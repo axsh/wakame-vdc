@@ -1,0 +1,5 @@
+
+
+mysql -uroot
+> create database wakame_dcmgr default character set utf8;
+> grant all on wakame_dcmgr.* to wakame_dcmgr@localhost identified by '<passwd>;
