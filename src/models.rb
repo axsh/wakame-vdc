@@ -14,10 +14,10 @@ class Instances < Sequel::Model; end
 
 class ImageStorages < Sequel::Model; end
 
-class VirtualMachineSpecs < Sequel::Model; end
+class VmSpecs < Sequel::Model; end
 
-class PhysicalMachines < Sequel::Model; end
+class PhysicalHosts < Sequel::Model; end
 
-class VMControllerMaster < Sequel::Model; end
+class VmcMasters < Sequel::Model; end
 
-class VMControllerAgent < Sequel::Model; end
+class VmcAgents < Sequel::Model; end
