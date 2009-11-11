@@ -17,7 +17,7 @@ DB.create_table? :users do
   Fixnum :group_id, :null=>false
 end
 
-DB.create_table? :vm_specs do
+DB.create_table? :hv_specs do
   primary_key :id, :type=>Integer
   Float :cpu_mhz, :null=>false
   Fixnum :memory, :null=>false
@@ -44,16 +44,16 @@ DB.create_table? :instances do
   Fixnum :user_id, :null=>false
   Fixnum :physicalhost_id, :null=>false
   Fixnum :imagestorage_id, :null=>false
-  Fixnum :vmspec_id, :null=>false
+  Fixnum :hvspec_id, :null=>false
 end
 
-DB.create_table? :vmc_masters do
+DB.create_table? :hv_controllers do
   primary_key :id, :type=>Integer
   String :access_url, :null=>false
 end
 
-DB.create_table? :vmc_agents do
+DB.create_table? :hv_agents do
   primary_key :id, :type=>Integer
-  Fixnum :vmcmaster_id
+  Fixnum :hvcontroller_id
   Fixnum :physicalhost_id
 end
