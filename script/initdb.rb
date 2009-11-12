@@ -25,7 +25,7 @@ end
 
 DB.create_table? :image_storages do
   primary_key :id, :type=>Integer
-  String :access_id, :auto_increment=>false, :fixed=>true, :size=>8
+  String :access_id, :fixed=>true, :size=>8, :null=>false
   String :storage_url, :null=>false
 end
 
@@ -40,7 +40,7 @@ end
 
 DB.create_table? :instances do
   primary_key :id, :type=>Integer
-  String :access_id, :type=>String, :auto_increment=>false, :fixed=>true, :size=>8
+  String :access_id, :type=>String, :fixed=>true, :size=>8, :null=>false
   Fixnum :user_id, :null=>false
   Fixnum :physicalhost_id, :null=>false
   Fixnum :imagestorage_id, :null=>false
