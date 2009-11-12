@@ -9,14 +9,26 @@ class Instance < ActiveResource::Base
 end
 
 # new
-instance = Instance.new()
-
-# list
+instance = Instance.new(:user_id=>1, :physical_hosts_id=>10,
+                        :imagestorage_id=>100,
+                        :hvspec_id=>1)
+instance.save
 
 # update
+instance.user_id = 2
+instance.save
+
+id = instance.id
+
+# get
+get_instance = Instance.find(id)
+
 # delete
+instance.destroy
 
-a = Instance.new
-a.save
-
+# list
+list = Instance.find(:all)
+for instance in list do
+  print instance.name
+end
 

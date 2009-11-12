@@ -21,3 +21,4 @@ class PhysicalHosts < Sequel::Model; end
 class HvControllers < Sequel::Model; end
 
 class HvAgents < Sequel::Model; end
+
