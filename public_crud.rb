@@ -19,6 +19,7 @@ END
 
 new_instance = eval(<<END )
   proc do
+    protected!
     #{public_name}_list = #{model}.all
     erb :"#{public_name}/new"
   end
@@ -26,6 +27,7 @@ END
 
 update_instance = eval(<<END )
   proc do
+    protected!
     id = params[:id]
     @id = id
     erb :"#{public_name}/update"
@@ -34,6 +36,7 @@ END
 
 delelete_instance = eval(<<END )
   proc do
+    protected!
     erb :"#{public_name}/update"
     # #{model}.filter(:id=>id).delete
     # redirect "/#{public_name}"
