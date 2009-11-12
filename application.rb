@@ -26,6 +26,12 @@ helpers do
 end
 
 public_crud Instances
+public_crud ImageStorages
+public_crud HvSpecs
+public_crud PhysicalHosts
+
+public_crud Groups
+public_crud Users
 
 get '/' do
   'startup wakame dcmgr'
