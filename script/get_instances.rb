@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'activeresource'
 
+# User.new(:account=>'user', :password=>'pass').save
+
 SITE = 'http://user:pass@localhost:9393/'
 
 class Instance < ActiveResource::Base
