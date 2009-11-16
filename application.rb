@@ -20,18 +20,21 @@ helpers do
   
   def authorized?
     @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-    @auth.provided? && @auth.basic? &&
-      @auth.credentials && @auth.credentials == ['user', 'pass']
+    @auth.provided? && @auth.basic? && authorize(@auth.credentials, @auth.credentials)
+  end
+
+  def authorize(user, pass)
+    
   end
 end
 
-public_crud Instances
-public_crud ImageStorages
-public_crud HvSpecs
-public_crud PhysicalHosts
+public_crud Instance
+public_crud ImageStorage
+public_crud HvSpec
+public_crud PhysicalHost
 
-public_crud Groups
-public_crud Users
+public_crud Group
+public_crud User
 
 get '/' do
   'startup wakame dcmgr'
