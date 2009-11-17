@@ -1,11 +1,6 @@
 require 'rubygems'
 require 'sinatra'
 
-Sinatra::Application.default_options.merge!(
-	:run => false,
-	:enf => :production
-)
-
 log = File.new("dcmgr.log", "a")
 STDOUT.reopen(log)
 STDERR.reopen(log)
@@ -15,4 +10,5 @@ $:.unshift "#{root}/lib"
 
 require 'wakame-dcmgr'
 
-run Sinatra::Application
+run Wakame::Dcmgr.new('dcmgr.conf')
+

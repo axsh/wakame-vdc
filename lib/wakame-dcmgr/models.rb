@@ -3,7 +3,7 @@
 require 'rubygems'
 require 'sequel'
 
-DB = Sequel.connect('mysql://localhost/wakame_dcmgr?user=wakame_dcmgr&password=passwd')
+DB = Sequel.connect(Wakame::Dcmgr.connection_configure)
 
 # models
 class Group < Sequel::Model; end
