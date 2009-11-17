@@ -2,6 +2,8 @@
 require 'sinatra'
 set :run, false
 
+require 'wakame-dcmgr/schema'
+
 module Wakame
   module Dcmgr
     extend self

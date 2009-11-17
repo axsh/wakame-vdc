@@ -3,6 +3,8 @@
 require 'rubygems'
 require 'sequel'
 
+require 'wakame-dcmgr'
+
 DB = Sequel.connect(Wakame::Dcmgr.connection_configure)
 
 # models
