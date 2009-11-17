@@ -10,7 +10,3 @@ Wakame::Dcmgr.connection_configure = 'sqlite:/'
 
 require 'wakame-dcmgr/schema'
 require 'wakame-dcmgr/models'
-
-
-
-
