@@ -9,7 +9,7 @@ end
 
 desc 'Run specs'
 task :spec do
-  sh "spec -c test/*_spec.rb"
+  sh "spec -fs -c test/*_spec.rb"
 end
 
 task :environment do
