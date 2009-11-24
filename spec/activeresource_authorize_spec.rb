@@ -11,7 +11,7 @@ module Test
   end
 end
 
-describe "access by active resource" do
+describe "active resource authorization" do
   before do
     @user = User.new(:account=>'__test__', :password=>'passwd')
     @user.save
@@ -34,7 +34,7 @@ describe "access by active resource" do
     @user.save
   end
   
-  it "should authorize, and save" do
+  it "should authorize" do
     instance = Test::Instance.new(:user_id=>1234, :physicalhost_id=>10,
                                   :imagestorage_id=>100,
                                   :hvspec_id=>10)
@@ -42,21 +42,6 @@ describe "access by active resource" do
     instance.id.should > 0
     
     $instance = instance
-  end
-
-  it "should be update" do
-    $instance.user_id = 2
-    $instance.save
-  end
-
-  it "should be get" do
-    instance = Test::Instance.find($instance.id)
-    instance.id.should == $instance.id
-  end
-
-  it "should be get list" do
-    list = Test::Instance.find(:all)
-    list.index { |ins| ins.id == $instance.id }.should be_true
   end
 end
 
