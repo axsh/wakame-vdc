@@ -3,11 +3,6 @@
 require 'rubygems'
 require 'sequel'
 
-require 'wakame-dcmgr'
-
-DB = Sequel.connect(Wakame::Dcmgr.connection_configure)
-
-# models
 class Group < Sequel::Model; end
 
 class User < Sequel::Model; end

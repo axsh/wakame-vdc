@@ -4,26 +4,19 @@ require 'rubygems'
 require 'activeresource'
 require File.dirname(__FILE__) + '/spec_helper'
 
-module Test
-  class Instance < ActiveResource::Base
-    self.site = 'http://__test__:passwd@localhost:9393/'
-    self.format = :json
-  end
-end
-
-describe "access by active resource" do
-  before do
-    @user = User.new(:account=>'__test__', :password=>'passwd')
-    @user.save
+describe "instance access by active resource" do
+  include ActiveResourceHelperMethods
+  before(:all) do
+    @class = describe_activeresource_model :Instance
   end
 
-  after do
-    @user.delete
-  end
-  
   it "should run instance" do
-    instance = Test::Instance.find($instance.id)
-    instance.id.should == $instance.id
+    instance = @class.new(:user_id=>1234, :physicalhost_id=>10,
+                          :imagestorage_id=>100,
+                          :hvspec_id=>10)
+    instance.save
+    instance.id.should > 0
+    @first_id = instance.id
   end
 
   it "should reboot"
@@ -32,8 +25,8 @@ describe "access by active resource" do
   it "should snapshot image, and backup image to image storage"
 
   it "should get list" do
-    list = Test::Instance.find(:all)
-    list.index { |ins| ins.id == $instance.id }.should be_true
+    list = @class.find(:all)
+    list.index { |ins| ins.id == @first_id.id }.should be_true
   end
 end
 
