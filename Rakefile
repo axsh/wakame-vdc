@@ -2,14 +2,9 @@ require 'rake/clean'
 
 task :default => :spec
 
-desc 'Run tests'
-task :test do
-  sh "testrb test/*_test.rb"
-end
-
 desc 'Run specs'
 task :spec do
-  sh "spec -fs -c test/*_spec.rb"
+  sh "spec -fs -c spec/*_spec.rb"
 end
 
 task :environment do
