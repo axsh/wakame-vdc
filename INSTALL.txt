@@ -3,8 +3,14 @@ mysql -uroot
 > create database wakame_dcmgr default character set utf8;
 > grant all on wakame_dcmgr.* to wakame_dcmgr@localhost identified by 'passwd';
 
-install shotgun.
-$ gem install shotgun
+Make sure to be installed rubygems (>= 1.3.5) and bundler (>= 0.7.0).
+
+Setup with the development gems. i.e. shotgun, rspec
+$ gem bundle --only development
+Setup only with runtime gems.
+$ gem bundle
+
+"gem bundle" will make vendor/ and bin/ folders.
 
 start up
-$ shotgun config.ru
+$ ./bin/shotgun config.ru
