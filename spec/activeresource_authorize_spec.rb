@@ -4,44 +4,31 @@ require 'rubygems'
 require 'activeresource'
 require File.dirname(__FILE__) + '/spec_helper'
 
-module Test
-  class Instance < ActiveResource::Base
-    self.site = 'http://__test__:passwd@localhost:9393/'
-    self.format = :json
-  end
-end
-
 describe "active resource authorization" do
-  before do
-    @user = User.new(:account=>'__test__', :password=>'passwd')
-    @user.save
+  include ActiveResourceHelperMethods
+  before(:all) do
+    @authuser = User.create(:account=>'__test_auth__', :password=>'passwd',
+                            :group_id=>1)
   end
 
-  after do
-    @user.delete
-  end
-  
   it "should not authorize" do
-    @user.password = 'hoge'
-    @user.save
     lambda {
-      instance = Test::Instance.new(:user_id=>1234, :physicalhost_id=>10,
-                                    :imagestorage_id=>100,
-                                    :hvspec_id=>10)
-      instance.save
+      not_auth_instance_class = describe_activeresource_model :Instance, '__test_auth__', 'bad_passwd'
+      not_auth_instance_class.create(:access_id=>1,
+                                     :user_id=>1234, :physicalhost_id=>10,
+                                     :imagestorage_id=>100,
+                                     :hvspec_id=>10)
     }.should raise_error(ActiveResource::UnauthorizedAccess)
-    @user.password = 'passwd'
-    @user.save
   end
   
   it "should authorize" do
-    instance = Test::Instance.new(:user_id=>1234, :physicalhost_id=>10,
-                                  :imagestorage_id=>100,
-                                  :hvspec_id=>10)
+    auth_instance_class = describe_activeresource_model :Instance, '__test_auth__', 'passwd'
+    instance = auth_instance_class.new(:access_id=>1,
+                                          :user_id=>1234, :physicalhost_id=>10,
+                                          :imagestorage_id=>100,
+                                       :hvspec_id=>10)
     instance.save
     instance.id.should > 0
-    
-    $instance = instance
   end
 end
 

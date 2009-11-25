@@ -19,11 +19,13 @@ module ActiveResourceHelperMethods
     end
   end
 
-  def describe_activeresource_model model_name
+  def describe_activeresource_model model_name, user=nil, passwd=nil
+    user ||= '__test__'
+    passwd ||= 'passwd'
     eval(<<END)
     module Test
       class #{model_name.to_s} < ActiveResource::Base
-        self.site = 'http://__test__:passwd@localhost:19393/'
+        self.site = 'http://#{user}:#{passwd}@localhost:19393/'
         self.format = :json
       end
     end

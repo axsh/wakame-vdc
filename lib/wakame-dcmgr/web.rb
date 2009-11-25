@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'sinatra'
 require 'sequel'
-require 'json'
 
 require 'wakame-dcmgr/models'
 require 'wakame-dcmgr/public_crud'
