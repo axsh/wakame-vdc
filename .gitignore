@@ -1,5 +1,5 @@
 #*#
 *~
-dcmgr.log
+*.log
 dcmgr.conf
-web-test.log
+
