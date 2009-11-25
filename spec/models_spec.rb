@@ -16,8 +16,6 @@ Wakame::Dcmgr::Schema.models.each{|model|
       @obj.id.should be_nil
     end
 
-    it 
-
     it "shoud be exists table" do
       Wakame::Dcmgr::Schema.table_exists?(model.table_name).should be_true
     end
