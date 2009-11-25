@@ -13,6 +13,10 @@ task :environment do
   Wakame::Dcmgr.configure 'dcmgr.conf'
 end
 
+task :shell do
+  sh "irb -r lib/wakame-dcmgr/shell"
+end
+
 namespace :db do
   desc 'Create all database tables'
   task :init => [ :environment ] do
