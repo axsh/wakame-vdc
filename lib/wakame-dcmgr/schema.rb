@@ -78,6 +78,10 @@ module Wakame
         }
       end
 
+      def table_exists?(table_name)
+        @db.table_exists? table_name
+      end
+
       def models
         require 'wakame-dcmgr/models'
         @models ||= [Group, User,

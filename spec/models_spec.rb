@@ -5,7 +5,6 @@ require File.dirname(__FILE__) + '/spec_helper'
 Wakame::Dcmgr::Schema.models.each{|model|
   describe model do
     before do
-      Wakame::Dcmgr::Schema.create!
       @obj = model.new
     end
     
@@ -13,8 +12,14 @@ Wakame::Dcmgr::Schema.models.each{|model|
       @obj.should be_valid
     end
 
+    it "should not be nil id before save" do
+      @obj.id.should be_nil
+    end
+
+    it 
+
     it "shoud be exists table" do
-      DB.table_exists?(model.table_name).should be_true
+      Wakame::Dcmgr::Schema.table_exists?(model.table_name).should be_true
     end
   end
 }
