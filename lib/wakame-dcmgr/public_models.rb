@@ -106,6 +106,8 @@ class PublicModel
   def initialize(request)
     @request = request
   end
+  
+  attr_accessor :request
 end
 
 class PublicInstance < PublicModel
@@ -116,8 +118,6 @@ class PublicInstance < PublicModel
   def model
     Instance
   end
-
-  attr_accessor :request
 
   def list
     default_list
@@ -155,6 +155,25 @@ class PublicInstance < PublicModel
      [:put,     pattern_target(:reboot),    :reboot, 1],
      [:put,     pattern_target(:terminate), :terminate, 1],
      [:put,     pattern_target(:snapshot),  :snapshot, 1],
+    ]
+  end
+end
+
+class PublicGroup < PublicModel
+  def self.model
+    Group
+  end
+
+  def model
+    Group
+  end
+
+  def create; default_create; end
+  def destroy id; default_destroy id; end
+
+  def self.public_actions
+    [[:post,    pattern_all,    :create, 0],
+     [:delete,  pattern_target, :destroy, 1],
     ]
   end
 end

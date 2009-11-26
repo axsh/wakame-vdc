@@ -5,3 +5,4 @@ Wakame::Dcmgr::Schema.connect \
   'mysql://localhost/wakame_dcmgr?user=wakame_dcmgr&password=passwd'
 Wakame::Dcmgr::Schema.create!
 
+require 'wakame-dcmgr/web'

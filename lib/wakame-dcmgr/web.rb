@@ -17,7 +17,7 @@ module Wakame
       #public_crud HvSpec
       #public_crud PhysicalHost
       
-      #public_crud Group
+      public_crud PublicGroup
       #public_crud User
       
       get '/' do
