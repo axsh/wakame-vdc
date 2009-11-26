@@ -178,3 +178,22 @@ class PublicGroup < PublicModel
   end
 end
 
+class PublicUser < PublicModel
+  def self.model
+    User
+  end
+
+  def model
+    User
+  end
+
+  def create; default_create; end
+  def destroy id; default_destroy id; end
+
+  def self.public_actions
+    [[:post,    pattern_all,    :create, 0],
+     [:delete,  pattern_target, :destroy, 1],
+    ]
+  end
+end
+

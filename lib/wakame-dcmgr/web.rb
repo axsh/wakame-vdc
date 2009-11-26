@@ -18,7 +18,7 @@ module Wakame
       #public_crud PhysicalHost
       
       public_crud PublicGroup
-      #public_crud User
+      public_crud PublicUser
       
       get '/' do
         'startup wakame dcmgr'
