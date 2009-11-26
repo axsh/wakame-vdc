@@ -100,7 +100,9 @@ class PublicModel
 
   def json_request
     raise "no data" unless request.body.size > 0
-    JSON.parse(request.body.read)
+    parsed = JSON.parse(request.body.read)
+    puts "request: " + parsed.inspect
+    parsed
   end
   
   def initialize(request)
@@ -211,6 +213,29 @@ class PublicHvController < PublicModel
 
   def self.public_actions
     [[:post,    pattern_all,    :create, 0],
+     [:delete,  pattern_target, :destroy, 1],
+    ]
+  end
+end
+
+class PublicImageStorage < PublicModel
+  def self.model
+    ImageStorage
+  end
+
+  def model
+    ImageStorage
+  end
+  
+  def list; default_list; end
+  def create; default_create; end
+  def get id; default_get id; end
+  def destroy id; default_destroy id; end
+
+  def self.public_actions
+    [[:get,     pattern_all,    :list, 0],
+     [:post,    pattern_all,    :create, 0],
+     [:get,     pattern_target, :get, 1],
      [:delete,  pattern_target, :destroy, 1],
     ]
   end

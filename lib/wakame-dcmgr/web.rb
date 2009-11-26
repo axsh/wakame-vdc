@@ -14,8 +14,8 @@ module Wakame
       
       public_crud PublicInstance
       public_crud PublicHvController
+      public_crud PublicImageStorage
       
-      #public_crud ImageStorage
       #public_crud HvSpec
       #public_crud PhysicalHost
       

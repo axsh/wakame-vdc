@@ -36,8 +36,13 @@ module Wakame
         
         @db.create_table? :image_storages do
           primary_key :id, :type=>Integer
+          Fixnum :imagestoragehost_id, :null=>false
           String :access_id, :fixed=>true, :size=>8, :null=>false
           String :storage_url, :null=>false
+        end
+
+        @db.create_table? :image_storage_hosts do
+          primary_key :id, :type=>Integer
         end
         
         @db.create_table? :physical_hosts do
