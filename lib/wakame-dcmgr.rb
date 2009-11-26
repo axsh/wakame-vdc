@@ -26,5 +26,3 @@ module Wakame
     end
   end
 end
-   
-    

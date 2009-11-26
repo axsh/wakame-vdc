@@ -14,7 +14,9 @@ module ActiveResourceHelperMethods
   
   def runserver
     Thread.new do
-      use Rack::CommonLogger, Logger.new('web-test.log')
+      logger = Logger.new('web-test.log')
+      logger.level = Logger::DEBUG
+      use Rack::CommonLogger, logger
       Rack::Handler::WEBrick.run Wakame::Dcmgr::Web, :Port => 19393
     end
   end

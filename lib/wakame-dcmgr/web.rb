@@ -4,6 +4,7 @@ require 'sequel'
 
 require 'wakame-dcmgr/models'
 require 'wakame-dcmgr/public_crud'
+require 'wakame-dcmgr/public_models'
 require 'wakame-dcmgr/helpers'
 
 module Wakame
@@ -11,16 +12,27 @@ module Wakame
     class Web < Sinatra::Base
       helpers { include Wakame::Dcmgr::Helpers }
       
-      public_crud Instance
-      public_crud ImageStorage
-      public_crud HvSpec
-      public_crud PhysicalHost
+      public_crud PublicInstance
+      #public_crud ImageStorage
+      #public_crud HvSpec
+      #public_crud PhysicalHost
       
-      public_crud Group
-      public_crud User
+      #public_crud Group
+      #public_crud User
       
       get '/' do
         'startup wakame dcmgr'
+      end
+      
+      not_found do
+        if request.body.size > 0
+          req_hash = JSON.parse(request.body.read)
+          puts "request:" + req_hash.to_s
+          "request:" + req_hash.to_s
+        else
+          puts "hoge"
+          nil
+        end
       end
     end
   end
