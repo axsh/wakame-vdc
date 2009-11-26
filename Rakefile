@@ -17,6 +17,10 @@ task :shell do
   sh "irb -r lib/wakame-dcmgr/shell"
 end
 
+task :run do
+  sh "shotgun -p 3000 config.ru"
+end
+
 namespace :db do
   desc 'Create all database tables'
   task :init => [ :environment ] do
