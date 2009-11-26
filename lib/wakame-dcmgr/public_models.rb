@@ -197,3 +197,22 @@ class PublicUser < PublicModel
   end
 end
 
+class PublicHvController < PublicModel
+  def self.model
+    HvController
+  end
+
+  def model
+    HvController
+  end
+
+  def create; default_create; end
+  def destroy id; default_destroy id; end
+
+  def self.public_actions
+    [[:post,    pattern_all,    :create, 0],
+     [:delete,  pattern_target, :destroy, 1],
+    ]
+  end
+end
+

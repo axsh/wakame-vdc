@@ -13,6 +13,8 @@ module Wakame
       helpers { include Wakame::Dcmgr::Helpers }
       
       public_crud PublicInstance
+      public_crud PublicHvController
+      
       #public_crud ImageStorage
       #public_crud HvSpec
       #public_crud PhysicalHost
