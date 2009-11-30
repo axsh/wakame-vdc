@@ -69,6 +69,10 @@ end
 
 class PublicModel
   extend PublicModelModule
+
+  def model
+    self.class.model
+  end
   
   def default_list
    model.all
@@ -120,10 +124,6 @@ class PublicInstance < PublicModel
     Instance
   end
 
-  def model
-    Instance
-  end
-
   def list
     default_list
   end
@@ -169,10 +169,6 @@ class PublicGroup < PublicModel
     Group
   end
 
-  def model
-    Group
-  end
-
   def create; default_create; end
   def destroy id; default_destroy id; end
 
@@ -185,10 +181,6 @@ end
 
 class PublicUser < PublicModel
   def self.model
-    User
-  end
-
-  def model
     User
   end
 
@@ -207,10 +199,6 @@ class PublicHvController < PublicModel
     HvController
   end
 
-  def model
-    HvController
-  end
-
   def create; default_create; end
   def destroy id; default_destroy id; end
 
@@ -226,10 +214,6 @@ class PublicImageStorage < PublicModel
     ImageStorage
   end
 
-  def model
-    ImageStorage
-  end
-  
   def list; default_list; end
   def create; default_create; end
   def get id; default_get id; end
@@ -249,10 +233,6 @@ class PublicImageStorageHost < PublicModel
     ImageStorageHost
   end
 
-  def model
-    ImageStorageHost
-  end
-  
   def list; default_list; end
   def create; default_create; end
   def get id; default_get id; end
@@ -272,10 +252,6 @@ class PublicPhysicalHost < PublicModel
     PhysicalHost
   end
 
-  def model
-    PhysicalHost
-  end
-  
   def list; default_list; end
   def create; default_create; end
   def get id; default_get id; end
