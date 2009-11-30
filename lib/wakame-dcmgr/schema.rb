@@ -52,6 +52,7 @@ module Wakame
           Fixnum :memory, :null=>false
           String :location, :null=>false
           String :hypervisor_type, :fixed=>true, :size=>8, :null=>false # xen, kvm, ...
+          Fixnum :relate_user_id
         end
         
         @db.create_table? :instances do

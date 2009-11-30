@@ -53,11 +53,14 @@ module PublicModelModule
       end
     else
       act = proc do |id|
-        p request.url
+        puts "url: " + request.url
         protected!
         obj = public_class.new(request)
         ret = eval("obj.#{actiontag} id")
-        json_render(ret)
+        puts "response: " + ret.inspect
+        json_ret = json_render(ret)
+        puts "response: " + json_ret
+        json_ret
       end
     end
     act
@@ -278,11 +281,21 @@ class PublicPhysicalHost < PublicModel
   def get id; default_get id; end
   def destroy id; default_destroy id; end
 
+  def relate id
+    user_id = request.GET[:user].to_i
+    obj = model.find(:id=>id.to_i)
+
+    obj.relate_user_id = request.GET['user'].to_i
+    obj.save
+    obj
+  end
+
   def self.public_actions
     [[:get,     pattern_all,    :list, 0],
      [:post,    pattern_all,    :create, 0],
      [:get,     pattern_target, :get, 1],
      [:delete,  pattern_target, :destroy, 1],
+     [:put,  pattern_target(:relate), :relate, 1],
     ]
   end
 end

@@ -37,7 +37,7 @@ describe "physical host access by active resource" do
     user = User.create(:account=>'__test_activeresource_physicalhost_spec__', :password=>'passwd',
                         :group_id=>1)
     physicalhost.put(:relate, :user=>user.id)
-    physicalhost.relation_user.id.should == user.id
+    @class.find(physicalhost.id).relate_user_id.should == user.id
   end
 end
 
