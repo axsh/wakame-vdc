@@ -9,3 +9,4 @@ describe "image storage host access by active resource" do
   it "should add host"
   it "should delete host"
 end
+
