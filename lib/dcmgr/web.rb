@@ -17,23 +17,19 @@ module Dcmgr
     public_crud PublicImageStorageHost
     public_crud PublicPhysicalHost
     
-    #public_crud HvSpec
-    
     public_crud PublicGroup
     public_crud PublicUser
     
     get '/' do
-      'startup wakame dcmgr'
+      'startup dcmgr'
     end
     
     not_found do
       if request.body.size > 0
         req_hash = JSON.parse(request.body.read)
-        puts "request:" + req_hash.to_s
-        "request:" + req_hash.to_s
+        "not found " + req_hash.to_s
       else
-        puts "hoge"
-        nil
+        "no request data"
       end
     end
   end
