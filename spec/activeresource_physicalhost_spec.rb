@@ -34,9 +34,9 @@ describe "physical host access by active resource" do
                                  :memory=>1.1,
                                  :location=>'',
                                  :hypervisor_type=>'')
-    user = User.create(:account=>'__test_activeresource_user_spec__', :password=>'passwd',
+    user = User.create(:account=>'__test_activeresource_physicalhost_spec__', :password=>'passwd',
                         :group_id=>1)
-    physicalhost.relate(user)
+    physicalhost.put(:relate, :user=>user.id)
     physicalhost.relation_user.id.should == user.id
   end
 end
