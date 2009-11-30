@@ -11,6 +11,8 @@ class Instance < Sequel::Model; end
 
 class ImageStorage < Sequel::Model; end
 
+class ImageStorageHost < Sequel::Model; end
+
 class HvSpec < Sequel::Model; end
 
 class PhysicalHost < Sequel::Model; end
