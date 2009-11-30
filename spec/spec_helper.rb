@@ -1,13 +1,13 @@
 
 require 'rubygems'
-require 'wakame-dcmgr'
+require 'dcmgr'
 require 'rack/handler/webrick'
 require 'sinatra'
 
-Wakame::Dcmgr::Schema.connect 'sqlite:/'
-Wakame::Dcmgr::Schema.create!
+Dcmgr::Schema.connect 'sqlite:/'
+Dcmgr::Schema.create!
 
-require 'wakame-dcmgr/web'
+require 'dcmgr/web'
 
 module ActiveResourceHelperMethods
   extend self
@@ -17,7 +17,7 @@ module ActiveResourceHelperMethods
       logger = Logger.new('web-test.log')
       logger.level = Logger::DEBUG
       use Rack::CommonLogger, logger
-      Rack::Handler::WEBrick.run Wakame::Dcmgr::Web, :Port => 19393
+      Rack::Handler::WEBrick.run Dcmgr::Web, :Port => 19393
     end
   end
 

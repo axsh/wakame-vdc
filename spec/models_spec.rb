@@ -2,7 +2,7 @@
 
 require File.dirname(__FILE__) + '/spec_helper'
 
-Wakame::Dcmgr::Schema.models.each{|model|
+Dcmgr::Schema.models.each{|model|
   describe model do
     before do
       @obj = model.new
@@ -17,7 +17,7 @@ Wakame::Dcmgr::Schema.models.each{|model|
     end
 
     it "shoud be exists table" do
-      Wakame::Dcmgr::Schema.table_exists?(model.table_name).should be_true
+      Dcmgr::Schema.table_exists?(model.table_name).should be_true
     end
   end
 }

@@ -9,12 +9,12 @@ end
 
 task :environment do
   $:.unshift 'lib'
-  require 'wakame-dcmgr'
-  Wakame::Dcmgr.configure 'dcmgr.conf'
+  require 'dcmgr'
+  Dcmgr.configure 'dcmgr.conf'
 end
 
 task :shell do
-  sh "irb -r lib/wakame-dcmgr/shell"
+  sh "irb -r lib/dcmgr/shell"
 end
 
 task :run do
@@ -24,12 +24,12 @@ end
 namespace :db do
   desc 'Create all database tables'
   task :init => [ :environment ] do
-    Wakame::Dcmgr::Schema.create!
+    Dcmgr::Schema.create!
   end
 
   desc 'Drop all database tables'
   task :drop => [ :environment ] do
-    Wakame::Dcmgr::Schema.drop!
+    Dcmgr::Schema.drop!
   end
 
   task :reset => [ :drop, :init ]

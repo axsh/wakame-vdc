@@ -1,5 +1,5 @@
 
 set :url, 'http://localhost:4567'
 
-Wakame::Dcmgr.connection_configure =
+Dcmgr.connection_configure =
   'mysql://localhost/wakame_dcmgr?user=wakame_dcmgr&password=passwd'

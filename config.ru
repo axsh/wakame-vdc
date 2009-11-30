@@ -10,7 +10,7 @@ $:.unshift "#{root}/lib"
 
 # Load local envrironment file which bundler generates.
 require "#{root}/vendor/gems/environment"
-require 'wakame-dcmgr'
+require 'dcmgr'
 
-run Wakame::Dcmgr.new('dcmgr.conf')
+run Dcmgr.new('dcmgr.conf')
 
