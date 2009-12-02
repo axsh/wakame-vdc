@@ -10,7 +10,7 @@ module Dcmgr
   class Web < Sinatra::Base
     helpers { include Dcmgr::Helpers }
     
-    def public_crud model
+    def self.public_crud model
       model.public_actions.each{|method_name, pattern, actiontag, args|
         eval("#{method_name} pattern, &model.get_action(model, actiontag, args)")
       }
