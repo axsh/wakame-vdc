@@ -3,11 +3,18 @@
 require 'rubygems'
 require 'sequel'
 
-class Account < Sequel::Model; end
+class Account < Sequel::Model;
+  one_to_many :account_roll
+end
 
-class User < Sequel::Model; end
+class User < Sequel::Model;
+  one_to_many :account_roll
+end
 
-class AccountRoll < Sequel::Model; end
+class AccountRoll < Sequel::Model;
+  many_to_one :account
+  many_to_one :user
+end
 
 class Instance < Sequel::Model; end
 
