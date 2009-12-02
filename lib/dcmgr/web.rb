@@ -3,7 +3,6 @@ require 'sinatra'
 require 'sequel'
 
 require 'dcmgr/models'
-require 'dcmgr/public_crud'
 require 'dcmgr/public_models'
 require 'dcmgr/helpers'
 
@@ -11,6 +10,12 @@ module Dcmgr
   class Web < Sinatra::Base
     helpers { include Dcmgr::Helpers }
     
+    def public_crud model
+      model.public_actions.each{|method_name, pattern, actiontag, args|
+        eval("#{method_name} pattern, &model.get_action(model, actiontag, args)")
+      }
+    end
+
     public_crud PublicInstance
     public_crud PublicHvController
     public_crud PublicImageStorage
