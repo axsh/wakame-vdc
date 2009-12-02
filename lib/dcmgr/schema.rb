@@ -15,24 +15,24 @@ module Dcmgr
     end
     
     def create!
-      @db.create_table? :groups do
+      @db.create_table? :accounts do
         primary_key :id, :type=>Integer
-        String :name, :unique=>true, :null=>false
+        String :name
       end
-
+      
       @db.create_table? :users do
         primary_key :id, :type=>Integer
         String :account, :unique=>true, :null=>false
         String :password, :null=>false
-        Fixnum :group_id, :null=>false
       end
-      
-      @db.create_table? :hv_specs do
-        primary_key :id, :type=>Integer
-        Float :cpu_mhz, :null=>false
-        Fixnum :memory, :null=>false
+
+      @db.create_table? :account_rolls do
+        Fixnum :account_id, :type=>Integer, :null=>false
+        Fixnum :user_id, :type=>Integer, :null=>false
+        index :account_id
+        index :user_id
       end
-      
+
       @db.create_table? :image_storages do
         primary_key :id, :type=>Integer
         Fixnum :imagestoragehost_id, :null=>false
@@ -73,6 +73,30 @@ module Dcmgr
         Fixnum :hvcontroller_id
         Fixnum :physicalhost_id
       end
+      
+      @db.create_table? :tags do
+        primary_key :id, :type=>Integer
+        Fixnum :account_id
+        String :name, :fixed=>true, :size=>32
+        Fixnum :type, :fixed=>true, :size=>1 # 0: non auth tag, 1: auth tag
+        index :account_id
+      end
+
+      @db.create_table? :tag_mappings do
+        primary_key :tag_id, :type=>Integer
+        Fixnum :type, :size=>2 # 0: account, 1: user, 2: instance, 3: instance image, 4: vmc
+        Fixnum :target_id
+        index [:tag_id, :type, :target_id]
+      end
+
+      @db.create_table? :logs do
+        primary_key :id, :type=>Integer
+        String :target, :fixed=>true, :size=>32, :null=>false
+        String :action, :fixed=>true, :size=>32, :null=>false
+        Fixnum :user_id, :null=>false
+        String :status, :fixed=>true, :size=>2, :null=>false # 'OK' / 'NG'
+        DateTime :created_at, :null=>false
+      end
 
       require 'dcmgr/models'
     end
@@ -89,9 +113,12 @@ module Dcmgr
 
     def models
       require 'dcmgr/models'
-      @models ||= [Group, User,
-                   Instance, ImageStorage, HvSpec, PhysicalHost,
-                   HvController, HvAgent, ].freeze
+      @models ||= [Account, User, AccountRoll,
+                   Instance, ImageStorage, ImageStorageHost, PhysicalHost,
+                   HvController, HvAgent,
+                   Tag, TagMapping,
+                   Log,
+                  ].freeze
     end
   end
 end
