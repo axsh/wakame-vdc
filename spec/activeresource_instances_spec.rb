@@ -8,16 +8,35 @@ describe "instance access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     @class = describe_activeresource_model :Instance
+    @tag_class = describe_activeresource_model :Tag
   end
 
   it "should run instance" do
-    instance = @class.new(:access_id=>1,
-                          :user_id=>1234, :physicalhost_id=>10,
+    tag = @tag_class.create(:name=>'instance crud',
+                            :auth_type=>'instance', :aut_action=>'crud'
+                            :account=>@account)
+    
+    instance = @class.new(:physicalhost_id=>10,
                           :imagestorage_id=>100,
-                          :hvspec_id=>10)
+                          :hvspec_id=>10,
+                          :tag=>tag,
+                          :account=>@account)
     instance.save
     instance.id.should > 0
     $instance_id = instance.id
+  end
+
+  it "should tag" do
+    tag = @tag_class[0]
+    instance = @class.find($instance_id)
+    instance.tags.include?(tag).should be_true
+
+    instance.remove_tag(tag)
+    instance.tags.include?(tag).should be_false
+
+    lambda {
+      instance.destroy
+    }.should error_raise(AuthorizeException)
   end
 
   it "should get instance" do

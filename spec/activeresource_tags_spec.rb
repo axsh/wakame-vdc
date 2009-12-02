@@ -10,18 +10,39 @@ describe "tags access by active resource" do
     @class = describe_activeresource_model :Tag
   end
 
-  it "should add" do
-    tag = Tag.create(:name=>'')
-    user.id.should > 0
-    User[user.id].should be_valid
-    $user = user
+  it "should add nomal tag" do
+    tag = @class.create(:name=>'', :account=>@account)
+    tag.id.should > 0
+
+    real_tag = Tag[tag.id]
+    real_tag.should be_valid
+    real_tag.account.id.should == @account.id
+    
+    $tag = tag
   end
   
-  it "should delete" do
-    id = $user.id
-    lambda {
-      $user.destroy
-    }.should change{ User[id] }
+  it "should delete normal tag" do
+    id = $tag.id
+    $tag.destroy
+    Tag[id].should be_null
+  end
+  
+  it "should add auth tag" do
+    tag = @class.create(:name=>'instance crud',
+                        :auth_type=>'instance', :aut_action=>'crud'
+                        :account=>@account)
+    tag.id.should > 0
+
+    real_tag = Tag[tag.id]
+    real_tag.should be_valid
+    real_tag.account.id.should == @account.id
+    
+    $auth_tag = tag
+  end
+  
+  it "should delete normal tag" do
+    $auth_tag.destroy
+    Tag[$auth_tag.id].should be_null
   end
 end
 
