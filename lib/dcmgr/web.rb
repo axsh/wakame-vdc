@@ -17,7 +17,6 @@ module Dcmgr
     public_crud PublicImageStorageHost
     public_crud PublicPhysicalHost
     
-    public_crud PublicGroup
     public_crud PublicUser
     
     get '/' do

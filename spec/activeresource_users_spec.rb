@@ -11,8 +11,7 @@ describe "user access by active resource" do
   end
 
   it "should add" do
-    user = User.create(:account=>'__test_activeresource_user_spec__', :password=>'passwd',
-                        :group_id=>1)
+    user = User.create(:account=>'__test_activeresource_user_spec__', :password=>'passwd')
     user.id.should > 0
     User[user.id].should be_valid
     $user = user

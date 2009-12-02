@@ -37,8 +37,7 @@ END
   end
 
   def create_authuser
-    @user = User.create(:account=>'__test__', :password=>'passwd',
-                        :group_id=>1)
+    @user = User.create(:account=>'__test__', :password=>'passwd')
   end
 
   def delete_authuser
