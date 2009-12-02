@@ -45,7 +45,7 @@ module PublicModelModule
         puts "url: " + request.url
         protected!
         obj = public_class.new(request)
-        ret = eval("obj.#{actiontag}")
+        ret = obj.send actiontag
         puts "response: " + ret.inspect
         json_ret = json_render(ret)
         puts "response: " + json_ret
@@ -56,7 +56,7 @@ module PublicModelModule
         puts "url: " + request.url
         protected!
         obj = public_class.new(request)
-        ret = eval("obj.#{actiontag} id")
+        ret = obj.send acttiontag, id
         puts "response: " + ret.inspect
         json_ret = json_render(ret)
         puts "response: " + json_ret
