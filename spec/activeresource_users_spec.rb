@@ -11,11 +11,16 @@ describe "user access by active resource" do
   end
 
   it "should add" do
-    user = User.create(:account=>'__test_activeresource_user_spec__', :password=>'passwd')
-    user.id.should > 0
-    User[user.id].should be_valid
+    user = User.create(:account=>'__test_as_user_spec__', :password=>'passwd')
+    user.id.should be_true
+    user.id.should.length >= 10
+    
+    User[:uuid=>user.id].should be_valid
+    
     $user = user
   end
+
+  it "should authorize" 
   
   it "should delete" do
     id = $user.id

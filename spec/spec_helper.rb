@@ -14,9 +14,6 @@ module ActiveResourceHelperMethods
   
   def runserver
     Thread.new do
-      logger = Logger.new('web-test.log')
-      logger.level = Logger::DEBUG
-      use Rack::CommonLogger, logger
       Rack::Handler::WEBrick.run Dcmgr::Web, :Port => 19393
     end
   end
@@ -49,7 +46,4 @@ end
 ActiveResourceHelperMethods.runserver
 ActiveResourceHelperMethods.create_authuser
 
-#log = File.new("dcmgr.log", "a")
-#STDOUT.reopen(log)
-#STDERR.reopen(log)
 
