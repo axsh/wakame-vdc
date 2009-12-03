@@ -7,7 +7,7 @@ mysql -uroot
 
 # for test
 > create database wakame_dcmgr_test default character set utf8;
-> grant all on wakame_dcmgr.* to dcmgr_test@localhost identified by 'passwd';
+> grant all on wakame_dcmgr_test.* to dcmgr_test@localhost identified by 'passwd';
 
 > exit
 
