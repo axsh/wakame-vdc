@@ -16,6 +16,13 @@ Dcmgr::Schema.models.each{|model|
       @obj.id.should be_nil
     end
 
+    if model.new.is_a? Dcmgr::Model::UUIDMethods
+      it "should have uuid" do
+        @obj.uuid.should be_true
+        @obj.prefix_uuid.should be_true
+      end
+    end
+
     it "shoud be exists table" do
       Dcmgr::Schema.table_exists?(model.table_name).should be_true
     end

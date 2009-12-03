@@ -38,7 +38,7 @@ END
 
   def create_authuser
     @user = User.create(:account=>'__test__', :password=>'passwd')
-    @account = Account.create(:account=>'__test_account__')
+    @account = Account.create(:name=>'__test_account__')
   end
 
   def delete_authuser
