@@ -42,24 +42,24 @@ module PublicModelModule
   def get_action(public_class, actiontag, args)
     if args == 0
       act = proc do
-        puts "url: " + request.url
+        logger.debug "url: " + request.url
         protected!
         obj = public_class.new(request)
         ret = obj.send actiontag
-        puts "response: " + ret.inspect
+        logger.debug "response: " + ret.inspect
         json_ret = json_render(ret)
-        puts "response: " + json_ret
+        logger.debug "response: " + json_ret
         json_ret
       end
     else
       act = proc do |id|
-        puts "url: " + request.url
+        logger.debug "url: " + request.url
         protected!
         obj = public_class.new(request)
         ret = obj.send acttiontag, id
-        puts "response: " + ret.inspect
+        logger.debug "response: " + ret.inspect
         json_ret = json_render(ret)
-        puts "response: " + json_ret
+        logger.debug "response: " + json_ret
         json_ret
       end
     end
@@ -112,8 +112,13 @@ class PublicModel
     parsed
   end
   
-  def initialize(request)
+  def initialize(request, logger)
     @request = request
+    @logger = logger
+  end
+
+  def logger
+    @logger
   end
   
   attr_accessor :request

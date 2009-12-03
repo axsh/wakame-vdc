@@ -16,10 +16,19 @@ module Dcmgr
     Sinatra.application.options
   end
 
+  def set_logger(logger)
+    @@logger = logger
+  end
+
+  def logger
+    @@logger
+  end
+  
   def new(config_file)
     config_file ||= 'dcmgr.conf'
     configure(config_file)
     require 'dcmgr/web'
+
     Web
   end
 end
