@@ -12,18 +12,23 @@ describe "instance access by active resource" do
   end
 
   it "should run instance" do
-    tag = @tag_class.create(:name=>'instance crud',
-                            :auth_type=>'instance', :aut_action=>'crud'
-                            :account=>@account)
+    normal_tag_a = @tag_class.create(:name=>'tag a') # name tag
+    normal_tag_b = @tag_class.create(:name=>'tag b')
+    normal_tag_c = @tag_class.create(:name=>'tag c')
     
-    instance = @class.new(:physicalhost_id=>10,
-                          :imagestorage_id=>100,
-                          :hvspec_id=>10,
-                          :tag=>tag,
-                          :account=>@account)
-    instance.save
-    instance.id.should > 0
-    $instance_id = instance.id
+    instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
+                                                    :roll=>'instance_shutdown', :tags=>[normal_tag_a, normal_tag_b],
+                                                    :account=>@account) # auth tag
+
+    user.add_tag(instance_crud_auth_tag)
+    
+    instance_a.add_tag(normal_tag)
+    instance_a.shutdown
+    
+    instance_b.remove_tag(instance_crud_auth_tag)
+    lambda {
+      instance_a.shutdown
+    }.should raise_error(NotAuthException)
   end
 
   it "should tag" do
