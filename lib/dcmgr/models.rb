@@ -3,10 +3,10 @@
 require 'rubygems'
 require 'sequel'
 
-module Dcmgr
-  class Model < Sequel::Model
-    class InvalidUUIDException < Exception; end
-    
+module Dcmgr::Model
+  class InvalidUUIDException < Exception; end
+
+  module UUIDMethods
     def generate_uuid
       "%08x" % rand(16 ** 8)
     end
@@ -14,20 +14,18 @@ module Dcmgr
     def self.search_by_uuid(uuid)
       self.filter
 
-    def before_create
-      begin
+    end
 
-          self.name = User.generate_name unless self.name
-          self.access_id = User.generate_accesskey
-          user = self
-        rescue
-      user = nil
-        end until user
-      end
+    def setup_uuid
+      self.uuid = generate_uuid
+    end
+
+    def before_create
+      setup_uuid
     end
 
     def uuid
-      "%s-%s" % [self.class.prefix, self.super.uuid]
+      "%s-%s" % [self.prefix_uuid, self.values[:uuid]]
     end
 
     def trim_uuid
@@ -41,13 +39,15 @@ module Dcmgr
   end
 end
 
-class Account < Dcmgr::Model
-  def self.prefix_uuid; 'A'; end
+class Account < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'A'; end
   one_to_many :account_roll
 end
 
-class User < Dcmgr::Model
-  def self.prefix_uuid; 'U'; end
+class User < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'U'; end
   one_to_many :account_roll
 end
 
@@ -56,32 +56,39 @@ class AccountRoll < Sequel::Model
   many_to_one :user
 end
 
-class Instance < Dcmgr::Model
-  def self.prefix_uuid; 'I'; end
+class Instance < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'I'; end
 end
 
-class ImageStorage < Dcmgr::Model
-  def self.prefix_uuid; 'IS'; end
+class ImageStorage < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'IS'; end
 end
 
-class ImageStorageHost < Dcmgr::Model
-  def self.prefix_uuid; 'ISH'; end
+class ImageStorageHost < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'ISH'; end
 end
 
-class PhysicalHost < Dcmgr::Model
-  def self.prefix_uuid; 'PH'; end
+class PhysicalHost < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'PH'; end
 end
 
-class HvController < Dcmgr::Model
-  def self.prefix_uuid; 'HVC'; end
+class HvController < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'HVC'; end
 end
 
-class HvAgent < Dcmgr::Model
-  def self.prefix_uuid; 'HVA'; end
+class HvAgent < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'HVA'; end
 end
 
-class Tag < Dcmgr::Model
-  def self.prefix_uuid; 'TAG'; end
+class Tag < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def prefix_uuid; 'TAG'; end
 end
 
 class TagMapping < Sequel::Model; end
