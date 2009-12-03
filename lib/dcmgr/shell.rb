@@ -1,8 +1,5 @@
 
 $:.unshift 'lib'
 require 'dcmgr'
-Dcmgr::Schema.connect \
-  'mysql://localhost/wakame_dcmgr?user=wakame_dcmgr&password=passwd'
-Dcmgr::Schema.create!
-
+Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
 require 'dcmgr/web'
