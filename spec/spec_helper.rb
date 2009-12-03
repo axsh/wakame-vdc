@@ -5,7 +5,7 @@ require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
 require 'rack/handler/webrick'
 require 'dcmgr'
 
-Dcmgr::Schema.connect 'sqlite:/'
+Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
 Dcmgr::Schema.create!
 
 module ActiveResourceHelperMethods

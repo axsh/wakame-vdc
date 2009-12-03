@@ -1,7 +1,15 @@
 
+Create database
+
 mysql -uroot
 > create database wakame_dcmgr default character set utf8;
 > grant all on wakame_dcmgr.* to wakame_dcmgr@localhost identified by 'passwd';
+
+# for test
+> create database wakame_dcmgr_test default character set utf8;
+> grant all on wakame_dcmgr.* to dcmgr_test@localhost identified by 'passwd';
+
+> exit
 
 Make sure to be installed rubygems (>= 1.3.5) and bundler (>= 0.7.0).
 
@@ -13,4 +21,7 @@ $ gem bundle
 "gem bundle" will make vendor/ and bin/ folders.
 
 start up
-$ ./bin/shotgun config.ru
+$ rake run
+
+spec
+$ rake spec
