@@ -1,5 +1,7 @@
 
 set :url, 'http://localhost:4567'
 
-Dcmgr.connection_configure =
+Dcmgr.set_logger Logger.new('dcmgr.log')
+
+Dcmgr::Schema.connect \
   'mysql://localhost/wakame_dcmgr?user=wakame_dcmgr&password=passwd'
