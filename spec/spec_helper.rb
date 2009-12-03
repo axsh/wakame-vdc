@@ -6,6 +6,7 @@ require 'rack/handler/webrick'
 require 'dcmgr'
 
 Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
+Dcmgr::Schema.drop!
 Dcmgr::Schema.create!
 
 module ActiveResourceHelperMethods
