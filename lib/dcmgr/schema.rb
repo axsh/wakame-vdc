@@ -19,13 +19,15 @@ module Dcmgr
     def create!
       @db.create_table? :accounts do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
         String :name
       end
       
       @db.create_table? :users do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
         String :account, :unique=>true, :null=>false
         String :password, :null=>false
       end
@@ -39,19 +41,22 @@ module Dcmgr
 
       @db.create_table? :image_storages do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
         Fixnum :imagestoragehost_id, :null=>false
         String :storage_url, :null=>false
       end
 
       @db.create_table? :image_storage_hosts do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
       end
       
       @db.create_table? :physical_hosts do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
         String :cpu_model, :null=>false
         Float :cpu_mhz, :null=>false
         Fixnum :memory, :null=>false
@@ -62,7 +67,8 @@ module Dcmgr
       
       @db.create_table? :instances do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
         Fixnum :user_id, :null=>false
         Fixnum :physicalhost_id, :null=>false
         Fixnum :imagestorage_id, :null=>false
@@ -71,20 +77,23 @@ module Dcmgr
       
       @db.create_table? :hv_controllers do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
         String :access_url, :null=>false
       end
       
       @db.create_table? :hv_agents do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
         Fixnum :hvcontroller_id
         Fixnum :physicalhost_id
       end
 
       @db.create_table? :tags do
         primary_key :id, :type=>Integer
-        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid
         Fixnum :account_id
         Fixnum :owner_id
         String :name, :fixed=>true, :size=>32
