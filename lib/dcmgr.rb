@@ -1,3 +1,4 @@
+require 'logger'
 require 'sinatra'
 
 set :run, false
@@ -6,6 +7,7 @@ require 'dcmgr/schema'
 
 module Dcmgr
   extend self
+  @@logger = Logger.new(STDOUT)
 
   def configure(config_file=nil)
     load(config_file) if config_file

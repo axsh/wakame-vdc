@@ -8,10 +8,12 @@ module Dcmgr
     
     def connect(str)
       @db = Sequel.connect(str)
+      load
     end
     
     def load
       require 'dcmgr/models'
+      require 'dcmgr/web'
     end
     
     def create!
@@ -112,8 +114,8 @@ module Dcmgr
         String :message, :fixed=>true, :size=>2, :null=>false
         DateTime :created_at, :null=>false
       end
-
-      require 'dcmgr/models'
+      
+      load
     end
 
     def drop!
@@ -127,7 +129,7 @@ module Dcmgr
     end
 
     def models
-      require 'dcmgr/models'
+      load
       @models ||= [Account, User, AccountRoll,
                    Instance, ImageStorage, ImageStorageHost, PhysicalHost,
                    HvController, HvAgent,

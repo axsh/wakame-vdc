@@ -1,13 +1,12 @@
+$:.unshift "#{File.dirname(__FILE__)}/lib"
 
 require 'rubygems'
-require 'dcmgr'
+require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
 require 'rack/handler/webrick'
-require 'sinatra'
+require 'dcmgr'
 
 Dcmgr::Schema.connect 'sqlite:/'
 Dcmgr::Schema.create!
-
-require 'dcmgr/web'
 
 module ActiveResourceHelperMethods
   extend self
