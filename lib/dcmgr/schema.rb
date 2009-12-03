@@ -17,11 +17,13 @@ module Dcmgr
     def create!
       @db.create_table? :accounts do
         primary_key :id, :type=>Integer
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
         String :name
       end
       
       @db.create_table? :users do
         primary_key :id, :type=>Integer
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
         String :account, :unique=>true, :null=>false
         String :password, :null=>false
       end
@@ -35,17 +37,19 @@ module Dcmgr
 
       @db.create_table? :image_storages do
         primary_key :id, :type=>Integer
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
         Fixnum :imagestoragehost_id, :null=>false
-        String :access_id, :fixed=>true, :size=>8, :null=>false
         String :storage_url, :null=>false
       end
 
       @db.create_table? :image_storage_hosts do
         primary_key :id, :type=>Integer
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
       end
       
       @db.create_table? :physical_hosts do
         primary_key :id, :type=>Integer
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
         String :cpu_model, :null=>false
         Float :cpu_mhz, :null=>false
         Fixnum :memory, :null=>false
@@ -56,7 +60,7 @@ module Dcmgr
       
       @db.create_table? :instances do
         primary_key :id, :type=>Integer
-        String :access_id, :type=>String, :fixed=>true, :size=>8, :null=>false
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
         Fixnum :user_id, :null=>false
         Fixnum :physicalhost_id, :null=>false
         Fixnum :imagestorage_id, :null=>false
@@ -65,18 +69,22 @@ module Dcmgr
       
       @db.create_table? :hv_controllers do
         primary_key :id, :type=>Integer
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
         String :access_url, :null=>false
       end
       
       @db.create_table? :hv_agents do
         primary_key :id, :type=>Integer
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
         Fixnum :hvcontroller_id
         Fixnum :physicalhost_id
       end
-      
+
       @db.create_table? :tags do
         primary_key :id, :type=>Integer
+        index :uuid, :type=>String, :fixed=>true, :size=>8, :null=>false
         Fixnum :account_id
+        Fixnum :owner_id
         String :name, :fixed=>true, :size=>32
         Fixnum :type, :fixed=>true, :size=>1 # 0: non auth tag, 1: auth tag
         index :account_id
@@ -89,12 +97,19 @@ module Dcmgr
         index [:tag_id, :type, :target_id]
       end
 
+      @db.create_table? :tag_includes do
+        primary_key :tag_id, :type=>Integer
+        Fixnum :type, :size=>2 # 0: account, 1: user, 2: instance, 3: instance image, 4: vmc
+        Fixnum :target_id
+        index [:tag_id, :type, :target_id]
+      end
+
       @db.create_table? :logs do
         primary_key :id, :type=>Integer
         String :target, :fixed=>true, :size=>32, :null=>false
         String :action, :fixed=>true, :size=>32, :null=>false
         Fixnum :user_id, :null=>false
-        String :status, :fixed=>true, :size=>2, :null=>false # 'OK' / 'NG'
+        String :message, :fixed=>true, :size=>2, :null=>false
         DateTime :created_at, :null=>false
       end
 
