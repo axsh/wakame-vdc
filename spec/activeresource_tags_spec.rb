@@ -32,7 +32,7 @@ describe "tags access by active resource" do
   it "should add auth tag" do
     tag = @auth_class.create(:name=>'instance crud tag #1',
                              :roll=>0,
-                             :tags=>[]
+                             :tags=>[],
                              :account=>@account)
     tag.id.length.should > 0
 

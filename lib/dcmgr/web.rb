@@ -20,7 +20,8 @@ module Dcmgr
     end
 
     public_crud PublicUser
-    public_crud PublicTag
+    public_crud PublicNameTag
+    public_crud PublicAuthTag
     
     get '/' do
       'startup dcmgr'

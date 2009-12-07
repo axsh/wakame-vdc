@@ -98,8 +98,7 @@ module Dcmgr
         Fixnum :owner_id
         String :name, :fixed=>true, :size=>32
         Fixnum :tag_type, :fixed=>true, :size=>1 # 0: name tag, 1: auth tag
-        Fixnum :auth_type # 0: account, 1: user, 2: instance, 3: instance image, 4: vmc
-        Fixnum :auth_action
+        Fixnum :roll
         index :account_id
       end
 

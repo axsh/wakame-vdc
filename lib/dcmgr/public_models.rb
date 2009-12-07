@@ -36,12 +36,9 @@ module Dcmgr
         @model = model_class
       end
       
-      def model_name
-        @model.to_s # ex. models
-      end
-      
-      def public_name
-        @model.table_name.to_s # Models
+      def public_name(name=nil)
+        return (@public_name or @model.table_name.to_s) unless name
+        @public_name = name
       end
       
       def route(public_class, block, args)
@@ -106,8 +103,6 @@ module Dcmgr
       obj = model.new
       obj.set_all(req_hash)
       obj.save
-
-      obj
     end
 
     def update
@@ -151,15 +146,29 @@ module Dcmgr
     end
   end
 
-  class PublicTag
+  class PublicNameTag
     include PublicModel
     model Tag
+    public_name 'name_tags'
 
     public_action :post do
       create
     end
     
-    #public_action_withid :delete do |id|
+    public_action_withid :delete do
+      destroy
+    end
+  end
+
+  class PublicAuthTag
+    include PublicModel
+    model Tag
+    public_name 'auth_tags'
+
+    public_action :post do
+      create
+    end
+    
     public_action_withid :delete do
       destroy
     end
