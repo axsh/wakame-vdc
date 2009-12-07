@@ -25,7 +25,7 @@ module Dcmgr
       
       def url_id(action_name=nil)
         if action_name
-          %r{/#{public_name}/(\w+-\w+)/#{action}.json}
+          %r{/#{public_name}/(\w+-\w+)/#{action_name}.json}
         else
           %r{/#{public_name}/(\w+-\w+).json}
         end
@@ -46,32 +46,18 @@ module Dcmgr
       
       def route(public_class, block, args)
         Dcmgr::logger.debug "route: %s, %s, %s, %d" % [self, public_class, block, args]
-        if args == 0
-          act = proc do
-            logger.debug "url: " + request.url
-            protected!
-            obj = public_class.new(request)
-            ret = obj.instance_eval(&block)
-            # logger.debug "response(inspect): " + ret.inspect
-            json_ret = public_class.json_render(ret)
-            logger.debug "response(json): " + json_ret
-            json_ret
-          end
-        else
-          act = proc do |id|
-            logger.debug "url: " + request.url
-            protected!
-            obj = public_class.new(request)
-            # ret = obj.exec(block, nil)
-            obj.uuid = id
-            ret = obj.instance_eval(&block)
-            # logger.debug "response(inspect): " + ret.inspect
-            json_ret = public_class.json_render(ret)
-            logger.debug "response(json): " + json_ret
-            json_ret
-          end
+        proc do |id|
+          logger.debug "url: " + request.url
+          protected!
+          obj = public_class.new(request)
+          # ret = obj.exec(block, nil)
+          obj.uuid = id if id
+          ret = obj.instance_eval(&block)
+          # logger.debug "response(inspect): " + ret.inspect
+          json_ret = public_class.json_render(ret)
+          logger.debug "response(json): " + json_ret
+          json_ret
         end
-        act
       end
       
       def json_render(obj)
@@ -155,7 +141,21 @@ module Dcmgr
     include PublicModel
     model User
 
-    public_action :post, :all do
+    public_action :post do
+      create
+    end
+    
+    #public_action_withid :delete do |id|
+    public_action_withid :delete do
+      destroy
+    end
+  end
+
+  class PublicTag
+    include PublicModel
+    model Tag
+
+    public_action :post do
       create
     end
     

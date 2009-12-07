@@ -97,7 +97,9 @@ module Dcmgr
         Fixnum :account_id
         Fixnum :owner_id
         String :name, :fixed=>true, :size=>32
-        Fixnum :type, :fixed=>true, :size=>1 # 0: non auth tag, 1: auth tag
+        Fixnum :tag_type, :fixed=>true, :size=>1 # 0: name tag, 1: auth tag
+        Fixnum :auth_type # 0: account, 1: user, 2: instance, 3: instance image, 4: vmc
+        Fixnum :auth_action
         index :account_id
       end
 
@@ -128,8 +130,13 @@ module Dcmgr
     end
 
     def drop!
+      puts "drop tables"
       models.each { |model|
-        @db.drop_table(model.table_name)
+        puts "deleteting ... #{model.table_name}"
+        begin
+          @db.drop_table(model.table_name)
+        rescue
+        end
       }
     end
 

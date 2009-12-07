@@ -91,7 +91,23 @@ end
 
 class Tag < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'TAG'; end
+  def self.prefix_uuid; 'TAG'; end
+
+  TYPE_NORMAL = 0
+  TYPE_AUTH = 1
+  
+  AUTH_TARGET_TYPE_ACCOUNT = 0
+  AUTH_TARGET_TYPE_USER = 1
+  AUTH_TARGET_TYPE_INSTANCE = 2
+  AUTH_TARGET_TYPE_INSTANCE_IMAGE = 3
+  AUTH_TARGET_TYPE_VMC = 4
+  
+  many_to_one :account
+  
+  def before_create
+    super
+    self.tag_type = TYPE_NORMAL unless self.tag_type
+  end
 end
 
 class TagMapping < Sequel::Model; end
