@@ -61,32 +61,32 @@ end
 
 class Instance < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'I'; end
+  def self.prefix_uuid; 'I'; end
 end
 
 class ImageStorage < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'IS'; end
+  def self.prefix_uuid; 'IS'; end
 end
 
 class ImageStorageHost < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'ISH'; end
+  def self.prefix_uuid; 'ISH'; end
 end
 
 class PhysicalHost < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'PH'; end
+  def self.prefix_uuid; 'PH'; end
 end
 
 class HvController < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'HVC'; end
+  def self.prefix_uuid; 'HVC'; end
 end
 
 class HvAgent < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'HVA'; end
+  def self.prefix_uuid; 'HVA'; end
 end
 
 class Tag < Sequel::Model
