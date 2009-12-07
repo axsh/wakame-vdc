@@ -219,17 +219,20 @@ module Dcmgr
     include PublicModel
     model ImageStorage
 
-    def list; list; end
-    def create; create; end
-    def get id; get id; end
-    def destroy id; destroy id; end
+    public_action :get do
+      list
+    end
 
-    def self.public_actions
-      [[:get,     pattern_all,    :list, 0],
-       [:post,    pattern_all,    :create, 0],
-       [:get,     pattern_target, :get, 1],
-       [:delete,  pattern_target, :destroy, 1],
-      ]
+    public_action :post do
+      create
+    end
+
+    public_action_withid :get do
+      get
+    end
+
+    public_action_withid :delete, :destroy do
+      destory
     end
   end
 
@@ -254,28 +257,30 @@ module Dcmgr
   class PublicPhysicalHost
     include PublicModel
     model PhysicalHost
+    
+    public_action :get do
+      list
+    end
 
-    def list; list; end
-    def create; create; end
-    def get id; get id; end
-    def destroy id; destroy id; end
+    public_action :post do
+      create
+    end
 
-    def relate id
+    public_action_withid :get do
+      get
+    end
+
+    public_action_withid :delete do
+      delete
+    end
+
+    public_action_withid :put, :relate do
       user_id = request.GET[:user].to_i
       obj = model.find(:id=>id.to_i)
 
       obj.relate_user_id = request.GET['user'].to_i
       obj.save
       obj
-    end
-
-    def self.public_actions
-      [[:get,     pattern_all,    :list, 0],
-       [:post,    pattern_all,    :create, 0],
-       [:get,     pattern_target, :get, 1],
-       [:delete,  pattern_target, :destroy, 1],
-       [:put,  pattern_target(:relate), :relate, 1],
-      ]
     end
   end
 end
