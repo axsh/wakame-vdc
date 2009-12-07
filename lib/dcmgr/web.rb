@@ -13,18 +13,17 @@ module Dcmgr
     helpers { include Dcmgr::Helpers }
     
     def self.public_crud model
-      model.public_actions.each{|method_name, pattern, actiontag, args|
-        Dcmgr.logger.debug "#{method_name} #{pattern}, &model.get_action(model, actiontag, args)"
-        eval("#{method_name} pattern, &model.get_action(model, actiontag, args)")
+      model.get_actions {|action, pattern, proc|
+        Dcmgr::logger.debug "regist: %s %s %s" % [action, pattern, proc]
+        self.send action, pattern, &proc
       }
+      #Dcmgr::PublicHelper.get_actions.each{|method_name, pattern, actiontag, args|
+        # Dcmgr.logger.debug "#{method_name} #{pattern}, &model.get_action(model, actiontag, args)"
+        # Dcmgr.logger.debug [method_name, pattern, actiontag, args]
+        # eval("#{method_name} pattern, &model.get_action(model, actiontag, args)")
+      #}
     end
 
-    public_crud PublicInstance
-    public_crud PublicHvController
-    public_crud PublicImageStorage
-    public_crud PublicImageStorageHost
-    public_crud PublicPhysicalHost
-    
     public_crud PublicUser
     
     get '/' do

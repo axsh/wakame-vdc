@@ -1,20 +1,22 @@
 require 'json'
 
-def json_render(obj)
-  def obj2hash i
-    Hash[i.keys.collect{ |key| [key, i[key]] }]
+module Dcmgr::PublicHelper
+  def get_actions
+    @public_actions.each{|method, path, args, arg_count, action|
+      yield [method, path, route(self, action, arg_count)]
+    }
+  end
+
+  def public_action(method, *args, &block)
+    @public_actions ||= []
+    @public_actions << [method, pattern_all, args, 0, block]
   end
   
-  if obj.is_a? Array
-    ret = obj.collect{|i| obj2hash(i)}
-    ret.to_json
-  else
-    ret = obj2hash(obj)
-    ret.to_json
+  def public_action_withid(method, name=nil, *args, &block)
+    @public_actions ||= []
+    @public_actions << [method, pattern_target(name), args, 1, block]
   end
-end
-
-module PublicModelModule
+  
   def pattern_all
     "/#{public_name}.json"
   end
@@ -27,28 +29,30 @@ module PublicModelModule
     end
   end
   
-  def model
-    raise "not implemented model"
+  def model(model_class=nil)
+    return @model unless model_class
+    @model = model_class
   end
 
   def model_name
-    model.to_s # ex. models
+    @model.to_s # ex. models
   end
 
   def public_name
-    model.table_name.to_s # Models
+    @model.table_name.to_s # Models
   end
   
-  def get_action(public_class, actiontag, args)
+  def route(public_class, block, args)
+    Dcmgr::logger.debug "route: %s, %s, %s, %d" % [self, public_class, block, args]
     if args == 0
       act = proc do
         logger.debug "url: " + request.url
         protected!
         obj = public_class.new(request)
-        ret = obj.send actiontag
-        logger.debug "response: " + ret.inspect
-        json_ret = json_render(ret)
-        logger.debug "response: " + json_ret
+        ret = obj.instance_eval(&block)
+        # logger.debug "response(inspect): " + ret.inspect
+        json_ret = public_class.json_render(ret)
+        logger.debug "response(json): " + json_ret
         json_ret
       end
     else
@@ -56,76 +60,108 @@ module PublicModelModule
         logger.debug "url: " + request.url
         protected!
         obj = public_class.new(request)
-        ret = obj.send acttiontag, id
-        logger.debug "response: " + ret.inspect
+        ret = obj.instance_eval(&block)
+        # logger.debug "response(inspect): " + ret.inspect
         json_ret = json_render(ret)
-        logger.debug "response: " + json_ret
+        logger.debug "response(json): " + json_ret
         json_ret
       end
     end
     act
   end
+  
+  def json_render(obj)
+    def model2hash i
+      h = Hash[i.keys.collect{ |key| [key, i[key]] }]
+      # strip id, change uuid to id
+      id = h.delete :id
+      uuid = h.delete :uuid
+      h[:id] = uuid if uuid
+      h
+    end
+    
+    if obj.is_a? Array
+      ret = obj.collect{|i| model2hash(i)}
+    else
+      ret = model2hash(obj)
+    end
+    ret.to_json
+  end
 end
 
-class PublicModel
-  extend PublicModelModule
+module Dcmgr
+  module PublicModel
+    def model
+      self.class.model
+    end
+    
+    def default_list
+      model.all
+    end
+    
+    def default_get(id)
+      model.find(:id=>id.to_i)
+    end
 
+    def default_create
+      req_hash = json_request
+      req_hash.delete 'id'
+
+      obj = model.new
+      obj.set_all(req_hash)
+      obj.save
+
+      obj
+    end
+
+    def default_update(id)
+      obj = model.find(:id=>id.to_i)
+      req_hash = json_request
+      obj.set_all(req_hash)
+      obj.save
+    end
+    
+    def default_destroy(id)
+      obj = model.find(:id=>id.to_i)
+      obj.destroy
+    end
+
+    def json_request
+      raise "no data" unless request.body.size > 0
+      parsed = JSON.parse(request.body.read)
+      parsed
+    end
+    
+    def initialize(request)
+      @request = request
+    end
+
+    attr_accessor :request
+  end
+end
+
+module Dcmgr
+  class PublicUser
+    extend PublicHelper
+    include PublicModel
+    
+    model User
+
+    public_action :post, :all do
+      default_create
+    end
+    
+    public_action_withid :post do |id|
+      default_destroy
+    end
+  end
+end
+
+__END__
+class PublicInstance
+  include PublicModel
+  
   def model
-    self.class.model
-  end
-  
-  def default_list
-   model.all
-  end
-  
-  def default_get(id)
-    model.find(:id=>id.to_i)
-  end
-
-  def default_create
-    req_hash = json_request
-    req_hash.delete 'id'
-
-    obj = model.new
-    obj.set_all(req_hash)
-    obj.save
-
-    obj = model[obj.id]
-  end
-
-  def default_update(id)
-    obj = model.find(:id=>id.to_i)
-    req_hash = json_request
-    obj.set_all(req_hash)
-    obj.save
-  end
-  
-  def default_destroy(id)
-    obj = model.find(:id=>id.to_i)
-    obj.destroy
-  end
-
-  def json_request
-    raise "no data" unless request.body.size > 0
-    parsed = JSON.parse(request.body.read)
-    puts "request: " + parsed.inspect
-    parsed
-  end
-  
-  def initialize(request, logger)
-    @request = request
-    @logger = logger
-  end
-
-  def logger
-    @logger
-  end
-  
-  attr_accessor :request
-end
-
-class PublicInstance < PublicModel
-  def self.model
     Instance
   end
 
@@ -165,21 +201,6 @@ class PublicInstance < PublicModel
      [:put,     pattern_target(:reboot),    :reboot, 1],
      [:put,     pattern_target(:terminate), :terminate, 1],
      [:put,     pattern_target(:snapshot),  :snapshot, 1],
-    ]
-  end
-end
-
-class PublicUser < PublicModel
-  def self.model
-    User
-  end
-
-  def create; default_create; end
-  def destroy id; default_destroy id; end
-
-  def self.public_actions
-    [[:post,    pattern_all,    :create, 0],
-     [:delete,  pattern_target, :destroy, 1],
     ]
   end
 end
@@ -265,4 +286,3 @@ class PublicPhysicalHost < PublicModel
     ]
   end
 end
-

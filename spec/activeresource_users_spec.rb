@@ -11,9 +11,9 @@ describe "user access by active resource" do
   end
 
   it "should add" do
-    user = User.create(:account=>'__test_as_user_spec__', :password=>'passwd')
+    user = @class.create(:account=>'__test_as_user_spec__', :password=>'passwd')
     user.id.should be_true
-    user.id.should.length >= 10
+    user.id.length.should >= 10
     
     User[:uuid=>user.id].should be_valid
     

@@ -29,7 +29,7 @@ describe "tags access by active resource" do
   
   it "should add auth tag" do
     tag = @class.create(:name=>'instance crud',
-                        :auth_type=>'instance', :aut_action=>'crud'
+                        :auth_type=>'instance', :aut_action=>'crud',
                         :account=>@account)
     tag.id.should > 0
 
