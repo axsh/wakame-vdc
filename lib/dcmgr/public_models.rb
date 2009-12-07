@@ -49,7 +49,7 @@ module Dcmgr
         if args == 0
           act = proc do
             logger.debug "url: " + request.url
-        protected!
+            protected!
             obj = public_class.new(request)
             ret = obj.instance_eval(&block)
             # logger.debug "response(inspect): " + ret.inspect
@@ -66,7 +66,7 @@ module Dcmgr
             obj.uuid = id
             ret = obj.instance_eval(&block)
             # logger.debug "response(inspect): " + ret.inspect
-        json_ret = public_class.json_render(ret)
+            json_ret = public_class.json_render(ret)
             logger.debug "response(json): " + json_ret
             json_ret
           end
@@ -97,7 +97,7 @@ module Dcmgr
     def self.included(mod)
       mod.extend ClassMethods
     end
-     
+    
     attr_accessor :uuid
     attr_accessor :request
     
@@ -105,15 +105,15 @@ module Dcmgr
       self.class.model
     end
     
-    def default_list
+    def list
       model.all
     end
     
-    def default_get(id)
-      model.find(:id=>id.to_i)
+    def get
+      model.search_by_uuid(uuid)
     end
 
-    def default_create
+    def create
       req_hash = json_request
       req_hash.delete 'id'
 
@@ -124,16 +124,15 @@ module Dcmgr
       obj
     end
 
-    def default_update(id)
-      obj = model.find(:id=>id.to_i)
+    def update
+      obj = model.search_by_uuid(uuid)
       req_hash = json_request
       obj.set_all(req_hash)
       obj.save
     end
     
-    def default_destroy(id)
-      p id
-      obj = model.search_by_uuid(id)
+    def destroy
+      obj = model.search_by_uuid(uuid)
       obj.destroy
     end
 
@@ -158,142 +157,137 @@ module Dcmgr
     model User
 
     public_action :post, :all do
-      default_create
+      create
     end
     
     #public_action_withid :delete do |id|
     public_action_withid :delete do
-      default_destroy uuid
+      destroy
     end
   end
-end
 
-__END__
-class PublicInstance
-  include PublicModel
-  
-  def model
-    Instance
+  class PublicInstance
+    include PublicModel
+    
+    def model
+      Instance
+    end
+    
+    def list
+      list
+    end
+    
+    def create; create; end
+    
+    def get id; get id; end
+    def update id; update id; end
+    def destroy id; destroy id; end
+
+    def reboot id
+      # TODO: reboot action
+      []
+    end
+
+    def terminate id
+      # TODO: terminate action
+      []
+    end
+
+    def snapshot id
+      # TODO: snapshot action
+      []
+    end
+
+    def self.public_actions
+      [[:get,     pattern_all,    :list, 0],
+       [:post,    pattern_all,    :create, 0],
+       [:get,     pattern_target, :get, 1],
+       [:put,     pattern_target, :update, 1],
+       [:delete,  pattern_target, :destroy, 1],
+
+       # actions
+       [:put,     pattern_target(:reboot),    :reboot, 1],
+       [:put,     pattern_target(:terminate), :terminate, 1],
+       [:put,     pattern_target(:snapshot),  :snapshot, 1],
+      ]
+    end
   end
 
-  def list
-    default_list
+  class PublicHvController
+    include PublicModel
+    model HvController
+
+    def create; create; end
+    def destroy id; destroy id; end
+
+    def self.public_actions
+      [[:post,    pattern_all,    :create, 0],
+       [:delete,  pattern_target, :destroy, 1],
+      ]
+    end
   end
 
-  def create; default_create; end
-  
-  def get id; default_get id; end
-  def update id; default_update id; end
-  def destroy id; default_destroy id; end
+  class PublicImageStorage
+    include PublicModel
+    model ImageStorage
 
-  def reboot id
-    # TODO: reboot action
-    []
+    def list; list; end
+    def create; create; end
+    def get id; get id; end
+    def destroy id; destroy id; end
+
+    def self.public_actions
+      [[:get,     pattern_all,    :list, 0],
+       [:post,    pattern_all,    :create, 0],
+       [:get,     pattern_target, :get, 1],
+       [:delete,  pattern_target, :destroy, 1],
+      ]
+    end
   end
 
-  def terminate id
-    # TODO: terminate action
-    []
+  class PublicImageStorageHost
+    include PublicModel
+    model ImageStorageHost
+
+    def list; list; end
+    def create; create; end
+    def get id; get id; end
+    def destroy id; destroy id; end
+
+    def self.public_actions
+      [[:get,     pattern_all,    :list, 0],
+       [:post,    pattern_all,    :create, 0],
+       [:get,     pattern_target, :get, 1],
+       [:delete,  pattern_target, :destroy, 1],
+      ]
+    end
   end
 
-  def snapshot id
-    # TODO: snapshot action
-    []
-  end
+  class PublicPhysicalHost
+    include PublicModel
+    model PhysicalHost
 
-  def self.public_actions
-    [[:get,     pattern_all,    :list, 0],
-     [:post,    pattern_all,    :create, 0],
-     [:get,     pattern_target, :get, 1],
-     [:put,     pattern_target, :update, 1],
-     [:delete,  pattern_target, :destroy, 1],
+    def list; list; end
+    def create; create; end
+    def get id; get id; end
+    def destroy id; destroy id; end
 
-     # actions
-     [:put,     pattern_target(:reboot),    :reboot, 1],
-     [:put,     pattern_target(:terminate), :terminate, 1],
-     [:put,     pattern_target(:snapshot),  :snapshot, 1],
-    ]
-  end
-end
+    def relate id
+      user_id = request.GET[:user].to_i
+      obj = model.find(:id=>id.to_i)
 
-class PublicHvController < PublicModel
-  def self.model
-    HvController
-  end
+      obj.relate_user_id = request.GET['user'].to_i
+      obj.save
+      obj
+    end
 
-  def create; default_create; end
-  def destroy id; default_destroy id; end
-
-  def self.public_actions
-    [[:post,    pattern_all,    :create, 0],
-     [:delete,  pattern_target, :destroy, 1],
-    ]
-  end
-end
-
-class PublicImageStorage < PublicModel
-  def self.model
-    ImageStorage
-  end
-
-  def list; default_list; end
-  def create; default_create; end
-  def get id; default_get id; end
-  def destroy id; default_destroy id; end
-
-  def self.public_actions
-    [[:get,     pattern_all,    :list, 0],
-     [:post,    pattern_all,    :create, 0],
-     [:get,     pattern_target, :get, 1],
-     [:delete,  pattern_target, :destroy, 1],
-    ]
-  end
-end
-
-class PublicImageStorageHost < PublicModel
-  def self.model
-    ImageStorageHost
-  end
-
-  def list; default_list; end
-  def create; default_create; end
-  def get id; default_get id; end
-  def destroy id; default_destroy id; end
-
-  def self.public_actions
-    [[:get,     pattern_all,    :list, 0],
-     [:post,    pattern_all,    :create, 0],
-     [:get,     pattern_target, :get, 1],
-     [:delete,  pattern_target, :destroy, 1],
-    ]
-  end
-end
-
-class PublicPhysicalHost < PublicModel
-  def self.model
-    PhysicalHost
-  end
-
-  def list; default_list; end
-  def create; default_create; end
-  def get id; default_get id; end
-  def destroy id; default_destroy id; end
-
-  def relate id
-    user_id = request.GET[:user].to_i
-    obj = model.find(:id=>id.to_i)
-
-    obj.relate_user_id = request.GET['user'].to_i
-    obj.save
-    obj
-  end
-
-  def self.public_actions
-    [[:get,     pattern_all,    :list, 0],
-     [:post,    pattern_all,    :create, 0],
-     [:get,     pattern_target, :get, 1],
-     [:delete,  pattern_target, :destroy, 1],
-     [:put,  pattern_target(:relate), :relate, 1],
-    ]
+    def self.public_actions
+      [[:get,     pattern_all,    :list, 0],
+       [:post,    pattern_all,    :create, 0],
+       [:get,     pattern_target, :get, 1],
+       [:delete,  pattern_target, :destroy, 1],
+       [:put,  pattern_target(:relate), :relate, 1],
+      ]
+    end
   end
 end
