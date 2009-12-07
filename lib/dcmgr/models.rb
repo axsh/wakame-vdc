@@ -7,13 +7,25 @@ module Dcmgr::Model
   class InvalidUUIDException < Exception; end
 
   module UUIDMethods
+    module ClassMethods
+      def search_by_uuid(uuid)
+        self[:uuid=>trim_uuid(uuid)]
+      end
+          
+      def trim_uuid(p_uuid)
+        if p_uuid and p_uuid.length == self.prefix_uuid.length + 9
+          return p_uuid[(self.prefix_uuid.length+1), p_uuid.length]
+        end
+        raise InvalidUUIDException
+      end
+    end
+    
+    def self.included(mod)
+      mod.extend ClassMethods
+    end
+      
     def generate_uuid
       "%08x" % rand(16 ** 8)
-    end
-
-    def self.search_by_uuid(uuid)
-      self.filter
-
     end
 
     def setup_uuid
@@ -25,29 +37,20 @@ module Dcmgr::Model
     end
 
     def uuid
-      "%s-%s" % [self.prefix_uuid, self.values[:uuid]]
-    end
-
-    def trim_uuid
-      uuid = self.super.uuid
-      if uuid and uuid.length == self.class.prefix.length + 9
-        uuid[self.class.prefix.length ... -1]
-      else
-        raise InvalidUUIDException
-      end
+      "%s-%s" % [self.class.prefix_uuid, self.values[:uuid]]
     end
   end
 end
 
 class Account < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'A'; end
+  def self.prefix_uuid; 'A'; end
   one_to_many :account_roll
 end
 
 class User < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  def prefix_uuid; 'U'; end
+  def self.prefix_uuid; 'U'; end
   one_to_many :account_roll
 end
 

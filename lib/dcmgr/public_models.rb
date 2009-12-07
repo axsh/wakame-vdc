@@ -9,23 +9,23 @@ module Dcmgr::PublicHelper
 
   def public_action(method, *args, &block)
     @public_actions ||= []
-    @public_actions << [method, pattern_all, args, 0, block]
+    @public_actions << [method, url_all, args, 0, block]
   end
   
   def public_action_withid(method, name=nil, *args, &block)
     @public_actions ||= []
-    @public_actions << [method, pattern_target(name), args, 1, block]
+    @public_actions << [method, url_id(name), args, 1, block]
   end
   
-  def pattern_all
+  def url_all
     "/#{public_name}.json"
   end
 
-  def pattern_target(action=nil)
-    unless action
-      %r{/#{public_name}/(\d+).json}
+  def url_id(action_name=nil)
+    if action_name
+      %r{/#{public_name}/(\w+-\w+)/#{action}.json}
     else
-      %r{/#{public_name}/(\d+)/#{action}.json}
+      %r{/#{public_name}/(\w+-\w+).json}
     end
   end
   
@@ -60,9 +60,11 @@ module Dcmgr::PublicHelper
         logger.debug "url: " + request.url
         protected!
         obj = public_class.new(request)
+        # ret = obj.exec(block, nil)
+        obj.uuid = id
         ret = obj.instance_eval(&block)
         # logger.debug "response(inspect): " + ret.inspect
-        json_ret = json_render(ret)
+        json_ret = public_class.json_render(ret)
         logger.debug "response(json): " + json_ret
         json_ret
       end
@@ -72,7 +74,8 @@ module Dcmgr::PublicHelper
   
   def json_render(obj)
     def model2hash i
-      h = Hash[i.keys.collect{ |key| [key, i[key]] }]
+      h = Hash[i.keys.collect{ |key| [key, i.send(key)] }]
+
       # strip id, change uuid to id
       id = h.delete :id
       uuid = h.delete :uuid
@@ -122,7 +125,8 @@ module Dcmgr
     end
     
     def default_destroy(id)
-      obj = model.find(:id=>id.to_i)
+      p id
+      obj = model.search_by_uuid(id)
       obj.destroy
     end
 
@@ -136,7 +140,13 @@ module Dcmgr
       @request = request
     end
 
+    attr_accessor :uuid
+
     attr_accessor :request
+
+    #def exec(block, id)
+    #  self.instance_eval &lambda {block.call(id)}
+    #end
   end
 end
 
@@ -151,8 +161,9 @@ module Dcmgr
       default_create
     end
     
-    public_action_withid :post do |id|
-      default_destroy
+    #public_action_withid :delete do |id|
+    public_action_withid :delete do
+      default_destroy uuid
     end
   end
 end

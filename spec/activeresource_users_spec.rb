@@ -15,18 +15,22 @@ describe "user access by active resource" do
     user.id.should be_true
     user.id.length.should >= 10
     
-    User[:uuid=>user.id].should be_valid
+    User.search_by_uuid(user.id).should be_valid
     
     $user = user
   end
 
-  it "should authorize" 
-  
   it "should delete" do
     id = $user.id
+    $user.destroy
+    User.search_by_uuid(id).should be_nil
+  end
+  
+  it "should notauthorize by bad password" do
+    notauth_class = describe_activeresource_model :User, '__test_as_user_spec__', 'badpass'
     lambda {
-      $user.destroy
-    }.should change{ User[id] }
+      notauth_class.create(:account=>'__test_as_user_spec__', :password=>'passwd')
+    }.should raise_error
   end
 end
 
