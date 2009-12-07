@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 require 'rubygems'
-require 'activeresource'
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe "physical host access by active resource" do

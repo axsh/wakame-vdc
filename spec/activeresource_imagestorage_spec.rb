@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 require 'rubygems'
-require 'activeresource'
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe "image storage access by active resource" do

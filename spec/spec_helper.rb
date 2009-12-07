@@ -2,6 +2,7 @@ $:.unshift "#{File.dirname(__FILE__)}/lib"
 
 require 'rubygems'
 require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
+require 'active_resource'
 require 'rack/handler/webrick'
 require 'dcmgr'
 
