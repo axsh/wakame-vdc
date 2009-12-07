@@ -206,13 +206,12 @@ module Dcmgr
     include PublicModel
     model HvController
 
-    def create; create; end
-    def destroy id; destroy id; end
+    public_action :post do
+      create
+    end
 
-    def self.public_actions
-      [[:post,    pattern_all,    :create, 0],
-       [:delete,  pattern_target, :destroy, 1],
-      ]
+    public_action_withid :delete, :destory do
+      destroy
     end
   end
 
