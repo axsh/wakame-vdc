@@ -17,14 +17,10 @@ module Dcmgr
         Dcmgr::logger.debug "regist: %s %s %s" % [action, pattern, proc]
         self.send action, pattern, &proc
       }
-      #Dcmgr::PublicHelper.get_actions.each{|method_name, pattern, actiontag, args|
-        # Dcmgr.logger.debug "#{method_name} #{pattern}, &model.get_action(model, actiontag, args)"
-        # Dcmgr.logger.debug [method_name, pattern, actiontag, args]
-        # eval("#{method_name} pattern, &model.get_action(model, actiontag, args)")
-      #}
     end
 
     public_crud PublicUser
+    #public_crud PublicTag
     
     get '/' do
       'startup dcmgr'

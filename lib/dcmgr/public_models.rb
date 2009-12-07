@@ -1,99 +1,106 @@
 require 'json'
 
-module Dcmgr::PublicHelper
-  def get_actions
-    @public_actions.each{|method, path, args, arg_count, action|
-      yield [method, path, route(self, action, arg_count)]
-    }
-  end
-
-  def public_action(method, *args, &block)
-    @public_actions ||= []
-    @public_actions << [method, url_all, args, 0, block]
-  end
-  
-  def public_action_withid(method, name=nil, *args, &block)
-    @public_actions ||= []
-    @public_actions << [method, url_id(name), args, 1, block]
-  end
-  
-  def url_all
-    "/#{public_name}.json"
-  end
-
-  def url_id(action_name=nil)
-    if action_name
-      %r{/#{public_name}/(\w+-\w+)/#{action}.json}
-    else
-      %r{/#{public_name}/(\w+-\w+).json}
-    end
-  end
-  
-  def model(model_class=nil)
-    return @model unless model_class
-    @model = model_class
-  end
-
-  def model_name
-    @model.to_s # ex. models
-  end
-
-  def public_name
-    @model.table_name.to_s # Models
-  end
-  
-  def route(public_class, block, args)
-    Dcmgr::logger.debug "route: %s, %s, %s, %d" % [self, public_class, block, args]
-    if args == 0
-      act = proc do
-        logger.debug "url: " + request.url
-        protected!
-        obj = public_class.new(request)
-        ret = obj.instance_eval(&block)
-        # logger.debug "response(inspect): " + ret.inspect
-        json_ret = public_class.json_render(ret)
-        logger.debug "response(json): " + json_ret
-        json_ret
-      end
-    else
-      act = proc do |id|
-        logger.debug "url: " + request.url
-        protected!
-        obj = public_class.new(request)
-        # ret = obj.exec(block, nil)
-        obj.uuid = id
-        ret = obj.instance_eval(&block)
-        # logger.debug "response(inspect): " + ret.inspect
-        json_ret = public_class.json_render(ret)
-        logger.debug "response(json): " + json_ret
-        json_ret
-      end
-    end
-    act
-  end
-  
-  def json_render(obj)
-    def model2hash i
-      h = Hash[i.keys.collect{ |key| [key, i.send(key)] }]
-
-      # strip id, change uuid to id
-      id = h.delete :id
-      uuid = h.delete :uuid
-      h[:id] = uuid if uuid
-      h
-    end
-    
-    if obj.is_a? Array
-      ret = obj.collect{|i| model2hash(i)}
-    else
-      ret = model2hash(obj)
-    end
-    ret.to_json
-  end
-end
-
 module Dcmgr
   module PublicModel
+    module ClassMethods
+      def get_actions
+        @public_actions.each{|method, path, args, arg_count, action|
+          yield [method, path, route(self, action, arg_count)]
+        }
+      end
+      
+      def public_action(method, *args, &block)
+        @public_actions ||= []
+        @public_actions << [method, url_all, args, 0, block]
+      end
+      
+      def public_action_withid(method, name=nil, *args, &block)
+        @public_actions ||= []
+        @public_actions << [method, url_id(name), args, 1, block]
+      end
+      
+      def url_all
+        "/#{public_name}.json"
+      end
+      
+      def url_id(action_name=nil)
+        if action_name
+          %r{/#{public_name}/(\w+-\w+)/#{action}.json}
+        else
+          %r{/#{public_name}/(\w+-\w+).json}
+        end
+      end
+      
+      def model(model_class=nil)
+        return @model unless model_class
+        @model = model_class
+      end
+      
+      def model_name
+        @model.to_s # ex. models
+      end
+      
+      def public_name
+        @model.table_name.to_s # Models
+      end
+      
+      def route(public_class, block, args)
+        Dcmgr::logger.debug "route: %s, %s, %s, %d" % [self, public_class, block, args]
+        if args == 0
+          act = proc do
+            logger.debug "url: " + request.url
+        protected!
+            obj = public_class.new(request)
+            ret = obj.instance_eval(&block)
+            # logger.debug "response(inspect): " + ret.inspect
+            json_ret = public_class.json_render(ret)
+            logger.debug "response(json): " + json_ret
+            json_ret
+          end
+        else
+          act = proc do |id|
+            logger.debug "url: " + request.url
+            protected!
+            obj = public_class.new(request)
+            # ret = obj.exec(block, nil)
+            obj.uuid = id
+            ret = obj.instance_eval(&block)
+            # logger.debug "response(inspect): " + ret.inspect
+        json_ret = public_class.json_render(ret)
+            logger.debug "response(json): " + json_ret
+            json_ret
+          end
+        end
+        act
+      end
+      
+      def json_render(obj)
+        def model2hash i
+          h = Hash[i.keys.collect{ |key| [key, i.send(key)] }]
+          
+          # strip id, change uuid to id
+          id = h.delete :id
+          uuid = h.delete :uuid
+          h[:id] = uuid if uuid
+          h
+        end
+        
+        if obj.is_a? Array
+          ret = obj.collect{|i| model2hash(i)}
+        else
+          ret = model2hash(obj)
+        end
+        ret.to_json
+      end
+    end
+
+    def self.included(mod)
+      mod.extend ClassMethods
+    end
+     
+    attr_accessor :uuid
+    attr_accessor :request
+    
     def model
       self.class.model
     end
@@ -140,19 +147,12 @@ module Dcmgr
       @request = request
     end
 
-    attr_accessor :uuid
-
-    attr_accessor :request
-
     #def exec(block, id)
     #  self.instance_eval &lambda {block.call(id)}
     #end
   end
-end
 
-module Dcmgr
   class PublicUser
-    extend PublicHelper
     include PublicModel
     
     model User
