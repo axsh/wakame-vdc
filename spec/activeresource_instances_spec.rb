@@ -8,6 +8,7 @@ describe "instance access by active resource" do
   before(:all) do
     @class = describe_activeresource_model :Instance
     @tag_class = describe_activeresource_model :Tag
+    @auth_tag_class = describe_activeresource_model :AuthTag
   end
 
   it "should run instance" do
@@ -15,9 +16,9 @@ describe "instance access by active resource" do
     normal_tag_b = @tag_class.create(:name=>'tag b')
     normal_tag_c = @tag_class.create(:name=>'tag c')
     
-    instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
-                                                    :roll=>'instance_shutdown', :tags=>[normal_tag_a, normal_tag_b],
-                                                    :account=>@account) # auth tag
+    instance_crud_auth_tag = @tag_class.create(:name=>'instance crud',
+                                               :roll=>'instance_shutdown', :tags=>[normal_tag_a, normal_tag_b],
+                                               :account=>@account) # auth tag
 
     user.add_tag(instance_crud_auth_tag)
     
