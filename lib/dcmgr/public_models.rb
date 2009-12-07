@@ -153,7 +153,6 @@ module Dcmgr
 
   class PublicUser
     include PublicModel
-    
     model User
 
     public_action :post, :all do
@@ -168,48 +167,38 @@ module Dcmgr
 
   class PublicInstance
     include PublicModel
+    model Instance
     
-    def model
-      Instance
-    end
-    
-    def list
+    public_action :get do
       list
     end
     
-    def create; create; end
+    public_action :post do
+      crreate
+    end
     
-    def get id; get id; end
-    def update id; update id; end
-    def destroy id; destroy id; end
-
-    def reboot id
-      # TODO: reboot action
-      []
+    public_action_withid :get do
+      get
+    end
+    
+    public_action_withid :put do
+      update
     end
 
-    def terminate id
-      # TODO: terminate action
-      []
+    public_action_withid :delete do
+      destory
     end
 
-    def snapshot id
-      # TODO: snapshot action
-      []
+    public_action_withid :put, :reboot do
+      [] # TODO: reboot action
     end
 
-    def self.public_actions
-      [[:get,     pattern_all,    :list, 0],
-       [:post,    pattern_all,    :create, 0],
-       [:get,     pattern_target, :get, 1],
-       [:put,     pattern_target, :update, 1],
-       [:delete,  pattern_target, :destroy, 1],
+    public_action_withid :put, :terminate do
+      [] # TODO: terminate action
+    end
 
-       # actions
-       [:put,     pattern_target(:reboot),    :reboot, 1],
-       [:put,     pattern_target(:terminate), :terminate, 1],
-       [:put,     pattern_target(:snapshot),  :snapshot, 1],
-      ]
+    public_action_withid :put, :snapshot do
+      [] # TODO: snapshot action
     end
   end
 
