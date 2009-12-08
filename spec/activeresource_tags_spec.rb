@@ -29,7 +29,7 @@ describe "tags access by active resource" do
     Tag.search_by_uuid(id).should be_nil
   end
   
-  it "should add auth tag" do
+  it "should add simple auth tag" do
     tag = @auth_class.create(:name=>'instance crud tag #1',
                              :roll=>0,
                              :tags=>[],
@@ -49,6 +49,27 @@ describe "tags access by active resource" do
   it "should delete auth tag" do
     $auth_tag.destroy
     Tag.search_by_uuid($auth_tag.id).should be_nil
+  end
+  
+  
+  it "should add auth tag that includes name tags" do
+    tag = @name_class.create(:name=>'name tag #2-1', :account=>@account)
+    tag = @name_class.create(:name=>'name tag #2-2', :account=>@account)
+    tag = @name_class.create(:name=>'name tag #2-3', :account=>@account)
+    
+    tag = @auth_class.create(:name=>'instance crud tag #2',
+                             :roll=>1,
+                             :tags=>[],
+                             :account=>@account)
+    tag.id.length.should > 0
+
+    real_tag = Tag.search_by_uuid(tag.id)
+    real_tag.should be_valid
+    real_tag.account.id.should == @account.id
+    real_tag.roll.should == 1
+    real_tag.tag_type.should == Tag::TYPE_AUTH
+    real_tag.name.should == 'instance crud tag #2'
+    real_tag.tag_mappingslength.should == 3
   end
 end
 
