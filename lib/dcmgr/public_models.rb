@@ -171,11 +171,28 @@ module Dcmgr
 
       obj = model.new
       
-      req_hash.delete 'tags'
+      tags = req_hash.delete 'tags'
+      
       req_hash['tag_type'] = Tag::TYPE_AUTH
       
       obj.set_all(req_hash)
       obj.save
+      
+      # tag mappings
+      Dcmgr.logger.debug("tags")      
+      Dcmgr.logger.debug(tags)
+      tags.each {|tag_uuid|
+        tag = Tag.search_by_uuid(tag_uuid)
+        Dcmgr.logger.debug(uuid)
+        Dcmgr.logger.debug(tag)
+        if tag
+          TagMapping.create(:tag_id=>obj.id,
+                            :type=>TagMapping::TYPE_TAG,
+                            :target_id=>tag.id)
+        end
+      }
+      
+      obj
     end
     
     public_action_withid :delete do

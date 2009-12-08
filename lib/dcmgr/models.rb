@@ -96,12 +96,6 @@ class Tag < Sequel::Model
   TYPE_NORMAL = 0
   TYPE_AUTH = 1
   
-  AUTH_TARGET_TYPE_ACCOUNT = 0
-  AUTH_TARGET_TYPE_USER = 1
-  AUTH_TARGET_TYPE_INSTANCE = 2
-  AUTH_TARGET_TYPE_INSTANCE_IMAGE = 3
-  AUTH_TARGET_TYPE_VMC = 4
-  
   many_to_one :account
   one_to_many :tag_mappings
   
@@ -111,6 +105,13 @@ class Tag < Sequel::Model
   end
 end
 
-class TagMapping < Sequel::Model; end
+class TagMapping < Sequel::Model
+  TYPE_ACCOUNT = 0
+  TYPE_TAG = 1
+  TYPE_USER = 2
+  TYPE_INSTANCE = 3
+  TYPE_INSTANCE_IMAGE = 4
+  TYPE_VMC = 5
+end
 
 class Log < Sequel::Model; end

@@ -53,13 +53,13 @@ describe "tags access by active resource" do
   
   
   it "should add auth tag that includes name tags" do
-    tag = @name_class.create(:name=>'name tag #2-1', :account=>@account)
-    tag = @name_class.create(:name=>'name tag #2-2', :account=>@account)
-    tag = @name_class.create(:name=>'name tag #2-3', :account=>@account)
+    tag1 = @name_class.create(:name=>'name tag #2-1', :account=>@account)
+    tag2 = @name_class.create(:name=>'name tag #2-2', :account=>@account)
+    tag3 = @name_class.create(:name=>'name tag #2-3', :account=>@account)
     
     tag = @auth_class.create(:name=>'instance crud tag #2',
                              :roll=>1,
-                             :tags=>[],
+                             :tags=>[tag1.id, tag2.id, tag3.id],
                              :account=>@account)
     tag.id.length.should > 0
 
@@ -69,7 +69,7 @@ describe "tags access by active resource" do
     real_tag.roll.should == 1
     real_tag.tag_type.should == Tag::TYPE_AUTH
     real_tag.name.should == 'instance crud tag #2'
-    real_tag.tag_mappingslength.should == 3
+    real_tag.tag_mappings.length.should == 3
   end
 end
 
