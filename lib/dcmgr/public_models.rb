@@ -249,17 +249,20 @@ module Dcmgr
     include PublicModel
     model ImageStorageHost
 
-    def list; list; end
-    def create; create; end
-    def get id; get id; end
-    def destroy id; destroy id; end
+    public_action :get do
+      list
+    end
 
-    def self.public_actions
-      [[:get,     pattern_all,    :list, 0],
-       [:post,    pattern_all,    :create, 0],
-       [:get,     pattern_target, :get, 1],
-       [:delete,  pattern_target, :destroy, 1],
-      ]
+    public_action :post do
+      create
+    end
+
+    public_action_withid :get do
+      get
+    end
+
+    public_action_withid :delete do
+      destory
     end
   end
 
