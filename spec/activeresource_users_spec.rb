@@ -25,6 +25,11 @@ describe "user access by active resource" do
     User.search_by_uuid(id).should be_nil
   end
   
+  it "should get myself" do
+    user = @class.put(:myself)
+    user.account.should == $spec_user.account
+  end
+  
   it "should notauthorize by bad password" do
     notauth_class = describe_activeresource_model :User, '__test_as_user_spec__', 'badpass'
     lambda {

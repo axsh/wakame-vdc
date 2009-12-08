@@ -17,8 +17,11 @@ module Dcmgr
     end
     
     def authorize(user, pass)
-      user = User.find(:account=>user, :password=>pass)
-      user
+      @user = User.find(:account=>user, :password=>pass)
+    end
+
+    def authorized_user
+      @user
     end
   end
 end

@@ -4,23 +4,27 @@ module Dcmgr
   module PublicModel
     module ClassMethods
       def get_actions
-        @public_actions.each{|method, path, args, arg_count, action|
-          yield [method, path, route(self, action, arg_count)]
+        @public_actions.each{|method, path, args, action|
+          yield [method, path, route(self, action)]
         }
       end
       
-      def public_action(method, *args, &block)
+      def public_action(method, name=nil, *args, &block)
         @public_actions ||= []
-        @public_actions << [method, url_all, args, 0, block]
+        @public_actions << [method, url_all(name), args, block]
       end
       
       def public_action_withid(method, name=nil, *args, &block)
         @public_actions ||= []
-        @public_actions << [method, url_id(name), args, 1, block]
+        @public_actions << [method, url_id(name), args, block]
       end
       
-      def url_all
-        "/#{public_name}.json"
+      def url_all(action_name=nil)
+        if action_name
+          "/#{public_name}/#{action_name}.json"
+        else
+          "/#{public_name}.json"
+        end          
       end
       
       def url_id(action_name=nil)
@@ -41,12 +45,12 @@ module Dcmgr
         @public_name = name
       end
       
-      def route(public_class, block, args)
-        Dcmgr::logger.debug "route: %s, %s, %s, %d" % [self, public_class, block, args]
+      def route(public_class, block)
+        Dcmgr::logger.debug "route: %s, %s, %s" % [self, public_class, block]
         proc do |id|
           logger.debug "url: " + request.url
           protected!
-          obj = public_class.new(request)
+          obj = public_class.new(authorized_user, request)
           obj.uuid = id if id
           ret = obj.instance_eval(&block)
           logger.debug "response(inspect): " + ret.inspect
@@ -81,6 +85,7 @@ module Dcmgr
     end
     
     attr_accessor :uuid
+    attr_accessor :user
     attr_accessor :request
     
     def model
@@ -123,7 +128,8 @@ module Dcmgr
       parsed
     end
     
-    def initialize(request)
+    def initialize(user, request)
+      @user = user
       @request = request
     end
 
@@ -143,6 +149,10 @@ module Dcmgr
     #public_action_withid :delete do |id|
     public_action_withid :delete do
       destroy
+    end
+
+    public_action :put, :myself do
+      user
     end
   end
 

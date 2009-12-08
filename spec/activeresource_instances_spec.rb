@@ -7,20 +7,25 @@ describe "instance access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     @class = describe_activeresource_model :Instance
-    @tag_class = describe_activeresource_model :Tag
+    @name_tag_class = describe_activeresource_model :NameTag
     @auth_tag_class = describe_activeresource_model :AuthTag
+    @user_class = describe_activeresource_model :User
+    @user = @user_class.put(:myself)
   end
 
   it "should run instance" do
-    normal_tag_a = @tag_class.create(:name=>'tag a') # name tag
-    normal_tag_b = @tag_class.create(:name=>'tag b')
-    normal_tag_c = @tag_class.create(:name=>'tag c')
+    normal_tag_a = @name_tag_class.create(:name=>'tag a', :account=>@account) # name tag
+    normal_tag_b = @name_tag_class.create(:name=>'tag b', :account=>@account)
+    normal_tag_c = @name_tag_class.create(:name=>'tag c', :account=>@account)
     
-    instance_crud_auth_tag = @tag_class.create(:name=>'instance crud',
-                                               :roll=>'instance_shutdown', :tags=>[normal_tag_a, normal_tag_b],
-                                               :account=>@account) # auth tag
+    instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
+                                                    :roll=>0,
+                                                    :tags=>[normal_tag_a.id,
+                                                            normal_tag_b.id,
+                                                            normal_tag_c.id],
+                                                    :account=>@account) # auth tag
 
-    user.add_tag(instance_crud_auth_tag)
+    @user.add_tag(instance_crud_auth_tag)
     
     instance_a.add_tag(normal_tag)
     instance_a.shutdown
