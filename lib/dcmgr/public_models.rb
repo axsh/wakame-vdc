@@ -47,10 +47,9 @@ module Dcmgr
           logger.debug "url: " + request.url
           protected!
           obj = public_class.new(request)
-          # ret = obj.exec(block, nil)
           obj.uuid = id if id
           ret = obj.instance_eval(&block)
-          # logger.debug "response(inspect): " + ret.inspect
+          logger.debug "response(inspect): " + ret.inspect
           json_ret = public_class.json_render(ret)
           logger.debug "response(json): " + json_ret
           json_ret
@@ -120,6 +119,7 @@ module Dcmgr
     def json_request
       raise "no data" unless request.body.size > 0
       parsed = JSON.parse(request.body.read)
+      Dcmgr.logger.debug("request: " + parsed.inspect)
       parsed
     end
     
@@ -166,7 +166,16 @@ module Dcmgr
     public_name 'auth_tags'
 
     public_action :post do
-      create
+      req_hash = json_request
+      req_hash.delete 'id'
+
+      obj = model.new
+      
+      req_hash.delete 'tags'
+      req_hash['tag_type'] = Tag::TYPE_AUTH
+      
+      obj.set_all(req_hash)
+      obj.save
     end
     
     public_action_withid :delete do
@@ -183,7 +192,7 @@ module Dcmgr
     end
     
     public_action :post do
-      crreate
+      create
     end
     
     public_action_withid :get do

@@ -103,6 +103,7 @@ class Tag < Sequel::Model
   AUTH_TARGET_TYPE_VMC = 4
   
   many_to_one :account
+  one_to_many :tag_mappings
   
   def before_create
     super

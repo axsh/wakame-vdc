@@ -104,14 +104,7 @@ module Dcmgr
 
       @db.create_table? :tag_mappings do
         primary_key :tag_id, :type=>Integer
-        Fixnum :type, :size=>2 # 0: account, 1: user, 2: instance, 3: instance image, 4: vmc
-        Fixnum :target_id
-        index [:tag_id, :type, :target_id]
-      end
-
-      @db.create_table? :tag_includes do
-        primary_key :tag_id, :type=>Integer
-        Fixnum :type, :size=>2 # 0: account, 1: user, 2: instance, 3: instance image, 4: vmc
+        Fixnum :type, :size=>2 # 0: account, 1: name tag, 2: user, 3: instance, 4: instance image, t: vmc
         Fixnum :target_id
         index [:tag_id, :type, :target_id]
       end

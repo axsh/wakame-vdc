@@ -41,7 +41,7 @@ describe "tags access by active resource" do
     real_tag.account.id.should == @account.id
     real_tag.tag_type.should == Tag::TYPE_AUTH
     real_tag.name.should == 'instance crud tag #1'
-    real_tag.mapping_tags.should.length == 0
+    real_tag.tag_mappings.length.should == 0
     
     $auth_tag = tag
   end
