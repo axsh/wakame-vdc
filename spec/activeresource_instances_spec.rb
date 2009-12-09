@@ -10,7 +10,7 @@ describe "instance access by active resource" do
     @name_tag_class = describe_activeresource_model :NameTag
     @auth_tag_class = describe_activeresource_model :AuthTag
     @user_class = describe_activeresource_model :User
-    @user = @user_class.put(:myself)
+    @user = @user_class.find(:myself)
   end
 
   it "should run instance" do
@@ -25,7 +25,7 @@ describe "instance access by active resource" do
                                                             normal_tag_c.id],
                                                     :account=>@account) # auth tag
 
-    @user.add_tag(instance_crud_auth_tag)
+    @user.put(:add_tag, :tag=>instance_crud_auth_tag.id)
     
     instance_a.add_tag(normal_tag)
     instance_a.shutdown

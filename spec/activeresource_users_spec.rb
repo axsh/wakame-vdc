@@ -26,7 +26,7 @@ describe "user access by active resource" do
   end
   
   it "should get myself" do
-    user = @class.put(:myself)
+    user = @class.find(:myself)
     user.account.should == $spec_user.account
   end
   

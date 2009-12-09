@@ -146,13 +146,18 @@ module Dcmgr
       create
     end
     
+    public_action :get, :myself do
+      user
+    end
+    
     #public_action_withid :delete do |id|
     public_action_withid :delete do
       destroy
     end
 
-    public_action :put, :myself do
-      user
+    public_action_withid :put, :add_tag do
+      req = json_request
+      p req
     end
   end
 
