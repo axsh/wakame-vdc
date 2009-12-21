@@ -7,6 +7,7 @@ describe "user access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     @class = describe_activeresource_model :User
+    @auth_tag_class = describe_activeresource_model :AuthTag
   end
 
   it "should add" do
@@ -29,6 +30,23 @@ describe "user access by active resource" do
     user = @class.find(:myself)
     user.account.should == $spec_user.account
   end
+
+  it "should add tag" do
+    user = @class.find(:myself)
+
+    instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
+                                                    :roll=>0,
+                                                    :tags=>[],
+                                                    :account=>@account) # auth tag
+    
+    user.put(:add_tag, :tag=>instance_crud_auth_tag)
+
+    real_user = User.search_by_uuid(user.id)
+    #real_user.tag_mappings.
+    
+    
+  end
+  
   
   it "should notauthorize by bad password" do
     notauth_class = describe_activeresource_model :User, '__test_as_user_spec__', 'badpass'
