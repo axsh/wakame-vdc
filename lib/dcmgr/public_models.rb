@@ -157,8 +157,8 @@ module Dcmgr
     end
 
     public_action_withid :put, :add_tag do
-      req = json_request
-      p req
+      request.GET['tag']
+      []
     end
   end
 
