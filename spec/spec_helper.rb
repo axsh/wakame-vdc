@@ -35,16 +35,16 @@ END
   end
 
   def create_authuser
-    @user = User.create(:account=>'__test__', :password=>'passwd')
-    @account = Account.create(:name=>'__test_account__')
+    $spec_user = User.create(:account=>'__test__', :password=>'passwd')
+    $spec_account = Account.create(:name=>'__test_account__')
   end
 
   def delete_authuser
-    @user.delete
+    $spec_user.delete
   end
 end
 
-ActiveResourceHelperMethods.runserver
+#ActiveResourceHelperMethods.runserver
 ActiveResourceHelperMethods.create_authuser
 
 
