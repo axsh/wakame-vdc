@@ -18,7 +18,7 @@ task :shell do
 end
 
 task :run do
-  sh "shotgun -p 3000 config.ru"
+  sh "./bin/shotgun -p 3000 config.ru"
 end
 
 namespace :db do
