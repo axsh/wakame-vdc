@@ -4,11 +4,12 @@ task :default => :spec
 
 desc 'Run specs'
 task :spec do
-  sh "spec -fs -c spec/*_spec.rb"
+  sh "./bin/spec -fs -c spec/*_spec.rb"
 end
 
 task :environment do
   $:.unshift 'lib'
+  require "#{File.dirname(__FILE__)}/vendor/gems/environment"
   require 'dcmgr'
   Dcmgr.configure 'dcmgr.conf'
 end
