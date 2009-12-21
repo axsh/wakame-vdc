@@ -62,7 +62,8 @@ module Dcmgr
       
       def json_render(obj)
         def model2hash i
-          h = Hash[i.keys.collect{ |key| [key, i.send(key)] }]
+          list = i.keys.collect{ |key| [key, i.send(key)] }
+          h = Hash[*list.flatten]
           
           # strip id, change uuid to id
           id = h.delete :id
