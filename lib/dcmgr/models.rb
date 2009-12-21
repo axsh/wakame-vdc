@@ -53,7 +53,7 @@ class User < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'U'; end
   
-  one_to_many :account_roll
+  many_to_many :account_roll
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :graph_join_table_conditions=>{:target_type=>2} do |ds|
     ds.filter{|o| o.tag_mappings.target_type == 2 }
   end
@@ -61,7 +61,7 @@ end
 
 class AccountRoll < Sequel::Model
   many_to_one :account
-  many_to_many :user
+  many_to_many :user, :left_primary_key=>:user_id
 end
 
 class Instance < Sequel::Model
