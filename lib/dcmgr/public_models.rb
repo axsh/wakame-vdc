@@ -212,7 +212,7 @@ module Dcmgr
         Dcmgr.logger.debug(tag)
         if tag
           TagMapping.create(:tag_id=>obj.id,
-                            :type=>TagMapping::TYPE_TAG,
+                            :target_type=>TagMapping::TYPE_TAG,
                             :target_id=>tag.id)
         end
       }
