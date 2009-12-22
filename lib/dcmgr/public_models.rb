@@ -92,13 +92,17 @@ module Dcmgr
     def model
       self.class.model
     end
+
+    def format_object(obj)
+      obj
+    end
     
     def list
-      model.all
+      model.all.map{|o| format_object(o)}
     end
     
     def get
-      model.search_by_uuid(uuid)
+      format_object(model.search_by_uuid(uuid))
     end
 
     def create
@@ -107,14 +111,14 @@ module Dcmgr
 
       obj = model.new
       obj.set_all(req_hash)
-      obj.save
+      format_object(obj.save)
     end
 
     def update
       obj = model.search_by_uuid(uuid)
       req_hash = json_request
       obj.set_all(req_hash)
-      obj.save
+      format_object(obj.save)
     end
     
     def destroy
@@ -236,7 +240,7 @@ module Dcmgr
   class PublicInstance
     include PublicModel
     model Instance
-    
+
     public_action :get do
       list
     end
@@ -283,12 +287,27 @@ module Dcmgr
     end
 
     public_action_withid :put, :shutdown do
-      user.tags.includes?
-      throw :halt, [400, 'err']
+      instance = Instance.search_by_uuid(uuid)
+      Dcmgr::logger.debug "instance: %s" % instance.uuid
+      Dcmgr::logger.debug "instance.tags:"
+      instance.tags.each{|tag|
+        Dcmgr::logger.debug "  %s" % tag.uuid
+      }
+      if instance.tags.length <= 0
+        throw :halt, [400, 'err']
+      end
+      []
     end
 
     public_action_withid :put, :snapshot do
       [] # TODO: snapshot action
+    end
+
+    def format_object(object)
+      if object
+        object.keys.push :tags
+      end
+      object
     end
   end
 

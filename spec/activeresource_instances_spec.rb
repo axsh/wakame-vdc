@@ -54,28 +54,30 @@ describe "instance access by active resource" do
   end
 
   it "should get instance" do
-    instance = @class.find($instance.uuid)
-    instance.id.should == $instance_id
-    instance.access_id.should == "1"
-    instance.user_id.should == 1234
+    instance = @class.find($instance_a.id)
+    instance.user_id.should == 1
     instance.physicalhost_id.should == 10
     instance.imagestorage_id.should == 100
     instance.hvspec_id.should == 10
   end
 
   it "should reboot" do
-    instance = @class.find($instance.uuid)
+    instance = @class.find($instance_a.id)
     instance.put(:reboot)
   end
   
   it "should terminate" do
-    instance = @class.find($instance.uuid)
+    instance = @class.find($instance_a.id)
     instance.put(:terminate)
   end
   
   it "should get describe" do
     list = @class.find(:all)
-    list.index { |ins| ins.uuid == $instance.uuid }.should be_true
+    list.each {|o|
+      puts "obj %s" % $instance_a.id
+      p o
+    }
+    list.index { |ins| ins.id == $instance_a.id }.should be_true
   end
   
   it "should snapshot image, and backup image to image storage" do
