@@ -15,7 +15,7 @@ module ActiveResourceHelperMethods
   
   def runserver
     Thread.new do
-      Rack::Handler::WEBrick.run Dcmgr::Web, :Port => 19393
+      #Rack::Handler::WEBrick.run Dcmgr::Web, :Port => 19393
     end
   end
 
@@ -25,7 +25,7 @@ module ActiveResourceHelperMethods
     eval(<<END)
     module Test
       class #{model_name.to_s} < ActiveResource::Base
-        self.site = 'http://#{user}:#{passwd}@localhost:19393/'
+        self.site = 'http://#{user}:#{passwd}@localhost:3000/'
         self.format = :json
       end
     end
