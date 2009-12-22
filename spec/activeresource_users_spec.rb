@@ -25,7 +25,7 @@ describe "user access by active resource" do
     $user.destroy
     User.search_by_uuid(id).should be_nil
   end
-  
+
   it "should get myself" do
     user = @class.find(:myself)
     user.account.should == $spec_user.account
@@ -42,7 +42,10 @@ describe "user access by active resource" do
     user.put(:add_tag, :tag=>instance_crud_auth_tag)
 
     real_user = User.search_by_uuid(user.id)
-    #real_user.tag_mappings.
+    real_user.tags.length.should == 1
+    real_user.tags.index {|tag|
+      tag.uuid == instance_crud_auth_tag.id
+    }.should be_true
     
     
   end

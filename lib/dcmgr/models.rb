@@ -42,6 +42,15 @@ module Dcmgr::Model
   end
 end
 
+class TagMapping < Sequel::Model
+  TYPE_ACCOUNT = 0
+  TYPE_TAG = 1
+  TYPE_USER = 2
+  TYPE_INSTANCE = 3
+  TYPE_INSTANCE_IMAGE = 4
+  TYPE_VMC = 5
+end
+
 class Account < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'A'; end
@@ -59,9 +68,7 @@ class User < Sequel::Model
   def self.prefix_uuid; 'U'; end
   
   many_to_many :account_roll
-  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :graph_join_table_conditions=>{:target_type=>2} do |ds|
-    ds.filter{|o| o.tag_mappings.target_type == 2 }
-  end
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
 end
 
 class AccountRoll < Sequel::Model
@@ -74,9 +81,7 @@ class Instance < Sequel::Model
   def self.prefix_uuid; 'I'; end
   
   many_to_one :account
-  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :graph_join_table_conditions=>{:target_type=>2} do |ds|
-    ds.filter{|o| o.tag_mappings.target_type == TagMapping::TYPE_TAG }
-  end
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_TAG}
 end
 
 class ImageStorage < Sequel::Model
@@ -118,15 +123,6 @@ class Tag < Sequel::Model
     super
     self.tag_type = TYPE_NORMAL unless self.tag_type
   end
-end
-
-class TagMapping < Sequel::Model
-  TYPE_ACCOUNT = 0
-  TYPE_TAG = 1
-  TYPE_USER = 2
-  TYPE_INSTANCE = 3
-  TYPE_INSTANCE_IMAGE = 4
-  TYPE_VMC = 5
 end
 
 class Log < Sequel::Model; end

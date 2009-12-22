@@ -166,8 +166,16 @@ module Dcmgr
     end
 
     public_action_withid :put, :add_tag do
-      request.GET['tag']
-      []
+      target = User.search_by_uuid(uuid)
+      tag_uuid = request.GET['tag']
+      tag = Tag.search_by_uuid(tag_uuid)
+      Dcmgr.logger.debug(uuid)
+      Dcmgr.logger.debug(tag)
+      if tag
+        TagMapping.create(:tag_id=>tag.id,
+                          :target_type=>TagMapping::TYPE_USER,
+                          :target_id=>target.id)
+      end
     end
   end
 
