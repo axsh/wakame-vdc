@@ -47,6 +47,11 @@ class Account < Sequel::Model
   def self.prefix_uuid; 'A'; end
   
   one_to_many :account_roll
+  
+  def before_create
+    super
+    self.created_at = Time.now unless self.created_at
+  end
 end
 
 class User < Sequel::Model
