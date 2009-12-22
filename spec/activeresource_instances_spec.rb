@@ -47,6 +47,8 @@ describe "instance access by active resource" do
     
     instance.tags.include?(@normal_tag_c.id).should be_false
     instance.put(:add_tag, :tag=>@normal_tag_c.id)
+
+    instance.reload
     instance.tags.include?(@normal_tag_c.id).should be_true
 
     instance.put(:remove_tag, :tag=>@normal_tag_c.id)
@@ -56,9 +58,9 @@ describe "instance access by active resource" do
   it "should get instance" do
     instance = @class.find($instance_a.id)
     instance.user_id.should == 1
-    instance.physicalhost_id.should == 10
-    instance.imagestorage_id.should == 100
-    instance.hvspec_id.should == 10
+    #instance.physicalhost_id.should == 10
+    #instance.imagestorage_id.should == 100
+    #instance.hvspec_id.should == 10
   end
 
   it "should reboot" do

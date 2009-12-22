@@ -81,7 +81,8 @@ class Instance < Sequel::Model
   def self.prefix_uuid; 'I'; end
   
   many_to_one :account
-  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_TAG}
+  many_to_one :user
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
 end
 
 class ImageStorage < Sequel::Model

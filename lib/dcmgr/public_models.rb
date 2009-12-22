@@ -62,9 +62,11 @@ module Dcmgr
       
       def json_render(obj)
         def model2hash i
-          list = i.keys.collect{ |key| [key, i.send(key)] }
-          h = Hash[*list.flatten]
-          
+          h = Hash.new
+          i.keys.each{ |key|
+            h[key] = i.send(key)
+          }
+
           # strip id, change uuid to id
           id = h.delete :id
           uuid = h.delete :uuid
@@ -253,8 +255,10 @@ module Dcmgr
       target = Instance.search_by_uuid(uuid)
       tag_uuid = request.GET['tag']
       tag = Tag.search_by_uuid(tag_uuid)
+      Dcmgr.logger.debug("")
       Dcmgr.logger.debug(uuid)
       Dcmgr.logger.debug(tag)
+      Dcmgr.logger.debug("")
       if tag
         TagMapping.create(:tag_id=>tag.id,
                           :target_type=>TagMapping::TYPE_INSTANCE,
@@ -263,7 +267,13 @@ module Dcmgr
     end
     
     public_action :post do
-      create
+      req_hash = json_request
+      req_hash.delete 'id'
+
+      obj = model.new
+      obj.set_all(req_hash)
+      obj.user = user
+      format_object(obj.save)
     end
     
     public_action_withid :get do
@@ -305,8 +315,11 @@ module Dcmgr
 
     def format_object(object)
       if object
-        object.keys.push :tags
+        def object.keys
+          @values.keys.push :tags
+        end
       end
+      Dcmgr::logger.debug "format_objects.keys: %s" % object.keys.join(", ")
       object
     end
   end
