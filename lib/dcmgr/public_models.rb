@@ -139,6 +139,15 @@ module Dcmgr
     #end
   end
 
+  class PublicAccount
+    include PublicModel
+    model Account
+
+    public_action :post do
+      create
+    end
+  end
+
   class PublicUser
     include PublicModel
     model User
