@@ -15,7 +15,7 @@ task :environment do
 end
 
 task :shell do
-  sh "irb -r lib/dcmgr/shell"
+  sh "ruby lib/dcmgr/shell.rb dcmgr.conf"
 end
 
 task :run do
