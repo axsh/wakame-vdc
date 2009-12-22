@@ -233,6 +233,23 @@ module Dcmgr
       list
     end
     
+    public_action_withid :get do
+      get
+    end
+    
+    public_action_withid :put, :add_tag do
+      target = Instance.search_by_uuid(uuid)
+      tag_uuid = request.GET['tag']
+      tag = Tag.search_by_uuid(tag_uuid)
+      Dcmgr.logger.debug(uuid)
+      Dcmgr.logger.debug(tag)
+      if tag
+        TagMapping.create(:tag_id=>tag.id,
+                          :target_type=>TagMapping::TYPE_INSTANCE,
+                          :target_id=>target.id)
+      end
+    end
+    
     public_action :post do
       create
     end
@@ -255,6 +272,11 @@ module Dcmgr
 
     public_action_withid :put, :terminate do
       [] # TODO: terminate action
+    end
+
+    public_action_withid :put, :shutdown do
+      user.tags.includes?
+      throw :halt, [400, 'err']
     end
 
     public_action_withid :put, :snapshot do

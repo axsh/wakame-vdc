@@ -45,7 +45,7 @@ end
 class Account < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'A'; end
-  
+
   one_to_many :account_roll
   
   def before_create
@@ -72,6 +72,11 @@ end
 class Instance < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'I'; end
+  
+  many_to_one :account
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :graph_join_table_conditions=>{:target_type=>2} do |ds|
+    ds.filter{|o| o.tag_mappings.target_type == TagMapping::TYPE_TAG }
+  end
 end
 
 class ImageStorage < Sequel::Model
