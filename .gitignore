@@ -1,7 +1,7 @@
 #*#
 *~
 *.log
-dcmgr.conf
+dcmgr*.conf
 
 # Bundler ignorance rules
 bin/
