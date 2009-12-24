@@ -62,10 +62,11 @@ module Dcmgr
       
       def json_render(obj)
         def model2hash i
-          list = i.keys.collect{ |key| [key, i.send(key)] }
-          h = Hash[*list.flatten]
+          h = Hash.new
+          i.keys.each{ |key|
+            h[key] = i.send(key)
+          }
 
-          
           # strip id, change uuid to id
           id = h.delete :id
           uuid = h.delete :uuid
@@ -93,13 +94,17 @@ module Dcmgr
     def model
       self.class.model
     end
+
+    def format_object(obj)
+      obj
+    end
     
     def list
-      model.all
+      model.all.map{|o| format_object(o)}
     end
     
     def get
-      model.search_by_uuid(uuid)
+      format_object(model.search_by_uuid(uuid))
     end
 
     def create
@@ -108,14 +113,14 @@ module Dcmgr
 
       obj = model.new
       obj.set_all(req_hash)
-      obj.save
+      format_object(obj.save)
     end
 
     def update
       obj = model.search_by_uuid(uuid)
       req_hash = json_request
       obj.set_all(req_hash)
-      obj.save
+      format_object(obj.save)
     end
     
     def destroy
@@ -140,6 +145,26 @@ module Dcmgr
     #end
   end
 
+  class PublicAccount
+    include PublicModel
+    model Account
+
+    public_action :get do
+      list
+    end
+
+    public_action :post do
+      account = create
+      # create account roll
+      AccountRoll.create(:account=>account,:user=>user)
+      account
+    end
+
+    public_action_withid :delete do
+      destroy
+    end
+  end
+
   class PublicUser
     include PublicModel
     model User
@@ -158,8 +183,16 @@ module Dcmgr
     end
 
     public_action_withid :put, :add_tag do
-      req = json_request
-      p req
+      target = User.search_by_uuid(uuid)
+      tag_uuid = request.GET['tag']
+      tag = Tag.search_by_uuid(tag_uuid)
+      Dcmgr.logger.debug(uuid)
+      Dcmgr.logger.debug(tag)
+      if tag
+        TagMapping.create(:tag_id=>tag.id,
+                          :target_type=>TagMapping::TYPE_USER,
+                          :target_id=>target.id)
+      end
     end
   end
 
@@ -204,7 +237,7 @@ module Dcmgr
         Dcmgr.logger.debug(tag)
         if tag
           TagMapping.create(:tag_id=>obj.id,
-                            :type=>TagMapping::TYPE_TAG,
+                            :target_type=>TagMapping::TYPE_TAG,
                             :target_id=>tag.id)
         end
       }
@@ -220,13 +253,45 @@ module Dcmgr
   class PublicInstance
     include PublicModel
     model Instance
-    
+
     public_action :get do
       list
     end
     
+    public_action_withid :get do
+      get
+    end
+    
+    public_action_withid :put, :add_tag do
+      target = Instance.search_by_uuid(uuid)
+      tag_uuid = request.GET['tag']
+      tag = Tag.search_by_uuid(tag_uuid)
+      Dcmgr.logger.debug("")
+      Dcmgr.logger.debug(uuid)
+      Dcmgr.logger.debug(tag)
+      Dcmgr.logger.debug("")
+      if tag
+        TagMapping.create(:tag_id=>tag.id,
+                          :target_type=>TagMapping::TYPE_INSTANCE,
+                          :target_id=>target.id)
+      end
+    end
+    
+    public_action_withid :put, :remove_tag do
+      target = Instance.search_by_uuid(uuid)
+      tag_uuid = request.GET['tag']
+      tag = Tag.search_by_uuid(tag_uuid)
+      target.remove_tag(tag.id) if tag
+    end
+    
     public_action :post do
-      create
+      req_hash = json_request
+      req_hash.delete 'id'
+
+      obj = model.new
+      obj.set_all(req_hash)
+      obj.user = user
+      format_object(obj.save)
     end
     
     public_action_withid :get do
@@ -249,8 +314,33 @@ module Dcmgr
       [] # TODO: terminate action
     end
 
+    public_action_withid :put, :shutdown do
+      instance = Instance.search_by_uuid(uuid)
+      Dcmgr::logger.debug "instance: %s" % instance.uuid
+      Dcmgr::logger.debug "instance.tags:"
+      instance.tags.each{|tag|
+        Dcmgr::logger.debug "  %s" % tag.uuid
+      }
+      if instance.tags.length <= 0
+        throw :halt, [400, 'err']
+      end
+      []
+    end
+
     public_action_withid :put, :snapshot do
       [] # TODO: snapshot action
+    end
+
+    def format_object(object)
+      if object
+        def object.keys
+          @values.keys.push :tags
+        end
+        def object.tags
+          super().map{|t| t.uuid} # format only tags uuid
+        end
+      end
+      object
     end
   end
 

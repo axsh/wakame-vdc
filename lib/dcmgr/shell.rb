@@ -1,5 +1,9 @@
 
 $:.unshift 'lib'
+require "#{File.dirname(__FILE__)}/../../vendor/gems/environment"
 require 'dcmgr'
-Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr?user=dcmgr&password=passwd'
-require 'dcmgr/web'
+
+Dcmgr.configure ARGV.shift
+
+require "irb"
+IRB.start(__FILE__)

@@ -18,10 +18,14 @@ module Dcmgr
         self.send action, pattern, &proc
       }
     end
-
+    
+    public_crud PublicAccount
     public_crud PublicUser
+    
     public_crud PublicNameTag
     public_crud PublicAuthTag
+    
+    public_crud PublicInstance
     
     get '/' do
       'startup dcmgr'

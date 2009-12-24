@@ -22,6 +22,13 @@ module Dcmgr
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
         String :name
+        String :exclusion, :fixed=>true, :size=>1, :null=>false # 'y': can login but can't se, 'n': enable
+        String :enable, :fixed=>true, :size=>1, :null=>false
+        DateTime :created_at, :null=>false
+        DateTime :contract_at, :null=>true
+        DateTime :deleted_at, :null=>true
+        String :is_deleted, :fixed=>true, :size=>1, :null=>false # 'y' or 'n'
+        String :memo
       end
       
       @db.create_table? :users do
@@ -30,13 +37,16 @@ module Dcmgr
         index :uuid
         String :account, :unique=>true, :null=>false
         String :password, :null=>false
+        String :default_password, :null=>false # default password, use password reset
+        String :enable, :fixed=>true, :size=>1, :null=>false # 'y' or 'n'
+        String :email, :null=>false
+        String :memo
       end
 
       @db.create_table? :account_rolls do
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :type=>Integer, :null=>false
-        index :account_id
-        index :user_id
+        primary_key ([:account_id, :user_id])
       end
 
       @db.create_table? :image_storages do
@@ -69,6 +79,7 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
+        Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :null=>false
         Fixnum :physicalhost_id, :null=>false
         Fixnum :imagestorage_id, :null=>false
@@ -105,15 +116,16 @@ module Dcmgr
       @db.create_table? :tag_mappings do
         primary_key :id, :type=>Integer
         Fixnum :tag_id, :null=>false
-        Fixnum :type, :size=>2 # 0: account, 1: name tag, 2: user, 3: instance, 4: instance image, t: vmc
+        Fixnum :target_type, :size=>2 # 0: account, 1: name tag, 2: user, 3: instance, 4: instance image, t: vmc
         Fixnum :target_id, :null=>false
-        index [:tag_id, :type, :target_id]
+        index [:tag_id, :target_type, :target_id]
       end
 
       @db.create_table? :logs do
         primary_key :id, :type=>Integer
         String :target, :fixed=>true, :size=>32, :null=>false
         String :action, :fixed=>true, :size=>32, :null=>false
+        Fixnum :account_id, :null=>false
         Fixnum :user_id, :null=>false
         String :message, :fixed=>true, :size=>2, :null=>false
         DateTime :created_at, :null=>false
