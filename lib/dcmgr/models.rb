@@ -59,6 +59,8 @@ class Account < Sequel::Model
   
   def before_create
     super
+    self.exclusion = 'n' unless self.exclusion
+    self.enable = 'y' unless self.enable
     self.created_at = Time.now unless self.created_at
   end
 end
@@ -73,7 +75,7 @@ end
 
 class AccountRoll < Sequel::Model
   many_to_one :account
-  many_to_many :user, :left_primary_key=>:user_id
+  many_to_one :user, :left_primary_key=>:user_id
 end
 
 class Instance < Sequel::Model

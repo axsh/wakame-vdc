@@ -150,7 +150,14 @@ module Dcmgr
     model Account
 
     public_action :post do
-      create
+      account = create
+      # create account roll
+      AccountRoll.create(:account=>account,:user=>user)
+      account
+    end
+
+    public_action_withid :delete do
+      destroy
     end
   end
 
