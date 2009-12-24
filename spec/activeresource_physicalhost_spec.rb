@@ -10,13 +10,21 @@ describe "physical host access by active resource" do
   end
   
   it "should add" do
-    physicalhost = @class.create(:cpu_model=>'core2',
+    physicalhost = @class.create(:cpus=>4,
                                  :cpu_mhz=>1.0,
-                                 :memory=>1.1,
-                                 :location=>'',
-                                 :hypervisor_type=>'')
-    physicalhost.id.should > 0
-    PhysicalHost[physicalhost.id].should be_valid
+                                 :memory=>2.0,
+                                 :hypervisor_type=>'xen')
+    physicalhost.id.length.should > 0
+
+    real_physicalhost = PhysicalHost[physicalhost.id]
+    real_physicalhost.should be_valid
+    real_physicalhost.id.should > 0
+    real_physicalhost.uuid.length.should > 0
+    real_physicalhost.cpus.should == 4
+    real_physicalhost.cpu_mhz.should == 1.0
+    real_physicalhost.memory.should == 2.0
+    real_physicalhost.hypervisor_type.should == 'xen'
+    
     $physicalhost_id = physicalhost.id
   end
   
@@ -28,13 +36,14 @@ describe "physical host access by active resource" do
   end
   
   it "should relate user" do
-    physicalhost = @class.create(:cpu_model=>'core2',
+    physicalhost = @class.create(:cpus=>4,
                                  :cpu_mhz=>1.0,
-                                 :memory=>1.1,
-                                 :location=>'',
-                                 :hypervisor_type=>'')
+                                 :memory=>2.0,
+                                 :hypervisor_type=>'xen')
     user = User.create(:name=>'__test_activeresource_physicalhost_spec__', :password=>'passwd')
-    physicalhost.put(:relate, :user=>user.id)
+
+    physicalhost.put(:relate, :user=>user.uuid)
+
     @class.find(physicalhost.id).relate_user_id.should == user.id
   end
 end
