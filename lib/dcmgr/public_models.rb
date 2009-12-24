@@ -149,6 +149,10 @@ module Dcmgr
     include PublicModel
     model Account
 
+    public_action :get do
+      list
+    end
+
     public_action :post do
       account = create
       # create account roll
