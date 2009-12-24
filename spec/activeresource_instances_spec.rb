@@ -76,10 +76,6 @@ describe "instance access by active resource" do
   
   it "should get describe" do
     list = @class.find(:all)
-    list.each {|o|
-      puts "obj %s" % $instance_a.id
-      p o
-    }
     list.index { |ins| ins.id == $instance_a.id }.should be_true
   end
   
