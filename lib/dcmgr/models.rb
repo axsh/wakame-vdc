@@ -8,8 +8,13 @@ module Dcmgr::Model
 
   module UUIDMethods
     module ClassMethods
-      def search_by_uuid(uuid)
-        self[:uuid=>trim_uuid(uuid)]
+      # override [] method. add search by uuid String
+      def [](*args)
+        if args.size == 1 and args[0].is_a? String
+          super(:uuid=>trim_uuid(args[0]))
+        else
+          super(*args)
+        end
       end
           
       def trim_uuid(p_uuid)
