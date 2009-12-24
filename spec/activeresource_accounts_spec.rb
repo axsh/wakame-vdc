@@ -23,7 +23,11 @@ describe "accounts by active resource" do
     real_account.enable.should == 'y'
 
     real_account.account_roll.index{|i| i.user.uuid== @user.id }.should_not be_nil
-    
+  end
+
+  it "should get list" do
+    list = @class.find(:all)
+    list.index { |account| account.id == $account.id }.should be_true
   end
   
   it "should delete" do
