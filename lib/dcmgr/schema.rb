@@ -35,7 +35,7 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
-        String :account, :unique=>true, :null=>false
+        String :name, :unique=>true, :null=>false
         String :password, :null=>false
         String :default_password, :null=>false # default password, use password reset
         String :enable, :fixed=>true, :size=>1, :null=>false # 'y' or 'n'
@@ -132,6 +132,12 @@ module Dcmgr
       end
       
       load
+    end
+
+    def initial_data
+      User.create(:name=>'staff', :password=>'passwd')
+      Account.create(:name=>'account1')
+      
     end
 
     def drop!

@@ -11,7 +11,7 @@ describe "user access by active resource" do
   end
 
   it "should add" do
-    user = @class.create(:account=>'__test_as_user_spec__', :password=>'passwd')
+    user = @class.create(:name=>'__test_as_user_spec__', :password=>'passwd')
     user.id.should be_true
     user.id.length.should >= 10
     
@@ -28,7 +28,7 @@ describe "user access by active resource" do
 
   it "should get myself" do
     user = @class.find(:myself)
-    user.account.should == $spec_user.account
+    user.name.should == $spec_user.name
   end
 
   it "should add tag" do
@@ -54,7 +54,7 @@ describe "user access by active resource" do
   it "should notauthorize by bad password" do
     notauth_class = describe_activeresource_model :User, '__test_as_user_spec__', 'badpass'
     lambda {
-      notauth_class.create(:account=>'__test_as_user_spec__', :password=>'passwd')
+      notauth_class.create(:name=>'__test_as_user_spec__', :password=>'passwd')
     }.should raise_error
   end
 end

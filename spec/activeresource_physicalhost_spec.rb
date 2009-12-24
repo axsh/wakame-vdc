@@ -33,7 +33,7 @@ describe "physical host access by active resource" do
                                  :memory=>1.1,
                                  :location=>'',
                                  :hypervisor_type=>'')
-    user = User.create(:account=>'__test_activeresource_physicalhost_spec__', :password=>'passwd')
+    user = User.create(:name=>'__test_activeresource_physicalhost_spec__', :password=>'passwd')
     physicalhost.put(:relate, :user=>user.id)
     @class.find(physicalhost.id).relate_user_id.should == user.id
   end

@@ -6,7 +6,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 describe "active resource authorization" do
   include ActiveResourceHelperMethods
   before(:all) do
-    @authuser = User.create(:account=>'__test_auth__', :password=>'passwd')
+    @authuser = User.create(:name=>'__test_auth__', :password=>'passwd')
   end
 
   it "should not authorize" do

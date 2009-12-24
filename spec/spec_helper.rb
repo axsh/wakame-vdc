@@ -35,7 +35,7 @@ END
   end
 
   def create_authuser
-    $spec_user = User.create(:account=>'__test__', :password=>'passwd')
+    $spec_user = User.create(:name=>'__test__', :password=>'passwd')
     $spec_account = Account.create(:name=>'__test_account__')
   end
 
