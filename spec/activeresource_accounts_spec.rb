@@ -21,7 +21,6 @@ describe "accounts by active resource" do
     real_account.uuid.length.should > 0
     real_account.exclusion.should == 'n'
     real_account.enable.should == 'y'
-    real_account.is_deleted.should == 'n'
 
     real_account.account_roll.index{|i| i.user.uuid== @user.id }.should_not be_nil
     
