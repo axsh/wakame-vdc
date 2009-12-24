@@ -54,6 +54,7 @@ class TagMapping < Sequel::Model
   TYPE_INSTANCE = 3
   TYPE_INSTANCE_IMAGE = 4
   TYPE_VMC = 5
+  TYPE_PHYSICAL_HOST_LOCATION = 6
 end
 
 class Account < Sequel::Model
