@@ -67,8 +67,8 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
-        String :cpu_model, :null=>false
-        Float :cpu_mhz, :null=>false
+        Fixnum :cpus, :null=>false
+        Float :cpu_mmhz, :null=>false
         Fixnum :memory, :null=>false
         String :location, :null=>false
         String :hypervisor_type, :fixed=>true, :size=>8, :null=>false # xen, kvm, ...
