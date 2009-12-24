@@ -416,16 +416,16 @@ module Dcmgr
     end
 
     public_action_withid :delete do
-      delete
+      destroy
     end
 
     public_action_withid :put, :relate do
-      user_id = request.GET[:user].to_i
-      obj = model.find(:id=>id.to_i)
-
-      obj.relate_user_id = request.GET['user'].to_i
-      obj.save
-      obj
+      user_uuid = request.GET['user']
+      relate_user = User[user_uuid]
+      target = PhysicalHost[uuid]
+      target.relate_user_id = relate_user.id
+      target.save
+      target
     end
   end
 end

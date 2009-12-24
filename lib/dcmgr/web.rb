@@ -26,6 +26,7 @@ module Dcmgr
     public_crud PublicAuthTag
     
     public_crud PublicInstance
+    public_crud PublicPhysicalHost
     
     get '/' do
       'startup dcmgr'
