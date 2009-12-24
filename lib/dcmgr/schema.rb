@@ -68,7 +68,7 @@ module Dcmgr
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
         Fixnum :cpus, :null=>false
-        Float :cpu_mmhz, :null=>false
+        Float :cpu_mhz, :null=>false
         Fixnum :memory, :null=>false
         String :location, :null=>false
         String :hypervisor_type, :fixed=>true, :size=>8, :null=>false # xen, kvm, ...
