@@ -33,5 +33,10 @@ namespace :db do
     Dcmgr::Schema.drop!
   end
 
+  desc 'Create initial data'
+  task :initial_data => [ :environment ] do
+    Dcmgr::Schema.initial_data
+  end
+
   task :reset => [ :drop, :init ]
 end

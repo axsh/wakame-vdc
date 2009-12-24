@@ -137,7 +137,18 @@ module Dcmgr
     def initial_data
       User.create(:name=>'staff', :password=>'passwd')
       Account.create(:name=>'account1')
-      
+      PhysicalHost.create(:cpus=>4,
+                          :cpu_mhz=>1.0,
+                          :memory=>2.0,
+                          :hypervisor_type=>'xen')
+      PhysicalHost.create(:cpus=>2,
+                          :cpu_mhz=>1.6,
+                          :memory=>1.0,
+                          :hypervisor_type=>'xen')
+      PhysicalHost.create(:cpus=>1,
+                          :cpu_mhz=>2.0,
+                          :memory=>4.0,
+                          :hypervisor_type=>'xen')
     end
 
     def drop!
