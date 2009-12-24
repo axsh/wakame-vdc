@@ -7,16 +7,24 @@ describe "accounts by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     @class = describe_activeresource_model :Account
+    @user_class = describe_activeresource_model :User
+    @user = @user_class.find(:myself)
   end
 
   it "should add" do
     account = @class.create(:name=>'test account')
-    account.id.should > 0
-    
-    real_account = Account[account.id]
-    real_account.should be_valid
-    
     $account = account
+    account.id.length.should > 0
+    
+    real_account = Account.search_by_uuid(account.id)
+    real_account.should be_valid
+    real_account.uuid.length.should > 0
+    real_account.exclusion.should == 'n'
+    real_account.enable.should == 'y'
+    real_account.is_deleted.should == 'n'
+
+    real_account.account_roll.index{|i| i.user.uuid== @user.id }.should_not be_nil
+    
   end
   
   it "should delete" do
