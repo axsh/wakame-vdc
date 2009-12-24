@@ -16,7 +16,7 @@ describe "accounts by active resource" do
     $account = account
     account.id.length.should > 0
     
-    real_account = Account.search_by_uuid(account.id)
+    real_account = Account[account.id]
     real_account.should be_valid
     real_account.uuid.length.should > 0
     real_account.exclusion.should == 'n'

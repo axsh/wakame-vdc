@@ -104,7 +104,7 @@ module Dcmgr
     end
     
     def get
-      format_object(model.search_by_uuid(uuid))
+      format_object(model[uuid])
     end
 
     def create
@@ -117,14 +117,14 @@ module Dcmgr
     end
 
     def update
-      obj = model.search_by_uuid(uuid)
+      obj = model[uuid]
       req_hash = json_request
       obj.set_all(req_hash)
       format_object(obj.save)
     end
     
     def destroy
-      obj = model.search_by_uuid(uuid)
+      obj = model[uuid]
       obj.destroy
     end
 
@@ -183,9 +183,9 @@ module Dcmgr
     end
 
     public_action_withid :put, :add_tag do
-      target = User.search_by_uuid(uuid)
+      target = User[uuid]
       tag_uuid = request.GET['tag']
-      tag = Tag.search_by_uuid(tag_uuid)
+      tag = Tag[tag_uuid]
       Dcmgr.logger.debug(uuid)
       Dcmgr.logger.debug(tag)
       if tag
@@ -232,7 +232,7 @@ module Dcmgr
       Dcmgr.logger.debug("tags")      
       Dcmgr.logger.debug(tags)
       tags.each {|tag_uuid|
-        tag = Tag.search_by_uuid(tag_uuid)
+        tag = Tag[tag_uuid]
         Dcmgr.logger.debug(uuid)
         Dcmgr.logger.debug(tag)
         if tag
@@ -263,9 +263,9 @@ module Dcmgr
     end
     
     public_action_withid :put, :add_tag do
-      target = Instance.search_by_uuid(uuid)
+      target = Instance[uuid]
       tag_uuid = request.GET['tag']
-      tag = Tag.search_by_uuid(tag_uuid)
+      tag = Tag[tag_uuid]
       Dcmgr.logger.debug("")
       Dcmgr.logger.debug(uuid)
       Dcmgr.logger.debug(tag)
@@ -278,9 +278,9 @@ module Dcmgr
     end
     
     public_action_withid :put, :remove_tag do
-      target = Instance.search_by_uuid(uuid)
+      target = Instance[uuid]
       tag_uuid = request.GET['tag']
-      tag = Tag.search_by_uuid(tag_uuid)
+      tag = Tag[tag_uuid]
       target.remove_tag(tag.id) if tag
     end
     
@@ -315,7 +315,7 @@ module Dcmgr
     end
 
     public_action_withid :put, :shutdown do
-      instance = Instance.search_by_uuid(uuid)
+      instance = Instance[uuid]
       Dcmgr::logger.debug "instance: %s" % instance.uuid
       Dcmgr::logger.debug "instance.tags:"
       instance.tags.each{|tag|

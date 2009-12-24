@@ -14,7 +14,7 @@ describe "tags access by active resource" do
     tag = @name_class.create(:name=>'name tag #1', :account=>@account)
     tag.id.length.should > 0
 
-    real_tag = Tag.search_by_uuid(tag.id)
+    real_tag = Tag[tag.id]
     real_tag.should be_valid
     real_tag.account.id.should == @account.id
     real_tag.tag_type.should == Tag::TYPE_NORMAL
@@ -26,7 +26,7 @@ describe "tags access by active resource" do
   it "should delete name tag" do
     id = $tag.id
     $tag.destroy
-    Tag.search_by_uuid(id).should be_nil
+    Tag[id].should be_nil
   end
   
   it "should add simple auth tag" do
@@ -36,7 +36,7 @@ describe "tags access by active resource" do
                              :account=>@account)
     tag.id.length.should > 0
 
-    real_tag = Tag.search_by_uuid(tag.id)
+    real_tag = Tag[tag.id]
     real_tag.should be_valid
     real_tag.account.id.should == @account.id
     real_tag.tag_type.should == Tag::TYPE_AUTH
@@ -48,7 +48,7 @@ describe "tags access by active resource" do
   
   it "should delete auth tag" do
     $auth_tag.destroy
-    Tag.search_by_uuid($auth_tag.id).should be_nil
+    Tag[$auth_tag.id].should be_nil
   end
   
   
@@ -63,7 +63,7 @@ describe "tags access by active resource" do
                              :account=>@account)
     tag.id.length.should > 0
 
-    real_tag = Tag.search_by_uuid(tag.id)
+    real_tag = Tag[tag.id]
     real_tag.should be_valid
     real_tag.account.id.should == @account.id
     real_tag.roll.should == 1

@@ -15,7 +15,7 @@ describe "user access by active resource" do
     user.id.should be_true
     user.id.length.should >= 10
     
-    User.search_by_uuid(user.id).should be_valid
+    User[user.id].should be_valid
     
     $user = user
   end
@@ -23,7 +23,7 @@ describe "user access by active resource" do
   it "should delete" do
     id = $user.id
     $user.destroy
-    User.search_by_uuid(id).should be_nil
+    User[id].should be_nil
   end
 
   it "should get myself" do
@@ -41,7 +41,7 @@ describe "user access by active resource" do
     
     user.put(:add_tag, :tag=>instance_crud_auth_tag)
 
-    real_user = User.search_by_uuid(user.id)
+    real_user = User[user.id]
     real_user.tags.length.should == 1
     real_user.tags.index {|tag|
       tag.uuid == instance_crud_auth_tag.id
