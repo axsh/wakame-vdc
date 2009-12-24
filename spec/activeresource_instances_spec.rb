@@ -48,10 +48,11 @@ describe "instance access by active resource" do
     instance.tags.include?(@normal_tag_c.id).should be_false
     instance.put(:add_tag, :tag=>@normal_tag_c.id)
 
-    instance.reload
+    instance = @class.find(instance.id)
     instance.tags.include?(@normal_tag_c.id).should be_true
 
     instance.put(:remove_tag, :tag=>@normal_tag_c.id)
+    instance = @class.find(instance.id)
     instance.tags.include?(@normal_tag_c.id).should be_false
   end
 

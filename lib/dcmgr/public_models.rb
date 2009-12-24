@@ -266,6 +266,13 @@ module Dcmgr
       end
     end
     
+    public_action_withid :put, :remove_tag do
+      target = Instance.search_by_uuid(uuid)
+      tag_uuid = request.GET['tag']
+      tag = Tag.search_by_uuid(tag_uuid)
+      target.remove_tag(tag.id) if tag
+    end
+    
     public_action :post do
       req_hash = json_request
       req_hash.delete 'id'
@@ -318,8 +325,10 @@ module Dcmgr
         def object.keys
           @values.keys.push :tags
         end
+        def object.tags
+          super().map{|t| t.uuid} # format only tags uuid
+        end
       end
-      Dcmgr::logger.debug "format_objects.keys: %s" % object.keys.join(", ")
       object
     end
   end
