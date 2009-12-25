@@ -12,24 +12,26 @@ describe "instance access by active resource" do
     @user_class = describe_activeresource_model :User
     @user = @user_class.find(:myself)
     
-    @normal_tag_a = @name_tag_class.create(:name=>'tag a', :account=>@account) # name tag
-    @normal_tag_b = @name_tag_class.create(:name=>'tag b', :account=>@account)
-    @normal_tag_c = @name_tag_class.create(:name=>'tag c', :account=>@account)
-    
     @account_class = describe_activeresource_model :Account
     @account = @account_class.create(:name=>'test account by instance spec')
     
+    @normal_tag_a = @name_tag_class.create(:name=>'tag a', :account=>@account.id) # name tag
+    @normal_tag_b = @name_tag_class.create(:name=>'tag b', :account=>@account.id)
+    @normal_tag_c = @name_tag_class.create(:name=>'tag c', :account=>@account.id)
+    
     instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
                                                     :roll=>0,
-                                                    :tags=>[@normal_tag_a,
-                                                            @normal_tag_b,
-                                                            @normal_tag_c],
-                                                    :account=>@account) # auth tag
+                                                    :tags=>[@normal_tag_a.id,
+                                                            @normal_tag_b.id,
+                                                            @normal_tag_c.id],
+                                                    :account=>@account.id) # auth tag
     @user.put(:add_tag, :tag=>instance_crud_auth_tag.id)
+
+    
   end
 
   it "should create instance" do
-    $instance_a = @class.create(:account=>@account)
+    $instance_a = @class.create(:account=>@account.id)
     $instance_a.status.should == Instance::STATUS_TYPE_STOP
     $instance_a.account_id.should equal(@account.id)
   end
