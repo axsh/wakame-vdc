@@ -74,8 +74,9 @@ end
 class User < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'U'; end
-  
-  many_to_many :account_roll
+
+  one_to_many  :account_rolls
+  many_to_many :accounts, :join_table=>:account_rolls
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
 end
 
@@ -90,7 +91,18 @@ class Instance < Sequel::Model
   
   many_to_one :account
   many_to_one :user
+
+  many_to_one :physicalhost
+  many_to_one :imagestorage
+  
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
+
+  def validate
+    errors.add(:account, "can't empty") unless self.account
+    errors.add(:user, "can't empty") unless self.user
+    errors.add(:physicalhost, "can't empty") unless self.physicalhost
+    errors.add(:imagestorage, "can't empty") unless self.imagestorage
+  end
 end
 
 class ImageStorage < Sequel::Model

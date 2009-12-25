@@ -83,7 +83,6 @@ module Dcmgr
         Fixnum :user_id, :null=>false
         Fixnum :physicalhost_id, :null=>false
         Fixnum :imagestorage_id, :null=>false
-        Fixnum :hvspec_id, :null=>false
       end
       
       @db.create_table? :hv_controllers do
