@@ -34,6 +34,11 @@ module Dcmgr
           %r{/#{public_name}/(\w+-\w+).json}
         end
       end
+
+      def allow_keys(keys=nil)
+        return @allow_keys unless keys
+        @allow_keys = keys
+      end
       
       def model(model_class=nil)
         return @model unless model_class
@@ -101,8 +106,28 @@ module Dcmgr
       self.class.model
     end
 
-    def format_object(obj)
-      obj
+    def allow_keys
+      self.class.allow_keys
+    end
+
+    def format_object(object)
+      if object
+        def object.keys
+          keys = super()
+          if keys.include? :account_id
+            keys.delete :account_id
+            keys.push :account
+          end
+          keys.push :tags
+        end
+        def object.tags
+          super().map{|t| t.uuid} # format only tags uuid
+        end
+        def object.account
+          super().uuid
+        end
+      end
+      object
     end
     
     def list
@@ -113,13 +138,33 @@ module Dcmgr
       format_object(model[uuid])
     end
 
-    def create
-      req_hash = json_request
-      req_hash.delete 'id'
-
+    def _create(req_hash=nil)
+      unless req_hash
+        req_hash = json_request
+        req_hash.delete 'id'
+      end
+      
       obj = model.new
-      obj.set_all(req_hash)
-      format_object(obj.save)
+
+      if allow_keys
+        allow_keys.each{|k|
+          if req_hash[k.to_s]
+            if k == :account
+              obj.account = Account[req_hash[k.to_s]]
+            else
+              obj.send('%s=' % k, req_hash[k.to_s])
+            end
+          end
+        }
+      else
+        obj.set_all(req_hash)
+      end
+      
+      obj.save
+    end
+    
+    def create
+      format_object(_create())
     end
 
     def update
@@ -206,6 +251,7 @@ module Dcmgr
     include PublicModel
     model Tag
     public_name 'name_tags'
+    allow_keys [:account, :name]
 
     public_action :post do
       create
@@ -220,19 +266,15 @@ module Dcmgr
     include PublicModel
     model Tag
     public_name 'auth_tags'
+    allow_keys [:account, :name, :tag_type, :roll]
 
     public_action :post do
       req_hash = json_request
       req_hash.delete 'id'
-
-      obj = model.new
-      
       tags = req_hash.delete 'tags'
-      
+
       req_hash['tag_type'] = Tag::TYPE_AUTH
-      
-      obj.set_all(req_hash)
-      obj.save
+      obj = _create(req_hash)
       
       # tag mappings
       Dcmgr.logger.debug("tags")      
@@ -248,7 +290,7 @@ module Dcmgr
         end
       }
       
-      obj
+      format_object(obj)
     end
     
     public_action_withid :delete do
@@ -336,18 +378,6 @@ module Dcmgr
 
     public_action_withid :put, :snapshot do
       [] # TODO: snapshot action
-    end
-
-    def format_object(object)
-      if object
-        def object.keys
-          @values.keys.push :tags
-        end
-        def object.tags
-          super().map{|t| t.uuid} # format only tags uuid
-        end
-      end
-      object
     end
   end
 

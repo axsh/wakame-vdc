@@ -62,6 +62,7 @@ class Account < Sequel::Model
   def self.prefix_uuid; 'A'; end
 
   one_to_many :account_roll
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_ACCOUNT}
   
   def before_create
     super
@@ -149,6 +150,7 @@ class Tag < Sequel::Model
   
   many_to_one :account
   one_to_many :tag_mappings
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_TAG}
   
   def before_create
     super
