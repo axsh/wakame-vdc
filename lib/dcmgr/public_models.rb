@@ -147,8 +147,13 @@ module Dcmgr
       obj = model.new
 
       if allow_keys
+        Dcmgr.logger.debug("_create: allow_keys:")
         allow_keys.each{|k|
-          if req_hash[k.to_s]
+          Dcmgr.logger.debug("  - %s" % k)
+          if k == :user
+              Dcmgr.logger.debug("user: " + user.inspect)
+            obj.user = user
+          elsif req_hash[k.to_s]
             if k == :account
               obj.account = Account[req_hash[k.to_s]]
             else
@@ -301,6 +306,7 @@ module Dcmgr
   class PublicInstance
     include PublicModel
     model Instance
+    allow_keys [:account, :user]
 
     public_action :get do
       list
@@ -333,14 +339,7 @@ module Dcmgr
     end
     
     public_action :post do
-      req_hash = json_request
-      req_hash.delete 'id'
-
-      obj = model.new
-      user
-      obj.set_all(req_hash)
-      obj.user = user
-      format_object(obj.save)
+      create
     end
     
     public_action_withid :get do
