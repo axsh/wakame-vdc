@@ -116,7 +116,7 @@ module Dcmgr
       @db.create_table? :tag_mappings do
         primary_key :id, :type=>Integer
         Fixnum :tag_id, :null=>false
-        Fixnum :target_type, :size=>2 # 0: account, 1: name tag, 2: user, 3: instance, 4: instance image, 5: vmc, 6: physical host location
+        Fixnum :target_type, :size=>2 # 0: account, 1: name tag, 2: user, 3: instance, 4: instance image, 5: vmc, 6: physical host, 7: physical host location
         Fixnum :target_id, :null=>false
         index [:tag_id, :target_type, :target_id]
       end
