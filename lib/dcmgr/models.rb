@@ -106,7 +106,7 @@ class Instance < Sequel::Model
 
   def before_create
     super
-    self.status = STATUS_TYPE_WAIT_SHUTDOWN
+    self.status = STATUS_TYPE_STOP
   end
 
   def validate

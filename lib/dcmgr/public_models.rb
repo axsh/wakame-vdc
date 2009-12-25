@@ -351,7 +351,7 @@ module Dcmgr
 
       obj = _create(req_hash)
       
-      create
+      format_object(obj)
     end
     
     public_action_withid :get do
@@ -372,6 +372,13 @@ module Dcmgr
 
     public_action_withid :put, :terminate do
       [] # TODO: terminate action
+    end
+
+    public_action_withid :put, :run do
+      instance = Instance[uuid]
+      instance.status = Instance::STATUS_TYPE_RUNNING
+      instance.save
+      []
     end
 
     public_action_withid :put, :shutdown do
