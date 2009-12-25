@@ -27,6 +27,11 @@ describe "physical host access by active resource" do
     
     $physicalhost_id = physicalhost.id
   end
+
+  it "should get list" do
+    list = @class.find(:all)
+    list.index { |ph| ph.id == $physicalhost_id }.should be_true
+  end
   
   it "should delete" do
     id = $physicalhost_id
