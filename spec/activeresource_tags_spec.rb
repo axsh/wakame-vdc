@@ -8,15 +8,18 @@ describe "tags access by active resource" do
   before(:all) do
     @name_class = describe_activeresource_model :NameTag
     @auth_class = describe_activeresource_model :AuthTag
+    
+    @account_class = describe_activeresource_model :Account
+    @account = @account_class.create(:name=>'test account by instance spec')
   end
 
   it "should add name tag" do
-    tag = @name_class.create(:name=>'name tag #1', :account=>@account)
+    tag = @name_class.create(:name=>'name tag #1', :account=>@account.id)
     tag.id.length.should > 0
 
     real_tag = Tag[tag.id]
     real_tag.should be_valid
-    real_tag.account.id.should == @account.id
+    real_tag.account.uuid.should == @account.id
     real_tag.tag_type.should == Tag::TYPE_NORMAL
     real_tag.name.should == 'name tag #1'
     
@@ -33,12 +36,12 @@ describe "tags access by active resource" do
     tag = @auth_class.create(:name=>'instance crud tag #1',
                              :roll=>0,
                              :tags=>[],
-                             :account=>@account)
+                             :account=>@account.id)
     tag.id.length.should > 0
 
     real_tag = Tag[tag.id]
     real_tag.should be_valid
-    real_tag.account.id.should == @account.id
+    real_tag.account.uuid.should == @account.id
     real_tag.tag_type.should == Tag::TYPE_AUTH
     real_tag.name.should == 'instance crud tag #1'
     real_tag.tag_mappings.length.should == 0
@@ -53,19 +56,19 @@ describe "tags access by active resource" do
   
   
   it "should add auth tag that includes name tags" do
-    tag1 = @name_class.create(:name=>'name tag #2-1', :account=>@account)
-    tag2 = @name_class.create(:name=>'name tag #2-2', :account=>@account)
-    tag3 = @name_class.create(:name=>'name tag #2-3', :account=>@account)
+    tag1 = @name_class.create(:name=>'name tag #2-1', :account=>@account.id)
+    tag2 = @name_class.create(:name=>'name tag #2-2', :account=>@account.id)
+    tag3 = @name_class.create(:name=>'name tag #2-3', :account=>@account.id)
     
     tag = @auth_class.create(:name=>'instance crud tag #2',
                              :roll=>1,
                              :tags=>[tag1.id, tag2.id, tag3.id],
-                             :account=>@account)
+                             :account=>@account.id)
     tag.id.length.should > 0
 
     real_tag = Tag[tag.id]
     real_tag.should be_valid
-    real_tag.account.id.should == @account.id
+    real_tag.account.uuid.should == @account.id
     real_tag.roll.should == 1
     real_tag.tag_type.should == Tag::TYPE_AUTH
     real_tag.name.should == 'instance crud tag #2'
