@@ -53,7 +53,7 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
-        Fixnum :imagestoragehost_id, :null=>false
+        Fixnum :image_storage_host_id, :null=>false
         String :storage_url, :null=>false
       end
 
@@ -82,8 +82,8 @@ module Dcmgr
         Fixnum :status, :null=>false
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :null=>false
-        Fixnum :physicalhost_id, :null=>false
-        Fixnum :imagestorage_id, :null=>false
+        Fixnum :physical_host_id, :null=>false
+        Fixnum :image_storage_id, :null=>false
       end
       
       @db.create_table? :hv_controllers do
@@ -149,6 +149,8 @@ module Dcmgr
                           :cpu_mhz=>2.0,
                           :memory=>4.0,
                           :hypervisor_type=>'xen')
+      image_storage_host_a = ImageStorageHost.create()
+      ImageStorage.create(:image_storage_host=>image_storage_host_a)
     end
 
     def drop!
