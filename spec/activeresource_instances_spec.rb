@@ -26,14 +26,15 @@ describe "instance access by active resource" do
                                                             @normal_tag_c.id],
                                                     :account=>@account.id) # auth tag
     @user.put(:add_tag, :tag=>instance_crud_auth_tag.id)
-
-    
   end
 
   it "should create instance" do
     $instance_a = @class.create(:account=>@account.id)
     $instance_a.status.should == Instance::STATUS_TYPE_STOP
     $instance_a.account_id.should equal(@account.id)
+
+    real_inst = Instance[$instance_a]
+    real_inst.physicalhost_id.should == 1
   end
 
   it "should run instance" do

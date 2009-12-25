@@ -147,18 +147,22 @@ module Dcmgr
       obj = model.new
 
       if allow_keys
-        Dcmgr.logger.debug("_create: allow_keys:")
+        Dcmgr.logger.debug("_create: set fields:")
         allow_keys.each{|k|
-          Dcmgr.logger.debug("  - %s" % k)
+          Dcmgr.logger.debug(" key: %s" % k)
           if k == :user
-              Dcmgr.logger.debug("user: " + user.inspect)
             obj.user = user
+            Dcmgr.logger.debug(" value: %s" % user)
           elsif req_hash[k.to_s]
             if k == :account
               obj.account = Account[req_hash[k.to_s]]
+              Dcmgr.logger.debug(" value: %s" % obj.account)
             else
               obj.send('%s=' % k, req_hash[k.to_s])
+              Dcmgr.logger.debug(" value: %s" % obj.send(k))
             end
+          else
+            Dcmgr.logger.debug(" value: undefined")
           end
         }
       else
@@ -306,7 +310,7 @@ module Dcmgr
   class PublicInstance
     include PublicModel
     model Instance
-    allow_keys [:account, :user]
+    allow_keys [:account, :user, :physical_host, :image_storage]
 
     public_action :get do
       list
@@ -339,6 +343,14 @@ module Dcmgr
     end
     
     public_action :post do
+      req_hash = json_request
+      req_hash.delete 'id'
+      
+      req_hash['image_storage'] = ImageStorage[1]
+      req_hash['physical_host'] = PhysicalHost[1]
+
+      obj = _create(req_hash)
+      
       create
     end
     
