@@ -79,6 +79,7 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
+        Fixnum :status, :null=>false
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :null=>false
         Fixnum :physicalhost_id, :null=>false

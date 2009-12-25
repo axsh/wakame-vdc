@@ -89,6 +89,11 @@ class Instance < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'I'; end
   
+  STATUS_TYPE_STOP = 0
+  STATUS_TYPE_WAIT_RUNNING = 1
+  STATUS_TYPE_RUNNING = 2
+  STATUS_TYPE_WAIT_SHUTDOWN = 3
+  
   many_to_one :account
   many_to_one :user
 
@@ -96,6 +101,11 @@ class Instance < Sequel::Model
   many_to_one :imagestorage
   
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
+
+  def before_create
+    super
+    self.status = STATUS_TYPE_WAIT_SHUTDOWN
+  end
 
   def validate
     errors.add(:account, "can't empty") unless self.account
