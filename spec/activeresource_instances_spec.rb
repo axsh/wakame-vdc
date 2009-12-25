@@ -31,33 +31,34 @@ describe "instance access by active resource" do
   it "should create instance" do
     $instance_a = @class.create(:account=>@account.id)
     $instance_a.status.should == Instance::STATUS_TYPE_STOP
-    $instance_a.account_id.should equal(@account.id)
+    $instance_a.account.should == @account.id
 
-    real_inst = Instance[$instance_a]
-    real_inst.physicalhost_id.should == 1
+    real_inst = Instance[$instance_a.id]
+    real_inst.physical_host_id.should == 1
   end
 
   it "should run instance" do
-    $instance_a = @class.create(:account=>@account)
+    $instance_a = @class.create(:account=>@account.id)
     $instance_a.put(:run)
+    $instance_a = @class.find($instance_a.id)
     $instance_a.status.should == Instance::STATUS_TYPE_RUNNING
   end
 
   it "should shutdown, and auth check" do
-    instance = @class.create(:account=>@account)
+    instance = @class.create(:account=>@account.id)
     instance.should_not be_null
 
     instance.put(:add_tag, :tag=>@normal_tag_a)
     instance.put(:shutdown)
     
-    instance = @class.create(:account=>@account)
+    instance = @class.create(:account=>@account.id)
     lambda {
      instance.put(:shutdown)
     }.should raise_error(ActiveResource::BadRequest)
   end
 
   it "should find tag" do
-    instance = @class.create(:account=>@account)
+    instance = @class.create(:account=>@account.id)
     
     instance.tags.include?(@normal_tag_c.id).should be_false
     instance.put(:add_tag, :tag=>@normal_tag_c.id)
@@ -72,11 +73,13 @@ describe "instance access by active resource" do
 
   it "should get instance" do
     instance = @class.find($instance_a.id)
-    instance.user_id.should == 1
+    instance.user_id.should > 0
+  end
+
+  it "shoud get instance details"
     #instance.physicalhost_id.should == 10
     #instance.imagestorage_id.should == 100
     #instance.hvspec_id.should == 10
-  end
 
   it "should reboot" do
     instance = @class.find($instance_a.id)
@@ -94,7 +97,7 @@ describe "instance access by active resource" do
   end
   
   it "should snapshot image, and backup image to image storage" do
-    instance = @class.create(:account=>@account)
+    instance = @class.create(:account=>@account.id)
     instance.put(:snapshot)
   end
 end
