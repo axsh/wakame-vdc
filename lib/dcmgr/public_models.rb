@@ -50,9 +50,15 @@ module Dcmgr
         proc do |id|
           logger.debug "url: " + request.url
           protected!
+          
           obj = public_class.new(authorized_user, request)
           obj.uuid = id if id
-          ret = obj.instance_eval(&block)
+          begin
+            ret = obj.instance_eval(&block)
+          rescue Sequel::ValidationFailed => e
+            logger.debug "err! %s" % e.to_s
+            throw :halt, [400, e.to_s]
+          end
           logger.debug "response(inspect): " + ret.inspect
           json_ret = public_class.json_render(ret)
           logger.debug "response(json): " + json_ret
@@ -289,6 +295,7 @@ module Dcmgr
       req_hash.delete 'id'
 
       obj = model.new
+      user
       obj.set_all(req_hash)
       obj.user = user
       format_object(obj.save)
