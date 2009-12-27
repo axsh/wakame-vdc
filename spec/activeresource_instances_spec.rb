@@ -29,12 +29,47 @@ describe "instance access by active resource" do
   end
 
   it "should create instance" do
-    $instance_a = @class.create(:account=>@account.id)
+    $instance_a = @class.create(:account=>@account.id,
+                                :need_cpus=>1,
+                                :need_cpu_mhz=>0.5,
+                                :need_memory=>1.0)
+
     $instance_a.status.should == Instance::STATUS_TYPE_STOP
     $instance_a.account.should == @account.id
 
     real_inst = Instance[$instance_a.id]
     real_inst.physical_host_id.should == 1
+  end
+
+  it "should schedule instances" do
+    # physical hosts
+    # id / cpus / mhz / memory
+    # 1  / 4    / 1.0  / 2.0 
+    # 2  / 2    / 1.6  / 1.0 
+    # 3  / 1    / 2.0  / 4.0
+    
+    # already 'instance a' use physical host 1 in should create instance
+
+    @class.create(:account=>@account.id,
+                  :need_cpus=>3,
+                  :need_cpu_mhz=>0.5,
+                  :need_memory=>2.0).physical_host_id.should == PhysicalHost[1].uuid
+
+    @class.create(:account=>@account.id,
+                  :need_cpus=>1,
+                  :need_cpu_mhz=>1.8,
+                  :need_memory=>3.5).physical_host_id.should == PhysicalHost[3].uuid # skip 2
+    
+    @class.create(:account=>@account.id,
+                  :need_cpus=>1,
+                  :need_cpu_mhz=>0.8,
+                  :need_memory=>0.4).physical_host_id.should == PhysicalHost[2].uuid
+    
+    @class.create(:account=>@account.id,
+                  :need_cpus=>1,
+                  :need_cpu_mhz=>0.8,
+                  :need_memory=>0.4).physical_host_id.should == PhysicalHost[2].uuid
+    
   end
 
   it "should run instance" do
