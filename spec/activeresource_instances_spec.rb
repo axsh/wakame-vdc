@@ -53,47 +53,60 @@ describe "instance access by active resource" do
     @class.create(:account=>@account.id,
                   :need_cpus=>3,
                   :need_cpu_mhz=>0.5,
-                  :need_memory=>2.0).physical_host_id.should == PhysicalHost[1].uuid
+                  :need_memory=>2.0).physical_host.should == PhysicalHost[1].uuid
 
     @class.create(:account=>@account.id,
                   :need_cpus=>1,
                   :need_cpu_mhz=>1.8,
-                  :need_memory=>3.5).physical_host_id.should == PhysicalHost[3].uuid # skip 2
+                  :need_memory=>3.5).physical_host.should == PhysicalHost[3].uuid # skip 2
     
     @class.create(:account=>@account.id,
                   :need_cpus=>1,
                   :need_cpu_mhz=>0.8,
-                  :need_memory=>0.4).physical_host_id.should == PhysicalHost[2].uuid
+                  :need_memory=>0.4).physical_host.should == PhysicalHost[2].uuid
     
     @class.create(:account=>@account.id,
                   :need_cpus=>1,
                   :need_cpu_mhz=>0.8,
-                  :need_memory=>0.4).physical_host_id.should == PhysicalHost[2].uuid
+                  :need_memory=>0.4).physical_host.should == PhysicalHost[2].uuid
     
   end
 
   it "should run instance" do
-    $instance_a = @class.create(:account=>@account.id)
+    $instance_a = @class.create(:account=>@account.id,
+                                :need_cpus=>1,
+                                :need_cpu_mhz=>0.5,
+                                :need_memory=>0.5)
+
     $instance_a.put(:run)
     $instance_a = @class.find($instance_a.id)
     $instance_a.status.should == Instance::STATUS_TYPE_RUNNING
   end
 
   it "should shutdown, and auth check" do
-    instance = @class.create(:account=>@account.id)
+    instance = @class.create(:account=>@account.id,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.5,
+                             :need_memory=>0.5)
     instance.should_not be_null
 
     instance.put(:add_tag, :tag=>@normal_tag_a)
     instance.put(:shutdown)
     
-    instance = @class.create(:account=>@account.id)
+    instance = @class.create(:account=>@account.id,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.5,
+                             :need_memory=>0.5)
     lambda {
      instance.put(:shutdown)
     }.should raise_error(ActiveResource::BadRequest)
   end
 
   it "should find tag" do
-    instance = @class.create(:account=>@account.id)
+    instance = @class.create(:account=>@account.id,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.5,
+                             :need_memory=>0.5)
     
     instance.tags.include?(@normal_tag_c.id).should be_false
     instance.put(:add_tag, :tag=>@normal_tag_c.id)
@@ -132,7 +145,11 @@ describe "instance access by active resource" do
   end
   
   it "should snapshot image, and backup image to image storage" do
-    instance = @class.create(:account=>@account.id)
+    instance = @class.create(:account=>@account.id,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.5,
+                             :need_memory=>0.5)
+    
     instance.put(:snapshot)
   end
 end
