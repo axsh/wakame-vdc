@@ -112,8 +112,13 @@ class Instance < Sequel::Model
   def validate
     errors.add(:account, "can't empty") unless self.account
     errors.add(:user, "can't empty") unless self.user
+    
     errors.add(:physical_host, "can't empty") unless self.physical_host
     errors.add(:image_storage, "can't empty") unless self.image_storage
+
+    errors.add(:need_cpus, "can't empty") unless self.need_cpus
+    errors.add(:need_cpu_mhz, "can't empty") unless self.need_cpu_mhz
+    errors.add(:need_memory, "can't empty") unless self.need_memory
   end
 end
 

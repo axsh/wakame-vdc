@@ -85,9 +85,9 @@ module Dcmgr
         Fixnum :physical_host_id, :null=>false
         Fixnum :image_storage_id, :null=>false
         
-        Fixnum :cpus, :null=>false
-        Float :cpu_mhz, :null=>false
-        Fixnum :memory, :null=>false
+        Fixnum :need_cpus, :null=>false
+        Float :need_cpu_mhz, :null=>false
+        Fixnum :need_memory, :null=>false
       end
       
       @db.create_table? :hv_controllers do

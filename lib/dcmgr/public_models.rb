@@ -310,7 +310,8 @@ module Dcmgr
   class PublicInstance
     include PublicModel
     model Instance
-    allow_keys [:account, :user, :physical_host, :image_storage]
+    allow_keys [:account, :user, :physical_host, :image_storage,
+               :need_cpus, :need_cpu_mhz, :need_memory]
 
     public_action :get do
       list
