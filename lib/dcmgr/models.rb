@@ -107,6 +107,9 @@ class Instance < Sequel::Model
   def before_create
     super
     self.status = STATUS_TYPE_STOP
+    Dcmgr::logger.debug "becore create: status = %s" % self.status
+    self.physical_host = PhysicalHost.schedule_instance(self)
+    Dcmgr::logger.debug "becore create: physical host = %s" % self.physical_host
   end
 
   def validate
@@ -134,9 +137,44 @@ class ImageStorageHost < Sequel::Model
   def self.prefix_uuid; 'ISH'; end
 end
 
+class NoPhysicalHostException < Exception; end
+
 class PhysicalHost < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'PH'; end
+
+  def self.schedule_instance(instance)
+    Dcmgr::logger.debug "schedule instance--"
+    
+    self.order_by(:id).each{|ph|
+      Dcmgr::logger.debug "  ph[%d].cpus: %s" % [ph.id, ph.cpus]
+      Dcmgr::logger.debug "  ph[%d].cpu_mhz: %s" % [ph.id, ph.cpu_mhz]
+      Dcmgr::logger.debug "  ph[%d].memory: %s" % [ph.id, ph.memory]
+      
+      Dcmgr::logger.debug "  ph[%d].instances cpus: %s" % [ph.id, ph.instances_dataset.sum(:need_cpus)]
+      Dcmgr::logger.debug "  ph[%d].instances cpu_mhz: %s" % [ph.id, ph.instances_dataset.sum(:need_cpu_mhz)]
+      Dcmgr::logger.debug "  ph[%d].instances memory: %s" % [ph.id, ph.instances_dataset.sum(:need_memory)]
+
+      space_cpus = ph.cpus - (ph.instances_dataset.sum(:need_cpus) or 0)
+      space_cpu_mhz = ph.cpu_mhz - (ph.instances_dataset.sum(:need_cpu_mhz) or 0)
+      space_memory = ph.memory - (ph.instances_dataset.sum(:need_memory) or 0)
+
+      Dcmgr::logger.debug "  ph[%d].space cpus: %s" % [ph.id, space_cpus]
+      Dcmgr::logger.debug "  ph[%d].space cpu_mhz: %s" % [ph.id, space_cpu_mhz]
+      Dcmgr::logger.debug "  ph[%d].space memory: %s" % [ph.id, space_memory]
+      
+      if instance.need_cpus <= space_cpus and
+          instance.need_cpu_mhz <= space_cpu_mhz and
+          instance.need_memory <= space_memory
+        Dcmgr::logger.debug "schedule_instance: %s" % ph
+        return ph
+      end
+    }
+    Dcmgr::logger.debug ""
+    raise NoPhysicalHostException
+  end
+  
+  one_to_many :instances
   
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST}
   many_to_many :location_tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST_LOCATION}
@@ -162,6 +200,8 @@ class Tag < Sequel::Model
   many_to_one :account
   one_to_many :tag_mappings
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_TAG}
+
+  many_to_one :owner, :class=>:User
   
   def before_create
     super

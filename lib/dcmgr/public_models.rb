@@ -114,16 +114,23 @@ module Dcmgr
       if object
         def object.keys
           keys = super()
-          if keys.include? :account_id
-            keys.delete :account_id
-            keys.push :account
-          end
+          # change from xxx_id to xxx
+          keys.map! {|k|
+            if /^(.*)_id$/ =~ k.to_s
+              $1.to_sym
+            else
+              k
+            end
+          }
           keys.push :tags
         end
         def object.tags
           super().map{|t| t.uuid} # format only tags uuid
         end
         def object.account
+          super().uuid
+        end
+        def object.physical_host
           super().uuid
         end
       end
@@ -168,7 +175,7 @@ module Dcmgr
       else
         obj.set_all(req_hash)
       end
-      
+
       obj.save
     end
     
@@ -351,6 +358,8 @@ module Dcmgr
       req_hash['physical_host'] = PhysicalHost[1]
 
       obj = _create(req_hash)
+      obj.physical_host = PhysicalHost.schedule_instance(obj)
+      obj.save
       
       format_object(obj)
     end
