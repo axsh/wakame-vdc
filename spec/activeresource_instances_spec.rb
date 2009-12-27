@@ -53,7 +53,7 @@ describe "instance access by active resource" do
     @class.create(:account=>@account.id,
                   :need_cpus=>3,
                   :need_cpu_mhz=>0.5,
-                  :need_memory=>2.0).physical_host.should == PhysicalHost[1].uuid
+                  :need_memory=>1.0).physical_host.should == PhysicalHost[1].uuid
 
     @class.create(:account=>@account.id,
                   :need_cpus=>1,
