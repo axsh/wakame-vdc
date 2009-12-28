@@ -22,8 +22,7 @@ describe "instance access by active resource" do
     instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
                                                     :roll=>0,
                                                     :tags=>[@normal_tag_a.id,
-                                                            @normal_tag_b.id,
-                                                            @normal_tag_c.id],
+                                                            @normal_tag_b.id],
                                                     :account=>@account.id) # auth tag
     @user.put(:add_tag, :tag=>instance_crud_auth_tag.id)
   end
@@ -88,7 +87,7 @@ describe "instance access by active resource" do
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
                              :need_memory=>0.5)
-    instance.should_not be_null
+    instance.should be_true
 
     instance.put(:add_tag, :tag=>@normal_tag_a)
     instance.put(:shutdown)
@@ -97,6 +96,8 @@ describe "instance access by active resource" do
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
                              :need_memory=>0.5)
+    instance.put(:add_tag, :tag=>@normal_tag_c)
+    
     lambda {
      instance.put(:shutdown)
     }.should raise_error(ActiveResource::BadRequest)
