@@ -9,7 +9,7 @@ Dcmgr::Schema.models.each{|model|
     end
     
     it "should be valid" do
-      @obj.should be_valid
+      @obj.should be_true
     end
 
     it "should not be nil id before save" do
