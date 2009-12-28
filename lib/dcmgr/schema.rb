@@ -87,7 +87,7 @@ module Dcmgr
         Fixnum :need_cpus, :null=>false
         Float :need_cpu_mhz, :null=>false
         Fixnum :need_memory, :null=>false
-        Fixnum :hv_agent_id: null=>false
+        Fixnum :hv_agent_id, :null=>false
       end
       
       @db.create_table? :hv_controllers do
