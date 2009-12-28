@@ -101,6 +101,7 @@ class Instance < Sequel::Model
 
   many_to_one :physical_host
   many_to_one :image_storage
+  many_to_one :hv_agent
   
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
 
