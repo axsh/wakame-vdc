@@ -84,25 +84,25 @@ module Dcmgr
         Fixnum :user_id, :null=>false
         Fixnum :physical_host_id, :null=>false
         Fixnum :image_storage_id, :null=>false
-        
         Fixnum :need_cpus, :null=>false
         Float :need_cpu_mhz, :null=>false
         Fixnum :need_memory, :null=>false
+        Fixnum :hv_agent_id: null=>false
       end
       
       @db.create_table? :hv_controllers do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
-        String :access_url, :null=>false
+        Fixnum :physical_host_id
       end
       
       @db.create_table? :hv_agents do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
-        Fixnum :hvcontroller_id
-        Fixnum :physicalhost_id
+        Fixnum :hv_controller_id
+        Fixnum :physical_host_id
       end
 
       @db.create_table? :tags do
