@@ -1,4 +1,5 @@
 require 'json'
+require 'dcmgr/authorize'
 
 module Dcmgr
   module PublicModel
@@ -393,13 +394,12 @@ module Dcmgr
 
     public_action_withid :put, :shutdown do
       instance = Instance[uuid]
-      Dcmgr::logger.debug "instance: %s" % instance.uuid
-      Dcmgr::logger.debug "instance.tags:"
-      instance.tags.each{|tag|
-        Dcmgr::logger.debug "  %s" % tag.uuid
-      }
-      if instance.tags.length <= 0
-        throw :halt, [400, 'err']
+      begin
+        Dcmgr.evalute(user, instance, :shutdown)
+      rescue Exception => e
+        Dcmgr::logger.debug("err! %s" % e)
+        raise e
+        throw :halt, [400, e.to_s]
       end
       []
     end
