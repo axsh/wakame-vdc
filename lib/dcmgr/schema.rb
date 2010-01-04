@@ -22,8 +22,7 @@ module Dcmgr
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
         String :name
-        String :exclusion, :fixed=>true, :size=>1, :null=>false # 'y': can login but can't se, 'n': enable
-        String :enable, :fixed=>true, :size=>1, :null=>false
+        String :enable, :fixed=>true, :size=>1, :null=>false # 'y' or 'n'
         DateTime :created_at, :null=>false
         DateTime :contract_at, :null=>true
         DateTime :deleted_at, :null=>true
