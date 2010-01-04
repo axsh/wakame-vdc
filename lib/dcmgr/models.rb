@@ -240,7 +240,7 @@ class Tag < Sequel::Model
                      ]
   SYSTEM_TAG_NAMES.each_with_index{|tag_name, i|
     const_name = "SYSTEM_TAG_%s" % tag_name.upcase.tr(' ', '_')
-    const_set(const_name, i)
+    const_set(const_name, i + 1)
   }
 
   def self.create_system_tags
