@@ -252,6 +252,14 @@ class Tag < Sequel::Model
     SYSTEM_TAG_NAMES.each{|tag_name|
       create_system_tag(tag_name)
     }
+    setup_system_tags
+  end
+
+  def self.setup_system_tags
+    SYSTEM_TAG_NAMES.each_with_index{|tag_name, i|
+      const_name = "SYSTEM_TAG_%s" % tag_name.upcase.tr(' ', '_')
+      const_set(const_name, self[i + 1])
+    }
   end
 
   def hash
@@ -277,10 +285,7 @@ class Tag < Sequel::Model
   SYSTEM_TAG_NAMES = [
                        'get ready instance',
                      ]
-  SYSTEM_TAG_NAMES.each_with_index{|tag_name, i|
-    const_name = "SYSTEM_TAG_%s" % tag_name.upcase.tr(' ', '_')
-    const_set(const_name, self[i + 1])
-  }
+  setup_system_tags
 end
 
 class Log < Sequel::Model; end

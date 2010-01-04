@@ -499,5 +499,14 @@ module Dcmgr
       target.save
       target
     end
+    
+    public_action_withid :put, :remove_tag do
+      target = PhysicalHost[uuid]
+      tag_uuid = request.GET['tag']
+      tag = Tag[tag_uuid]
+      p tag
+      target.remove_tag(tag) if tag
+      []
+    end
   end
 end
