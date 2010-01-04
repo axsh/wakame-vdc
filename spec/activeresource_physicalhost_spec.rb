@@ -26,7 +26,7 @@ describe "physical host access by active resource" do
     real_physicalhost.memory.should == 2.0
     real_physicalhost.hypervisor_type.should == 'xen'
     real_physicalhost.tags.each{|tag| p tag}
-    p real_physicalhost.tags.include?(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+    real_physicalhost.tags.include?(Tag::SYSTEM_TAG_GET_READY_INSTANCE).should be_true
     $physicalhost_id = physicalhost.id
   end
 
@@ -49,11 +49,12 @@ describe "physical host access by active resource" do
                                  :cpu_mhz=>1.0,
                                  :memory=>2.0,
                                  :hypervisor_type=>'xen')
+    p physicalhost.id
     user = User.create(:name=>'__test_activeresource_physicalhost_spec__', :password=>'passwd')
-
+    
     physicalhost.put(:relate, :user=>user.uuid)
 
-    @class.find(physicalhost.id).relate_user_id.should == user.id
+    @class.find(physicalhost.id).relate_user.should == user.uuid
   end
 end
 
