@@ -61,14 +61,16 @@ end
 class Account < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'A'; end
+  
+  set_dataset db[:accounts].filter(:enable=>'y')
+
 
   one_to_many :account_roll
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_ACCOUNT}
   
   def before_create
     super
-    self.exclusion = 'n' unless self.exclusion
-    self.enable = 'y' unless self.enable
+    self.enable = 'y' unless self.enable == "n"
     self.created_at = Time.now unless self.created_at
   end
 end
@@ -76,11 +78,14 @@ end
 class User < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'U'; end
+  
+  set_dataset db[:users].filter(:enable=>'y')
 
   one_to_many  :account_rolls
   many_to_many :accounts, :join_table=>:account_rolls
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
 end
+
 
 class AccountRoll < Sequel::Model
   many_to_one :account
