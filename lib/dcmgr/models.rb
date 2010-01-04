@@ -68,6 +68,10 @@ class Account < Sequel::Model
   one_to_many :account_roll
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_ACCOUNT}
   
+  def enable?
+    self.enable == 'y'
+  end
+  
   def before_create
     super
     self.enable = 'y' unless self.enable == "n"
@@ -84,6 +88,15 @@ class User < Sequel::Model
   one_to_many  :account_rolls
   many_to_many :accounts, :join_table=>:account_rolls
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
+
+  def enable?
+    self.enable == 'y'
+  end
+  
+  def before_create
+    super
+    self.enable = 'y'
+  end
 end
 
 
