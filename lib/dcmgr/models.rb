@@ -185,11 +185,15 @@ class PhysicalHost < Sequel::Model
   many_to_many :location_tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST_LOCATION}
 
   many_to_one :relate_user, :class=>:User
+
+  def self.enable_hosts
+    self.order_by(:id)
+  end
   
   def self.schedule_instance(instance)
     Dcmgr::logger.debug "schedule instance--"
     
-    self.order_by(:id).each{|ph|
+    enable_hosts.each{|ph|
       Dcmgr::logger.debug "  ph[%d].cpus: %s" % [ph.id, ph.cpus]
       Dcmgr::logger.debug "  ph[%d].cpu_mhz: %s" % [ph.id, ph.cpu_mhz]
       Dcmgr::logger.debug "  ph[%d].memory: %s" % [ph.id, ph.memory]
