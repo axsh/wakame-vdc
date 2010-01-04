@@ -205,7 +205,6 @@ class PhysicalHost < Sequel::Model
   
   def before_create
     super
-    self.add_tag_type = TYPE_NORMAL unless self.tag_type
   end
 end
 
