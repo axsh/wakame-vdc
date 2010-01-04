@@ -218,16 +218,35 @@ class Tag < Sequel::Model
 
   TYPE_NORMAL = 0
   TYPE_AUTH = 1
-  
+
   many_to_one :account
   one_to_many :tag_mappings
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_TAG}
 
   many_to_one :owner, :class=>:User
+
+  def self.create_system_tag(name)
+    create(:account_id=>0, :owner_id=>0, :tag_type=>TYPE_NORMAL,
+                 :roll=>0)
+  end
   
   def before_create
     super
     self.tag_type = TYPE_NORMAL unless self.tag_type
+  end
+
+  SYSTEM_TAG_NAMES = [
+                       'get ready instance',
+                     ]
+  SYSTEM_TAG_NAMES.each_with_index{|tag_name, i|
+    const_name = "SYSTEM_TAG_%s" % tag_name.upcase.tr(' ', '_')
+    const_set(const_name, i)
+  }
+
+  def self.create_system_tags
+    SYSTEM_TAG_NAMES.each{|tag_name|
+      create_system_tag(tag_name)
+    }
   end
 end
 
