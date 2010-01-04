@@ -261,6 +261,12 @@ class Tag < Sequel::Model
   def eql?(obj)
     return false if obj == nil
     return false unless obj.is_a? Tag
+    self.id.eql? obj.id
+  end
+
+  def ==(obj)
+    return false if obj == nil
+    return false unless obj.is_a? Tag
     self.id == obj.id
   end
   

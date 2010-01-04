@@ -131,6 +131,13 @@ module Dcmgr
         def object.account
           super().uuid
         end
+        def object.relate_user
+          if super
+            super.uuid
+          else
+            nil
+          end
+        end
         def object.physical_host
           super().uuid
         end
