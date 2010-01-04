@@ -12,6 +12,22 @@ describe "instance access by active resource" do
     @user_class = describe_activeresource_model :User
     @user = @user_class.find(:myself)
     
+    Account.create(:name=>'account1')
+    PhysicalHost.create(:cpus=>4,
+                        :cpu_mhz=>1.0,
+                        :memory=>2.0,
+                        :hypervisor_type=>'xen')
+    PhysicalHost.create(:cpus=>2,
+                        :cpu_mhz=>1.6,
+                        :memory=>1.0,
+                        :hypervisor_type=>'xen')
+    PhysicalHost.create(:cpus=>1,
+                        :cpu_mhz=>2.0,
+                        :memory=>4.0,
+                        :hypervisor_type=>'xen')
+    image_storage_host_a = ImageStorageHost.create()
+    ImageStorage.create(:image_storage_host=>image_storage_host_a)
+    
     @account_class = describe_activeresource_model :Account
     @account = @account_class.create(:name=>'test account by instance spec')
     
