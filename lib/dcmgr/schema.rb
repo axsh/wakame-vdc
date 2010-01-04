@@ -102,7 +102,7 @@ module Dcmgr
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
         Fixnum :hv_controller_id
-        Fixnum :physical_host_id
+        Fixnum :phyosical_host_id
       end
 
       @db.create_table? :tags do
