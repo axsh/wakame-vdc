@@ -145,6 +145,20 @@ class Instance < Sequel::Model
     errors.add(:need_cpu_mhz, "can't empty") unless self.need_cpu_mhz
     errors.add(:need_memory, "can't empty") unless self.need_memory
   end
+
+  def run
+    Dcmgr::http(self.host, 80).open {|http|
+      res = http.get('/run')
+      return res.success?
+    }
+  end
+
+  def shutdown
+    Dcmgr::http(self.host, 80).open {|http|
+      res = http.get('/shutdown')
+      return res.success?
+    }
+  end
 end
 
 class ImageStorage < Sequel::Model

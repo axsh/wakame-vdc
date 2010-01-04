@@ -4,6 +4,7 @@ require 'sinatra'
 set :run, false
 
 require 'dcmgr/schema'
+require 'dcmgr/hvchttpmock'
 
 module Dcmgr
   extend self
@@ -24,6 +25,15 @@ module Dcmgr
 
   def logger
     @@logger
+  end
+
+  def hvchttp
+    @@hvchttp ||= HvcHttpMock
+    @@hvchttp
+  end
+
+  def set_hvcsrv(hvchttp)
+    @@hvchttp = hvhttp
   end
   
   def new(config_file)
