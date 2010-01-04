@@ -356,10 +356,10 @@ module Dcmgr
       req_hash.delete 'id'
       
       req_hash['image_storage'] = ImageStorage[1]
-      req_hash['physical_host'] = PhysicalHost[1]
 
       obj = _create(req_hash)
-      obj.physical_host = PhysicalHost.schedule_instance(obj)
+      physical_host = HVController.schedule_instance(obj)
+      obj.hv_controller = physical_host.add_physical_host
       obj.save
       
       format_object(obj)
@@ -395,7 +395,7 @@ module Dcmgr
     public_action_withid :put, :shutdown do
       instance = Instance[uuid]
       begin
-        Dcmgr.evalute(user, instance, :shutdown)
+        Dcmgr.execute(user, instance, :shutdown)
       rescue Exception => e
         Dcmgr::logger.debug("err! %s" % e)
         raise e

@@ -2,7 +2,7 @@
 module Dcmgr
   class RollException < Exception; end
     
-  module Roll
+  module RollExecutor
     class Base
     end
     
@@ -13,16 +13,16 @@ module Dcmgr
       
       def self.id; 1; end
       
-      def enable?(evalutor)
+      def evaluate(evalutor)
         evalutor.tags.each{|tag|
           if tag.tags.include? instance.tag
-            return true
+            return
           end
         }
-        false
+        raise RollException(user, self)
       end
 
-      def evalute(user)
+      def execute(user)
         @instance.status = Instance::STATUS_TYPE_STOP
         @instance.save
         true
