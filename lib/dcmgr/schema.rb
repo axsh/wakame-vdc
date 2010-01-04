@@ -108,11 +108,11 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
-        Fixnum :account_id
-        Fixnum :owner_id
-        String :name, :fixed=>true, :size=>32
+        Fixnum :account_id, :null=>false # if 0 system tag
+        Fixnum :owner_id, :null=>false
+        String :name, :fixed=>true, :size=>32, :null=>false
         Fixnum :tag_type, :fixed=>true, :size=>1 # 0: name tag, 1: auth tag
-        Fixnum :roll
+        Fixnum :roll, :null=>false # only auth tag, if name tag then 0
         index :account_id
       end
 
