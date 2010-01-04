@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+
+require File.dirname(__FILE__) + '/spec_helper'
+
+describe PhysicalHost do
+  it "should get schedule instances, not only 'get read instance' tag" do
+    physicalhost_a = PhysicalHost.create
+    physicalhost_b = PhysicalHost.create
+    physicalhost_c = PhysicalHost.create
+    
+    physicalhost_a.remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+    physicalhost_c.remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+
+    enable_physicalhosts = PhysicalHost.enable_hosts
+    enable_physicalhosts.include?(physicalhost_a).should be_true
+    enable_physicalhosts.include?(physicalhost_b).should be_nil
+    enable_physicalhosts.include?(physicalhost_c).should be_true
+  end
+end
