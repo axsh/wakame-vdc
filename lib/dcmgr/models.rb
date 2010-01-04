@@ -99,9 +99,12 @@ class Instance < Sequel::Model
   many_to_one :account
   many_to_one :user
 
-  many_to_one :physical_host
   many_to_one :image_storage
   many_to_one :hv_agent
+
+  def physical_host
+    self.hv_agent.physical_host
+  end
   
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
 
@@ -117,7 +120,7 @@ class Instance < Sequel::Model
     errors.add(:account, "can't empty") unless self.account
     errors.add(:user, "can't empty") unless self.user
     
-    errors.add(:physical_host, "can't empty") unless self.physical_host
+    # errors.add(:hv_agent, "can't empty") unless self.hv_agent
     errors.add(:image_storage, "can't empty") unless self.image_storage
 
     errors.add(:need_cpus, "can't empty") unless self.need_cpus
