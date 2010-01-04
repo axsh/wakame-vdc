@@ -165,6 +165,13 @@ class PhysicalHost < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'PH'; end
 
+  one_to_many :instances
+  
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST}
+  many_to_many :location_tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST_LOCATION}
+
+  many_to_one :relate_user, :class=>:User
+  
   def self.schedule_instance(instance)
     Dcmgr::logger.debug "schedule instance--"
     
@@ -196,10 +203,10 @@ class PhysicalHost < Sequel::Model
     raise NoPhysicalHostException
   end
   
-  one_to_many :instances
-  
-  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST}
-  many_to_many :location_tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST_LOCATION}
+  def before_create
+    super
+    self.add_tag_type = TYPE_NORMAL unless self.tag_type
+  end
 end
 
 class HvController < Sequel::Model
