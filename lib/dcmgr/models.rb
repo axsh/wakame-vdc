@@ -206,6 +206,13 @@ class PhysicalHost < Sequel::Model
   def before_create
     super
   end
+
+  def after_create
+    super
+    TagMapping.create(:tag_id=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.id,
+                      :target_type=>TagMapping::TYPE_PHYSICAL_HOST,
+                      :target_id=>self.id)
+  end
 end
 
 class HvController < Sequel::Model
@@ -233,7 +240,7 @@ class Tag < Sequel::Model
 
   def self.create_system_tag(name)
     create(:account_id=>0, :owner_id=>0, :tag_type=>TYPE_NORMAL,
-                 :roll=>0)
+                 :roll=>0, :name=>name)
   end
   
   def before_create
@@ -241,19 +248,33 @@ class Tag < Sequel::Model
     self.tag_type = TYPE_NORMAL unless self.tag_type
   end
 
-  SYSTEM_TAG_NAMES = [
-                       'get ready instance',
-                     ]
-  SYSTEM_TAG_NAMES.each_with_index{|tag_name, i|
-    const_name = "SYSTEM_TAG_%s" % tag_name.upcase.tr(' ', '_')
-    const_set(const_name, i + 1)
-  }
-
   def self.create_system_tags
     SYSTEM_TAG_NAMES.each{|tag_name|
       create_system_tag(tag_name)
     }
   end
+
+  def hash
+    self.id
+  end
+
+  def eql?(obj)
+    return false if obj == nil
+    return false unless obj.is_a? Tag
+    self.id == obj.id
+  end
+  
+  def validate
+    errors.add(:name, "can't empty") if self.name == nil or self.name.length == 0
+  end
+  
+  SYSTEM_TAG_NAMES = [
+                       'get ready instance',
+                     ]
+  SYSTEM_TAG_NAMES.each_with_index{|tag_name, i|
+    const_name = "SYSTEM_TAG_%s" % tag_name.upcase.tr(' ', '_')
+    const_set(const_name, self[i + 1])
+  }
 end
 
 class Log < Sequel::Model; end
