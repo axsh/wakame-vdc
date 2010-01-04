@@ -30,7 +30,15 @@ describe "physical host access by active resource" do
     $physicalhost_id = physicalhost.id
   end
 
-  it "should remove tag"
+  it "should remove tag" do
+    physicalhost = @class.create(:cpus=>4,
+                                 :cpu_mhz=>1.0,
+                                 :memory=>2.0,
+                                 :hypervisor_type=>'xen')
+    physicalhost.put(:remove_tag, :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.uuid)
+    real_physicalhost = PhysicalHost[physicalhost.id]
+    real_physicalhost.tags.include?(Tag::SYSTEM_TAG_GET_READY_INSTANCE).should be_false
+  end
 
   it "should get list" do
     list = @class.find(:all)
@@ -57,5 +65,3 @@ describe "physical host access by active resource" do
     @class.find(physicalhost.id).relate_user.should == user.uuid
   end
 end
-
-
