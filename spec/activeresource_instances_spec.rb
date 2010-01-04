@@ -13,18 +13,16 @@ describe "instance access by active resource" do
     @user = @user_class.find(:myself)
     
     Account.create(:name=>'account1')
-    PhysicalHost.create(:cpus=>4,
-                        :cpu_mhz=>1.0,
-                        :memory=>2.0,
-                        :hypervisor_type=>'xen')
-    PhysicalHost.create(:cpus=>2,
-                        :cpu_mhz=>1.6,
-                        :memory=>1.0,
-                        :hypervisor_type=>'xen')
-    PhysicalHost.create(:cpus=>1,
-                        :cpu_mhz=>2.0,
-                        :memory=>4.0,
-                        :hypervisor_type=>'xen')
+    physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
+                                          :memory=>2.0,
+                                          :hypervisor_type=>'xen')
+    
+    physical_host_b = PhysicalHost.create(:cpus=>2, :cpu_mhz=>1.6,
+                                          :memory=>1.0,
+                                          :hypervisor_type=>'xen')
+    physical_host_c = PhysicalHost.create(:cpus=>1, :cpu_mhz=>2.0,
+                                          :memory=>4.0,
+                                          :hypervisor_type=>'xen')
     image_storage_host_a = ImageStorageHost.create()
     ImageStorage.create(:image_storage_host=>image_storage_host_a)
     
