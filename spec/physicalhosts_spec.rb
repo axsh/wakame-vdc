@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+DISABLE_TEST_SERVER = true
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe PhysicalHost do
@@ -13,7 +14,7 @@ describe PhysicalHost do
 
     enable_physicalhosts = PhysicalHost.enable_hosts
     enable_physicalhosts.include?(physicalhost_a).should be_true
-    enable_physicalhosts.include?(physicalhost_b).should be_nil
+    enable_physicalhosts.include?(physicalhost_b).should be_false
     enable_physicalhosts.include?(physicalhost_c).should be_true
   end
 end
