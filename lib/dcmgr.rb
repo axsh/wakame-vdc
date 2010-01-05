@@ -5,6 +5,7 @@ set :run, false
 
 require 'dcmgr/schema'
 require 'dcmgr/hvchttpmock'
+require 'dcmgr/scheduler'
 
 module Dcmgr
   extend self
@@ -29,11 +30,18 @@ module Dcmgr
 
   def hvchttp
     @@hvchttp ||= HvcHttpMock
-    @@hvchttp
   end
 
   def set_hvcsrv(hvchttp)
     @@hvchttp = hvhttp
+  end
+
+  def set_scheduler(scheduler)
+    @@scheduler = scheduler
+  end
+
+  def scheduler
+    @@scheduler ||= PhysicalHostScheduler::Algorithm2
   end
   
   def new(config_file)
