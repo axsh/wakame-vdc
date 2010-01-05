@@ -54,7 +54,7 @@ module Dcmgr
       def route(public_class, block)
         Dcmgr::logger.debug "route: %s, %s, %s" % [self, public_class, block]
         proc do |id|
-          logger.debug "url: " + request.url
+          logger.debug "access url: " + request.url
           protected!
           
           obj = public_class.new(authorized_user, request)
@@ -164,22 +164,15 @@ module Dcmgr
       obj = model.new
 
       if allow_keys
-        Dcmgr.logger.debug("_create: set fields:")
         allow_keys.each{|k|
-          Dcmgr.logger.debug(" key: %s" % k)
           if k == :user
             obj.user = user
-            Dcmgr.logger.debug(" value: %s" % user)
           elsif req_hash[k.to_s]
             if k == :account
               obj.account = Account[req_hash[k.to_s]]
-              Dcmgr.logger.debug(" value: %s" % obj.account)
             else
               obj.send('%s=' % k, req_hash[k.to_s])
-              Dcmgr.logger.debug(" value: %s" % obj.send(k))
             end
-          else
-            Dcmgr.logger.debug(" value: undefined")
           end
         }
       else
