@@ -45,5 +45,7 @@ END
   end
 end
 
-ActiveResourceHelperMethods.runserver
+unless defined? DISABLE_TEST_SERVER
+  ActiveResourceHelperMethods.runserver
+end
 ActiveResourceHelperMethods.create_authuser
