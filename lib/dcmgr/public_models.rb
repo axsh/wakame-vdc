@@ -1,5 +1,5 @@
 require 'json'
-require 'dcmgr/authorize'
+require 'dcmgr/evaluator'
 
 module Dcmgr
   module PublicModel
