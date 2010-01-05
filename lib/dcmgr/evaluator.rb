@@ -6,7 +6,7 @@ module Dcmgr
     class Base
     end
     
-    class InstanceShutdown < Base
+    class ShutdownInstance < Base
       def initialize(instance)
         @instance = instance
       end
@@ -29,32 +29,28 @@ module Dcmgr
       end
     end
 
-    @rolls = [InstanceShutdown]
+    @rolls = [ShutdownInstance]
 
-    def self.roll(target, action)
-      rollname = "%s%s" % [target.class, action.to_s.capitalize]
+    def self.[](target, action)
+      rollname = "%s%s" % [action.to_s.capitalize, target.class]
       begin
         rollclass = eval("%s" % rollname)
       rescue NameError
         return nil
       end
       return nil unless @rolls.include? rollclass
-      return rollclass.new(target)
+      rollclass.new(target)
     end
   end
 
   # auth target is image or user
   def self.evaluate(evalutor, target, action)
-    if evalutor.is_a?(User)
-      roll = Roll.roll(target, action)
-      raise ArgumentError.new("unkown roll(target: %s, action: %s)" % [target, action]) unless roll
-      Dcmgr::logger.debug("roll: %s" % roll)
-      if roll.evaluate(evalutor)
-        return roll.execute(evalutor)
-      else
-        raise RollException.new("can't %s(evalutor: %s, target: %s" % [action, target])
-      end
-    end
-    raise ArgumentError.new("unknown class: %s" % evalutor)
+    raise ArgumentError.new("unknown class: %s" % evalutor) unless evalutor.is_a?(User)
+    
+    roll = RollExecutor[target, action]
+    raise ArgumentError.new("unkown roll(target: %s, action: %s)" % [target, action]) unless roll
+    Dcmgr::logger.debug("roll: %s" % roll)
+    raise RollException.new("can't %s(evalutor: %s, target: %s" % [action, target]) unless roll.evaluate(evalutor)
+    roll.execute(evalutor)
   end
 end
