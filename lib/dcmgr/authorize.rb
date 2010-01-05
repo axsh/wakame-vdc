@@ -44,13 +44,13 @@ module Dcmgr
   end
 
   # auth target is image or user
-  def self.evalute(evalutor, target, action)
+  def self.evaluate(evalutor, target, action)
     if evalutor.is_a?(User)
       roll = Roll.roll(target, action)
       raise ArgumentError.new("unkown roll(target: %s, action: %s)" % [target, action]) unless roll
       Dcmgr::logger.debug("roll: %s" % roll)
-      if roll.enable?(evalutor)
-        return roll.evalute(evalutor)
+      if roll.evaluate(evalutor)
+        return roll.execute(evalutor)
       else
         raise RollException.new("can't %s(evalutor: %s, target: %s" % [action, target])
       end

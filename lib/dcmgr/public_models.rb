@@ -404,7 +404,7 @@ module Dcmgr
     public_action_withid :put, :shutdown do
       instance = Instance[uuid]
       begin
-        Dcmgr.execute(user, instance, :shutdown)
+        Dcmgr.evaluate(user, instance, :shutdown)
       rescue Exception => e
         Dcmgr::logger.debug("err! %s" % e)
         raise e
