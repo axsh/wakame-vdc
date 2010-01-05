@@ -61,7 +61,7 @@ module Dcmgr
           obj.uuid = id if id
           begin
             ret = obj.instance_eval(&block)
-          rescue Sequel::ValidationFailed => e
+          rescue Exception => e
             logger.debug "err! %s" % e.to_s
             throw :halt, [400, e.to_s]
           end
@@ -400,7 +400,6 @@ module Dcmgr
         Dcmgr.evaluate(user, instance, :shutdown)
       rescue Exception => e
         Dcmgr::logger.debug("err! %s" % e)
-        raise e
         throw :halt, [400, e.to_s]
       end
       []

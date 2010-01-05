@@ -6,7 +6,8 @@ module Dcmgr
     module Algorithm1
       def assign_to_instance(hosts, instance)
         Dcmgr::logger.debug "alrogithm 1 schedule instance--"
-        hosts[1]
+        raise NoPhysicalHostException.new if hosts.length == 0
+        hosts[0]
       end
     end
     
