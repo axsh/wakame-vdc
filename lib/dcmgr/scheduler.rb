@@ -1,6 +1,8 @@
 
 module Dcmgr
   module PhysicalHostScheduler
+    class NoPhysicalHostException < Exception; end
+
     module Algorithm1
       def assign_to_instance(hosts, instance)
         Dcmgr::logger.debug "alrogithm 1 schedule instance--"

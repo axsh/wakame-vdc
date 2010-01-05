@@ -126,20 +126,18 @@ module Dcmgr
           keys.push :tags
         end
         def object.tags
-          super().map{|t| t.uuid} # format only tags uuid
+          super.map{|t| t.uuid} # format only tags uuid
         end
         def object.account
-          super().uuid
+          super.uuid
         end
         def object.relate_user
-          if super
-            super.uuid
-          else
-            nil
-          end
+          return nil unless super
+          super.uuid
         end
         def object.physical_host
-          super().uuid
+          return nil unless super
+          super.uuid
         end
       end
       object
@@ -364,12 +362,12 @@ module Dcmgr
       
       req_hash['image_storage'] = ImageStorage[1]
 
-      obj = _create(req_hash)
-      physical_host = HVController.schedule_instance(obj)
-      obj.hv_controller = physical_host.add_physical_host
-      obj.save
+      instance = _create(req_hash)
+      physical_host = PhysicalHost.assign(instance)
+      instance.hv_agent = HvAgent.create(:physical_host=>physical_host)
+      instance.save
       
-      format_object(obj)
+      format_object(instance)
     end
     
     public_action_withid :get do

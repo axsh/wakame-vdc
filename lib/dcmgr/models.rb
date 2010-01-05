@@ -130,7 +130,8 @@ class Instance < Sequel::Model
     super
     self.status = STATUS_TYPE_STOP
     Dcmgr::logger.debug "becore create: status = %s" % self.status
-    self.physical_host = PhysicalHost.assign(self)
+    physical_host = PhysicalHost.assign(self)
+    self.hv_agent = HvAgent.create(:physical_host=>physical_host)
     Dcmgr::logger.debug "becore create: physical host = %s" % self.physical_host
   end
 
@@ -173,8 +174,6 @@ class ImageStorageHost < Sequel::Model
   def self.prefix_uuid; 'ISH'; end
 end
 
-class NoPhysicalHostException < Exception; end
-
 class PhysicalHost < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   extend Dcmgr::scheduler
@@ -215,6 +214,8 @@ end
 class HvAgent < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'HVA'; end
+  many_to_one :hv_controller
+  many_to_one :physical_host
 end
 
 class Tag < Sequel::Model
