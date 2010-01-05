@@ -22,6 +22,9 @@ module Dcmgr
 
   def set_logger(logger)
     @@logger = logger
+    def @@logger.write(str)
+      @@logger << str
+    end
   end
 
   def logger

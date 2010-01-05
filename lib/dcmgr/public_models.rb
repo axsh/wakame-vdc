@@ -52,7 +52,7 @@ module Dcmgr
       end
       
       def route(public_class, block)
-        Dcmgr::logger.debug "route: %s, %s, %s" % [self, public_class, block]
+        # Dcmgr::logger.debug "ROUTE: %s, %s, %s" % [self, public_class, block]
         proc do |id|
           logger.debug "access url: " + request.url
           protected!

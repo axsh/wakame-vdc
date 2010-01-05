@@ -14,7 +14,7 @@ module Dcmgr
     
     def self.public_crud model
       model.get_actions {|action, pattern, proc|
-        Dcmgr::logger.debug "regist: %s %s" % [action, pattern]
+        Dcmgr::logger.debug "REGIST: %s %s" % [action, pattern]
         self.send action, pattern, &proc
       }
     end
