@@ -131,6 +131,10 @@ module Dcmgr
         def object.account
           super.uuid
         end
+        def object.user
+          return nil unless super
+          super.uuid
+        end
         def object.relate_user
           return nil unless super
           super.uuid

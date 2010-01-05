@@ -7,6 +7,7 @@ describe "instance access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     @class = describe_activeresource_model :Instance
+    @physical_host_class = describe_activeresource_model :PhysicalHost
     @name_tag_class = describe_activeresource_model :NameTag
     @auth_tag_class = describe_activeresource_model :AuthTag
     @user_class = describe_activeresource_model :User
@@ -53,7 +54,8 @@ describe "instance access by active resource" do
   end
 
   it "should create instance" do
-    @physical_host_a.put(:remove_tag, :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+    @physical_host_class.find(@physical_host_a.id).put(:remove_tag,
+                                                       :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE)
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
@@ -109,7 +111,7 @@ describe "instance access by active resource" do
     
     # already 'instance a' use physical host 1 in should create instance
     
-    hosts = []; hosts.default = 0
+    hosts = {}; hosts.default = 0
     3.times{
       hosts[@class.create(:account=>@account.id,
                             :need_cpus=>1,
@@ -175,7 +177,7 @@ describe "instance access by active resource" do
 
   it "should get instance" do
     instance = @class.find($instance_a.id)
-    instance.user_id.should > 0
+    instance.user.length.should > 0
   end
 
   it "shoud get instance details"
