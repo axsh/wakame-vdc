@@ -54,8 +54,8 @@ describe "instance access by active resource" do
   end
 
   it "should create instance" do
-    @physical_host_class.find(@physical_host_a.id).put(:remove_tag,
-                                                       :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+    @physical_host_class.find(@physical_host_a.uuid).put(:remove_tag,
+                                                       :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.uuid)
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
@@ -65,7 +65,7 @@ describe "instance access by active resource" do
     $instance_a.account.should == @account.id
 
     real_inst = Instance[$instance_a.id]
-    real_inst.physical_host_id.should == 1
+    real_inst.physical_host_id.should > 0
   end
 
   it "should schedule instances by schedule algorithm 2" do
