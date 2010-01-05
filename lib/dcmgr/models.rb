@@ -187,7 +187,7 @@ class PhysicalHost < Sequel::Model
   many_to_one :relate_user, :class=>:User
 
   def self.enable_hosts
-    filter(~:id => TagMapping.filter(:target_type=>TagMapping::TYPE_PHYSICAL_HOST).select(:target_id)).order_by(:id)
+    filter(~:id => TagMapping.filter(:target_type=>TagMapping::TYPE_PHYSICAL_HOST).select(:target_id)).order_by(:id).all
   end
 
   def self.assign(instance)
