@@ -225,8 +225,8 @@ module Dcmgr
 
     public_action :post do
       account = create
-      # create account roll
-      AccountRoll.create(:account=>account,:user=>user)
+      # create account role
+      AccountRole.create(:account=>account,:user=>user)
       account
     end
 
@@ -285,7 +285,7 @@ module Dcmgr
     include PublicModel
     model Tag
     public_name 'auth_tags'
-    allow_keys [:account, :name, :tag_type, :roll]
+    allow_keys [:account, :name, :tag_type, :role]
 
     public_action :post do
       req_hash = json_request

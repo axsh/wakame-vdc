@@ -37,7 +37,7 @@ describe "instance access by active resource" do
     @normal_tag_c = @name_tag_class.create(:name=>'tag c', :account=>@account.id)
     
     instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
-                                                    :roll=>0,
+                                                    :role=>0,
                                                     :tags=>[@normal_tag_a.id,
                                                             @normal_tag_b.id],
                                                     :account=>@account.id) # auth tag

@@ -42,7 +42,7 @@ module Dcmgr
         String :memo
       end
 
-      @db.create_table? :account_rolls do
+      @db.create_table? :account_roles do
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :type=>Integer, :null=>false
         primary_key ([:account_id, :user_id])
@@ -112,7 +112,7 @@ module Dcmgr
         Fixnum :owner_id, :null=>false
         String :name, :fixed=>true, :size=>32, :null=>false
         Fixnum :tag_type, :fixed=>true, :size=>1 # 0: name tag, 1: auth tag
-        Fixnum :roll, :null=>false # only auth tag, if name tag then 0
+        Fixnum :role, :null=>false # only auth tag, if name tag then 0
         index :account_id
       end
 
@@ -159,7 +159,7 @@ module Dcmgr
 
     def models
       load
-      @models ||= [Account, User, AccountRoll,
+      @models ||= [Account, User, AccountRole,
                    Instance, ImageStorage, ImageStorageHost, PhysicalHost,
                    HvController, HvAgent,
                    Tag, TagMapping,

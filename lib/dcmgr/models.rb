@@ -65,7 +65,7 @@ class Account < Sequel::Model
   set_dataset db[:accounts].filter(:enable=>'y')
 
 
-  one_to_many :account_roll
+  one_to_many :account_role
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_ACCOUNT}
   
   def enable?
@@ -85,8 +85,8 @@ class User < Sequel::Model
   
   set_dataset db[:users].filter(:enable=>'y')
 
-  one_to_many  :account_rolls
-  many_to_many :accounts, :join_table=>:account_rolls
+  one_to_many  :account_roles
+  many_to_many :accounts, :join_table=>:account_roles
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
 
   def enable?
@@ -100,7 +100,7 @@ class User < Sequel::Model
 end
 
 
-class AccountRoll < Sequel::Model
+class AccountRole < Sequel::Model
   many_to_one :account
   many_to_one :user, :left_primary_key=>:user_id
 end
@@ -233,7 +233,7 @@ class Tag < Sequel::Model
 
   def self.create_system_tag(name)
     create(:account_id=>0, :owner_id=>0, :tag_type=>TYPE_NORMAL,
-                 :roll=>0, :name=>name)
+                 :role=>0, :name=>name)
   end
   
   def before_create

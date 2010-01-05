@@ -22,7 +22,7 @@ describe "accounts by active resource" do
     real_account.exclusion.should == 'n'
     real_account.enable.should == 'y'
 
-    real_account.account_roll.index{|i| i.user.uuid== @user.id }.should_not be_nil
+    real_account.account_role.index{|i| i.user.uuid== @user.id }.should_not be_nil
   end
 
   it "should get list" do

@@ -1,8 +1,8 @@
 
 module Dcmgr
-  class RollException < Exception; end
+  class RoleException < Exception; end
     
-  module RollExecutor
+  module RoleExecutor
     class Base
     end
     
@@ -13,13 +13,13 @@ module Dcmgr
       
       def self.id; 1; end
       
-      def evaluate(evalutor)
-        evalutor.tags.each{|tag|
-          if tag.tags.include? instance.tag
+      def evaluate(evaluator)
+        evaluator.tags.each{|tag|
+          if tag.tags.include? @instance.tag
             return
           end
         }
-        raise RollException(user, self)
+        raise RoleException(user, self)
       end
 
       def execute(user)
@@ -29,28 +29,28 @@ module Dcmgr
       end
     end
 
-    @rolls = [ShutdownInstance]
+    @roles = [ShutdownInstance]
 
     def self.[](target, action)
-      rollname = "%s%s" % [action.to_s.capitalize, target.class]
+      rolename = "%s%s" % [action.to_s.capitalize, target.class]
       begin
-        rollclass = eval("%s" % rollname)
+        roleclass = eval("%s" % rolename)
       rescue NameError
         return nil
       end
-      return nil unless @rolls.include? rollclass
-      rollclass.new(target)
+      return nil unless @roles.include? roleclass
+      roleclass.new(target)
     end
   end
 
   # auth target is image or user
-  def self.evaluate(evalutor, target, action)
-    raise ArgumentError.new("unknown class: %s" % evalutor) unless evalutor.is_a?(User)
+  def self.evaluate(evaluator, target, action)
+    raise ArgumentError.new("unknown class: %s" % evaluator) unless evaluator.is_a?(User)
     
-    roll = RollExecutor[target, action]
-    raise ArgumentError.new("unkown roll(target: %s, action: %s)" % [target, action]) unless roll
-    Dcmgr::logger.debug("roll: %s" % roll)
-    raise RollException.new("can't %s(evalutor: %s, target: %s" % [action, target]) unless roll.evaluate(evalutor)
-    roll.execute(evalutor)
+    role = RoleExecutor[target, action]
+    raise ArgumentError.new("unkown role(target: %s, action: %s)" % [target, action]) unless role
+    Dcmgr::logger.debug("role: %s" % role)
+    raise RoleException.new("can't %s(evaluator: %s, target: %s" % [action, target]) unless role.evaluate(evaluator)
+    role.execute(evaluator)
   end
 end

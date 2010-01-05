@@ -35,7 +35,7 @@ describe "user access by active resource" do
     user = @class.find(:myself)
 
     instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
-                                                    :roll=>0,
+                                                    :role=>0,
                                                     :tags=>[],
                                                     :account=>@account) # auth tag
     
