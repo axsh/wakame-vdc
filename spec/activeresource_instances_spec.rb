@@ -11,20 +11,22 @@ describe "instance access by active resource" do
     @auth_tag_class = describe_activeresource_model :AuthTag
     @user_class = describe_activeresource_model :User
     @user = @user_class.find(:myself)
-    
-    Account.create(:name=>'account1')
-    physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
-                                          :memory=>2.0,
-                                          :hypervisor_type=>'xen')
-    
-    physical_host_b = PhysicalHost.create(:cpus=>2, :cpu_mhz=>1.6,
-                                          :memory=>1.0,
-                                          :hypervisor_type=>'xen')
-    physical_host_c = PhysicalHost.create(:cpus=>1, :cpu_mhz=>2.0,
-                                          :memory=>4.0,
-                                          :hypervisor_type=>'xen')
     image_storage_host_a = ImageStorageHost.create()
     ImageStorage.create(:image_storage_host=>image_storage_host_a)
+  end
+    
+  before(:each) do
+    Account.create(:name=>'account1')
+    PhysicalHost.destroy
+    @physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
+                                          :memory=>2.0,
+                                          :hypervisor_type=>'xen')
+    @physical_host_b = PhysicalHost.create(:cpus=>2, :cpu_mhz=>1.6,
+                                          :memory=>1.0,
+                                          :hypervisor_type=>'xen')
+    @physical_host_c = PhysicalHost.create(:cpus=>1, :cpu_mhz=>2.0,
+                                          :memory=>4.0,
+                                          :hypervisor_type=>'xen')
     
     @account_class = describe_activeresource_model :Account
     @account = @account_class.create(:name=>'test account by instance spec')
@@ -41,7 +43,17 @@ describe "instance access by active resource" do
     @user.put(:add_tag, :tag=>instance_crud_auth_tag.id)
   end
 
+  it "should not schedule instances while no runnning physical hosts" do
+    lambda {
+      @class.create(:account=>@account.id,
+                    :need_cpus=>1,
+                    :need_cpu_mhz=>0.5,
+                    :need_memory=>1.0)    
+    }.should raise_error(ActiveResource::BadRequest)
+  end
+
   it "should create instance" do
+    @physical_host_a.put(:remove_tag, :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE)
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
@@ -54,7 +66,8 @@ describe "instance access by active resource" do
     real_inst.physical_host_id.should == 1
   end
 
-  it "should schedule instances" do
+  it "should schedule instances by schedule algorithm 2" do
+    Dcmgr::set_scheduler Dcmgr::PhysicalHostScheduler::Algorithm2
     # physical hosts
     # id / cpus / mhz / memory
     # 1  / 4    / 1.0  / 2.0 
@@ -83,6 +96,32 @@ describe "instance access by active resource" do
                   :need_cpu_mhz=>0.8,
                   :need_memory=>0.4).physical_host.should == PhysicalHost[2].uuid
     
+  end
+
+  it "should schedule instances by schedule algorithm 1" do
+    Dcmgr::set_scheduler Dcmgr::PhysicalHostScheduler::Algorithm1
+    
+    # physical hosts
+    # id / cpus / mhz / memory
+    # 1  / 4    / 1.0  / 2.0 / 1F
+    # 2  / 2    / 1.6  / 1.0 / 2F
+    # 3  / 1    / 2.0  / 4.0 / 3F
+    
+    # already 'instance a' use physical host 1 in should create instance
+    
+    hosts = []; hosts.default = 0
+    3.times{
+      hosts[@class.create(:account=>@account.id,
+                            :need_cpus=>1,
+                            :need_cpu_mhz=>1.0,
+                            :need_memory=>1.0).physical_host] += 1
+    }
+    
+    # each floor physica hosts
+    hosts.length.should == 3
+    hosts[PhysicalHost[1].uuid].should == 1
+    hosts[PhysicalHost[2].uuid].should == 2
+    hosts[PhysicalHost[3].uuid].should == 3
   end
 
   it "should run instance" do
