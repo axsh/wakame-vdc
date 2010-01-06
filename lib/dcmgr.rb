@@ -9,7 +9,6 @@ require 'dcmgr/scheduler'
 
 module Dcmgr
   extend self
-  @@logger = Logger.new(STDOUT)
 
   def configure(config_file=nil)
     load(config_file) if config_file
@@ -21,30 +20,31 @@ module Dcmgr
   end
 
   def set_logger(logger)
-    @@logger = logger
-    def @@logger.write(str)
-      @@logger << str
+    @logger = logger
+    def @logger.write(str)
+      self << str
     end
   end
 
   def logger
-    @@logger
+    set_logger Logger.new(STDOUT) unless @logger 
+    @logger
   end
 
   def hvchttp
-    @@hvchttp ||= HvcHttpMock
+    @hvchttp ||= HvcHttpMock
   end
 
   def set_hvcsrv(hvchttp)
-    @@hvchttp = hvhttp
+    @hvchttp = hvhttp
   end
 
   def set_scheduler(scheduler)
-    @@scheduler = scheduler
+    @scheduler = scheduler
   end
 
   def scheduler
-    @@scheduler ||= PhysicalHostScheduler::Algorithm2
+    @scheduler ||= PhysicalHostScheduler::Algorithm2
   end
   
   def new(config_file)
