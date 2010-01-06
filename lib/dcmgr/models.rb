@@ -109,10 +109,10 @@ class Instance < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'I'; end
   
-  STATUS_TYPE_STOP = 0
-  STATUS_TYPE_WAIT_RUNNING = 1
-  STATUS_TYPE_RUNNING = 2
-  STATUS_TYPE_WAIT_SHUTDOWN = 3
+  STATUS_TYPE_OFFLINE = 0
+  STATUS_TYPE_RUNNING = 1
+  STATUS_TYPE_ONLINE = 2
+  STATUS_TYPE_TERMINATING = 3
   
   many_to_one :account
   many_to_one :user

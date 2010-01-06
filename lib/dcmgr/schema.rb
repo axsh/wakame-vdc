@@ -68,25 +68,24 @@ module Dcmgr
         index :uuid
         Fixnum :cpus, :null=>false
         Float :cpu_mhz, :null=>false
-        Fixnum :memory, :null=>false
-        String :location, :null=>false
+        Fixnum :memory, :null=>false # MB
         String :hypervisor_type, :fixed=>true, :size=>8, :null=>false # xen, kvm, ...
-        Fixnum :relate_user_id
       end
       
       @db.create_table? :instances do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
-        Fixnum :status, :null=>false
+        Fixnum :status, :null=>false # 0: offline, 1: running, 2: online, 3: terminating
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :null=>false
         Fixnum :physical_host_id, :null=>false
         Fixnum :image_storage_id, :null=>false
         Fixnum :need_cpus, :null=>false
         Float :need_cpu_mhz, :null=>false
-        Fixnum :need_memory, :null=>false
+        Fixnum :need_memory, :null=>false # MB
         Fixnum :hv_agent_id, :null=>false
+        String :ip, :fixed=>true, :size=>14
       end
       
       @db.create_table? :hv_controllers do
@@ -94,6 +93,7 @@ module Dcmgr
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
         Fixnum :physical_host_id
+        String :ip, :fixed=>true, :size=>14, :null=>false
       end
       
       @db.create_table? :hv_agents do
@@ -102,6 +102,7 @@ module Dcmgr
         index :uuid
         Fixnum :hv_controller_id
         Fixnum :physical_host_id
+        String :ip, :fixed=>true, :size=>14
       end
 
       @db.create_table? :tags do
