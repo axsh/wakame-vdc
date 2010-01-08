@@ -2,7 +2,7 @@
 gem "rack", ">= 1.0.1"
 gem "sinatra"
 gem "sequel", ">= 3.7.0"
-gem "do_mysql", ">= 0.10.0"
+gem "mysql", ">= 2.8.1"
 gem "activeresource", ">= 2.3.5"
 gem "hpricot", ">=0.8.2"
 
