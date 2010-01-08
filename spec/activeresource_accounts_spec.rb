@@ -19,7 +19,6 @@ describe "accounts by active resource" do
     real_account = Account[account.id]
     real_account.should be_valid
     real_account.uuid.length.should > 0
-    real_account.exclusion.should == 'n'
     real_account.enable.should == 'y'
 
     real_account.account_role.index{|i| i.user.uuid== @user.id }.should_not be_nil
