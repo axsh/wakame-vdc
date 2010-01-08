@@ -278,7 +278,11 @@ class Tag < Sequel::Model
   SYSTEM_TAG_NAMES = [
                        'get ready instance',
                      ]
-  setup_system_tags
+  begin
+    setup_system_tags
+  rescue
+    # ignore
+  end
 end
 
 class Log < Sequel::Model; end
