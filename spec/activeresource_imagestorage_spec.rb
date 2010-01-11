@@ -7,13 +7,14 @@ describe "image storage access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     @class = describe_activeresource_model :ImageStorage
+    image_storage_host_class = describe_activeresource_model :ImageStorageHost
+    @image_storage_host = image_storage_host_class.create
   end
 
   it "should upload image" do
-    image_storage = @class.create(:imagestoragehost_id=>1,
-                          :access_id=>2,
+    image_storage = @class.create(:image_storage_host=>@image_storage_host.id,
                           :storage_url=>'http://hoge')
-    image_storage.id.should > 0
+    image_storage.id.length.should > 0
     ImageStorage[image_storage.id].should be_valid
     $image_storage_id = image_storage.id
   end
