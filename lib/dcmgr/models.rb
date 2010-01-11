@@ -56,6 +56,7 @@ class TagMapping < Sequel::Model
   TYPE_VMC = 5
   TYPE_PHYSICAL_HOST = 6
   TYPE_PHYSICAL_HOST_LOCATION = 7
+  TYPE_IMAGE_STORAGE_HOST = 8
 end
 
 class Account < Sequel::Model
@@ -172,6 +173,8 @@ end
 class ImageStorageHost < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'ISH'; end
+  
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_IMAGE_STORAGE_HOST}
 end
 
 class PhysicalHost < Sequel::Model

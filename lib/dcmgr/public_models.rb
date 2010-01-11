@@ -75,6 +75,7 @@ module Dcmgr
       def json_render(obj)
         def model2hash i
           h = Hash.new
+          p i.keys
           i.keys.each{ |key|
             h[key] = i.send(key)
           }
@@ -114,7 +115,7 @@ module Dcmgr
     def format_object(object)
       if object
         def object.keys
-          keys = super()
+          keys = super
           # change from xxx_id to xxx
           keys.map! {|k|
             if /^(.*)_id$/ =~ k.to_s
@@ -123,7 +124,8 @@ module Dcmgr
               k
             end
           }
-          keys.push :tags
+          keys.push :tags if self.respond_to? :tags
+          keys  
         end
         def object.tags
           super.map{|t| t.uuid} # format only tags uuid
@@ -377,7 +379,7 @@ module Dcmgr
     end
 
     public_action_withid :delete do
-      destory
+      destroy
     end
 
     public_action_withid :put, :reboot do
@@ -419,7 +421,7 @@ module Dcmgr
       create
     end
 
-    public_action_withid :delete, :destory do
+    public_action_withid :delete do
       destroy
     end
   end
@@ -441,7 +443,7 @@ module Dcmgr
     end
 
     public_action_withid :delete, :destroy do
-      destory
+      destroy
     end
   end
 
@@ -462,7 +464,7 @@ module Dcmgr
     end
 
     public_action_withid :delete do
-      destory
+      destroy
     end
   end
 

@@ -28,6 +28,8 @@ module Dcmgr
     public_crud PublicInstance
     public_crud PublicPhysicalHost
     
+    public_crud PublicImageStorageHost
+    
     get '/' do
       'startup dcmgr'
     end
