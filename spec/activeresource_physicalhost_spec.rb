@@ -51,17 +51,4 @@ describe "physical host access by active resource" do
       @class.find(id).destroy
     }.should change{ PhysicalHost[id] }
   end
-  
-  it "should relate user" do
-    physicalhost = @class.create(:cpus=>4,
-                                 :cpu_mhz=>1.0,
-                                 :memory=>2.0,
-                                 :hypervisor_type=>'xen')
-    p physicalhost.id
-    user = User.create(:name=>'__test_activeresource_physicalhost_spec__', :password=>'passwd')
-    
-    physicalhost.put(:relate, :user=>user.uuid)
-
-    @class.find(physicalhost.id).relate_user.should == user.uuid
-  end
 end
