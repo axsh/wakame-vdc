@@ -129,6 +129,7 @@ module Dcmgr
           super.map{|t| t.uuid} # format only tags uuid
         end
         def object.account
+          return nil unless super
           super.uuid
         end
         def object.user
