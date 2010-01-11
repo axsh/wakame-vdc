@@ -63,6 +63,7 @@ module Dcmgr
             ret = obj.instance_eval(&block)
           rescue Exception => e
             logger.debug "err! %s" % e.to_s
+            raise e
             throw :halt, [400, e.to_s]
           end
           logger.debug "response(inspect): " + ret.inspect
@@ -432,20 +433,27 @@ module Dcmgr
   class PublicImageStorage
     include PublicModel
     model ImageStorage
+    allow_keys [:image_storage_host, :storage_url]
 
     public_action :get do
       list
     end
 
     public_action :post do
-      create
+      req_hash = json_request
+      req_hash.delete 'id'
+      
+      req_hash['image_storage_host'] = ImageStorageHost[req_hash.delete('image_storage_host')]
+
+      image_storage = _create(req_hash)
+      format_object(image_storage)
     end
 
     public_action_withid :get do
       get
     end
 
-    public_action_withid :delete, :destroy do
+    public_action_withid :delete do
       destroy
     end
   end

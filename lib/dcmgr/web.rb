@@ -28,6 +28,7 @@ module Dcmgr
     public_crud PublicInstance
     public_crud PublicPhysicalHost
     
+    public_crud PublicImageStorage
     public_crud PublicImageStorageHost
     
     get '/' do
