@@ -12,7 +12,7 @@ describe "image storage host access by active resource" do
 
   it "should add host" do
     image_storage_host = @class.create
-    image_storage_host.id.should > 0
+    image_storage_host.id.length.should > 0
     ImageStorageHost[image_storage_host.id].should be_valid
     $image_storage_host_id = image_storage_host.id
   end
