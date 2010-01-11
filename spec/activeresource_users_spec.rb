@@ -33,21 +33,20 @@ describe "user access by active resource" do
 
   it "should add tag" do
     user = @class.find(:myself)
-
+    real_user = User[user.id]
+    tag_length = real_user.tags.length
+    
     instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
                                                     :role=>0,
                                                     :tags=>[],
                                                     :account=>@account) # auth tag
-    
     user.put(:add_tag, :tag=>instance_crud_auth_tag)
 
     real_user = User[user.id]
-    real_user.tags.length.should == 1
+    real_user.tags.length.should == (tag_length + 1)
     real_user.tags.index {|tag|
       tag.uuid == instance_crud_auth_tag.id
     }.should be_true
-    
-    
   end
   
   

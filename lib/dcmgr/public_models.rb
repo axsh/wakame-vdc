@@ -259,13 +259,16 @@ module Dcmgr
       target = User[uuid]
       tag_uuid = request.GET['tag']
       tag = Tag[tag_uuid]
+
+      Dcmgr.logger.debug(tag.id)
+      Dcmgr.logger.debug(target.id)
       Dcmgr.logger.debug(uuid)
       Dcmgr.logger.debug(tag)
-      if tag
-        TagMapping.create(:tag_id=>tag.id,
-                          :target_type=>TagMapping::TYPE_USER,
-                          :target_id=>target.id)
-      end
+
+      TagMapping.create(:tag_id=>tag.id,
+                        :target_type=>TagMapping::TYPE_USER,
+                        :target_id=>target.id)
+      []
     end
   end
 
