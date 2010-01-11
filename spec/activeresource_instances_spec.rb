@@ -22,12 +22,15 @@ describe "instance access by active resource" do
     @physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
                                           :memory=>2.0,
                                           :hypervisor_type=>'xen')
+    PhysicalHost[@physical_host_a.id].remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
     @physical_host_b = PhysicalHost.create(:cpus=>2, :cpu_mhz=>1.6,
                                           :memory=>1.0,
                                           :hypervisor_type=>'xen')
+    PhysicalHost[@physical_host_b.id].remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
     @physical_host_c = PhysicalHost.create(:cpus=>1, :cpu_mhz=>2.0,
                                           :memory=>4.0,
                                           :hypervisor_type=>'xen')
+    PhysicalHost[@physical_host_c.id].remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
     
     @account_class = describe_activeresource_model :Account
     @account = @account_class.create(:name=>'test account by instance spec')
@@ -61,11 +64,11 @@ describe "instance access by active resource" do
                                 :need_cpu_mhz=>0.5,
                                 :need_memory=>1.0)
 
-    $instance_a.status.should == Instance::STATUS_TYPE_STOP
+    $instance_a.status.should == Instance::STATUS_TYPE_OFFLINE
     $instance_a.account.should == @account.id
 
     real_inst = Instance[$instance_a.id]
-    real_inst.physical_host_id.should > 0
+    real_inst.hv_agent.physical_host_id.should > 0
   end
 
   it "should schedule instances by schedule algorithm 2" do

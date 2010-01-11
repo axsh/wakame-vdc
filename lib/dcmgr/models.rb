@@ -130,7 +130,7 @@ class Instance < Sequel::Model
 
   def before_create
     super
-    self.status = STATUS_TYPE_STOP
+    self.status = STATUS_TYPE_OFFLINE
     Dcmgr::logger.debug "becore create: status = %s" % self.status
     physical_host = PhysicalHost.assign(self)
     self.hv_agent = HvAgent.create(:physical_host=>physical_host)

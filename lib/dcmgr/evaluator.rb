@@ -17,7 +17,7 @@ module Dcmgr
         evaluator.tags.each{|tag|
           return if @instance.tags.include? tag
         }
-        raise RoleException(user, self)
+        raise RoleException.new("no role")
       end
 
       def execute(user)

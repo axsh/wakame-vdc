@@ -13,7 +13,7 @@ module Dcmgr
     
     module Algorithm2
       def assign_to_instance(hosts, instance)
-        Dcmgr::logger.debug "schedule instance--"
+        Dcmgr::logger.debug "assign to instance (%d hosts)" % hosts.length
         
         hosts.each{|ph|
           Dcmgr::logger.debug "  ph[%d].cpus: %s" % [ph.id, ph.cpus]
@@ -39,7 +39,7 @@ module Dcmgr
             return ph
           end
         }
-        Dcmgr::logger.debug ""
+        
         raise NoPhysicalHostException
       end
     end
