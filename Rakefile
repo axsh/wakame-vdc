@@ -38,5 +38,10 @@ namespace :db do
     Dcmgr::Schema.initial_data
   end
 
+  desc 'Create sample data'
+  task :sample_data => [ :environment ] do
+    Dcmgr::Schema.load 'fixtures/sample_data.dump'
+  end
+
   task :reset => [ :drop, :init ]
 end
