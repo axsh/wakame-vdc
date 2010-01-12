@@ -1,2 +1,8 @@
 *~
 #*#
+
+config.ru
+test.rb
+dcmgr-gui.rb
+WakameWebAPI.rb
+views/
