@@ -48,6 +48,7 @@ describe "instance access by active resource" do
   end
 
   it "should not schedule instances while no runnning physical hosts" do
+    pending
     lambda {
       @class.create(:account=>@account.id,
                     :need_cpus=>1,
@@ -57,6 +58,7 @@ describe "instance access by active resource" do
   end
 
   it "should create instance" do
+    pending
     @physical_host_class.find(@physical_host_a.uuid).put(:remove_tag,
                                                        :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.uuid)
     $instance_a = @class.create(:account=>@account.id,
@@ -80,7 +82,8 @@ describe "instance access by active resource" do
     # 3  / 1    / 2.0  / 4.0
     
     # already 'instance a' use physical host 1 in should create instance
-
+    
+    pending
     @class.create(:account=>@account.id,
                   :need_cpus=>3,
                   :need_cpu_mhz=>0.5,
@@ -114,6 +117,7 @@ describe "instance access by active resource" do
     
     # already 'instance a' use physical host 1 in should create instance
     
+    pending
     hosts = {}; hosts.default = 0
     3.times{
       hosts[@class.create(:account=>@account.id,
@@ -130,6 +134,7 @@ describe "instance access by active resource" do
   end
 
   it "should run instance" do
+    pending
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
@@ -141,6 +146,7 @@ describe "instance access by active resource" do
   end
 
   it "should shutdown, and auth check" do
+    pending
     instance = @class.create(:account=>@account.id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
@@ -162,6 +168,7 @@ describe "instance access by active resource" do
   end
 
   it "should find tag" do
+    pending
     instance = @class.create(:account=>@account.id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
@@ -179,6 +186,7 @@ describe "instance access by active resource" do
   end
 
   it "should get instance" do
+    pending
     instance = @class.find($instance_a.id)
     instance.user.length.should > 0
   end
@@ -189,21 +197,25 @@ describe "instance access by active resource" do
     #instance.hvspec_id.should == 10
 
   it "should reboot" do
+    pending
     instance = @class.find($instance_a.id)
     instance.put(:reboot)
   end
   
   it "should terminate" do
+    pending
     instance = @class.find($instance_a.id)
     instance.put(:terminate)
   end
   
   it "should get describe" do
+    pending
     list = @class.find(:all)
     list.index { |ins| ins.id == $instance_a.id }.should be_true
   end
   
   it "should snapshot image, and backup image to image storage" do
+    pending
     instance = @class.create(:account=>@account.id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
