@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'uri'
 require 'cgi'
-require 'json'
+require 'active_support'
 
 module Dcmgr
   class HvcHttpMock
@@ -89,7 +89,7 @@ module Dcmgr
             'status'=>:online,
             'instances'=>ret_instances}
         }
-        HvcHttpMockResponse.new(200, JSON.unparse(ret))
+        HvcHttpMockResponse.new(200, ret.to_json)
       else
         HvcHttpMockResponse.new(404, "not found")
       end
