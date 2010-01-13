@@ -63,6 +63,7 @@ module Dcmgr
             ret = obj.instance_eval(&block)
           rescue Exception => e
             logger.debug "err! %s" % e.to_s
+            logger.debug e.backtrace.join("\n")
             raise e
             throw :halt, [400, e.to_s]
           end
@@ -203,7 +204,7 @@ module Dcmgr
     end
 
     def json_request
-      raise "no data" unless request.body.size > 0
+      raise "no data" unless request.content_length.to_i > 0
       parsed = JSON.parse(request.body.read)
       Dcmgr.logger.debug("request: " + parsed.inspect)
       parsed
@@ -406,6 +407,7 @@ module Dcmgr
       begin
         Dcmgr.evaluate(user, instance, :shutdown)
       rescue Exception => e
+	raise e
         Dcmgr::logger.debug("err! %s" % e)
         throw :halt, [400, e.to_s]
       end
