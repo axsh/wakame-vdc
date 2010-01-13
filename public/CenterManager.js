@@ -1,5 +1,5 @@
 /*
-	Wakame GUI
+	Wakame GUI		-*- coding: utf-8 -*-
 */
 var centerPanel = null;
 var panelMode = 0;
@@ -134,7 +134,6 @@ WestPanel = function(){
 Ext.extend(WestPanel, Ext.tree.TreePanel);
 
 MainPanel = function(){
-
   var amPanel = new AMPanel();
   var umPanel = new UMPanel();
   var mapPanel = new MAPPanel();
@@ -143,49 +142,48 @@ MainPanel = function(){
   var centerLogPanel = new CenterLogPanel();
 
   MainPanel.superclass.constructor.call(this, {
-    region: 'center',
-    layout:'card',
-	activeItem: 0, 
+	region:'center',
+	layout:'card',
+	activeItem: 0,
 	defaults: {
-		border:false
+	  border:false
 	},
 	items: [amPanel,umPanel,rViewerPanel,rEditPanel,mapPanel,centerLogPanel]
   });
 }
 Ext.extend(MainPanel, Ext.Panel);
 
-
 AMPanel = function(){
-   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
-   var addWin = null;
-   var store = new Ext.data.SimpleStore({
-    fields: [
-      { name: 'account-id' },
-      { name: 'account-name' },
-      { name: 'exclusion' },
-      { name: 'enable' },
-      { name: 'registered' },
-      { name: 'contract-date' },
-      { name: 'memo-text' }
-    ],
-    data:[
-      [ '12837549402300', 'AXSH(SOUMU)', 'false', 'true',  '2009/12/1',  '2009/12/10', ''],
-      [ '83948393933331', 'AXSH(EIGYO)', 'false', 'true',  '2009/12/1',  '2009/12/10', ''],
-      [ '13983343933113', 'Yaboo',       'false', 'true',  '2009/12/2',  '2009/12/3',  ''],
-      [ '13977743933223', 'Coocle',      'false', 'false', '2009/11/10', '2009/11/10', ''],
-      [ '25447689654556', 'Damazon',     'true',  'true',  '2009/10/10', '2009/11/11', '']
-    ]
+  var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
+  var addWin = null;
+  var store = new Ext.data.Store({
+    proxy: new Ext.data.HttpProxy({
+      url: '/account-list',
+//    url: './account.json',
+      method:'GET'
+    }),
+    reader: new Ext.data.JsonReader({
+      totalProperty: "totalCount",
+      root:'rows',
+      fields:[
+        { name:'id' ,type:'string'},
+        { name:'nm' ,type:'string'},
+        { name:'en' ,type:'string'},
+        { name:'rg' ,type:'string'},
+        { name:'cn' ,type:'string'},
+        { name:'mm' ,type:'string'}
+      ]
+    })
   });
 
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
-    { header: "Account-ID", width: 120, dataIndex: 'account-id', hideable:false, menuDisabled:true },
-    { header: "Account-Name", width: 120, dataIndex: 'account-name', sortable: true },
-    { header: "Exclusion", width: 60, dataIndex: 'exclusion' },
-    { header: "Enable", width: 60, dataIndex: 'enable' },
-    { header: "Registered", width: 80, dataIndex: 'registered'   , sortable: true},
-    { header: "Contract-Date", width: 80, dataIndex: 'contract-date', sortable: true },
-    { header: "Memo",   width: 300,     dataIndex: 'memo-text'  }
+    { header: "Account-ID"    , width: 120, dataIndex: 'id' , hideable:false, menuDisabled:true },
+    { header: "Account-Name"  , width: 120, dataIndex: 'nm' , sortable: true },
+    { header: "Enable"        , width: 60,  dataIndex: 'en' },
+    { header: "Registered"    , width: 80,  dataIndex: 'rg' , sortable: true},
+    { header: "Contract-Date" , width: 80,  dataIndex: 'cn' , sortable: true },
+    { header: "Memo"          , width: 300, dataIndex: 'mm' }
   ]);
 
   AMPanel.superclass.constructor.call(this, {
@@ -197,7 +195,7 @@ AMPanel = function(){
     autoHeight: false,
     stripeRows: true,
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
@@ -243,11 +241,11 @@ AMPanel = function(){
       }
     ]
   });
+  store.load({params: {start: 0, limit: 50}});		// limit = page size
 }
 Ext.extend(AMPanel, Ext.grid.GridPanel);
 
 UMPanel = function(){
-
   var ulistPanel = new UListPanel();
   var ulogPanel  = new ULOGPanel();
 
@@ -265,33 +263,33 @@ Ext.extend(UMPanel, Ext.Panel);
 UListPanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
 
-  var store = new Ext.data.SimpleStore({
-    fields: [
-      { name: 'user-id' },
-      { name: 'user-name' },
-      { name: 'state' },
-      { name: 'enable' },
-      { name: 'e-mail' },
-      { name: 'memo-text' }
-    ],
-    data:[ 
-      [ '839438494990' , 'sato' , 'login',  'true',  'xxx@xxx.jp' , 'cccccc'],
-      [ '238230208490' , 'ito'  , 'logout', 'true',  'xxx@xxx.jp' , 'cccccc'],
-      [ '344584949220' , 'kato' , 'login',  'true',  'xxx@xxx.jp' , 'cccccc'],
-      [ '734983849234' , 'zato' , 'logout', 'false', 'xxx@xxx.jp' , 'xxxxx']
-    ]
+  var store = new Ext.data.Store({
+    url: '/user.json',
+//    url: '/user-list',
+    reader: new Ext.data.JsonReader({
+      totalProperty: "totalCount",
+      root:'rows',
+      fields: [
+        { name: 'id' ,type:'string'},
+        { name: 'nm' ,type:'string'},
+        { name: 'st' ,type:'string'},
+        { name: 'en' ,type:'string'},
+        { name: 'em' ,type:'string'},
+        { name: 'mm' ,type:'string'}
+      ]
+    })
   });
+  store.load();
 
   var addWin = null;
-
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
-    { header: "User-ID",    width: 100, dataIndex: 'user-id', hideable:false, menuDisabled:true },
-    { header: "User-Name",  width: 100, dataIndex: 'user-name' },
-    { header: "State",      width:  80, dataIndex: 'state'    },
-    { header: "Enable",     width:  60, dataIndex: 'enable'    },
-    { header: "E-Mail",     width: 100, dataIndex: 'e-mail'    },
-    { header: "Memo",       width: 350, dataIndex: 'memo-text' }
+    { header: "User-ID",    width: 100, dataIndex: 'id', hideable:false, menuDisabled:true },
+    { header: "User-Name",  width: 100, dataIndex: 'nm' },
+    { header: "State",      width:  80, dataIndex: 'st' },
+    { header: "Enable",     width:  60, dataIndex: 'en' },
+    { header: "E-Mail",     width: 100, dataIndex: 'em' },
+    { header: "Memo",       width: 350, dataIndex: 'mm' }
   ]);
 
   UListPanel.superclass.constructor.call(this, {
@@ -413,41 +411,41 @@ Ext.extend(ULOGPanel, Ext.grid.GridPanel);
 
 
 AddAccountWindow = function(){
-    var form = new Ext.form.FormPanel({
-      labelWidth: 120, 
-      width: 400, 
-      baseCls: 'x-plain',
+  var form = new Ext.form.FormPanel({
+    labelWidth: 120, 
+    width: 400, 
+    baseCls: 'x-plain',
+    items: [
+      {
+      fieldLabel: 'Account-Name',
+      xtype: 'textfield',
+      id: 'nm',
+      anchor: '100%'
+      }
+      ,{
+      fieldLabel: '',
+      id: 'en',
+      xtype: 'checkboxgroup',
       items: [
-        {
-        fieldLabel: 'Account-Name',
-        xtype: 'textfield',
-        name: 'form_textfield',
-        anchor: '100%'
-        }
-        ,{
-        fieldLabel: '',
-        xtype: 'checkboxgroup',
-        items: [
-          {boxLabel: 'Exclusion', name: 'exclusionr'},
-          {boxLabel: 'Enable',    name: 'enable'}
-        ]
-        }
-        ,{
-        fieldLabel: 'Contract-Date',
-        xtype: 'datefield',
-        name: 'contract-date',
-        anchor: '100%'
-        }
-        ,{
-        fieldLabel: 'Memo',
-        xtype: 'textarea',
-        name: 'form_textarea',
-        anchor: '100%'
-        }
+        {boxLabel: 'Enable',    name: 'enable'}
       ]
-    });
+      }
+      ,{
+      fieldLabel: 'Contract-Date',
+      xtype: 'datefield',
+      id: 'cn',
+      anchor: '100%'
+      }
+      ,{
+      fieldLabel: 'Memo',
+      xtype: 'textarea',
+      id: 'mm',
+      anchor: '100%'
+      }
+    ]
+  });
 
-    AddAccountWindow.superclass.constructor.call(this, {
+  AddAccountWindow.superclass.constructor.call(this, {
         iconCls: 'icon-panel',
         collapsible:true,
         titleCollapse:true,
@@ -462,18 +460,32 @@ AddAccountWindow = function(){
 
 		items: [form],
 		buttons: [{
-			text:'Create',
+		  text:'Create',
+          handler: submit
 		},{
-			text: 'Close',
-			handler: function(){
-				this.hide();
-			},
-			scope:this
+		  text: 'Close',
+		  handler: function(){
+		    this.hide();
+		  },
+		  scope:this
 		}]
+  });
+  function submit(){
+    form.getForm().submit({
+      url: '/account-create',
+      method: 'POST',
+      success: function(form, action) {
+        alert( action.response.responseText );
+	    this.close();
+      },
+      failure: function(form, action) {
+        alert( action.failureType );
+	    this.close();
+      }
     });
+  }
 }
 Ext.extend(AddAccountWindow, Ext.Window);
-
 
 EditAccountWindow = function(accountData){
    var form = new Ext.form.FormPanel({
@@ -499,10 +511,6 @@ EditAccountWindow = function(accountData){
         fieldLabel: '',
         xtype: 'checkboxgroup',
         items: [
-          { boxLabel: 'Exclusion',
-            name: 'exclusionr',
-            checked: accountData.get('exclusion')=='true'?true:false
-          },
           { boxLabel: 'Enable',
             name: 'enable',
             checked: accountData.get('enable')=='true'?true:false
@@ -576,14 +584,6 @@ SearchAccountWindow = function(){
             xtype: 'textfield',
             name: 'account-name',
             anchor: '100%'
-          }, {
-            fieldLabel: 'Exclusion',
-            xtype: 'checkbox',
-            anchor: '100%',
-            items: [{
-	          name: "exclusionr",
-              boxLabel: 'Exclusionr'
-	        }]
           }, {
             fieldLabel: 'Enable',
             xtype: 'checkbox',
