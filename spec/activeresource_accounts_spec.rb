@@ -30,6 +30,8 @@ describe "accounts by active resource" do
     list = @class.find(:all)
     list.index { |account| account.id == $account.id }.should be_true
   end
+
+  it "should get by id"
   
   it "should delete" do
     id = $account.id
