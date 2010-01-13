@@ -34,6 +34,7 @@ describe Dcmgr::HvcHttpMock do
   end
   
   it "should get describe instances" do
+    pending
     @hvchttp.open('192.168.1.10', 80) {|http|
       res = http.get('/terminate_instance?instance_ip=%s' %
                      ['192.168.1.22'])
