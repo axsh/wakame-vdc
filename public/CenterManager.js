@@ -259,7 +259,6 @@ UMPanel = function(){
 }
 Ext.extend(UMPanel, Ext.Panel);
 
-
 UListPanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
 
