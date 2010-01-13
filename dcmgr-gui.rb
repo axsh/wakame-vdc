@@ -28,6 +28,7 @@ post '/account-create' do
   cdate = params[:cn]
   enable = params[:en]
   memo = params[:mm]
+  Account.login('staff', 'passwd')
   Account.create(:name=>name)
   rtn = {"success" => true}
   content_type :json
