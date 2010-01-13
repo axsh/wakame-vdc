@@ -2,6 +2,7 @@
 
 require 'dcmgr'
 
+
 describe Dcmgr::HvcHttpMock do
   before(:each) do
     @hvchttp = Dcmgr::HvcHttpMock.new('192.168.1.10')
@@ -34,14 +35,23 @@ describe Dcmgr::HvcHttpMock do
   end
   
   it "should get describe instances" do
-    pending
     @hvchttp.open('192.168.1.10', 80) {|http|
-      res = http.get('/terminate_instance?instance_ip=%s' %
-                     ['192.168.1.22'])
+      res = http.get('/describe_instances')
       res.success?.should be_true
-      ret = res.body # json decode res.body
+      ret = JSON.parse(res.body) # json decode res.body
+
       ret.key?('192.168.1.20').should be_true
-      ret['192.168.1.20'].key('status').should be_true
+      ret['192.168.1.20'].key?('status').should be_true
+      ret['192.168.1.20']['status'].should == 'online'
+      ret['192.168.1.20'].key?('instances').should be_true
+      
+      ret['192.168.1.20']['instances'].key?('192.168.1.21').should be_true
+      ret['192.168.1.20']['instances']['192.168.1.21'].key?('status').should be_true
+      ret['192.168.1.20']['instances']['192.168.1.21']['status'].should == 'running'
+      
+      ret['192.168.1.20']['instances'].key?('192.168.1.22').should be_true
+      ret['192.168.1.20']['instances']['192.168.1.22'].key?('status').should be_true
+      ret['192.168.1.20']['instances']['192.168.1.22']['status'].should == 'offline'
     }
   end
 

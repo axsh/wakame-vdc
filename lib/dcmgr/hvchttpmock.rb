@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'uri'
 require 'cgi'
+require 'json'
 
 module Dcmgr
   class HvcHttpMock
@@ -32,8 +33,6 @@ module Dcmgr
       else
         hvas = nil
       end
-      p [host, @host, port, @port]
-      p hvas
       block.call(HvcHttpMockConnection.new(self))
     end
     
@@ -78,6 +77,19 @@ module Dcmgr
           return HvcHttpMockResponse.new(200, "ok")
         }
         HvcHttpMockResponse.new(404, "not found")
+
+      when '/describe_instances'
+        ret = {}
+        @hvas.each{|hva_ip, hva|
+          ret_instances = {}
+          hva.instances.each{|ip, status|
+            ret_instances[ip] = {:status=>status.to_s}
+          }
+          ret[hva_ip] = {
+            'status'=>:online,
+            'instances'=>ret_instances}
+        }
+        HvcHttpMockResponse.new(200, JSON.unparse(ret))
       else
         HvcHttpMockResponse.new(404, "not found")
       end
