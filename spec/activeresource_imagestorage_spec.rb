@@ -29,6 +29,8 @@ describe "image storage access by active resource" do
     lambda {
       @class.find(id).destroy
     }.should change{ ImageStorage[id] }
-  end    
+  end
+
+  it "should get by paging"
 end
 

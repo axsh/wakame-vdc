@@ -143,6 +143,8 @@ describe "instance access by active resource" do
     $instance_a.put(:run)
     $instance_a = @class.find($instance_a.id)
     $instance_a.status.should == Instance::STATUS_TYPE_RUNNING
+
+    pending("check hvc mock server's status")
   end
 
   it "should shutdown, and auth check" do
@@ -155,6 +157,8 @@ describe "instance access by active resource" do
 
     instance.put(:add_tag, :tag=>@normal_tag_a)
     instance.put(:shutdown)
+    
+    pending("check hvc mock server's status")
     
     instance = @class.create(:account=>@account.id,
                              :need_cpus=>1,

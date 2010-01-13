@@ -24,6 +24,8 @@ describe "accounts by active resource" do
     real_account.account_role.index{|i| i.user.uuid== @user.id }.should_not be_nil
   end
 
+  it "should add with memo, contract_at, enable fields"
+
   it "should get list" do
     list = @class.find(:all)
     list.index { |account| account.id == $account.id }.should be_true
@@ -34,5 +36,7 @@ describe "accounts by active resource" do
     $account.destroy
     Account[id].should be_nil
   end
+
+  it "should raise error on duplicate uuid"
 end
 
