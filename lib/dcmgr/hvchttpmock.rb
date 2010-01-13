@@ -4,21 +4,6 @@ require 'cgi'
 
 module Dcmgr
   class HvcHttpMock
-    class Hva
-      def initialize(hva_ip)
-        @ip = hva_ip
-        @instances = {}
-      end
-
-      def add_instance(ip, status)
-        @instances[ip] = status
-      end
-
-      alias :update_instance :add_instance
-
-      attr_accessor :instances
-    end
-    
     def initialize(host, port=80)
       @host = host
       @port = port
@@ -51,6 +36,21 @@ module Dcmgr
       p hvas
       block.call(HvcHttpMockConnection.new(self))
     end
+    
+    class Hva
+      def initialize(hva_ip)
+        @ip = hva_ip
+        @instances = {}
+      end
+
+      def add_instance(ip, status)
+        @instances[ip] = status
+      end
+
+      alias :update_instance :add_instance
+
+      attr_accessor :instances
+    end
   end
 
   class HvcHttpMockConnection
@@ -67,13 +67,17 @@ module Dcmgr
       when '/run_instance'
         query = CGI.parse(uri.query)
         hva_ip = query['hva_ip'][0]
-        @hvas[hva_ip].add_instance(hva_ip, :runnning)
+        @hvas[hva_ip].add_instance(hva_ip, :online)
         HvcHttpMockResponse.new(200, "ok")
       when '/terminate_instance'
         query = CGI.parse(uri.query)
-        hva_ip = query['hva_ip'][0]
-        @hvas[hva_ip].update_instance(hva_ip, :offline)
-        HvcHttpMockResponse.new(200, "ok")
+        instance_ip = query['instance_ip'][0]
+        @hvas.each_value{|hva|
+          next unless hva.instances.key? instance_ip
+          hva.update_instance(instance_ip, :offline)
+          return HvcHttpMockResponse.new(200, "ok")
+        }
+        HvcHttpMockResponse.new(404, "not found")
       else
         HvcHttpMockResponse.new(404, "not found")
       end

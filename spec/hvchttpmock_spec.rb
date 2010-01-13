@@ -6,7 +6,7 @@ describe Dcmgr::HvcHttpMock do
   before(:each) do
     @hvchttp = Dcmgr::HvcHttpMock.new('192.168.1.10')
     @hvchttp.add_hva('192.168.1.20')
-    @hvchttp.add_instance(:ip=>'192.168.1.21', :status=>:runnning, :hva=>'192.168.1.20')
+    @hvchttp.add_instance(:ip=>'192.168.1.21', :status=>:running, :hva=>'192.168.1.20')
     @hvchttp.add_instance(:ip=>'192.168.1.22', :status=>:offline, :hva=>'192.168.1.20')
     @hvchttp.add_hva('192.168.1.30')
     @hvchttp.add_instance(:ip=>'192.168.1.31', :status=>:online, :hva=>'192.168.1.30')
@@ -24,7 +24,6 @@ describe Dcmgr::HvcHttpMock do
   end
 
   it "should run instance" do
-    pending
     @hvchttp.open('192.168.1.10', 80) {|http|
       res = http.get('/terminate_instance?instance_ip=%s' %
                      ['192.168.1.21'])
