@@ -78,6 +78,7 @@ describe "instance access by active resource" do
   end
 
   it "should schedule instances by schedule algorithm 2" do
+    pending
     Dcmgr::set_scheduler Dcmgr::PhysicalHostScheduler::Algorithm2
     # physical hosts
     # id / cpus / mhz / memory
@@ -87,7 +88,6 @@ describe "instance access by active resource" do
     
     # already 'instance a' use physical host 1 in should create instance
     
-    pending
     @class.create(:account=>@account.id,
                   :need_cpus=>3,
                   :need_cpu_mhz=>0.5,
@@ -138,7 +138,6 @@ describe "instance access by active resource" do
   end
 
   it "should run instance" do
-    pending
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
@@ -147,7 +146,8 @@ describe "instance access by active resource" do
     $instance_a.put(:run)
     $instance_a = @class.find($instance_a.id)
     $instance_a.status.should == Instance::STATUS_TYPE_RUNNING
-
+    
+    
     pending("check hvc mock server's status")
   end
 
@@ -194,7 +194,6 @@ describe "instance access by active resource" do
   end
 
   it "should get instance" do
-    pending
     instance = @class.find($instance_a.id)
     instance.user.length.should > 0
   end
@@ -205,19 +204,18 @@ describe "instance access by active resource" do
     #instance.hvspec_id.should == 10
 
   it "should reboot" do
-    pending
     instance = @class.find($instance_a.id)
     instance.put(:reboot)
+    pending("check hvc mock server's status")
   end
   
   it "should terminate" do
-    pending
     instance = @class.find($instance_a.id)
     instance.put(:terminate)
+    pending("check hvc mock server's status")
   end
   
   it "should get describe" do
-    pending
     list = @class.find(:all)
     list.index { |ins| ins.id == $instance_a.id }.should be_true
   end
