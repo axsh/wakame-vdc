@@ -189,7 +189,7 @@ class PhysicalHost < Sequel::Model
   extend Dcmgr::scheduler
   def self.prefix_uuid; 'PH'; end
 
-  one_to_many :instances
+  one_to_many :hv_agents
   
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST}
   many_to_many :location_tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST_LOCATION}
@@ -214,6 +214,10 @@ class PhysicalHost < Sequel::Model
                       :target_type=>TagMapping::TYPE_PHYSICAL_HOST,
                       :target_id=>self.id)
   end
+
+  def instances
+    self.hv_agents.map{|hva| hva.instances}.flatten
+  end
 end
 
 class HvController < Sequel::Model
@@ -227,6 +231,7 @@ class HvAgent < Sequel::Model
   def self.prefix_uuid; 'HVA'; end
   many_to_one :hv_controller
   many_to_one :physical_host
+  one_to_many :instances
 end
 
 class Tag < Sequel::Model

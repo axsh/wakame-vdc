@@ -19,14 +19,19 @@ module Dcmgr
           Dcmgr::logger.debug "  ph[%d].cpus: %s" % [ph.id, ph.cpus]
           Dcmgr::logger.debug "  ph[%d].cpu_mhz: %s" % [ph.id, ph.cpu_mhz]
           Dcmgr::logger.debug "  ph[%d].memory: %s" % [ph.id, ph.memory]
+
+          instances = ph.instances
+          need_cpus = instances.inject(0) {|v, ins| v + ins.need_cpus}
+          need_cpu_mhz = instances.inject(0) {|v, ins| v + ins.need_cpu_mhz}
+          need_memory = instances.inject(0) {|v, ins| v + ins.need_memory}
           
-          Dcmgr::logger.debug "  ph[%d].instances cpus: %s" % [ph.id, ph.instances_dataset.sum(:need_cpus)]
-          Dcmgr::logger.debug "  ph[%d].instances cpu_mhz: %s" % [ph.id, ph.instances_dataset.sum(:need_cpu_mhz)]
-          Dcmgr::logger.debug "  ph[%d].instances memory: %s" % [ph.id, ph.instances_dataset.sum(:need_memory)]
+          Dcmgr::logger.debug "  ph[%d].instances cpus: %s" % [ph.id, need_cpus]
+          Dcmgr::logger.debug "  ph[%d].instances cpu_mhz: %s" % [ph.id, need_cpu_mhz]
+          Dcmgr::logger.debug "  ph[%d].instances memory: %s" % [ph.id, need_memory]
           
-          space_cpus = ph.cpus - (ph.instances_dataset.sum(:need_cpus) or 0)
-          space_cpu_mhz = ph.cpu_mhz - (ph.instances_dataset.sum(:need_cpu_mhz) or 0)
-          space_memory = ph.memory - (ph.instances_dataset.sum(:need_memory) or 0)
+          space_cpus = ph.cpus - need_cpus
+          space_cpu_mhz = ph.cpu_mhz - need_cpu_mhz
+          space_memory = ph.memory - need_memory
         
           Dcmgr::logger.debug "  ph[%d].space cpus: %s" % [ph.id, space_cpus]
           Dcmgr::logger.debug "  ph[%d].space cpu_mhz: %s" % [ph.id, space_cpu_mhz]
