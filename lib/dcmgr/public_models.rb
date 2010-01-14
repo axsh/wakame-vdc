@@ -61,10 +61,9 @@ module Dcmgr
           obj.uuid = id if id
           begin
             ret = obj.instance_eval(&block)
-          rescue Exception => e
+          rescue StandardError => e
             logger.debug "err! %s" % e.to_s
             logger.debug e.backtrace.join("\n")
-            raise e
             throw :halt, [400, e.to_s]
           end
           logger.debug "response(inspect): " + ret.inspect

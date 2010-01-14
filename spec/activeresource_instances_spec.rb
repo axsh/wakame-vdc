@@ -48,7 +48,12 @@ describe "instance access by active resource" do
   end
 
   it "should not schedule instances while no runnning physical hosts" do
-    pending
+    [@physical_host_a, @physical_host_b, @physical_host_c].each{|host|
+      TagMapping.create(:tag_id=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.id,
+                        :target_type=>TagMapping::TYPE_PHYSICAL_HOST,
+                        :target_id=>PhysicalHost[host.id].id)
+    }
+                        
     lambda {
       @class.create(:account=>@account.id,
                     :need_cpus=>1,
@@ -58,7 +63,6 @@ describe "instance access by active resource" do
   end
 
   it "should create instance" do
-    pending
     @physical_host_class.find(@physical_host_a.uuid).put(:remove_tag,
                                                        :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.uuid)
     $instance_a = @class.create(:account=>@account.id,

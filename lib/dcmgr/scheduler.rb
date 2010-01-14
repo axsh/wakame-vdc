@@ -1,12 +1,12 @@
 
 module Dcmgr
   module PhysicalHostScheduler
-    class NoPhysicalHostException < Exception; end
+    class NoPhysicalHostError < StandardError; end
 
     module Algorithm1
       def assign_to_instance(hosts, instance)
         Dcmgr::logger.debug "alrogithm 1 schedule instance--"
-        raise NoPhysicalHostException.new if hosts.length == 0
+        raise NoPhysicalHostError.new("no enable physical hosts") if hosts.length == 0
         hosts[0]
       end
     end
@@ -40,7 +40,7 @@ module Dcmgr
           end
         }
         
-        raise NoPhysicalHostException
+        raise NoPhysicalHostError.new("can't assign physical host")
       end
     end
   end
