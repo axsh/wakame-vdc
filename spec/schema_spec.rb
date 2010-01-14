@@ -29,10 +29,10 @@ describe Dcmgr::Schema do
   it "should store sample data, by mysqldump" do
     Dcmgr::Schema.drop!
     Dcmgr::Schema.create!
-    Dcmgr::Schema.load_data File.dirname(__FILE__) + '/../fixtures/sample_data.dump'
+    Dcmgr::Schema.load_data File.dirname(__FILE__) + '/../fixtures/sample_data'
     
     Dcmgr::Schema.models.each{|model|
-      next if [Instance, TagMapping, Log].include? model
+      next if model == Log
       puts model
       model.count.should > 0
     }

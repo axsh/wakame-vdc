@@ -83,7 +83,6 @@ module Dcmgr
         Fixnum :status, :null=>false # 0: offline, 1: running, 2: online, 3: terminating
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :null=>false
-        Fixnum :physical_host_id, :null=>false
         Fixnum :image_storage_id, :null=>false
         Fixnum :need_cpus, :null=>false
         Float :need_cpu_mhz, :null=>false
@@ -147,14 +146,18 @@ module Dcmgr
       User.create(:name=>'staff', :password=>'passwd')
     end
 
-    def load_data(dump_path)
-      open(dump_path) {|f|
-        while line = f.gets
-          unless line == "\n"
-            @db << line
+    def load_data(path)
+      if FileTest.exist? path + '.dump'
+        open(path + ".dump") {|f|
+          while line = f.gets
+            @db << line unless line == "\n"
           end
-        end
-      }
+        }
+      elsif FileTest.exist? path + '.rb'
+        open(path + ".rb") {|f|
+          require path + ".rb"
+        }
+      end
     end
 
     def drop!

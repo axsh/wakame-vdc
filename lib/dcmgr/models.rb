@@ -58,6 +58,8 @@ class TagMapping < Sequel::Model
   TYPE_PHYSICAL_HOST_LOCATION = 7
   TYPE_IMAGE_STORAGE_HOST = 8
   TYPE_IMAGE_STORAGE = 9
+
+  many_to_one :tag
 end
 
 class Account < Sequel::Model
@@ -132,9 +134,11 @@ class Instance < Sequel::Model
     super
     self.status = STATUS_TYPE_OFFLINE
     Dcmgr::logger.debug "becore create: status = %s" % self.status
-    physical_host = PhysicalHost.assign(self)
-    self.hv_agent = HvAgent.create(:physical_host=>physical_host)
-    Dcmgr::logger.debug "becore create: physical host = %s" % self.physical_host
+    unless self.hv_agent
+      physical_host = PhysicalHost.assign(self)
+      self.hv_agent = HvAgent.create(:physical_host=>physical_host)
+    end
+    # Dcmgr::logger.debug "becore create: physical host = %s" % self.physical_host
   end
 
   def validate
