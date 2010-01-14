@@ -10,6 +10,10 @@ module Dcmgr
       @db = Sequel.connect(str)
       load
     end
+
+    def table_exists?(table_name)
+      @db.table_exists? table_name
+    end
     
     def load
       require 'dcmgr/models'
@@ -141,6 +145,16 @@ module Dcmgr
     def initial_data
       Tag.create_system_tags
       User.create(:name=>'staff', :password=>'passwd')
+    end
+
+    def load_data(dump_path)
+      open(dump_path) {|f|
+        while line = f.gets
+          unless line == "\n"
+            @db << line
+          end
+        end
+      }
     end
 
     def drop!

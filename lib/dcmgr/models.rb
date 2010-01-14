@@ -215,6 +215,7 @@ end
 class HvController < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'HVC'; end
+  many_to_one :physical_host
 end
 
 class HvAgent < Sequel::Model
