@@ -139,11 +139,11 @@ module Dcmgr
       end
       
       load
+      initial_data
     end
 
     def initial_data
       Tag.create_system_tags
-      User.create(:name=>'staff', :password=>'passwd')
     end
 
     def load_data(path)

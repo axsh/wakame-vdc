@@ -13,12 +13,9 @@ describe Dcmgr::Schema do
   it "should store initial data, by mysqldump" do
     Dcmgr::Schema.drop!
     Dcmgr::Schema.create!
-    Dcmgr::Schema.initial_data
     
     Dcmgr::Schema.models.each{|model|
-      if model == User
-        User.count.should == 1
-      elsif model == Tag
+      if model == Tag
         Tag.count.should == 1
       else
         model.count.should == 0

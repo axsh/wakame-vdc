@@ -33,11 +33,6 @@ namespace :db do
     Dcmgr::Schema.drop!
   end
 
-  desc 'Create initial data'
-  task :initial_data => [ :environment ] do
-    Dcmgr::Schema.initial_data
-  end
-
   desc 'Create sample data'
   task :sample_data => [ :environment ] do
     Dcmgr::Schema.load_data 'fixtures/sample_data'

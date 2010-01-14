@@ -8,7 +8,6 @@ describe "instance access by active resource" do
   before(:all) do
     Dcmgr::Schema.drop!
     Dcmgr::Schema.create!
-    Dcmgr::Schema.initial_data
     create_authuser
 
     @class = describe_activeresource_model :Instance
