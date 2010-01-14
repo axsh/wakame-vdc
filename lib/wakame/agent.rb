@@ -54,7 +54,19 @@ module Wakame
       if Wakame.config.environment == :EC2
         @agent_id = self.class.ec2_query_metadata_uri('instance-id')
       else
-        @agent_id = '__STAND_ALONE__'
+        # for Linux
+        @nic = 'eth0'
+
+        cmd = (`/sbin/ifconfig #{@nic}`).split(/\n+/)
+        cmd[0] =~ %r/^#{@nic}\s+Link\sencap:Ethernet\s+HWaddr\s(\S+)\s+$/m
+        @macaddr = $1
+
+        cmd[1] =~ %r/^\s+inet addr:(\d+\.\d+\.\d+\.\d+).*$/m
+        abort("Failed to get ipaddress") if cmd[1].nil?
+        @ipaddr = $1
+
+        @agent_id = "#{@ipaddr}-#{@macaddr}"
+        @agent_id
       end
     end
 
@@ -89,4 +101,4 @@ module Wakame
     end
 
   end
-end 
+end
