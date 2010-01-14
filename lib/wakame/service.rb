@@ -128,10 +128,12 @@ module Wakame
       end
 
       def update_vm_attr
-        require 'right_aws'
-        ec2 = RightAws::Ec2.new(Wakame.config.aws_access_key, Wakame.config.aws_secret_key)
-        dat = ec2.describe_instances([self.id])
-        @vm_attr = dat[0]
+        if Wakame.config.environment == :EC2
+          require 'right_aws'
+          ec2 = RightAws::Ec2.new(Wakame.config.aws_access_key, Wakame.config.aws_secret_key)
+          dat = ec2.describe_instances([self.id])
+          @vm_attr = dat[0]
+        end
         self.save
       end
     end
