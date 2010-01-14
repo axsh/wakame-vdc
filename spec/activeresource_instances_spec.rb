@@ -229,5 +229,7 @@ describe "instance access by active resource" do
     
     instance.put(:snapshot)
   end
+
+  it "should create with relate image storage"
 end
 
