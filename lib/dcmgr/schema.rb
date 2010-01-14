@@ -146,6 +146,10 @@ module Dcmgr
       Tag.create_system_tags
     end
 
+    def createsuperuser(name, passwd)
+      User.create(:name=>name, :password=>'passwd')
+    end
+
     def load_data(path)
       if FileTest.exist? path + '.dump'
         open(path + ".dump") {|f|

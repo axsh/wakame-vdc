@@ -1,3 +1,4 @@
+# -*- coding: undecided -*-
 require 'rake/clean'
 
 task :default => :spec
@@ -20,6 +21,31 @@ end
 
 task :run do
   sh "./bin/shotgun -p 3000 config.ru"
+end
+
+def input(disp, empty=false)
+  print disp
+  while buf = STDIN.gets
+    break if buf and (buf.length > 0 or empty)
+  end
+  
+  buf.chomp
+end
+
+desc 'Create super user'
+task :createsuperuser => [ :environment ] do
+  user = input("Username: ")
+  exit unless user
+  system "stty -echo"
+  begin
+    passwd = input("Password: ")
+    puts
+    passwd_again = input("Password (again): ", true)
+    puts
+  end while passwd != passwd_again
+  system "stty echo"
+  
+  Dcmgr::Schema.createsuperuser(user, passwd)
 end
 
 namespace :db do
