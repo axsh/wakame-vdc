@@ -16,8 +16,9 @@ describe "instance access by active resource" do
     @auth_tag_class = describe_activeresource_model :AuthTag
     @user_class = describe_activeresource_model :User
     @user = @user_class.find(:myself)
-    image_storage_host_a = ImageStorageHost.create()
+    image_storage_host_a = ImageStorageHost.create
     ImageStorage.create(:image_storage_host=>image_storage_host_a)
+    @image_storage = ImageStorage.create(:image_storage_host=>image_storage_host_a)
   end
     
   before(:each) do
@@ -62,7 +63,9 @@ describe "instance access by active resource" do
       @class.create(:account=>@account.id,
                     :need_cpus=>1,
                     :need_cpu_mhz=>0.5,
-                    :need_memory=>1.0)    
+                    :need_memory=>1.0,
+                    :image_storage=>@image_storage.uuid)
+      
     }.should raise_error(ActiveResource::BadRequest)
   end
 
@@ -72,7 +75,8 @@ describe "instance access by active resource" do
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
-                                :need_memory=>1.0)
+                                :need_memory=>1.0,
+                                :image_storage=>@image_storage.uuid)
 
     $instance_a.status.should == Instance::STATUS_TYPE_OFFLINE
     $instance_a.account.should == @account.id
@@ -145,7 +149,8 @@ describe "instance access by active resource" do
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
-                                :need_memory=>0.5)
+                                :need_memory=>0.5,
+                                :image_storage=>@image_storage.uuid)
 
     $instance_a.put(:run)
     $instance_a = @class.find($instance_a.id)
@@ -233,7 +238,5 @@ describe "instance access by active resource" do
     
     instance.put(:snapshot)
   end
-
-  it "should create with relate image storage"
 end
 

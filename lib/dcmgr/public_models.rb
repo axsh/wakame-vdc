@@ -147,6 +147,10 @@ module Dcmgr
           return nil unless super
           super.uuid
         end
+        def object.image_storage
+          return nil unless super
+          super.uuid
+        end
       end
       object
     end
@@ -364,7 +368,7 @@ module Dcmgr
       req_hash = json_request
       req_hash.delete 'id'
       
-      req_hash['image_storage'] = ImageStorage[1]
+      req_hash['image_storage'] = ImageStorage[req_hash['image_storage']]
 
       instance = _create(req_hash)
       physical_host = PhysicalHost.assign(instance)
