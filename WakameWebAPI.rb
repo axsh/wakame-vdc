@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
-
 require 'rubygems'
 require 'active_resource'
 
-URL = "http://dcmgr.opty.jp/"
-#URL = "http://192.168.1.133:3000/"
-#URL = "http://192.168.1.135/"
+load('dcmgr-gui.conf')
 
 class WebAPI < ActiveResource::Base
-  self.site     = URL
+  self.site     = API_SERVER_URL
   self.format   = :json
-
   def self.login(user, pass)
     self.user = user
     self.password = pass
@@ -23,7 +19,10 @@ end
 class User < WebAPI
 end
 
-class Tag < WebAPI
+class AuthTag < WebAPI
+end
+
+class NameTag < WebAPI
 end
 
 class Instance < WebAPI
