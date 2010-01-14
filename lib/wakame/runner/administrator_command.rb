@@ -275,7 +275,8 @@ class Wakame::Cli::Subcommand::Status
 
   summary "Show summary status across the cluster"
 
-  STATUS_TMPL = <<__E__
+  if Wakame.config.environment == :EC2
+    STATUS_TMPL = <<__E__
 <%- if cluster -%>
 Cluster : <%= cluster["name"].to_s %> (<%= cluster_status_msg(cluster["status"]) %>)
 <%- cluster["resources"].keys.each { |res_id|
@@ -315,6 +316,7 @@ Cloud Host (<%= cluster["cloud_hosts"].size %>):
 Cluster: 
   No cluster data is loaded in master. (Run import_cluster_config first)
 <%- end # if cluster -%>
+
 <%- if agent_pool && agent_pool["group_active"].size > 0 -%>
 
 Agents (<%= agent_pool["group_active"].size %>):
@@ -331,9 +333,76 @@ Agents (<%= agent_pool["group_active"].size %>):
 <%- else -%>
 
 Agents (0):
+.....
   None of agents are observed.
 <%- end -%>
 __E__
+
+  else
+    STATUS_TMPL = <<__E__
+<%- if cluster -%>
+Cluster : <%= cluster["name"].to_s %> (<%= cluster_status_msg(cluster["status"]) %>)
+<%- cluster["resources"].keys.each { |res_id|
+  resource = body["resources"][res_id]
+-%>
+  <%= resource["class_type"] %> : <current=<%= resource["instance_count"] %> min=<%= resource["min_instances"] %>, max=<%= resource["max_instances"] %><%= resource["require_agent"] ? "" : ", AgentLess" %>>
+  <%- resource["services_ref"].each { |svc| -%>
+     <%= svc["id"] %> (<%= svc_status_msg(svc["status"]) %>:<%= monitor_status_msg(svc["monitor_status"]) %>)
+  <%- } -%>
+<%- } -%>
+<%- if cluster["services"].size > 0  -%>
+
+Instances (<%= cluster["services"].size %>):
+  <%- cluster["services"].keys.each { |svc_id| 
+    svc = body["services"][svc_id]
+  -%>
+  <%= svc_id %> : <%= svc["resource_ref"]["class_type"] %> (<%= svc_status_msg(svc["status"]) %>:<%= monitor_status_msg(svc["monitor_status"]) %>)
+    <%- if svc["agent_ref"] -%>
+    On VM: <%= svc["agent_ref"]["id"] %>
+    <%- end -%>
+  <%- } -%>
+<%- end -%>
+<%- if cluster["cloud_hosts"].size > 0 -%>
+
+Cloud Host (<%= cluster["cloud_hosts"].size %>):
+  <%- cluster["cloud_hosts"].keys.each { |host_id| 
+    cloud_host = body["cloud_hosts"][host_id]
+  -%>
+  <%= host_id %> : <% if cloud_host["agent_id"] %>bind to <%= cloud_host["agent_id"] %><% end %>
+    <%- assigned_svcs = body['services'].values.find_all{|data| data['cloud_host_id'] == host_id } -%>
+    <%- if assigned_svcs.size > 0 -%>
+    Assigned: <%= body['services'].values.find_all{|data| data['cloud_host_id'] == host_id }.map{|data| data['resource_ref']['class_type'] }.join(', ')  %>
+    <%- end -%>
+  <%- } -%>
+<%- end -%>
+<%- else # if cluster -%>
+Cluster: 
+  No cluster data is loaded in master. (Run import_cluster_config first)
+<%- end # if cluster -%>
+
+<%- if agent_pool && agent_pool["group_active"].size > 0 -%>
+
+Agents (<%= agent_pool["group_active"].size %>):
+  <%- agent_pool["group_active"].each { |agent_id|
+  a = body["agents"][agent_id]
+  -%>
+  <%= a["id"] %> : <%= (Time.now - Time.parse(a["last_ping_at"])).to_i %> sec(s) (<%= agent_status_msg(a["status"]) %>)
+   <%- if a["reported_services"].size > 0 && !cluster["services"].empty? -%>
+    Services (<%= a["reported_services"].size %>): <%= a["reported_services"].keys.collect{ |svc_id|
+                body['services'][svc_id].nil? ? 'Unknown:' + svc_id[0,5] + '...' :  body["services"][svc_id]["resource_ref"]["class_type"]
+              }.join(', ') %>
+   <%- end -%>
+  <%- } -%>
+<%- else -%>
+
+Agents (0):
+.....
+  None of agents are observed.
+<%- end -%>
+__E__
+  end
+
+
 
   SVC_STATUS_MSG={
     Wakame::Service::STATUS_TERMINATE=>'Terminated',
