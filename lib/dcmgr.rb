@@ -32,11 +32,11 @@ module Dcmgr
   end
 
   def hvchttp
-    @hvchttp ||= HvcHttpMock
+    @hvchttp ||= HvcHttpMock.new(HvController[1])
   end
 
   def set_hvcsrv(hvchttp)
-    @hvchttp = hvhttp
+    @hvchttp = hvchttp
   end
 
   def set_scheduler(scheduler)
