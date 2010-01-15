@@ -6,10 +6,6 @@ require 'active_resource'
 require 'rack/handler/webrick'
 require 'dcmgr'
 
-Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
-Dcmgr::Schema.drop!
-Dcmgr::Schema.create!
-
 module ActiveResourceHelperMethods
   extend self
   
@@ -34,17 +30,13 @@ module ActiveResourceHelperMethods
 END
   end
 
-  def create_authuser
-    $spec_user = User.create(:name=>'__test__', :password=>'passwd')
-    $spec_account = Account.create(:name=>'__test_account__')
-  end
-
-  def delete_authuser
-    $spec_user.delete
+  def reset_db
+    Dcmgr::Schema.drop!
+    Dcmgr::Schema.create!
+    Dcmgr::Schema.load_data File.dirname(__FILE__) + '/../fixtures/sample_data'
   end
 end
 
-unless defined? DISABLE_TEST_SERVER
-  ActiveResourceHelperMethods.runserver
-end
-ActiveResourceHelperMethods.create_authuser
+Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
+ActiveResourceHelperMethods.reset_db
+ActiveResourceHelperMethods.runserver unless defined? DISABLE_TEST_SERVER
