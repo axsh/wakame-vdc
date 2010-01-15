@@ -7,6 +7,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 describe "image storage host access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
+    reset_db
     @class = describe_activeresource_model :ImageStorageHost
   end
 
