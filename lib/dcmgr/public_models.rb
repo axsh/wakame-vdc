@@ -407,8 +407,6 @@ module Dcmgr
       instance.status = Instance::STATUS_TYPE_RUNNING
       instance.save
 
-      Dcmgr::set_hvcsrv Dcmgr::HvcHttpMock.new(HvController.all[0])
-
       Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
         res = http.get('/run_instance?hva_ip=%s&instance_uuid=%s&cpus=%s&cpu_mhz=%s&memory=%s' %
                        [instance.hv_agent.ip,
