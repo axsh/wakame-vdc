@@ -6,9 +6,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 describe "instance access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
-    Dcmgr::Schema.drop!
-    Dcmgr::Schema.create!
-    create_authuser
+    reset_db
 
     @class = describe_activeresource_model :Instance
     @physical_host_class = describe_activeresource_model :PhysicalHost
@@ -161,6 +159,8 @@ describe "instance access by active resource" do
 
   it "should run instance" do
     hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
+    Dcmgr::set_hvcsrv hvchttp
+    
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
@@ -172,13 +172,7 @@ describe "instance access by active resource" do
     $instance_a.status.should == Instance::STATUS_TYPE_RUNNING
     
     real_inst = Instance[$instance_a.id]
-    hvchttp.hvas.each{|k,v|
-      p [k, v]
-      v.instances.each{|sk, sv|
-        p [sk, sv]
-      }
-    }
-    hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip].should == :run
+    hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip][1].should == :online
   end
 
   it "should shutdown, and auth check" do
