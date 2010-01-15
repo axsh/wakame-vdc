@@ -159,7 +159,6 @@ AMPanel = function(){
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
       url: '/account-list',
-//    url: './account.json',
       method:'GET'
     }),
     reader: new Ext.data.JsonReader({
@@ -456,7 +455,6 @@ AddAccountWindow = function(){
 		modal: true,
 		plain: true,
         defaults:{bodyStyle:'padding:15px'},
-
 		items: [form],
 		buttons: [{
 		  text:'Create',
@@ -495,15 +493,15 @@ EditAccountWindow = function(accountData){
         {
         fieldLabel: 'Account-ID',
         xtype: 'displayfield',
-        name: 'form_textfield',
-        value: accountData.get('account-id'),
+        id: 'id',
+        value: accountData.get('id'),
         anchor: '100%'
         }
         ,{
         fieldLabel: 'Account-Name',
         xtype: 'textfield',
-        name: 'form_textfield',
-        value: accountData.get('account-name'),
+        name: 'nm',
+        value: accountData.get('nm'),
         anchor: '100%'
         }
         ,{
@@ -512,7 +510,7 @@ EditAccountWindow = function(accountData){
         items: [
           { boxLabel: 'Enable',
             name: 'enable',
-            checked: accountData.get('enable')=='true'?true:false
+            checked: accountData.get('en')=='y'?true:false
           }
         ]
         }
@@ -520,14 +518,14 @@ EditAccountWindow = function(accountData){
         fieldLabel: 'Contract-Date',
         xtype: 'textfield',
         name: 'contract-date',
-        value: accountData.get('contract-date'),
+        value: accountData.get('cn'),
         anchor: '100%'
         }
         ,{
         fieldLabel: 'Memo',
         xtype: 'textarea',
         name: 'form_textarea',
-        value: accountData.get('memo-text'),
+        value: accountData.get('mm'),
         anchor: '100%'
         }
       ]
