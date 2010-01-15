@@ -13,7 +13,7 @@ module Dcmgr
         @hvas = Hash[*hvc.hv_agents.map{|hva|
                        hva_data = Hva.new(hva.ip)
                        hva.instances.each{|ins|
-                         hva_data.add_instance(ins.ip, ins.id, ins.status)
+                         hva_data.add_instance(ins.ip, ins.uuid, ins.status_sym)
                        }
                        [hva.ip, hva_data]
                      }.flatten]
@@ -28,18 +28,10 @@ module Dcmgr
       @hvas[hva_ip] = Hva.new(hva_ip)
     end
 
-    def inc_instance_ip
-      @@instance_ip ||= 0
-      @@instance_ip += 1
-    end
-
     def add_instance(instance)
       hva_ip = instance[:hva]
       hva = @hvas[hva_ip]
       instance_uuid, instance_ip = instance[:uuid], instance[:ip]
-      unless instance_ip
-        instance_ip = '192.168.2.' + inc_instance_ip
-      end
       hva.add_instance(instance_ip, instance_uuid, instance[:status])
     end
 
@@ -64,12 +56,38 @@ module Dcmgr
         @instances = {}
       end
 
+      def dummy_instance_ip
+        @@instance_ip ||= 0
+        @@instance_ip += 1
+        '192.168.2.%s' % @@instance_ip
+      end
+      
       def add_instance(ip, uuid, status)
+        unless ip
+          raise "can't empty uuid" unless uuid
+          ip = dummy_instance_ip
+          instance = Instance[uuid]
+          instance.ip = ip
+          instance.save
+        end
+        
+        p [ip, uuid, status].join(",").to_s
+        p caller
         @instances[ip] = [uuid, status]
       end
 
       def update_instance(ip, uuid=nil, status=nil)
-        cur_uuid, cur_status = @instances[ip]
+        unless ip
+          @instances.each{|_ip, inst|
+            next unless inst[0] == uuid
+            cur_uuid, cur_status = inst
+            ip = _ip
+            break
+          }
+        else
+          cur_uuid, cur_status = @instances[ip]
+        end
+
         uuid ||= cur_uuid
         status ||= cur_status
         add_instance(ip, uuid, status)
@@ -93,7 +111,11 @@ module Dcmgr
       when '/run_instance'
         query = CGI.parse(uri.query)
         hva_ip = query['hva_ip'][0]
-        @hvas[hva_ip].update_instance(hva_ip, nil, :online)
+        instance_uuid = query['instance_uuid'][0]
+        unless @hvas[hva_ip]
+          raise "unkown hva ip: %s" % hva_ip
+        end
+        @hvas[hva_ip].update_instance(nil, instance_uuid, :online)
         p @hvas
         HvcHttpMockResponse.new(200, "ok")
       when '/terminate_instance'
