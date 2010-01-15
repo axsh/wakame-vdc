@@ -135,6 +135,10 @@ module Dcmgr
           return nil unless super
           super.uuid
         end
+        def object.hv_agent
+          return nil unless super
+          super.uuid
+        end
         def object.user
           return nil unless super
           super.uuid
@@ -372,7 +376,7 @@ module Dcmgr
 
       instance = _create(req_hash)
       physical_host = PhysicalHost.assign(instance)
-      instance.hv_agent = HvAgent.create(:physical_host=>physical_host)
+      instance.hv_agent = physical_host.hv_agents[0]
       instance.save
       
       format_object(instance)
@@ -402,6 +406,17 @@ module Dcmgr
       instance = Instance[uuid]
       instance.status = Instance::STATUS_TYPE_RUNNING
       instance.save
+
+      Dcmgr::set_hvcsrv Dcmgr::HvcHttpMock.new(HvController.all[0])
+
+      Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
+        res = http.get('/run_instance?hva_ip=%s&instance_uuid=%s&cpus=%s&cpu_mhz=%s&memory=%s' %
+                       [instance.hv_agent.ip,
+                        instance.uuid,
+                        instance.need_cpus, instance.need_cpu_mhz,
+                        instance.need_memory])
+        raise "can't controll hvc server" unless res.success?
+      }
       []
     end
 

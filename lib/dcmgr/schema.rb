@@ -159,8 +159,10 @@ module Dcmgr
         }
       elsif FileTest.exist? path + '.rb'
         open(path + ".rb") {|f|
-          require path + ".rb"
+          Kernel.load path + ".rb"
         }
+      else
+        raise "file not exists: %s" % path
       end
     end
 

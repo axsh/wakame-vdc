@@ -117,6 +117,13 @@ class Instance < Sequel::Model
   STATUS_TYPE_RUNNING = 1
   STATUS_TYPE_ONLINE = 2
   STATUS_TYPE_TERMINATING = 3
+
+  STATUS_TYPES = {
+    STATUS_TYPE_OFFLINE => :offline,
+    STATUS_TYPE_RUNNING => :running,
+    STATUS_TYPE_ONLINE => :online,
+    STATUS_TYPE_TERMINATING => :terminating,
+  }
   
   many_to_one :account
   many_to_one :user
@@ -127,6 +134,10 @@ class Instance < Sequel::Model
   def physical_host
     self.hv_agent.physical_host
   end
+
+  def status_sym
+    STATUS_TYPES[self.status]
+  end
   
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
 
@@ -136,7 +147,7 @@ class Instance < Sequel::Model
     Dcmgr::logger.debug "becore create: status = %s" % self.status
     unless self.hv_agent
       physical_host = PhysicalHost.assign(self)
-      self.hv_agent = HvAgent.create(:physical_host=>physical_host)
+      self.hv_agent = physical_host.hv_agents[0]
     end
     # Dcmgr::logger.debug "becore create: physical host = %s" % self.physical_host
   end
@@ -224,6 +235,7 @@ class HvController < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'HVC'; end
   many_to_one :physical_host
+  one_to_many :hv_agents
 end
 
 class HvAgent < Sequel::Model
