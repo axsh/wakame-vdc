@@ -37,13 +37,7 @@ module Dcmgr
     
     not_found do
       logger.debug "not found"
-      #if request.body.size > 0
-      #  req_hash = JSON.parse(request.body.read)
-        
-      #  "not found " + req_hash.to_s
-      #else
-        "no request data"
-      #end
+      "not found"
     end
   end
 end
