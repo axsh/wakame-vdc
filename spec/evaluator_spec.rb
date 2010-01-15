@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+require 'rubygems'
+require File.dirname(__FILE__) + '/spec_helper'
+
 describe Dcmgr::RoleExecutor do
   it "should evaluate run instance"
   it "should evaluate shutdown instance"

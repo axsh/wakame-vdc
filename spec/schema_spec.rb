@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'rubygems'
+DISABLE_TEST_SERVER = true
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe Dcmgr::Schema do
@@ -16,7 +18,8 @@ describe Dcmgr::Schema do
     
     Dcmgr::Schema.models.each{|model|
       if model == Tag
-        Tag.count.should == 1
+        # check exist system tags
+        Tag.count.should >= 1
       else
         model.count.should == 0
       end
