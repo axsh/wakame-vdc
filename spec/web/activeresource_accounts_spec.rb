@@ -6,6 +6,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 describe "accounts by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
+    reset_db
     @class = describe_activeresource_model :Account
     @user_class = describe_activeresource_model :User
     @user = @user_class.find(:myself)

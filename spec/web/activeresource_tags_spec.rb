@@ -6,6 +6,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 describe "tags access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
+    reset_db
     @name_class = describe_activeresource_model :NameTag
     @auth_class = describe_activeresource_model :AuthTag
     

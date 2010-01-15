@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'rubygems'
-require File.dirname(__FILE__) + '/spec_helper'
+require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "instance access by active resource" do
   include ActiveResourceHelperMethods
@@ -50,6 +50,20 @@ describe "instance access by active resource" do
                                                             @normal_tag_b.id],
                                                     :account=>@account.id) # auth tag
     @user.put(:add_tag, :tag=>instance_crud_auth_tag.id)
+    
+    HvController.destroy
+    @hv_controller = HvController.create(:physical_host=>@physical_host_a,
+                                         :ip=>'192.168.1.10')
+    HvAgent.destroy
+    @hv_agent_a = HvAgent.create(:hv_controller=>@hv_controller,
+                                 :physical_host=>@physical_host_a,
+                                 :ip=>'192.168.1.20')
+    @hv_agent_b = HvAgent.create(:hv_controller=>@hv_controller,
+                                 :physical_host=>@physical_host_a,
+                                 :ip=>'192.168.1.30')
+    @hv_agent_c = HvAgent.create(:hv_controller=>@hv_controller,
+                                 :physical_host=>@physical_host_a,
+                                 :ip=>'192.168.1.40')
   end
 
   it "should not schedule instances while no runnning physical hosts" do
@@ -146,6 +160,7 @@ describe "instance access by active resource" do
   end
 
   it "should run instance" do
+    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
@@ -156,8 +171,14 @@ describe "instance access by active resource" do
     $instance_a = @class.find($instance_a.id)
     $instance_a.status.should == Instance::STATUS_TYPE_RUNNING
     
-    
-    pending("check hvc mock server's status")
+    real_inst = Instance[$instance_a.id]
+    hvchttp.hvas.each{|k,v|
+      p [k, v]
+      v.instances.each{|sk, sv|
+        p [sk, sv]
+      }
+    }
+    hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip].should == :run
   end
 
   it "should shutdown, and auth check" do
