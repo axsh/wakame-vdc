@@ -39,7 +39,8 @@ instance_a = Instance.create(:status=>0, # offline
                              :need_cpus=>1,
                              :need_cpu_mhz=>1.0,
                              :need_memory=>0.5,
-                             :hv_agent=>hv_agent_a)
+                             :hv_agent=>hv_agent_a,
+                             :ip=>'192.168.2.100')
 
 normal_tag_a = Tag.create(:name=>'sample tag a',
                           :account=>account)
