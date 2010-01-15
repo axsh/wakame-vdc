@@ -21,7 +21,7 @@ module Dcmgr::Model
         if p_uuid and p_uuid.length == self.prefix_uuid.length + 9
           return p_uuid[(self.prefix_uuid.length+1), p_uuid.length]
         end
-        raise InvalidUUIDException
+        raise InvalidUUIDException.new("invalid uuid: %s" % p_uuid)
       end
     end
     
