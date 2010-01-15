@@ -5,7 +5,7 @@ task :default => :spec
 
 desc 'Run specs'
 task :spec do
-  sh "./bin/spec -fs -c spec/*_spec.rb"
+  sh "./bin/spec -fs -c spec"
 end
 
 task :environment do
