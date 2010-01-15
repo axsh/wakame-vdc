@@ -71,8 +71,6 @@ module Dcmgr
           instance.save
         end
         
-        p [ip, uuid, status].join(",").to_s
-        p caller
         @instances[ip] = [uuid, status]
       end
 
