@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'rubygems'
-require File.dirname(__FILE__) + '/spec_helper'
+require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "tags access by active resource" do
   include ActiveResourceHelperMethods
