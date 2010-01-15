@@ -1,5 +1,8 @@
 var cardPanel = null;
 var panelMode = 0;
+var upPanel = null;
+var instancePanel = null;
+var imagePanel = null;
 
 Ext.onReady(function(){
   Ext.BLANK_IMAGE_URL='./javascripts/ext-js/resources/images/default/s.gif';
@@ -23,7 +26,7 @@ function ChangePanel(md)
 }
 
 WestPanel = function(){
-  var upPanel = new UpPanel();
+  upPanel = new UpPanel();
   var downPanel = new DownPanel();
 
   WestPanel.superclass.constructor.call(this,{
@@ -40,33 +43,52 @@ Ext.extend(WestPanel, Ext.Panel);
 
 UpPanel = function(){
 
+  var store = new Ext.data.Store({
+    proxy: new Ext.data.HttpProxy({
+      url: '/account-list',
+      method:'GET'
+    }),
+    listeners: {
+      'load': function( temp , records, ope ){
+        if(records.length > 0){
+          combo.setValue(records[0].id);
+        }
+      }
+    },
+    reader: new Ext.data.JsonReader({
+      totalProperty: "totalCount",
+      root:'rows',
+      fields:[
+        { name:'id'    ,type:'string'},
+        { name:'nm'    ,type:'string'}
+      ]
+    })
+  });
+  store.load();
+
+  var combo = new Ext.form.ComboBox({
+    typeAhead: true,
+    lazyRender:true,
+    editable: false,
+    width: 120, 
+    triggerAction: 'all',
+    forceSelection:true,
+    mode: 'local',
+    store: store,
+    valueField: 'id',
+    displayField: 'nm'
+  });
+
   var form = new Ext.form.FormPanel({
       labelWidth: 5, 
       width: 100,
       baseCls: 'x-plain',
-      items: [
-        {
-        xtype: 'combo',
-        editable: false,
-        typeAhead: true,
-        width: 120, 
-        triggerAction: 'all',
-        forceSelection:true,
-        mode: 'local',
-        store: new Ext.data.ArrayStore({
-          id: 1,
-          fields: [
-            'myId',
-            'displayText'
-          ],
-          data: [[1, 'AXSH-SOUMU1'], [2, 'AXSH-SOUMU2']]
-        }),
-        valueField: 'myId',
-        value:1,
-        displayField: 'displayText'
-        }
-      ]
+      items: [ combo ]
   });
+
+  this.getSelectedAccount = function(){
+    return combo.value;
+  }
 
   UpPanel.superclass.constructor.call(this,{
     region: "north", 
@@ -222,8 +244,8 @@ AdminQueryPanel = function(){
 Ext.extend(AdminQueryPanel, Ext.form.FormPanel);
 
 CardPanel = function(){
-  var instancePanel = new InstancePanel();
-  var imagePanel = new ImagePanel();
+  instancePanel = new InstancePanel();
+  imagePanel = new ImagePanel();
   var clusterPanel = new ClusterPanel();
   var servicePanel = new ServicePanel();
 
@@ -241,32 +263,34 @@ Ext.extend(CardPanel, Ext.Panel);
 
 ImagePanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true}); 
-  var store = new Ext.data.SimpleStore({
-
-    fields: [
-      { name: 'wmi-id' },
-      { name: 'name' },
-      { name: 'owner-id' },
-      { name: 'visibility' },
-      { name: 'architecture' },
-      { name: 'image-size' },
-      { name: 'description' }
-    ],
-    data:[
-      [ 'WK-2009', 'Blog',   'O10001', 'public',  'i386',  '0', 'test'],
-      [ 'WK-2010', 'Debian', 'O10001', 'public',  'x86_64','0', ''],
-      [ 'WK-2011', 'SNS',    'O10001', 'private', 'i386',  '0', 'develop']
-    ]
+  var store = new Ext.data.Store({
+    proxy: new Ext.data.HttpProxy({
+      url: '/image-list',
+      method:'GET'
+    }),
+    reader: new Ext.data.JsonReader({
+      totalProperty: "totalCount",
+      root:'rows',
+      fields:[
+        { name:'id' ,type:'string'},
+        { name:'nm' ,type:'string'},
+        { name:'od' ,type:'string'},
+        { name:'vy' ,type:'string'},
+        { name:'ac' ,type:'string'},
+        { name:'is' ,type:'string'},
+        { name:'dc' ,type:'string'}
+      ]
+    })
   });
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
-    { header: "WMI-ID", width: 100, dataIndex: 'wmi-id' },
-    { header: "Name", width: 100, dataIndex: 'name' },
-    { header: "Owner", width: 100, dataIndex: 'owner-id' },
-    { header: "Visibility", width: 100, dataIndex: 'visibility' },
-    { header: "Architecture", width: 100, dataIndex: 'architecture'  },
-    { header: "Image-size", width: 100, dataIndex: 'image-size'  },
-    { header: "Description", width: 100, dataIndex: 'description'  }
+    { header: "WMI-ID",       width: 100, dataIndex: 'id' },
+    { header: "Name",         width: 100, dataIndex: 'nm' },
+    { header: "Owner",        width: 100, dataIndex: 'od' },
+    { header: "Visibility",   width: 100, dataIndex: 'vy' },
+    { header: "Architecture", width: 100, dataIndex: 'ac'  },
+    { header: "Image-size",   width: 100, dataIndex: 'is'  },
+    { header: "Description",  width: 100, dataIndex: 'dc'  }
   ]);
 
   ImagePanel.superclass.constructor.call(this, {
@@ -278,54 +302,66 @@ ImagePanel = function(){
     autoHeight: false,
     stripeRows: true,
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
       emptyMsg: "No data to display"
     }),
     tbar : [
-      { text : 'Launch',handler:function(){}
+      { text : 'Launch',handler:function(){
+		  var temp = sm.getCount();
+		  if(temp > 0){
+            var aid  =  upPanel.getSelectedAccount();
+            var data = sm.getSelected();
+			var launchWin = new LaunchWindow(data,aid);
+			launchWin.show();
+          }
+        }
       },
       { text : 'Delete',handler:function(){}
       }
     ]
   });
+  store.load({params: {start: 0, limit: 50}});		// limit = page size
 }
 Ext.extend(ImagePanel, Ext.grid.GridPanel);
 
 InstancePanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
-  var store = new Ext.data.SimpleStore({
-    fields: [
-      { name: 'instance-id' },
-      { name: 'owner-id' },
-      { name: 'wmi-id' },
-      { name: 'state' },
-      { name: 'public-dns' },
-      { name: 'private-dns' },
-      { name: 'private-ip' },
-      { name: 'type' },
-      { name: 'service' }
-    ],
-    data:[
-      [ 'AA9999995', 'O10001', 'WK-2009', 'running',  'axsh1.com/sssss/', 'xxxx1.com/xxxxx', '192.168.100.10','small','LB'],
-      [ 'AA9999996', 'O10001', 'WK-2009', 'shutdown', '', '', '', 'large',''],
-      [ 'AA9999997', 'O10001', 'WK-2009', 'running', 'axsh2.com/sssss/',  'xxxx2.com/xxxxx', '192.168.100.11','small','Web']
-    ]
+  var store = new Ext.data.Store({
+    proxy: new Ext.data.HttpProxy({
+      url: '/instance-list',
+      method:'GET'
+    }),
+    reader: new Ext.data.JsonReader({
+      totalProperty: "totalCount",
+      root:'rows',
+      fields:[
+        { name:'id' ,type:'string'},
+        { name:'od' ,type:'string'},
+        { name:'wd' ,type:'string'},
+        { name:'st' ,type:'string'},
+        { name:'pub-dns' ,type:'string'},
+        { name:'pri-dns' ,type:'string'},
+        { name:'ip' ,type:'string'},
+        { name:'tp' ,type:'string'},
+        { name:'sv' ,type:'string'}
+      ]
+    })
   });
 
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
-    { header: "Instance ID", width: 100, dataIndex: 'instance-id' },
-    { header: "Owner", width: 100, dataIndex: 'owner-id' },
-    { header: "WMI ID", width: 100, dataIndex: 'wmi-id' },
-    { header: "State", width: 80, dataIndex: 'state' },
-    { header: "Public DNS", width: 100, dataIndex: 'public-dns' },
-    { header: "Private DNS", width: 100, dataIndex: 'private-dns' },
-    { header: "Private IP",  width: 100, dataIndex: 'private-ip'  },
-    { header: "type", width: 50, dataIndex: 'type'  },
-    { header: "Service", width: 100, dataIndex: 'service'  }
+    { header: "Instance ID" ,width: 100, dataIndex: 'id'},
+    { header: "Owner"       ,width: 100, dataIndex: 'od'},
+    { header: "WMI ID"      ,width: 100, dataIndex: 'wd'},
+    { header: "State"       ,width: 80,  dataIndex: 'st'},
+    { header: "Public DNS"  ,width: 100, dataIndex: 'pub-dns'},
+    { header: "Private DNS" ,width: 100, dataIndex: 'pri-dns'},
+    { header: "Private IP"  ,width: 100, dataIndex: 'ip'},
+    { header: "type"        ,width: 50,  dataIndex: 'tp'},
+    { header: "Service"     ,width: 100, dataIndex: 'sv'}
   ]);
 
   InstancePanel.superclass.constructor.call(this, {
@@ -337,21 +373,46 @@ InstancePanel = function(){
     autoHeight: false,
     stripeRows: true,
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
       emptyMsg: "No data to display"
     }),
     tbar : [
-      { text : 'Reboot',handler:function(){}
+      { text : 'Reboot',handler:function(){
+		  if(sm.getCount() <= 0)
+            return;
+          Ext.Ajax.request({
+	        url: '/instance-reboot',
+	        method: "GET", 
+            params : 'id=' + sm.getSelected().id
+	      }); 
+        }
       },
-      { text : 'Terminate',handler:function(){}
+      { text : 'Terminate',handler:function(){
+		  if(sm.getCount() <= 0)
+            return;
+          Ext.Ajax.request({
+	        url: '/instance-terminate',
+	        method: "GET", 
+            params : 'id=' + sm.getSelected().id
+	      }); 
+        }
       },
-      { text : 'Save',handler:function(){}
+      { text : 'Save',handler:function(){
+		  if(sm.getCount() <= 0)
+            return;
+          Ext.Ajax.request({
+	        url: '/instance-save',
+	        method: "GET", 
+            params : 'id=' + sm.getSelected().id
+	      }); 
+        }
       }
     ]
   });
+  store.load({params: {start: 0, limit: 50}});		// limit = page size
 }
 Ext.extend(InstancePanel, Ext.grid.GridPanel);
 
@@ -510,77 +571,80 @@ ServicePanel = function(){
 }
 Ext.extend(ServicePanel, Ext.grid.GridPanel);
 
-AddScaleOutWindow = function(){
-    var form = new Ext.form.FormPanel({
-      labelWidth: 70, 
-      width: 150,
-      baseCls: 'x-plain',
-      items: [
-        {
-        fieldLabel: 'Cluster ID',
-        xtype: 'displayfield',
-        name: 'form_textfield',
-        value: 'AAAAAAA',
-        anchor: '100%'
-        }
-        ,{
-        fieldLabel: 'Name',
-        xtype: 'displayfield',
-        name: 'form_textfield',
-        value: 'AAAAAAA',
-        anchor: '100%'
-        }
-        ,{
-        fieldLabel: 'LB',
-        xtype: 'numberfield',
-        name: 'form_textfield',
-        width: 80
-        }
-        ,{
-        fieldLabel: 'Web',
-        xtype: 'numberfield',
-        name: 'form_textfield',
-        width: 80
-        }
-        ,{
-        fieldLabel: 'APP',
-        xtype: 'numberfield',
-        name: 'form_textfield',
-        width: 80
-        }
-        ,{
-        fieldLabel: 'DB',
-        xtype: 'numberfield',
-        name: 'form_textfield',
-        width: 80
-        }
-      ]
-    });
+LaunchWindow = function(launchData,account_id){
+  var form = new Ext.form.FormPanel({
+    labelWidth: 70, 
+    width: 150,
+    baseCls: 'x-plain',
+    items: [
+    {
+      fieldLabel: 'WMI-ID',
+      xtype: 'displayfield',
+      value: launchData.get('id'),
+      anchor: '100%'
+    }
+    ,{
+      fieldLabel: 'Name',
+      xtype: 'displayfield',
+      value: launchData.get('nm'),
+      anchor: '100%'
+    },
+    {
+      xtype: 'hidden',
+      id: 'wd',
+      value: launchData.get('id'),
+    }
+    ,{
+      xtype: 'hidden',
+      id: 'id',
+      value: account_id,
+    }
+    ,{
+      fieldLabel: 'TYPE',
+      xtype: 'textfield',
+      id: 'tp',
+      width: 80
+    }]
+  });
 
-    AddScaleOutWindow.superclass.constructor.call(this, {
-        iconCls: 'icon-panel',
-        collapsible:true,
-        titleCollapse:true,
-        width: 250,
-        height: 250,
-		layout:'fit',
-		closeAction:'hide',
-        title: 'Scale Out/In',
-		modal: true,
-		plain: true,
-        defaults:{bodyStyle:'padding:15px'},
+  LaunchWindow.superclass.constructor.call(this, {
+    iconCls: 'icon-panel',
+    collapsible:true,
+    titleCollapse:true,
+    width: 250,
+    height: 200,
+	layout:'fit',
+	closeAction:'hide',
+    title: 'Launch',
+	modal: true,
+	plain: true,
+    defaults:{bodyStyle:'padding:15px'},
 
-		items: [form],
-		buttons: [{
-			text:'Save',
-		},{
-			text: 'Close',
-			handler: function(){
-				this.hide();
-			},
-			scope:this
-		}]
-
-    });
+	items: [form],
+	buttons: [{
+	  text:'Launch',
+	  handler: function(){
+        form.getForm().submit({
+          url: '/instance-create',
+          method: 'POST',
+          success: function(form, action) {
+            alert( action.response.responseText );
+	        this.close();
+          },
+          failure: function(form, action) {
+            alert( action.failureType );
+	        this.close();
+          }
+        });
+	  },
+	  scope:this
+	},{
+	  text: 'Close',
+	  handler: function(){
+	  this.hide();
+	  },
+	  scope:this
+	}]
+  });
 }
-Ext.extend(AddScaleOutWindow, Ext.Window);
+Ext.extend(LaunchWindow, Ext.Window);
