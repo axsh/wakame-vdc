@@ -29,7 +29,7 @@ describe "user access by active resource" do
 
   it "should get myself" do
     user = @class.find(:myself)
-    user.name.should == $spec_user.name
+    user.name.should == User[1].name
   end
 
   it "should add tag" do
