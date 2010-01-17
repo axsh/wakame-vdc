@@ -197,6 +197,7 @@ end
 class PhysicalHost < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   extend Dcmgr::scheduler
+
   def self.prefix_uuid; 'PH'; end
 
   one_to_many :hv_agents

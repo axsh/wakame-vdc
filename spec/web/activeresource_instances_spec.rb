@@ -104,7 +104,7 @@ describe "instance access by active resource" do
 
   it "should schedule instances by schedule algorithm 2" do
     pending
-    Dcmgr::set_scheduler Dcmgr::PhysicalHostScheduler::Algorithm2
+    Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm2
     # physical hosts
     # id / cpus / mhz / memory
     # 1  / 4    / 1.0  / 2.0 
@@ -136,7 +136,7 @@ describe "instance access by active resource" do
   end
 
   it "should schedule instances by schedule algorithm 1" do
-    Dcmgr::set_scheduler Dcmgr::PhysicalHostScheduler::Algorithm1
+    Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm1
     
     # physical hosts
     # id / cpus / mhz / memory

@@ -3,7 +3,7 @@ set :url, 'http://localhost:4567'
 
 Dcmgr.set_logger Logger.new('dcmgr.log')
 
-Dcmgr.set_scheduler Dcmgr::PhysicalHostScheduler::Algorithm1
+Dcmgr.scheduler = Dcmgr::PhysicalHostScheduler::Algorithm1
 
 Dcmgr::Schema.connect \
   'mysql://localhost/wakame_dcmgr?user=wakame_dcmgr&password=passwd'

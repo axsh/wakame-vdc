@@ -9,7 +9,7 @@ require 'dcmgr/scheduler'
 
 module Dcmgr
   extend self
-
+  
   def configure(config_file=nil)
     load(config_file) if config_file
     self
@@ -39,19 +39,16 @@ module Dcmgr
     @hvchttp = hvchttp
   end
 
-  def set_scheduler(scheduler)
-    @scheduler = scheduler
-  end
-
   def scheduler
     @scheduler ||= PhysicalHostScheduler::Algorithm2
   end
+
+  attr_writer :scheduler
   
   def new(config_file)
     config_file ||= 'dcmgr.conf'
     configure(config_file)
     require 'dcmgr/web'
-
     Web
   end
 end
