@@ -1,7 +1,7 @@
 
 set :url, 'http://localhost:4567'
 
-Dcmgr.set_logger Logger.new('dcmgr.log')
+Dcmgr.logger = Logger.new('dcmgr.log')
 
 Dcmgr.scheduler = Dcmgr::PhysicalHostScheduler::Algorithm1
 

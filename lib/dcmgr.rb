@@ -15,11 +15,7 @@ module Dcmgr
     self
   end
   
-  def options
-    Sinatra.application.options
-  end
-
-  def set_logger(logger)
+  def logger=(logger)
     @logger = logger
     def @logger.write(str)
       self << str
@@ -27,7 +23,7 @@ module Dcmgr
   end
 
   def logger
-    set_logger Logger.new(STDOUT) unless @logger 
+    @logger = Logger.new(STDOUT) unless @logger 
     @logger
   end
 
