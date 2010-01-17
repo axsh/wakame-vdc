@@ -23,7 +23,7 @@ module Dcmgr
   end
 
   def logger
-    @logger = Logger.new(STDOUT) unless @logger 
+    self.logger = Logger.new(STDOUT) unless @logger 
     @logger
   end
 
