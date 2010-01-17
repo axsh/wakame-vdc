@@ -5,7 +5,8 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "instance access by active resource" do
   include ActiveResourceHelperMethods
-  before(:all) do
+  
+  def init
     reset_db
 
     @class = describe_activeresource_model :Instance
@@ -17,6 +18,10 @@ describe "instance access by active resource" do
     image_storage_host_a = ImageStorageHost.create
     ImageStorage.create(:image_storage_host=>image_storage_host_a)
     @image_storage = ImageStorage.create(:image_storage_host=>image_storage_host_a)
+  end
+  
+  before(:all) do
+    init
   end
     
   before(:each) do
@@ -145,9 +150,9 @@ describe "instance access by active resource" do
     hosts = {}; hosts.default = 0
     3.times{
       hosts[@class.create(:account=>@account.id,
-                            :need_cpus=>1,
-                            :need_cpu_mhz=>1.0,
-                            :need_memory=>1.0).physical_host] += 1
+                          :need_cpus=>1,
+                          :need_cpu_mhz=>1.0,
+                          :need_memory=>1.0).physical_host] += 1
     }
     
     # each floor physica hosts
@@ -188,6 +193,19 @@ describe "instance access by active resource" do
     
     pending("check hvc mock server's status")
     
+    instance = @class.create(:account=>@account.id,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.5,
+                             :need_memory=>0.5)
+    instance.put(:add_tag, :tag=>@normal_tag_c)
+    
+    lambda {
+     instance.put(:shutdown)
+    }.should raise_error(ActiveResource::BadRequest)
+  end
+
+  it "shoud shutdown by sample data, and raise role error" do
+    pending
     instance = @class.create(:account=>@account.id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
@@ -252,6 +270,16 @@ describe "instance access by active resource" do
                              :need_memory=>0.5)
     
     instance.put(:snapshot)
+  end
+  
+  it "should shutdown by sample data" do
+    reset_db
+    real_instance = Instance[1]
+    instance = @class.find(real_instance.uuid)
+    instance.should be_true
+    instance.put(:add_tag, :tag=>@normal_tag_a)
+    instance.put(:shutdown)
+    init
   end
 end
 

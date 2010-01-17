@@ -1,6 +1,6 @@
 
 module Dcmgr
-  class RoleException < Exception; end
+  class RoleError < StandardError; end
     
   module RoleExecutor
     class Base
@@ -14,14 +14,16 @@ module Dcmgr
       def self.id; 1; end
       
       def evaluate(evaluator)
-        evaluator.tags.each{|tag|
-          return if @instance.tags.include? tag
+        Tag.filter(:owner_id=>evaluator.id, :role=>ShutdownInstance.id).each{|tag|
+          @instance.tags.each{|t|
+            return if tag.tags.include? t
+          }
         }
-        raise RoleException.new("no role")
+        raise RoleError.new("no role(user: %s, target: %s)" % [evaluator.uuid, @instance.uuid])
       end
 
       def execute(user)
-        @instance.status = Instance::STATUS_TYPE_STOP
+        @instance.status = Instance::STATUS_TYPE_OFFLINE
         @instance.save
         true
       end
@@ -47,8 +49,10 @@ module Dcmgr
     
     role = RoleExecutor[target, action]
     raise ArgumentError.new("unkown role(target: %s, action: %s)" % [target, action]) unless role
+    
     Dcmgr::logger.debug("role: %s" % role)
-    raise RoleException.new("can't %s(evaluator: %s, target: %s" % [action, target]) unless role.evaluate(evaluator)
+    role.evaluate(evaluator)
+    
     role.execute(evaluator)
   end
 end

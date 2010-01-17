@@ -90,6 +90,8 @@ module Dcmgr
         
         if obj.is_a? Array
           ret = obj.collect{|i| model2hash(i)}
+        elsif obj == nil
+          ret = nil
         else
           ret = model2hash(obj)
         end
