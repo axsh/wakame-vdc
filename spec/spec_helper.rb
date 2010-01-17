@@ -3,7 +3,7 @@ $:.unshift "#{File.dirname(__FILE__)}/lib"
 require 'rubygems'
 require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
 require 'active_resource'
-require 'rack/handler/webrick'
+require 'rack/handler/thin'
 require 'dcmgr'
 
 module ActiveResourceHelperMethods
@@ -11,7 +11,7 @@ module ActiveResourceHelperMethods
   
   def runserver
     Thread.new do
-      Rack::Handler::WEBrick.run Dcmgr::Web, :Port => 19393
+      Rack::Handler::Thin.run Dcmgr::Web, :Port => 19393
     end
   end
 
