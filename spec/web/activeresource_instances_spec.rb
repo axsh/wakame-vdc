@@ -164,7 +164,7 @@ describe "instance access by active resource" do
 
   it "should run instance" do
     hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
-    Dcmgr::set_hvcsrv hvchttp
+    Dcmgr::hvchttp = hvchttp
     
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,

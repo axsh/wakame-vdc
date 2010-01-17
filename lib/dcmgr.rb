@@ -35,9 +35,7 @@ module Dcmgr
     @hvchttp ||= HvcHttpMock.new(HvController[1])
   end
 
-  def set_hvcsrv(hvchttp)
-    @hvchttp = hvchttp
-  end
+  attr_writer :hvchttp
 
   def scheduler
     @scheduler ||= PhysicalHostScheduler::Algorithm2
