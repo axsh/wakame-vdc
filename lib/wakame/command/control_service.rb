@@ -21,7 +21,7 @@ class Wakame::Command::ControlService
       cloud_host_id = nil
       refsvc = service_cluster.find_service(@options["service_id"])
       if refsvc.nil?
-       raise("Unknown ServiceInstance ID: #{@options["service_id"]}")
+        raise("Unknown ServiceInstance ID: #{@options["service_id"]}")
       end
       trigger_action{|action|
         num.times{
@@ -31,13 +31,25 @@ class Wakame::Command::ControlService
     else
       num = (service_cluster.instance_count(resobj) - num).to_i
       refsvc = service_cluster.each_instance(resobj)
-      do_terminate = true
       c = 1
+      res = {}
       refsvc.reverse_each {|svc|
-        trigger_action(Wakame::Actions::StopService.new(svc, do_terminate))
+        cloud_host = Service::CloudHost.find(svc.cloud_host_id)
+        res[svc.id] =  cloud_host.agent.vm_attr
+        trigger_action { |action|
+          action.trigger_action(Wakame::Actions::StopService.new(svc))
+
+          action.flush_subactions
+#           Wakame::StatusDB.barrier{
+#             cloud_host.unmap_agent
+#             cluster.remove_cloud_host(cloud_host.id)
+#           }
+          action.trigger_action(Wakame::Actions::ShutdownVM.new(cloud_host.agent))
+        }
         c += 1
         break if c > num
       }
     end
+    res
   end
 end
