@@ -22,6 +22,7 @@ module Wakame
 
     def initialize(env=WAKAME_ENV)
       super(PARAMS)
+
       if root_path.nil?
         root_path = Object.const_defined?(:WAKAME_ROOT) ? WAKAME_ROOT : '../'
       end
@@ -42,6 +43,10 @@ module Wakame
     
     def root_path
       ::WAKAME_ROOT
+    end
+
+    def cluster_env
+      ENV['WAKAME_CLUSTER_ENV'] ? ENV['WAKAME_CLUSTER_ENV'] : 'development'
     end
 
     def tmp_path
