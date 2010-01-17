@@ -183,6 +183,8 @@ module Dcmgr
             if k == :account
               obj.account = Account[req_hash[k.to_s]]
             else
+              Dcmgr.logger.debug("%s, %s, %s, %s" %
+                                 [k, k.class, req_hash[k.to_s], req_hash[k.to_s].class])
               obj.send('%s=' % k, req_hash[k.to_s])
             end
           end
@@ -230,6 +232,7 @@ module Dcmgr
   class PublicAccount
     include PublicModel
     model Account
+    allow_keys [:name, :memo, :enable, :contract_at]
 
     public_action :get do
       list

@@ -66,8 +66,7 @@ class Account < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'A'; end
   
-  set_dataset db[:accounts].filter(:enable=>'y')
-
+  # set_dataset db[:accounts].filter(:enable=>'y')
 
   one_to_many :account_role
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_ACCOUNT}
