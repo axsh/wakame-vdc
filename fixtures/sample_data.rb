@@ -45,10 +45,16 @@ instance_a = Instance.create(:status=>0, # offline
 normal_tag_a = Tag.create(:name=>'sample tag a',
                           :account=>account)
 
-instance_crud = Tag.create(:name=>'sample instance crud',
-                           :role=>0,
-                           :account=>account)
+TagMapping.create(:tag=>normal_tag_a,
+                  :target_type=>TagMapping::TYPE_INSTANCE,
+                  :target_id=>instance_a.id)
 
-TagMapping.create(:tag=>instance_crud,
-                 :target_type=>TagMapping::TYPE_INSTANCE,
-                 :target_id=>instance_a.id)
+instance_crud = Tag.create(:name=>'sample instance crud',
+                           :role=>1,
+                           :account=>account,
+                           :owner=>user)
+
+TagMapping.create(:tag=>normal_tag_a,
+                 :target_type=>TagMapping::TYPE_TAG,
+                 :target_id=>instance_crud.id)
+                  
