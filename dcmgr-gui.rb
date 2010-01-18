@@ -69,12 +69,14 @@ post '/instance-create' do
   cups=1
   cpu_mhz=0.5
   memory=1
-#  instance = Instance.create(
-#                    :account=>id,
-#                    :wid=>wd,
-#                    :need_cpus=>cups,
-#                    :need_cpu_mhz=>cpu_mhz,
-#                    :need_memory=>memory)
+  instance = Instance.create(
+                   :account=>id,
+                   :wid=>wd,
+                   :need_cpus=>cups,
+                   :need_cpu_mhz=>cpu_mhz,
+                   :need_memory=>memory,
+				   :image_storage=>wd)
+  instance.put(:run)
   rtn = {"success" => true}
   content_type :json
   rtn.to_json
@@ -82,6 +84,9 @@ end
 
 post '/instance-reboot' do
   id = params[:id]
+  Instance.login('staff', 'passwd')
+  instance = Instance.find(id)
+  instance.put(:reboot)
   rtn = {"success" => true}
   content_type :json
   rtn.to_json
@@ -89,6 +94,9 @@ end
 
 post '/instance-save' do
   id = params[:id]
+  Instance.login('staff', 'passwd')
+  instance = Instance.find(id)
+  instance.put(:save)
   rtn = {"success" => true}
   content_type :json
   rtn.to_json
@@ -97,8 +105,8 @@ end
 post '/instance-terminate' do
   id = params[:id]
   Instance.login('staff', 'passwd')
-#  instance = Instance.find(id)
-#  instance.terminate
+  instance = Instance.find(id)
+  instance.put(:terminate)
   rtn = {"success" => true}
   content_type :json
   rtn.to_json
