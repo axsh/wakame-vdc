@@ -56,7 +56,7 @@ module Wakame
         m.init
       }
 
-      Wakame.log.info("Started master process : AMQP Server=#{amqp_server_uri.to_s} WAKAME_ROOT=#{Wakame.config.root_path} WAKAME_ENV=#{Wakame.config.environment}")
+      Wakame.log.info("Started master process : AMQP Server=#{amqp_server_uri.to_s} WAKAME_ROOT=#{Wakame.config.root_path} WAKAME_ENV=#{Wakame.config.environment} WAKAME_CLUSTER_ENV=#{Wakame.config.cluster_env}")
     end
 
 

@@ -23,7 +23,7 @@ PIDFILE=/var/run/wakame/wakame-master.pid
 . /lib/lsb/init-functions
 if [ -z $WAKAME_ROOT ]; then
     [ -f /etc/default/wakame ] && . /etc/default/wakame
-    export GEM_HOME WAKAME_ROOT WAKAME_ENV
+    export GEM_HOME WAKAME_ROOT WAKAME_ENV WAKAME_CLUSTER_ENV
 fi
 
 start_master()
