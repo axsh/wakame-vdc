@@ -330,6 +330,12 @@ ImagePanel = function(){
     ]
   });
   store.load({params: {start: 0, limit: 50}});		// limit = page size
+  Ext.TaskMgr.start({
+    run: function(){
+      store.reload();
+    },
+    interval: 30000
+  });
 }
 Ext.extend(ImagePanel, Ext.grid.GridPanel);
 
