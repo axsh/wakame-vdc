@@ -302,7 +302,7 @@ ImagePanel = function(){
   });
 
   this.refresh = function(){
-    toolbar.refresh() 
+    store.reload();
   }
 
   ImagePanel.superclass.constructor.call(this, {
@@ -370,6 +370,18 @@ InstancePanel = function(){
     { header: "Service"     ,width: 100, dataIndex: 'sv'}
   ]);
 
+  this.refresh = function(){
+      store.reload();
+  }
+
+  var toolbar= new Ext.PagingToolbar({
+      pageSize: 50,
+      store: store,
+      displayInfo: true,
+      displayMsg: 'Displaying data {0} - {1} of {2}',
+      emptyMsg: "No data to display"
+  });
+
   InstancePanel.superclass.constructor.call(this, {
     title: 'Instance',
     store: store,
@@ -378,13 +390,7 @@ InstancePanel = function(){
     width: 320,
     autoHeight: false,
     stripeRows: true,
-    bbar: new Ext.PagingToolbar({
-      pageSize: 50,
-      store: store,
-      displayInfo: true,
-      displayMsg: 'Displaying data {0} - {1} of {2}',
-      emptyMsg: "No data to display"
-    }),
+    bbar: toolbar,
     tbar : [
       { text : 'Reboot',handler:function(){
 		  if(sm.getCount() <= 0)
@@ -625,32 +631,37 @@ LaunchWindow = function(launchData,account_id){
 	modal: true,
 	plain: true,
     defaults:{bodyStyle:'padding:15px'},
-
 	items: [form],
 	buttons: [{
 	  text:'Launch',
-	  handler: function(){
+      handler: function(){
         form.getForm().submit({
           url: '/instance-create',
+          waitMsg: 'creating...',
           method: 'POST',
-          success: function(form, action) {
-            alert( action.response.responseText );
-	        this.close();
-          },
-          failure: function(form, action) {
-            alert( action.failureType );
-	        this.close();
-          }
+          scope: this,
+          success: this.submitSuccess,
+          failure: this.submitFailure
         });
 	  },
 	  scope:this
 	},{
 	  text: 'Close',
 	  handler: function(){
-	  this.hide();
+	    this.close();
 	  },
 	  scope:this
 	}]
   });
 }
-Ext.extend(LaunchWindow, Ext.Window);
+Ext.extend(LaunchWindow, Ext.Window , {
+  submitSuccess: function(form, action){
+    this.close();
+//  fireEvent( "","" );
+    instancePanel.refresh();
+  },
+  submitFailure: function(form, action){
+    alert('Create Failure.');
+    this.close();
+  }
+});
