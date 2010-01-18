@@ -293,6 +293,18 @@ ImagePanel = function(){
     { header: "Description",  width: 100, dataIndex: 'dc'  }
   ]);
 
+  toolbar = new Ext.PagingToolbar({
+      pageSize: 50,
+      store: store,
+      displayInfo: true,
+      displayMsg: 'Displaying data {0} - {1} of {2}',
+      emptyMsg: "No data to display"
+  });
+
+  this.refresh = function(){
+    toolbar.refresh() 
+  }
+
   ImagePanel.superclass.constructor.call(this, {
     title: 'Image',
     store: store,
@@ -301,13 +313,7 @@ ImagePanel = function(){
     width: 320,
     autoHeight: false,
     stripeRows: true,
-    bbar: new Ext.PagingToolbar({
-      pageSize: 50,
-      store: store,
-      displayInfo: true,
-      displayMsg: 'Displaying data {0} - {1} of {2}',
-      emptyMsg: "No data to display"
-    }),
+    bbar: toolbar,
     tbar : [
       { text : 'Launch',handler:function(){
 		  var temp = sm.getCount();
@@ -385,7 +391,7 @@ InstancePanel = function(){
             return;
           Ext.Ajax.request({
 	        url: '/instance-reboot',
-	        method: "GET", 
+	        method: "POST", 
             params : 'id=' + sm.getSelected().id
 	      }); 
         }
@@ -395,7 +401,7 @@ InstancePanel = function(){
             return;
           Ext.Ajax.request({
 	        url: '/instance-terminate',
-	        method: "GET", 
+	        method: "POST", 
             params : 'id=' + sm.getSelected().id
 	      }); 
         }
@@ -405,7 +411,7 @@ InstancePanel = function(){
             return;
           Ext.Ajax.request({
 	        url: '/instance-save',
-	        method: "GET", 
+	        method: "POST", 
             params : 'id=' + sm.getSelected().id
 	      }); 
         }
