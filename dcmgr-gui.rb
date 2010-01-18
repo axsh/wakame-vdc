@@ -48,7 +48,7 @@ get '/instance-list' do
     rows = Hash::new
     rows.store('id',index.id)
     rows.store('od','')
-    rows.store('wd','')
+    rows.store('wd',index.image_storage)
     rows.store('st',index.status)
     rows.store('pub-dns','')
     rows.store('pri-dns','')
