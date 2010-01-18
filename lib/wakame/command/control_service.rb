@@ -38,13 +38,14 @@ class Wakame::Command::ControlService
         res[svc.id] =  cloud_host.agent.vm_attr
         trigger_action { |action|
           action.trigger_action(Wakame::Actions::StopService.new(svc))
-
           action.flush_subactions
-#           Wakame::StatusDB.barrier{
-#             cloud_host.unmap_agent
-#             cluster.remove_cloud_host(cloud_host.id)
-#           }
           action.trigger_action(Wakame::Actions::ShutdownVM.new(cloud_host.agent))
+          action.flush_subactions
+          Wakame::StatusDB.barrier{
+            cluster = Wakame::Service::ServiceCluster.find(cloud_host.cluster_id)
+            cloud_host.unmap_agent
+            cluster.remove_cloud_host(cloud_host.id)
+          }
         }
         c += 1
         break if c > num
