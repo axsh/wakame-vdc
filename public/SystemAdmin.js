@@ -663,11 +663,10 @@ LaunchWindow = function(launchData,account_id){
 Ext.extend(LaunchWindow, Ext.Window , {
   submitSuccess: function(form, action){
     this.close();
-//  fireEvent( "","" );
     instancePanel.refresh();
   },
   submitFailure: function(form, action){
-    alert('Create Failure.');
+    alert('Create failure.');
     this.close();
   }
 });
