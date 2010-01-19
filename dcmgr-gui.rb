@@ -2,12 +2,29 @@ require 'rubygems'
 require 'sinatra'
 require 'erb'
 require 'WakameWebAPI'
+require 'logger'
 
-##################
-get '/' do
- erb :index
+if DEBUG_LOG
+  @@logger = Logger.new('dcmgr-gui.log')
+  def @@logger.write(str)
+    self << str
+  end
+  use Rack::CommonLogger, @@logger
 end
-##################
+
+def debug_log(str)
+  @@logger.debug str if DEBUG_LOG
+end
+
+get '/' do
+  'startup dcmgr-gui'
+# erb :index
+end
+
+not_found do
+ debug_log "not found"
+ "not found"
+end
 
 post '/account-create' do
   name = params[:nm]
@@ -17,6 +34,7 @@ post '/account-create' do
   Account.login('staff', 'passwd')
   Account.create(:name=>name)
   rtn = {"success" => true}
+  debug_log rtn
   content_type :json
   rtn.to_json
 end
@@ -35,6 +53,7 @@ get '/account-list' do
     rows.store('en',index.enable)
     rtn['rows'].push(rows)
   }
+  debug_log rtn
   content_type :json
   rtn.to_json
 end
@@ -57,6 +76,7 @@ get '/instance-list' do
     rows.store('sv','')
     rtn['rows'].push(rows)
   }
+  debug_log rtn
   content_type :json
   rtn.to_json
 end
@@ -78,6 +98,7 @@ post '/instance-create' do
 				   :image_storage=>wd)
   instance.put(:run)
   rtn = {"success" => true}
+  debug_log rtn
   content_type :json
   rtn.to_json
 end
@@ -88,6 +109,7 @@ post '/instance-reboot' do
   instance = Instance.find(id)
   instance.put(:reboot)
   rtn = {"success" => true}
+  debug_log rtn
   content_type :json
   rtn.to_json
 end
@@ -98,6 +120,7 @@ post '/instance-save' do
   instance = Instance.find(id)
   instance.put(:save)
   rtn = {"success" => true}
+  debug_log rtn
   content_type :json
   rtn.to_json
 end
@@ -108,6 +131,7 @@ post '/instance-terminate' do
   instance = Instance.find(id)
   instance.put(:terminate)
   rtn = {"success" => true}
+  debug_log rtn
   content_type :json
   rtn.to_json
 end
@@ -128,6 +152,7 @@ get '/image-list' do
     rows.store('dc','')
     rtn['rows'].push(rows)
   }
+  debug_log rtn
   content_type :json
   rtn.to_json
 end
