@@ -44,6 +44,10 @@ module Dcmgr::Model
     def uuid
       "%s-%s" % [self.class.prefix_uuid, self.values[:uuid]]
     end
+
+    def to_s
+      uuid
+    end
   end
 end
 
