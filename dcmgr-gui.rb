@@ -18,7 +18,7 @@ end
 
 get '/' do
   'startup dcmgr-gui'
-# erb :index
+//  erb :index
 end
 
 not_found do
@@ -32,7 +32,10 @@ post '/account-create' do
   enable = params[:en]
   memo = params[:mm]
   Account.login('staff', 'passwd')
-  Account.create(:name=>name)
+  Account.create(:name=>name,
+                 :enable=>enable,
+                 :memo=>memo,
+                 :contract_at=>cdate)
   rtn = {"success" => true}
   debug_log rtn
   content_type :json
@@ -51,6 +54,7 @@ get '/account-list' do
     rows.store('rg',index.created_at)
     rows.store('cn',index.contract_at)
     rows.store('en',index.enable)
+    rows.store('mm',index.memo)
     rtn['rows'].push(rows)
   }
   debug_log rtn
