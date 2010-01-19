@@ -260,10 +260,11 @@ Ext.extend(UMPanel, Ext.Panel);
 
 UListPanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
-
   var store = new Ext.data.Store({
-    url: '/user.json',
-//    url: '/user-list',
+    proxy: new Ext.data.HttpProxy({
+      url: '/user-list',
+      method:'GET'
+    }),
     reader: new Ext.data.JsonReader({
       totalProperty: "totalCount",
       root:'rows',
@@ -277,7 +278,6 @@ UListPanel = function(){
       ]
     })
   });
-  store.load();
 
   var addWin = null;
   var clmnModel = new Ext.grid.ColumnModel([
@@ -352,6 +352,7 @@ UListPanel = function(){
       }
     ]
   });
+  store.load({params: {start: 0, limit: 50}});		// limit = page size
 }
 Ext.extend(UListPanel, Ext.grid.GridPanel);
 
