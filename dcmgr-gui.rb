@@ -156,3 +156,31 @@ get '/image-list' do
   content_type :json
   rtn.to_json
 end
+
+
+get '/user-list' do
+  rtn = {'totalCount'=>0,'rows'=>[]}
+  rtn['totalCount'] = 2
+
+  rows = Hash::new
+  rows.store('id',839438494990)
+  rows.store('nm',"sato")
+  rows.store('st',"login")
+  rows.store('en',"y")
+  rows.store('em','xxx@xxx.jp')
+  rows.store('mm','xxxxxxxxxx')
+  rtn['rows'].push(rows)
+
+  rows = Hash::new
+  rows.store('id',238230208490)
+  rows.store('nm',"kato")
+  rows.store('st',"logout")
+  rows.store('en',"y")
+  rows.store('em','zzz@xxx.jp')
+  rows.store('mm','bbbbbbbbb')
+  rtn['rows'].push(rows)
+
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
