@@ -9,8 +9,8 @@ describe PhysicalHost do
     physicalhost_b = PhysicalHost.create
     physicalhost_c = PhysicalHost.create
     
-    physicalhost_a.remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
-    physicalhost_c.remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+    physicalhost_a.remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
+    physicalhost_c.remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
 
     enable_physicalhosts = PhysicalHost.enable_hosts
     enable_physicalhosts.include?(physicalhost_a).should be_true

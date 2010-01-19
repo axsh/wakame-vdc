@@ -18,7 +18,6 @@ describe "physical host access by active resource" do
     physicalhost.id.length.should > 0
     
     real_physicalhost = PhysicalHost[physicalhost.id]
-    p real_physicalhost.id
     real_physicalhost.should be_valid
     real_physicalhost.id.should > 0
     real_physicalhost.uuid.length.should > 0
@@ -27,7 +26,7 @@ describe "physical host access by active resource" do
     real_physicalhost.memory.should == 2.0
     real_physicalhost.hypervisor_type.should == 'xen'
     real_physicalhost.tags.each{|tag| p tag}
-    real_physicalhost.tags.include?(Tag::SYSTEM_TAG_GET_READY_INSTANCE).should be_true
+    real_physicalhost.tags.include?(Tag.system_tag(:STANDBY_INSTANCE)).should be_true
     $physicalhost_id = physicalhost.id
   end
 
@@ -36,9 +35,9 @@ describe "physical host access by active resource" do
                                  :cpu_mhz=>1.0,
                                  :memory=>2.0,
                                  :hypervisor_type=>'xen')
-    physicalhost.put(:remove_tag, :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.uuid)
+    physicalhost.put(:remove_tag, :tag=>Tag.system_tag(:STANDBY_INSTANCE).uuid)
     real_physicalhost = PhysicalHost[physicalhost.id]
-    real_physicalhost.tags.include?(Tag::SYSTEM_TAG_GET_READY_INSTANCE).should be_false
+    real_physicalhost.tags.include?(Tag.system_tag(:STANDBY_INSTANCE)).should be_false
   end
 
   it "should get list" do

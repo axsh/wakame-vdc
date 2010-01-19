@@ -30,15 +30,15 @@ describe "instance access by active resource" do
     @physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
                                           :memory=>2.0,
                                           :hypervisor_type=>'xen')
-    PhysicalHost[@physical_host_a.id].remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+    PhysicalHost[@physical_host_a.id].remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
     @physical_host_b = PhysicalHost.create(:cpus=>2, :cpu_mhz=>1.6,
                                           :memory=>1.0,
                                           :hypervisor_type=>'xen')
-    PhysicalHost[@physical_host_b.id].remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+    PhysicalHost[@physical_host_b.id].remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
     @physical_host_c = PhysicalHost.create(:cpus=>1, :cpu_mhz=>2.0,
                                           :memory=>4.0,
                                           :hypervisor_type=>'xen')
-    PhysicalHost[@physical_host_c.id].remove_tag(Tag::SYSTEM_TAG_GET_READY_INSTANCE)
+    PhysicalHost[@physical_host_c.id].remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
     
     @account_class = describe_activeresource_model :Account
     @account = @account_class.create(:name=>'test account by instance spec')
@@ -71,7 +71,7 @@ describe "instance access by active resource" do
 
   it "should not schedule instances while no runnning physical hosts" do
     [@physical_host_a, @physical_host_b, @physical_host_c].each{|host|
-      TagMapping.create(:tag_id=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.id,
+      TagMapping.create(:tag_id=>Tag.system_tag(:STANDBY_INSTANCE).id,
                         :target_type=>TagMapping::TYPE_PHYSICAL_HOST,
                         :target_id=>PhysicalHost[host.id].id)
     }
@@ -88,7 +88,7 @@ describe "instance access by active resource" do
 
   it "should create instance" do
     @physical_host_class.find(@physical_host_a.uuid).put(:remove_tag,
-                                                       :tag=>Tag::SYSTEM_TAG_GET_READY_INSTANCE.uuid)
+                                                       :tag=>Tag.system_tag(:STANDBY_INSTANCE).uuid)
     $instance_a = @class.create(:account=>@account.id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
