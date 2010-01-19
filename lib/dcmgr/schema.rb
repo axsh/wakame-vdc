@@ -167,9 +167,9 @@ module Dcmgr
     end
 
     def drop!
-      puts "drop tables"
+      Dcmgr::logger.debug "drop tables"
       models.each { |model|
-        puts "deleteting ... #{model.table_name}"
+        Dcmgr::logger.debug "deleteting ... #{model.table_name}"
         begin
           @db.drop_table(model.table_name)
         rescue

@@ -33,7 +33,6 @@ describe Dcmgr::Schema do
     
     Dcmgr::Schema.models.each{|model|
       next if model == Log
-      puts model
       model.count.should > 0
     }
   end

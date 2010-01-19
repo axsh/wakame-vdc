@@ -53,7 +53,8 @@ module Dcmgr
       
       def route(public_class, block)
         # Dcmgr::logger.debug "ROUTE: %s, %s, %s" % [self, public_class, block]
-        proc do |id|
+        proc do |*args|
+          id = args[0] if args.length > 0
           logger.debug "access url: " + request.url
           protected!
           
@@ -76,7 +77,6 @@ module Dcmgr
       def json_render(obj)
         def model2hash i
           h = Hash.new
-          p i.keys
           i.keys.each{ |key|
             h[key] = i.send(key)
           }
@@ -535,7 +535,6 @@ module Dcmgr
       target = PhysicalHost[uuid]
       tag_uuid = request.GET['tag']
       tag = Tag[tag_uuid]
-      p tag
       target.remove_tag(tag) if tag
       []
     end

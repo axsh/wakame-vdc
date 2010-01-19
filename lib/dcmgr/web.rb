@@ -9,7 +9,7 @@ require 'dcmgr/helpers'
 module Dcmgr
   class Web < Sinatra::Base
     set :logger, false
-    use Rack::CommonLogger, Dcmgr.logger
+    ## use Rack::CommonLogger, Dcmgr.logger
     helpers { include Dcmgr::Helpers }
     
     def self.public_crud model

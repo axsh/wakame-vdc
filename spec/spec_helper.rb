@@ -6,6 +6,8 @@ require 'active_resource'
 require 'rack/handler/thin'
 require 'dcmgr'
 
+require "#{File.dirname(__FILE__)}/specformat_detail" if defined? SPECFORMAT
+
 module ActiveResourceHelperMethods
   extend self
   
