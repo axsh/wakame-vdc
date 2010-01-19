@@ -2,8 +2,10 @@
 	Wakame GUI		-*- coding: utf-8 -*-
 */
 var centerPanel = null;
+var amPanel = null;
 var panelMode = 0;
 var querySelect = 0;
+
 
 Ext.onReady(function(){
   Ext.BLANK_IMAGE_URL='./javascripts/ext-js/resources/images/default/s.gif';
@@ -134,7 +136,7 @@ WestPanel = function(){
 Ext.extend(WestPanel, Ext.tree.TreePanel);
 
 MainPanel = function(){
-  var amPanel = new AMPanel();
+  amPanel = new AMPanel();
   var umPanel = new UMPanel();
   var mapPanel = new MAPPanel();
   var rEditPanel = new ResourceEditorPanel();
@@ -155,7 +157,6 @@ Ext.extend(MainPanel, Ext.Panel);
 
 AMPanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
-  var addWin = null;
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
       url: '/account-list',
@@ -185,6 +186,10 @@ AMPanel = function(){
     { header: "Memo"          , width: 300, dataIndex: 'mm' }
   ]);
 
+  this.refresh = function(){
+      store.reload();
+  }
+
   AMPanel.superclass.constructor.call(this, {
     store: store,
     cm:clmnModel,
@@ -203,9 +208,7 @@ AMPanel = function(){
     tbar : [
       { iconCls: 'addUser',
         text : 'Add',handler:function(){
-          if(addWin == null){
-            addWin = new AddAccountWindow();
-          }
+          var addWin = new AddAccountWindow();
 		  addWin.show();
         }
       },'-',
@@ -459,7 +462,23 @@ AddAccountWindow = function(){
 		items: [form],
 		buttons: [{
 		  text:'Create',
-          handler: submit
+          handler: function(){
+            form.getForm().submit({
+              url: '/account-create',
+              waitMsg: 'Adding...',
+              method: 'POST',
+              scope: this,
+              success: function(form, action) {
+                amPanel.refresh();
+	            this.close();
+              },
+              failure: function(form, action) {
+                alert('Add account failure.');
+	            this.close();
+              }
+            });
+	      },
+	      scope:this
 		},{
 		  text: 'Close',
 		  handler: function(){
@@ -468,20 +487,6 @@ AddAccountWindow = function(){
 		  scope:this
 		}]
   });
-  function submit(){
-    form.getForm().submit({
-      url: '/account-create',
-      method: 'POST',
-      success: function(form, action) {
-        alert( action.response.responseText );
-	    this.close();
-      },
-      failure: function(form, action) {
-        alert( action.failureType );
-	    this.close();
-      }
-    });
-  }
 }
 Ext.extend(AddAccountWindow, Ext.Window);
 
