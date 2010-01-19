@@ -4,7 +4,8 @@ require 'sinatra'
 set :run, false
 
 require 'dcmgr/schema'
-require 'dcmgr/hvchttpmock'
+require 'dcmgr/hvchttp'
+require 'dcmgr/hvchttp/mock'
 require 'dcmgr/scheduler'
 
 module Dcmgr

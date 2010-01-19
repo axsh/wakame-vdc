@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+  
 require 'uri'
 require 'cgi'
 require 'active_support'
-
+  
 module Dcmgr
   class HvcHttpMock
     def initialize(host, port=80)
