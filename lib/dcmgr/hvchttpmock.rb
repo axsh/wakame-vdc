@@ -114,7 +114,6 @@ module Dcmgr
           raise "unkown hva ip: %s" % hva_ip
         end
         @hvas[hva_ip].update_instance(nil, instance_uuid, :online)
-        p @hvas
         HvcHttpMockResponse.new(200, "ok")
       when '/terminate_instance'
         query = CGI.parse(uri.query)
