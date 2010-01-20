@@ -198,6 +198,7 @@ AMPanel = function(){
     width: 320,
     autoHeight: false,
     stripeRows: true,
+    loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
       pageSize: 50,
       store: store,
@@ -303,6 +304,7 @@ UListPanel = function(){
     split: true,
     autoHeight: false,
     stripeRows: true,
+    loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
       pageSize: 1,
       store: store,
