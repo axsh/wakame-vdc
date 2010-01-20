@@ -7,3 +7,10 @@ $ gem bundle
 
 "gem bundle" will make vendor/ and bin/ folders.
 
+
+------------------------
+delopment enviroment
+
+ "./tmp/restart.txt"
+
+touch restart.txt
