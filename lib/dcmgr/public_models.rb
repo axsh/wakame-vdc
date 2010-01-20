@@ -379,7 +379,6 @@ module Dcmgr
       
       req_hash['image_storage'] = ImageStorage[req_hash['image_storage']]
       instance = _create(req_hash)
-      p instance
       format_object(instance)
     end
     
