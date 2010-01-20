@@ -276,21 +276,17 @@ ImagePanel = function(){
         { name:'nm' ,type:'string'},
         { name:'od' ,type:'string'},
         { name:'vy' ,type:'string'},
-        { name:'ac' ,type:'string'},
-        { name:'is' ,type:'string'},
-        { name:'dc' ,type:'string'}
+        { name:'ac' ,type:'string'}
       ]
     })
   });
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
     { header: "WMI-ID",       width: 100, dataIndex: 'id' },
-    { header: "Name",         width: 100, dataIndex: 'nm' },
+    { header: "Manifest",     width: 200, dataIndex: 'nm' },
     { header: "Owner",        width: 100, dataIndex: 'od' },
     { header: "Visibility",   width: 100, dataIndex: 'vy' },
-    { header: "Architecture", width: 100, dataIndex: 'ac'  },
-    { header: "Image-size",   width: 100, dataIndex: 'is'  },
-    { header: "Description",  width: 100, dataIndex: 'dc'  }
+    { header: "Architecture", width: 100, dataIndex: 'ac' }
   ]);
 
   toolbar = new Ext.PagingToolbar({
@@ -354,11 +350,11 @@ InstancePanel = function(){
         { name:'od' ,type:'string'},
         { name:'wd' ,type:'string'},
         { name:'st' ,type:'string'},
-        { name:'pub-dns' ,type:'string'},
-        { name:'pri-dns' ,type:'string'},
+//      { name:'pub-dns' ,type:'string'},
+//      { name:'pri-dns' ,type:'string'},
         { name:'ip' ,type:'string'},
-        { name:'tp' ,type:'string'},
-        { name:'sv' ,type:'string'}
+        { name:'tp' ,type:'string'}
+//      { name:'sv' ,type:'string'}
       ]
     })
   });
@@ -369,11 +365,11 @@ InstancePanel = function(){
     { header: "Owner"       ,width: 100, dataIndex: 'od'},
     { header: "WMI ID"      ,width: 100, dataIndex: 'wd'},
     { header: "State"       ,width: 80,  dataIndex: 'st'},
-    { header: "Public DNS"  ,width: 100, dataIndex: 'pub-dns'},
-    { header: "Private DNS" ,width: 100, dataIndex: 'pri-dns'},
+//  { header: "Public DNS"  ,width: 100, dataIndex: 'pub-dns'},
+//  { header: "Private DNS" ,width: 100, dataIndex: 'pri-dns'},
     { header: "Private IP"  ,width: 100, dataIndex: 'ip'},
-    { header: "type"        ,width: 50,  dataIndex: 'tp'},
-    { header: "Service"     ,width: 100, dataIndex: 'sv'}
+    { header: "type"        ,width: 50,  dataIndex: 'tp'}
+//  { header: "Service"     ,width: 100, dataIndex: 'sv'}
   ]);
 
   this.refresh = function(){
