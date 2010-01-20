@@ -74,18 +74,18 @@ END
   end
 
   it "should not schedule instances while no runnning physical hosts" do
-    [@physical_host_a, @physical_host_b, @physical_host_c].each{|host|
+    PhysicalHost.each{|host|
       TagMapping.create(:tag_id=>Tag.system_tag(:STANDBY_INSTANCE).id,
                         :target_type=>TagMapping::TYPE_PHYSICAL_HOST,
-                        :target_id=>PhysicalHost[host.id].id)
+                        :target_id=>host.id)
     }
                         
     lambda {
-      @class.create(:account=>@account.id,
+      @class.create(:account=>Account[1].uuid,
                     :need_cpus=>1,
                     :need_cpu_mhz=>0.5,
                     :need_memory=>1.0,
-                    :image_storage=>@image_storage.uuid)
+                    :image_storage=>ImageStorage[1].uuid)
       
     }.should raise_error(ActiveResource::BadRequest)
   end
