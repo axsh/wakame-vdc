@@ -341,6 +341,7 @@ class Tag < Sequel::Model
   end
   
   SYSTEM_TAG_NAMES = ['standby instance',
+                      'wakame image',
                      ]
 end
 
