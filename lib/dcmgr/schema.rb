@@ -60,6 +60,8 @@ module Dcmgr
         Fixnum :user_id, :type=>Integer, :null=>false
         Fixnum :image_storage_host_id, :null=>false
         String :storage_url, :null=>false
+        String :name, :null=>false
+        Fixnum :archetype, :null=>false # 0: 32, 1: 64
       end
 
       @db.create_table? :image_storage_hosts do
@@ -76,6 +78,7 @@ module Dcmgr
         Float :cpu_mhz, :null=>false
         Fixnum :memory, :null=>false # MB
         String :hypervisor_type, :fixed=>true, :size=>8, :null=>false # xen, kvm, ...
+        Fixnum :archetype, :null=>false # 0: 32, 1: 64
       end
       
       @db.create_table? :instances do
@@ -91,6 +94,7 @@ module Dcmgr
         Fixnum :need_memory, :null=>false # MB
         Fixnum :hv_agent_id, :null=>false
         String :ip, :fixed=>true, :size=>14
+        Fixnum :archetype, :null=>false # 0: 32, 1: 64
       end
       
       @db.create_table? :hv_controllers do
