@@ -56,6 +56,8 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
+        Fixnum :account_id, :type=>Integer, :null=>false
+        Fixnum :user_id, :type=>Integer, :null=>false
         Fixnum :image_storage_host_id, :null=>false
         String :storage_url, :null=>false
       end
