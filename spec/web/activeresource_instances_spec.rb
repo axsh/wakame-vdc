@@ -6,7 +6,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 describe "instance access by active resource" do
   include ActiveResourceHelperMethods
   
-  def init
+  before(:each) do
     reset_db
 
     @class = describe_activeresource_model :Instance
@@ -18,59 +18,7 @@ describe "instance access by active resource" do
     image_storage_host_a = ImageStorageHost.create
     ImageStorage.create(:image_storage_host=>image_storage_host_a)
     @image_storage = ImageStorage.create(:image_storage_host=>image_storage_host_a)
-  end
-  
-  before(:all) do
-    init
-  end
-    
-  before(:each) do
-    init
     Instance.destroy
-    a = <<END
-    Account.create(:name=>'account1')
-    PhysicalHost.destroy
-    @physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
-                                          :memory=>2.0,
-                                          :hypervisor_type=>'xen')
-    PhysicalHost[@physical_host_a.id].remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
-    @physical_host_b = PhysicalHost.create(:cpus=>2, :cpu_mhz=>1.6,
-                                          :memory=>1.0,
-                                          :hypervisor_type=>'xen')
-    PhysicalHost[@physical_host_b.id].remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
-    @physical_host_c = PhysicalHost.create(:cpus=>1, :cpu_mhz=>2.0,
-                                          :memory=>4.0,
-                                          :hypervisor_type=>'xen')
-    PhysicalHost[@physical_host_c.id].remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
-    
-    @account_class = describe_activeresource_model :Account
-    @account = @account_class.create(:name=>'test account by instance spec')
-    
-    @normal_tag_a = @name_tag_class.create(:name=>'tag a', :account=>@account.id) # name tag
-    @normal_tag_b = @name_tag_class.create(:name=>'tag b', :account=>@account.id)
-    @normal_tag_c = @name_tag_class.create(:name=>'tag c', :account=>@account.id)
-    
-    instance_crud_auth_tag = @auth_tag_class.create(:name=>'instance crud',
-                                                    :role=>0,
-                                                    :tags=>[@normal_tag_a.id,
-                                                            @normal_tag_b.id],
-                                                    :account=>@account.id) # auth tag
-    @user.put(:add_tag, :tag=>instance_crud_auth_tag.id)
-    
-    HvController.destroy
-    @hv_controller = HvController.create(:physical_host=>@physical_host_a,
-                                         :ip=>'192.168.1.10')
-    HvAgent.destroy
-    @hv_agent_a = HvAgent.create(:hv_controller=>@hv_controller,
-                                 :physical_host=>@physical_host_a,
-                                 :ip=>'192.168.1.20')
-    @hv_agent_b = HvAgent.create(:hv_controller=>@hv_controller,
-                                 :physical_host=>@physical_host_a,
-                                 :ip=>'192.168.1.30')
-    @hv_agent_c = HvAgent.create(:hv_controller=>@hv_controller,
-                                 :physical_host=>@physical_host_a,
-                                 :ip=>'192.168.1.40')
-END
   end
 
   it "should not schedule instances while no runnning physical hosts" do
@@ -172,6 +120,8 @@ END
     hosts[PhysicalHost[3].uuid].should == 3
   end
 
+  it "should schedule instances, archetype test"
+  
   it "should run instance" do
     hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
     Dcmgr::hvchttp = hvchttp
