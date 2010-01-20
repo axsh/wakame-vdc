@@ -14,32 +14,16 @@ module Dcmgr
     module Algorithm2
       def assign_to_instance(hosts, instance)
         Dcmgr::logger.debug "assign to instance (%d hosts)" % hosts.length
-        
+        Dcmgr::logger.debug " instance[#{instance}] - cpus: #{instance.need_cpus} / cpu_mhz: #{instance.need_cpu_mhz} / memory: #{instance.need_memory}"
         hosts.each{|ph|
-          Dcmgr::logger.debug "  ph[%d].cpus: %s" % [ph.id, ph.cpus]
-          Dcmgr::logger.debug "  ph[%d].cpu_mhz: %s" % [ph.id, ph.cpu_mhz]
-          Dcmgr::logger.debug "  ph[%d].memory: %s" % [ph.id, ph.memory]
-
-          instances = ph.instances
-          need_cpus = instances.inject(0) {|v, ins| v + ins.need_cpus}
-          need_cpu_mhz = instances.inject(0) {|v, ins| v + ins.need_cpu_mhz}
-          need_memory = instances.inject(0) {|v, ins| v + ins.need_memory}
+          Dcmgr::logger.debug " #{ph} - " +
+            "cpus: #{ph.cpus} / " +
+            "space cpu_mhz: #{ph.space_cpu_mhz} / " +
+            "space memory: #{ph.space_memory}"
           
-          Dcmgr::logger.debug "  ph[%d].instances cpus: %s" % [ph.id, need_cpus]
-          Dcmgr::logger.debug "  ph[%d].instances cpu_mhz: %s" % [ph.id, need_cpu_mhz]
-          Dcmgr::logger.debug "  ph[%d].instances memory: %s" % [ph.id, need_memory]
-          
-          space_cpus = ph.cpus - need_cpus
-          space_cpu_mhz = ph.cpu_mhz - need_cpu_mhz
-          space_memory = ph.memory - need_memory
-        
-          Dcmgr::logger.debug "  ph[%d].space cpus: %s" % [ph.id, space_cpus]
-          Dcmgr::logger.debug "  ph[%d].space cpu_mhz: %s" % [ph.id, space_cpu_mhz]
-          Dcmgr::logger.debug "  ph[%d].space memory: %s" % [ph.id, space_memory]
-          
-          if instance.need_cpus <= space_cpus and
-              instance.need_cpu_mhz <= space_cpu_mhz and
-              instance.need_memory <= space_memory
+          if instance.need_cpus <= ph.cpus and
+              instance.need_cpu_mhz <= ph.space_cpu_mhz and
+              instance.need_memory <= ph.space_memory
             Dcmgr::logger.debug "assign to instance: %s" % ph
             return ph
           end

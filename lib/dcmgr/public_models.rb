@@ -378,12 +378,8 @@ module Dcmgr
       req_hash.delete 'id'
       
       req_hash['image_storage'] = ImageStorage[req_hash['image_storage']]
-
       instance = _create(req_hash)
-      physical_host = PhysicalHost.assign(instance)
-      instance.hv_agent = physical_host.hv_agents[0]
-      instance.save
-      
+      p instance
       format_object(instance)
     end
     

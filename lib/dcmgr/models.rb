@@ -134,15 +134,20 @@ class Instance < Sequel::Model
   many_to_one :image_storage
   many_to_one :hv_agent
 
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
+  
   def physical_host
-    self.hv_agent.physical_host
+    if self.hv_agent
+      self.hv_agent.physical_host
+    else
+      nil
+    end
   end
 
   def status_sym
     STATUS_TYPES[self.status]
   end
   
-  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
 
   def before_create
     super
@@ -232,6 +237,29 @@ class PhysicalHost < Sequel::Model
 
   def instances
     self.hv_agents.map{|hva| hva.instances}.flatten
+  end
+
+  def space_cpu_mhz
+    setup_space unless @space_cpu_mhz
+    @space_cpu_mhz
+  end
+
+  def setup_space
+    
+    need_cpu_mhz = instances.inject(0) {|v, ins| v + ins.need_cpu_mhz}
+    space_cpu_mhz = cpu_mhz - need_cpu_mhz
+    # 10 % down
+    @space_cpu_mhz = space_cpu_mhz * 0.9
+    
+    need_memory = instances.inject(0) {|v, ins| v + ins.need_memory}
+    space_memory = memory - need_memory
+    # 10 % down
+    @space_memory = space_memory * 0.9
+  end
+  
+  def space_memory
+    setup_space unless @space_memory
+    @space_memory
   end
 end
 
