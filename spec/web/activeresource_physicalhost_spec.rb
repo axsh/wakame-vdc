@@ -25,7 +25,6 @@ describe "physical host access by active resource" do
     real_physicalhost.cpu_mhz.should == 1.0
     real_physicalhost.memory.should == 2.0
     real_physicalhost.hypervisor_type.should == 'xen'
-    real_physicalhost.tags.each{|tag| p tag}
     real_physicalhost.tags.include?(Tag.system_tag(:STANDBY_INSTANCE)).should be_true
     $physicalhost_id = physicalhost.id
   end
