@@ -46,6 +46,14 @@ describe "accounts by active resource" do
     real_account.account_role.index{|i| i.user.uuid== @user.id }.should_not be_nil
   end
 
+  it "should find by id"
+
+  it "should find by account name"
+  
+  it "should find by enable"
+
+  it "should find by contract date"
+
   it "should get list" do
     list = @class.find(:all)
     list.index { |account| account.id == $account.id }.should be_true
