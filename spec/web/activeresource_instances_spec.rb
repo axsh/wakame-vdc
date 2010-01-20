@@ -261,20 +261,47 @@ END
   end
 
   it "should reboot" do
-    instance = @class.find($instance_a.id)
+    real_instance = Instance.create(:status=>0, # offline
+                                    :account=>Account[1],
+                                    :user=>User[1],
+                                    :image_storage=>ImageStorage[1],
+                                    :need_cpus=>1,
+                                    :need_cpu_mhz=>0.5,
+                                    :need_memory=>500,
+                                    :hv_agent=>HvAgent[1],
+                                    :ip=>'192.168.2.100')
+    instance = @class.find(real_instance.uuid)
     instance.put(:reboot)
     pending("check hvc mock server's status")
   end
   
   it "should terminate" do
-    instance = @class.find($instance_a.id)
+    real_instance = Instance.create(:status=>0, # offline
+                                    :account=>Account[1],
+                                    :user=>User[1],
+                                    :image_storage=>ImageStorage[1],
+                                    :need_cpus=>1,
+                                    :need_cpu_mhz=>0.5,
+                                    :need_memory=>500,
+                                    :hv_agent=>HvAgent[1],
+                                    :ip=>'192.168.2.100')
+    instance = @class.find(real_instance.uuid)
     instance.put(:terminate)
     pending("check hvc mock server's status")
   end
   
   it "should get describe" do
+    real_instance = Instance.create(:status=>0, # offline
+                                    :account=>Account[1],
+                                    :user=>User[1],
+                                    :image_storage=>ImageStorage[1],
+                                    :need_cpus=>1,
+                                    :need_cpu_mhz=>0.5,
+                                    :need_memory=>500,
+                                    :hv_agent=>HvAgent[1],
+                                    :ip=>'192.168.2.100')
     list = @class.find(:all)
-    list.index { |ins| ins.id == $instance_a.id }.should be_true
+    list.index { |ins| ins.id == real_instance.uuid }.should be_true
   end
   
   it "should snapshot image, and backup image to image storage" do
@@ -285,16 +312,6 @@ END
                              :need_memory=>0.5)
     
     instance.put(:snapshot)
-  end
-  
-  it "should shutdown by sample data" do
-    reset_db
-    real_instance = Instance[1]
-    instance = @class.find(real_instance.uuid)
-    instance.should be_true
-    instance.put(:add_tag, :tag=>@normal_tag_a)
-    instance.put(:shutdown)
-    init
   end
 end
 
