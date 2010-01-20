@@ -51,18 +51,18 @@ describe "user access by active resource" do
       tag.uuid == instance_crud_auth_tag.id
     }.should be_true
   end
+
+  it "should get default password" do
+    user = @class.create(:name=>'__test_as_user_spec__', :password=>'passwd')
+    real_user = User[user.id]
+    real_user.default_password.should == real_user.password
+  end
   
   it "should notauthorize by bad password" do
     notauth_class = describe_activeresource_model :User, '__test_as_user_spec__', 'badpass'
     lambda {
       notauth_class.create(:name=>'__test_as_user_spec__', :password=>'passwd')
     }.should raise_error
-  end
-
-  it "should get default password" do
-    pending
-    real_user = User[user.id]
-    real_user.default_password.should = 'passwd'
   end
 end
 

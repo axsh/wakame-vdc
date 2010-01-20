@@ -103,6 +103,7 @@ class User < Sequel::Model
   def before_create
     super
     self.enable = 'y'
+    self.default_password = self.password
   end
 end
 
