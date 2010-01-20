@@ -41,4 +41,4 @@ end
 
 Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
 ActiveResourceHelperMethods.reset_db
-ActiveResourceHelperMethods.runserver unless defined? DISABLE_TEST_SERVER
+ActiveResourceHelperMethods.runserver

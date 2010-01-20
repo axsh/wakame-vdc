@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-DISABLE_TEST_SERVER = true
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe PhysicalHost do
