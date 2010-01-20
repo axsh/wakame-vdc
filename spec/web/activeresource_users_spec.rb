@@ -32,6 +32,8 @@ describe "user access by active resource" do
     user.name.should == User[1].name
   end
 
+  it "should find all"
+
   it "should add tag" do
     user = @class.find(:myself)
     real_user = User[user.id]
