@@ -53,6 +53,8 @@ describe "accounts by active resource" do
 
   it "should get by id"
 
+  it "should update by id"
+
   it "should be able to be used, only enable account"
   
   it "should delete" do
