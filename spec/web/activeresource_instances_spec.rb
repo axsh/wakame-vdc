@@ -25,6 +25,9 @@ describe "instance access by active resource" do
   end
     
   before(:each) do
+    init
+    Instance.destroy
+    a = <<END
     Account.create(:name=>'account1')
     PhysicalHost.destroy
     @physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
@@ -67,6 +70,7 @@ describe "instance access by active resource" do
     @hv_agent_c = HvAgent.create(:hv_controller=>@hv_controller,
                                  :physical_host=>@physical_host_a,
                                  :ip=>'192.168.1.40')
+END
   end
 
   it "should not schedule instances while no runnning physical hosts" do
@@ -87,23 +91,22 @@ describe "instance access by active resource" do
   end
 
   it "should create instance" do
-    @physical_host_class.find(@physical_host_a.uuid).put(:remove_tag,
+    @physical_host_class.find(PhysicalHost[1].uuid).put(:remove_tag,
                                                        :tag=>Tag.system_tag(:STANDBY_INSTANCE).uuid)
-    $instance_a = @class.create(:account=>@account.id,
+    $instance_a = @class.create(:account=>Account[1].uuid,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
                                 :need_memory=>1.0,
-                                :image_storage=>@image_storage.uuid)
+                                :image_storage=>ImageStorage[1].uuid)
 
     $instance_a.status.should == Instance::STATUS_TYPE_OFFLINE
-    $instance_a.account.should == @account.id
+    $instance_a.account.should == Account[1].uuid
 
     real_inst = Instance[$instance_a.id]
     real_inst.hv_agent.physical_host_id.should > 0
   end
 
   it "should schedule instances by schedule algorithm 2" do
-    pending
     Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm2
     # physical hosts
     # id / cpus / mhz / memory
@@ -113,26 +116,33 @@ describe "instance access by active resource" do
     
     # already 'instance a' use physical host 1 in should create instance
     
-    @class.create(:account=>@account.id,
-                  :need_cpus=>3,
-                  :need_cpu_mhz=>0.5,
-                  :need_memory=>1.0).physical_host.should == PhysicalHost[1].uuid
+    instance = @class.create(:account=>Account[1].uuid,
+                             :need_cpus=>3,
+                             :need_cpu_mhz=>0.5,
+                             :need_memory=>1000,
+                             :image_storage=>@image_storage.uuid)
+    HvAgent[instance.hv_agent].physical_host == PhysicalHost[1].uuid
 
-    @class.create(:account=>@account.id,
-                  :need_cpus=>1,
-                  :need_cpu_mhz=>1.8,
-                  :need_memory=>3.5).physical_host.should == PhysicalHost[3].uuid # skip 2
+    instance = @class.create(:account=>Account[1].uuid,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.7,
+                             :need_memory=>2000,
+                             :image_storage=>@image_storage.uuid) # skip 2
+    HvAgent[instance.hv_agent].physical_host == PhysicalHost[3].uuid
     
-    @class.create(:account=>@account.id,
-                  :need_cpus=>1,
-                  :need_cpu_mhz=>0.8,
-                  :need_memory=>0.4).physical_host.should == PhysicalHost[2].uuid
+    instance = @class.create(:account=>Account[1].uuid,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.8,
+                             :need_memory=>400,
+                             :image_storage=>@image_storage.uuid)
+    HvAgent[instance.hv_agent].physical_host == PhysicalHost[2].uuid
     
-    @class.create(:account=>@account.id,
-                  :need_cpus=>1,
-                  :need_cpu_mhz=>0.8,
-                  :need_memory=>0.4).physical_host.should == PhysicalHost[2].uuid
-    
+    instance = @class.create(:account=>Account[1].uuid,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.8,
+                             :need_memory=>400,
+                             :image_storage=>@image_storage.uuid)
+    HvAgent[instance.hv_agent].physical_host == PhysicalHost[2].uuid
   end
 
   it "should schedule instances by schedule algorithm 1" do
@@ -166,11 +176,11 @@ describe "instance access by active resource" do
     hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
     Dcmgr::hvchttp = hvchttp
     
-    $instance_a = @class.create(:account=>@account.id,
+    $instance_a = @class.create(:account=>Account[1].id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,
                                 :need_memory=>0.5,
-                                :image_storage=>@image_storage.uuid)
+                                :image_storage=>ImageStorage[1].uuid)
 
     $instance_a.put(:run)
     $instance_a = @class.find($instance_a.id)
@@ -182,7 +192,7 @@ describe "instance access by active resource" do
 
   it "should shutdown, and auth check" do
     pending
-    instance = @class.create(:account=>@account.id,
+    instance = @class.create(:account=>Account[1].id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
                              :need_memory=>0.5)
@@ -193,7 +203,7 @@ describe "instance access by active resource" do
     
     pending("check hvc mock server's status")
     
-    instance = @class.create(:account=>@account.id,
+    instance = @class.create(:account=>Account[1].id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
                              :need_memory=>0.5)
@@ -206,7 +216,7 @@ describe "instance access by active resource" do
 
   it "shoud shutdown by sample data, and raise role error" do
     pending
-    instance = @class.create(:account=>@account.id,
+    instance = @class.create(:account=>Account[1].id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
                              :need_memory=>0.5)
@@ -219,7 +229,7 @@ describe "instance access by active resource" do
 
   it "should find tag" do
     pending
-    instance = @class.create(:account=>@account.id,
+    instance = @class.create(:account=>Account[1].id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
                              :need_memory=>0.5)
@@ -236,14 +246,19 @@ describe "instance access by active resource" do
   end
 
   it "should get instance" do
-    instance = @class.find($instance_a.id)
+    instance_a = Instance.create(:status=>0, # offline
+                                 :account=>Account[1],
+                                 :user=>User[1],
+                                 :image_storage=>ImageStorage[1],
+                                 :need_cpus=>1,
+                                 :need_cpu_mhz=>0.5,
+                                 :need_memory=>500,
+                                 :hv_agent=>HvAgent[1],
+                                 :ip=>'192.168.2.100')
+    instance = @class.find(instance_a.uuid)
     instance.user.length.should > 0
+    instance.image_storage.length.should > 0
   end
-
-  it "shoud get instance details"
-    #instance.physicalhost_id.should == 10
-    #instance.imagestorage_id.should == 100
-    #instance.hvspec_id.should == 10
 
   it "should reboot" do
     instance = @class.find($instance_a.id)
@@ -264,7 +279,7 @@ describe "instance access by active resource" do
   
   it "should snapshot image, and backup image to image storage" do
     pending
-    instance = @class.create(:account=>@account.id,
+    instance = @class.create(:account=>Account[1].id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
                              :need_memory=>0.5)
