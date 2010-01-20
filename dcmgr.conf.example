@@ -3,7 +3,7 @@ set :url, 'http://localhost:4567'
 
 Dcmgr.logger = Logger.new('dcmgr.log')
 
-# Dcmgr.hvchttp = HvcHttp.new
+Dcmgr.hvchttp = Dcmgr::HvcHttp.new
 
 Dcmgr.scheduler = Dcmgr::PhysicalHostScheduler::Algorithm1
 
