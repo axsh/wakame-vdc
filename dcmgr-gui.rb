@@ -18,7 +18,7 @@ end
 
 get '/' do
   'startup dcmgr-gui'
-//  erb :index
+#  erb :index
 end
 
 not_found do
@@ -70,14 +70,11 @@ get '/instance-list' do
   instanceList.each{|index|
     rows = Hash::new
     rows.store('id',index.id)
-    rows.store('od','')
+    rows.store('od',index.user)
     rows.store('wd',index.image_storage)
     rows.store('st',index.status)
-    rows.store('pub-dns','')
-    rows.store('pri-dns','')
     rows.store('ip',index.ip)
     rows.store('tp','')
-    rows.store('sv','')
     rtn['rows'].push(rows)
   }
   debug_log rtn
@@ -152,8 +149,6 @@ get '/image-list' do
     rows.store('od','')
     rows.store('vy','')
     rows.store('ac','')
-    rows.store('is','')
-    rows.store('dc','')
     rtn['rows'].push(rows)
   }
   debug_log rtn
