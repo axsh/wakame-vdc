@@ -6,7 +6,7 @@ module Dcmgr
     module ClassMethods
       def get_actions
         @public_actions.each{|method, path, args, action|
-          yield [method, path, route(self, action)]
+          yield [method, path, route(self, method, action)]
         }
       end
       
@@ -51,22 +51,23 @@ module Dcmgr
         @public_name = name
       end
       
-      def route(public_class, block)
+      def route(public_class, method, block)
         # Dcmgr::logger.debug "ROUTE: %s, %s, %s" % [self, public_class, block]
         proc do |*args|
-          id = args[0] if args.length > 0
-          logger.debug "access url: " + request.url
+          logger.debug "URL: #{method} #{request.url} #{args}"
+
           protected!
-          
           obj = public_class.new(authorized_user, request)
-          obj.uuid = id if id
+          obj.uuid = args[0] if args.length > 0
+          
           begin
             ret = obj.instance_eval(&block)
           rescue StandardError => e
-            logger.debug "err! %s" % e.to_s
-            logger.debug e.backtrace.join("\n")
+            logger.info "err! %s" % e.to_s
+            logger.info "  " + e.backtrace.join("\n  ")
             throw :halt, [400, e.to_s]
           end
+          
           logger.debug "response(inspect): " + ret.inspect
           json_ret = public_class.json_render(ret)
           logger.debug "response(json): " + json_ret
@@ -161,7 +162,7 @@ module Dcmgr
       object
     end
     
-    def list
+    def find
       model.all.map{|o| format_object(o)}
     end
     
@@ -225,10 +226,6 @@ module Dcmgr
       @user = user
       @request = request
     end
-
-    #def exec(block, id)
-    #  self.instance_eval &lambda {block.call(id)}
-    #end
   end
 
   class PublicAccount
@@ -262,6 +259,10 @@ module Dcmgr
     
     public_action :get, :myself do
       user
+    end
+    
+    public_action :get do
+      model.find(:account=>user.account).map{|o| format_object(o)}
     end
     
     #public_action_withid :delete do |id|

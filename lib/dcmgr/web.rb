@@ -37,6 +37,7 @@ module Dcmgr
     
     not_found do
       logger.debug "not found"
+      logger.debug request.inspect
       "not found"
     end
   end
