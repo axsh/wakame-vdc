@@ -24,7 +24,7 @@ describe "accounts by active resource" do
     real_account.memo.should be_nil
     real_account.contract_at.should be_nil
 
-    real_account.account_role.index{|i| i.user.uuid== @user.id }.should_not be_nil
+    real_account.users.find{|user| user.uuid== @user.id }.should be_true
   end
 
   it "should add with memo, contract_at, enable fields" do
@@ -43,7 +43,7 @@ describe "accounts by active resource" do
     real_account.memo.should == 'memo \n abc'
     real_account.contract_at.should be_close(dt, 1)
 
-    real_account.account_role.index{|i| i.user.uuid== @user.id }.should_not be_nil
+    real_account.users.find{|user| user.uuid== @user.id }.should be_true
   end
 
   it "should find by id"
