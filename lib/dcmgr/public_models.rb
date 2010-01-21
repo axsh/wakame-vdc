@@ -178,9 +178,6 @@ module Dcmgr
       }
       find_params << {:uuid => Account.trim_uuid(request[:id])} if request[:id]
       
-      p request.params
-      p find_params
-        
       if find_params.length > 0
         model.filter(find_params).map{|o| format_object(o)}
       else
