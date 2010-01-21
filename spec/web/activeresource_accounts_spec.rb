@@ -49,13 +49,29 @@ describe "accounts by active resource" do
   it "should find by id" do
     account = @class.find(Account[1].uuid)
     account.id.should == Account[1].uuid
+    
+    accounts = @class.find(:all, :params=>{:id=>Account[1].uuid})
+    accounts.length.should == 1
+    accounts[0].id.should == Account[1].uuid
   end
 
-  it "should find by account name"
+  it "should find by account name" do
+    accounts = @class.find(:all, :params=>{:name=>Account[1].name})
+    accounts.length.should == 1
+    accounts[0].id.should == Account[1].uuid
+  end
   
-  it "should find by enable"
+  it "should find by enable, and name" do
+    accounts = @class.find(:all, :params=>{:enable=>true, :name=>Account[1].name})
+    accounts.length.should == 1
+    accounts[0].id.should == Account[1].uuid
+  end
 
-  it "should find by contract date"
+  it "should find by contract date" do
+    accounts = @class.find(:all, :params=>{:contract_date=>Time.now})
+    accounts.length.should == 1
+    accounts[0].id.should == Account[1].uuid
+  end    
 
   it "should get list" do
     list = @class.find(:all)
