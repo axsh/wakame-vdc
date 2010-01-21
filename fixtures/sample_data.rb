@@ -1,5 +1,5 @@
 
-account_a = Account.create(:name=>'__test_account__')
+account_a = Account.create(:name=>'__test_account__', :contract_at=>Time.now)
 account_b = Account.create(:name=>'__test_account2__')
 
 user = User.create(:name=>'__test__', :password=>'passwd')
