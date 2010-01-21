@@ -100,6 +100,11 @@ class User < Sequel::Model
     self.enable == 'y'
   end
   
+  def validate
+    errors.add(:name, "can't empty") unless self.name and self.name.length > 0
+    errors.add(:password, "can't empty") unless self.password and self.password.length > 0
+  end
+  
   def before_create
     super
     self.enable = 'y'

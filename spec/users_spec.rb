@@ -4,8 +4,8 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe User do
   before(:all) do
-    @user_a = User.create(:name=>'user a')
-    @user_b = User.create(:name=>'user b')
+    @user_a = User.create(:name=>'user a', :password=>'p1')
+    @user_b = User.create(:name=>'user b', :password=>'p2')
     @user_b.enable = 'n'
     @user_b.save
   end
