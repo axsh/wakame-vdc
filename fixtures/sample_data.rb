@@ -1,7 +1,9 @@
 
-account = Account.create(:name=>'__test_account__')
+account_a = Account.create(:name=>'__test_account__')
+account_b = Account.create(:name=>'__test_account2__')
+
 user = User.create(:name=>'__test__', :password=>'passwd')
-user.add_account(account)
+user.add_account(account_a)
 
 image_storage_host = ImageStorageHost.create
 image_storage = ImageStorage.create(:image_storage_host=>image_storage_host)
@@ -33,7 +35,7 @@ hv_agent_c = HvAgent.create(:hv_controller=>hv_controller,
                             :ip=>'192.168.1.40')
 
 instance_a = Instance.create(:status=>0, # offline
-                             :account=>account,
+                             :account=>account_a,
                              :user=>user,
                              :image_storage=>image_storage,
                              :need_cpus=>1,
@@ -43,7 +45,7 @@ instance_a = Instance.create(:status=>0, # offline
                              :ip=>'192.168.2.100')
 
 normal_tag_a = Tag.create(:name=>'sample tag a',
-                          :account=>account)
+                          :account=>account_a)
 
 TagMapping.create(:tag=>normal_tag_a,
                   :target_type=>TagMapping::TYPE_INSTANCE,
@@ -51,7 +53,7 @@ TagMapping.create(:tag=>normal_tag_a,
 
 instance_crud = Tag.create(:name=>'sample instance crud',
                            :role=>1,
-                           :account=>account,
+                           :account=>account_a,
                            :owner=>user)
 
 TagMapping.create(:tag=>normal_tag_a,
