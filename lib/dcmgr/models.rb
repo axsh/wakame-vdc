@@ -72,7 +72,7 @@ class Account < Sequel::Model
   
   # set_dataset db[:accounts].filter(:enable=>'y')
 
-  one_to_many :account_role
+  many_to_many :users, :join_table=>:account_roles  
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_ACCOUNT}
   
   def enable?
@@ -92,7 +92,6 @@ class User < Sequel::Model
   
   set_dataset db[:users].filter(:enable=>'y')
 
-  one_to_many  :account_roles
   many_to_many :accounts, :join_table=>:account_roles
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
 

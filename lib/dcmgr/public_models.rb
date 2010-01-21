@@ -262,7 +262,7 @@ module Dcmgr
     end
     
     public_action :get do
-      model.find(:account=>user.account).map{|o| format_object(o)}
+       user.accounts.map{|o|o.users}.flatten
     end
     
     #public_action_withid :delete do |id|

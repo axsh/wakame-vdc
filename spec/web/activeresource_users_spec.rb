@@ -37,6 +37,12 @@ describe "user access by active resource" do
     user_b = @class.create(:name=>'user_b', :password=>'passwd')
     user_c = @class.create(:name=>'user_c', :password=>'passwd')
     user_d = @class.create(:name=>'user_d', :password=>'passwd')
+
+    # add account
+    real_user_a = User[user_a.id]
+    real_user_a.add_account(Account[1])
+    real_user_b = User[user_b.id]
+    real_user_b.add_account(Account[1])
     
     # remove account
     real_user_c = User[user_c.id]
