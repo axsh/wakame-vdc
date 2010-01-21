@@ -56,7 +56,7 @@ describe "accounts by active resource" do
 
   it "should get list" do
     list = @class.find(:all)
-    list.index { |account| account.id == $account.id }.should be_true
+    list.find{|account| account.id == Account[1].uuid }.should be_true
   end
 
   it "should get by id"

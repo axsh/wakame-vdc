@@ -234,7 +234,7 @@ module Dcmgr
     allow_keys [:name, :memo, :enable, :contract_at]
 
     public_action :get do
-      list
+      find
     end
 
     public_action :post do
@@ -345,7 +345,7 @@ module Dcmgr
                :need_cpus, :need_cpu_mhz, :need_memory]
 
     public_action :get do
-      list
+      find
     end
     
     public_action_withid :get do
@@ -455,7 +455,7 @@ module Dcmgr
     allow_keys [:image_storage_host, :storage_url]
 
     public_action :get do
-      list
+      find
     end
 
     public_action :post do
@@ -482,7 +482,7 @@ module Dcmgr
     model ImageStorageHost
 
     public_action :get do
-      list
+      find
     end
 
     public_action :post do
@@ -503,7 +503,7 @@ module Dcmgr
     model PhysicalHost
     
     public_action :get do
-      list
+      find
     end
 
     public_action :post do
