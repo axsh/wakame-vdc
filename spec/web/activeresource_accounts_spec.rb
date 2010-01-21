@@ -46,7 +46,10 @@ describe "accounts by active resource" do
     real_account.users.find{|user| user.uuid== @user.id }.should be_true
   end
 
-  it "should find by id"
+  it "should find by id" do
+    account = @class.find(Account[1].uuid)
+    account.id.should == Account[1].uuid
+  end
 
   it "should find by account name"
   

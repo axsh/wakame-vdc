@@ -237,6 +237,10 @@ module Dcmgr
       find
     end
 
+    public_action_withid :get do
+      get
+    end
+    
     public_action :post do
       account = create
       # create account role
