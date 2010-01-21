@@ -215,15 +215,16 @@ AMPanel = function(){
       },'-',
       { iconCls: 'removeUser',
         text : 'Remove', handler:function(){
-          var temp = sm.getCount();
-          if(temp > 0){
-            Ext.Msg.confirm("Remove:","Are you share?", function(btn){
-              if(btn == 'yes'){
-                var rec = sm.getSelected();
-                store.remove(rec);
-              }
-            });
-          }
+		  if(sm.getCount() <= 0)
+            return;
+          Ext.Ajax.request({
+	        url: '/account-remove',
+	        method: "POST", 
+            params : 'id=' + sm.getSelected().id,
+            success: function(form, action) {
+              store.reload();
+            }
+	      });
         }
       },'-',
       { iconCls: 'editUser',
@@ -485,7 +486,7 @@ AddAccountWindow = function(){
 		},{
 		  text: 'Close',
 		  handler: function(){
-		    this.hide();
+	        this.close();
 		  },
 		  scope:this
 		}]
@@ -519,7 +520,7 @@ EditAccountWindow = function(accountData){
         items: [
           { boxLabel: 'Enable',
             name: 'enable',
-            checked: accountData.get('en')=='y'?true:false
+            checked: accountData.get('en')
           }
         ]
         }
@@ -1726,7 +1727,7 @@ AddMapWindow = function(){
 /*     }, {
         xtype: 'fileuploadfield',
         id: 'map-file',
-        emptyText: 'Select an file',
+        emptyText: 'Select an image file',
         fieldLabel: 'Map-File',
         name: 'map-file',
         buttonText: 'file'
