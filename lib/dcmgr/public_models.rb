@@ -163,7 +163,29 @@ module Dcmgr
     end
     
     def find
-      model.all.map{|o| format_object(o)}
+      find_params = []
+      allow_keys.each{|key|
+        if request[key]
+          if model.db_schema[key][:type] == :boolean
+            find_params << {key => request[key] == 'true'}
+          elsif model.db_schema[key][:type] == :datetime
+            find_params << (key >= Time.parse(request[key][0]))
+            find_params << (key <= Time.parse(request[key][1]))
+          else
+            find_params << {key => request[key]}
+          end
+        end
+      }
+      find_params << {:uuid => Account.trim_uuid(request[:id])} if request[:id]
+      
+      p request.params
+      p find_params
+        
+      if find_params.length > 0
+        model.filter(find_params).map{|o| format_object(o)}
+      else
+        model.all.map{|o| format_object(o)}
+      end
     end
     
     def get
@@ -171,18 +193,14 @@ module Dcmgr
     end
 
     def _create(req_hash=nil)
-      unless req_hash
-        req_hash = json_request
-        req_hash.delete 'id'
-      end
-      
+      req_hash = json_request unless req_hash
       obj = model.new
 
       if allow_keys
         allow_keys.each{|k|
           if k == :user
             obj.user = user
-          elsif req_hash[k.to_s]
+          elsif not req_hash[k.to_s].nil? # through false
             if k == :account
               obj.account = Account[req_hash[k.to_s]]
             else
@@ -217,7 +235,8 @@ module Dcmgr
 
     def json_request
       raise "no data" unless request.content_length.to_i > 0
-      parsed = JSON.parse(request.body.read)
+      body = request.body.read
+      parsed = JSON.parse(body)
       Dcmgr.logger.debug("request: " + parsed.inspect)
       parsed
     end
