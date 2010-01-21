@@ -41,7 +41,7 @@ module Dcmgr
         String :name, :unique=>true, :null=>false
         String :password, :null=>false
         String :default_password, :null=>false # default password, use password reset
-        Boolean :enable
+        Boolean :enable, :default=>true
         String :email, :null=>false
         String :memo
       end
