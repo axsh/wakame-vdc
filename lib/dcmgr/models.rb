@@ -70,18 +70,11 @@ class Account < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'A'; end
   
-  # set_dataset db[:accounts].filter(:enable=>'y')
-
   many_to_many :users, :join_table=>:account_roles  
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_ACCOUNT}
   
-  def enable?
-    self.enable == 'y'
-  end
-  
   def before_create
     super
-    self.enable = 'y' unless self.enable == "n"
     self.created_at = Time.now unless self.created_at
   end
 end
@@ -90,15 +83,9 @@ class User < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'U'; end
   
-  set_dataset db[:users].filter(:enable=>'y')
-
   many_to_many :accounts, :join_table=>:account_roles
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
 
-  def enable?
-    self.enable == 'y'
-  end
-  
   def validate
     errors.add(:name, "can't empty") unless self.name and self.name.length > 0
     errors.add(:password, "can't empty") unless self.password and self.password.length > 0
@@ -106,7 +93,6 @@ class User < Sequel::Model
   
   def before_create
     super
-    self.enable = 'y'
     self.default_password = self.password
   end
 end

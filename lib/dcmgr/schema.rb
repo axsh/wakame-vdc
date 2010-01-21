@@ -26,11 +26,11 @@ module Dcmgr
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
         String :name
-        String :enable, :fixed=>true, :size=>1, :null=>false # 'y' or 'n'
+        Boolean :enable, :default=>true
         DateTime :created_at, :null=>false
         DateTime :contract_at, :null=>true
         DateTime :deleted_at, :null=>true
-        String :is_deleted, :fixed=>true, :size=>1, :null=>false # 'y' or 'n'
+        Boolean :is_deleted, :default=>false
         String :memo
       end
       
@@ -41,7 +41,7 @@ module Dcmgr
         String :name, :unique=>true, :null=>false
         String :password, :null=>false
         String :default_password, :null=>false # default password, use password reset
-        String :enable, :fixed=>true, :size=>1, :null=>false # 'y' or 'n'
+        Boolean :enable
         String :email, :null=>false
         String :memo
       end
