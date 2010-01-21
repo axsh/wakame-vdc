@@ -82,6 +82,29 @@ get '/instance-list' do
   rtn.to_json
 end
 
+get '/instance-detail-list' do
+  Instance.login('staff', 'passwd')
+  instanceList = Instance.find(:all)
+  rtn = {'totalCount'=>0,'rows'=>[] }
+  rtn['totalCount'] = instanceList.length
+  instanceList.each{|index|
+    rows = Hash::new
+    rows.store('id',index.id)
+    rows.store('sd','')				# physicalhost ID
+    rows.store('ad',index.account)
+    rows.store('ud',index.user)
+    rows.store('wd',index.image_storage)
+    rows.store('st',index.status)
+    rows.store('ip',index.ip)
+    rows.store('tp','')				# cpu type+memory
+    rows.store('sv','')				# image name (from index.image_storage)
+    rtn['rows'].push(rows)
+  }
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
 post '/instance-create' do
   Instance.login('staff', 'passwd')
   id = params[:id]
@@ -183,3 +206,22 @@ get '/user-list' do
   content_type :json
   rtn.to_json
 end
+
+get '/physicalhost-list' do
+  PhysicalHost.login('staff', 'passwd')
+  physicalhostlist = PhysicalHost.find(:all)
+  rtn = {'totalCount'=>0,'rows'=>[]}
+  rtn['totalCount'] = physicalhostlist.length
+  physicalhostlist.each{|index|
+    rows = Hash::new
+    rows.store('id'  ,index.id)
+    rows.store('cpus',index.cpus)
+    rows.store('mhz' ,index.cpu_mhz)
+    rows.store('memory',index.memory)
+    rtn['rows'].push(rows)
+  }
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
