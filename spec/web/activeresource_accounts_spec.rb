@@ -20,7 +20,7 @@ describe "accounts by active resource" do
     real_account = Account[account.id]
     real_account.should be_valid
     real_account.uuid.length.should > 0
-    real_account.enable.should == 'y'
+    real_account.enable.should be_true
     real_account.memo.should be_nil
     real_account.contract_at.should be_nil
 
@@ -30,16 +30,15 @@ describe "accounts by active resource" do
   it "should add with memo, contract_at, enable fields" do
     dt = Time.now
     account = @class.create(:name=>'test account',
-                            :enable=>'n',
+                            :enable=>false,
                             :memo=>'memo \n abc',
                             :contract_at=>dt)
-    $account = account
     account.id.length.should > 0
     
     real_account = Account[account.id]
     real_account.should be_valid
     real_account.uuid.length.should > 0
-    real_account.enable.should == 'n'
+    real_account.enable.should be_false
     real_account.memo.should == 'memo \n abc'
     real_account.contract_at.should be_close(dt, 1)
 
@@ -68,8 +67,8 @@ describe "accounts by active resource" do
   end
 
   it "should find by contract date" do
-    accounts = @class.find(:all, :params=>{:contract_date=>Time.now})
-    accounts.length.should == 1
+    accounts = @class.find(:all, :params=>{:contract_at=>[Time.now - 3600, Time.now]})
+    accounts.length.should == 2
     accounts[0].id.should == Account[1].uuid
   end    
 
