@@ -306,7 +306,7 @@ UListPanel = function(){
     stripeRows: true,
     loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
@@ -402,8 +402,9 @@ ULOGPanel = function(){
     collapsible:true,
     titleCollapse:true,
     animCollapse:true,
+    loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
@@ -1359,37 +1360,43 @@ Ext.extend(ServerListPanel, Ext.TabPanel);
 
 HWPanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:false});
-  var store = new Ext.data.SimpleStore({
-    fields: [
-      { name: 'server-id'       },
-      { name: 'cpu_model'       },
-      { name: 'cpu_mhz'         },
-      { name: 'memory'          },
-      { name: 'hypervisor_type' },
-      { name: 'ip-address'      },
-      { name: 'hvc-address'     },
-      { name: 'rack-name'       },
-      { name: 'pool'            },
-      { name: 'location'        },
-      { name: 'memo'            }
-    ],
-    data:[ 
-      [ 'S1001', 'x386', '2GHz', '3GB', 'HVC', '192.168.1.1', '','R1001','TEST','1F2001','Test Server']
-    ]
+  var store = new Ext.data.Store({
+    proxy: new Ext.data.HttpProxy({
+      url: '/physicalhost-list',
+      method:'GET'
+    }),
+    reader: new Ext.data.JsonReader({
+      totalProperty: "totalCount",
+      root:'rows',
+      fields:[
+        { name:'id' ,type:'string'     },
+        { name:'cpus' ,type:'string'   },
+        { name:'mhz' ,type:'string'    },
+        { name:'memory' ,type:'string' },
+        { name:'htype' ,type:'string'  },
+        { name:'hvcadr' ,type:'string' },
+        { name:'ip' ,type:'string'     },
+        { name:'rack-nm' ,type:'string'},
+        { name:'pool' ,type:'string'   },
+        { name:'location' ,type:'string'},
+        { name:'memo' ,type:'string'    }
+      ]
+    })
   });
+
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
-    { header: "Server-ID"  , width: 100, dataIndex: 'server-id'   },
-    { header: "CPU"  , width: 100, dataIndex: 'cpu_model'   },
-    { header: "Hz"   , width: 100, dataIndex: 'cpu_mhz'   },
-    { header: "Memory"   , width: 100, dataIndex: 'memory'   },
-    { header: "Type"    , width: 100, dataIndex: 'hypervisor_type'   },
-    { header: "IP-address"  , width: 100, dataIndex: 'ip-address'   },
-    { header: "HVC-address"  , width: 100, dataIndex: 'hvc-address'   },
-    { header: "Rack-Name", width: 150, dataIndex: 'rack-name' },
-    { header: "Pool", width: 150, dataIndex: 'pool' },
-    { header: "Location" , width: 150, dataIndex: 'location'  },
-    { header: "Memo"     , width: 150, dataIndex: 'memo'      }
+    { header: "Server-ID"  , width: 100, dataIndex: 'id'       },
+    { header: "CPUS"       , width: 100, dataIndex: 'cpus'     },
+    { header: "Hz"         , width: 100, dataIndex: 'mhz'      },
+    { header: "Memory"     , width: 100, dataIndex: 'memory'   },
+    { header: "Type"       , width: 100, dataIndex: 'htype'    },
+    { header: "HVC-address", width: 100, dataIndex: 'hvcadr'   },
+    { header: "IP-address" , width: 100, dataIndex: 'ip'       },
+    { header: "Rack-Name"  , width: 150, dataIndex: 'rack-nm'  },
+    { header: "Pool"       , width: 150, dataIndex: 'pool'     },
+    { header: "Location"   , width: 150, dataIndex: 'location' },
+    { header: "Memo"       , width: 150, dataIndex: 'memo'     }
   ]);
 
   HWPanel.superclass.constructor.call(this, {
@@ -1401,14 +1408,17 @@ HWPanel = function(){
     width: 320,
     autoHeight: false,
     stripeRows: true,
+    loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
       emptyMsg: "No data to display"
     })
   });
+  store.load({params: {start: 0, limit: 50}});		// limit = page size
+
 }
 Ext.extend(HWPanel, Ext.grid.GridPanel);
 
@@ -1448,8 +1458,9 @@ RackPanel = function(){
     width: 320,
     autoHeight: false,
     stripeRows: true,
+    loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
@@ -1462,7 +1473,7 @@ Ext.extend(RackPanel, Ext.grid.GridPanel);
 
 HVCPanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:false});
-   var store = new Ext.data.SimpleStore({
+  var store = new Ext.data.SimpleStore({
     fields: [
       { name: 'a' }, { name: 'b' },{ name: 'c' }, { name: 'd' },
       { name: 'e' }, { name: 'f' },{ name: 'g' }, { name: 'h' }
@@ -1510,9 +1521,10 @@ HVCPanel = function(){
     width: 320,
     autoHeight: false,
     stripeRows: true,
+    loadMask: {msg: 'Loading...'},
     listeners: {activate:function() { ChangeQuery(0);} },
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
@@ -1570,9 +1582,10 @@ HVAPanel = function(){
     width: 320,
     autoHeight: false,
     stripeRows: true,
+    loadMask: {msg: 'Loading...'},
     listeners: {activate:function() { ChangeQuery(1);} },
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
@@ -1584,36 +1597,37 @@ Ext.extend(HVAPanel, Ext.grid.GridPanel);
 
 VMPanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:false});
-  var store = new Ext.data.SimpleStore({
-    fields: [
-      { name: 'instance-id' },
-      { name: 'server-id' },
-      { name: 'account-id' },
-      { name: 'user-id' },
-      { name: 'wmi-id' },
-      { name: 'state' },
-      { name: 'public-dns' },
-      { name: 'private-dns' },
-      { name: 'private-ip' },
-      { name: 'type' },
-      { name: 'service' }
-    ],
-    data:[ 
-//      [ '88939299', 'S1001', 39e9de9edd , '39de9d9','ssxxx','run', 'http://ssss/ssss','192.168.10.10', 'x86_64', '2F-22-001-01' , 'for test'],
-    ]
+  var store = new Ext.data.Store({
+    proxy: new Ext.data.HttpProxy({
+      url: '/instance-detail-list',
+      method:'GET'
+    }),
+    reader: new Ext.data.JsonReader({
+      totalProperty: "totalCount",
+      root:'rows',
+      fields:[
+        { name:'id' ,type:'string'},
+        { name:'sd' ,type:'string'},
+        { name:'ad' ,type:'string'},
+        { name:'ud' ,type:'string'},
+        { name:'wd' ,type:'string'},
+        { name:'st' ,type:'string'},
+        { name:'ip' ,type:'string'},
+        { name:'tp' ,type:'string'},
+        { name:'sv' ,type:'string'}
+      ]
+    })
   });
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
-    { header: "Instance-ID", width: 100, dataIndex: 'instance-id' },
-    { header: "Server-ID", width: 120, dataIndex: 'server-id' },
-    { header: "Account-ID", width: 120, dataIndex: 'account-id' },
-    { header: "User-ID", width: 120, dataIndex: 'user-id' },
-    { header: "WMI-ID", width: 120, dataIndex: 'wmi-id' },
-    { header: "State", width: 120, dataIndex: 'state' },
-    { header: "Public-DNS", width: 120, dataIndex: 'public-dns' },
-    { header: "Public-IP", width: 120, dataIndex: 'public-ip' },
-    { header: "Type", width: 120, dataIndex: 'type' },
-    { header: "Service", width: 120, dataIndex: 'service' }
+    { header: "Instance-ID" , width: 100, dataIndex: 'id' },
+    { header: "Server-ID"   , width: 120, dataIndex: 'sd' },
+    { header: "Account-ID"  , width: 120, dataIndex: 'ad' },
+    { header: "User-ID"     , width: 120, dataIndex: 'ud' },
+    { header: "WMI-ID"      , width: 120, dataIndex: 'wd' },
+    { header: "State"       , width: 120, dataIndex: 'st' },
+    { header: "Type"        , width: 120, dataIndex: 'tp' },
+    { header: "Service"     , width: 120, dataIndex: 'sv' }
   ]);
 
   VMPanel.superclass.constructor.call(this, {
@@ -1625,14 +1639,16 @@ VMPanel = function(){
     autoHeight: false,
     stripeRows: true,
     listeners: {activate:function() { ChangeQuery(4);} },
+    loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
       emptyMsg: "No data to display"
     })
   });
+  store.load({params: {start: 0, limit: 50}});		// limit = page size
 }
 Ext.extend(VMPanel, Ext.grid.GridPanel);
 
@@ -1820,8 +1836,9 @@ CenterLogPanel = function(){
         }
       }
     ],
+    loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
-      pageSize: 1,
+      pageSize: 50,
       store: store,
       displayInfo: true,
       displayMsg: 'Displaying data {0} - {1} of {2}',
