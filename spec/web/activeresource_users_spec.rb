@@ -32,7 +32,26 @@ describe "user access by active resource" do
     user.name.should == User[1].name
   end
 
-  it "should find all"
+  it "should find all" do
+    user_a = @class.create(:name=>'user_a', :password=>'passwd')
+    user_b = @class.create(:name=>'user_b', :password=>'passwd')
+    user_c = @class.create(:name=>'user_c', :password=>'passwd')
+    user_d = @class.create(:name=>'user_d', :password=>'passwd')
+    
+    # remove account
+    real_user_c = User[user_c.id]
+    real_user_c.remove_account(Account[1])
+
+    # other account
+    real_user_d = User[user_c.id]
+    real_user_d.remove_account(Account[1])
+    real_user_d.add_account(Account[2])
+
+    users = @class.find(:all)
+    users.detect{|u| u.id == user_a.id }.should be_true
+    users.detect{|u| u.id == user_b.id }.should be_true
+    users.detect{|u| u.id == user_c.id }.should_not be_true
+  end
 
   it "should add tag" do
     user = @class.find(:myself)
