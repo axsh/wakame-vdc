@@ -42,6 +42,17 @@ post '/account-create' do
   rtn.to_json
 end
 
+post '/account-remove' do
+  id = params[:id]
+  Account.login('staff', 'passwd')
+  account = Account.find(id)
+  account.destroy
+  rtn = {"success" => true}
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
 get '/account-list' do
   Account.login('staff', 'passwd')
   accountList = Account.find(:all)
@@ -178,7 +189,6 @@ get '/image-list' do
   content_type :json
   rtn.to_json
 end
-
 
 get '/user-list' do
   rtn = {'totalCount'=>0,'rows'=>[]}
