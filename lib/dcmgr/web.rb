@@ -36,8 +36,7 @@ module Dcmgr
     end
     
     not_found do
-      logger.debug "not found"
-      logger.debug request.inspect
+      logger.debug "not found: #{request.request_method} #{request.path}"
       "not found"
     end
   end
