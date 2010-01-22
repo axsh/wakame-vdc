@@ -117,12 +117,18 @@ describe "accounts by active resource" do
 
   it "should chagnge" do
     account = @class.create(:name=>'test account')
+    
     account.enable.should be_true
     account.enable = false
     account.save
     account.enable.should be_false
+    Account[account.id].enable.should be_false
 
-    Account[account.uuid].enable.should be_false
+    account.name.should == 'test account'
+    account.name = 'changed name'
+    account.save
+    account.name.should == 'changed name'
+    Account[account.id].name.should == 'changed name'
   end
 
   it "should be able to be used, only enable account"
