@@ -1,5 +1,10 @@
 
+var	accountPanel = null;
+
 AccountPanel = function(){
+
+  accountPanel = this;
+
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
@@ -53,7 +58,7 @@ AccountPanel = function(){
     tbar : [
       { iconCls: 'addUser',
         text : 'Add',handler:function(){
-          var addWin = new AddAccountWindow(this);
+          var addWin = new AddAccountWindow();
 		  addWin.show();
         }
       },'-',
@@ -93,7 +98,7 @@ AccountPanel = function(){
 }
 Ext.extend(AccountPanel, Ext.grid.GridPanel);
 
-AddAccountWindow = function(accountPanel){
+AddAccountWindow = function(){
   var form = new Ext.form.FormPanel({
     labelWidth: 120, 
     width: 400, 
