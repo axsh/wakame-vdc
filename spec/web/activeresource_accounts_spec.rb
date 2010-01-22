@@ -115,7 +115,15 @@ describe "accounts by active resource" do
     account.id.should == Account[1].uuid
   end
 
-  it "should chagnge"
+  it "should chagnge" do
+    account = @class.create(:name=>'test account')
+    account.enable.should be_true
+    account.enable = false
+    account.save
+    account.enable.should be_false
+
+    Account[account.uuid].enable.should be_false
+  end
 
   it "should be able to be used, only enable account"
   
