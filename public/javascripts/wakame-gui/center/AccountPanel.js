@@ -111,11 +111,21 @@ AddAccountWindow = function(){
       anchor: '100%'
       }
       ,{
-      fieldLabel: '',
-      xtype: 'checkboxgroup',
-      items: [
-        {boxLabel: 'Enable', name: 'en' }
-      ]
+      fieldLabel: 'Useful',
+      xtype: 'radiogroup',
+      defaultType: "radio", 
+      anchor: '100%',
+	  items: [{
+        name: "en", 
+	    inputValue: "true", 
+	      boxLabel: "enable", 
+	      checked: true 
+	    },
+	    {
+	      name: "en", 
+	      inputValue: "false", 
+	      boxLabel: "disable" 
+	    }]
       }
       ,{
       fieldLabel: 'Contract-Date',
@@ -196,14 +206,21 @@ EditAccountWindow = function(accountData){
         anchor: '100%'
         }
         ,{
-        fieldLabel: '',
-        xtype: 'checkboxgroup',
-        items: [
-          { boxLabel: 'Enable',
-            name: 'enable',
+        fieldLabel: 'Useful',
+        xtype: 'radiogroup',
+        defaultType: "radio", 
+        anchor: '100%',
+	    items: [{
+          name: "en", 
+	      inputValue: "true", 
+	        boxLabel: "enable", 
             checked: accountData.get('en')
-          }
-        ]
+	      },
+	      {
+	        name: "en", 
+	        inputValue: "false", 
+	        boxLabel: "disable" 
+	      }]
         }
         ,{
         fieldLabel: 'Contract-Date',
