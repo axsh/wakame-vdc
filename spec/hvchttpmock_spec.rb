@@ -50,8 +50,8 @@ describe Dcmgr::HvcHttpMock do
   it "should terminate instance" do
     hvchttp = get_hvchttp
     hvchttp.open('192.168.1.10', 80) {|http|
-      res = http.get('/terminate_instance?instance_ip=%s' %
-                     ['192.168.1.21'])
+      res = http.get('/terminate_instance?hva_ip=%s&instance_ip=%s' %
+                     ['192.168.1.20', '192.168.1.21'])
       res.success?.should be_true
       res.body.should == "ok"
     }
