@@ -1,5 +1,7 @@
 
-ImagePanel = function(instancePanel){
+var instancePanel = null;
+
+ImagePanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true}); 
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
@@ -45,6 +47,10 @@ ImagePanel = function(instancePanel){
     upPanel = obj;
   }
 
+  this.setInstancePanel = function(obj){
+    instancePanel = obj;
+  }
+
   ImagePanel.superclass.constructor.call(this, {
     title: 'Image',
     store: store,
@@ -60,7 +66,7 @@ ImagePanel = function(instancePanel){
 		  if(temp > 0){
             var aid  =  upPanel.getSelectedAccount();
             var data = sm.getSelected();
-			var launchWin = new LaunchWindow(data,aid,instancePanel);
+			var launchWin = new LaunchWindow(data,aid);
 			launchWin.show();
           }
         }
@@ -74,12 +80,12 @@ ImagePanel = function(instancePanel){
     run: function(){
       store.reload();
     },
-    interval: 30000
+    interval: 60000
   });
 }
 Ext.extend(ImagePanel, Ext.grid.GridPanel);
 
-LaunchWindow = function(launchData,account_id,instancePanel){
+LaunchWindow = function(launchData,account_id){
   var form = new Ext.form.FormPanel({
     labelWidth: 70, 
     width: 150,
