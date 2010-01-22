@@ -253,10 +253,12 @@ AdminQueryPanel = function(){
 Ext.extend(AdminQueryPanel, Ext.form.FormPanel);
 
 CardPanel = function(){
-  var instancePanel    = new InstancePanel();
-  var imagePanel   = new ImagePanel(instancePanel);
-  var clusterPanel = new ClusterPanel();
-  var servicePanel = new ServicePanel();
+  var instancePanel = new InstancePanel();
+  var imagePanel    = new ImagePanel();
+  var clusterPanel  = new ClusterPanel();
+  var servicePanel  = new ServicePanel();
+
+  imagePanel.setInstancePanel(instancePanel);
 
   this.setUpPanel = function(obj){
     imagePanel.setUpPanel(obj)
