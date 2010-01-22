@@ -244,7 +244,12 @@ module Dcmgr
     def update
       obj = model[uuid]
       req_hash = json_request
-      obj.set_all(req_hash)
+      req_hash.delete "id"
+      allow_keys.each{|key|
+        if req_hash.key?(key.to_s)
+          obj.send('%s=' % key, req_hash[key.to_s])
+        end
+      }
       format_object(obj.save)
     end
     
@@ -278,6 +283,10 @@ module Dcmgr
 
     public_action_withid :get do
       get
+    end
+    
+    public_action_withid :put do
+      update
     end
     
     public_action :post do
