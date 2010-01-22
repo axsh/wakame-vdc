@@ -161,6 +161,20 @@ module Dcmgr
       end
       object
     end
+
+    def query_str_like(key, str)
+      def escape(str); str.gsub(/_/, '\_').gsub(/%/, '\%'); end
+      case str
+      when /^\*(.*)\*$/
+        key.like("%#{escape($1)}%")
+      when /^\*(.*)$/
+        key.like("%#{escape($1)}")
+      when /^(.*)\*$/
+        key.like("#{escape($1)}%")
+      else
+        {key=>str}
+      end
+    end
     
     def find
       find_params = []
@@ -172,13 +186,22 @@ module Dcmgr
             find_params << (key >= Time.parse(request[key][0]))
             find_params << (key <= Time.parse(request[key][1]))
           else
-            find_params << {key => request[key]}
+            p request[key]
+            p query_str_like(key, request[key])
+            find_params << query_str_like(key, request[key])
           end
         end
       }
-      find_params << {:uuid => Account.trim_uuid(request[:id])} if request[:id]
+      if request[:id]
+        begin
+          find_params << {:uuid => Account.trim_uuid(request[:id])}
+        rescue Dcmgr::Model::InvalidUUIDException
+          return []
+        end
+      end
       
       if find_params.length > 0
+        p model.filter(find_params).sql
         model.filter(find_params).map{|o| format_object(o)}
       else
         model.all.map{|o| format_object(o)}
