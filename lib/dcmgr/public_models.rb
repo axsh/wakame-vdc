@@ -186,8 +186,6 @@ module Dcmgr
             find_params << (key >= Time.parse(request[key][0]))
             find_params << (key <= Time.parse(request[key][1]))
           else
-            p request[key]
-            p query_str_like(key, request[key])
             find_params << query_str_like(key, request[key])
           end
         end
@@ -201,7 +199,6 @@ module Dcmgr
       end
       
       if find_params.length > 0
-        p model.filter(find_params).sql
         model.filter(find_params).map{|o| format_object(o)}
       else
         model.all.map{|o| format_object(o)}
