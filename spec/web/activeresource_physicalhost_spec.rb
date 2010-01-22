@@ -40,7 +40,6 @@ describe "physical host access by active resource" do
   end
 
   it "should get list" do
-    pending
     list = @class.find(:all)
     list.index { |ph| ph.id == $physicalhost_id }.should be_true
   end

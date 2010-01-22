@@ -550,6 +550,7 @@ module Dcmgr
   class PublicPhysicalHost
     include PublicModel
     model PhysicalHost
+    allow_keys [:cpus, :cpu_mhz, :memory, :hypervisor_type]
     
     public_action :get do
       find
