@@ -49,6 +49,10 @@ WakameGUI.UserList = function(){
     { header: "Memo",       width: 350, dataIndex: 'mm' }
   ]);
 
+  var refresh = function(){
+    store.reload();
+  };
+  
   WakameGUI.UserList.superclass.constructor.call(this, {
     region: "center",
     store: store,
@@ -122,39 +126,64 @@ WakameGUI.UserList = function(){
         {
         fieldLabel: 'User-Name',
         xtype: 'textfield',
-        name: 'form_textfield',
-        anchor: '100%'
+        name: 'user_name',
+        anchor: '100%',
+        allowBlank:false
         }
         ,{
         fieldLabel: 'Password',
         xtype: 'textfield',
         inputType : 'password',
-        name: 'form_textfield',
-        anchor: '100%'
+        name: 'password',
+        anchor: '100%',
+        allowBlank:false
         }
         ,{
         fieldLabel: 'E-Mail',
         xtype: 'textfield',
-        name: 'form_textfield',
-        anchor: '100%'
+        name: 'email',
+        anchor: '100%',
+        allowBlank:false
         }
         ,{
-        fieldLabel: 'Enable',
+        fieldLabel: 'enable',
         xtype: 'checkbox',
         width: 100,
-          items: [{
-	        name: "enable",
-            boxLabel: 'Enable',
-            checked : true
-	      }]
+        name: "enable",
+        checked : true
         }
         ,{
         fieldLabel: 'Memo',
         xtype: 'textarea',
-        name: 'form_textfield',
+        name: 'memo',
         anchor: '100%'
         }
-      ]
+      ],buttons: [{
+        text:'Save',
+        handler: function(){
+          form.getForm().submit({
+            url: '/user-create',
+            waitMsg: 'Saveing...',
+            method: 'POST',
+            scope: this,
+            success: function(form, action) {
+              refresh();
+              this.close();
+            },
+            failure: function(form, action) {
+              alert('Add user failure.');
+              this.close();
+            }
+          });
+        },
+        scope:this
+      },{
+        text: 'Close',
+        handler: function(){
+          this.close();
+        },
+        scope:this
+      }]      
     });
 
     var myData = {
@@ -325,16 +354,7 @@ WakameGUI.UserList = function(){
       title: 'Add User',
       plain: true,
       layout:'fit',
-      items: [tabwin],
-      buttons: [{
-        text:'Save',
-      },{
-        text: 'Close',
-        handler: function(){
-	      this.close();
-        },
-        scope:this
-      }]
+      items: [tabwin]
     });
   }
   Ext.extend(AddUserWindow, Ext.Window);

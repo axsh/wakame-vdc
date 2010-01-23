@@ -62,7 +62,7 @@ post '/account-save' do
   rtn.to_json
 end
 
-post '/account-search' do
+post '/account-search' do 
   id = params[:id]
   nm = params[:nm]
   en = params[:en]
@@ -385,3 +385,22 @@ get '/rack-list' do
   rtn.to_json
 end
 
+post '/user-create' do
+  debug_log params
+  name = params[:user_name]
+  email = params[:email]
+  password = params[:password]
+  enable = params[:enable] == 'on' ? 1:0
+  memo = params[:memo]
+  User.login(USER_ID,PASSWORD)
+  User.create(:name=>name,
+              :email=>email,
+              :password=>password,
+              :enable=>enable,
+              :memo=>memo
+              )
+  rtn = {"success" => true}
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
