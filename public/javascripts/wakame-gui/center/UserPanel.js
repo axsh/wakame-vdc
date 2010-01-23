@@ -15,6 +15,11 @@ WakameGUI.User = function(){
     layout: 'border',
 	items: [ulistPanel,ulogPanel]
   });
+  
+  this.refresh = function(){
+    ulistPanel.refresh();
+    ulogPanel.refresh();
+  }
 }
 Ext.extend(WakameGUI.User, Ext.Panel);
 
@@ -49,7 +54,7 @@ WakameGUI.UserList = function(){
     { header: "Memo",       width: 350, dataIndex: 'mm' }
   ]);
 
-  var refresh = function(){
+  this.refresh = function(){
     store.reload();
   };
   
@@ -663,6 +668,10 @@ WakameGUI.UserLog = function(){
     { header: "Account-Name",width: 100, dataIndex: 'account-name'  },
     { header: "Message",     width: 350, dataIndex: 'message' }
   ]);
+  
+  this.refresh = function(){
+    //store.reload();
+  };
 
   WakameGUI.UserLog.superclass.constructor.call(this, {
     region: "south",
@@ -688,5 +697,3 @@ WakameGUI.UserLog = function(){
   });
 }
 Ext.extend(WakameGUI.UserLog, Ext.grid.GridPanel);
-
-

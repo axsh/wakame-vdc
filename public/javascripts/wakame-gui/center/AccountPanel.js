@@ -13,6 +13,10 @@ WakameGUI.Account = function(){
       layout: 'border',
   	  items: [alistPanel]
   });
+  
+  this.refresh = function(){
+    alistPanel.refresh();
+  }
 }
 Ext.extend(WakameGUI.Account, Ext.Panel);
   
@@ -38,7 +42,7 @@ WakameGUI.AccountList = function(){
         })
       });
 
-    var refresh = function(){
+    this.refresh = function(){
       store.reload();
     };
 

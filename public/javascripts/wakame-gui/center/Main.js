@@ -25,25 +25,19 @@ WakameGUI.Selector = function(centerPanel){
   var panelMode = 0;
   function ChangePanel(no)
   {
-      console.debug(no);
-    
       if(WakameGUI.activePanel != no){
         WakameGUI.activePanel = no;
         centerPanel.layout.setActiveItem(WakameGUI.activePanel);
-        if(WakameGUI.activePanel == 0){
-          // centerPanel.refreshInstance();
-        }
-        else if(WakameGUI.activePanel == 1){
-          // centerPanel.refreshImage();
-        }else if(WakameGUI.activePanel == 2){
-            
+        switch(no) {
+            case 0:
+              centerPanel.refreshPanel('accountPanel');
+            break;
+      
+            case 1:
+              centerPanel.refreshPanel('userPanel');
+            break;
         }
       }
-      
-    // if(panelMode != md){
-    //   panelMode = md;
-    //   centerPanel.layout.setActiveItem(panelMode);
-    // } 
   }
 
   WakameGUI.Selector.superclass.constructor.call(this,{
@@ -60,8 +54,6 @@ WakameGUI.Selector = function(centerPanel){
     width: 160,
     listeners: {
       'click': function(node){
-          //console.debug(node.id);
-          
           if(node.id == 'menu01'){
             ChangePanel(0);
           }
@@ -164,13 +156,10 @@ WakameGUI.Main = function(){
     cardPanel.setUpPanel(obj)
   }
   
-  this.refreshInstance = function(){
-    centerPanel.refresh();
+  this.refreshPanel = function(panel){
+      eval(panel).refresh();
   }
 
-  // this.refreshImage = function(){
-  //   centerPanel.refresh();
-  // }
   WakameGUI.Main.superclass.constructor.call(this, {
 	region:'center',
 	layout:'card',
