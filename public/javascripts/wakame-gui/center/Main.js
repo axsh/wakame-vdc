@@ -3,6 +3,7 @@
 */
 // Global Resources
 Ext.apply(WakameGUI, {
+  activePanel : 0,
   Main:null,
   Selector:null
 });
@@ -22,12 +23,27 @@ Ext.onReady(function(){
 
 WakameGUI.Selector = function(centerPanel){
   var panelMode = 0;
-  function ChangePanel(md)
+  function ChangePanel(no)
   {
-    if(panelMode != md){
-      panelMode = md;
-      centerPanel.layout.setActiveItem(panelMode);
-    } 
+      console.debug(no);
+    
+      if(WakameGUI.activePanel != no){
+        WakameGUI.activePanel = no;
+        centerPanel.layout.setActiveItem(WakameGUI.activePanel);
+        if(WakameGUI.activePanel == 0){
+          // centerPanel.refreshInstance();
+        }
+        else if(WakameGUI.activePanel == 1){
+          // centerPanel.refreshImage();
+        }else if(WakameGUI.activePanel == 2){
+            
+        }
+      }
+      
+    // if(panelMode != md){
+    //   panelMode = md;
+    //   centerPanel.layout.setActiveItem(panelMode);
+    // } 
   }
 
   WakameGUI.Selector.superclass.constructor.call(this,{
@@ -44,6 +60,8 @@ WakameGUI.Selector = function(centerPanel){
     width: 160,
     listeners: {
       'click': function(node){
+          //console.debug(node.id);
+          
           if(node.id == 'menu01'){
             ChangePanel(0);
           }
@@ -135,6 +153,24 @@ WakameGUI.Main = function(){
   var resourceEditorPanel = new WakameGUI.ResourceEditor();
   var locationMapPanel    = new WakameGUI.LocationMap();
   var logViewerPanel      = new WakameGUI.LogViewer();
+  
+  var centerPanel  = new WakameGUI.Selector();
+
+  this.getCardPanel = function(){
+    return cardPanel;
+  }
+
+  this.setUpPanel = function(obj){
+    cardPanel.setUpPanel(obj)
+  }
+  
+  this.refreshInstance = function(){
+    centerPanel.refresh();
+  }
+
+  // this.refreshImage = function(){
+  //   centerPanel.refresh();
+  // }
   WakameGUI.Main.superclass.constructor.call(this, {
 	region:'center',
 	layout:'card',

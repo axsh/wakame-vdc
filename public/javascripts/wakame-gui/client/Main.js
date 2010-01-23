@@ -94,11 +94,22 @@ WakameGUI.SystemAdminDownPanel = function(cardPanel){
     if(WakameGUI.activePanel != no){
       WakameGUI.activePanel = no;
       cardPanel.layout.setActiveItem(WakameGUI.activePanel);
-      if(WakameGUI.activePanel == 0){
-        cardPanel.refreshInstance();
-      }
-      else if(WakameGUI.activePanel == 1){
-        cardPanel.refreshImage();
+      switch(no) {
+          case 0:
+            cardPanel.refreshPanel('instancePanel');
+          break;
+                    
+          case 1:
+            cardPanel.refreshPanel('imagePanel');
+          break;
+          
+          case 2:
+            //cardPanel.refreshPanel('clusterPanel');
+          break;
+          
+          case 3:
+            //cardPanel.refreshPanel('servicePanel');            
+          break;
       }
     }
   }
@@ -262,12 +273,8 @@ WakameGUI.SystemAdminCard = function(){
     imagePanel.setUpPanel(obj)
   }
 
-  this.refreshInstance = function(){
-    instancePanel.refresh();
-  }
-
-  this.refreshImage = function(){
-    imagePanel.refresh();
+  this.refreshPanel = function(panel){
+      eval(panel).refresh();
   }
 
   WakameGUI.SystemAdminCard.superclass.constructor.call(this, {

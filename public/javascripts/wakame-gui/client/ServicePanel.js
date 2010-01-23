@@ -27,6 +27,10 @@ WakameGUI.Service = function(){
     { header: "Visibility", width: 100, dataIndex: 'visibility' },
     { header: "Architecture", width: 100, dataIndex: 'architecture'  }
   ]);
+  
+  this.refresh = function(){
+    store.reload();
+  }
 
   WakameGUI.Service.superclass.constructor.call(this, {
     title: 'Service',

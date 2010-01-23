@@ -8,6 +8,7 @@ Ext.apply(WakameGUI, {
 WakameGUI.Cluster = function(){
   var clistPanel = new WakameGUI.ClusterList();
   var cctrlPanel = new WakameGUI.ClusterCtrl();
+
   WakameGUI.Cluster.superclass.constructor.call(this, {
     title: 'Cluster',
     width: 320,

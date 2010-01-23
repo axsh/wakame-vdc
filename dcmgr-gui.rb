@@ -385,8 +385,31 @@ get '/rack-list' do
   rtn.to_json
 end
 
-post '/user-create' do
+get 'user-list' do
+  debug_log('hoge');
   debug_log params
+  User.login(USER_ID,PASSWORD)
+  userList = User.find(:all)
+  rtn = {'totalCount'=>0,'rows'=>[]}
+  rtn['totalCount'] = userList.length
+  debug_log userList
+  # userList.each{|index|
+  #   rows = Hash::new
+  #   rows.store('id',index.id)
+  #   rows.store('nm',index.name)
+  #   rows.store('st',index.created_at)
+  #   rows.store('en',index.contract_at)
+  #   rows.store('em',index.enable)
+  #   rows.store('mm',index.memo)
+  #   rtn['rows'].push(rows)
+  # }
+  # debug_log rtn
+  # content_type :json
+  # rtn.to_json
+  
+end
+
+post '/user-create' do
   name = params[:user_name]
   email = params[:email]
   password = params[:password]
