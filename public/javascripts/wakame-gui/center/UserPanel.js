@@ -122,7 +122,7 @@ WakameGUI.UserList = function(){
   store.load({params: {start: 0, limit: 50}});		// limit = page size
 
   AddUserWindow = function(){
-    var form = new Ext.form.FormPanel({
+    var user = new Ext.form.FormPanel({
       title: 'User-Infomation',
       labelWidth: 120, 
       width: 400,
@@ -191,112 +191,6 @@ WakameGUI.UserList = function(){
       }]      
     });
 
-    var myData = {
-		records : [
-			{ name : "12837549402300", column1 : "AXSH(SOUMU)" },
-			{ name : "83948393933331", column1 : "AXSH(EIGYO)" },
-			{ name : "13983343933113", column1 : "Yaboo" },
-			{ name : "13977743933223", column1 : "Coocle" },
-			{ name : "25447689654556", column1 : "Damazon" },
-			{ name : "25447689654557", column1 : "fffff" },
-			{ name : "54476896545566", column1 : "ggggg" },
-			{ name : "54476896545567", column1 : "hhhhhh" },
-			{ name : "54476896545568", column1 : "iiiiiii" },
-			{ name : "54476896545569", column1 : "jjjjjjj" }
-		]
-	};
-
-	var fields = [
-		{name: 'account-id',   mapping : 'name'   },
-		{name: 'account-name', mapping : 'column1'}
-	];
-
-    var ds1 = new Ext.data.JsonStore({
-        fields : fields,
-		data   : myData,
-		root   : 'records'
-    });
-
-	var cols = [
-		{ id : 'name', header: "Account-ID", width: 100, sortable: true, dataIndex: 'account-id'},
-		{              header: "Account-Name", width:100, sortable: true, dataIndex: 'account-name'}
-	];
-
-    var grid1 = new Ext.grid.GridPanel({
-	    ddGroup          : 'ddGroup2',
-        style            : 'padding:0;',
-        store            : ds1,
-        columns          : cols,
-	    enableDragDrop   : true,
-        stripeRows       : true,
-        autoExpandColumn : 'name'
-    });
-
-    var ds2 = new Ext.data.JsonStore({
-        fields : fields,
-		root   : 'records'
-    });
-
-    var grid2 = new Ext.grid.GridPanel({
-	    ddGroup          : 'ddGroup2',
-        style            : 'padding:0;',
-        store            : ds2,
-        columns          : cols,
-	    enableDragDrop   : true,
-        stripeRows       : true,
-        autoExpandColumn : 'name'
-    });
-
-    var ds3 = new Ext.data.SimpleStore({
-      fields : ["ID","Tag-Name"],
-      data : [
-        [1,"Instance.Read"],
-        [2,"Instance.Write"],
-        [3,"WMI.Exec"],
-        [4,"WMI.Stop"]
-      ]
-    });
-
-    var list1 = new Ext.ListView({
-      title            : 'Available',
-	  ddGroup          : 'ddGroup3',
-      multiSelect      : true,
-      width            : 200,
-      style            : 'padding:0;',
-      store            : ds3,
-	  enableDragDrop   : true,
-      columns: [{
-        header: 'Tag-ID',
-        width: .3,
-        dataIndex: 'ID'
-      },{
-        header: 'Rool',
-        dataIndex: 'Tag-Name',
-      }]
-    });
-
-    var ds4 = new Ext.data.SimpleStore({
-      fields : ["ID","Tag-Name"]
-    });
-
-    var list2 = new Ext.ListView({
-      title            : 'Selected',
- 	  ddGroup          : 'ddGroup4',
-      width            : 200,
-      multiSelect      : false,
-      style            : 'padding:0;',
-      store            : ds4,
-	  enableDragDrop   : true,
-      columns: [{
-        header: 'Tag-ID',
-        width: .3,
-        dataIndex: 'id'
-      },{
-        header: 'Rool',
-        dataIndex: 'name',
-      }]
-    });
-
     var dsUserProfile = new Ext.data.SimpleStore({
       fields : ["Account-Name","ID"],
       data : [
@@ -307,31 +201,11 @@ WakameGUI.UserList = function(){
       ]
     });
 
-    var tags = new Ext.Panel({
-      title: 'TAGs',
-	  layout: 'hbox',
-	  defaults     : { flex : 1 }, //auto stretch
-	  layoutConfig : { align : 'stretch' },
-      items : [list1,list2],
-      tbar: [{
-        xtype: 'combo',
-        editable: false,
-        id: 'cmbUserProfile',
-        store: dsUserProfile,
-        mode: 'local',
-        width: 100,
-        triggerAction: 'all',
-        displayField: 'Account-Name',
-        value:'1',
-        valueField: 'ID'
-      }]
-    });
-
     var tabwin = new Ext.TabPanel({
       activeTab: 0, 
       baseCls: 'x-plain',
       defaults:{bodyStyle:'padding:5px'},
-      items: [form,tags]
+      items: [user]
     });
 
     AddUserWindow.superclass.constructor.call(this, {
@@ -348,20 +222,20 @@ WakameGUI.UserList = function(){
   Ext.extend(AddUserWindow, Ext.Window);
 
   EditUserWindow = function(userData){
-    var form = new Ext.form.FormPanel({
+    var user = new Ext.form.FormPanel({
       title: 'User-Infomation',
       labelWidth: 120, 
       width: 400,
       baseCls: 'x-plain',
-	  buttons: [
-	    {
-			text: 'Password Reset',
-			handler: function(){
-              alert("Password Reset...");
-			},
-			scope:this
-	    }
-      ],
+	  buttons: [{
+        text:'Save'
+      },{
+        text: 'Close',
+        handler: function(){
+          this.close();
+        },
+        scope:this
+      }],
       items: [
         {
         fieldLabel: 'User-ID',
@@ -401,17 +275,165 @@ WakameGUI.UserList = function(){
         }
       ]
     });
+    
+    //Account
+    var a_fields = [
+		{name: 'account-id',   mapping : 'name'   },
+		{name: 'account-name', mapping : 'column1'}
+	];
 
-    var tags = new Ext.Panel({
-      title: 'TAGs',
-      layout:'fit',
-      html: 'TAGs Selecter'
+    var sa1 = new Ext.data.JsonStore({
+        fields : a_fields,
+		data   : {
+    		records : [
+    			{ name : "12837549402300", column1 : "AXSH(SOUMU)" },
+    			{ name : "83948393933331", column1 : "AXSH(EIGYO)" },
+    			{ name : "13983343933113", column1 : "Yaboo" },
+    			{ name : "13977743933223", column1 : "Coocle" },
+    			{ name : "25447689654556", column1 : "Damazon" },
+    			{ name : "25447689654557", column1 : "fffff" },
+    			{ name : "54476896545566", column1 : "ggggg" },
+    			{ name : "54476896545567", column1 : "hhhhhh" },
+    			{ name : "54476896545568", column1 : "iiiiiii" },
+    			{ name : "54476896545569", column1 : "jjjjjjj" }
+    		]
+    	},
+		root   : 'records'
     });
+
+    var sa2 = new Ext.data.JsonStore({
+        fields : a_fields,
+		root   : 'records'
+    });
+
+	var a_cols = [
+		{ id : 'name', header: "Account-ID", width: 100, sortable: true, dataIndex: 'account-id'},
+		{              header: "Account-Name", width:100, sortable: true, dataIndex: 'account-name'}
+	];
+        
+    var account = new Ext.Panel({
+      title: 'Account',
+      layout: 'hbox',
+      baseCls: 'x-plain',
+      defaults     : { flex : 1 }, //auto stretch
+      layoutConfig : { align : 'stretch' },
+            items : [
+            new Ext.grid.GridPanel({
+        	    ddGroup          : 'ddGroup2',
+                style            : 'padding:0;',
+                store            : sa1,
+                columns          : a_cols,
+        	    enableDragDrop   : true,
+                stripeRows       : true,
+                autoExpandColumn : 'name'
+            }),
+            new Ext.grid.GridPanel({
+        	    ddGroup          : 'ddGroup2',
+                style            : 'padding:0;',
+                store            : sa2,
+                columns          : a_cols,
+        	    enableDragDrop   : true,
+                stripeRows       : true,
+                autoExpandColumn : 'name'
+            })],
+            tbar : [
+              { text : 'Search Account-ID',
+                handler:function(){
+                  var schWin = new SearchAccountWindow();
+                 schWin.show();
+                }
+              }
+            ],
+        buttons: [{
+          text:'Save'
+        },{
+          text: 'Close',
+          handler: function(){
+            this.close();
+          },
+          scope:this
+        }]        
+    });
+    
+    //Role
+    var r_fields = [
+		{name: 'role-id',   mapping : 'role'   }
+	];
+
+    var sr1 = new Ext.data.JsonStore({
+        fields : r_fields,
+		data   : {
+    		records : [
+    		      { role : "RunInstance" },
+                  { role : "ShutdownInstance" },
+                  { role : "CreateAccount" },
+                  { role : "DestroyAccount" },
+                  { role : "CreateImageStorage" },
+                  { role : "GetImageStorage" },
+                  { role : "DestroyImageStorage" },
+                  { role : "CreateImageStorageHost" },
+                  { role : "DestroyImageStorageHost" },
+                  { role : "CreatePhysicalHost" },
+                  { role : "DestroyPhysicalHost" },
+                  { role : "CreateHvController" },
+                  { role : "DestroyHvController" },
+                  { role : "CreateHvAgent" },
+                  { role : "DestroyHvAgent" }
+    		]
+    	},
+		root   : 'records'
+    });
+
+    var sr2 = new Ext.data.JsonStore({
+        fields : r_fields,
+		root   : 'records'
+    });
+
+	var r_cols = [
+		{ id : 'role-id', header: "Role", width: 100, sortable: true, dataIndex: 'role-id'}
+	];
+        
+    var role = new Ext.Panel({
+      title: 'Role',
+      layout: 'hbox',
+      baseCls: 'x-plain',
+      defaults     : { flex : 1 }, //auto stretch
+      layoutConfig : { align : 'stretch' },
+            items : [
+            new Ext.grid.GridPanel({
+        	    ddGroup          : 'ddGroup2',
+                style            : 'padding:0;',
+                store            : sr1,
+                columns          : r_cols,
+        	    enableDragDrop   : true,
+                stripeRows       : true,
+                autoExpandColumn : 'role-id'
+            }),
+            new Ext.grid.GridPanel({
+        	    ddGroup          : 'ddGroup2',
+                style            : 'padding:0;',
+                store            : sr2,
+                columns          : r_cols,
+        	    enableDragDrop   : true,
+                stripeRows       : true,
+                autoExpandColumn : 'role-id'
+            })],
+        buttons: [{
+              text:'Save'
+            },{
+              text: 'Close',
+              handler: function(){
+                this.close();
+              },
+              scope:this
+            }]
+        
+        });
 
     var tabwin = new Ext.TabPanel({
       baseCls: 'x-plain',
       activeTab: 0, 
-      items: [form,tags]
+      items: [user,account,role]
     });
 
     EditUserWindow.superclass.constructor.call(this, {
@@ -424,16 +446,7 @@ WakameGUI.UserList = function(){
       plain: true,
       layout:'fit',
       defaults:{bodyStyle:'padding:15px'},
-      items: [tabwin],
-      buttons: [{
-        text:'Save'
-      },{
-        text: 'Close',
-        handler: function(){
-          this.close();
-        },
-        scope:this
-      }]
+      items: [tabwin]
     });
   }
   Ext.extend(EditUserWindow, Ext.Window);
