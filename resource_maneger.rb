@@ -124,7 +124,7 @@ class ResourceManeger
     map = Hash.new()
     map.store(:id,map_uuid)
     map.store(:nm,"1F-100")
-    map.store(:url,'./images/map/1F-10.jpeg')
+    map.store(:url,'/images/map/1F-10.jpeg')
     map.store(:grid,20)
     if level > 0
       map.store(:racks,getRacks(map_uuid,level))
@@ -135,7 +135,7 @@ class ResourceManeger
     map = Hash.new()
     map.store(:id,map_uuid)
     map.store(:nm,"2F-100")
-    map.store(:url,'./images/map/1F-10.jpeg')
+    map.store(:url,'/images/map/1F-10.jpeg')
     map.store(:grid,40)
     if level > 0
       map.store(:racks,getRacks(map_uuid,level))
@@ -146,7 +146,7 @@ class ResourceManeger
     map = Hash.new()
     map.store(:id,map_uuid)
     map.store(:nm,"2F-200")
-    map.store(:url,'./images/map/1F-10.jpeg')
+    map.store(:url,'/images/map/1F-10.jpeg')
     map.store(:grid,30)
     if level > 0
       map.store(:racks,getRacks(map_uuid,level))

@@ -17,8 +17,8 @@ WakameGUI.ResourceViewer = function(){
   var serverlist  = new WakameGUI.ServerList();
   var mtabPanel   = new WakameGUI.MAPTab('east',250);
 
-  mtabPanel.add(new WakameGUI.MAPView('1F-100',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new WakameGUI.MAPView('1F-101',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('1F-100',"/images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('1F-101',"/images/map/1F-10.jpeg"));
 
   WakameGUI.ResourceViewer.superclass.constructor.call(this, {
     split: true,

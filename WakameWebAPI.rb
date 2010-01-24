@@ -1,8 +1,21 @@
 # -*- coding: utf-8 -*-
 require 'rubygems'
 require 'active_resource'
+require 'logger'
 
 load('dcmgr-gui.conf')
+
+if DEBUG_LOG
+  @@logger = Logger.new('dcmgr-gui.log')
+  def @@logger.write(str)
+    self << str
+  end
+  use Rack::CommonLogger, @@logger
+end
+
+def debug_log(str)
+  @@logger.debug str if DEBUG_LOG
+end
 
 class WebAPI < ActiveResource::Base
   self.site     = API_SERVER_URL

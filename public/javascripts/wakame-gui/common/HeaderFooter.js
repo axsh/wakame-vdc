@@ -20,7 +20,7 @@ WakameGUI.Header = function(headerTitle){
       { text : 'Help',handler:function(){ alert('Help'); }
       },'-',
       { text: 'Logout',
-        handler:function(){ alert('Logout'); }
+        handler:function(){ location.href = "/logout" }
       },'-'
     ]
   });

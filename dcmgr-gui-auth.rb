@@ -24,15 +24,21 @@ helpers do
    if auth_ok?(params['id'], params['pw'])
      session[:login_id] = params['id']
      session[:login_pw] = params['pw']
+     session[:log_in_path] = "/"+login_select+"/login"
      redirect "/"+login_select+"/"
    else
      erb :login
    end
  end
 
- def logout login_path
-   session.delete(:login)
-   redirect login_path
+ def logout
+   session.delete(:id)
+   session.delete(:pw)
+   if session[:log_in_path]
+     lg_path = session[:log_in_path]
+     session.delete(:log_in_path)
+     redirect lg_path
+   end
  end
 
  def need_auth login_select
