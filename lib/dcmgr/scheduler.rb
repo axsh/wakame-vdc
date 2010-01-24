@@ -51,7 +51,7 @@ module Dcmgr
         end
 
         def set_same_area_hosts(area_id, hosts)
-          @same_area_hosts[area_id] = hosts
+          @same_area_hosts[area_id] = hosts.select{|h| h != self}
         end
 
         def same_area_hosts(area_id)
@@ -74,7 +74,6 @@ module Dcmgr
             }
             areas
           }
-          p layer_areas
           
           ret = []
           layer_areas.each_with_index{|areas, id|
@@ -85,7 +84,7 @@ module Dcmgr
             }
             ret << area_hash
           }
-          ret
+          [ret, hosts]
         end
       end
       
