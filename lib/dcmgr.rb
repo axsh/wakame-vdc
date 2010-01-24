@@ -35,10 +35,12 @@ module Dcmgr
   attr_writer :hvchttp
 
   def scheduler
-    @scheduler ||= PhysicalHostScheduler::Algorithm2
+    @scheduler ||= PhysicalHostScheduler::Algorithm2.new
   end
-
-  attr_writer :scheduler
+  
+  def scheduler=(scheduler_module)
+    @scheduler = scheduler_module.new
+  end
   
   def new(config_file)
     config_file ||= 'dcmgr.conf'

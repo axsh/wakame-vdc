@@ -95,29 +95,92 @@ describe "instance access by active resource" do
 
   it "should schedule instances by schedule algorithm 1" do
     Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm1
+
+    #    A B None
+    # 1F 0 3 6
+    # 2F 1 4 7
+    # 3F 2 5
+    # Physical Host 2: 1 instance
+    # Physical Host 4: 1 instance
     
-    # physical hosts
-    # id / cpus / mhz / memory
-    # 1  / 4    / 1.0  / 2.0 / 1F
-    # 2  / 2    / 1.6  / 1.0 / 2F
-    # 3  / 1    / 2.0  / 4.0 / 3F
-    
-    # already 'instance a' use physical host 1 in should create instance
-    
-    pending
-    hosts = {}; hosts.default = 0
-    3.times{
-      hosts[@class.create(:account=>@account.id,
-                          :need_cpus=>1,
-                          :need_cpu_mhz=>1.0,
-                          :need_memory=>1.0).physical_host] += 1
+    PhysicalHost.destroy
+    HvController.destroy
+    hosts = []; hv_agents = []
+    8.times{|i|
+      host = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
+                                 :memory=>2000,
+                                 :hypervisor_type=>'xen')
+      hosts << host
+      host.remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
+
+      if i == 0
+        hv_controller = HvController.create(:physical_host=>host,
+                                            :ip=>'192.168.1.10')
+      end
+
+      hv_agent = HvAgent.create(:hv_controller=>hv_controller,
+                                :physical_host=>host,
+                                :ip=>"192.168.1.#{i + 20}")
+      hv_agents << hv_agent
+    }
+
+    Instance.create(:status=>0,
+                    :account=>Account[1],
+                    :user=>User[1],
+                    :image_storage=>ImageStorage[1],
+                    :need_cpus=>1, :need_cpu_mhz=>0.2,
+                    :need_memory=>100,
+                    :hv_agent=>hv_agents[2])
+    Instance.create(:status=>0,
+                    :account=>Account[1],
+                    :user=>User[1],
+                    :image_storage=>ImageStorage[1],
+                    :need_cpus=>1, :need_cpu_mhz=>0.2,
+                    :need_memory=>100,
+                    :hv_agent=>hv_agents[4])
+
+    hosts[0].create_location_tag('1F.A', Account[1])
+    hosts[1].create_location_tag('2F.A', Account[1])
+    hosts[2].create_location_tag('3F.A', Account[1])
+    hosts[3].create_location_tag('1F.B', Account[1])
+    hosts[4].create_location_tag('2F.B', Account[1])
+    hosts[5].create_location_tag('3F.B', Account[1])
+    hosts[6].create_location_tag('1F._', Account[1])
+    hosts[7].create_location_tag('2F._', Account[1])
+
+    PhysicalHost.order(:id).each{|ph|
+      print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
     }
     
-    # each floor physica hosts
-    hosts.length.should == 3
-    hosts[PhysicalHost[1].uuid].should == 1
-    hosts[PhysicalHost[2].uuid].should == 2
-    hosts[PhysicalHost[3].uuid].should == 3
+    pending
+    instance = @class.create(:account=>Account[1].uuid,
+                             :need_cpus=>1,
+                             :need_cpu_mhz=>0.2,
+                             :need_memory=>100,
+                             :image_storage=>ImageStorage[1].uuid)
+    
+    PhysicalHost.order(:id).each{|ph|
+      print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
+    }
+    
+    instance.hv_agent.should == hv_agents[6].uuid
+    
+    assigned_hosts = {}; assigned_hosts.default = 0
+    5.times{
+      instance = @class.create(:account=>Account[1].uuid,
+                               :need_cpus=>1,
+                               :need_cpu_mhz=>0.2,
+                               :need_memory=>100,
+                               :image_storage=>ImageStorage[1].uuid)
+      assigned_hosts[Instance[instance.id].physical_host.uuid] += 1
+    }
+
+    PhysicalHost.order(:id).each{|ph|
+      print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
+    }
+    
+    # each floor physica assigned_hosts
+    assigned_hosts.length.should == 8
   end
 
   it "should schedule instances, archetype test"
@@ -126,6 +189,7 @@ describe "instance access by active resource" do
     hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
     Dcmgr::hvchttp = hvchttp
     
+    pending
     $instance_a = @class.create(:account=>Account[1].id,
                                 :need_cpus=>1,
                                 :need_cpu_mhz=>0.5,

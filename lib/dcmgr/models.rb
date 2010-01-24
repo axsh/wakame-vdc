@@ -199,14 +199,13 @@ end
 
 class PhysicalHost < Sequel::Model
   include Dcmgr::Model::UUIDMethods
-  extend Dcmgr::scheduler
 
   def self.prefix_uuid; 'PH'; end
 
   one_to_many :hv_agents
   
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST}
-  many_to_many :location_tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST_LOCATION}
+  many_to_many :location_tags, :class=>:Tag, :right_key=>:tag_id, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_PHYSICAL_HOST_LOCATION}
 
   many_to_one :relate_user, :class=>:User
 
@@ -215,7 +214,7 @@ class PhysicalHost < Sequel::Model
   end
 
   def self.assign(instance)
-    assign_to_instance(enable_hosts, instance)
+    Dcmgr::scheduler.assign_to_instance(enable_hosts, instance)
   end
   
   def before_create
@@ -231,6 +230,12 @@ class PhysicalHost < Sequel::Model
 
   def instances
     self.hv_agents.map{|hva| hva.instances}.flatten
+  end
+
+  def create_location_tag(name, account)
+    TagMapping.create(:tag_id=>Tag.create(:name=>name, :account=>account).id,
+                      :target_type=>TagMapping::TYPE_PHYSICAL_HOST_LOCATION,
+                      :target_id=>self.id)
   end
 
   def space_cpu_mhz
