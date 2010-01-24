@@ -247,23 +247,6 @@ WakameGUI.UserList = function(){
         autoExpandColumn : 'name'
     });
 
-    var account = new Ext.Panel({
-      title : 'Account',
-	  layout: 'hbox',
-      baseCls: 'x-plain',
-	  defaults     : { flex : 1 }, //auto stretch
-	  layoutConfig : { align : 'stretch' },
-      items : [grid1,grid2],
-      tbar : [
-        { text : 'Search Account-ID',
-          handler:function(){
-            var schWin = new SearchAccountWindow();
-		    schWin.show();
-          }
-        }
-      ]
-    });
-
     var ds3 = new Ext.data.SimpleStore({
       fields : ["ID","Tag-Name"],
       data : [
@@ -348,7 +331,7 @@ WakameGUI.UserList = function(){
       activeTab: 0, 
       baseCls: 'x-plain',
       defaults:{bodyStyle:'padding:5px'},
-      items: [form,account,tags]
+      items: [form,tags]
     });
 
     AddUserWindow.superclass.constructor.call(this, {
@@ -419,11 +402,6 @@ WakameGUI.UserList = function(){
       ]
     });
 
-    var account = new Ext.Panel({
-      title: 'Account',
-      html: 'Account Selecter'
-    });
-
     var tags = new Ext.Panel({
       title: 'TAGs',
       layout:'fit',
@@ -433,7 +411,7 @@ WakameGUI.UserList = function(){
     var tabwin = new Ext.TabPanel({
       baseCls: 'x-plain',
       activeTab: 0, 
-      items: [form,account,tags]
+      items: [form,tags]
     });
 
     EditUserWindow.superclass.constructor.call(this, {
@@ -670,7 +648,7 @@ WakameGUI.UserLog = function(){
   ]);
   
   this.refresh = function(){
-    //store.reload();
+    // store.reload();
   };
 
   WakameGUI.UserLog.superclass.constructor.call(this, {
