@@ -35,8 +35,10 @@ describe Dcmgr::HvcHttpMock do
     instance = Instance[1]
 
     hvchttp.open('192.168.1.10', 80) {|http|
-      res = http.get('/run_instance?hva_ip=%s&instance_uuid=%s&cpus=%s&cpu_mhz=%s&memory=%s' %
-                     [instance.hv_agent.ip, instance.uuid, '1', '1.0', '2.0'])
+      url = http.run_instance(instance.hv_agent.ip, instance.uuid, 1, 1.0, 2.0, :url_only)
+      url.should == '/?action=run_instance&hva_ip=#{instance.hv_agent.ip}&instance_uuid=#{instance.uuid}&cpus=1&cpu_mhz=1.0&memory=2.0'
+      
+      res = http.run_instance(instance, 1, 1.0, 2.0)
       res.success?.should be_true
       res.body.should == "ok"
     }
@@ -50,8 +52,10 @@ describe Dcmgr::HvcHttpMock do
   it "should terminate instance" do
     hvchttp = get_hvchttp
     hvchttp.open('192.168.1.10', 80) {|http|
-      res = http.get('/terminate_instance?hva_ip=%s&instance_ip=%s' %
-                     ['192.168.1.20', '192.168.1.21'])
+      url = http.terminate_instance('192.168.1.20', '192.168.1.21', :url_only)
+      url.should == '/?action=terminate_instance&hva_ip=#{192.168.1.20}&instance_ip=#{192.168.1.21}'
+      
+      res = http.terminate_instance('192.168.1.20', '192.168.1.21', :url_only)
       res.success?.should be_true
       res.body.should == "ok"
     }
@@ -61,7 +65,10 @@ describe Dcmgr::HvcHttpMock do
   it "should get describe instances" do
     hvchttp = get_hvchttp
     hvchttp.open('192.168.1.10', 80) {|http|
-      res = http.get('/describe_instances')
+      url = http.describe_instances
+      url.should == '/?action=describe_instances'
+
+      res = http.describe_instances
       res.success?.should be_true
       ret = JSON.parse(res.body) # json decode res.body
 

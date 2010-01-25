@@ -13,7 +13,10 @@ module ActiveResourceHelperMethods
   
   def runserver
     Thread.new do
-      Rack::Handler::Thin.run Dcmgr::Web, :Port => 19393
+      Rack::Handler::Thin.run Dcmgr::PublicWeb, :Port => 19393
+    end
+    Thread.new do
+      Rack::Handler::Thin.run Dcmgr::PrivateWeb, :Port => 19394
     end
   end
 
