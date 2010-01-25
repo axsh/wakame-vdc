@@ -186,7 +186,8 @@ AddAccountWindow = function(){
 Ext.extend(AddAccountWindow, Ext.Window);
 
 EditAccountWindow = function(accountData){
-   var form = new Ext.form.FormPanel({
+
+  var form = new Ext.form.FormPanel({
       labelWidth: 120, 
       width: 400, 
       baseCls: 'x-plain',
@@ -197,6 +198,11 @@ EditAccountWindow = function(accountData){
         id: 'id',
         value: accountData.get('id'),
         anchor: '100%'
+        }
+        ,{
+        xtype: 'hidden',
+        id: 'id',
+        value: accountData.get('id'),
         }
         ,{
         fieldLabel: 'Account-Name',
@@ -210,29 +216,30 @@ EditAccountWindow = function(accountData){
         xtype: 'radiogroup',
         defaultType: "radio", 
         anchor: '100%',
-	    items: [{
-          name: "en", 
-	      inputValue: "true", 
-	        boxLabel: "enable", 
-            checked: accountData.get('en')
+	      items: [{
+            name: "en", 
+	        inputValue: "true", 
+	        boxLabel: "enable",
+            checked: accountData.get('en') == "true"
 	      },
 	      {
 	        name: "en", 
 	        inputValue: "false", 
-	        boxLabel: "disable" 
+	        boxLabel: "disable",
+            checked: accountData.get('en') == "false"
 	      }]
         }
         ,{
         fieldLabel: 'Contract-Date',
         xtype: 'textfield',
-        name: 'contract-date',
+        name: "cn",
         value: accountData.get('cn'),
         anchor: '100%'
         }
         ,{
         fieldLabel: 'Memo',
         xtype: 'textarea',
-        name: 'form_textarea',
+        name: "mm",
         value: accountData.get('mm'),
         anchor: '100%'
         }
@@ -246,17 +253,29 @@ EditAccountWindow = function(accountData){
         width: 500,
         height: 250,
 		layout:'fit',
-//		closeAction:'hide',
         title: 'Edit Account',
 		modal: true,
 		plain: true,
         defaults:{bodyStyle:'padding:15px'},
 		items: [form],
 		buttons: [{
-			text:'Create',
-			handler: function(){
-				this.close();
-			},
+			text:'Save',
+            handler: function(){
+              form.getForm().submit({
+                url: '/account-save',
+                waitMsg: 'Saveing...',
+                method: 'POST',
+                scope: this,
+                success: function(form, action) {
+                  accountPanel.refresh();
+	              this.close();
+                },
+                failure: function(form, action) {
+                  alert('Add account failure.');
+	              this.close();
+                }
+              });
+	        },
 			scope:this
 		},{
 			text: 'Close',
