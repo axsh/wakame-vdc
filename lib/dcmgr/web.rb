@@ -9,7 +9,6 @@ require 'dcmgr/helpers'
 module Dcmgr
   class Web < Sinatra::Base
     set :logger, false
-    ## use Rack::CommonLogger, Dcmgr.logger
     helpers { include Dcmgr::Helpers }
     
     def self.public_crud model
@@ -18,7 +17,14 @@ module Dcmgr
         self.send action, pattern, &proc
       }
     end
-    
+
+    not_found do
+      logger.debug "not found: #{request.request_method} #{request.path}"
+      "not found"
+    end
+  end
+  
+  class PublicWeb < Web
     public_crud PublicAccount
     public_crud PublicUser
     
@@ -32,12 +38,16 @@ module Dcmgr
     public_crud PublicImageStorageHost
     
     get '/' do
-      'startup dcmgr'
+      'startup dcmgro'
     end
+  end
+  
+  class PrivateWeb < Web
+    public_crud PublicInstance
+    public_crud PublicPhysicalHost
     
-    not_found do
-      logger.debug "not found: #{request.request_method} #{request.path}"
-      "not found"
+    get '/' do
+      'startup dcmgr. private mode'
     end
   end
 end

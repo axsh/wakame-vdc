@@ -27,7 +27,15 @@ task :shell do
 end
 
 task :run do
-  sh "./bin/shotgun -p 3000 config.ru"
+  desc 'Run server for public'
+  sh "./bin/shotgun -p 3000 web/public/config.ru"
+end
+
+namespace :run do
+  desc 'Run server for private'
+  task :private do
+    sh "./bin/shotgun -p 3000 web/private/config.ru"
+  end
 end
 
 def input(disp, empty=false)

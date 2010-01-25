@@ -42,10 +42,17 @@ module Dcmgr
     @scheduler = scheduler_module.new
   end
   
-  def new(config_file)
+  def new(config_file, mode=:public)
     config_file ||= 'dcmgr.conf'
     configure(config_file)
     require 'dcmgr/web'
-    Web
+    case mode
+    when :public
+      PublicWeb
+    when :private
+      PrivateWeb
+    else
+      raise Exception, "unkowon mode: #{mode}"
+    end
   end
 end
