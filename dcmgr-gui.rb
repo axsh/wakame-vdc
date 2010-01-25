@@ -3,6 +3,7 @@ require 'sinatra'
 require 'erb'
 require 'WakameWebAPI'
 require 'logger'
+require 'parsedate'
 
 if DEBUG_LOG
   @@logger = Logger.new('dcmgr-gui.log')
@@ -36,6 +37,22 @@ post '/account-create' do
                  :enable=>enable,
                  :memo=>memo,
                  :contract_at=>cdate)
+  rtn = {"success" => true}
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
+post '/account-save' do
+  id = params[:id]
+  Account.login('staff', 'passwd')
+  account = Account.find(id)
+  account.name = params[:nm]
+  account.enable = params[:en]
+  account.memo = params[:mm]
+  ary = ParseDate::parsedate(params[:cn])
+  account.contract_at = Time::local(*ary[0..-3])
+  account.save
   rtn = {"success" => true}
   debug_log rtn
   content_type :json
