@@ -2,37 +2,8 @@
 module Dcmgr
   module PhysicalHostScheduler
     class Algorithm1
-      def split_layers(tag_names, i)
-        layer_names = {}
-        tag_names.each{|name|
-          layer_name = ((name + "........").split(".", 9))[i]
-          a[]
-          layer_names[i][layer_name] = true
-        }
-        
-        layer_names.keys
-      end
-
-      def find_layer_hosts(hosts, layer_name, i)
-        hosts.each{|host|
-          layer_name = ((name + "........").split(".", 9))[i]
-        }
-      end
-      
-      def points(hosts, location_tags)
-        ArrangeHost.new(location_tags, hosts).each{|host|
-          if host.instances > 0
-            host.same_layer_hosts.each{|h| h.point += 1}
-          end
-        }
-      end
-
       class ArrangeHost
         include Enumerable
-        def self.generate_by_tagnames(tags, hosts)
-          #
-          #
-        end
         
         def initialize(host)
           @host = host
@@ -52,8 +23,16 @@ module Dcmgr
           @same_area_hosts[area_id] = hosts.select{|h| h != self}
         end
 
+        def inspect
+          @host.inspect
+        end
+
         def same_area_hosts(area_id)
           @same_area_hosts[area_id]
+        end
+
+        def method_missing(name, *arg)
+          @host.send(name, *arg)
         end
 
         def self.layers(tags, physical_hosts, layer_level=8)
@@ -99,8 +78,51 @@ module Dcmgr
         
         location_tags = enable_hosts.map{|h| h.location_tags.first.name }
         host_points = points(enable_hosts, location_tags)
+        min_point = host_points.min
+
+        p host_points
+        p min_point
         
-        enable_hosts[host_points.min]
+        host = enable_hosts[host_points.index{|pt| pt == min_point}]
+        p host
+        host
+      end
+      
+      private
+      
+      def split_layers(tag_names, i)
+        layer_names = {}
+        tag_names.each{|name|
+          layer_name = ((name + "........").split(".", 9))[i]
+          a[]
+          layer_names[i][layer_name] = true
+        }
+        
+        layer_names.keys
+      end
+
+      def find_layer_hosts(hosts, layer_name, i)
+        hosts.each{|host|
+          layer_name = ((name + "........").split(".", 9))[i]
+        }
+      end
+      
+      def points(hosts, location_tags)
+        layers, hosts = ArrangeHost.layers(location_tags, hosts)
+        host_points = Array.new(hosts.length, 0.0)
+
+        hosts.each_with_index {|host, i|
+          next unless host.instances.length > 0
+
+          layers.length.times{|layer_id|
+            host_points[i] += host.instances.length
+            host.same_area_hosts(layer_id).each{|same_host|
+              id = hosts.index{|h| h == same_host}
+              host_points[id] += host.instances.length.to_f / 10
+            }
+          }
+        }
+        host_points
       end
     end
   end

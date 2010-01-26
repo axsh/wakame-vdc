@@ -148,35 +148,38 @@ describe "instance access by active resource" do
     hosts[6].create_location_tag('1F._', Account[1])
     hosts[7].create_location_tag('2F._', Account[1])
 
-    PhysicalHost.order(:id).each{|ph|
-      print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
-    }
+    #PhysicalHost.order(:id).each{|ph|
+    #  print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
+    #}
     
-    pending
     instance = @class.create(:account=>Account[1].uuid,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.2,
                              :need_memory=>100,
                              :image_storage=>ImageStorage[1].uuid)
     
-    PhysicalHost.order(:id).each{|ph|
-      print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
+    #PhysicalHost.order(:id).each{|ph|
+    #  print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
+    #}
+    PhysicalHost.all.each{|h|
+      p h.uuid
+      p h.hv_agents.length
     }
     
     instance.hv_agent.should == hv_agents[6].uuid
     
     assigned_hosts = {}; assigned_hosts.default = 0
-    5.times{
+    10.times{
       instance = @class.create(:account=>Account[1].uuid,
                                :need_cpus=>1,
                                :need_cpu_mhz=>0.2,
                                :need_memory=>100,
                                :image_storage=>ImageStorage[1].uuid)
       assigned_hosts[Instance[instance.id].physical_host.uuid] += 1
-    }
-
-    PhysicalHost.order(:id).each{|ph|
-      print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
+      
+      #PhysicalHost.order(:id).each{|ph|
+      #  print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
+      #}
     }
     
     # each floor physica assigned_hosts
