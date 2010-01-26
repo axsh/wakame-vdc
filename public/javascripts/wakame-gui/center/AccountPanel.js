@@ -29,7 +29,7 @@ AccountPanel = function(){
     new Ext.grid.RowNumberer(),
     { header: "Account-ID"    , width: 120, dataIndex: 'id' , hideable:false, menuDisabled:true },
     { header: "Account-Name"  , width: 120, dataIndex: 'nm' , sortable: true },
-    { header: "Enable"        , width: 60,  dataIndex: 'en' },
+    { header: "Useful"        , width: 60,  dataIndex: 'en' },
     { header: "Registered"    , width: 80,  dataIndex: 'rg' , sortable: true},
     { header: "Contract-Date" , width: 80,  dataIndex: 'cn' , sortable: true },
     { header: "Memo"          , width: 300, dataIndex: 'mm' }
@@ -38,6 +38,12 @@ AccountPanel = function(){
   this.refresh = function(){
       store.reload();
   }
+
+  this.searchView = function(data){
+    store.loadData(data);
+  }
+
+  var schWin = null;
 
   AccountPanel.superclass.constructor.call(this, {
     store: store,
@@ -88,7 +94,9 @@ AccountPanel = function(){
       },'-',
       { iconCls: 'findUser',
         text : 'Search',handler:function(){
-          var schWin = new SearchAccountWindow();
+          if(schWin == null){
+            schWin = new SearchAccountWindow();
+          }
 		  schWin.show();
         }
       }
@@ -130,6 +138,7 @@ AddAccountWindow = function(){
       ,{
       fieldLabel: 'Contract-Date',
       xtype: 'datefield',
+      format: 'Y/m/d',
       id: 'cn',
       anchor: '100%'
       }
@@ -195,7 +204,6 @@ EditAccountWindow = function(accountData){
         {
         fieldLabel: 'Account-ID',
         xtype: 'displayfield',
-        id: 'id',
         value: accountData.get('id'),
         anchor: '100%'
         }
@@ -289,171 +297,97 @@ EditAccountWindow = function(accountData){
 Ext.extend(EditAccountWindow, Ext.Window);
 
 SearchAccountWindow = function(){
+
+    var tooltip1 = new Ext.ToolTip({
+      html: "Input Account ID. (each)",
+      target: "id"
+    });
+
     var form = new Ext.form.FormPanel({
-      width: 400,
       frame:true,
       bodyStyle:'padding:5px 5px 0',
-      items: [{
-        layout:'column',
-        items:[{
-          columnWidth:.7,
-          layout: 'form',
-          items: [{
-            fieldLabel: 'Account-ID',
-            xtype: 'textfield',
-            id: 'id',
-            anchor: '100%'
-          }, {
-            fieldLabel: 'Account-Name',
-            xtype: 'textfield',
-            id: 'nm',
-            anchor: '100%'
-          }, {
-            fieldLabel: 'Enable',
-            xtype: 'checkbox',
-            anchor: '100%',
-            items: [{
-	          name: "enable",
-              boxLabel: 'Enable',
-              id: 'en',
-              checked : true
-	        }]
-          }, {
-            fieldLabel: 'Contract-Date',
-            xtype: 'datefield',
-            id: 'cn',
-            anchor: '100%'
-          }]
+      items:[{
+        layout: 'form',
+        items: [{
+          fieldLabel: 'Account-ID',
+          xtype: 'textfield',
+          id: 'id',
+          anchor: '100%'
         },{
-          labelWidth: 5, 
-          columnWidth:.3,
-          layout: 'form',
-          items: [{
-            xtype: 'combo',
-            editable: false,
-            anchor: '100%',
-            forceSelection:true,
-            mode: 'local',
-            store: new Ext.data.ArrayStore({
-              id: 1,
-              fields: [
-                'myId',
-                'displayText'
-              ],
-              data: [[1,'without'],[2, 'exact'], [3, 'include']]
-            }),
-            triggerAction: 'all',
-		    value:'1',
-            valueField: 'myId',
-            displayField: 'displayText'
-          },{
-            xtype: 'combo',
-            editable: false,
-            anchor: '100%',
-            forceSelection:true,
-            mode: 'local',
-            store: new Ext.data.ArrayStore({
-              id: 1,
-              fields: [
-                'myId',
-                'displayText'
-              ],
-              data: [[1,'without'],[2, 'exact'], [3,'include']]
-            }),
-            triggerAction: 'all',
-		    value:'1',
-            valueField: 'myId',
-            displayField: 'displayText'
-          },{
-            xtype: 'combo',
-            editable: false,
-            anchor: '100%',
-            forceSelection:true,
-            mode: 'local',
-            store: new Ext.data.ArrayStore({
-              id: 1,
-              fields: [
-                'myId',
-                'displayText'
-              ],
-              data: [[1, 'without'], [2, 'use']]
-            }),
-            triggerAction: 'all',
-		    value:'1',
-            valueField: 'myId',
-            displayField: 'displayText'
-          },{
-            xtype: 'combo',
-            editable: false,
-            anchor: '100%',
-            forceSelection:true,
-            mode: 'local',
-            store: new Ext.data.ArrayStore({
-              id: 1,
-              fields: [
-                'myId',
-                'displayText'
-              ],
-              data: [[1, 'without'], [2, 'use']]
-            }),
-            triggerAction: 'all',
-		    value:'1',
-            valueField: 'myId',
-            displayField: 'displayText'
-          },{
-            xtype: 'combo',
-            editable: false,
-            anchor: '100%',
-            forceSelection:true,
-            mode: 'local',
-            store: new Ext.data.ArrayStore({
-              id: 1,
-              fields: [
-                'myId',
-                'displayText'
-              ],
-              data: [[1,'without'],[2, 'before'], [3, 'after']]
-            }),
-            triggerAction: 'all',
-		    value:'1',
-            valueField: 'myId',
-            displayField: 'displayText'
-          }]
+          fieldLabel: 'Account-Name',
+          xtype: 'textfield',
+          id: 'nm',
+          anchor: '100%'
+        },{
+          fieldLabel: 'Useful',
+          xtype: 'radiogroup',
+          defaultType: "radio", 
+          anchor: '100%',
+	      items: [{
+            name: "en", 
+	        inputValue: 0, 
+	        boxLabel: "non",
+            checked: true
+	      },
+	      {
+	        name: "en",
+	        inputValue: 1,
+	        boxLabel: "enable"
+	      },
+	      {
+	        name: "en",
+	        inputValue: 2, 
+	        boxLabel: "disable"
+	      }]
+        },{
+          fieldLabel: 'Contract-Date',
+          xtype: 'datefield',
+          id: 'cn',
+          anchor: '100%',
+          format: 'Y/m/d'
         }]
       }]
     });
 
     SearchAccountWindow.superclass.constructor.call(this, {
         iconCls: 'icon-panel',
-        height: 220,
-        width: 500,
+        height: 200,
+        width: 350,
 		layout:'fit',
         title: 'Search Account',
 		items: [form],
 		buttons: [{
-			text:'Load Query',
-			handler: function(){
-              alert('Load Query !!!')
-			},
-			scope:this
+		  text:'Reset',
+          handler: function(){
+            form.getForm().reset();
+	      },
+		  scope:this
 		},{
-			text:'Save Query',
-			handler: function(){
-              alert('Save Query !!!')
-			},
-			scope:this
+		  text:'OK',
+          handler: function(){
+            form.getForm().submit({
+              url: '/account-search',
+              waitMsg: 'Searching...',
+              method: 'POST',
+              scope: this,
+              success: function(form, action) {
+                jsonRes = Ext.util.JSON.decode(action.response.responseText);  
+                accountPanel.searchView(jsonRes);
+			    this.hide();
+              },
+              failure: function(form, action) {
+                alert('Add account failure.');
+			    this.hide();
+              }
+            });
+	      },
+		  scope:this
 		},{
-			text:'OK',
-			handler: function(){
-				this.close();
-			},
-			scope:this
-		},{
-			text: 'Cancel',
-			handler: function(){
-				this.close();
-			},
-			scope:this
+		  text: 'Cancel',
+		  handler: function(){
+		    this.hide();
+		  },
+		  scope:this
 		}]
     });
 }
