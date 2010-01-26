@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'rubygems'
-require File.dirname(__FILE__) + '/spec_helper'
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Dcmgr::Schema do
   it "should drop all tables" do
@@ -28,7 +28,7 @@ describe Dcmgr::Schema do
   it "should store sample data, by mysqldump" do
     Dcmgr::Schema.drop!
     Dcmgr::Schema.create!
-    Dcmgr::Schema.load_data File.dirname(__FILE__) + '/../fixtures/sample_data'
+    Dcmgr::Schema.load_data File.dirname(__FILE__) + '/../../fixtures/sample_data'
     
     Dcmgr::Schema.models.each{|model|
       next if model == Log

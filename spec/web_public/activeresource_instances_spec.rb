@@ -9,11 +9,11 @@ describe "instance access by active resource" do
   before(:each) do
     reset_db
 
-    @class = describe_activeresource_model :Instance
-    @physical_host_class = describe_activeresource_model :PhysicalHost
-    @name_tag_class = describe_activeresource_model :NameTag
-    @auth_tag_class = describe_activeresource_model :AuthTag
-    @user_class = describe_activeresource_model :User
+    @class = ar_class :Instance
+    @physical_host_class = ar_class :PhysicalHost
+    @name_tag_class = ar_class :NameTag
+    @auth_tag_class = ar_class :AuthTag
+    @user_class = ar_class :User
     @user = @user_class.find(:myself)
     image_storage_host_a = ImageStorageHost.create
     ImageStorage.create(:image_storage_host=>image_storage_host_a)

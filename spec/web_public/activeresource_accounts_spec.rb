@@ -6,8 +6,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "accounts by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
-    @class = describe_activeresource_model :Account
-    @user_class = describe_activeresource_model :User
+    @class = ar_class :Account
+    @user_class = ar_class :User
   end
   
   before(:each) do

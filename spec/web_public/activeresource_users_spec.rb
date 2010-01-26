@@ -7,8 +7,8 @@ describe "user access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     reset_db
-    @class = describe_activeresource_model :User
-    @auth_tag_class = describe_activeresource_model :AuthTag
+    @class = ar_class :User
+    @auth_tag_class = ar_class :AuthTag
   end
 
   it "should add" do
@@ -84,7 +84,7 @@ describe "user access by active resource" do
   end
   
   it "should notauthorize by bad password" do
-    notauth_class = describe_activeresource_model :User, '__test_as_user_spec__', 'badpass'
+    notauth_class = ar_class :User, :user=>'__test_as_user_spec__', :password=>'badpass'
     lambda {
       notauth_class.create(:name=>'__test_as_user_spec__', :password=>'passwd')
     }.should raise_error

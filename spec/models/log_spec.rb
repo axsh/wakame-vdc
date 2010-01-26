@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'rubygems'
-require File.dirname(__FILE__) + '/spec_helper'
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "log" do
   it "should log user login"

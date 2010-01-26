@@ -6,8 +6,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "image storage access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
-    @class = describe_activeresource_model :ImageStorage
-    image_storage_host_class = describe_activeresource_model :ImageStorageHost
+    @class = ar_class :ImageStorage
+    image_storage_host_class = ar_class :ImageStorageHost
     @image_storage_host = image_storage_host_class.create
   end
 

@@ -21,31 +21,26 @@ module ActiveResourceHelperMethods
     end
   end
 
-  def describe_activeresource_model model_name, user=nil, passwd=nil, port=19393
-    user ||= '__test__'
-    passwd ||= 'passwd'
+  def ar_class model_name, opts={}
+    user = opts[:user] || '__test__'
+    passwd = opts[:password] || 'passwd'
+    port = opts[:port] || 19393
+    private_mode = if opts.key?(:private) then opts[:private] else false end
+
+    if private_mode
+      site = "http://localhost:19394/"
+    else
+      site = "http://#{user}:#{passwd}@localhost:#{port}/"
+    end
+    
     eval(<<END)
     module Test
-      class #{model_name.to_s} < ActiveResource::Base
-        self.site = 'http://#{user}:#{passwd}@localhost:#{port}/'
+      class #{model_name} < ActiveResource::Base
+        self.site = "#{site}"
         self.format = :json
       end
     end
-
-    return Test::#{model_name.to_s}
-END
-  end
-
-  def ar_private_class model_name, port=19394
-    eval(<<END)
-    module Test
-      class #{model_name.to_s} < ActiveResource::Base
-        self.site = 'http://localhost:#{port}/'
-        self.format = :json
-      end
-    end
-
-    Test::#{model_name.to_s}
+    Test::#{model_name}
 END
   end
 

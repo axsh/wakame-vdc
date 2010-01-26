@@ -7,7 +7,7 @@ describe "physical host access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     reset_db
-    @class = describe_activeresource_model :PhysicalHost
+    @class = ar_class :PhysicalHost
   end
   
   it "should add" do

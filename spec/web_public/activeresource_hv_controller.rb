@@ -6,7 +6,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe "hvc access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
-    @class = describe_activeresource_model :HvController
+    @class = ar_class :HvController
   end
 
   it "should add" do

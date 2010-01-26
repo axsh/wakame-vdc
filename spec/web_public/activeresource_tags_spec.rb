@@ -7,10 +7,10 @@ describe "tags access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     reset_db
-    @name_class = describe_activeresource_model :NameTag
-    @auth_class = describe_activeresource_model :AuthTag
+    @name_class = ar_class :NameTag
+    @auth_class = ar_class :AuthTag
     
-    @account_class = describe_activeresource_model :Account
+    @account_class = ar_class :Account
     @account = @account_class.create(:name=>'test account by instance spec')
   end
 

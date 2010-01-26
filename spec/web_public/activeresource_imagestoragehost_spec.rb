@@ -8,7 +8,7 @@ describe "image storage host access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     reset_db
-    @class = describe_activeresource_model :ImageStorageHost
+    @class = ar_class :ImageStorageHost
   end
 
   it "should add host" do
