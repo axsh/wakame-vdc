@@ -80,12 +80,7 @@ module Dcmgr
         host_points = points(enable_hosts, location_tags)
         min_point = host_points.min
 
-        p host_points
-        p min_point
-        
-        host = enable_hosts[host_points.index{|pt| pt == min_point}]
-        p host
-        host
+        enable_hosts[host_points.index{|pt| pt == min_point}]
       end
       
       private
