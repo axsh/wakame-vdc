@@ -59,6 +59,88 @@ post '/account-save' do
   rtn.to_json
 end
 
+post '/account-search' do
+  id = params[:id]
+  nm = params[:nm]
+  en = params[:en]
+  cn = params[:cn]
+
+  Account.login('staff', 'passwd')
+
+  accountList = nil
+  rtn = {'success'=>false,'totalCount'=>0,'rows'=>[]}
+
+  fromDate = nil;
+  toDate = nil;
+  if cn.length > 0
+    ary = ParseDate::parsedate(cn)
+    fromDate = Time::local(*ary[0..-3])
+    toDate = fromDate + 3600*24
+  end
+
+  if id.length > 0
+    accountList = Account.find(:all, :params=>{:id=>id})
+  elsif cn.length > 0
+    if en != "0"
+      if en == "1"
+        if nm.length > 0
+          accountList = Account.find(:all, :params=>{:name=>nm,:enable=>true,:contract_at=>[fromDate,toDate]})
+        else
+          accountList = Account.find(:all, :params=>{:enable=>true,:contract_at=>[fromDate,toDate]})
+        end
+      else
+        if nm.length > 0
+          accountList = Account.find(:all, :params=>{:name=>nm,:enable=>false,:contract_at=>[fromDate,toDate]})
+        else
+          accountList = Account.find(:all, :params=>{:enable=>false,:contract_at=>[fromDate,toDate]})
+        end
+      end
+    else
+      if nm.length > 0
+        accountList = Account.find(:all, :params=>{:name=>nm,:contract_at=>[fromDate,toDate]})
+      else
+        accountList = Account.find(:all, :params=>{:contract_at=>[fromDate,toDate]})
+      end
+    end
+  elsif en != "0"
+    if nm.length > 0
+      if en == "1"
+        accountList = Account.find(:all, :params=>{:enable=>true,:name=>nm})
+      else
+        accountList = Account.find(:all, :params=>{:enable=>false,:name=>nm})
+      end
+    else
+      if en == "1"
+        accountList = Account.find(:all, :params=>{:enable=>true})
+      else
+        accountList = Account.find(:all, :params=>{:enable=>false})
+      end
+    end
+  elsif nm.length > 0
+    accountList = Account.find(:all, :params=>{:name=>nm})
+  else
+    accountList = Account.find(:all)
+  end
+
+  if accountList != nil
+    rtn['success'] = true
+    rtn['totalCount'] = accountList.length
+    accountList.each{|index|
+      rows = Hash::new
+      rows.store('id',index.id)
+      rows.store('nm',index.name)
+      rows.store('rg',index.created_at)
+      rows.store('cn',index.contract_at)
+      rows.store('en',index.enable)
+      rows.store('mm',index.memo)
+      rtn['rows'].push(rows)
+    }
+  end
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
 post '/account-remove' do
   id = params[:id]
   Account.login('staff', 'passwd')
@@ -215,7 +297,7 @@ get '/user-list' do
   rows.store('id',839438494990)
   rows.store('nm',"sato")
   rows.store('st',"login")
-  rows.store('en',"y")
+  rows.store('en',"ture")
   rows.store('em','xxx@xxx.jp')
   rows.store('mm','xxxxxxxxxx')
   rtn['rows'].push(rows)
@@ -224,7 +306,7 @@ get '/user-list' do
   rows.store('id',238230208490)
   rows.store('nm',"kato")
   rows.store('st',"logout")
-  rows.store('en',"y")
+  rows.store('en',"ture")
   rows.store('em','zzz@xxx.jp')
   rows.store('mm','bbbbbbbbb')
   rtn['rows'].push(rows)
