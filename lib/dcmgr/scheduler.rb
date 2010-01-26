@@ -1,6 +1,6 @@
 
-require 'dcmgr/scheduler/alrorithm1'
-require 'dcmgr/scheduler/alrorithm2'
+require 'dcmgr/scheduler/algorithm1'
+require 'dcmgr/scheduler/algorithm2'
 
 module Dcmgr
   module PhysicalHostScheduler
