@@ -11,27 +11,41 @@ require "#{File.dirname(__FILE__)}/specformat_detail" unless defined? SPECFORMAT
 module ActiveResourceHelperMethods
   extend self
   
-  def runserver
+  def runserver(mode=:public)
     Thread.new do
-      Rack::Handler::Thin.run Dcmgr::PublicWeb, :Port => 19393
-    end
-    Thread.new do
-      Rack::Handler::Thin.run Dcmgr::PrivateWeb, :Port => 19394
+      if mode == :public
+        Rack::Handler::Thin.run Dcmgr::PublicWeb, :Port => 19393
+      else
+        Rack::Handler::Thin.run Dcmgr::PrivateWeb, :Port => 19394
+      end
     end
   end
 
-  def describe_activeresource_model model_name, user=nil, passwd=nil
+  def describe_activeresource_model model_name, user=nil, passwd=nil, port=19393
     user ||= '__test__'
     passwd ||= 'passwd'
     eval(<<END)
     module Test
       class #{model_name.to_s} < ActiveResource::Base
-        self.site = 'http://#{user}:#{passwd}@localhost:19393/'
+        self.site = 'http://#{user}:#{passwd}@localhost:#{port}/'
         self.format = :json
       end
     end
 
     return Test::#{model_name.to_s}
+END
+  end
+
+  def ar_private_class model_name, port=19394
+    eval(<<END)
+    module Test
+      class #{model_name.to_s} < ActiveResource::Base
+        self.site = 'http://localhost:#{port}/'
+        self.format = :json
+      end
+    end
+
+    Test::#{model_name.to_s}
 END
   end
 

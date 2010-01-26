@@ -25,6 +25,8 @@ module Dcmgr
   end
   
   class PublicWeb < Web
+    helpers { include Dcmgr::AuthorizeHelpers }
+    
     public_crud PublicAccount
     public_crud PublicUser
     
@@ -43,8 +45,8 @@ module Dcmgr
   end
   
   class PrivateWeb < Web
-    public_crud PublicInstance
-    public_crud PublicPhysicalHost
+    helpers { include Dcmgr::NoAuthorizeHelpers }
+    public_crud PrivateInstance
     
     get '/' do
       'startup dcmgr. private mode'

@@ -243,7 +243,11 @@ module Dcmgr
       req_hash = json_request
       req_hash.delete "id"
       allow_keys.each{|key|
-        if req_hash.key?(key.to_s)
+        if key == :account # duplicate create
+          obj.account = Account[req_hash[key.to_s]]
+        elsif key == :user
+            
+        else req_hash.key?(key.to_s)
           obj.send('%s=' % key, req_hash[key.to_s])
         end
       }
@@ -482,6 +486,20 @@ module Dcmgr
 
     public_action_withid :put, :snapshot do
       [] # TODO: snapshot action
+    end
+  end
+
+  class PrivateInstance
+    include PublicModel
+    model Instance
+    allow_keys [:status, :ip]
+
+    public_action_withid :get do
+      get
+    end
+    
+    public_action_withid :put do
+      update
     end
   end
 
