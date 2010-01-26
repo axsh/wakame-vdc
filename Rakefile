@@ -11,7 +11,7 @@ end
 namespace :spec do
   desc 'Run specs, detail mode'
   task :detail do
-    sh "./bin/spec -fs -c -r spec/specformat_detail spec"
+    sh "./bin/spec -fs -b -c -r spec/specformat_detail spec"
   end
 end
 
