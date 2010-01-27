@@ -304,7 +304,7 @@ SearchAccountWindow = function(){
       items:[{
         layout: 'form',
         items: [{
-          fieldLabel: '<span ext:qtitle="Account-ID" ext:qwidth=200 ext:qtip="Input Account ID. (each)">Account-ID</span>',
+          fieldLabel: '<span ext:qtitle="Account-ID" ext:qwidth=200 ext:qtip="Input Account ID. (exact)">Account-ID</span>',
           xtype: 'textfield',
           id: 'id',
           anchor: '100%'
