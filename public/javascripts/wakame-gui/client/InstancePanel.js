@@ -123,10 +123,11 @@ InstancePanel = function(){
       }
     ]
   });
-  store.load({params: {start: 0, limit: 50}});		// limit = page size
   Ext.TaskMgr.start({
     run: function(){
-      store.reload();
+      if(activePanel == 0){
+        store.reload();
+      }
     },
     interval: 60000
   });
