@@ -31,7 +31,7 @@ module Dcmgr
   
   class HvcHttp
     include HvcAccess
-    def open(host, port=80, &block)
+    def open(host, port=3000, &block)
       Net::HTTP.start(host, port) {|http|
         block.call(http)
       }
