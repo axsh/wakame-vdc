@@ -191,19 +191,18 @@ describe "instance access by active resource" do
   it "should schedule instances, archetype test"
   
   it "should run instance" do
-    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
-    Dcmgr::hvchttp = hvchttp
-    
     instance_a = @class.create(:account=>Account[1].id,
                                :need_cpus=>1,
                                :need_cpu_mhz=>0.5,
                                :need_memory=>0.5,
                                :image_storage=>ImageStorage[1].uuid)
     
+    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
+    Dcmgr::hvchttp = hvchttp
     instance_a.put(:run)
+    
     instance_a = @class.find(instance_a.id)
     instance_a.status.should == Instance::STATUS_TYPE_RUNNING
-    pending
     
     real_inst = Instance[instance_a.id]
     hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip][1].should == :online
@@ -212,9 +211,6 @@ describe "instance access by active resource" do
   it "should shutdown, and auth check"
 
   it "should shutdown" do
-    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
-    Dcmgr::hvchttp = hvchttp
-    
     instance = @class.create(:account=>Account[1].id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
@@ -227,6 +223,9 @@ describe "instance access by active resource" do
     
     instance.should be_true
 
+    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
+    Dcmgr::hvchttp = hvchttp
+    
     instance.put(:shutdown)
     
     real_inst = Instance[instance.id]

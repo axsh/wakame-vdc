@@ -156,6 +156,10 @@ module Dcmgr
       @body = body
     end
 
+    def code
+      @status.to_s
+    end
+
     def success?
       @status == 200
     end
