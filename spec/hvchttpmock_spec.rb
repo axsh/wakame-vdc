@@ -11,10 +11,10 @@ describe Dcmgr::HvcHttpMock do
   def get_hvchttp
     hvchttp = Dcmgr::HvcHttpMock.new('192.168.1.10')
     hvchttp.add_hva('192.168.1.20')
-    hvchttp.add_instance(:ip=>'192.168.1.21', :status=>:running, :hva=>'192.168.1.20')
-    hvchttp.add_instance(:ip=>'192.168.1.22', :status=>:offline, :hva=>'192.168.1.20')
+    hvchttp.add_instance(:ip=>'192.168.1.21', :uuid=>'I-12345678', :status=>:running, :hva=>'192.168.1.20')
+    hvchttp.add_instance(:ip=>'192.168.1.22', :uuid=>'I-12345679', :status=>:offline, :hva=>'192.168.1.20')
     hvchttp.add_hva('192.168.1.30')
-    hvchttp.add_instance(:ip=>'192.168.1.31', :status=>:online, :hva=>'192.168.1.30')
+    hvchttp.add_instance(:ip=>'192.168.1.31', :uuid=>'I-12345670', :status=>:online, :hva=>'192.168.1.30')
     hvchttp
   end
 
@@ -51,11 +51,13 @@ describe Dcmgr::HvcHttpMock do
 
   it "should terminate instance" do
     hvchttp = get_hvchttp
+    hvchttp.hva('192.168.1.20').instances['192.168.1.21'][1].should == :running
+    
     hvchttp.open('192.168.1.10', 80) {|http|
-      url = http.terminate_instance('192.168.1.20', '192.168.1.21', :url_only)
-      url.should == "/?action=terminate_instance&hva_ip=192.168.1.20&instance_ip=192.168.1.21"
+      url = http.terminate_instance('192.168.1.20', 'I-12345678', :url_only)
+      url.should == "/?action=terminate_instance&hva_ip=192.168.1.20&instance_uuid=I-12345678"
       
-      res = http.terminate_instance('192.168.1.20', '192.168.1.21')
+      res = http.terminate_instance('192.168.1.20', 'I-12345678')
       res.success?.should be_true
       res.body.should == "ok"
     }
