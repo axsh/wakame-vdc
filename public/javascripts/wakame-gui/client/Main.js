@@ -1,4 +1,6 @@
 
+var activePanel = 0;	// Active Panel
+
 Ext.onReady(function(){
   Ext.BLANK_IMAGE_URL='./javascripts/ext-js/resources/images/default/s.gif';
   Ext.QuickTips.init();
@@ -96,12 +98,11 @@ UpPanel = function(){
 Ext.extend(UpPanel, Ext.Panel);
 
 DownPanel = function(cardPanel){
-  var panelMode = 0;
-  function ChangePanel(md)
+  function ChangePanel(no)
   {
-    if(panelMode != md){
-      panelMode = md;
-      cardPanel.layout.setActiveItem(panelMode);
+    if(activePanel != no){
+      activePanel = no;
+      cardPanel.layout.setActiveItem(activePanel);
     }
   }
 
