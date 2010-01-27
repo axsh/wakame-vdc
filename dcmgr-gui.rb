@@ -264,7 +264,7 @@ post '/instance-terminate' do
   id = params[:id]
   Instance.login('staff', 'passwd')
   instance = Instance.find(id)
-  instance.put(:terminate)
+  instance.put(:shutdown)
   rtn = {"success" => true}
   debug_log rtn
   content_type :json
