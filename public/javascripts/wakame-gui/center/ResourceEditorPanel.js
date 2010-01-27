@@ -1,12 +1,12 @@
 
 ResourceEditorPanel = function(){
   var mtabPanel  = new MAPTabPanel('center',600);
-  mtabPanel.add(new MAPViewPanel('1F-100'));
-  mtabPanel.add(new MAPViewPanel('1F-101'));
-  mtabPanel.add(new MAPViewPanel('2F-101'));
-  mtabPanel.add(new MAPViewPanel('2F-200'));
-  mtabPanel.add(new MAPViewPanel('3F-105'));
-  mtabPanel.add(new MAPViewPanel('3F-200'));
+  mtabPanel.add(new MAPViewPanel('1F-100',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('1F-101',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('2F-101',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('2F-200',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('3F-105',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('3F-200',"./images/map/1F-10.jpeg"));
 
   var palletPanel = new PalletPanel();
   var resourceTreePanel = new ResourceTreePanel();
@@ -153,14 +153,15 @@ ResourcePropertyPanel = function(){
 }
 Ext.extend(ResourcePropertyPanel, Ext.Panel);
 
-MAPViewPanel = function(name){
+MAPViewPanel = function(name,url){
   MAPViewPanel.superclass.constructor.call(this, {
     region: 'center',
     title: name,
     autoScroll: true,
     split: true,
     layout: 'fit',
-    html: '<img src="1F-10.jpeg">'
+    html: '<img src='+url+'>'
+//  html: '<img src='1F-10.jpeg">'
 //  bodyStyle: "background-image:url(1F-10.jpeg); background-repeat: no-repeat; background-attachment: fixed;"
   });
 }
