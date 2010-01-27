@@ -40,7 +40,7 @@ module Dcmgr
     public_crud PublicImageStorageHost
     
     get '/' do
-      'startup dcmgro'
+      'startup dcmgr'
     end
   end
   
