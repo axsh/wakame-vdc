@@ -9,6 +9,8 @@ describe "instance access by active resource" do
   before(:each) do
     reset_db
 
+    Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm2
+    
     @class = ar_class :Instance
     @physical_host_class = ar_class :PhysicalHost
     @name_tag_class = ar_class :NameTag
@@ -184,8 +186,6 @@ describe "instance access by active resource" do
     
     # each floor physica assigned_hosts
     assigned_hosts.length.should == 8
-    
-    Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm2
   end
 
   it "should schedule instances, archetype test"
