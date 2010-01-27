@@ -125,8 +125,6 @@ module Dcmgr
         @hvas.each_value{|hva|
           matched_instance = hva.instances.find{|inst| p inst; inst[1][0] == instance_uuid}
           next unless matched_instance
-          p hva
-          p matched_instance
           hva.update_instance(matched_instance[0], matched_instance[1][0], :offline)
           return HvcHttpMockResponse.new(200, "ok")
         }
