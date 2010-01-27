@@ -163,10 +163,6 @@ describe "instance access by active resource" do
     #PhysicalHost.order(:id).each{|ph|
     #  print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
     #}
-    PhysicalHost.all.each{|h|
-      p h.uuid
-      p h.hv_agents.length
-    }
     
     instance.hv_agent.should == hv_agents[6].uuid
     
