@@ -96,13 +96,17 @@ InstancePanel = function(){
             return;
           if(sm.getSelected().data['st'] != "running")
             return;
-          Ext.Ajax.request({
-	        url: '/instance-terminate',
-	        method: "POST", 
-            params : 'id=' + sm.getSelected().data['id'],
-            success: reqeustSuccess,
-            failure: reqeustfailure
-	      });
+          Ext.Msg.confirm("Terminate:","Are you share?", function(btn){
+            if(btn == 'yes'){
+              Ext.Ajax.request({
+	            url: '/instance-terminate',
+	            method: "POST",
+                params : 'id=' + sm.getSelected().data['id'],
+                success: reqeustSuccess,
+                failure: reqeustfailure
+	          });
+            }
+          });
         }
       },
       { text : 'Save',handler:function(){
@@ -120,6 +124,12 @@ InstancePanel = function(){
     ]
   });
   store.load({params: {start: 0, limit: 50}});		// limit = page size
+  Ext.TaskMgr.start({
+    run: function(){
+      store.reload();
+    },
+    interval: 60000
+  });
 }
 Ext.extend(InstancePanel, Ext.grid.GridPanel);
 
