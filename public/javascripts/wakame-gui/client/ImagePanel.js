@@ -75,10 +75,13 @@ ImagePanel = function(){
       }
     ]
   });
-  store.load({params: {start: 0, limit: 50}});		// limit = page size
+  store.reload();
+
   Ext.TaskMgr.start({
     run: function(){
-      store.reload();
+      if(activePanel == 1){
+        store.reload();
+      }
     },
     interval: 60000
   });
@@ -115,9 +118,24 @@ LaunchWindow = function(launchData,account_id){
     }
     ,{
       fieldLabel: 'TYPE',
-      xtype: 'textfield',
+      xtype: 'combo',
+      editable: false,
       id: 'tp',
-      width: 80
+      width: 80,
+      forceSelection:true,
+      mode: 'local',
+      store: new Ext.data.ArrayStore({
+        id: 1,
+        fields: [
+         'myId',
+          'displayText'
+        ],
+        data: [[1,'small'],[2, 'large']]
+      }),
+      triggerAction: 'all',
+	  value:'1',
+      valueField: 'myId',
+      displayField: 'displayText'
     }]
   });
 
