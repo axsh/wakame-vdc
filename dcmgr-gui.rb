@@ -4,6 +4,7 @@ require 'erb'
 require 'WakameWebAPI'
 require 'logger'
 require 'parsedate'
+require 'define'
 
 if DEBUG_LOG
   @@logger = Logger.new('dcmgr-gui.log')
@@ -182,7 +183,7 @@ get '/instance-list' do
     rows.store('id',index.id)
     rows.store('od',index.user)
     rows.store('wd',index.image_storage)
-    rows.store('st',index.status)
+    rows.store('st',@@inStatus[index.status.to_s])
     rows.store('ip',index.ip)
     rows.store('tp','')
     rtn['rows'].push(rows)
@@ -204,7 +205,7 @@ get '/instance-detail-list' do
     rows.store('ad',index.account)
     rows.store('ud',index.user)
     rows.store('wd',index.image_storage)
-    rows.store('st',index.status)
+    rows.store('st',@@inStatus[index.status.to_s])
     rows.store('ip',index.ip)
     rows.store('tp','')				# cpu type+memory
     rows.store('sv','')				# image name (from index.image_storage)
@@ -278,10 +279,10 @@ get '/image-list' do
   imagelist.each{|index|
     rows = Hash::new
     rows.store('id',index.id)
-    rows.store('nm','')
-    rows.store('od','')
-    rows.store('vy','')
-    rows.store('ac','')
+    rows.store('nm','centos5.4-i386-1part-aio-4gb-2009121801')
+    rows.store('od','staff')
+    rows.store('vy','public')
+    rows.store('ac','i386')
     rtn['rows'].push(rows)
   }
   debug_log rtn
