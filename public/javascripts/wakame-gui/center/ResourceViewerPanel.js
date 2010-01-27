@@ -14,8 +14,8 @@ ResourceViewerPanel = function(){
   var serverlist  = new ServerListPanel();
   var mtabPanel  = new MAPTabPanel('east',250);
 
-  mtabPanel.add(new MAPViewPanel('1F-100'));
-  mtabPanel.add(new MAPViewPanel('1F-101'));
+  mtabPanel.add(new MAPViewPanel('1F-100',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('1F-101',"./images/map/1F-10.jpeg"));
 
   ResourceViewerPanel.superclass.constructor.call(this, {
     split: true,
