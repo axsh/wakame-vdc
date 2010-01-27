@@ -24,7 +24,7 @@ module Dcmgr
       if opts.include? :url_only
         url
       else
-        get(url)
+        ret = get(url)
       end
     end
   end
@@ -33,6 +33,7 @@ module Dcmgr
     include HvcAccess
     def open(host, port=3000, &block)
       Net::HTTP.start(host, port) {|http|
+        http.extend HvcAccess
         block.call(http)
       }
     end

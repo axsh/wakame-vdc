@@ -227,7 +227,6 @@ describe "instance access by active resource" do
     
     instance.should be_true
 
-    pending
     instance.put(:shutdown)
     
     real_inst = Instance[instance.id]

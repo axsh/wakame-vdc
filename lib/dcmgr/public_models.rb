@@ -465,10 +465,10 @@ module Dcmgr
                                   instance.uuid,
                                   instance.need_cpus, instance.need_cpu_mhz,
                                   instance.need_memory)
-        rescue e
+        rescue => e
           raise e
         end
-        raise "can't controll hvc server" unless res.success?
+        raise "can't controll hvc server" unless res.code == "200"
       }
       instance.status = Instance::STATUS_TYPE_RUNNING
       instance.save
@@ -482,11 +482,10 @@ module Dcmgr
         begin
           res = http.terminate_instance(instance.hv_agent.ip,
                                         instance.ip)
-        rescue e
+        rescue => e
           raise e
         end
-        raise "can't controll hvc server" unless res.success?
-        
+        raise "can't controll hvc server" unless res.code == "200"
       }
       instance.status = Instance::STATUS_TYPE_TERMINATING
       instance.save
