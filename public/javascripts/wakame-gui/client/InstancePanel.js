@@ -85,7 +85,7 @@ InstancePanel = function(){
           Ext.Ajax.request({
 	        url: '/instance-reboot',
 	        method: "POST", 
-            params : 'id=' + sm.getSelected().id,
+            params : 'id=' + sm.getSelected().data['id'],
             success: reqeustSuccess,
             failure: reqeustfailure
 	      }); 
@@ -94,12 +94,12 @@ InstancePanel = function(){
       { text : 'Terminate',handler:function(){
 		  if(sm.getCount() <= 0)
             return;
-          if(sm.getSelected().st != "running")
+          if(sm.getSelected().data['st'] != "running")
             return;
           Ext.Ajax.request({
 	        url: '/instance-terminate',
 	        method: "POST", 
-            params : 'id=' + sm.getSelected().id,
+            params : 'id=' + sm.getSelected().data['id'],
             success: reqeustSuccess,
             failure: reqeustfailure
 	      });
@@ -111,7 +111,7 @@ InstancePanel = function(){
           Ext.Ajax.request({
 	        url: '/instance-save',
 	        method: "POST", 
-            params : 'id=' + sm.getSelected().id,
+            params : 'id=' + sm.getSelected().data['id'],
             success: reqeustSuccess,
             failure: reqeustfailure
 	      }); 
