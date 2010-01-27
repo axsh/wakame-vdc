@@ -185,7 +185,7 @@ get '/instance-list' do
     rows.store('wd',index.image_storage)
     rows.store('st',@@inStatus[index.status.to_s])
     rows.store('ip',index.ip)
-    rows.store('tp','')
+    rows.store('tp','small')
     rtn['rows'].push(rows)
   }
   debug_log rtn
@@ -207,7 +207,7 @@ get '/instance-detail-list' do
     rows.store('wd',index.image_storage)
     rows.store('st',@@inStatus[index.status.to_s])
     rows.store('ip',index.ip)
-    rows.store('tp','')				# cpu type+memory
+    rows.store('tp','small')		# cpu type+memory
     rows.store('sv','')				# image name (from index.image_storage)
     rtn['rows'].push(rows)
   }
