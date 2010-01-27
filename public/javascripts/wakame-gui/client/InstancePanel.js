@@ -24,10 +24,12 @@ InstancePanel = function(){
   });
 
   function statusChange(val){
-    if(val == "running"){
-      return '<span style="color:green;">' + val + '</span>';
+    if(val == "pending"){
+      return '<span style="color:#FF9000;">' + val + '</span>';
+    } else if(val == "running"){
+      return '<span style="color:#4FFF00;">' + val + '</span>';
     } else {
-      return '<span style="color:red;">' + val + '</span>';
+      return '<span style="color:gray;">' + val + '</span>';
     }
     return val;
   }
