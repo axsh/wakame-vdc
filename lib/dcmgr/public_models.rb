@@ -458,30 +458,49 @@ module Dcmgr
 
     public_action_withid :put, :run do
       instance = Instance[uuid]
-      instance.status = Instance::STATUS_TYPE_RUNNING
-      instance.save
 
       Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
-        res = http.get('/run_instance?hva_ip=%s&instance_uuid=%s&cpus=%s&cpu_mhz=%s&memory=%s' %
-                       [instance.hv_agent.ip,
-                        instance.uuid,
-                        instance.need_cpus, instance.need_cpu_mhz,
-                        instance.need_memory])
+        begin
+          res = http.run_instance(instance.hv_agent.ip,
+                                  instance.uuid,
+                                  instance.need_cpus, instance.need_cpu_mhz,
+                                  instance.need_memory)
+        rescue e
+          raise e
+        end
         raise "can't controll hvc server" unless res.success?
       }
+      instance.status = Instance::STATUS_TYPE_RUNNING
+      instance.save
       []
     end
 
     public_action_withid :put, :shutdown do
       instance = Instance[uuid]
-      begin
-        Dcmgr.evaluate(user, instance, :shutdown)
-      rescue Exception => e
-	raise e
-        Dcmgr::logger.debug("err! %s" % e)
-        throw :halt, [400, e.to_s]
-      end
+      
+      Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
+        begin
+          res = http.terminate_instance(instance.hv_agent.ip,
+                                        instance.ip)
+        rescue e
+          raise e
+        end
+        raise "can't controll hvc server" unless res.success?
+        
+      }
+      instance.status = Instance::STATUS_TYPE_TERMINATING
+      instance.save
       []
+      
+      # TODO check shutdown role
+      #begin
+      #  Dcmgr.evaluate(user, instance, :shutdown)
+      #rescue Exception => e
+      #	raise e
+      #  Dcmgr::logger.debug("err! %s" % e)
+      #  throw :halt, [400, e.to_s]
+      #end
+      #[]
     end
 
     public_action_withid :put, :snapshot do

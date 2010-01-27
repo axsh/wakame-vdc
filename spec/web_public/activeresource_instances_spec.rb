@@ -41,16 +41,16 @@ describe "instance access by active resource" do
   it "should create instance" do
     @physical_host_class.find(PhysicalHost[1].uuid).put(:remove_tag,
                                                        :tag=>Tag.system_tag(:STANDBY_INSTANCE).uuid)
-    $instance_a = @class.create(:account=>Account[1].uuid,
-                                :need_cpus=>1,
-                                :need_cpu_mhz=>0.5,
-                                :need_memory=>1.0,
-                                :image_storage=>ImageStorage[1].uuid)
+    instance_a = @class.create(:account=>Account[1].uuid,
+                               :need_cpus=>1,
+                               :need_cpu_mhz=>0.5,
+                               :need_memory=>1.0,
+                               :image_storage=>ImageStorage[1].uuid)
 
-    $instance_a.status.should == Instance::STATUS_TYPE_OFFLINE
-    $instance_a.account.should == Account[1].uuid
+    instance_a.status.should == Instance::STATUS_TYPE_OFFLINE
+    instance_a.account.should == Account[1].uuid
 
-    real_inst = Instance[$instance_a.id]
+    real_inst = Instance[instance_a.id]
     real_inst.hv_agent.physical_host_id.should > 0
   end
 
@@ -184,6 +184,8 @@ describe "instance access by active resource" do
     
     # each floor physica assigned_hosts
     assigned_hosts.length.should == 8
+    
+    Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm2
   end
 
   it "should schedule instances, archetype test"
@@ -192,43 +194,44 @@ describe "instance access by active resource" do
     hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
     Dcmgr::hvchttp = hvchttp
     
-    pending
-    $instance_a = @class.create(:account=>Account[1].id,
-                                :need_cpus=>1,
-                                :need_cpu_mhz=>0.5,
-                                :need_memory=>0.5,
-                                :image_storage=>ImageStorage[1].uuid)
-
-    $instance_a.put(:run)
-    $instance_a = @class.find($instance_a.id)
-    $instance_a.status.should == Instance::STATUS_TYPE_RUNNING
+    instance_a = @class.create(:account=>Account[1].id,
+                               :need_cpus=>1,
+                               :need_cpu_mhz=>0.5,
+                               :need_memory=>0.5,
+                               :image_storage=>ImageStorage[1].uuid)
     
-    real_inst = Instance[$instance_a.id]
+    instance_a.put(:run)
+    instance_a = @class.find(instance_a.id)
+    instance_a.status.should == Instance::STATUS_TYPE_RUNNING
+    pending
+    
+    real_inst = Instance[instance_a.id]
     hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip][1].should == :online
   end
+  
+  it "should shutdown, and auth check"
 
-  it "should shutdown, and auth check" do
-    pending
+  it "should shutdown" do
+    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
+    Dcmgr::hvchttp = hvchttp
+    
     instance = @class.create(:account=>Account[1].id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
-                             :need_memory=>0.5)
+                             :need_memory=>0.5,
+                             :image_storage=>ImageStorage[1].uuid)
+
+    real_instance = Instance[instance.id]
+    real_instance.ip = '192.168.11.22'
+    real_instance.save
+    
     instance.should be_true
 
-    instance.put(:add_tag, :tag=>@normal_tag_a)
+    pending
     instance.put(:shutdown)
     
-    pending("check hvc mock server's status")
-    
-    instance = @class.create(:account=>Account[1].id,
-                             :need_cpus=>1,
-                             :need_cpu_mhz=>0.5,
-                             :need_memory=>0.5)
-    instance.put(:add_tag, :tag=>@normal_tag_c)
-    
-    lambda {
-     instance.put(:shutdown)
-    }.should raise_error(ActiveResource::BadRequest)
+    real_inst = Instance[instance.id]
+    hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip][1].should == :offline
   end
 
   it "shoud shutdown by sample data, and raise role error" do

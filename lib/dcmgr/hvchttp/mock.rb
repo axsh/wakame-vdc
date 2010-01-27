@@ -127,7 +127,7 @@ module Dcmgr
           hva.update_instance(instance_ip, nil, :offline)
           return HvcHttpMockResponse.new(200, "ok")
         }
-        HvcHttpMockResponse.new(404, "not found")
+        HvcHttpMockResponse.new(404, "not found: #{query.inspect}")
 
       when 'describe_instances'
         ret = {}
@@ -145,7 +145,7 @@ module Dcmgr
         
       else
         Dcmgr::logger.info "404: #{uri.path}"
-        HvcHttpMockResponse.new(404, "not found")
+        HvcHttpMockResponse.new(404, "not found: #{query}")
       end
     end
   end
