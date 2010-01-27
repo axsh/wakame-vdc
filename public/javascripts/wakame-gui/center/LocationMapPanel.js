@@ -2,12 +2,12 @@
 LocationMapPanel = function(){
   var mPropertyPanel = new MAPPropertyPanel();
   var mtabPanel  = new MAPTabPanel('center',600);
-  mtabPanel.add(new MAPViewPanel('1F-100'));
-  mtabPanel.add(new MAPViewPanel('1F-101'));
-  mtabPanel.add(new MAPViewPanel('2F-101'));
-  mtabPanel.add(new MAPViewPanel('2F-200'));
-  mtabPanel.add(new MAPViewPanel('3F-105'));
-  mtabPanel.add(new MAPViewPanel('3F-200'));
+  mtabPanel.add(new MAPViewPanel('1F-100',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('1F-101',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('2F-101',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('2F-200',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('3F-105',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new MAPViewPanel('3F-200',"./images/map/1F-10.jpeg"));
 
   LocationMapPanel.superclass.constructor.call(this, {
     split: true,
