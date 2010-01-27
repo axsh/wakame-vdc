@@ -48,7 +48,17 @@ InstancePanel = function(){
   ]);
 
   this.refresh = function(){
-      store.reload();
+    store.reload();
+  }
+
+  function reqeustSuccess()
+  {
+    store.reload();
+  }
+
+  function  reqeustfailure()
+  {
+    alert('Request failure.');
   }
 
   var toolbar= new Ext.PagingToolbar({
@@ -85,8 +95,10 @@ InstancePanel = function(){
           Ext.Ajax.request({
 	        url: '/instance-terminate',
 	        method: "POST", 
-            params : 'id=' + sm.getSelected().id
-	      }); 
+            params : 'id=' + sm.getSelected().id,
+            success: reqeustSuccess,
+            failure: reqeustfailure
+	      });
         }
       },
       { text : 'Save',handler:function(){
