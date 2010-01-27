@@ -3,5 +3,5 @@
 #
 
 # instance status
-@@inStatus = {'0'=>'offline','1'=>'running','2'=>'online','2'=>'terminating'}
+@@inStatus = {'0'=>'offline','1'=>'running','2'=>'online','3'=>'terminating'}
 
