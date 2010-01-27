@@ -87,8 +87,8 @@ Ext.extend(ImagePanel, Ext.grid.GridPanel);
 
 LaunchWindow = function(launchData,account_id){
   var form = new Ext.form.FormPanel({
-    labelWidth: 70, 
-    width: 150,
+    labelWidth: 50,
+    width: 330,
     baseCls: 'x-plain',
     items: [
     {
@@ -125,8 +125,8 @@ LaunchWindow = function(launchData,account_id){
     iconCls: 'icon-panel',
     collapsible:true,
     titleCollapse:true,
-    width: 250,
-    height: 200,
+    height: 170,
+    width: 350,
 	layout:'fit',
 	closeAction:'hide',
     title: 'Launch',
