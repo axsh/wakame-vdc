@@ -298,11 +298,6 @@ Ext.extend(EditAccountWindow, Ext.Window);
 
 SearchAccountWindow = function(){
 
-    var tooltip1 = new Ext.ToolTip({
-      html: "Input Account ID. (each)",
-      target: "id"
-    });
-
     var form = new Ext.form.FormPanel({
       frame:true,
       bodyStyle:'padding:5px 5px 0',
@@ -312,6 +307,7 @@ SearchAccountWindow = function(){
           fieldLabel: 'Account-ID',
           xtype: 'textfield',
           id: 'id',
+          tooltip: '',
           anchor: '100%'
         },{
           fieldLabel: 'Account-Name',
