@@ -23,12 +23,21 @@ InstancePanel = function(){
     })
   });
 
+  function statusChange(val){
+    if(val == "running"){
+      return '<span style="color:green;">' + val + '</span>';
+    } else {
+      return '<span style="color:red;">' + val + '</span>';
+    }
+    return val;
+  }
+
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
     { header: "Instance ID" ,width: 100, dataIndex: 'id'},
     { header: "Owner"       ,width: 100, dataIndex: 'od'},
     { header: "WMI ID"      ,width: 100, dataIndex: 'wd'},
-    { header: "State"       ,width: 80,  dataIndex: 'st'},
+    { header: "State"       ,width: 80,  dataIndex: 'st' , renderer: statusChange},
 //  { header: "Public DNS"  ,width: 100, dataIndex: 'pub-dns'},
 //  { header: "Private DNS" ,width: 100, dataIndex: 'pri-dns'},
     { header: "Private IP"  ,width: 100, dataIndex: 'ip'},
