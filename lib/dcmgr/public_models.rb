@@ -481,7 +481,7 @@ module Dcmgr
       Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
         begin
           res = http.terminate_instance(instance.hv_agent.ip,
-                                        instance.ip)
+                                        instance.uuid)
         rescue => e
           raise e
         end

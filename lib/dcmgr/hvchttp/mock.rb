@@ -121,10 +121,12 @@ module Dcmgr
         HvcHttpMockResponse.new(200, "ok")
         
       when 'terminate_instance'
-        instance_ip = query['instance_ip'].first
+        instance_uuid = query['instance_uuid'].first
         @hvas.each_value{|hva|
-          next unless hva.instances.key? instance_ip
-          hva.update_instance(instance_ip, nil, :offline)
+          matched_instance = hva.instances.find{|inst| p inst; inst[1][0] == instance_uuid}
+          next unless matched_instance
+          p matched_instance
+          hva.update_instance(matched_instance[0], matched_instance[1][0], :offline)
           return HvcHttpMockResponse.new(200, "ok")
         }
         HvcHttpMockResponse.new(404, "not found: #{query.inspect}")

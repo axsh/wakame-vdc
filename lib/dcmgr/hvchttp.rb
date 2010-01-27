@@ -11,8 +11,8 @@ module Dcmgr
            opts)
     end
 
-    def terminate_instance(hva_ip, instance_ip, *opts)
-      _get("/?action=terminate_instance&hva_ip=#{hva_ip}&instance_ip=#{instance_ip}",
+    def terminate_instance(hva_ip, instance_uuid, *opts)
+      _get("/?action=terminate_instance&hva_ip=#{hva_ip}&instance_uuid=#{instance_uuid}",
            opts)
     end
 
