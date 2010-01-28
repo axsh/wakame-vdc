@@ -5,6 +5,7 @@ module Dcmgr
     class NoAssignIPError < StandardError; end
 
     @check_assigned = @default_check_assigned = lambda{|mac, ip|
+      p "check instance"
       Instance.filter(:ip => ip).count <= 0
     }
     
@@ -33,7 +34,7 @@ module Dcmgr
     
     # return [mac_address, ip_address]
     def assign_ip
-      @ip_map.find{|mac, ip| assigned?(mac, ip)} or raise NoAssignIPError
+      @ip_map.find{|mac, ip| assigned?(mac, ip)} or raise NoAssignIPError, "ip size = #{@ip_map.length}"
     end
     
     private
