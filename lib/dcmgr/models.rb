@@ -126,6 +126,12 @@ class Instance < Sequel::Model
   many_to_one :hv_agent
 
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
+
+#  set_dataset filter(
+#                     ({~:status => Instance::STATUS_TYPE_OFFLINE})
+  #                     | ({:status => Instance::STATUS_TYPE_OFFLINE} & (:status_updated_at > Time.now - 3600)))
+  
+  set_dataset filter({~:status => Instance::STATUS_TYPE_OFFLINE} | ({:status => Instance::STATUS_TYPE_OFFLINE} & (:status_updated_at > Time.now - 3600)))
   
   def physical_host
     if self.hv_agent

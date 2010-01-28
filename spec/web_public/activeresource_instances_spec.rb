@@ -345,8 +345,23 @@ describe "instance access by active resource" do
                                     :need_memory=>500,
                                     :hv_agent=>HvAgent[1],
                                     :ip=>'192.168.2.100')
+    
+    old_instance = Instance.create(:status=>0, # offline
+                                   :account=>Account[1],
+                                   :user=>User[1],
+                                   :image_storage=>ImageStorage[1],
+                                   :need_cpus=>1,
+                                   :need_cpu_mhz=>0.1,
+                                   :need_memory=>100,
+                                   :hv_agent=>HvAgent[1],
+                                   :ip=>'192.168.2.100')
+    old_instance.status = Instance::STATUS_TYPE_OFFLINE
+    old_instance.status_updated_at = Time.now - 86400
+    old_instance.save
+
     list = @c.find(:all)
-    list.index { |ins| ins.id == real_instance.uuid }.should be_true
+    list.index {|ins| ins.id == real_instance.uuid }.should be_true
+    list.index {|ins| ins.id == old_instance.uuid }.should_not be_true
   end
   
   it "should snapshot image, and backup image to image storage" do
