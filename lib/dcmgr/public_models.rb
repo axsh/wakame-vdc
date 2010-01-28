@@ -430,9 +430,26 @@ module Dcmgr
     public_action :post do
       req_hash = json_request
       req_hash.delete 'id'
-      
-      req_hash['image_storage'] = ImageStorage[req_hash['image_storage']]
-      instance = _create(req_hash)
+      instance = nil
+
+      Dcmgr.db.transaction do
+        req_hash['image_storage'] = ImageStorage[req_hash['image_storage']]
+        instance = _create(req_hash)
+        
+        Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
+          begin
+            res = http.run_instance(instance.hv_agent.ip,
+                                    instance.uuid,
+                                    instance.need_cpus, instance.need_cpu_mhz,
+                                    instance.need_memory)
+          rescue => e
+            raise e
+          end
+          raise "can't controll hvc server" unless res.code == "200"
+        }
+        instance.status = Instance::STATUS_TYPE_RUNNING
+        instance.save
+      end
       format_object(instance)
     end
     
@@ -454,25 +471,6 @@ module Dcmgr
 
     public_action_withid :put, :terminate do
       [] # TODO: terminate action
-    end
-
-    public_action_withid :put, :run do
-      instance = Instance[uuid]
-
-      Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
-        begin
-          res = http.run_instance(instance.hv_agent.ip,
-                                  instance.uuid,
-                                  instance.need_cpus, instance.need_cpu_mhz,
-                                  instance.need_memory)
-        rescue => e
-          raise e
-        end
-        raise "can't controll hvc server" unless res.code == "200"
-      }
-      instance.status = Instance::STATUS_TYPE_RUNNING
-      instance.save
-      []
     end
 
     public_action_withid :put, :shutdown do

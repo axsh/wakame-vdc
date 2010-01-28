@@ -11,6 +11,8 @@ module Dcmgr
       load
     end
 
+    attr_reader :db
+
     def table_exists?(table_name)
       @db.table_exists? table_name
     end

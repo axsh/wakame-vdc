@@ -41,6 +41,10 @@ module Dcmgr
   def scheduler=(scheduler_module)
     @scheduler = scheduler_module.new
   end
+
+  def db
+    Dcmgr::Schema.db
+  end
   
   def new(config_file, mode=:public)
     config_file ||= 'dcmgr.conf'
