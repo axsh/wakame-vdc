@@ -8,6 +8,19 @@ require 'dcmgr'
 
 require "#{File.dirname(__FILE__)}/specformat_detail" unless defined? SPECFORMAT
 
+Dcmgr.assign_ips = {
+  '00:16:3E:49:23:C9' => '192.168.11.201',
+  '00:16:3E:49:23:CA' => '192.168.11.202',
+  '00:16:3E:49:23:CB' => '192.168.11.203',
+  '00:16:3E:49:23:CC' => '192.168.11.204',
+  '00:16:3E:49:23:CD' => '192.168.11.205',
+  '00:16:3E:49:23:CE' => '192.168.11.206',
+  '00:16:3E:49:23:CF' => '192.168.11.207',
+  '00:16:3E:49:23:D0' => '192.168.11.208',
+  '00:16:3E:49:23:D1' => '192.168.11.209',
+  '00:16:3E:49:23:D2' => '192.168.11.210',
+}
+
 module ActiveResourceHelperMethods
   extend self
   
@@ -54,3 +67,4 @@ end
 Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
 ActiveResourceHelperMethods.reset_db
 ActiveResourceHelperMethods.runserver
+

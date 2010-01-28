@@ -72,6 +72,7 @@ describe "instance access by active resource" do
     
     instance.status.should == Instance::STATUS_TYPE_RUNNING
     instance.account.should == Account[1].uuid
+    instance.ip.should match(/^192\.168\.11\.2/)
 
     real_inst = Instance[instance.id]
     real_inst.hv_agent.physical_host_id.should > 0
@@ -120,6 +121,11 @@ describe "instance access by active resource" do
                              :need_memory=>400,
                              :image_storage=>ImageStorage.first.uuid)
     HvAgent[instance.hv_agent].physical_host == PhysicalHost[2].uuid
+
+    # check ips
+    Instance.each{|instance|
+      Instance.filter(:ip => instance.ip).count.should == 1 # only 1 ip
+    }
   end
 
   it "should schedule instances by schedule algorithm 1" do
@@ -147,8 +153,6 @@ describe "instance access by active resource" do
                                             :ip=>'192.168.1.10')
       end
 
-      p "hoge"
-      p hv_controller
       hv_agent = HvAgent.create(:hv_controller=>hv_controller,
                                 :physical_host=>host,
                                 :ip=>"192.168.1.#{i + 120}")
