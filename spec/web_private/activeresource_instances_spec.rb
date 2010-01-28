@@ -25,14 +25,17 @@ describe "instance access by active resouce(private mode)" do
   it "should change instance status" do
     real_instance = Instance[1]
     real_instance.status = Instance::STATUS_TYPE_RUNNING
+    real_instance.status_updated_at = status_updated_at = Time.now - 3600
     real_instance.save
     
     instance = @c.find(Instance[1].uuid)
     instance.status = Instance::STATUS_TYPE_ONLINE
     instance.save
-
-    Instance[1].status.should == Instance::STATUS_TYPE_ONLINE
-    @c.find(Instance[1].uuid)
+    
+    real_instance.reload
+    real_instance.status.should == Instance::STATUS_TYPE_ONLINE
+    real_instance.status_updated_at.should_not == status_updated_at
+    real_instance.status_updated_at.should be_close(Time.now, 2)
   end
   
   it "should change instance ip address" do

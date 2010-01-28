@@ -516,7 +516,20 @@ module Dcmgr
     end
     
     public_action_withid :put do
-      update
+      obj = model[uuid]
+      req_hash = json_request
+      req_hash.delete "id"
+      
+      allow_keys.each{|key|
+        if key == :status
+          obj.status = req_hash[key.to_s]
+          obj.status_updated_at = Time.now
+            
+        else req_hash.key?(key.to_s)
+          obj.send('%s=' % key, req_hash[key.to_s])
+        end
+      }
+      format_object(obj.save)
     end
   end
 
