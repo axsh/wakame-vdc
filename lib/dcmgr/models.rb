@@ -137,6 +137,10 @@ class Instance < Sequel::Model
     end
   end
 
+  def mac_address
+    Dcmgr::IP_MANAGER.macaddress_by_ip(self.ip)
+  end
+
   def status_sym
     STATUS_TYPES[self.status]
   end

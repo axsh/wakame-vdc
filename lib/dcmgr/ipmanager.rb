@@ -15,6 +15,14 @@ module Dcmgr
       @ip_map = ip_map
     end
 
+    def macaddress_by_ip(ip)
+      matched = @ip_map.find{|mac_adr, ip_adr|
+        ip_adr == ip
+      }
+      return nil unless matched
+      matched[0]
+    end
+
     def set_assigned?(&block)
       @check_assigned = block
     end

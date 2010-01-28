@@ -30,4 +30,9 @@ describe Dcmgr::IP_MANAGER do
       p @ipm.assign_ip
     }.should raise_error(Dcmgr::IP_MANAGER::NoAssignIPError)
   end
+
+  it "should get mac address" do
+    @ipm.macaddress_by_ip('192.168.1.1').should == '00:50:56:c0:00:01'
+    @ipm.macaddress_by_ip('192.168.1.2').should == '00:50:56:c0:00:02'
+  end
 end

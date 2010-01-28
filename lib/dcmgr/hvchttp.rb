@@ -4,10 +4,10 @@ require 'net/http'
 
 module Dcmgr
   module HvcAccess
-    def run_instance(hva_ip, instance_uuid, instance_ip,
+    def run_instance(hva_ip, instance_uuid, instance_ip, instance_mac,
                      cpus, cpu_mhz, memory, *opts)
       _get("/?action=run_instance&hva_ip=#{hva_ip}&" \
-           + "instance_uuid=#{instance_uuid}&instance_ip=#{instance_ip}&cpus=1&cpu_mhz=1.0&memory=2.0",
+           + "instance_uuid=#{instance_uuid}&instance_ip=#{instance_ip}&instance_mac=#{instance_mac}&cpus=1&cpu_mhz=1.0&memory=2.0",
            opts)
     end
 
