@@ -103,6 +103,12 @@ DownPanel = function(cardPanel){
     if(activePanel != no){
       activePanel = no;
       cardPanel.layout.setActiveItem(activePanel);
+      if(activePanel == 0){
+        cardPanel.refreshInstance();
+      }
+      else if(activePanel == 1){
+        cardPanel.refreshImage();
+      }
     }
   }
 
@@ -263,6 +269,14 @@ CardPanel = function(){
 
   this.setUpPanel = function(obj){
     imagePanel.setUpPanel(obj)
+  }
+
+  this.refreshInstance = function(){
+    instancePanel.refresh();
+  }
+
+  this.refreshImage = function(){
+    imagePanel.refresh();
   }
 
   CardPanel.superclass.constructor.call(this, {
