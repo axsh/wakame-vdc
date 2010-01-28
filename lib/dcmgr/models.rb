@@ -150,7 +150,9 @@ class Instance < Sequel::Model
       physical_host = PhysicalHost.assign(self)
       self.hv_agent = physical_host.hv_agents[0]
     end
-    # Dcmgr::logger.debug "becore create: physical host = %s" % self.physical_host
+    
+    mac, self.ip = Dcmgr::IP_MANAGER.assign_ip
+    Dcmgr::logger.debug "assigned ip: mac: #{mac}, ip: #{self.ip}"
   end
 
   def validate

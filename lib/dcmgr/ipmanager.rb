@@ -3,6 +3,10 @@
 module Dcmgr
   module IP_MANAGER
     class NoAssignIPError < StandardError; end
+
+    @check_assigned = lambda{|mac, ip|
+      Instance.filter(:ip => ip).count <= 0
+    }
     
     extend self
     def setup(ip_map)
