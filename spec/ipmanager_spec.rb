@@ -16,6 +16,7 @@ describe Dcmgr::IP_MANAGER do
     end
     
     @ipm.assign_ip.should == ['00:50:56:c0:00:01', '192.168.1.1']
+    @ipm.set_default_assigned?
   end
   
   it "should raise error, when no ip" do
@@ -25,10 +26,11 @@ describe Dcmgr::IP_MANAGER do
       assign_count <= 1
     end
     
-    p @ipm.assign_ip
     lambda {
-      p @ipm.assign_ip
+      @ipm.assign_ip
     }.should raise_error(Dcmgr::IP_MANAGER::NoAssignIPError)
+    
+    @ipm.set_default_assigned?
   end
 
   it "should get mac address" do

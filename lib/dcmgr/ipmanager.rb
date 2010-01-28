@@ -4,7 +4,7 @@ module Dcmgr
   module IP_MANAGER
     class NoAssignIPError < StandardError; end
 
-    @check_assigned = lambda{|mac, ip|
+    @check_assigned = @default_check_assigned = lambda{|mac, ip|
       Instance.filter(:ip => ip).count <= 0
     }
     
@@ -25,6 +25,10 @@ module Dcmgr
 
     def set_assigned?(&block)
       @check_assigned = block
+    end
+
+    def set_default_assigned?
+      @check_assigned = @default_check_assigned
     end
     
     # return [mac_address, ip_address]
