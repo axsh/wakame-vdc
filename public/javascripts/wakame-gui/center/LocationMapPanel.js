@@ -52,56 +52,63 @@ MAPPropertyPanel = function(){
 Ext.extend(MAPPropertyPanel, Ext.Panel);
 
 AddMapWindow = function(){
-    var form = new Ext.form.FormPanel({
-      width: 400,
-      frame:true,
-      bodyStyle:'padding:5px 5px 0',
-      fileUpload: true,
-      items: [{
-        fieldLabel: 'Map-Name',
-        xtype: 'textfield',
-        name: 'account-id',
-        anchor: '100%'
-      }, {
-        fieldLabel: 'Map-File',
-        xtype: 'textfield',
-        inputType: 'file',
-        width: 200,
-        name: 'map-file',
-        anchor: '100%'
-/*     }, {
-        xtype: 'fileuploadfield',
-        id: 'map-file',
-        emptyText: 'Select an image file',
-        fieldLabel: 'Map-File',
-        name: 'map-file',
-        buttonText: 'file'
-*/
-      }, {
-        fieldLabel: 'Memo',
-        xtype: 'textarea',
-        name: 'form_textfield',
-        anchor: '100%'
-      }]
-    });
-
-    AddMapWindow.superclass.constructor.call(this, {
-      iconCls: 'icon-panel',
-      height: 220,
-      width: 400,
-	  layout:'fit',
-      title: 'Add Map',
-	  items: [form],
-	  buttons: [{
-		text:'OK',
-	  },{
-		text: 'Close',
-		handler: function(){
-			this.close();
-		},
-		scope:this
-	  }]
-    });
+  var form = new Ext.form.FormPanel({
+    width: 400,
+    frame:true,
+    bodyStyle:'padding:5px 5px 0',
+    fileUpload: true,
+    items: [{
+      fieldLabel: 'Map-Name',
+      xtype: 'textfield',
+      name: 'account-id',
+      anchor: '100%'
+    }, {
+      fieldLabel: 'Map-File',
+      xtype: 'textfield',
+      inputType: 'file',
+      width: 200,
+      name: 'map-file',
+      anchor: '100%'
+    }, {
+      fieldLabel: 'Memo',
+      xtype: 'textarea',
+      name: 'form_textfield',
+      anchor: '100%'
+    }]
+  });
+  AddMapWindow.superclass.constructor.call(this, {
+    iconCls: 'icon-panel',
+    height: 220,
+    width: 400,
+	layout:'fit',
+    title: 'Add Map',
+	items: [form],
+	buttons: [{
+      text:'Save',
+      handler: function(){
+        form.getForm().submit({
+          url: '/map_upload',
+          waitMsg: 'Uploading...',
+          method: 'POST',
+          scope: this,
+          success: function(form, action) {
+            alert('Success !');
+	        this.close();
+          },
+          failure: function(form, action) {
+            alert('Upload file failure.');
+	        this.close();
+          }
+        });
+      },
+      scope:this
+    },{
+	  text: 'Close',
+	  handler: function(){
+        this.close();
+      },
+      scope:this
+    }]
+  });
 }
 Ext.extend(AddMapWindow, Ext.Window);
-
