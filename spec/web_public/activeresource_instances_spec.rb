@@ -75,6 +75,8 @@ describe "instance access by active resource" do
 
     real_inst = Instance[instance.id]
     real_inst.hv_agent.physical_host_id.should > 0
+    real_inst.status.should == Instance::STATUS_TYPE_RUNNING
+    real_inst.status_updated_at.should be_close(Time.now, 2)
   end
 
   it "should schedule instances by schedule algorithm 2" do

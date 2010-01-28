@@ -138,11 +138,11 @@ class Instance < Sequel::Model
   def status_sym
     STATUS_TYPES[self.status]
   end
-  
 
   def before_create
     super
     self.status = STATUS_TYPE_OFFLINE
+    self.status_updated_at = Time.now
     Dcmgr::logger.debug "becore create: status = %s" % self.status
     unless self.hv_agent
       physical_host = PhysicalHost.assign(self)

@@ -88,6 +88,7 @@ module Dcmgr
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid
         Fixnum :status, :null=>false # 0: offline, 1: running, 2: online, 3: terminating
+        DateTime :status_updated_at, :null=>false
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :null=>false
         Fixnum :image_storage_id, :null=>false
