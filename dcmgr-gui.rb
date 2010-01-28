@@ -185,7 +185,18 @@ get '/instance-list' do
     rows.store('wd',index.image_storage)
     rows.store('st',@@inStatus[index.status.to_s])
     rows.store('ip',index.ip)
-    rows.store('tp','small')
+    type = "other"
+    @@instanceType.each do |key,value|
+      if value[0]==index.need_cpus.to_i
+        if value[1]==index.need_cpu_mhz.to_i
+          if value[2]==index.need_memory.to_i
+            type = key
+            break
+          end
+        end
+      end
+    end
+    rows.store('tp',type)
     rtn['rows'].push(rows)
   }
   debug_log rtn
@@ -221,17 +232,16 @@ post '/instance-create' do
   id = params[:id]
   wd = params[:wd]
   tp = params[:tp]
-  cups=1
-  cpu_mhz=0.5
-  memory=1
+  cups=@@instanceType[tp][0]
+  cpu_mhz=@@instanceType[tp][1]
+  memory=@@instanceType[tp][2]
   instance = Instance.create(
-                   :account=>id,
-                   :wid=>wd,
-                   :need_cpus=>cups,
-                   :need_cpu_mhz=>cpu_mhz,
-                   :need_memory=>memory,
-				   :image_storage=>wd)
-  instance.put(:run)
+               :account=>id,
+               :wid=>wd,
+               :need_cpus=>cups,
+               :need_cpu_mhz=>cpu_mhz,
+               :need_memory=>memory,
+	           :image_storage=>wd)
   rtn = {"success" => true}
   debug_log rtn
   content_type :json
@@ -328,3 +338,15 @@ get '/physicalhost-list' do
   rtn.to_json
 end
 
+post '/map_upload' do
+  rtn = {"success" => false}
+#  if params[:file]
+#    new_filename = DateTime.now.strftime('%s') + File.extname(params[:file][:filename])
+#    save_file = './public/images/map/' + new_filename
+#    File.open(save_file, 'wb'){ |f| f.write(params[:file][:tempfile].read) }
+#    rtn['success'] = true
+#  end
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
