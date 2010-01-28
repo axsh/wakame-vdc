@@ -7,6 +7,7 @@ require 'dcmgr/schema'
 require 'dcmgr/hvchttp'
 require 'dcmgr/hvchttp/mock'
 require 'dcmgr/scheduler'
+require 'dcmgr/ipmanager'
 
 module Dcmgr
   extend self
