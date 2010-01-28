@@ -440,6 +440,7 @@ module Dcmgr
           begin
             res = http.run_instance(instance.hv_agent.ip,
                                     instance.uuid,
+                                    instance.ip,
                                     instance.need_cpus, instance.need_cpu_mhz,
                                     instance.need_memory)
           rescue => e
