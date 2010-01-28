@@ -326,8 +326,8 @@ describe "instance access by active resource" do
                                     :user=>User[1],
                                     :image_storage=>ImageStorage[1],
                                     :need_cpus=>1,
-                                    :need_cpu_mhz=>0.5,
-                                    :need_memory=>500,
+                                    :need_cpu_mhz=>0.1,
+                                    :need_memory=>100,
                                     :hv_agent=>HvAgent[1],
                                     :ip=>'192.168.2.100')
     instance = @c.find(real_instance.uuid)
@@ -336,18 +336,29 @@ describe "instance access by active resource" do
   end
   
   it "should get describe" do
-    real_instance = Instance.create(:status=>0, # offline
-                                    :account=>Account[1],
-                                    :user=>User[1],
-                                    :image_storage=>ImageStorage[1],
-                                    :need_cpus=>1,
-                                    :need_cpu_mhz=>0.5,
-                                    :need_memory=>500,
-                                    :hv_agent=>HvAgent[1],
-                                    :ip=>'192.168.2.100')
+    run_instance = Instance.create(:account=>Account[1],
+                                   :user=>User[1],
+                                   :image_storage=>ImageStorage[1],
+                                   :need_cpus=>1,
+                                   :need_cpu_mhz=>0.1,
+                                   :need_memory=>100,
+                                   :hv_agent=>HvAgent[1],
+                                   :ip=>'192.168.2.100')
+    run_instance.status = Instance::STATUS_TYPE_RUNNING
+    run_instance.save
     
-    old_instance = Instance.create(:status=>0, # offline
-                                   :account=>Account[1],
+    offline_instance = Instance.create(:account=>Account[1],
+                                       :user=>User[1],
+                                       :image_storage=>ImageStorage[1],
+                                       :need_cpus=>1,
+                                       :need_cpu_mhz=>0.1,
+                                       :need_memory=>100,
+                                       :hv_agent=>HvAgent[1],
+                                       :ip=>'192.168.2.100')
+    offline_instance.status = Instance::STATUS_TYPE_OFFLINE
+    offline_instance.save
+    
+    old_instance = Instance.create(:account=>Account[1],
                                    :user=>User[1],
                                    :image_storage=>ImageStorage[1],
                                    :need_cpus=>1,
@@ -360,8 +371,9 @@ describe "instance access by active resource" do
     old_instance.save
 
     list = @c.find(:all)
-    list.index {|ins| ins.id == real_instance.uuid }.should be_true
-    list.index {|ins| ins.id == old_instance.uuid }.should_not be_true
+    list.index {|i| i.id == run_instance.uuid }.should be_true
+    list.index {|i| i.id == offline_instance.uuid }.should be_true
+    list.index {|i| i.id == old_instance.uuid }.should_not be_true
   end
   
   it "should snapshot image, and backup image to image storage" do
