@@ -251,8 +251,7 @@ module Dcmgr
             if k == :account
               obj.account = Account[req_hash[k]]
             else
-              Dcmgr.logger.debug("%s, %s, %s, %s" %
-                                 [k, k.class, req_hash[k], req_hash[k].class])
+              Dcmgr.logger.debug("set: #{k} = #{req_hash[k]}")
               obj.send('%s=' % k, req_hash[k])
             end
           end
@@ -346,7 +345,7 @@ module Dcmgr
 
     public_action_withid :put, :add_tag do
       target = User[uuid]
-      tag_uuid = request[:tag]
+      tag_uuid = request[:_get_tag]
       tag = Tag[tag_uuid]
 
       Dcmgr.logger.debug(tag.id)
@@ -661,7 +660,7 @@ module Dcmgr
     
     public_action_withid :put, :remove_tag do
       target = PhysicalHost[uuid]
-      tag_uuid = request[:tag]
+      tag_uuid = request[:_get_tag]
       tag = Tag[tag_uuid]
       target.remove_tag(tag) if tag
       []
