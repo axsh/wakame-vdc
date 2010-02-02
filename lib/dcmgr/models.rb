@@ -361,6 +361,6 @@ class Log < Sequel::Model
     errors.add(:account, "can't empty") unless (self.account or self.account_id)
     errors.add(:tareget_uuid, "can't empty") unless self.target_uuid
     errors.add(:action, "can't empty") unless self.action
-    errors.add(:user, "can't empty") unless self.user
+    errors.add(:user, "can't empty") unless (self.user or self.user_id)
   end
 end

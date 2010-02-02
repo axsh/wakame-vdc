@@ -52,11 +52,23 @@ module Dcmgr
       end
 
       def json_request(request)
-        return {} unless request.content_length.to_i > 0
-        body = request.body.read
-        parsed = JSON.parse(body)
-        Dcmgr.logger.debug("request: " + parsed.inspect)
-        parsed
+        ret = Hash.new
+        
+        request.GET.each{|k,v|
+          ret[:"_get_#{k}"] = v
+        }
+        
+        if request.content_length.to_i > 0
+          body = request.body.read
+          parsed = JSON.parse(body)
+          Dcmgr.logger.debug("request: " + parsed.inspect)
+        
+          parsed.each{|k,v|
+            ret[k.to_sym] = v
+          }
+        end
+        Dcmgr.logger.debug("request: " + ret.inspect)
+        ret        
       end
 
       def route(public_class, method, block)
@@ -65,19 +77,19 @@ module Dcmgr
           logger.debug "URL: #{method} #{request.url} #{args}"
 
           protected!
-
-          parsed_request = public_class.json_request(request)
-
-          # log
-          Log.create(:user=>authorized_user,
-                     :account_id=>parsed_request[:account].to_i,
-                     :target_uuid=>authorized_user.uuid,
-                     :action=>'login')
-          
-          obj = public_class.new(authorized_user, parsed_request)
-          obj.uuid = args[0] if args.length > 0
           
           begin
+            parsed_request = public_class.json_request(request)
+
+            # log
+            Log.create(:user_id=>(if authorized_user then authorized_user.id else 0 end),
+                       :account_id=>parsed_request[:account].to_i,
+                       :target_uuid=>(if authorized_user.respond_to? :uuid then authorized_user.uuid else "" end),
+                       :action=>'login')
+            
+            obj = public_class.new(authorized_user, parsed_request)
+            obj.uuid = args[0] if args.length > 0
+            
             ret = obj.instance_eval(&block)
           rescue StandardError => e
             logger.info "err! %s" % e.to_s
@@ -196,20 +208,21 @@ module Dcmgr
     def find
       find_params = []
       allow_keys.each{|key|
-        if request[key]
+        get_key = :"_get_#{key}"
+        if request[get_key]
           if model.db_schema[key][:type] == :boolean
-            find_params << {key => request[key] == 'true'}
+            find_params << {key => request[get_key] == 'true'}
           elsif model.db_schema[key][:type] == :datetime
-            find_params << (key >= Time.parse(request[key][0]))
-            find_params << (key <= Time.parse(request[key][1]))
+            find_params << (key >= Time.parse(request[get_key][0]))
+            find_params << (key <= Time.parse(request[get_key][1]))
           else
-            find_params << query_str_like(key, request[key])
+            find_params << query_str_like(key, request[get_key])
           end
         end
       }
-      if request[:id]
+      if request[:_get_id]
         begin
-          find_params << {:uuid => Account.trim_uuid(request[:id])}
+          find_params << {:uuid => Account.trim_uuid(request[:_get_id])}
         rescue Dcmgr::Model::InvalidUUIDException
           return []
         end
@@ -234,13 +247,13 @@ module Dcmgr
         allow_keys.each{|k|
           if k == :user
             obj.user = user
-          elsif not req_hash[k.to_s].nil? # through false
+          elsif not req_hash[k].nil? # through false
             if k == :account
-              obj.account = Account[req_hash[k.to_s]]
+              obj.account = Account[req_hash[k]]
             else
               Dcmgr.logger.debug("%s, %s, %s, %s" %
-                                 [k, k.class, req_hash[k.to_s], req_hash[k.to_s].class])
-              obj.send('%s=' % k, req_hash[k.to_s])
+                                 [k, k.class, req_hash[k], req_hash[k].class])
+              obj.send('%s=' % k, req_hash[k])
             end
           end
         }
@@ -261,11 +274,11 @@ module Dcmgr
       req_hash.delete "id"
       allow_keys.each{|key|
         if key == :account # duplicate create
-          obj.account = Account[req_hash[key.to_s]]
+          obj.account = Account[req_hash[key]]
         elsif key == :user
             
-        else req_hash.key?(key.to_s)
-          obj.send('%s=' % key, req_hash[key.to_s])
+        else req_hash.key?(key)
+          obj.send('%s=' % key, req_hash[key])
         end
       }
       format_object(obj.save)
@@ -301,7 +314,6 @@ module Dcmgr
     
     public_action :post do
       account = create
-      # create account role
       AccountRole.create(:account=>account,:user=>user)
       account
     end
@@ -334,7 +346,7 @@ module Dcmgr
 
     public_action_withid :put, :add_tag do
       target = User[uuid]
-      tag_uuid = request.GET['tag']
+      tag_uuid = request[:tag]
       tag = Tag[tag_uuid]
 
       Dcmgr.logger.debug(tag.id)
@@ -416,7 +428,7 @@ module Dcmgr
     
     public_action_withid :put, :add_tag do
       target = Instance[uuid]
-      tag_uuid = request.GET['tag']
+      tag_uuid = request[:tag]
       tag = Tag[tag_uuid]
       Dcmgr.logger.debug("")
       Dcmgr.logger.debug(uuid)
@@ -431,7 +443,7 @@ module Dcmgr
     
     public_action_withid :put, :remove_tag do
       target = Instance[uuid]
-      tag_uuid = request.GET['tag']
+      tag_uuid = request[:tag]
       tag = Tag[tag_uuid]
       target.remove_tag(tag.id) if tag
     end
@@ -544,11 +556,11 @@ module Dcmgr
       
       allow_keys.each{|key|
         if key == :status
-          obj.status = req_hash[key.to_s]
+          obj.status = req_hash[key]
           obj.status_updated_at = Time.now
             
-        else req_hash.key?(key.to_s)
-          obj.send('%s=' % key, req_hash[key.to_s])
+        else req_hash.key?(key)
+          obj.send('%s=' % key, req_hash[key])
         end
       }
       format_object(obj.save)
@@ -639,7 +651,7 @@ module Dcmgr
     end
 
     public_action_withid :put, :relate do
-      user_uuid = request.GET['user']
+      user_uuid = request[:user]
       relate_user = User[user_uuid]
       target = PhysicalHost[uuid]
       target.relate_user_id = relate_user.id
@@ -649,7 +661,7 @@ module Dcmgr
     
     public_action_withid :put, :remove_tag do
       target = PhysicalHost[uuid]
-      tag_uuid = request.GET['tag']
+      tag_uuid = request[:tag]
       tag = Tag[tag_uuid]
       target.remove_tag(tag) if tag
       []
