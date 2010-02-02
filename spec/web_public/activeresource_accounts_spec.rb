@@ -135,6 +135,7 @@ describe "accounts by active resource" do
   
   it "should delete" do
     account = @class.create(:name=>'test account')
+    id = account.id
     account.destroy
     Account[id].should be_nil
   end
