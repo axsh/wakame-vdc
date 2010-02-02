@@ -186,9 +186,9 @@ describe "instance access by active resource" do
     hosts[6].create_location_tag('1F._', Account[1])
     hosts[7].create_location_tag('2F._', Account[1])
 
-    PhysicalHost.order(:id).each{|ph|
-      print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
-    }
+    #PhysicalHost.order(:id).each{|ph|
+    #  print "#{ph.uuid} / agents: #{ph.hv_agents} / instances: #{ph.hv_agents.map{|a| a.instances}.flatten.join(", ")}#\n"
+    #}
     
     instance = @c.create(:account=>Account[1].uuid,
                          :need_cpus=>1,

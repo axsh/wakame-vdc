@@ -5,7 +5,6 @@ module Dcmgr
     class NoAssignIPError < StandardError; end
 
     @check_assigned = @default_check_assigned = lambda{|mac, ip|
-      p "check instance"
       Instance.filter(:ip => ip).count <= 0
     }
     

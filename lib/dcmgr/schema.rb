@@ -139,7 +139,7 @@ module Dcmgr
 
       @db.create_table? :logs do
         primary_key :id, :type=>Integer
-        String :target, :fixed=>true, :size=>32, :null=>false
+        String :target_uuid, :fixed=>true, :size=>32, :null=>false
         String :action, :fixed=>true, :size=>32, :null=>false
         Fixnum :account_id, :null=>false
         Fixnum :user_id, :null=>false

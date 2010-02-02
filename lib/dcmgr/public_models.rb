@@ -50,14 +50,31 @@ module Dcmgr
         return (@public_name or @model.table_name.to_s) unless name
         @public_name = name
       end
-      
+
+      def json_request(request)
+        return {} unless request.content_length.to_i > 0
+        body = request.body.read
+        parsed = JSON.parse(body)
+        Dcmgr.logger.debug("request: " + parsed.inspect)
+        parsed
+      end
+
       def route(public_class, method, block)
         # Dcmgr::logger.debug "ROUTE: %s, %s, %s" % [self, public_class, block]
         proc do |*args|
           logger.debug "URL: #{method} #{request.url} #{args}"
 
           protected!
-          obj = public_class.new(authorized_user, request)
+
+          parsed_request = public_class.json_request(request)
+
+          # log
+          Log.create(:user=>authorized_user,
+                     :account_id=>parsed_request[:account].to_i,
+                     :target_uuid=>authorized_user.uuid,
+                     :action=>'login')
+          
+          obj = public_class.new(authorized_user, parsed_request)
           obj.uuid = args[0] if args.length > 0
           
           begin
@@ -210,7 +227,7 @@ module Dcmgr
     end
 
     def _create(req_hash=nil)
-      req_hash = json_request unless req_hash
+      req_hash = request unless req_hash
       obj = model.new
 
       if allow_keys
@@ -240,7 +257,7 @@ module Dcmgr
 
     def update
       obj = model[uuid]
-      req_hash = json_request
+      req_hash = request
       req_hash.delete "id"
       allow_keys.each{|key|
         if key == :account # duplicate create
@@ -259,14 +276,6 @@ module Dcmgr
       obj.destroy
     end
 
-    def json_request
-      raise "no data" unless request.content_length.to_i > 0
-      body = request.body.read
-      parsed = JSON.parse(body)
-      Dcmgr.logger.debug("request: " + parsed.inspect)
-      parsed
-    end
-    
     def initialize(user, request)
       @user = user
       @request = request
@@ -362,7 +371,7 @@ module Dcmgr
     allow_keys [:account, :name, :tag_type, :role]
 
     public_action :post do
-      req_hash = json_request
+      req_hash = request
       req_hash.delete 'id'
       tags = req_hash.delete 'tags'
 
@@ -428,7 +437,7 @@ module Dcmgr
     end
     
     public_action :post do
-      req_hash = json_request
+      req_hash = request
       req_hash.delete 'id'
       instance = nil
 
@@ -518,7 +527,7 @@ module Dcmgr
     
     public_action_withid :put do
       obj = model[uuid]
-      req_hash = json_request
+      req_hash = request
       req_hash.delete "id"
       
       allow_keys.each{|key|
@@ -557,7 +566,7 @@ module Dcmgr
     end
 
     public_action :post do
-      req_hash = json_request
+      req_hash = request
       req_hash.delete 'id'
       
       req_hash['image_storage_host'] = ImageStorageHost[req_hash.delete('image_storage_host')]
