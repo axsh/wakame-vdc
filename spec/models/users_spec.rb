@@ -16,11 +16,10 @@ describe User do
   end
     
   it "should be get only enable users" do
-    pending
     User.all.index{|u| u.id == @user_a.id}.should be_true
     User.all.index{|u| u.id == @user_b.id}.should be_true
     
-    User.enable_users.index{|u| u.id == @user_a.id}.should be_true
-    User.enable_users.index{|u| u.id == @user_b.id}.should_not be_false
+    User.enable_users.all.index{|u| u.id == @user_a.id}.should be_true
+    User.enable_users.all.index{|u| u.id == @user_b.id}.should be_false
   end
 end

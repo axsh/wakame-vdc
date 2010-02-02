@@ -95,6 +95,10 @@ class User < Sequel::Model
     super
     self.default_password = self.password
   end
+
+  def self.enable_users
+    filter(:enable=>true)
+  end
 end
 
 
