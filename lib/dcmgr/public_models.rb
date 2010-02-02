@@ -459,6 +459,12 @@ module Dcmgr
           raise "can't controll hvc server" unless res.code == "200"
         }
         instance.status = Instance::STATUS_TYPE_RUNNING
+        
+        Log.create(:user=>user,
+                   :account_id=>request[:account].to_i,
+                   :target_uuid=>instance.uuid,
+                   :action=>'run')
+        
         instance.save
       end
       format_object(instance)
@@ -498,6 +504,12 @@ module Dcmgr
       }
       instance.status = Instance::STATUS_TYPE_TERMINATING
       instance.save
+      
+      Log.create(:user=>user,
+                 :account_id=>request[:account].to_i,
+                 :target_uuid=>instance.uuid,
+                 :action=>'shutdown')
+      
       []
       
       # TODO check shutdown role
