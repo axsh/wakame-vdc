@@ -271,7 +271,7 @@ module Dcmgr
     def update
       obj = model[uuid]
       req_hash = request
-      req_hash.delete "id"
+      req_hash.delete :id
       allow_keys.each{|key|
         if key == :account # duplicate create
           obj.account = Account[req_hash[key]]
@@ -384,10 +384,10 @@ module Dcmgr
 
     public_action :post do
       req_hash = request
-      req_hash.delete 'id'
-      tags = req_hash.delete 'tags'
+      req_hash.delete :id
+      tags = req_hash.delete :tags
 
-      req_hash['tag_type'] = Tag::TYPE_AUTH
+      req_hash[:tag_type] = Tag::TYPE_AUTH
       obj = _create(req_hash)
       
       # tag mappings
@@ -450,11 +450,11 @@ module Dcmgr
     
     public_action :post do
       req_hash = request
-      req_hash.delete 'id'
+      req_hash.delete :id
       instance = nil
 
       Dcmgr.db.transaction do
-        req_hash['image_storage'] = ImageStorage[req_hash['image_storage']]
+        req_hash[:image_storage] = ImageStorage[req_hash[:image_storage]]
         instance = _create(req_hash)
         
         Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
@@ -552,7 +552,7 @@ module Dcmgr
     public_action_withid :put do
       obj = model[uuid]
       req_hash = request
-      req_hash.delete "id"
+      req_hash.delete :id
       
       allow_keys.each{|key|
         if key == :status
@@ -591,9 +591,9 @@ module Dcmgr
 
     public_action :post do
       req_hash = request
-      req_hash.delete 'id'
+      req_hash.delete :id
       
-      req_hash['image_storage_host'] = ImageStorageHost[req_hash.delete('image_storage_host')]
+      req_hash[:image_storage_host] = ImageStorageHost[req_hash.delete(:image_storage_host)]
 
       image_storage = _create(req_hash)
       format_object(image_storage)
