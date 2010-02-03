@@ -52,9 +52,37 @@ describe Dcmgr::RoleExecutor do
     role.execute(User[1]).should be_true
   end    
   
-  it "should evaluate put image storage"
-  it "should evaluate get image storage"
-  it "should evaluate delete image storage"
+  it "should evaluate put image storage" do
+    image_storage = ImageStorage.new
+    role = Dcmgr::RoleExecutor[image_storage, :create]
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::CreateImageStorage
+    role.evaluate(User[1]).should be_true
+
+    image_storage.should_receive(:save)
+    role.execute(User[1]).should be_true
+  end
+  
+  it "should evaluate get image storage" do
+    pending
+    role = Dcmgr::RoleExecutor[ImageStorage, :get]
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::GetImageStorage
+    role.evaluate(User[1], :id=>1).should be_true
+
+    role.execute(User[1]).should == ImageStorage[1]
+  end    
+
+  it "should evaluate delete image storage" do
+    image_storage = ImageStorage.create
+    role = Dcmgr::RoleExecutor[image_storage, :destroy]
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::DestroyImageStorage
+    role.evaluate(User[1]).should be_true
+
+    image_storage.should_receive(:destroy)
+    role.execute(User[1]).should be_true
+  end    
   
   it "should evaluate add image storage host"
   it "should evaluate delete image storage host"
