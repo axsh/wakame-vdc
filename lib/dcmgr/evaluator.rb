@@ -63,10 +63,30 @@ module Dcmgr
       end
     end
 
+    class CreateImageStorage < Base
+      @id = 5
+
+      private
+      def _execute(user, image_storage)
+        image_storage.save
+      end
+    end
+
+    class DestroyImageStorage < Base
+      @id = 6
+
+      private
+      def _execute(user, image_storage)
+        image_storage.destroy
+      end
+    end
+
     @roles = [RunInstance,
               ShutdownInstance,
               CreateAccount,
-              DestroyAccount]
+              DestroyAccount,
+              CreateImageStorage,
+              DestroyImageStorage]
 
     def self.[](target, action)
       rolename = "%s%s" % [action.to_s.capitalize, target.class]
