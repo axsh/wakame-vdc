@@ -31,7 +31,6 @@ describe Dcmgr::RoleExecutor do
   end
   
   it "should evaluate create account" do
-    pending
     account = Account.new
     role = Dcmgr::RoleExecutor[account, :create]
     role.should be_true
@@ -43,7 +42,6 @@ describe Dcmgr::RoleExecutor do
   end
   
   it "should evaluate delete account" do
-    pending
     account = Account.create
     role = Dcmgr::RoleExecutor[account, :destroy]
     role.should be_true
