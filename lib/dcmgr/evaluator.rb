@@ -4,30 +4,42 @@ module Dcmgr
     
   module RoleExecutor
     class Base
-      def initialize(target)
+      def initialize(target, params)
         @target = target
+        @params = params
       end
 
       def self.id; @id; end
 
-      def evaluate(evaluator)
-        Tag.filter(:owner_id=>evaluator.id, :role=>self.class.id).each{|tag|
-          return true if @target.tags.index{|t| tag.tags.include? t}
-          return true if @target.class.tags.index{|t| tag.name == t.name}
-        }
-        raise RoleError, "no role(user: #{evaluator.uuid}, target: #{@target.uuid})"
+      def class_type?
+        @target.class == Class
       end
 
-      def execute(evaluator)
-        _execute(evaluator, @target)
-        true
+      def evaluate(account, evaluator)
+        Tag.filter(:owner_id=>evaluator.id, :role=>self.class.id).each{|tag|
+          if class_type?
+            return true
+
+          else
+            return true if @target.tags.index{|t| tag.tags.include? t}
+            return true if @target.class.tags.index{|t| tag.name == t.name}
+          end
+        }
+        raise RoleError, "no role" +
+          "(user: #{evaluator.uuid}, target: #{@target})"
       end
+
+      def execute(account, evaluator)
+        _execute(account, evaluator, @target)
+      end
+
+      attr_reader :params
     end
     
     class RunInstance < Base
       @id = 1
       
-      def _execute(user, instance)
+      def _execute(account, user, instance)
         instance.status = Instance::STATUS_TYPE_ONLINE
         instance.save
         true
@@ -38,7 +50,7 @@ module Dcmgr
       @id = 2
 
       private
-      def _execute(user, instance)
+      def _execute(account, user, instance)
         instance.status = Instance::STATUS_TYPE_OFFLINE
         instance.save
         true
@@ -49,8 +61,9 @@ module Dcmgr
       @id = 3
 
       private
-      def _execute(user, account)
-        account.save
+      def _execute(account, user, target_account)
+        target_account.save
+        true
       end
     end
 
@@ -58,8 +71,9 @@ module Dcmgr
       @id = 4
 
       private
-      def _execute(user, account)
-        account.destroy
+      def _execute(account, user, target_account)
+        target_account.destroy
+        true
       end
     end
 
@@ -67,8 +81,18 @@ module Dcmgr
       @id = 5
 
       private
-      def _execute(user, image_storage)
+      def _execute(account, user, image_storage)
         image_storage.save
+        true
+      end
+    end
+
+    class GetImageStorageClass < Base
+      @id = 6
+
+      private
+      def _execute(account, user, image_storage_class)
+        ImageStorage[params]
       end
     end
 
@@ -76,8 +100,9 @@ module Dcmgr
       @id = 6
 
       private
-      def _execute(user, image_storage)
+      def _execute(account, user, image_storage)
         image_storage.destroy
+        true
       end
     end
 
@@ -86,17 +111,21 @@ module Dcmgr
               CreateAccount,
               DestroyAccount,
               CreateImageStorage,
+              GetImageStorageClass,
               DestroyImageStorage]
 
-    def self.[](target, action)
-      rolename = "%s%s" % [action.to_s.capitalize, target.class]
+    def self.get(target, action, params={})
+      rolename = if target.class == Class
+                 then "%s%sClass" % [action.to_s.capitalize, target.name]
+                 else"%s%s" % [action.to_s.capitalize, target.class]
+                 end
       begin
         roleclass = eval("%s" % rolename)
       rescue NameError
         return nil
       end
       return nil unless @roles.include? roleclass
-      roleclass.new(target)
+      roleclass.new(target, params)
     end
 
     def self.roles
