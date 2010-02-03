@@ -12,9 +12,8 @@ module Dcmgr
 
       def evaluate(evaluator)
         Tag.filter(:owner_id=>evaluator.id, :role=>self.class.id).each{|tag|
-          @target.tags.each{|t|
-            return true if tag.tags.include? t
-          }
+          return true if @target.tags.index{|t| tag.tags.include? t}
+          return true if @target.class.tags.index{|t| p [tag, t]; tag.name == t.name}
         }
         raise RoleError, "no role(user: #{evaluator.uuid}, target: #{@target.uuid})"
       end

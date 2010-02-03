@@ -23,6 +23,10 @@ module Dcmgr::Model
         end
         raise InvalidUUIDException.new("invalid uuid: %s" % p_uuid)
       end
+
+      def tags
+        [Tag.new(:name=>"%s-_ROLETAG" % [self.prefix_uuid])]
+      end
     end
     
     def self.included(mod)
@@ -368,3 +372,4 @@ class Log < Sequel::Model
     errors.add(:user, "can't empty") unless (self.user or self.user_id)
   end
 end
+

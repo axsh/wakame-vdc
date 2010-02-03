@@ -51,7 +51,8 @@ TagMapping.create(:tag=>normal_tag_a,
                   :target_type=>TagMapping::TYPE_INSTANCE,
                   :target_id=>instance_a.id)
 
-Dcmgr::RoleExecutor.roles.each{|role|
+[Dcmgr::RoleExecutor::RunInstance,
+ Dcmgr::RoleExecutor::ShutdownInstance].each{|role|
   role_tag = Tag.create(:name=>role.name,
                         :role=>role.id,
                         :account=>account_a,
@@ -60,4 +61,16 @@ Dcmgr::RoleExecutor.roles.each{|role|
                     :target_type=>TagMapping::TYPE_TAG,
                     :target_id=>role_tag.id)
 }
+
+Tag.create(:name=>Account.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::CreateAccount.id,
+           :account=>account_a,
+           :owner=>user)
+
+Tag.create(:name=>Account.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::DestroyAccount.id,
+           :account=>account_a,
+           :owner=>user)
+
+
                   
