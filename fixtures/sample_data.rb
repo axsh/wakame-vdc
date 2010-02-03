@@ -86,3 +86,13 @@ Tag.create(:name=>ImageStorage.tags[0].name,
            :role=>Dcmgr::RoleExecutor::DestroyImageStorage.id,
            :account=>account_a,
            :owner=>user)
+
+Tag.create(:name=>ImageStorageHost.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::CreateImageStorageHost.id,
+           :account=>account_a,
+           :owner=>user)
+
+Tag.create(:name=>ImageStorageHost.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::DestroyImageStorageHost.id,
+           :account=>account_a,
+           :owner=>user)

@@ -88,8 +88,27 @@ describe Dcmgr::RoleExecutor do
     role.execute(@account, @user).should be_true
   end    
   
-  it "should evaluate add image storage host"
-  it "should evaluate delete image storage host"
+  it "should evaluate add image storage host" do
+    image_storage_host = ImageStorageHost.create
+    role = Dcmgr::RoleExecutor.get(image_storage_host, :create)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::CreateImageStorageHost
+    role.evaluate(@account, @user).should be_true
+
+    image_storage_host.should_receive(:save)
+    role.execute(@account, @user).should be_true
+  end
+  
+  it "should evaluate delete image storage host" do
+    image_storage_host = ImageStorageHost.create
+    role = Dcmgr::RoleExecutor.get(image_storage_host, :destroy)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::DestroyImageStorageHost
+    role.evaluate(@account, @user).should be_true
+
+    image_storage_host.should_receive(:destroy)
+    role.execute(@account, @user).should be_true
+  end
   
   it "should evaluate add physical host"
   it "should evaluate delete physical host"

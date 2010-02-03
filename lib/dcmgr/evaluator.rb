@@ -97,7 +97,7 @@ module Dcmgr
     end
 
     class DestroyImageStorage < Base
-      @id = 6
+      @id = 7
 
       private
       def _execute(account, user, image_storage)
@@ -106,13 +106,33 @@ module Dcmgr
       end
     end
 
+    class CreateAction < Base
+      def _execute(accont, user, target)
+        target.save
+        true
+      end
+    end
+
+    class DestroyAction < Base
+      def _execute(accont, user, target)
+        target.destroy
+        true
+      end
+    end
+
+    class CreateImageStorageHost < CreateAction; @id = 8; end
+    class DestroyImageStorageHost < DestroyAction; @id = 9; end
+
     @roles = [RunInstance,
               ShutdownInstance,
               CreateAccount,
               DestroyAccount,
               CreateImageStorage,
               GetImageStorageClass,
-              DestroyImageStorage]
+              DestroyImageStorage,
+              CreateImageStorageHost,
+              DestroyImageStorageHost,
+             ]
 
     def self.get(target, action, params={})
       rolename = if target.class == Class
