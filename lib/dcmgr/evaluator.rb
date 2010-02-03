@@ -4,32 +4,70 @@ module Dcmgr
     
   module RoleExecutor
     class Base
-    end
-    
-    class ShutdownInstance < Base
-      def initialize(instance)
-        @instance = instance
-      end
-      
-      def self.id; 1; end
-      
-      def evaluate(evaluator)
-        Tag.filter(:owner_id=>evaluator.id, :role=>ShutdownInstance.id).each{|tag|
-          @instance.tags.each{|t|
-            return if tag.tags.include? t
-          }
-        }
-        raise RoleError.new("no role(user: %s, target: %s)" % [evaluator.uuid, @instance.uuid])
+      def initialize(target)
+        @target = target
       end
 
-      def execute(user)
-        @instance.status = Instance::STATUS_TYPE_OFFLINE
-        @instance.save
+      def self.id; @id; end
+
+      def evaluate(evaluator)
+        Tag.filter(:owner_id=>evaluator.id, :role=>self.class.id).each{|tag|
+          @target.tags.each{|t|
+            return true if tag.tags.include? t
+          }
+        }
+        raise RoleError, "no role(user: #{evaluator.uuid}, target: #{@target.uuid})"
+      end
+
+      def execute(evaluator)
+        _execute(evaluator, @target)
+        true
+      end
+    end
+    
+    class RunInstance < Base
+      @id = 1
+      
+      def _execute(user, instance)
+        instance.status = Instance::STATUS_TYPE_ONLINE
+        instance.save
         true
       end
     end
 
-    @roles = [ShutdownInstance]
+    class ShutdownInstance < Base
+      @id = 2
+
+      private
+      def _execute(user, instance)
+        instance.status = Instance::STATUS_TYPE_OFFLINE
+        instance.save
+        true
+      end
+    end
+
+    class CreateAccount < Base
+      @id = 3
+
+      private
+      def _execute(user, account)
+        account.save
+      end
+    end
+
+    class DestroyAccount < Base
+      @id = 4
+
+      private
+      def _execute(user, account)
+        account.destroy
+      end
+    end
+
+    @roles = [RunInstance,
+              ShutdownInstance,
+              CreateAccount,
+              DestroyAccount]
 
     def self.[](target, action)
       rolename = "%s%s" % [action.to_s.capitalize, target.class]
@@ -40,6 +78,10 @@ module Dcmgr
       end
       return nil unless @roles.include? roleclass
       roleclass.new(target)
+    end
+
+    def self.roles
+      @roles
     end
   end
 
