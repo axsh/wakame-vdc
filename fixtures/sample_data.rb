@@ -51,12 +51,13 @@ TagMapping.create(:tag=>normal_tag_a,
                   :target_type=>TagMapping::TYPE_INSTANCE,
                   :target_id=>instance_a.id)
 
-instance_crud = Tag.create(:name=>'sample instance crud',
-                           :role=>1,
-                           :account=>account_a,
-                           :owner=>user)
-
-TagMapping.create(:tag=>normal_tag_a,
-                 :target_type=>TagMapping::TYPE_TAG,
-                 :target_id=>instance_crud.id)
+Dcmgr::RoleExecutor.roles.each{|role|
+  role_tag = Tag.create(:name=>role.name,
+                        :role=>role.id,
+                        :account=>account_a,
+                        :owner=>user)
+  TagMapping.create(:tag=>normal_tag_a,
+                    :target_type=>TagMapping::TYPE_TAG,
+                    :target_id=>role_tag.id)
+}
                   
