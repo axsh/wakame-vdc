@@ -106,3 +106,23 @@ Tag.create(:name=>PhysicalHost.tags[0].name,
            :role=>Dcmgr::RoleExecutor::DestroyPhysicalHost.id,
            :account=>account_a,
            :owner=>user)
+
+Tag.create(:name=>HvController.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::CreateHvController.id,
+           :account=>account_a,
+           :owner=>user)
+
+Tag.create(:name=>HvController.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::DestroyHvController.id,
+           :account=>account_a,
+           :owner=>user)
+
+Tag.create(:name=>HvAgent.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::CreateHvAgent.id,
+           :account=>account_a,
+           :owner=>user)
+
+Tag.create(:name=>HvAgent.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::DestroyHvAgent.id,
+           :account=>account_a,
+           :owner=>user)

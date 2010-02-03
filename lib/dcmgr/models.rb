@@ -61,11 +61,12 @@ class TagMapping < Sequel::Model
   TYPE_USER = 2
   TYPE_INSTANCE = 3
   TYPE_INSTANCE_IMAGE = 4
-  TYPE_VMC = 5
-  TYPE_PHYSICAL_HOST = 6
-  TYPE_PHYSICAL_HOST_LOCATION = 7
-  TYPE_IMAGE_STORAGE_HOST = 8
-  TYPE_IMAGE_STORAGE = 9
+  TYPE_HV_CONTROLLER = 5
+  TYPE_HV_AGENT = 6
+  TYPE_PHYSICAL_HOST = 7
+  TYPE_PHYSICAL_HOST_LOCATION = 8
+  TYPE_IMAGE_STORAGE_HOST = 9
+  TYPE_IMAGE_STORAGE = 10
 
   many_to_one :tag
 end
@@ -283,6 +284,7 @@ class HvController < Sequel::Model
   def self.prefix_uuid; 'HVC'; end
   many_to_one :physical_host
   one_to_many :hv_agents
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_HV_CONTROLLER}
 end
 
 class HvAgent < Sequel::Model
@@ -291,6 +293,7 @@ class HvAgent < Sequel::Model
   many_to_one :hv_controller
   many_to_one :physical_host
   one_to_many :instances
+  many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_HV_AGENT}
 end
 
 class Tag < Sequel::Model

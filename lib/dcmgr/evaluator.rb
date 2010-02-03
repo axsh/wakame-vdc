@@ -123,8 +123,14 @@ module Dcmgr
     class CreateImageStorageHost < CreateAction; @id = 8; end
     class DestroyImageStorageHost < DestroyAction; @id = 9; end
 
-    class CreatePhysicalHost < CreateAction; @id = 8; end
-    class DestroyPhysicalHost < DestroyAction; @id = 9; end
+    class CreatePhysicalHost < CreateAction; @id = 10; end
+    class DestroyPhysicalHost < DestroyAction; @id = 11; end
+
+    class CreateHvController < CreateAction; @id = 12; end
+    class DestroyHvController < DestroyAction; @id = 13; end
+
+    class CreateHvAgent < CreateAction; @id = 14; end
+    class DestroyHvAgent < DestroyAction; @id = 15; end
 
     @roles = [RunInstance,
               ShutdownInstance,
@@ -137,6 +143,10 @@ module Dcmgr
               DestroyImageStorageHost,
               CreatePhysicalHost,
               DestroyPhysicalHost,
+              CreateHvController,
+              DestroyHvController,
+              CreateHvAgent,
+              DestroyHvAgent,
              ]
 
     def self.get(target, action, params={})

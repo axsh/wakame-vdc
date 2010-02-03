@@ -132,10 +132,48 @@ describe Dcmgr::RoleExecutor do
     role.execute(@account, @user).should be_true
   end
   
-  it "should evaluate add hvc"
-  it "should evaluate delete hvc"
+  it "should evaluate add hvc" do
+    hv_controller = HvController.create
+    role = Dcmgr::RoleExecutor.get(hv_controller, :create)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::CreateHvController
+    role.evaluate(@account, @user).should be_true
+
+    hv_controller.should_receive(:save)
+    role.execute(@account, @user).should be_true
+  end
+
+  it "should evaluate delete hvc" do
+    hv_controller = HvController.create
+    role = Dcmgr::RoleExecutor.get(hv_controller, :destroy)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::DestroyHvController
+    role.evaluate(@account, @user).should be_true
+
+    hv_controller.should_receive(:destroy)
+    role.execute(@account, @user).should be_true
+  end
   
-  it "should evaluate add hva"
-  it "should evaluate delete hva"
+  it "should evaluate add hva" do
+    hv_agent = HvAgent.create
+    role = Dcmgr::RoleExecutor.get(hv_agent, :create)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::CreateHvAgent
+    role.evaluate(@account, @user).should be_true
+
+    hv_agent.should_receive(:save)
+    role.execute(@account, @user).should be_true
+  end
+
+  it "should evaluate delete hva" do
+    hv_agent = HvAgent.create
+    role = Dcmgr::RoleExecutor.get(hv_agent, :destroy)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::DestroyHvAgent
+    role.evaluate(@account, @user).should be_true
+
+    hv_agent.should_receive(:destroy)
+    role.execute(@account, @user).should be_true
+  end
 end
 
