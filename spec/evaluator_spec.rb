@@ -110,8 +110,27 @@ describe Dcmgr::RoleExecutor do
     role.execute(@account, @user).should be_true
   end
   
-  it "should evaluate add physical host"
-  it "should evaluate delete physical host"
+  it "should evaluate add physical host" do
+    physical_host = PhysicalHost.create
+    role = Dcmgr::RoleExecutor.get(physical_host, :create)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::CreatePhysicalHost
+    role.evaluate(@account, @user).should be_true
+
+    physical_host.should_receive(:save)
+    role.execute(@account, @user).should be_true
+  end
+  
+  it "should evaluate delete physical host" do
+    physical_host = PhysicalHost.create
+    role = Dcmgr::RoleExecutor.get(physical_host, :destroy)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::DestroyPhysicalHost
+    role.evaluate(@account, @user).should be_true
+
+    physical_host.should_receive(:destroy)
+    role.execute(@account, @user).should be_true
+  end
   
   it "should evaluate add hvc"
   it "should evaluate delete hvc"

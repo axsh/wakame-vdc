@@ -96,3 +96,13 @@ Tag.create(:name=>ImageStorageHost.tags[0].name,
            :role=>Dcmgr::RoleExecutor::DestroyImageStorageHost.id,
            :account=>account_a,
            :owner=>user)
+
+Tag.create(:name=>PhysicalHost.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::CreatePhysicalHost.id,
+           :account=>account_a,
+           :owner=>user)
+
+Tag.create(:name=>PhysicalHost.tags[0].name,
+           :role=>Dcmgr::RoleExecutor::DestroyPhysicalHost.id,
+           :account=>account_a,
+           :owner=>user)
