@@ -8,14 +8,13 @@ describe "accounts by active resource" do
   before(:all) do
     @class = ar_class :Account
     @user_class = ar_class :User
+    @user = @user_class.find(:myself)
   end
   
   before(:each) do
-    reset_db
-    @user = @user_class.find(:myself)
   end
 
-  it "should add" do
+  it "should create" do
     account = @class.create(:name=>'test account')
     account.id.length.should > 0
     
@@ -25,11 +24,10 @@ describe "accounts by active resource" do
     real_account.enable.should be_true
     real_account.memo.should be_nil
     real_account.contract_at.should be_nil
-
-    real_account.users.find{|user| user.uuid== @user.id }.should be_true
+    real_account.users.find{|user| user.uuid == @user.id }.should be_true
   end
 
-  it "should add with memo, contract_at, enable fields" do
+  it "should create with memo, contract_at, enable fields" do
     dt = Time.now
     account = @class.create(:name=>'test account',
                             :enable=>false,
@@ -43,23 +41,17 @@ describe "accounts by active resource" do
     real_account.enable.should be_false
     real_account.memo.should == 'memo \n abc'
     real_account.contract_at.should be_close(dt, 1)
-
     real_account.users.find{|user| user.uuid== @user.id }.should be_true
   end
 
-  it "should find by id" do
+  it "should find" do
     accounts = @class.find(:all, :params=>{:id=>Account[1].uuid})
     accounts.length.should == 1
     accounts[0].id.should == Account[1].uuid
 
-    accounts = @class.find(:all, :params=>{:id=>'A-1234'})
-    accounts.length.should == 0
-    
-    accounts = @class.find(:all, :params=>{:id=>nil})
-    accounts.length.should == 0
-    
-    accounts = @class.find(:all, :params=>{:id=>''})
-    accounts.length.should == 0
+    @class.find(:all, :params=>{:id=>'A-1234'}).should be_empty
+    @class.find(:all, :params=>{:id=>nil}).should be_empty
+    @class.find(:all, :params=>{:id=>''}).should be_empty
   end
 
   it "should find by account name" do
@@ -68,12 +60,12 @@ describe "accounts by active resource" do
     accounts[0].id.should == Account[1].uuid
     
     accounts = @class.find(:all, :params=>{:name=>'*account*'})
-    accounts.length.should == 2
+    accounts.length.should >= 2
     accounts[0].id.should == Account[1].uuid
     accounts[1].id.should == Account[2].uuid
     
     accounts = @class.find(:all, :params=>{:name=>'*account*'})
-    accounts.length.should == 2
+    accounts.length.should >= 2
     accounts[0].id.should == Account[1].uuid
     accounts[1].id.should == Account[2].uuid
     
@@ -131,7 +123,16 @@ describe "accounts by active resource" do
     Account[account.id].name.should == 'changed name'
   end
 
-  it "should be able to be used, only enable account"
+  it "should be able to be used, only enable account" do
+    all_accounts = @class.find(:all)
+    enable_accounts = all_accounts.select{|a| a.enable }
+    enable_accounts.length.should > 0
+    disable_accounts = all_accounts.select{|a| ! a.enable }
+    disable_accounts.length.should > 0
+
+    Account.filter(:enable=>true).count.should == enable_accounts.length
+    Account.filter(:enable=>false).count.should== disable_accounts.length
+  end
   
   it "should delete" do
     account = @class.create(:name=>'test account')
@@ -139,7 +140,5 @@ describe "accounts by active resource" do
     account.destroy
     Account[id].should be_nil
   end
-
-  it "should raise error on duplicate uuid"
 end
 

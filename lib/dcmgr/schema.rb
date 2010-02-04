@@ -26,7 +26,7 @@ module Dcmgr
       @db.create_table? :accounts do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
         String :name
         Boolean :enable, :default=>true
         DateTime :created_at, :null=>false
@@ -39,7 +39,7 @@ module Dcmgr
       @db.create_table? :users do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
         String :name, :unique=>true, :null=>false
         String :password, :null=>false
         String :default_password, :null=>false # default password, use password reset
@@ -57,7 +57,7 @@ module Dcmgr
       @db.create_table? :image_storages do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :type=>Integer, :null=>false
         Fixnum :image_storage_host_id, :null=>false
@@ -69,13 +69,13 @@ module Dcmgr
       @db.create_table? :image_storage_hosts do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
       end
       
       @db.create_table? :physical_hosts do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
         Fixnum :cpus, :null=>false
         Float :cpu_mhz, :null=>false
         Fixnum :memory, :null=>false # MB
@@ -86,7 +86,7 @@ module Dcmgr
       @db.create_table? :instances do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
         Fixnum :status, :null=>false # 0: offline, 1: running, 2: online, 3: terminating
         DateTime :status_updated_at, :null=>false
         Fixnum :account_id, :type=>Integer, :null=>false
@@ -103,7 +103,7 @@ module Dcmgr
       @db.create_table? :hv_controllers do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
         Fixnum :physical_host_id
         String :ip, :fixed=>true, :size=>14, :null=>false
       end
@@ -111,7 +111,7 @@ module Dcmgr
       @db.create_table? :hv_agents do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
         Fixnum :hv_controller_id
         Fixnum :physical_host_id
         String :ip, :fixed=>true, :size=>14
@@ -120,7 +120,7 @@ module Dcmgr
       @db.create_table? :tags do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
-        index :uuid
+        index :uuid, :unique=>true
         Fixnum :account_id, :null=>false # if 0 system tag
         Fixnum :owner_id, :null=>false
         String :name, :fixed=>true, :size=>32, :null=>false

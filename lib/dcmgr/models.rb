@@ -4,7 +4,8 @@ require 'rubygems'
 require 'sequel'
 
 module Dcmgr::Model
-  class InvalidUUIDException < Exception; end
+  class InvalidUUIDError < StandardError; end
+  class DuplicateUUIDError < StandardError; end
 
   module UUIDMethods
     module ClassMethods
@@ -21,7 +22,7 @@ module Dcmgr::Model
         if p_uuid and p_uuid.length == self.prefix_uuid.length + 9
           return p_uuid[(self.prefix_uuid.length+1), p_uuid.length]
         end
-        raise InvalidUUIDException.new("invalid uuid: %s" % p_uuid)
+        raise InvalidUUIDError, "invalid uuid: #{p_uuid}"
       end
 
       def tags
@@ -38,11 +39,17 @@ module Dcmgr::Model
     end
 
     def setup_uuid
-      self.uuid = generate_uuid
+      self.uuid = generate_uuid unless self.values[:uuid]
     end
 
     def before_create
       setup_uuid
+    end
+
+    def save(*columns)
+      super(columns)
+    rescue Sequel::DatabaseError
+      raise DuplicateUUIDError
     end
 
     def uuid
