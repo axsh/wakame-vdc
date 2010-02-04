@@ -283,7 +283,6 @@ describe "instance access by active resource" do
                          :need_cpu_mhz=>0.5,
                          :need_memory=>0.5,
                          :image_storage=>ImageStorage[1])
-    p tag_c
     instance.tags.include?(tag_c.uuid).should be_false
     instance.put(:add_tag, :tag=>tag_c.uuid)
     
