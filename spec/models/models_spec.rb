@@ -23,7 +23,7 @@ Dcmgr::Schema.models.each{|model|
       end
     end
 
-    it "shoud be exists table" do
+    it "should be exists table" do
       Dcmgr::Schema.table_exists?(model.table_name).should be_true
     end
   end

@@ -263,7 +263,7 @@ describe "instance access by active resource" do
     hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip][1].should == :offline
   end
 
-  it "shoud shutdown by sample data, and raise role error" do
+  it "should shutdown by sample data, and raise role error" do
     pending
     instance = @c.create(:account=>Account[1].id,
                              :need_cpus=>1,
