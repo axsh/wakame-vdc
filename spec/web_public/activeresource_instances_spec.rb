@@ -277,21 +277,22 @@ describe "instance access by active resource" do
   end
 
   it "should find tag" do
-    pending
+    tag_c = Tag[:name=>'sample tag c']
     instance = @c.create(:account=>Account[1].id,
-                             :need_cpus=>1,
-                             :need_cpu_mhz=>0.5,
-                             :need_memory=>0.5)
+                         :need_cpus=>1,
+                         :need_cpu_mhz=>0.5,
+                         :need_memory=>0.5,
+                         :image_storage=>ImageStorage[1])
+    p tag_c
+    instance.tags.include?(tag_c.uuid).should be_false
+    instance.put(:add_tag, :tag=>tag_c.uuid)
     
-    instance.tags.include?(@normal_tag_c.id).should be_false
-    instance.put(:add_tag, :tag=>@normal_tag_c.id)
-
     instance = @c.find(instance.id)
-    instance.tags.include?(@normal_tag_c.id).should be_true
+    instance.tags.index{|t| t == tag_c.uuid}.should be_true
 
-    instance.put(:remove_tag, :tag=>@normal_tag_c.id)
+    instance.put(:remove_tag, :tag=>tag_c.uuid)
     instance = @c.find(instance.id)
-    instance.tags.include?(@normal_tag_c.id).should be_false
+    instance.tags.index{|t| t == tag_c.uuid}.should be_false
   end
 
   it "should get instance" do

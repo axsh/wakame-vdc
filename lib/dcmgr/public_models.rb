@@ -435,22 +435,18 @@ module Dcmgr
     
     public_action_withid :put, :add_tag do
       target = Instance[uuid]
-      tag_uuid = request[:tag]
+
+      tag_uuid = request[:_get_tag]
       tag = Tag[tag_uuid]
-      Dcmgr.logger.debug("")
-      Dcmgr.logger.debug(uuid)
-      Dcmgr.logger.debug(tag)
-      Dcmgr.logger.debug("")
-      if tag
-        TagMapping.create(:tag_id=>tag.id,
-                          :target_type=>TagMapping::TYPE_INSTANCE,
-                          :target_id=>target.id)
-      end
+
+      TagMapping.create(:tag_id=>tag.id,
+                        :target_type=>TagMapping::TYPE_INSTANCE,
+                        :target_id=>target.id) if tag
     end
     
     public_action_withid :put, :remove_tag do
       target = Instance[uuid]
-      tag_uuid = request[:tag]
+      tag_uuid = request[:_get_tag]
       tag = Tag[tag_uuid]
       target.remove_tag(tag.id) if tag
     end

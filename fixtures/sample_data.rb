@@ -46,6 +46,10 @@ instance_a = Instance.create(:status=>0, # offline
 
 normal_tag_a = Tag.create(:name=>'sample tag a',
                           :account=>account_a)
+normal_tag_b = Tag.create(:name=>'sample tag b',
+                          :account=>account_a)
+normal_tag_c = Tag.create(:name=>'sample tag c',
+                          :account=>account_a)
 
 TagMapping.create(:tag=>normal_tag_a,
                   :target_type=>TagMapping::TYPE_INSTANCE,
