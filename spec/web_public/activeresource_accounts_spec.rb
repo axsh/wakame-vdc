@@ -11,7 +11,8 @@ describe "accounts by active resource" do
     @user = @user_class.find(:myself)
   end
   
-  before(:each) do
+  after(:all) do
+    reset_db
   end
 
   it "should create" do
