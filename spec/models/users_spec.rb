@@ -23,7 +23,7 @@ describe User do
     User.all.index{|u| u.id == @user_b.id}.should be_true
 
     enable_users = User.enable_users.all
-    enable_users.index{|u| p [u.id, @user_a.id]; u.id == @user_a.id}.should be_true
-    enable_users.index{|u| p [u.id, @user_b.id]; u.id == @user_b.id}.should be_false
+    enable_users.index{|u| u.id == @user_a.id}.should be_true
+    enable_users.index{|u| u.id == @user_b.id}.should be_false
   end
 end
