@@ -227,12 +227,20 @@ module Dcmgr
           return []
         end
       end
+
+      offset = if request.key? :_get_offset
+               then request[:_get_offset].to_i
+               else 0 end
+      limit = if request.key? :_get_limit
+              then request[:_get_limit].to_i
+              else 100 end
       
-      if find_params.length > 0
-        model.filter(find_params).map{|o| format_object(o)}
-      else
-        model.all.map{|o| format_object(o)}
-      end
+      filter = if find_params.length > 0
+                 model.filter(find_params)
+               else
+                 model
+               end
+      filter.limit(limit, offset).map{|o| format_object(o)}
     end
     
     def get

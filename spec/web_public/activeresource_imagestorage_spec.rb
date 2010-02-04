@@ -31,6 +31,29 @@ describe "image storage access by active resource" do
     }.should change{ ImageStorage[id] }
   end
 
-  it "should get by paging"
+  it "should get by paging" do
+    image_storages = (0...30).map{
+      @class.create(:image_storage_host=>@image_storage_host.id,
+                    :storage_url=>'http://hoge')
+    }
+
+    ret = @class.find(:all, :params=>{:limit=>3})
+    ret.length.should == 3
+    ret[0].id.should == ImageStorage.all[0].uuid
+    ret[1].id.should == ImageStorage.all[1].uuid
+    ret[2].id.should == ImageStorage.all[2].uuid
+
+    ret = @class.find(:all, :params=>{:offset=>3})
+    ret.length.should >= 27 # 30 - 3
+    ret[0].id.should == ImageStorage.limit(1, 3).all.first.uuid
+    ret[1].id.should == ImageStorage.limit(1, 4).all.first.uuid
+    ret[2].id.should == ImageStorage.limit(1, 5).all.first.uuid
+
+    ret = @class.find(:all, :params=>{:limit=>3, :offset=>10})
+    ret.length.should == 3
+    ret[0].id.should == ImageStorage.limit(1, 10).all.first.uuid
+    ret[1].id.should == ImageStorage.limit(1, 11).all.first.uuid
+    ret[2].id.should == ImageStorage.limit(1, 12).all.first.uuid
+  end
 end
 
