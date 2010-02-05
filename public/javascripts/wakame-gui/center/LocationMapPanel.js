@@ -52,36 +52,45 @@ MAPPropertyPanel = function(){
 Ext.extend(MAPPropertyPanel, Ext.Panel);
 
 AddMapWindow = function(){
+
   var form = new Ext.form.FormPanel({
+//  fileUpload: true,
     width: 400,
-    frame:true,
-    bodyStyle:'padding:5px 5px 0',
-    fileUpload: true,
+    baseCls: 'x-plain',
     items: [{
       fieldLabel: 'Map-Name',
       xtype: 'textfield',
-      name: 'account-id',
+      id: 'nm',
       anchor: '100%'
-    }, {
+    },
+    {
       fieldLabel: 'Map-File',
       xtype: 'textfield',
       inputType: 'file',
       width: 200,
-      name: 'map-file',
+      id: 'file',
       anchor: '100%'
-    }, {
+    },
+    {
       fieldLabel: 'Memo',
       xtype: 'textarea',
-      name: 'form_textfield',
+      id: 'mm',
       anchor: '100%'
     }]
   });
+
   AddMapWindow.superclass.constructor.call(this, {
     iconCls: 'icon-panel',
     height: 220,
     width: 400,
 	layout:'fit',
     title: 'Add Map',
+    collapsible:true,
+    titleCollapse:true,
+	modal: true,
+	plain: true,
+	closeAction:'hide',
+    defaults:{bodyStyle:'padding:15px'},
 	items: [form],
 	buttons: [{
       text:'Save',
@@ -112,3 +121,18 @@ AddMapWindow = function(){
   });
 }
 Ext.extend(AddMapWindow, Ext.Window);
+
+MAPViewPanel = function(name,url){
+  MAPViewPanel.superclass.constructor.call(this, {
+    region: 'center',
+    title: name,
+    autoScroll: true,
+    split: true,
+    layout: 'fit',
+    html: '<img src='+url+'>'
+//  html: '<img src='1F-10.jpeg">'
+//  bodyStyle: "background-image:url(1F-10.jpeg); background-repeat: no-repeat; background-attachment: fixed;"
+  });
+}
+Ext.extend(MAPViewPanel, Ext.Panel);
+
