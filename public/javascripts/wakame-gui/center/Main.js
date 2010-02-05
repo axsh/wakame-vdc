@@ -9,7 +9,6 @@ Ext.onReady(function(){
   var selectorPanel = new SelectorPanel(mainPanel);
   var headerPanel   = new HeaderPanel('DataCenter Manager');
   var footerPanel   = new FooterPanel();
-
   viewport = new Ext.Viewport({
     layout: 'border',
     items:[ headerPanel, mainPanel, selectorPanel, footerPanel]
