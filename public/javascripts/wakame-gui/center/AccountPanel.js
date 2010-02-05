@@ -152,53 +152,52 @@ AddAccountWindow = function(){
   });
 
   AddAccountWindow.superclass.constructor.call(this, {
-        iconCls: 'icon-panel',
-        collapsible:true,
-        titleCollapse:true,
-        width: 500,
-        height: 250,
-		layout:'fit',
-		closeAction:'hide',
-        title: 'Add Account',
-		modal: true,
-		plain: true,
-        defaults:{bodyStyle:'padding:15px'},
-		items: [form],
-		buttons: [{
-		  text:'Create',
-          handler: function(){
-            form.getForm().submit({
-              url: '/account-create',
-              waitMsg: 'Adding...',
-              method: 'POST',
-              scope: this,
-              success: function(form, action) {
-                accountPanel.refresh();
-	            this.close();
-              },
-              failure: function(form, action) {
-                alert('Add account failure.');
-	            this.close();
-              }
-            });
-	      },
-	      scope:this
-		},{
-		  text: 'Close',
-		  handler: function(){
+    iconCls: 'icon-panel',
+    collapsible:true,
+    titleCollapse:true,
+    width: 500,
+    height: 250,
+	layout:'fit',
+	closeAction:'hide',
+    title: 'Add Account',
+	modal: true,
+	plain: true,
+    defaults:{bodyStyle:'padding:15px'},
+	items: [form],
+	buttons: [{
+	  text:'Create',
+      handler: function(){
+        form.getForm().submit({
+          url: '/account-create',
+          waitMsg: 'Adding...',
+          method: 'POST',
+          scope: this,
+          success: function(form, action) {
+            accountPanel.refresh();
 	        this.close();
-		  },
-		  scope:this
-		}]
+          },
+          failure: function(form, action) {
+            alert('Add account failure.');
+	        this.close();
+          }
+        });
+	  },
+	  scope:this
+    },{
+	  text: 'Close',
+	  handler: function(){
+	    this.close();
+	  },
+	  scope:this
+    }]
   });
 }
 Ext.extend(AddAccountWindow, Ext.Window);
 
 EditAccountWindow = function(accountData){
-
   var form = new Ext.form.FormPanel({
-      labelWidth: 120, 
-      width: 400, 
+      labelWidth: 120,
+      width: 400,
       baseCls: 'x-plain',
       items: [
         {
