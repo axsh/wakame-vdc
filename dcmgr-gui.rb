@@ -4,6 +4,7 @@ require 'erb'
 require 'WakameWebAPI'
 require 'logger'
 require 'parsedate'
+require 'date'
 require 'define'
 
 if DEBUG_LOG
@@ -218,7 +219,18 @@ get '/instance-detail-list' do
     rows.store('wd',index.image_storage)
     rows.store('st',@@inStatus[index.status.to_s])
     rows.store('ip',index.ip)
-    rows.store('tp','small')		# cpu type+memory
+    type = "other"
+    @@instanceType.each do |key,value|
+      if value[0]==index.need_cpus.to_i
+        if value[1]==index.need_cpu_mhz.to_i
+          if value[2]==index.need_memory.to_i
+            type = key
+            break
+          end
+        end
+      end
+    end
+    rows.store('tp',type)
     rows.store('sv','')				# image name (from index.image_storage)
     rtn['rows'].push(rows)
   }
@@ -339,13 +351,15 @@ get '/physicalhost-list' do
 end
 
 post '/map_upload' do
-  rtn = {"success" => false}
-#  if params[:file]
-#    new_filename = DateTime.now.strftime('%s') + File.extname(params[:file][:filename])
-#    save_file = './public/images/map/' + new_filename
-#    File.open(save_file, 'wb'){ |f| f.write(params[:file][:tempfile].read) }
-#    rtn['success'] = true
-#  end
+  name = params[:nm]
+  memo = params[:mm]
+  rtn = {"success"=>false , "file"=>params[:file][:filename]}
+  if params[:file]
+    new_filename = DateTime.now.strftime('%s') + File.extname(params[:file][:filename])
+    save_file = './public/images/map/' + new_filename
+    File.open(save_file, 'wb'){ |f| f.write(params[:file][:tempfile].read) }
+    rtn['success'] = true
+  end
   debug_log rtn
   content_type :json
   rtn.to_json
