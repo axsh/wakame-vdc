@@ -43,7 +43,6 @@ module Dcmgr
        user.accounts.map{|o|o.users}.flatten
     end
     
-    #public_action_withid :delete do |id|
     public_action_withid :delete do
       destroy
     end

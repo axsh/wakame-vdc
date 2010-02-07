@@ -1,3 +1,4 @@
+
 module Dcmgr
   module RestModel
     module ClassMethods
@@ -142,8 +143,13 @@ module Dcmgr
       self.class.allow_keys
     end
 
+    def add_only_uuid_method(obj, method)
+      instance_eval("def obj.#{method}; return nil unless super; super.uuid; end")
+    end
+
     def format_object(object)
       if object
+        # for response format 
         def object.keys
           keys = super
           # change from xxx_id to xxx
@@ -157,32 +163,13 @@ module Dcmgr
           keys.push :tags if self.respond_to? :tags
           keys  
         end
+        # only uuid
+        [:tags, :account, :hv_agent, :user, :relate_user,
+         :physical_host, :image_storage].each{|method|
+          add_only_uuid_method object, method
+        }
         def object.tags
           super.map{|t| t.uuid} # format only tags uuid
-        end
-        def object.account
-          return nil unless super
-          super.uuid
-        end
-        def object.hv_agent
-          return nil unless super
-          super.uuid
-        end
-        def object.user
-          return nil unless super
-          super.uuid
-        end
-        def object.relate_user
-          return nil unless super
-          super.uuid
-        end
-        def object.physical_host
-          return nil unless super
-          super.uuid
-        end
-        def object.image_storage
-          return nil unless super
-          super.uuid
         end
       end
       object
