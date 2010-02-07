@@ -3,7 +3,7 @@ require 'sinatra'
 require 'sequel'
 
 require 'dcmgr/models'
-require 'dcmgr/public_models'
+require 'dcmgr/rest_models'
 require 'dcmgr/helpers'
 
 module Dcmgr

@@ -347,7 +347,6 @@ describe "instance access by active resource" do
     instance = @c.find(real_instance.uuid)
     instance.status.should == Instance::STATUS_TYPE_OFFLINE
     
-    p hvchttp
     hvchttp.hvas[real_instance.hv_agent.ip].instances[real_instance.ip][1].should == :offline
   end
   
