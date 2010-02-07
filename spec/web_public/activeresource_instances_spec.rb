@@ -5,17 +5,19 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "instance access by active resource" do
   include ActiveResourceHelperMethods
+  before(:all) do
+    @c = ar_class :Instance
+    @physical_host_class = ar_class :PhysicalHost
+    @name_tag_class = ar_class :NameTag
+    @auth_tag_class = ar_class :AuthTag
+    @user_class = ar_class :User
+  end
   
   before(:each) do
     reset_db
 
     Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm2
     
-    @c = ar_class :Instance
-    @physical_host_class = ar_class :PhysicalHost
-    @name_tag_class = ar_class :NameTag
-    @auth_tag_class = ar_class :AuthTag
-    @user_class = ar_class :User
     @user = @user_class.find(:myself)
     
     image_storage_host = ImageStorageHost.create
@@ -54,11 +56,10 @@ describe "instance access by active resource" do
                         
     lambda {
       @c.create(:account=>Account[1].uuid,
-                    :need_cpus=>1,
-                    :need_cpu_mhz=>0.5,
-                    :need_memory=>1.0,
-                    :image_storage=>ImageStorage[1].uuid)
-      
+                :need_cpus=>1,
+                :need_cpu_mhz=>0.5,
+                :need_memory=>1.0,
+                :image_storage=>ImageStorage[1].uuid)
     }.should raise_error(ActiveResource::BadRequest)
   end
 
@@ -93,33 +94,33 @@ describe "instance access by active resource" do
     # already 'instance a' use physical host 1 in should create instance
     
     instance = @c.create(:account=>Account[1].uuid,
-                             :need_cpus=>3,
-                             :need_cpu_mhz=>0.5,
-                             :need_memory=>1000,
-                             :image_storage=>ImageStorage.first.uuid)
+                         :need_cpus=>3,
+                         :need_cpu_mhz=>0.5,
+                         :need_memory=>1000,
+                         :image_storage=>ImageStorage.first.uuid)
     HvAgent[instance.hv_agent].physical_host == PhysicalHost[1].uuid
 
     Dcmgr::hvchttp = Dcmgr::HvcHttpMock.new(HvController[1])
     
     instance = @c.create(:account=>Account[1].uuid,
-                             :need_cpus=>1,
-                             :need_cpu_mhz=>0.7,
-                             :need_memory=>2000,
-                             :image_storage=>ImageStorage.first.uuid) # skip 2
+                         :need_cpus=>1,
+                         :need_cpu_mhz=>0.7,
+                         :need_memory=>2000,
+                         :image_storage=>ImageStorage.first.uuid) # skip 2
     HvAgent[instance.hv_agent].physical_host == PhysicalHost[3].uuid
     
     instance = @c.create(:account=>Account[1].uuid,
-                             :need_cpus=>1,
-                             :need_cpu_mhz=>0.8,
-                             :need_memory=>400,
-                             :image_storage=>ImageStorage.first.uuid)
+                         :need_cpus=>1,
+                         :need_cpu_mhz=>0.8,
+                         :need_memory=>400,
+                         :image_storage=>ImageStorage.first.uuid)
     HvAgent[instance.hv_agent].physical_host == PhysicalHost[2].uuid
     
     instance = @c.create(:account=>Account[1].uuid,
-                             :need_cpus=>1,
-                             :need_cpu_mhz=>0.8,
-                             :need_memory=>400,
-                             :image_storage=>ImageStorage.first.uuid)
+                         :need_cpus=>1,
+                         :need_cpu_mhz=>0.8,
+                         :need_memory=>400,
+                         :image_storage=>ImageStorage.first.uuid)
     HvAgent[instance.hv_agent].physical_host == PhysicalHost[2].uuid
 
     # check ips
@@ -205,10 +206,10 @@ describe "instance access by active resource" do
     assigned_hosts = {}; assigned_hosts.default = 0
     10.times{
       instance = @c.create(:account=>Account[1].uuid,
-                               :need_cpus=>1,
-                               :need_cpu_mhz=>0.2,
-                               :need_memory=>100,
-                               :image_storage=>ImageStorage[1].uuid)
+                           :need_cpus=>1,
+                           :need_cpu_mhz=>0.2,
+                           :need_memory=>100,
+                           :image_storage=>ImageStorage[1].uuid)
       assigned_hosts[Instance[instance.id].physical_host.uuid] += 1
       
       #PhysicalHost.order(:id).each{|ph|
@@ -224,10 +225,10 @@ describe "instance access by active resource" do
   
   it "should run instance" do
     instance_a = @c.create(:account=>Account[1].id,
-                               :need_cpus=>1,
-                               :need_cpu_mhz=>0.5,
-                               :need_memory=>0.5,
-                               :image_storage=>ImageStorage[1].uuid)
+                           :need_cpus=>1,
+                           :need_cpu_mhz=>0.5,
+                           :need_memory=>0.5,
+                           :image_storage=>ImageStorage[1].uuid)
     
     hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
     Dcmgr::hvchttp = hvchttp
@@ -243,10 +244,10 @@ describe "instance access by active resource" do
 
   it "should shutdown" do
     instance = @c.create(:account=>Account[1].id,
-                             :need_cpus=>1,
-                             :need_cpu_mhz=>0.5,
-                             :need_memory=>0.5,
-                             :image_storage=>ImageStorage[1].uuid)
+                         :need_cpus=>1,
+                         :need_cpu_mhz=>0.5,
+                         :need_memory=>0.5,
+                         :image_storage=>ImageStorage[1].uuid)
 
     real_instance = Instance[instance.id]
     real_instance.ip = '192.168.11.22'
@@ -325,18 +326,29 @@ describe "instance access by active resource" do
   end
   
   it "should terminate" do
-    real_instance = Instance.create(:status=>0, # offline
+    real_instance = Instance.create(:status=>Instance::STATUS_TYPE_ONLINE,
                                     :account=>Account[1],
                                     :user=>User[1],
                                     :image_storage=>ImageStorage[1],
                                     :need_cpus=>1,
                                     :need_cpu_mhz=>0.1,
                                     :need_memory=>100,
-                                    :hv_agent=>HvAgent[1],
+                                    :hv_agent=>HvAgent.all.first,
                                     :ip=>'192.168.2.100')
     instance = @c.find(real_instance.uuid)
-    instance.put(:terminate)
-    pending("check hvc mock server's status")
+
+    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
+    Dcmgr::hvchttp = hvchttp
+
+    hvchttp.hvas[real_instance.hv_agent.ip].instances[real_instance.ip][1].should == :online
+    
+    instance.put(:shutdown)
+    
+    instance = @c.find(real_instance.uuid)
+    instance.status.should == Instance::STATUS_TYPE_OFFLINE
+    
+    p hvchttp
+    hvchttp.hvas[real_instance.hv_agent.ip].instances[real_instance.ip][1].should == :offline
   end
   
   it "should get describe" do

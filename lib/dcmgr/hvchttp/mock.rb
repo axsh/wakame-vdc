@@ -66,6 +66,7 @@ module Dcmgr
       end
       
       def add_instance(ip, uuid, status)
+        p [ip, uuid, status]
         unless ip
           raise "can't empty uuid" unless uuid
           ip = dummy_instance_ip

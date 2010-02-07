@@ -501,10 +501,6 @@ module Dcmgr
       [] # TODO: reboot action
     end
 
-    public_action_withid :put, :terminate do
-      [] # TODO: terminate action
-    end
-
     public_action_withid :put, :shutdown do
       instance = Instance[uuid]
       
