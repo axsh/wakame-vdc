@@ -92,6 +92,11 @@ module Dcmgr
 
         uuid ||= cur_uuid
         status ||= cur_status
+
+        inst = Instance[uuid]
+        inst.status_sym= status
+        inst.save
+        
         add_instance(ip, uuid, status)
       end
 

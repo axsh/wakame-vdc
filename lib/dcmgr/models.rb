@@ -161,9 +161,15 @@ class Instance < Sequel::Model
     STATUS_TYPES[self.status]
   end
 
+  def status_sym=(sym)
+    match = STATUS_TYPES.find{|k,v| v == sym}
+    return nil unless match
+    self.status = match[0]
+  end
+
   def before_create
     super
-    self.status = STATUS_TYPE_OFFLINE
+    self.status = STATUS_TYPE_OFFLINE unless self.status
     self.status_updated_at = Time.now
     Dcmgr::logger.debug "becore create: status = %s" % self.status
     unless self.hv_agent

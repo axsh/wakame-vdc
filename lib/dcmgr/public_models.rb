@@ -503,6 +503,10 @@ module Dcmgr
 
     public_action_withid :put, :shutdown do
       instance = Instance[uuid]
+      Dcmgr.logger.debug("terminating instance: #{instance.uuid}")
+
+      instance.status = Instance::STATUS_TYPE_TERMINATING
+      instance.save
       
       Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
         begin
@@ -513,8 +517,6 @@ module Dcmgr
         end
         raise "can't controll hvc server" unless res.code == "200"
       }
-      instance.status = Instance::STATUS_TYPE_TERMINATING
-      instance.save
       
       Log.create(:user=>user,
                  :account_id=>request[:account].to_i,
