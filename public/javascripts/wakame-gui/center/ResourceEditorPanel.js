@@ -1,14 +1,7 @@
 
 ResourceEditorPanel = function(){
-//  var mtabPanel  = new MAPTabPanel('center',600);
-//  mtabPanel.add(new MapPanel('1F-100',"./images/map/1F-10.jpeg"));
-//  mtabPanel.add(new MapPanel('1F-101',"./images/map/1F-10.jpeg"));
-//  mtabPanel.add(new MapPanel('2F-101',"./images/map/1F-10.jpeg"));
-//  mtabPanel.add(new MapPanel('2F-200',"./images/map/1F-10.jpeg"));
-//  mtabPanel.add(new MapPanel('3F-105',"./images/map/1F-10.jpeg"));
-//  mtabPanel.add(new MapPanel('3F-200',"./images/map/1F-10.jpeg"));
 
-  var mtabPanel = new MapPanel('1F-100',"./images/map/1F-10.jpeg");
+  var mtabPanel = new MapPanel("./images/map/1F-10.jpeg");
   var palletPanel = new PalletPanel(mtabPanel);
 
   var resourceTreePanel = new ResourceTreePanel();
@@ -23,12 +16,58 @@ ResourceEditorPanel = function(){
     items : [resourceTreePanel,resourcePropertyPanel]
   });
 
+  var store1 = new Ext.data.Store({
+    proxy: new Ext.data.HttpProxy({
+      url: '/map-list',
+      method:'GET'
+    }),
+    listeners: {
+      'load': function( temp , records, ope ){
+        if(records.length > 0){
+          combo.setValue(records[0].id);
+        }
+      }
+    },
+    reader: new Ext.data.JsonReader({
+      totalProperty: "totalCount",
+      root:'rows',
+      fields:[
+        { name:'id'    ,type:'string'},
+        { name:'nm'    ,type:'string'},
+        { name:'url'   ,type:'string'},
+        { name:'grid'  ,type:'int'}
+      ]
+    })
+  });
+//  store.load();
+
+  var store = new Ext.data.SimpleStore({
+    fields : ["ID","nm","url","grid"],
+    data : [
+      ["1","1F-100","xxxx.jpg",20],
+      ["2","2F-100","xxxx",20],
+      ["3","3F-100","xxxx",20],
+      ["4","3F-200","xxxx",20]
+    ]
+  });
+
   ResourceEditorPanel.superclass.constructor.call(this, {
     split: true,
     header: false,
     border: false,
     layout: 'border',
-    items: [palletPanel,mtabPanel,editPanel]
+    items: [palletPanel,mtabPanel,editPanel],
+    tbar: [{
+      xtype: 'combo',
+      editable: false,
+      store: store,
+      mode: 'local',
+      width: 100,
+      triggerAction: 'all',
+      displayField: 'nm',
+      value:'1',
+      valueField: 'ID'
+    }]
   });
 }
 Ext.extend(ResourceEditorPanel, Ext.Panel);
@@ -149,10 +188,9 @@ ResourcePropertyPanel = function(){
 }
 Ext.extend(ResourcePropertyPanel, Ext.Panel);
 
-MapPanel = function(name,url){
+MapPanel = function(url){
   MapPanel.superclass.constructor.call(this, {
     region: 'center',
-    title: name,
     autoScroll: true,
     split: true,
     layout: 'fit',
@@ -302,6 +340,13 @@ MapPanel = function(name,url){
       {text:'delete rack'}
     ]
   });
+
+//
+//  this.loadImage = function(url){
+//    var map = document.getElementById('map');
+//    map.src = url;
+//  }
+//
 
   this.addRack = function(){
     var myEl = new Ext.Element(document.createElement('div'));
