@@ -23,6 +23,8 @@ module Dcmgr
     end
     
     def create!
+      Sequel::MySQL.default_engine = 'InnoDB'
+      
       @db.create_table? :accounts do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
@@ -122,11 +124,15 @@ module Dcmgr
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid, :unique=>true
         Fixnum :account_id, :null=>false # if 0 system tag
+        index :account_id
         Fixnum :owner_id, :null=>false
         String :name, :fixed=>true, :size=>32, :null=>false
+      end
+
+      @db.create_table? :tag_attributes do
         Fixnum :tag_type, :fixed=>true, :size=>1 # 0: name tag, 1: auth tag
         Fixnum :role, :null=>false # only auth tag, if name tag then 0
-        index :account_id
+        
       end
 
       @db.create_table? :tag_mappings do
