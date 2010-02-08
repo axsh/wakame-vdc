@@ -130,6 +130,7 @@ module Dcmgr
       end
 
       @db.create_table? :tag_attributes do
+        key :tag_id, :type=>Integer
         Fixnum :role, :null=>false # only auth tag, if name tag then 0
         File :body, :size=>:medium
       end

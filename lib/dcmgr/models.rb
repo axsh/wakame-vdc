@@ -323,15 +323,15 @@ class Tag < Sequel::Model
   many_to_one :owner, :class=>:User
 
   def self.create_system_tag(name)
-    create(:account_id=>0, :owner_id=>0, :tag_type=>TYPE_NORMAL,
-                 :role=>0, :name=>name)
-  end
-  
-  def before_create
-    super
-    self.tag_type = TYPE_NORMAL unless self.tag_type
+    create(:account_id=>0, :owner_id=>0,
+           :role=>0, :name=>name)
   end
 
+  def initialize(*args)
+    @attribute = nil
+    super
+  end
+  
   def self.create_system_tags
     SYSTEM_TAG_NAMES.each{|tag_name|
       create_system_tag(tag_name)
@@ -361,6 +361,26 @@ class Tag < Sequel::Model
     return false if obj == nil
     return false unless obj.is_a? Tag
     self.id == obj.id
+  end
+
+  def role=(val)
+    attribute = find_attribute
+    attribute.role = val
+  end
+
+  def save
+    super
+    if @attribute
+      @attribute.tag_id = self.id unless @attribute.tag_id
+      @attribute.save
+    end
+  end
+
+  def find_attribute
+    unless @attribute = TagAttribute[:tag_id=>self.id]
+      @attribute = TagAttribute.create(:tag_id=>self.id)
+    end
+    @attribute
   end
   
   def validate
