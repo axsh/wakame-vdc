@@ -48,7 +48,7 @@ module Dcmgr
         String :memo
       end
 
-      @db.create_table? :account_roles do
+      @db.create_table? :accounts_users do
         Fixnum :account_id, :type=>Integer, :null=>false
         Fixnum :user_id, :type=>Integer, :null=>false
         primary_key ([:account_id, :user_id])
@@ -192,7 +192,7 @@ module Dcmgr
 
     def models
       load
-      @models ||= [Account, User, AccountRole,
+      @models ||= [Account, User, AccountsUser,
                    Instance, ImageStorage, ImageStorageHost, PhysicalHost,
                    HvController, HvAgent,
                    Tag, TagMapping,

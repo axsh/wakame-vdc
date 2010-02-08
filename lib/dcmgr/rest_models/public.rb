@@ -18,7 +18,7 @@ module Dcmgr
     
     public_action :post do
       account = create
-      AccountRole.create(:account=>account,:user=>user)
+      user.add_account(account)
       account
     end
 

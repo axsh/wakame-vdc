@@ -82,7 +82,7 @@ class Account < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'A'; end
   
-  many_to_many :users, :join_table=>:account_roles  
+  many_to_many :users
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_ACCOUNT}
   
   def before_create
@@ -95,7 +95,7 @@ class User < Sequel::Model
   include Dcmgr::Model::UUIDMethods
   def self.prefix_uuid; 'U'; end
 
-  many_to_many :accounts, :join_table=>:account_roles
+  many_to_many :accounts
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
 
   def validate
@@ -114,7 +114,7 @@ class User < Sequel::Model
 end
 
 
-class AccountRole < Sequel::Model
+class AccountsUser < Sequel::Model
   many_to_one :account
   many_to_one :user, :left_primary_key=>:user_id
 end
