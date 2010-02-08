@@ -5,6 +5,7 @@ require 'WakameWebAPI'
 require 'logger'
 require 'parsedate'
 require 'date'
+require 'resource_maneger'
 require 'define'
 
 if DEBUG_LOG
@@ -364,3 +365,24 @@ post '/map_upload' do
   content_type :json
   rtn.to_json
 end
+
+get '/map-list' do
+  rtn = {'count'=>0}
+  resource = ResourceManeger.new
+  rtn = resource.getMaps(ResourceManeger::M_ONLY)
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
+get '/rack-list' do
+  id = params[:id]
+  rtn = {'success'=>false}
+  resource = ResourceManeger.new
+  rtn.store(:racks,resource.getRacks(id,ResourceManeger::R_SV))
+  rtn['success'] = true
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
