@@ -372,6 +372,9 @@ class Tag < Sequel::Model
                      ]
 end
 
+class TagAttribute < Sequel::Model
+end
+
 class Log < Sequel::Model
   many_to_one :account
   many_to_one :user, :left_primary_key=>:user_id

@@ -130,9 +130,8 @@ module Dcmgr
       end
 
       @db.create_table? :tag_attributes do
-        Fixnum :tag_type, :fixed=>true, :size=>1 # 0: name tag, 1: auth tag
         Fixnum :role, :null=>false # only auth tag, if name tag then 0
-        
+        File :body, :size=>:medium
       end
 
       @db.create_table? :tag_mappings do
@@ -201,7 +200,7 @@ module Dcmgr
       @models ||= [Account, User, AccountsUser,
                    Instance, ImageStorage, ImageStorageHost, PhysicalHost,
                    HvController, HvAgent,
-                   Tag, TagMapping,
+                   Tag, TagAttribute, TagMapping,
                    Log,
                   ].freeze
     end
