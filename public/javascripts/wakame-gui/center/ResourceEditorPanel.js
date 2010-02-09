@@ -1,10 +1,11 @@
 
+var dataJson = null;
+var resourceTreePanel = null;
+
 ResourceEditorPanel = function(){
-
-  var mtabPanel = new MapPanel("./images/map/1F-10.jpeg");
-  var palletPanel = new PalletPanel(mtabPanel);
-
-  var resourceTreePanel = new ResourceTreePanel();
+  var mapPanel = new MapPanel();
+  var palletPanel = new PalletPanel(this);
+  resourceTreePanel = new ResourceTreePanel();
   var resourcePropertyPanel = new ResourcePropertyPanel();
   var editPanel = new Ext.Panel({
     region: 'east',
@@ -16,7 +17,43 @@ ResourceEditorPanel = function(){
     items : [resourceTreePanel,resourcePropertyPanel]
   });
 
-  var store1 = new Ext.data.Store({
+  this.drawRack = function(){
+    mapPanel.drawRack();
+  }
+
+  this.addRack = function(){
+    mapPanel.addRack();
+  }
+
+  this.setMapInfo = function(url,grid){
+    mapPanel.setMapInfo(url,grid);
+  }
+
+  this.changeMap = function(){
+    mapPanel.changeMap();
+  }
+
+  this.redrawTree = function(){
+    resourceTreePanel.redrawTree();
+  }
+
+  this.treeInfo = function(){
+    resourceTreePanel.TreeInfo();
+  }
+
+  function reqeustSuccess(response)
+  {
+    if (response.responseText !== undefined) { 
+      dataJson = Ext.decode(response.responseText);
+    }
+  }
+
+  function  reqeustfailure()
+  {
+    alert('Request failure.');
+  }
+
+  var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
       url: '/map-list',
       method:'GET'
@@ -25,11 +62,19 @@ ResourceEditorPanel = function(){
       'load': function( temp , records, ope ){
         if(records.length > 0){
           combo.setValue(records[0].id);
+          Ext.Ajax.request({
+	        url: '/rack-list',
+	        method: "GET",
+            params : 'id=' + records[0].id,
+            success: reqeustSuccess,
+            failure: reqeustfailure
+	      });
+          mapPanel.setMapInfo(records[0].data.url,records[0].data.grid);
         }
       }
     },
     reader: new Ext.data.JsonReader({
-      totalProperty: "totalCount",
+      totalProperty: "count",
       root:'rows',
       fields:[
         { name:'id'    ,type:'string'},
@@ -39,16 +84,19 @@ ResourceEditorPanel = function(){
       ]
     })
   });
-//  store.load();
+  store.load();
 
-  var store = new Ext.data.SimpleStore({
-    fields : ["ID","nm","url","grid"],
-    data : [
-      ["1","1F-100","xxxx.jpg",20],
-      ["2","2F-100","xxxx",20],
-      ["3","3F-100","xxxx",20],
-      ["4","3F-200","xxxx",20]
-    ]
+  var combo = new Ext.form.ComboBox({
+    typeAhead: true,
+    lazyRender:true,
+    editable: false,
+    width: 100, 
+    triggerAction: 'all',
+    forceSelection:true,
+    mode: 'local',
+    store: store,
+    valueField: 'id',
+    displayField: 'nm'
   });
 
   ResourceEditorPanel.superclass.constructor.call(this, {
@@ -56,34 +104,15 @@ ResourceEditorPanel = function(){
     header: false,
     border: false,
     layout: 'border',
-    items: [palletPanel,mtabPanel,editPanel],
-    tbar: [{
-      xtype: 'combo',
-      editable: false,
-      store: store,
-      mode: 'local',
-      width: 100,
-      triggerAction: 'all',
-      displayField: 'nm',
-      value:'1',
-      valueField: 'ID'
-    }]
+    items: [palletPanel,mapPanel,editPanel],
+    tbar: [combo ]
   });
 }
 Ext.extend(ResourceEditorPanel, Ext.Panel);
 
-MAPTabPanel = function(posi,size){
-  MAPTabPanel.superclass.constructor.call(this, {
-    split: true,
-    region: posi,
-    width: size,
-    activeTab: 0
-  });
-}
-Ext.extend(MAPTabPanel, Ext.TabPanel);
+PalletPanel = function(mappanel){
+  var mPanel = mappanel;
 
-PalletPanel = function(mapPanel){
-  var mPanel = mapPanel;
   PalletPanel.superclass.constructor.call(this, {
     region: 'west',
     split: true,
@@ -98,27 +127,70 @@ PalletPanel = function(mapPanel){
       align:'stretch'
     },
     defaults:{margins:'0 0 5 0'},
-    items:[{
-      xtype:'button',
-      text: 'Add Rack',
-      handler: function(){
-        mPanel.addRack();
+    items:[
+      {
+        xtype:'button',
+        text: 'Add Rack',
+        handler: function(){
+          mPanel.addRack();
+        }
+      },{
+        xtype:'button',
+        text: 'Change map',
+        handler: function(){
+          mPanel.changeMap();
+        }
+      },{
+        xtype:'button',
+        text: 'redraw tree',
+        handler: function(){
+          mPanel.redrawTree();
+        }
+      },{
+        xtype:'button',
+        text: 'treeinfo',
+        handler: function(){
+          mPanel.treeInfo();
+        }
+      },{
+        xtype:'button',
+        text: 'drawrack',
+        handler: function(){
+          mPanel.drawRack();
+        }
       }
-    }]
+    ]
   });
 }
 Ext.extend(PalletPanel, Ext.Panel);
 
 ResourceTreePanel = function(){
+  var root = new Ext.tree.TreeNode({
+      draggable:false,
+      id:"root",
+      text:"",
+      expanded:true,
+      leaf:false
+    });
   ResourceTreePanel.superclass.constructor.call(this,{
     split: true,
+    autoScroll: true,
     title: 'Server',
     border: false,
     useArrows:true,
     width: 160,
     rootVisible: false,
+    listeners:{
+      'afterrender': function(){
+alert('11111111111111111111111.');		// NG
+         task.delay(50); 
+      },
+      'activate': function(){
+alert('222222222222222222222222.');		// NG
+      }
+    },
     tbar : [
-      { 
+      {
         iconCls: 'icon-add',
         handler:function(){
           alert('Add');
@@ -135,44 +207,59 @@ ResourceTreePanel = function(){
         }
       }
     ],
-    root:{
-      text:      '',
-      draggable: false,
-      id:        'root',
-      expanded:  true,
-      children:  [
-        {
-          id:       'child1',
-          text:     'RACK-AAAA',
-          expanded:  true,
-          children:  [
-            {
-              id:       'menu01',
-              text:     'Server0001',
-              leaf:     true
-            },
-            {
-              id:       'menu02',
-              text:     'Server0002',
-              leaf:     true
-            }
-          ]
-        },
-        {
-          id:       'child2',
-          text:     'RACK-BBBB',
-          expanded:  true,
-          children:  [
-            {
-              id:       'menu03',
-              text:     'ServerAAAAA',
-              leaf:     true
-            }
-          ]
-        }
-      ]
+    root:root,
+    listeners: {
+      'click': function(node){
+
+        console.debug(node.getPath());
+
+//        alert('id:' + node.id);
+      }
     }
   });
+
+  this.TreeInfo = function(){
+    var max=root.childNodes.length;
+  }
+
+  this.redrawTree  = function(){
+    drawTree();
+  }
+
+  function createNode( id, text, isLeaf, isDrag ){
+    return new Ext.tree.TreeNode({
+      draggable:isDrag,
+      id:id,
+      text:text,
+      expanded:true,
+      leaf:isLeaf
+    });
+  }
+
+  var task = new Ext.util.DelayedTask(function(){
+    drawTree();
+  });
+
+  function drawTree(){
+    if(dataJson == null){
+      return;
+    }
+    var max=root.childNodes.length;
+    for(var i=0;i<max;i++){
+      root.childNodes[0].remove();
+    }
+    var max = dataJson.racks.count;
+    for(var i=0;i<max;i++){
+      var nm = dataJson.racks.rows[i].id;
+      var rack = createNode( nm,nm, false, false );
+      var smax = dataJson.racks.rows[i].servers.count;
+      for(var j=0;j<smax;j++){
+        var snm = dataJson.racks.rows[i].servers.rows[j].id;
+        rack.appendChild(createNode( snm,snm, true, false ));
+      }
+      root.appendChild(rack);
+    }
+  }
 }
 Ext.extend(ResourceTreePanel, Ext.tree.TreePanel);
 
@@ -183,36 +270,16 @@ ResourcePropertyPanel = function(){
     split: true,
     width: 150,
     bodyStyle:'padding:15px',
-    html: 'XXXXXXXX'
+    html: ''
   });
 }
 Ext.extend(ResourcePropertyPanel, Ext.Panel);
 
-MapPanel = function(url){
-  MapPanel.superclass.constructor.call(this, {
-    region: 'center',
-    autoScroll: true,
-    split: true,
-    layout: 'fit',
-    listeners:{
-      'afterrender': function(){
-        init();
-        setScreenSize();
-        var ctx = getCanvas();
-        if(ctx != null){
-          gridLine(ctx);
-        }
-        var top = Ext.get('canvas');
-        top.addListener("mousedown",mousedownHandler);
-        top.addListener("mouseup",mouseupHandler);
-        top.addListener("mousemove",mousemoveHandler);
-      }
-    },
-    html: '<div style="position:absolute"><img id="map" src="' + url + '"></div><canvas id="canvas" style="position:absolute"></canvas><div id="rackSurface" style="position:absolute"></div>'
-  });
-
+MapPanel = function(){
   var grid_x = 20;
   var grid_y = 20;
+  var map_url = Ext.BLANK_IMAGE_URL;
+  var render_end = false;
   var rack_width = 20;
   var rack_high  = 15;
   var boxDraw=false;
@@ -220,6 +287,7 @@ MapPanel = function(url){
   var mousex1=0;
   var mousex2=-1;
   var mousey2=-1;
+  var dataMap = new Array();
 
   function init(){
     Ext.override(Ext.dd.DD, {
@@ -241,6 +309,10 @@ MapPanel = function(url){
         Ext.get(this.getEl()).setY(top.getY()+dist_y);
       }
     });
+    var top = Ext.get('canvas');
+    top.addListener("mousedown",mousedownHandler);
+    top.addListener("mouseup",mouseupHandler);
+    top.addListener("mousemove",mousemoveHandler);
   }
 
   function getCanvas()
@@ -323,8 +395,12 @@ MapPanel = function(url){
     }
   }
 
-  // select rack
   function  selectRack(e,target) {
+
+//  console.debug(dataMap[target.id]);
+
+    resourceTreePanel.selectPath("/root/"+dataMap[target.id]);
+
 //   Ext.get(target.id).applyStyles({'background-color': 'yellow'});
 // console.debug("CTRL");
 // console.debug(e.browserEvent.ctrlKey);
@@ -341,14 +417,46 @@ MapPanel = function(url){
     ]
   });
 
-//
-//  this.loadImage = function(url){
-//    var map = document.getElementById('map');
-//    map.src = url;
-//  }
-//
+  this.setMapInfo = function(url,grid){
+    map_url = url;
+    grid_x  = grid;
+    grid_y  = grid;
+    if(render_end){
+      this.changeMap();
+    }
+  }
 
-  this.addRack = function(){
+  this.changeMap = function(){
+    var map = document.getElementById('map');
+    map.src = map_url;
+    map.onload = function() {
+      setScreenSize();
+      var ctx = getCanvas();
+      if(ctx != null){
+        gridLine(ctx);
+      }
+      map.onload = "";
+    }
+  }
+
+  var change = this.changeMap;
+  var task = new Ext.util.DelayedTask(function(){
+    change();
+  });
+
+  function drawRack(){
+    var max = dataJson.racks.count;
+    for(var i=0;i<max;i++){
+      var rtn = deployRack(dataJson.racks.rows[i].x,dataJson.racks.rows[i].y);
+      dataMap[rtn] = dataJson.racks.rows[i].id;
+    }
+  }
+
+  this.drawRack = function(){
+    drawRack();
+  }
+
+  function deployRack(x,y){
     var myEl = new Ext.Element(document.createElement('div'));
     myEl.setWidth(rack_width-2);
     myEl.setHeight(rack_high-2);
@@ -357,7 +465,7 @@ MapPanel = function(url){
     myEl.setStyle({ 'border-style':'solid' });
     myEl.setStyle({ 'border-color':'black' });
     myEl.setStyle({ 'border-width':'2px' });
-    myEl.setLocation(0,0);
+    myEl.setLocation(x,y);
     myEl.on('contextmenu', function(e){
       myMenu.showAt(e.getXY());
     }, null, {stopEvent:true});
@@ -365,7 +473,31 @@ MapPanel = function(url){
 // alert(myEl.id);	ここで自動で付けられたIDとデータをマッピングする
     Ext.get('rackSurface').appendChild(myEl.dom);
     new Ext.dd.DD(myEl, "group1");
+    return myEl.id;
   }
+  this.addRack = function(){
+
+// serverでラックのインスタンスを作成
+
+    deployRack(0,0);
+  }
+
+  MapPanel.superclass.constructor.call(this, {
+    region: 'center',
+    autoScroll: true,
+    split: true,
+    layout: 'fit',
+    listeners:{
+      'afterrender': function(){
+         init();
+         if(map_url != Ext.BLANK_IMAGE_URL){
+           task.delay(50); 
+         }
+         render_end = true;
+      }
+    },
+    html: '<div style="position:absolute"><img id="map" src="'+Ext.BLANK_IMAGE_URL+'"></div><canvas id="canvas" style="position:absolute"></canvas><div id="rackSurface" style="position:absolute"></div>'
+  });
 }
 Ext.extend(MapPanel, Ext.Panel);
 
