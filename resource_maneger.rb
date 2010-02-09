@@ -96,7 +96,7 @@ class ResourceManeger
     rack.store(:x,200)
     rack.store(:y,200)
     if level > 0
-      rack.store(:severs,getServers(rack_uuid,level))
+      rack.store(:servers,getServers(rack_uuid,level))
     end
     rows.push(rack)
 
@@ -106,7 +106,7 @@ class ResourceManeger
     rack.store(:x,300)
     rack.store(:y,200)
     if level > 0
-      rack.store(:severs,getServers(rack_uuid,level))
+      rack.store(:servers,getServers(rack_uuid,level))
     end
     rows.push(rack)
 
