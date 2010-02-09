@@ -8,6 +8,15 @@ function ChangeQuery(md)
   }
 }
 
+MAPTabPanel = function(posi,size){
+  MAPTabPanel.superclass.constructor.call(this, {
+    split: true,
+    region: posi,
+    width: size,
+    activeTab: 0
+  });
+}
+Ext.extend(MAPTabPanel, Ext.TabPanel);
 
 ResourceViewerPanel = function(){
   var serverquery = new ServerQueryPanel();
