@@ -83,14 +83,13 @@ module Dcmgr
     include RestModel
     model Tag
     public_name 'auth_tags'
-    allow_keys [:account, :name, :tag_type, :role]
+    allow_keys [:account, :name, :role]
 
     public_action :post do
       req_hash = request
       req_hash.delete :id
       tags = req_hash.delete :tags
 
-      req_hash[:tag_type] = Tag::TYPE_AUTH
       obj = _create(req_hash)
       
       # tag mappings
