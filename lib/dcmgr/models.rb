@@ -374,12 +374,20 @@ class Tag < Sequel::Model
       @attribute.tag_id = self.id unless @attribute.tag_id
       @attribute.save
     end
+    self
   end
 
   def find_attribute
-    unless @attribute = TagAttribute[:tag_id=>self.id]
-      @attribute = TagAttribute.create(:tag_id=>self.id)
+    return @attribute if @attribute
+      
+    if self.id
+      unless @attribute = TagAttribute[:tag_id=>self.id]
+        @attribute = TagAttribute.create(:tag_id=>self.id)
+      end
+    else
+      @attribute = TagAttribute.new
     end
+
     @attribute
   end
   
