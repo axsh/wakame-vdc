@@ -368,6 +368,11 @@ class Tag < Sequel::Model
     attribute.role = val
   end
 
+  def role
+    attribute = find_attribute
+    attribute.role
+  end
+
   def save
     super
     if @attribute
