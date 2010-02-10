@@ -83,5 +83,9 @@ describe "tags access by active resource" do
     real_tagattribute.should be_valid
     real_tagattribute.role == 1
   end
+
+  it "should store tag attribute"
+
+  it "should get tag attribute"
 end
 
