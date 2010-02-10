@@ -322,6 +322,8 @@ class Tag < Sequel::Model
 
   many_to_one :owner, :class=>:User
 
+  one_to_many :tag_attributes, :one_to_one=>true
+
   def self.create_system_tag(name)
     create(:account_id=>0, :owner_id=>0,
            :role=>0, :name=>name)
@@ -406,6 +408,7 @@ class Tag < Sequel::Model
 end
 
 class TagAttribute < Sequel::Model
+  many_to_one :tag, :one_to_one=>true
 end
 
 class Log < Sequel::Model

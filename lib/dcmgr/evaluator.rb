@@ -16,7 +16,7 @@ module Dcmgr
       end
 
       def evaluate(account, evaluator)
-        Tag.filter(:owner_id=>evaluator.id, :role=>self.class.id).each{|tag|
+        Tag.join(:tag_attributes, :tag_id=>:id).filter(:owner_id=>evaluator.id, :tag_attributes__role=>self.class.id).each{|tag|
           if class_type?
             return true
 
