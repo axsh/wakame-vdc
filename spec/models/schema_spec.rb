@@ -16,7 +16,7 @@ describe Dcmgr::Schema do
     Dcmgr::Schema.create!
     
     Dcmgr::Schema.models.each{|model|
-      if model == Tag
+      if [Tag, TagAttribute].include? model
         # check exist system tags
         Tag.count.should >= 1
       else
