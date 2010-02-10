@@ -71,7 +71,7 @@ describe Dcmgr::RoleExecutor do
   it "should evaluate get image storage" do
     role = Dcmgr::RoleExecutor.get(ImageStorage, :get, :id=>1)
     role.should be_true
-    role.class.is_a? Dcmgr::RoleExecutor::GetImageStorageClass
+    role.class.is_a? Dcmgr::RoleExecutor::GetImageStorage
     role.evaluate(@account, @user).should be_true
 
     role.execute(@account, @user).should == ImageStorage[1]

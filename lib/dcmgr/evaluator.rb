@@ -75,7 +75,7 @@ module Dcmgr
     class DestroyAccount < DestroyAction; @id = 4; end
     class CreateImageStorage < CreateAction; @id = 5; end
 
-    class GetImageStorageClass < Base
+    class GetImageStorage < Base
       @id = 6
 
       private
@@ -103,7 +103,7 @@ module Dcmgr
               CreateAccount,
               DestroyAccount,
               CreateImageStorage,
-              GetImageStorageClass,
+              GetImageStorage,
               DestroyImageStorage,
               CreateImageStorageHost,
               DestroyImageStorageHost,
@@ -117,7 +117,7 @@ module Dcmgr
 
     def self.get(target, action, params={})
       rolename = if target.class == Class
-                 then "%s%sClass" % [action.to_s.capitalize, target.name]
+                 then "%s%s" % [action.to_s.capitalize, target.name]
                  else"%s%s" % [action.to_s.capitalize, target.class]
                  end
       begin
