@@ -36,6 +36,20 @@ module Dcmgr
       attr_reader :params
     end
     
+    class CreateAction < Base
+      def _execute(accont, user, target)
+        target.save
+        true
+      end
+    end
+
+    class DestroyAction < Base
+      def _execute(accont, user, target)
+        target.destroy
+        true
+      end
+    end
+
     class RunInstance < Base
       @id = 1
       
@@ -57,35 +71,9 @@ module Dcmgr
       end
     end
 
-    class CreateAccount < Base
-      @id = 3
-
-      private
-      def _execute(account, user, target_account)
-        target_account.save
-        true
-      end
-    end
-
-    class DestroyAccount < Base
-      @id = 4
-
-      private
-      def _execute(account, user, target_account)
-        target_account.destroy
-        true
-      end
-    end
-
-    class CreateImageStorage < Base
-      @id = 5
-
-      private
-      def _execute(account, user, image_storage)
-        image_storage.save
-        true
-      end
-    end
+    class CreateAccount < CreateAction; @id = 3; end
+    class DestroyAccount < DestroyAction; @id = 4; end
+    class CreateImageStorage < CreateAction; @id = 5; end
 
     class GetImageStorageClass < Base
       @id = 6
@@ -96,29 +84,7 @@ module Dcmgr
       end
     end
 
-    class DestroyImageStorage < Base
-      @id = 7
-
-      private
-      def _execute(account, user, image_storage)
-        image_storage.destroy
-        true
-      end
-    end
-
-    class CreateAction < Base
-      def _execute(accont, user, target)
-        target.save
-        true
-      end
-    end
-
-    class DestroyAction < Base
-      def _execute(accont, user, target)
-        target.destroy
-        true
-      end
-    end
+    class DestroyImageStorage < DestroyAction; @id = 7; end
 
     class CreateImageStorageHost < CreateAction; @id = 8; end
     class DestroyImageStorageHost < DestroyAction; @id = 9; end
