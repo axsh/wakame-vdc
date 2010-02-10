@@ -400,5 +400,7 @@ describe "instance access by active resource" do
     
     instance.put(:snapshot)
   end
+
+  it "should get instances by location""
 end
 
