@@ -3,7 +3,6 @@ account_a = Account.create(:name=>'__test_account__', :contract_at=>Time.now)
 account_b = Account.create(:name=>'__test_account2__')
 
 user = User.create(:name=>'__test__', :password=>'passwd')
-p "add_account #{user} #{account_a}"
 user.add_account(account_a)
 
 image_storage_host = ImageStorageHost.create
