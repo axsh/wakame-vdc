@@ -13,10 +13,10 @@ describe "locations access by active resource" do
   it "should get location groups" do
     Dcmgr::location_groups = %w(floor rack power)
     groups = @c.find(:all)
-    group.length.should == 3
-    group[0].name.should == "floor"
-    group[1].name.should == "rack"
-    group[2].name.should == "power"
+    groups.length.should == 3
+    groups[0].name.should == "floor"
+    groups[1].name.should == "rack"
+    groups[2].name.should == "power"
   end
 end
 
