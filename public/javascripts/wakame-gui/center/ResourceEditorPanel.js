@@ -330,11 +330,11 @@ MapPanel = function(){
       gridLine(ctx);
 
 //
-// ‚±‚±‚Å”ÍˆÍ’†‚É‚ ‚éƒ‰ƒbƒN‚ğ‘I‘ğó‘Ô‚É‚·‚é
+// ã“ã“ã§ç¯„å›²ä¸­ã«ã‚ã‚‹ãƒ©ãƒƒã‚¯ã‚’é¸æŠçŠ¶æ…‹ã«ã™ã‚‹
 //
 //
 
-// ˜A‘z”z—ñ‚É‚Í for in
+// é€£æƒ³é…åˆ—ã«ã¯ for in
 
 for (var i in dataMap) {
   console.debug(i);
@@ -390,7 +390,7 @@ for (var i in dataMap) {
 	  var max = dataJson.racks.count;
 	  for(var i=0;i<max;i++){
 	      var rtn = deployRack(dataJson.racks.rows[i].x,dataJson.racks.rows[i].y);
-		  // ‚±‚±‚Å©“®‚Å•t‚¯‚ç‚ê‚½ID‚Æƒf[ƒ^‚ğƒ}ƒbƒsƒ“ƒO‚·‚é
+		  // ã“ã“ã§è‡ªå‹•ã§ä»˜ã‘ã‚‰ã‚ŒãŸIDã¨ãƒ‡ãƒ¼ã‚¿ã‚’ãƒãƒƒãƒ”ãƒ³ã‚°ã™ã‚‹
 	      dataMap[rtn] = dataJson.racks.rows[i].id;
 	  }
 	}
@@ -466,13 +466,13 @@ for (var i in dataMap) {
   }
 
   this.addRack = function(){
-	// server‚Åƒ‰ƒbƒN‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ğì¬
+	// serverã§ãƒ©ãƒƒã‚¯ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ä½œæˆ
 // /rack-create?x=0;y=0
-//  suucessirack idj
+//  suucessï¼ˆrack idï¼‰
 //	/rack-list
 //  dataJson.racks.rows.push[]
 //  dataMap[rtn] = 
-	// select‚·‚éRACK‚ğŠÇ—
+	// selectã™ã‚‹RACKã‚’ç®¡ç†
     var x = 20;
     var y = 20;
     var rtn = deployRack(x,y);
