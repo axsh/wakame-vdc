@@ -32,6 +32,7 @@ module Dcmgr
     
     public_crud PublicNameTag
     public_crud PublicAuthTag
+    public_crud PublicTagAttribute
     
     public_crud PublicInstance
     public_crud PublicPhysicalHost

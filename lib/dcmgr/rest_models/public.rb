@@ -73,7 +73,7 @@ module Dcmgr
     public_action :post do
       create
     end
-    
+
     public_action_withid :delete do
       destroy
     end
@@ -111,6 +111,59 @@ module Dcmgr
     
     public_action_withid :delete do
       destroy
+    end
+  end
+
+  class PublicTagAttribute
+    include RestModel
+    model TagAttribute
+    allow_keys [:body]
+
+    public_action :get do
+      find
+    end
+
+    def format_object(object)
+      if object
+        def object.keys
+          [:tag, :body, :uuid]
+        end
+        add_only_uuid_method object, :tag
+        def object.uuid
+          self.tag
+        end
+      end
+      object
+    end
+
+    public_action_withid :get do
+      ret = nil
+      if uuid
+        tag = Tag[uuid]
+        ret = tag.tag_attribute
+        unless ret
+          ret = TagAttribute.create(:tag_id=>tag.id,
+                                    :body=>'')
+          
+        end
+      end
+      format_object(ret)
+    end
+
+    public_action_withid :put do
+      obj = Tag[uuid].tag_attribute
+      req_hash = request
+      req_hash.delete :id
+      allow_keys.each{|key|
+        if key == :account # duplicate create
+          obj.account = Account[req_hash[key]]
+        elsif key == :user
+            
+        else req_hash.key?(key)
+          obj.send('%s=' % key, req_hash[key])
+        end
+      }
+      format_object(obj.save)
     end
   end
 

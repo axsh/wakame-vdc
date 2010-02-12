@@ -160,12 +160,12 @@ module Dcmgr
               k
             end
           }
-          keys.push :tags if self.respond_to? :tags
+          keys.push :tags if super.respond_to? :tags
           keys  
         end
         # only uuid
-        [:tags, :account, :hv_agent, :user, :relate_user,
-         :physical_host, :image_storage].each{|method|
+        [:account, :hv_agent, :user, :relate_user,
+         :physical_host, :image_storage, :tag].each{|method|
           add_only_uuid_method object, method
         }
         def object.tags
