@@ -1,11 +1,12 @@
 
 var dataJson = null;
 var resourceTreePanel = null;
+var mapPanel = null;
 
 ResourceEditorPanel = function(){
-  var mapPanel = new MapPanel();
-  var palletPanel = new PalletPanel(this);
+  mapPanel = new MapPanel();
   resourceTreePanel = new ResourceTreePanel();
+  var palletPanel = new PalletPanel();
   var resourcePropertyPanel = new ResourcePropertyPanel();
   var editPanel = new Ext.Panel({
     region: 'east',
@@ -17,40 +18,28 @@ ResourceEditorPanel = function(){
     items : [resourceTreePanel,resourcePropertyPanel]
   });
 
-  this.drawRack = function(){
-    mapPanel.drawRack();
-  }
-
-  this.addRack = function(){
-    mapPanel.addRack();
-  }
-
-  this.setMapInfo = function(url,grid){
-    mapPanel.setMapInfo(url,grid);
-  }
-
-  this.changeMap = function(){
-    mapPanel.changeMap();
-  }
-
-  this.redrawTree = function(){
-    resourceTreePanel.redrawTree();
-  }
-
-  this.treeInfo = function(){
-    resourceTreePanel.TreeInfo();
-  }
-
   function reqeustSuccess(response)
   {
     if (response.responseText !== undefined) { 
       dataJson = Ext.decode(response.responseText);
+      mapPanel.drawRack();
+      resourceTreePanel.drawTree();
     }
   }
 
   function  reqeustfailure()
   {
     alert('Request failure.');
+  }
+
+  function loadRackList(id){
+    Ext.Ajax.request({
+	  url: '/rack-list',
+	  method: "GET",
+      params : 'id=' + id,
+      success: reqeustSuccess,
+      failure: reqeustfailure
+	});
   }
 
   var store = new Ext.data.Store({
@@ -62,13 +51,7 @@ ResourceEditorPanel = function(){
       'load': function( temp , records, ope ){
         if(records.length > 0){
           combo.setValue(records[0].id);
-          Ext.Ajax.request({
-	        url: '/rack-list',
-	        method: "GET",
-            params : 'id=' + records[0].id,
-            success: reqeustSuccess,
-            failure: reqeustfailure
-	      });
+          loadRackList(records[0].id);
           mapPanel.setMapInfo(records[0].data.url,records[0].data.grid);
         }
       }
@@ -96,7 +79,15 @@ ResourceEditorPanel = function(){
     mode: 'local',
     store: store,
     valueField: 'id',
-    displayField: 'nm'
+    displayField: 'nm',
+    listeners: {
+      'select': function(cb,rec,index){
+      console.debug(rec);
+//      console.debug(index);
+        loadRackList(rec.id);
+        mapPanel.setMapInfo(rec.data.url,rec.data.grid);
+      }
+    }
   });
 
   ResourceEditorPanel.superclass.constructor.call(this, {
@@ -105,22 +96,21 @@ ResourceEditorPanel = function(){
     border: false,
     layout: 'border',
     items: [palletPanel,mapPanel,editPanel],
-    tbar: [combo ]
+    tbar: [combo]
   });
 }
 Ext.extend(ResourceEditorPanel, Ext.Panel);
 
-PalletPanel = function(mappanel){
-  var mPanel = mappanel;
-
+PalletPanel = function(){
   PalletPanel.superclass.constructor.call(this, {
     region: 'west',
     split: true,
+    title: "Rack",
     collapsed:false,
     collapsible:true,
     titleCollapse:true,
     animCollapse:true,
-    width: 80,
+    width: 70,
     layout: {
       type:'vbox',
       padding:'5',
@@ -130,33 +120,10 @@ PalletPanel = function(mappanel){
     items:[
       {
         xtype:'button',
-        text: 'Add Rack',
+        iconCls: 'icon-add',
+        text: 'Add',
         handler: function(){
-          mPanel.addRack();
-        }
-      },{
-        xtype:'button',
-        text: 'Change map',
-        handler: function(){
-          mPanel.changeMap();
-        }
-      },{
-        xtype:'button',
-        text: 'redraw tree',
-        handler: function(){
-          mPanel.redrawTree();
-        }
-      },{
-        xtype:'button',
-        text: 'treeinfo',
-        handler: function(){
-          mPanel.treeInfo();
-        }
-      },{
-        xtype:'button',
-        text: 'drawrack',
-        handler: function(){
-          mPanel.drawRack();
+          mapPanel.addRack();
         }
       }
     ]
@@ -166,65 +133,12 @@ Ext.extend(PalletPanel, Ext.Panel);
 
 ResourceTreePanel = function(){
   var root = new Ext.tree.TreeNode({
-      draggable:false,
-      id:"root",
-      text:"",
-      expanded:true,
-      leaf:false
-    });
-  ResourceTreePanel.superclass.constructor.call(this,{
-    split: true,
-    autoScroll: true,
-    title: 'Server',
-    border: false,
-    useArrows:true,
-    width: 160,
-    rootVisible: false,
-    listeners:{
-      'afterrender': function(){
-alert('11111111111111111111111.');		// NG
-         task.delay(50); 
-      },
-      'activate': function(){
-alert('222222222222222222222222.');		// NG
-      }
-    },
-    tbar : [
-      {
-        iconCls: 'icon-add',
-        handler:function(){
-          alert('Add');
-        }
-      },
-      { iconCls: 'icon-delete',
-        handler:function(){
-          alert('Remove');
-         }
-      },
-      { iconCls: 'icon-edit',
-        handler:function(){
-          alert('Edit');
-        }
-      }
-    ],
-    root:root,
-    listeners: {
-      'click': function(node){
-
-        console.debug(node.getPath());
-
-//        alert('id:' + node.id);
-      }
-    }
+    draggable:false,
+    id:"root",
+    text:"",
+    expanded:true,
+    leaf:false
   });
-
-  this.TreeInfo = function(){
-    var max=root.childNodes.length;
-  }
-
-  this.redrawTree  = function(){
-    drawTree();
-  }
 
   function createNode( id, text, isLeaf, isDrag ){
     return new Ext.tree.TreeNode({
@@ -236,14 +150,7 @@ alert('222222222222222222222222.');		// NG
     });
   }
 
-  var task = new Ext.util.DelayedTask(function(){
-    drawTree();
-  });
-
   function drawTree(){
-    if(dataJson == null){
-      return;
-    }
     var max=root.childNodes.length;
     for(var i=0;i<max;i++){
       root.childNodes[0].remove();
@@ -251,15 +158,56 @@ alert('222222222222222222222222.');		// NG
     var max = dataJson.racks.count;
     for(var i=0;i<max;i++){
       var nm = dataJson.racks.rows[i].id;
-      var rack = createNode( nm,nm, false, false );
+      var rack = createNode( nm, nm, false, false );
       var smax = dataJson.racks.rows[i].servers.count;
       for(var j=0;j<smax;j++){
         var snm = dataJson.racks.rows[i].servers.rows[j].id;
-        rack.appendChild(createNode( snm,snm, true, false ));
+        rack.appendChild(createNode( nm+":"+snm, snm, true, false ));
       }
       root.appendChild(rack);
     }
   }
+  this.drawTree = function(){
+    drawTree();
+  }
+
+  ResourceTreePanel.superclass.constructor.call(this,{
+    split: true,
+    autoScroll: true,
+    title: 'Server',
+    border: false,
+    useArrows:true,
+    width: 160,
+    rootVisible: false,
+    tbar : [
+      {
+        iconCls: 'icon-add',
+        handler:function(){
+console.debug('Server Add..');
+console.debug(resourceTreePanel.getSelectionModel().selNode.id);
+        }
+      },
+      { iconCls: 'icon-delete',
+        handler:function(){
+console.debug('Server Remove..');
+         }
+      },
+      { iconCls: 'icon-edit',
+        handler:function(){
+console.debug('Server Edit..');
+        }
+      }
+    ],
+    root:root,
+    listeners: {
+      'click': function(node){
+        console.debug(node.getPath());
+//      console.dir(node);
+//      console.debug(root.childNodes.length);
+//        alert('id:' + node.id);
+      }
+    }
+  });
 }
 Ext.extend(ResourceTreePanel, Ext.tree.TreePanel);
 
@@ -291,6 +239,12 @@ MapPanel = function(){
 
   function init(){
     Ext.override(Ext.dd.DD, {
+      onDrag : function(e){
+        var x = Ext.get(this.getEl()).getX()-top.getX();
+        var y = Ext.get(this.getEl()).getY()-top.getY();
+//console.debug(x);
+//console.debug(y);
+      },
       endDrag: function(e) {
 //      alert(Ext.get(this.getEl()).id);
         var top = Ext.get('rackSurface');
@@ -374,6 +328,19 @@ MapPanel = function(){
     if(ctx != null){
       clearSelCanvas(ctx);
       gridLine(ctx);
+
+//
+// ここで範囲中にあるラックを選択状態にする
+//
+//
+
+// 連想配列には for in
+
+for (var i in dataMap) {
+  console.debug(i);
+  console.debug(dataMap[i]);
+}
+
     }
     boxDraw=false;
     mousex2=-1;
@@ -397,7 +364,8 @@ MapPanel = function(){
 
   function  selectRack(e,target) {
 
-//  console.debug(dataMap[target.id]);
+    console.debug(target.id);
+    console.debug(dataMap[target.id]);
 
     resourceTreePanel.selectPath("/root/"+dataMap[target.id]);
 
@@ -408,15 +376,6 @@ MapPanel = function(){
 // console.debug(e.browserEvent.shiftKey);
   }
 
-  var myMenu = new Ext.menu.Menu({
-    id: 'mainMenu',
-    style: { overflow: 'visible' },
-    items: [
-      {text:'add server'},
-      {text:'delete rack'}
-    ]
-  });
-
   this.setMapInfo = function(url,grid){
     map_url = url;
     grid_x  = grid;
@@ -426,7 +385,18 @@ MapPanel = function(){
     }
   }
 
-  this.changeMap = function(){
+  function drawRack(){
+    if(render_end){
+	  var max = dataJson.racks.count;
+	  for(var i=0;i<max;i++){
+	      var rtn = deployRack(dataJson.racks.rows[i].x,dataJson.racks.rows[i].y);
+		  // ここで自動で付けられたIDとデータをマッピングする
+	      dataMap[rtn] = dataJson.racks.rows[i].id;
+	  }
+	}
+  }
+
+  function changeMap(){
     var map = document.getElementById('map');
     map.src = map_url;
     map.onload = function() {
@@ -439,22 +409,41 @@ MapPanel = function(){
     }
   }
 
-  var change = this.changeMap;
-  var task = new Ext.util.DelayedTask(function(){
-    change();
-  });
-
-  function drawRack(){
-    var max = dataJson.racks.count;
-    for(var i=0;i<max;i++){
-      var rtn = deployRack(dataJson.racks.rows[i].x,dataJson.racks.rows[i].y);
-      dataMap[rtn] = dataJson.racks.rows[i].id;
-    }
+  this.changeMap = function(){
+    changeMap();
   }
-
   this.drawRack = function(){
     drawRack();
   }
+
+  var taskDrawMap = new Ext.util.DelayedTask(function(){
+    changeMap();
+  });
+  var taskDrawRack = new Ext.util.DelayedTask(function(){
+    drawRack();
+    resourceTreePanel.drawTree();
+  });
+
+  var selectedRack = null;
+
+  var myMenu = new Ext.menu.Menu({
+    style: { overflow: 'visible' },
+    items: [
+      {text:'add server',
+        handler: function(node,e){
+          console.debug(selectedRack);
+          selectedRack = null;
+        }
+      },
+      {text:'delete rack',
+        handler: function(node,e){
+// console.debug(e.browserEvent);
+          console.debug(selectedRack);
+          selectedRack = null;
+        }
+      }
+    ]
+  });
 
   function deployRack(x,y){
     var myEl = new Ext.Element(document.createElement('div'));
@@ -466,20 +455,27 @@ MapPanel = function(){
     myEl.setStyle({ 'border-color':'black' });
     myEl.setStyle({ 'border-width':'2px' });
     myEl.setLocation(x,y);
-    myEl.on('contextmenu', function(e){
+    myEl.on('contextmenu', function(e,w,q){
+      selectedRack = this.id;
       myMenu.showAt(e.getXY());
     }, null, {stopEvent:true});
     myEl.addListener("click",selectRack);
-// alert(myEl.id);	ここで自動で付けられたIDとデータをマッピングする
     Ext.get('rackSurface').appendChild(myEl.dom);
     new Ext.dd.DD(myEl, "group1");
     return myEl.id;
   }
+
   this.addRack = function(){
-
-// serverでラックのインスタンスを作成
-
-    deployRack(0,0);
+	// serverでラックのインスタンスを作成
+// /rack-create?x=0;y=0
+//  suucess（rack id）
+//	/rack-list
+//  dataJson.racks.rows.push[]
+//  dataMap[rtn] = 
+	// selectするRACKを管理
+    var x = 20;
+    var y = 20;
+    var rtn = deployRack(x,y);
   }
 
   MapPanel.superclass.constructor.call(this, {
@@ -491,7 +487,10 @@ MapPanel = function(){
       'afterrender': function(){
          init();
          if(map_url != Ext.BLANK_IMAGE_URL){
-           task.delay(50); 
+           taskDrawMap.delay(50); 
+         }
+         if(dataJson != null){
+           taskDrawRack.delay(100);
          }
          render_end = true;
       }
