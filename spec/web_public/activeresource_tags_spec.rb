@@ -7,15 +7,18 @@ describe "tags access by active resource" do
   include ActiveResourceHelperMethods
   before(:all) do
     reset_db
-    @name_class = ar_class :NameTag
-    @auth_class = ar_class :AuthTag
-    
-    @account_class = ar_class :Account
-    @account = @account_class.create(:name=>'test account by instance spec')
+
+    @name_c = ar_class :NameTag
+    @auth_c = ar_class :AuthTag
+
+    @attribute_c = ar_class :TagAttribute
+
+    account_c = ar_class :Account
+    @account = account_c.create(:name=>'test account by instance spec')
   end
 
   it "should add name tag" do
-    tag = @name_class.create(:name=>'name tag #1', :account=>@account.id)
+    tag = @name_c.create(:name=>'name tag #1', :account=>@account.id)
     tag.id.length.should > 0
 
     real_tag = Tag[tag.id]
@@ -36,7 +39,7 @@ describe "tags access by active resource" do
   end
   
   it "should add simple auth tag" do
-    tag = @auth_class.create(:name=>'instance crud tag #1',
+    tag = @auth_c.create(:name=>'instance crud tag #1',
                              :role=>1,
                              :tags=>[],
                              :account=>@account.id)
@@ -62,11 +65,11 @@ describe "tags access by active resource" do
   
   
   it "should add auth tag that includes name tags" do
-    tag1 = @name_class.create(:name=>'name tag #2-1', :account=>@account.id)
-    tag2 = @name_class.create(:name=>'name tag #2-2', :account=>@account.id)
-    tag3 = @name_class.create(:name=>'name tag #2-3', :account=>@account.id)
+    tag1 = @name_c.create(:name=>'name tag #2-1', :account=>@account.id)
+    tag2 = @name_c.create(:name=>'name tag #2-2', :account=>@account.id)
+    tag3 = @name_c.create(:name=>'name tag #2-3', :account=>@account.id)
     
-    tag = @auth_class.create(:name=>'instance crud tag #2',
+    tag = @auth_c.create(:name=>'instance crud tag #2',
                              :role=>1,
                              :tags=>[tag1.id, tag2.id, tag3.id],
                              :account=>@account.id)
@@ -84,8 +87,25 @@ describe "tags access by active resource" do
     real_tagattribute.role == 1
   end
 
-  it "should store tag attribute"
+  it "should store tag attribute" do
+    tag = @name_c.create(:name=>'name tag #2-1', :account=>@account.id)
 
-  it "should get tag attribute"
+    attribute = @attribute_c.find(tag.id)
+    attribute.body = 'x' * 100
+    attribute.save
+
+    real_attribute = Tag[tag.id].tag_attribute
+    real_attribute.body.should == 'x' * 100
+  end
+
+  it "should get tag attribute" do
+    tag = @name_c.create(:name=>'name tag #2-1', :account=>@account.id)
+
+    TagAttribute.create(:tag_id=>Tag[tag.id].id,
+                        :body=>'y'*100)
+
+    attribute = @attribute_c.find(tag.id)
+    attribute.body.should == 'y' * 100
+  end
 end
 
