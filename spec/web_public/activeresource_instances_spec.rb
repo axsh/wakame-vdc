@@ -278,6 +278,7 @@ describe "instance access by active resource" do
   end
 
   it "should find tag" do
+    pending
     tag_c = Tag[:name=>'sample tag c']
     instance = @c.create(:account=>Account[1].id,
                          :need_cpus=>1,
