@@ -39,6 +39,8 @@ module Dcmgr
     public_crud PublicImageStorage
     public_crud PublicImageStorageHost
     
+    public_crud PublicLocationGroup
+
     get '/' do
       'startup dcmgr'
     end

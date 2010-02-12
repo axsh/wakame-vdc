@@ -336,4 +336,14 @@ module Dcmgr
       []
     end
   end
+
+  class PublicLocationGroup
+    include RestModel
+    model LocationGroup
+    allow_keys [:name]
+    
+    public_action :get do
+      LocationGroup.all
+    end
+  end
 end

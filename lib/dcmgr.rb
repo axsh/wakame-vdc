@@ -29,6 +29,8 @@ module Dcmgr
     @logger
   end
 
+  attr_accessor :location_groups
+
   def hvchttp
     @hvchttp ||= HvcHttpMock.new(HvController[1])
   end
