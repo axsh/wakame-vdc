@@ -88,7 +88,6 @@ describe "tags access by active resource" do
   end
 
   it "should store tag attribute" do
-    pending
     tag = @name_c.create(:name=>'name tag #2-1', :account=>@account.id)
 
     attribute = @attribute_c.find(tag.id)
@@ -102,7 +101,7 @@ describe "tags access by active resource" do
   it "should get tag attribute" do
     tag = @name_c.create(:name=>'name tag #2-1', :account=>@account.id)
 
-    TagAttribute.create(:tag_id=>Tag[tag.id].id,
+    TagAttribute.create(:tag=>Tag[tag.id],
                         :body=>'y'*100)
 
     attribute = @attribute_c.find(tag.id)
