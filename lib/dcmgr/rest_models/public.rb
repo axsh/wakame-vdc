@@ -142,7 +142,7 @@ module Dcmgr
         tag = Tag[uuid]
         ret = tag.tag_attribute
         unless ret
-          ret = TagAttribute.create(:tag_id=>tag.id,
+          ret = TagAttribute.create(:tag=>tag,
                                     :body=>'')
           
         end
