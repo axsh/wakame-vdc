@@ -25,9 +25,9 @@ module Dcmgr::Model
         raise InvalidUUIDError, "invalid uuid: #{p_uuid}"
       end
 
-      def tags
-        [Tag.new(:name=>"%s-_ROLETAG" % [self.prefix_uuid])]
-      end
+      #def tags
+      #  [Tag.new(:name=>"%s-_ROLETAG" % [self.prefix_uuid])]
+      #end
     end
     
     def self.included(mod)
@@ -317,6 +317,7 @@ class Tag < Sequel::Model
   TYPE_AUTH = 1
 
   many_to_one :account
+
   one_to_many :tag_mappings
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_TAG}
 

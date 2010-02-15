@@ -11,7 +11,9 @@ module Dcmgr
 
       def self.id; @id; end
 
-      def class_type?
+      def self.allow_types; @allow_types; end
+
+      def class_target?
         @target.class == Class
       end
 
@@ -20,18 +22,17 @@ module Dcmgr
                  :tag_id=>:id).filter(:owner_id=>evaluator.id,
                                       :tag_attributes__role=>self.class.id,
                                       :account_id=>account.id).each{|tag|
-          if class_type?
-            return true
-
-          else
-            if @target.tags.index{|t| tag.tags.include? t} or
-                @target.class.tags.index{|t| tag.name == t.name}
-              return true
-            end
+          unless class_target?
+            return true if @target.tags.index{|t| tag.tags.include? t}
           end
+          
+          return true if TagMapping.dataset.where(:target_type=>
+                                                  self.class.allow_types,
+                                                  :tag_id=>tag.tags.map{|t| t.id},
+                                                  :target_id=>0).count > 0
         }
-        raise RoleError, "no role" +
-          "(user: #{evaluator.uuid}, target: #{@target})"
+        raise RoleError, "no role #{self.class}" +
+          "(user: #{evaluator.uuid}, account: #{account.uuid}, target: #{@target})"
       end
 
       def execute(account, evaluator)
@@ -58,6 +59,7 @@ module Dcmgr
 
     class RunInstance < Base
       @id = 1
+      @allow_types = [TagMapping::TYPE_INSTANCE]
       
       def _execute(account, user, instance)
         instance.status = Instance::STATUS_TYPE_ONLINE
@@ -68,6 +70,7 @@ module Dcmgr
 
     class ShutdownInstance < Base
       @id = 2
+      @allow_types = [TagMapping::TYPE_INSTANCE]
 
       private
       def _execute(account, user, instance)
@@ -77,12 +80,24 @@ module Dcmgr
       end
     end
 
-    class CreateAccount < CreateAction; @id = 3; end
-    class DestroyAccount < DestroyAction; @id = 4; end
-    class CreateImageStorage < CreateAction; @id = 5; end
+    class CreateAccount < CreateAction;
+      @id = 3
+      @allow_types = [TagMapping::TYPE_ACCOUNT]
+    end
+
+    class DestroyAccount < DestroyAction
+      @id = 4
+      @allow_types = [TagMapping::TYPE_ACCOUNT]
+    end
+
+    class CreateImageStorage < CreateAction
+      @id = 5
+      @allow_types = [TagMapping::TYPE_IMAGE_STORAGE]
+    end
 
     class GetImageStorage < Base
       @id = 6
+      @allow_types = [TagMapping::TYPE_IMAGE_STORAGE]
 
       private
       def _execute(account, user, image_storage_class)
@@ -90,19 +105,50 @@ module Dcmgr
       end
     end
 
-    class DestroyImageStorage < DestroyAction; @id = 7; end
+    class DestroyImageStorage < DestroyAction
+      @id = 7
+      @allow_types = [TagMapping::TYPE_IMAGE_STORAGE]
+    end
 
-    class CreateImageStorageHost < CreateAction; @id = 8; end
-    class DestroyImageStorageHost < DestroyAction; @id = 9; end
+    class CreateImageStorageHost < CreateAction
+      @id = 8
+      @allow_types = [TagMapping::TYPE_IMAGE_STORAGE_HOST]
+    end
 
-    class CreatePhysicalHost < CreateAction; @id = 10; end
-    class DestroyPhysicalHost < DestroyAction; @id = 11; end
+    class DestroyImageStorageHost < DestroyAction
+      @id = 9
+      @allow_types = [TagMapping::TYPE_IMAGE_STORAGE_HOST]
+    end
 
-    class CreateHvController < CreateAction; @id = 12; end
-    class DestroyHvController < DestroyAction; @id = 13; end
+    class CreatePhysicalHost < CreateAction
+      @id = 10
+      @allow_types = [TagMapping::TYPE_PHYSICAL_HOST]
+    end
 
-    class CreateHvAgent < CreateAction; @id = 14; end
-    class DestroyHvAgent < DestroyAction; @id = 15; end
+    class DestroyPhysicalHost < DestroyAction
+      @id = 11
+      @allow_types = [TagMapping::TYPE_PHYSICAL_HOST]
+    end
+
+    class CreateHvController < CreateAction
+      @id = 12
+      @allow_types = [TagMapping::TYPE_HV_CONTROLLER]
+    end
+
+    class DestroyHvController < DestroyAction
+      @id = 13
+      @allow_types = [TagMapping::TYPE_HV_CONTROLLER]
+    end
+
+    class CreateHvAgent < CreateAction
+      @id = 14
+      @allow_types = [TagMapping::TYPE_HV_AGENT]
+    end
+
+    class DestroyHvAgent < DestroyAction
+      @id = 15
+      @allow_types = [TagMapping::TYPE_HV_AGENT]
+    end
 
     @roles = [RunInstance,
               ShutdownInstance,
