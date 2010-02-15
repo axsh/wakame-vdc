@@ -55,78 +55,28 @@ TagMapping.create(:tag=>normal_tag_a,
                   :target_type=>TagMapping::TYPE_INSTANCE,
                   :target_id=>instance_a.id)
 
-[Dcmgr::RoleExecutor::RunInstance,
- Dcmgr::RoleExecutor::ShutdownInstance].each{|role|
+Dcmgr::RoleExecutor.roles.each{|role|
+  # create role tag
   role_tag = Tag.create(:name=>role.name,
                         :role=>role.id,
                         :account=>account_a,
                         :owner=>user)
-  TagMapping.create(:tag=>normal_tag_a,
+
+  # create normal tag
+  tag = Tag.create(:name=>"normal #{role.name}",
+                   :account=>account_a,
+                   :owner=>user)
+
+  # belongs to normal tag
+  role.allow_types.each{|type|
+    TagMapping.create(:tag=>tag,
+                      :target_type=>type,
+                      :target_id=>0)
+  }
+
+  # relation role tag, normal tag
+  TagMapping.create(:tag=>tag,
                     :target_type=>TagMapping::TYPE_TAG,
                     :target_id=>role_tag.id)
 }
 
-Tag.create(:name=>Account.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::CreateAccount.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>Account.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::DestroyAccount.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>ImageStorage.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::CreateImageStorage.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>ImageStorage.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::GetImageStorage.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>ImageStorage.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::DestroyImageStorage.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>ImageStorageHost.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::CreateImageStorageHost.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>ImageStorageHost.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::DestroyImageStorageHost.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>PhysicalHost.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::CreatePhysicalHost.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>PhysicalHost.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::DestroyPhysicalHost.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>HvController.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::CreateHvController.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>HvController.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::DestroyHvController.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>HvAgent.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::CreateHvAgent.id,
-           :account=>account_a,
-           :owner=>user)
-
-Tag.create(:name=>HvAgent.tags[0].name,
-           :role=>Dcmgr::RoleExecutor::DestroyHvAgent.id,
-           :account=>account_a,
-           :owner=>user)
