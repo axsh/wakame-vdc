@@ -16,13 +16,18 @@ module Dcmgr
       end
 
       def evaluate(account, evaluator)
-        Tag.join(:tag_attributes, :tag_id=>:id).filter(:owner_id=>evaluator.id, :tag_attributes__role=>self.class.id).each{|tag|
+        Tag.join(:tag_attributes,
+                 :tag_id=>:id).filter(:owner_id=>evaluator.id,
+                                      :tag_attributes__role=>self.class.id,
+                                      :account_id=>account.id).each{|tag|
           if class_type?
             return true
 
           else
-            return true if @target.tags.index{|t| tag.tags.include? t}
-            return true if @target.class.tags.index{|t| tag.name == t.name}
+            if @target.tags.index{|t| tag.tags.include? t} or
+                @target.class.tags.index{|t| tag.name == t.name}
+              return true
+            end
           end
         }
         raise RoleError, "no role" +
@@ -30,6 +35,7 @@ module Dcmgr
       end
 
       def execute(account, evaluator)
+        evaluate(account, evaluator)
         _execute(account, evaluator, @target)
       end
 

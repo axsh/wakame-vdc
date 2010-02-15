@@ -9,6 +9,7 @@ describe Dcmgr::RoleExecutor do
   before(:all) do
     @user = User[1]
     @account = Account[1]
+    @other_account = Account.create
   end
   
   it "should evaluate run instance" do
@@ -21,6 +22,21 @@ describe Dcmgr::RoleExecutor do
     instance.should_receive(:status=)
     instance.should_receive(:save)
     role.execute(@account, @user).should be_true
+  end
+
+  it "should evaluate run instance, and check role error by other account" do
+    instance = Instance[1]
+    role = Dcmgr::RoleExecutor.get(instance, :run)
+    role.should be_true
+    role.class.is_a? Dcmgr::RoleExecutor::RunInstance
+
+    lambda {
+      role.evaluate(@other_account, @user).should be_true
+    }.should raise_error(Dcmgr::RoleError)
+
+    lambda {
+      role.execute(@other_account, @user).should be_true
+    }.should raise_error(Dcmgr::RoleError)
   end
 
   it "should evaluate shutdown instance" do
