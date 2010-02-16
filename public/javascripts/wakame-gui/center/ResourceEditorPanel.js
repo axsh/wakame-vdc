@@ -233,8 +233,8 @@ MapPanel = function(){
   var boxDraw=false;
   var mousex1=0;
   var mousex1=0;
-  var mousex2=-1;
-  var mousey2=-1;
+  var mousex2=0;
+  var mousey2=0;
   var dataMap = new Array();
 
   function init(){
@@ -267,11 +267,12 @@ MapPanel = function(){
     top.addListener("mousedown",mousedownHandler);
     top.addListener("mouseup",mouseupHandler);
     top.addListener("mousemove",mousemoveHandler);
+    top.addListener("mouseout",mouseoutHandler);
   }
 
   function getCanvas()
   {
-    var canvas = document.getElementById("canvas");
+    var canvas = Ext.getDom("canvas");
     if(canvas.getContext){
       var ctx = canvas.getContext("2d");
       ctx.lineWidth = 1;
@@ -282,19 +283,19 @@ MapPanel = function(){
 
   function setScreenSize()
   {
-    var canvas = document.getElementById("canvas");
-    var map = document.getElementById('map');
+    var canvas = Ext.getDom("canvas");
+    var map = Ext.getDom('map');
     canvas.height = map.height;
     canvas.width = map.width;
   }
 
   function clearSelCanvas(ctx){
-    var canvas = document.getElementById("canvas");
+    var canvas = Ext.getDom("canvas");
     ctx.clearRect(0,0,canvas.width,canvas.height);
   }
 
   function gridLine(ctx) {
-    var map = document.getElementById('map');
+    var map = Ext.getDom('map');
     ctx.globalAlpha = 0.8;
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'rgb(204,204,153)';
@@ -323,27 +324,24 @@ MapPanel = function(){
     mousey1=e.browserEvent.clientY-top.getY();
   }
 
-  function mouseupHandler(e, target) { 
+  function mouseSelectCancel() { 
     var ctx = getCanvas();
     if(ctx != null){
       clearSelCanvas(ctx);
       gridLine(ctx);
+    }
+    boxDraw=false;
+  }
 
-//
+  function mouseupHandler(e, target) { 
 // ここで範囲中にあるラックを選択状態にする
-//
-//
-
-// 連想配列には for in
-
+/*
 for (var i in dataMap) {
   console.debug(i);
   console.debug(dataMap[i]);
 }
-
-    }
-    boxDraw=false;
-    mousex2=-1;
+*/
+    mouseSelectCancel();
   }
 
   function mousemoveHandler(e, target) { 
@@ -360,6 +358,10 @@ for (var i in dataMap) {
         ctx.stroke();
       }
     }
+  }
+
+  function  mouseoutHandler(e, target){
+    mouseSelectCancel();
   }
 
   function  selectRack(e,target) {
@@ -397,7 +399,7 @@ for (var i in dataMap) {
   }
 
   function changeMap(){
-    var map = document.getElementById('map');
+    var map = Ext.getDom('map');
     map.src = map_url;
     map.onload = function() {
       setScreenSize();
