@@ -1,9 +1,14 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  User:null,
+  UserList:null,
+  UserLog:null
+});
 
-UserPanel = function(){
-  var ulistPanel = new UListPanel();
-  var ulogPanel  = new ULOGPanel();
-
-  UserPanel.superclass.constructor.call(this, {
+WakameGUI.User = function(){
+  var ulistPanel = new WakameGUI.UserList();
+  var ulogPanel  = new WakameGUI.UserLog();
+  WakameGUI.User.superclass.constructor.call(this, {
     split: true,
     header: false,
     border: false,
@@ -11,9 +16,9 @@ UserPanel = function(){
 	items: [ulistPanel,ulogPanel]
   });
 }
-Ext.extend(UserPanel, Ext.Panel);
+Ext.extend(WakameGUI.User, Ext.Panel);
 
-UListPanel = function(){
+WakameGUI.UserList = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
@@ -45,7 +50,7 @@ UListPanel = function(){
     { header: "Memo",       width: 350, dataIndex: 'mm' }
   ]);
 
-  UListPanel.superclass.constructor.call(this, {
+  WakameGUI.UserList.superclass.constructor.call(this, {
     region: "center",
     store: store,
     cm:clmnModel,
@@ -109,61 +114,8 @@ UListPanel = function(){
     ]
   });
   store.load({params: {start: 0, limit: 50}});		// limit = page size
-}
-Ext.extend(UListPanel, Ext.grid.GridPanel);
 
-ULOGPanel = function(){
-  var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
-  var store = new Ext.data.SimpleStore({
-    fields: [
-      { name: 'action' },
-      { name: 'date-time' },
-      { name: 'target' },
-      { name: 'account-name' },
-      { name: 'message' }
-    ],
-    data:[
-      [ 'lauch', '2009/12/1 11:10:10' , 'instance',  'axsh_soumu', 'xxxxx'],
-      [ 'save',  '2009/12/2 15:00:20' ,  'wmi',      'axsh_eigyo', 'xxxxx'],
-      [ 'stop' , '2009/12/3 19:00:05' , 'instance',  'axsh_soumu', 'xxxxx']
-    ]
-  });
-
-  var clmnModel = new Ext.grid.ColumnModel([
-    new Ext.grid.RowNumberer(),
-    { header: "DateTime",    width: 150, dataIndex: 'date-time' },
-    { header: "Action",      width: 100, dataIndex: 'action'   },
-    { header: "Target",      width: 100, dataIndex: 'target'    },
-    { header: "Account-Name",width: 100, dataIndex: 'account-name'  },
-    { header: "Message",     width: 350, dataIndex: 'message' }
-  ]);
-
-  ULOGPanel.superclass.constructor.call(this, {
-    region: "south",
-    title: 'Log',
-    cm:clmnModel,
-    sm:sm,
-    split: true,
-    height: 200,
-    store: store,
-    stripeRows: true,
-    collapsed:false,
-    collapsible:true,
-    titleCollapse:true,
-    animCollapse:true,
-    loadMask: {msg: 'Loading...'},
-    bbar: new Ext.PagingToolbar({
-      pageSize: 50,
-      store: store,
-      displayInfo: true,
-      displayMsg: 'Displaying data {0} - {1} of {2}',
-      emptyMsg: "No data to display"
-    })
-   });
-}
-Ext.extend(ULOGPanel, Ext.grid.GridPanel);
-
-AddUserWindow = function(){
+  AddUserWindow = function(){
     var form = new Ext.form.FormPanel({
       title: 'User-Infomation',
       labelWidth: 120, 
@@ -239,10 +191,8 @@ AddUserWindow = function(){
 		{              header: "Account-Name", width:100, sortable: true, dataIndex: 'account-name'}
 	];
 
-	// declare the source Grid
     var grid1 = new Ext.grid.GridPanel({
 	    ddGroup          : 'ddGroup2',
-//      title            : 'Available',
         style            : 'padding:0;',
         store            : ds1,
         columns          : cols,
@@ -256,10 +206,8 @@ AddUserWindow = function(){
 		root   : 'records'
     });
 
-    // create the destination Grid
     var grid2 = new Ext.grid.GridPanel({
 	    ddGroup          : 'ddGroup2',
-//      title            : 'Selected',
         style            : 'padding:0;',
         store            : ds2,
         columns          : cols,
@@ -373,29 +321,28 @@ AddUserWindow = function(){
     });
 
     AddUserWindow.superclass.constructor.call(this, {
-        iconCls: 'icon-panel',
-        width: 500,
-        height: 400,
-		closeAction:'hide',
-        title: 'Add User',
-		plain: true,
-		layout:'fit',
-        items: [tabwin],
-		buttons: [{
-			text:'Save',
-		},{
-			text: 'Close',
-			handler: function(){
-				this.hide();
-			},
-			scope:this
-		}]
-
+      iconCls: 'icon-panel',
+      width: 500,
+      height: 400,
+      closeAction:'hide',
+      title: 'Add User',
+      plain: true,
+      layout:'fit',
+      tems: [tabwin],
+      buttons: [{
+        text:'Save',
+      },{
+        text: 'Close',
+        handler: function(){
+          this.hide();
+        },
+        scope:this
+      }]
     });
-}
-Ext.extend(AddUserWindow, Ext.Window);
+  }
+  Ext.extend(AddUserWindow, Ext.Window);
 
-EditUserWindow = function(userData){
+  EditUserWindow = function(userData){
     var form = new Ext.form.FormPanel({
       title: 'User-Infomation',
       labelWidth: 120, 
@@ -468,31 +415,30 @@ EditUserWindow = function(userData){
     });
 
     EditUserWindow.superclass.constructor.call(this, {
-        iconCls: 'icon-panel',
-		modal: true,
-        width: 500,
-        height: 400,
-		closeAction:'hide',
-        title: 'Edit User',
-		plain: true,
-		layout:'fit',
-        defaults:{bodyStyle:'padding:15px'},
-        items: [tabwin],
-		buttons: [{
-			text:'Save',
-		},{
-			text: 'Close',
-			handler: function(){
-				this.close();
-			},
-			scope:this
-		}]
-
+      iconCls: 'icon-panel',
+      modal: true,
+      width: 500,
+      height: 400,
+      closeAction:'hide',
+      title: 'Edit User',
+      plain: true,
+      layout:'fit',
+      defaults:{bodyStyle:'padding:15px'},
+      items: [tabwin],
+      buttons: [{
+        text:'Save',
+      },{
+        text: 'Close',
+        handler: function(){
+          this.close();
+        },
+        scope:this
+      }]
     });
-}
-Ext.extend(EditUserWindow, Ext.Window);
+  }
+  Ext.extend(EditUserWindow, Ext.Window);
 
-SearchUserWindow = function(){
+  SearchUserWindow = function(){
     var form = new Ext.form.FormPanel({
       width: 400,
       frame:true,
@@ -632,43 +578,96 @@ SearchUserWindow = function(){
       }]
     });
     SearchUserWindow.superclass.constructor.call(this, {
-        iconCls: 'icon-panel',
-        height: 220,
-        width: 500,
-		layout:'fit',
-        title: 'Search User',
-		items: [form],
-		buttons: [{
-			text:'Get Account-ID',
-			handler: function(){
-              alert('Get Account-ID !!!')
-			},
-			scope:this
+      iconCls: 'icon-panel',
+      height: 220,
+      width: 500,
+      layout:'fit',
+      title: 'Search User',
+      items: [form],
+      buttons: [{
+        text:'Get Account-ID',
+		handler: function(){
+          alert('Get Account-ID !!!')
+		},
+		scope:this
 		},{
-			text:'Load Query',
-			handler: function(){
-              alert('Load Query !!!')
-			},
-			scope:this
+		text:'Load Query',
+		handler: function(){
+          alert('Load Query !!!')
+		},
+		scope:this
 		},{
-			text:'Save Query',
-			handler: function(){
-              alert('Save Query !!!')
-			},
-			scope:this
+		text:'Save Query',
+		handler: function(){
+          alert('Save Query !!!')
+		},
+		scope:this
 		},{
-			text:'OK',
-			handler: function(){
-				this.close();
-			},
-			scope:this
+		text:'OK',
+		handler: function(){
+		  this.close();
+		},
+		scope:this
 		},{
-			text: 'Cancel',
-			handler: function(){
-				this.close();
-			},
-			scope:this
-		}]
+		text: 'Cancel',
+		handler: function(){
+		  this.close();
+		},
+		scope:this
+      }]
     });
+  }
+  Ext.extend(SearchUserWindow, Ext.Window);
 }
-Ext.extend(SearchUserWindow, Ext.Window);
+Ext.extend(WakameGUI.UserList, Ext.grid.GridPanel);
+
+WakameGUI.UserLog = function(){
+  var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
+  var store = new Ext.data.SimpleStore({
+    fields: [
+      { name: 'action' },
+      { name: 'date-time' },
+      { name: 'target' },
+      { name: 'account-name' },
+      { name: 'message' }
+    ],
+    data:[
+      [ 'lauch', '2009/12/1 11:10:10' , 'instance',  'axsh_soumu', 'xxxxx'],
+      [ 'save',  '2009/12/2 15:00:20' ,  'wmi',      'axsh_eigyo', 'xxxxx'],
+      [ 'stop' , '2009/12/3 19:00:05' , 'instance',  'axsh_soumu', 'xxxxx']
+    ]
+  });
+
+  var clmnModel = new Ext.grid.ColumnModel([
+    new Ext.grid.RowNumberer(),
+    { header: "DateTime",    width: 150, dataIndex: 'date-time' },
+    { header: "Action",      width: 100, dataIndex: 'action'   },
+    { header: "Target",      width: 100, dataIndex: 'target'    },
+    { header: "Account-Name",width: 100, dataIndex: 'account-name'  },
+    { header: "Message",     width: 350, dataIndex: 'message' }
+  ]);
+
+  WakameGUI.UserLog.superclass.constructor.call(this, {
+    region: "south",
+    title: 'Log',
+    cm:clmnModel,
+    sm:sm,
+    split: true,
+    height: 200,
+    store: store,
+    stripeRows: true,
+    collapsed:false,
+    collapsible:true,
+    titleCollapse:true,
+    animCollapse:true,
+    loadMask: {msg: 'Loading...'},
+    bbar: new Ext.PagingToolbar({
+      pageSize: 50,
+      store: store,
+      displayInfo: true,
+      displayMsg: 'Displaying data {0} - {1} of {2}',
+      emptyMsg: "No data to display"
+    })
+  });
+}
+Ext.extend(WakameGUI.UserLog, Ext.grid.GridPanel);

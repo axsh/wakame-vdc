@@ -1,33 +1,41 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  ResourceEditor:null,
+  ResourceMap:null,
+  ResourcePallet:null,
+  ResourceTree:null,
+  ResourceProperty:null,
+  dataJson:null,
+  resourceTreePanel:null,
+  mapPanel:null
+});
 
-var dataJson = null;
-var resourceTreePanel = null;
-var mapPanel = null;
+WakameGUI.ResourceEditor = function(){
+  WakameGUI.mapPanel          = new WakameGUI.ResourceMap();
+  WakameGUI.resourceTreePanel = new WakameGUI.ResourceTree();
+  var palletPanel   = new WakameGUI.ResourcePallet();
+  var propertyPanel = new WakameGUI.ResourceProperty();
 
-ResourceEditorPanel = function(){
-  mapPanel = new MapPanel();
-  resourceTreePanel = new ResourceTreePanel();
-  var palletPanel = new PalletPanel();
-  var resourcePropertyPanel = new ResourcePropertyPanel();
   var editPanel = new Ext.Panel({
     region: 'east',
     width: 150,
-    defaults     : { flex : 1 }, //auto stretch
+    defaults     : { flex  : 1 }, //auto stretch
     layoutConfig : { align : 'stretch' },
     split: true,
 	layout: 'vbox',
-    items : [resourceTreePanel,resourcePropertyPanel]
+    items : [WakameGUI.resourceTreePanel,propertyPanel]
   });
 
   function reqeustSuccess(response)
   {
     if (response.responseText !== undefined) { 
-      dataJson = Ext.decode(response.responseText);
-      mapPanel.drawRack();
-      resourceTreePanel.drawTree();
+      WakameGUI.dataJson = Ext.decode(response.responseText);
+      WakameGUI.mapPanel.drawRack();
+      WakameGUI.resourceTreePanel.drawTree();
     }
   }
 
-  function  reqeustfailure()
+  function  requestfailure()
   {
     alert('Request failure.');
   }
@@ -38,7 +46,7 @@ ResourceEditorPanel = function(){
 	  method: "GET",
       params : 'id=' + id,
       success: reqeustSuccess,
-      failure: reqeustfailure
+      failure: requestfailure
 	});
   }
 
@@ -52,7 +60,7 @@ ResourceEditorPanel = function(){
         if(records.length > 0){
           combo.setValue(records[0].id);
           loadRackList(records[0].id);
-          mapPanel.setMapInfo(records[0].data.url,records[0].data.grid);
+          WakameGUI.mapPanel.setMapInfo(records[0].data.url,records[0].data.grid);
         }
       }
     },
@@ -85,24 +93,24 @@ ResourceEditorPanel = function(){
       console.debug(rec);
 //      console.debug(index);
         loadRackList(rec.id);
-        mapPanel.setMapInfo(rec.data.url,rec.data.grid);
+        WakameGUI.mapPanel.setMapInfo(rec.data.url,rec.data.grid);
       }
     }
   });
 
-  ResourceEditorPanel.superclass.constructor.call(this, {
+  WakameGUI.ResourceEditor.superclass.constructor.call(this, {
     split: true,
     header: false,
     border: false,
     layout: 'border',
-    items: [palletPanel,mapPanel,editPanel],
+    items: [palletPanel,WakameGUI.mapPanel,editPanel],
     tbar: [combo]
   });
 }
-Ext.extend(ResourceEditorPanel, Ext.Panel);
+Ext.extend(WakameGUI.ResourceEditor, Ext.Panel);
 
-PalletPanel = function(){
-  PalletPanel.superclass.constructor.call(this, {
+WakameGUI.ResourcePallet = function(){
+  WakameGUI.ResourcePallet.superclass.constructor.call(this, {
     region: 'west',
     split: true,
     title: "Rack",
@@ -123,15 +131,15 @@ PalletPanel = function(){
         iconCls: 'icon-add',
         text: 'Add',
         handler: function(){
-          mapPanel.addRack();
+          WakameGUI.mapPanel.addRack();
         }
       }
     ]
   });
 }
-Ext.extend(PalletPanel, Ext.Panel);
+Ext.extend(WakameGUI.ResourcePallet, Ext.Panel);
 
-ResourceTreePanel = function(){
+WakameGUI.ResourceTree = function(){
   var root = new Ext.tree.TreeNode({
     draggable:false,
     id:"root",
@@ -155,13 +163,13 @@ ResourceTreePanel = function(){
     for(var i=0;i<max;i++){
       root.childNodes[0].remove();
     }
-    var max = dataJson.racks.count;
+    var max = WakameGUI.dataJson.racks.count;
     for(var i=0;i<max;i++){
-      var nm = dataJson.racks.rows[i].id;
+      var nm = WakameGUI.dataJson.racks.rows[i].id;
       var rack = createNode( nm, nm, false, false );
-      var smax = dataJson.racks.rows[i].servers.count;
+      var smax = WakameGUI.dataJson.racks.rows[i].servers.count;
       for(var j=0;j<smax;j++){
-        var snm = dataJson.racks.rows[i].servers.rows[j].id;
+        var snm = WakameGUI.dataJson.racks.rows[i].servers.rows[j].id;
         rack.appendChild(createNode( nm+":"+snm, snm, true, false ));
       }
       root.appendChild(rack);
@@ -171,7 +179,7 @@ ResourceTreePanel = function(){
     drawTree();
   }
 
-  ResourceTreePanel.superclass.constructor.call(this,{
+  WakameGUI.ResourceTree.superclass.constructor.call(this,{
     split: true,
     autoScroll: true,
     title: 'Server',
@@ -184,7 +192,7 @@ ResourceTreePanel = function(){
         iconCls: 'icon-add',
         handler:function(){
 console.debug('Server Add..');
-console.debug(resourceTreePanel.getSelectionModel().selNode.id);
+console.debug(WakameGUI.resourceTreePanel.getSelectionModel().selNode.id);
         }
       },
       { iconCls: 'icon-delete',
@@ -209,10 +217,10 @@ console.debug('Server Edit..');
     }
   });
 }
-Ext.extend(ResourceTreePanel, Ext.tree.TreePanel);
+Ext.extend(WakameGUI.ResourceTree, Ext.tree.TreePanel);
 
-ResourcePropertyPanel = function(){
-  ResourcePropertyPanel.superclass.constructor.call(this, {
+WakameGUI.ResourceProperty = function(){
+  WakameGUI.ResourceProperty.superclass.constructor.call(this, {
     title: "Property",
     autoScroll: true,
     split: true,
@@ -221,9 +229,9 @@ ResourcePropertyPanel = function(){
     html: ''
   });
 }
-Ext.extend(ResourcePropertyPanel, Ext.Panel);
+Ext.extend(WakameGUI.ResourceProperty, Ext.Panel);
 
-MapPanel = function(){
+WakameGUI.ResourceMap = function(){
   var grid_x = 20;
   var grid_y = 20;
   var map_url = Ext.BLANK_IMAGE_URL;
@@ -369,7 +377,7 @@ for (var i in dataMap) {
     console.debug(target.id);
     console.debug(dataMap[target.id]);
 
-    resourceTreePanel.selectPath("/root/"+dataMap[target.id]);
+    WakameGUI.resourceTreePanel.selectPath("/root/"+dataMap[target.id]);
 
 //   Ext.get(target.id).applyStyles({'background-color': 'yellow'});
 // console.debug("CTRL");
@@ -389,11 +397,11 @@ for (var i in dataMap) {
 
   function drawRack(){
     if(render_end){
-	  var max = dataJson.racks.count;
+	  var max = WakameGUI.dataJson.racks.count;
 	  for(var i=0;i<max;i++){
-	      var rtn = deployRack(dataJson.racks.rows[i].x,dataJson.racks.rows[i].y);
+	      var rtn = deployRack(WakameGUI.dataJson.racks.rows[i].x,WakameGUI.dataJson.racks.rows[i].y);
 		  // ここで自動で付けられたIDとデータをマッピングする
-	      dataMap[rtn] = dataJson.racks.rows[i].id;
+	      dataMap[rtn] = WakameGUI.dataJson.racks.rows[i].id;
 	  }
 	}
   }
@@ -423,7 +431,7 @@ for (var i in dataMap) {
   });
   var taskDrawRack = new Ext.util.DelayedTask(function(){
     drawRack();
-    resourceTreePanel.drawTree();
+    WakameGUI.resourceTreePanel.drawTree();
   });
 
   var selectedRack = null;
@@ -472,7 +480,7 @@ for (var i in dataMap) {
 // /rack-create?x=0;y=0
 //  suucess（rack id）
 //	/rack-list
-//  dataJson.racks.rows.push[]
+//  WakameGUI.dataJson.racks.rows.push[]
 //  dataMap[rtn] = 
 	// selectするRACKを管理
     var x = 20;
@@ -480,7 +488,7 @@ for (var i in dataMap) {
     var rtn = deployRack(x,y);
   }
 
-  MapPanel.superclass.constructor.call(this, {
+  WakameGUI.ResourceMap.superclass.constructor.call(this, {
     region: 'center',
     autoScroll: true,
     split: true,
@@ -491,7 +499,7 @@ for (var i in dataMap) {
          if(map_url != Ext.BLANK_IMAGE_URL){
            taskDrawMap.delay(50); 
          }
-         if(dataJson != null){
+         if(WakameGUI.dataJson != null){
            taskDrawRack.delay(100);
          }
          render_end = true;
@@ -500,5 +508,5 @@ for (var i in dataMap) {
     html: '<div style="position:absolute"><img id="map" src="'+Ext.BLANK_IMAGE_URL+'"></div><canvas id="canvas" style="position:absolute"></canvas><div id="rackSurface" style="position:absolute"></div>'
   });
 }
-Ext.extend(MapPanel, Ext.Panel);
+Ext.extend(WakameGUI.ResourceMap, Ext.Panel);
 

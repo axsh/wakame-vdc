@@ -1,21 +1,26 @@
 /*
 	Wakame GUI Main (Center)  -*- coding: utf-8 -*-
 */
+// Global Resources
+Ext.apply(WakameGUI, {
+  Main:null,
+  Selector:null
+});
+
 Ext.onReady(function(){
   Ext.BLANK_IMAGE_URL='./javascripts/ext-js/resources/images/default/s.gif';
   Ext.QuickTips.init();
-
-  var mainPanel     = new MainPanel();
-  var selectorPanel = new SelectorPanel(mainPanel);
-  var headerPanel   = new HeaderPanel('DataCenter Manager');
-  var footerPanel   = new FooterPanel();
+  var mainPanel     = new WakameGUI.Main();
+  var selectorPanel = new WakameGUI.Selector(mainPanel);
+  var headerPanel   = new WakameGUI.Header('DataCenter Manager');
+  var footerPanel   = new WakameGUI.Footer();
   viewport = new Ext.Viewport({
     layout: 'border',
     items:[ headerPanel, mainPanel, selectorPanel, footerPanel]
   });
 });
 
-SelectorPanel = function(centerPanel){
+WakameGUI.Selector = function(centerPanel){
   var panelMode = 0;
   function ChangePanel(md)
   {
@@ -25,7 +30,7 @@ SelectorPanel = function(centerPanel){
     } 
   }
 
-  SelectorPanel.superclass.constructor.call(this,{
+  WakameGUI.Selector.superclass.constructor.call(this,{
     region: "west",
     split: true,
     header: false,
@@ -121,16 +126,16 @@ SelectorPanel = function(centerPanel){
     }
   });
 }
-Ext.extend(SelectorPanel, Ext.tree.TreePanel);
+Ext.extend(WakameGUI.Selector, Ext.tree.TreePanel);
 
-MainPanel = function(){
-  var accountPanel  = new AccountPanel();
-  var userPanel = new UserPanel();
-  var resourceViewerPanel = new ResourceViewerPanel();
-  var resourceEditorPanel = new ResourceEditorPanel();
-  var locationMapPanel = new LocationMapPanel();
-  var logViewerPanel = new LogViewerPanel();
-  MainPanel.superclass.constructor.call(this, {
+WakameGUI.Main = function(){
+  var accountPanel        = new WakameGUI.Account();
+  var userPanel           = new WakameGUI.User();
+  var resourceViewerPanel = new WakameGUI.ResourceViewer();
+  var resourceEditorPanel = new WakameGUI.ResourceEditor();
+  var locationMapPanel    = new WakameGUI.LocationMap();
+  var logViewerPanel      = new WakameGUI.LogViewer();
+  WakameGUI.Main.superclass.constructor.call(this, {
 	region:'center',
 	layout:'card',
 	activeItem: 0,
@@ -138,4 +143,4 @@ MainPanel = function(){
 	items: [accountPanel,userPanel,resourceViewerPanel,resourceEditorPanel,locationMapPanel,logViewerPanel]
   });
 }
-Ext.extend(MainPanel, Ext.Panel);
+Ext.extend(WakameGUI.Main, Ext.Panel);

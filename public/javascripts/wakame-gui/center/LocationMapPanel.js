@@ -1,15 +1,20 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  LocationMap:null,
+  MAPProperty:null,
+  MAPView:null
+});
 
-LocationMapPanel = function(){
-  var mPropertyPanel = new MAPPropertyPanel();
-  var mtabPanel  = new MAPTabPanel('center',600);
-  mtabPanel.add(new MAPViewPanel('1F-100',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new MAPViewPanel('1F-101',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new MAPViewPanel('2F-101',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new MAPViewPanel('2F-200',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new MAPViewPanel('3F-105',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new MAPViewPanel('3F-200',"./images/map/1F-10.jpeg"));
-
-  LocationMapPanel.superclass.constructor.call(this, {
+WakameGUI.LocationMap = function(){
+  var mPropertyPanel = new WakameGUI.MAPProperty();
+  var mtabPanel      = new WakameGUI.MAPTab('center',600);
+  mtabPanel.add(new WakameGUI.MAPView('1F-100',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('1F-101',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('2F-101',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('2F-200',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('3F-105',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('3F-200',"./images/map/1F-10.jpeg"));
+  WakameGUI.LocationMap.superclass.constructor.call(this, {
     split: true,
     header: false,
     border: false,
@@ -32,11 +37,81 @@ LocationMapPanel = function(){
       }
     ]
   });
-}
-Ext.extend(LocationMapPanel, Ext.Panel);
 
-MAPPropertyPanel = function(){
-  MAPPropertyPanel.superclass.constructor.call(this, {
+  AddMapWindow = function(){
+    var form = new Ext.form.FormPanel({
+//    fileUpload: true,
+      width: 400,
+      baseCls: 'x-plain',
+      items: [{
+      fieldLabel: 'Map-Name',
+      xtype: 'textfield',
+      id: 'nm',
+      anchor: '100%'
+      },
+      {
+      fieldLabel: 'Map-File',
+      xtype: 'textfield',
+      inputType: 'file',
+      width: 200,
+      id: 'file',
+      anchor: '100%'
+      },
+      {
+      fieldLabel: 'Memo',
+      xtype: 'textarea',
+      id: 'mm',
+      anchor: '100%'
+      }]
+    });
+
+    AddMapWindow.superclass.constructor.call(this, {
+      iconCls: 'icon-panel',
+      height: 220,
+      width: 400,
+	  layout:'fit',
+      title: 'Add Map',
+      collapsible:true,
+      titleCollapse:true,
+	  modal: true,
+	  plain: true,
+	  closeAction:'hide',
+      defaults:{bodyStyle:'padding:15px'},
+	  items: [form],
+	  buttons: [{
+        text:'Save',
+        handler: function(){
+          form.getForm().submit({
+            url: '/map_upload',
+            waitMsg: 'Uploading...',
+            method: 'POST',
+            scope: this,
+            success: function(form, action) {
+              alert('Success !');
+	          this.close();
+            },
+            failure: function(form, action) {
+              alert('Upload file failure.');
+	          this.close();
+            }
+          });
+        },
+        scope:this
+      },{
+	    text: 'Close',
+	    handler: function(){
+          this.close();
+        },
+        scope:this
+      }]
+    });
+  }
+  Ext.extend(AddMapWindow, Ext.Window);
+}
+Ext.extend(WakameGUI.LocationMap, Ext.Panel);
+
+WakameGUI.MAPProperty = function(){
+  WakameGUI.MAPProperty.superclass.constructor.call(this, {
     region: 'east',
     title: "Property",
     split: true,
@@ -49,81 +124,10 @@ MAPPropertyPanel = function(){
     html: 'Memo:xxxx'
   });
 }
-Ext.extend(MAPPropertyPanel, Ext.Panel);
+Ext.extend(WakameGUI.MAPProperty, Ext.Panel);
 
-AddMapWindow = function(){
-
-  var form = new Ext.form.FormPanel({
-//  fileUpload: true,
-    width: 400,
-    baseCls: 'x-plain',
-    items: [{
-      fieldLabel: 'Map-Name',
-      xtype: 'textfield',
-      id: 'nm',
-      anchor: '100%'
-    },
-    {
-      fieldLabel: 'Map-File',
-      xtype: 'textfield',
-      inputType: 'file',
-      width: 200,
-      id: 'file',
-      anchor: '100%'
-    },
-    {
-      fieldLabel: 'Memo',
-      xtype: 'textarea',
-      id: 'mm',
-      anchor: '100%'
-    }]
-  });
-
-  AddMapWindow.superclass.constructor.call(this, {
-    iconCls: 'icon-panel',
-    height: 220,
-    width: 400,
-	layout:'fit',
-    title: 'Add Map',
-    collapsible:true,
-    titleCollapse:true,
-	modal: true,
-	plain: true,
-	closeAction:'hide',
-    defaults:{bodyStyle:'padding:15px'},
-	items: [form],
-	buttons: [{
-      text:'Save',
-      handler: function(){
-        form.getForm().submit({
-          url: '/map_upload',
-          waitMsg: 'Uploading...',
-          method: 'POST',
-          scope: this,
-          success: function(form, action) {
-            alert('Success !');
-	        this.close();
-          },
-          failure: function(form, action) {
-            alert('Upload file failure.');
-	        this.close();
-          }
-        });
-      },
-      scope:this
-    },{
-	  text: 'Close',
-	  handler: function(){
-        this.close();
-      },
-      scope:this
-    }]
-  });
-}
-Ext.extend(AddMapWindow, Ext.Window);
-
-MAPViewPanel = function(name,url){
-  MAPViewPanel.superclass.constructor.call(this, {
+WakameGUI.MAPView = function(name,url){
+  WakameGUI.MAPView.superclass.constructor.call(this, {
     region: 'center',
     title: name,
     autoScroll: true,
@@ -134,5 +138,5 @@ MAPViewPanel = function(name,url){
 //  bodyStyle: "background-image:url(1F-10.jpeg); background-repeat: no-repeat; background-attachment: fixed;"
   });
 }
-Ext.extend(MAPViewPanel, Ext.Panel);
+Ext.extend(WakameGUI.MAPView, Ext.Panel);
 

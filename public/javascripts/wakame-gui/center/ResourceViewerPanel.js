@@ -1,32 +1,26 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  querySelect:0,
+  ChangeQuery : function(md){
+    if(WakameGUI.querySelect != md){
+      WakameGUI.querySelect = md;
+    }
+  },
+  ResourceViewer:null,
+  ServerQuery:null,
+  ServerList:null,
+  MAPTab:null
+});
 
-var querySelect = 0;
+WakameGUI.ResourceViewer = function(){
+  var serverquery = new WakameGUI.ServerQuery();
+  var serverlist  = new WakameGUI.ServerList();
+  var mtabPanel   = new WakameGUI.MAPTab('east',250);
 
-function ChangeQuery(md)
-{
-  if(querySelect != md){
-    querySelect = md;
-  }
-}
+  mtabPanel.add(new WakameGUI.MAPView('1F-100',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('1F-101',"./images/map/1F-10.jpeg"));
 
-MAPTabPanel = function(posi,size){
-  MAPTabPanel.superclass.constructor.call(this, {
-    split: true,
-    region: posi,
-    width: size,
-    activeTab: 0
-  });
-}
-Ext.extend(MAPTabPanel, Ext.TabPanel);
-
-ResourceViewerPanel = function(){
-  var serverquery = new ServerQueryPanel();
-  var serverlist  = new ServerListPanel();
-  var mtabPanel  = new MAPTabPanel('east',250);
-
-  mtabPanel.add(new MAPViewPanel('1F-100',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new MAPViewPanel('1F-101',"./images/map/1F-10.jpeg"));
-
-  ResourceViewerPanel.superclass.constructor.call(this, {
+  WakameGUI.ResourceViewer.superclass.constructor.call(this, {
     split: true,
     header: false,
     border: false,
@@ -34,10 +28,11 @@ ResourceViewerPanel = function(){
 	items: [serverquery,serverlist,mtabPanel]
   });
 }
-Ext.extend(ResourceViewerPanel, Ext.Panel);
+Ext.extend(WakameGUI.ResourceViewer, Ext.Panel);
 
-ServerQueryPanel = function(){
-  ServerQueryPanel.superclass.constructor.call(this, {
+
+WakameGUI.ServerQuery = function(){
+  WakameGUI.ServerQuery.superclass.constructor.call(this, {
     height:70,
     region: 'north',
     frame : true,
@@ -87,22 +82,22 @@ ServerQueryPanel = function(){
 	}]
   });
 }
-Ext.extend(ServerQueryPanel, Ext.form.FormPanel);
+Ext.extend(WakameGUI.ServerQuery, Ext.form.FormPanel);
 
-ServerListPanel = function(){
+WakameGUI.ServerList = function(){
   var rackPanel = new RackPanel();
   var hwPanel   = new HWPanel();
   var hvcPanel  = new HVCPanel();
   var hvaPanel  = new HVAPanel();
   var vmPanel   = new VMPanel();
-  ServerListPanel.superclass.constructor.call(this, {
+  WakameGUI.ServerList.superclass.constructor.call(this, {
     split: true,
     region: 'center',
     activeTab: 0, 
     items: [rackPanel,hwPanel,hvcPanel,hvaPanel,vmPanel]
   });
 }
-Ext.extend(ServerListPanel, Ext.TabPanel);
+Ext.extend(WakameGUI.ServerList, Ext.TabPanel);
 
 RackPanel = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:false});
@@ -133,7 +128,7 @@ RackPanel = function(){
 
   RackPanel.superclass.constructor.call(this, {
     title: "Rack",
-    listeners: {activate:function() { ChangeQuery(2);} },
+    listeners: {activate:function() { WakameGUI.ChangeQuery(2);} },
     store: store,
     cm:clmnModel,
     sm:sm,
@@ -195,7 +190,7 @@ HWPanel = function(){
 
   HWPanel.superclass.constructor.call(this, {
     title: "Server",
-    listeners: {activate:function() { ChangeQuery(3);} },
+    listeners: {activate:function() { WakameGUI.ChangeQuery(3);} },
     store: store,
     cm:clmnModel,
     sm:sm,
@@ -267,7 +262,7 @@ HVCPanel = function(){
     autoHeight: false,
     stripeRows: true,
     loadMask: {msg: 'Loading...'},
-    listeners: {activate:function() { ChangeQuery(0);} },
+    listeners: {activate:function() { WakameGUI.ChangeQuery(0);} },
     bbar: new Ext.PagingToolbar({
       pageSize: 50,
       store: store,
@@ -328,7 +323,7 @@ HVAPanel = function(){
     autoHeight: false,
     stripeRows: true,
     loadMask: {msg: 'Loading...'},
-    listeners: {activate:function() { ChangeQuery(1);} },
+    listeners: {activate:function() { WakameGUI.ChangeQuery(1);} },
     bbar: new Ext.PagingToolbar({
       pageSize: 50,
       store: store,
@@ -383,7 +378,7 @@ VMPanel = function(){
     width: 320,
     autoHeight: false,
     stripeRows: true,
-    listeners: {activate:function() { ChangeQuery(4);} },
+    listeners: {activate:function() { WakameGUI.ChangeQuery(4);} },
     loadMask: {msg: 'Loading...'},
     bbar: new Ext.PagingToolbar({
       pageSize: 50,
@@ -396,4 +391,14 @@ VMPanel = function(){
   store.load({params: {start: 0, limit: 50}});		// limit = page size
 }
 Ext.extend(VMPanel, Ext.grid.GridPanel);
+
+WakameGUI.MAPTab = function(posi,size){
+  WakameGUI.MAPTab.superclass.constructor.call(this, {
+    split: true,
+    region: posi,
+    width: size,
+    activeTab: 0
+  });
+}
+Ext.extend(WakameGUI.MAPTab, Ext.TabPanel);
 

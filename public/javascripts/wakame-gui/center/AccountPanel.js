@@ -1,10 +1,11 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  Account:null
+});
 
-var	accountPanel = null;
-
-AccountPanel = function(){
-
-  accountPanel = this;
-
+WakameGUI.Account = function(){
+  var accountPanel = this;
+  var schWin = null;
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
@@ -43,9 +44,7 @@ AccountPanel = function(){
     store.loadData(data);
   }
 
-  var schWin = null;
-
-  AccountPanel.superclass.constructor.call(this, {
+  WakameGUI.Account.superclass.constructor.call(this, {
     store: store,
     cm:clmnModel,
     sm:sm,
@@ -103,15 +102,13 @@ AccountPanel = function(){
     ]
   });
   store.load({params: {start: 0, limit: 50}});		// limit = page size
-}
-Ext.extend(AccountPanel, Ext.grid.GridPanel);
 
-AddAccountWindow = function(){
-  var form = new Ext.form.FormPanel({
-    labelWidth: 120, 
-    width: 400, 
-    baseCls: 'x-plain',
-    items: [
+  AddAccountWindow = function(){
+    var form = new Ext.form.FormPanel({
+      labelWidth: 120, 
+      width: 400, 
+      baseCls: 'x-plain',
+      items: [
       {
       fieldLabel: 'Account-Name',
       xtype: 'textfield',
@@ -147,24 +144,22 @@ AddAccountWindow = function(){
       xtype: 'textarea',
       id: 'mm',
       anchor: '100%'
-      }
-    ]
-  });
-
-  AddAccountWindow.superclass.constructor.call(this, {
-    iconCls: 'icon-panel',
-    collapsible:true,
-    titleCollapse:true,
-    width: 500,
-    height: 250,
-	layout:'fit',
-	closeAction:'hide',
-    title: 'Add Account',
-	modal: true,
-	plain: true,
-    defaults:{bodyStyle:'padding:15px'},
-	items: [form],
-	buttons: [{
+      }]
+    });
+    AddAccountWindow.superclass.constructor.call(this, {
+      iconCls: 'icon-panel',
+      collapsible:true,
+      titleCollapse:true,
+      width: 500,
+      height: 250,
+	  layout:'fit',
+	  closeAction:'hide',
+      title: 'Add Account',
+	  modal: true,
+	  plain: true,
+      defaults:{bodyStyle:'padding:15px'},
+	  items: [form],
+	  buttons: [{
 	  text:'Create',
       handler: function(){
         form.getForm().submit({
@@ -182,20 +177,20 @@ AddAccountWindow = function(){
           }
         });
 	  },
-	  scope:this
-    },{
-	  text: 'Close',
-	  handler: function(){
-	    this.close();
-	  },
-	  scope:this
-    }]
-  });
-}
-Ext.extend(AddAccountWindow, Ext.Window);
+	    scope:this
+      },{
+	    text: 'Close',
+	    handler: function(){
+	      this.close();
+	    },
+	    scope:this
+      }]
+    });
+  }
+  Ext.extend(AddAccountWindow, Ext.Window);
 
-EditAccountWindow = function(accountData){
-  var form = new Ext.form.FormPanel({
+  EditAccountWindow = function(accountData){
+    var form = new Ext.form.FormPanel({
       labelWidth: 120,
       width: 400,
       baseCls: 'x-plain',
@@ -252,51 +247,49 @@ EditAccountWindow = function(accountData){
         }
       ]
     });
-
     EditAccountWindow.superclass.constructor.call(this, {
-        iconCls: 'icon-panel',
-        collapsible:true,
-        titleCollapse:true,
-        width: 500,
-        height: 250,
-		layout:'fit',
-        title: 'Edit Account',
-		modal: true,
-		plain: true,
-        defaults:{bodyStyle:'padding:15px'},
-		items: [form],
-		buttons: [{
-			text:'Save',
-            handler: function(){
-              form.getForm().submit({
-                url: '/account-save',
-                waitMsg: 'Saveing...',
-                method: 'POST',
-                scope: this,
-                success: function(form, action) {
-                  accountPanel.refresh();
-	              this.close();
-                },
-                failure: function(form, action) {
-                  alert('Add account failure.');
-	              this.close();
-                }
-              });
-	        },
-			scope:this
+      iconCls: 'icon-panel',
+      collapsible:true,
+      titleCollapse:true,
+      width: 500,
+      height: 250,
+      layout:'fit',
+      title: 'Edit Account',
+      modal: true,
+      plain: true,
+      defaults:{bodyStyle:'padding:15px'},
+      items: [form],
+      buttons: [{
+        text:'Save',
+        handler: function(){
+          form.getForm().submit({
+            url: '/account-save',
+            waitMsg: 'Saveing...',
+            method: 'POST',
+            scope: this,
+            success: function(form, action) {
+            accountPanel.refresh();
+	          this.close();
+            },
+            failure: function(form, action) {
+              alert('Add account failure.');
+	          this.close();
+            }
+          });
+	    },
+		  scope:this
 		},{
-			text: 'Close',
-			handler: function(){
-				this.close();
-			},
-			scope:this
-		}]
+		  text: 'Close',
+		  handler: function(){
+		    this.close();
+		},
+        scope:this
+      }]
     });
-}
-Ext.extend(EditAccountWindow, Ext.Window);
+  }
+  Ext.extend(EditAccountWindow, Ext.Window);
 
-SearchAccountWindow = function(){
-
+  SearchAccountWindow = function(){
     var form = new Ext.form.FormPanel({
       frame:true,
       bodyStyle:'padding:5px 5px 0',
@@ -342,48 +335,48 @@ SearchAccountWindow = function(){
         }]
       }]
     });
-
     SearchAccountWindow.superclass.constructor.call(this, {
-        iconCls: 'icon-panel',
-        height: 200,
-        width: 350,
-		layout:'fit',
-        title: 'Search Account',
-		items: [form],
-		buttons: [{
-		  text:'Reset',
-          handler: function(){
-            form.getForm().reset();
-	      },
-		  scope:this
-		},{
-		  text:'OK',
-          handler: function(){
-            form.getForm().submit({
-              url: '/account-search',
-              waitMsg: 'Searching...',
-              method: 'POST',
-              scope: this,
-              success: function(form, action) {
-                jsonRes = Ext.util.JSON.decode(action.response.responseText);  
-                accountPanel.searchView(jsonRes);
-			    this.hide();
-              },
-              failure: function(form, action) {
-                alert('Add account failure.');
-			    this.hide();
-              }
-            });
-	      },
-		  scope:this
-		},{
-		  text: 'Cancel',
-		  handler: function(){
-		    this.hide();
-		  },
-		  scope:this
-		}]
+      iconCls: 'icon-panel',
+      height: 200,
+      width: 350,
+      layout:'fit',
+      title: 'Search Account',
+      items: [form],
+      buttons: [{
+        text:'Reset',
+        handler: function(){
+          form.getForm().reset();
+	    },
+		scope:this
+      },{
+        text:'OK',
+        handler: function(){
+          form.getForm().submit({
+            url: '/account-search',
+            waitMsg: 'Searching...',
+            method: 'POST',
+            scope: this,
+            success: function(form, action) {
+              jsonRes = Ext.util.JSON.decode(action.response.responseText);
+              accountPanel.searchView(jsonRes);
+			  this.hide();
+            },
+            failure: function(form, action) {
+              alert('Add account failure.');
+			  this.hide();
+            }
+          });
+	    },
+        scope:this
+      },{
+        text: 'Cancel',
+		handler: function(){
+		  this.hide();
+		},
+		scope:this
+      }]
     });
+  }
+  Ext.extend(SearchAccountWindow, Ext.Window);
 }
-Ext.extend(SearchAccountWindow, Ext.Window);
-
+Ext.extend(WakameGUI.Account, Ext.grid.GridPanel);

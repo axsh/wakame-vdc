@@ -1,5 +1,9 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  LogViewer:null
+});
 
-LogViewerPanel = function(){
+WakameGUI.LogViewer = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
   var store = new Ext.data.SimpleStore({
     fields: [
@@ -16,7 +20,6 @@ LogViewerPanel = function(){
       [ 'stop' , '2009/12/3 19:00:05' , 'instance',  'axsh_soumu', 'kato', 'xxxxx']
     ]
   });
-
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
     { header: "DateTime",    width: 150, dataIndex: 'date-time' },
@@ -26,8 +29,7 @@ LogViewerPanel = function(){
     { header: "User-Name"   ,width: 100, dataIndex: 'user-name'  },
     { header: "Message",     width: 350, dataIndex: 'message' }
   ]);
-
-  LogViewerPanel.superclass.constructor.call(this, {
+  WakameGUI.LogViewer.superclass.constructor.call(this, {
     region: "south",
     title: 'Center Log',
     cm:clmnModel,
@@ -52,11 +54,8 @@ LogViewerPanel = function(){
       displayMsg: 'Displaying data {0} - {1} of {2}',
       emptyMsg: "No data to display"
     })
-   });
-}
-Ext.extend(LogViewerPanel, Ext.grid.GridPanel);
-
-SearchLogWindow = function(){
+  });
+  SearchLogWindow = function(){
     var form = new Ext.form.FormPanel({
       width: 400,
       frame:true,
@@ -191,38 +190,39 @@ SearchLogWindow = function(){
       }]
     });
     SearchLogWindow.superclass.constructor.call(this, {
-        iconCls: 'icon-panel',
-        height: 220,
-        width: 500,
-		layout:'fit',
-        title: 'Search Log',
-		items: [form],
-		buttons: [{
-			text:'Load Query',
-			handler: function(){
-              alert('Load Query !!!')
-			},
-			scope:this
-		},{
-			text:'Save Query',
-			handler: function(){
-              alert('Save Query !!!')
-			},
-			scope:this
-		},{
-			text:'OK',
-			handler: function(){
-				this.close();
-			},
-			scope:this
-		},{
-			text: 'Cancel',
-			handler: function(){
-				this.close();
-			},
-			scope:this
-		}]
+      iconCls: 'icon-panel',
+      height: 220,
+      width: 500,
+      layout:'fit',
+      title: 'Search Log',
+      items: [form],
+      buttons: [{
+		text:'Load Query',
+		handler: function(){
+          alert('Load Query !!!')
+		},
+		scope:this
+      },{
+        text:'Save Query',
+        handler: function(){
+          alert('Save Query !!!')
+		},
+		scope:this
+      },{
+        text:'OK',
+        handler: function(){
+          this.close();
+        },
+        scope:this
+      },{
+        text: 'Cancel',
+        handler: function(){
+          this.close();
+        },
+        scope:this
+      }]
     });
+  }
+  Ext.extend(SearchLogWindow, Ext.Window);
 }
-Ext.extend(SearchLogWindow, Ext.Window);
-
+Ext.extend(WakameGUI.LogViewer, Ext.grid.GridPanel);
