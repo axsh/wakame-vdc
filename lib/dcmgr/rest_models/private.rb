@@ -3,7 +3,7 @@ module Dcmgr
   class PrivateInstance
     include RestModel
     model Instance
-    allow_keys [:status, :ip]
+    allow_keys :status, :ip
 
     public_action_withid :get do
       get
