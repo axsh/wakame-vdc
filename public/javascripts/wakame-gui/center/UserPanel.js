@@ -39,7 +39,6 @@ WakameGUI.UserList = function(){
     })
   });
 
-  var addWin = null;
   var clmnModel = new Ext.grid.ColumnModel([
     new Ext.grid.RowNumberer(),
     { header: "User-ID",    width: 100, dataIndex: 'id', hideable:false, menuDisabled:true },
@@ -71,9 +70,7 @@ WakameGUI.UserList = function(){
     tbar : [
       { iconCls: 'addUser',
         text : 'Add',handler:function(){
-          if(addWin == null){
-            addWin = new AddUserWindow();
-          }
+          var addWin = new AddUserWindow();
 		  addWin.show();
         }
       },'-',
@@ -328,13 +325,13 @@ WakameGUI.UserList = function(){
       title: 'Add User',
       plain: true,
       layout:'fit',
-      tems: [tabwin],
+      items: [tabwin],
       buttons: [{
         text:'Save',
       },{
         text: 'Close',
         handler: function(){
-          this.hide();
+	      this.close();
         },
         scope:this
       }]
@@ -671,3 +668,5 @@ WakameGUI.UserLog = function(){
   });
 }
 Ext.extend(WakameGUI.UserLog, Ext.grid.GridPanel);
+
+
