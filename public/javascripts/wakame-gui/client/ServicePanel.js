@@ -1,8 +1,11 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  Service:null
+});
 
-ServicePanel = function(){
+WakameGUI.Service = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
   var store = new Ext.data.SimpleStore({
-
     fields: [
       { name: 'wmi-id' },
       { name: 'name' },
@@ -25,7 +28,7 @@ ServicePanel = function(){
     { header: "Architecture", width: 100, dataIndex: 'architecture'  }
   ]);
 
-  ServicePanel.superclass.constructor.call(this, {
+  WakameGUI.Service.superclass.constructor.call(this, {
     title: 'Service',
     store: store,
     cm:clmnModel,
@@ -48,5 +51,4 @@ ServicePanel = function(){
     ]
   });
 }
-Ext.extend(ServicePanel, Ext.grid.GridPanel);
-
+Ext.extend(WakameGUI.Service, Ext.grid.GridPanel);

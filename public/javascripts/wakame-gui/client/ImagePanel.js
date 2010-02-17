@@ -1,7 +1,10 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  Image:null
+});
 
-var instancePanel = null;
-
-ImagePanel = function(){
+WakameGUI.Image = function(){
+  var instancePanel = null;
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true}); 
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
@@ -51,7 +54,7 @@ ImagePanel = function(){
     instancePanel = obj;
   }
 
-  ImagePanel.superclass.constructor.call(this, {
+  WakameGUI.Image.superclass.constructor.call(this, {
     title: 'Image',
     store: store,
     cm:clmnModel,
@@ -79,44 +82,42 @@ ImagePanel = function(){
 
   Ext.TaskMgr.start({
     run: function(){
-      if(activePanel == 1){
+      if(WakameGUI.activePanel == 1){
         store.reload();
       }
     },
     interval: 60000
   });
-}
-Ext.extend(ImagePanel, Ext.grid.GridPanel);
 
-LaunchWindow = function(launchData,account_id){
-  var form = new Ext.form.FormPanel({
-    labelWidth: 50,
-    width: 330,
-    baseCls: 'x-plain',
-    items: [
-    {
+  LaunchWindow = function(launchData,account_id){
+    var form = new Ext.form.FormPanel({
+      labelWidth: 50,
+      width: 330,
+      baseCls: 'x-plain',
+      items: [
+      {
       fieldLabel: 'WMI-ID',
       xtype: 'displayfield',
       value: launchData.get('id'),
       anchor: '100%'
-    }
-    ,{
+      }
+      ,{
       fieldLabel: 'Name',
       xtype: 'displayfield',
       value: launchData.get('nm'),
       anchor: '100%'
-    },
-    {
+      },
+      {
       xtype: 'hidden',
       id: 'wd',
       value: launchData.get('id'),
-    }
-    ,{
+      }
+      ,{
       xtype: 'hidden',
       id: 'id',
       value: account_id,
-    }
-    ,{
+      }
+      ,{
       fieldLabel: 'TYPE',
       xtype: 'combo',
       editable: false,
@@ -136,51 +137,52 @@ LaunchWindow = function(launchData,account_id){
 	  value:'1',
       valueField: 'myId',
       displayField: 'displayText'
-    }]
-  });
-
-  LaunchWindow.superclass.constructor.call(this, {
-    iconCls: 'icon-panel',
-    collapsible:true,
-    titleCollapse:true,
-    height: 170,
-    width: 350,
-	layout:'fit',
-	closeAction:'hide',
-    title: 'Launch',
-	modal: true,
-	plain: true,
-    defaults:{bodyStyle:'padding:15px'},
-	items: [form],
-	buttons: [{
-	  text:'Launch',
-      handler: function(){
-        form.getForm().submit({
-          url: '/instance-create',
-          waitMsg: 'creating...',
-          method: 'POST',
-          scope: this,
-          success: this.submitSuccess,
-          failure: this.submitFailure
-        });
-	  },
-	  scope:this
-	},{
-	  text: 'Close',
-	  handler: function(){
-	    this.close();
-	  },
-	  scope:this
-	}]
+      }]
+    });
+    LaunchWindow.superclass.constructor.call(this, {
+      iconCls: 'icon-panel',
+      collapsible:true,
+      titleCollapse:true,
+      height: 170,
+      width: 350,
+	  layout:'fit',
+	  closeAction:'hide',
+      title: 'Launch',
+	  modal: true,
+	  plain: true,
+      defaults:{bodyStyle:'padding:15px'},
+	  items: [form],
+	  buttons: [{
+	    text:'Launch',
+        handler: function(){
+          form.getForm().submit({
+            url: '/instance-create',
+            waitMsg: 'creating...',
+            method: 'POST',
+            scope: this,
+            success: this.submitSuccess,
+            failure: this.submitFailure
+          });
+	    },
+	    scope:this
+	  },{
+	    text: 'Close',
+	    handler: function(){
+	      this.close();
+	    },
+	    scope:this
+	  }]
+    });
+  }
+  Ext.extend(LaunchWindow, Ext.Window , {
+    submitSuccess: function(form, action){
+      this.close();
+      instancePanel.refresh();
+    },
+    submitFailure: function(form, action){
+      alert('Create failure.');
+      this.close();
+    }
   });
 }
-Ext.extend(LaunchWindow, Ext.Window , {
-  submitSuccess: function(form, action){
-    this.close();
-    instancePanel.refresh();
-  },
-  submitFailure: function(form, action){
-    alert('Create failure.');
-    this.close();
-  }
-});
+Ext.extend(WakameGUI.Image, Ext.grid.GridPanel);

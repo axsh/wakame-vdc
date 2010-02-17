@@ -1,5 +1,9 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  Instance:null
+});
 
-InstancePanel = function(){
+WakameGUI.Instance = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
@@ -69,7 +73,7 @@ InstancePanel = function(){
       emptyMsg: "No data to display"
   });
 
-  InstancePanel.superclass.constructor.call(this, {
+  WakameGUI.Instance.superclass.constructor.call(this, {
     title: 'Instance',
     store: store,
     cm:clmnModel,
@@ -125,12 +129,11 @@ InstancePanel = function(){
   });
   Ext.TaskMgr.start({
     run: function(){
-      if(activePanel == 0){
+      if(WakameGUI.activePanel == 0){
         store.reload();
       }
     },
     interval: 60000
   });
 }
-Ext.extend(InstancePanel, Ext.grid.GridPanel);
-
+Ext.extend(WakameGUI.Instance, Ext.grid.GridPanel);

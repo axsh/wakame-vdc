@@ -1,30 +1,21 @@
-
-var activePanel = 0;	// Active Panel
-
-Ext.onReady(function(){
-  Ext.BLANK_IMAGE_URL='./javascripts/ext-js/resources/images/default/s.gif';
-  Ext.QuickTips.init();
-  var mainPanel     = new MainPanel();
-  var selectorPanel = new SelectorPanel(mainPanel);
-  mainPanel.setUpPanel(selectorPanel.getUpPanel());
-
-  var headerPanel   = new HeaderPanel('System Administrator Tool');
-  var footerPanel   = new FooterPanel();
-  viewport = new Ext.Viewport({
-    layout: 'border',
-    items:[ headerPanel, mainPanel, selectorPanel, footerPanel]
-  });
+// Global Resources
+Ext.apply(WakameGUI, {
+  activePanel : 0,
+  SystemAdminMain:null,
+  SystemAdminSelector:null,
+  SystemAdminUpPanel:null,
+  SystemAdminDownPanel:null,
+  SystemAdminQuery:null,
+  SystemAdminCard:null
 });
 
-SelectorPanel = function(mainPanel){
-  var upPanel   = new UpPanel();
-  var downPanel = new DownPanel(mainPanel.getCardPanel());
-
+WakameGUI.SystemAdminSelector = function(mainPanel){
+  var upPanel   = new WakameGUI.SystemAdminUpPanel();
+  var downPanel = new WakameGUI.SystemAdminDownPanel(mainPanel.getCardPanel());
   this.getUpPanel = function(){
     return upPanel;
   }
-
-  SelectorPanel.superclass.constructor.call(this,{
+  WakameGUI.SystemAdminSelector.superclass.constructor.call(this,{
     region: "west", 
     split: true,
     header: false,
@@ -34,9 +25,9 @@ SelectorPanel = function(mainPanel){
 	items: [upPanel,downPanel]
   });
 }
-Ext.extend(SelectorPanel, Ext.Panel);
+Ext.extend(WakameGUI.SystemAdminSelector, Ext.Panel);
 
-UpPanel = function(){
+WakameGUI.SystemAdminUpPanel = function(){
   var store = new Ext.data.Store({
     proxy: new Ext.data.HttpProxy({
       url: '/account-list',
@@ -84,7 +75,7 @@ UpPanel = function(){
     return combo.value;
   }
 
-  UpPanel.superclass.constructor.call(this,{
+  WakameGUI.SystemAdminUpPanel.superclass.constructor.call(this,{
     region: "north", 
     split: true,
     height: 60,
@@ -95,24 +86,24 @@ UpPanel = function(){
     items: [form]
   });
 }
-Ext.extend(UpPanel, Ext.Panel);
+Ext.extend(WakameGUI.SystemAdminUpPanel, Ext.Panel);
 
-DownPanel = function(cardPanel){
+WakameGUI.SystemAdminDownPanel = function(cardPanel){
   function ChangePanel(no)
   {
-    if(activePanel != no){
-      activePanel = no;
-      cardPanel.layout.setActiveItem(activePanel);
-      if(activePanel == 0){
+    if(WakameGUI.activePanel != no){
+      WakameGUI.activePanel = no;
+      cardPanel.layout.setActiveItem(WakameGUI.activePanel);
+      if(WakameGUI.activePanel == 0){
         cardPanel.refreshInstance();
       }
-      else if(activePanel == 1){
+      else if(WakameGUI.activePanel == 1){
         cardPanel.refreshImage();
       }
     }
   }
 
-  DownPanel.superclass.constructor.call(this,{
+  WakameGUI.SystemAdminDownPanel.superclass.constructor.call(this,{
     region: "center", 
     split: true,
     header: false,
@@ -122,18 +113,18 @@ DownPanel = function(cardPanel){
     width: 150,
     listeners: {
       'click': function(node){
-          if(node.id == 'menu01'){
-            ChangePanel(0);
-          }
-          else if(node.id == 'menu02'){
-            ChangePanel(1);
-          }
-          else if(node.id == 'menu03'){
-            ChangePanel(2);
-          }
-          else if(node.id == 'menu04'){
-            ChangePanel(3);
-          }
+        if(node.id == 'menu01'){
+          ChangePanel(0);
+        }
+        else if(node.id == 'menu02'){
+          ChangePanel(1);
+        }
+        else if(node.id == 'menu03'){
+          ChangePanel(2);
+        }
+        else if(node.id == 'menu04'){
+          ChangePanel(3);
+        }
       }
     },
     rootVisible: false,
@@ -181,11 +172,11 @@ DownPanel = function(cardPanel){
     }
   });
 }
-Ext.extend(DownPanel, Ext.tree.TreePanel);
+Ext.extend(WakameGUI.SystemAdminDownPanel, Ext.tree.TreePanel);
 
-MainPanel = function(){
-  var adminQuery = new AdminQueryPanel();
-  var cardPanel    = new CardPanel();
+WakameGUI.SystemAdminMain = function(){
+  var adminQuery = new WakameGUI.SystemAdminQuery();
+  var cardPanel  = new WakameGUI.SystemAdminCard();
 
   this.getCardPanel = function(){
     return cardPanel;
@@ -195,7 +186,7 @@ MainPanel = function(){
     cardPanel.setUpPanel(obj)
   }
 
-  MainPanel.superclass.constructor.call(this, {
+  WakameGUI.SystemAdminMain.superclass.constructor.call(this, {
     region: 'center',
     split: true,
     header: false,
@@ -204,10 +195,10 @@ MainPanel = function(){
 	items: [adminQuery,cardPanel]
   });
 }
-Ext.extend(MainPanel, Ext.Panel);
+Ext.extend(WakameGUI.SystemAdminMain, Ext.Panel);
 
-AdminQueryPanel = function(){
-  AdminQueryPanel.superclass.constructor.call(this, {
+WakameGUI.SystemAdminQuery = function(){
+  WakameGUI.SystemAdminQuery.superclass.constructor.call(this, {
     height:80,
     region: 'north',
     frame : true,
@@ -257,13 +248,13 @@ AdminQueryPanel = function(){
 	}]
   });
 }
-Ext.extend(AdminQueryPanel, Ext.form.FormPanel);
+Ext.extend(WakameGUI.SystemAdminQuery, Ext.form.FormPanel);
 
-CardPanel = function(){
-  var instancePanel = new InstancePanel();
-  var imagePanel    = new ImagePanel();
-  var clusterPanel  = new ClusterPanel();
-  var servicePanel  = new ServicePanel();
+WakameGUI.SystemAdminCard = function(){
+  var instancePanel = new WakameGUI.Instance();
+  var imagePanel    = new WakameGUI.Image();
+  var clusterPanel  = new WakameGUI.Cluster();
+  var servicePanel  = new WakameGUI.Service();
 
   imagePanel.setInstancePanel(instancePanel);
 
@@ -279,7 +270,7 @@ CardPanel = function(){
     imagePanel.refresh();
   }
 
-  CardPanel.superclass.constructor.call(this, {
+  WakameGUI.SystemAdminCard.superclass.constructor.call(this, {
     region: 'center',
     layout:'card',
 	activeItem: 0, 
@@ -289,5 +280,19 @@ CardPanel = function(){
 	items: [instancePanel,imagePanel,clusterPanel,servicePanel]
   });
 }
-Ext.extend(CardPanel, Ext.Panel);
+Ext.extend(WakameGUI.SystemAdminCard, Ext.Panel);
 
+Ext.onReady(function(){
+  Ext.BLANK_IMAGE_URL='./javascripts/ext-js/resources/images/default/s.gif';
+  Ext.QuickTips.init();
+  var mainPanel     = new WakameGUI.SystemAdminMain();
+  var selectorPanel = new WakameGUI.SystemAdminSelector(mainPanel);
+  mainPanel.setUpPanel(selectorPanel.getUpPanel());
+
+  var headerPanel   = new WakameGUI.Header('System Administrator Tool');
+  var footerPanel   = new WakameGUI.Footer();
+  viewport = new Ext.Viewport({
+    layout: 'border',
+    items:[ headerPanel, mainPanel, selectorPanel, footerPanel]
+  });
+});

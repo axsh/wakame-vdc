@@ -1,8 +1,14 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  Cluster:null,
+  ClusterList:null,
+  ClusterCtrl:null
+});
 
-ClusterPanel = function(){
-  var clistPanel = new ClusterListPanel();
-  var cctrlPanel = new ClusterCtrlPanel();
-  ClusterPanel.superclass.constructor.call(this, {
+WakameGUI.Cluster = function(){
+  var clistPanel = new WakameGUI.ClusterList();
+  var cctrlPanel = new WakameGUI.ClusterCtrl();
+  WakameGUI.Cluster.superclass.constructor.call(this, {
     title: 'Cluster',
     width: 320,
     header: false,
@@ -11,9 +17,9 @@ ClusterPanel = function(){
 	items: [clistPanel,cctrlPanel]
   });
 }
-Ext.extend(ClusterPanel, Ext.Panel);
+Ext.extend(WakameGUI.Cluster, Ext.Panel);
 
-ClusterListPanel = function(){
+WakameGUI.ClusterList = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
   var store = new Ext.data.SimpleStore({
     fields: [
@@ -34,7 +40,7 @@ ClusterListPanel = function(){
     { header: "Public DNS", width: 100, dataIndex: 'public-dns' }
   ]);
 
-  ClusterListPanel.superclass.constructor.call(this, {
+  WakameGUI.ClusterList.superclass.constructor.call(this, {
     region: 'center',
     store: store,
     cm:clmnModel,
@@ -52,10 +58,9 @@ ClusterListPanel = function(){
     })
   });
 }
-Ext.extend(ClusterListPanel, Ext.grid.GridPanel);
+Ext.extend(WakameGUI.ClusterList, Ext.grid.GridPanel);
 
-ClusterCtrlPanel = function(){
-
+WakameGUI.ClusterCtrl = function(){
   var sm = new Ext.grid.RowSelectionModel({singleSelect:true});
   var store = new Ext.data.SimpleStore({
     fields: [
@@ -80,7 +85,7 @@ ClusterCtrlPanel = function(){
     { header: "Setting", width: 50, dataIndex: 'setting' }
   ]);
 
-  ClusterCtrlPanel.superclass.constructor.call(this, {
+  WakameGUI.ClusterCtrl.superclass.constructor.call(this, {
     region: 'east',
     store: store,
     cm:clmnModel,
@@ -101,5 +106,4 @@ ClusterCtrlPanel = function(){
     ]
   });
 }
-Ext.extend(ClusterCtrlPanel, Ext.grid.GridPanel);
-
+Ext.extend(WakameGUI.ClusterCtrl, Ext.grid.GridPanel);
