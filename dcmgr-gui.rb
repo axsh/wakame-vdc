@@ -35,7 +35,7 @@ post '/account-create' do
   cdate = params[:cn]
   enable = params[:en]
   memo = params[:mm]
-  Account.login('staff', 'passwd')
+  Account.login(USER_ID,PASSWORD)
   Account.create(:name=>name,
                  :enable=>enable,
                  :memo=>memo,
@@ -48,7 +48,7 @@ end
 
 post '/account-save' do
   id = params[:id]
-  Account.login('staff', 'passwd')
+  Account.login(USER_ID,PASSWORD)
   account = Account.find(id)
   account.name = params[:nm]
   account.enable = params[:en]
@@ -68,8 +68,7 @@ post '/account-search' do
   en = params[:en]
   cn = params[:cn]
 
-  Account.login('staff', 'passwd')
-
+  Account.login(USER_ID,PASSWORD)
   accountList = nil
   rtn = {'success'=>false,'totalCount'=>0,'rows'=>[]}
 
@@ -146,7 +145,7 @@ end
 
 post '/account-remove' do
   id = params[:id]
-  Account.login('staff', 'passwd')
+  Account.login(USER_ID,PASSWORD)
   account = Account.find(id)
   account.destroy
   rtn = {"success" => true}
@@ -156,7 +155,7 @@ post '/account-remove' do
 end
 
 get '/account-list' do
-  Account.login('staff', 'passwd')
+  Account.login(USER_ID,PASSWORD)
   accountList = Account.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = accountList.length
@@ -176,7 +175,7 @@ get '/account-list' do
 end
 
 get '/instance-list' do
-  Instance.login('staff', 'passwd')
+  Instance.login(USER_ID,PASSWORD)
   instanceList = Instance.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[] }
   rtn['totalCount'] = instanceList.length
@@ -207,7 +206,7 @@ get '/instance-list' do
 end
 
 get '/instance-detail-list' do
-  Instance.login('staff', 'passwd')
+  Instance.login(USER_ID,PASSWORD)
   instanceList = Instance.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[] }
   rtn['totalCount'] = instanceList.length
@@ -241,7 +240,7 @@ get '/instance-detail-list' do
 end
 
 post '/instance-create' do
-  Instance.login('staff', 'passwd')
+  Instance.login(USER_ID,PASSWORD)
   id = params[:id]
   wd = params[:wd]
   tp = params[:tp]
@@ -263,7 +262,7 @@ end
 
 post '/instance-reboot' do
   id = params[:id]
-  Instance.login('staff', 'passwd')
+  Instance.login(USER_ID,PASSWORD)
   instance = Instance.find(id)
   instance.put(:reboot)
   rtn = {"success" => true}
@@ -274,7 +273,7 @@ end
 
 post '/instance-save' do
   id = params[:id]
-  Instance.login('staff', 'passwd')
+  Instance.login(USER_ID,PASSWORD)
   instance = Instance.find(id)
   instance.put(:save)
   rtn = {"success" => true}
@@ -285,7 +284,7 @@ end
 
 post '/instance-terminate' do
   id = params[:id]
-  Instance.login('staff', 'passwd')
+  Instance.login(USER_ID,PASSWORD)
   instance = Instance.find(id)
   instance.put(:shutdown)
   rtn = {"success" => true}
@@ -295,7 +294,7 @@ post '/instance-terminate' do
 end
 
 get '/image-list' do
-  ImageStorage.login('staff', 'passwd')
+  ImageStorage.login(USER_ID,PASSWORD)
   imagelist = ImageStorage.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = imagelist.length
@@ -314,7 +313,7 @@ get '/image-list' do
 end
 
 get '/user-list' do
-  User.login('staff', 'passwd')
+  User.login(USER_ID,PASSWORD)
   userlist = User.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = userlist.length
@@ -334,7 +333,7 @@ get '/user-list' do
 end
 
 get '/physicalhost-list' do
-  PhysicalHost.login('staff', 'passwd')
+  PhysicalHost.login(USER_ID,PASSWORD)
   physicalhostlist = PhysicalHost.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = physicalhostlist.length
