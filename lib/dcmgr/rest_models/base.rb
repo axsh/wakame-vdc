@@ -34,8 +34,8 @@ module Dcmgr
         end
       end
 
-      def allow_keys(keys=nil)
-        return @allow_keys unless keys
+      def allow_keys(*keys)
+        return @allow_keys if keys.empty?
         @allow_keys = keys
       end
       
@@ -231,32 +231,31 @@ module Dcmgr
       format_object(model[uuid])
     end
 
-    def _create(req_hash=nil)
-      req_hash = request unless req_hash
+    def allowed_request_columns(request)
+      columns = {}
+      allow_keys.each{|key|
+        next unless request.key? key and not request[key].nil?
+        val = request[key]
+        case key
+        when :account
+          columns[key] = Account[val]
+        else
+          columns[key] = val
+        end
+      }
+      columns
+    end
+
+    def _create(req=request)
       obj = model.new
-
-      if allow_keys
-        allow_keys.each{|k|
-          if k == :user
-            obj.user = user
-          elsif not req_hash[k].nil? # through false
-            if k == :account
-              obj.account = Account[req_hash[k]]
-            else
-              Dcmgr.logger.debug("set: #{k} = #{req_hash[k]}")
-              obj.send('%s=' % k, req_hash[k])
-            end
-          end
-        }
-      else
-        obj.set_all(req_hash)
-      end
-
+      columns = allowed_request_columns(req)
+      Dcmgr.logger.debug("_create columns: " + columns.inspect)
+      obj.set_all(columns)
       obj.save
     end
     
     def create
-      format_object(_create())
+      format_object(_create)
     end
 
     def update

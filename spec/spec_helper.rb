@@ -36,7 +36,7 @@ module ActiveResourceHelperMethods
     else
       site = "http://#{user}:#{passwd}@localhost:#{port}/"
     end
-    
+
     eval(<<END)
     module Test
       class #{model_name} < ActiveResource::Base

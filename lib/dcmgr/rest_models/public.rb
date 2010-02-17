@@ -2,7 +2,7 @@ module Dcmgr
   class PublicAccount
     include RestModel
     model Account
-    allow_keys [:name, :memo, :enable, :contract_at]
+    allow_keys :name, :memo, :enable, :contract_at
 
     public_action :get do
       find
@@ -30,6 +30,7 @@ module Dcmgr
   class PublicUser
     include RestModel
     model User
+    allow_keys :name, :password
 
     public_action :post do
       create
@@ -68,7 +69,7 @@ module Dcmgr
     include RestModel
     model Tag
     public_name 'name_tags'
-    allow_keys [:account, :name]
+    allow_keys :account, :name
 
     public_action :post do
       create
@@ -83,7 +84,7 @@ module Dcmgr
     include RestModel
     model Tag
     public_name 'auth_tags'
-    allow_keys [:account, :name, :role]
+    allow_keys :account, :name, :role
 
     public_action :post do
       req_hash = request
@@ -117,7 +118,7 @@ module Dcmgr
   class PublicTagAttribute
     include RestModel
     model TagAttribute
-    allow_keys [:body]
+    allow_keys :body
 
     public_action :get do
       find
@@ -170,8 +171,8 @@ module Dcmgr
   class PublicInstance
     include RestModel
     model Instance
-    allow_keys [:account, :user, :physical_host, :image_storage,
-               :need_cpus, :need_cpu_mhz, :need_memory]
+    allow_keys :account, :user, :physical_host, :image_storage,
+               :need_cpus, :need_cpu_mhz, :need_memory
 
     public_action :get do
       find
@@ -305,7 +306,7 @@ module Dcmgr
   class PublicImageStorage
     include RestModel
     model ImageStorage
-    allow_keys [:image_storage_host, :storage_url]
+    allow_keys :image_storage_host, :storage_url
 
     public_action :get do
       find
@@ -354,7 +355,7 @@ module Dcmgr
   class PublicPhysicalHost
     include RestModel
     model PhysicalHost
-    allow_keys [:cpus, :cpu_mhz, :memory, :hypervisor_type]
+    allow_keys :cpus, :cpu_mhz, :memory, :hypervisor_type
     
     public_action :get do
       find
@@ -393,7 +394,7 @@ module Dcmgr
   class PublicLocationGroup
     include RestModel
     model LocationGroup
-    allow_keys [:name]
+    allow_keys :name
     
     public_action :get do
       LocationGroup.all
