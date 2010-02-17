@@ -3,10 +3,10 @@
 require 'rubygems'
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe "instance access by active resource" do
+describe "run instance access by active resource" do
   include ActiveResourceHelperMethods
 
-  it "should run instance(sample request)" do
+  it "should run/shutdown instance(sample code)" do
     reset_db
 
     # account
