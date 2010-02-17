@@ -334,6 +334,8 @@ module Dcmgr
   class PublicImageStorageHost
     include RestModel
     model ImageStorageHost
+    allow_keys :name
+
 
     public_action :get do
       find
