@@ -423,7 +423,7 @@ WakameGUI.UserList = function(){
       defaults:{bodyStyle:'padding:15px'},
       items: [tabwin],
       buttons: [{
-        text:'Save',
+        text:'Save'
       },{
         text: 'Close',
         handler: function(){
