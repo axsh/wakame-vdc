@@ -233,6 +233,12 @@ module Dcmgr
 
     def allowed_request_columns(request)
       columns = {}
+
+      # set request user if allow keys
+      if allow_keys.include? :user
+        columns[:user] = user
+      end
+      
       allow_keys.each{|key|
         next unless request.key? key and not request[key].nil?
         val = request[key]
