@@ -1,6 +1,11 @@
+// Global Resources
+Ext.apply(WakameGUI, {
+  Header:null,
+  Footer:null
+});
 
-HeaderPanel = function(headerTitle){
-  HeaderPanel.superclass.constructor.call(this,{
+WakameGUI.Header = function(headerTitle){
+  WakameGUI.Header.superclass.constructor.call(this,{
     region: "north", 
     height: 0,
     border: false,
@@ -20,19 +25,18 @@ HeaderPanel = function(headerTitle){
     ]
   });
 }
-Ext.extend(HeaderPanel, Ext.Panel);
+Ext.extend(WakameGUI.Header, Ext.Panel);
 
-
-FooterPanel = function(){
-  FooterPanel.superclass.constructor.call(this,{
+WakameGUI.Footer = function(){
+  WakameGUI.Footer.superclass.constructor.call(this,{
     region: "south", 
     height: 0,
     border: false,
     tbar : [
       { xtype: 'tbtext',
-        text : '2009,axsh Co., Ltd. All right reserved.'
+        text : '2009-2010,axsh Co., Ltd. All right reserved.'
       }
     ]
   });
 }
-Ext.extend(FooterPanel, Ext.Panel);
+Ext.extend(WakameGUI.Footer, Ext.Panel);
