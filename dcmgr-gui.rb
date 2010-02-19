@@ -1,5 +1,4 @@
 require 'rubygems'  
-require 'logger'
 require 'sinatra'
 require 'erb'
 require 'WakameWebAPI'
@@ -8,18 +7,6 @@ require 'date'
 require 'resource_maneger'
 require 'dcmgr-gui-auth'
 require 'define'
-
-if DEBUG_LOG
-  @@logger = Logger.new('dcmgr-gui.log')
-  def @@logger.write(str)
-    self << str
-  end
-  use Rack::CommonLogger, @@logger
-end
-
-def debug_log(str)
-  @@logger.debug str if DEBUG_LOG
-end
 
 get '/' do
   'startup dcmgr-gui'
@@ -55,11 +42,8 @@ end
 post '/client/login' do
   login('client')
 end
-get '/center/logout' do
-  logout('/center/login')
-end
-get '/client/logout' do
-  logout('/center/login')
+get '/logout' do
+  logout
 end
 #################################
 
