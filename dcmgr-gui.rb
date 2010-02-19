@@ -2,10 +2,10 @@ require 'rubygems'
 require 'sinatra'
 require 'erb'
 require 'WakameWebAPI'
-require 'logger'
 require 'parsedate'
 require 'date'
 require 'resource_maneger'
+require 'dcmgr-gui-auth'
 require 'define'
 
 if DEBUG_LOG
@@ -29,6 +29,38 @@ not_found do
  debug_log "not found"
  "not found"
 end
+
+#################################
+# for login
+get '/center/' do
+  need_auth 'center' do
+    redirect '/CenterManager.html'
+  end
+end
+get '/center/login' do
+  login('center','/CenterManager.html')
+end
+post '/center/login' do
+  login('center','/CenterManager.html')
+end
+get '/client/' do
+  need_auth 'client' do
+    redirect '/SystemAdmin.html'
+  end
+end
+get '/client/login' do
+  login('client','/SystemAdmin.html')
+end
+post '/client/login' do
+  login('client','/SystemAdmin.html')
+end
+get '/center/logout' do
+  logout('/center/login')
+end
+get '/client/logout' do
+  logout('/center/login')
+end
+#################################
 
 post '/account-create' do
   name = params[:nm]
@@ -385,31 +417,8 @@ get '/rack-list' do
   rtn.to_json
 end
 
-get 'user-list' do
-  debug_log('hoge');
-  debug_log params
-  User.login(USER_ID,PASSWORD)
-  userList = User.find(:all)
-  rtn = {'totalCount'=>0,'rows'=>[]}
-  rtn['totalCount'] = userList.length
-  debug_log userList
-  # userList.each{|index|
-  #   rows = Hash::new
-  #   rows.store('id',index.id)
-  #   rows.store('nm',index.name)
-  #   rows.store('st',index.created_at)
-  #   rows.store('en',index.contract_at)
-  #   rows.store('em',index.enable)
-  #   rows.store('mm',index.memo)
-  #   rtn['rows'].push(rows)
-  # }
-  # debug_log rtn
-  # content_type :json
-  # rtn.to_json
-  
-end
-
 post '/user-create' do
+  debug_log params
   name = params[:user_name]
   email = params[:email]
   password = params[:password]
