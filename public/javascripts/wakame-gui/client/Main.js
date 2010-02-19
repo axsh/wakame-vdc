@@ -290,7 +290,7 @@ WakameGUI.SystemAdminCard = function(){
 Ext.extend(WakameGUI.SystemAdminCard, Ext.Panel);
 
 Ext.onReady(function(){
-  Ext.BLANK_IMAGE_URL='./javascripts/ext-js/resources/images/default/s.gif';
+  Ext.BLANK_IMAGE_URL='/javascripts/ext-js/resources/images/default/s.gif';
   Ext.QuickTips.init();
   var mainPanel     = new WakameGUI.SystemAdminMain();
   var selectorPanel = new WakameGUI.SystemAdminSelector(mainPanel);
