@@ -47,6 +47,10 @@ get '/logout' do
 end
 #################################
 
+get '/user-name' do
+  session[:login_id]
+end
+
 post '/account-create' do
   name = params[:nm]
   cdate = params[:cn]
