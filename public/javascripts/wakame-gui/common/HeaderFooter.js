@@ -9,7 +9,7 @@ WakameGUI.Header = function(headerTitle){
   function reqeustSuccess(response)
   {
     if (response.responseText !== undefined) { 
-      Ext.getDom("WELCOME_MESSAGE").innerHTML = 'Welcome , ' + response.responseText;
+      Ext.get("WELCOME_MESSAGE").update('Welcome , ' + response.responseText);
     }
   }
 
