@@ -18,7 +18,7 @@ WakameGUI.Header = function(headerTitle){
     height: 0,
     border: false,
     listeners: {
-      'afterrender': function(node){
+      'render': function(node){
         Ext.Ajax.request({
 	      url: '/user-name',
 	      method: "GET",
