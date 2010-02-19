@@ -8,12 +8,12 @@ Ext.apply(WakameGUI, {
 WakameGUI.LocationMap = function(){
   var mPropertyPanel = new WakameGUI.MAPProperty();
   var mtabPanel      = new WakameGUI.MAPTab('center',600);
-  mtabPanel.add(new WakameGUI.MAPView('1F-100',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new WakameGUI.MAPView('1F-101',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new WakameGUI.MAPView('2F-101',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new WakameGUI.MAPView('2F-200',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new WakameGUI.MAPView('3F-105',"./images/map/1F-10.jpeg"));
-  mtabPanel.add(new WakameGUI.MAPView('3F-200',"./images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('1F-100',"/images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('1F-101',"/images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('2F-101',"/images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('2F-200',"/images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('3F-105',"/images/map/1F-10.jpeg"));
+  mtabPanel.add(new WakameGUI.MAPView('3F-200',"/images/map/1F-10.jpeg"));
   WakameGUI.LocationMap.superclass.constructor.call(this, {
     split: true,
     header: false,
