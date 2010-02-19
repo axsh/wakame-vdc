@@ -19,18 +19,12 @@ helpers do
     rtn
   end
 
- def login(login_select,suucess_path)
+ def login(login_select)
    @selector = login_select
-
-  debug_log params['id']
-  debug_log params['pw']
-  debug_log session[:login_id]
-  debug_log session[:login_pw]
-
    if auth_ok?(params['id'], params['pw'])
      session[:login_id] = params['id']
      session[:login_pw] = params['pw']
-     redirect suucess_path
+     redirect "/"+login_select+"/"
    else
      erb :login
    end
