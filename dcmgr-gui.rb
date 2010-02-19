@@ -1,4 +1,5 @@
 require 'rubygems'  
+require 'logger'
 require 'sinatra'
 require 'erb'
 require 'WakameWebAPI'
@@ -34,25 +35,25 @@ end
 # for login
 get '/center/' do
   need_auth 'center' do
-    redirect '/CenterManager.html'
+    erb :center
   end
 end
 get '/center/login' do
-  login('center','/CenterManager.html')
+  login('center')
 end
 post '/center/login' do
-  login('center','/CenterManager.html')
+  login('center')
 end
 get '/client/' do
   need_auth 'client' do
-    redirect '/SystemAdmin.html'
+    erb :client
   end
 end
 get '/client/login' do
-  login('client','/SystemAdmin.html')
+  login('client')
 end
 post '/client/login' do
-  login('client','/SystemAdmin.html')
+  login('client')
 end
 get '/center/logout' do
   logout('/center/login')
