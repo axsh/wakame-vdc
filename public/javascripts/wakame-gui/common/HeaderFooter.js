@@ -5,17 +5,35 @@ Ext.apply(WakameGUI, {
 });
 
 WakameGUI.Header = function(headerTitle){
+
+  function reqeustSuccess(response)
+  {
+    if (response.responseText !== undefined) { 
+      Ext.getDom("WELCOME_MESSAGE").innerHTML = 'Welcome , ' + response.responseText;
+    }
+  }
+
   WakameGUI.Header.superclass.constructor.call(this,{
     region: "north", 
     height: 0,
     border: false,
+    listeners: {
+      'afterrender': function(node){
+        Ext.Ajax.request({
+	      url: '/user-name',
+	      method: "GET",
+          success: reqeustSuccess
+	    });
+      }
+    },
     tbar : [
       { xtype: 'tbtext',
         style: 'color:#0000ff; font-size:14px;',
         text : headerTitle
       },'->','-',
       { xtype: 'tbtext',
-        text : 'Welcome , xxxxx'
+        id: 'WELCOME_MESSAGE',
+        text : ''
       },'-',
       { text : 'Help',handler:function(){ alert('Help'); }
       },'-',
