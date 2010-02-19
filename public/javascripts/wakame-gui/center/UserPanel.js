@@ -222,6 +222,7 @@ WakameGUI.UserList = function(){
   Ext.extend(AddUserWindow, Ext.Window);
 
   EditUserWindow = function(userData){
+      console.log(userData);
     var user = new Ext.form.FormPanel({
       title: 'User-Infomation',
       labelWidth: 120, 
@@ -241,21 +242,21 @@ WakameGUI.UserList = function(){
         fieldLabel: 'User-ID',
         xtype: 'displayfield',
         name: 'form_textfield',
-        value: userData.get('user-id'),
+        value: userData.get('id'),
         anchor: '100%'
         }
         ,{
         fieldLabel: 'User-Name',
         xtype: 'textfield',
         name: 'form_textfield',
-        value: userData.get('user-name'),
+        value: userData.get('nm'),
         anchor: '100%'
         }
         ,{
         fieldLabel: 'E-Mail',
         xtype: 'textfield',
         name: 'form_textfield',
-        value: userData.get('e-mail'),
+        value: userData.get('em'),
         anchor: '100%'
         }
         ,{
@@ -264,13 +265,13 @@ WakameGUI.UserList = function(){
         width: 100,
 	    name: "enable",
         boxLabel: '',
-        checked : userData.get('enable')=='true'?true:false
+        checked : userData.get('en')=='true'?true:false
         }
         ,{
         fieldLabel: 'Memo',
         xtype: 'textarea',
         name: 'form_textfield',
-        value: userData.get('memo-text'),
+        value: userData.get('mm'),
         anchor: '100%'
         }
       ]
