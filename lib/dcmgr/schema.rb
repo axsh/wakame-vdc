@@ -56,6 +56,14 @@ module Dcmgr
         primary_key ([:account_id, :user_id])
       end
 
+      @db.create_table? :key_pairs do
+        primary_key :id, :type=>Integer
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid, :unique=>true
+        Fixnum :user_id, :null=>false
+        String :public_key, :null=>false
+      end
+
       @db.create_table? :image_storages do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
