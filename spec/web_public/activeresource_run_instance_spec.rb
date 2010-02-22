@@ -26,7 +26,10 @@ describe "run instance access by active resource" do
 
     # change user
     user = ar_class(:User, ar_opts).find(:myself)
-    p user
+    user.name.should == user_name
+    lambda {
+      user.password
+    }.should raise_error(NoMethodError)
 
     pending
     
