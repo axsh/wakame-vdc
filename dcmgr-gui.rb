@@ -56,12 +56,15 @@ post '/account-create' do
   cdate = params[:cn]
   enable = params[:en]
   memo = params[:mm]
+  rtn = {"success" => false}
   Account.login(session[:login_id],session[:login_pw])
-  Account.create(:name=>name,
-                 :enable=>enable,
-                 :memo=>memo,
-                 :contract_at=>cdate)
-  rtn = {"success" => true}
+  begin
+    Account.create(:name=>name,
+                   :enable=>enable,
+                   :memo=>memo,
+                   :contract_at=>cdate)
+    rtn['success'] = true
+  end
   debug_log rtn
   content_type :json
   rtn.to_json
@@ -69,15 +72,18 @@ end
 
 post '/account-save' do
   id = params[:id]
+  rtn = {"success" => false}
   Account.login(session[:login_id],session[:login_pw])
-  account = Account.find(id)
-  account.name = params[:nm]
-  account.enable = params[:en]
-  account.memo = params[:mm]
-  ary = ParseDate::parsedate(params[:cn])
-  account.contract_at = Time::local(*ary[0..-3])
-  account.save
-  rtn = {"success" => true}
+  begin
+    account = Account.find(id)
+    account.name = params[:nm]
+    account.enable = params[:en]
+    account.memo = params[:mm]
+    ary = ParseDate::parsedate(params[:cn])
+    account.contract_at = Time::local(*ary[0..-3])
+    account.save
+    rtn['success'] = true
+  end
   debug_log rtn
   content_type :json
   rtn.to_json
@@ -89,63 +95,81 @@ post '/account-search' do
   en = params[:en]
   cn = params[:cn]
 
+  rtn = {'success'=>false,'totalCount'=>0,'rows'=>[]}
   Account.login(session[:login_id],session[:login_pw])
   accountList = nil
-  rtn = {'success'=>false,'totalCount'=>0,'rows'=>[]}
+  begin
+    fromDate = nil;
+    toDate = nil;
+    if cn.length > 0
+      ary = ParseDate::parsedate(cn)
+      fromDate = Time::local(*ary[0..-3])
+      toDate = fromDate + 3600*24
+    end
 
-  fromDate = nil;
-  toDate = nil;
-  if cn.length > 0
-    ary = ParseDate::parsedate(cn)
-    fromDate = Time::local(*ary[0..-3])
-    toDate = fromDate + 3600*24
-  end
-
-  if id.length > 0
-    accountList = Account.find(:all, :params=>{:id=>id})
-  elsif cn.length > 0
-    if en != "0"
-      if en == "1"
-        if nm.length > 0
-          accountList = Account.find(:all, :params=>{:name=>nm,:enable=>true,:contract_at=>[fromDate,toDate]})
-        else
-          accountList = Account.find(:all, :params=>{:enable=>true,:contract_at=>[fromDate,toDate]})
-        end
-      else
-        if nm.length > 0
-          accountList = Account.find(:all, :params=>{:name=>nm,:enable=>false,:contract_at=>[fromDate,toDate]})
-        else
-          accountList = Account.find(:all, :params=>{:enable=>false,:contract_at=>[fromDate,toDate]})
-        end
-      end
+    acArg = Hash.new()
+    acPrm = Hash.new()
+    if id.length > 0
+      acPrm.store(:id,id)
     else
+      if cn.length > 0
+	    acPrm.store(:contract_at,[fromDate,toDate])
+      end
       if nm.length > 0
-        accountList = Account.find(:all, :params=>{:name=>nm,:contract_at=>[fromDate,toDate]})
-      else
-        accountList = Account.find(:all, :params=>{:contract_at=>[fromDate,toDate]})
+        acPrm.store(:name,nm)
+      end
+      if en == "1"
+        acPrm.store(:enable,true)
+      elsif en == "2"
+        acPrm.store(:enable,false)
       end
     end
-  elsif en != "0"
-    if nm.length > 0
-      if en == "1"
-        accountList = Account.find(:all, :params=>{:enable=>true,:name=>nm})
-      else
-        accountList = Account.find(:all, :params=>{:enable=>false,:name=>nm})
-      end
+    if acPrm.length==0
+      accountList = Account.find(:all)
     else
-      if en == "1"
-        accountList = Account.find(:all, :params=>{:enable=>true})
-      else
-        accountList = Account.find(:all, :params=>{:enable=>false})
-      end
+      acArg.store(:params,acPrm)
+      accountList = Account.find(:all,acArg)
     end
-  elsif nm.length > 0
-    accountList = Account.find(:all, :params=>{:name=>nm})
-  else
-    accountList = Account.find(:all)
-  end
 
-  if accountList != nil
+    if accountList != nil
+      rtn['success'] = true
+      rtn['totalCount'] = accountList.length
+      accountList.each{|index|
+        rows = Hash::new
+        rows.store('id',index.id)
+        rows.store('nm',index.name)
+        rows.store('rg',index.created_at)
+        rows.store('cn',index.contract_at)
+        rows.store('en',index.enable)
+        rows.store('mm',index.memo)
+        rtn['rows'].push(rows)
+      }
+    end
+  end
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
+post '/account-remove' do
+  id = params[:id]
+  rtn = {"success" => false}
+  Account.login(session[:login_id],session[:login_pw])
+  begin
+    account = Account.find(id)
+    account.destroy
+    rtn = {"success" => true}
+  end
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
+get '/account-list' do
+  rtn = {"success" => false,'totalCount'=>0,'rows'=>[]}
+  Account.login(session[:login_id],session[:login_pw])
+  begin
+    accountList = Account.find(:all)
     rtn['success'] = true
     rtn['totalCount'] = accountList.length
     accountList.each{|index|
@@ -159,37 +183,6 @@ post '/account-search' do
       rtn['rows'].push(rows)
     }
   end
-  debug_log rtn
-  content_type :json
-  rtn.to_json
-end
-
-post '/account-remove' do
-  id = params[:id]
-  Account.login(session[:login_id],session[:login_pw])
-  account = Account.find(id)
-  account.destroy
-  rtn = {"success" => true}
-  debug_log rtn
-  content_type :json
-  rtn.to_json
-end
-
-get '/account-list' do
-  Account.login(session[:login_id],session[:login_pw])
-  accountList = Account.find(:all)
-  rtn = {'totalCount'=>0,'rows'=>[]}
-  rtn['totalCount'] = accountList.length
-  accountList.each{|index|
-    rows = Hash::new
-    rows.store('id',index.id)
-    rows.store('nm',index.name)
-    rows.store('rg',index.created_at)
-    rows.store('cn',index.contract_at)
-    rows.store('en',index.enable)
-    rows.store('mm',index.memo)
-    rtn['rows'].push(rows)
-  }
   debug_log rtn
   content_type :json
   rtn.to_json
