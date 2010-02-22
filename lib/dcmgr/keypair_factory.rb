@@ -10,7 +10,7 @@ module Dcmgr::KeyPairFactory
 
   def self.generate(filename)
     tmp = "/tmp/#{filename}_key"
-    command = "#{KEYGEN_PATH} -t #{TYPE} -f #{tmp} -N \"\""
+    command = "#{KEYGEN_PATH} -t #{TYPE} -f #{tmp} -N \"\" > /dev/null"
     ret = system(command)
     raise KeyPairFactoryError unless ret
 
