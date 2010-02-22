@@ -207,7 +207,7 @@ module Dcmgr
                else
                  model
                end
-      filter.limit(limit, offset)
+      filter.limit(limit, offset).all
     end
     
     def get
