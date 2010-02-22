@@ -2,7 +2,7 @@ module Dcmgr
   class PublicAccount
     include RestModel
     model Account
-    allow_keys :uuid, :name, :memo, :enable, :contract_at
+    allow_keys :name, :memo, :enable, :contract_at
 
     public_action :get do
       find
