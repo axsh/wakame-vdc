@@ -153,6 +153,7 @@ module Dcmgr
           val = get_val.call(object)
         else
           val = object.send(key)
+          val = val.uuid if val.respond_to? :uuid
         end
         ret[key] = val
       }

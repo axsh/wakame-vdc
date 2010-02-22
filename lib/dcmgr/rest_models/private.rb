@@ -23,7 +23,7 @@ module Dcmgr
           obj.send('%s=' % key, req_hash[key])
         end
       }
-      format_object(obj.save)
+      obj.save
     end
   end
 end
