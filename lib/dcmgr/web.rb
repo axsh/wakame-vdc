@@ -29,6 +29,7 @@ module Dcmgr
     
     public_crud PublicAccount
     public_crud PublicUser
+    public_crud PublicKeyPair
     
     public_crud PublicNameTag
     public_crud PublicAuthTag
