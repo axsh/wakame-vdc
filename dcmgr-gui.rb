@@ -392,7 +392,7 @@ get '/rack-list' do
   id = params[:id]
   rtn = {'success'=>false}
   resource = ResourceManeger.new
-  rtn.store(:racks,resource.getRacks(id,ResourceManeger::R_SV))
+  rtn.store(:racks,resource.getRacks(id,ResourceManeger::R_SV,true))
   rtn['success'] = true
   debug_log rtn
   content_type :json
