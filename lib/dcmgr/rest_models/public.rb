@@ -107,7 +107,7 @@ module Dcmgr
         end
       }
       
-      format_object(obj)
+      obj
     end
     
     public_action_withid :delete do
@@ -119,22 +119,10 @@ module Dcmgr
     include RestModel
     model TagAttribute
     allow_keys :body
+    response_keys [:tag, :uuid], :body, [:uuid, :tag]
 
     public_action :get do
       find
-    end
-
-    def format_object(object)
-      if object
-        def object.keys
-          [:tag, :body, :uuid]
-        end
-        add_only_uuid_method object, :tag
-        def object.uuid
-          self.tag
-        end
-      end
-      object
     end
 
     public_action_withid :get do
@@ -148,7 +136,7 @@ module Dcmgr
           
         end
       end
-      format_object(ret)
+      ret
     end
 
     public_action_withid :put do
@@ -164,7 +152,7 @@ module Dcmgr
           obj.send('%s=' % key, req_hash[key])
         end
       }
-      format_object(obj.save)
+      obj.save
     end
   end
 
@@ -231,7 +219,7 @@ module Dcmgr
         
         instance.save
       end
-      format_object(instance)
+      instance
     end
     
     public_action_withid :get do
@@ -319,7 +307,7 @@ module Dcmgr
       req_hash[:image_storage_host] = ImageStorageHost[req_hash.delete(:image_storage_host)]
 
       image_storage = _create(req_hash)
-      format_object(image_storage)
+      image_storage
     end
 
     public_action_withid :get do

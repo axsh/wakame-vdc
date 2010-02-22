@@ -39,6 +39,11 @@ module Dcmgr
         @allow_keys = keys
       end
       
+      def response_keys(*keys)
+        return @response_keys if keys.empty?
+        @response_keys = keys
+      end
+      
       def model(model_class=nil)
         return @model unless model_class
         @model = model_class
@@ -89,41 +94,18 @@ module Dcmgr
             obj.uuid = args[0] if args.length > 0
             
             ret = obj.instance_eval(&block)
+
+            logger.debug "response(inspect): " + ret.inspect
+            json_ret = obj.to_response(ret).to_json
+            logger.debug "response(json): " + json_ret
+            json_ret
+
           rescue StandardError => e
             logger.info "err! %s" % e.to_s
             logger.info "  " + e.backtrace.join("\n  ")
             throw :halt, [400, e.to_s]
           end
-          
-          logger.debug "response(inspect): " + ret.inspect
-          json_ret = public_class.json_render(ret)
-          logger.debug "response(json): " + json_ret
-          json_ret
         end
-      end
-      
-      def json_render(obj)
-        def model2hash i
-          h = Hash.new
-          i.keys.each{ |key|
-            h[key] = i.send(key)
-          }
-
-          # strip id, change uuid to id
-          id = h.delete :id
-          uuid = h.delete :uuid
-          h[:id] = uuid if uuid
-          h
-        end
-        
-        if obj.is_a? Array
-          ret = obj.collect{|i| model2hash(i)}
-        elsif obj == nil
-          ret = nil
-        else
-          ret = model2hash(obj)
-        end
-        ret.to_json
       end
     end
 
@@ -143,36 +125,37 @@ module Dcmgr
       self.class.allow_keys
     end
 
-    def add_only_uuid_method(obj, method)
-      instance_eval("def obj.#{method}; return nil unless super; super.uuid; end")
+    def response_keys
+      self.class.response_keys
+    end
+
+    def to_response(object)
+      case object
+      when Array
+        object.map{|o| format_object(o) }
+      else
+        format_object(object)
+      end
     end
 
     def format_object(object)
-      if object
-        # for response format 
-        def object.keys
-          keys = super
-          # change from xxx_id to xxx
-          keys.map! {|k|
-            if /^(.*)_id$/ =~ k.to_s
-              $1.to_sym
-            else
-              k
-            end
-          }
-          keys.push :tags if super.respond_to? :tags
-          keys  
-        end
-        # only uuid
-        [:account, :hv_agent, :user, :relate_user,
-         :physical_host, :image_storage, :tag].each{|method|
-          add_only_uuid_method object, method
+      keys = response_keys ? response_keys :
+        object.keys.map{|key|
+          if /^(.*)_id$/ =~ key.to_s then $1.to_sym else key end
         }
-        def object.tags
-          super.map{|t| t.uuid} # format only tags uuid
-        end
-      end
-      object
+
+      ret = {}
+      keys.each{|key|
+        val = object.send(key)
+        ret[key] = val
+      }
+      
+      # strip id, change uuid to id
+      id = ret.delete :id
+      uuid = ret.delete :uuid
+      ret[:id] = uuid if uuid
+
+      ret
     end
 
     def query_str_like(key, str)
@@ -224,11 +207,11 @@ module Dcmgr
                else
                  model
                end
-      filter.limit(limit, offset).map{|o| format_object(o)}
+      filter.limit(limit, offset)
     end
     
     def get
-      format_object(model[uuid])
+      model[uuid]
     end
 
     def allowed_request_columns(request)
@@ -261,7 +244,7 @@ module Dcmgr
     end
     
     def create
-      format_object(_create)
+      _create
     end
 
     def update
@@ -277,7 +260,7 @@ module Dcmgr
           obj.send('%s=' % key, req_hash[key])
         end
       }
-      format_object(obj.save)
+      obj.save
     end
     
     def destroy
