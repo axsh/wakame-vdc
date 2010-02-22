@@ -22,6 +22,7 @@ helpers do
  def login(login_select)
    @selector = login_select
    if auth_ok?(params['id'], params['pw'])
+     session[:login_user] = login_select
      session[:login_id] = params['id']
      session[:login_pw] = params['pw']
      session[:log_in_path] = "/"+login_select+"/login"
@@ -34,6 +35,7 @@ helpers do
  def logout
    session.delete(:id)
    session.delete(:pw)
+   session.delete(:login_user)
    if session[:log_in_path]
      lg_path = session[:log_in_path]
      session.delete(:log_in_path)
@@ -43,10 +45,10 @@ helpers do
 
  def need_auth login_select
    @selector = login_select
-   unless session[:login_id] && session[:login_pw]
+   unless session[:login_user] && session[:login_id] && session[:login_pw]
      erb :login
    else
-     if auth_ok?(session[:login_id], session[:login_pw])
+     if session[:login_user] == login_select && auth_ok?(session[:login_id], session[:login_pw])
        yield
      else
        erb :login
