@@ -31,6 +31,7 @@ module Dcmgr
     include RestModel
     model User
     allow_keys :name, :password
+    response_keys :uuid, :name, :enable, :memo
 
     public_action :post do
       create

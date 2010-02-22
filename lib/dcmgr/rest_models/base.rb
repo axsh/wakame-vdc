@@ -159,7 +159,7 @@ module Dcmgr
       }
       
       # strip id, change uuid to id
-      id = ret.delete :id
+      ret.delete :id
       uuid = ret.delete :uuid
       ret[:id] = uuid if uuid
 
