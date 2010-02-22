@@ -119,7 +119,7 @@ module Dcmgr
     include RestModel
     model TagAttribute
     allow_keys :body
-    response_keys [:tag, :uuid], :body, [:uuid, :tag]
+    response_keys :body, [:uuid, proc {|o| o.tag.uuid}]
 
     public_action :get do
       find

@@ -146,7 +146,14 @@ module Dcmgr
 
       ret = {}
       keys.each{|key|
-        val = object.send(key)
+        case key # resopnse_key Array format is [:key, proc]
+        when Array
+          get_val = key[1]
+          key = key[0]
+          val = get_val.call(object)
+        else
+          val = object.send(key)
+        end
         ret[key] = val
       }
       
