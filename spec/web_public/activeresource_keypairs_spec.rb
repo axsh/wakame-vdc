@@ -12,17 +12,24 @@ describe "keypairs access by active resource" do
   end
 
   it "should create key pairs" do
-    pending
-
     keypair = @c.create
-    keypair.id.should.length > 0
-    keypair.secret_body.length.should > 0
+    keypair.id.length.should > 0
+    keypair.private_key.length.should > 0
+    keypair.public_key.length.should > 0
+    keypair.user.should == @user.id
+  end
+
+  it "should get" do
+    keypair = @c.create
+    keypair = @c.find(keypair.id)
+    
+    keypair.id.length.should > 0
+    keypair.public_key.length.should > 0
+    keypair.private_key.should be_nil
     keypair.user.should == @user.id
   end
 
   it "should delete" do
-    pending
-
     keypair = @c.create
 
     KeyPair[keypair.id].should be_true
@@ -34,18 +41,16 @@ describe "keypairs access by active resource" do
   end
 
   it "should find all" do
-    pending
-    
     keypair = @c.create
 
     keypairs = @c.find(:all)
-    keypairs.detect{|kp| kp.uuid == keypair.id }.should be_true
+    keypairs.detect{|kp| kp.id == keypair.id }.should be_true
 
     keypair_id = keypair.id
     keypair.destroy
 
     keypairs = @c.find(:all)
-    keypairs.detect{|kp| kp.uuid == keypair.id }.should be_false
+    keypairs.detect{|kp| kp.id == keypair.id }.should be_false
   end
 end
 

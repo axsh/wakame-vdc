@@ -2,7 +2,7 @@ module Dcmgr
   class PublicAccount
     include RestModel
     model Account
-    allow_keys :name, :memo, :enable, :contract_at
+    allow_keys :uuid, :name, :memo, :enable, :contract_at
 
     public_action :get do
       find
@@ -31,7 +31,7 @@ module Dcmgr
     include RestModel
     model User
     allow_keys :name, :password
-    response_keys :name, :enable, :memo
+    response_keys :uuid, :name, :enable, :memo
 
     public_action :post do
       create
@@ -74,6 +74,10 @@ module Dcmgr
 
     public_action :post do
       create
+    end
+
+    public_action_withid :get do
+      get
     end
 
     public_action_withid :delete do
