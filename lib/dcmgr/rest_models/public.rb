@@ -31,7 +31,7 @@ module Dcmgr
     include RestModel
     model User
     allow_keys :name, :password
-    response_keys :uuid, :name, :enable, :memo
+    response_keys :name, :enable, :memo
 
     public_action :post do
       create
@@ -63,6 +63,25 @@ module Dcmgr
                         :target_type=>TagMapping::TYPE_USER,
                         :target_id=>target.id)
       []
+    end
+  end
+
+  class PublicKeyPair
+    include RestModel
+    model KeyPair
+    allow_keys :user
+    response_keys :uuid, :user, :public_key, :private_key
+
+    public_action :post do
+      create
+    end
+
+    public_action_withid :delete do
+      destroy
+    end
+
+    public_action :get do
+      find
     end
   end
 

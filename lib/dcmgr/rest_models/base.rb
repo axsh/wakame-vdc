@@ -157,7 +157,7 @@ module Dcmgr
         end
         ret[key] = val
       }
-      
+
       # strip id, change uuid to id
       ret.delete :id
       uuid = ret.delete :uuid

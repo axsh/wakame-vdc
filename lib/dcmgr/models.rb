@@ -97,6 +97,7 @@ class User < Sequel::Model
 
   many_to_many :accounts
   many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
+  one_to_many :key_pairs
 
   def validate
     errors.add(:name, "can't empty") unless self.name and self.name.length > 0
@@ -111,6 +112,22 @@ class User < Sequel::Model
   def self.enable_users
     filter(:enable=>true)
   end
+end
+
+class KeyPair < Sequel::Model
+  include Dcmgr::Model::UUIDMethods
+  def self.prefix_uuid; 'KP'; end
+
+  many_to_one :user
+
+  def before_create
+    super
+    keypair = Dcmgr::KeyPairFactory.generate(self.uuid)
+    self.public_key = keypair[:public]
+    self.private_key = keypair[:private]
+  end
+
+  attr_accessor :private_key
 end
 
 
