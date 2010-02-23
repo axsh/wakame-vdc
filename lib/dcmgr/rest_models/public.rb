@@ -31,7 +31,7 @@ module Dcmgr
     include RestModel
     model User
     allow_keys :name, :password, :enable
-    response_keys :uuid, :name, :enable, :memo
+    response_keys :uuid, :name, :enable, :memo, :accounts
 
     public_action :post do
       create
@@ -40,8 +40,21 @@ module Dcmgr
     public_action_withid :put do
       update
     end
+
     public_action :get, :myself do
       user
+    end
+
+    public_action_withid :get do
+      get
+    end
+
+    public_action_withid :put, :add_account do
+      target = User[uuid]
+      account_uuid = request[:_get_account]
+      account = Account[account_uuid]
+      target.add_account(account)
+      nil
     end
     
     public_action :get do

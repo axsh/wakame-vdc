@@ -43,14 +43,13 @@ describe "user access by active resource" do
   end
 
   it "should add account" do
-    pending
     user = @class.create(:name=>'__test_as_user_add_account__', :password=>'passwd')
     user.accounts.length.should == 0
 
     account_c = ar_class :Account
     account = account_c.create(:name=>'test account for ' + user.name)
 
-    user.put(:add_account, account.id)
+    user.put(:add_account, :account=>account.id)
 
     user.reload
 
