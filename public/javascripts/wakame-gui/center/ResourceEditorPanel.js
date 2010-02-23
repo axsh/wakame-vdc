@@ -297,6 +297,18 @@ WakameGUI.ResourceMap = function(){
   var dataMap = new Array();
   var draggingRack=false;
 
+  function clearRackSelect(target){
+	for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id != dataMap[Ext.get(target).id]){
+        if(WakameGUI.dataRacks[i].sel){
+          WakameGUI.dataRacks[i].sel = false;
+          var myEl = Ext.get(WakameGUI.dataRacks[i].draw_id);
+          myEl.applyStyles({ 'background-color':'green' });
+        }
+      }
+    }
+  }
+
   function dragRack(target){
     var top = Ext.get('rackSurface');
     var x = Ext.get(target).getX()-top.getX();
@@ -319,6 +331,10 @@ WakameGUI.ResourceMap = function(){
           WakameGUI.dataRacks[i].sel = true;
           var myEl = Ext.get(WakameGUI.dataRacks[i].draw_id);
           myEl.applyStyles({ 'background-color':'red' });
+          // ドラッグ対象が選択されていなかった場合
+　　　　　// 他の選択されていたラックを選択解除する
+          // ドラッグの際に単独で選択されたとみなす
+          clearRackSelect(target);
         }
         move_x = WakameGUI.dataRacks[i].x-dist_x;
         move_y = WakameGUI.dataRacks[i].y-dist_y;
