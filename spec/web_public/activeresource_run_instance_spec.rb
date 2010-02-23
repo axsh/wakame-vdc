@@ -40,16 +40,24 @@ describe "run instance access by active resource" do
     keypair.public_key.length.should > 0
     
     # select image
-    images = ar_class(:ImageStorageHost, ar_opts).find(:all)
+    images = ar_class(:ImageStorage, ar_opts).find(:all)
     images.length.should > 0
     select_image = images[0]
 
     # run instance
-    
+    instance_c = ar_class(:Instance, ar_opts)
+    instance = instance_c.create(:account=>account.id,
+                                 :need_cpus=>1, :need_cpu_mhz=>0.5,
+                                 :need_memory=>1.0,
+                                 :image_storage=>select_image.id,
+                                 :keyparir=>keypair.id)
+    instance.should be_valid
 
     # terminate instance
-
+    instance.put(:shutdown)
+    
     # log
+    
 
     # account log
   end
