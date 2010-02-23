@@ -1,3 +1,32 @@
+/*-
+ * Copyright (c) 2010 axsh co., LTD.
+ * All rights reserved.
+ *
+ * Author: Takahisa Kamiya
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ */
+
 // Global Resources
 Ext.apply(WakameGUI, {
   ResourceEditor:null,
@@ -262,38 +291,71 @@ WakameGUI.ResourceMap = function(){
   var rack_high  = 15;
   var boxDraw=false;
   var mousex1=0;
-  var mousex1=0;
+  var mousey1=0;
   var mousex2=0;
   var mousey2=0;
   var dataMap = new Array();
+  var draggingRack=false;
+
+  function dragRack(target){
+    var top = Ext.get('rackSurface');
+    var x = Ext.get(target).getX()-top.getX();
+    var y = Ext.get(target).getY()-top.getY();
+    var dist_x = Math.floor(x / grid_x)*grid_x;
+    var dist_y = Math.floor(y / grid_y)*grid_y;
+    if((x % grid_x) > (grid_x/2)){
+      dist_x += grid_x;
+    }
+    if((y % grid_y) > (grid_y/2)){
+      dist_y += grid_y;
+    }
+    Ext.get(target).setX(top.getX()+dist_x);
+    Ext.get(target).setY(top.getY()+dist_y);
+    var move_x = 0;
+    var move_y = 0;
+	for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id == dataMap[Ext.get(target).id]){
+        if(!WakameGUI.dataRacks[i].sel){
+          WakameGUI.dataRacks[i].sel = true;
+          var myEl = Ext.get(WakameGUI.dataRacks[i].draw_id);
+          myEl.applyStyles({ 'background-color':'red' });
+        }
+        move_x = WakameGUI.dataRacks[i].x-dist_x;
+        move_y = WakameGUI.dataRacks[i].y-dist_y;
+        WakameGUI.dataRacks[i].x = dist_x;
+        WakameGUI.dataRacks[i].y = dist_y;
+        break;
+      }
+	}
+	for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id != dataMap[Ext.get(target).id]){
+        if(WakameGUI.dataRacks[i].sel){
+          dist_x = WakameGUI.dataRacks[i].x-move_x;
+          dist_y = WakameGUI.dataRacks[i].y-move_y;
+          WakameGUI.dataRacks[i].x = dist_x;
+          WakameGUI.dataRacks[i].y = dist_y;
+          Ext.get(WakameGUI.dataRacks[i].draw_id).setX(top.getX()+dist_x);
+          Ext.get(WakameGUI.dataRacks[i].draw_id).setY(top.getY()+dist_y);
+        }
+      }
+    }
+  }
+
+  var taskEndDrag = new Ext.util.DelayedTask(function(){
+    draggingRack=false;
+  });
 
   function init(){
     Ext.override(Ext.dd.DD, {
+      startDrag :  function(x, y){
+        draggingRack=true;
+      },
       onDrag : function(e){
-        var x = Ext.get(this.getEl()).getX()-top.getX();
-        var y = Ext.get(this.getEl()).getY()-top.getY();
+        dragRack(this.getEl());
       },
       endDrag: function(e) {
-        var top = Ext.get('rackSurface');
-        var x = Ext.get(this.getEl()).getX()-top.getX();
-        var y = Ext.get(this.getEl()).getY()-top.getY();
-        var dist_x = Math.floor(x / grid_x)*grid_x;
-        var dist_y = Math.floor(y / grid_y)*grid_y;
-        if((x % grid_x) > (grid_x/2)){
-          dist_x += grid_x;
-        }
-        if((y % grid_y) > (grid_y/2)){
-          dist_y += grid_y;
-        }
-        Ext.get(this.getEl()).setX(top.getX()+dist_x);
-        Ext.get(this.getEl()).setY(top.getY()+dist_y);
-	    for(var i=0;i<WakameGUI.dataRacks.length;i++){
-          if(WakameGUI.dataRacks[i].id == dataMap[Ext.get(this.getEl()).id]){
-            WakameGUI.dataRacks[i].x = dist_x;
-            WakameGUI.dataRacks[i].y = dist_y;
-            break;
-          }
-	    }
+        dragRack(this.getEl());
+        taskEndDrag.delay(50);
       }
     });
     var top = Ext.get('canvas');
@@ -421,8 +483,11 @@ WakameGUI.ResourceMap = function(){
   }
 
   function  selectRack(e,target) {
-//    console.debug(target.id);
-//    console.debug(dataMap[target.id]);
+    if(draggingRack){
+      return;
+    }
+//  console.debug(target.id);
+//  console.debug(dataMap[target.id]);
     for(var i=0;i<WakameGUI.dataRacks.length;i++){
       if(WakameGUI.dataRacks[i].id == dataMap[target.id]){
         WakameGUI.dataRacks[i].sel = true;
