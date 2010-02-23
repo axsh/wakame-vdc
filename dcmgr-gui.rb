@@ -98,16 +98,15 @@ post '/account-create' do
 end
 
 post '/account-save' do
-  id = params[:id]
   rtn = {"success" => false}
-  Account.login(session[:login_id],session[:login_pw])
   begin
-    account = Account.find(id)
+    Account.login(session[:login_id],session[:login_pw])
+    account = Account.find(params[:id])
     account.name = params[:nm]
     account.enable = params[:en]
     account.memo = params[:mm]
-    ary = ParseDate::parsedate(params[:cn])
-    account.contract_at = Time::local(*ary[0..-3])
+    # ary = ParseDate::parsedate(params[:cn])
+    # account.contract_at = Time::local(*ary[0..-3]) //todo
     account.save
     rtn['success'] = true
   end
