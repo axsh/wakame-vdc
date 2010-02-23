@@ -21,6 +21,37 @@ describe "user access by active resource" do
     $user = user
   end
 
+  it "should save" do
+    pending
+    user = @class.create(:name=>'__test_as_user_spec2__', :password=>'passwd')
+    user.name = 'changed_name'
+    user.enable = false
+    user.save
+  end
+
+  it "should change password" do
+    pending
+    user = @class.create(:name=>'__test_as_user_spec3__', :password=>'passwd')
+    user.password = 'changed_password'
+    user.save
+  end
+
+  it "should add account" do
+    pending
+    user = @class.create(:name=>'__test_as_user_add_account__', :password=>'passwd')
+    user.accounts.length.should == 0
+
+    account_c = ar_class :Account
+    account = account_c.create(:name=>'test account for ' + user.name)
+
+    user.put(:add_account, account.id)
+
+    user.reload
+
+    user.accounts.length.should == 1
+    user.accounts[0].should == account.id
+  end
+
   it "should delete" do
     id = $user.id
     $user.destroy
