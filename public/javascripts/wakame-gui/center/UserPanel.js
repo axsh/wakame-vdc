@@ -222,7 +222,6 @@ WakameGUI.UserList = function(){
   Ext.extend(AddUserWindow, Ext.Window);
 
   EditUserWindow = function(userData){
-      console.log(userData);
     var user = new Ext.form.FormPanel({
       title: 'User-Infomation',
       labelWidth: 120, 

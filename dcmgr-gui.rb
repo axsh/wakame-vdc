@@ -342,9 +342,8 @@ get '/user-list' do
     rows = Hash::new
     rows.store('id',index.id)
     rows.store('nm',index.name)
-    rows.store('st','')
     rows.store('en',index.enable)
-    rows.store('em',index.email)
+    # rows.store('em',index.email)
     rows.store('mm',index.memo)
     rtn['rows'].push(rows)
   }
