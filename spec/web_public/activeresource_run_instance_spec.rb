@@ -31,15 +31,21 @@ describe "run instance access by active resource" do
       user.password
     }.should raise_error(NoMethodError)
 
-    pending
-    
+    # mapping account
+    user.put(:add_account, :account=>account)
+
     # key pair
+    keypair = ar_class(:KeyPair, ar_opts).create
+    keypair.private_key.length.should > 0
+    keypair.public_key.length.should > 0
     
     # select image
-
-    # auth
+    images = ar_class(:ImageStorageHost, ar_opts).find(:all)
+    images.length.should > 0
+    select_image = images[0]
 
     # run instance
+    
 
     # terminate instance
 
