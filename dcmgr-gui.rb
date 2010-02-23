@@ -406,7 +406,6 @@ get '/rack-list' do
 end
 
 post '/user-create' do
-  debug_log params
   name = params[:user_name]
   email = params[:email]
   password = params[:password]
@@ -419,6 +418,28 @@ post '/user-create' do
               :enable=>enable,
               :memo=>memo
               )
+  rtn = {"success" => true}
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end
+
+post '/user-edit' do
+  id   = params[:user_id]
+  name = params[:user_name]
+  email = params[:email]
+  password = params[:password]
+  enable = params[:enable] == 'on' ? 1:0
+  memo = params[:memo]
+  User.login(session[:login_id],session[:login_pw])
+  user = User.find(:myself ,id)
+  user.name = name
+  # user.email = email #todo update email
+  # user.password = 'passwd' #todo not required
+  user.enable = enable
+  user.memo = memo
+  user.save
+
   rtn = {"success" => true}
   debug_log rtn
   content_type :json

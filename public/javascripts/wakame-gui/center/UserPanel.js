@@ -228,7 +228,24 @@ WakameGUI.UserList = function(){
       width: 400,
       baseCls: 'x-plain',
 	  buttons: [{
-        text:'Save'
+        text:'Edit',
+        handler: function(){
+          user.getForm().submit({
+            url: '/user-edit',
+            waitMsg: 'Editing...',
+            method: 'POST',
+            scope: this,
+            success: function(user, action) {
+              this.refresh
+              this.close();
+            },
+            failure: function(user, action) {
+              alert('Edit user failure.');
+              this.close();
+            }
+          });
+        },
+        scope:this
       },{
         text: 'Close',
         handler: function(){
@@ -240,21 +257,26 @@ WakameGUI.UserList = function(){
         {
         fieldLabel: 'User-ID',
         xtype: 'displayfield',
-        name: 'form_textfield',
+        name: 'id',
         value: userData.get('id'),
         anchor: '100%'
         }
         ,{
+        xtype: 'hidden',
+        name: 'user_id',
+        value: userData.get('id'),
+        }
+        ,{
         fieldLabel: 'User-Name',
         xtype: 'textfield',
-        name: 'form_textfield',
+        name: 'user_name',
         value: userData.get('nm'),
         anchor: '100%'
         }
         ,{
         fieldLabel: 'E-Mail',
         xtype: 'textfield',
-        name: 'form_textfield',
+        name: 'email',
         value: userData.get('em'),
         anchor: '100%'
         }
@@ -269,7 +291,7 @@ WakameGUI.UserList = function(){
         ,{
         fieldLabel: 'Memo',
         xtype: 'textarea',
-        name: 'form_textfield',
+        name: 'memo',
         value: userData.get('mm'),
         anchor: '100%'
         }
