@@ -26,13 +26,20 @@ describe "user access by active resource" do
     user.name = 'changed_name'
     user.enable = false
     user.save
+
+    real_user = User[user.id]
+    real_user.should be_valid
+    real_user.name.should == 'changed_name'
+    real_user.enable.should == false
   end
 
   it "should change password" do
-    pending
     user = @class.create(:name=>'__test_as_user_spec3__', :password=>'passwd')
     user.password = 'changed_password'
     user.save
+
+    real_user = User[user.id]
+    real_user.password.should == 'changed_password'
   end
 
   it "should add account" do

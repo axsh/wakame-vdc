@@ -30,7 +30,7 @@ module Dcmgr
   class PublicUser
     include RestModel
     model User
-    allow_keys :name, :password
+    allow_keys :name, :password, :enable
     response_keys :uuid, :name, :enable, :memo
 
     public_action :post do
