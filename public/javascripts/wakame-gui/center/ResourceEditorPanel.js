@@ -26,7 +26,7 @@ WakameGUI.ResourceRack = function(id,name,x,y){
   this.add  = false;				// 新規追加されたか？
   this.edit = false;				// 編集されたか？（座標が変わった場合も含む）
   this.sel  = false;				// 選択されているか？
-  this.draw_id = null;					// divのID
+  this.draw_id = null;				// divのID
   this.servers = new Array();
   this.add = function(obj){
     this.servers.push(obj);
@@ -106,7 +106,7 @@ WakameGUI.ResourceEditor = function(){
       root:'maps',
       fields:[
         { name:'id'    ,type:'string'},
-        { name:'name'    ,type:'string'},
+        { name:'name'  ,type:'string'},
         { name:'url'   ,type:'string'},
         { name:'grid'  ,type:'int'},
         { name:'memo'  ,type:'string'}
@@ -272,11 +272,8 @@ WakameGUI.ResourceMap = function(){
       onDrag : function(e){
         var x = Ext.get(this.getEl()).getX()-top.getX();
         var y = Ext.get(this.getEl()).getY()-top.getY();
-//console.debug(x);
-//console.debug(y);
       },
       endDrag: function(e) {
-//      alert(Ext.get(this.getEl()).id);
         var top = Ext.get('rackSurface');
         var x = Ext.get(this.getEl()).getX()-top.getX();
         var y = Ext.get(this.getEl()).getY()-top.getY();
@@ -290,6 +287,13 @@ WakameGUI.ResourceMap = function(){
         }
         Ext.get(this.getEl()).setX(top.getX()+dist_x);
         Ext.get(this.getEl()).setY(top.getY()+dist_y);
+	    for(var i=0;i<WakameGUI.dataRacks.length;i++){
+          if(WakameGUI.dataRacks[i].id == dataMap[Ext.get(this.getEl()).id]){
+            WakameGUI.dataRacks[i].x = dist_x;
+            WakameGUI.dataRacks[i].y = dist_y;
+            break;
+          }
+	    }
       }
     });
     var top = Ext.get('canvas');
@@ -363,14 +367,37 @@ WakameGUI.ResourceMap = function(){
   }
 
   function mouseupHandler(e, target) { 
-// ここで範囲中にあるラックを選択状態にする
-/*
-for (var i in dataMap) {
-  console.debug(i);
-  console.debug(dataMap[i]);
-}
-*/
+    var top = Ext.get('rackSurface');
+    mousex2=e.browserEvent.clientX-top.getX();
+    mousey2=e.browserEvent.clientY-top.getY();
+    if(mousex1>mousex2){
+      var temp = mousex2;
+      mousex2 = mousex1;
+      mousex1 = temp;
+    }
+    if(mousey1>mousey2){
+      var temp = mousey2;
+      mousey2 = mousey1;
+      mousey1 = temp;
+    }
+    var rackSelCount=0;
+    for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      var x = WakameGUI.dataRacks[i].x;
+      var y = WakameGUI.dataRacks[i].y;
+      if(mousex1 <= x && mousex2 >=x && mousey1 <= y && mousey2 >= y){
+        WakameGUI.dataRacks[i].sel = true;
+        rackSelCount++;
+      }
+      else{
+        WakameGUI.dataRacks[i].sel = false;
+      }
+	}
     mouseSelectCancel();
+    drawRack();
+    if(rackSelCount == 0){
+      // todo: non select (disp map info propety)
+    }
+    // todo: rack treeの選択場所を変える！
   }
 
   function mousemoveHandler(e, target) { 
@@ -394,17 +421,23 @@ for (var i in dataMap) {
   }
 
   function  selectRack(e,target) {
-
-    console.debug(target.id);
-    console.debug(dataMap[target.id]);
-
+//    console.debug(target.id);
+//    console.debug(dataMap[target.id]);
+    for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id == dataMap[target.id]){
+        WakameGUI.dataRacks[i].sel = true;
+        if(e.browserEvent.ctrlKey){
+          break;
+        }
+	  }
+      else{
+        if(!e.browserEvent.ctrlKey){
+          WakameGUI.dataRacks[i].sel = false;
+        }
+      }
+    }
+    drawRack();
     WakameGUI.resourceTreePanel.selectPath("/root/"+dataMap[target.id]);
-
-//   Ext.get(target.id).applyStyles({'background-color': 'yellow'});
-// console.debug("CTRL");
-// console.debug(e.browserEvent.ctrlKey);
-// console.debug("SHIFT");
-// console.debug(e.browserEvent.shiftKey);
   }
 
   this.setMapInfo = function(url,grid){
@@ -418,8 +451,7 @@ for (var i in dataMap) {
 
   function drawRack(){
     if(render_end){
-	  var max = WakameGUI.dataRacks.length;
-	  for(var i=0;i<max;i++){
+	  for(var i=0;i<WakameGUI.dataRacks.length;i++){
         if(WakameGUI.dataRacks[i].draw_id == null){
           var x = WakameGUI.dataRacks[i].x;
           var y = WakameGUI.dataRacks[i].y;
@@ -485,7 +517,6 @@ for (var i in dataMap) {
       },
       {text:'delete rack',
         handler: function(node,e){
-// console.debug(e.browserEvent);
           console.debug(selectedRack);
           selectedRack = null;
         }
@@ -558,4 +589,3 @@ for (var i in dataMap) {
   });
 }
 Ext.extend(WakameGUI.ResourceMap, Ext.Panel);
-
