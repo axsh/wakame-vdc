@@ -338,13 +338,13 @@ get '/user-list' do
   userlist = User.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = userlist.length
+  debug_log userlist
   userlist.each{|index|
     rows = Hash::new
     rows.store('id',index.id)
     rows.store('nm',index.name)
-    rows.store('st','')
     rows.store('en',index.enable)
-    rows.store('em',index.email)
+    # rows.store('em',index.email)
     rows.store('mm',index.memo)
     rtn['rows'].push(rows)
   }
