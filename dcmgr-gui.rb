@@ -338,7 +338,6 @@ get '/user-list' do
   userlist = User.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = userlist.length
-  debug_log userlist
   userlist.each{|index|
     rows = Hash::new
     rows.store('id',index.id)
