@@ -22,7 +22,6 @@ describe "user access by active resource" do
   end
 
   it "should save" do
-    pending
     user = @class.create(:name=>'__test_as_user_spec2__', :password=>'passwd')
     user.name = 'changed_name'
     user.enable = false

@@ -37,6 +37,9 @@ module Dcmgr
       create
     end
     
+    public_action_withid :put do
+      update
+    end
     public_action :get, :myself do
       user
     end
