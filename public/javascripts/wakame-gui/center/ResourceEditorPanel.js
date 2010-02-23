@@ -1,19 +1,70 @@
+/*-
+ * Copyright (c) 2010 axsh co., LTD.
+ * All rights reserved.
+ *
+ * Author: Takahisa Kamiya
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ */
+
 // Global Resources
 Ext.apply(WakameGUI, {
   ResourceEditor:null,
   ResourceMap:null,
-  ResourcePallet:null,
   ResourceTree:null,
   ResourceProperty:null,
-  dataJson:null,
+  ResourceServer:null,
+  ResourceRack:null,
+  dataRacks:null,
   resourceTreePanel:null,
+  newRackid:0,
+  newServerid:0,
   mapPanel:null
 });
+
+WakameGUI.ResourceServer = function(id,name){
+  this.id = id;
+  this.name = name;
+}
+
+WakameGUI.ResourceRack = function(id,name,x,y){
+  this.id = id;
+  this.name = name;
+  this.x = x;
+  this.y = y;
+  this.add  = false;				// 新規追加されたか？
+  this.edit = false;				// 編集されたか？（座標が変わった場合も含む）
+  this.sel  = false;				// 選択されているか？
+  this.draw_id = null;				// divのID
+  this.servers = new Array();
+  this.add = function(obj){
+    this.servers.push(obj);
+  }
+}
 
 WakameGUI.ResourceEditor = function(){
   WakameGUI.mapPanel          = new WakameGUI.ResourceMap();
   WakameGUI.resourceTreePanel = new WakameGUI.ResourceTree();
-  var palletPanel   = new WakameGUI.ResourcePallet();
   var propertyPanel = new WakameGUI.ResourceProperty();
 
   var editPanel = new Ext.Panel({
@@ -29,7 +80,22 @@ WakameGUI.ResourceEditor = function(){
   function reqeustSuccess(response)
   {
     if (response.responseText !== undefined) { 
-      WakameGUI.dataJson = Ext.decode(response.responseText);
+      var data = Ext.decode(response.responseText);
+      WakameGUI.dataRacks = new Array();
+	  var max = data.racks['racks'].length;
+      for(var i=0;i<max;i++){
+        var id = data.racks['racks'][i].id;
+        var name = data.racks['racks'][i].name;
+        var x = data.racks['racks'][i].x;
+        var y = data.racks['racks'][i].y;
+        var rackData = new WakameGUI.ResourceRack(id,name,x,y);
+        var smax = data.racks['racks'][i]['servers'].length;
+        for(var j=0;j<smax;j++){
+          var svrData = new WakameGUI.ResourceServer(data.racks['racks'][i]['servers'][j].id,data.racks['racks'][i]['servers'][j].name)
+          rackData.add(svrData);
+        }
+        WakameGUI.dataRacks.push(rackData);
+      }
       WakameGUI.mapPanel.drawRack();
       WakameGUI.resourceTreePanel.drawTree();
     }
@@ -66,12 +132,13 @@ WakameGUI.ResourceEditor = function(){
     },
     reader: new Ext.data.JsonReader({
       totalProperty: "count",
-      root:'rows',
+      root:'maps',
       fields:[
         { name:'id'    ,type:'string'},
-        { name:'nm'    ,type:'string'},
+        { name:'name'  ,type:'string'},
         { name:'url'   ,type:'string'},
-        { name:'grid'  ,type:'int'}
+        { name:'grid'  ,type:'int'},
+        { name:'memo'  ,type:'string'}
       ]
     })
   });
@@ -87,7 +154,7 @@ WakameGUI.ResourceEditor = function(){
     mode: 'local',
     store: store,
     valueField: 'id',
-    displayField: 'nm',
+    displayField: 'name',
     listeners: {
       'select': function(cb,rec,index){
       console.debug(rec);
@@ -103,41 +170,20 @@ WakameGUI.ResourceEditor = function(){
     header: false,
     border: false,
     layout: 'border',
-    items: [palletPanel,WakameGUI.mapPanel,editPanel],
-    tbar: [combo]
-  });
-}
-Ext.extend(WakameGUI.ResourceEditor, Ext.Panel);
-
-WakameGUI.ResourcePallet = function(){
-  WakameGUI.ResourcePallet.superclass.constructor.call(this, {
-    region: 'west',
-    split: true,
-    title: "Rack",
-    collapsed:false,
-    collapsible:true,
-    titleCollapse:true,
-    animCollapse:true,
-    width: 70,
-    layout: {
-      type:'vbox',
-      padding:'5',
-      align:'stretch'
-    },
-    defaults:{margins:'0 0 5 0'},
-    items:[
+    items: [WakameGUI.mapPanel,editPanel],
+    tbar : [
       {
-        xtype:'button',
         iconCls: 'icon-add',
         text: 'Add',
-        handler: function(){
+        handler:function(){
           WakameGUI.mapPanel.addRack();
         }
-      }
+      },'-',
+      combo
     ]
   });
 }
-Ext.extend(WakameGUI.ResourcePallet, Ext.Panel);
+Ext.extend(WakameGUI.ResourceEditor, Ext.Panel);
 
 WakameGUI.ResourceTree = function(){
   var root = new Ext.tree.TreeNode({
@@ -163,14 +209,16 @@ WakameGUI.ResourceTree = function(){
     for(var i=0;i<max;i++){
       root.childNodes[0].remove();
     }
-    var max = WakameGUI.dataJson.racks.count;
+	var max = WakameGUI.dataRacks.length;
     for(var i=0;i<max;i++){
-      var nm = WakameGUI.dataJson.racks.rows[i].id;
-      var rack = createNode( nm, nm, false, false );
-      var smax = WakameGUI.dataJson.racks.rows[i].servers.count;
+      var id = WakameGUI.dataRacks[i].id;
+      var nm = WakameGUI.dataRacks[i].name;
+      var rack = createNode( id, nm, false, false );
+      var smax = WakameGUI.dataRacks[i].servers.length;
       for(var j=0;j<smax;j++){
-        var snm = WakameGUI.dataJson.racks.rows[i].servers.rows[j].id;
-        rack.appendChild(createNode( nm+":"+snm, snm, true, false ));
+        var sid = WakameGUI.dataRacks[i].servers[j].id;
+        var snm = WakameGUI.dataRacks[i].servers[j].name
+        rack.appendChild(createNode( nm+":"+sid, snm, true, false ));
       }
       root.appendChild(rack);
     }
@@ -227,6 +275,9 @@ WakameGUI.ResourceProperty = function(){
     width: 150,
     bodyStyle:'padding:15px',
     html: ''
+//	layout:'card',
+//	activeItem: 0,
+//	items: [mapProperty,rackProperty,serverProperty]
   });
 }
 Ext.extend(WakameGUI.ResourceProperty, Ext.Panel);
@@ -240,35 +291,87 @@ WakameGUI.ResourceMap = function(){
   var rack_high  = 15;
   var boxDraw=false;
   var mousex1=0;
-  var mousex1=0;
+  var mousey1=0;
   var mousex2=0;
   var mousey2=0;
   var dataMap = new Array();
+  var draggingRack=false;
+
+  function clearRackSelect(target){
+	for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id != dataMap[Ext.get(target).id]){
+        if(WakameGUI.dataRacks[i].sel){
+          WakameGUI.dataRacks[i].sel = false;
+          var myEl = Ext.get(WakameGUI.dataRacks[i].draw_id);
+          myEl.applyStyles({ 'background-color':'green' });
+        }
+      }
+    }
+  }
+
+  function dragRack(target){
+    var top = Ext.get('rackSurface');
+    var x = Ext.get(target).getX()-top.getX();
+    var y = Ext.get(target).getY()-top.getY();
+    var dist_x = Math.floor(x / grid_x)*grid_x;
+    var dist_y = Math.floor(y / grid_y)*grid_y;
+    if((x % grid_x) > (grid_x/2)){
+      dist_x += grid_x;
+    }
+    if((y % grid_y) > (grid_y/2)){
+      dist_y += grid_y;
+    }
+    Ext.get(target).setX(top.getX()+dist_x);
+    Ext.get(target).setY(top.getY()+dist_y);
+    var move_x = 0;
+    var move_y = 0;
+	for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id == dataMap[Ext.get(target).id]){
+        if(!WakameGUI.dataRacks[i].sel){
+          WakameGUI.dataRacks[i].sel = true;
+          var myEl = Ext.get(WakameGUI.dataRacks[i].draw_id);
+          myEl.applyStyles({ 'background-color':'red' });
+          // ドラッグ対象が選択されていなかった場合
+　　　　　// 他の選択されていたラックを選択解除する
+          // ドラッグの際に単独で選択されたとみなす
+          clearRackSelect(target);
+        }
+        move_x = WakameGUI.dataRacks[i].x-dist_x;
+        move_y = WakameGUI.dataRacks[i].y-dist_y;
+        WakameGUI.dataRacks[i].x = dist_x;
+        WakameGUI.dataRacks[i].y = dist_y;
+        break;
+      }
+	}
+	for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id != dataMap[Ext.get(target).id]){
+        if(WakameGUI.dataRacks[i].sel){
+          dist_x = WakameGUI.dataRacks[i].x-move_x;
+          dist_y = WakameGUI.dataRacks[i].y-move_y;
+          WakameGUI.dataRacks[i].x = dist_x;
+          WakameGUI.dataRacks[i].y = dist_y;
+          Ext.get(WakameGUI.dataRacks[i].draw_id).setX(top.getX()+dist_x);
+          Ext.get(WakameGUI.dataRacks[i].draw_id).setY(top.getY()+dist_y);
+        }
+      }
+    }
+  }
+
+  var taskEndDrag = new Ext.util.DelayedTask(function(){
+    draggingRack=false;
+  });
 
   function init(){
     Ext.override(Ext.dd.DD, {
+      startDrag :  function(x, y){
+        draggingRack=true;
+      },
       onDrag : function(e){
-        var x = Ext.get(this.getEl()).getX()-top.getX();
-        var y = Ext.get(this.getEl()).getY()-top.getY();
-//console.debug(x);
-//console.debug(y);
+        dragRack(this.getEl());
       },
       endDrag: function(e) {
-//      alert(Ext.get(this.getEl()).id);
-        var top = Ext.get('rackSurface');
-        var x = Ext.get(this.getEl()).getX()-top.getX();
-        var y = Ext.get(this.getEl()).getY()-top.getY();
-        var dist_x = Math.floor(x / grid_x)*grid_x;
-        var dist_y = Math.floor(y / grid_y)*grid_y;
-        if((x % grid_x) > (grid_x/2)){
-          dist_x += grid_x;
-        }
-        if((y % grid_y) > (grid_y/2)){
-          dist_y += grid_y;
-        }
-        Ext.get(this.getEl()).applyStyles({'background-color': 'green'}); 
-        Ext.get(this.getEl()).setX(top.getX()+dist_x);
-        Ext.get(this.getEl()).setY(top.getY()+dist_y);
+        dragRack(this.getEl());
+        taskEndDrag.delay(50);
       }
     });
     var top = Ext.get('canvas');
@@ -342,14 +445,37 @@ WakameGUI.ResourceMap = function(){
   }
 
   function mouseupHandler(e, target) { 
-// ここで範囲中にあるラックを選択状態にする
-/*
-for (var i in dataMap) {
-  console.debug(i);
-  console.debug(dataMap[i]);
-}
-*/
+    var top = Ext.get('rackSurface');
+    mousex2=e.browserEvent.clientX-top.getX();
+    mousey2=e.browserEvent.clientY-top.getY();
+    if(mousex1>mousex2){
+      var temp = mousex2;
+      mousex2 = mousex1;
+      mousex1 = temp;
+    }
+    if(mousey1>mousey2){
+      var temp = mousey2;
+      mousey2 = mousey1;
+      mousey1 = temp;
+    }
+    var rackSelCount=0;
+    for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      var x = WakameGUI.dataRacks[i].x;
+      var y = WakameGUI.dataRacks[i].y;
+      if(mousex1 <= x && mousex2 >=x && mousey1 <= y && mousey2 >= y){
+        WakameGUI.dataRacks[i].sel = true;
+        rackSelCount++;
+      }
+      else{
+        WakameGUI.dataRacks[i].sel = false;
+      }
+	}
     mouseSelectCancel();
+    drawRack();
+    if(rackSelCount == 0){
+      // todo: non select (disp map info propety)
+    }
+    // todo: rack treeの選択場所を変える！
   }
 
   function mousemoveHandler(e, target) { 
@@ -373,17 +499,26 @@ for (var i in dataMap) {
   }
 
   function  selectRack(e,target) {
-
-    console.debug(target.id);
-    console.debug(dataMap[target.id]);
-
+    if(draggingRack){
+      return;
+    }
+//  console.debug(target.id);
+//  console.debug(dataMap[target.id]);
+    for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id == dataMap[target.id]){
+        WakameGUI.dataRacks[i].sel = true;
+        if(e.browserEvent.ctrlKey){
+          break;
+        }
+	  }
+      else{
+        if(!e.browserEvent.ctrlKey){
+          WakameGUI.dataRacks[i].sel = false;
+        }
+      }
+    }
+    drawRack();
     WakameGUI.resourceTreePanel.selectPath("/root/"+dataMap[target.id]);
-
-//   Ext.get(target.id).applyStyles({'background-color': 'yellow'});
-// console.debug("CTRL");
-// console.debug(e.browserEvent.ctrlKey);
-// console.debug("SHIFT");
-// console.debug(e.browserEvent.shiftKey);
   }
 
   this.setMapInfo = function(url,grid){
@@ -397,11 +532,27 @@ for (var i in dataMap) {
 
   function drawRack(){
     if(render_end){
-	  var max = WakameGUI.dataJson.racks.count;
-	  for(var i=0;i<max;i++){
-	      var rtn = deployRack(WakameGUI.dataJson.racks.rows[i].x,WakameGUI.dataJson.racks.rows[i].y);
-		  // ここで自動で付けられたIDとデータをマッピングする
-	      dataMap[rtn] = WakameGUI.dataJson.racks.rows[i].id;
+	  for(var i=0;i<WakameGUI.dataRacks.length;i++){
+        if(WakameGUI.dataRacks[i].draw_id == null){
+          var x = WakameGUI.dataRacks[i].x;
+          var y = WakameGUI.dataRacks[i].y;
+          var id = WakameGUI.dataRacks[i].id;
+          var sel = WakameGUI.dataRacks[i].sel;
+	      var rtn = deployRack(x,y,sel);
+	      dataMap[rtn] = id;
+          WakameGUI.dataRacks[i].draw_id = rtn;
+        }
+        else{
+          var tid = WakameGUI.dataRacks[i].draw_id;
+          var sel = WakameGUI.dataRacks[i].sel;
+          var myEl = Ext.get(tid);
+          if(sel){
+            myEl.applyStyles({ 'background-color':'red' });
+          }
+          else{
+            myEl.applyStyles({ 'background-color':'green' });
+          }
+        }
 	  }
 	}
   }
@@ -447,7 +598,6 @@ for (var i in dataMap) {
       },
       {text:'delete rack',
         handler: function(node,e){
-// console.debug(e.browserEvent);
           console.debug(selectedRack);
           selectedRack = null;
         }
@@ -455,12 +605,17 @@ for (var i in dataMap) {
     ]
   });
 
-  function deployRack(x,y){
+  function deployRack(x,y,sel){
     var myEl = new Ext.Element(document.createElement('div'));
     myEl.setWidth(rack_width-2);
     myEl.setHeight(rack_high-2);
     myEl.setStyle({ 'position':'absolute' });
-    myEl.setStyle({ 'background-color':'red' });
+    if(sel){
+      myEl.setStyle({ 'background-color':'red' });
+    }
+    else{
+      myEl.setStyle({ 'background-color':'green' });
+    }
     myEl.setStyle({ 'border-style':'solid' });
     myEl.setStyle({ 'border-color':'black' });
     myEl.setStyle({ 'border-width':'2px' });
@@ -477,15 +632,21 @@ for (var i in dataMap) {
 
   this.addRack = function(){
 	// serverでラックのインスタンスを作成
-// /rack-create?x=0;y=0
-//  suucess（rack id）
-//	/rack-list
-//  WakameGUI.dataJson.racks.rows.push[]
-//  dataMap[rtn] = 
-	// selectするRACKを管理
     var x = 20;
     var y = 20;
-    var rtn = deployRack(x,y);
+    // 座標の正規化??
+    var rackData = new WakameGUI.ResourceRack("R-" + WakameGUI.newRackid,"Untitled",x,y);
+    WakameGUI.newRackid++;		// 仮IDを付ける（重複しないもの）
+    // 選択状態の変更
+    // 他に選択されているラックをキャンセル
+	for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      WakameGUI.dataRacks[i].sel = false;
+	}
+    rackData.sel = true;
+    rackData.add = true;	// 新規追加
+    WakameGUI.dataRacks.push(rackData);
+    drawRack();
+    WakameGUI.resourceTreePanel.drawTree();
   }
 
   WakameGUI.ResourceMap.superclass.constructor.call(this, {
@@ -499,7 +660,7 @@ for (var i in dataMap) {
          if(map_url != Ext.BLANK_IMAGE_URL){
            taskDrawMap.delay(50); 
          }
-         if(WakameGUI.dataJson != null){
+         if(WakameGUI.dataRacks != null){
            taskDrawRack.delay(100);
          }
          render_end = true;
@@ -509,4 +670,3 @@ for (var i in dataMap) {
   });
 }
 Ext.extend(WakameGUI.ResourceMap, Ext.Panel);
-
