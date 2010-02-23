@@ -17,7 +17,7 @@ WakameGUI.User = function(){
   });
   
   this.refresh = function(){
-    ulistPanels.refresh();
+    ulistPanel.refresh();
     ulogPanel.refresh();
   }
 }
@@ -165,7 +165,7 @@ WakameGUI.UserList = function(){
       ],buttons: [{
         text:'Save',
         handler: function(){
-          form.getForm().submit({
+          user.getForm().submit({
             url: '/user-create',
             waitMsg: 'Saveing...',
             method: 'POST',
@@ -175,8 +175,12 @@ WakameGUI.UserList = function(){
               this.close();
             },
             failure: function(form, action) {
-              alert('Add user failure.');
-              this.close();
+              //TODO:Change Ext.js ErrorBox
+              if(!form.isValid()){
+                  alert('Validate error');
+              }else{
+                  alert('Add user failure.');
+              }
             }
           });
         },
