@@ -57,7 +57,7 @@ describe "run instance access by active resource" do
     instance.put(:shutdown)
     
     # log
-    
+    pending
 
     # account log
   end
