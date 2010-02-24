@@ -214,7 +214,7 @@ WakameGUI.AccountList = function(){
           method: 'POST',
           scope: this,
           success: function(form, action) {
-            refresh();
+            store.reload();
 	        this.close();
           },
           failure: function(form, action) {
@@ -314,7 +314,7 @@ WakameGUI.AccountList = function(){
             method: 'POST',
             scope: this,
             success: function(form, action) {
-              refresh();
+              store.reload();
 	          this.close();
             },
             failure: function(form, action) {

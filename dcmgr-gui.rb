@@ -98,16 +98,15 @@ post '/account-create' do
 end
 
 post '/account-save' do
-  id = params[:id]
   rtn = {"success" => false}
-  Account.login(session[:login_id],session[:login_pw])
   begin
-    account = Account.find(id)
+    Account.login(session[:login_id],session[:login_pw])
+    account = Account.find(params[:id])
     account.name = params[:nm]
     account.enable = params[:en]
     account.memo = params[:mm]
-    ary = ParseDate::parsedate(params[:cn])
-    account.contract_at = Time::local(*ary[0..-3])
+    # ary = ParseDate::parsedate(params[:cn])
+    # account.contract_at = Time::local(*ary[0..-3]) //todo
     account.save
     rtn['success'] = true
   end
@@ -445,22 +444,23 @@ post '/user-create' do
 end
 
 post '/user-edit' do
-  id   = params[:user_id]
   name = params[:user_name]
   email = params[:email]
   password = params[:password]
   enable = params[:enable] == 'on' ? 1:0
   memo = params[:memo]
-  User.login(session[:login_id],session[:login_pw])
-  user = User.find(:myself ,id)
-  user.name = name
-  # user.email = email #todo update email
-  # user.password = 'passwd' #todo not required
-  user.enable = enable
-  user.memo = memo
-  user.save
-
-  rtn = {"success" => true}
+  begin
+    User.login(session[:login_id],session[:login_pw])
+    debug_log params
+    user = User.find(params[:user_id])
+    user.name = name
+    # user.email = email #todo update email
+    user.password = 'passwd' #todo not required
+    user.enable = enable
+    user.memo = memo
+    user.save
+    rtn = {"success" => true}
+  end
   debug_log rtn
   content_type :json
   rtn.to_json

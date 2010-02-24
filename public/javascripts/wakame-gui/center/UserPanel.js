@@ -48,16 +48,15 @@ WakameGUI.UserList = function(){
     new Ext.grid.RowNumberer(),
     { header: "User-ID",    width: 100, dataIndex: 'id', hideable:false, menuDisabled:true },
     { header: "User-Name",  width: 100, dataIndex: 'nm' },
-    { header: "State",      width:  80, dataIndex: 'st' },
     { header: "Enable",     width:  60, dataIndex: 'en' },
     { header: "E-Mail",     width: 100, dataIndex: 'em' },
     { header: "Memo",       width: 350, dataIndex: 'mm' }
   ]);
 
   this.refresh = function(){
-    store.reload();
+      store.reload();
   };
-  
+    
   WakameGUI.UserList.superclass.constructor.call(this, {
     region: "center",
     store: store,
@@ -166,18 +165,22 @@ WakameGUI.UserList = function(){
       ],buttons: [{
         text:'Save',
         handler: function(){
-          form.getForm().submit({
+          user.getForm().submit({
             url: '/user-create',
             waitMsg: 'Saveing...',
             method: 'POST',
             scope: this,
             success: function(form, action) {
-              refresh();
+              store.reload();
               this.close();
             },
             failure: function(form, action) {
-              alert('Add user failure.');
-              this.close();
+              //TODO:Change Ext.js ErrorBox
+              if(!form.isValid()){
+                  alert('Validate error');
+              }else{
+                  alert('Add user failure.');
+              }
             }
           });
         },
@@ -236,7 +239,7 @@ WakameGUI.UserList = function(){
             method: 'POST',
             scope: this,
             success: function(user, action) {
-              this.refresh
+              store.reload();
               this.close();
             },
             failure: function(user, action) {
