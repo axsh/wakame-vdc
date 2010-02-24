@@ -223,6 +223,7 @@ module Dcmgr
                else
                  model
                end
+
       filter.limit(limit, offset).all
     end
     

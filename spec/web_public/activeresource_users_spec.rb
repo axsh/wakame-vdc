@@ -120,6 +120,21 @@ describe "user access by active resource" do
     }.should be_true
   end
 
+  it "should get accounts" do
+    user_a = @class.create(:name=>'user_a', :password=>'passwd')
+    user_a.accounts.length.should == 0
+
+    real_user = User[user_a.id]
+    real_user.add_account(Account[1])
+    real_user.add_account(Account[2])
+
+    user_a.reload
+
+    user_a.accounts.length.should == 2
+    user_a.accounts[0].should == Accounts[1].uuid
+    user_a.accounts[1].should == Accounts[2].uuid
+  end
+
   it "should get default password" do
     user = @class.create(:name=>'__test_as_user_spec__', :password=>'passwd')
     real_user = User[user.id]
