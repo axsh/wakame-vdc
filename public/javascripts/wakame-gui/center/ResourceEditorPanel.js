@@ -33,18 +33,24 @@ Ext.apply(WakameGUI, {
   ResourceMap:null,
   ResourceTree:null,
   ResourceProperty:null,
+  MapProperty:null,
+  RackProperty:null,
+  ServerProperty:null,
   ResourceServer:null,
   ResourceRack:null,
-  dataRacks:null,
+  resourceMapPanel:null,
   resourceTreePanel:null,
+  resourcePropertyPanel:null,
+  dataRacks:null,
   newRackid:0,
-  newServerid:0,
-  mapPanel:null
+  newServerid:0
 });
 
 WakameGUI.ResourceServer = function(id,name){
   this.id = id;
   this.name = name;
+  this.append = false;				// 新規追加
+  this.edit = false;				// 編集されたか？（座標が変わった場合も含む）
 }
 
 WakameGUI.ResourceRack = function(id,name,x,y){
@@ -52,7 +58,7 @@ WakameGUI.ResourceRack = function(id,name,x,y){
   this.name = name;
   this.x = x;
   this.y = y;
-  this.add  = false;				// 新規追加されたか？
+  this.append = false;				// 新規追加
   this.edit = false;				// 編集されたか？（座標が変わった場合も含む）
   this.sel  = false;				// 選択されているか？
   this.draw_id = null;				// divのID
@@ -63,9 +69,9 @@ WakameGUI.ResourceRack = function(id,name,x,y){
 }
 
 WakameGUI.ResourceEditor = function(){
-  WakameGUI.mapPanel          = new WakameGUI.ResourceMap();
+  WakameGUI.resourceMapPanel  = new WakameGUI.ResourceMap();
   WakameGUI.resourceTreePanel = new WakameGUI.ResourceTree();
-  var propertyPanel = new WakameGUI.ResourceProperty();
+  WakameGUI.resourcePropertyPanel = new WakameGUI.ResourceProperty();
 
   var editPanel = new Ext.Panel({
     region: 'east',
@@ -74,7 +80,7 @@ WakameGUI.ResourceEditor = function(){
     layoutConfig : { align : 'stretch' },
     split: true,
 	layout: 'vbox',
-    items : [WakameGUI.resourceTreePanel,propertyPanel]
+    items : [WakameGUI.resourceTreePanel,WakameGUI.resourcePropertyPanel]
   });
 
   function reqeustSuccess(response)
@@ -96,7 +102,7 @@ WakameGUI.ResourceEditor = function(){
         }
         WakameGUI.dataRacks.push(rackData);
       }
-      WakameGUI.mapPanel.drawRack();
+      WakameGUI.resourceMapPanel.drawRack();
       WakameGUI.resourceTreePanel.drawTree();
     }
   }
@@ -126,7 +132,7 @@ WakameGUI.ResourceEditor = function(){
         if(records.length > 0){
           combo.setValue(records[0].id);
           loadRackList(records[0].id);
-          WakameGUI.mapPanel.setMapInfo(records[0].data.url,records[0].data.grid);
+          WakameGUI.resourceMapPanel.setMapInfo(records[0].data.url,records[0].data.grid);
         }
       }
     },
@@ -157,10 +163,10 @@ WakameGUI.ResourceEditor = function(){
     displayField: 'name',
     listeners: {
       'select': function(cb,rec,index){
-      console.debug(rec);
+//      console.debug(rec);
 //      console.debug(index);
         loadRackList(rec.id);
-        WakameGUI.mapPanel.setMapInfo(rec.data.url,rec.data.grid);
+        WakameGUI.resourceMapPanel.setMapInfo(rec.data.url,rec.data.grid);
       }
     }
   });
@@ -170,13 +176,13 @@ WakameGUI.ResourceEditor = function(){
     header: false,
     border: false,
     layout: 'border',
-    items: [WakameGUI.mapPanel,editPanel],
+    items: [WakameGUI.resourceMapPanel,editPanel],
     tbar : [
       {
         iconCls: 'icon-add',
         text: 'Add',
         handler:function(){
-          WakameGUI.mapPanel.addRack();
+          WakameGUI.resourceMapPanel.addRack();
         }
       },'-',
       combo
@@ -209,8 +215,7 @@ WakameGUI.ResourceTree = function(){
     for(var i=0;i<max;i++){
       root.childNodes[0].remove();
     }
-	var max = WakameGUI.dataRacks.length;
-    for(var i=0;i<max;i++){
+    for(var i=0;i<WakameGUI.dataRacks.length;i++){
       var id = WakameGUI.dataRacks[i].id;
       var nm = WakameGUI.dataRacks[i].name;
       var rack = createNode( id, nm, false, false );
@@ -227,6 +232,22 @@ WakameGUI.ResourceTree = function(){
     drawTree();
   }
 
+  function addServer(rackid){
+    for(var i=0;i<WakameGUI.dataRacks.length;i++){
+      if(WakameGUI.dataRacks[i].id == rackid){
+        var svrData = new WakameGUI.ResourceServer("S-" + WakameGUI.newServerid,"Untitled");
+        svrData.append = true;
+        WakameGUI.dataRacks[i].add(svrData);
+        WakameGUI.newServerid++;
+        break;
+      }
+    }
+    drawTree();
+  }
+  this.addServer = function(id){
+    addServer(id);
+  }
+
   WakameGUI.ResourceTree.superclass.constructor.call(this,{
     split: true,
     autoScroll: true,
@@ -239,48 +260,47 @@ WakameGUI.ResourceTree = function(){
       {
         iconCls: 'icon-add',
         handler:function(){
-console.debug('Server Add..');
-console.debug(WakameGUI.resourceTreePanel.getSelectionModel().selNode.id);
+          var selNode = WakameGUI.resourceTreePanel.getSelectionModel().selNode;
+          if(selNode == null){
+            return;
+          }
+          var ids = selNode.getPath().split("/");
+          if(ids.length>2){
+            addServer(ids[2]);
+          }
         }
       },
       { iconCls: 'icon-delete',
         handler:function(){
-console.debug('Server Remove..');
-         }
-      },
-      { iconCls: 'icon-edit',
-        handler:function(){
-console.debug('Server Edit..');
         }
       }
     ],
     root:root,
     listeners: {
       'click': function(node){
-        console.debug(node.getPath());
-//      console.dir(node);
-//      console.debug(root.childNodes.length);
-//        alert('id:' + node.id);
+//        console.debug(node.getPath());
+        var ids = node.getPath().split("/");
+        if(ids.length>2){
+          if(ids.length==3){
+            WakameGUI.resourcePropertyPanel.selectProperty(1);
+          }else{
+            WakameGUI.resourcePropertyPanel.selectProperty(2);
+          }
+          for(var i=0;i<WakameGUI.dataRacks.length;i++){
+            if(WakameGUI.dataRacks[i].id == ids[2]){	// RACK-ID
+              WakameGUI.dataRacks[i].sel = true;
+            }
+            else{
+              WakameGUI.dataRacks[i].sel = false;
+            }
+          }
+          WakameGUI.resourceMapPanel.drawRack();
+        }
       }
     }
   });
 }
 Ext.extend(WakameGUI.ResourceTree, Ext.tree.TreePanel);
-
-WakameGUI.ResourceProperty = function(){
-  WakameGUI.ResourceProperty.superclass.constructor.call(this, {
-    title: "Property",
-    autoScroll: true,
-    split: true,
-    width: 150,
-    bodyStyle:'padding:15px',
-    html: ''
-//	layout:'card',
-//	activeItem: 0,
-//	items: [mapProperty,rackProperty,serverProperty]
-  });
-}
-Ext.extend(WakameGUI.ResourceProperty, Ext.Panel);
 
 WakameGUI.ResourceMap = function(){
   var grid_x = 20;
@@ -458,13 +478,11 @@ WakameGUI.ResourceMap = function(){
       mousey2 = mousey1;
       mousey1 = temp;
     }
-    var rackSelCount=0;
     for(var i=0;i<WakameGUI.dataRacks.length;i++){
       var x = WakameGUI.dataRacks[i].x;
       var y = WakameGUI.dataRacks[i].y;
       if(mousex1 <= x && mousex2 >=x && mousey1 <= y && mousey2 >= y){
         WakameGUI.dataRacks[i].sel = true;
-        rackSelCount++;
       }
       else{
         WakameGUI.dataRacks[i].sel = false;
@@ -472,10 +490,10 @@ WakameGUI.ResourceMap = function(){
 	}
     mouseSelectCancel();
     drawRack();
-    if(rackSelCount == 0){
-      // todo: non select (disp map info propety)
-    }
-    // todo: rack treeの選択場所を変える！
+    // rack treeの選択を解除
+    WakameGUI.resourceTreePanel.selectPath("/root");
+    // todo: disp map info propety
+    WakameGUI.resourcePropertyPanel.selectProperty(0);
   }
 
   function mousemoveHandler(e, target) { 
@@ -519,6 +537,7 @@ WakameGUI.ResourceMap = function(){
     }
     drawRack();
     WakameGUI.resourceTreePanel.selectPath("/root/"+dataMap[target.id]);
+    WakameGUI.resourcePropertyPanel.selectProperty(1);
   }
 
   this.setMapInfo = function(url,grid){
@@ -526,11 +545,11 @@ WakameGUI.ResourceMap = function(){
     grid_x  = grid;
     grid_y  = grid;
     if(render_end){
-      this.changeMap();
+      changeMap();
     }
   }
 
-  function drawRack(){
+  function drawRack() {
     if(render_end){
 	  for(var i=0;i<WakameGUI.dataRacks.length;i++){
         if(WakameGUI.dataRacks[i].draw_id == null){
@@ -556,6 +575,9 @@ WakameGUI.ResourceMap = function(){
 	  }
 	}
   }
+  this.drawRack = function(){
+    drawRack();
+  }
 
   function changeMap(){
     var map = Ext.getDom('map');
@@ -568,13 +590,6 @@ WakameGUI.ResourceMap = function(){
       }
       map.onload = "";
     }
-  }
-
-  this.changeMap = function(){
-    changeMap();
-  }
-  this.drawRack = function(){
-    drawRack();
   }
 
   var taskDrawMap = new Ext.util.DelayedTask(function(){
@@ -592,13 +607,14 @@ WakameGUI.ResourceMap = function(){
     items: [
       {text:'add server',
         handler: function(node,e){
-          console.debug(selectedRack);
+// todo: input infomation window
+          WakameGUI.resourceTreePanel.addServer(dataMap[selectedRack]);
           selectedRack = null;
         }
       },
       {text:'delete rack',
         handler: function(node,e){
-          console.debug(selectedRack);
+//          console.debug(selectedRack);
           selectedRack = null;
         }
       }
@@ -643,7 +659,6 @@ WakameGUI.ResourceMap = function(){
       WakameGUI.dataRacks[i].sel = false;
 	}
     rackData.sel = true;
-    rackData.add = true;	// 新規追加
     WakameGUI.dataRacks.push(rackData);
     drawRack();
     WakameGUI.resourceTreePanel.drawTree();
@@ -669,4 +684,109 @@ WakameGUI.ResourceMap = function(){
     html: '<div style="position:absolute"><img id="map" src="'+Ext.BLANK_IMAGE_URL+'"></div><canvas id="canvas" style="position:absolute"></canvas><div id="rackSurface" style="position:absolute"></div>'
   });
 }
-Ext.extend(WakameGUI.ResourceMap, Ext.Panel);
+Ext.extend(WakameGUI.ResourceMap, Ext.Panel, {}); 
+
+WakameGUI.ResourceProperty = function(){
+  var mapProperty    = new WakameGUI.MapProperty();
+  var rackProperty   = new WakameGUI.RackProperty();
+  var serverProperty = new WakameGUI.ServerProperty();
+
+  this.selectProperty = function(no){
+    this.layout.setActiveItem(no);
+    switch(no){ 
+      case 0:
+        this.setTitle("Map Property");
+        break;
+      case 1:
+        this.setTitle("Rack Property");
+        break;
+      case 2:
+        this.setTitle("Server Property");
+        break;
+    }
+  }
+
+  WakameGUI.ResourceProperty.superclass.constructor.call(this, {
+    title: "Map Property",
+    autoScroll: true,
+    split: true,
+    width: 150,
+    bodyStyle:'padding:5px',
+	layout:'card',
+	activeItem: 0,
+	items: [mapProperty,rackProperty,serverProperty]
+  });
+}
+Ext.extend(WakameGUI.ResourceProperty, Ext.Panel);
+
+WakameGUI.MapProperty = function(){
+  WakameGUI.MapProperty.superclass.constructor.call(this, {
+    autoScroll: true,
+    labelWidth: 35,
+    frame : true,
+    baseCls: 'x-plain',
+    items: [
+      {
+      fieldLabel: 'Name',
+      xtype: 'textfield',
+      name: 'user_name',
+      anchor: '100%'
+      }
+      ,{
+      fieldLabel: 'Memo',
+      xtype: 'textarea',
+      name: 'memo',
+      anchor: '100%'
+      }
+    ]
+  });
+}
+Ext.extend(WakameGUI.MapProperty, Ext.form.FormPanel);
+
+WakameGUI.RackProperty = function(){
+  WakameGUI.RackProperty.superclass.constructor.call(this, {
+    autoScroll: true,
+    labelWidth: 35,
+    frame : true,
+    baseCls: 'x-plain',
+    items: [
+      {
+      fieldLabel: 'Name',
+      xtype: 'textfield',
+      name: 'user_name',
+      anchor: '100%'
+      }
+      ,{
+      fieldLabel: 'Memo',
+      xtype: 'textarea',
+      name: 'memo',
+      anchor: '100%'
+      }
+    ]
+  });
+}
+Ext.extend(WakameGUI.RackProperty, Ext.form.FormPanel);
+
+WakameGUI.ServerProperty = function(){
+  WakameGUI.ServerProperty.superclass.constructor.call(this, {
+    autoScroll: true,
+    labelWidth: 35,
+    frame : true,
+    baseCls: 'x-plain',
+    items: [
+      {
+      fieldLabel: 'Name',
+      xtype: 'textfield',
+      name: 'user_name',
+      anchor: '100%'
+      }
+      ,{
+      fieldLabel: 'Memo',
+      xtype: 'textarea',
+      name: 'memo',
+      anchor: '100%'
+      }
+    ]
+  });
+}
+Ext.extend(WakameGUI.ServerProperty, Ext.form.FormPanel);
