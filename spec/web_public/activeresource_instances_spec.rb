@@ -43,7 +43,7 @@ describe "instance access by active resource" do
                                 :physical_host=>physical_host_a,
                                 :ip=>'192.168.1.20')
     
-    @hvchttp = Dcmgr::HvcHttpMock.new(hv_controller_a)
+    @hvchttp = Dcmgr::HvcHttpMock.new
     Dcmgr::hvchttp = @hvchttp
   end
 
@@ -100,7 +100,7 @@ describe "instance access by active resource" do
                          :image_storage=>ImageStorage.first.uuid)
     HvAgent[instance.hv_agent].physical_host == PhysicalHost[1].uuid
 
-    Dcmgr::hvchttp = Dcmgr::HvcHttpMock.new(HvController[1])
+    Dcmgr::hvchttp = Dcmgr::HvcHttpMock.new
     
     instance = @c.create(:account=>Account[1].uuid,
                          :need_cpus=>1,
@@ -160,7 +160,7 @@ describe "instance access by active resource" do
       hv_agents << hv_agent
     }
     
-    hvchttp = Dcmgr::HvcHttpMock.new(hv_controller)
+    hvchttp = Dcmgr::HvcHttpMock.new
     Dcmgr::hvchttp = hvchttp
 
     Instance.create(:status=>0,
@@ -230,7 +230,7 @@ describe "instance access by active resource" do
                            :need_memory=>0.5,
                            :image_storage=>ImageStorage[1].uuid)
     
-    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
+    hvchttp = Dcmgr::HvcHttpMock.new
     Dcmgr::hvchttp = hvchttp
     
     instance_a = @c.find(instance_a.id)
@@ -255,7 +255,7 @@ describe "instance access by active resource" do
     
     instance.should be_true
 
-    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
+    hvchttp = Dcmgr::HvcHttpMock.new
     Dcmgr::hvchttp = hvchttp
     
     instance.put(:shutdown)
@@ -338,7 +338,7 @@ describe "instance access by active resource" do
                                     :ip=>'192.168.2.100')
     instance = @c.find(real_instance.uuid)
 
-    hvchttp = Dcmgr::HvcHttpMock.new(HvController[:ip=>'192.168.1.10'])
+    hvchttp = Dcmgr::HvcHttpMock.new
     Dcmgr::hvchttp = hvchttp
 
     hvchttp.hvas[real_instance.hv_agent.ip].instances[real_instance.ip][1].should == :online
