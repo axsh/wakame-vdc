@@ -68,7 +68,7 @@ describe "user access by active resource" do
     user.name.should == User[1].name
   end
 
-  it "should find all" do
+  it "should find users same accounts" do
     user_a = @class.create(:name=>'user_a', :password=>'passwd')
     user_b = @class.create(:name=>'user_b', :password=>'passwd')
     user_c = @class.create(:name=>'user_c', :password=>'passwd')
@@ -89,7 +89,7 @@ describe "user access by active resource" do
     real_user_d.remove_account(Account[1])
     real_user_d.add_account(Account[2])
 
-    users = @class.find(:all)
+    users = @class.find(:all, :params => {:same_accounts=>true})
     users.detect{|u| u.id == user_a.id }.should be_true
     users.detect{|u| u.id == user_b.id }.should be_true
     users.detect{|u| u.id == user_c.id }.should_not be_true
@@ -121,7 +121,8 @@ describe "user access by active resource" do
   end
 
   it "should get accounts" do
-    user_a = @class.create(:name=>'user_a', :password=>'passwd')
+    user_a = @class.create(:name=>'user_a_get_accounts',
+                           :password=>'passwd')
     user_a.accounts.length.should == 0
 
     real_user = User[user_a.id]
@@ -131,8 +132,8 @@ describe "user access by active resource" do
     user_a.reload
 
     user_a.accounts.length.should == 2
-    user_a.accounts[0].should == Accounts[1].uuid
-    user_a.accounts[1].should == Accounts[2].uuid
+    user_a.accounts[0].should == Account[1].uuid
+    user_a.accounts[1].should == Account[2].uuid
   end
 
   it "should get default password" do
