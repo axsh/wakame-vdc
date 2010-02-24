@@ -95,6 +95,13 @@ describe "user access by active resource" do
     users.detect{|u| u.id == user_c.id }.should_not be_true
   end
 
+  it "should find user who has no account" do
+    user = @class.create(:name=>'user', :password=>'password')
+    User[user.id].remove_all_accounts # just in case
+    users = @class.find(:all)
+    users.detect{|u| u.id == user.id}.should be_true
+  end
+
   it "should add tag" do
     user = @class.find(:myself)
     real_user = User[user.id]
