@@ -236,7 +236,7 @@ module Dcmgr
       Dcmgr.db.transaction do
         req_hash[:image_storage] = ImageStorage[req_hash[:image_storage]]
         instance = _create(req_hash)
-        
+
         Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
           begin
             res = http.run_instance(instance.hv_agent.ip,
