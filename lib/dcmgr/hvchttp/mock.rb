@@ -6,70 +6,68 @@ require 'active_support'
   
 module Dcmgr
   class HvcHttpMock
-    def initialize(host, port=80)
-      if host.is_a? HvController
-        hvc = host
-        @host = hvc.ip
-        @port = port
-        @hvas = Hash[*hvc.hv_agents.map{|hva|
-                       hva_data = Hva.new(hva.ip)
-                       hva.instances.each{|ins|
-                         hva_data.add_instance(ins.ip, ins.uuid, ins.status_sym)
-                       }
-                       [hva.ip, hva_data]
-                     }.flatten]
-      else
-        @host = host
-        @port = port
-        @hvas = {}
-      end
+    def hvas
+      ret = {}
+      HvController.all.each{|hvc|
+        ret.merge! find_hvas_byhvc(hvc)
+      }
+      ret
     end
 
-    def add_hva(hva_ip)
-      @hvas[hva_ip] = Hva.new(hva_ip)
+    def hva(hva_ip)
+      p self.hvas
+      self.hvas[hva_ip]
     end
 
-    def add_instance(instance)
-      hva_ip = instance[:hva]
-      hva = @hvas[hva_ip]
-      instance_uuid, instance_ip = instance[:uuid], instance[:ip]
-      hva.add_instance(instance_ip, instance_uuid, instance[:status])
+    def find_hvas(hvc_ip)
+      hvc = HvController[:ip=>hvc_ip]
+      return [] unless hvc
+      find_hvas_byhvc(hvc)
     end
 
-    def hva(ip)
-      @hvas[ip]
+    def find_hvas_byhvc(hvc)
+      ret = {}
+      hvc.hv_agents.each{|hva|
+        hva_data = Hva.new(hva.ip,
+                           hva.instances)
+        ret[hva.ip] = hva_data
+      }
+      ret
     end
-
-    attr_accessor :hvas
-          
-    def open(host, port=80, &block)
-      if host == @host && port == @port
-        hvas = @hvas
-      else
-        hvas = nil
-      end
-      conn = HvcHttpMockConnection.new(self)
+    
+    def open(host, port=3000, &block)
+      hvas = find_hvas(host)
+      conn = HvcHttpMockConnection.new(hvas)
       conn.extend HvcAccess
       block.call(conn)
     end
     
     class Hva
-      def initialize(hva_ip)
+      def initialize(hva_ip, instances={})
         @ip = hva_ip
         @instances = {}
+        add_instances(instances)
       end
 
       def dummy_instance_ip
         @@instance_ip ||= 0
         @@instance_ip += 1
+
         '192.168.2.%s' % @@instance_ip
       end
       
+      def add_instances(instances)
+        instances.each{|instance|
+          add_instance(instance.ip, instance.uuid,
+                       instance.status_sym)
+        }
+      end
+
       def add_instance(ip, uuid, status)
         unless ip
           raise "can't empty uuid" unless uuid
           ip = dummy_instance_ip
-          instance = Instance[uuid]
+          instance = Instance[:uuid=>uuid]
           instance.ip = ip
           instance.save
         end
@@ -106,9 +104,8 @@ module Dcmgr
   end
 
   class HvcHttpMockConnection
-    def initialize(hva_http)
-      @hva_http = hva_http
-      @hvas = hva_http.hvas
+    def initialize(hvas)
+      @hvas = hvas
     end
 
     def get(path)
