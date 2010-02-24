@@ -58,6 +58,10 @@ module Dcmgr
     end
     
     public_action :get do
+      find
+    end
+
+    public_action :get, :same_accounts do
        user.accounts.map{|o|o.users}.flatten
     end
     
