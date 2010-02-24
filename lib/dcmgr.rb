@@ -33,7 +33,7 @@ module Dcmgr
   attr_accessor :location_groups
 
   def hvchttp
-    @hvchttp ||= HvcHttpMock.new(HvController[1])
+    @hvchttp ||= HvcHttpMock.new
   end
 
   attr_writer :hvchttp
