@@ -48,6 +48,24 @@ module ActiveResourceHelperMethods
 END
   end
 
+  def ar_class_fsuser model_name, opts={}
+    user = opts[:user] || '__test__'
+    passwd = opts[:password] || 'passwd'
+    port = opts[:port] || 19393
+
+    site = "http://#{user}:#{passwd}@localhost:#{port}/"
+
+    eval(<<END)
+    module Test
+      class #{model_name} < ActiveResource::Base
+        self.site = "#{site}"
+        self.format = :json
+      end
+    end
+    Test::#{model_name}
+END
+  end
+
   def reset_db
     Dcmgr::Schema.drop!
     Dcmgr::Schema.create!
