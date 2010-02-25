@@ -465,3 +465,17 @@ post '/user-edit' do
   content_type :json
   rtn.to_json
 end
+
+post '/user-remove' do
+  id = params[:id]
+  rtn = {"success" => false}
+  User.login(session[:login_id],session[:login_pw])
+  begin
+    account = User.find(id)
+    account.destroy
+    rtn = {"success" => true}
+  end
+  debug_log rtn
+  content_type :json
+  rtn.to_json
+end

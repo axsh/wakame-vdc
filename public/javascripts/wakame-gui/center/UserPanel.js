@@ -88,8 +88,14 @@ WakameGUI.UserList = function(){
           if(temp > 0){
             Ext.Msg.confirm("Remove:","Are you sure?", function(btn){
               if(btn == 'yes'){
-                var rec = sm.getSelected();
-                store.remove(rec);
+                Ext.Ajax.request({
+                  url: '/user-remove',
+                  method: "POST", 
+                  params : 'id=' + sm.getSelected().id,
+                  success: function(form, action) {
+                    store.reload();
+                  }
+                });
               }
             });
           }
