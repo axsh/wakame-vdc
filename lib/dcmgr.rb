@@ -32,6 +32,9 @@ module Dcmgr
 
   attr_accessor :location_groups
 
+  attr_accessor :fsuser_auth_type
+  attr_accessor :fsuser_auth_users
+
   def hvchttp
     @hvchttp ||= HvcHttpMock.new
   end
