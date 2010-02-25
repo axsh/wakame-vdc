@@ -52,8 +52,7 @@ Ext.onReady(function(){
 
 WakameGUI.Selector = function(centerPanel){
   var panelMode = 0;
-  function ChangePanel(no)
-  {
+  var changePanel = function(no){
       if(WakameGUI.activePanel != no){
         WakameGUI.activePanel = no;
         centerPanel.layout.setActiveItem(WakameGUI.activePanel);
@@ -84,22 +83,22 @@ WakameGUI.Selector = function(centerPanel){
     listeners: {
       'click': function(node){
           if(node.id == 'menu01'){
-            ChangePanel(0);
+            changePanel(0);
           }
           else if(node.id == 'menu02'){
-            ChangePanel(1);
+            changePanel(1);
           }
           else if(node.id == 'menu03'){
-            ChangePanel(2);
+            changePanel(2);
           }
           else if(node.id == 'menu04'){
-            ChangePanel(3);
+            changePanel(3);
           }
           else if(node.id == 'menu05'){
-            ChangePanel(4);
+            changePanel(4);
           }
           else if(node.id == 'menu06'){
-            ChangePanel(5);
+            changePanel(5);
           }
       }
     },

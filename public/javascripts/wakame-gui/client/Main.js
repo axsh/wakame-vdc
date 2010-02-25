@@ -118,8 +118,7 @@ WakameGUI.SystemAdminUpPanel = function(){
 Ext.extend(WakameGUI.SystemAdminUpPanel, Ext.Panel);
 
 WakameGUI.SystemAdminDownPanel = function(cardPanel){
-  function ChangePanel(no)
-  {
+  var changePanel = function(no){
     if(WakameGUI.activePanel != no){
       WakameGUI.activePanel = no;
       cardPanel.layout.setActiveItem(WakameGUI.activePanel);
@@ -154,16 +153,16 @@ WakameGUI.SystemAdminDownPanel = function(cardPanel){
     listeners: {
       'click': function(node){
         if(node.id == 'menu01'){
-          ChangePanel(0);
+          changePanel(0);
         }
         else if(node.id == 'menu02'){
-          ChangePanel(1);
+          changePanel(1);
         }
         else if(node.id == 'menu03'){
-          ChangePanel(2);
+          changePanel(2);
         }
         else if(node.id == 'menu04'){
-          ChangePanel(3);
+          changePanel(3);
         }
       }
     },
