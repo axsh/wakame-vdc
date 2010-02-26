@@ -277,8 +277,8 @@ WakameGUI.SystemAdminCard = function(){
     imagePanel.setUpPanel(obj)
   }
 
-  this.refreshPanel = function(panel){
-      eval(panel).refresh();
+  this.refreshPanel = function(panelName){
+      eval(panelName).refresh();
   }
 
   WakameGUI.SystemAdminCard.superclass.constructor.call(this, {

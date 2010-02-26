@@ -168,8 +168,8 @@ WakameGUI.Main = function(){
     cardPanel.setUpPanel(obj)
   }
   
-  this.refreshPanel = function(panel){
-      eval(panel).refresh();
+  this.refreshPanel = function(panelName){
+      eval(panelName).refresh();
   }
 
   WakameGUI.Main.superclass.constructor.call(this, {

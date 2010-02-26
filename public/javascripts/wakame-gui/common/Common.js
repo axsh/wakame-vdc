@@ -70,11 +70,11 @@ Ext.apply(WakameGUI,{
                msg: 'Sysytem Error' 
            });
      }
-  },changePanel: function(mainPanel,changePanel,no){
+  },changePanel: function(mainPanel,changePanelName,no){
      if(WakameGUI.activePanel != no){
        WakameGUI.activePanel = no;
        mainPanel.layout.setActiveItem(WakameGUI.activePanel);
-       mainPanel.refreshPanel(changePanel);
+       mainPanel.refreshPanel(changePanelName);
      }
    }
 });
