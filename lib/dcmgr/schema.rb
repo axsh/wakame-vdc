@@ -210,7 +210,7 @@ module Dcmgr
                    Instance, ImageStorage, ImageStorageHost, PhysicalHost,
                    HvController, HvAgent,
                    Tag, TagAttribute, TagMapping,
-                   Log,
+                   Log, KeyPair,
                   ].freeze
     end
   end
