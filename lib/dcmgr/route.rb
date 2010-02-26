@@ -4,23 +4,12 @@ module Dcmgr
     proc do |*args|
       logger.debug "URL: #{method} #{request.url} #{args}"
 
-      logger.debug rest_c.protect?.inspect
-      
       protected! if rest_c.protect?
       
-      begin parsed_request = json_request(request)
+      begin
         user = authorized_user
-        user_id = if user then user.id else 0 end
-        user_uuid = if user.respond_to? :uuid
-                    then user.uuid else "" end
 
-        # log
-        Log.create(:user_id=>user_id,
-                   :account_id=>parsed_request[:account].to_i,
-                   :target_uuid=>user_uuid,
-                   :action=>'login')
-
-        obj = rest_c.new(user, parsed_request)
+        obj = rest_c.new(user, request)
         obj.uuid = args[0] if args.length > 0
 
         ret = obj.instance_eval(&block)

@@ -1,5 +1,8 @@
+require 'dcmgr/helpers'
 
 module Dcmgr::RestModel
+  include Dcmgr::Helpers
+  
   module ClassMethods
     def actions
       @actions.each{|method, path, args, action|
@@ -250,8 +253,20 @@ module Dcmgr::RestModel
   end
   
   def initialize(user, request)
+    parsed_request = json_request(request)
+
+    # log
+    user_id = if user then user.id else 0 end
+    user_uuid = if user.respond_to? :uuid
+                then user.uuid else "" end
+    Log.create(:user_id=>user_id,
+               :account_id=>parsed_request[:account].to_i,
+               :target_uuid=>user_uuid,
+               :action=>'login')
+    
     @user = user
-    @request = request
+    @request = parsed_request
+    @orig_request = request
   end
 end
 

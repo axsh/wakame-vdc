@@ -4,8 +4,18 @@ module Dcmgr
     public_name "frontend_service_users"
     set_protect false
 
+    def authorize
+      req = @orig_request
+      case Dcmgr.fsuser_auth_type
+      when :ip
+        user = Dcmgr.fsuser_auth_users[req.env["REMOTE_ADDR"]]
+        throw(:halt, [401, "Not authorized\n"]) unless user
+        user
+      end
+    end
+
     public_action :get, :myself do
-      {"a"=>3}
+      {"name"=>self.authorize}
     end
   end
   
