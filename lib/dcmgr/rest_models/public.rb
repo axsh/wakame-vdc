@@ -1,4 +1,14 @@
 module Dcmgr
+  class FrontendServiceUser
+    include RestModel
+    public_name "frontend_service_users"
+    set_protect false
+
+    public_action :get, :myself do
+      {"a"=>3}
+    end
+  end
+  
   class PublicAccount
     include RestModel
     model Account
