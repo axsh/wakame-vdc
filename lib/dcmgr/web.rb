@@ -12,7 +12,7 @@ module Dcmgr
     helpers { include Dcmgr::Helpers }
     
     def self.public_crud model
-      model.get_actions {|action, pattern, proc|
+      model.actions {|action, pattern, proc|
         Dcmgr::logger.debug "REGIST: %s %s" % [action, pattern]
         self.send action, pattern, &proc
       }
@@ -27,10 +27,12 @@ module Dcmgr
   class PublicWeb < Web
     helpers { include Dcmgr::AuthorizeHelpers }
     
+    public_crud FrontendServiceUser
+    
     public_crud PublicAccount
     public_crud PublicUser
     public_crud PublicKeyPair
-    
+
     public_crud PublicNameTag
     public_crud PublicAuthTag
     public_crud PublicTagAttribute
