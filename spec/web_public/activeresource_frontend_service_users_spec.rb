@@ -7,8 +7,6 @@ describe "frontend service users access by active resource" do
   include ActiveResourceHelperMethods
 
   it "should authorize by ip" do
-    pending
-    
     Dcmgr.fsuser_auth_type = :ip
     Dcmgr.fsuser_auth_users =
       [{:user=>"gui_server", :ip=>"127.0.0.1"},
@@ -16,7 +14,7 @@ describe "frontend service users access by active resource" do
 
     gui_server_c = ar_class(:FrontendServiceUser,
                                 :user=>"gui")
-    gui_server = gui_server_c.get(:myself)
+    gui_server = gui_server_c.find(:myself)
     gui_server.should be_valid
   end
   
