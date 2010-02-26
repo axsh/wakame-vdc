@@ -52,22 +52,6 @@ Ext.onReady(function(){
 
 WakameGUI.Selector = function(centerPanel){
   var panelMode = 0;
-  var changePanel = function(no){
-      if(WakameGUI.activePanel != no){
-        WakameGUI.activePanel = no;
-        centerPanel.layout.setActiveItem(WakameGUI.activePanel);
-        switch(no) {
-            case 0:
-              centerPanel.refreshPanel('accountPanel');
-            break;
-      
-            case 1:
-              centerPanel.refreshPanel('userPanel');
-            break;
-        }
-      }
-  }
-
   WakameGUI.Selector.superclass.constructor.call(this,{
     region: "west",
     split: true,
@@ -83,22 +67,22 @@ WakameGUI.Selector = function(centerPanel){
     listeners: {
       'click': function(node){
           if(node.id == 'menu01'){
-            changePanel(0);
+            WakameGUI.changePanel(centerPanel,'accountPanel',0);
           }
           else if(node.id == 'menu02'){
-            changePanel(1);
+            WakameGUI.changePanel(centerPanel,'userPanel',1);
           }
           else if(node.id == 'menu03'){
-            changePanel(2);
+            // WakameGUI.changePanel(centerPanel,'resourceViewerPanel',2);
           }
           else if(node.id == 'menu04'){
-            changePanel(3);
+            // WakameGUI.changePanel(centerPanel,'resourceEditorPanel',3);
           }
           else if(node.id == 'menu05'){
-            changePanel(4);
+            // WakameGUI.changePanel(centerPanel,'locationMapPanel',4);
           }
           else if(node.id == 'menu06'){
-            changePanel(5);
+            // WakameGUI.changePanel(centerPanel,'logViewerPanel',5);
           }
       }
     },
