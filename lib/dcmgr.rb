@@ -9,6 +9,7 @@ require 'dcmgr/hvchttp/mock'
 require 'dcmgr/scheduler'
 require 'dcmgr/ipmanager'
 require 'dcmgr/keypair_factory'
+require 'dcmgr/route'
 
 module Dcmgr
   extend self
