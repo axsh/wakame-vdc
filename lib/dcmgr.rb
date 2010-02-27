@@ -10,10 +10,11 @@ require 'dcmgr/scheduler'
 require 'dcmgr/ipmanager'
 require 'dcmgr/keypair_factory'
 require 'dcmgr/route'
+require 'dcmgr/fsuser_authorizer'
 
 module Dcmgr
   extend self
-  
+
   def configure(config_file=nil)
     load(config_file) if config_file
     self
@@ -33,9 +34,22 @@ module Dcmgr
 
   attr_accessor :location_groups
 
-  attr_accessor :fsuser_auth_type
-  attr_accessor :fsuser_auth_users
+  def fsuser_auth_type=(type)
+    FsuserAuthorizer.auth_type = type
+  end
 
+  def fsuser_auth_type
+    FsuserAuthorizer.auth_type
+  end
+
+  def fsuser_auth_users=(users)
+    FsuserAuthorizer.auth_users = users
+  end
+
+  def fsuser_auth_users
+    FsuserAuthorizer.auth_users
+  end
+  
   def hvchttp
     @hvchttp ||= HvcHttpMock.new
   end
