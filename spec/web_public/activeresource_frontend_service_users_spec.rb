@@ -30,7 +30,33 @@ describe "frontend service users access by active resource" do
     user.name.should == "gui"
   end
   
-  it "should authorize by basic auth"
+  it "should authorize by basic auth" do
+    gui_server_c = ar_class(:FrontendServiceUser,
+                            :user=>"gui")
+
+    Dcmgr.fsuser_auth_type = :basic
+
+    Dcmgr.fsuser_auth_users = {}
+    proc {
+      gui_server = gui_server_c.find(:myself)
+    }.should raise_error(ActiveResource::UnauthorizedAccess)
+
+    Dcmgr.fsuser_auth_users =
+      {"gui"=>"bad_password"}
+    proc {
+      gui_server = gui_server_c.find(:myself)
+    }.should raise_error(ActiveResource::UnauthorizedAccess)
+
+    Dcmgr.fsuser_auth_users =
+      {"gui"=>"password"}
+    user = gui_server_c.find(:myself)
+    user.should be_valid
+    user.name.should == "gui"
+  end
+
+  it "shouldn't set authorize type" do
+    
+  end
 
   it "should authorize user"
 end
