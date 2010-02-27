@@ -57,10 +57,10 @@ describe "frontend service users access by active resource" do
   it "shouldn't set authorize type" do
     proc {
       Dcmgr.fsuser_auth_type = nil
-    }.should raise_error(Dcmgr::UnknownFsuserAuthType)
+    }.should raise_error(Dcmgr::FsuserAuthorizer::UnknownAuthType)
     proc {
       Dcmgr.fsuser_auth_type = :unknown_auth_type
-    }.should raise_error(Dcmgr::UnknownFsuserAuthType)
+    }.should raise_error(Dcmgr::FsuserAuthorizer::UnknownAuthType)
   end
 
   it "should authorize user"

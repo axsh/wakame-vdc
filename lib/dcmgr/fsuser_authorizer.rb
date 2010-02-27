@@ -1,9 +1,10 @@
 module Dcmgr::FsuserAuthorizer
   extend self
 
-  class UnkownAuthType < StandardError; end
+  class UnknownAuthType < StandardError; end
 
   def auth_type=(type)
+    raise UnknownAuthType, "unkown #{type}" unless [:ip, :basic].include? type
     @auth_type = type
   end
 
