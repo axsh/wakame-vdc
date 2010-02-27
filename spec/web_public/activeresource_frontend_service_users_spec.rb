@@ -18,13 +18,13 @@ describe "frontend service users access by active resource" do
     }.should raise_error(ActiveResource::UnauthorizedAccess)
 
     Dcmgr.fsuser_auth_users =
-      {"192.168.1.10"=>"gui"}
+      {"gui"=>"192.168.1.10"}
     proc {
       gui_server = gui_server_c.find(:myself)
     }.should raise_error(ActiveResource::UnauthorizedAccess)
 
     Dcmgr.fsuser_auth_users =
-      {"127.0.0.1"=>"gui"}
+      {"gui"=>"127.0.0.1"}
     user = gui_server_c.find(:myself)
     user.should be_valid
     user.name.should == "gui"
@@ -55,7 +55,12 @@ describe "frontend service users access by active resource" do
   end
 
   it "shouldn't set authorize type" do
-    
+    proc {
+      Dcmgr.fsuser_auth_type = nil
+    }.should raise_error(Dcmgr::UnknownFsuserAuthType)
+    proc {
+      Dcmgr.fsuser_auth_type = :unknown_auth_type
+    }.should raise_error(Dcmgr::UnknownFsuserAuthType)
   end
 
   it "should authorize user"
