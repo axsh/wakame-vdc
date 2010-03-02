@@ -19,7 +19,7 @@ describe "instance access by active resouce(private mode)" do
   
   before(:all) do
     runserver(:private)
-    @c = ar_class :Instance, :private=>true
+    @c = ar_class_with_basicauth :Instance, :private=>true
   end
   
   it "should change instance status" do
