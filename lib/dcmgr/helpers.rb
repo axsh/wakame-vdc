@@ -33,7 +33,6 @@ module Dcmgr
 
     def authorized?
       user_uuid = request.env['HTTP_X_WAKAME_USER']
-      p user_uuid
       if user_uuid
         authorize(user_uuid)
       else
