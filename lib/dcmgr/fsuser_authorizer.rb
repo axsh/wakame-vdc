@@ -37,7 +37,6 @@ module Dcmgr::FsuserAuthorizer
   end
 
   def find_by_basic(req_username, req_password)
-    p "#{req_username}, #{req_password}"
     match = @users.detect{|username, password|
       username == req_username && password == req_password
     }
@@ -53,9 +52,7 @@ module Dcmgr::FsuserAuthorizer
              find_by_ip(ip)
              
            when :basic
-             p request.env
-        
-             bauth= Rack::Auth::Basic::Request.new(request.env)
+              bauth= Rack::Auth::Basic::Request.new(request.env)
              bauth.provided? && bauth.basic? &&
                find_by_basic(*bauth.credentials)
            end
