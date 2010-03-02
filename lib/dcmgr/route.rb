@@ -8,7 +8,11 @@ module Dcmgr
         protected! if rest_c.protect?
       
         user = protected!
-        logger.debug "Authorized user: #{user}"
+        if user and user.respond_to? :uuid
+          logger.debug "authorized user: #{user.uuid}"
+        else
+          logger.debug "not Authorize"
+        end
 
         obj = rest_c.new(user, request)
         obj.uuid = args[0] if args.length > 0
