@@ -6,12 +6,9 @@ module Dcmgr
 
     def authorize
       req = @orig_request
-      case Dcmgr.fsuser_auth_type
-      when :ip
-        user = Dcmgr.fsuser_auth_users[req.env["REMOTE_ADDR"]]
-        throw(:halt, [401, "Not authorized\n"]) unless user
-        user
-      end
+      fsuser = Dcmgr::FsuserAuthorizer.authorize(@orig_request)
+    rescue Dcmgr::FsuserAuthorizer::NotAuthorized
+      throw(:halt, [401, "Not authorized\n"])
     end
 
     public_action :get, :myself do

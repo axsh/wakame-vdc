@@ -35,7 +35,8 @@ module Dcmgr
 
     def authorized?
       @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-      @auth.provided? && @auth.basic? && authorize(@auth.credentials, @auth.credentials)
+      @auth.provided? && @auth.basic? &&
+        authorize(@auth.credentials, @auth.credentials)
     end
 
     def authorize(name, password)
