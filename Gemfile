@@ -10,3 +10,5 @@ gem "thin", ">=1.2.5"
 
 gem "rspec", ">= 1.2.9", :only=>'development'
 gem "shotgun", :only=>'development'
+
+gem 'extlib', '>= 0.9.14'
