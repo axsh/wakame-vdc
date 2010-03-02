@@ -25,7 +25,7 @@ module Dcmgr
   end
   
   class PublicWeb < Web
-    helpers { include Dcmgr::AuthorizeHelpers }
+    helpers { include Dcmgr::UUIDAuthorizeHelpers }
     
     public_crud FrontendServiceUser
     

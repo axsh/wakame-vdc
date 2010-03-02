@@ -5,6 +5,7 @@ require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
 require 'active_resource'
 require 'rack/handler/thin'
 require 'dcmgr'
+require 'dcmgr/certificated_active_resource'
 
 require "#{File.dirname(__FILE__)}/specformat_detail" unless defined? SPECFORMAT
 
@@ -27,25 +28,24 @@ module ActiveResourceHelperMethods
 
   def ar_class model_name, opts={}
     user = opts[:user] || '__test__'
-    passwd = opts[:password] || 'passwd'
+    user_uuid = opts[:uuid] ||User.find(:name=>user).uuid
+
+    raise "user unknown: #{user}" unless user_uuid
+    
     port = opts[:port] || 19393
     private_mode = if opts.key?(:private) then opts[:private] else false end
+    site = "http://localhost:#{port}/"
 
-    if private_mode
-      site = "http://localhost:19394/"
-    else
-      site = "http://#{user}:#{passwd}@localhost:#{port}/"
-    end
-
-    eval(<<END)
+    eval(<<-END)
     module Test
-      class #{model_name} < ActiveResource::Base
+      class #{model_name} < Dcmgr::CertificatedActiveResource
         self.site = "#{site}"
         self.format = :json
+        self.user_uuid = '#{user_uuid}'
       end
     end
     Test::#{model_name}
-END
+    END
   end
 
   def ar_class_fsuser model_name, opts={}
@@ -55,7 +55,7 @@ END
 
     site = "http://#{user}:#{passwd}@localhost:#{port}/"
 
-    eval(<<END)
+    eval(<<-END)
     module Test
       class #{model_name} < ActiveResource::Base
         self.site = "#{site}"
@@ -63,7 +63,7 @@ END
       end
     end
     Test::#{model_name}
-END
+    END
   end
 
   def reset_db
