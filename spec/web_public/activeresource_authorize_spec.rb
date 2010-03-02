@@ -9,14 +9,6 @@ describe "active resource authorization" do
     @authuser = User.create(:name=>'__test_auth__', :password=>'passwd')
   end
 
-  it "should not authorize" do
-    lambda {
-      not_auth_tag_class = ar_class :NameTag, :user=>'__test_auth__', :password=>'bad_passwd'
-      not_auth_tag_class.create(:name=>'name tag',
-                                :account=>@account)
-    }.should raise_error(ActiveResource::UnauthorizedAccess)
-  end
-  
   it "should authorize" do
     auth_tag_class = ar_class :NameTag, :user=>'__test_auth__', :password=>'passwd'
     tag = auth_tag_class.create(:name=>'name tag',

@@ -26,7 +26,32 @@ module Dcmgr
     end
   end
 
-  module AuthorizeHelpers
+  module UUIDAuthorizeHelpers
+    def protected!
+      authorized?
+    end
+
+    def authorized?
+      user_uuid = request.env['HTTP_X_WAKAME_USER']
+      p user_uuid
+      if user_uuid
+        authorize(user_uuid)
+      else
+        false
+      end
+    end
+
+    def authorize(uuid, password=nil)
+      @user = User[uuid]
+      @user
+    end
+
+    def authorized_user
+      @user
+    end
+  end
+  
+  module BasicAuthorizeHelpers
     def protected!
       response['WWW-Authenticate'] = %(Basic realm="HTTP Auth") and
         throw(:halt, [401, "Not authorized\n"]) and
@@ -35,7 +60,8 @@ module Dcmgr
 
     def authorized?
       @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-      @auth.provided? && @auth.basic? && authorize(@auth.credentials, @auth.credentials)
+      @auth.provided? && @auth.basic? &&
+        authorize(@auth.credentials, @auth.credentials)
     end
 
     def authorize(name, password)

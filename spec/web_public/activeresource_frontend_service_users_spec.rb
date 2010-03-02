@@ -31,8 +31,9 @@ describe "frontend service users access by active resource" do
   end
   
   it "should authorize by basic auth" do
-    gui_server_c = ar_class(:FrontendServiceUser,
-                            :user=>"gui")
+    gui_server_c = ar_class_fsuser(:FrontendServiceUser,
+                                   :user=>"gui",
+                                   :password=>"password")
 
     Dcmgr.fsuser_auth_type = :basic
 
