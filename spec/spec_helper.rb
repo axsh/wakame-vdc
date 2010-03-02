@@ -63,13 +63,13 @@ module ActiveResourceHelperMethods
     site = "http://#{user}:#{passwd}@localhost:#{port}/"
 
     eval(<<-END)
-    module Test
+    module Test2
       class #{model_name} < ActiveResource::Base
         self.site = "#{site}"
         self.format = :json
       end
     end
-    Test::#{model_name}
+    Test2::#{model_name}
     END
   end
 
