@@ -61,8 +61,7 @@ module ActiveResourceHelperMethods
     port = opts[:port] || (private_mode and 19394) || 19393
 
     site = "http://#{user}:#{passwd}@localhost:#{port}/"
-    p site
-    
+
     eval(<<-END)
     module Test
       class #{model_name} < ActiveResource::Base
