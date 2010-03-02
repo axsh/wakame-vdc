@@ -27,8 +27,12 @@ module ActiveResourceHelperMethods
   end
 
   def ar_class model_name, opts={}
-    user = opts[:user] || '__test__'
-    user_uuid = opts[:uuid] ||User.find(:name=>user).uuid
+    username = opts[:user] || '__test__'
+    user_uuid = opts[:uuid]
+    unless user_uuid
+      user = User.find(:name=>username)
+      user_uuid = user.uuid if user
+    end
 
     raise "user unknown: #{user}" unless user_uuid
     

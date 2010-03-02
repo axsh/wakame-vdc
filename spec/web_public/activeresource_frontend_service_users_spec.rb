@@ -7,8 +7,7 @@ describe "frontend service users access by active resource" do
   include ActiveResourceHelperMethods
 
   it "should authorize by ip" do
-    gui_server_c = ar_class(:FrontendServiceUser,
-                            :user=>"gui")
+    gui_server_c = ar_class_fsuser(:FrontendServiceUser)
 
     Dcmgr.fsuser_auth_type = :ip
 
