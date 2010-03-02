@@ -91,6 +91,7 @@ describe "instance access by active resource" do
     # 3  / 1    / 2.0  / 4.0
     
     # already 'instance a' use physical host 1 in should create instance
+    @c = ar_class :Instance
     
     instance = @c.create(:account=>Account[1].uuid,
                          :need_cpus=>3,
