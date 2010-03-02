@@ -19,8 +19,10 @@ module ActiveResourceHelperMethods
   def runserver(mode=:public)
     Thread.new do
       if mode == :public
+        puts "start public server"
         Rack::Handler::Thin.run Dcmgr::PublicWeb, :Port => 19393
       else
+        puts "start private server"
         Rack::Handler::Thin.run Dcmgr::PrivateWeb, :Port => 19394
       end
     end
@@ -52,13 +54,15 @@ module ActiveResourceHelperMethods
     END
   end
 
-  def ar_class_fsuser model_name, opts={}
+  def ar_class_with_basicauth model_name, opts={}
     user = opts[:user] || '__test__'
     passwd = opts[:password] || 'passwd'
-    port = opts[:port] || 19393
+    private_mode = opts[:private]
+    port = opts[:port] || (private_mode and 19394) || 19393
 
     site = "http://#{user}:#{passwd}@localhost:#{port}/"
-
+    p site
+    
     eval(<<-END)
     module Test
       class #{model_name} < ActiveResource::Base
