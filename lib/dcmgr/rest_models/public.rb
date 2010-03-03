@@ -12,7 +12,18 @@ module Dcmgr
     end
 
     public_action :get, :myself do
-      {"name"=>self.authorize}
+      fsuser = authorize
+      {"name"=>fsuser}
+    end
+
+    public_action :get, :authorize do
+      username, password = request[:_get_user], request[:_get_password]
+      user = User.find(:name=>username, :password=>password)
+      if user
+        {:id=>user.uuid, :name=>user.name}
+      else
+        nil
+      end
     end
   end
   
