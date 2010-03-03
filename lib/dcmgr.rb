@@ -13,6 +13,11 @@ require 'dcmgr/route'
 require 'dcmgr/fsuser_authorizer'
 
 module Dcmgr
+
+  module Web
+    autoload :Metadata, 'dcmgr/web/metadata'
+  end
+
   extend self
 
   def configure(config_file=nil)
