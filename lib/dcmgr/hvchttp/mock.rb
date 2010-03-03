@@ -15,7 +15,6 @@ module Dcmgr
     end
 
     def hva(hva_ip)
-      p self.hvas
       self.hvas[hva_ip]
     end
 
