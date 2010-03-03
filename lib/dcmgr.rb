@@ -9,7 +9,6 @@ require 'dcmgr/scheduler'
 require 'dcmgr/ipmanager'
 require 'dcmgr/keypair_factory'
 require 'dcmgr/route'
-require 'dcmgr/fsuser_authorizer'
 
 module Dcmgr
   extend self
@@ -86,4 +85,5 @@ module Dcmgr
   end
 
   autoload :Schema, 'dcmgr/schema'
+  autoload :FsuserAuthorizer, 'dcmgr/fsuser_authorizer'
 end
