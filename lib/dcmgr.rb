@@ -3,8 +3,6 @@ require 'sinatra'
 
 set :run, false
 
-require 'dcmgr/hvchttp'
-require 'dcmgr/hvchttp/mock'
 require 'dcmgr/route'
 
 module Dcmgr
@@ -86,4 +84,7 @@ module Dcmgr
   autoload :KeyPairFactory, 'dcmgr/keypair_factory'
   autoload :PhysicalHostScheduler, 'dcmgr/scheduler'
   autoload :IPManager, 'dcmgr/ipmanager'
+  autoload :HvcHttp, 'dcmgr/hvchttp'
+  autoload :HvcAccess, 'dcmgr/hvchttp'
+  autoload :HvcHttpMock, 'dcmgr/hvchttp/mock'
 end
