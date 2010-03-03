@@ -63,5 +63,18 @@ describe "frontend service users access by active resource" do
     }.should raise_error(Dcmgr::FsuserAuthorizer::UnknownAuthType)
   end
 
-  it "should authorize user"
+  it "should authorize user" do
+    gui_server_c = ar_class_with_basicauth(:FrontendServiceUser)
+
+    Dcmgr.fsuser_auth_type = :ip
+    Dcmgr.fsuser_auth_users =
+      {"gui"=>"127.0.0.1"}
+
+    user = gui_server_c.get(:authorize,
+                            :user=>'__test__',
+                            :password=>'passwd')
+    user.should be_instance_of Hash
+    user["name"].should == '__test__'
+    user["id"].should == User.find(:name=>'__test__').uuid
+  end
 end
