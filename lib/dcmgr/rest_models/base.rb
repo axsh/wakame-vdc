@@ -248,7 +248,7 @@ module Dcmgr::RestModel
     parsed_request = json_request(request)
 
     # log
-    user_id = if user then user.id else 0 end
+    user_id = if user and user.is_a? Sequel::Model then user.id else 0 end
     user_uuid = if user.respond_to? :uuid
                 then user.uuid else "" end
     Log.create(:user_id=>user_id,
