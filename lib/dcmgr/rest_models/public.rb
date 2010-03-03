@@ -58,8 +58,8 @@ module Dcmgr
   class PublicUser
     include RestModel
     model User
-    allow_keys :name, :password, :enable
-    response_keys :uuid, :name, :enable, :memo, :accounts
+    allow_keys :name, :password, :enable, :email, :memo
+    response_keys :uuid, :name, :enable, :email, :memo, :accounts
 
     public_action :post do
       create
