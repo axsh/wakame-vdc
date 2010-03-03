@@ -6,11 +6,6 @@ set :run, false
 require 'dcmgr/route'
 
 module Dcmgr
-
-  module Web
-    autoload :Metadata, 'dcmgr/web/metadata'
-  end
-
   extend self
 
   def configure(config_file=nil)
@@ -92,4 +87,9 @@ module Dcmgr
   autoload :HvcHttp, 'dcmgr/hvchttp'
   autoload :HvcAccess, 'dcmgr/hvchttp'
   autoload :HvcHttpMock, 'dcmgr/hvchttp/mock'
+  module Web
+    autoload :Metadata, 'dcmgr/web/metadata'
+  end
+  module Models
+  end
 end
