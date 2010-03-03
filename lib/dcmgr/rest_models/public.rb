@@ -235,7 +235,7 @@ module Dcmgr
       :need_cpus, :need_cpu_mhz, :need_memory
 
     response_keys :uuid, :account, :user, :tags, :physical_host, :image_storage,
-    :need_cpus, :need_cpu_mhz, :need_memory, :status, :ip,
+    :need_cpus, :need_cpu_mhz, :need_memory, :status, :ip, :hv_agent
     [:tags, proc {|o| o.tags.map{|t| t.uuid}}]
 
     public_action :get do
