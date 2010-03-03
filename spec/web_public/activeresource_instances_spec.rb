@@ -81,8 +81,6 @@ describe "instance access by active resource" do
     hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip][1].should == :running
   end
   
-  it "should shutdown, and auth check"
-
   it "should shutdown" do
     instance = @c.create(:account=>Account[1].id,
                          :need_cpus=>1,
@@ -119,7 +117,6 @@ describe "instance access by active resource" do
   end
 
   it "should find tag" do
-    pending
     tag_c = Tag[:name=>'sample tag c']
     instance = @c.create(:account=>Account[1].id,
                          :need_cpus=>1,
