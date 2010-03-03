@@ -3,7 +3,6 @@ require 'sinatra'
 
 set :run, false
 
-require 'dcmgr/schema'
 require 'dcmgr/hvchttp'
 require 'dcmgr/hvchttp/mock'
 require 'dcmgr/scheduler'
@@ -85,4 +84,6 @@ module Dcmgr
       raise Exception, "unkowon mode: #{mode}"
     end
   end
+
+  autoload :Schema, 'dcmgr/schema'
 end
