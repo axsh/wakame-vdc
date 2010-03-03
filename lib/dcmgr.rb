@@ -87,4 +87,9 @@ module Dcmgr
   autoload :HvcHttp, 'dcmgr/hvchttp'
   autoload :HvcAccess, 'dcmgr/hvchttp'
   autoload :HvcHttpMock, 'dcmgr/hvchttp/mock'
+  module Web
+    autoload :Metadata, 'dcmgr/web/metadata'
+  end
+  module Models
+  end
 end
