@@ -3,9 +3,9 @@
 require 'rubygems'
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe Dcmgr::IP_MANAGER do
+describe Dcmgr::IPManager do
   before(:each) do
-    @ipm = Dcmgr::IP_MANAGER
+    @ipm = Dcmgr::IPManager
     @ipm.setup('00:50:56:c0:00:01'=>'192.168.1.1',
                '00:50:56:c0:00:02'=>'192.168.1.2')
   end
@@ -34,7 +34,7 @@ describe Dcmgr::IP_MANAGER do
     @ipm.assign_ip
     lambda {
       @ipm.assign_ip
-    }.should raise_error(Dcmgr::IP_MANAGER::NoAssignIPError)
+    }.should raise_error(Dcmgr::IPManager::NoAssignIPError)
     
     @ipm.set_default_assigned?
   end

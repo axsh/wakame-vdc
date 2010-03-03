@@ -60,7 +60,7 @@ module Dcmgr
   end
 
   def assign_ips=(ips)
-    IP_MANAGER.setup ips
+    IPManager.setup ips
   end
 
   def db
@@ -85,5 +85,5 @@ module Dcmgr
   autoload :FsuserAuthorizer, 'dcmgr/fsuser_authorizer'
   autoload :KeyPairFactory, 'dcmgr/keypair_factory'
   autoload :PhysicalHostScheduler, 'dcmgr/scheduler'
-  autoload :IP_MANAGER, 'dcmgr/ipmanager'
+  autoload :IPManager, 'dcmgr/ipmanager'
 end

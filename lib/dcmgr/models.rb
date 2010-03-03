@@ -171,7 +171,7 @@ class Instance < Sequel::Model
   end
 
   def mac_address
-    Dcmgr::IP_MANAGER.macaddress_by_ip(self.ip)
+    Dcmgr::IPManager.macaddress_by_ip(self.ip)
   end
 
   def status_sym
@@ -194,7 +194,7 @@ class Instance < Sequel::Model
       self.hv_agent = physical_host.hv_agents[0]
     end
     
-    mac, self.ip = Dcmgr::IP_MANAGER.assign_ip
+    mac, self.ip = Dcmgr::IPManager.assign_ip
     Dcmgr::logger.debug "assigned ip: mac: #{mac}, ip: #{self.ip}"
   end
 
