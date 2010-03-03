@@ -232,7 +232,13 @@ module Dcmgr
     include RestModel
     model Instance
     allow_keys :account, :user, :physical_host, :image_storage,
-               :need_cpus, :need_cpu_mhz, :need_memory
+      :need_cpus, :need_cpu_mhz, :need_memory
+
+    response_keys :uuid, :account, :user, :tags, :physical_host, :image_storage,
+    :need_cpus, :need_cpu_mhz, :need_memory,
+    [:tags, proc {|o| o.tags.map{|t| t.uuid}}]
+
+#    => #<Instance @values={:need_memory=>0, :status=>1, :ip=>"192.168.11.297", :account_id=>1, :need_cpus=>1, :user_id=>1, :status_updated_at=>Wed Mar 03 17:19:19 +0900 2010, :archetype=>0, :image_storage_id=>1, :hv_agent_id=>4, :need_cpu_mhz=>0.5, :uuid=>"b4d41bd4", :id=>2}>
 
     public_action :get do
       find
@@ -251,6 +257,7 @@ module Dcmgr
       TagMapping.create(:tag_id=>tag.id,
                         :target_type=>TagMapping::TYPE_INSTANCE,
                         :target_id=>target.id) if tag
+      true
     end
     
     public_action_withid :put, :remove_tag do
@@ -258,6 +265,7 @@ module Dcmgr
       tag_uuid = request[:_get_tag]
       tag = Tag[tag_uuid]
       target.remove_tag(tag.id) if tag
+      true
     end
     
     public_action :post do

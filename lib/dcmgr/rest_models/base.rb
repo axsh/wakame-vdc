@@ -105,13 +105,15 @@ module Dcmgr::RestModel
   end
   
   def format_object(object)
-    return unless object
-    return object if object.is_a? Hash
-    
-      keys = response_keys ? response_keys :
+    case object
+    when TrueClass, FalseClass, NilClass
+      return object
+    end
+
+    keys = response_keys ? response_keys :
       object.keys.map{|key|
-      if /^(.*)_id$/ =~ key.to_s then $1.to_sym else key end
-    }
+        if /^(.*)_id$/ =~ key.to_s then $1.to_sym else key end
+      }
     
     ret = {}
     keys.each{|key|
