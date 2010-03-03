@@ -7,7 +7,6 @@ require 'dcmgr/hvchttp'
 require 'dcmgr/hvchttp/mock'
 require 'dcmgr/scheduler'
 require 'dcmgr/ipmanager'
-require 'dcmgr/keypair_factory'
 require 'dcmgr/route'
 
 module Dcmgr
@@ -86,4 +85,5 @@ module Dcmgr
 
   autoload :Schema, 'dcmgr/schema'
   autoload :FsuserAuthorizer, 'dcmgr/fsuser_authorizer'
+  autoload :KeyPairFactory, 'dcmgr/keypair_factory'
 end
