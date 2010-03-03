@@ -12,7 +12,18 @@ module Dcmgr
     end
 
     public_action :get, :myself do
-      {"name"=>self.authorize}
+      fsuser = authorize
+      {"name"=>fsuser}
+    end
+
+    public_action :get, :authorize do
+      username, password = request[:_get_user], request[:_get_password]
+      user = User.find(:name=>username, :password=>password)
+      if user
+        {:id=>user.uuid, :name=>user.name}
+      else
+        nil
+      end
     end
   end
   
@@ -47,8 +58,8 @@ module Dcmgr
   class PublicUser
     include RestModel
     model User
-    allow_keys :name, :password, :enable
-    response_keys :uuid, :name, :enable, :memo, :accounts
+    allow_keys :name, :password, :enable, :email, :memo
+    response_keys :uuid, :name, :enable, :email, :memo, :accounts
 
     public_action :post do
       create

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module IP_MANAGER
+  module IPManager
     class NoAssignIPError < StandardError; end
 
     @check_assigned = @default_check_assigned = lambda{|mac, ip|

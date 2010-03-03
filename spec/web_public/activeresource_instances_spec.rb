@@ -5,16 +5,15 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "instance access by active resource" do
   include ActiveResourceHelperMethods
-  before(:all) do
-    @c = ar_class :Instance
-    @physical_host_class = ar_class :PhysicalHost
-    @name_tag_class = ar_class :NameTag
-    @auth_tag_class = ar_class :AuthTag
-    @user_class = ar_class :User
-  end
   
   before(:each) do
     reset_db
+
+    @c = ar_class :Instance
+    @user_class = ar_class :User
+    @physical_host_class = ar_class :PhysicalHost
+    @name_tag_class = ar_class :NameTag
+    @auth_tag_class = ar_class :AuthTag
 
     Dcmgr::scheduler = Dcmgr::PhysicalHostScheduler::Algorithm2
     
@@ -92,6 +91,7 @@ describe "instance access by active resource" do
     # 3  / 1    / 2.0  / 4.0
     
     # already 'instance a' use physical host 1 in should create instance
+    @c = ar_class :Instance
     
     instance = @c.create(:account=>Account[1].uuid,
                          :need_cpus=>3,

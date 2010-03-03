@@ -15,7 +15,10 @@ describe "user access by active resource" do
     user = @class.create(:name=>'__test_as_user_spec__', :password=>'passwd')
     user.id.should be_true
     user.id.length.should >= 10
-    
+    user.memo.should be_nil
+    user.email.should be_nil
+    user.enable be_true
+
     User[user.id].should be_valid
     
     $user = user
@@ -24,13 +27,23 @@ describe "user access by active resource" do
   it "should save" do
     user = @class.create(:name=>'__test_as_user_spec2__', :password=>'passwd')
     user.name = 'changed_name'
+    user.email = 'a@mail.com'
+    user.memo = "memo\nabc"
     user.enable = false
     user.save
 
     real_user = User[user.id]
     real_user.should be_valid
     real_user.name.should == 'changed_name'
+    real_user.email.should == 'a@mail.com'
+    real_user.memo.should == "memo\nabc"
     real_user.enable.should == false
+
+    user.reload
+    user.name.should == 'changed_name'
+    user.email.should == 'a@mail.com'
+    user.memo.should == "memo\nabc"
+    user.enable.should be_false
   end
 
   it "should change password" do

@@ -4,10 +4,15 @@ module Dcmgr
     proc do |*args|
       logger.debug "URL: #{method} #{request.url} #{args}"
 
-      protected! if rest_c.protect?
-      
       begin
-        user = authorized_user
+        protected! if rest_c.protect?
+      
+        user = protected!
+        if user and user.respond_to? :uuid
+          logger.debug "authorized user: #{user.uuid}"
+        else
+          logger.debug "not Authorize"
+        end
 
         obj = rest_c.new(user, request)
         obj.uuid = args[0] if args.length > 0

@@ -3,14 +3,7 @@ require 'sinatra'
 
 set :run, false
 
-require 'dcmgr/schema'
-require 'dcmgr/hvchttp'
-require 'dcmgr/hvchttp/mock'
-require 'dcmgr/scheduler'
-require 'dcmgr/ipmanager'
-require 'dcmgr/keypair_factory'
 require 'dcmgr/route'
-require 'dcmgr/fsuser_authorizer'
 
 module Dcmgr
 
@@ -70,7 +63,7 @@ module Dcmgr
   end
 
   def assign_ips=(ips)
-    IP_MANAGER.setup ips
+    IPManager.setup ips
   end
 
   def db
@@ -90,4 +83,13 @@ module Dcmgr
       raise Exception, "unkowon mode: #{mode}"
     end
   end
+
+  autoload :Schema, 'dcmgr/schema'
+  autoload :FsuserAuthorizer, 'dcmgr/fsuser_authorizer'
+  autoload :KeyPairFactory, 'dcmgr/keypair_factory'
+  autoload :PhysicalHostScheduler, 'dcmgr/scheduler'
+  autoload :IPManager, 'dcmgr/ipmanager'
+  autoload :HvcHttp, 'dcmgr/hvchttp'
+  autoload :HvcAccess, 'dcmgr/hvchttp'
+  autoload :HvcHttpMock, 'dcmgr/hvchttp/mock'
 end

@@ -231,19 +231,11 @@ module Dcmgr::RestModel
     _create
   end
   
-  def update
+  def update(req=request)
     obj = model[uuid]
-    req_hash = request
-    req_hash.delete :id
-    allow_keys.each{|key|
-      if key == :account # duplicate create
-        obj.account = Account[req_hash[key]]
-      elsif key == :user
-        
-      else req_hash.key?(key)
-        obj.send('%s=' % key, req_hash[key])
-      end
-    }
+    columns = allowed_request_columns(request)
+    Dcmgr.logger.debug("_update columns: " + columns.inspect)
+    obj.set_all(columns)
     obj.save
   end
   

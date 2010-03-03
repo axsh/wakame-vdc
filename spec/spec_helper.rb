@@ -19,16 +19,22 @@ module ActiveResourceHelperMethods
   def runserver(mode=:public)
     Thread.new do
       if mode == :public
+        puts "start public server"
         Rack::Handler::Thin.run Dcmgr::PublicWeb, :Port => 19393
       else
+        puts "start private server"
         Rack::Handler::Thin.run Dcmgr::PrivateWeb, :Port => 19394
       end
     end
   end
 
   def ar_class model_name, opts={}
-    user = opts[:user] || '__test__'
-    user_uuid = opts[:uuid] ||User.find(:name=>user).uuid
+    username = opts[:user] || '__test__'
+    user_uuid = opts[:uuid]
+    unless user_uuid
+      user = User.find(:name=>username)
+      user_uuid = user.uuid if user
+    end
 
     raise "user unknown: #{user}" unless user_uuid
     
@@ -48,21 +54,22 @@ module ActiveResourceHelperMethods
     END
   end
 
-  def ar_class_fsuser model_name, opts={}
+  def ar_class_with_basicauth model_name, opts={}
     user = opts[:user] || '__test__'
     passwd = opts[:password] || 'passwd'
-    port = opts[:port] || 19393
+    private_mode = opts[:private]
+    port = opts[:port] || (private_mode and 19394) || 19393
 
     site = "http://#{user}:#{passwd}@localhost:#{port}/"
 
     eval(<<-END)
-    module Test
+    module Test2
       class #{model_name} < ActiveResource::Base
         self.site = "#{site}"
         self.format = :json
       end
     end
-    Test::#{model_name}
+    Test2::#{model_name}
     END
   end
 
