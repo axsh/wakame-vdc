@@ -106,7 +106,7 @@ module Dcmgr::RestModel
   
   def format_object(object)
     case object
-    when TrueClass, FalseClass, NilClass
+    when Hash, TrueClass, FalseClass, NilClass
       return object
     end
 
