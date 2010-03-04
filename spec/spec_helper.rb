@@ -20,10 +20,10 @@ module ActiveResourceHelperMethods
     Thread.new do
       if mode == :public
         puts "start public server"
-        Rack::Handler::Thin.run Dcmgr::PublicWeb, :Port => 19393
+        Rack::Handler::Thin.run Dcmgr::Web::Public, :Port => 19393
       else
         puts "start private server"
-        Rack::Handler::Thin.run Dcmgr::PrivateWeb, :Port => 19394
+        Rack::Handler::Thin.run Dcmgr::Web::Private, :Port => 19394
       end
     end
   end
@@ -83,4 +83,4 @@ end
 Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
 ActiveResourceHelperMethods.reset_db
 ActiveResourceHelperMethods.runserver
-
+sleep 3.0

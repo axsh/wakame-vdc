@@ -16,7 +16,7 @@ Dcmgr::Schema.models.each{|model|
       @obj.id.should be_nil
     end
 
-    if model.new.is_a? Dcmgr::Model::UUIDMethods
+    if model.new.is_a? Dcmgr::Models::UUIDMethods
       it "should have uuid" do
         model.prefix_uuid.should be_true
         @obj.uuid.should be_true
