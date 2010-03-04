@@ -113,6 +113,7 @@ module Dcmgr
   module RestModels
     autoload :Base, 'dcmgr/rest_models/base'
     autoload :Public, 'dcmgr/rest_models/public'
+    autoload :Private, 'dcmgr/rest_models/private'
   end
 
   autoload :Web, 'dcmgr/web'

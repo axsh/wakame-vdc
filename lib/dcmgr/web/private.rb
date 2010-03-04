@@ -1,10 +1,14 @@
-module Dcmgr::Web
-  class Private < Base
-    helpers { include Dcmgr::NoAuthorizeHelpers }
-    public_crud PrivateInstance
+module Dcmgr
+  module Web
+    class Private < Base
+      helpers { include NoAuthorizeHelpers }
+
+      include RestModels::Private
+      public_crud Instance
     
-    get '/' do
-      'startup dcmgr. private mode'
+      get '/' do
+        'startup dcmgr. private mode'
+      end
     end
   end
 end
