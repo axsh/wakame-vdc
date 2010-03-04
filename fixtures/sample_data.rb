@@ -1,3 +1,4 @@
+include Dcmgr::Models
 
 account_a = Account.create(:name=>'__test_account__', :contract_at=>Time.now)
 account_b = Account.create(:name=>'__test_account2__')
