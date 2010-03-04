@@ -6,8 +6,8 @@ describe Account do
   it "should raise error on duplicate uuid" do
     lambda {
       Account.create(:name=>"duplicate uuid",
-                                :uuid=>Account[1].uuid[2..-1])
-    }.should raise_error(Dcmgr::Model::DuplicateUUIDError)
+                     :uuid=>Dcmgr::Models::Account[1].uuid[2..-1])
+    }.should raise_error(Dcmgr::Models::DuplicateUUIDError)
   end
 end
 
