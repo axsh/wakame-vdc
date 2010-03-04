@@ -87,9 +87,39 @@ module Dcmgr
   autoload :HvcHttp, 'dcmgr/hvchttp'
   autoload :HvcAccess, 'dcmgr/hvchttp'
   autoload :HvcHttpMock, 'dcmgr/hvchttp/mock'
+
+  autoload :RoleExecutor, 'dcmgr/evaluator'
+  autoload :Helpers, 'dcmgr/helpers'
+
+  module Models
+    autoload :Base, 'dcmgr/models/base'
+    autoload :Account, 'dcmgr/models/account'
+    autoload :AccountsUser, 'dcmgr/models/accounts_user'
+    autoload :User, 'dcmgr/models/user'
+    autoload :KeyPair, 'dcmgr/models/key_pair'
+    autoload :Tag, 'dcmgr/models/tag'
+    autoload :TagAttribute, 'dcmgr/models/tag_attribute'
+    autoload :TagMapping, 'dcmgr/models/tag_mapping'
+    autoload :Instance, 'dcmgr/models/instance'
+    autoload :HvController, 'dcmgr/models/hv_controller'
+    autoload :HvAgent, 'dcmgr/models/hv_agent'
+    autoload :ImageStorage, 'dcmgr/models/image_storage'
+    autoload :ImageStorageHost, 'dcmgr/models/image_storage_host'
+    autoload :PhysicalHost, 'dcmgr/models/physical_host'
+    autoload :LocationGroup, 'dcmgr/models/location_group'
+    autoload :Log, 'dcmgr/models/log'
+  end
+
+  module RestModels
+    autoload :Base, 'dcmgr/rest_models/base'
+    autoload :Public, 'dcmgr/rest_models/public'
+  end
+
+  autoload :Web, 'dcmgr/web'
   module Web
+    autoload :Public, 'dcmgr/web/public'
+    autoload :Private, 'dcmgr/web/private'
     autoload :Metadata, 'dcmgr/web/metadata'
   end
-  module Models
-  end
+
 end
