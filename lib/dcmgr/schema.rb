@@ -8,18 +8,12 @@ module Dcmgr
     
     def connect(str)
       @db = Sequel.connect(str)
-      load
     end
 
     attr_reader :db
 
     def table_exists?(table_name)
       @db.table_exists? table_name
-    end
-    
-    def load
-      #require 'dcmgr/models'
-      #require 'dcmgr/web'
     end
     
     def create!
@@ -161,7 +155,6 @@ module Dcmgr
         DateTime :created_at, :null=>false
       end
       
-      load
       initial_data
     end
 
@@ -205,7 +198,6 @@ module Dcmgr
     end
 
     def models
-      load
       @models ||= [Models::Account, Models::User, Models::AccountsUser,
                    Models::Instance, Models::ImageStorage, Models::ImageStorageHost, Models::PhysicalHost,
                    Models::HvController, Models::HvAgent,
