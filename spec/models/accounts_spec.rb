@@ -10,5 +10,3 @@ describe Account do
     }.should raise_error(Dcmgr::Models::DuplicateUUIDError)
   end
 end
-
-

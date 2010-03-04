@@ -41,8 +41,7 @@ module Dcmgr::Models
 
     def save(*columns)
       super
-    rescue Sequel::DatabaseError, e
-      raise e
+    rescue Sequel::DatabaseError
       raise DuplicateUUIDError
     end
 
