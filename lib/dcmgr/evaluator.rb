@@ -4,6 +4,8 @@ module Dcmgr
     
   module RoleExecutor
     class Base
+      include Dcmgr::Models
+    
       def initialize(target, params)
         @target = target
         @params = params
@@ -169,12 +171,15 @@ module Dcmgr
 
     def self.get(target, action, params={})
       rolename = if target.class == Class
-                 then "%s%s" % [action.to_s.capitalize, target.name]
-                 else"%s%s" % [action.to_s.capitalize, target.class]
+                 then "%s%s" % [action.to_s.capitalize,
+                                target.name.split(/::/).last]
+                 else "%s%s" % [action.to_s.capitalize,
+                                target.class.to_s.split(/::/).last]
                  end
       begin
         roleclass = eval("%s" % rolename)
       rescue NameError
+        Dcmgr::logger.debug "unmatch role name: #{rolename}"
         return nil
       end
       return nil unless @roles.include? roleclass
