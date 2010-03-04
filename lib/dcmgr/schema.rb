@@ -18,8 +18,8 @@ module Dcmgr
     end
     
     def load
-      require 'dcmgr/models'
-      require 'dcmgr/web'
+      #require 'dcmgr/models'
+      #require 'dcmgr/web'
     end
     
     def create!
@@ -166,11 +166,11 @@ module Dcmgr
     end
 
     def initial_data
-      Tag.create_system_tags
+      Models::Tag.create_system_tags
     end
 
     def createsuperuser(name, passwd)
-      User.create(:name=>name, :password=>'passwd')
+      Models::User.create(:name=>name, :password=>'passwd')
     end
 
     def load_data(path)
@@ -206,11 +206,11 @@ module Dcmgr
 
     def models
       load
-      @models ||= [Account, User, AccountsUser,
-                   Instance, ImageStorage, ImageStorageHost, PhysicalHost,
-                   HvController, HvAgent,
-                   Tag, TagAttribute, TagMapping,
-                   Log, KeyPair,
+      @models ||= [Models::Account, Models::User, Models::AccountsUser,
+                   Models::Instance, Models::ImageStorage, Models::ImageStorageHost, Models::PhysicalHost,
+                   Models::HvController, Models::HvAgent,
+                   Models::Tag, Models::TagAttribute, Models::TagMapping,
+                   Models::Log, Models::KeyPair,
                   ].freeze
     end
   end
