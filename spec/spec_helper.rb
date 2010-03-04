@@ -5,7 +5,6 @@ require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
 require 'active_resource'
 require 'rack/handler/thin'
 require 'dcmgr'
-require 'dcmgr/certificated_active_resource'
 
 require "#{File.dirname(__FILE__)}/specformat_detail" unless defined? SPECFORMAT
 

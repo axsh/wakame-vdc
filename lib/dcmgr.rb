@@ -68,7 +68,6 @@ module Dcmgr
   def new(config_file, mode=:public)
     config_file ||= 'dcmgr.conf'
     configure(config_file)
-    require 'dcmgr/web'
     case mode
     when :public
       Web::Public
@@ -123,4 +122,5 @@ module Dcmgr
     autoload :Metadata, 'dcmgr/web/metadata'
   end
 
+  autoload :CertificatedActiveResource, 'dcmgr/certificated_active_resource'
 end
