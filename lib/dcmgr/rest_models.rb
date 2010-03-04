@@ -1,5 +1,4 @@
 require 'json'
-require 'dcmgr/evaluator'
 
 module Dcmgr
   module RestModel
