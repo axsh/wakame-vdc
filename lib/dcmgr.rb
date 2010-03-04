@@ -71,9 +71,9 @@ module Dcmgr
     require 'dcmgr/web'
     case mode
     when :public
-      PublicWeb
+      Web::Public
     when :private
-      PrivateWeb
+      Web::Private
     else
       raise Exception, "unkowon mode: #{mode}"
     end
