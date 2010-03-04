@@ -1,10 +1,5 @@
-require 'rubygems'
 require 'sinatra'
 require 'sequel'
-
-#require 'dcmgr/models'
-#require 'dcmgr/rest_models'
-#require 'dcmgr/helpers'
 
 module Dcmgr::Web
   class Base < Sinatra::Base

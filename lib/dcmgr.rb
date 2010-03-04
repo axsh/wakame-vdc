@@ -116,8 +116,8 @@ module Dcmgr
     autoload :Private, 'dcmgr/rest_models/private'
   end
 
-  autoload :Web, 'dcmgr/web'
   module Web
+    autoload :Base, 'dcmgr/web/base'
     autoload :Public, 'dcmgr/web/public'
     autoload :Private, 'dcmgr/web/private'
     autoload :Metadata, 'dcmgr/web/metadata'
