@@ -175,7 +175,7 @@ module Dcmgr
         if request[:_get_id]
           begin
             find_params << {:uuid => Account.trim_uuid(request[:_get_id])}
-          rescue Dcmgr::Model::InvalidUUIDError
+          rescue Dcmgr::Models::InvalidUUIDError
             return []
           end
         end
