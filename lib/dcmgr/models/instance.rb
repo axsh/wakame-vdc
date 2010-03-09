@@ -22,7 +22,10 @@ module Dcmgr
       many_to_one :image_storage
       many_to_one :hv_agent
 
-      many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
+      many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id,
+      :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
+
+      one_to_many :ip
 
       set_dataset filter({~:status => Instance::STATUS_TYPE_OFFLINE} | ({:status => Instance::STATUS_TYPE_OFFLINE} & (:status_updated_at > Time.now - 3600)))
       
