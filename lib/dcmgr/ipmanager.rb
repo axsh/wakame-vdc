@@ -32,7 +32,7 @@ module Dcmgr
     def assign_ips
       IpGroup.map{|group|
         ip = group.ips.find{|i| assigned?(i.ip, i.mac)} or
-          raise NoAssignIPError, "ip size = #{@ip_map.length}"
+          raise NoAssignIPError
         {:group_name=>group.name,
           :ip=>ip.ip,
           :mac=>ip.mac}
