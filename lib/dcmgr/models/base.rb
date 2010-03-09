@@ -42,8 +42,8 @@ module Dcmgr::Models
     def save(*columns)
       super
     rescue Sequel::DatabaseError => e
+      raise DuplicateUUIDError if /^Mysql::Error: Duplicate/ =~ e.message
       raise e
-      raise DuplicateUUIDError
     end
 
     def uuid
