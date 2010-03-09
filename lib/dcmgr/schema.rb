@@ -100,8 +100,27 @@ module Dcmgr
         Float :need_cpu_mhz, :null=>false
         Fixnum :need_memory, :null=>false # MB
         Fixnum :hv_agent_id, :null=>false
-        String :ip, :fixed=>true, :size=>14
         Fixnum :archetype, :null=>false # 0: 32, 1: 64
+      end
+
+      @db.create_table? :ip_groups do
+        primary_key :id, :type=>Integer
+        String :uuid, :fixed=>true, :size=>8, :null=>false
+        index :uuid, :unique=>true
+        String :name, :fixed=>true, :size=>32, :null=>false
+      end
+
+      @db.create_table? :ips do
+        primary_key :id, :type=>Integer
+        Fixnum :group_ip_id, :type=>Integer, :null=>false
+        String :mac, :fixed=>true, :size=>17, :null=>false
+        String :ip, :fixed=>true, :size=>14, :null=>false
+      end
+
+      @db.create_table? :instances_ips do
+        Fixnum :instance_id, :type=>Integer, :null=>false
+        Fixnum :ip_id, :type=>Integer, :null=>false
+        primary_key ([:instance_id, :ip_id])
       end
       
       @db.create_table? :hv_controllers do
