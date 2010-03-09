@@ -30,10 +30,13 @@ describe Dcmgr::HvcHttpMock do
     instance = Instance[1]
 
     @hvchttp.open('192.168.1.10', 80) {|http|
-      url = http.run_instance(instance.hv_agent.ip, instance.uuid, instance.ip, instance.mac_address, 1, 1.0, 2.0, :url_only)
-      url.should == "/?action=run_instance&hva_ip=#{instance.hv_agent.ip}&instance_uuid=#{instance.uuid}&instance_ip=#{instance.ip}&instance_mac=#{instance.mac_address}&cpus=1&cpu_mhz=1.0&memory=2.0"
+      url = http.run_instance(instance.hv_agent.ip, instance.uuid,
+                              instance.ip.first.ip, instance.ip.first.mac, 1, 1.0, 2.0, :url_only)
+      url.should == "/?action=run_instance&hva_ip=#{instance.hv_agent.ip}&instance_uuid=#{instance.uuid}" +
+        "&instance_ip=#{instance.ip.first.ip}&instance_mac=#{instance.ip.first.mac}&cpus=1&cpu_mhz=1.0&memory=2.0"
       
-      res = http.run_instance(instance.hv_agent.ip, instance.uuid, instance.ip, instance.mac_address, 1, 1.0, 2.0)
+      res = http.run_instance(instance.hv_agent.ip, instance.uuid,
+                              instance.ip.first.ip, instance.ip.first.mac, 1, 1.0, 2.0)
       res.success?.should be_true
       res.body.should == "ok"
     }
