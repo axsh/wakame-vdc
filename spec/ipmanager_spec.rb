@@ -43,9 +43,4 @@ describe Dcmgr::IPManager do
     
     @ipm.set_default_assigned?
   end
-
-  it "should get mac address" do
-    @ipm.macaddress_by_ip('192.168.1.1').should == '00:50:56:c0:00:01'
-    @ipm.macaddress_by_ip('192.168.1.2').should == '00:50:56:c0:00:02'
-  end
 end

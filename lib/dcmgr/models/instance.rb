@@ -37,10 +37,6 @@ module Dcmgr
         end
       end
 
-      def mac_address
-        Dcmgr::IPManager.macaddress_by_ip(self.ip)
-      end
-
       def status_sym
         STATUS_TYPES[self.status]
       end
