@@ -33,12 +33,12 @@ describe Dcmgr::IPManager do
     assign_count = 0
     @ipm.set_assigned? do |mac, ip|
       assign_count += 1
-      assign_count <= 1
+      assign_count <= 2
     end
     
-    @ipm.assign_ip
+    @ipm.assign_ips
     lambda {
-      @ipm.assign_ip
+      @ipm.assign_ips
     }.should raise_error(Dcmgr::IPManager::NoAssignIPError)
     
     @ipm.set_default_assigned?
