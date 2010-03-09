@@ -51,7 +51,7 @@ instance_a = Instance.create(:status=>0, # offline
                              :need_memory=>500,
                              :hv_agent=>hv_agent_a)
 
-instance_a.add_ip(instance_a)
+ip_a.instance = instance_a
 
 normal_tag_a = Tag.create(:name=>'sample tag a',
                           :account=>account_a)
