@@ -115,14 +115,10 @@ module Dcmgr
         Fixnum :ip_group_id, :type=>Integer, :null=>false
         String :mac, :fixed=>true, :size=>17, :null=>false
         String :ip, :fixed=>true, :size=>14, :null=>false
+        Fixnum :instance_id
+        Fixnum :status, :null=>false
       end
 
-      @db.create_table? :instances_ips do
-        Fixnum :instance_id, :type=>Integer, :null=>false
-        Fixnum :ip_id, :type=>Integer, :null=>false
-        primary_key ([:instance_id, :ip_id])
-      end
-      
       @db.create_table? :hv_controllers do
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
@@ -218,11 +214,12 @@ module Dcmgr
 
     def models
       @models ||= [Models::Account, Models::User, Models::AccountsUser,
-                   Models::Instance, Models::ImageStorage, Models::ImageStorageHost, Models::PhysicalHost,
+                   Models::Instance,
+                   Models::IpGroup, Models::Ip,
+                   Models::ImageStorage, Models::ImageStorageHost, Models::PhysicalHost,
                    Models::HvController, Models::HvAgent,
                    Models::Tag, Models::TagAttribute, Models::TagMapping,
                    Models::Log, Models::KeyPair,
-                   Models::IpGroup, Models::Ip,
                   ].freeze
     end
   end
