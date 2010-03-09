@@ -112,7 +112,7 @@ module Dcmgr
 
       @db.create_table? :ips do
         primary_key :id, :type=>Integer
-        Fixnum :group_ip_id, :type=>Integer, :null=>false
+        Fixnum :ip_group_id, :type=>Integer, :null=>false
         String :mac, :fixed=>true, :size=>17, :null=>false
         String :ip, :fixed=>true, :size=>14, :null=>false
       end
@@ -222,6 +222,7 @@ module Dcmgr
                    Models::HvController, Models::HvAgent,
                    Models::Tag, Models::TagAttribute, Models::TagMapping,
                    Models::Log, Models::KeyPair,
+                   Models::IpGroup, Models::Ip,
                   ].freeze
     end
   end
