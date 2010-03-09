@@ -9,6 +9,13 @@ user.add_account(account_a)
 image_storage_host = ImageStorageHost.create
 image_storage = ImageStorage.create(:image_storage_host=>image_storage_host)
 
+ip_group_a = IpGroup.create(:name=>'ip group a')
+ip_group_b = IpGroup.create(:name=>'ip group b')
+
+ip_a = Ip.new(:ip=>'192.168.2.100',
+              :mac=>'00:26:08:eb:14:d5')
+ip_group_a.add_ip(ip_a)
+
 physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
                                       :memory=>2000,
                                       :hypervisor_type=>'xen')
@@ -42,8 +49,9 @@ instance_a = Instance.create(:status=>0, # offline
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
                              :need_memory=>500,
-                             :hv_agent=>hv_agent_a,
-                             :ip=>'192.168.2.100')
+                             :hv_agent=>hv_agent_a)
+
+instance_a.add_ip(instance_a)
 
 normal_tag_a = Tag.create(:name=>'sample tag a',
                           :account=>account_a)
