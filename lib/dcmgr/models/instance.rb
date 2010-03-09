@@ -64,7 +64,7 @@ module Dcmgr
             Ip.create(:ip=>ip[:ip],
                       :mac=>ip[:mac],
                       :ip_group=>ip[:group])
-            Dcmgr::logger.debug "assigned ip: mac: #{ip[:mac]}, ip: #{ip[:ip]}"
+            Dcmgr::logger.debug "assigned ip: [#{self.uuid}], mac: #{ip[:mac]}, ip: #{ip[:ip]}"
           }
         }
       end
