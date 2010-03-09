@@ -57,10 +57,6 @@ module Dcmgr
     @scheduler = scheduler_module.new
   end
 
-  def assign_ips=(ips)
-    IPManager.setup ips
-  end
-
   def db
     Dcmgr::Schema.db
   end

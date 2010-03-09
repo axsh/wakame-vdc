@@ -7,18 +7,5 @@ Dcmgr.scheduler = Dcmgr::PhysicalHostScheduler::Algorithm1
 
 Dcmgr.location_groups = %w(floor rack power)
 
-Dcmgr.assign_ips = {
-  '00:16:3E:49:23:C9' => '192.168.1.201',
-  '00:16:3E:49:23:CA' => '192.168.1.202',
-  '00:16:3E:49:23:CB' => '192.168.1.203',
-  '00:16:3E:49:23:CC' => '192.168.1.204',
-  '00:16:3E:49:23:CD' => '192.168.1.205',
-  '00:16:3E:49:23:CE' => '192.168.1.206',
-  '00:16:3E:49:23:CF' => '192.168.1.207',
-  '00:16:3E:49:23:D0' => '192.168.1.208',
-  '00:16:3E:49:23:D1' => '192.168.1.209',
-  '00:16:3E:49:23:D2' => '192.168.1.210',
-}
-
 Dcmgr::Schema.connect \
   'mysql://localhost/wakame_dcmgr?user=wakame_dcmgr&password=passwd'
