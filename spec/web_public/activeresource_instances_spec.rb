@@ -34,7 +34,7 @@ describe "instance access by active resource" do
     # hv controllers
     HvController.destroy
     hv_controller_a = HvController.create(:physical_host=>physical_host_a,
-                                        :ip=>'192.168.1.10')
+                                          :ip=>'192.168.1.10')
 
     # hv agents
     HvAgent.destroy
@@ -56,7 +56,7 @@ describe "instance access by active resource" do
     
     instance.status.should == Instance::STATUS_TYPE_RUNNING
     instance.account.should == Account[1].uuid
-    instance.ip.should match(/^192\.168\.11\.2/)
+    instance.ip.first.should match(/^192\.168\.11\.2/)
 
     real_inst = Instance[instance.id]
     real_inst.hv_agent.physical_host_id.should > 0
