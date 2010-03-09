@@ -57,15 +57,13 @@ module Dcmgr
           physical_host = PhysicalHost.assign(self)
           self.hv_agent = physical_host.hv_agents[0]
         end
+      end
 
-        Dcmgr.db.transaction {
-          ips = Dcmgr::IPManager.assign_ips
-          ips.each{|ip|
-            Ip.create(:ip=>ip[:ip],
-                      :mac=>ip[:mac],
-                      :ip_group=>ip[:group])
-            Dcmgr::logger.debug "assigned ip: [#{self.uuid}], mac: #{ip[:mac]}, ip: #{ip[:ip]}"
-          }
+      def after_create
+        super
+        ips = Dcmgr::IPManager.assign_ips(self)
+        ips.each{|ip|
+          Dcmgr::logger.debug "assigned ip: [#{self.uuid}], mac: #{ip[:mac]}, ip: #{ip[:ip]}"
         }
       end
 
