@@ -48,7 +48,7 @@ describe "instance access by active resource" do
 
   it "should create instance" do
     @physical_host_class.find(PhysicalHost.all[0].uuid).put(:remove_tag,
-                                                        :tag=>Tag.system_tag(:STANDBY_INSTANCE).uuid)
+                                                            :tag=>Tag.system_tag(:STANDBY_INSTANCE).uuid)
     instance = @c.create(:account=>Account[1].uuid,
                          :need_cpus=>1, :need_cpu_mhz=>0.5,
                          :need_memory=>1.0,

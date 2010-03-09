@@ -27,7 +27,8 @@ module Dcmgr
         STATUS_TYPE_TERMINATING => :terminating,
       }
       
-      set_dataset filter({~:status => Instance::STATUS_TYPE_OFFLINE} | ({:status => Instance::STATUS_TYPE_OFFLINE} & (:status_updated_at > Time.now - 3600)))
+      set_dataset filter({~:status => Instance::STATUS_TYPE_OFFLINE} |
+                         ({:status => Instance::STATUS_TYPE_OFFLINE} & (:status_updated_at > Time.now - 3600)))
       
       def physical_host
         if self.hv_agent
@@ -56,9 +57,16 @@ module Dcmgr
           physical_host = PhysicalHost.assign(self)
           self.hv_agent = physical_host.hv_agents[0]
         end
-        
-        #mac, self.ip = Dcmgr::IPManager.assign_ip
-        #Dcmgr::logger.debug "assigned ip: mac: #{mac}, ip: #{self.ip}"
+
+        Dcmgr.db.transaction {
+          ips = Dcmgr::IPManager.assign_ips
+          ips.each{|ip|
+            Ip.create(:ip=>ip[:ip],
+                      :mac=>ip[:mac],
+                      :ip_group=>ip[:group])
+            Dcmgr::logger.debug "assigned ip: mac: #{ip[:mac]}, ip: #{ip[:ip]}"
+          }
+        }
       end
 
       def validate

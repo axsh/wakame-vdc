@@ -6,8 +6,8 @@ module Dcmgr
 
     class NoAssignIPError < StandardError; end
 
-    @check_assigned = @default_check_assigned = lambda{|mac, ip|
-      Instance.filter(:ip => ip).count <= 0
+    @check_assigned = @default_check_assigned = lambda{|ip|
+      ip.instance.nil?
     }
     
     def set_assigned?(&block)
@@ -23,9 +23,10 @@ module Dcmgr
     # Hash has group_name, ip, mac.
     def assign_ips
       IpGroup.map{|group|
-        ip = group.ips.find{|i| assigned?(i.ip, i.mac)} or
+        ip = group.ips.find{|i| assigned?(i)} or
           raise NoAssignIPError
         {:group_name=>group.name,
+          :group=>group,
           :ip=>ip.ip,
           :mac=>ip.mac}
       }
@@ -33,8 +34,8 @@ module Dcmgr
     
     private
 
-    def assigned?(mac, ip)
-      @check_assigned.call(mac, ip)
+    def assigned?(ip)
+      @check_assigned.call(ip)
     end
   end
 end
