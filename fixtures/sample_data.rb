@@ -9,12 +9,17 @@ user.add_account(account_a)
 image_storage_host = ImageStorageHost.create
 image_storage = ImageStorage.create(:image_storage_host=>image_storage_host)
 
-ip_group_a = IpGroup.create(:name=>'ip group a')
-ip_group_b = IpGroup.create(:name=>'ip group b')
+ip_group_a = IpGroup.create(:name=>'public')
+ip_group_b = IpGroup.create(:name=>'private')
 
-ip_a = Ip.new(:ip=>'192.168.2.100',
-              :mac=>'00:26:08:eb:14:d5')
-ip_group_a.add_ip(ip_a)
+100.times{|i|
+  Ip.create(:ip=>"192.168.1.#{i}",
+            :mac=>"00:00:%d" % i,
+            :ip_group=>ip_group_a)
+  Ip.create(:ip=>"192.168.11.#{i + 200}",
+            :mac=>"00:16:%d" % i,
+            :ip_group=>ip_group_b)
+}
 
 physical_host_a = PhysicalHost.create(:cpus=>4, :cpu_mhz=>1.0,
                                       :memory=>2000,
@@ -51,7 +56,9 @@ instance_a = Instance.create(:status=>0, # offline
                              :need_memory=>500,
                              :hv_agent=>hv_agent_a)
 
+ip_a = Ip.first
 ip_a.instance = instance_a
+ip_a.save
 
 normal_tag_a = Tag.create(:name=>'sample tag a',
                           :account=>account_a)
