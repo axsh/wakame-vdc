@@ -99,6 +99,8 @@ module Dcmgr
     autoload :Tag, 'dcmgr/models/tag'
     autoload :TagAttribute, 'dcmgr/models/tag_attribute'
     autoload :TagMapping, 'dcmgr/models/tag_mapping'
+    autoload :IpGroup, 'dcmgr/models/ip_group'
+    autoload :Ip, 'dcmgr/models/ip'
     autoload :Instance, 'dcmgr/models/instance'
     autoload :HvController, 'dcmgr/models/hv_controller'
     autoload :HvAgent, 'dcmgr/models/hv_agent'
