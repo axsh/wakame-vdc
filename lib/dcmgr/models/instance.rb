@@ -13,7 +13,7 @@ module Dcmgr
       many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id,
       :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
 
-      # one_to_many :ip
+      one_to_many :ip
 
       STATUS_TYPE_OFFLINE = 0
       STATUS_TYPE_RUNNING = 1
