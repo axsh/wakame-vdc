@@ -26,10 +26,17 @@ module Dcmgr
       @check_assigned = @default_check_assigned
     end
     
-    # return [mac_address, ip_address]
+    # return format
+    # Array, element is Hash.
+    # Hash has group_name, ip, mac.
     def assign_ips
-      @ip_map.find{|mac, ip| assigned?(mac, ip)} or
-        raise NoAssignIPError, "ip size = #{@ip_map.length}"
+      IpGroup.map{|group|
+        ip = group.ips.find{|i| assigned?(i.ip, i.mac)} or
+          raise NoAssignIPError, "ip size = #{@ip_map.length}"
+        {:group_name=>group.name,
+          :ip=>ip.ip,
+          :mac=>ip.mac}
+      }
     end
     
     private
