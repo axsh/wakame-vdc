@@ -4,6 +4,17 @@ module Dcmgr
       include Base
       def self.prefix_uuid; 'I'; end
       
+      many_to_one :account
+      many_to_one :user
+
+      many_to_one :image_storage
+      many_to_one :hv_agent
+
+      many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id,
+      :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
+
+      # one_to_many :ip
+
       STATUS_TYPE_OFFLINE = 0
       STATUS_TYPE_RUNNING = 1
       STATUS_TYPE_ONLINE = 2
@@ -16,17 +27,6 @@ module Dcmgr
         STATUS_TYPE_TERMINATING => :terminating,
       }
       
-      many_to_one :account
-      many_to_one :user
-
-      many_to_one :image_storage
-      many_to_one :hv_agent
-
-      many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id,
-      :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
-
-      one_to_many :ip
-
       set_dataset filter({~:status => Instance::STATUS_TYPE_OFFLINE} | ({:status => Instance::STATUS_TYPE_OFFLINE} & (:status_updated_at > Time.now - 3600)))
       
       def physical_host
@@ -61,8 +61,8 @@ module Dcmgr
           self.hv_agent = physical_host.hv_agents[0]
         end
         
-        mac, self.ip = Dcmgr::IPManager.assign_ip
-        Dcmgr::logger.debug "assigned ip: mac: #{mac}, ip: #{self.ip}"
+        #mac, self.ip = Dcmgr::IPManager.assign_ip
+        #Dcmgr::logger.debug "assigned ip: mac: #{mac}, ip: #{self.ip}"
       end
 
       def validate
