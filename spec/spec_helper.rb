@@ -8,10 +8,6 @@ require 'dcmgr'
 
 require "#{File.dirname(__FILE__)}/specformat_detail" unless defined? SPECFORMAT
 
-# generate 100 ip
-ips = []; 100.times{|i| ips << ["00:16:%d" % i, "192.168.11.#{i + 200}"]}
-Dcmgr.assign_ips = Hash[*ips.flatten]
-
 module ActiveResourceHelperMethods
   extend self
   

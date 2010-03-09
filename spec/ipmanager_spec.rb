@@ -6,22 +6,27 @@ require File.dirname(__FILE__) + '/spec_helper'
 describe Dcmgr::IPManager do
   before(:each) do
     @ipm = Dcmgr::IPManager
-    @ipm.setup('00:50:56:c0:00:01'=>'192.168.1.1',
-               '00:50:56:c0:00:02'=>'192.168.1.2')
   end
 
   after(:all) do
-    ips = []; 100.times{|i| ips << ["00:16:%d" % i, "192.168.11.#{i + 200}"]}
-    Dcmgr.assign_ips = Hash[*ips.flatten]
     @ipm.set_default_assigned?
   end
   
   it "should assign ip" do
     @ipm.set_assigned? do |mac, ip|
-      ip != '192.168.1.2'
+      true
     end
     
-    @ipm.assign_ip.should == ['00:50:56:c0:00:01', '192.168.1.1']
+    ips = @ipm.assign_ips
+    ips.length.should == 2
+
+    ips[0][:group_name].should == 'public'
+    ips[0][:ip] == '192.168.1.1'
+    ips[0][:mac] == '00:00:01'
+
+    ips[1][:group_name].should == 'private'
+    ips[1][:ip] == '192.168.11.201'
+    ips[1][:mac] == '00:16:01'
   end
   
   it "should raise error, when no ip" do
