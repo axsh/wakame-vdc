@@ -7,20 +7,28 @@ module Dcmgr
 
     def json_request(request)
       ret = Hash.new
+
+      if request.respond_to? :GET
+        request.GET.each{|k,v|
+          ret[:"_get_#{k}"] = v
+        }
       
-      request.GET.each{|k,v|
-        ret[:"_get_#{k}"] = v
-      }
-      
-      if request.content_length.to_i > 0
-        body = request.body.read
-        parsed = JSON.parse(body)
-        Dcmgr.logger.debug("request: " + parsed.inspect)
+        if request.respond_to? :content_length and request.content_length.to_i > 0
+          body = request.body.read
+          parsed = JSON.parse(body)
+          Dcmgr.logger.debug("request: " + parsed.inspect)
+          
+          parsed.each{|k,v|
+            ret[k.to_sym] = v
+          }
+        end
         
-        parsed.each{|k,v|
+      else
+        request.each{|k,v|
           ret[k.to_sym] = v
         }
       end
+      
       Dcmgr.logger.debug("request: " + ret.inspect)
       ret        
     end

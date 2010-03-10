@@ -19,10 +19,9 @@ module Dcmgr
         obj = rest_c.new(user, request)
         obj.uuid = args[0] if args.length > 0
 
-        ret = obj.instance_eval(&block)
-
-        logger.debug "response(inspect): " + ret.inspect
-        json_ret = obj.to_response(ret).to_json
+        ret = obj.to_response(obj.instance_eval(&block))
+        logger.debug "response: " + ret.inspect
+        json_ret = ret.to_json
         logger.debug "response(json): " + json_ret
         json_ret
 
