@@ -4,7 +4,6 @@ require 'rubygems'
 require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
 require 'active_resource'
 require 'rack/handler/thin'
-require "#{File.dirname(__FILE__)}/../client/certificated_active_resource"
 require 'dcmgr'
 
 require "#{File.dirname(__FILE__)}/specformat_detail" unless defined? SPECFORMAT
