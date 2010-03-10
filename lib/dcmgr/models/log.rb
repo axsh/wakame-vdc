@@ -1,3 +1,5 @@
+require 'sequel'
+
 module Dcmgr
   module Models
     class Log < Sequel::Model

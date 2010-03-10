@@ -1,7 +1,7 @@
 module Dcmgr
   module Models
-    class HvController < Sequel::Model
-      include Base
+    class HvController < Base
+      set_dataset :hv_controllers
       def self.prefix_uuid; 'HVC'; end
       many_to_one :physical_host
       one_to_many :hv_agents

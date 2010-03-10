@@ -1,7 +1,7 @@
 module Dcmgr
   module Models
-    class IpGroup < Sequel::Model
-      include Base
+    class IpGroup < Base
+      set_dataset :ip_groups
       def self.prefix_uuid; 'IG'; end
 
       one_to_many :ips

@@ -1,7 +1,7 @@
 module Dcmgr
   module Models
-    class Account < Sequel::Model
-      include Base
+    class Account < Base
+      set_dataset :accounts
       def self.prefix_uuid; 'A'; end
       
       many_to_many :users

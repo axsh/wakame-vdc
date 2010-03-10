@@ -1,3 +1,5 @@
+require 'sequel'
+
 module Dcmgr
   module Models
     class TagMapping < Sequel::Model

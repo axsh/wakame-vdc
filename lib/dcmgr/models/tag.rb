@@ -1,7 +1,7 @@
 module Dcmgr
   module Models
-    class Tag < Sequel::Model
-      include Base
+    class Tag <  Base
+      set_dataset :tags
       def self.prefix_uuid; 'TAG'; end
 
       TYPE_NORMAL = 0

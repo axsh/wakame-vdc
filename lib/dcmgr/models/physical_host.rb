@@ -1,7 +1,7 @@
 module Dcmgr
   module Models
-    class PhysicalHost < Sequel::Model
-      include Base
+    class PhysicalHost < Base
+      set_dataset :physical_hosts
       def self.prefix_uuid; 'PH'; end
 
       one_to_many :hv_agents

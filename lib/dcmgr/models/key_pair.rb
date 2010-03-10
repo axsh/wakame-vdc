@@ -1,7 +1,7 @@
 module Dcmgr
   module Models
-    class KeyPair < Sequel::Model
-      include Base
+    class KeyPair < Base
+      set_dataset :key_pairs
       def self.prefix_uuid; 'KP'; end
       
       many_to_one :user

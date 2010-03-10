@@ -1,7 +1,7 @@
 module Dcmgr
   module Models
-    class ImageStorage < Sequel::Model
-      include Base
+    class ImageStorage < Base
+      set_dataset :image_storages
       def self.prefix_uuid; 'IS'; end
       
       many_to_one :image_storage_host

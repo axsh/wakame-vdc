@@ -1,6 +1,9 @@
+require 'sequel'
+
 module Dcmgr
   module Models
     class LocationGroup < Sequel::Model
+      set_dataset :location_groups
       def initialize(name)
         @name = name
       end
