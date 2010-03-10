@@ -213,7 +213,7 @@ module Dcmgr
           val = request[key]
           case key
           when :account
-            columns[key] = Account[val]
+            columns[key] = Models::Account[val]
           else
             columns[key] = val
           end

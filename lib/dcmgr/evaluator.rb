@@ -20,8 +20,8 @@ module Dcmgr
       end
 
       def evaluate(account, evaluator)
-        Tag.join(:tag_attributes,
-                 :tag_id=>:id).filter(:owner_id=>evaluator.id,
+        Models::Tag.join(:tag_attributes,
+                         :tag_id=>:id).filter(:owner_id=>evaluator.id,
                                       :tag_attributes__role=>self.class.id,
                                       :account_id=>account.id).each{|tag|
           unless class_target?
