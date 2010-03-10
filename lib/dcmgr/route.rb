@@ -12,8 +12,8 @@ module Dcmgr
         if user and user.respond_to? :uuid
           logger.debug "authorized user: #{user.uuid}"
         else
-          logger.debug "not Authorize"
-          throw(:halt, [401, "Not authorized"])
+          logger.debug "not authorize"
+          #throw(:halt, [401, "Not authorized"])
         end
 
         obj = rest_c.new(user, request)
