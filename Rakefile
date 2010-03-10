@@ -26,6 +26,12 @@ task :shell do
   sh "ruby lib/dcmgr/shell.rb dcmgr.conf"
 end
 
+namespace :shell do
+  task :client do
+    sh "ruby lib/dcmgr/shell.rb -client"
+  end
+end
+
 task :run do
   desc 'Run server for public'
   sh "./bin/shotgun -p 3000 web/public/config.ru"
