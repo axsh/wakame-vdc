@@ -41,7 +41,7 @@ module Dcmgr
     end
 
     def authorize(uuid, password=nil)
-      @user = User[uuid]
+      @user = Models::User[uuid]
       @user
     end
 

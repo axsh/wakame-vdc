@@ -2,6 +2,7 @@ require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
 require 'active_resource'
 
 URL = 'http://__test__:passwd@localhost:3000'
+USER_UUID = 'U-XXXXXXXX'
 
 # Custom Active Resource Class, add request header parameter user_uuid
 #
@@ -12,9 +13,6 @@ URL = 'http://__test__:passwd@localhost:3000'
 # end
 
 class CertificatedActiveResource < ActiveResource::Base
-  self.format = :json
-  self.site = URL
-
   class Connection < ActiveResource::Connection
     attr_accessor :user_uuid
     
@@ -24,8 +22,14 @@ class CertificatedActiveResource < ActiveResource::Base
   end
   
   class << self
-    attr_accessor :user_uuid
-    
+    def user_uuid
+      read_inheritable_attribute(:user_uuid)
+    end
+
+    def user_uuid=(uuid)
+      write_inheritable_attribute(:user_uuid, uuid)
+    end
+      
     def connection(refresh = false)
       @connection = Connection.new(site, format) if refresh ||
         @connection.nil?
@@ -33,6 +37,10 @@ class CertificatedActiveResource < ActiveResource::Base
       super(false)
       end
   end
+
+  self.format = :json
+  self.site = URL
+  self.user_uuid = USER_UUID
 end
 
 class Instance < CertificatedActiveResource; end
