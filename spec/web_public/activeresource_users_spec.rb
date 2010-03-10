@@ -18,7 +18,6 @@ describe "user access by active resource" do
     user.memo.should be_nil
     user.email.should be_nil
     user.enable be_true
-
     User[user.id].should be_valid
     
     $user = user

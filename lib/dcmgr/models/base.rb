@@ -43,6 +43,9 @@ module Dcmgr
       def save(*columns)
         super
       rescue Sequel::DatabaseError => e
+        Dcmgr.logger.info "db error: %s" % e
+        Dcmgr.logger.info "  " + e.backtrace.join("\n  ")
+
         raise DuplicateUUIDError if /^Mysql::Error: Duplicate/ =~ e.message
         raise e
       end
@@ -58,10 +61,7 @@ module Dcmgr
 
     class Base < Sequel::Model
       include UUIDMethods
-
-      def self.included(mod)
-        mod.extend UUIDMethods::ClassMethods
-      end
+      extend UUIDMethods::ClassMethods
     end
   end
 end
