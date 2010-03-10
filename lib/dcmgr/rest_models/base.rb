@@ -103,6 +103,13 @@ module Dcmgr
           format_object(object)
         end
       end
+
+      def format_keys(object)
+        return response_keys if response_keys
+        object.keys.map{|key|
+          if /^(.*)_id$/ =~ key.to_s then $1.to_sym else key end
+        }
+      end        
       
       def format_object(object)
         case object
@@ -110,10 +117,7 @@ module Dcmgr
           return object
         end
         
-        keys = response_keys ? response_keys :
-          object.keys.map{|key|
-          if /^(.*)_id$/ =~ key.to_s then $1.to_sym else key end
-        }
+        keys = format_keys(object)
         
         ret = {}
         keys.each{|key|
@@ -124,9 +128,10 @@ module Dcmgr
             val = get_val.call(object)
           else
             val = object.send(key)
-            if Array === val
+            case val
+            when Array
               val = val.map{|v|
-                if v.respond_to? :uuid then v.uuid else v end
+                if v.respond_to? :uuid then v.uuid else v.to_s end
               }
             else
               val = val.uuid if val.respond_to? :uuid
