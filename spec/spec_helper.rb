@@ -4,6 +4,7 @@ require 'rubygems'
 require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
 require 'active_resource'
 require 'rack/handler/thin'
+require "#{File.dirname(__FILE__)}/../client/certificated_active_resource"
 require 'dcmgr'
 
 require "#{File.dirname(__FILE__)}/specformat_detail" unless defined? SPECFORMAT
@@ -39,7 +40,7 @@ module ActiveResourceHelperMethods
 
     eval(<<-END)
     module Test
-      class #{model_name} < Dcmgr::CertificatedActiveResource
+      class #{model_name} < CertificatedActiveResource
         self.site = "#{site}"
         self.format = :json
         self.user_uuid = '#{user_uuid}'
