@@ -1,3 +1,4 @@
+require 'active_support'
 
 module Dcmgr
   def self.route(rest_c, method, block)
@@ -12,6 +13,7 @@ module Dcmgr
           logger.debug "authorized user: #{user.uuid}"
         else
           logger.debug "not Authorize"
+          throw(:halt, [401, "Not authorized"])
         end
 
         obj = rest_c.new(user, request)
@@ -21,8 +23,7 @@ module Dcmgr
 
         logger.debug "response(inspect): " + ret.inspect
         json_ret = obj.to_response(ret).to_json
-        logger.debug "response(json): " + json_ret + ", class: " + json_ret.class.to_s
-        
+        logger.debug "response(json): " + json_ret
         json_ret
 
       rescue StandardError => e
