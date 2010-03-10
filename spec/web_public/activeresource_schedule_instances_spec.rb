@@ -106,8 +106,9 @@ describe "instance access for scheduling by active resource" do
     HvAgent[instance.hv_agent].physical_host == PhysicalHost[2].uuid
 
     # check ips
+    ip_group_count = IpGroup.count
     Instance.each{|instance|
-      Instance.filter(:ip => instance.ip).count.should == 1 # only 1 ip
+      instance.ip.count == ip_group_count # count by ip groups
     }
   end
 
