@@ -56,7 +56,7 @@ describe "instance access by active resource" do
     
     instance.status.should == Instance::STATUS_TYPE_RUNNING
     instance.account.should == Account[1].uuid
-    instance.ip.first.should match(/^192\.168\.11\.2/)
+    instance.ip.first.should match(/^192\.168\.1\./)
 
     real_inst = Instance[instance.id]
     real_inst.hv_agent.physical_host_id.should > 0
@@ -87,11 +87,6 @@ describe "instance access by active resource" do
                          :need_cpu_mhz=>0.5,
                          :need_memory=>0.5,
                          :image_storage=>ImageStorage[1].uuid)
-
-    real_instance = Instance[instance.id]
-    real_instance.ip = '192.168.11.22'
-    real_instance.save
-    
     instance.should be_true
 
     hvchttp = Dcmgr::HvcHttpMock.new
@@ -100,7 +95,8 @@ describe "instance access by active resource" do
     instance.put(:shutdown)
     
     real_inst = Instance[instance.id]
-    hvchttp.hvas[real_inst.hv_agent.ip].instances[real_inst.ip][1].should == :offline
+    hvchttp.hvas[real_inst.hv_agent.ip].
+      instances[real_inst.ip][1].should == :offline
   end
 
   it "should shutdown by sample data, and raise role error" do
@@ -142,8 +138,7 @@ describe "instance access by active resource" do
                                  :need_cpus=>1,
                                  :need_cpu_mhz=>0.5,
                                  :need_memory=>500,
-                                 :hv_agent=>HvAgent[1],
-                                 :ip=>'192.168.2.100')
+                                 :hv_agent=>HvAgent[1])
     instance = @c.find(instance_a.uuid)
     instance.user.length.should > 0
     instance.image_storage.length.should > 0
@@ -157,8 +152,7 @@ describe "instance access by active resource" do
                                     :need_cpus=>1,
                                     :need_cpu_mhz=>0.5,
                                     :need_memory=>500,
-                                    :hv_agent=>HvAgent[1],
-                                    :ip=>'192.168.2.100')
+                                    :hv_agent=>HvAgent[1])
     instance = @c.find(real_instance.uuid)
     instance.put(:reboot)
     pending("check hvc mock server's status")
@@ -172,8 +166,7 @@ describe "instance access by active resource" do
                                     :need_cpus=>1,
                                     :need_cpu_mhz=>0.1,
                                     :need_memory=>100,
-                                    :hv_agent=>HvAgent.all.first,
-                                    :ip=>'192.168.2.100')
+                                    :hv_agent=>HvAgent.first)
     instance = @c.find(real_instance.uuid)
 
     hvchttp = Dcmgr::HvcHttpMock.new
@@ -196,8 +189,7 @@ describe "instance access by active resource" do
                                    :need_cpus=>1,
                                    :need_cpu_mhz=>0.1,
                                    :need_memory=>100,
-                                   :hv_agent=>HvAgent[1],
-                                   :ip=>'192.168.2.100')
+                                   :hv_agent=>HvAgent[1])
     run_instance.status = Instance::STATUS_TYPE_RUNNING
     run_instance.save
     
@@ -207,8 +199,7 @@ describe "instance access by active resource" do
                                        :need_cpus=>1,
                                        :need_cpu_mhz=>0.1,
                                        :need_memory=>100,
-                                       :hv_agent=>HvAgent[1],
-                                       :ip=>'192.168.2.100')
+                                       :hv_agent=>HvAgent[1])
     offline_instance.status = Instance::STATUS_TYPE_OFFLINE
     offline_instance.save
     
@@ -218,8 +209,7 @@ describe "instance access by active resource" do
                                    :need_cpus=>1,
                                    :need_cpu_mhz=>0.1,
                                    :need_memory=>100,
-                                   :hv_agent=>HvAgent[1],
-                                   :ip=>'192.168.2.100')
+                                   :hv_agent=>HvAgent[1])
     old_instance.status = Instance::STATUS_TYPE_OFFLINE
     old_instance.status_updated_at = Time.now - 86400
     old_instance.save
