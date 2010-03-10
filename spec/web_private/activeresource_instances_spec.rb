@@ -38,17 +38,4 @@ describe "instance access by active resouce(private mode)" do
     real_instance.status_updated_at.should_not == status_updated_at
     real_instance.status_updated_at.should be_close(Time.now, 2)
   end
-  
-  it "should change instance ip address" do
-    real_instance = Instance[1]
-    real_instance.ip = '192.168.10.1'
-    real_instance.save
-    
-    instance = @c.find(Instance[1].uuid)
-    instance.ip = '192.168.11.11'
-    instance.save
-
-    real_instance.reload
-    real_instance.ip.should == '192.168.11.11'
-  end
 end

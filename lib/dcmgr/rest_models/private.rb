@@ -3,7 +3,7 @@ module Dcmgr
     class Instance
       include Dcmgr::RestModels::Base
       model Models::Instance
-      allow_keys :status, :ip
+      allow_keys :status
       
       public_action_withid :get do
         get
