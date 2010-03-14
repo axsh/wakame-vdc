@@ -30,13 +30,21 @@ describe Dcmgr::HvcHttpMock do
     instance = Instance[1]
 
     @hvchttp.open('192.168.1.10', 80) {|http|
-      url = http.run_instance(instance.hv_agent.ip, instance.uuid,
-                              instance.ip.first.ip, instance.ip.first.mac, 1, 1.0, 2.0, :url_only)
-      url.should == "/?action=run_instance&hva_ip=#{instance.hv_agent.ip}&instance_uuid=#{instance.uuid}" +
-        "&instance_ip=#{instance.ip.first.ip}&instance_mac=#{instance.ip.first.mac}&cpus=1&cpu_mhz=1.0&memory=2.0"
+      req = http.run_instance(instance.hv_agent.ip, instance.uuid,
+                              instance.ip_addresses, instance.mac_addresses, 1, 1.0, 2.0, :url_only)
+      req.should == {:action=>"run_instance",
+        :hva_ip=>instance.hv_agent.ip,
+        :instance_uuid=>instance.uuid,
+        :instance_ip_addresses=>instance.ip_addresses,
+        :instance_mac_addresses=>instance.mac_addresses,
+        :cpus=>1,
+        :cpu_mhz=>1.0,
+        :memory=>2.0}
       
       res = http.run_instance(instance.hv_agent.ip, instance.uuid,
-                              instance.ip.first.ip, instance.ip.first.mac, 1, 1.0, 2.0)
+                              instance.ip_addresses,
+                              instance.mac_addresses,
+                              1, 1.0, 2.0)
       res.success?.should be_true
       res.body.should == "ok"
     }
@@ -54,8 +62,11 @@ describe Dcmgr::HvcHttpMock do
     @hvchttp.hva('192.168.1.20').instances.values[0][1].should == :running
 
     @hvchttp.open('192.168.1.10', 80) {|http|
-      url = http.terminate_instance('192.168.1.20', 'I-12345678', :url_only)
-      url.should == "/?action=terminate_instance&hva_ip=192.168.1.20&instance_uuid=I-12345678"
+      req = http.terminate_instance('192.168.1.20', 'I-12345678', :url_only)
+      req.should == {:action=>"terminate_instance",
+        :hva_ip=>"192.168.1.20",
+        :instance_uuid=>"I-12345678"
+      }
       
       res = http.terminate_instance('192.168.1.20', instance.uuid)
       res.success?.should be_true
@@ -66,8 +77,8 @@ describe Dcmgr::HvcHttpMock do
   
   it "should get describe instances" do
     @hvchttp.open('192.168.1.10', 80) {|http|
-      url = http.describe_instances(:url_only)
-      url.should == '/?action=describe_instances'
+      req = http.describe_instances(:url_only)
+      req.should == {:action=>"describe_instances"}
 
       res = http.describe_instances
       res.success?.should be_true
@@ -82,7 +93,7 @@ describe Dcmgr::HvcHttpMock do
 
   it "should error access" do
     @hvchttp.open('192.168.1.10', 1080) {|http|
-      res = http.get('/')
+      res = http.get_response({})
       res.success?.should be_false
       res.status.should == 404
     }
