@@ -48,6 +48,14 @@ module Dcmgr
         self.status = match[0]
       end
 
+      def ip_addresses
+        self.ip.each{|ip| ip.ip}
+      end
+
+      def mac_addresses
+        self.ip.each{|ip| ip.mac}
+      end
+
       def before_create
         super
         self.status = STATUS_TYPE_OFFLINE unless self.status

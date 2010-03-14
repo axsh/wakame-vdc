@@ -40,7 +40,7 @@ module Dcmgr
       conn.extend HvcAccess
       block.call(conn)
     end
-    
+
     class Hva
       def initialize(hva_ip, instances={})
         @ip = hva_ip
@@ -107,31 +107,28 @@ module Dcmgr
       @hvas = hvas
     end
 
-    def get(path)
+    def get_response(req)
       return HvcHttpMockResponse.new(404, "") unless @hvas
-      uri = URI(path)
-
-      query = CGI.parse(uri.query) if uri.query
-      action = query["action"].first if query
+      action = req[:action]
 
       case action
       when 'run_instance'
-        hva_ip = query['hva_ip'].first
-        instance_uuid = query['instance_uuid'].first
+        hva_ip = req[:hva_ip]
+        instance_uuid = req[:instance_uuid]
         raise "unkown hva ip: %s" % hva_ip unless @hvas[hva_ip]
 
         @hvas[hva_ip].update_instance(nil, instance_uuid, :online)
         HvcHttpMockResponse.new(200, "ok")
         
       when 'terminate_instance'
-        instance_uuid = query['instance_uuid'].first
+        instance_uuid = req[:instance_uuid]
         @hvas.each_value{|hva|
           matched_instance = hva.instances.find{|inst| inst[1][0] == instance_uuid}
           next unless matched_instance
           hva.update_instance(matched_instance[0], matched_instance[1][0], :offline)
           return HvcHttpMockResponse.new(200, "ok")
         }
-        HvcHttpMockResponse.new(404, "not found: #{query.inspect}")
+        HvcHttpMockResponse.new(404, "not found: #{action}")
 
       when 'describe_instances'
         ret = {}
@@ -148,8 +145,8 @@ module Dcmgr
         HvcHttpMockResponse.new(200, ret.to_json)
         
       else
-        Dcmgr::logger.info "404: #{uri.path}"
-        HvcHttpMockResponse.new(404, "not found: #{query}")
+        Dcmgr::logger.info "404, action: #{action}"
+        HvcHttpMockResponse.new(404, "not found: #{action}")
       end
     end
   end

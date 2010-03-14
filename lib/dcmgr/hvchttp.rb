@@ -4,27 +4,37 @@ require 'net/http'
 
 module Dcmgr
   module HvcAccess
-    def run_instance(hva_ip, instance_uuid, instance_ip, instance_mac,
+    def run_instance(hva_ip, instance_uuid, instance_ip_addresses, instance_mac_addresses,
                      cpus, cpu_mhz, memory, *opts)
-      _get("/?action=run_instance&hva_ip=#{hva_ip}&" \
-           + "instance_uuid=#{instance_uuid}&instance_ip=#{instance_ip}&instance_mac=#{instance_mac}&cpus=1&cpu_mhz=1.0&memory=2.0",
-           opts)
+      post(:action=>"run_instance",
+           :hva_ip=>hva_ip,
+           :instance_uuid=>instance_uuid,
+           :instance_ip_addresses=>instance_ip_addresses,
+           :instance_mac_addresses=>instance_mac_addresses,
+           :cpus=>cpus,
+           :cpu_mhz=>cpu_mhz,
+           :memory=>memory,
+           :opts=>opts)
     end
 
     def terminate_instance(hva_ip, instance_uuid, *opts)
-      _get("/?action=terminate_instance&hva_ip=#{hva_ip}&instance_uuid=#{instance_uuid}",
-           opts)
+      post(:action=>"terminate_instance",
+           :hva_ip=>hva_ip,
+           :instance_uuid=>instance_uuid,
+           :opts=>opts)
     end
 
     def describe_instances(*opts)
-      _get("/?action=describe_instances", opts)
+      post(:action=>"describe_instances",
+           :opts=>opts)
     end
 
-    def _get(url, opts)
-      if opts.include? :url_only
-        url
+    def post(params)
+      request = params.reject{|k,v| k == :opts}
+      if params[:opts].include? :url_only
+        request
       else
-        ret = get(url)
+        get_response(request)
       end
     end
   end
