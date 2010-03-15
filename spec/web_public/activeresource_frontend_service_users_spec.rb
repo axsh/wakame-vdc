@@ -77,4 +77,22 @@ describe "frontend service users access by active resource" do
     user["name"].should == '__test__'
     user["id"].should == User.find(:name=>'__test__').uuid
   end
+
+  it "should access other ar class" do
+    gui_server_c = ar_class_with_basicauth(:FrontendServiceUser)
+    gui_server_c = ar_class_with_basicauth(:FrontendServiceUser)
+
+    Dcmgr.fsuser_auth_type = :ip
+    Dcmgr.fsuser_auth_users =
+      {"gui"=>"10.1.1.1"}
+
+    proc {
+      account = ar_class(:Account).create
+    }.should raise_error(NoMethodError)
+
+    Dcmgr.fsuser_auth_users =
+      {"gui"=>"127.0.0.1"}
+
+    account = ar_class(:Account).create
+  end
 end
