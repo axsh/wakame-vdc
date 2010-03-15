@@ -54,4 +54,6 @@ describe "log" do
     log.user.should == User[1]
     log.created_at.should be_close(Time.now, 2)
   end
+
+  it "should log frontend service user"
 end
