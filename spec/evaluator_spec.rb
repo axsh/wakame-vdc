@@ -191,5 +191,7 @@ describe Dcmgr::RoleExecutor do
     hv_agent.should_receive(:destroy)
     role.execute(@account, @user).should be_true
   end
+
+  it "should evaluate enable assign ip group"
 end
 
