@@ -162,11 +162,21 @@ module Dcmgr
 
       @db.create_table? :logs do
         primary_key :id, :type=>Integer
+        String :fsuser, :fixed=>true, :size=>32, :null=>false
         String :target_uuid, :fixed=>true, :size=>32, :null=>false
         String :action, :fixed=>true, :size=>32, :null=>false
         Fixnum :account_id, :null=>false
         Fixnum :user_id, :null=>false
         String :message, :fixed=>true, :size=>2, :null=>false
+        DateTime :created_at, :null=>false
+      end
+
+      @db.create_table? :account_logs do
+        primary_key :id, :type=>Integer
+        Date :target_date, :null=>false
+        String :fsuser, :fixed=>true, :size=>32, :null=>false
+        String :target_uuid, :fixed=>true, :size=>32, :null=>false
+        Fixnum :user_id, :null=>false
         DateTime :created_at, :null=>false
       end
       
@@ -219,7 +229,8 @@ module Dcmgr
                    Models::ImageStorage, Models::ImageStorageHost, Models::PhysicalHost,
                    Models::HvController, Models::HvAgent,
                    Models::Tag, Models::TagAttribute, Models::TagMapping,
-                   Models::Log, Models::KeyPair,
+                   Models::Log, Models::AccountLog,
+                   Models::KeyPair,
                   ].freeze
     end
   end

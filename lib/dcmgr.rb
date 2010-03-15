@@ -105,6 +105,7 @@ module Dcmgr
     autoload :PhysicalHost, 'dcmgr/models/physical_host'
     autoload :LocationGroup, 'dcmgr/models/location_group'
     autoload :Log, 'dcmgr/models/log'
+    autoload :AccountLog, 'dcmgr/models/account_log'
   end
 
   module RestModels
