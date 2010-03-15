@@ -11,15 +11,14 @@ mysql -uroot
 
 > exit
 
-Make sure to be installed rubygems (>= 1.3.5) and bundler (= 0.7.1).
-> gem install bundler --version 0.7.1
+Make sure to be installed rubygems (>= 1.3.6) and bundler (>= 0.9).
+> gem install bundler --version 0.9
 
-Setup with the development gems. i.e. shotgun, rspec
-$ gem bundle --only development
-Setup only with runtime gems.
-$ gem bundle
+Bundle depend gems.
 
-"gem bundle" will make vendor/ and bin/ folders.
+$ bundle install
+generate .bundle/environment file
+$ bundle lock
 
 start up
 $ rake run

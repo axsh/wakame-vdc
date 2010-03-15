@@ -1,8 +1,10 @@
 #*#
 *~
 *.log
-dcmgr*.conf
+web/*/dcmgr*.conf
 
 # Bundler ignorance rules
 bin/
 vendor/gems/
+.bundle/
+Gemfile.lock
