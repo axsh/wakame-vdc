@@ -31,7 +31,7 @@ describe Dcmgr::Schema do
     Dcmgr::Schema.load_data File.dirname(__FILE__) + '/../../fixtures/sample_data'
     
     Dcmgr::Schema.models.each{|model|
-      next if [Log, KeyPair].include? model
+      next if [Log, AccountLog, KeyPair].include? model
       model.count.should > 0
     }
   end
