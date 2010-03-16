@@ -88,7 +88,7 @@ describe "frontend service users access by active resource" do
 
     proc {
       account = ar_class(:Account).create
-    }.should raise_error(NoMethodError)
+    }.should raise_error(ActiveResource::UnauthorizedAccess)
 
     Dcmgr.fsuser_auth_users =
       {"gui"=>"127.0.0.1"}
