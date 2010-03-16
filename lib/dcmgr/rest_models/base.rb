@@ -266,7 +266,6 @@ module Dcmgr
                            :target_uuid=>target_uuid,
                            :user_id=>user_id,
                            :account_id=>account_id,
-                           :target_uuid=>target_uuid,
                            :action=>action_name)
       end
 
