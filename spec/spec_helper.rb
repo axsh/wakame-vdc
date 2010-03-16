@@ -77,6 +77,10 @@ module ActiveResourceHelperMethods
 end
 
 Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&password=passwd'
+
+Dcmgr.fsuser_auth_type = :ip
+Dcmgr.fsuser_auth_users = {"gui"=>"127.0.0.1"}
+
 ActiveResourceHelperMethods.reset_db
 ActiveResourceHelperMethods.runserver
 sleep 1.0
