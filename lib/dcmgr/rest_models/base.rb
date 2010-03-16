@@ -251,6 +251,24 @@ module Dcmgr
         obj = model[uuid]
         obj.destroy
       end
+
+      def get_response(block)
+        ret = instance_eval(&block)
+        response = to_response(ret)
+
+        #logging
+        
+        response
+      end
+
+      def logging
+        Models::Log.create(:fsuser=>fsuser,
+                           :target_uuid=>target_uuid,
+                           :user_id=>user_id,
+                           :account_id=>account.aparsed_request[:account].to_i,
+                           :target_uuid=>user_uuid,
+                           :action=>'login')
+      end
       
       def initialize(user, request)
         parsed_request = json_request(request)

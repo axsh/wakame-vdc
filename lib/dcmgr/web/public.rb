@@ -2,7 +2,7 @@ module Dcmgr
   module Web
     class Public < Base
       helpers { include Dcmgr::UUIDAuthorizeHelpers }
-    
+
       public_crud RestModels::Public::FrontendServiceUser
       
       public_crud RestModels::Public::Account
