@@ -13,10 +13,12 @@ module Dcmgr
           logger.debug "not authorize"
         end
 
-        obj = rest_c.new(user, request)
+        obj = rest_c.new(:user=>user, :request=>request,
+                         :fsuser=>@fsuser,
+                         :target_uuid=>args)
         obj.uuid = args[0] if args.length > 0
         ret = obj.get_response(block)
-        
+
         logger.debug "response: " + ret.inspect
         json_ret = ret.to_json
         logger.debug "response(json): " + json_ret

@@ -290,10 +290,10 @@ module Dcmgr
           }
           instance.status = Models::Instance::STATUS_TYPE_RUNNING
           
-          Models::Log.create(:user=>user,
-                             :account_id=>request[:account].to_i,
-                             :target_uuid=>instance.uuid,
-                             :action=>'run')
+          #Models::Log.create(:user=>user,
+          #                   :account_id=>request[:account].to_i,
+          #                   :target_uuid=>instance.uuid,
+          #                   :action=>'run')
           
           instance.save
         end
@@ -333,10 +333,10 @@ module Dcmgr
           raise "can't controll hvc server" unless res.code == "200"
         }
         
-        Models::Log.create(:user=>user,
-                           :account_id=>request[:account].to_i,
-                           :target_uuid=>instance.uuid,
-                           :action=>'shutdown')
+        #Models::Log.create(:user=>user,
+        #                   :account_id=>request[:account].to_i,
+        #                   :target_uuid=>instance.uuid,
+        #                   :action=>'shutdown')
         
         []
         

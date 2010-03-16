@@ -52,8 +52,7 @@ describe "log" do
     log.target_uuid.should == instance.id
     log.action.should == "shutdown"
     log.user.should == User[1]
+    log.fsuser.should == "gui"
     log.created_at.should be_close(Time.now, 2)
   end
-
-  it "should log frontend service user"
 end

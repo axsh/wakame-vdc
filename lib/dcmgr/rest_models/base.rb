@@ -256,7 +256,7 @@ module Dcmgr
         ret = instance_eval(&block)
         response = to_response(ret)
 
-        #logging
+        logging
         
         response
       end
@@ -265,26 +265,48 @@ module Dcmgr
         Models::Log.create(:fsuser=>fsuser,
                            :target_uuid=>target_uuid,
                            :user_id=>user_id,
-                           :account_id=>account.aparsed_request[:account].to_i,
-                           :target_uuid=>user_uuid,
-                           :action=>'login')
+                           :account_id=>account_id,
+                           :target_uuid=>target_uuid,
+                           :action=>action_name)
       end
-      
-      def initialize(user, request)
-        parsed_request = json_request(request)
+
+      def action_name
+        url = orig_request.url
+        if /\/(\w+)\.json/ =~ url
+          return $1
+        else
+          "#{orig_request.request_method} / #{url}"
+        end
+      end
+
+      def account_id
+        return 0 unless request.key? :account
+        id = request[:account].to_i
+        Account[id].id
+      end
+
+      attr_reader :user, :fsuser,
+        :orig_request, :request, :user_id,
+        :user_uuid, :target_uuid
+
+      def initialize(params)
+        @user = params[:user]
+        @fsuser = params[:fsuser]
+        @target_uuid = params[:target_uuid]
+
+        @orig_request = params[:request]
+        @request = json_request(@orig_request)
         
-        # log
-        user_id = if user and user.is_a? Sequel::Model then user.id else 0 end
-        user_uuid = if user.respond_to? :uuid
-                    then user.uuid else "" end
-        Models::Log.create(:user_id=>user_id,
-                           :account_id=>parsed_request[:account].to_i,
-                           :target_uuid=>user_uuid,
-                           :action=>'login')
-        
-        @user = user
-        @request = parsed_request
-        @orig_request = request
+        @user_id = if @user and @user.is_a? Sequel::Model then
+                     @user.id
+                   else
+                     0
+                   end
+        @user_uuid = if @user.respond_to? :uuid then
+                       @user.uuid
+                     else
+                       ""
+                     end
       end
     end
   end
