@@ -257,20 +257,22 @@ module Dcmgr
         ret = instance_eval(&block)
         response = to_response(ret)
 
-        logging
+        logging(response)
         
         response
       end
 
-      def logging
+      def logging(response)
         Models::Log.create(:fsuser=>fsuser,
-                           :target_uuid=>target_uuid,
+                           :target_uuid=>response[:id],
                            :user_id=>user_id,
                            :account_id=>account_id,
                            :action=>action_name)
       end
 
       def action_name
+        return @action_name if @action_name
+          
         url = orig_request.url
         if /\/(\w+)\.json/ =~ url
           return $1
@@ -293,6 +295,7 @@ module Dcmgr
         @user = params[:user]
         @fsuser = params[:fsuser]
         @target_uuid = params[:target_uuid]
+        @action_name = params[:action_name]
 
         @orig_request = params[:request]
         @request = json_request(@orig_request)

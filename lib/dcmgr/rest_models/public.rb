@@ -360,8 +360,9 @@ module Dcmgr
       include Dcmgr::RestModels::Base
       model Models::HvController
 
-      public_action :post do
-        create
+      public_action :post, nil, :action_name=>:run do
+        request[:physical_host] = Models::PhysicalHost[request.delete(:physical_host)]
+        _create(request)
       end
 
       public_action_withid :delete do
