@@ -265,7 +265,7 @@ module Dcmgr
 
       def logging(response)
         Models::Log.create(:fsuser=>fsuser,
-                           :target_uuid=>response[:id],
+                           :target_uuid=>@target_uuid,
                            :user_id=>user_id,
                            :account_id=>account_id,
                            :action=>action_name)
