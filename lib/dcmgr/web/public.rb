@@ -14,11 +14,13 @@ module Dcmgr
       public_crud RestModels::Public::TagAttribute
       
       public_crud RestModels::Public::Instance
+
       public_crud RestModels::Public::PhysicalHost
+      public_crud RestModels::Public::HvController
       
       public_crud RestModels::Public::ImageStorage
       public_crud RestModels::Public::ImageStorageHost
-      
+
       public_crud RestModels::Public::LocationGroup
       
       get '/' do
