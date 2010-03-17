@@ -265,10 +265,18 @@ module Dcmgr
 
       def logging(response)
         Models::Log.create(:fsuser=>fsuser || "",
-                           :target_uuid=>@target_uuid,
+                           :target_uuid=>target_uuid(response),
                            :user_id=>user_id,
                            :account_id=>account_id,
                            :action=>action_name)
+      end
+
+      def target_uuid(response=nil)
+        if response and response.is_a? Hash
+          response[:id]
+        else
+          @target_uuid
+        end
       end
 
       def action_name
@@ -285,12 +293,13 @@ module Dcmgr
       def account_id
         return 0 unless request.key? :account
         id = request[:account].to_i
+        return 0 if id == 0
         Account[id].id
       end
 
       attr_reader :user, :fsuser,
         :orig_request, :request, :user_id,
-        :user_uuid, :target_uuid
+        :user_uuid
 
       def initialize(params)
         @user = params[:user]

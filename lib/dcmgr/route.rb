@@ -16,7 +16,7 @@ module Dcmgr
         obj = rest_c.new(:user=>user, :request=>request,
                          :fsuser=>@fsuser,
                          :target_uuid=>args,
-                         :action_name=>params[:name])
+                         :action_name=>params[:action_name])
         obj.uuid = args[0] if args.length > 0
         ret = obj.get_response(block)
 

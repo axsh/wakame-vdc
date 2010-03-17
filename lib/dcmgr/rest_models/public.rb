@@ -266,7 +266,7 @@ module Dcmgr
         true
       end
       
-      public_action :post do
+      public_action :post, nil, :action_name=>:run do
         req_hash = request
         req_hash.delete :id
         instance = nil
