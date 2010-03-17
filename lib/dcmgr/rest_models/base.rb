@@ -257,7 +257,7 @@ module Dcmgr
         ret = instance_eval(&block)
         response = to_response(ret)
 
-        logger.debug("response: %p" % ret)
+        logger.debug("response: #{response.inspect}")
         logging(response)
         
         response
