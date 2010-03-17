@@ -8,7 +8,6 @@ module Dcmgr
       end
       
       def public_action(method, name=nil, args={}, &block)
-        p [method, name, args, block]
         @actions ||= []
         @actions << [method, url_all(name), args, block]
       end
