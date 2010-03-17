@@ -1,9 +1,9 @@
 require 'active_support'
 
 module Dcmgr
-  def self.route(rest_c, method, block, params)
-    proc do |*args|
-      logger.debug "URL: #{method} #{request.url} #{args}"
+  def self.route(rest_class, method, block, params)
+    proc do |*request_id|
+      logger.debug "URL: #{method} #{request.url} #{request_id}"
 
       begin
         user = protected! if rest_c.protect?
@@ -13,20 +13,18 @@ module Dcmgr
           logger.debug "not authorize"
         end
 
-        obj = rest_c.new(:user=>user, :request=>request,
-                         :fsuser=>@fsuser,
-                         :target_uuid=>args,
-                         :action_name=>params[:action_name])
-        obj.uuid = args[0] if args.length > 0
-        ret = obj.get_response(block)
-
-        json_ret = ret.to_json
-        logger.debug "response(json): " + json_ret
-        json_ret
+        obj = rest_class.new(:user=>user,
+                             :request=>request,
+                             :fsuser=>@fsuser,
+                             :request_id=>request_id,
+                             :action_name=>params[:action_name])
+        obj.response(block).tap{|ret|
+          logger.debug "response(json): %s" + ret
+        }
 
       rescue StandardError => e
-        logger.info "err! #{e}"
-        logger.info "  " + e.backtrace.join("\n  ")
+        logger.info "err! #{e}\n" +
+          "  " + e.backtrace.join("\n  ")
         throw :halt, [400, e.to_s]
       end
     end

@@ -252,7 +252,7 @@ module Dcmgr
         obj.destroy
       end
 
-      def get_response(block)
+      def response(block)
         ret = instance_eval(&block)
 
         response = to_response(ret)
@@ -260,7 +260,7 @@ module Dcmgr
 
         logging(response)
         
-        response
+        response.to_json
       end
 
       def logging(response)
@@ -320,6 +320,7 @@ module Dcmgr
                      else
                        ""
                      end
+        obj.uuid = args[0] if args.length > 0
       end
     end
   end
