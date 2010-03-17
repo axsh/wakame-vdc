@@ -11,10 +11,18 @@ module Dcmgr
       rescue Dcmgr::FsuserAuthorizer::NotAuthorized
         throw(:halt, [401, "Not authorized\n"])
       end
+
+      def target_uuid(response=nil)
+        if response and response.is_a? Hash and response.key?(:name)
+          response[:name]
+        else
+          ""
+        end
+      end
       
       public_action :get, :myself do
         fsuser = authorize
-        {"name"=>fsuser}
+        {:name=>fsuser}
       end
 
       public_action :get, :authorize do
