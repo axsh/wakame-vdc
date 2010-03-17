@@ -20,7 +20,6 @@ module Dcmgr
         obj.uuid = args[0] if args.length > 0
         ret = obj.get_response(block)
 
-        logger.debug "response: " + ret.inspect
         json_ret = ret.to_json
         logger.debug "response(json): " + json_ret
         json_ret
