@@ -3,16 +3,17 @@ module Dcmgr
     module ClassMethods
       def actions
         @actions.each{|method, path, args, action|
-          yield [method, path, Dcmgr.route(self, method, action)]
+          yield [method, path, Dcmgr.route(self, method, action, args)]
         }
       end
       
-      def public_action(method, name=nil, *args, &block)
+      def public_action(method, name=nil, args={}, &block)
+        p [method, name, args, block]
         @actions ||= []
         @actions << [method, url_all(name), args, block]
       end
       
-      def public_action_withid(method, name=nil, *args, &block)
+      def public_action_withid(method, name=nil, args={}, &block)
         @actions ||= []
         @actions << [method, url_id(name), args, block]
       end

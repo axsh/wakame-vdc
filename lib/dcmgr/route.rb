@@ -1,7 +1,7 @@
 require 'active_support'
 
 module Dcmgr
-  def self.route(rest_c, method, block)
+  def self.route(rest_c, method, block, params)
     proc do |*args|
       logger.debug "URL: #{method} #{request.url} #{args}"
 
