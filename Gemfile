@@ -12,6 +12,8 @@ gem "thin", ">=1.2.5"
 
 gem 'extlib', '>= 0.9.14'
 
+gem 'rake', '>= 0.8.7'
+
 group :development do
   gem "rspec", ">= 1.2.9"
   gem "shotgun", '>= 0.6'
