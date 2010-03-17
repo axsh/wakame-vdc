@@ -381,13 +381,8 @@ module Dcmgr
       end
 
       public_action :post do
-        req_hash = request
-        req_hash.delete :id
-        
-        req_hash[:image_storage_host] = Models::ImageStorageHost[req_hash.delete(:image_storage_host)]
-
-        image_storage = _create(req_hash)
-        image_storage
+        request[:image_storage_host] = Models::ImageStorageHost[request.delete(:image_storage_host)]
+        _create(request)
       end
 
       public_action_withid :get do
