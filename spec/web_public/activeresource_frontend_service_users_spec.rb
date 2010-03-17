@@ -1,4 +1,4 @@
-orequire File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "frontend service users access by active resource" do
   include ActiveResourceHelperMethods
