@@ -1,12 +1,12 @@
 require 'active_support'
 
 module Dcmgr
-  def self.route(rest_class, method, block, params)
-    proc do |*request_id|
-      logger.debug "URL: #{method} #{request.url} #{request_id}"
+  def self.route(rest_class, method, block, params2)
+    proc do |*request_ids|
+      logger.debug "URL: #{method} #{request.url} #{request_ids}"
 
       begin
-        user = protected! if rest_c.protect?
+        user = protected! if rest_class.protect?
         if user and user.respond_to? :uuid
           logger.debug "authorized user: #{user.uuid}"
         else
@@ -16,8 +16,8 @@ module Dcmgr
         obj = rest_class.new(:user=>user,
                              :request=>request,
                              :fsuser=>@fsuser,
-                             :request_id=>request_id,
-                             :action_name=>params[:action_name])
+                             :request_ids=>request_ids,
+                             :action_name=>params2[:action_name])
         obj.response(block).tap{|ret|
           logger.debug "response(json): %s" + ret
         }

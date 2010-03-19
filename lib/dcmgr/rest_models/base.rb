@@ -79,7 +79,8 @@ module Dcmgr
         mod.extend ClassMethods
       end
       
-      attr_accessor :uuid
+      attr_reader :uuid
+
       attr_accessor :user
       attr_accessor :request
       
@@ -264,6 +265,9 @@ module Dcmgr
       end
 
       def logging(response)
+        logger.debug("action name: %s" % action_name)
+        logger.debug("target uuid: %s" % uuid)
+        
         Models::Log.create(:fsuser=>fsuser || "",
                            :target_uuid=>target_uuid(response),
                            :user_id=>user_id,
@@ -274,17 +278,45 @@ module Dcmgr
       def target_uuid(response=nil)
         if response and response.is_a? Hash
           response[:id]
+        elsif uuid
+          uuid
         else
-          @target_uuid
+          model.to_s
         end
       end
 
       def action_name
         return @action_name if @action_name
-          
+
         url = orig_request.url
-        if /\/(\w+)\.json/ =~ url
-          return $1
+        return $1 if /\/(\w+)\.json/ =~ url
+
+        method = orig_request.request_method
+          
+        if uuid
+          action_name_with_id(method)
+        else
+          action_name_without_id(method)
+        end
+      end
+
+      def action_name_with_id(method)
+        case method
+        when "PUT"
+          "save"
+        when "GET"
+          "get"
+        when "DELETE"
+          "delete"
+        else
+          "#{orig_request.request_method} / #{url}"
+        end
+      end 
+
+      def action_name_without_id(method)
+        case method
+        when "GET"
+          "find"
         else
           "#{orig_request.request_method} / #{url}"
         end
@@ -304,7 +336,7 @@ module Dcmgr
       def initialize(params)
         @user = params[:user]
         @fsuser = params[:fsuser]
-        @target_uuid = params[:target_uuid]
+
         @action_name = params[:action_name]
 
         @orig_request = params[:request]
@@ -320,7 +352,8 @@ module Dcmgr
                      else
                        ""
                      end
-        obj.uuid = args[0] if args.length > 0
+
+        @uuid = params[:request_ids][0] if params[:request_ids].length > 0
       end
     end
   end
