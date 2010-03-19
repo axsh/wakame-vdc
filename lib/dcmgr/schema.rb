@@ -121,8 +121,7 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid, :unique=>true
-        Fixnum :physical_host_id
-        String :ip, :fixed=>true, :size=>14, :null=>false
+        String :access_url, :null=>false
       end
       
       @db.create_table? :hv_agents do
