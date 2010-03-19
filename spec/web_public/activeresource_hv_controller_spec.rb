@@ -7,7 +7,7 @@ describe "hvc access by active resource" do
   end
 
   it "should add" do
-    hvc = @class.create
+    hvc = @class.create(:access_url=>'http://localhost/')
     hvc.id.length.should > 0
     HvController[hvc.id].should be_valid
     $hvc = hvc
