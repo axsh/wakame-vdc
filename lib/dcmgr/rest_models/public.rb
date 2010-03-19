@@ -283,7 +283,8 @@ module Dcmgr
           req_hash[:image_storage] = Models::ImageStorage[req_hash[:image_storage]]
           instance = _create(req_hash)
 
-          Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
+          hvc = instance.hv_agent.hv_controller
+          Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
             begin
               res = http.run_instance(instance.hv_agent.ip,
                                       instance.uuid,
@@ -330,8 +331,9 @@ module Dcmgr
 
         instance.status = Models::Instance::STATUS_TYPE_TERMINATING
         instance.save
-        
-        Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
+
+        hvc = instance.hv_agent.hv_controller
+        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
           begin
             res = http.terminate_instance(instance.hv_agent.ip,
                                           instance.uuid)
