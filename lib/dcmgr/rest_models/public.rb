@@ -367,7 +367,7 @@ module Dcmgr
     class HvController
       include Dcmgr::RestModels::Base
       model Models::HvController
-      allow_keys :physical_host
+      allow_keys :access_url
 
       public_action :post, nil, :action_name=>:run do
         request[:physical_host] = Models::PhysicalHost[request.delete(:physical_host)]

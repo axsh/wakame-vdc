@@ -146,7 +146,7 @@ describe Dcmgr::RoleExecutor do
   end
   
   it "should evaluate add hvc" do
-    hv_controller = HvController.create
+    hv_controller = HvController.create(:access_url=>'http://localhost/')
     role = Dcmgr::RoleExecutor.get(hv_controller, :create)
     role.should be_true
     role.class.is_a? Dcmgr::RoleExecutor::CreateHvController
@@ -157,7 +157,7 @@ describe Dcmgr::RoleExecutor do
   end
 
   it "should evaluate delete hvc" do
-    hv_controller = HvController.create
+    hv_controller = HvController.create(:access_url=>'http://localhost/')
     role = Dcmgr::RoleExecutor.get(hv_controller, :destroy)
     role.should be_true
     role.class.is_a? Dcmgr::RoleExecutor::DestroyHvController
