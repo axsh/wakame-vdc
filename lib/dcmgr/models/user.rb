@@ -2,7 +2,7 @@ module Dcmgr
   module Models
     class User < Base
       set_dataset :users
-      def self.prefix_uuid; 'U'; end
+      set_prefix_uuid 'U'
 
       many_to_many :accounts
       many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}

@@ -1,3 +1,5 @@
+require 'uri'
+
 module Dcmgr
   module Models
     class HvController < Base
@@ -10,6 +12,14 @@ module Dcmgr
 
       def validate
         errors.add(:access_url, "can't empty") unless self.access_url
+      end
+
+      def access_host
+        URI(access_url).host
+      end
+
+      def access_port
+        URI(access_url).port
       end
     end
   end

@@ -2,7 +2,7 @@ module Dcmgr
   module Models
     class IpGroup < Base
       set_dataset :ip_groups
-      def self.prefix_uuid; 'IG'; end
+      set_prefix_uuid 'IG'
 
       one_to_many :ips
 

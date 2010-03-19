@@ -2,7 +2,7 @@ module Dcmgr
   module Models
     class KeyPair < Base
       set_dataset :key_pairs
-      def self.prefix_uuid; 'KP'; end
+      set_prefix_uuid 'KP'
       
       many_to_one :user
       

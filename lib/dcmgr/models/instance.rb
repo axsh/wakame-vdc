@@ -2,7 +2,7 @@ module Dcmgr
   module Models
     class Instance < Base
       set_dataset :instances
-      def self.prefix_uuid; 'I'; end
+      set_prefix_uuid 'I'
       
       many_to_one :account
       many_to_one :user
