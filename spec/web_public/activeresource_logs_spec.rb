@@ -8,7 +8,21 @@ describe "log access by active resource" do
     @accountlog_c = ar_class :AccountLog
   end
 
-  it "should find by month"
-  it "should find account log by month" # => response account, instance, status, server type, time(minute)
+  it "should find by month" do
+    date = Time.now
+    logs = @log_c.find(:all, :params=>{
+                         :account=>Account[1].uuid,
+                         :year=>date.year, :month=>date.month})
+    logs.should be_true
+  end
+  
+  it "should find account log by month" do
+    date = Time.now
+    @accountlog_c.find(:all, :params=>{
+                         :account=>Account[1].uuid,
+                         :year=>date.year, :month=>date.month})
+    logs.should be_true
+    pending # => response account, instance, status, server type, time(minute)
+  end
 end
 
