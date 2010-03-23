@@ -317,7 +317,7 @@ module Dcmgr
         update
       end
 
-      public_action_withid :delete do
+      public_action_withid :delete, :action_name=>:terminate do
         destroy
       end
 
