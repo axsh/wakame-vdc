@@ -171,9 +171,10 @@ module Dcmgr
       @db.create_table? :account_logs do
         primary_key :id, :type=>Integer
         Date :target_date, :null=>false
-        String :fsuser, :fixed=>true, :size=>32, :null=>false
-        String :target_uuid, :fixed=>true, :size=>32, :null=>false
         Fixnum :user_id, :null=>false
+        Fixnum :account_id, :null=>false
+        String :target_uuid, :fixed=>true, :size=>32, :null=>false
+        Fixnum :use_minutes, :null=>false
         DateTime :created_at, :null=>false
       end
       
