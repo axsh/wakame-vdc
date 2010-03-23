@@ -2,26 +2,30 @@ module Dcmgr
   module Web
     class Public < Base
       helpers { include Dcmgr::UUIDAuthorizeHelpers }
+      include RestModels::Public
 
-      public_crud RestModels::Public::FrontendServiceUser
+      public_crud FrontendServiceUser
       
-      public_crud RestModels::Public::Account
-      public_crud RestModels::Public::User
-      public_crud RestModels::Public::KeyPair
+      public_crud Account
+      public_crud User
+      public_crud KeyPair
       
-      public_crud RestModels::Public::NameTag
-      public_crud RestModels::Public::AuthTag
-      public_crud RestModels::Public::TagAttribute
+      public_crud NameTag
+      public_crud AuthTag
+      public_crud TagAttribute
       
-      public_crud RestModels::Public::Instance
+      public_crud Instance
 
-      public_crud RestModels::Public::PhysicalHost
-      public_crud RestModels::Public::HvController
+      public_crud PhysicalHost
+      public_crud HvController
       
-      public_crud RestModels::Public::ImageStorage
-      public_crud RestModels::Public::ImageStorageHost
+      public_crud ImageStorage
+      public_crud ImageStorageHost
 
-      public_crud RestModels::Public::LocationGroup
+      public_crud Log
+      public_crud AccountLog
+
+      public_crud LocationGroup
       
       get '/' do
         'startup dcmgr'
