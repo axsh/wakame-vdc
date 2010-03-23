@@ -469,8 +469,14 @@ module Dcmgr
     class Log
       include Dcmgr::RestModels::Base
       model Models::Log
+
       public_action :get do
-        Models::LocationGroup.all
+        account_uuid = request[:_get_account]
+        account = Models::Account[account_uuid]
+        unless account
+          throw(:halt, [400, "account not match"])
+        end
+        Models::Log.find(:account_id=>account.id)
       end
     end
 
@@ -478,6 +484,7 @@ module Dcmgr
       include Dcmgr::RestModels::Base
       model Models::Log
       public_action :get do
+        p params
         Models::LocationGroup.all
       end
     end
