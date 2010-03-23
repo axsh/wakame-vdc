@@ -17,6 +17,7 @@ module Dcmgr
     end
     
     def create!
+      Sequel::MySQL.default_charset = 'utf8'
       Sequel::MySQL.default_engine = 'InnoDB'
       
       @db.create_table? :accounts do

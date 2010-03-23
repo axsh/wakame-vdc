@@ -1,7 +1,11 @@
 $:.unshift "#{File.dirname(__FILE__)}/../lib"
 
 require 'rubygems'
-require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
+begin
+  require "#{File.dirname(__FILE__)}/../vendor/gems/environment"
+rescue
+  require "#{File.dirname(__FILE__)}/../.bundle/environment"
+end
 require 'logger'
 require 'dcmgr'
 

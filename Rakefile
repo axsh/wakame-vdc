@@ -17,7 +17,7 @@ end
 
 task :environment do
   $:.unshift 'lib'
-  require "#{File.dirname(__FILE__)}/vendor/gems/environment"
+  require "#{File.dirname(__FILE__)}/./.bundle/environment"
   require 'dcmgr'
   Dcmgr.configure 'dcmgr.conf'
 end
