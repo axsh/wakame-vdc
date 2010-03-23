@@ -45,18 +45,25 @@ describe "run instance access by active resource" do
     instance_c = ar_class(:Instance, ar_opts)
     instance = instance_c.create(:account=>account.id,
                                  :need_cpus=>1, :need_cpu_mhz=>0.5,
-                                 :need_memory=>1.0,
+                                 :need_memory=>10000,
                                  :image_storage=>select_image.id,
                                  :keyparir=>keypair.id)
     instance.should be_valid
 
     # terminate instance
     instance.put(:shutdown)
-    
+
     # log
-    pending
+    date = Time.now
+    log_c = ar_class(:Log, ar_opts)
+    log_c.find(:all, :params=>
+               {:account=>account.id,
+                 :year=>date.year, :month=>date.month})
 
     # account log
+    log_c = ar_class(:Log, ar_opts)
+    log_c.find(:all, :params=>{:account=>account.id,
+                 :year=>date.year, :month=>date.month})
   end
 end
 
