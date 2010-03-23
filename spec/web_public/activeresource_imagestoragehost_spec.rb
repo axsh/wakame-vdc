@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-require 'rubygems'
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "image storage host access by active resource" do

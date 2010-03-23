@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-require 'rubygems'
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe Dcmgr::HvcHttpMock do
@@ -13,8 +10,8 @@ describe Dcmgr::HvcHttpMock do
 
   it "should get hva for hvchttp" do
     hva = HvAgent[:ip=>'192.168.1.20']
-    hva_mock = Dcmgr::HvcHttpMock::Hva.new(hva.ip,
-                                           hva.instances)
+    hva_mock = Dcmgr::HvcHttpMock::HvaStore.new(hva.ip,
+                                                hva.instances)
     hva.instances.length.should > 0
     hva_mock.instances.length.should > 0
   end

@@ -2,7 +2,7 @@ module Dcmgr
   module Models
     class PhysicalHost < Base
       set_dataset :physical_hosts
-      def self.prefix_uuid; 'PH'; end
+      set_prefix_uuid 'PH'
 
       one_to_many :hv_agents
       

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-require 'rubygems'
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "instance access by active resource" do
@@ -33,8 +30,7 @@ describe "instance access by active resource" do
 
     # hv controllers
     HvController.destroy
-    hv_controller_a = HvController.create(:physical_host=>physical_host_a,
-                                          :ip=>'192.168.1.10')
+    hv_controller_a = HvController.create(:access_url=>'http://192.168.1.10/')
 
     # hv agents
     HvAgent.destroy

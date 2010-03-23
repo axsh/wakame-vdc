@@ -11,10 +11,18 @@ module Dcmgr
       rescue Dcmgr::FsuserAuthorizer::NotAuthorized
         throw(:halt, [401, "Not authorized\n"])
       end
+
+      def target_uuid(response=nil)
+        if response and response.is_a? Hash and response.key?(:name)
+          response[:name]
+        else
+          ""
+        end
+      end
       
       public_action :get, :myself do
         fsuser = authorize
-        {"name"=>fsuser}
+        {:name=>fsuser}
       end
 
       public_action :get, :authorize do
@@ -266,7 +274,7 @@ module Dcmgr
         true
       end
       
-      public_action :post do
+      public_action :post, nil, :action_name=>:run do
         req_hash = request
         req_hash.delete :id
         instance = nil
@@ -275,7 +283,8 @@ module Dcmgr
           req_hash[:image_storage] = Models::ImageStorage[req_hash[:image_storage]]
           instance = _create(req_hash)
 
-          Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
+          hvc = instance.hv_agent.hv_controller
+          Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
             begin
               res = http.run_instance(instance.hv_agent.ip,
                                       instance.uuid,
@@ -290,10 +299,10 @@ module Dcmgr
           }
           instance.status = Models::Instance::STATUS_TYPE_RUNNING
           
-          Models::Log.create(:user=>user,
-                             :account_id=>request[:account].to_i,
-                             :target_uuid=>instance.uuid,
-                             :action=>'run')
+          #Models::Log.create(:user=>user,
+          #                   :account_id=>request[:account].to_i,
+          #                   :target_uuid=>instance.uuid,
+          #                   :action=>'run')
           
           instance.save
         end
@@ -322,8 +331,9 @@ module Dcmgr
 
         instance.status = Models::Instance::STATUS_TYPE_TERMINATING
         instance.save
-        
-        Dcmgr::hvchttp.open(instance.hv_agent.hv_controller.ip) {|http|
+
+        hvc = instance.hv_agent.hv_controller
+        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
           begin
             res = http.terminate_instance(instance.hv_agent.ip,
                                           instance.uuid)
@@ -333,10 +343,10 @@ module Dcmgr
           raise "can't controll hvc server" unless res.code == "200"
         }
         
-        Models::Log.create(:user=>user,
-                           :account_id=>request[:account].to_i,
-                           :target_uuid=>instance.uuid,
-                           :action=>'shutdown')
+        #Models::Log.create(:user=>user,
+        #                   :account_id=>request[:account].to_i,
+        #                   :target_uuid=>instance.uuid,
+        #                   :action=>'shutdown')
         
         []
         
@@ -359,9 +369,11 @@ module Dcmgr
     class HvController
       include Dcmgr::RestModels::Base
       model Models::HvController
+      allow_keys :access_url
 
-      public_action :post do
-        create
+      public_action :post, nil, :action_name=>:run do
+        request[:physical_host] = Models::PhysicalHost[request.delete(:physical_host)]
+        _create(request)
       end
 
       public_action_withid :delete do
@@ -379,13 +391,8 @@ module Dcmgr
       end
 
       public_action :post do
-        req_hash = request
-        req_hash.delete :id
-        
-        req_hash[:image_storage_host] = Models::ImageStorageHost[req_hash.delete(:image_storage_host)]
-
-        image_storage = _create(req_hash)
-        image_storage
+        request[:image_storage_host] = Models::ImageStorageHost[request.delete(:image_storage_host)]
+        _create(request)
       end
 
       public_action_withid :get do
@@ -456,6 +463,34 @@ module Dcmgr
         tag = Models::Tag[tag_uuid]
         target.remove_tag(tag) if tag
         []
+      end
+    end
+
+    class Log
+      include Dcmgr::RestModels::Base
+      model Models::Log
+
+      public_action :get do
+        account_uuid = request[:_get_account]
+        account = Models::Account[account_uuid]
+        unless account
+          throw(:halt, [400, "account not match"])
+        end
+        Models::Log.find(:account_id=>account.id)
+      end
+    end
+
+    class AccountLog
+      include Dcmgr::RestModels::Base
+      model Models::AccountLog
+
+      public_action :get do
+        account_uuid = request[:_get_account]
+        account = Models::Account[account_uuid]
+        unless account
+          throw(:halt, [400, "account not match"])
+        end
+        Models::AccountLog.find(:account_id=>account.id)
       end
     end
 

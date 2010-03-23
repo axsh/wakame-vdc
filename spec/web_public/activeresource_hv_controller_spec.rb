@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-require 'rubygems'
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "hvc access by active resource" do
@@ -10,8 +7,8 @@ describe "hvc access by active resource" do
   end
 
   it "should add" do
-    hvc = @class.create(:access_url=>'http://hoge')
-    hvc.id.should > 0
+    hvc = @class.create(:access_url=>'http://localhost/')
+    hvc.id.length.should > 0
     HvController[hvc.id].should be_valid
     $hvc = hvc
   end

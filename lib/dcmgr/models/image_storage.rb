@@ -2,7 +2,7 @@ module Dcmgr
   module Models
     class ImageStorage < Base
       set_dataset :image_storages
-      def self.prefix_uuid; 'IS'; end
+      set_prefix_uuid 'IS'
       
       many_to_one :image_storage_host
       

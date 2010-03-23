@@ -3,16 +3,16 @@ module Dcmgr
     module ClassMethods
       def actions
         @actions.each{|method, path, args, action|
-          yield [method, path, Dcmgr.route(self, method, action)]
+          yield [method, path, Dcmgr.route(self, method, action, args)]
         }
       end
       
-      def public_action(method, name=nil, *args, &block)
+      def public_action(method, name=nil, args={}, &block)
         @actions ||= []
         @actions << [method, url_all(name), args, block]
       end
       
-      def public_action_withid(method, name=nil, *args, &block)
+      def public_action_withid(method, name=nil, args={}, &block)
         @actions ||= []
         @actions << [method, url_id(name), args, block]
       end
@@ -79,7 +79,8 @@ module Dcmgr
         mod.extend ClassMethods
       end
       
-      attr_accessor :uuid
+      attr_reader :uuid
+
       attr_accessor :user
       attr_accessor :request
       
@@ -251,22 +252,108 @@ module Dcmgr
         obj = model[uuid]
         obj.destroy
       end
-      
-      def initialize(user, request)
-        parsed_request = json_request(request)
+
+      def response(block)
+        ret = instance_eval(&block)
+
+        response = to_response(ret)
+        logger.debug("response: #{response.inspect}")
+
+        logging(response)
         
-        # log
-        user_id = if user and user.is_a? Sequel::Model then user.id else 0 end
-        user_uuid = if user.respond_to? :uuid
-                    then user.uuid else "" end
-        Models::Log.create(:user_id=>user_id,
-                           :account_id=>parsed_request[:account].to_i,
-                           :target_uuid=>user_uuid,
-                           :action=>'login')
+        response.to_json
+      end
+
+      def logging(response)
+        logger.debug("action name: %s" % action_name)
+        logger.debug("target uuid: %s" % uuid)
         
-        @user = user
-        @request = parsed_request
-        @orig_request = request
+        Models::Log.create(:fsuser=>fsuser || "",
+                           :target_uuid=>target_uuid(response),
+                           :user_id=>user_id,
+                           :account_id=>account_id,
+                           :action=>action_name)
+      end
+
+      def target_uuid(response=nil)
+        if response and response.is_a? Hash
+          response[:id]
+        elsif uuid
+          uuid
+        else
+          model.to_s
+        end
+      end
+
+      def action_name
+        return @action_name if @action_name
+
+        url = orig_request.url
+        return $1 if /\/(\w+)\.json/ =~ url
+
+        method = orig_request.request_method
+          
+        if uuid
+          action_name_with_id(method)
+        else
+          action_name_without_id(method)
+        end
+      end
+
+      def action_name_with_id(method)
+        case method
+        when "PUT"
+          "save"
+        when "GET"
+          "get"
+        when "DELETE"
+          "delete"
+        else
+          "#{orig_request.request_method} / #{url}"
+        end
+      end 
+
+      def action_name_without_id(method)
+        case method
+        when "GET"
+          "find"
+        else
+          "#{orig_request.request_method} / #{url}"
+        end
+      end
+
+      def account_id
+        return 0 unless request.key? :account
+        id = request[:account].to_i
+        return 0 if id == 0
+        Account[id].id
+      end
+
+      attr_reader :user, :fsuser,
+        :orig_request, :request, :user_id,
+        :user_uuid
+
+      def initialize(params)
+        @user = params[:user]
+        @fsuser = params[:fsuser]
+
+        @action_name = params[:action_name]
+
+        @orig_request = params[:request]
+        @request = json_request(@orig_request)
+        
+        @user_id = if @user and @user.is_a? Sequel::Model then
+                     @user.id
+                   else
+                     0
+                   end
+        @user_uuid = if @user.respond_to? :uuid then
+                       @user.uuid
+                     else
+                       ""
+                     end
+
+        @uuid = params[:request_ids][0] if params[:request_ids].length > 0
       end
     end
   end

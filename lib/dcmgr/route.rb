@@ -1,33 +1,30 @@
 require 'active_support'
 
 module Dcmgr
-  def self.route(rest_c, method, block)
-    proc do |*args|
-      logger.debug "URL: #{method} #{request.url} #{args}"
+  def self.route(rest_class, method, block, params2)
+    proc do |*request_ids|
+      logger.debug "URL: #{method} #{request.url} #{request_ids}"
 
       begin
-        protected! if rest_c.protect?
-      
-        user = protected!
+        user = protected! if rest_class.protect?
         if user and user.respond_to? :uuid
           logger.debug "authorized user: #{user.uuid}"
         else
           logger.debug "not authorize"
-          #throw(:halt, [401, "Not authorized"])
         end
 
-        obj = rest_c.new(user, request)
-        obj.uuid = args[0] if args.length > 0
-
-        ret = obj.to_response(obj.instance_eval(&block))
-        logger.debug "response: " + ret.inspect
-        json_ret = ret.to_json
-        logger.debug "response(json): " + json_ret
-        json_ret
+        obj = rest_class.new(:user=>user,
+                             :request=>request,
+                             :fsuser=>@fsuser,
+                             :request_ids=>request_ids,
+                             :action_name=>params2[:action_name])
+        obj.response(block).tap{|ret|
+          logger.debug "response(json): %s" + ret
+        }
 
       rescue StandardError => e
-        logger.info "err! %s" % e.to_s
-        logger.info "  " + e.backtrace.join("\n  ")
+        logger.info "err! #{e}\n" +
+          "  " + e.backtrace.join("\n  ")
         throw :halt, [400, e.to_s]
       end
     end

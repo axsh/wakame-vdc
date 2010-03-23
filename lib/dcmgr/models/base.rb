@@ -23,9 +23,11 @@ module Dcmgr
           raise InvalidUUIDError, "invalid uuid: #{p_uuid}"
         end
 
-        #def tags
-        #  [Tag.new(:name=>"%s-_ROLETAG" % [self.prefix_uuid])]
-        #end
+        def set_prefix_uuid(prefix_uuid)
+          @prefix_uuid = prefix_uuid
+        end
+
+        attr_reader :prefix_uuid
       end
       
       def generate_uuid

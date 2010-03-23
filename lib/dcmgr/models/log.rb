@@ -16,6 +16,8 @@ module Dcmgr
         errors.add(:tareget_uuid, "can't empty") unless self.target_uuid
         errors.add(:action, "can't empty") unless self.action
         errors.add(:user, "can't empty") unless (self.user or self.user_id)
+
+        errors.add(:action, "mismatch action") unless /^(\S+)$/ =~ self.action
       end
     end
   end

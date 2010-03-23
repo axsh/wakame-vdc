@@ -1,11 +1,26 @@
+require 'uri'
+
 module Dcmgr
   module Models
     class HvController < Base
       set_dataset :hv_controllers
-      def self.prefix_uuid; 'HVC'; end
-      many_to_one :physical_host
+      set_prefix_uuid 'HVC'
+      
       one_to_many :hv_agents
-      many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_HV_CONTROLLER}
+      many_to_many :tags, :join_table=>:tag_mappings,
+        :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_HV_CONTROLLER}
+
+      def validate
+        errors.add(:access_url, "can't empty") unless self.access_url
+      end
+
+      def access_host
+        URI(access_url).host
+      end
+
+      def access_port
+        URI(access_url).port
+      end
     end
   end
 end

@@ -1,17 +1,17 @@
-# -*- coding: undecided -*-
+# -*- coding: utf-8 -*-
 require 'rake/clean'
 
 task :default => :spec
 
 desc 'Run specs'
 task :spec do
-  sh "./bin/spec -fs -c -r spec/specformat_silent spec"
+  sh "bundle exec spec -fs -c -r spec/specformat_silent spec"
 end
 
 namespace :spec do
   desc 'Run specs, detail mode'
   task :detail do
-    sh "./bin/spec -fs -b -c -r spec/specformat_detail spec"
+    sh "bundle exec spec -fs -b -c -r spec/specformat_detail spec"
   end
 end
 
@@ -23,24 +23,24 @@ task :environment do
 end
 
 task :shell do
-  sh "ruby lib/dcmgr/shell.rb dcmgr.conf"
+  sh "bundle exec ruby lib/dcmgr/shell.rb dcmgr.conf"
 end
 
 namespace :shell do
   task :client do
-    sh "ruby lib/dcmgr/shell.rb -client"
+    sh "bundle exec ruby lib/dcmgr/shell.rb -client"
   end
 end
 
 task :run do
   desc 'Run server for public'
-  sh "./bin/shotgun -p 3000 web/public/config.ru"
+  sh "bundle exec shotgun -p 3000 web/public/config.ru"
 end
 
 namespace :run do
   desc 'Run server for private'
   task :private do
-    sh "./bin/shotgun -p 3000 web/private/config.ru"
+    sh "bundle exec shotgun -p 3000 web/private/config.ru"
   end
 end
 

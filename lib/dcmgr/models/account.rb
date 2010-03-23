@@ -2,7 +2,7 @@ module Dcmgr
   module Models
     class Account < Base
       set_dataset :accounts
-      def self.prefix_uuid; 'A'; end
+      set_prefix_uuid 'A'
       
       many_to_many :users
       many_to_many :tags, :join_table=>:tag_mappings,

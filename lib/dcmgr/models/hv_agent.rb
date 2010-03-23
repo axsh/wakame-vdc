@@ -2,7 +2,8 @@ module Dcmgr
   module Models
     class HvAgent < Base
       set_dataset :hv_agents
-      def self.prefix_uuid; 'HVA'; end
+      set_prefix_uuid 'HVA'
+
       many_to_one :hv_controller
       many_to_one :physical_host
       one_to_many :instances

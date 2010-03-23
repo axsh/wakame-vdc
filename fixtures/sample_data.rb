@@ -34,8 +34,7 @@ physical_host_c = PhysicalHost.create(:cpus=>1, :cpu_mhz=>2.0,
                                       :hypervisor_type=>'xen')
 PhysicalHost[physical_host_c.id].remove_tag(Tag.system_tag(:STANDBY_INSTANCE))
 
-hv_controller = HvController.create(:physical_host=>physical_host_a,
-                                    :ip=>'192.168.1.10')
+hv_controller = HvController.create(:access_url=>'http://192.168.1.10/')
 
 hv_agent_a = HvAgent.create(:hv_controller=>hv_controller,
                             :physical_host=>physical_host_a,

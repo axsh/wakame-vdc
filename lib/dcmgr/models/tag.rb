@@ -2,7 +2,7 @@ module Dcmgr
   module Models
     class Tag <  Base
       set_dataset :tags
-      def self.prefix_uuid; 'TAG'; end
+      set_prefix_uuid 'TAG'
 
       TYPE_NORMAL = 0
       TYPE_AUTH = 1

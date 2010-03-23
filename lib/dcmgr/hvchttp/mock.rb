@@ -18,8 +18,9 @@ module Dcmgr
       self.hvas[hva_ip]
     end
 
-    def find_hvas(hvc_ip)
-      hvc = HvController[:ip=>hvc_ip]
+    def find_hvas(host, port)
+      url = "http://#{host}#{if port == 80 then "" else ":" + port.to_s end}/"
+      hvc = HvController[:access_url=>url]
       return [] unless hvc
       find_hvas_byhvc(hvc)
     end
@@ -27,7 +28,7 @@ module Dcmgr
     def find_hvas_byhvc(hvc)
       ret = {}
       hvc.hv_agents.each{|hva|
-        hva_data = Hva.new(hva.ip,
+        hva_data = HvaStore.new(hva.ip,
                            hva.instances)
         ret[hva.ip] = hva_data
       }
@@ -35,13 +36,13 @@ module Dcmgr
     end
     
     def open(host, port=3000, &block)
-      hvas = find_hvas(host)
+      hvas = find_hvas(host, port)
       conn = HvcHttpMockConnection.new(hvas)
       conn.extend HvcAccess
       block.call(conn)
     end
 
-    class Hva
+    class HvaStore
       def initialize(hva_ip, instances={})
         @ip = hva_ip
         @instances = {}

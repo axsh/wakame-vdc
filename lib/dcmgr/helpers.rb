@@ -29,8 +29,9 @@ module Dcmgr
         }
       end
       
-      Dcmgr.logger.debug("request: " + ret.inspect)
-      ret        
+      logger.debug "request: #{ret.inspect}"
+
+      ret
     end
   end
 
@@ -40,17 +41,25 @@ module Dcmgr
     end
 
     def authorized?
+      @fsuser = Dcmgr::FsuserAuthorizer.authorize(request)
       user_uuid = request.env['HTTP_X_WAKAME_USER']
       if user_uuid
-        authorize(user_uuid)
+        user = authorize(user_uuid)
       else
         false
       end
+    rescue Dcmgr::FsuserAuthorizer::NotAuthorized
+      throw(:halt, [401, "Not authorized\n"])
     end
 
     def authorize(uuid, password=nil)
-      @user = Models::User[uuid]
-      @user
+      @user = Models::User[uuid].tap{|user|
+        Models::Log.create(:fsuser=>@fsuser,
+                           :target_uuid=>user.uuid,
+                           :user_id=>user.id,
+                           :account_id=>0,
+                           :action=>'login')
+      }
     end
 
     def authorized_user
