@@ -466,6 +466,22 @@ module Dcmgr
       end
     end
 
+    class Log
+      include Dcmgr::RestModels::Base
+      model Models::Log
+      public_action :get do
+        Models::LocationGroup.all
+      end
+    end
+
+    class AccountLog
+      include Dcmgr::RestModels::Base
+      model Models::Log
+      public_action :get do
+        Models::LocationGroup.all
+      end
+    end
+
     class LocationGroup
       include Dcmgr::RestModels::Base
       model Models::LocationGroup
