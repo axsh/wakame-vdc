@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+begin
+  # Try to require the preresolved locked set of gems.
+  require File.expand_path('../../../.bundle/environment', __FILE__)
+rescue LoadError
+  # Fall back on doing an unlocked resolve at runtime.
+  require "rubygems"
+  require "bundler"
+  Bundler.setup(File.expand_path('../../', __FILE__))
+end
+
+
+$:.unshift File.expand_path('../.', __FILE__)
+
+require 'irb'
+require 'irb/completion'
+require 'client'
+
+
+Dcmgr::Client::Base.site=ENV['DCMGRSH_ENDPOINT_URI'] || 'http://dcmgr/'
+Dcmgr::Client::Base.user_uuid=ENV['DCMGRSH_USER'] || 'anonymous'
+
+include Dcmgr::Client
+
+Readline.completion_proc = proc { |input|
+  bind = IRB.conf[:MAIN_CONTEXT].workspace.binding
+  
+  input.lstrip!
+  class_candidates = Dcmgr::Client.constants
+
+  case input
+  when /^([A-Z]\w+)\.(\w*)/
+    recv = $1
+    method_candidates = eval("#{recv}.public_methods", bind) - ActiveResource.public_methods
+    if $2
+      method_candidates = method_candidates.grep(/^#{Regexp.quote($2)}/)
+    end
+    method_candidates.map{|m| "#{recv}.#{m}"}
+  when /^([A-Z]\w*)/
+    
+    c = Regexp.quote($1)
+    class_candidates.grep(/^#{c}/) #.collect{|e| receiver + "::" + e}
+    
+  else
+    class_candidates
+  end
+}
+
+IRB.start

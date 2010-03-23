@@ -5,7 +5,7 @@ rescue LoadError
   # Fall back on doing an unlocked resolve at runtime.
   require "rubygems"
   require "bundler"
-  Bundler.setup
+  Bundler.setup(:root=>File.expand_path('../../../', __FILE__))
 end
 $:.unshift "#{File.dirname(__FILE__)}/../../lib"
 

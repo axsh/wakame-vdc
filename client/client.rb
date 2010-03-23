@@ -1,7 +1,5 @@
-require 'active_resource'
 
-URL = 'http://__test__:passwd@localhost:3000'
-USER_UUID = 'U-XXXXXXXX'
+require 'active_resource'
 
 # Custom Active Resource Class, add request header parameter user_uuid
 #
@@ -12,6 +10,7 @@ USER_UUID = 'U-XXXXXXXX'
 # end
 module Dcmgr
   module Client
+
     class CertificatedActiveResource < ActiveResource::Base
       class Connection < ActiveResource::Connection
         attr_accessor :user_uuid
@@ -42,8 +41,6 @@ module Dcmgr
     end
 
     class Base < CertificatedActiveResource
-      self.site = URL
-      self.user_uuid = USER_UUID
     end
 
     class Instance < Base; end
