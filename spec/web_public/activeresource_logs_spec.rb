@@ -25,4 +25,3 @@ describe "log access by active resource" do
     pending # => response account, instance, status, server type, time(minute)
   end
 end
-
