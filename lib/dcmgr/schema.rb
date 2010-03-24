@@ -172,10 +172,10 @@ module Dcmgr
       @db.create_table? :account_logs do
         primary_key :id, :type=>Integer
         Date :target_date, :null=>false
-        Fixnum :user_id, :null=>false
         Fixnum :account_id, :null=>false
         String :target_uuid, :fixed=>true, :size=>32, :null=>false
-        Fixnum :use_minutes, :null=>false
+        Fixnum :target_type, :size=>2 # same tag_mappings.target_type
+        Fixnum :usage_value, :null=>false
         DateTime :created_at, :null=>false
       end
       
