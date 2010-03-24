@@ -28,35 +28,66 @@ describe "account log" do
   end
 
   it "should get instance, account, minute) by month" do
-    year = 2010; month = 1
-
     Log.destroy
 
+    #    | prev month | current month |
+    # A) |                 <--->
+    # B) |                 <----------
+    # C) |   <------------------------
+    # D) |   <------------->
+    # E) |   <----------> <--> <--> <-
+
+    # A)
     Log.create(:action=>'run',
                :target_uuid=>'I-00000001',
                :account=>Account[1],
-               :user=>User[1]).update(:created_at=>Time.gm(year, month, 1))
-
+               :user=>User[1]).update(:created_at=>Time.gm(2010, 1, 1))
     Log.create(:action=>'terminate',
                :target_uuid=>'I-00000001',
                :account=>Account[1],
-               :user=>User[1]).update(:created_at=>Time.gm(year, month, 10))
+               :user=>User[1]).update(:created_at=>Time.gm(2010, 1, 10))
 
+    # B)
     Log.create(:action=>'run',
                :target_uuid=>'I-00000002',
                :account=>Account[1],
-               :user=>User[1]).update(:created_at=>Time.gm(year, month, 3))
+               :user=>User[1]).update(:created_at=>Time.gm(2010, 1, 3))
 
-    AccountLog.generate(year, month)
+
+    # C)
+    Log.create(:action=>'run',
+               :target_uuid=>'I-00000003',
+               :account=>Account[2],
+               :user=>User[1]).update(:created_at=>Time.gm(2009, 12, 25))
+    Log.create(:action=>'run',
+               :target_uuid=>'I-00000004',
+               :account=>Account[2],
+               :user=>User[1]).update(:created_at=>Time.gm(2009, 12, 25))
+    Log.create(:action=>'terminate',
+               :target_uuid=>'I-00000004',
+               :account=>Account[2],
+               :user=>User[1]).update(:created_at=>Time.gm(2009, 12, 31))
+
+    before_instances = AccountLog.before_run_instance_uuid(2010, 1)
+    before_instances.length.should == 1
+    target_uuid = before_instances.keys[0]
+    before_instances[target_uuid].account_id.should == Account[2].id
+    before_instances[target_uuid].target_uuid.should == 'I-00000003'
+    
+    AccountLog.generate(2010, 1)
     logs = AccountLog.filter('YEAR(target_date) = ? AND MONTH(target_date) = ?',
-                             year, month).all
+                             2010, 1).all
 
     logs[0].target_uuid.should == 'I-00000001'
     logs[0].account.should == Account[1]
-    logs[0].usage_value.should == 12960
+    logs[0].usage_value.should == 60 * 24 * 9
 
     logs[1].target_uuid.should == 'I-00000002'
     logs[1].account.should == Account[1]
-    logs[1].usage_value.should == 41760
+    logs[1].usage_value.should == 60 * 24 * 29
+
+    logs[2].target_uuid.should == 'I-00000003'
+    logs[2].account.should == Account[2]
+    logs[2].usage_value.should == 60 * 24 * 31
   end
 end
