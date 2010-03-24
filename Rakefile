@@ -85,5 +85,23 @@ namespace :db do
     Dcmgr::Schema.load_data 'fixtures/sample_data'
   end
 
+  desc 'Install a range of ip addrs and paired mac addr together'
+  task :install_ip => [:environment] do
+    require 'dcmgr'
+    require 'ipaddr'
+    ip_group = Dcmgr::Models::IpGroup.find(:name=>ENV['IP_GROUP']) || abort("No such ip group: #{ENV['IP_GROUP']}")
+    ip_start = IPAddr.new(ENV['IP_BEGIN'])
+    range_num = ENV['RANGE'].to_i
+
+    Dcmgr::Models::Ip.db.transaction do
+      range_num.times { |n|
+        ip_cur = IPAddr.new(ip_start.to_i + n, Socket::AF_INET)
+        #random mac addr generation
+        mac = Array.new(6).map{"%02x" % rand(0xff) }.join(':')
+        Dcmgr::Models::Ip.create({:ip=>ip_cur.to_s, :mac=>mac, :ip_group_id=>ip_group.id,:status=>0})
+      }
+    end
+  end
+
   task :reset => [ :drop, :init ]
 end
