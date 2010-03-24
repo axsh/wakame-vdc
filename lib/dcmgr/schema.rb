@@ -178,7 +178,7 @@ module Dcmgr
         Fixnum :usage_value, :null=>false
         DateTime :created_at, :null=>false
       end
-      
+
       initial_data
     end
 
@@ -234,4 +234,3 @@ module Dcmgr
     end
   end
 end
-
