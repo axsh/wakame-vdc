@@ -14,7 +14,19 @@ module Dcmgr
       def validate
         errors.add(:account, "can't empty") unless (self.account or self.account_id)
         errors.add(:tareget_uuid, "can't empty") unless self.target_uuid
-        errors.add(:user, "can't empty") unless (self.user or self.user_id)
+        errors.add(:target_type, "can't empty") unless self.target_type
+        errors.add(:usage_value, "can't empty") unless self.usage_value
+      end
+
+      def self.last_date(year, month)
+        next_year = month == 12? year + 1: year
+        next_month = month == 12? 1: month + 1
+        t = Time.local(next_year, next_month, 1)
+        if t > (now = Time.now)
+          now
+        else
+          t
+        end
       end
 
       def self.generate(year, month)
@@ -26,20 +38,33 @@ module Dcmgr
             {:action=>i.action, :date=>i.created_at}
           }
           status = "terminate"
-          min = 0.0
+          usage_sec = 0.0
           start = nil
+
           logs.each{|lg|
+            p lg
             if lg[:action] == "run"
               start = lg[:date]
             elsif lg[:action] == "terminate"
-              min += (lg[:date] - start) / 1000
+
+              usage_sec += lg[:date] - start
             end
           }
-          create(:target_date=>Time.gm(year, month),
-                 :user_id=>l.user_id,
+
+          if logs.last[:action] == "run"
+            p "lst"
+            p last_date(year, month)
+            p logs.last[:date]
+            p usage_sec
+            usage_sec += last_date(year, month) - logs.last[:date]
+            p usage_sec
+          end
+
+          create(:target_date=>Time.local(year, month),
                  :account_id=>l.account_id,
                  :target_uuid=>l.target_uuid,
-                 :use_minutes=>min)
+                 :target_type=>TagMapping::TYPE_INSTANCE,
+                 :usage_value=>(usage_sec / 60).ceil)
         }
       end
 
@@ -57,7 +82,7 @@ module Dcmgr
 
       def self.clear(year, month)
         filter('YEAR(target_date) = ? AND MONTH(target_date) = ?',
-               year, month).delete
+               year, month).tap{|o| p o.sql }.delete
       end
     end
   end
