@@ -68,11 +68,22 @@ describe "account log" do
                :account=>Account[2],
                :user=>User[1]).update(:created_at=>Time.gm(2009, 12, 31))
 
-    before_instances = AccountLog.before_run_instance_uuid(2010, 1)
-    before_instances.length.should == 1
-    target_uuid = before_instances.keys[0]
-    before_instances[target_uuid].account_id.should == Account[2].id
-    before_instances[target_uuid].target_uuid.should == 'I-00000003'
+    # D)
+    Log.create(:action=>'run',
+               :target_uuid=>'I-00000005',
+               :account=>Account[2],
+               :user=>User[1]).update(:created_at=>Time.gm(2009, 1, 2))
+    Log.create(:action=>'terminate',
+               :target_uuid=>'I-00000005',
+               :account=>Account[2],
+               :user=>User[1]).update(:created_at=>Time.gm(2010, 1, 2))
+
+    p preview_month_instances = AccountLog.preview_month_instances(2010, 1)
+    
+    preview_month_instances.length.should == 2
+    target_uuid = preview_month_instances.keys[0]
+    preview_month_instances[target_uuid].account_id.should == Account[2].id
+    preview_month_instances[target_uuid].target_uuid.should == 'I-00000003'
     
     AccountLog.generate(2010, 1)
     logs = AccountLog.filter('YEAR(target_date) = ? AND MONTH(target_date) = ?',
@@ -89,5 +100,9 @@ describe "account log" do
     logs[2].target_uuid.should == 'I-00000003'
     logs[2].account.should == Account[2]
     logs[2].usage_value.should == 60 * 24 * 31
+
+    logs[3].target_uuid.should == 'I-00000005'
+    logs[3].account.should == Account[2]
+    logs[3].usage_value.should == 60 * 24 * 1
   end
 end
