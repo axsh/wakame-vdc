@@ -11,7 +11,7 @@ require 'active_resource'
 module Dcmgr
   module Client
 
-    class CertificatedActiveResource < ActiveResource::Base
+    class Base < ActiveResource::Base
       class Connection < ActiveResource::Connection
         attr_accessor :user_uuid
         
@@ -22,14 +22,19 @@ module Dcmgr
       
       class << self
         def user_uuid
-          read_inheritable_attribute(:user_uuid)
+          if defined?(@user_uuid)
+            @user_uuid
+          elsif superclass != Object && superclass.user_uuid
+            superclass.user_uuid
+          end
         end
 
-        def user_uuid=(uuid)
-          write_inheritable_attribute(:user_uuid, uuid)
-        end
+        attr_writer :user_uuid
         
         def connection(refresh = false)
+          puts "user_uuid"
+          p user_uuid
+          
           @connection = Connection.new(site, format) if refresh ||
             @connection.nil?
           @connection.user_uuid = user_uuid if user_uuid
@@ -38,9 +43,6 @@ module Dcmgr
       end
 
       self.format = :json
-    end
-
-    class Base < CertificatedActiveResource
     end
 
     class Instance < Base; end
