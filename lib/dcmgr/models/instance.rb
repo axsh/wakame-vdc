@@ -74,10 +74,7 @@ module Dcmgr
 
       def after_create
         super
-        ips = Dcmgr::IPManager.assign_ips(self)
-        ips.each{|ip|
-          Dcmgr::logger.debug "assigned ip: [#{self.uuid}], mac: #{ip[:mac]}, ip: #{ip[:ip]}"
-        }
+        Dcmgr::IPManager.assign_ips(self)
       end
 
       def validate
