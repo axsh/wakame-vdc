@@ -38,7 +38,7 @@ module ActiveResourceHelperMethods
 
     eval(<<-END)
     module Test
-      class #{model_name} < Dcmgr::Client::CertificatedActiveResource
+      class #{model_name} < Dcmgr::Client::Base
         self.site = "#{site}"
         self.format = :json
         self.user_uuid = '#{user_uuid}'
