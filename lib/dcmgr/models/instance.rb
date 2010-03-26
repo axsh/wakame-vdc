@@ -15,7 +15,7 @@ module Dcmgr
 
       module ExtendIpAssoc
         def find_by_group_name(group_name)
-          filter(:ip_group_id=>IpGroup.find(:name=>group_name).id).all
+          filter(:ip_group_id=>IpGroup.find(:name=>group_name).id)
         end
       end
       one_to_many :ip, :extend=>ExtendIpAssoc
