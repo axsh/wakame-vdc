@@ -24,7 +24,7 @@ module Dcmgr
         def user_uuid
           if defined?(@user_uuid)
             @user_uuid
-          elsif superclass != Object && superclass.user_uuid
+          elsif superclass != Object && superclass.respond_to?(:user_uuid)
             superclass.user_uuid
           end
         end
