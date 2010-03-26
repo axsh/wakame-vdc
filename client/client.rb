@@ -32,9 +32,6 @@ module Dcmgr
         attr_writer :user_uuid
         
         def connection(refresh = false)
-          puts "user_uuid"
-          p user_uuid
-          
           @connection = Connection.new(site, format) if refresh ||
             @connection.nil?
           @connection.user_uuid = user_uuid if user_uuid
