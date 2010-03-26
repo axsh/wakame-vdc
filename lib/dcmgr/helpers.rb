@@ -60,6 +60,8 @@ module Dcmgr
                            :account_id=>0,
                            :action=>'login')
       }
+    rescue Dcmgr::Models::InvalidUUIDError => e
+      raise Dcmgr::FsuserAuthorizer::NotAuthorized.new
     end
 
     def authorized_user

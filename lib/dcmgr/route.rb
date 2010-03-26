@@ -25,8 +25,25 @@ module Dcmgr
       rescue StandardError => e
         logger.info "err! #{e}\n" +
           "  " + e.backtrace.join("\n  ")
-        throw :halt, [400, e.to_s]
+        code = Dcmgr.errorcode(e)
+        message = e.to_s
+        logger.info "code: #{code}, message: #{message}"
+        throw :halt, [code, message]
+
+      rescue e
+        logger.info "err! #{e}\n" +
+          "  " + e.backtrace.join("\n  ")
+        throw :halt, [500, e.to_s]
       end
+    end
+  end
+
+  def self.errorcode(e)
+    case e
+    when InvalidUUIDError, DuplicateUUIDError
+      400
+    else
+      500
     end
   end
 end
