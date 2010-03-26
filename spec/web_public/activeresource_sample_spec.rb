@@ -1,8 +1,22 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.expand_path(File.dirname(__FILE__) + '/../../client/client')
 
 describe "run instance access by active resource" do
   include ActiveResourceHelperMethods
 
+  it "should access by Dcmgr::Client" do
+    Dcmgr::Client::Base.site = 'http://localhost:19393'
+    Dcmgr::Client::Base.user_uuid = User[1].uuid
+
+    instance = Dcmgr::Client::Instance.create(:action_name=>'run',
+                                              :account=>Account[1].uuid,
+                                              :need_cpus=>1,
+                                              :need_cpu_mhz=>0.5,
+                                              :need_memory=>512,
+                                              :image_storage=>ImageStorage[1].uuid)
+    instance.should be_valid
+  end
+  
   it "should run/shutdown instance(sample code)" do
     reset_db
 
