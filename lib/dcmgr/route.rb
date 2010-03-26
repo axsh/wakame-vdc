@@ -27,7 +27,7 @@ module Dcmgr
           "  " + e.backtrace.join("\n  ")
         code = Dcmgr.errorcode(e)
         message = e.to_s
-        logger.info "code: #{code}, message: #{message}"
+        logger.info "exception #{e.class}, code: #{code}, message: #{message}"
         throw :halt, [code, message]
 
       rescue e
@@ -42,6 +42,8 @@ module Dcmgr
     case e
     when InvalidUUIDError, DuplicateUUIDError
       400
+    when PhysicalHostScheduler::NoPhysicalHostError
+      404
     else
       500
     end

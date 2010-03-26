@@ -55,7 +55,7 @@ describe "instance access for scheduling by active resource" do
                 :need_cpu_mhz=>0.5,
                 :need_memory=>1.0,
                 :image_storage=>ImageStorage[1].uuid)
-    }.should raise_error(ActiveResource::BadRequest)
+    }.should raise_error(ActiveResource::ResourceNotFound)
   end
 
   it "should schedule instances by schedule algorithm 2" do
