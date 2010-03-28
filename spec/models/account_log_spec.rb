@@ -90,7 +90,7 @@ describe "account log" do
     Log.create(:action=>'run',
                :target_uuid=>'I-00000006',
                :account=>Account[2],
-               :user=>User[1]).update(:created_at=>Time.gm(2009, 1, 5))
+               :user=>User[1]).update(:created_at=>Time.gm(2010, 1, 5))
     Log.create(:action=>'terminate',
                :target_uuid=>'I-00000006',
                :account=>Account[2],
@@ -98,7 +98,7 @@ describe "account log" do
     Log.create(:action=>'run',
                :target_uuid=>'I-00000006',
                :account=>Account[2],
-               :user=>User[1]).update(:created_at=>Time.gm(2009, 1, 20))
+               :user=>User[1]).update(:created_at=>Time.gm(2010, 1, 20))
     Log.create(:action=>'terminate',
                :target_uuid=>'I-00000006',
                :account=>Account[2],
@@ -106,7 +106,7 @@ describe "account log" do
     Log.create(:action=>'run',
                :target_uuid=>'I-00000006',
                :account=>Account[2],
-               :user=>User[1]).update(:created_at=>Time.gm(2009, 1, 31))
+               :user=>User[1]).update(:created_at=>Time.gm(2010, 1, 31))
 
     p preview_month_instances = AccountLog.preview_month_instances(2010, 1)
     
@@ -119,28 +119,29 @@ describe "account log" do
     logs = AccountLog.filter('YEAR(target_date) = ? AND MONTH(target_date) = ?',
                              2010, 1).all
 
+    # A)
     logs[0].target_uuid.should == 'I-00000001'
     logs[0].account.should == Account[1]
     logs[0].usage_value.should == 60 * 24 * 9
 
+    # B)
     logs[1].target_uuid.should == 'I-00000002'
     logs[1].account.should == Account[1]
     logs[1].usage_value.should == 60 * 24 * 29
 
+    # C)
     logs[2].target_uuid.should == 'I-00000003'
     logs[2].account.should == Account[2]
     logs[2].usage_value.should == 60 * 24 * 31
 
+    # D)
     logs[3].target_uuid.should == 'I-00000005'
     logs[3].account.should == Account[2]
     logs[3].usage_value.should == 60 * 24 * 1
 
+    # E)
     logs[4].target_uuid.should == 'I-00000006'
     logs[4].account.should == Account[2]
-    logs[4].usage_value.should == 60 * 24 * 1
-
-    logs[5].target_uuid.should == 'I-00000006'
-    logs[5].account.should == Account[2]
-    logs[45].usage_value.should == 60 * 24 * 5
+    logs[4].usage_value.should == 60 * 24 * 5 # 1 + 2 + 1 + 1 day
   end
 end
