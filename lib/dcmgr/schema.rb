@@ -106,7 +106,7 @@ module Dcmgr
         primary_key :id, :type=>Integer
         String :uuid, :fixed=>true, :size=>8, :null=>false
         index :uuid, :unique=>true
-        String :name, :fixed=>true, :size=>32, :null=>false
+        String :name, :size=>32, :null=>false
       end
 
       @db.create_table? :ips do
@@ -116,6 +116,8 @@ module Dcmgr
         String :ip, :fixed=>true, :size=>14, :null=>false
         Fixnum :instance_id
         Fixnum :status, :null=>false
+        index :mac, :unique=>true
+        index :ip, :unique=>true
       end
 
       @db.create_table? :hv_controllers do

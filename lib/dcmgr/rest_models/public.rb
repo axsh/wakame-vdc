@@ -280,22 +280,27 @@ module Dcmgr
         instance = nil
 
         Dcmgr.db.transaction do
-          req_hash[:image_storage] = Models::ImageStorage[req_hash[:image_storage]]
+          image = req_hash[:image_storage] = Models::ImageStorage[req_hash[:image_storage]]
           instance = _create(req_hash)
 
           hvc = instance.hv_agent.hv_controller
           Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
             begin
-              res = http.run_instance(instance.hv_agent.ip,
-                                      instance.uuid,
-                                      instance.ip.first.ip,
-                                      instance.ip.first.mac,
-                                      instance.need_cpus, instance.need_cpu_mhz,
-                                      instance.need_memory)
+              vnic_list = ['eth0'].map {|i|
+                ip = instance.ip_dataset.find_by_group_name(i).first
+                {:mac=>ip.mac, :ip=>ip.ip, :bridge=>i}
+              }
+              http.run_instance(instance.hv_agent.ip,
+                                instance.uuid,
+                                {:cpus=>instance.need_cpus,
+                                  :cpu_mhz => instance.need_cpu_mhz,
+                                  :memory=>instance.need_memory,
+                                  :vnic=>vnic_list,
+                                  :image_storage_uri=> image.storage_url
+                                })
             rescue => e
               raise e
             end
-            raise "can't controll hvc server" unless res.code == "200"
           }
           instance.status = Models::Instance::STATUS_TYPE_RUNNING
           

@@ -4,48 +4,37 @@ require 'net/http'
 
 module Dcmgr
   module HvcAccess
-    def run_instance(hva_ip, instance_uuid, instance_ip_addresses, instance_mac_addresses,
-                     cpus, cpu_mhz, memory, *opts)
-      _post(:action=>"run_instance",
-            :hva_ip=>hva_ip,
-            :instance_uuid=>instance_uuid,
-            :instance_ip_addresses=>instance_ip_addresses,
-            :instance_mac_addresses=>instance_mac_addresses,
-            :cpus=>cpus,
-            :cpu_mhz=>cpu_mhz,
-            :memory=>memory,
-            :opts=>opts)
+    def run_instance(hva_ip, instance_uuid, opts={})
+      _post("/instance/run_instance",
+            opts.dup.merge({:hva_ip=>hva_ip, :instance_uuid=>instance_uuid})
+            )
     end
     
     def terminate_instance(hva_ip, instance_uuid, *opts)
-      _post(:action=>"terminate_instance",
+      _post("/instance/terminate_instance",
             :hva_ip=>hva_ip,
             :instance_uuid=>instance_uuid,
             :opts=>opts)
     end
 
     def describe_instances(*opts)
-      _post(:action=>"describe_instances",
+      _post("/instance/describe_instances",
             :opts=>opts)
     end
 
-    def _post(params)
-      request = params.reject{|k,v| k == :opts}
-      if params[:opts].include? :url_only
-        request
-      else
-        get_response(request)
-      end
+    def _post(path, params)
+      get_response(path, params)
     end
   end
 
   module JsonHvcAccess
-    def get_response(request)
-      res = post('/', YAML.dump(request))
-      if res.code == 200
-        YAML.load(res.body)
+    def get_response(path, request)
+      require 'json'
+      res = post(path, JSON.dump(request), {'Content-Type'=>'text/javascript'})
+      if res.is_a? Net::HTTPSuccess
+        JSON.load(res.body)
       else
-        nil
+        raise "Failed request to hvc: #{res}"
       end
     end
   end

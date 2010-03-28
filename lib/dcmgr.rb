@@ -44,7 +44,8 @@ module Dcmgr
   end
   
   def hvchttp
-    @hvchttp ||= HvcHttpMock.new
+    #@hvchttp ||= HvcHttpMock.new
+    @hvchttp ||= HvcHttp.new
   end
 
   attr_writer :hvchttp

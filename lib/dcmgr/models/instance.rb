@@ -13,7 +13,12 @@ module Dcmgr
       many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id,
       :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
 
-      one_to_many :ip
+      module ExtendIpAssoc
+        def find_by_group_name(group_name)
+          filter(:ip_group_id=>IpGroup.find(:name=>group_name).id)
+        end
+      end
+      one_to_many :ip, :extend=>ExtendIpAssoc
 
       STATUS_TYPE_OFFLINE = 0
       STATUS_TYPE_RUNNING = 1
@@ -69,10 +74,7 @@ module Dcmgr
 
       def after_create
         super
-        ips = Dcmgr::IPManager.assign_ips(self)
-        ips.each{|ip|
-          Dcmgr::logger.debug "assigned ip: [#{self.uuid}], mac: #{ip[:mac]}, ip: #{ip[:ip]}"
-        }
+        Dcmgr::IPManager.assign_ips(self)
       end
 
       def validate
