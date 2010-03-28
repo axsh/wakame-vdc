@@ -1,3 +1,4 @@
+require 'digest/sha1'
 
 module Dcmgr
   class RoleError < StandardError; end
@@ -5,13 +6,39 @@ module Dcmgr
   module RoleExecutor
     class Base
       include Dcmgr::Models
+
+      @@inherited_classes = []
+
+      def self.inherited(subclass)
+        # check duplicate class name for generate class name hash
+        if @@inherited_classes.index(subclass)
+          raise "Deplicated class #{subclass.name}"
+        end
+
+        @@inherited_classes << subclass
+      end
     
       def initialize(target, params)
         @target = target
         @params = params
       end
 
-      def self.id; @id; end
+      def self.id
+        if @cached_id
+          @cached_id
+        end
+        @cached_id = generate_id
+      end
+
+      def self.generate_id
+        Digest::SHA1.hexdigest(self.name)[0,8]
+      end
+
+      def self.roles
+        @@inherited_classes.select{|c|
+          c.allow_types != nil
+        }
+      end
 
       def self.allow_types; @allow_types; end
 
@@ -21,9 +48,10 @@ module Dcmgr
 
       def evaluate(account, evaluator)
         Models::Tag.join(:tag_attributes,
-                         :tag_id=>:id).filter(:owner_id=>evaluator.id,
-                                      :tag_attributes__role=>self.class.id,
-                                      :account_id=>account.id).each{|tag|
+                         :tag_id=>:id).
+          filter(:owner_id=>evaluator.id,
+                 :tag_attributes__role=>self.class.id,
+                 :account_id=>account.id).each{|tag|
           unless class_target?
             return true if @target.tags.index{|t| tag.tags.include? t}
           end
@@ -60,7 +88,6 @@ module Dcmgr
     end
 
     class RunInstance < Base
-      @id = 1
       @allow_types = [TagMapping::TYPE_INSTANCE]
       
       def _execute(account, user, instance)
@@ -71,7 +98,6 @@ module Dcmgr
     end
 
     class ShutdownInstance < Base
-      @id = 2
       @allow_types = [TagMapping::TYPE_INSTANCE]
 
       private
@@ -83,22 +109,18 @@ module Dcmgr
     end
 
     class CreateAccount < CreateAction;
-      @id = 3
       @allow_types = [TagMapping::TYPE_ACCOUNT]
     end
 
     class DestroyAccount < DestroyAction
-      @id = 4
       @allow_types = [TagMapping::TYPE_ACCOUNT]
     end
 
     class CreateImageStorage < CreateAction
-      @id = 5
       @allow_types = [TagMapping::TYPE_IMAGE_STORAGE]
     end
 
     class GetImageStorage < Base
-      @id = 6
       @allow_types = [TagMapping::TYPE_IMAGE_STORAGE]
 
       private
@@ -108,66 +130,44 @@ module Dcmgr
     end
 
     class DestroyImageStorage < DestroyAction
-      @id = 7
       @allow_types = [TagMapping::TYPE_IMAGE_STORAGE]
     end
 
     class CreateImageStorageHost < CreateAction
-      @id = 8
       @allow_types = [TagMapping::TYPE_IMAGE_STORAGE_HOST]
     end
 
     class DestroyImageStorageHost < DestroyAction
-      @id = 9
       @allow_types = [TagMapping::TYPE_IMAGE_STORAGE_HOST]
     end
 
     class CreatePhysicalHost < CreateAction
-      @id = 10
       @allow_types = [TagMapping::TYPE_PHYSICAL_HOST]
     end
 
     class DestroyPhysicalHost < DestroyAction
-      @id = 11
       @allow_types = [TagMapping::TYPE_PHYSICAL_HOST]
     end
 
     class CreateHvController < CreateAction
-      @id = 12
       @allow_types = [TagMapping::TYPE_HV_CONTROLLER]
     end
 
     class DestroyHvController < DestroyAction
-      @id = 13
       @allow_types = [TagMapping::TYPE_HV_CONTROLLER]
     end
 
     class CreateHvAgent < CreateAction
-      @id = 14
       @allow_types = [TagMapping::TYPE_HV_AGENT]
     end
 
     class DestroyHvAgent < DestroyAction
-      @id = 15
       @allow_types = [TagMapping::TYPE_HV_AGENT]
     end
 
-    @roles = [RunInstance,
-              ShutdownInstance,
-              CreateAccount,
-              DestroyAccount,
-              CreateImageStorage,
-              GetImageStorage,
-              DestroyImageStorage,
-              CreateImageStorageHost,
-              DestroyImageStorageHost,
-              CreatePhysicalHost,
-              DestroyPhysicalHost,
-              CreateHvController,
-              DestroyHvController,
-              CreateHvAgent,
-              DestroyHvAgent,
-             ]
+    def self.roles
+      Base.roles
+    end
 
     def self.get(target, action, params={})
       rolename = if target.class == Class
@@ -182,12 +182,8 @@ module Dcmgr
         Dcmgr::logger.debug "unmatch role name: #{rolename}"
         return nil
       end
-      return nil unless @roles.include? roleclass
+      return nil unless roles.include? roleclass
       roleclass.new(target, params)
-    end
-
-    def self.roles
-      @roles
     end
   end
 
