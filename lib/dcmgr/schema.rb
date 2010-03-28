@@ -148,7 +148,7 @@ module Dcmgr
 
       @db.create_table? :tag_attributes do
         key :tag_id, :type=>Integer
-        Fixnum :role, :null=>false # only auth tag, if name tag then 0
+        String :role, :fixed=>true, :size=>8 # RoleExecutor class uiid, only auth tag
         File :body, :size=>:medium
       end
 
