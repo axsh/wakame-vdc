@@ -12,10 +12,12 @@ describe Dcmgr::HvcHttp do
     @hvchttp = Dcmgr::HvcHttpMock.new
   end
 
-  it "should dummy access" do
+  it "should access" do
     @hvchttp.open('localhost', 19393) {|http|
-      res = http.get_response({})
-      res.should be_nil
+      proc {
+        # access POST "/" to public server
+        http.get_response("/", {})
+      }.should raise_error(RuntimeError) # not found
     }
   end
 end
