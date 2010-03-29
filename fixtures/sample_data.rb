@@ -9,13 +9,13 @@ user.add_account(account_a)
 image_storage_host = ImageStorageHost.create
 image_storage = ImageStorage.create(:image_storage_host=>image_storage_host)
 
-ip_group_eth0 = IpGroup.create(:name=>'eth0')
+ip_group_newbr0 = IpGroup.create(:name=>'newbr0')
 ip_group_eth1 = IpGroup.create(:name=>'eth1')
 
 100.times{|i|
   Ip.create(:ip=>"192.168.1.#{i}",
             :mac=>"00:00:%d" % i,
-            :ip_group=>ip_group_eth0)
+            :ip_group=>ip_group_newbr0)
   Ip.create(:ip=>"192.168.11.#{i + 200}",
             :mac=>"00:16:%d" % i,
             :ip_group=>ip_group_eth1)
