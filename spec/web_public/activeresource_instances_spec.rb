@@ -95,8 +95,18 @@ describe "instance access by active resource" do
       instances[real_inst.ip][1].should == :offline
   end
 
+  it "should validate and return errors" do
+    instance = @c.new(:account=>Account[1].id,
+                      :need_cpus=>1,
+                      :need_cpu_mhz=>0.5,
+                      :need_memory=>0.5)
+    instance.save_with_validation.should be_false
+    p instance.errors.full_messages
+    instance.valid?.should be_false
+    instance.errors.should_not be_empty
+  end    
+
   it "should shutdown by sample data, and raise role error" do
-    pending
     instance = @c.create(:account=>Account[1].id,
                              :need_cpus=>1,
                              :need_cpu_mhz=>0.5,
