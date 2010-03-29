@@ -6,19 +6,6 @@ module Dcmgr
 
     class NoAssignIPError < StandardError; end
 
-    @check_assigned = @default_check_assigned = lambda{|ip|
-      ip.instance.nil?
-    }
-    
-    def set_assigned?(&block)
-      @check_assigned = block
-    end
-
-    def set_default_assigned?
-      @check_assigned = @default_check_assigned
-    end
-    
-
     # pick each IP from respective groups. The eth0 group only be
     # looked up for the time being.
     def assign_ips(instance)
@@ -44,25 +31,5 @@ module Dcmgr
         ip_obj.save
       }
     end
-
-    def assigned?(ip)
-      @check_assigned.call(ip)
-    end
-
-    def assign_ips_old1(instance=nil)
-      Dcmgr.db.transaction do
-        ips = Models::IpGroup.map{|group|
-          ip = group.ips.find{|i| assigned?(i)} or
-          raise NoAssignIPError
-          
-          {:group_name=>group.name,
-            :group=>group,
-            :ip=>ip}
-        }.tap{|ips|
-          assign_ips_to(instance, ips) if instance
-        }
-      end
-    end
-    
   end
 end
