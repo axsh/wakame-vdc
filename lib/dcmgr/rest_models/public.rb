@@ -327,7 +327,32 @@ module Dcmgr
       end
 
       public_action_withid :put, :reboot do
-        [] # TODO: reboot action
+        instance = Models::Instance[uuid]
+        Dcmgr.logger.debug("terminating instance: #{instance.uuid}")
+
+        instance.status = Models::Instance::STATUS_TYPE_TERMINATING
+        instance.save
+
+        hvc = instance.hv_agent.hv_controller
+        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
+          begin
+            res = http.terminate_instance(instance.hv_agent.ip,
+                                          instance.uuid)
+          rescue => e
+            raise e
+          end
+          raise "can't controll hvc server" unless res.code == "200"
+
+          begin
+            res = http.run_instance(instance.hv_agent.ip,
+                                    instance.uuid)
+          rescue => e
+            raise e
+          end
+          raise "can't controll hvc server" unless res.code == "200"
+        }
+        
+        []
       end
 
       public_action_withid :put, :shutdown do
@@ -348,13 +373,8 @@ module Dcmgr
           raise "can't controll hvc server" unless res.code == "200"
         }
         
-        #Models::Log.create(:user=>user,
-        #                   :account_id=>request[:account].to_i,
-        #                   :target_uuid=>instance.uuid,
-        #                   :action=>'shutdown')
-        
         []
-        
+
         # TODO check shutdown role
         #begin
         #  Dcmgr.evaluate(user, instance, :shutdown)
