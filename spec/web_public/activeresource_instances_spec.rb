@@ -141,7 +141,7 @@ describe "instance access by active resource" do
   end
 
   it "should reboot" do
-    real_instance = Instance.create(:status=>0, # offline
+    real_instance = Instance.create(:status=>Instance::STATUS_TYPE_ONLINE,
                                     :account=>Account[1],
                                     :user=>User[1],
                                     :image_storage=>ImageStorage[1],
@@ -150,8 +150,18 @@ describe "instance access by active resource" do
                                     :need_memory=>500,
                                     :hv_agent=>HvAgent[1])
     instance = @c.find(real_instance.uuid)
+
+    hvchttp = Dcmgr::HvcHttpMock.new
+    Dcmgr::hvchttp = hvchttp
+
+    hvchttp.hvas[real_instance.hv_agent.ip].instances[real_instance.ip][1].should == :online
+
     instance.put(:reboot)
-    pending("check hvc mock server's status")
+    
+    instance = @c.find(real_instance.uuid)
+    instance.status.should == Instance::STATUS_TYPE_ONLINE
+    
+    hvchttp.hvas[real_instance.hv_agent.ip].instances[real_instance.ip][1].should == :online
   end
   
   it "should terminate" do
