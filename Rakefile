@@ -92,16 +92,35 @@ namespace :db do
     ip_group = Dcmgr::Models::IpGroup.find(:name=>ENV['IP_GROUP']) || abort("No such ip group: #{ENV['IP_GROUP']}")
     ip_start = IPAddr.new(ENV['IP_BEGIN'])
     range_num = ENV['RANGE'].to_i
-
+    # mac vendor address is generated among the local address space. (2,6,a,e)
+    vendor_mac = ENV['VENDOR_MAC'] || [("%x%x" % [rand(0xf), %w(0x2 0x6 0xa 0xe)[rand(3).to_i]]),
+                                       ("%02x" % rand(0xff)),
+                                       ("%02x" % rand(0xff))
+                                      ].join(':')
     Dcmgr::Models::Ip.db.transaction do
       range_num.times { |n|
         ip_cur = IPAddr.new(ip_start.to_i + n, Socket::AF_INET)
-        #random mac addr generation
-        mac = Array.new(6).map{"%02x" % rand(0xff) }.join(':')
-        Dcmgr::Models::Ip.create({:ip=>ip_cur.to_s, :mac=>mac, :ip_group_id=>ip_group.id,:status=>0})
+        #random mac addr generation for three lower digits.
+        lower_mac = Array.new(3).map{"%02x" % rand(0xff) }.join(':')
+        Dcmgr::Models::Ip.create({:ip=>ip_cur.to_s, :mac=>[vendor_mac, lower_mac].join(':'), :ip_group_id=>ip_group.id,:status=>0})
       }
     end
   end
 
   task :reset => [ :drop, :init ]
 end
+
+desc "Generate dnsmasq.conf has mac and ip address pair."
+task :gen_dnsmasq => [:environment] do
+  require 'dcmgr'
+  require 'erb'
+  iplist = Dcmgr::Models::Ip.all
+  File.open('dnsmasq.conf', 'w') { |f|
+    f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+<%- iplist.each do |ip| -%>
+dhcp-host=<%= ip[:mac] %>,<%= ip[:ip] %>
+<%- end -%>
+_EOS_
+  }
+end
+

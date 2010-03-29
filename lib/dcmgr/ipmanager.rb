@@ -6,13 +6,25 @@ module Dcmgr
 
     class NoAssignIPError < StandardError; end
 
-    # pick each IP from respective groups. The eth0 group only be
+    @check_assigned = @default_check_assigned = lambda{|ip|
+      ip.instance.nil?
+    }
+    
+    def set_assigned?(&block)
+      @check_assigned = block
+    end
+
+    def set_default_assigned?
+      @check_assigned = @default_check_assigned
+    end
+    
+
+    # pick each IP from respective groups. The newbr0 group only be
     # looked up for the time being.
     def assign_ips(instance)
       Dcmgr.db.transaction do
-        %w(eth0).each { |i|
+        %w(newbr0).each { |i|
           ds = Models::Ip.find_by_group_name(i).filter('instance_id IS NULL')
-          p ds.sql
           raise "no available IP in #{i} group" if ds.count < 1
           assigned_ip = ds.limit(1, rand(ds.count)).first
           assigned_ip.instance = instance

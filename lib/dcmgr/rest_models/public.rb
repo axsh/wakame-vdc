@@ -286,7 +286,7 @@ module Dcmgr
           hvc = instance.hv_agent.hv_controller
           Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
             begin
-              vnic_list = ['eth0'].map {|i|
+              vnic_list = ['newbr0'].map {|i|
                 ip = instance.ip_dataset.find_by_group_name(i).first
                 {:mac=>ip.mac, :ip=>ip.ip, :bridge=>i}
               }
