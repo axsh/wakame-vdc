@@ -4,6 +4,7 @@ module Dcmgr
   def self.route(rest_class, method, block, params2)
     proc do |*request_ids|
       logger.debug "URL: #{method} #{request.url} #{request_ids}"
+      content_type 'application/json', :charset => 'utf-8'
 
       begin
         user = protected! if rest_class.protect?
@@ -26,9 +27,9 @@ module Dcmgr
         logger.info "err! #{e}\n" +
           "  " + e.backtrace.join("\n  ")
         code = Dcmgr.errorcode(e)
-        message = e.to_s
-        logger.info "exception #{e.class}, code: #{code}, message: #{message}"
-        throw :halt, [code, message]
+        body = {"errors"=>[e.to_s]}.to_json
+        logger.info "exception #{e.class}, code: #{code}, body: #{body}"
+        throw :halt, [code, body]
 
       rescue e
         logger.info "err! #{e}\n" +
@@ -44,6 +45,8 @@ module Dcmgr
       400
     when PhysicalHostScheduler::NoPhysicalHostError
       404
+    when Sequel::ValidationFailed
+      422
     else
       500
     end
