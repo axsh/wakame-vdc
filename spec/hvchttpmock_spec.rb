@@ -27,21 +27,12 @@ describe Dcmgr::HvcHttpMock do
     instance = Instance[1]
 
     @hvchttp.open('192.168.1.10', 80) {|http|
-      req = http.run_instance(instance.hv_agent.ip, instance.uuid,
-                              instance.ip_addresses, instance.mac_addresses, 1, 1.0, 2.0, :url_only)
-      req.should == {:action=>"run_instance",
-        :hva_ip=>instance.hv_agent.ip,
-        :instance_uuid=>instance.uuid,
-        :instance_ip_addresses=>instance.ip_addresses,
-        :instance_mac_addresses=>instance.mac_addresses,
-        :cpus=>1,
-        :cpu_mhz=>1.0,
-        :memory=>2.0}
-      
       res = http.run_instance(instance.hv_agent.ip, instance.uuid,
-                              instance.ip_addresses,
-                              instance.mac_addresses,
-                              1, 1.0, 2.0)
+                              :ip_address=>instance.ip_addresses,
+                              :mac_addresses=>instance.mac_addresses,
+                              :need_cpus=>1,
+                              :need_cpu_mhz=>1.0,
+                              :need_memory=>2.0)
       res.success?.should be_true
       res.body.should == "ok"
     }
@@ -59,12 +50,6 @@ describe Dcmgr::HvcHttpMock do
     @hvchttp.hva('192.168.1.20').instances.values[0][1].should == :running
 
     @hvchttp.open('192.168.1.10', 80) {|http|
-      req = http.terminate_instance('192.168.1.20', 'I-12345678', :url_only)
-      req.should == {:action=>"terminate_instance",
-        :hva_ip=>"192.168.1.20",
-        :instance_uuid=>"I-12345678"
-      }
-      
       res = http.terminate_instance('192.168.1.20', instance.uuid)
       res.success?.should be_true
       res.body.should == "ok"
@@ -74,9 +59,6 @@ describe Dcmgr::HvcHttpMock do
   
   it "should get describe instances" do
     @hvchttp.open('192.168.1.10', 80) {|http|
-      req = http.describe_instances(:url_only)
-      req.should == {:action=>"describe_instances"}
-
       res = http.describe_instances
       res.success?.should be_true
       ret = JSON.parse(res.body) # json decode res.body
@@ -90,7 +72,7 @@ describe Dcmgr::HvcHttpMock do
 
   it "should error access" do
     @hvchttp.open('192.168.1.10', 1080) {|http|
-      res = http.get_response({})
+      res = http.get_response("/not_found", {})
       res.success?.should be_false
       res.status.should == 404
     }

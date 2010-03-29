@@ -108,30 +108,29 @@ module Dcmgr
       @hvas = hvas
     end
 
-    def get_response(req)
+    def get_response(path, params)
       return HvcHttpMockResponse.new(404, "") unless @hvas
-      action = req[:action]
 
-      case action
-      when 'run_instance'
-        hva_ip = req[:hva_ip]
-        instance_uuid = req[:instance_uuid]
+      case path
+      when '/instance/run_instance'
+        hva_ip = params[:hva_ip]
+        instance_uuid = params[:instance_uuid]
         raise "unkown hva ip: %s" % hva_ip unless @hvas[hva_ip]
 
         @hvas[hva_ip].update_instance(nil, instance_uuid, :online)
         HvcHttpMockResponse.new(200, "ok")
         
-      when 'terminate_instance'
-        instance_uuid = req[:instance_uuid]
+      when '/instance/terminate_instance'
+        instance_uuid = params[:instance_uuid]
         @hvas.each_value{|hva|
           matched_instance = hva.instances.find{|inst| inst[1][0] == instance_uuid}
           next unless matched_instance
           hva.update_instance(matched_instance[0], matched_instance[1][0], :offline)
           return HvcHttpMockResponse.new(200, "ok")
         }
-        HvcHttpMockResponse.new(404, "not found: #{action}")
+        HvcHttpMockResponse.new(404, "not found: #{path}")
 
-      when 'describe_instances'
+      when '/instance/describe_instances'
         ret = {}
         @hvas.each{|hva_ip, hva|
           ret_instances = {}
@@ -146,8 +145,8 @@ module Dcmgr
         HvcHttpMockResponse.new(200, ret.to_json)
         
       else
-        Dcmgr::logger.info "404, action: #{action}"
-        HvcHttpMockResponse.new(404, "not found: #{action}")
+        Dcmgr::logger.info "404, path: #{path}"
+        HvcHttpMockResponse.new(404, "not found: #{path}")
       end
     end
   end
