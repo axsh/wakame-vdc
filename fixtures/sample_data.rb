@@ -46,7 +46,7 @@ hv_agent_c = HvAgent.create(:hv_controller=>hv_controller,
                             :physical_host=>physical_host_c,
                             :ip=>'192.168.1.40')
 
-instance_a = Instance.create(:status=>0, # offline
+instance_a = Instance.create(:status=>Instance::STATUS_TYPE_OFFLINE,
                              :account=>account_a,
                              :user=>user,
                              :image_storage=>image_storage,
