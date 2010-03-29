@@ -37,7 +37,7 @@ describe "tags access by active resource" do
   
   it "should add simple auth tag" do
     tag = @auth_c.create(:name=>'instance crud tag #1',
-                             :role=>1,
+                             :role=>"ABCD1234",
                              :tags=>[],
                              :account=>@account.id)
     tag.id.length.should > 0
@@ -50,7 +50,7 @@ describe "tags access by active resource" do
 
     real_tagattribute = real_tag.tag_attribute
     real_tagattribute.should be_valid
-    real_tagattribute.role == 1
+    real_tagattribute.role.should == "ABCD1234"
     
     $auth_tag = tag
   end
@@ -67,7 +67,7 @@ describe "tags access by active resource" do
     tag3 = @name_c.create(:name=>'name tag #2-3', :account=>@account.id)
     
     tag = @auth_c.create(:name=>'instance crud tag #2',
-                             :role=>1,
+                             :role=>"ABCD1234",
                              :tags=>[tag1.id, tag2.id, tag3.id],
                              :account=>@account.id)
     tag.id.length.should > 0
@@ -75,13 +75,13 @@ describe "tags access by active resource" do
     real_tag = Tag[tag.id]
     real_tag.should be_valid
     real_tag.account.uuid.should == @account.id
-    real_tag.role.should == 1
+    real_tag.role.should == "ABCD1234"
     real_tag.name.should == 'instance crud tag #2'
     real_tag.tag_mappings.length.should == 3
 
     real_tagattribute = real_tag.tag_attribute
     real_tagattribute.should be_valid
-    real_tagattribute.role == 1
+    real_tagattribute.role.should == "ABCD1234"
   end
 
   it "should store tag attribute" do
