@@ -34,6 +34,13 @@ module Dcmgr
       
       set_dataset filter({~:status => Instance::STATUS_TYPE_OFFLINE} |
                          ({:status => Instance::STATUS_TYPE_OFFLINE} & (:status_updated_at > Time.now - 3600)))
+
+      # look up an instance keyed by the assigned ip address.
+      def self.find_by_assigned_ipaddr(ipaddr)
+        ipobj = Ip.find(:ip=>ipaddr) || raise("Unknown IP address in the pool.")
+        raise("The address is not leased to any hosts.") if ipobj.instance_id.nil?
+        find(:id=>ipobj.instance_id)
+      end
       
       def physical_host
         if self.hv_agent

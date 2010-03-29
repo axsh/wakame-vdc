@@ -19,6 +19,8 @@ require 'dcmgr'
 module Dcmgr
   module Web
     class Metadata < Sinatra::Base
+
+      LATEST_PROVIDER_VER_ID='2010-03-01'
       
       get '/' do
         ''
@@ -28,12 +30,22 @@ module Dcmgr
       #get %r!\A/(\d{4}-\d{2}-\d{2})/metadata.(\w+)\Z! do
         v = params[:version]
         ext = params[:splat][0]
-        raise "Invalid syntax in the version" unless v =~ /\A\d{4}-\d{2}-\d{2}\Z/
+        v = case v
+            when 'latest'
+              LATEST_PROVIDER_VER_ID
+            when /\A\d{4}-\d{2}-\d{2}\Z/
+              v
+            else
+              raise "Invalid syntax in the version"  
+            end
         v = v.gsub(/-/, '')
+        
         hash_doc = begin
                      Module.find_const("::Dcmgr::Web::Metadata::Provider_#{v}").new.document(request.ip)
                    rescue NameError => e
+                     raise e if e.is_a? NoMethodError
                      Dcmgr.logger.error("ERROR: Unsupported metadata version: #{v}")
+                     Dcmgr.logger.error(e)
                      raise "Unsupported metadata version: #{v}"
                    end
 
@@ -62,14 +74,28 @@ module Dcmgr
         # @param [String] src_ip Source IP address who requested to the Meatadata service.
         # @return [Hash] Details for the VM
         def document(src_ip)
-          raise UnImplementedError
+          raise NotImplementedError
         end
       end
 
       # 2010-03-01 version of metadata provider
       class Provider_20100301 < Provider
         def document(src_ip)
-          {:ip=>src_ip}
+          inst = Models::Instance.find_by_assigned_ipaddr(src_ip)
+          ret = {:instance_id=>"#{Models::Instance.prefix_uuid}-#{inst[:uuid]}"}
+          # picks keys and values are duplicable from model obj.
+          {:cpus=>:need_cpus,
+            :cpu_mhz=>:need_cpu_mhz,
+            :memory=>:need_memory,
+            :account_id=>:account_id,
+            :status=>:status}.each {|k1,k2|
+            ret[k1] = inst[k2]
+          }
+          # IP address values
+          ret[:ipaddrs] = inst.ip.map { |i|
+            i[:ip]
+          }
+          ret
         end
       end
 
