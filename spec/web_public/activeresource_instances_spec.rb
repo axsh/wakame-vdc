@@ -234,19 +234,20 @@ describe "instance access by active resource" do
     list.index {|i| i.id == old_instance.uuid }.should_not be_true
   end
   
-  it "should snapshot image, and backup image to image storage" do
-    pending
-    instance = @c.create(:account=>Account[1].id,
-                             :need_cpus=>1,
-                             :need_cpu_mhz=>0.5,
-                             :need_memory=>0.5)
-    
-    instance.put(:snapshot)
-  end
-
   it "should get instances by location" do
-    instances = @c.find(:all, :params => {:location => "rack"})
-    instances.should > 0
+    instance = @c.create(:account=>Account[1].uuid,
+                         :need_cpus=>1, :need_cpu_mhz=>0.5,
+                         :need_memory=>500,
+                         :image_storage=>ImageStorage[1].uuid)
+    
+    real_instance = Instance.all.first
+    real_instance.physical_host.create_location_tag('1F.RACK-A', Account[1])
+    
+    instances = @c.find(:all, :params => {:location_type => "rack", :location => "RACK-A"})
+    instances.length.should > 0
+
+    instances = @c.find(:all, :params => {:location_type => "rack", :location => "RACK-B"})
+    instances.length.should == 0
   end
 end
 
