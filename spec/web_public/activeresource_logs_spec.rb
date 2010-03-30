@@ -22,6 +22,7 @@ describe "log access by active resource" do
                          :account=>Account[1].uuid,
                          :year=>date.year, :month=>date.month})
     logs.should be_true
-    pending("get response account, instance, status, server type, time(minute)")
+
+    # check "get response account, instance, status, server type, time(minute)"
   end
 end

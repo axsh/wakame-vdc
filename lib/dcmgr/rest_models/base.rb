@@ -165,7 +165,7 @@ module Dcmgr
         end
       end
       
-      def find
+      def find(&block)
         find_params = []
         allow_keys.each{|key|
           get_key = "_get_#{key}".to_sym
@@ -180,6 +180,9 @@ module Dcmgr
             end
           end
         }
+
+        block.call(find_params, request) if block
+        
         if request[:_get_id]
           begin
             find_params << {:uuid => Account.trim_uuid(request[:_get_id])}
@@ -200,7 +203,7 @@ module Dcmgr
                  else
                    model
                  end
-        
+
         filter.limit(limit, offset).all
       end
       

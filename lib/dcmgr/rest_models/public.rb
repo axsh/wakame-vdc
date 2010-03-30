@@ -247,7 +247,37 @@ module Dcmgr
       [:tags, proc {|o| o.tags.map{|t| t.uuid}}]
 
       public_action :get do
-        find
+        find{|find_params, request|
+          unless request[:_get_location] and request[:_get_location_type]
+            next
+          end
+          
+          location_idx = Models::LocationGroup.index_by_name(request[:_get_location_type])
+          unless location_idx
+            raise InvalidParameterError, "unkown location type: #{request[:_get_location_type]}"
+          end
+
+          matched = false
+          
+          Dcmgr::Models::Tag.join(:tag_mappings, :tag_id=>:id).
+          filter(:tag_mappings__target_type => Dcmgr::Models::TagMapping::TYPE_PHYSICAL_HOST_LOCATION).each{|tag|
+            if Models::LocationGroup.match?(tag.name,
+                                            request[:_get_location_type], request[:_get_location])
+              tag.tag_mappings.each{|tm|
+                if tm.target_type == TagMapping::TYPE_PHYSICAL_HOST_LOCATION
+                  find_params << {:hv_agent_id=>
+                    Models::PhysicalHost[tm.target_id].hv_agents.map{|hv| hv.id}
+                  }
+                  matched = true
+                end
+              }
+            end
+          }
+
+          unless matched
+            find_params << {:hv_agent_id=>-1}
+          end
+        }
       end
       
       public_action_withid :get do

@@ -79,6 +79,7 @@ Dcmgr::Schema.connect 'mysql://localhost/wakame_dcmgr_test?user=dcmgr_test&passw
 Dcmgr.fsuser_auth_type = :ip
 Dcmgr.fsuser_auth_users = {"gui"=>"127.0.0.1"}
 Dcmgr.hvchttp = Dcmgr::HvcHttpMock.new
+Dcmgr.location_groups = %w(floor rack)
 
 ActiveResourceHelperMethods.reset_db
 ActiveResourceHelperMethods.runserver
