@@ -1,5 +1,7 @@
 module Dcmgr
   module RestModels
+    class InvalidParameterError < StandardError; end
+    
     module ClassMethods
       def actions
         @actions.each{|method, path, args, action|
