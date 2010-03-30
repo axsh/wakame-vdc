@@ -244,6 +244,9 @@ describe "instance access by active resource" do
     instance.put(:snapshot)
   end
 
-  it "should get instances by location"
+  it "should get instances by location" do
+    instances = @c.find(:all, :params => {:location => "rack"})
+    instances.should > 0
+  end
 end
 
