@@ -42,6 +42,17 @@ describe "log" do
                                      :need_cpus=>1, :need_cpu_mhz=>0.5,
                                      :need_memory=>1.0,
                                      :image_storage=>ImageStorage[1].uuid)
+    tag = Tag.create(:name=>"normal tag",
+                     :account=>Account[1],
+                     :owner=>User[1])
+    role_tag = Tag.create(:name=>"shutdown instance",
+                          :role=>Dcmgr::RoleExecutor::ShutdownInstance.id,
+                          :account=>Account[1],
+                          :owner=>User[1])
+    TagMapping.create(:tag=>tag,
+                      :target_type=>TagMapping::TYPE_TAG,
+                      :target_id=>role_tag.id)
+    
     instance.put(:shutdown)
 
     log = Log.find(:user_id=>User[1].id, :target_uuid=>instance.id, :action=>"shutdown")

@@ -373,7 +373,6 @@ module Dcmgr
           raise "can't controll hvc server" unless res.code == "200"
         }
         
-        Dcmgr.evaluate(user, instance, :shutdown)
         []
       end
 

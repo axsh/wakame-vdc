@@ -42,13 +42,15 @@ module Dcmgr
   def self.errorcode(e)
     case e
     when InvalidUUIDError, DuplicateUUIDError
-      400
+      400 # ActiveResource::BadRequest
+    when RoleError
+      403 # ActiveResource::ForbiddenAccess
     when PhysicalHostScheduler::NoPhysicalHostError
-      404
+      404 # ActiveResource::ResourceNotFound
     when Sequel::ValidationFailed
-      422
+      422 # ActiveResource::ResourceInvalid
     else
-      500
+      500 # ActiveResource::ServerError
     end
   end
 end
