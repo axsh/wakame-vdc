@@ -373,17 +373,8 @@ module Dcmgr
           raise "can't controll hvc server" unless res.code == "200"
         }
         
+        Dcmgr.evaluate(user, instance, :shutdown)
         []
-
-        # TODO check shutdown role
-        #begin
-        #  Dcmgr.evaluate(user, instance, :shutdown)
-        #rescue Exception => e
-        #	raise e
-        #  Dcmgr::logger.debug("err! %s" % e)
-        #  throw :halt, [400, e.to_s]
-        #end
-        #[]
       end
 
       public_action_withid :put, :snapshot do

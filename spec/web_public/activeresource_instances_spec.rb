@@ -101,18 +101,16 @@ describe "instance access by active resource" do
                       :need_cpu_mhz=>0.5,
                       :need_memory=>0.5)
     instance.save_with_validation.should be_false
-    p instance.errors.full_messages
     instance.valid?.should be_false
     instance.errors.should_not be_empty
   end    
 
   it "should shutdown by sample data, and raise role error" do
     instance = @c.create(:account=>Account[1].id,
-                             :need_cpus=>1,
-                             :need_cpu_mhz=>0.5,
-                             :need_memory=>0.5)
-    instance.put(:add_tag, :tag=>@normal_tag_c)
-    
+                         :need_cpus=>1,
+                         :need_cpu_mhz=>0.5,
+                         :need_memory=>500,
+                         :image_storage=>ImageStorage[1].uuid)
     lambda {
      instance.put(:shutdown)
     }.should raise_error(ActiveResource::BadRequest)

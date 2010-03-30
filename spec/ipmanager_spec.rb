@@ -12,11 +12,11 @@ describe Dcmgr::IPManager do
                                :hv_agent=>HvAgent[1])
     # called Dcmgr::IPManager.assign_ips(instance)
 
-    ips = instance.ip_dataset.find_by_group_name('eth0').all
+    ips = instance.ip_dataset.find_by_group_name('newbr0').all
     ips.length.should == 1
 
     ip = ips.first
-    ip.ip_group.name.should == 'eth0'
+    ip.ip_group.name.should == 'newbr0'
     ip.ip.should match(/^192\.168\.1\.\d+$/)
     ip.mac.should match(/^00:00:\d\d$/)
   end

@@ -191,12 +191,11 @@ module Dcmgr
   def self.evaluate(evaluator, target, action)
     raise ArgumentError.new("unknown class: %s" % evaluator) unless evaluator.is_a?(User)
     
-    role = RoleExecutor[target, action]
+    role = RoleExecutor.get(target, action)
     raise ArgumentError.new("unkown role(target: %s, action: %s)" % [target, action]) unless role
     
     Dcmgr::logger.debug("role: %s" % role)
-    role.evaluate(evaluator)
-    
-    role.execute(evaluator)
+    role.evaluate(evaluator, target)
+    role.execute(evaluator, target)
   end
 end
