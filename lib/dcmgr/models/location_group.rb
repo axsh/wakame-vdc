@@ -15,8 +15,6 @@ module Dcmgr
       end
 
       def self.match?(location_tag_name, search_type, search_name)
-        puts "match?"
-        p [location_tag_name, search_type, search_name]
         idx = index_by_name(search_type)
         return false unless idx
         splits = location_tag_name.split "."

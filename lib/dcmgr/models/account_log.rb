@@ -46,14 +46,6 @@ module Dcmgr
                     nil
                   end
 
-          puts "instance:"
-          p instance
-          puts "start:"
-          p start
-          puts "logs:"
-          p logs
-          puts ""
-
           logs.each{|lg|
             if lg[:action] == "run"
               start = lg[:date]

@@ -81,7 +81,6 @@ module Dcmgr
         account_uuid = request[:_get_account]
         raise InvalidParameterError, "account can't empty" unless account_uuid
         account = user.accounts_dataset.find_by_uuid(account_uuid).first
-        puts user.accounts_dataset.find_by_uuid(account_uuid).sql
         raise  InvalidParameterError, "account not found" unless account
         account
       end
