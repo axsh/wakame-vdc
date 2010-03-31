@@ -132,7 +132,7 @@ module Dcmgr
 
       def reboot
         shutdown
-        reboot
+        run
       end
     end
   end
