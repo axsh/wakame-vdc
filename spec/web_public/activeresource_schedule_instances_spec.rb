@@ -76,7 +76,7 @@ describe "instance access for scheduling by active resource" do
                          :need_cpu_mhz=>0.5,
                          :need_memory=>1000,
                          :image_storage=>ImageStorage.first.uuid)
-    HvAgent[instance.hv_agent].physical_host == PhysicalHost[1].uuid
+    HvAgent[instance.hv_agent].physical_host.uuid.should == PhysicalHost[1].uuid
 
     Dcmgr::hvchttp = Dcmgr::HvcHttpMock.new
     
@@ -85,27 +85,21 @@ describe "instance access for scheduling by active resource" do
                          :need_cpu_mhz=>0.7,
                          :need_memory=>2000,
                          :image_storage=>ImageStorage.first.uuid) # skip 2
-    HvAgent[instance.hv_agent].physical_host == PhysicalHost[3].uuid
+    HvAgent[instance.hv_agent].physical_host.uuid.should == PhysicalHost[3].uuid
     
     instance = @c.create(:account=>Account[1].uuid,
                          :need_cpus=>1,
                          :need_cpu_mhz=>0.8,
                          :need_memory=>400,
                          :image_storage=>ImageStorage.first.uuid)
-    HvAgent[instance.hv_agent].physical_host == PhysicalHost[2].uuid
+    HvAgent[instance.hv_agent].physical_host.uuid.should == PhysicalHost[2].uuid
     
     instance = @c.create(:account=>Account[1].uuid,
                          :need_cpus=>1,
-                         :need_cpu_mhz=>0.8,
+                         :need_cpu_mhz=>0.7,
                          :need_memory=>400,
                          :image_storage=>ImageStorage.first.uuid)
-    HvAgent[instance.hv_agent].physical_host == PhysicalHost[2].uuid
-
-    # check ips
-    ip_group_count = IpGroup.count
-    Instance.each{|instance|
-      instance.ip.count == ip_group_count # count by ip groups
-    }
+    HvAgent[instance.hv_agent].physical_host.uuid.should == PhysicalHost[2].uuid
   end
 
   it "should schedule instances by schedule algorithm 1" do
