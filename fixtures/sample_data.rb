@@ -8,6 +8,8 @@ user = User.create(:name=>'__test__', :password=>'passwd')
 user.add_account(account_a)
 user.add_account(account_b)
 
+other_user = User.create(:name=>'__test2__', :password=>'passwd')
+
 image_storage_host = ImageStorageHost.create
 image_storage = ImageStorage.create(:image_storage_host=>image_storage_host)
 
