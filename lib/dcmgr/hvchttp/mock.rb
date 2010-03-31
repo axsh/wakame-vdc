@@ -126,9 +126,9 @@ module Dcmgr
           matched_instance = hva.instances.find{|inst| inst[1][0] == instance_uuid}
           next unless matched_instance
           hva.update_instance(matched_instance[0], matched_instance[1][0], :offline)
-          return HvcHttpMockResponse.new(200, "ok")
+          return response(200, "ok")
         }
-        HvcHttpMockResponse.new(404, "not found: #{path}")
+        response(404, "not found: #{path}")
 
       when '/instance/describe_instances'
         ret = {}
@@ -142,21 +142,26 @@ module Dcmgr
             'status'=>:online,
             'instances'=>ret_instances}
         }
-        HvcHttpMockResponse.new(200, ret.to_json)
+        response(200, ret.to_json)
         
       else
         Dcmgr::logger.info "404, path: #{path}"
-        HvcHttpMockResponse.new(404, "not found: #{path}")
+        response(404, "not found: #{path}")
       end
     end
+    
+    def response(status, message)
+      [{"status"=>status,
+         "message"=>message}]
+    end
   end
-
+  
   class HvcHttpMockResponse
     def initialize(status, body)
       @status = status
       @body = body
     end
-
+    
     def code
       @status.to_s
     end
