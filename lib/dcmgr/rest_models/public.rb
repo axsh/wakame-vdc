@@ -516,12 +516,11 @@ module Dcmgr
       model Models::Log
 
       public_action :get do
-        account_uuid = request[:_get_account]
-        account = Models::Account[account_uuid]
-        unless account
-          throw(:halt, [400, "account not match"])
-        end
-        Models::Log.find(:account_id=>account.id)
+        Models::Log.filter(:account_id=>account.id).all
+      end
+
+      def target_uuid(res=nil)
+        model.to_s.split("::").last
       end
     end
 
@@ -530,12 +529,7 @@ module Dcmgr
       model Models::AccountLog
 
       public_action :get do
-        account_uuid = request[:_get_account]
-        account = Models::Account[account_uuid]
-        unless account
-          throw(:halt, [400, "account not match"])
-        end
-        Models::AccountLog.find(:account_id=>account.id)
+        Models::AccountLog.filter(:account_id=>account.id).all
       end
     end
 

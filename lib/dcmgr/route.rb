@@ -20,7 +20,7 @@ module Dcmgr
                              :request_ids=>request_ids,
                              :action_name=>params2[:action_name])
         obj.response(block).tap{|ret|
-          logger.debug "response(json): %s" + ret
+          logger.debug "response(json): #{ret}"
         }
 
       rescue StandardError => e
@@ -47,7 +47,7 @@ module Dcmgr
       403 # ActiveResource::ForbiddenAccess
     when PhysicalHostScheduler::NoPhysicalHostError
       404 # ActiveResource::ResourceNotFound
-    when Sequel::ValidationFailed
+    when RestModels::InvalidParameterError, Sequel::ValidationFailed
       422 # ActiveResource::ResourceInvalid
     else
       500 # ActiveResource::ServerError

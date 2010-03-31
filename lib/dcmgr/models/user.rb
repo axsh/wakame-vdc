@@ -4,7 +4,13 @@ module Dcmgr
       set_dataset :users
       set_prefix_uuid 'U'
 
-      many_to_many :accounts
+      module ExtendAccountAssoc
+        def find_by_uuid(uuid)
+          filter(:uuid=>Account.trim_uuid(uuid))
+        end
+      end
+      many_to_many :accounts, :extend=>ExtendAccountAssoc
+
       many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_USER}
       one_to_many :key_pairs
       

@@ -76,6 +76,15 @@ module Dcmgr
     
     module Base
       include Dcmgr::Helpers
+
+      def account
+        account_uuid = request[:_get_account]
+        raise InvalidParameterError, "account can't empty" unless account_uuid
+        account = user.accounts_dataset.find_by_uuid(account_uuid).first
+        puts user.accounts_dataset.find_by_uuid(account_uuid).sql
+        raise  InvalidParameterError, "account not found" unless account
+        account
+      end
       
       def self.included(mod)
         mod.extend ClassMethods
@@ -144,9 +153,11 @@ module Dcmgr
         }
         
         # strip id, change uuid to id
-        ret.delete :id
-        uuid = ret.delete :uuid
-        ret[:id] = uuid if uuid
+        if ret[:uuid]
+          ret.delete :id
+          uuid = ret.delete :uuid
+          ret[:id] = uuid if uuid
+        end
         
         ret
       end
@@ -270,11 +281,13 @@ module Dcmgr
       end
 
       def logging(response)
-        logger.debug("action name: %s" % action_name)
-        logger.debug("target uuid: %s" % uuid)
+        logger.debug("action name: #{action_name}")
+
+        t_uuid = target_uuid(response)
+        logger.debug("target uuid: #{t_uuid}")
         
         Models::Log.create(:fsuser=>fsuser || "",
-                           :target_uuid=>target_uuid(response),
+                           :target_uuid=>t_uuid,
                            :user_id=>user_id,
                            :account_id=>account_id,
                            :action=>action_name)
@@ -286,7 +299,7 @@ module Dcmgr
         elsif uuid
           uuid
         else
-          model.to_s
+          model.to_s.split("::").last
         end
       end
 
