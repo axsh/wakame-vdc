@@ -85,13 +85,14 @@ describe "run instance access by active resource" do
     # log
     date = Time.now
     log_c = ar_class(:Log, ar_opts)
-    log_c.find(:all, :params=>
-               {:account=>account.id,
+    log_c.find(:all, :params=>{
+                 :account=>account.id,
                  :year=>date.year, :month=>date.month})
 
     # account log
     log_c = ar_class(:Log, ar_opts)
-    log_c.find(:all, :params=>{:account=>account.id,
+    log_c.find(:all, :params=>{
+                 :account=>account.id,
                  :year=>date.year, :month=>date.month})
   end
 end

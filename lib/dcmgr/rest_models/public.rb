@@ -42,7 +42,7 @@ module Dcmgr
       allow_keys :name, :memo, :enable, :contract_at
 
       public_action :get do
-        find
+        find_all
       end
 
       public_action_withid :get do
@@ -96,7 +96,7 @@ module Dcmgr
         if request[:_get_same_accounts] == "true"
           user.accounts.map{|o|o.users}.flatten
         else
-          find
+          find_all
         end
       end
 
@@ -140,7 +140,7 @@ module Dcmgr
       end
 
       public_action :get do
-        find
+        find_all
       end
     end
 
@@ -201,7 +201,7 @@ module Dcmgr
       response_keys :body, [:uuid, proc {|o| o.tag.uuid}]
 
       public_action :get do
-        find
+        find_all
       end
 
       public_action_withid :get do
@@ -245,7 +245,7 @@ module Dcmgr
       [:tags, proc {|o| o.tags.map{|t| t.uuid}}]
 
       public_action :get do
-        find{|find_params, request|
+        find_all{|find_params, request|
           unless request[:_get_location] and request[:_get_location_type]
             next
           end
@@ -430,7 +430,7 @@ module Dcmgr
       allow_keys :image_storage_host, :storage_url
 
       public_action :get do
-        find
+        find_all
       end
 
       public_action :post do
@@ -454,7 +454,7 @@ module Dcmgr
 
 
       public_action :get do
-        find
+        find_all
       end
 
       public_action :post do
@@ -476,7 +476,7 @@ module Dcmgr
       allow_keys :cpus, :cpu_mhz, :memory, :hypervisor_type
       
       public_action :get do
-        find
+        find_all
       end
 
       public_action :post do
