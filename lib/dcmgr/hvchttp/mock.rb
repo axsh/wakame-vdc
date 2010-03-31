@@ -109,7 +109,7 @@ module Dcmgr
     end
 
     def get_response(path, params)
-      return HvcHttpMockResponse.new(404, "") unless @hvas
+      return response(404, "no hvas") unless @hvas
 
       case path
       when '/instance/run_instance'
@@ -142,7 +142,7 @@ module Dcmgr
             'status'=>:online,
             'instances'=>ret_instances}
         }
-        response(200, ret.to_json)
+        response(200, ret)
         
       else
         Dcmgr::logger.info "404, path: #{path}"
