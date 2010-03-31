@@ -1,4 +1,5 @@
 require 'active_support'
+require 'dcmgr/evaluator'
 
 module Dcmgr
   def self.route(rest_class, method, block, params2)
@@ -41,7 +42,7 @@ module Dcmgr
 
   def self.errorcode(e)
     case e
-    when InvalidUUIDError, DuplicateUUIDError
+    when Models::InvalidUUIDError, Models::DuplicateUUIDError
       400 # ActiveResource::BadRequest
     when RoleError
       403 # ActiveResource::ForbiddenAccess
