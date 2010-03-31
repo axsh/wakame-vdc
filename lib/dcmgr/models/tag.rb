@@ -16,6 +16,13 @@ module Dcmgr
 
       one_to_many :tag_attributes, :one_to_one=>true
 
+      def self.filter_by_user_and_role(user, role_class)
+        join(:tag_attributes,
+             :tag_id=>:id).
+          filter(:owner_id=>user.id,
+                 :tag_attributes__role=>role_class.id)
+      end
+
       def self.create_system_tag(name)
         create(:account_id=>0, :owner_id=>0,
                :role=>0, :name=>name)

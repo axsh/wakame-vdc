@@ -283,22 +283,29 @@ module Dcmgr
       end
       
       public_action_withid :put, :add_tag do
-        target = Models::Instance[uuid]
+        instance = Models::Instance.find_by_uuid_with_user(uuid, user)
+        unless instance
+          raise RestModels::InvalidParameterError, "instance can't add tag"
+        end
 
         tag_uuid = request[:_get_tag]
         tag = Models::Tag[tag_uuid]
 
         Models::TagMapping.create(:tag_id=>tag.id,
                                   :target_type=>Models::TagMapping::TYPE_INSTANCE,
-                                  :target_id=>target.id) if tag
+                                  :target_id=>instance.id) if tag
         true
       end
       
       public_action_withid :put, :remove_tag do
-        target = Models::Instance[uuid]
+        instance = Models::Instance.find_by_uuid_with_user(uuid, user)
+        unless instance
+          raise RestModels::InvalidParameterError, "instance can't remove tag"
+        end
+
         tag_uuid = request[:_get_tag]
         tag = Models::Tag[tag_uuid]
-        target.remove_tag(tag.id) if tag
+        instance.remove_tag(tag.id) if tag
         true
       end
       
@@ -355,8 +362,12 @@ module Dcmgr
       end
 
       public_action_withid :put, :reboot do
-        instance = Models::Instance[uuid]
-        Dcmgr.logger.debug("terminating instance: #{instance.uuid}")
+        instance = Models::Instance.find_by_uuid_with_user(uuid, user)
+        unless instance
+          raise RestModels::InvalidParameterError, "instance can't reboot"
+        end
+
+        Dcmgr.logger.debug("rebooting instance: #{instance.uuid}")
 
         instance.status = Models::Instance::STATUS_TYPE_TERMINATING
         instance.save
@@ -384,7 +395,10 @@ module Dcmgr
       end
 
       public_action_withid :put, :shutdown do
-        instance = Models::Instance[uuid]
+        instance = Models::Instance.find_by_uuid_with_user(uuid, user)
+        unless instance
+          raise RestModels::InvalidParameterError, "instance can't shutdown"
+        end
         Dcmgr.logger.debug("terminating instance: #{instance.uuid}")
 
         instance.status = Models::Instance::STATUS_TYPE_TERMINATING
@@ -400,8 +414,8 @@ module Dcmgr
           end
           raise "can't controll hvc server" unless res.code == "200"
         }
-        
-        []
+
+        true
       end
 
       public_action_withid :put, :snapshot do

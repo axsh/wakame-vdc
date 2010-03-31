@@ -105,15 +105,22 @@ describe "instance access by active resource" do
     instance.errors.should_not be_empty
   end    
 
-  it "should shutdown by sample data, and raise role error" do
+  it "shouldn't shutdown no role instance" do
     instance = @c.create(:account=>Account[1].id,
                          :need_cpus=>1,
                          :need_cpu_mhz=>0.5,
                          :need_memory=>500,
                          :image_storage=>ImageStorage[1].uuid)
-    lambda {
-     instance.put(:shutdown)
-    }.should raise_error(ActiveResource::BadRequest)
+    begin
+      user_uuid = @c.user_uuid
+      @c.user_uuid = User[2].uuid
+      
+      lambda {
+        instance.put(:shutdown)
+      }.should raise_error(ActiveResource::ResourceInvalid)
+    ensure
+      @c.user_uuid = user_uuid
+    end
   end
 
   it "should find tag" do
@@ -132,6 +139,28 @@ describe "instance access by active resource" do
     instance.put(:remove_tag, :tag=>tag_c.uuid)
     instance = @c.find(instance.id)
     instance.tags.index{|t| t == tag_c.uuid}.should be_false
+  end
+
+  it "shouldn't add tag no role instance" do
+    tag_c = Tag[:name=>'sample tag c']
+    instance = @c.create(:account=>Account[1].id,
+                         :need_cpus=>1,
+                         :need_cpu_mhz=>0.5,
+                         :need_memory=>0.5,
+                         :image_storage=>ImageStorage[1])
+    instance.tags.include?(tag_c.uuid).should be_false
+    
+    begin
+      user_uuid = @c.user_uuid
+      @c.user_uuid = User[2].uuid
+      
+      lambda {
+        instance.put(:add_tag, :tag=>tag_c.uuid)
+
+      }.should raise_error(ActiveResource::ResourceInvalid)
+    ensure
+      @c.user_uuid = user_uuid
+    end
   end
 
   it "should get instance" do

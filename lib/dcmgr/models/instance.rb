@@ -20,6 +20,14 @@ module Dcmgr
       end
       one_to_many :ip, :extend=>ExtendIpAssoc
 
+      def self.find_by_uuid_with_user(uuid, user)
+        instance = find(:uuid=>trim_uuid(uuid))
+        unless user.accounts.index(instance.account)
+          return false
+        end
+        instance
+      end
+
       STATUS_TYPE_OFFLINE = 0
       STATUS_TYPE_RUNNING = 1
       STATUS_TYPE_ONLINE = 2
