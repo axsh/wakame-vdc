@@ -33,8 +33,8 @@ describe Dcmgr::HvcHttpMock do
                               :need_cpus=>1,
                               :need_cpu_mhz=>1.0,
                               :need_memory=>2.0)
-      res.success?.should be_true
-      res.body.should == "ok"
+      res.first["status"].should == 200
+      res.first["message"].should == "ok"
     }
 
     instance.reload
