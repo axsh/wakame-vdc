@@ -86,10 +86,16 @@ WakameGUI.UserList = function(){
         text : 'Remove', handler:function(){
           var temp = sm.getCount();
           if(temp > 0){
-            Ext.Msg.confirm("Remove:","Are you share?", function(btn){
+            Ext.Msg.confirm("Remove:","Are you sure?", function(btn){
               if(btn == 'yes'){
-                var rec = sm.getSelected();
-                store.remove(rec);
+                Ext.Ajax.request({
+                  url: '/user-remove',
+                  method: "POST", 
+                  params : 'id=' + sm.getSelected().id,
+                  success: function(form, action) {
+                    store.reload();
+                  }
+                });
               }
             });
           }
@@ -175,12 +181,7 @@ WakameGUI.UserList = function(){
               this.close();
             },
             failure: function(form, action) {
-              //TODO:Change Ext.js ErrorBox
-              if(!form.isValid()){
-                  alert('Validate error');
-              }else{
-                  alert('Add user failure.');
-              }
+              WakameGUI.formsFailureBox(form);
             }
           });
         },
@@ -238,13 +239,12 @@ WakameGUI.UserList = function(){
             waitMsg: 'Editing...',
             method: 'POST',
             scope: this,
-            success: function(user, action) {
+            success: function(form, action) {
               store.reload();
               this.close();
             },
-            failure: function(user, action) {
-              alert('Edit user failure.');
-              this.close();
+            failure: function(form, action) {
+              WakameGUI.formsFailureBox(form);
             }
           });
         },
@@ -274,7 +274,8 @@ WakameGUI.UserList = function(){
         xtype: 'textfield',
         name: 'user_name',
         value: userData.get('nm'),
-        anchor: '100%'
+        anchor: '100%',
+        allowBlank:false
         }
         ,{
         fieldLabel: 'E-Mail',

@@ -118,31 +118,6 @@ WakameGUI.SystemAdminUpPanel = function(){
 Ext.extend(WakameGUI.SystemAdminUpPanel, Ext.Panel);
 
 WakameGUI.SystemAdminDownPanel = function(cardPanel){
-  function ChangePanel(no)
-  {
-    if(WakameGUI.activePanel != no){
-      WakameGUI.activePanel = no;
-      cardPanel.layout.setActiveItem(WakameGUI.activePanel);
-      switch(no) {
-          case 0:
-            cardPanel.refreshPanel('instancePanel');
-          break;
-                    
-          case 1:
-            cardPanel.refreshPanel('imagePanel');
-          break;
-          
-          case 2:
-            //cardPanel.refreshPanel('clusterPanel');
-          break;
-          
-          case 3:
-            //cardPanel.refreshPanel('servicePanel');            
-          break;
-      }
-    }
-  }
-
   WakameGUI.SystemAdminDownPanel.superclass.constructor.call(this,{
     region: "center", 
     split: true,
@@ -154,16 +129,16 @@ WakameGUI.SystemAdminDownPanel = function(cardPanel){
     listeners: {
       'click': function(node){
         if(node.id == 'menu01'){
-          ChangePanel(0);
+          WakameGUI.changePanel(cardPanel,'instancePanel',0);
         }
         else if(node.id == 'menu02'){
-          ChangePanel(1);
+          WakameGUI.changePanel(cardPanel,'imagePanel',1);
         }
         else if(node.id == 'menu03'){
-          ChangePanel(2);
+          WakameGUI.changePanel(cardPanel,'clusterPanel',2);
         }
         else if(node.id == 'menu04'){
-          ChangePanel(3);
+          WakameGUI.changePanel(cardPanel,'servicePanel',3);
         }
       }
     },
@@ -302,8 +277,8 @@ WakameGUI.SystemAdminCard = function(){
     imagePanel.setUpPanel(obj)
   }
 
-  this.refreshPanel = function(panel){
-      eval(panel).refresh();
+  this.refreshPanel = function(panelName){
+      eval(panelName).refresh();
   }
 
   WakameGUI.SystemAdminCard.superclass.constructor.call(this, {

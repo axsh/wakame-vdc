@@ -37,13 +37,13 @@ Ext.apply(WakameGUI,{
     var ret = 0;
     var els = Ext.select('*');
     els.each(function(el){
-    var zIndex = el.getStyle('z-index');
-    if(Ext.isNumber(parseInt(zIndex)) && ret < zIndex) {
-      ret = zIndex;
-    }
-  }, this);
+      var zIndex = el.getStyle('z-index');
+      if(Ext.isNumber(parseInt(zIndex)) && ret < zIndex) {
+        ret = zIndex;
+      }
+    }, this);
     return ret;
-},
+  },
   getScrollPos: function() {
     var y = (document.documentElement.scrollTop > 0)
        ? document.documentElement.scrollTop
@@ -55,5 +55,26 @@ Ext.apply(WakameGUI,{
       x: x,
       y: y
     };
-  }
+  },
+  formsFailureBox: function(form){
+     if(!form.isValid()){
+      Ext.Msg.show({ 
+              icon: Ext.Msg.WARNING,
+              title: 'Bad Request', 
+              msg: 'Please confirm the input value' 
+          });
+     }else{
+       Ext.Msg.show({ 
+               icon: Ext.Msg.ERROR,
+               title: 'Bad Request', 
+               msg: 'Sysytem Error' 
+           });
+     }
+  },changePanel: function(mainPanel,changePanelName,no){
+     if(WakameGUI.activePanel != no){
+       WakameGUI.activePanel = no;
+       mainPanel.layout.setActiveItem(WakameGUI.activePanel);
+       mainPanel.refreshPanel(changePanelName);
+     }
+   }
 });

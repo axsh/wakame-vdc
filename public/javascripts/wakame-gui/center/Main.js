@@ -52,23 +52,6 @@ Ext.onReady(function(){
 
 WakameGUI.Selector = function(centerPanel){
   var panelMode = 0;
-  function ChangePanel(no)
-  {
-      if(WakameGUI.activePanel != no){
-        WakameGUI.activePanel = no;
-        centerPanel.layout.setActiveItem(WakameGUI.activePanel);
-        switch(no) {
-            case 0:
-              centerPanel.refreshPanel('accountPanel');
-            break;
-      
-            case 1:
-              centerPanel.refreshPanel('userPanel');
-            break;
-        }
-      }
-  }
-
   WakameGUI.Selector.superclass.constructor.call(this,{
     region: "west",
     split: true,
@@ -84,22 +67,22 @@ WakameGUI.Selector = function(centerPanel){
     listeners: {
       'click': function(node){
           if(node.id == 'menu01'){
-            ChangePanel(0);
+            WakameGUI.changePanel(centerPanel,'accountPanel',0);
           }
           else if(node.id == 'menu02'){
-            ChangePanel(1);
+            WakameGUI.changePanel(centerPanel,'userPanel',1);
           }
           else if(node.id == 'menu03'){
-            ChangePanel(2);
+            // WakameGUI.changePanel(centerPanel,'resourceViewerPanel',2);
           }
           else if(node.id == 'menu04'){
-            ChangePanel(3);
+            // WakameGUI.changePanel(centerPanel,'resourceEditorPanel',3);
           }
           else if(node.id == 'menu05'){
-            ChangePanel(4);
+            // WakameGUI.changePanel(centerPanel,'locationMapPanel',4);
           }
           else if(node.id == 'menu06'){
-            ChangePanel(5);
+            // WakameGUI.changePanel(centerPanel,'logViewerPanel',5);
           }
       }
     },
@@ -185,8 +168,8 @@ WakameGUI.Main = function(){
     cardPanel.setUpPanel(obj)
   }
   
-  this.refreshPanel = function(panel){
-      eval(panel).refresh();
+  this.refreshPanel = function(panelName){
+      eval(panelName).refresh();
   }
 
   WakameGUI.Main.superclass.constructor.call(this, {

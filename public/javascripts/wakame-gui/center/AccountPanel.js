@@ -27,11 +27,7 @@
  *
  */
 
-// Global Resources
-Ext.apply(WakameGUI, {
-  Account:null,
-  AccountList:null
-});
+Ext.ns('WakameGUI');
 
 WakameGUI.Account = function(){
   var alistPanel = new WakameGUI.AccountList();
