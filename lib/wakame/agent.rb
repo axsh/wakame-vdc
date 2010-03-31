@@ -25,7 +25,11 @@ module Wakame
 
     def initialize(opts={})
       @managers = {}
-      determine_agent_id
+      if opts[:agent_id]
+        @agent_id = opts[:agent_id]
+      else
+        determine_agent_id
+      end
     end
 
     # post_setup
