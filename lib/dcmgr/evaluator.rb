@@ -24,9 +24,7 @@ module Dcmgr
       end
 
       def self.id
-        if @cached_id
-          @cached_id
-        end
+        return @cached_id if @cached_id
         @cached_id = generate_id
       end
 
@@ -46,42 +44,36 @@ module Dcmgr
         @target.class == Class
       end
 
-      def evaluate(account, evaluator)
-        Models::Tag.join(:tag_attributes,
-                         :tag_id=>:id).
-          filter(:owner_id=>evaluator.id,
-                 :tag_attributes__role=>self.class.id,
-                 :account_id=>account.id).each{|tag|
+      def evaluate(evaluator)
+        Models::Tag.filter_by_user_and_role(evaluator, self.class).each{|tag|
           unless class_target?
             return true if @target.tags.index{|t| tag.tags.include? t}
           end
           
-          return true if TagMapping.dataset.where(:target_type=>
-                                                  self.class.allow_types,
-                                                  :tag_id=>tag.tags.map{|t| t.id},
-                                                  :target_id=>0).count > 0
+          return true if TagMapping.target_exist?(self.class.allow_types,
+                                                  tag)
         }
         raise RoleError, "no role #{self.class}" +
           "(user: #{evaluator.uuid}, account: #{account.uuid}, target: #{@target})"
       end
 
-      def execute(account, evaluator)
-        evaluate(account, evaluator)
-        _execute(account, evaluator, @target)
+      def execute(evaluator)
+        evaluate(evaluator)
+        _execute(evaluator, @target)
       end
 
       attr_reader :params
     end
     
     class CreateAction < Base
-      def _execute(accont, user, target)
+      def _execute(user, target)
         target.save
         true
       end
     end
 
     class DestroyAction < Base
-      def _execute(accont, user, target)
+      def _execute(user, target)
         target.destroy
         true
       end
@@ -90,7 +82,7 @@ module Dcmgr
     class RunInstance < Base
       @allow_types = [TagMapping::TYPE_INSTANCE]
       
-      def _execute(account, user, instance)
+      def _execute(user, instance)
         instance.status = Instance::STATUS_TYPE_ONLINE
         instance.save
         true
@@ -101,7 +93,7 @@ module Dcmgr
       @allow_types = [TagMapping::TYPE_INSTANCE]
 
       private
-      def _execute(account, user, instance)
+      def _execute(user, instance)
         instance.status = Instance::STATUS_TYPE_OFFLINE
         instance.save
         true
@@ -124,7 +116,7 @@ module Dcmgr
       @allow_types = [TagMapping::TYPE_IMAGE_STORAGE]
 
       private
-      def _execute(account, user, image_storage_class)
+      def _execute(user, image_storage_class)
         ImageStorage[params]
       end
     end
@@ -148,7 +140,7 @@ module Dcmgr
     class DestroyPhysicalHost < DestroyAction
       @allow_types = [TagMapping::TYPE_PHYSICAL_HOST]
     end
-
+    
     class CreateHvController < CreateAction
       @allow_types = [TagMapping::TYPE_HV_CONTROLLER]
     end
@@ -169,33 +161,37 @@ module Dcmgr
       Base.roles
     end
 
-    def self.get(target, action, params={})
-      rolename = if target.class == Class
-                 then "%s%s" % [action.to_s.capitalize,
-                                target.name.split(/::/).last]
-                 else "%s%s" % [action.to_s.capitalize,
-                                target.class.to_s.split(/::/).last]
-                 end
+    private
+    
+    def self.get_role(target, action, params={})
+      role_name = if target.class == Class
+                  then "%s%s" % [action.to_s.capitalize,
+                                 target.name.split(/::/).last]
+                  else "%s%s" % [action.to_s.capitalize,
+                                 target.class.to_s.split(/::/).last]
+                  end
+
       begin
-        roleclass = eval("%s" % rolename)
+        role_class = eval(role_name)
       rescue NameError
-        Dcmgr::logger.debug "unmatch role name: #{rolename}"
+        Dcmgr::logger.info "unmatch role name: #{role_name}"
         return nil
       end
-      return nil unless roles.include? roleclass
-      roleclass.new(target, params)
+
+      return nil unless roles.include? role_class
+      role_class.new(target, params)
     end
   end
 
   # auth target is image or user
   def self.evaluate(evaluator, target, action)
-    raise ArgumentError.new("unknown class: %s" % evaluator) unless evaluator.is_a?(User)
-    
-    role = RoleExecutor.get(target, action)
-    raise ArgumentError.new("unkown role(target: %s, action: %s)" % [target, action]) unless role
-    
-    Dcmgr::logger.debug("role: %s" % role)
-    role.evaluate(evaluator, target)
-    role.execute(evaluator, target)
+    raise ArgumentError, "unknown evaluator: #{evaluator}" unless evaluator.is_a?(User)
+
+    role = RoleExecutor.get_role(target, action)
+    raise ArgumentError, "unkown role(target: #{target}, action: #{action})" unless role
+    Dcmgr::logger.debug "role: #{role}"
+
+    role.evaluate(evaluator)
+    role.execute(evaluator)
   end
 end
