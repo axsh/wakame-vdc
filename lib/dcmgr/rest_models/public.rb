@@ -315,34 +315,11 @@ module Dcmgr
         instance = nil
 
         Dcmgr.db.transaction do
-          image = req_hash[:image_storage] = Models::ImageStorage[req_hash[:image_storage]]
+          req_hash[:image_storage] = Models::ImageStorage[req_hash[:image_storage]]
           instance = _create(req_hash)
 
-          hvc = instance.hv_agent.hv_controller
-          Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
-            begin
-              vnic_list = ['newbr0'].map {|i|
-                ip = instance.ip_dataset.find_by_group_name(i).first
-                {:mac=>ip.mac, :ip=>ip.ip, :bridge=>i}
-              }
-              http.run_instance(instance.hv_agent.ip,
-                                instance.uuid,
-                                {:cpus=>instance.need_cpus,
-                                  :cpu_mhz => instance.need_cpu_mhz,
-                                  :memory=>instance.need_memory,
-                                  :vnic=>vnic_list,
-                                  :image_storage_uri=> image.storage_url
-                                })
-            rescue => e
-              raise e
-            end
-          }
+          instance.run
           instance.status = Models::Instance::STATUS_TYPE_RUNNING
-          
-          #Models::Log.create(:user=>user,
-          #                   :account_id=>request[:account].to_i,
-          #                   :target_uuid=>instance.uuid,
-          #                   :action=>'run')
           
           instance.save
         end
@@ -372,26 +349,8 @@ module Dcmgr
         instance.status = Models::Instance::STATUS_TYPE_TERMINATING
         instance.save
 
-        hvc = instance.hv_agent.hv_controller
-        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
-          begin
-            res = http.terminate_instance(instance.hv_agent.ip,
-                                          instance.uuid)
-          rescue => e
-            raise e
-          end
-          raise "can't controll hvc server" unless res.first["status"] == 200
-
-          begin
-            res = http.run_instance(instance.hv_agent.ip,
-                                    instance.uuid)
-          rescue => e
-            raise e
-          end
-          raise "can't controll hvc server" unless res.first["status"] == 200
-        }
-        
-        []
+        instance.reboot
+        true
       end
 
       public_action_withid :put, :shutdown do
@@ -404,16 +363,7 @@ module Dcmgr
         instance.status = Models::Instance::STATUS_TYPE_TERMINATING
         instance.save
 
-        hvc = instance.hv_agent.hv_controller
-        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
-          begin
-            res = http.terminate_instance(instance.hv_agent.ip,
-                                          instance.uuid)
-            raise "hvc operation failed: #{res.first['message']}" if res.first['status'] != 200
-          rescue => e
-            raise e
-          end
-        }
+        instance.shutdown
 
         true
       end

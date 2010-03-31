@@ -105,17 +105,34 @@ module Dcmgr
       end
 
       def run
-        Dcmgr::http(self.host, 80).open {|http|
-          res = http.get('/run')
-          return res.success?
+        hvc = hv_agent.hv_controller
+        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
+          vnic_list = ['newbr0'].map {|i|
+            ip = ip_dataset.find_by_group_name(i).first
+            {:mac=>ip.mac, :ip=>ip.ip, :bridge=>i}
+          }
+          res = http.run_instance(hv_agent.ip, uuid,
+                                  {:cpus=>need_cpus,
+                                    :cpu_mhz => need_cpu_mhz,
+                                    :memory=>need_memory,
+                                    :vnic=>vnic_list,
+                                    :image_storage_uri=> image_storage.storage_url
+                                  })
+          raise "can't controll hvc server" unless res.first["status"] == 200
         }
       end
 
       def shutdown
-        Dcmgr::http(self.host, 80).open {|http|
-          res = http.get('/shutdown')
-          return res.success?
+        hvc = hv_agent.hv_controller
+        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
+          res = http.terminate_instance(hv_agent.ip, uuid)
+          raise "hvc operation failed: #{res.first['message']}" if res.first['status'] != 200
         }
+      end
+
+      def reboot
+        shutdown
+        reboot
       end
     end
   end
