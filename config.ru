@@ -25,9 +25,17 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-require 'rubygems'
-# Load local envrironment file which bundler generates.
-require "#{File.dirname(__FILE__)}/vendor/gems/environment"
+begin
+  # Try to require the preresolved locked set of gems.
+  require File.expand_path('../.bundle/environment', __FILE__)
+rescue LoadError
+  # Fall back on doing an unlocked resolve at runtime.
+  require "rubygems"
+  require "bundler"
+  Bundler.setup
+end
+$:.unshift "#{File.dirname(__FILE__)}/."
+$:.unshift "#{File.dirname(__FILE__)}/../dcmgr/client"
 
 require 'dcmgr-gui'
 run Sinatra::Application
