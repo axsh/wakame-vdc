@@ -380,7 +380,7 @@ module Dcmgr
           rescue => e
             raise e
           end
-          raise "can't controll hvc server" unless res.code == "200"
+          raise "can't controll hvc server" unless res.first["status"] == 200
 
           begin
             res = http.run_instance(instance.hv_agent.ip,
@@ -388,7 +388,7 @@ module Dcmgr
           rescue => e
             raise e
           end
-          raise "can't controll hvc server" unless res.code == "200"
+          raise "can't controll hvc server" unless res.first["status"] == 200
         }
         
         []
