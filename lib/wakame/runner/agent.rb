@@ -13,8 +13,8 @@ module Wakame
         
         @options = {
           :amqp_server => URI.parse('amqp://guest@localhost/'),
-          :log_file => '/var/log/wakame-agent.log',
-          :pid_file => '/var/run/wakame/wakame-agent.pid',
+          :log_file => '/var/log/hva.log',
+          :pid_file => '/var/run/hva.pid',
           :daemonize => true
         }
         
@@ -49,21 +49,22 @@ module Wakame
           Signal.trap(i) { Wakame::Agent.stop{ remove_pidfile } }
         }
 
+        opts = ::AMQP.settings.dup
         unless @options[:amqp_server].nil?
           uri = @options[:amqp_server]
-          default = ::AMQP.settings
-          opts = {:host => uri.host, 
-            :port => uri.port || default[:port],
-            :vhost => uri.vhost || default[:vhost],
-            :user=>uri.user || default[:user],
-            :pass=>uri.password ||default[:pass]
-          }
-        else
-          opts = nil
-        end
+          opts[:host] = uri.host
+          opts[:port] = uri.port if uri.port
+          opts[:vhost] = uri.vhost if uri.vhost
+          opts[:user] = uri.user if uri.user
+          opts[:pass] = uri.password if uri.password
+         end
         
         if @options[:daemonize]
           daemonize(@options[:log_file])
+        end
+
+        if !ENV['WAKAME_AGENT_ID'].nil? && ENV['WAKAME_AGENT_ID'].nil? != ''
+          opts[:agent_id] = ENV['WAKAME_AGENT_ID']
         end
 
         Initializer.run(:process_agent)
