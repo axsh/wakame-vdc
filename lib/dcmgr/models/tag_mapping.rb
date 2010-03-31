@@ -16,6 +16,12 @@ module Dcmgr
       TYPE_IMAGE_STORAGE = 10
       
       many_to_one :tag
+
+      def self.target_exist?(target_types, role_tag)
+          dataset.where(:target_type=>target_types,
+                        :tag_id=>role_tag.tags.map{|t| t.id},
+                        :target_id=>0).count > 0
+      end
     end
   end
 end
