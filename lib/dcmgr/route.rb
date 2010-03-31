@@ -1,5 +1,4 @@
 require 'active_support'
-require 'dcmgr/evaluator'
 
 module Dcmgr
   def self.route(rest_class, method, block, params2)
@@ -41,6 +40,8 @@ module Dcmgr
   end
 
   def self.errorcode(e)
+    require 'dcmgr/evaluator'
+    
     case e
     when Models::InvalidUUIDError, Models::DuplicateUUIDError
       400 # ActiveResource::BadRequest
