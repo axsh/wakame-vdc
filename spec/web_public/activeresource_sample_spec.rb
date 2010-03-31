@@ -38,10 +38,6 @@ describe "run instance access by active resource" do
     user_name = "user_a"
     password = "pass"
 
-    # account
-    account = ar_class(:Account).create
-    account.should be_valid
-
     # user
     user = ar_class(:User).create(:name=>user_name, :password=>password)
     user.should be_valid
@@ -58,7 +54,8 @@ describe "run instance access by active resource" do
     }.should raise_error(NoMethodError)
 
     # mapping account
-    user.put(:add_account, :account=>account)
+    account = ar_class(:Account, ar_opts).create
+    account.should be_valid
 
     # key pair
     keypair = ar_class(:KeyPair, ar_opts).create
