@@ -2,9 +2,11 @@ include Dcmgr::Models
 
 account_a = Account.create(:name=>'__test_account__', :contract_at=>Time.now)
 account_b = Account.create(:name=>'__test_account2__')
+account_c = Account.create(:name=>'__test_account3__')
 
 user = User.create(:name=>'__test__', :password=>'passwd')
 user.add_account(account_a)
+user.add_account(account_b)
 
 image_storage_host = ImageStorageHost.create
 image_storage = ImageStorage.create(:image_storage_host=>image_storage_host)
