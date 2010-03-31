@@ -118,7 +118,7 @@ module Dcmgr
         raise "unkown hva ip: %s" % hva_ip unless @hvas[hva_ip]
 
         @hvas[hva_ip].update_instance(nil, instance_uuid, :online)
-        HvcHttpMockResponse.new(200, "ok")
+        response(200, "ok")
         
       when '/instance/terminate_instance'
         instance_uuid = params[:instance_uuid]
@@ -139,7 +139,7 @@ module Dcmgr
               :status=>ret_instance[1]}
           }
           ret[hva_ip] = {
-            'status'=>:online,
+            'status'=>"online",
             'instances'=>ret_instances}
         }
         response(200, ret)
