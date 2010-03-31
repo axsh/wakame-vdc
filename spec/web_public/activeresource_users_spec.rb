@@ -96,7 +96,7 @@ describe "user access by active resource" do
     # other account
     real_user_d = User[user_c.id]
     real_user_d.remove_account(Account[1])
-    real_user_d.add_account(Account[2])
+    real_user_d.add_account(Account[3])
 
     users = @class.find(:all, :params => {:same_accounts=>true})
     users.detect{|u| u.id == user_a.id }.should be_true

@@ -87,11 +87,8 @@ module Dcmgr
       end
 
       public_action_withid :put, :add_account do
-        target = Models::User[uuid]
-        account_uuid = request[:_get_account]
-        account = Models::Account[account_uuid]
         target.add_account(account)
-        nil
+        true
       end
       
       public_action :get do
