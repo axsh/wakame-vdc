@@ -59,24 +59,6 @@ module Wakame
       Wakame.log.info("Started master process : AMQP Server=#{amqp_server_uri.to_s} WAKAME_ROOT=#{Wakame.config.root_path} WAKAME_ENV=#{Wakame.config.environment} WAKAME_CLUSTER_ENV=#{Wakame.config.cluster_env}")
     end
 
-
-    def self.ec2_query_metadata_uri(key)
-      require 'open-uri'
-      open("http://169.254.169.254/2008-02-01/meta-data/#{key}"){|f|
-        return f.readline
-      }
-    end
-
-    def self.ec2_fetch_local_attrs
-      attrs = {}
-      %w[instance-id instance-type local-ipv4 local-hostname public-hostname public-ipv4 ami-id].each{|key|
-        rkey = key.tr('-', '_')
-        attrs[rkey.to_sym]=ec2_query_metadata_uri(key)
-      }
-      attrs[:availability_zone]=ec2_query_metadata_uri('placement/availability-zone')
-      attrs
-    end
-
     private
     def pre_setup
       @started_at = Time.now
