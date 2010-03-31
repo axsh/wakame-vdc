@@ -11,8 +11,8 @@ module Wakame
 
         @options = {
           :amqp_server => URI.parse('amqp://guest@localhost/'),
-          :log_file => '/var/log/wakame-master.log',
-          :pid_file => '/var/run/wakame/wakame-master.pid',
+          :log_file => '/var/log/hvc.log',
+          :pid_file => '/var/run/hvc.pid',
           :daemonize => true
         }
 
