@@ -74,40 +74,47 @@ module Wakame
         
         def call(env)
           req = Rack::Request.new(env)
-          begin
-            unless req.get?().to_s == "true"
-              raise "No Support Response"
-            end
-            query = req.query_string()
-            params = req.params()
-            if Wakame.config.enable_authentication == "true"
-              auth = authentication(params, query)
-            end
-            cname = params["action"].split("_")
-            begin
-              cmd = eval("Command::#{(cname.collect{|c| c.capitalize}).join}").new 
-              cmd.options = params
-              command = @command_queue.send_cmd(cmd)
-
-              if command.is_a?(Exception)
-                status = 500
-                body = json_encode(status, command.message)
-              else
-                status = 200
-                body = json_encode(status, "OK", command)
+          action_name, param_body = 
+            case req.request_method
+            when 'GET'
+              query = req.query_string()
+              if Wakame.config.enable_authentication == "true"
+                begin
+                  authentication(req.params, query)
+                rescue => e
+                  return make_res(403, 'auth failed')
+                end
               end
-            rescue => e
-              status = 404
-              body = json_encode(status, e)
+
+              [req.params['action'], req.params]
+            when 'POST'
+              return make_res(415, 'Unsupported media type') if req.content_type !~ %r{text/javascript}
+              
+              case req.path_info
+              when %r{^/instance/(\w+)}
+                action_name = $1
+              else
+                return make_res(404, "no such path")
+              end
+              
+              [action_name, JSON.load(req.body)]
+            else
+              return make_res(405, "Unsupported method type")
             end
+          
+          begin
+            cmd = eval("Command::#{action_name.split('_').collect{|c| c.capitalize}.join}").new
+            cmd.options = param_body
           rescue => e
-            status = 403
-            body = json_encode(status, e)
-            Wakame.log.error(e)
+            return make_res(404, 'no such path')
           end
-          [ status, {'Content-Type' => 'text/javascript+json'}, body]
+          
+          cmd_res = @command_queue.send_cmd(cmd)
+           
+          return cmd_res.is_a?(Exception) ? make_res(500, cmd_res.message) : make_res(200, 'OK')
         end
 
+        private
         def authentication(path, query)
           key = Wakame.config.private_key
           req = query.split(/\&signature\=/)
@@ -118,13 +125,8 @@ module Wakame
           end
         end
 
-        def json_encode(status, message, data=nil)
-          if status == 200 && data.is_a?(Hash)
-            body = [{:status=>status, :message=>message}, {:data=>data}].to_json
-          else
-            body = [{:status=>status, :message=>message}].to_json
-          end
-          body
+        def make_res(status, msg)
+          [status, {'Content-Type' => 'text/javascript+json'}, [[{:status=>status, :message=>msg.to_s}].to_json]]
         end
       end
 
