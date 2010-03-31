@@ -363,13 +363,13 @@ get '/image-list' do
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = imagelist.length
   imagelist.each{|index|
-    rows = Hash::new
-    rows.store('id',index.id)
-    rows.store('nm','centos5.4-i386-1part-aio-4gb-2009121801')
-    rows.store('od','staff')
-    rows.store('vy','public')
-    rows.store('ac','i386')
-    rtn['rows'].push(rows)
+    rtn['rows'] << {
+      'id'=>index.id,
+      'nm' => index.name,
+      'od' => 'staff',
+      'vy' => 'public',
+      'ac' => index.archetype
+    }
   }
   debug_log rtn
   content_type :json
