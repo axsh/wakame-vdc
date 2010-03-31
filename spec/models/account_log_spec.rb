@@ -108,7 +108,7 @@ describe "account log" do
                :account=>Account[2],
                :user=>User[1]).update(:created_at=>Time.gm(2010, 1, 31))
 
-    p preview_month_instances = AccountLog.preview_month_instances(2010, 1)
+    preview_month_instances = AccountLog.preview_month_instances(2010, 1)
     
     preview_month_instances.length.should == 3
     target_uuid = preview_month_instances.keys[0]
