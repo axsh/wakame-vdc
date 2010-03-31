@@ -127,8 +127,6 @@ WakameGUI.Instance = function(){
       { text : 'Terminate',handler:function(){
 		  if(sm.getCount() <= 0)
             return;
-          if(sm.getSelected().data['st'] != "running")
-            return;
           Ext.Msg.confirm("Terminate:","Are you share?", function(btn){
             if(btn == 'yes'){
               Ext.Ajax.request({
