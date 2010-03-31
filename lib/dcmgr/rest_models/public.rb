@@ -87,6 +87,7 @@ module Dcmgr
       end
 
       public_action_withid :put, :add_account do
+        target = Models::User[uuid]
         target.add_account(account)
         true
       end
