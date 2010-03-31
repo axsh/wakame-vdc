@@ -409,10 +409,10 @@ module Dcmgr
           begin
             res = http.terminate_instance(instance.hv_agent.ip,
                                           instance.uuid)
+            raise "hvc operation failed: #{res.first['message']}" if res.first['status'] != 200
           rescue => e
             raise e
           end
-          raise "can't controll hvc server" unless res.code == "200"
         }
 
         true
