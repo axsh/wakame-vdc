@@ -25,15 +25,40 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-require 'rubygems'  
 require 'sinatra'
 require 'erb'
-require 'WakameWebAPI'
+require 'client'
 require 'parsedate'
 require 'date'
-require 'resource_maneger'
-require 'dcmgr-gui-auth'
+require 'resource_manager'
 require 'define'
+
+def logger
+  require 'logger'
+  ::Logger.new(STDERR)
+end
+
+def debug_log(msg)
+  logger.debug(msg)
+end
+
+# Shortcut for the AR client classes.
+include Dcmgr::Client
+
+configure do
+  load 'dcmgr-gui.conf'
+end
+
+before do
+  if session[:user_uuid].nil?
+    next if request.path_info == '/center/login' || request.path_info == '/client/login'
+    # force to show login page.
+    redirect '/client/login'
+    next
+  else
+    Dcmgr::Client::Base.user_uuid = session[:user_uuid]
+  end
+end
 
 get '/' do
   'startup dcmgr-gui'
@@ -48,29 +73,40 @@ end
 #################################
 # for login
 get '/center/' do
-  need_auth 'center' do
-    erb :center
-  end
+  erb :center
 end
 get '/center/login' do
-  login('center')
+  erb :login_center
 end
 post '/center/login' do
-  login('center')
-end
-get '/client/' do
-  need_auth 'client' do
-    erb :client
+  authres = Dcmgr::Client::FrontendServiceUser.get(:authorize, :user=>params[:id], :password=>params[:pw])
+  if authres
+    session[:user_uuid] = authres['id']
+    redirect '/center/'
+    next
+  else
+    erb :login_center
   end
 end
+get '/client/' do
+  erb :client
+end
 get '/client/login' do
-  login('client')
+  erb :login_client
 end
 post '/client/login' do
-  login('client')
+  authres = Dcmgr::Client::FrontendServiceUser.get(:authorize, :user=>params[:id], :password=>params[:pw])
+  if authres
+    session[:user_uuid] = authres['id']
+    redirect '/client/'
+    next
+  else
+    erb :login_client
+  end
 end
 get '/logout' do
-  logout
+  session[:user_uuid] = nil
+  redirect '/client/'
 end
 #################################
 
@@ -84,9 +120,8 @@ post '/account-create' do
   enable = params[:en]
   memo = params[:mm]
   rtn = {"success" => false}
-  Account.login(session[:login_id],session[:login_pw])
   begin
-    Account.create(:name=>name,
+    Dcmgr::Client::Account.create(:name=>name,
                    :enable=>enable,
                    :memo=>memo,
                    :contract_at=>cdate)
@@ -100,7 +135,6 @@ end
 post '/account-save' do
   rtn = {"success" => false}
   begin
-    Account.login(session[:login_id],session[:login_pw])
     account = Account.find(params[:id])
     account.name = params[:nm]
     account.enable = params[:en]
@@ -122,7 +156,6 @@ post '/account-search' do
   cn = params[:cn]
 
   rtn = {'success'=>false,'totalCount'=>0,'rows'=>[]}
-  Account.login(session[:login_id],session[:login_pw])
   accountList = nil
   begin
     fromDate = nil;
@@ -180,7 +213,6 @@ end
 post '/account-remove' do
   id = params[:id]
   rtn = {"success" => false}
-  Account.login(session[:login_id],session[:login_pw])
   begin
     account = Account.find(id)
     account.destroy
@@ -193,7 +225,6 @@ end
 
 get '/account-list' do
   rtn = {"success" => false,'totalCount'=>0,'rows'=>[]}
-  Account.login(session[:login_id],session[:login_pw])
   begin
     accountList = Account.find(:all)
     rtn['success'] = true
@@ -215,7 +246,6 @@ get '/account-list' do
 end
 
 get '/instance-list' do
-  Instance.login(session[:login_id],session[:login_pw])
   instanceList = Instance.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[] }
   rtn['totalCount'] = instanceList.length
@@ -246,7 +276,6 @@ get '/instance-list' do
 end
 
 get '/instance-detail-list' do
-  Instance.login(session[:login_id],session[:login_pw])
   instanceList = Instance.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[] }
   rtn['totalCount'] = instanceList.length
@@ -280,20 +309,19 @@ get '/instance-detail-list' do
 end
 
 post '/instance-create' do
-  Instance.login(session[:login_id],session[:login_pw])
   id = params[:id]
   wd = params[:wd]
   tp = params[:tp]
-  cups=@@instanceType[tp][0]
+  cpus=@@instanceType[tp][0]
   cpu_mhz=@@instanceType[tp][1]
   memory=@@instanceType[tp][2]
   instance = Instance.create(
                :account=>id,
                :wid=>wd,
-               :need_cpus=>cups,
+               :need_cpus=>cpus,
                :need_cpu_mhz=>cpu_mhz,
                :need_memory=>memory,
-	           :image_storage=>wd)
+               :image_storage=>wd)
   rtn = {"success" => true}
   debug_log rtn
   content_type :json
@@ -302,7 +330,6 @@ end
 
 post '/instance-reboot' do
   id = params[:id]
-  Instance.login(session[:login_id],session[:login_pw])
   instance = Instance.find(id)
   instance.put(:reboot)
   rtn = {"success" => true}
@@ -313,7 +340,6 @@ end
 
 post '/instance-save' do
   id = params[:id]
-  Instance.login(session[:login_id],session[:login_pw])
   instance = Instance.find(id)
   instance.put(:save)
   rtn = {"success" => true}
@@ -324,7 +350,6 @@ end
 
 post '/instance-terminate' do
   id = params[:id]
-  Instance.login(session[:login_id],session[:login_pw])
   instance = Instance.find(id)
   instance.put(:shutdown)
   rtn = {"success" => true}
@@ -334,7 +359,6 @@ post '/instance-terminate' do
 end
 
 get '/image-list' do
-  ImageStorage.login(session[:login_id],session[:login_pw])
   imagelist = ImageStorage.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = imagelist.length
@@ -353,7 +377,6 @@ get '/image-list' do
 end
 
 get '/user-list' do
-  User.login(session[:login_id],session[:login_pw])
   userlist = User.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = userlist.length
@@ -372,7 +395,6 @@ get '/user-list' do
 end
 
 get '/physicalhost-list' do
-  PhysicalHost.login(session[:login_id],session[:login_pw])
   physicalhostlist = PhysicalHost.find(:all)
   rtn = {'totalCount'=>0,'rows'=>[]}
   rtn['totalCount'] = physicalhostlist.length
@@ -430,7 +452,6 @@ post '/user-create' do
   password = params[:password]
   enable = params[:enable] == 'on' ? 1:0
   memo = params[:memo]
-  User.login(session[:login_id],session[:login_pw])
   User.create(:name=>name,
               :email=>email,
               :password=>password,
@@ -450,7 +471,6 @@ post '/user-edit' do
   enable = params[:enable] == 'on' ? 1:0
   memo = params[:memo]
   begin
-    User.login(session[:login_id],session[:login_pw])
     debug_log params
     user = User.find(params[:user_id])
     user.name = name

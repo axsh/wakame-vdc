@@ -37,5 +37,13 @@ end
 $:.unshift "#{File.dirname(__FILE__)}/."
 $:.unshift "#{File.dirname(__FILE__)}/../dcmgr/client"
 
+use Rack::Session::Cookie, {
+  :key => 'dcmgr-gui.session',
+  :path => '/',
+  #:expire_after => 1.minutes,
+  :secret => 'dcmgr-gui'
+}
+  
+
 require 'dcmgr-gui'
 run Sinatra::Application
