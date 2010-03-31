@@ -16,12 +16,10 @@ module Wakame
         }
 
 
-      register(Actor::ServiceMonitor.new, '/service_monitor')
-      register(Actor::Daemon.new, '/daemon')
-      register(Actor::System.new, '/system')
-      register(Actor::MySQL.new, '/mysql')
-      register(Actor::Deploy.new, '/deploy')
-      register(Actor::Monitor.new, '/monitor')
+        register(Actor::ServiceMonitor.new, '/service_monitor')
+        register(Actor::Daemon.new, '/daemon')
+        register(Actor::Monitor.new, '/monitor')
+        register(Actor::Xen.new, '/xen')
         
       end
 
