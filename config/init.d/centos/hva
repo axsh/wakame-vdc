@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# Start/stop hva.
+#
+# chkconfig: - 99 10
+# description: hva
+# processname: hva
+# pidfile: /var/run/hva.pid
+
+
+NAME=`basename $0`
+USER=wakame
+GROUP=wakame
+PIDFILE=/var/run/$NAME.pid
+
+. /etc/rc.d/init.d/functions
+[ -f /etc/default/wakame ] && {
+	. /etc/default/wakame
+	export WAKAME_ROOT WAKAME_ENV WAKAME_AGENT_ID
+}
+
+DAEMON=$WAKAME_ROOT/bin/$NAME
+
+case "$1" in
+	start)
+		echo -n $"Starting $NAME: "
+		$DAEMON    $USER $OPTIONS && success || failure
+		RETVAL=$?
+		echo
+		;;
+	stop)
+		echo -n $"Stopping $NAME: "
+		kill `cat $PIDFILE`
+		RETVAL=$?
+		echo
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	*)
+		echo $"Usage: $0 [start|stop|restart]"
+		RETVAL=1
+		;;
+esac
+exit $RETVAL
