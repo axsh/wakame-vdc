@@ -4,7 +4,7 @@ require 'active_resource'
 module Wakame
   module Models
     class Dcmgr < ActiveResource::Base
-      self.site = "" 
+      self.site = Wakame.config.dcmgr_private_endpoint
       self.format = :json
     end
 
