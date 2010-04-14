@@ -1,0 +1,54 @@
+== 0.5.1 2009-11-22
+
+* Add deploy_application action.
+
+== 0.5.0 2009-09-18
+
+* Add Memcached resource.
+
+* Use SQL based persistent store for the status information.
+
+* Many internal changes along with the above change.
+
+== 0.4.2 2009-07-24
+
+* Add Web API for master control. (Note that the API design is not fixed yet)
+
+* Rewrote the CLI to use HTTP instead of old DRb interface.
+
+* Add support for agent less resource.
+
+* Add LockQueue to avoid confliction when multiple actions run.
+
+* Add MySQL_Slave resource.
+
+* Add Elastic IP resource. 
+
+* Add Elastic Load Balancer resource.
+
+* Add Nginx resource.
+
+== 0.4.1 2009-06-29
+
+* Fixed the packaging bugs.
+
+== 0.4.0 2009-06-26
+
+* Actor and Monitor plugin support for Agent.
+
+* Changed the deployment procedure for configuration/script files of each resource.
+
+* Restructured the source code.
+
+* Project folder generators using rubigen.
+
+* Changed the deployment procedure for configuration/script files of each resource.
+
+* Renamed major data classes. And renaming is still on-going.
+
+* Gem packaging.
+
+== 0.3.0 2009-04-22
+
+* 1 major enhancement:
+  * Initial release

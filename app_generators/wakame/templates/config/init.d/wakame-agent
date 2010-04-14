@@ -1,0 +1,72 @@
+#!/bin/bash
+# Start/stop the wakame agent daemon.
+#
+### BEGIN INIT INFO
+# Provides:          wakame-agent
+# Required-Start:    $local_fs $network rabbitmq-server wakame-master
+# Required-Stop:     $local_fs $network rabbitmq-server wakame-master
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: 
+# Description:       cron is a standard UNIX program that runs user-specified 
+#                    programs at periodic scheduled times. vixie cron adds a 
+#                    number of features to the basic UNIX cron, including better
+#                    security and more powerful configuration options.
+### END INIT INFO
+
+PIDFILE=/var/run/wakame/wakame-agent.pid
+
+#LSBNAMES='-l'  # Uncomment for LSB name support in /etc/cron.d/
+
+. /lib/lsb/init-functions
+if [ -z $WAKAME_ROOT ]; then
+    [ -f /etc/default/wakame ] && . /etc/default/wakame
+    export GEM_HOME WAKAME_ROOT WAKAME_ENV
+fi
+
+start_agent()
+{
+    typeset user_data i
+    # Prepare the parent directory for the pidfile.
+    typeset pid_dir=`dirname $PIDFILE`
+    [ -d $pid_dir ] || {
+      mkdir -p /var/run/wakame
+    }
+
+    user_data="`curl -s -f --retry 3 http://169.254.169.254/2008-02-01/user-data`"
+    if [ "$?" = 0 -a -n "$user_data" ]; then
+	for i in `echo "$user_data" | awk -F\= '$1 == "amqp_server" {print $2}'`
+	do
+	    opts="$opts -s $i"
+	done
+    fi
+    start-stop-daemon --start --quiet --pidfile $PIDFILE --name wakame-agent --startas $WAKAME_ROOT/bin/wakame-agent -- $opts $LSBNAMES
+}
+
+stop_agent()
+{
+    start-stop-daemon --stop --quiet --pidfile $PIDFILE --name wakame-agent
+}
+
+case "$1" in
+start)	log_daemon_msg "Starting agent process for Wakame" "wakame-agent"
+	start_agent
+        log_end_msg $?
+	;;
+stop)	log_daemon_msg "Stopping agent process for Wakame" "wakame-agent"
+	stop_agent
+        log_end_msg $?
+        ;;
+restart) log_daemon_msg "Restarting agent process for Wakame" "wakame-agent" 
+	stop_agent
+	start_agent
+        log_end_msg $?
+        ;;
+reload|force-reload) log_daemon_msg "Reloading configuration files for " ""
+        log_end_msg 0
+        ;;
+*)	log_action_msg "Usage: /etc/init.d/wakame-agent {start|stop|restart|reload|force-reload}"
+        exit 2
+        ;;
+esac
+exit 0

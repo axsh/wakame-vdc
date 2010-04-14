@@ -1,0 +1,7 @@
+export APACHE_RUN_USER=www-data
+export APACHE_RUN_GROUP=www-data
+export APACHE_PID_FILE=/var/run/apache2-app.pid
+export APACHE_ACCESS_LOG_FILE=/var/log/apache2/access-app.log
+export APACHE_ERROR_LOG_FILE=/var/log/apache2/error-app.log
+export SYSTEM_INCLUDE_FILE=system-app.conf
+export SITES_INCLUDE_FILE=sites-app.conf
