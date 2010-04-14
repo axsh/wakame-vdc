@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+# -*- ruby -*-
+require 'rubygems' rescue ENV['NO_RUBYGEMS']
+if %w(--version -v).include? ARGV.first
+  require File.dirname(__FILE__) + "/../lib/wakame"
+  puts "#{File.basename($0)} #{Wakame::VERSION}"
+  exit(0)
+end
+
+#app_path = ARGV.first
+
+require 'rubigen'
+require 'rubigen/scripts/generate'
+RubiGen::Base.use_application_sources! 
+RubiGen::Base.append_sources RubiGen::PathSource.new(:application,
+                                                     File.join(File.dirname(__FILE__), "../app_generators"))
+#p RubiGen::Base.sources
+RubiGen::Scripts::Generate.new.run(ARGV, :generator => 'wakame')

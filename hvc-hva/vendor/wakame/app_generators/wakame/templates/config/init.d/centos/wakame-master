@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+
+NAME=`basename $0`
+USER=wakame
+GROUP=wakame
+PIDFILE=/var/run/wakame/$NAME.pid
+
+. /etc/rc.d/init.d/functions
+[ -f /etc/default/wakame ] && {
+	. /etc/default/wakame
+	export WAKAME_ROOT WAKAME_ENV
+}
+
+DAEMON=$WAKAME_ROOT/bin/$NAME
+
+case "$1" in
+	start)
+		echo -n $"Starting $NAME: "
+		$DAEMON -u $USER $OPTIONS && success || failure
+		RETVAL=$?
+		echo
+		;;
+	stop)
+		echo -n $"Stopping $NAME: "
+		kill `cat $PIDFILE`
+		RETVAL=$?
+		echo
+		;;
+	restart)
+		$0 stop
+		sleep 1
+		$0 start
+		;;
+	*)
+		echo $"Usage: $0 [start|stop|restart]"
+		RETVAL=1
+		;;
+esac
+exit $RETVAL

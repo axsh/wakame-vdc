@@ -1,0 +1,6 @@
+export APACHE_RUN_USER=www-data
+export APACHE_RUN_GROUP=www-data
+export APACHE_PID_FILE=/var/run/apache2-lb.pid
+export APACHE_ERROR_LOG_FILE=/var/log/apache2/error-lb.log
+export SYSTEM_INCLUDE_FILE=system-lb.conf
+export SITES_INCLUDE_FILE=sites-lb.conf

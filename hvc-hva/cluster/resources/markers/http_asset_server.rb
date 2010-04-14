@@ -1,0 +1,2 @@
+module HttpAssetServer
+end

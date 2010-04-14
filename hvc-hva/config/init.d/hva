@@ -1,0 +1,69 @@
+#!/bin/bash
+# Start/stop hva.
+#
+### BEGIN INIT INFO
+# Provides:          hva
+# Required-Start:    $local_fs $network rabbitmq-server hvc
+# Required-Stop:     $local_fs $network rabbitmq-server hvc
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: 
+# Description:       
+### END INIT INFO
+
+PIDFILE=/var/run/hva.pid
+
+#LSBNAMES='-l'  # Uncomment for LSB name support in /etc/cron.d/
+
+. /lib/lsb/init-functions
+if [ -z $WAKAME_ROOT ]; then
+    [ -f /etc/default/wakame ] && . /etc/default/wakame
+    export GEM_HOME WAKAME_ROOT WAKAME_ENV
+fi
+
+start_agent()
+{
+    typeset user_data i
+    # Prepare the parent directory for the pidfile.
+    typeset pid_dir=`dirname $PIDFILE`
+    [ -d $pid_dir ] || {
+      mkdir -p /var/run
+    }
+
+    user_data="`curl -s -f --retry 3 http://169.254.169.254/2008-02-01/user-data`"
+    if [ "$?" = 0 -a -n "$user_data" ]; then
+	for i in `echo "$user_data" | awk -F\= '$1 == "amqp_server" {print $2}'`
+	do
+	    opts="$opts -s $i"
+	done
+    fi
+    start-stop-daemon --start --quiet --pidfile $PIDFILE --name hva --startas $WAKAME_ROOT/bin/hva -- $opts $LSBNAMES
+}
+
+stop_agent()
+{
+    start-stop-daemon --stop --quiet --pidfile $PIDFILE --name hva
+}
+
+case "$1" in
+start)	log_daemon_msg "Starting agent process for Wakame" "hva"
+	start_agent
+        log_end_msg $?
+	;;
+stop)	log_daemon_msg "Stopping agent process for Wakame" "hva"
+	stop_agent
+        log_end_msg $?
+        ;;
+restart) log_daemon_msg "Restarting agent process for Wakame" "hva" 
+	stop_agent
+	start_agent
+        log_end_msg $?
+        ;;
+reload|force-reload) log_daemon_msg "Reloading configuration files for " ""
+        log_end_msg 0
+        ;;
+*)	log_action_msg "Usage: /etc/init.d/hva {start|stop|restart|reload|force-reload}"
+        exit 2
+        ;;
+esac
+exit 0

@@ -1,0 +1,66 @@
+#!/bin/bash
+# Start/stop hvc
+#
+### BEGIN INIT INFO
+# Provides:          hvc
+# Required-Start:    $local_fs $network rabbitmq-server
+# Required-Stop:     $local_fs $network rabbitmq-server
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: 
+# Description:       
+### END INIT INFO
+
+USER=wakame
+GROUP=wakame
+PIDFILE=/var/run/hvc.pid
+
+#LSBNAMES='-l'  # Uncomment for LSB name support in /etc/cron.d/
+
+. /lib/lsb/init-functions
+if [ -z $WAKAME_ROOT ]; then
+    [ -f /etc/default/wakame ] && . /etc/default/wakame
+    export GEM_HOME WAKAME_ROOT WAKAME_ENV
+fi
+
+start_master()
+{
+    # Prepare the parent directory for the pidfile.
+    typeset pid_dir=`dirname $PIDFILE`
+    if su -c "test -w $pid_dir" $USER; then
+      :
+    else
+      mkdir -p $pid_dir
+      chown "$USER:$GROUP" $pid_dir
+    fi
+    
+    start-stop-daemon --start --quiet --pidfile $PIDFILE --name hvc --startas $WAKAME_ROOT/bin/hvc -- -u $USER $LSBNAMES
+    
+}
+stop_master()
+{
+    start-stop-daemon --stop --quiet --pidfile $PIDFILE --name hvc
+}
+
+case "$1" in
+start)	log_daemon_msg "Starting master process for Wakame" "hvc"
+	start_master
+        log_end_msg $?
+	;;
+stop)	log_daemon_msg "Stopping master process for Wakame" "hvc"
+	stop_master
+        log_end_msg $?
+        ;;
+restart) log_daemon_msg "Restarting master process for Wakame" "hvc" 
+	stop_master
+	start_master
+        log_end_msg $?
+        ;;
+reload|force-reload) log_daemon_msg "Reloading configuration files for " ""
+        log_end_msg 0
+        ;;
+*)	log_action_msg "Usage: /etc/init.d/wakame-master {start|stop|restart|reload|force-reload}"
+        exit 2
+        ;;
+esac
+exit 0
