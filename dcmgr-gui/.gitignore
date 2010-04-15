@@ -1,0 +1,9 @@
+*~
+#*#
+
+.bundle/*
+vendor/*
+Gemfile.lock
+public/javascripts/ext-js/*
+public/javascripts/excanvas/*
+public/images/icons/*
