@@ -8,7 +8,7 @@
 # pidfile: /var/run/hva.pid
 
 
-NAME=`basename $0`
+NAME=hva
 USER=wakame
 GROUP=wakame
 PIDFILE=/var/run/$NAME.pid
@@ -24,16 +24,19 @@ DAEMON=$WAKAME_ROOT/bin/$NAME
 case "$1" in
 	start)
 		echo -n $"Starting $NAME: "
+		[ -f $PIDFILE ] && ps -c `cat $PIDFILE` >/dev/null && success && echo && exit 0
 		$DAEMON    $USER $OPTIONS && success || failure
 		RETVAL=$?
 		echo
 		;;
 	stop)
 		echo -n $"Stopping $NAME: "
-		kill `cat $PIDFILE`
+		[ -f $PIDFILE ] || { success; echo; exit 0; }
+		kill `cat $PIDFILE` && success || failure
 		RETVAL=$?
-		echo
-		;;
+		rm -f $PIDFILE
+                echo
+                ;;
 	restart)
 		$0 stop
 		sleep 1
