@@ -1,0 +1,15 @@
+# -*- ruby -*-
+manager Isono::ManagerModules::EventChannel
+manager Isono::ManagerModules::DataStore
+manager Isono::ManagerModules::MqCommand
+manager Isono::ManagerModules::AgentCollector
+manager Isono::ManagerModules::FileSenderChannel
+manager Isono::ManagerModules::ResourceLocator
+
+node_id 'master'
+config_path File.expand_path('config/mgr-config.rb', app_root)
+
+config do |c|
+  c.resource_locator.resource_base_dir = File.expand_path('resource_repos', c.app_root)
+  c.resource_locator.resource_tmp_dir = File.expand_path('resource_repos/tmp', c.app_root)
+end

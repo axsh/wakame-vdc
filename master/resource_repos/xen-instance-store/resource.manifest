@@ -1,0 +1,60 @@
+# -*- ruby -*-
+
+name 'xen-instance-store'
+require 'hva'
+state_monitor Hva::XenMonitor
+
+statemachine {
+  trans :init,  :on_load, :ready
+  trans :ready, :on_start, :starting
+  trans :starting, :on_online, :running
+  trans :running, :on_attach_volume, :attaching_volume
+  trans :attaching_volume, :on_back_to_run, :running
+  trans :running, :on_stop, :shuttingdown
+  trans :shuttingdown, :on_offline, :terminated
+}
+
+extend RakeHelper
+default_rakefile 'tasks/xen.rake'
+
+entry_state(:running) do
+  on_event :stop_vm, 'mgr-master' do
+    process_event(:on_stop)
+  end
+  
+  on_event :attach_volume, 'storage_node' do
+    process_event(:on_attach_volume)
+  end
+end
+
+entry_state(:ready) do
+  task do
+    # immediatry change the state
+    state_monitor.start
+    process_event(:on_start)
+  end
+end
+
+entry_state(:starting) {
+  task do
+    rake 'start_vm'
+  end
+}
+
+entry_state(:shuttingdown) {
+  task do
+    rake 'stop_vm'
+  end
+}
+
+entry_state(:attaching_volume) {
+  task do
+    rake 'attach_file_vol'
+  end
+}
+
+entry_state(:terminated) {
+  task do
+    state_monitor.stop
+  end
+}

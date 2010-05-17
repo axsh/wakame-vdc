@@ -1,0 +1,13 @@
+# -*- ruby -*-
+manager Isono::ManagerModules::EventChannel
+manager Isono::ManagerModules::AgentHeartbeat
+manager Isono::ManagerModules::FileReceiverChannel
+manager Isono::ManagerModules::ResourceLoader
+
+config_path File.expand_path('config/hva-config.rb', app_root)
+
+config do |c|
+  c.file_receiver_channel.complete_dir = File.expand_path('tmp/', c.app_root)
+  c.file_receiver_channel.buffer_dir = File.expand_path('tmp/receiver', c.app_root)
+  c.resource_loader.resource_save_dir = File.expand_path('tmp/resource', c.app_root)
+end
