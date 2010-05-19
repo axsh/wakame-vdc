@@ -2,7 +2,7 @@
 require 'sequel'
 require File.expand_path('../config/path_resolver', __FILE__)
 
-M = Isono::Manifest.load_file('mgr.isono')
+M = Isono::Manifest.load_file('master.isono')
 
 namespace :db do
   
