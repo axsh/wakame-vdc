@@ -4,8 +4,6 @@ begin
   require File.expand_path('../../.bundle/environment', __FILE__)
 rescue LoadError => e
   require 'rubygems'
-  #require 'bundler'
-  #Bundler.setup
 end
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
@@ -19,6 +17,5 @@ end
 begin
   gem 'isono', version
 rescue Gem::LoadError => e
-  $LOAD_PATH.unshift File.expand_path('../../../isono/lib', __FILE__)
   require 'isono'
 end
