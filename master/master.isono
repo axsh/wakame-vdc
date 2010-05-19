@@ -5,6 +5,7 @@ manager Isono::ManagerModules::MqCommand
 manager Isono::ManagerModules::AgentCollector
 manager Isono::ManagerModules::FileSenderChannel
 manager Isono::ManagerModules::ResourceLocator
+manager Isono::ManagerModules::EventLogger
 
 node_id 'master'
 config_path File.expand_path('config/mgr-config.rb', app_root)

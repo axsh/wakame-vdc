@@ -10,7 +10,7 @@ namespace :db do
     db = Sequel.connect(M.config.data_store.database_dsn)
     Isono::Models::AgentPool.create_table?
     Isono::Models::ResourceInstance.create_table?
-    #Isono::Models::ResourceGraph.create_table?
+    Isono::Models::EventLog.create_table?
   end
 
   task :reset => [:drop, :setup]
