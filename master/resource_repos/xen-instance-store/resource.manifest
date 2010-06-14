@@ -1,11 +1,24 @@
 # -*- ruby -*-
 
 name 'xen-instance-store'
+
+plugin RakeHelper
+default_rakefile 'tasks/xen.rake'
+
+plugin MonitorHelper
+
 require 'hva'
-state_monitor Hva::XenMonitor
+state_monitor Hva::XenMonitor do |m|
+  m.vm_instance_id = manifest.instance_data[:vm_instance_id]
+end
+
+config do |c|
+  c.image_deployment_base_dir='/opt/wakame/var/cache/image_store'
+end
 
 statemachine {
   trans :init,  :on_load, :ready
+  trans :ready, :on_online, :running
   trans :ready, :on_start, :starting
   trans :starting, :on_online, :running
   trans :running, :on_attach_volume, :attaching_volume
@@ -14,47 +27,47 @@ statemachine {
   trans :shuttingdown, :on_offline, :terminated
 }
 
-extend RakeHelper
-default_rakefile 'tasks/xen.rake'
-
 entry_state(:running) do
-  on_event :stop_vm, 'mgr-master' do
-    process_event(:on_stop)
+  on_command 'stop_vm' do
+    next_event(:on_stop)
+    true
   end
   
   on_event :attach_volume, 'storage_node' do
-    process_event(:on_attach_volume)
+    next_event(:on_attach_volume)
   end
 end
 
 entry_state(:ready) do
   task do
     # immediatry change the state
-    state_monitor.start
-    process_event(:on_start)
+    #state_monitor.start
+    next_event(:on_start)
   end
 end
 
 entry_state(:starting) {
   task do
-    rake 'start_vm'
+    rake 'xen:start_vm'
+    next_event(:on_online)
   end
 }
 
 entry_state(:shuttingdown) {
   task do
-    rake 'stop_vm'
+    rake 'xen:stop_vm'
+    next_event(:on_offline)
   end
 }
 
 entry_state(:attaching_volume) {
   task do
-    rake 'attach_file_vol'
+    rake 'xen:attach_file_vol'
   end
 }
 
 entry_state(:terminated) {
   task do
-    state_monitor.stop
+    #state_monitor.stop
   end
 }

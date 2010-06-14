@@ -3,42 +3,33 @@
 require 'fileutils'
 
 namespace :xen do
+
   task :start_vm do
-    puts "xm create hogefuga"
-    sleep 10
-  end
-
-  task :stop_vm do
-    puts "xm destroy hogefuga"
-    sleep 3
-  end
-
-  task :start_vm2 do
     # prepare image store directory for new instance.
-    img_basedir = File.expand_path("#{options['instance_uuid']}", Wakame.config.image_deployment_base_dir)
-    raise "the instance already exists: #{options['instance_uuid']}" if File.exists? img_basedir
+    img_basedir = File.expand_path("#{$instance_data[:vm_instance_id]}",
+                                   $manifest.config.image_deployment_base_dir)
+    raise "the instance already exists: #{$instance_data[:vm_instance_id]}" if File.exists? img_basedir
     FileUtils.mkdir_p(img_basedir)
 
     # copy image file from the src image store.
     os_img_path = File.expand_path('os.img', img_basedir)
-    if system("curl --silent -f -I '#{options['image_storage_uri']}.gz'")
-      Wakame::Util.exec("curl --silent '#{options['image_storage_uri']}.gz' | zcat > '#{os_img_path}'")
-      #Wakame::Util.exec("gunzip  '#{os_img_path}.gz'")
+    if sh("curl --silent -f -I '#{$instance_data[:image_storage_uri]}.gz'")
+      sh("curl --silent '#{$instance_data[:image_storage_uri]}.gz' | zcat > '#{os_img_path}'")
     else
-      Wakame::Util.exec("curl --silent -o '#{os_img_path}' '#{options['image_storage_uri']}'")
+      sh("curl --silent -o '#{os_img_path}' '#{$instance_data[:image_storage_uri]}'")
     end
     # setup ephemeral/swap devs
-    #Wakame::Util.exec("/bin/dd if=/dev/zero of=#{} count=#{} bs=1M")
+    #sh("/bin/dd if=/dev/zero of=#{} count=#{} bs=1M")
 
-    xen_conf = File.expand_path(options['instance_uuid'], img_basedir)
+    xen_conf = File.expand_path('xen.conf', img_basedir)
 
-    vnic = options['vnic'].map{|i| "mac=#{i['mac']}, bridge=#{i['bridge']}" }
+    vnic = $instance_data[:vnic].map{|i| "mac=#{i[:mac]}, bridge=#{i[:bridge]}" }
     # create xen config file under the img_basedir.
     File.open(xen_conf, 'w') { |f|
       f << <<__XEN_CONF__
-name        = '#{options["instance_uuid"]}'
-memory      = #{options["memory"].to_i}
-vcpus       = #{options["cpus"]}
+name        = '#{$instance_data[:vm_instance_id]}'
+memory      = #{$instance_data[:memory].to_i}
+vcpus       = #{$instance_data[:cpus]}
 bootroader  = '/usr/bin/pygrub'
 root        = '/dev/xvda ro'
 vfb         = [ ]
@@ -50,6 +41,17 @@ on_crash    = 'restart'
 __XEN_CONF__
     }
 
-    Wakame::Util.exec("xm create #{xen_conf}")
+    sh("xm create #{xen_conf}")
   end
+
+
+  task :stop_vm do
+    img_basedir = File.expand_path("#{$instance_data[:vm_instance_id]}",
+                                   $manifest.config.image_deployment_base_dir)
+    
+    sh("xm destroy '#{$instance_data[:vm_instance_id]}'")
+    sleep 5
+    FileUtils.rm_rf(img_basedir)
+  end
+  
 end

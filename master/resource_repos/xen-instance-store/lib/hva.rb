@@ -2,13 +2,13 @@ module Hva
 end
 
 
-class Hva::XenMonitor
-  def start
+class Hva::XenMonitor < Isono::Monitors::Base
+  def initialize
+    super()
+    self.vm_instance_id = nil
   end
-
-
-  def stop
+  
+  def check
+    system("xm list #{self.vm_instance_id}")
   end
 end
-    
-  
