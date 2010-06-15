@@ -8,7 +8,7 @@ module Dcmgr::Web
     
     def self.public_crud model
       model.actions {|action, pattern, proc|
-        Dcmgr::logger.debug "REGIST: %s %s" % [action, pattern]
+        Dcmgr::logger.debug "REGISTER: %s %s" % [action, pattern]
         self.send action, pattern, &proc
       }
     end

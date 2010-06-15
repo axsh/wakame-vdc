@@ -80,7 +80,7 @@ module Dcmgr
         super
         self.status = STATUS_TYPE_OFFLINE unless self.status
         self.status_updated_at = Time.now
-        Dcmgr::logger.debug "becore create: status = %s" % self.status
+        Dcmgr::logger.debug "before create: status = %s" % self.status
         unless self.hv_agent
           physical_host = PhysicalHost.assign(self)
           self.hv_agent = physical_host.hv_agents[0]
