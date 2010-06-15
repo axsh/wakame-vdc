@@ -6,7 +6,7 @@ module Wakame
       include ThreadImmutable
 
       def init
-        @agent_timeout = 31.to_f
+        @agent_timeout = 601.to_f
         @agent_kill_timeout = @agent_timeout * 2
         @gc_period = 20.to_f
 
