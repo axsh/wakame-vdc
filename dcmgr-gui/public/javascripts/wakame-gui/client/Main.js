@@ -166,6 +166,7 @@ WakameGUI.SystemAdminDownPanel = function(cardPanel){
             }
           ]
         },
+/*
         {
           id:       'child2',
           text:     'PlatHome',
@@ -183,6 +184,7 @@ WakameGUI.SystemAdminDownPanel = function(cardPanel){
             }
           ]
         }
+*/
       ]
     }
   });
