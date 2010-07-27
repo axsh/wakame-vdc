@@ -1,19 +1,18 @@
 
-source :gemcutter
+source :rubygems
 
-gem "rack", ">= 1.0.1"
-gem "sinatra", ">= 0.9.4"
+gem "rack", ">= 1.2.1"
+gem "sinatra", ">= 1.0"
 gem "json", ">= 1.2.0"
 gem "sequel", "= 3.9.0"
 gem "mysql", ">= 2.8.1"
-gem "activeresource", ">= 2.3.5"
+gem "activeresource", ">= 2.3.8"
 gem "hpricot", ">=0.8.2"
-
 gem 'extlib', '>= 0.9.14'
+gem 'configuration'
 
 gem 'rake', '>= 0.8.7'
 
 group :development do
-  gem "rspec", ">= 1.2.9"
-  gem "shotgun", '>= 0.6'
+  gem 'bacon'
 end
