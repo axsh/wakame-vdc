@@ -1,12 +1,67 @@
 require 'logger'
+require 'configuration'
 
 module Dcmgr
   extend self
 
-  def configure(config_file=nil)
-    load(config_file) if config_file
-    self
+  class << self
+    def conf
+      @conf
+    end
+
+    def configure(config_path=nil, &blk)
+      return self if @conf
+      
+      if config_path.is_a?(String)
+        raise "Could not find configration file: #{config_path}" unless File.exists?(config_path)
+        code= <<-__END
+        Configuration('global') do
+          #{File.read(config_path)}
+        end
+        __END
+        @conf = eval(code)
+      else
+        @conf = Configuration.for('global', &blk)
+      end
+
+      self
+    end
+
+    def run_initializers()
+      raise "Complete the configuration prior to run_initializers()." if @conf.nil?
+      initializer_hooks.each { |n|
+        n.call
+      }
+    end
+
+    def initializer_hooks(&blk)
+      @initializer_hooks ||= []
+      if blk
+        @initializer_hooks << blk
+      end
+      @initializer_hooks
+    end
+
   end
+
+  initializer_hooks {
+    Dcmgr.class_eval {
+      DCMGR_ROOT = ENV['DCMGR_ROOT'] || File.expand_path('../../', __FILE__)
+    }
+  }
+  
+  # Add conf/initializers/*.rb loader 
+  initializer_hooks {
+    initializers_root = begin
+                          File.expand_path('conf/initializers', DCMGR_ROOT)
+                        end
+    if File.directory?(initializers_root)
+      Dir.glob("#{initializers_root}/*.rb") do |f|
+        ::Kernel.load(f)
+      end
+    end
+  }
+  
   
   def logger=(logger)
     @logger = logger
