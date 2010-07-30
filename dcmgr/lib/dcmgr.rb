@@ -1,9 +1,4 @@
 require 'logger'
-require 'sinatra'
-
-set :run, false
-
-require 'dcmgr/route'
 
 module Dcmgr
   extend self
