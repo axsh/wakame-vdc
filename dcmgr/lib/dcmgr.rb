@@ -52,13 +52,12 @@ module Dcmgr
   
   # Add conf/initializers/*.rb loader 
   initializer_hooks {
-    initializers_root = begin
-                          File.expand_path('conf/initializers', DCMGR_ROOT)
-                        end
+    initializers_root = File.expand_path('conf/initializers', DCMGR_ROOT) 
+    
     if File.directory?(initializers_root)
-      Dir.glob("#{initializers_root}/*.rb") do |f|
+      Dir.glob("#{initializers_root}/*.rb") { |f|
         ::Kernel.load(f)
-      end
+      }
     end
   }
   
