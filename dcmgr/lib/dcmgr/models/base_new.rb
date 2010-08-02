@@ -114,8 +114,8 @@ module Dcmgr::Models
         end
         raise InvalidUUIDError, "Invalid uuid or unsupported uuid: #{p_uuid} in #{self}"
       end
-      
-    end    
+
+    end
         
   end
 
