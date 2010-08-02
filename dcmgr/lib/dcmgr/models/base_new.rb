@@ -37,6 +37,11 @@ module Dcmgr::Models
       upc[:class].find(:uuid=>$2)
     end
 
+    # Checks if the uuid object stored in the database.
+    def self.exists?(uuid)
+      !find(uuid).nil?
+    end
+
     def self.configure(model)
       if !model.respond_to?(:schema) || model.instance_variable_get(:@schema).nil?
         raise "Missing support of 'plugin :schema': #{klass}"
