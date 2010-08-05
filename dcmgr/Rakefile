@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 require 'rake/clean'
+$:.unshift 'lib'
+begin
+  require File.expand_path('../.bundle/environment', __FILE__)
+rescue LoadError
+end
+require 'dcmgr'
 
 task :default => :spec
 
@@ -16,10 +22,8 @@ namespace :spec do
 end
 
 task :environment do
-  $:.unshift 'lib'
-  require "#{File.dirname(__FILE__)}/./.bundle/environment"
-  require 'dcmgr'
   Dcmgr.configure 'dcmgr.conf'
+  Dcmgr.run_initializers
 end
 
 task :shell do
@@ -122,5 +126,39 @@ dhcp-host=<%= ip[:mac] %>,<%= ip[:ip] %>
 <%- end -%>
 _EOS_
   }
+end
+
+namespace :dbnew do
+  desc 'Create all database tables'
+  task :init => [ :environment ] do
+    require 'sequel'
+    #if driver is mysql
+    Sequel::MySQL.default_charset = 'utf8'
+    Sequel::MySQL.default_engine = 'InnoDB'
+    #end
+    
+    Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
+      Dcmgr::Models.const_get(c).create_table!
+    }
+
+    Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
+      Dcmgr::Models.const_get(c).install_data
+    }
+  end
+
+  desc 'Drop all database tables'
+  task :drop => [ :environment ] do
+    require 'sequel'
+    
+    Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
+      Dcmgr::Models.const_get(c).drop_table
+    }
+  end
+end
+
+desc 'run bundle command with necessary options.'
+task :bundle do
+  sh "bundle unlock"
+  sh "bundle install --relock --disable-shared-gems"
 end
 
