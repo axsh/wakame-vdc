@@ -43,14 +43,12 @@ module Dcmgr::Models
     end
 
     def self.configure(model)
-      if !model.respond_to?(:schema) || model.instance_variable_get(:@schema).nil?
-        raise "Missing support of 'plugin :schema': #{klass}"
-      end
-
-      unless model.schema.has_column?(:uuid)
-        # add :uuid column with unique index constraint.
-        model.schema.column(:uuid, String, :size=>8, :null=>false, :fixed=>true, :unique=>true)
-      end
+      model.schema_builders << proc {
+        unless has_column?(:uuid)
+          # add :uuid column with unique index constraint.
+          column(:uuid, String, :size=>8, :null=>false, :fixed=>true, :unique=>true)
+        end
+      }
     end
 
     module InstanceMethods
@@ -149,22 +147,35 @@ module Dcmgr::Models
   #   String :col2
   module InheritableSchema
     def self.apply(model)
-      model.class_eval {
-        plugin :schema
-
-        set_schema(implicit_table_name) do
-          primary_key :id, :type=>Integer, :unsigned=>true
-        end
-      }
+      model.plugin :schema
     end
 
     module ClassMethods
+      def schema_builders
+        @schema_builders ||= []
+      end
+      
       def inheritable_schema(&blk)
         if blk
+          self.schema_builders << blk
+          
           if @schema.nil?
-            @schema = superclass.schema.dup
+            set_schema(implicit_table_name) do
+              primary_key :id, :type=>Integer, :unsigned=>true
+            end
           end
-          @schema.instance_eval(&blk)
+
+          builders = []
+          c = self
+          begin
+            builders << c.schema_builders if c.respond_to?(:schema_builders)
+          end while (c = c.superclass) < InheritableSchema
+
+          builders = builders.reverse.flatten
+          builders.delete(nil)
+          builders.each { |blk|
+            @schema.instance_eval(&blk)
+          }
         end
       end
     end
@@ -226,9 +237,15 @@ module Dcmgr::Models
         #   with_timestamps
         # end
         def self.with_timestamps
-          @schema.column(:created_at, Time, :null=>false)
-          @schema.column(:updated_at, Time, :null=>false)
-
+          self.schema_builders << proc {
+            unless has_column?(:created_at)
+              column(:created_at, Time, :null=>false)
+            end
+            unless has_column?(:updated_at)
+              column(:updated_at, Time, :null=>false)
+            end
+          }
+          
           self.plugin :timestamps, :update_on_create=>true
         end
 
