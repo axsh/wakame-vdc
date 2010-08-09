@@ -164,9 +164,17 @@ module Dcmgr::Models
           self.schema_builders << blk
           
           if @schema.nil?
+            # set_dataset(:tablename) in set_schema() force to overwrite
+            # dataset.row_proc to the standard one even if the
+            # dataset.row_proc is set something another. This becomes problem when
+            # another plugin needed to set its own row_proc.
+
+            # This is workaround to prevent from above.
+            row_proc = dataset.row_proc
             set_schema(implicit_table_name) do
               primary_key :id, :type=>Integer, :unsigned=>true
             end
+            dataset.row_proc = row_proc if row_proc.is_a?(Proc)
           end
 
           builders = []
