@@ -110,13 +110,14 @@ module Dcmgr::Models
     module ClassMethods
       # Getter and setter for uuid_prefix of the class.
       #
-      # class Model1 < Sequel::Model
-      #   plugin Taggable
-      #   uuid_prefix('m')
-      # end
-      # 
-      # Model1.uuid_prefix # == 'm'
-      # Model1.new.canonical_uuid # == 'm-abcd1234'
+      # @example
+      #   class Model1 < Sequel::Model
+      #     plugin Taggable
+      #     uuid_prefix('m')
+      #   end
+      #   
+      #   Model1.uuid_prefix # == 'm'
+      #   Model1.new.canonical_uuid # == 'm-abcd1234'
       def uuid_prefix(prefix=nil)
         if prefix
           raise UUIDPrefixDuplication, "Found collision for uuid_prefix key: #{prefix}" if Taggable.uuid_prefix_collection.has_key?(prefix)
@@ -130,7 +131,8 @@ module Dcmgr::Models
 
       # Override Model.[] to add lookup by uuid.
       #
-      # Account['a-xxxxxx']
+      # @example
+      #   Account['a-xxxxxx']
       def [](*args)
         if args.size == 1 and args[0].is_a? String
           super(:uuid=>trim_uuid(args[0]))
@@ -141,9 +143,9 @@ module Dcmgr::Models
 
       # Returns the uuid string which is removed prefix part: /^(:?\w+)-/.
       #
+      # @example
       #   Account.trim_uuid('a-abcd1234') # = 'abcd1234'
-      # It will raise InvalidUUIDError if the different type of uuid
-      # is given.
+      # @example Will get InvalidUUIDError as the uuid with invalid prefix has been tried.
       #   Account.trim_uuid('u-abcd1234') # 'u-' prefix is for User model.
       def trim_uuid(p_uuid)
         regex = %r/^#{self.uuid_prefix}-/
