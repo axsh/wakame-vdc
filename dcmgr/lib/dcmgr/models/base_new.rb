@@ -70,6 +70,41 @@ module Dcmgr::Models
         "#{self.uuid_prefix}-#{self[:uuid]}"
       end
       alias_method :cuuid, :canonical_uuid
+
+      # Put the tag on the object.
+      #
+      # This method just delegates the method call of Tag#label().
+      # @params [Models::Tag,String] tag_or_tag_uuid 'tag-xxxx' is expected when the type is string
+      def label_tag(tag_or_tag_uuid)
+        tag = case tag_or_tag_uuid
+              when String
+                Tag[tag_or_tag_uuid]
+              when Tag
+                tag_or_tag_uuid
+              else
+                raise ArgumentError, "Invalid type: #{tag_or_tag_uuid.class}"
+              end
+        
+        tag.label(self.uuid)
+      end
+
+      # Remove the labeled tag from the object
+      #
+      # This method just delegates the method call of Tag#unlabel().
+      # @params [Models::Tag,String] tag_or_tag_uuid 'tag-xxxx' is expected when the type is string
+      def unlabel_tag(tag_or_tag_uuid)
+        tag = case tag_or_tag_uuid
+              when String
+                Tag[tag_or_tag_uuid]
+              when Tag
+                tag_or_tag_uuid
+              else
+                raise ArgumentError, "Invalid type: #{tag_or_tag_uuid.class}"
+              end
+
+        tag.unlabel(self.uuid)
+      end
+
     end
 
     module ClassMethods
