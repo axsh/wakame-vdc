@@ -178,5 +178,9 @@ module Dcmgr
     autoload :Metadata, 'dcmgr/web/metadata'
   end
 
+  module Endpoints
+    autoload :CoreAPI, 'dcmgr/endpoints/core_api'
+  end
+
   autoload :CertificatedActiveResource, 'dcmgr/certificated_active_resource'
 end
