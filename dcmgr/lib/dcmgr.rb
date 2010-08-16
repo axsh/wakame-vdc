@@ -138,16 +138,10 @@ module Dcmgr
 
   module Models
     autoload :Base, 'dcmgr/models/base'
-    autoload :Account, 'dcmgr/models/account'
-    autoload :AccountsUser, 'dcmgr/models/accounts_user'
-    autoload :User, 'dcmgr/models/user'
     autoload :KeyPair, 'dcmgr/models/key_pair'
-    autoload :Tag, 'dcmgr/models/tag'
     autoload :TagAttribute, 'dcmgr/models/tag_attribute'
-    autoload :TagMapping, 'dcmgr/models/tag_mapping'
     autoload :IpGroup, 'dcmgr/models/ip_group'
     autoload :Ip, 'dcmgr/models/ip'
-    autoload :Instance, 'dcmgr/models/instance'
     autoload :HvController, 'dcmgr/models/hv_controller'
     autoload :HvAgent, 'dcmgr/models/hv_agent'
     autoload :ImageStorage, 'dcmgr/models/image_storage'
@@ -156,6 +150,19 @@ module Dcmgr
     autoload :LocationGroup, 'dcmgr/models/location_group'
     autoload :Log, 'dcmgr/models/log'
     autoload :AccountLog, 'dcmgr/models/account_log'
+
+    CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,
+                          :Image,:HostPool,:RequestLog,:Instance,].freeze
+    autoload :BaseNew, 'dcmgr/models/base_new'
+    autoload :Account, 'dcmgr/models/account'
+    autoload :Tag, 'dcmgr/models/tag'
+    autoload :TagMapping, 'dcmgr/models/tag_mapping'
+    autoload :AccountResource, 'dcmgr/models/account_resource'
+    autoload :Instance, 'dcmgr/models/instance'
+    autoload :Image, 'dcmgr/models/image'
+    autoload :HostPool, 'dcmgr/models/host_pool'
+    autoload :RequestLog, 'dcmgr/models/request_log'
+    autoload :FrontendSystem, 'dcmgr/models/frontend_system'
   end
 
   module RestModels
