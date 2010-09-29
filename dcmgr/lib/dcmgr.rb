@@ -14,6 +14,7 @@ module Dcmgr
       
       if config_path.is_a?(String)
         raise "Could not find configration file: #{config_path}" unless File.exists?(config_path)
+
         code= <<-__END
         Configuration('global') do
           #{File.read(config_path)}
@@ -152,7 +153,8 @@ module Dcmgr
     autoload :AccountLog, 'dcmgr/models/account_log'
 
     CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,
-                          :Image,:HostPool,:RequestLog,:Instance,].freeze
+                          :Image,:HostPool,:RequestLog,:Instance,
+                          :StorageAgent,:StoragePool,:Volume,:VolumeSnapshot].freeze
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
     autoload :Tag, 'dcmgr/models/tag'
@@ -163,6 +165,10 @@ module Dcmgr
     autoload :HostPool, 'dcmgr/models/host_pool'
     autoload :RequestLog, 'dcmgr/models/request_log'
     autoload :FrontendSystem, 'dcmgr/models/frontend_system'
+    autoload :StorageAgent, 'dcmgr/models/storage_agent'
+    autoload :StoragePool, 'dcmgr/models/storage_pool'
+    autoload :Volume, 'dcmgr/models/volume'
+    autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
   end
 
   module RestModels

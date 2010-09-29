@@ -334,6 +334,330 @@ module Dcmgr
 
       end
 
+      collection :volumes do
+        operation :show do
+          description 'Show lists of the volume'
+          # params account_id, string
+          # params visibility, string
+          # params like, string
+          # params sort, string
+          control do
+            vl = [{
+                    :id => 1,
+                    :uuid => 'vol-xxxxxxx',
+                    :storage_pool_id => '1',
+                    :status => 1,
+                    :size => 10,
+                    :target => 'instance_id',
+                    :export_path => 'vol-xxxxxxx',
+                    :initiater_device_name => 'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5',
+                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :visibility => 'public'
+                  },{
+                    :id => 2,
+                    :uuid => 'vol-00000000',
+                    :storage_pool_id => '1',
+                    :status => 1,
+                    :size => 10,
+                    :target => 'instance_id',
+                    :export_path => 'vol-xxxxxxx',
+                    :initiater_device_name => 'iqn.1986-03.com.sun:05:d453f87c-40de-ca50-a488-cf304ag1ff6e',
+                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :visibility => 'private'
+                  }]
+            respond_to { |f|
+              f.json {vl.to_json}
+            }
+          end
+        end
+
+        operation :create do
+          description 'Create the new volume'
+          # params volume_size, string
+          # params snapshot_id, string
+          control do
+            # vl = { :status => 'creating', :messages => 'creating the new volume vol-xxxxxxx'}
+            vl = Models::Volume.create(:size=> params[:volume_size])
+            vl.state_machine.on_create
+            respond_to { |f|
+              f.json { vl.to_hash_document.to_json}
+            }
+          end
+        end
+
+        operation :destroy do
+          description 'Delete the volume'
+          # params account_id, string
+          # params volume_id, string
+          control do
+            vl = { :status => 'deleting', :messages => 'deleting the volume vol-xxxxxxx'}
+            respond_to { |f|
+              f.json { vl.to_json}
+            }
+          end
+        end
+
+        operation :attach, :method =>:put, :member =>true do
+          description 'Attachd the volume'
+          # params account_id, string
+          # params volume_id, string
+          # params instance_id, string
+          control do
+            vl = { :status => 'attaching', :message => 'attaching the volume of vol-xxxxxx to instance_id'}
+            respond_to { |f|
+              f.json { vl.to_json}
+            }
+          end
+        end
+
+        operation :detach, :method =>:put, :member =>true do
+          description 'Detachd the volume'
+          # params account_id, string
+          # params volume_id, string
+          # params instance_id, string
+          control do
+            vl = { :status => 'detaching', :message => 'detaching the volume of instance_id to vol-xxxxxx'}
+            respond_to { |f|
+              f.json { vl.to_json}
+            }
+          end
+        end
+
+        operation :status, :method =>:get, :member =>true do
+          description 'Show the status'
+          # params account_id, string
+          control do
+            vl = [{ :id => 1, :uuid => 'vol-xxxxxxx', :status => 1 },
+                  { :id => 2, :uuid => 'vol-xxxxxxx', :status => 0 },
+                  { :id => 3, :uuid => 'vol-xxxxxxx', :status => 3 },
+                  { :id => 4, :uuid => 'vol-xxxxxxx', :status => 2 },
+                  { :id => 5, :uuid => 'vol-xxxxxxx', :status => 4 }]
+            respond_to {|f|
+              f.json { vl.to_json}
+            }
+          end
+        end
+
+        operation :detail, :method =>:get, :member =>true do
+          description 'Show the volume status'
+          # params account_id, string
+          # params volume_id, string
+          control do
+            vl = {
+              :id => 1,
+              :uuid => 'vol-xxxxxxx',
+              :storage_pool_id => '1',
+              :status => 1,
+              :size => 10,
+              :target => 'instance_id',
+              :export_path => 'vol-xxxxxxx',
+              :initiater_device_name => 'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5',
+              :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+              :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+              :visibility => 'public'
+            }
+            respond_to { |f|
+              f.json { vl.to_json}
+            }
+          end
+        end
+      end
+
+      collection :volume_snapshots do
+        operation :show do
+          description 'Show lists of the volume_snapshots'
+          # params account_id, string
+          # params visibility, string
+          # params like, string
+          # parms sort, string
+          control do
+            vs = [{
+                    :id => 1,
+                    :uuid => 'snap-00000000',
+                    :storage_pool_id => 1,
+                    :origin_volume_id => 1,
+                    :size => 10,
+                    :status => 1,
+                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :visibility => 'public'
+                  },{
+                    :id => 1,
+                    :uuid => 'snap-00000000',
+                    :storage_pool_id => 1,
+                    :origin_volume_id => 1,
+                    :size => 10,
+                    :status => 1,
+                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :visibility => 'private'
+                  }]
+            respond_to { |f|
+              f.json { vs.to_json }
+            }
+          end
+        end
+
+        operation :create do
+          description 'Create a new volume snapshot'
+          # params account_id, string
+          # params volume_id, string
+          control do
+            vs = { :status => 'creating', :message => 'creating the new snapshot'}
+            respond_to { |f|
+              f.json { vs.to_json }
+            }
+          end
+        end
+
+        operation :destroy do
+          description 'Delete the volume snapshot'
+          # params account_id, string
+          # params snapshot_id, string
+          control do
+            vs = { :status => 'deleting', :message => 'deleting the snapshot'}
+            respond_to { |f|
+              f.json { vs.to_json }
+            }
+          end
+        end
+
+        operation :status, :method =>:get, :member =>true do
+          description 'Show the status'
+          # params account_id, string
+          control do
+            vs = [{ :id => 1, :uuid => 'snap-xxxxxxx', :status => 1 },
+                  { :id => 2, :uuid => 'snap-xxxxxxx', :status => 0 },
+                  { :id => 3, :uuid => 'snap-xxxxxxx', :status => 3 },
+                  { :id => 4, :uuid => 'snap-xxxxxxx', :status => 2 },
+                  { :id => 5, :uuid => 'snap-xxxxxxx', :status => 4 }]
+            respond_to {|f|
+              f.json { vs.to_json}
+            }
+          end
+        end
+
+        operation :detail, :method =>:get, :member =>true do
+          description 'Show the volume status'
+          # params account_id, string
+          # params volume_id, string
+          control do
+            vs = {
+              :id => 1,
+              :uuid => 'snap-00000000',
+              :storage_pool_id => 1,
+              :origin_volume_id => 1,
+              :size => 10,
+              :status => 1,
+              :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+              :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+              :visibility => 'public'
+            }
+            respond_to { |f|
+              f.json { vs.to_json}
+            }
+          end
+        end
+
+      end
+
+      collection :private_pools do
+        operation :show do
+          description 'Show lists of the private_pools'
+          # params account_id, string
+          control do
+            pp = [{
+                    :id => 1,
+                    :account_id => 'u-xxxxxxx',
+                    :storage_pool_id => 1,
+                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010'
+                  },{
+                    :id => 2,
+                    :account_id => 'u-xxxxxxx',
+                    :storage_pool_id => 23,
+                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010'
+                  },{
+                    :id => 2,
+                    :account_id => 'u-xxxxxxx',
+                    :storage_pool_id => 150,
+                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010'
+                  }]
+            respond_to { |f|
+              f.json { pp.to_json}
+            }
+          end
+        end
+      end
+
+      collection :storage_pools do
+        operation :show do
+          description 'Show lists of the storage_pools'
+          # params account_id, string
+          control do
+            sp = Models::StoragePool.all.map { |c|
+              c.to_hash_document
+            }
+            respond_to { |f|
+              f.json { sp.to_json}
+            }
+          end
+        end
+
+        operation :create do
+          description 'Create a new storage_pool'
+          # params agent_id, string
+          # params offerring_disk_space, int
+          # params transport_type, string
+          # params export_path, string
+          control do
+            raise OperationNotPermitted unless @account.is_a?(Models::Account::SystemAccount::DatacenterAccount)
+
+            sp = Models::StoragePool.create(:agent_id => params[:agent_id],
+                                            :offerring_disk_space => params[:offerring_disk_space],
+                                            :transport_type => params[:transport_type],
+                                            :storage_type => params[:storage_type],
+                                            :export_path => params[:export_path],
+                                            :status => :registering)
+
+            opts ={:uuid=>"sp-#{sp.uuid}"}
+            # sp = {:status => 'registering', :message => 'creating new storage_pools'}
+            respond_to { |f|
+              f.json { sp.to_hash_document.to_json}
+            }
+          end
+        end
+
+        operation :destroy do
+          description 'Delete the storage_pool'
+          # params account_id, string
+          # params storage_pool_id, string
+          control do
+            sp = {:status => 'deleteing', :message => 'deleting storage_pools'}
+            respond_to { |f|
+              f.json { sp.to_json}
+            }
+          end
+        end
+
+        operation :update do
+          description 'Update the storage_pool'
+          # params account_id, string
+          # params offerring_disk_space, int
+          # params transport_type, string
+          control do
+            sp = {:status => 'updated', :message => 'updated storage_pools'}
+            respond_to { |f|
+              f.json { sp.to_json }
+            }
+          end
+        end
+      end
+
     end
   end
 end

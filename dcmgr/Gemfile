@@ -10,9 +10,11 @@ gem "activeresource", ">= 2.3.8"
 gem "hpricot", ">=0.8.2"
 gem 'extlib', '>= 0.9.14'
 gem 'configuration'
+gem 'statemachine'
 
 gem 'rake', '>= 0.8.7'
 
 group :development do
   gem 'bacon'
 end
+

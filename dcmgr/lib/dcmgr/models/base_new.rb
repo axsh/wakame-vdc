@@ -125,7 +125,8 @@ module Dcmgr::Models
           Taggable.uuid_prefix_collection[prefix]={:class=>self}
           @uuid_prefix = prefix
         end
-        @uuid_prefix || raise("uuid prefix is unset for:#{self}")
+
+        @uuid_prefix || (superclass.uuid_prefix if superclass.respond_to?(:uuid_prefix)) || raise("uuid prefix is unset for:#{self}")
       end
 
 
