@@ -188,45 +188,66 @@ module Dcmgr::Models
   #   String :col1
   #   String :col2
   module InheritableSchema
-    def self.apply(model)
-      model.plugin :schema
-    end
 
     module ClassMethods
+      # Creates table, using the column information from set_schema.
+      def create_table
+        db.create_table(table_name, :generator=>schema)
+        @db_schema = get_db_schema(true)
+        columns
+      end
+
+      # Drops the table if it exists and then runs
+      # create_table.  Should probably
+      # not be used except in testing.
+      def create_table!
+        drop_table rescue nil
+        create_table
+      end
+
+      # Creates the table unless the table already exists
+      def create_table?
+        create_table unless table_exists?
+      end
+
+      # Drops table.
+      def drop_table
+        db.drop_table(table_name)
+      end
+
+      # Returns true if table exists, false otherwise.
+      def table_exists?
+        db.table_exists?(table_name)
+      end
+
+      def schema
+        builders = []
+        c = self
+        begin
+          builders << c.schema_builders if c.respond_to?(:schema_builders)
+        end while((c = c.superclass) && c != Sequel::Model)
+        
+        builders = builders.reverse.flatten
+        builders.delete(nil)
+
+        schema = Sequel::Schema::Generator.new(db) {
+          primary_key :id, Integer, :null=>false, :unsigned=>true
+        }
+        builders.each { |blk|
+          schema.instance_eval(&blk)
+        }
+        set_primary_key(schema.primary_key_name) if schema.primary_key_name
+        
+        schema
+      end
+      
       def schema_builders
         @schema_builders ||= []
       end
       
-      def inheritable_schema(&blk)
-        if blk
-          self.schema_builders << blk
-          
-          if @schema.nil?
-            # set_dataset(:tablename) in set_schema() force to overwrite
-            # dataset.row_proc to the standard one even if the
-            # dataset.row_proc is set something another. This becomes problem when
-            # another plugin needed to set its own row_proc.
-
-            # This is workaround to prevent from above.
-            row_proc = dataset.row_proc
-            set_schema(implicit_table_name) do
-              primary_key :id, :type=>Integer, :unsigned=>true
-            end
-            dataset.row_proc = row_proc if row_proc.is_a?(Proc)
-          end
-
-          builders = []
-          c = self
-          begin
-            builders << c.schema_builders if c.respond_to?(:schema_builders)
-          end while (c = c.superclass) < InheritableSchema
-
-          builders = builders.reverse.flatten
-          builders.delete(nil)
-          builders.each { |blk|
-            @schema.instance_eval(&blk)
-          }
-        end
+      def inheritable_schema(name=nil, &blk)
+        set_dataset(db[name || implicit_table_name])
+        self.schema_builders << blk
       end
     end
     
