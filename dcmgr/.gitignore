@@ -6,6 +6,6 @@ dcmgr.conf
 
 # Bundler ignorance rules
 bin/
-vendor/gems/
+vendor/
 .bundle/
 Gemfile.lock
