@@ -12,7 +12,7 @@ module Dcmgr
   module Endpoints
     class CoreAPI < Sinatra::Base
       register Sinatra::Rabbit
-      
+
       disable :sessions
       disable :show_exceptions
 
@@ -378,30 +378,13 @@ module Dcmgr
           description 'Create the new volume'
           # params volume_size, string, required
           # params snapshot_id, string, optional
-          # params storage_pool_id, string, optional
+          # params private_pool_id, string, optional
           control do
-            raise UndefinedVolumeSize if params[:volume_size].nil?
-
-            # ストレージプールの選択
-            if params[:storage_pool_id]
-              sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
-              raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
-            end
-            raise UnknownStoragePool if sp.nil?
-
-            begin
-              v = sp.create_volume(@account.canonical_uuid, params[:volume_size])
-            rescue Models::Volume::DiskError => e
-              Dcmgr.logger.error(e)
-              raise OutOfDiskSpace
-            rescue Sequel::DatabaseError => e
-              Dcmgr.logger.error(e)
-              raise DatabaseError
-            end
-
-            # 選択したプールがあるstorage_agentに送る
+            vl = { :status => 'creating', :messages => 'creating the new volume vol-xxxxxxx'}
+            # vl = Models::Volume.create(:size=> params[:volume_size])
+            # vl.state_machine.on_create
             respond_to { |f|
-              f.json { v.values.to_json}
+              f.json { vl.to_json}
             }
           end
         end
@@ -410,19 +393,9 @@ module Dcmgr
           description 'Delete the volume'
           # params volume_id, string, required
           control do
-            raise UndefinedVolumeID if params[:volume_id].nil?
-
-            begin
-              v  = Models::Volume.delete_volume(@account.canonical_uuid, params[:volume_id])
-            rescue Models::Volume::RequestError => e
-              Dcmgr.logger.error(e)
-              raise InvalidDeleteRequest
-            end
-            raise UnknownVolume if v.nil?
-
-            # 選択したvolumeの削除をstorage_agentに送る
+            vl = { :status => 'deleting', :messages => 'deleting the volume vol-xxxxxxx'}
             respond_to { |f|
-              f.json { v.values.to_json}
+              f.json { vl.to_json}
             }
           end
         end

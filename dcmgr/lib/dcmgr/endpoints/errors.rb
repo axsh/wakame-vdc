@@ -28,5 +28,14 @@ module Dcmgr
     define_error(:InvalidRequestCredentials, 400)
     define_error(:DisabledAccount, 403)
     define_error(:OperationNotPermitted, 403)
+    define_error(:UndefinedVolumeSize, 400)
+    define_error(:StoragePoolNotPermitted, 403)
+    define_error(:UnknownStoragePool, 404)
+    define_error(:OutOfDiskSpace, 400)
+    define_error(:DatabaseError, 400)
+    define_error(:UndefinedVolumeID, 400)
+    define_error(:InvalidDeleteRequest, 400)
+    define_error(:UnknownVolume, 404)
+
   end
 end

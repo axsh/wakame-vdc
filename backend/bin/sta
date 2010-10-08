@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+require File.expand_path('../../config/path_resolver', __FILE__)
+
+manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'sta'
+end
+
+Isono::Runner::RpcServer.start(manifest) do
+end

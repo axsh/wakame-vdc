@@ -5,7 +5,7 @@ module Dcmgr::Models
   class AccountResource < BaseNew
 
     inheritable_schema do
-      Fixnum :account_id, :null=>false, :index=>true
+      String :account_id, :null=>false, :index=>true
     end
 
     many_to_one :account

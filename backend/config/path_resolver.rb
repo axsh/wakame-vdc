@@ -16,3 +16,4 @@ begin
 rescue Gem::LoadError => e
 end
 require 'isono'
+require 'vdc'
