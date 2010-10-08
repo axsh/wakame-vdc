@@ -9,7 +9,6 @@ end
 $:.unshift "#{File.dirname(__FILE__)}/../../lib"
 
 require 'dcmgr'
-# Preload the endpoint to get initializer_hooks() installed.
 
 if File.exists?('./dcmgr.conf')
   Dcmgr.configure('./dcmgr.conf')
