@@ -17,7 +17,6 @@ end
 begin
   gem 'isono', version
 rescue Gem::LoadError => e
-  require 'isono'
 end
+require 'isono'
 require 'vdc'
-
