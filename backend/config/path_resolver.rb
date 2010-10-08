@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
-begin
-  require File.expand_path('../../.bundle/environment', __FILE__)
-rescue LoadError => e
-  require 'rubygems'
-end
+require 'rubygems'
+require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 version = ">= 0"
