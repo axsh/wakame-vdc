@@ -1,0 +1,7 @@
+# -*- coding: utf-8 -*-
+
+source "http://rubygems.org"
+
+gem 'statemachine', '1.1.1'
+
+gem 'isono', :git => 'git://github.com/axsh/isono.git'
