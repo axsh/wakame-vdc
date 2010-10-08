@@ -12,7 +12,7 @@ module Dcmgr
   module Endpoints
     class CoreAPI < Sinatra::Base
       register Sinatra::Rabbit
-
+      
       disable :sessions
       disable :show_exceptions
 
@@ -337,20 +337,20 @@ module Dcmgr
       collection :volumes do
         operation :show do
           description 'Show lists of the volume'
-          # params account_id, string
-          # params visibility, string
-          # params like, string
-          # params sort, string
+          # params visibility, string, optional
+          # params like, string, optional
+          # params sort, string, optional
           control do
             vl = [{
                     :id => 1,
                     :uuid => 'vol-xxxxxxx',
                     :storage_pool_id => '1',
-                    :status => 1,
+                    :instance_id => '1',
                     :size => 10,
-                    :target => 'instance_id',
+                    :status => 1,
+                    :state => 1,
                     :export_path => 'vol-xxxxxxx',
-                    :initiater_device_name => 'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5',
+                    :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
                     :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
                     :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
                     :visibility => 'public'
@@ -358,11 +358,12 @@ module Dcmgr
                     :id => 2,
                     :uuid => 'vol-00000000',
                     :storage_pool_id => '1',
-                    :status => 1,
+                    :instance_id => '2',
                     :size => 10,
-                    :target => 'instance_id',
+                    :status => 1,
+                    :state => 1,
                     :export_path => 'vol-xxxxxxx',
-                    :initiater_device_name => 'iqn.1986-03.com.sun:05:d453f87c-40de-ca50-a488-cf304ag1ff6e',
+                    :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
                     :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
                     :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
                     :visibility => 'private'
@@ -375,35 +376,61 @@ module Dcmgr
 
         operation :create do
           description 'Create the new volume'
-          # params volume_size, string
-          # params snapshot_id, string
+          # params volume_size, string, required
+          # params snapshot_id, string, optional
+          # params storage_pool_id, string, optional
           control do
-            # vl = { :status => 'creating', :messages => 'creating the new volume vol-xxxxxxx'}
-            vl = Models::Volume.create(:size=> params[:volume_size])
-            vl.state_machine.on_create
+            raise UndefinedVolumeSize if params[:volume_size].nil?
+
+            # ストレージプールの選択
+            if params[:storage_pool_id]
+              sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
+              raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
+            end
+            raise UnknownStoragePool if sp.nil?
+
+            begin
+              v = sp.create_volume(@account.canonical_uuid, params[:volume_size])
+            rescue Models::Volume::DiskError => e
+              Dcmgr.logger.error(e)
+              raise OutOfDiskSpace
+            rescue Sequel::DatabaseError => e
+              Dcmgr.logger.error(e)
+              raise DatabaseError
+            end
+
+            # 選択したプールがあるstorage_agentに送る
             respond_to { |f|
-              f.json { vl.to_hash_document.to_json}
+              f.json { v.values.to_json}
             }
           end
         end
 
         operation :destroy do
           description 'Delete the volume'
-          # params account_id, string
-          # params volume_id, string
+          # params volume_id, string, required
           control do
-            vl = { :status => 'deleting', :messages => 'deleting the volume vol-xxxxxxx'}
+            raise UndefinedVolumeID if params[:volume_id].nil?
+
+            begin
+              v  = Models::Volume.delete_volume(@account.canonical_uuid, params[:volume_id])
+            rescue Models::Volume::RequestError => e
+              Dcmgr.logger.error(e)
+              raise InvalidDeleteRequest
+            end
+            raise UnknownVolume if v.nil?
+
+            # 選択したvolumeの削除をstorage_agentに送る
             respond_to { |f|
-              f.json { vl.to_json}
+              f.json { v.values.to_json}
             }
           end
         end
 
         operation :attach, :method =>:put, :member =>true do
           description 'Attachd the volume'
-          # params account_id, string
-          # params volume_id, string
-          # params instance_id, string
+          # params volume_id, string, required
+          # params instance_id, string, required
           control do
             vl = { :status => 'attaching', :message => 'attaching the volume of vol-xxxxxx to instance_id'}
             respond_to { |f|
@@ -414,9 +441,7 @@ module Dcmgr
 
         operation :detach, :method =>:put, :member =>true do
           description 'Detachd the volume'
-          # params account_id, string
-          # params volume_id, string
-          # params instance_id, string
+          # params volume_id, string, required
           control do
             vl = { :status => 'detaching', :message => 'detaching the volume of instance_id to vol-xxxxxx'}
             respond_to { |f|
@@ -427,7 +452,6 @@ module Dcmgr
 
         operation :status, :method =>:get, :member =>true do
           description 'Show the status'
-          # params account_id, string
           control do
             vl = [{ :id => 1, :uuid => 'vol-xxxxxxx', :status => 1 },
                   { :id => 2, :uuid => 'vol-xxxxxxx', :status => 0 },
@@ -442,18 +466,18 @@ module Dcmgr
 
         operation :detail, :method =>:get, :member =>true do
           description 'Show the volume status'
-          # params account_id, string
-          # params volume_id, string
+          # params volume_id, string, required
           control do
             vl = {
               :id => 1,
-              :uuid => 'vol-xxxxxxx',
-              :storage_pool_id => '1',
-              :status => 1,
+              :uuid => 'vol-00000000',
+              :storage_pool_id => 1,
+              :instance_id => 2,
               :size => 10,
-              :target => 'instance_id',
+              :status => 1,
+              :state => 1,
               :export_path => 'vol-xxxxxxx',
-              :initiater_device_name => 'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5',
+              :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
               :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
               :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
               :visibility => 'public'
@@ -468,16 +492,15 @@ module Dcmgr
       collection :volume_snapshots do
         operation :show do
           description 'Show lists of the volume_snapshots'
-          # params account_id, string
-          # params visibility, string
-          # params like, string
-          # parms sort, string
+          # params visibility, string, optional
+          # params like, string, optional
+          # parms sort, string, optional
           control do
             vs = [{
                     :id => 1,
                     :uuid => 'snap-00000000',
                     :storage_pool_id => 1,
-                    :origin_volume_id => 1,
+                    :origin_volume_uuid => 'vol-xxxxxxx',
                     :size => 10,
                     :status => 1,
                     :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
@@ -486,8 +509,8 @@ module Dcmgr
                   },{
                     :id => 1,
                     :uuid => 'snap-00000000',
-                    :storage_pool_id => 1,
-                    :origin_volume_id => 1,
+                    :storage_pool_id => 2,
+                    :origin_volume_id => 'vol-xxxxxxx',
                     :size => 10,
                     :status => 1,
                     :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
@@ -502,8 +525,8 @@ module Dcmgr
 
         operation :create do
           description 'Create a new volume snapshot'
-          # params account_id, string
-          # params volume_id, string
+          # params volume_id, string, required
+          # params pool_id, string, optional
           control do
             vs = { :status => 'creating', :message => 'creating the new snapshot'}
             respond_to { |f|
@@ -514,8 +537,7 @@ module Dcmgr
 
         operation :destroy do
           description 'Delete the volume snapshot'
-          # params account_id, string
-          # params snapshot_id, string
+          # params snapshot_id, string, required
           control do
             vs = { :status => 'deleting', :message => 'deleting the snapshot'}
             respond_to { |f|
@@ -526,7 +548,6 @@ module Dcmgr
 
         operation :status, :method =>:get, :member =>true do
           description 'Show the status'
-          # params account_id, string
           control do
             vs = [{ :id => 1, :uuid => 'snap-xxxxxxx', :status => 1 },
                   { :id => 2, :uuid => 'snap-xxxxxxx', :status => 0 },
@@ -541,14 +562,13 @@ module Dcmgr
 
         operation :detail, :method =>:get, :member =>true do
           description 'Show the volume status'
-          # params account_id, string
-          # params volume_id, string
+          # params volume_id, string, required
           control do
             vs = {
               :id => 1,
               :uuid => 'snap-00000000',
               :storage_pool_id => 1,
-              :origin_volume_id => 1,
+              :origin_volume_uuid => 'vol-xxxxxxx',
               :size => 10,
               :status => 1,
               :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
@@ -566,7 +586,6 @@ module Dcmgr
       collection :private_pools do
         operation :show do
           description 'Show lists of the private_pools'
-          # params account_id, string
           control do
             pp = [{
                     :id => 1,
@@ -589,70 +608,6 @@ module Dcmgr
                   }]
             respond_to { |f|
               f.json { pp.to_json}
-            }
-          end
-        end
-      end
-
-      collection :storage_pools do
-        operation :show do
-          description 'Show lists of the storage_pools'
-          # params account_id, string
-          control do
-            sp = Models::StoragePool.all.map { |c|
-              c.to_hash_document
-            }
-            respond_to { |f|
-              f.json { sp.to_json}
-            }
-          end
-        end
-
-        operation :create do
-          description 'Create a new storage_pool'
-          # params agent_id, string
-          # params offerring_disk_space, int
-          # params transport_type, string
-          # params export_path, string
-          control do
-            raise OperationNotPermitted unless @account.is_a?(Models::Account::SystemAccount::DatacenterAccount)
-
-            sp = Models::StoragePool.create(:agent_id => params[:agent_id],
-                                            :offerring_disk_space => params[:offerring_disk_space],
-                                            :transport_type => params[:transport_type],
-                                            :storage_type => params[:storage_type],
-                                            :export_path => params[:export_path],
-                                            :status => :registering)
-
-            opts ={:uuid=>"sp-#{sp.uuid}"}
-            # sp = {:status => 'registering', :message => 'creating new storage_pools'}
-            respond_to { |f|
-              f.json { sp.to_hash_document.to_json}
-            }
-          end
-        end
-
-        operation :destroy do
-          description 'Delete the storage_pool'
-          # params account_id, string
-          # params storage_pool_id, string
-          control do
-            sp = {:status => 'deleteing', :message => 'deleting storage_pools'}
-            respond_to { |f|
-              f.json { sp.to_json}
-            }
-          end
-        end
-
-        operation :update do
-          description 'Update the storage_pool'
-          # params account_id, string
-          # params offerring_disk_space, int
-          # params transport_type, string
-          control do
-            sp = {:status => 'updated', :message => 'updated storage_pools'}
-            respond_to { |f|
-              f.json { sp.to_json }
             }
           end
         end
