@@ -1,0 +1,54 @@
+PATH
+  remote: /home/katsuo/dev/isono
+  specs:
+    isono (0.0.1)
+      amqp (>= 0.6.7)
+      eventmachine (>= 0.12.10)
+      log4r
+      statemachine (>= 1.0.0)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    activemodel (3.0.0)
+      activesupport (= 3.0.0)
+      builder (~> 2.1.2)
+      i18n (~> 0.4.1)
+    activeresource (3.0.0)
+      activemodel (= 3.0.0)
+      activesupport (= 3.0.0)
+    activesupport (3.0.0)
+    amqp (0.6.7)
+      eventmachine (>= 0.12.4)
+    bacon (1.1.0)
+    builder (2.1.2)
+    configuration (1.1.0)
+    eventmachine (0.12.10)
+    extlib (0.9.15)
+    i18n (0.4.1)
+    json (1.4.6)
+    log4r (1.1.8)
+    mysql (2.8.1)
+    rack (1.2.1)
+    rake (0.8.7)
+    sequel (3.16.0)
+    sinatra (1.0)
+      rack (>= 1.0)
+    statemachine (1.1.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  activeresource (= 3.0.0)
+  bacon
+  configuration
+  extlib (= 0.9.15)
+  isono!
+  json (>= 1.2.0)
+  mysql (>= 2.8.1)
+  rack (>= 1.2.1)
+  rake (>= 0.8.7)
+  sequel (= 3.16.0)
+  sinatra (= 1.0)
+  statemachine (= 1.1.1)

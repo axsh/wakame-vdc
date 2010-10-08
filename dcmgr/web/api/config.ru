@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
-begin
-  # Try to require the preresolved locked set of gems.
-  require File.expand_path('../../../.bundle/environment', __FILE__)
-rescue LoadError
-  # Fall back on doing an unlocked resolve at runtime.
-  require "rubygems"
-end
+
+require "rubygems"
+require "bundler/setup"
+
 $:.unshift "#{File.dirname(__FILE__)}/../../lib"
 
 require 'dcmgr'

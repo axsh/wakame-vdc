@@ -5,7 +5,5 @@ web/*/dcmgr*.conf
 dcmgr.conf
 
 # Bundler ignorance rules
-bin/
 vendor/
 .bundle/
-Gemfile.lock

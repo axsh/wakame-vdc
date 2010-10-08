@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-require 'rake/clean'
+
+require 'rubygems'
+require 'bundler/setup'
 $:.unshift 'lib'
-begin
-  require File.expand_path('../.bundle/environment', __FILE__)
-rescue LoadError
-end
+
+require 'rake/clean'
 require 'dcmgr'
 
 task :default => :spec
