@@ -1,5 +1,6 @@
-PATH
-  remote: /home/katsuo/dev/isono
+GIT
+  remote: git://github.com/axsh/isono.git
+  revision: 28f56cdeff12256680e145226ceb99095a10c8a9
   specs:
     isono (0.0.1)
       amqp (>= 0.6.7)
@@ -13,12 +14,20 @@ GEM
     amqp (0.6.7)
       eventmachine (>= 0.12.4)
     eventmachine (0.12.10)
+    extlib (0.9.15)
     log4r (1.1.8)
+    mysql (2.8.1)
+    ruby-hmac (0.4.0)
+    sequel (3.16.0)
     statemachine (1.1.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  extlib
   isono!
+  mysql
+  ruby-hmac
+  sequel
   statemachine (= 1.1.1)
