@@ -188,5 +188,9 @@ module Dcmgr
     autoload :CoreAPI, 'dcmgr/endpoints/core_api'
   end
 
+  module NodeModules
+    autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
+  end
+
   autoload :CertificatedActiveResource, 'dcmgr/certificated_active_resource'
 end
