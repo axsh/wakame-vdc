@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/axsh/isono.git
-  revision: 28f56cdeff12256680e145226ceb99095a10c8a9
+  revision: 27e196c1a194a823ea8155594d3a362ced87b14e
   specs:
     isono (0.0.1)
       amqp (>= 0.6.7)
@@ -16,9 +16,7 @@ GEM
     eventmachine (0.12.10)
     extlib (0.9.15)
     log4r (1.1.8)
-    mysql (2.8.1)
     ruby-hmac (0.4.0)
-    sequel (3.16.0)
     statemachine (1.1.1)
 
 PLATFORMS
@@ -27,7 +25,5 @@ PLATFORMS
 DEPENDENCIES
   extlib
   isono!
-  mysql
   ruby-hmac
-  sequel
   statemachine (= 1.1.1)
