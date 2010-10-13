@@ -584,6 +584,96 @@ module Dcmgr
 
       end
 
+      collection :netfilter_groups do
+        operation :index do
+          control do
+          end
+        end
+
+        operation :show do
+          description 'Show lists of the netfilter_groups'
+          # params account_id, string
+          control do
+            g = Models::NetfilterGroup[params[:id]]
+            respond_to { |f|
+              #f.json { g.values.to_json }
+              f.json { g.to_hash_document.to_json }
+            }
+          end
+        end
+
+        # :create => { :method => :post, :member => false },
+        operation :create do
+          description 'Register a new netfilter_group'
+          # params name, string
+          # params description, string
+          # with @account.canonical_uuid
+          control do
+            raise UndefinedGroupName if params[:name].nil?
+
+            # [TODO] add exceptions
+            begin
+              #g = Models::NetfilterGroup.create()
+              g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
+            end
+
+            respond_to { |f|
+              # with_uuid?
+              f.json { g.to_hash_document.to_json }
+              # without_uuid?
+              # f.json { g.values.to_json }
+            }
+          end
+        end
+
+        # :update => { :method => :put, :member => true },
+        operation :update do
+          description "Update parameters for the netfilter group"
+          # params name, string
+          # params description, string
+
+          control do
+            g = Models::NetfilterGroup[params[:id]]
+            raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
+
+            if params[:name]
+              g.name = params[:name]
+            end
+            if params[:description]
+              g.description = params[:description].to_s
+            end
+
+            respond_to { |f|
+              f.json { g.save.values.to_json }
+            }
+          end
+        end
+
+        # :destroy => { :method => :delete, :member => true }
+        operation :destroy do
+          # params name, string
+          description "Delete the netfilter group"
+
+          control do
+            g = Models::NetfilterGroup[params[:id]]
+            raise UnknownNetfilterGroup if g.nil?
+            raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
+
+            respond_to { |f|
+              f.json { g.destroy.values.to_json }
+            }
+          end
+        end
+
+      end
+
+      collection :netfilter_rules do
+        operation :index do
+          control do
+          end
+        end
+      end
+
       collection :private_pools do
         operation :show do
           description 'Show lists of the private_pools'
