@@ -400,8 +400,9 @@ module Dcmgr
             end
 
             # 選択したプールがあるstorage_agentに送る
+            Dcmgr.messaging.request('sta-loader.sta-0d12ca599d', 'on_create', v)
             respond_to { |f|
-              f.json { v.values.to_json}
+              f.json { v.to_json}
             }
           end
         end
