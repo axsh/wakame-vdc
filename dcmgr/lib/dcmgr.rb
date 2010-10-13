@@ -154,6 +154,7 @@ module Dcmgr
 
     CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,
                           :Image,:HostPool,:RequestLog,:Instance,
+                          :NetfilterGroup, :NetfilterRule,
                           :StorageAgent,:StoragePool,:Volume,:VolumeSnapshot].freeze
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
@@ -169,6 +170,8 @@ module Dcmgr
     autoload :StoragePool, 'dcmgr/models/storage_pool'
     autoload :Volume, 'dcmgr/models/volume'
     autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
+    autoload :NetfilterGroup, 'dcmgr/models/netfilter_group'
+    autoload :NetfilterRule, 'dcmgr/models/netfilter_rule'
   end
 
   module RestModels
