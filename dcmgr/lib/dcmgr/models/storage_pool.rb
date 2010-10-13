@@ -115,6 +115,7 @@ module Dcmgr::Models
       v = Volume.create(:account_id => account_id,
                         :storage_pool_id => self.id,
                         :size =>size)
+      v = v.values.merge({:uuid => v.canonical_uuid, :pool_name=> self.export_path.split('/').last})
     end
   end
 end
