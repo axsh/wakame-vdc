@@ -37,5 +37,9 @@ module Dcmgr
     define_error(:InvalidDeleteRequest, 400)
     define_error(:UnknownVolume, 404)
 
+    # netfilter_group
+    define_error(:UndefinedGroupName, 400)
+    define_error(:UnknownNetfilterGroup, 400)
+    define_error(:NetfilterGroupNotPermitted, 400)
   end
 end
