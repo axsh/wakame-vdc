@@ -9,7 +9,7 @@ module Dcmgr::Models
     STATUS_TYPE_REGISTERING = 0
     STATUS_TYPE_ONLINE = 1
     STATUS_TYPE_OFFLINE = 2
-    STATUS_TYPE_FAIL = 3
+    STATUS_TYPE_FAILED = 3
 
     STATE_TYPE_REGISTERING = 0
     STATE_TYPE_CREATING = 1
@@ -102,6 +102,7 @@ module Dcmgr::Models
         end
 
         trans :failed, :on_create, :creating
+        trans :failed, :on_fail, :failed
         trans :deregistering, :on_delete, :deleting
         trans :deleting, :on_delete, :deleted
         trans :deleted, :on_delete, :deleted
