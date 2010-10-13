@@ -1,16 +1,13 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-begin
-  require File.expand_path('../.bundle/environment', __FILE__)
-rescue LoadError
-  require 'rubygems'
-end
-$LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'dcmgr'
 
-Dcmgr.configure(File.expand_path('../dcmgr.conf', __FILE__))
+Dcmgr.configure(File.expand_path('../../dcmgr.conf', __FILE__))
 Dcmgr.run_initializers
 
 require 'irb'
