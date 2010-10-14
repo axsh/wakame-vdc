@@ -132,6 +132,7 @@ namespace :dbnew do
   desc 'Create all database tables'
   task :init => [ :environment ] do
     require 'sequel'
+    require 'isono'
     #if driver is mysql
     Sequel::MySQL.default_charset = 'utf8'
     Sequel::MySQL.default_engine = 'InnoDB'
@@ -140,6 +141,7 @@ namespace :dbnew do
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
       Dcmgr::Models.const_get(c).create_table!
     }
+    Isono::Models::JobState.create_table!
 
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
       Dcmgr::Models.const_get(c).install_data
