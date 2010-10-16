@@ -18,7 +18,7 @@ module Dcmgr::Models
       
       Fixnum :cpu_cores, :null=>false, :unsigned=>true
       Fixnum :memory_size, :null=>false, :unsigned=>true
-      String :user_data
+      String :user_data, :null=>false, :default=>''
     end
     with_timestamps
     
