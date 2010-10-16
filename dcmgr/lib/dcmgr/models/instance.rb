@@ -10,24 +10,11 @@ module Dcmgr::Models
   class Instance < AccountResource
     taggable 'i'
 
-    STATUS_TYPE_NONE = -1
-    STATUS_TYPE_OFFLINE = 0
-    STATUS_TYPE_RUNNING = 1
-    STATUS_TYPE_ONLINE = 2
-    STATUS_TYPE_TERMINATING = 3
-    
-    STATUS_MSGS = {
-      STATUS_TYPE_OFFLINE => :offline,
-      STATUS_TYPE_RUNNING => :running,
-      STATUS_TYPE_ONLINE => :online,
-      STATUS_TYPE_TERMINATING => :terminating,
-    }
-    
     inheritable_schema do
       Fixnum :host_pool_id, :null=>false
       Fixnum :image_id, :null=>false
-      Fixnum :state, :null=>false, :default=>STATUS_TYPE_NONE
-      Fixnum :status, :null=>false, :default=>STATUS_TYPE_NONE
+      String :state, :size=>20, :null=>false, :default=>:init.to_s
+      String :status, :size=>20, :null=>false, :default=>:init.to_s
       
       Fixnum :cpu_cores, :null=>false, :unsigned=>true
       Fixnum :memory_size, :null=>false, :unsigned=>true
