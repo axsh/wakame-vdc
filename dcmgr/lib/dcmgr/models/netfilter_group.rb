@@ -2,22 +2,15 @@
 
 module Dcmgr::Models
   class NetfilterGroup < AccountResource
-    taggable 'nfgrp'
     with_timestamps
 
     inheritable_schema do
       String :name, :null=>false
       String :description
-      String :rule
+      Text   :rule
     end
 
     one_to_many :netfilter_rules
-
-    def to_hash_document
-      h = self.values.dup
-      h[:id] = h[:uuid] = self.canonical_uuid
-      h
-    end
 
     def self.create_group(account_id, params)
       grp = self.create(:account_id  => account_id,
@@ -28,18 +21,17 @@ module Dcmgr::Models
       grp
     end
 
-    def destroy_rule
-      #p self.netfilter_rules
+    def flush_rule
       NetfilterRule.filter(:netfilter_group_id => self.id).destroy
     end
 
     def destroy_group
-      self.destroy_rule
+      self.flush_rule
       self.destroy
     end
 
     def rebuild_rule
-      self.destroy_rule
+      self.flush_rule
       self.build_rule
     end
 

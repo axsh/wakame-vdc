@@ -593,12 +593,11 @@ module Dcmgr
         operation :show do
           description 'Show lists of the netfilter_groups'
           control do
-            begin
-              g = Models::NetfilterGroup[params[:id]]
-            end
+            @name = params[:id]
+            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
 
             respond_to { |f|
-              f.json { g.to_hash_document.to_json }
+              f.json { g.values.to_json }
             }
           end
         end
@@ -611,13 +610,14 @@ module Dcmgr
           control do
             raise UndefinedNetfilterGroup if params[:name].nil?
 
-            # [TODO] add exceptions
-            begin
-              g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
-            end
+            @name = params[:name]
+            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
+            raise DuplicatedNetfilterGroup unless g.nil?
+
+            g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
 
             respond_to { |f|
-              f.json { g.to_hash_document.to_json }
+              f.json { g.values.to_json }
             }
           end
         end
@@ -628,16 +628,12 @@ module Dcmgr
           # params description, string
           # params rule, string
           control do
-            begin
-              g = Models::NetfilterGroup[params[:id]]
-            end
+            @name = params[:id]
+            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
 
             raise UnknownNetfilterGroup if g.nil?
-            raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
 
-            if params[:name]
-              g.name = params[:name]
-            end
+            g.name = @name
             if params[:description]
               g.description = params[:description]
             end
@@ -645,13 +641,8 @@ module Dcmgr
               g.rule = params[:rule]
             end
 
-            begin
-              g.save
-            end
-
-            begin
-              g.rebuild_rule
-            end
+            g.save
+            g.rebuild_rule
 
             respond_to { |f|
               f.json { g.values.to_json }
@@ -664,15 +655,12 @@ module Dcmgr
           description "Delete the netfilter group"
 
           control do
-            begin
-              g = Models::NetfilterGroup[params[:id]]
-            end
+            g = Models::NetfilterGroup[params[:id]]
 
             raise UnknownNetfilterGroup if g.nil?
             raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
 
             respond_to { |f|
-              # f.json { g.destroy.values.to_json }
               f.json { g.destroy_group.values.to_json }
             }
           end
@@ -691,7 +679,8 @@ module Dcmgr
           control do
             rules = []
             begin
-              g = Models::NetfilterGroup[params[:id]]
+              @name = params[:id]
+              g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
               raise UnknownNetfilterGroup if g.nil?
 
               g.netfilter_rules.each { |rule|
