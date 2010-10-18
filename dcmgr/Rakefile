@@ -141,6 +141,7 @@ namespace :dbnew do
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
       Dcmgr::Models.const_get(c).create_table!
     }
+    Isono::Models::NodeState.create_table!
     Isono::Models::JobState.create_table!
 
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
@@ -151,10 +152,13 @@ namespace :dbnew do
   desc 'Drop all database tables'
   task :drop => [ :environment ] do
     require 'sequel'
+    require 'isono'
     
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
       Dcmgr::Models.const_get(c).drop_table
     }
+    Isono::Models::NodeState.drop_table
+    Isono::Models::JobState.drop_table
   end
 end
 
