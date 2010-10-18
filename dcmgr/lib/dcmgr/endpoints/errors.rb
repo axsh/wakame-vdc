@@ -36,6 +36,8 @@ module Dcmgr
     define_error(:UndefinedVolumeID, 400)
     define_error(:InvalidDeleteRequest, 400)
     define_error(:UnknownVolume, 404)
+    define_error(:UnknownHostPool, 404)
+    define_error(:UnknownInstance, 404)
 
     # netfilter_group
     define_error(:UndefinedNetfilterGroup, 400)
