@@ -12,7 +12,7 @@ module Dcmgr
   module Endpoints
     class CoreAPI < Sinatra::Base
       register Sinatra::Rabbit
-      
+
       disable :sessions
       disable :show_exceptions
 
@@ -80,7 +80,7 @@ module Dcmgr
           control do
           end
         end
-        
+
         operation :show do
           control do
             a = find_account(params[:id])
@@ -149,7 +149,7 @@ module Dcmgr
 
             tag_class = Models::Tags.find_tag_class(params[:tag_name])
             raise "UnknownTagClass: #{params[:tag_name]}" if tag_class.nil?
-            
+
             a.add_tag(tag_class.new(:name=>params[:name]))
           end
         end
@@ -177,9 +177,9 @@ module Dcmgr
           #param :account_id, :string, :optional
           control do
             tag_class = Models::Tag.find_tag_class(params[:tag_name])
-            
+
             tag_class.create
-            
+
           end
         end
 
@@ -200,7 +200,7 @@ module Dcmgr
           end
         end
       end
-      
+
       collection :instances do
         operation :create do
           description 'Runs a new instance'
@@ -327,7 +327,7 @@ module Dcmgr
             if params[:memory_size]
               hp.offering_memory_size = params[:memory_size].to_i
             end
-            
+
             hp.save
           end
         end
@@ -592,75 +592,88 @@ module Dcmgr
 
         operation :show do
           description 'Show lists of the netfilter_groups'
-          # params account_id, string
           control do
-            g = Models::NetfilterGroup[params[:id]]
+            begin
+              g = Models::NetfilterGroup[params[:id]]
+            end
+
             respond_to { |f|
-              #f.json { g.values.to_json }
               f.json { g.to_hash_document.to_json }
             }
           end
         end
 
-        # :create => { :method => :post, :member => false },
         operation :create do
           description 'Register a new netfilter_group'
           # params name, string
           # params description, string
-          # with @account.canonical_uuid
+          # params rule, string
           control do
-            raise UndefinedGroupName if params[:name].nil?
+            raise UndefinedNetfilterGroup if params[:name].nil?
 
             # [TODO] add exceptions
             begin
-              #g = Models::NetfilterGroup.create()
               g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
             end
 
             respond_to { |f|
-              # with_uuid?
               f.json { g.to_hash_document.to_json }
-              # without_uuid?
-              # f.json { g.values.to_json }
             }
           end
         end
 
-        # :update => { :method => :put, :member => true },
         operation :update do
           description "Update parameters for the netfilter group"
           # params name, string
           # params description, string
-
+          # params rule, string
           control do
-            g = Models::NetfilterGroup[params[:id]]
+            begin
+              g = Models::NetfilterGroup[params[:id]]
+            end
+
+            raise UnknownNetfilterGroup if g.nil?
             raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
 
             if params[:name]
               g.name = params[:name]
             end
             if params[:description]
-              g.description = params[:description].to_s
+              g.description = params[:description]
+            end
+            if params[:rule]
+              g.rule = params[:rule]
+            end
+
+            begin
+              g.save
+            end
+
+            begin
+              g.rebuild_rule
             end
 
             respond_to { |f|
-              f.json { g.save.values.to_json }
+              f.json { g.values.to_json }
             }
           end
         end
 
-        # :destroy => { :method => :delete, :member => true }
         operation :destroy do
           # params name, string
           description "Delete the netfilter group"
 
           control do
-            g = Models::NetfilterGroup[params[:id]]
+            begin
+              g = Models::NetfilterGroup[params[:id]]
+            end
+
             raise UnknownNetfilterGroup if g.nil?
             raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
 
             respond_to { |f|
-              f.json { g.destroy.values.to_json }
+              # f.json { g.destroy.values.to_json }
+              f.json { g.destroy_group.values.to_json }
             }
           end
         end
@@ -670,6 +683,25 @@ module Dcmgr
       collection :netfilter_rules do
         operation :index do
           control do
+          end
+        end
+
+        operation :show do
+          description 'Show lists of the netfilter_rules'
+          control do
+            rules = []
+            begin
+              g = Models::NetfilterGroup[params[:id]]
+              raise UnknownNetfilterGroup if g.nil?
+
+              g.netfilter_rules.each { |rule|
+                rules << rule.values
+              }
+            end
+
+            respond_to { |f|
+              f.json { rules.to_json }
+            }
           end
         end
       end

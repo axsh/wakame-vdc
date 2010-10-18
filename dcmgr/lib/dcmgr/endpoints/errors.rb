@@ -8,7 +8,7 @@ module Dcmgr
       c.instance_eval(&blk) if blk
       self.const_set(class_name.to_sym, c)
     end
-    
+
     class APIError < StandardError
       def self.status_code(code=nil)
         if code
@@ -16,7 +16,7 @@ module Dcmgr
         end
         @status_code || raise("@status_code for the class is not set")
       end
-      
+
       def status_code
         self.class.status_code
       end
@@ -38,7 +38,7 @@ module Dcmgr
     define_error(:UnknownVolume, 404)
 
     # netfilter_group
-    define_error(:UndefinedGroupName, 400)
+    define_error(:UndefinedNetfilterGroup, 400)
     define_error(:UnknownNetfilterGroup, 400)
     define_error(:NetfilterGroupNotPermitted, 400)
   end
