@@ -41,5 +41,6 @@ module Dcmgr
     define_error(:UndefinedNetfilterGroup, 400)
     define_error(:UnknownNetfilterGroup, 400)
     define_error(:NetfilterGroupNotPermitted, 400)
+    define_error(:DuplicatedNetfilterGroup, 400)
   end
 end
