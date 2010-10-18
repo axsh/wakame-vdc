@@ -132,6 +132,7 @@ namespace :dbnew do
   desc 'Create all database tables'
   task :init => [ :environment ] do
     require 'sequel'
+    require 'isono'
     #if driver is mysql
     Sequel::MySQL.default_charset = 'utf8'
     Sequel::MySQL.default_engine = 'InnoDB'
@@ -140,6 +141,8 @@ namespace :dbnew do
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
       Dcmgr::Models.const_get(c).create_table!
     }
+    Isono::Models::NodeState.create_table!
+    Isono::Models::JobState.create_table!
 
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
       Dcmgr::Models.const_get(c).install_data
@@ -149,16 +152,26 @@ namespace :dbnew do
   desc 'Drop all database tables'
   task :drop => [ :environment ] do
     require 'sequel'
+    require 'isono'
     
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
       Dcmgr::Models.const_get(c).drop_table
     }
+    Isono::Models::NodeState.drop_table
+    Isono::Models::JobState.drop_table
   end
 end
 
-desc 'run bundle command with necessary options.'
+desc 'run bundle command to install vendored gems.'
 task :bundle do
-  sh "bundle unlock"
-  sh "bundle install --relock --disable-shared-gems"
+  sh <<_ENDCMD
+mkdir .bundle
+cat <<END_ > .bundle/config
+---
+BUNDLE_DISABLE_SHARED_GEMS: "1"
+BUNDLE_PATH: vendor/bundle
+END_
+_ENDCMD
+  sh "bundle install"
 end
 

@@ -42,10 +42,6 @@ module Dcmgr
         find_by_uuid(:Account, account_uuid)
       end
 
-      def find_user(user_uuid)
-        find_by_uuid(:User, user_uuid)
-      end
-
       def parsed_request_body
         raise "no hint for body content to be parsed" if @mime_types.nil? || @mime_types.empty?
         mime = @mime_types.first
