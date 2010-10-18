@@ -1,0 +1,118 @@
+<% content_for :javascript do %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.instancePanel();
+});
+</script>
+<% end %>
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Instances<a href="javascript:void(0);" class="showhide"></a></h3>
+ <div class="maincontent">
+		<div class="controller clearfix">
+		  <div id="instanceaction">Instance Actions</div>
+      <ul id="actionlist">
+        <li id="actionparent">Instance Actions</li>
+				<ul id="instanceaction">
+					<li class="terminate_instances"><a href="javascript:void(0);">Terminate</a></li>
+					<li class="reboot_instances" ><a href="javascript:void(0);">Reboot</a></li>
+					<li class="stop_instances"><a href="javascript:void(0);">Stop</a></li>
+					<li class="start_instances"><a href="javascript:void(0);">Start</a></li>
+				</ul>
+		  </ul>
+			<a href="javascript:void(0);" class="refresh" style="margin-left:456px">Refresh</a>
+		</div>
+		<div class="controller clearfix">
+			<div class="l_float">
+				<span class="text">Viewing:</span>
+				<select class="select">
+					<option>All Instances</option>
+					<option>Running Instances</option>
+					<option>Stopped Instances</option>
+					<option>Tarminated Instances</option>
+				</select>
+				<select class="type">
+					<option>All Instance Types</option>
+					<option>Standard Instances</option>
+					<option>High Memory Instance</option>
+					<option>High CPU Instances</option>
+				</select>
+				<input type="text" class="search" />
+			</div>
+         <div id="pagenate" class="r_float">
+			  	<a href="javascript:void(0);" class="prev"></a>
+			  	<p id="viewPagenate">Instances</p>
+			  	<a href="javascript:void(0);" class="next"></a>
+         </div>
+		</div>
+		<div id="display_instances" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="instancesListTemplate" type="text/x-jquery-tmpl">
+			 <table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+			   <tr>
+			     <th></th>
+			     <th>Instance ID</th>
+			     <th>Owner</th>
+			     <th>WMI ID</th>
+			     <th>State</th>
+			     <th>Private IP</th>
+			     <th>Type</th>
+			   </tr>
+			   {{each(index,item) rows}}
+			   <tr>
+					{{if item.instance_id }}
+						<td class="center"><input type="checkbox" value="${item.instance_id}" > </td>
+					{{else}}
+						<td class="center"><input type="checkbox"> </td>
+					{{/if}}
+					<td class="instance_id" title="${item.instance_id}">${item.instance_id}</td>
+					<td class="owner" title="${item.owner}">${item.owner}</td>
+					<td class="wmi_id" title="${item.wmi_id}">${item.wmi_id}</td>
+					<td class="state" title="running">running</td>
+					<td class="private_ip" title="${item.state}">${item.state}</td>
+					<td class="type" title="${item.type}">${item.type}</td>
+				</tr>
+			   {{/each}}
+			   </table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_resource.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+	<div id="detail" class="maincontent">
+		<% content_for :javascript_template do %>
+		<script id="instancesDetailTemplate" type="text/x-jquery-tmpl">
+		<div id="${item.instance_id}" class="display_area">
+			<h4 class="ptn01">EC2 Instance:<span class="instansid">${item.instance_id}</span></h4>
+			<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">WMI ID:</td>
+					<td>${item.wmi_id}</td>
+					<td class="padcell"></td>
+					<td class="title">Zone:</td>
+					<td>${item.zone}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Security Groups:</td>
+					<td>${item.security_groups}</td>
+					<td class="padcell"></td>
+					<td class="title">Type:</td>
+					<td>${item.type}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Status:</td>
+					<td class="state">${item.status}</td>
+					<td class="padcell"></td>
+					<td class="title">Owner:</td>
+					<td>${item.owner}</td>
+				</tr>
+			</table>
+		</div>
+		</script>
+		<% end %>
+	</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

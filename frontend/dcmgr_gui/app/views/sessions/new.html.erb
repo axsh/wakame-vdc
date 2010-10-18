@@ -1,0 +1,27 @@
+<% content_for :stylesheet do %>
+<style type="text/css">
+	h3 {
+	color:#5E5E5E;
+	font-family:"LucidaGrande","Myriad Pro";
+	font-size:22px;
+	height:34px;
+	line-height:30px;
+	padding:0 0 0 5px;
+	text-shadow:1px 1px 0 rgba(255, 255, 255, 0.7);
+	}
+</style>
+<% end %>
+<div style="text-align:left;height:496px">
+	<div style="padding:5px;">
+			<%= form_tag session_path do -%>
+			<fieldset>
+				<legend><h3>Log in</h3></legend>
+			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag 'login' %><br />
+			<%= text_field_tag 'login', @login %></p>
+			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag 'password' %><br />
+			<%= password_field_tag 'password', nil %></p>
+			</fieldset>
+			<p><%= submit_tag 'login' %></p>
+			<% end -%>
+	</div>
+</div>

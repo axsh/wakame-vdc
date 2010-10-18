@@ -1,0 +1,191 @@
+{
+  "vol-24f1af01" : {
+    "volume_id" : "vol-24f1af01",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af02" : {
+    "volume_id" : "vol-24f1af02",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af03" : {
+    "volume_id" : "vol-24f1af03",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af04" : {
+    "volume_id" : "vol-24f1af04",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af05" : {
+    "volume_id" : "vol-24f1af05",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af06" : {
+    "volume_id" : "vol-24f1af06",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af07" : {
+    "volume_id" : "vol-24f1af07",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af08" : {
+    "volume_id" : "vol-24f1af08",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af09" : {
+    "volume_id" : "vol-24f1af09",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af10" : {
+    "volume_id" : "vol-24f1af10",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af11" : {
+    "volume_id" : "vol-24f1af11",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af12" : {
+    "volume_id" : "vol-24f1af12",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af13" : {
+    "volume_id" : "vol-24f1af13",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af14" : {
+    "volume_id" : "vol-24f1af14",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af15" : {
+    "volume_id" : "vol-24f1af15",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af16" : {
+    "volume_id" : "vol-24f1af16",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af17" : {
+    "volume_id" : "vol-24f1af17",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af18" : {
+    "volume_id" : "vol-24f1af18",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af19" : {
+    "volume_id" : "vol-24f1af19",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af20" : {
+    "volume_id" : "vol-24f1af20",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  },
+  "vol-24f1af21" : {
+    "volume_id" : "vol-24f1af21",
+    "capacity" : "1GB",
+    "snapshot" : "-",
+    "created" : "2010-10-12 12:12 GMT+0900",
+    "zone" : "-",
+    "status" : "creating",
+    "attachment_information" : "-"
+  }
+}

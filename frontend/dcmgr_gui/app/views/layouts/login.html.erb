@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta name="keywords" content="あくしゅ,axsh,wakame" />
+<meta name="description" content="Wakame UI">
+<title>Wakame UI</title>
+<%= stylesheet_link_tag :all %>
+<%= csrf_meta_tag %>
+<%= yield :javascript %>
+<%= yield :stylesheet %>
+<link rel="shortcut icon" href="favicon.ico" />
+</head>
+<body>
+	<div id="head_gradation"></div>
+	<div id="content_wrapper">
+		<%= render :partial => 'layouts/login_header' %>
+		<div id="content" class="clearfix">
+			<%= yield %>
+		</div>
+		<%= render :partial => 'layouts/footer'%>
+	</div>
+</body>
+</html>

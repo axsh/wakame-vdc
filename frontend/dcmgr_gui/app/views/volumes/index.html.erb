@@ -1,0 +1,121 @@
+<% content_for :javascript do %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.volumePanel();
+});
+</script>
+<% end %>
+
+<% content_for :stylesheet do %>
+<style type="text/css">
+	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+	.ui-dialog .ui-dialog-content {margin:5px;}
+</style>
+<% end %>
+
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Volumes<a href="javascript:void(0);" class="showhide"></a></h3>
+ <div class="maincontent">
+		<div class="controller clearfix">
+		  <a href="javascript:void(0);" class="create_volume">Create Volume</a>
+			<div id="volumeaction">Volume Actions</div>
+    	<ul id="volumelist">
+      	<li><a href="javascript:void(0);">Volume Actions</a></li>
+				<li><a href="javascript:void(0);" class="attach_volume">Attach Volume</a></li>
+				<li><a href="javascript:void(0);" class="detach_volume">Detach Volume</a></li>
+	  	</ul>
+			<a href="javascript:void(0);" class="delete_volume" >Delete</a>
+			<a href="javascript:void(0);" class="create_snapshot">Create Snapshot</a>
+		  <a href="javascript:void(0);" class="refresh" style="margin-left:85px">Refresh</a>
+		</div>
+		<div class="controller clearfix">
+			<div class="l_float">
+				<span class="text">Viewing:</span>
+				<select class="select">
+					<option>All Volumes</option>
+				</select>
+				<input type="text" class="search" />
+			</div>
+     <div id="pagenate" class="r_float">
+			  <a href="javascript:void(0);" class="prev"></a>
+				<p id="viewPagenate">Volumes</p>
+			  <a href="javascript:void(0);" class="next"></a>
+     </div>
+		</div>
+		<div id="display_volumes" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="volumesListTemplate" type="text/x-jquery-tmpl">
+			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<th></th>
+					<th>Volume ID</th>
+					<th>Capacity</th>
+					<th>Snapshot</th>
+					<th>Created</th>
+					<th>Zone</th>
+					<th>Status</th>
+				</tr>
+				{{each(index,item) rows}}
+			   <tr>
+			    {{if item.volume_id }}
+						<td><input type="checkbox" value="${item.volume_id}" > </td>
+					{{else}}
+						<td><input type="checkbox"> </td>
+					{{/if}}
+					<td class="vtip" title="volume-id">${item.volume_id}</td>
+					<td class="vtip center" title="capacity" style="width:40px">${item.capacity}</td>
+					<td class="vtip center" title="snapshot">${item.snapshot}</td>
+					<td class="vtip" title="created">${item.created}</td>
+					<td class="vtip center" title="zone">${item.zone}</td>
+					<td class="state" title="status">${item.status}</td>
+				</tr>
+				{{/each}}
+			</table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_resource.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+ 		<div id="detail" class="maincontent">
+ 			<% content_for :javascript_template do %>
+			<script id="volumesDetailTemplate" type="text/x-jquery-tmpl">
+			<div id="${item.volume_id}" class="display_area">
+				<h4 class="ptn01">VolumeId:<span class="instansid">${item.volume_id}</span></h4>
+				<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Volume ID:</td>
+						<td>${item.volume_id}</td>
+						<td class="padcell"></td>
+						<td class="title">Capacity:</td>
+						<td>${item.capacity}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Snapshot:</td>
+						<td>${item.snapshot}</td>
+						<td class="padcell"></td>
+						<td class="title">Created:</td>
+						<td>${item.created}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Zone:</td>
+						<td>${item.zone}</td>
+						<td class="padcell"></td>
+						<td class="title">Status:</td>
+						<td class="state">${item.status}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Attachment Information:</td>
+						<td colspan="5">${item.attachment_information}</td>
+					</tr>
+				</table>
+			</div>
+			</script>
+			<% end %>
+ 		</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

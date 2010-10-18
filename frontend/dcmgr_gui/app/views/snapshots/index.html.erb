@@ -1,0 +1,105 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui' %>
+<% end %>
+<% content_for :stylesheet do %>
+<style type="text/css">
+	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+	.ui-dialog .ui-dialog-content {margin:5px;}
+</style>
+<% end %>
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Snapshots<a href="#" class="showhide"></a></h3>
+ <div class="maincontent">
+		<div class="controller clearfix">
+		<a href="#" class="create_snapshot" onClick="dcmgrGUI.dialog(this)">Create Snapshot</a>  
+		<a href="#" class="delete_snapshot" onClick="dcmgrGUI.dialog(this)">Delete Snapshot</a>
+		<a href="#" class="create_volume" style="margin-left:7px" onclick="dcmgrGUI.dialog(this);">Create Volume</a>
+			
+		  <a href="#" class="refresh" style="margin-left:211px">Refresh</a>
+		</div>
+		<div class="controller clearfix">
+			<div class="l_float">
+				<span class="text">Viewing:</span>
+				<select class="select">
+					<option>All Volumes</option>
+				</select>
+				<input type="text" class="search" />
+			</div>
+     <div class="r_float">
+			  <a href="#" class="prev"></a>
+			  <p>1 to 2 of 2 Items</p>
+			  <a href="#" class="next"></a>
+     </div>
+		</div>
+		<div class="display_area">
+			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<th></th>
+					<th>Volume ID</th>
+					<th>Capacity</th>
+					<th>Snapshot</th>
+					<th>Created</th>
+					<th>Zone</th>
+					<th>Status</th>
+				</tr>
+				<% 10.times do |i| %>
+				<tr>
+					<td class="center"><%= i+1 %></td>
+					<td class="vtip" title="volume-id">vol-24f1af4d</td>
+					<td class="vtip center" title="capacity">1GB</td>
+					<td class="vtip" title="snapshot">--</td>
+					<td class="vtip" title="created"><%= Time.new.strftime("%Y-%m-%d %H:%d GMT%z") %></td>
+					<td class="vtip center" title="zone">us-east-1a</td>
+					<td class="vtip center" title="status">avaibale</td>
+				</tr>
+				<% end %>
+			</table>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_resource.gif" />Block Store Volume Snapshot: snap-67f07b0d<a href="#" class="showhide"></a></h3>
+ 		<div class="maincontent">
+		<div class="display_area">
+			<h4 class="ptn01">Snapshot ID:<span class="instansid">snap-67f07b0d</span></h4>
+			<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Status:</td>
+					<td>completed</td>
+					<td class="padcell"></td>
+					<td class="title">Progress:</td>
+					<td>100%</td>
+				</tr>
+
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Volume ID:</td>
+					<td>vol-4a005923</td>
+					<td class="padcell"></td>
+					<td class="title">Capacity:</td>
+					<td>1GiB</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Owner:</td>
+					<td>401808652880</td>
+					<td class="padcell"></td>
+					<td class="title">Started:</td>
+					<td>2010-09-21 12:32 GMT+0900</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Description:</td>
+					<td colspan="5">
+						xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br />
+						xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br />
+						xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br />
+						xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br />
+						xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br />
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

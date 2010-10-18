@@ -1,0 +1,142 @@
+<% content_for :javascript do %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.imagePanel();
+});
+</script>
+<% end %>
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Wakame Machine Images<a href="javascript:void(0);" class="showhide"></a></h3>
+ <div class="maincontent">
+		<div class="controller clearfix">
+		  <a href="javascript:void(0);" class="instance" onclick="dcmgrGUI.instanceDialog().open();">Launch Instance</a>
+			<a href="javascript:void(0);" class="register_new_ami">Register New AMI</a>
+			<a href="javascript:void(0);" class="de_register">De-register</a>
+			<a href="javascript:void(0);" class="refresh" style="margin-left:218px">Refresh</a>
+		</div>
+		<div class="controller clearfix">
+			<div class="l_float">
+				<span class="text">Viewing:</span>
+				<select class="select">
+					<option>Owned By Me</option>
+				</select>
+				<select class="type">
+					<option>All Platforms</option>
+				</select>
+				<input type="text" class="search" />
+			</div>
+     <div id="pagenate" class="r_float">
+			  <a href="javascript:void(0);" class="prev"></a>
+			  <p id="viewPagenate">WMIs</p>
+			  <a href="javascript:void(0);" class="next"></a>
+     </div>
+		</div>
+		<div id="display_images" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="imagesListTemplate" type="text/x-jquery-tmpl">
+			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<th></th>
+					<th>WMI ID</th>
+					<th>Source</th>
+					<th>Owner</th>
+					<th>Visibility</th>
+					<th>State</th>
+				</tr>
+			   {{each(index,item) rows}}
+			   <tr>
+			    {{if item.wmi_id }}
+						<td><input type="checkbox" value="${item.wmi_id}" > </td>
+					{{else}}
+						<td><input type="checkbox"> </td>
+					{{/if}}
+					<td class="vtip" title="wmiid">${item.wmi_id}</td>
+					<td class="vtip" title="source" style="width:300px">${item.source}</td>
+					<td class="vtip" title="owner">${item.owner}</td>
+					<td class="vtip center" title="visibility">${item.visibility}</td>
+					<td class="vtip center" title="state">${item.state}</td>
+				</tr>
+				{{/each}}
+			</table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_resource.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+ 		<div id="detail" class="maincontent">
+			<% content_for :javascript_template do %>
+			<script id="imagesDetailTemplate" type="text/x-jquery-tmpl">
+			<div id="${item.wmi_id}" class="display_area">
+				<h4 class="ptn01">Image ID:<span class="instansid">${item.wmi_id}</span></h4>
+				<table class="ptn06" frame="void" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Name:</td>
+						<td colspan="7">${item.name}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Description:</td>
+						<td colspan="7">${item.description}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Source:</td>
+						<td colspan="7">${item.source}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Owner:</td>
+						<td>${item.owner}</td>
+						<td class="padcell"></td>
+						<td class="title">Visibility:</td>
+						<td>${item.title}</td>
+						<td class="padcell"></td>
+						<td class="title">Product Code:</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">State:</td>
+						<td>${item.title}</td>
+						<td class="padcell"></td>
+						<td class="title">Kanel ID:</td>
+						<td>${item.karnel_id}</td>
+						<td class="padcell"></td>
+						<td class="title">Platform:</td>
+						<td>${item.platform}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Root Device Type:</td>
+						<td>instance-store</td>
+						<td class="padcell"></td>
+						<td class="title">Root Device:</td>
+						<td>${item.root_device}</td>
+						<td class="padcell"></td>
+						<td class="title">Image Size:</td>
+						<td>${item.image_size}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Block Devices:</td>
+						<td colspan="7">${item.block_devices}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Virtualization:</td>
+						<td colspan="7">${item.virtualization}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">State Reason:</td>
+						<td colspan="7">${item.state}</td>
+					</tr>
+				</table>
+			</div>
+			</script>
+			<% end %>
+	</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

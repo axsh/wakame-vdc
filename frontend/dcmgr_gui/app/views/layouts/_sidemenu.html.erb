@@ -1,0 +1,52 @@
+<div id="sidemenu">
+	<div id="account" style="padding:5px">
+			<%= form_for :accounts,:url => accounts_switch_path,:remote => true do |f| %>
+				Change Account：&nbsp;<%= f.select "account_uuid",show_accounts,{:selected => primary_account_id} %>
+			<% end %>
+	</div>
+
+	<div id="regionselect"><img src="images/listicon_useast.gif" />US East</div>
+	<ul id="regionmenu">
+		<li><a href="#" id="list-useast"><img src="images/listicon_useast.gif" />US East</a></li>
+	  <li><a href="#" id="list-japan"><img src="images/listicon_useast.gif" />Japan</a></li>
+	</ul>
+	<div class="sidemenu_top"></div><ul class="classify_parent">
+		<li class="parent"><h3><img src="images/icon_summary.gif" width="20" height="20" />SUMMARY</h3>
+			<ul>
+				<%= li_link_to_current('Dashboard','home')%>
+			</ul>
+		</li>
+		<li class="parent"><h3><img src="images/icon_instances.gif" width="20" height="20" />INSTANCES</h3>
+			<ul>
+				<%= li_link_to_current('Instances','instances')%>
+			</ul>
+		</li>
+		<li class="parent"><h3><img src="images/icon_images.gif" width="20" height="20" />IMAGES</h3>
+			<ul>
+				<%= li_link_to_current('Machine Images','images')%>
+			</ul>
+		</li>
+		<li class="parent"><h3><img src="images/icon_blockstore.gif" width="20" height="20" />BLOCK STORE</h3>
+			<ul>
+				<%= li_link_to_current('Volumes','volumes')%>
+			</ul>
+			<ul>
+				<%= li_link_to_current('Snapshots','snapshots')%>
+			</ul>
+		</li>
+		<li class="parent"><h3><img src="images/icon_security.gif" width="20" height="20" />NETWORK & SECURITY</h3>
+			<ul>
+				<%= li_link_to_current('Security Groups','security_groups')%>
+			</ul>
+			<ul>
+				<%= li_link_to_current('Key Pairs','security')%>
+			</ul>
+		</li>
+		<li class="parent"><h3><img src="images/icon_information.gif" width="20" height="20" />INFORMATION</h3>
+			<ul>
+				<%= li_link_to_current('Service Status','information')%>
+			</ul>
+		</li>
+	</ul>
+	<div class="sidemenu_bottom"></div>
+</div>
