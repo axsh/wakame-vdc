@@ -13,19 +13,19 @@ module Dcmgr::Models
     inheritable_schema do
       Fixnum :host_pool_id, :null=>false
       Fixnum :image_id, :null=>false
+      Fixnum :instance_spec_id, :null=>false
       String :state, :size=>20, :null=>false, :default=>:init.to_s
       String :status, :size=>20, :null=>false, :default=>:init.to_s
-      
-      Fixnum :cpu_cores, :null=>false, :unsigned=>true
-      Fixnum :memory_size, :null=>false, :unsigned=>true
-      String :user_data, :null=>false, :default=>''
+
+      Text :user_data, :null=>false, :default=>''
     end
     with_timestamps
     
     many_to_one :image
+    many_to_one :instance_spec
     many_to_one :host_pool
 
-    subset(:runnings){|f| f.state == STATUS_TYPE_RUNNING }
+    subset(:runnings){|f| f.state == :running }
 
     # Returns the hypervisor type for the instance.
     def hypervisor
@@ -35,6 +35,18 @@ module Dcmgr::Models
     # Returns the architecture type of the image
     def arch
       self.image.arch
+    end
+
+    def cpu_cores
+      self.instance_spec.cpu_cores
+    end
+
+    def memory_size
+      self.instance_spec.memory_size
+    end
+
+    def config
+      self.instance_spec.config
     end
 
   end

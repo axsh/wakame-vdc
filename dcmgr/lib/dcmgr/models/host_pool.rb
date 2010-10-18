@@ -63,9 +63,10 @@ module Dcmgr::Models
     end
     
     # Factory method for Instance model to run on this HostPool.
-    def create_instance(image_uuid, &blk)
+    def create_instance(image_uuid, instance_spec, &blk)
       i = Instance.new &blk
       i.image = Image[image_uuid]
+      i.instance_spec = instance_spec
       i.host_pool = self
       i.save
     end
