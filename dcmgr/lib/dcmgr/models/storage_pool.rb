@@ -6,11 +6,11 @@ module Dcmgr::Models
     taggable 'sp'
     with_timestamps
 
-    STATAS_TYPE_REGISTERING = 1
-    STATAS_TYPE_ONLINE = 2
-    STATAS_TYPE_DEGRADE = 3
-    STATAS_TYPE_FAILED = 4
-    STATAS_TYPE_DEREGISTERED = 5
+    STATAS_TYPE_REGISTERING = 0
+    STATAS_TYPE_ONLINE = 1
+    STATAS_TYPE_DEGRADE = 2
+    STATAS_TYPE_FAILED = 3
+    STATAS_TYPE_DEREGISTERED = 4
 
     STATUS_MSGS = {
       STATAS_TYPE_REGISTERING => :registering,
@@ -115,7 +115,6 @@ module Dcmgr::Models
       v = Volume.create(:account_id => account_id,
                         :storage_pool_id => self.id,
                         :size =>size)
-      v = v.values.merge({:uuid => v.canonical_uuid, :pool_name=> self.export_path.split('/').last})
     end
   end
 end
