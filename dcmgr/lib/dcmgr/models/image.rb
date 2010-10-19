@@ -37,5 +37,10 @@ module Dcmgr::Models
         errors.add(:arch, "Unsupported arch type: #{self.arch}")
       end
     end
+
+    def to_hash
+      values.dup.merge({:source=>self.source.dup, :description=>description.to_s})
+    end
+    
   end
 end
