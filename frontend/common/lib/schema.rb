@@ -78,16 +78,6 @@ module Frontend
         index [:tag_id, :target_type, :target_id]
       end
       
-      
-    end
-
-    def drop!
-      models.each { |model|
-              begin
-                @db.drop_table(model.table_name)
-              rescue
-              end
-            }
     end
 
     def drop!
