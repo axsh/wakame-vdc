@@ -378,7 +378,6 @@ module Dcmgr
           control do
             raise UndefinedVolumeSize if params[:volume_size].nil?
 
-            # ストレージプールの選択
             if params[:storage_pool_id]
               sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
               raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
@@ -395,10 +394,11 @@ module Dcmgr
               raise DatabaseError
             end
 
-            # 選択したプールがあるstorage_agentに送る
-            Dcmgr.messaging.request('sta-loader.sta-0d12ca599d', 'on_create', v)
+            Dcmgr.messaging.request("sta-loader.#{sp.values[:agent_id]}", 'create', v.canonical_uuid) do |req|
+              req.oneshot = true
+            end
             respond_to { |f|
-              f.json { v.to_json}
+              f.json { v.values.to_json}
             }
           end
         end
@@ -417,6 +417,11 @@ module Dcmgr
             end
             raise UnknownVolume if v.nil?
 
+            sp = v.storage_pool
+
+            Dcmgr.messaging.request("sta-loader.#{sp.values[:agent_id]}", 'delete', v.canonical_uuid) do |req|
+              req.oneshot = true
+            end
             # 選択したvolumeの削除をstorage_agentに送る
             respond_to { |f|
               f.json { v.values.to_json}
@@ -429,9 +434,24 @@ module Dcmgr
           # params volume_id, string, required
           # params instance_id, string, required
           control do
-            vl = { :status => 'attaching', :message => 'attaching the volume of vol-xxxxxx to instance_id'}
+            require 'yaml'
+            raise UndefinedInstanceID if params[:instance_id].nil?
+            raise UndefinedVolumeID if params[:volume_id].nil?
+            
+            i = find_by_uuid(:Instance, params[:instance_id])
+            raise UnknownInstance if i.nil?
+
+            v = i.find_volume(@account.canonical_uuid, params[:volume_id])
+            raise UnknownVolume if v.nil?
+
+            opt = v.values.dup
+            opt[:transport_information] = YAML.load(opt[:transport_information])
+            Dcmgr.messaging.request("job.kvm-handle.hva-192.168.1.181", 'attach', opt) do |req|
+              req.oneshot = true
+            end
+
             respond_to { |f|
-              f.json { vl.to_json}
+              f.json { v.values.to_json}
             }
           end
         end
