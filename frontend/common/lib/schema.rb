@@ -11,6 +11,10 @@ module Frontend
       @db = Sequel.connect(str)
     end
     
+    def current_connect
+      @db
+    end
+    
     def config(env,file)
       YAML::load(ERB.new(IO.read(file)).result)[env]
     end
@@ -86,6 +90,15 @@ module Frontend
             }
     end
 
+    def drop!
+      models.each { |model|
+              begin
+                @db.drop_table(model.table_name)
+              rescue
+              end
+            }
+    end
+    
     def models
       @models ||= [Models::Account, Models::User,
                    Models::Authz,Models::Tag,Models::TagMapping
