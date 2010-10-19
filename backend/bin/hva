@@ -3,4 +3,89 @@
 
 require File.expand_path('../../config/path_resolver', __FILE__)
 
-Isono::Runner::Agent.new(ARGV).run(File.expand_path('../../hva.isono', __FILE__))
+include Isono::Runner::RpcServer
+
+manifest = DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'hva'
+  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
+  load_module Isono::NodeModules::NodeHeartbeat
+  load_module KvmMonitor
+  
+  config_path File.expand_path('config/hva-config.rb', app_root)
+
+  config do |c|
+  end
+end
+
+VM_BASEDIR='/var/lib/vm'
+
+require 'fileutils'
+
+class KvmHandler < EndpointBuilder
+  include Isono::Logger
+
+  job :run_local_store do
+    #hva = rpc.delegate('hva-collector')
+    inst_id = request.args[0]
+    logger.info("Booting #{inst_id}")
+    #inst = hva.get_instance(inst_id)
+
+    p inst = rpc.request('hva-collector', 'get_instance',  inst_id)
+
+    # setup vm data folder
+    FileUtils.mkdir(File.expand_path("#{inst_id}", VM_BASEDIR))
+    # copy image file
+    img_src = inst[:image][:source]
+    case img_src[:type].to_sym
+    when :http
+      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", VM_BASEDIR)
+      system("curl --silent -o '#{img_path}' #{img_src[:uri]}")
+    else
+      raise "Unknown image source type: #{img_src[:type]}"
+    end
+
+    inst[:disk]
+    
+    # boot virtual machine
+    system("kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :11 -drive file=#{img_path} -daemonize -net tap -net nic,macaddr=52:54:00:12:35:11")
+    
+    #hva.update_instance(inst_id, {:state=>:running})
+  end
+
+  job :run_vol_store do
+    inst = rpc.request('hva-collector', 'get_instance', request.args[0])
+    logger.info("Booting #{inst_id}")
+    
+    # create volume
+    # attach disk
+    # run vm
+    system("kvm -m 128 -smp 1 -name hvakvm1 -vnc :11 -drive file=/home/katsuo/vm/a1/tmpmz0N86.qcow2 -daemonize -net tap -net nic,macaddr=52:54:00:12:35:11")
+  end
+  
+  job :terminate do
+    hva = rpc.delegate('hva-collector')
+    inst_id = request.
+    logger.info("Booting #{inst_id}")
+  end
+
+  job :attach do
+  end
+
+  job :detach do
+  end
+
+  def rpc
+    @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
+  end
+
+  def jobreq
+    @jobreq ||= Isono::NodeModules::JobChannel.new(@node)
+  end
+
+end
+
+
+start(manifest) do
+  endpoint "kvm-handle.#{@node.node_id}", KvmHandler
+end
