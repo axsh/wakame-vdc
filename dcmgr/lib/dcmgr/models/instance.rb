@@ -18,6 +18,7 @@ module Dcmgr::Models
       String :status, :size=>20, :null=>false, :default=>:init.to_s
 
       Text :user_data, :null=>false, :default=>''
+      index :state
     end
     with_timestamps
     

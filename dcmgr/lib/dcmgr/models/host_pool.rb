@@ -9,8 +9,8 @@ module Dcmgr::Models
     HYPERVISOR_XEN_40=:'xen-4.0'
     HYPERVISOR_KVM=:'kvm'
 
-    ARCH_X86=:x86
-    ARCH_X86_64=:x86_64
+    ARCH_X86=:x86.to_s
+    ARCH_X86_64=:x86_64.to_s
 
     SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
 
