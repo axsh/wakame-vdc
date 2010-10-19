@@ -1,0 +1,9 @@
+
+#Create database
+mysql -uroot
+> create database wakame_dcmgr_gui default character set utf8;
+> grant all on wakame_dcmgr_gui.* to wakame_dcmgr_gui@localhost identified by 'passwd';
+
+#for development
+rake db:init
+rake db:sample_data
