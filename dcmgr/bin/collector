@@ -25,6 +25,9 @@ manifest.instance_eval do
 
   load_module Isono::NodeModules::DataStore
   load_module Dcmgr::NodeModules::StaCollector
+  load_module Isono::NodeModules::NodeCollector
+  load_module Isono::NodeModules::JobCollector
+  load_module Dcmgr::NodeModules::HvaCollector
 
   config do |c|
     conf = load_conf()
