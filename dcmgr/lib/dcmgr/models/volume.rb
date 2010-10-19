@@ -22,25 +22,25 @@ module Dcmgr::Models
     STATE_TYPE_DELETING = 8
     STATE_TYPE_DELETED = 9
 
-    STATE_MSGS = {
-      STATE_TYPE_REGISTERING => :registering,
-      STATE_TYPE_CREATING => :creating,
-      STATE_TYPE_AVAILABLE => :available,
-      STATE_TYPE_ATTATING => :attaching,
-      STATE_TYPE_ATTACHED => :attached,
-      STATE_TYPE_DETACHING => :detaching,
-      STATE_TYPE_FAILED => :failed,
-      STATE_TYPE_DEREGISTERING => :deregistering,
-      STATE_TYPE_DELETING => :deleting,
-      STATE_TYPE_DELETED => :deleted
-    }
+    # STATE_MSGS = {
+    #   STATE_TYPE_REGISTERING => :registering,
+    #   STATE_TYPE_CREATING => :creating,
+    #   STATE_TYPE_AVAILABLE => :available,
+    #   STATE_TYPE_ATTATING => :attaching,
+    #   STATE_TYPE_ATTACHED => :attached,
+    #   STATE_TYPE_DETACHING => :detaching,n
+    #   STATE_TYPE_FAILED => :failed,
+    #   STATE_TYPE_DEREGISTERING => :deregistering,
+    #   STATE_TYPE_DELETING => :deleting,
+    #   STATE_TYPE_DELETED => :deleted
+    # }
 
-    MSG_TO_ID = STATE_MSGS.invert
+    # MSG_TO_ID = STATE_MSGS.invert
 
     inheritable_schema do
       Fixnum :storage_pool_id, :null=>false
       Fixnum :status, :null=>false, :default=>STATUS_TYPE_REGISTERING
-      Fixnum :state, :null=>false, :default=>STATE_TYPE_REGISTERING
+      String :state, :null=>false, :default=> 'registering'
       Fixnum :size, :null=>false
       String :instance_id
       String :host_device_name
@@ -67,90 +67,107 @@ module Dcmgr::Models
       super
     end
 
+    def before_save
+      self.updated_at = Time.now
+      super
+    end
+
     def self.delete_volume(account_id, uuid)
       v = self.dataset.where(:account_id=>account_id).where(:uuid=>uuid.split('-').last).first
-      if v.state != STATE_TYPE_AVAILABLE
+      if v.state.to_sym != :available
         raise RequestError, "invalid delete request"
       end
-      sm = v.state_machine
-      sm.on_deregister
+      v.state = :deregistering
       v.save_changes
       v
     end
 
+    def merge_pool_data
+      sp = self.storage_pool
+      v = self.to_hash_document
+      unless v[:transport_information].nil?
+        v[:transport_information] = YAML.load(v[:transport_information])
+      end
+      v.merge(:pool_name=>sp.values[:export_path].split('/').last)
+    end
+
     def to_hash_document
       h = self.values.dup
-      h[:id] = h[:uuid] = self.canonical_uuid
+      h[:id] = h[:uuid] = h[:export_path] = self.canonical_uuid
       h
     end
 
-    def state_machine
-      model = self
-      sm = Statemachine.build do
-        superstate :volume_condition do
-          trans :registering, :on_create, :creating
-          trans :creating, :on_create, :available
-          trans :available, :on_attach, :attaching
-          trans :attaching, :on_attach, :attached
-          trans :available, :on_create, :available
-          trans :attached, :on_detach, :detaching
-          trans :detaching, :on_detach, :attached
-          trans :attached, :on_attach, :attached
+    # def state_machine
+    #   model = self
+    #   sm = Statemachine.build do
+    #     superstate :volume_condition do
+    #       trans :registering, :on_create, :creating
+    #       trans :creating, :on_create, :available
+    #       trans :available, :on_attach, :attaching
+    #       trans :attaching, :on_attach, :attached
+    #       trans :available, :on_create, :available
+    #       trans :attached, :on_detach, :detaching
+    #       trans :detaching, :on_detach, :attached
+    #       trans :attached, :on_attach, :attached
 
-          event :on_fail, :failed
-          event :on_deregister, :deregistering
-        end
+    #       event :on_fail, :failed
+    #       event :on_deregister, :deregistering
+    #     end
 
-        trans :failed, :on_create, :creating
-        trans :failed, :on_fail, :failed
-        trans :deregistering, :on_delete, :deleting
-        trans :deleting, :on_delete, :deleted
-        trans :deleted, :on_delete, :deleted
+    #     trans :failed, :on_create, :creating
+    #     trans :failed, :on_fail, :failed
+    #     trans :deregistering, :on_delete, :deleting
+    #     trans :deleting, :on_delete, :deleted
+    #     trans :deleted, :on_delete, :deleted
 
-        on_entry_of :creating, proc {
-          model.state = STATE_TYPE_CREATING
-        }
+    #     on_entry_of :creating, proc {
+    #       model.state = STATE_TYPE_CREATING
+    #     }
 
-        on_entry_of :available, proc {
-          model.state = STATE_TYPE_AVAILABLE
-          model.status = STATUS_TYPE_ONLINE
-        }
+    #     on_entry_of :available, proc {
+    #       model.state = STATE_TYPE_AVAILABLE
+    #       model.status = STATUS_TYPE_ONLINE
+    #     }
 
-        on_entry_of :attached, proc {
-          model.state = STATUS_TYPE_ATTACHED
-        }
+    #     on_entry_of :attatinging, proc {
+    #       model.state = STATE_TYPE_ATTATING 
+    #     }
 
-        on_entry_of :failed, proc {
-          model.state = STATE_TYPE_FAILED
-          model.status = STATUS_TYPE_FAILED
-        }
+    #     on_entry_of :attached, proc {
+    #       model.state = STATUS_TYPE_ATTACHED
+    #     }
 
-        on_entry_of :deregistering, proc {
-          model.state = STATE_TYPE_DEREGISTERING
-        }
+    #     on_entry_of :failed, proc {
+    #       model.state = STATE_TYPE_FAILED
+    #       model.status = STATUS_TYPE_FAILED
+    #     }
 
-        on_entry_of :deleting, proc {
-          model.state = STATE_TYPE_DELETING
-        }
+    #     on_entry_of :deregistering, proc {
+    #       model.state = STATE_TYPE_DEREGISTERING
+    #     }
 
-        on_entry_of :deleted, proc {
-          model.state = STATE_TYPE_DELETED
-          model.status = STATUS_TYPE_OFFLINE
-        }
+    #     on_entry_of :deleting, proc {
+    #       model.state = STATE_TYPE_DELETING
+    #     }
 
-      end
+    #     on_entry_of :deleted, proc {
+    #       model.state = STATE_TYPE_DELETED
+    #       model.status = STATUS_TYPE_OFFLINE
+    #     }
 
-      if self[:state]
-        if sm.has_state(STATE_MSGS[self[:state]].to_sym)
-          sm.state = STATE_MSGS[self[:state]].to_sym
-        else
-          raise "Unknown state: #{self[:state]}"
-        end
-      else
-        sm.reset
-      end
-      sm
-    end
+    #   end
+
+    #   if self[:state]
+    #     if sm.has_state(STATE_MSGS[self[:state]].to_sym)
+    #       sm.state = STATE_MSGS[self[:state]].to_sym
+    #     else
+    #       raise "Unknown state: #{self[:state]}"
+    #     end
+    #   else
+    #     sm.reset
+    #   end
+    #   sm
+    # end
 
   end
 end
