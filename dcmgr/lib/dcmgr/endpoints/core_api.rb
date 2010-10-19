@@ -197,18 +197,29 @@ module Dcmgr
         end
       end
 
+      # Endpoint to handle VM instance.
       collection :instances do
         operation :create do
-          description 'Runs a new instance'
+          description 'Runs a new VM instance'
           # param :image_id, :required
           # param :instance_spec_id, :required
+          # param :host_pool_id, :optional
+          # param :host_name, :optional
           control do
-            hp = Models::HostPool.dataset.first
-            raise NoCandidateTo
-            i = hp.create_instance(params[:image_id])
+            hp = if params[:host_pool_id]
+                   hp = Models::HostPool[params[:host_pool_id]]
+                 else
+                   # TODO: schedule a host pool owned by SharedPool account.
+                 end
+           
+            raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
 
+            spec = find_by_uuid(:InstanceSpec, 'is-kpf0pasc')
+            inst = hp.create_instance(params[:image_id], spec)
+
+            req = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
             respond_to { |f|
-              f.json { i.to_hash_document.to_json }
+              f.json { inst.to_hash.to_json }
             }
           end
         end
@@ -217,8 +228,10 @@ module Dcmgr
           #param :account_id, :string, :optional
           control do
             i = Modles::Instance[params[:id]]
+            raise UnknownInstance if i.nil?
+            
             respond_to { |f|
-              f.json { i.to_hash_document.to_json }
+              f.json { i.to_hash.to_json }
             }
           end
         end
@@ -229,7 +242,7 @@ module Dcmgr
             i = find_by_uuid(:Instance, params[:id])
 
             respond_to { |f|
-              f.json { i.to_hash_document.to_json }
+              f.json { i.to_hash.to_json }
             }
           end
         end
