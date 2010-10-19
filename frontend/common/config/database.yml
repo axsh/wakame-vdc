@@ -1,20 +1,20 @@
 development:
   adapter: mysql
-  database: wakame_vdc_isono_api
+  database: wakame_dcmgr_gui
   host: localhost
-  user: wakame
-  password: wakame
+  user: wakame_dcmgr_gui
+  password: passwd
 
 test:
   adapter: mysql
-  database: wakame_vdc_isono_api
+  database: wakame_dcmgr_gui
   host: localhost
-  user: wakame
-  password: wakame
+  user: wakame_dcmgr_gui
+  password: passwd
 
 production:
   adapter: mysql
-  database: wakame_vdc_isono_api
+  database: wakame_dcmgr_gui
   host: localhost
-  user: wakame
-  password: wakame
+  user: wakame_dcmgr_gui
+  password: passwd
