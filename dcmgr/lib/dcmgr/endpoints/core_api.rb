@@ -351,33 +351,9 @@ module Dcmgr
           # params like, string, optional
           # params sort, string, optional
           control do
-            vl = [{
-                    :id => 1,
-                    :uuid => 'vol-xxxxxxx',
-                    :storage_pool_id => '1',
-                    :instance_id => '1',
-                    :size => 10,
-                    :status => 1,
-                    :state => 1,
-                    :export_path => 'vol-xxxxxxx',
-                    :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :visibility => 'public'
-                  },{
-                    :id => 2,
-                    :uuid => 'vol-00000000',
-                    :storage_pool_id => '1',
-                    :instance_id => '2',
-                    :size => 10,
-                    :status => 1,
-                    :state => 1,
-                    :export_path => 'vol-xxxxxxx',
-                    :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :visibility => 'private'
-                  }]
+            vl = Models::Volume.dataset.all.map{|row|
+              row.values
+            }
             respond_to { |f|
               f.json {vl.to_json}
             }
@@ -391,15 +367,22 @@ module Dcmgr
           # params storage_pool_id, string, optional
           control do
             raise UndefinedVolumeSize if params[:volume_size].nil?
-
-            if params[:storage_pool_id]
-              sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
-              raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
+            
+            if params[:snapshot_id]
+              vs = find_by_uuid(:VolumeSnapshot, params[:snapshot_id])
+              sp = vs.storage_pool
+            else
+              if params[:storage_pool_id]
+                sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
+                raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
+              end
+              raise UnknownStoragePool if sp.nil?
             end
-            raise UnknownStoragePool if sp.nil?
 
+            volume_size = (vs.values[:size] if !vs.nil?) || params[:volume_size]
+            snapshot_id = (vs.canonical_uuid if !vs.nil?) || nil
             begin
-              v = sp.create_volume(@account.canonical_uuid, params[:volume_size])
+              v = sp.create_volume(@account.canonical_uuid, params[:volume_size], snapshot_id)
             rescue Models::Volume::DiskError => e
               Dcmgr.logger.error(e)
               raise OutOfDiskSpace
@@ -408,7 +391,7 @@ module Dcmgr
               raise DatabaseError
             end
 
-            Dcmgr.messaging.request("sta-loader.#{sp.values[:agent_id]}", 'create', v.canonical_uuid) do |req|
+            Dcmgr.messaging.request("sta-loader.#{sp.values[:agent_id]}", 'create', {:volume_id=>v.canonical_uuid, :snapshot_id=>snapshot_id) do |req|
               req.oneshot = true
             end
             respond_to { |f|
