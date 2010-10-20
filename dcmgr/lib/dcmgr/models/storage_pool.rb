@@ -27,6 +27,7 @@ module Dcmgr::Models
       Fixnum :offerring_disk_space, :null=>false, :unsigned=>true
       String :transport_type, :null=>false
       String :storage_type, :null=>false
+      String :ipaddr, :null=>false
     end
 
     one_to_many :volumes
@@ -98,7 +99,8 @@ module Dcmgr::Models
                   :offerring_disk_space => params[:offerring_disk_space],
                   :transport_type => params[:transport_type],
                   :storage_type => params[:storage_type],
-                  :export_path => params[:export_path])
+                  :export_path => params[:export_path],
+                  :ipaddr => params[:ipaddr])
     end
 
     def self.get_lists(uuid)
@@ -111,9 +113,10 @@ module Dcmgr::Models
     #   sp = self.dataset.where(:account_id=>account_id).where(:uuid=>uuid)
     # end
 
-    def create_volume(account_id, size)
+    def create_volume(account_id, size, snapshot_id=nil)
       v = Volume.create(:account_id => account_id,
                         :storage_pool_id => self.id,
+                        :snapshot_id => snapshot_id,
                         :size =>size)
     end
   end
