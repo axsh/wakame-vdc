@@ -34,7 +34,6 @@ module Dcmgr
     define_error(:OutOfDiskSpace, 400)
     define_error(:DatabaseError, 400)
     define_error(:UndefinedVolumeID, 400)
-    define_error(:UndefinedVolumeID, 400)
     define_error(:InvalidDeleteRequest, 400)
     define_error(:UnknownVolume, 404)
     define_error(:UnknownHostPool, 404)
