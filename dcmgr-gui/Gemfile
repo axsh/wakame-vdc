@@ -1,10 +1,10 @@
 
 source :gemcutter
 
-gem "rack", ">= 1.0.1"
+gem "rack", "1.2.1"
 gem "sinatra", "0.9.4"
 gem "activeresource", "2.3.5"
 
 group :development do
-  gem "shotgun"
+  gem "shotgun", "0.8"
 end
