@@ -20,7 +20,10 @@ module Frontend
     end
     
     def test_create
-      p @volume.create
+      params = {
+        :volume_size => 1024
+      }
+      p Frontend::Models::DcmgrResource::Volume.create(params)
     end
     
     def test_destroy

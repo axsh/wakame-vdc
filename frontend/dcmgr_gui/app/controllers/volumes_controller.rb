@@ -6,9 +6,25 @@ class VolumesController < ApplicationController
   
   # POST volumes/create.json
   def create
-    @volume = Frontend::Models::DcmgrResource::Volume.create
-    size = params[:size]
-    snapshot = params[:snapshot]
+    
+    # Convert to MB
+    size = case params[:unit]
+      when 'gb'
+        params[:size].to_i * 1024
+      when 'tb'
+        params[:size].to_i * 1024 * 1024
+    end
+        
+    # snapshot_id = params[:snapshot_id] #option
+    # storage_pool_id = params[:storage_pool_id] #option
+    
+    data = {
+      :volume_size => size,
+      # :storage_pool_id => storage_pool_id,
+      # :snapshot_id => snapshot_id
+    }
+    
+    @volume = Frontend::Models::DcmgrResource::Volume.create(data)
     
     render :json => @volume
   end

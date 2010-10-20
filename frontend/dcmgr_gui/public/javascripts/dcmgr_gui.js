@@ -603,9 +603,13 @@ DcmgrGUI.prototype = {
       path:'/create_volume',
       button:{
        "Create": function() { 
-         var size = $('#create_volume_size').find('option:selected').val();
-         var snapshot = $('#create_volume_snapshot').find('option:selected').val();
-         var data = "size="+size+"&snapshot="+snapshot;
+         var volume_size = $('#volume_size').val();
+         var unit = $('#unit').find('option:selected').val();
+         if(!volume_size){
+           $('#volume_size').focus();
+           return false;
+         }
+         var data = "size="+volume_size+"&unit="+unit;
          
          $.ajax({
             "type": "POST",
