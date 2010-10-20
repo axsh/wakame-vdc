@@ -17,11 +17,11 @@ module Frontend
           def set_debug(debug = true)
             @@debug = debug
           end
-                  
+        end
+        
         ActiveResource::Connection.class_eval do 
-          
-          private
 
+          private
           def configure_http(http)
             http = apply_ssl_options(http)
 
