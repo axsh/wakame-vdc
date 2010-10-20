@@ -18,6 +18,7 @@ module Dcmgr::Models
       String :status, :size=>20, :null=>false, :default=>:init.to_s
 
       Text :user_data, :null=>false, :default=>''
+      index :state
     end
     with_timestamps
     
@@ -26,6 +27,14 @@ module Dcmgr::Models
     many_to_one :host_pool
 
     subset(:runnings){|f| f.state == :running }
+
+    def to_hash
+      values.dup.merge({:uuid=>canonical_uuid,
+                         :user_data => user_data.to_s,
+                         :image=>image.to_hash,
+                         :host_pool=>host_pool.values
+                       }.merge(instance_spec.to_hash))
+    end
 
     # Returns the hypervisor type for the instance.
     def hypervisor

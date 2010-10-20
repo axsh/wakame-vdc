@@ -9,7 +9,7 @@ Dcmgr.class_eval {
   def self.messaging
     @messaging_client ||= Isono::MessagingClient.start(conf.amqp_server_uri) do
       node_name 'dcmgr'
-      node_instance_id "#{Process.pid}"
+      node_instance_id "#{Isono::Util.default_gw_ipaddr}:#{Process.pid}"
     end
   end
 }

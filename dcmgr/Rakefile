@@ -131,12 +131,8 @@ end
 namespace :dbnew do
   desc 'Create all database tables'
   task :init => [ :environment ] do
-    require 'sequel'
+    ::Kernel.load(File.expand_path('../conf/initializers/sequel.rb', __FILE__))
     require 'isono'
-    #if driver is mysql
-    Sequel::MySQL.default_charset = 'utf8'
-    Sequel::MySQL.default_engine = 'InnoDB'
-    #end
     
     Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
       Dcmgr::Models.const_get(c).create_table!

@@ -13,6 +13,9 @@ module Dcmgr::Models
       Text :config, :null=>false, :default=>''
     end
     with_timestamps
-    
+
+    def to_hash
+      values.dup.merge({:config=>config.to_s})
+    end
   end
 end

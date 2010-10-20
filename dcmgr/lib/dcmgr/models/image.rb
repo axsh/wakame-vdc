@@ -9,12 +9,6 @@ module Dcmgr::Models
     BOOT_DEV_SAN=1
     BOOT_DEV_LOCAL=2
 
-    # Possible source column data:
-    # vdc volume:
-    # {:type=>:vdcvol, :account_id=>'a-xxxxx', :snap_id=>'snap-xxxxxx'}
-    plugin :serialization
-    serialize_attributes :yaml, :source
-    
     inheritable_schema do
       Fixnum :boot_dev_type, :null=>false, :default=>BOOT_DEV_SAN
       Text :source, :null=>false
@@ -25,6 +19,15 @@ module Dcmgr::Models
       String :state, :size=>20, :null=>false, :default=>:init.to_s
     end
 
+    # serialize plugin must be defined at the bottom of all class
+    # method calls.
+    # Possible source column data:
+    # vdc volume:
+    # {:type=>:vdcvol, :account_id=>'a-xxxxx', :snap_id=>'snap-xxxxxx'}
+    # {:type=>:http, :uri=>'http://localhost/xxx/xxx'}
+    plugin :serialization
+    serialize_attributes :yaml, :source
+    
     def validate
       unless [BOOT_DEV_SAN, BOOT_DEV_LOCAL].member?(self.boot_dev_type)
         errors.add(:boot_dev_type, "Invalid boot dev type: #{self.boot_dev_type}")
@@ -34,5 +37,10 @@ module Dcmgr::Models
         errors.add(:arch, "Unsupported arch type: #{self.arch}")
       end
     end
+
+    def to_hash
+      values.dup.merge({:source=>self.source.dup, :description=>description.to_s})
+    end
+    
   end
 end
