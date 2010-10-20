@@ -34,6 +34,11 @@ DcmgrGUI.prototype.instancePanel = function(){
     template_id:'#instancesDetailTemplate',
     detail_path:'/instances/detail/'
   });
+  
+  c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
+    c_list.setData(params.data);
+    c_list.multiCheckList(c_list.detail_template);
+  });
 
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:10,

@@ -41,6 +41,10 @@ DcmgrGUI.prototype.imagePanel = function(){
     detail_path:'/images/detail/'
   });
   
+  c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
+    c_list.setData(params.data);
+    c_list.multiCheckList(c_list.detail_template);
+  });
 
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:10,

@@ -174,11 +174,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.detail_template = {};
     
     var self = this;
-    this.element.bind('dcmgrGUI.contentChange',function(event,params){
-      self.setData(params.data);
-      self.checkList(self.detail_template);
-    });
-    
+
     this.element.bind('dcmgrGUI.afterUpdate',function(event){
       
       var bg;
@@ -251,7 +247,42 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
        $('#detail').find('#'+id).find('.state').html(state);
     });
   },
-  checkList:function(params){
+  singleCheckList:function(params){
+    var self = this;
+    this.element.find("[type='radio']").each(function(key,value){
+      $(this).click(function(){
+        var check_id = $(this).val();
+        
+        if($(this).is(':checked')){
+          var c_detail = new DcmgrGUI.Detail({
+            element_id:$('<div></div>'),
+            template_id:params.template_id
+          });
+          
+          c_detail.element.bind('dcmgrGUI.contentChange',function(event,params){
+            var data = { item:params.data }
+            
+            //initialize
+            if(!params.data){
+              data.item = self.getEmptyData();
+            }
+            
+            if(data.item){
+              $('#detail').html($( c_detail.template ).tmpl(data));
+            }
+          });
+          
+          c_detail.update({
+            url:DcmgrGUI.Util.getPagePath(params.detail_path,check_id)
+          },true);
+          
+        }else{
+          $('#detail').html('');
+        }
+      });
+    });
+  },
+  multiCheckList:function(params){
     var self = this;
     this.element.find("[type='checkbox']").each(function(key,value){
       $(this).click(function(){

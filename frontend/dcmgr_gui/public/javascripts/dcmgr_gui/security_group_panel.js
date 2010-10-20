@@ -10,6 +10,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     }]
   }
   
+  
   DcmgrGUI.Detail.prototype.getEmptyData = function(){
     return {
       "group_id":"-",
@@ -27,12 +28,11 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     + "#\n"
     + "# Exmaple:\n"
     + "# ssh,tcp,22,22,0.0.0.0/0\n";
-
+    
     var data = $('#detail').find('#config_'+id).html();
     if(!data){
-      $('#detail').find('#config_'+id).html(initialize_config);
+      $('#security_group_config').html(initialize_config);
     }
-    
   });
   
   DcmgrGUI.Detail.prototype.register_event('dcmgrGUI.afterUpdate',function(event,params){
@@ -50,7 +50,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
        });
     });
     
-    self.element.trigger('dcmgrGUI.configUpdatee',[self.id]);
+    self.element.trigger('dcmgrGUI.configUpdate',[self.id]);
   });
              
   var c_list = new DcmgrGUI.List({
@@ -61,6 +61,11 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   c_list.setDetailTemplate({
     template_id:'#securityGroupsDetailTemplate',
     detail_path:'/security_groups/detail/'
+  });
+  
+  c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
+    c_list.setData(params.data);
+    c_list.singleCheckList(c_list.detail_template);
   });
 
   var c_pagenate = new DcmgrGUI.Pagenate({

@@ -49,9 +49,9 @@ jQuery(function($){
 				{{each(index,item) rows}}
 			   <tr>
 			    {{if item.group_id }}
-						<td style="width:5px"><input type="checkbox" value="${item.group_id}" > </td>
+						<td style="width:5px"><input type="radio" name="select" value="${item.group_id}" > </td>
 					{{else}}
-						<td><input type="checkbox"> </td>
+						<td><input type="radio"> </td>
 					{{/if}}
 					<td class="vtip" title="name" style="width:100px">${item.name}</td>
 					<td class="vtip" title="description" style="width:500px">${item.description}</td>
@@ -67,7 +67,7 @@ jQuery(function($){
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="securityGroupsDetailTemplate" type="text/x-jquery-tmpl">
-			<div id="${item.group_id}" class="display_area">
+			<div class="display_area">
 				<table class="ptn07" frame="void" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td class="padcell"></td>
@@ -82,8 +82,7 @@ jQuery(function($){
 					<tr>
 						<td class="padcell"></td>
 						<td colspan="2">
-						<textarea id="config_${item.group_id}" rows="10" cols="10" style="width:630px;height:150px">${item.config}</textarea><br />
-						<a href="javascript:void(0);" id="update_${item.group_id}">Update</a>
+						<textarea id="security_group_config" rows="10" cols="10" style="width:630px;height:150px" disabled>${item.config}</textarea><br />
 						</td>
 					</tr>
 				</table>
