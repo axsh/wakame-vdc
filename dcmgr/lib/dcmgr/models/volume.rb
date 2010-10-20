@@ -43,6 +43,7 @@ module Dcmgr::Models
       String :state, :null=>false, :default=> 'registering'
       Fixnum :size, :null=>false
       String :instance_id
+      String :snapshot_id
       String :host_device_name
       String :guest_device_name
       String :export_path, :null=>false
