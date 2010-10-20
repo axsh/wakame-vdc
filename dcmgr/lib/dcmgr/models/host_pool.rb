@@ -63,10 +63,14 @@ module Dcmgr::Models
     end
     
     # Factory method for Instance model to run on this HostPool.
-    def create_instance(image_uuid, instance_spec, &blk)
+    # @param [Models::Image] image
+    # @param [Models::InstanceSpec] spec
+    def create_instance(image, spec, &blk)
+      raise ArgumentError unless image.is_a?(Image)
+      raise ArgumentError unless spec.is_a?(InstanceSpec)
       i = Instance.new &blk
-      i.image = Image[image_uuid]
-      i.instance_spec = instance_spec
+      i.image = image
+      i.instance_spec = spec
       i.host_pool = self
       i.save
     end

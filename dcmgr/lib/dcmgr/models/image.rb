@@ -23,7 +23,7 @@ module Dcmgr::Models
     # method calls.
     # Possible source column data:
     # vdc volume:
-    # {:type=>:vdcvol, :account_id=>'a-xxxxx', :snap_id=>'snap-xxxxxx'}
+    # {:type=>:vdcvol, :account_id=>'a-xxxxx', :snapshot_id=>'snap-xxxxxx'}
     # {:type=>:http, :uri=>'http://localhost/xxx/xxx'}
     plugin :serialization
     serialize_attributes :yaml, :source

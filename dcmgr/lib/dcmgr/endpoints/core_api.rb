@@ -207,18 +207,34 @@ module Dcmgr
           # param :host_pool_id, :optional
           # param :host_name, :optional
           control do
+            wmi = find_by_uuid(:Image, params[:image_id])
+
             hp = if params[:host_pool_id]
                    hp = Models::HostPool[params[:host_pool_id]]
                  else
                    # TODO: schedule a host pool owned by SharedPool account.
                  end
-           
+            
             raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
-
+            
             spec = find_by_uuid(:InstanceSpec, 'is-kpf0pasc')
-            inst = hp.create_instance(params[:image_id], spec)
+            inst = hp.create_instance(wmi, spec) do |i|
+              i.runtime_config = {:vnc_port=>rand(2000)}
+            end
 
-            req = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
+            case wmi.boot_dev_type
+            when Models::Image::BOOT_DEV_SAN
+              # create new volume from 
+              # snapshot_id = wmi.source[:snapshot_id]
+              # vol = create_volume_from_snapshot(snapshot_id)
+              
+              vol_id = wmi.source[:vol_id]
+              res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol_id)
+            when Models::Image::BOOT_DEV_LOCAL
+              res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
+            else
+              raise "Unknown boot type"
+            end
             respond_to { |f|
               f.json { inst.to_hash.to_json }
             }

@@ -10,7 +10,6 @@ manifest.instance_eval do
   node_name 'hva'
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
   load_module Isono::NodeModules::NodeHeartbeat
-  load_module KvmMonitor
   
   config_path File.expand_path('config/hva-config.rb', app_root)
 
@@ -48,19 +47,38 @@ class KvmHandler < EndpointBuilder
     inst[:disk]
     
     # boot virtual machine
-    system("kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :11 -drive file=#{img_path} -daemonize -net tap -net nic,macaddr=52:54:00:12:35:11")
+    system("kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{img_path} -daemonize")
     
     #hva.update_instance(inst_id, {:state=>:running})
   end
 
   job :run_vol_store do
-    inst = rpc.request('hva-collector', 'get_instance', request.args[0])
+    inst_id = request.args[0]
+    vol_id = request.args[1]
+    
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
     logger.info("Booting #{inst_id}")
     
-    # create volume
+    # create volume from snapshot
+    #jobreq.run("sta.#{}", "create", vol_id)
+    
+    vol = rpc.request('sta-collector', 'get_volume', vol_id)
+
     # attach disk
+    #lists = `sudo iscsiadm -m discovery -t sendtargets -p 192.168.1.21`
+    initiator = `sudo iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '192.168.1.21:3260'`
+    # check under until the dev file is created.
+    # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
+    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ['192.168.1.21:3260',
+                                                                  vol[:transport_information][:iqn],
+                                                                  vol[:transport_information][:lun]]
+    tryagain do
+      File.exist?(linux_dev_path) ? true : (sleep 1; false)
+    end
+    
     # run vm
-    system("kvm -m 128 -smp 1 -name hvakvm1 -vnc :11 -drive file=/home/katsuo/vm/a1/tmpmz0N86.qcow2 -daemonize -net tap -net nic,macaddr=52:54:00:12:35:11")
+    puts "kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{linux_dev_path} -daemonize"
+    system("kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{linux_dev_path} -daemonize")
   end
   
   job :terminate do
@@ -81,6 +99,34 @@ class KvmHandler < EndpointBuilder
 
   def jobreq
     @jobreq ||= Isono::NodeModules::JobChannel.new(@node)
+  end
+
+
+  class TimeoutError < RuntimeError; end
+  
+  def tryagain(opts={:timeout=>60, :retry=>3}, &blk)
+    timedout = false
+    curthread = Thread.current
+
+    timersig = EventMachine.add_timer(opts[:timeout]) {
+      timedout = true
+      if curthread
+        curthread.raise(TimeoutError.new("timeout"))
+        curthread.pass
+      end
+    }
+
+    begin
+      count = 0
+      begin
+        break if blk.call
+      end while !timedout && ((count += 1) < opts[:retry])
+    rescue TimeoutError => e
+      raise e
+    ensure
+      curthread = nil
+      EventMachine.cancel_timer(timersig) rescue nil
+    end
   end
 
 end
