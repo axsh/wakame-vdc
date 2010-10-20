@@ -5,8 +5,12 @@ module Frontend::Models
         self.get(account_id)
       end
     
-      # def self.create
-      # end
+      def self.create(params)
+        volume = self.new
+        volume.volume_size = params[:volume_size]
+        volume.save
+        volume
+      end
   
       def self.destroy(account_id,volume_id)
         self.delete(account_id).body
