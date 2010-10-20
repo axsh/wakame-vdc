@@ -4,7 +4,6 @@ require 'statemachine'
 module Dcmgr::Models
   class Volume < AccountResource
     taggable 'vol'
-    plugin :serialization, :yaml, :transport_information
 
     STATUS_TYPE_REGISTERING = 0
     STATUS_TYPE_ONLINE = 1
@@ -51,6 +50,13 @@ module Dcmgr::Models
     end
     with_timestamps
 
+    # serialization plugin must be defined at the bottom of all class
+    # method calls.
+    # Possible column data:
+    # iscsi:
+    # {:iqn=>'iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc', :lun=>0}
+    plugin :serialization, :yaml, :transport_information
+    
     many_to_one :storage_pool
 
     class DiskError < RuntimeError; end
@@ -86,15 +92,14 @@ module Dcmgr::Models
     def merge_pool_data
       sp = self.storage_pool
       v = self.to_hash_document
-      unless v[:transport_information].nil?
-        v[:transport_information] = YAML.load(v[:transport_information])
-      end
       v.merge(:pool_name=>sp.values[:export_path].split('/').last)
     end
 
     def to_hash_document
       h = self.values.dup
       h[:id] = h[:uuid] = h[:export_path] = self.canonical_uuid
+      # yaml -> hash translation
+      h[:transport_information]=self.transport_information
       h
     end
 
