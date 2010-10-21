@@ -58,15 +58,15 @@ jQuery(function($){
 				{{each(index,item) rows}}
 			   <tr>
 			    {{if item.uuid }}
-						<td><input type="checkbox" value="${item.uuid}" > </td>
+						<td class="listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
 					{{else}}
-						<td><input type="checkbox"> </td>
+					<td class="listcheckbox"></td>
 					{{/if}}
-					<td class="vtip" title="volume-id">${item.uuid}</td>
-					<td class="vtip center volume_size" title="capacity" style="width:40px">${item.size}</td>
+					<td class="vtip" title="volume-id" style="width:90px">${item.uuid}</td>
+					<td class="vtip center volume_size" title="capacity" style="width:50px">${item.size}</td>
 					<td class="vtip center" title="snapshot">${item.snapshot_id}</td>
 					<td class="vtip" title="created">${item.created_at}</td>
-					<td class="state" title="status">${item.state}</td>
+					<td class="state vtip center" title="status">${item.state}</td>
 				</tr>
 				{{/each}}
 			</table>
