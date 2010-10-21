@@ -346,29 +346,29 @@ module Dcmgr
           control do
             vl = [{
                     :id => 1,
-                    :uuid => 'vol-xxxxxxx',
+                    :uuid => 'vol-00000000',
                     :storage_pool_id => '1',
                     :instance_id => '1',
-                    :size => 10,
+                    :size => 1024,
                     :status => 1,
-                    :state => 1,
+                    :state => 'available',
                     :export_path => 'vol-xxxxxxx',
                     :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :created_at => '2010-10-21 02:41:04',
+                    :updated_at => '2010-10-21 02:41:04',
                     :visibility => 'public'
                   },{
                     :id => 2,
-                    :uuid => 'vol-00000000',
+                    :uuid => 'vol-00000001',
                     :storage_pool_id => '1',
                     :instance_id => '2',
-                    :size => 10,
+                    :size => 1024,
                     :status => 1,
-                    :state => 1,
+                    :state => 'available',
                     :export_path => 'vol-xxxxxxx',
                     :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+                    :created_at => '2010-10-21 02:41:04',
+                    :updated_at => '2010-10-21 02:41:04',
                     :visibility => 'private'
                   }]
             respond_to { |f|
@@ -449,13 +449,13 @@ module Dcmgr
               :uuid => 'vol-00000000',
               :storage_pool_id => 1,
               :instance_id => 2,
-              :size => 10,
+              :size => 1024,
               :status => 1,
               :state => 1,
-              :export_path => 'vol-xxxxxxx',
+              :export_path => 'vol-00000000',
               :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-              :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+              :created_at => '2010-10-21 02:41:04',
+              :updated_at => '2010-10-21 02:41:04',
               :visibility => 'public'
             }
             respond_to { |f|
