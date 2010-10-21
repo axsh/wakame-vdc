@@ -18,6 +18,7 @@ module Dcmgr::Models
       String :status, :size=>20, :null=>false, :default=>:init.to_s
 
       Text :user_data, :null=>false, :default=>''
+      Text :runtime_config, :null=>false, :default=>''
       index :state
     end
     with_timestamps
@@ -28,9 +29,18 @@ module Dcmgr::Models
 
     subset(:runnings){|f| f.state == :running }
 
+    # serialization plugin must be defined at the bottom of all class
+    # method calls.
+    # Possible column data:
+    #   kvm:
+    # {:vnc_port=>11}
+    plugin :serialization
+    serialize_attributes :yaml, :runtime_config
+
     def to_hash
       values.dup.merge({:uuid=>canonical_uuid,
                          :user_data => user_data.to_s,
+                         :runtime_config => self.runtime_config, # yaml -> hash
                          :image=>image.to_hash,
                          :host_pool=>host_pool.values
                        }.merge(instance_spec.to_hash))
