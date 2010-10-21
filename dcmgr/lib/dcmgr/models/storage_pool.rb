@@ -28,6 +28,7 @@ module Dcmgr::Models
       String :transport_type, :null=>false
       String :storage_type, :null=>false
       String :ipaddr, :null=>false
+      String :snapshot_base_path, :null=>false
     end
 
     one_to_many :volumes
