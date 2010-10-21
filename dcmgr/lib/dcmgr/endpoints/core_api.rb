@@ -17,7 +17,7 @@ module Dcmgr
       disable :show_exceptions
 
       before do
-        @params = parsed_request_body.values.first
+        @params = parsed_request_body
         request.env['dcmgr.frotend_system.id'] = 1
         request.env['HTTP_X_VDC_REQUESTER_TOKEN']='u-xxxxxx'
         request.env['HTTP_X_VDC_ACCOUNT_UUID']='a-00000000'
@@ -44,6 +44,7 @@ module Dcmgr
       end
 
       def parsed_request_body
+        return @params if request.request_method == 'GET'
         raise "no hint for body content to be parsed" if @mime_types.nil? || @mime_types.empty?
         mime = @mime_types.first
         case mime.to_sym
@@ -58,6 +59,7 @@ module Dcmgr
         else
           raise "Unsupported format in request.body: #{mime}"
         end
+        return hash.values.first
       end
 
       # I am not going to use error(ex, &blk) hook since it works only
