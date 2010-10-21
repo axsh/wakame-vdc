@@ -13,7 +13,7 @@ module Frontend::Models
       end
   
       def self.destroy(account_id,volume_id)
-        self.delete(account_id).body
+        self.delete(account_id,{:volume_id => volume_id}).body
       end
     
       def self.attach(account_id,instance_id)
