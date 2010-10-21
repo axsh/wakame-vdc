@@ -350,6 +350,8 @@ module Dcmgr
           # params visibility, string, optional
           # params like, string, optional
           # params sort, string, optional
+          # params start, fixnum, optional 
+          # params limit, fixnum, optional
           control do
             vl = Models::Volume.dataset.all.map{|row|
               row.values
@@ -391,7 +393,7 @@ module Dcmgr
               raise DatabaseError
             end
 
-            Dcmgr.messaging.request("sta-loader.#{sp.values[:agent_id]}", 'create', {:volume_id=>v.canonical_uuid, :snapshot_id=>snapshot_id) do |req|
+            Dcmgr.messaging.request("sta-loader.#{sp.values[:agent_id]}", 'create', {:volume_id=>v.canonical_uuid, :snapshot_id=>snapshot_id}) do |req|
               req.oneshot = true
             end
             respond_to { |f|
