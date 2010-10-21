@@ -53,22 +53,20 @@ jQuery(function($){
 					<th>Capacity</th>
 					<th>Snapshot</th>
 					<th>Created</th>
-					<th>Zone</th>
 					<th>Status</th>
 				</tr>
 				{{each(index,item) rows}}
 			   <tr>
-			    {{if item.volume_id }}
-						<td><input type="checkbox" value="${item.volume_id}" > </td>
+			    {{if item.uuid }}
+						<td><input type="checkbox" value="${item.uuid}" > </td>
 					{{else}}
 						<td><input type="checkbox"> </td>
 					{{/if}}
-					<td class="vtip" title="volume-id">${item.volume_id}</td>
-					<td class="vtip center" title="capacity" style="width:40px">${item.capacity}</td>
-					<td class="vtip center" title="snapshot">${item.snapshot}</td>
-					<td class="vtip" title="created">${item.created}</td>
-					<td class="vtip center" title="zone">${item.zone}</td>
-					<td class="state" title="status">${item.status}</td>
+					<td class="vtip" title="volume-id">${item.uuid}</td>
+					<td class="vtip center volume_size" title="capacity" style="width:40px">${item.size}</td>
+					<td class="vtip center" title="snapshot">${item.snapshot_id}</td>
+					<td class="vtip" title="created">${item.created_at}</td>
+					<td class="state" title="status">${item.state}</td>
 				</tr>
 				{{/each}}
 			</table>
@@ -81,37 +79,32 @@ jQuery(function($){
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="volumesDetailTemplate" type="text/x-jquery-tmpl">
-			<div id="${item.volume_id}" class="display_area">
-				<h4 class="ptn01">VolumeId:<span class="instansid">${item.volume_id}</span></h4>
+			<div id="${item.uuid}" class="display_area">
+				<h4 class="ptn01">VolumeId:<span class="instansid">${item.uuid}</span></h4>
 				<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td class="padcell"></td>
 						<td class="title">Volume ID:</td>
-						<td>${item.volume_id}</td>
+						<td class="volume_size">${item.uuid}</td>
 						<td class="padcell"></td>
 						<td class="title">Capacity:</td>
-						<td>${item.capacity}</td>
+						<td>${item.size}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
 						<td class="title">Snapshot:</td>
-						<td>${item.snapshot}</td>
+						<td>${item.snapshot_id}</td>
 						<td class="padcell"></td>
 						<td class="title">Created:</td>
-						<td>${item.created}</td>
+						<td>${item.created_at}</td>
 					</tr>
 					<tr>
-						<td class="padcell"></td>
-						<td class="title">Zone:</td>
-						<td>${item.zone}</td>
 						<td class="padcell"></td>
 						<td class="title">Status:</td>
-						<td class="state">${item.status}</td>
-					</tr>
-					<tr>
+						<td class="state">${item.state}</td>
 						<td class="padcell"></td>
-						<td class="title">Attachment Information:</td>
-						<td colspan="5">${item.attachment_information}</td>
+						<td class="title">Updated:</td>
+						<td>${item.updated_at}</td>
 					</tr>
 				</table>
 			</div>

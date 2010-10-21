@@ -16,7 +16,7 @@ module Frontend
 
     def test_show
       account_id = 'a-00000000'
-      p @volume.show(account_id)
+      p Frontend::Models::DcmgrResource::Volume.show(account_id)
     end
     
     def test_create

@@ -1,8 +1,8 @@
 module Frontend::Models
   module DcmgrResource
     class Volume < Base
-      def self.show(account_id)
-        self.get(account_id)
+      def self.show(account_id,params = {})
+        self.get(account_id,params)
       end
     
       def self.create(params)
