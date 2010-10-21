@@ -409,9 +409,7 @@ module Dcmgr
               raise DatabaseError
             end
 
-            Dcmgr.messaging.request("sta-loader.#{sp.values[:agent_id]}", 'create', {:volume_id=>v.canonical_uuid, :snapshot_id=>snapshot_id}) do |req|
-              req.oneshot = true
-            end
+            Dcmgr.messaging.submit("sta-loader.#{sp.values[:agent_id]}", 'create', v.canonical_uuid, snapshot_id)
             respond_to { |f|
               f.json { v.values.to_json}
             }
