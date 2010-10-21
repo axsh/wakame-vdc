@@ -58,13 +58,8 @@ class VolumesController < ApplicationController
   
   # GET volumes/detail/vol-24f1af4d.json
   def detail
-    volume_id = params[:id]
-    json = Frontend::Models::DcmgrResource::Mock.load('volumes/details')
-    details = JSON.load(json)
-
-    detail = details[volume_id]
+    detail = Frontend::Models::DcmgrResource::Volume.detail(current_account.uuid)
     detail["size"] = convert_from_mb_to_gb(detail["size"]).to_s + 'GB'
-    
     respond_with(detail,:to => [:json])
   end
 end
