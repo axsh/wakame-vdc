@@ -1,5 +1,6 @@
 class VolumesController < ApplicationController
   respond_to :json
+  include Util
   
   def index
   end
@@ -43,21 +44,28 @@ class VolumesController < ApplicationController
   # GET volumes/show/1.json
   def show
     json = Frontend::Models::DcmgrResource::Mock.load('volumes/list')
-    @volumes = JSON.load(json)
+    volumes = JSON.load(json)
+    
+    volumes.each do |volume|
+      volume["size"] = convert_from_mb_to_gb(volume["size"]).to_s + 'GB'
+    end
 
     page = params[:id].to_i
     limit = 10
     from = ((page -1) * limit).to_i
     to = (from + limit -1).to_i
-    respond_with(@volumes[from..to],:to => [:json])
-    
+    respond_with(volumes[from..to],:to => [:json])
   end
   
   # GET volumes/detail/vol-24f1af4d.json
   def detail
     volume_id = params[:id]
     json = Frontend::Models::DcmgrResource::Mock.load('volumes/details')
-    @detail = JSON.load(json)
-    respond_with(@detail[volume_id],:to => [:json])
+    details = JSON.load(json)
+
+    detail = details[volume_id]
+    detail["size"] = convert_from_mb_to_gb(detail["size"]).to_s + 'GB'
+    
+    respond_with(detail,:to => [:json])
   end
 end
