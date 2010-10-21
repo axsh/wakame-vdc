@@ -43,8 +43,7 @@ class VolumesController < ApplicationController
   
   # GET volumes/show/1.json
   def show
-    json = Frontend::Models::DcmgrResource::Mock.load('volumes/list')
-    volumes = JSON.load(json)
+    volumes = Frontend::Models::DcmgrResource::Volume.show(current_account.uuid)
     
     volumes.each do |volume|
       volume["size"] = convert_from_mb_to_gb(volume["size"]).to_s + 'GB'
