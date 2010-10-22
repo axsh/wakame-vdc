@@ -31,7 +31,7 @@ module Dcmgr
       disable :show_exceptions
 
       before do
-        @params = parsed_request_body
+        @params = parsed_request_body if request.post?
         request.env['dcmgr.frotend_system.id'] = 1
         request.env['HTTP_X_VDC_REQUESTER_TOKEN']='u-xxxxxx'
         request.env['HTTP_X_VDC_ACCOUNT_UUID']='a-00000000'
@@ -61,9 +61,11 @@ module Dcmgr
         find_by_uuid(:User, user_uuid)
       end
 
+      # Returns deserialized hash from HTTP body. Serialization fromat
+      # is guessed from content type header. The query string params
+      # is returned if none of content type header is in HTTP headers.
+      # This method is called only when the request method is POST.
       def parsed_request_body
-        return @params if request.request_method != 'POST'
-        raise "no hint for body content to be parsed" if @mime_types.nil? || @mime_types.empty?
         mime = @mime_types.first
         case mime.to_sym
         when :'application/json', :'text/json'
@@ -73,7 +75,13 @@ module Dcmgr
         when :'application/yaml', :'text/yaml'
           require 'yaml'
           hash = YAML.load(request.body)
-          hash.to_mash
+          hash = hash.to_mash
+        when '', nil
+          # use query string as requested params if Content-Type
+          # header was not sent.
+          # ActiveResource library tells the one level nested hash which has
+          # {'something key'=>real_params} so that dummy key is assinged here.
+          hash = {:dummy=>@params}
         else
           raise "Unsupported format in request.body: #{mime}"
         end
