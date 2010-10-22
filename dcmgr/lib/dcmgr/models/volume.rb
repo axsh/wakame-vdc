@@ -79,6 +79,12 @@ module Dcmgr::Models
       super
     end
 
+    def self.get_list(account_id, start, limit)
+      self.dataset.where(:account_id=>account_id).limit(limit, start).all.map{|row|
+        row.values
+      }
+    end
+
     def self.delete_volume(account_id, uuid)
       v = self.dataset.where(:account_id=>account_id).where(:uuid=>uuid.split('-').last).first
       if v.state.to_sym != :available
