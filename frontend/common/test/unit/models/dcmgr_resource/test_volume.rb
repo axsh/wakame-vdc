@@ -51,7 +51,8 @@ module Frontend
     
     def test_detail
       account_id = 'a-00000000'
-      p @volume.detail(account_id)
+      volume_id = 'vol-24f1af01'
+      p @volume.detail(account_id,volume_id)
     end
   end
 end
