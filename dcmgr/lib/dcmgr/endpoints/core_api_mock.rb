@@ -11,16 +11,15 @@ require 'dcmgr/endpoints/errors'
 module Dcmgr
   module Endpoints
     class Mock
-      def self.load(load)
-        root = File.expand_path('../../')
-        load = File::split(load)
-        namespace = load[0]
-        file = load[1] + '.json'
-        dir = File.join(root,'fixtures','mock',namespace)
-        jsonfile = File.join(dir,file)
-        json = ''
-        open(jsonfile) {|f| json = f.read }
-        json
+      def self.loadfile(path, ext='json')
+        root_path = File.expand_path('../../')
+        controller,action = path.split('/')
+        file = action + '.' + ext
+        dir_path = File.join(root_path,'fixtures','mock',controller)
+        readfile = File.join(dir_path,file)
+        data = ''
+        open(readfile) {|f| data = f.read }
+        data
       end
     end
 
@@ -381,7 +380,7 @@ module Dcmgr
           # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
-            json = Mock.load('volumes/list')
+            json = Mock.loadfile('volumes/list')
             vl = JSON.load(json)
             vl = pagenate(vl,params[:start],params[:limit])
             respond_to { |f|
@@ -458,7 +457,7 @@ module Dcmgr
           # params volume_id, string, required
           control do
             raise UndefinedVolumeID if params[:volume_id].nil?
-            json = Mock.load('volumes/details')
+            json = Mock.loadfile('volumes/details')
             vl = JSON.load(json)
             vl = vl[params[:volume_id]]
             respond_to { |f|
