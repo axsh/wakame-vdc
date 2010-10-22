@@ -19,6 +19,16 @@ module Frontend
       p @volume.show(account_id)
     end
     
+    def test_show_pagenate
+      account_id = 'a-00000000'
+      params = {
+        :start => 1,
+        :limit => 10
+      }
+      p @volume.show(account_id,params).size
+      # p @volume.size
+    end
+    
     def test_create
       params = {
         :volume_size => 1024

@@ -43,17 +43,16 @@ class VolumesController < ApplicationController
   
   # GET volumes/show/1.json
   def show
-    volumes = Frontend::Models::DcmgrResource::Volume.show(current_account.uuid)
+    data = {
+      :start => params[:start],
+      :limit => params[:limit]
+    }
+    volumes = Frontend::Models::DcmgrResource::Volume.show(current_account.uuid,data)
     
     volumes.each do |volume|
       volume["size"] = convert_from_mb_to_gb(volume["size"]).to_s + 'GB'
     end
-
-    page = params[:id].to_i
-    limit = 10
-    from = ((page -1) * limit).to_i
-    to = (from + limit -1).to_i
-    respond_with(volumes[from..to],:to => [:json])
+    respond_with(volumes,:to => [:json])
   end
   
   # GET volumes/detail/vol-24f1af4d.json

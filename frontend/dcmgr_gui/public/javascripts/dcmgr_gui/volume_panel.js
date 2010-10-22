@@ -1,6 +1,12 @@
 DcmgrGUI.prototype.volumePanel = function(){
-  var list_request = { "url":DcmgrGUI.Util.getPagePath('/volumes/show/',1) };
-  
+
+  var maxrow = 10;
+  var page = 1;
+  var list_request = { 
+    "url" : DcmgrGUI.Util.getPagePath('/volumes/show/',page),
+    "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
+  };
+    
   DcmgrGUI.List.prototype.getEmptyData = function(){
     return [{
       "uuid":'',
@@ -21,10 +27,17 @@ DcmgrGUI.prototype.volumePanel = function(){
       "state" : "",
     }
   }
-
+  
+  var c_pagenate = new DcmgrGUI.Pagenate({
+    row:maxrow,
+    total:30 //todo:get total from dcmgr
+  });
+  
   var c_list = new DcmgrGUI.List({
     element_id:'#display_volumes',
-    template_id:'#volumesListTemplate'
+    template_id:'#volumesListTemplate',
+    maxrow:maxrow,
+    page:page
   });
   
   c_list.setDetailTemplate({
@@ -33,13 +46,9 @@ DcmgrGUI.prototype.volumePanel = function(){
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
+    c_list.page = c_pagenate.current_page;
     c_list.setData(params.data);
     c_list.multiCheckList(c_list.detail_template);
-  });
-
-  var c_pagenate = new DcmgrGUI.Pagenate({
-    row:10,
-    total:30 //todo:get total from dcmgr
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -116,7 +125,9 @@ DcmgrGUI.prototype.volumePanel = function(){
   });
 
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
-    list_request.url = DcmgrGUI.Util.getPagePath('/volumes/show/',c_pagenate.current_page);
+    c_list.page = c_pagenate.current_page;
+    list_request.url = DcmgrGUI.Util.getPagePath('/volumes/show/',c_list.page);
+    list_request.data = DcmgrGUI.Util.getPagenateData(c_list.page,c_list.maxrow)
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
     //update detail

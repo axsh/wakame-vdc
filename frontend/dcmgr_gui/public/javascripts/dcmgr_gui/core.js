@@ -125,11 +125,12 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     this.async = async;
     var self = this;
     self.element.trigger('dcmgrGUI.beforeUpdate');
-    
+
     $.ajax({
        async: async||true,
        url: request.url,
        dataType: "json",
+       data: request.data,
        success: function(json,status){
          self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
          self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
@@ -166,6 +167,17 @@ DcmgrGUI.Util.setfillData = function(maxrows,json){
   return json;
 }
 
+DcmgrGUI.Util.getPagenateData = function(page,limit){
+
+  if (page === 1) {
+    var start = 1;
+  } else {
+    var start = ((page -1) * limit) + 1;
+  }
+  
+  return "start=" + start + "&" + "limit=" + limit;
+}
+
 DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   initialize: function(params){
     this.element = $(params.element_id);
@@ -173,6 +185,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.checked_list = {};
     this.detail_template = {};
     this.maxrow = params.maxrow
+    this.page = params.page
     
     var self = this;
 
@@ -324,7 +337,8 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
           
           //step3:update detail
           self.checked_list[check_id].c_detail.update({
-            url:DcmgrGUI.Util.getPagePath(params.detail_path,check_id)
+            url:DcmgrGUI.Util.getPagePath(params.detail_path,check_id),
+            data:"start=1&limit=10"
           },true);
 
         }else{
