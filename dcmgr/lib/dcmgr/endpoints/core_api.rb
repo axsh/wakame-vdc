@@ -674,7 +674,8 @@ module Dcmgr
           description "Delete the netfilter group"
 
           control do
-            g = Models::NetfilterGroup[params[:id]]
+            @name = params[:id]
+            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
 
             raise UnknownNetfilterGroup if g.nil?
             raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
