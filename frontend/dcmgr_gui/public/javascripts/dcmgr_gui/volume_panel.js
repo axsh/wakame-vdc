@@ -12,15 +12,15 @@ DcmgrGUI.prototype.volumePanel = function(){
   }
   
   DcmgrGUI.Detail.prototype.getEmptyData = function(){
-        return {
-          "uuid" : "-",
-          "size" : "-",
-          "snapshot_id" : "-",
-          "created_at" : "-",
-          "updated_at" : "-",
-          "state" : "",
-        }
-      }
+    return {
+      "uuid" : "-",
+      "size" : "-",
+      "snapshot_id" : "-",
+      "created_at" : "-",
+      "updated_at" : "-",
+      "state" : "",
+    }
+  }
 
   var c_list = new DcmgrGUI.List({
     element_id:'#display_volumes',
