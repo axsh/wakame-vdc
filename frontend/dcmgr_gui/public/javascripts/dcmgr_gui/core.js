@@ -337,8 +337,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
           
           //step3:update detail
           self.checked_list[check_id].c_detail.update({
-            url:DcmgrGUI.Util.getPagePath(params.detail_path,check_id),
-            data:"start=1&limit=10"
+            url:DcmgrGUI.Util.getPagePath(params.detail_path,check_id)
           },true);
 
         }else{
