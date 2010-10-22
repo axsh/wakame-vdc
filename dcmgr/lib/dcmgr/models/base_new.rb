@@ -4,6 +4,9 @@ require 'sequel/model'
 
 
 module Dcmgr::Models
+  class InvalidUUIDError < StandardError; end
+  class UUIDPrefixDuplication < StandardError; end
+    
   # Sequal::Model plugin to inject the Taggable feature to the model
   # class.
   #
@@ -15,9 +18,6 @@ module Dcmgr::Models
   module Taggable
     UUID_TABLE='abcdefghijklmnopqrstuvwxyz0123456789'.split('').freeze
     UUID_REGEX=%r/^(\w+)-([#{UUID_TABLE.join}]+)/
-    
-    class InvalidUUIDError < StandardError; end
-    class UUIDPrefixDuplication < StandardError; end
     
     def self.uuid_prefix_collection
       @uuid_prefix_collection ||= {}
