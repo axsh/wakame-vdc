@@ -6,7 +6,9 @@ require File.expand_path('../../config/path_resolver', __FILE__)
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'sta'
+  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
 
+  load_module Isono::NodeModules::NodeHeartbeat
   load_module Vdc::NodeModules::StaLoader
 end
 
