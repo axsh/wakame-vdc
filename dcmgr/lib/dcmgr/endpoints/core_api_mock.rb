@@ -355,18 +355,21 @@ module Dcmgr
         operation :show do
           description 'Show lists of the volume'
           # params visibility, string, optional
-          # params like, string, optional
+          # params filter, string, optional
+          # params target, string, optional
           # params sort, fixnum, optional
           # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
-            start = params[:start].to_i
-            limit = params[:limit].to_i
             json = Mock.load('volumes/list')
             vl = JSON.load(json)
-            from = (start - 1).to_i
-            to = (limit - 1).to_i
-            vl = vl[from..to]
+            if !params[:start].nil? && !params[:limit].nil?
+              start = params[:start].to_i
+              limit = params[:limit].to_i
+              from = (start - 1).to_i
+              to = (limit - 1).to_i
+              vl = vl[from..to]
+            end
             respond_to { |f|
               f.json {vl.to_json}
             }
