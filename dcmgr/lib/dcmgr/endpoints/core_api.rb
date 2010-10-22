@@ -17,7 +17,7 @@ module Dcmgr
       disable :show_exceptions
 
       before do
-        @params = parsed_request_body
+        #@params = parsed_request_body
         request.env['dcmgr.frotend_system.id'] = 1
         request.env['HTTP_X_VDC_REQUESTER_TOKEN']='u-xxxxxx'
         request.env['HTTP_X_VDC_ACCOUNT_UUID']='a-00000000'
@@ -608,13 +608,18 @@ module Dcmgr
       end
 
       collection :netfilter_groups do
+        description 'Show lists of the netfilter_groups'
         operation :index do
           control do
+            g = Models::NetfilterGroup.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.values }
+            respond_to { |f|
+              f.json { g.to_json }
+            }
           end
         end
 
         operation :show do
-          description 'Show lists of the netfilter_groups'
+          description 'Show the netfilter_groups'
           control do
             @name = params[:id]
             g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
