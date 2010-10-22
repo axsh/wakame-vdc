@@ -62,7 +62,7 @@ module Dcmgr
       end
 
       def parsed_request_body
-        return @params if request.request_method == 'GET'
+        return @params if request.request_method != 'POST'
         raise "no hint for body content to be parsed" if @mime_types.nil? || @mime_types.empty?
         mime = @mime_types.first
         case mime.to_sym

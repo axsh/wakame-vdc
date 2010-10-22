@@ -47,9 +47,9 @@ jQuery(function($){
 			   {{each(index,item) rows}}
 			   <tr>
 			    {{if item.wmi_id }}
-						<td><input type="checkbox" value="${item.wmi_id}" > </td>
+						<td class="listcheckbox"><input type="checkbox" value="${item.wmi_id}" > </td>
 					{{else}}
-						<td><input type="checkbox"> </td>
+						<td class="listcheckbox"></td>
 					{{/if}}
 					<td class="vtip" title="wmiid">${item.wmi_id}</td>
 					<td class="vtip" title="source" style="width:300px">${item.source}</td>

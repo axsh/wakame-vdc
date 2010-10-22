@@ -3,24 +3,22 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   DcmgrGUI.List.prototype.getEmptyData = function(){
     return [{
-      "id":'',
-      "wmi_id":'',
-      "source":'',
-      "owner":'',
-      "visibility":'',
+      "uuid":'',
+      "size":'',
+      "snapshot_id":'',
+      "created_at":'',
       "state":''
     }]
   }
   
   DcmgrGUI.Detail.prototype.getEmptyData = function(){
         return {
-          "volume_id" : "-",
-          "capacity" : "-",
-          "snapshot" : "-",
-          "created" : "-",
-          "zone" : "-",
-          "status" : "",
-          "attachment_information" : "-"
+          "uuid" : "-",
+          "size" : "-",
+          "snapshot_id" : "-",
+          "created_at" : "-",
+          "updated_at" : "-",
+          "state" : "",
         }
       }
 

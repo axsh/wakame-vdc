@@ -16,14 +16,14 @@ module Frontend
 
     def test_show
       account_id = 'a-00000000'
-      p Frontend::Models::DcmgrResource::Volume.show(account_id)
+      p @volume.show(account_id)
     end
     
     def test_create
       params = {
         :volume_size => 1024
       }
-      p Frontend::Models::DcmgrResource::Volume.create(params)
+      p @volume.create(params)
     end
     
     def test_destroy

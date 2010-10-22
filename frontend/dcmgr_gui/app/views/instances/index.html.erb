@@ -61,16 +61,16 @@ jQuery(function($){
 			   {{each(index,item) rows}}
 			   <tr>
 					{{if item.instance_id }}
-						<td class="center"><input type="checkbox" value="${item.instance_id}" > </td>
+						<td class="center listcheckbox"><input type="checkbox" value="${item.instance_id}" > </td>
 					{{else}}
-						<td class="center"><input type="checkbox"> </td>
+						<td class="listcheckbox"></td>
 					{{/if}}
 					<td class="instance_id" title="${item.instance_id}">${item.instance_id}</td>
 					<td class="owner" title="${item.owner}">${item.owner}</td>
 					<td class="wmi_id" title="${item.wmi_id}">${item.wmi_id}</td>
-					<td class="state" title="running">running</td>
-					<td class="private_ip" title="${item.state}">${item.state}</td>
-					<td class="type" title="${item.type}">${item.type}</td>
+					<td class="vtip center state" title="${item.state}">${item.state}</td>
+					<td class="vtip center private_ip" title="${item.private_ip}">${item.private_ip}</td>
+					<td class="vtip center type" title="${item.type}">${item.type}</td>
 				</tr>
 			   {{/each}}
 			   </table>

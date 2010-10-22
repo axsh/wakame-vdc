@@ -172,6 +172,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.template = params.template_id;
     this.checked_list = {};
     this.detail_template = {};
+    this.maxrow = params.maxrow
     
     var self = this;
 
@@ -226,11 +227,10 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     if(!json){
       json = this.getEmptyData()
     }
-    var row = this.element.find('tr').length-1;
+    var row = this.maxrow || 10;
     var data = {
       rows:DcmgrGUI.Util.setfillData(row,json)
     };
-    
     this.element.html('');
     if(data.rows){
       $( this.template )

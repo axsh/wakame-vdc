@@ -745,7 +745,10 @@ body{
 	background: url(../images/mainarea_wide_bottom_bg.gif) repeat-y;
 }
 
-
+#content #mainarea_wide table tr .listcheckbox {
+  width:30px;
+  height:25px;
+}
 
 
 
