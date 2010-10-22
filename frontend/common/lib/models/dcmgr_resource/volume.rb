@@ -40,10 +40,10 @@ module Frontend::Models
         result
       end
 
-      def self.detail(account_id)
+      def self.detail(account_id,volume_id)
         @collection ||= self.collection_name
         self.collection_name = File.join(@collection,account_id)
-        result = self.get(:detail)
+        result = self.get(:detail,{:volume_id => volume_id})
         self.collection_name = @collection
         result
       end
