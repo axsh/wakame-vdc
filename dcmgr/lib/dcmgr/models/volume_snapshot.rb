@@ -20,11 +20,10 @@ module Dcmgr::Models
       h
     end
 
+    # create volume inherite from this snapshot for the account.
+    # limitation: inherit volume is created on same storage_pool.
     def create_volume(account_id)
-      v = Volume.create(:account_id => account_id,
-                        :storage_pool_id => self.storage_pool_id,
-                        :size => self.size,
-                        :snapshot_id => self.canonical_uuid)
+      storage_pool.create_volume(account_id, self.size, self.canonical_uuid)
     end
   end
 end
