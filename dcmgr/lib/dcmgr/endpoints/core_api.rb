@@ -82,6 +82,12 @@ module Dcmgr
         end
       end
 
+      def create_volume_from_snapshot(account_id, snapshot_id)
+        vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
+        raise UnknownVolumeSnapshot if vs.nil?
+        vs.create_volume(account_id)
+      end
+        
       collection :accounts do
         operation :index do
           control do
@@ -385,7 +391,7 @@ module Dcmgr
             target = params[:target] if params[:target]
             sort = params[:sort] if params[:sort]
             filter = params[:filter] if params[:filter]
-            vl = Models::Volume.get_list(@account.canonical_uuid, from, to, target, sort, filter)
+            vl = Models::Volume.get_list(@account.canonical_uuid, {:from=>from, :to=>to, :target=>target, :sort=>sort, :filter=>filter})
             respond_to { |f|
               f.json {vl.to_json}
             }
@@ -398,34 +404,33 @@ module Dcmgr
           # params snapshot_id, string, optional
           # params storage_pool_id, string, optional
           control do
+            # volume_size or snapshot_id required
             raise UndefinedVolumeSize if params[:volume_size].nil?
+            # check volume_size
             
             if params[:snapshot_id]
-              vs = find_by_uuid(:VolumeSnapshot, params[:snapshot_id])
-              sp = vs.storage_pool
+              v = create_volume_from_snapshot(@account.canonical_uuid, params[:snapshot_id])
+              sp = v.storage_pool
             else
               if params[:storage_pool_id]
                 sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
                 raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
               end
               raise UnknownStoragePool if sp.nil?
+              begin
+                v = sp.create_volume(@account.canonical_uuid, params[:volume_size])
+              rescue Models::Volume::DiskError => e
+                Dcmgr.logger.error(e)
+                raise OutOfDiskSpace
+              rescue Sequel::DatabaseError => e
+                Dcmgr.logger.error(e)
+                raise DatabaseError
+              end
             end
 
-            volume_size = (vs.values[:size] if !vs.nil?) || params[:volume_size]
-            snapshot_id = (vs.canonical_uuid if !vs.nil?) || nil
-            begin
-              v = sp.create_volume(@account.canonical_uuid, params[:volume_size], snapshot_id)
-            rescue Models::Volume::DiskError => e
-              Dcmgr.logger.error(e)
-              raise OutOfDiskSpace
-            rescue Sequel::DatabaseError => e
-              Dcmgr.logger.error(e)
-              raise DatabaseError
-            end
-
-            Dcmgr.messaging.submit("sta-loader.#{sp.values[:agent_id]}", 'create', v.canonical_uuid, snapshot_id)
+            Dcmgr.messaging.submit("sta-loader.#{sp.values[:agent_id]}", 'create', v.canonical_uuid, v.snapshot_id)
             respond_to { |f|
-              f.json { v.values.to_json}
+              f.json { v.to_hash_document.to_json}
             }
           end
         end
