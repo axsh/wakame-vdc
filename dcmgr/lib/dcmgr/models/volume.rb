@@ -79,8 +79,22 @@ module Dcmgr::Models
       super
     end
 
-    def self.get_list(account_id, start, limit)
-      self.dataset.where(:account_id=>account_id).limit(limit, start).all.map{|row|
+    def self.get_list(account_id, start=nil, limit=nil, target=nil, sort=nil, filter=nil)
+      vl = self.dataset.where(:account_id=>account_id)
+      vl = vl.limit(limit, start) if start && limit
+      if target && sort
+        vl = case sort
+             when 'desc'
+               vl = vl.order(target.to_sym.desc)
+             when 'asc'
+               vl = vl.order(target.to_sym.asc)
+             end
+      end
+      if target && filter
+        filter = filter.split('vol-').last if target == 'uuid'
+        vl = vl.grep(target.to_sym, "%#{filter}%")
+      end
+      vl.all.map{|row|
         row.values
       }
     end
