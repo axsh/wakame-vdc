@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/axsh/isono.git
-  revision: 27e196c1a194a823ea8155594d3a362ced87b14e
+  revision: 3caabddb030277a6707430a5a7dd3ae3b220b12a
   specs:
     isono (0.0.1)
       amqp (>= 0.6.7)

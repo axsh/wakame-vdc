@@ -19,5 +19,12 @@ module Dcmgr::Models
       h[:id] = h[:uuid] = self.canonical_uuid
       h
     end
+
+    def create_volume(account_id)
+      v = Volume.create(:account_id => account_id,
+                        :storage_pool_id => self.storage_pool_id,
+                        :size => self.size,
+                        :snapshot_id => self.canonical_uuid)
+    end
   end
 end
