@@ -22,6 +22,7 @@ end
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'collector'
+  node_instance_id 'master'
 
   load_module Isono::NodeModules::DataStore
   load_module Dcmgr::NodeModules::StaCollector
