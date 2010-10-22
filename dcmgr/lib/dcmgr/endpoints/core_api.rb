@@ -366,14 +366,18 @@ module Dcmgr
         operation :show do
           description 'Show lists of the volume'
           # params visibility, string, optional
-          # params like, string, optional
+          # params filter, string, optional
+          # params target, string, optional
           # params sort, string, optional
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            from = params[:start].to_i
-            to = ((params[:limit].to_i - from) + 1).to_i
-            vl = Models::Volume.get_list(@account.canonical_uuid, from, to)
+            from = params[:from] if params[:from]
+            to = params[:limit] if params[:limit]
+            target = params[:target] if params[:target]
+            sort = params[:sort] if params[:sort]
+            filter = params[:filter] if params[:filter]
+            vl = Models::Volume.get_list(@account.canonical_uuid, from, to, target, sort, filter)
             respond_to { |f|
               f.json {vl.to_json}
             }
@@ -604,13 +608,18 @@ module Dcmgr
       end
 
       collection :netfilter_groups do
+        description 'Show lists of the netfilter_groups'
         operation :index do
           control do
+            g = Models::NetfilterGroup.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.values }
+            respond_to { |f|
+              f.json { g.to_json }
+            }
           end
         end
 
         operation :show do
-          description 'Show lists of the netfilter_groups'
+          description 'Show the netfilter_groups'
           control do
             @name = params[:id]
             g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
