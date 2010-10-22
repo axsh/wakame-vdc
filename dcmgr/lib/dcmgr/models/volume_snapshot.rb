@@ -25,5 +25,10 @@ module Dcmgr::Models
     def create_volume(account_id)
       storage_pool.create_volume(account_id, self.size, self.canonical_uuid)
     end
+
+    def origin_volume
+      Volume[origin_volume_id]
+    end
+
   end
 end
