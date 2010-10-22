@@ -244,11 +244,10 @@ module Dcmgr
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
               # create new volume from 
-              # snapshot_id = wmi.source[:snapshot_id]
-              # vol = create_volume_from_snapshot(snapshot_id)
+              snapshot_id = wmi.source[:snapshot_id]
+              vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
               
-              vol_id = wmi.source[:vol_id]
-              res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol_id)
+              res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
             else

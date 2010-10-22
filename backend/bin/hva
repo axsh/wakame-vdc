@@ -57,19 +57,22 @@ class KvmHandler < EndpointBuilder
     vol_id = request.args[1]
     
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    vol = rpc.request('sta-collector', 'get_volume', vol_id)
     logger.info("Booting #{inst_id}")
     
     # create volume from snapshot
-    #jobreq.run("sta.#{}", "create", vol_id)
+    jobreq.run("sta-loader.#{vol[:storage_pool][:agent_id]}", "create", vol_id, vol[:snapshot_id])
     
+    puts "volume created on #{vol[:storage_pool][:agent_id]}: #{vol_id}"
+    # reload volume info
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
 
     # attach disk
-    #lists = `sudo iscsiadm -m discovery -t sendtargets -p 192.168.1.21`
-    initiator = `sudo iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '192.168.1.21:3260'`
+    lists = `sudo iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}`
+    initiator = `sudo iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'`
     # check under until the dev file is created.
     # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ['192.168.1.21:3260',
+    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{vol[:storage_pool][:ipaddr]}:3260",
                                                                   vol[:transport_information][:iqn],
                                                                   vol[:transport_information][:lun]]
     tryagain do
