@@ -118,7 +118,7 @@ module Dcmgr::Models
     def merge_pool_data
       sp = self.storage_pool
       v = self.to_hash_document
-      v.merge(:pool_name=>sp.values[:export_path].split('/').last, :snapshot_base_path=>sp.values[:snapshot_base_path])
+      v.merge(:pool_name=>sp[:export_path], :snapshot_base_path=>sp[:snapshot_base_path])
     end
 
     def to_hash_document
