@@ -371,9 +371,9 @@ module Dcmgr
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            vl = Models::Volume.dataset.all.map{|row|
-              row.values
-            }
+            from = params[:start].to_i
+            to = ((params[:limit].to_i - from) + 1).to_i
+            vl = Models::Volume.get_list(@account.canonical_uuid, from, to)
             respond_to { |f|
               f.json {vl.to_json}
             }
@@ -500,22 +500,10 @@ module Dcmgr
           description 'Show the volume status'
           # params volume_id, string, required
           control do
-            vl = {
-              :id => 1,
-              :uuid => 'vol-00000000',
-              :storage_pool_id => 1,
-              :instance_id => 2,
-              :size => 10,
-              :status => 1,
-              :state => 1,
-              :export_path => 'vol-xxxxxxx',
-              :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-              :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :visibility => 'public'
-            }
+            raise UndefinedVolumeID if params[:volume_id].nil?
+            v = find_by_uuid(:Volume, params[:volume_id])
             respond_to { |f|
-              f.json { vl.to_json}
+              f.json { vl.values.to_json}
             }
           end
         end

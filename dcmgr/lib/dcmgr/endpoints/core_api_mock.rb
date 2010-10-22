@@ -10,6 +10,20 @@ require 'dcmgr/endpoints/errors'
 
 module Dcmgr
   module Endpoints
+    class Mock
+      def self.load(load)
+        root = File.expand_path('../../')
+        load = File::split(load)
+        namespace = load[0]
+        file = load[1] + '.json'
+        dir = File.join(root,'fixtures','mock',namespace)
+        jsonfile = File.join(dir,file)
+        json = ''
+        open(jsonfile) {|f| json = f.read }
+        json
+      end
+    end
+
     class CoreAPI < Sinatra::Base
       register Sinatra::Rabbit
 
@@ -342,35 +356,17 @@ module Dcmgr
           description 'Show lists of the volume'
           # params visibility, string, optional
           # params like, string, optional
-          # params sort, string, optional
+          # params sort, fixnum, optional
+          # params start, fixnum, optional
+          # params limit, fixnum, optional
           control do
-            vl = [{
-                    :id => 1,
-                    :uuid => 'vol-00000000',
-                    :storage_pool_id => '1',
-                    :instance_id => '1',
-                    :size => 1024,
-                    :status => 1,
-                    :state => 'available',
-                    :export_path => 'vol-xxxxxxx',
-                    :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-                    :created_at => '2010-10-21 02:41:04',
-                    :updated_at => '2010-10-21 02:41:04',
-                    :visibility => 'public'
-                  },{
-                    :id => 2,
-                    :uuid => 'vol-00000001',
-                    :storage_pool_id => '1',
-                    :instance_id => '2',
-                    :size => 1024,
-                    :status => 1,
-                    :state => 'available',
-                    :export_path => 'vol-xxxxxxx',
-                    :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-                    :created_at => '2010-10-21 02:41:04',
-                    :updated_at => '2010-10-21 02:41:04',
-                    :visibility => 'private'
-                  }]
+            start = params[:start].to_i
+            limit = params[:limit].to_i
+            json = Mock.load('volumes/list')
+            vl = JSON.load(json)
+            from = (start - 1).to_i
+            to = (limit - 1).to_i
+            vl = vl[from..to]
             respond_to { |f|
               f.json {vl.to_json}
             }
@@ -444,20 +440,10 @@ module Dcmgr
           description 'Show the volume status'
           # params volume_id, string, required
           control do
-            vl = {
-              :id => 1,
-              :uuid => 'vol-00000000',
-              :storage_pool_id => 1,
-              :instance_id => 2,
-              :size => 1024,
-              :status => 1,
-              :state => 1,
-              :export_path => 'vol-00000000',
-              :transport_information => { :iqn =>'iqn.1986-03.com.sun:02:d453f40c-40de-ca60-a377-c25f3af01fe5'},
-              :created_at => '2010-10-21 02:41:04',
-              :updated_at => '2010-10-21 02:41:04',
-              :visibility => 'public'
-            }
+            raise UndefinedVolumeID if params[:volume_id].nil?
+            json = Mock.load('volumes/details')
+            vl = JSON.load(json)
+            vl = vl[params[:volume_id]]
             respond_to { |f|
               f.json { vl.to_json}
             }
