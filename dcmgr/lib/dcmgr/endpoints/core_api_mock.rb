@@ -91,6 +91,18 @@ module Dcmgr
           super
         end
       end
+      
+      def pagenate(data,start,limit) 
+        return data unless data.kind_of?(Array)
+        if !start.nil? && !limit.nil?
+          start = start.to_i
+          limit = limit.to_i
+          from = (start - 1)
+          to = (from + limit -1)
+          data = data[from..to]         
+        end
+        data
+      end
 
       collection :accounts do
         operation :index do
@@ -363,13 +375,7 @@ module Dcmgr
           control do
             json = Mock.load('volumes/list')
             vl = JSON.load(json)
-            if !params[:start].nil? && !params[:limit].nil?
-              start = params[:start].to_i
-              limit = params[:limit].to_i
-              from = (start - 1).to_i
-              to = (limit - 1).to_i
-              vl = vl[from..to]
-            end
+            vl = pagenate(vl,params[:start],params[:limit])
             respond_to { |f|
               f.json {vl.to_json}
             }
