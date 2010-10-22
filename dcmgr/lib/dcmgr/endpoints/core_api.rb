@@ -48,24 +48,27 @@ module Dcmgr
       # is returned if none of content type header is in HTTP headers.
       # This method is called only when the request method is POST.
       def parsed_request_body
-        mime = @mime_types.first
-        case mime.to_sym
-        when :'application/json', :'text/json'
-          require 'json'
-          hash = JSON.load(request.body)
-          hash.to_mash
-        when :'application/yaml', :'text/yaml'
-          require 'yaml'
-          hash = YAML.load(request.body)
-          hash = hash.to_mash
-        when '', nil
+        # @mime_types should be defined by sinatra/respond_to.rb plugin.
+        if @mime_types.nil?
           # use query string as requested params if Content-Type
           # header was not sent.
           # ActiveResource library tells the one level nested hash which has
           # {'something key'=>real_params} so that dummy key is assinged here.
           hash = {:dummy=>@params}
         else
-          raise "Unsupported format in request.body: #{mime}"
+          mime = @mime_types.first
+          case mime.to_s
+          when 'application/json', 'text/json'
+            require 'json'
+            hash = JSON.load(request.body)
+            hash = hash.to_mash
+          when 'application/yaml', 'text/yaml'
+            require 'yaml'
+            hash = YAML.load(request.body)
+            hash = hash.to_mash
+          else
+            raise "Unsupported body document type: #{mime.to_s}"
+          end
         end
         return hash.values.first
       end
