@@ -38,6 +38,7 @@ module Dcmgr
     define_error(:UnknownVolume, 404)
     define_error(:UnknownHostPool, 404)
     define_error(:UnknownInstance, 404)
+    define_error(:UndefindVolumeSnapshotID, 400)
     define_error(:UnknownVolumeSnapshot, 404)
     define_error(:UndefinedRequiredParameter, 400)
     define_error(:InvalidVolumeSize, 400)

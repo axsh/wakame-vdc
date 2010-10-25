@@ -46,4 +46,8 @@ class DialogController < ApplicationController
   
   def create_security_group
   end
+  
+  def delete_security_group
+    @name = params[:ids][0]
+  end
 end

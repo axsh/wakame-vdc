@@ -32,4 +32,11 @@ class SecurityGroupsController < ApplicationController
     @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.create(data)
     render :json => @netfilter_group
   end
+  
+  def destroy
+    name = params[:id]
+    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.destroy(name)
+    render :json => @netfilter_group    
+  end
+  
 end
