@@ -262,7 +262,7 @@ module Dcmgr
         operation :show do
           #param :account_id, :string, :optional
           control do
-            i = Modles::Instance[params[:id]]
+            i = Models::Instance[params[:id]]
             raise UnknownInstance if i.nil?
             
             respond_to { |f|
