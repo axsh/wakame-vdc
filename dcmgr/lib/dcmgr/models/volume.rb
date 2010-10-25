@@ -118,9 +118,7 @@ module Dcmgr::Models
     def merge_pool_data
       sp = self.storage_pool
       v = self.to_hash_document
-      v.merge(:pool_name=>sp[:export_path],
-              :snapshot_base_path=>sp[:snapshot_base_path],
-              :storage_pool=>storage_pool.to_hash_document)
+      v.merge(:storage_pool=>storage_pool.to_hash_document)
     end
 
     def to_hash_document
@@ -129,6 +127,13 @@ module Dcmgr::Models
       # yaml -> hash translation
       h[:transport_information]=self.transport_information
       h
+    end
+
+    def create_snapshot(account_id)
+      vs = VolumeSnapshot.create(:account_id=>account_id,
+                                 :storage_pool_id=>self.storage_pool_id,
+                                 :origin_volume_id=>self.canonical_uuid,
+                                 :size=>self.size)
     end
 
     # def state_machine

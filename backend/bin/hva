@@ -61,9 +61,9 @@ class KvmHandler < EndpointBuilder
     logger.info("Booting #{inst_id}")
     
     # create volume from snapshot
-    jobreq.run("sta-loader.#{vol[:storage_pool][:agent_id]}", "create", vol_id, vol[:snapshot_id])
+    jobreq.run("sta-loader.#{vol[:storage_pool][:node_id]}", "create", vol_id)
     
-    puts "volume created on #{vol[:storage_pool][:agent_id]}: #{vol_id}"
+    puts "volume created on #{vol[:storage_pool][:node_id]}: #{vol_id}"
     # reload volume info
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
 
