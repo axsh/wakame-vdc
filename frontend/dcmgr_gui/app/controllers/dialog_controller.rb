@@ -43,4 +43,7 @@ class DialogController < ApplicationController
   def terminate_instances
     @instance_ids = params[:ids]
   end
+  
+  def create_security_group
+  end
 end

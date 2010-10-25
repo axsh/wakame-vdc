@@ -28,24 +28,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     total:30 //todo:get total from dcmgr
   });
   
-  DcmgrGUI.Detail.prototype.register_event('dcmgrGUI.afterUpdate',function(event,params){
-    var self = params.self;
-    $('#detail').find('#update_'+self.id).live('click',function(){
-      $.ajax({
-         "type": "POST",
-         "async": true,
-         "url": '/security_groups/config',
-         "data":"id="+self.id,
-         "dataType": "json",
-         success: function(json,status){
-           console.log(status);
-         }
-       });
-    });
-    
-    self.element.trigger('dcmgrGUI.configUpdate',[self.id]);
-  });
-             
   var c_list = new DcmgrGUI.List({
     element_id:'#display_security_groups',
     template_id:'#securityGroupsListTemplate',
@@ -89,6 +71,58 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     c_list.clearCheckedList();
     $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
+  });
+  
+  var bt_create_security_group = new DcmgrGUI.Dialog({
+    target:'.create_security_group',
+    width:400,
+    height:500,
+    title:'Create Security Group',
+    path:'/create_security_group',
+    button:{
+     "Create": function() { 
+       var name = $('#security_group_name').val();
+       var description = $('#security_group_description').val();
+       var rule = $('#security_group_rule').val();
+       var data = 'name=' + name
+                 +'&description=' + description
+                 +'&rule=' + rule;
+       if(!name){
+         $('#security_group_name').focus();
+         return false;
+       }
+
+       if(!description){
+         $('#security_group_description').focus();
+         return false;
+       }
+
+       if(!rule){
+         $('#security_group_rule').focus();
+         return false;
+       }
+       
+       $('#security_group_name').focus();
+
+       $.ajax({
+          "type": "POST",
+          "async": true,
+          "url": '/security_groups.json',
+          "dataType": "json",
+          "data": data,
+          success: function(json,status){
+            console.log(json);
+            bt_refresh.element.trigger('dcmgrGUI.refresh');
+          }
+       });
+       
+       $(this).dialog("close");
+      }
+    }
+  });
+  
+  bt_create_security_group.target.bind('click',function(){
+    bt_create_security_group.open();
   });
 
   c_list.setData(null);

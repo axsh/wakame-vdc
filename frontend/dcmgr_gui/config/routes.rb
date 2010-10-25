@@ -63,6 +63,10 @@ DcmgrGui::Application.routes.draw do
     post 'create',:on => :member
   end
   
+  resources :security_groups do
+    post 'create',:on => :member
+  end
+  
   # resource :account, :only => [:new]
   match 'accounts/switch' => 'accounts#new',:via => :post
   # match 'signup' => 'users#new', :as => :signup
