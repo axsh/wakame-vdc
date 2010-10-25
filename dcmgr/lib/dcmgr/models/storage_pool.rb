@@ -21,7 +21,7 @@ module Dcmgr::Models
     }
     
     inheritable_schema do
-      String :agent_id, :null=>false
+      String :node_id, :null=>false
       String :export_path, :null=>false
       Fixnum :status, :null=>false, :default=>STATAS_TYPE_REGISTERING
       Fixnum :offerring_disk_space, :null=>false, :unsigned=>true
@@ -36,6 +36,15 @@ module Dcmgr::Models
     
     many_to_one :storage_agents
     
+    def before_validation
+      export_path = self.export_path
+      if export_path =~ /^(\/[a-z0-9]+)+$/
+        export_path = export_path.split('/')
+        export_path.shift
+        self.export_path = export_path.join('/')
+      end
+    end
+
     def to_hash_document
       h = self.values.dup
       h[:id] = h[:uuid] = self.canonical_uuid
@@ -96,7 +105,7 @@ module Dcmgr::Models
 
     def self.create_pool(params)
       self.create(:account_id => params[:account_id],
-                  :agent_id => params[:agent_id],
+                  :node_id => params[:node_id],
                   :offerring_disk_space => params[:offerring_disk_space],
                   :transport_type => params[:transport_type],
                   :storage_type => params[:storage_type],
