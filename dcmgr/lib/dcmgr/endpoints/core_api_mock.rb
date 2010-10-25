@@ -705,7 +705,7 @@ module Dcmgr
           description 'Show lists of the netfilter_rules'
           control do
             g = [
-                 {:id => 1 ,:netfilter_group_id => 1, :permission => "tcp:22,22,0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
+                 {:id => 1, :netfilter_group_id => 1, :permission => "tcp:22,22,0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
                  {:id => 2, :netfilter_group_id => 1, :permission => "tcp:80,80,0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
                  {:id => 3, :netfilter_group_id => 1, :permission => "udp:53,53,0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
                  {:id => 4, :netfilter_group_id => 1, :permission => "icmp:-1,-1,0.0.0.0", :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
