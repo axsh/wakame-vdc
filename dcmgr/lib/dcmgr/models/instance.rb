@@ -26,6 +26,7 @@ module Dcmgr::Models
     many_to_one :image
     many_to_one :instance_spec
     many_to_one :host_pool
+    one_to_many :volume
 
     subset(:runnings){|f| f.state == :running }
 
