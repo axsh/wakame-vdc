@@ -654,6 +654,9 @@ module Dcmgr
             raise UndefinedNetfilterGroup if params[:name].nil?
 
             @name = params[:name]
+            # TODO: validate @name. @name can use [a-z] [A-Z] '_' '-'
+            # - invalidate? -> raise InvalidCharacterOfNetfilterGroupName
+
             g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
             raise DuplicatedNetfilterGroup unless g.nil?
 
