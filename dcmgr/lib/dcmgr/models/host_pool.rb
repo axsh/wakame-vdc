@@ -19,6 +19,7 @@ module Dcmgr::Models
       
       String :arch, :size=>10, :null=>false # :x86, :x86_64
       String :hypervisor, :size=>30, :null=>false
+      Fixnum :network_id, :null=>false
 
       Fixnum :offering_cpu_cores,   :null=>false, :unsigned=>true
       Fixnum :offering_memory_size, :null=>false, :unsigned=>true
@@ -27,12 +28,14 @@ module Dcmgr::Models
     
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
+    many_to_one :network
 
     def after_initialize
       super
     end
 
     def validate
+      super
       unless self.node_id =~ /^hva-/
         errors.add(:node_id, "hva node has to be associated: #{self.node_id}")
       end

@@ -14,6 +14,8 @@ module Dcmgr::Models
     end
     with_timestamps
 
+    many_to_one :host_pool
+
     def validate
       super
     end
