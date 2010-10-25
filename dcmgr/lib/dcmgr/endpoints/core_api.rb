@@ -219,6 +219,18 @@ module Dcmgr
 
       # Endpoint to handle VM instance.
       collection :instances do
+        description 'Show lists of the instances'
+        operation :index do
+          control do
+            # TODO: crete instance with account_id as param.
+            #insts = Models::Instance.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.values }
+            insts = Models::Instance.filter().all.collect { |row| row.values }
+            respond_to { |f|
+              f.json { insts.to_json }
+            }
+          end
+        end
+
         operation :create do
           description 'Runs a new VM instance'
           # param :image_id, :required
