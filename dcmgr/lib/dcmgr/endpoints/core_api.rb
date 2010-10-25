@@ -17,7 +17,7 @@ module Dcmgr
       disable :show_exceptions
 
       before do
-        # @params = parsed_request_body if request.post?
+        @params = parsed_request_body if request.post?
         request.env['dcmgr.frotend_system.id'] = 1
         request.env['HTTP_X_VDC_REQUESTER_TOKEN']='u-xxxxxx'
         request.env['HTTP_X_VDC_ACCOUNT_UUID']='a-00000000'
