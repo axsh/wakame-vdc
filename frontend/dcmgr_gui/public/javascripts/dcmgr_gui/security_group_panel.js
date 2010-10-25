@@ -124,6 +124,38 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   bt_create_security_group.target.bind('click',function(){
     bt_create_security_group.open();
   });
+  
+  var bt_delete_security_group = new DcmgrGUI.Dialog({
+    target:'.delete_security_group',
+    width:400,
+    height:200,
+    title:'Delete Security Group',
+    path:'/delete_security_group',
+    button:{
+     "Yes, Delete": function() { 
+       var name = $('#delete_group_name').text();
+       $.ajax({
+          "type": "DELETE",
+          "async": true,
+          "url": '/security_groups/'+ name +'.json',
+          "dataType": "json",
+          success: function(json,status){
+            console.log(json);
+            bt_refresh.element.trigger('dcmgrGUI.refresh');
+          }
+       });
+       $(this).dialog("close");
+      }
+    }
+  });
+  
+  bt_delete_security_group.target.bind('click',function(){
+    var id = c_list.currentChecked();
+    if( id ){
+      bt_delete_security_group.open(id);
+    }
+    return false;
+  });
 
   c_list.setData(null);
   c_list.update(list_request,true);
