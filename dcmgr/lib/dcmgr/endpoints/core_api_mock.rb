@@ -567,18 +567,18 @@ module Dcmgr
       collection :netfilter_groups do
         operation :index do
           control do
-            @name = params[:id]
             g = (1..30).collect { |i|
               {
                 :id          => i,
-                :name        => "#{@name}_#{i}",
-                :description => "desc_#{@name}_#{i}",
+                :name        => "group_#{i}",
+                :description => "desc_group_#{i}",
                 :rule        => "\ntcp:22,22,0.0.0.0\ntcp:80,80,0.0.0.0\n#tcp:443,443,0.0.0.0\nudp:53,53,0.0.0.0\nicmp:-1,-1,0.0.0.0\n",
                 :account_id  => "a-00000000",
                 :created_at  => "Fri Oct 22 10:50:09 +0900 2010",
                 :updated_at  => "Fri Oct 22 10:50:09 +0900 2010",
               }
             }
+            g = pagenate(g,params[:start],params[:limit])
 
             respond_to { |f|
               f.json { g.to_json }

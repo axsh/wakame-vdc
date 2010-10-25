@@ -260,6 +260,14 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
        $('#detail').find('#'+id).find('.state').html(state);
     });
   },
+  currentChecked:function(){
+    var id = this.element.find("[type='radio']:checked").val();
+    if( id ){
+      return {'ids' : [id] }
+    }else{
+      return null;
+    }
+  },
   singleCheckList:function(params){
     var self = this;
     this.element.find("[type='radio']").each(function(key,value){
