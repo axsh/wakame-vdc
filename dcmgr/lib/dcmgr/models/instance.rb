@@ -27,6 +27,7 @@ module Dcmgr::Models
     many_to_one :instance_spec
     many_to_one :host_pool
     one_to_many :volume
+    one_to_many :instance_nic
 
     subset(:runnings){|f| f.state == :running }
 
@@ -39,12 +40,17 @@ module Dcmgr::Models
     serialize_attributes :yaml, :runtime_config
 
     def to_hash
-      values.dup.merge({:uuid=>canonical_uuid,
-                         :user_data => user_data.to_s,
-                         :runtime_config => self.runtime_config, # yaml -> hash
-                         :image=>image.to_hash,
-                         :host_pool=>host_pool.values
-                       }.merge(instance_spec.to_hash))
+      h = super
+      h = h.merge({:user_data => user_data.to_s, # Sequel::BLOB -> String
+                    :runtime_config => self.runtime_config, # yaml -> hash
+                    :image=>image.to_hash,
+                    :host_pool=>host_pool.to_hash_document,
+                    :instance_nics=>instance_nic.map {|n| n.to_hash },
+                  }).merge(instance_spec.to_hash)
+      h.delete(:host_pool_id)
+      h.delete(:image_id)
+      h.delete(:instance_spec_id)
+      h
     end
 
     # Returns the hypervisor type for the instance.
@@ -67,6 +73,17 @@ module Dcmgr::Models
 
     def config
       self.instance_spec.config
+    end
+
+    def add_nic(vifname=nil, vendor_id=nil)
+      vifname ||= "vif-#{self[:uuid]}"
+      # TODO: get default vendor ID based on the hypervisor.
+      vendor_id ||= '1f:ff:f1'
+      nic = InstanceNic.new({:vif=>vifname,
+                              :mac_addr=>vendor_id
+                            })
+      nic.instance = self
+      nic.save
     end
 
   end
