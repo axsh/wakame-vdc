@@ -17,7 +17,7 @@ module Dcmgr
       disable :show_exceptions
 
       before do
-        @params = parsed_request_body if request.post?
+        # @params = parsed_request_body if request.post?
         request.env['dcmgr.frotend_system.id'] = 1
         request.env['HTTP_X_VDC_REQUESTER_TOKEN']='u-xxxxxx'
         request.env['HTTP_X_VDC_ACCOUNT_UUID']='a-00000000'
@@ -406,9 +406,10 @@ module Dcmgr
           # params snapshot_id, string, optional
           # params storage_pool_id, string, optional
           control do
-            # volume_size or snapshot_id required
-            raise UndefinedVolumeSize if params[:volume_size].nil?
-            # check volume_size
+            raise UndefinedRequiredParameter if params[:volume_size].nil? && params[:snapshot_id].nil?
+            if params[:volume_size]
+              raise InvalidVolumeSize if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) || !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
+            end
             
             if params[:snapshot_id]
               v = create_volume_from_snapshot(@account.canonical_uuid, params[:snapshot_id])
@@ -430,7 +431,7 @@ module Dcmgr
               end
             end
 
-            Dcmgr.messaging.submit("sta-loader.#{sp.values[:agent_id]}", 'create', v.canonical_uuid, v.snapshot_id)
+            Dcmgr.messaging.submit("sta-loader.#{sp.values[:node_id]}", 'create', v.canonical_uuid)
             respond_to { |f|
               f.json { v.to_hash_document.to_json}
             }
@@ -450,12 +451,8 @@ module Dcmgr
               raise InvalidDeleteRequest
             end
             raise UnknownVolume if v.nil?
-
             sp = v.storage_pool
-
-            Dcmgr.messaging.request("sta-loader.#{sp.values[:agent_id]}", 'delete', v.canonical_uuid) do |req|
-              req.oneshot = true
-            end
+            Dcmgr.messaging.submit("sta-loader.#{sp.values[:node_id]}", 'delete', v.canonical_uuid)
             # 選択したvolumeの削除をstorage_agentに送る
             respond_to { |f|
               f.json { v.values.to_json}
@@ -565,11 +562,19 @@ module Dcmgr
         operation :create do
           description 'Create a new volume snapshot'
           # params volume_id, string, required
-          # params pool_id, string, optional
+          # params storage_pool_id, string, optional
           control do
-            vs = { :status => 'creating', :message => 'creating the new snapshot'}
+            raise UndefinedVolumeID if params[:volume_id].nil?
+
+            v = find_by_uuid(:Volume, params[:volume_id])
+            raise UnknownVolume if v.nil?
+
+            vs = v.create_snapshot(@account.canonical_uuid)
+            sp = vs.storage_pool
+
+            Dcmgr.messaging.submit("sta-loader.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid)
             respond_to { |f|
-              f.json { vs.to_json }
+              f.json { vs.to_hash_document.to_json}
             }
           end
         end
