@@ -116,7 +116,6 @@ module Dcmgr::Models
     end
 
     def merge_pool_data
-      sp = self.storage_pool
       v = self.to_hash_document
       v.merge(:storage_pool=>storage_pool.to_hash_document)
     end
