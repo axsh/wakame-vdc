@@ -571,7 +571,9 @@ module Dcmgr
             vs = v.create_snapshot(@account.canonical_uuid)
             sp = vs.storage_pool
 
-            Dcmgr.messaging.submit("sta-loader.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid)
+            Dcmgr.messaging.request("job.sta-loader.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid) do |req|
+              req.oneshot = true
+            end
             respond_to { |f|
               f.json { vs.to_hash_document.to_json}
             }
@@ -582,9 +584,17 @@ module Dcmgr
           description 'Delete the volume snapshot'
           # params snapshot_id, string, required
           control do
-            vs = { :status => 'deleting', :message => 'deleting the snapshot'}
+            raise UndefindVolumeSnapshotID if params[:snapshot_id].nil?
+
+            vs = find_by_uuid(:VolumeSnapshot, params[:snapshot_id])
+            raise UnknownVolumeSnapshot if vs.nil?
+            vs = vs.delete_snapshot
+            sp = vs.storage_pool
+            Dcmgr.messaging.request("job.sta-loader.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid) do |req|
+              req.oneshot = true
+            end
             respond_to { |f|
-              f.json { vs.to_json }
+              f.json { vs.to_hash_document.to_json }
             }
           end
         end
