@@ -2,6 +2,7 @@
 
 module Dcmgr::Models
   class NetfilterGroup < AccountResource
+    taggable 'ng'
     with_timestamps
 
     inheritable_schema do
