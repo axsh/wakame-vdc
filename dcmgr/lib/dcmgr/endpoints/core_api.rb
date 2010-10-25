@@ -250,15 +250,19 @@ module Dcmgr
             
             spec = find_by_uuid(:InstanceSpec, 'is-kpf0pasc')
             inst = hp.create_instance(wmi, spec) do |i|
+              # TODO: do not use rand() to decide vnc port.
               i.runtime_config = {:vnc_port=>rand(2000)}
             end
+            # TODO: set vnic spec from InstanceSpec
+            inst.add_nic
 
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
-              # create new volume from 
+              # create new volume from snapshot.
               snapshot_id = wmi.source[:snapshot_id]
               vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
-              
+              vol.instance = inst
+              vol.save
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)

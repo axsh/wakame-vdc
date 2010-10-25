@@ -80,8 +80,12 @@ class KvmHandler < EndpointBuilder
     end
     
     # run vm
-    puts "kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{linux_dev_path} -daemonize"
-    system("kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{linux_dev_path} -daemonize")
+    cmd = "kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-#{inst_id} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{linux_dev_path} -daemonize"
+    if vnic = inst[:instance_nics].first
+      cmd += " -net nic,macaddr=#{vnic[:mac_addr].unpack('A2'*6).join(':')} -net tap,ifname=#{vnic[:vif]}"
+    end
+    puts  cmd
+    system(cmd)
   end
   
   job :terminate do

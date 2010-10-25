@@ -156,7 +156,7 @@ module Dcmgr
                           :Image,:HostPool,:RequestLog,:Instance,
                           :NetfilterGroup, :NetfilterRule,
                           :StorageAgent,:StoragePool,:Volume,:VolumeSnapshot,
-                          :InstanceSpec].freeze
+                          :InstanceSpec, :InstanceNic, :Network, :IpLease].freeze
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
     autoload :Tag, 'dcmgr/models/tag'
@@ -174,6 +174,9 @@ module Dcmgr
     autoload :NetfilterGroup, 'dcmgr/models/netfilter_group'
     autoload :NetfilterRule, 'dcmgr/models/netfilter_rule'
     autoload :InstanceSpec, 'dcmgr/models/instance_spec'
+    autoload :InstanceNic, 'dcmgr/models/instance_nic'
+    autoload :Network, 'dcmgr/models/network'
+    autoload :IpLease, 'dcmgr/models/ip_lease'
   end
 
   module RestModels
