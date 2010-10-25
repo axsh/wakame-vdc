@@ -65,24 +65,27 @@ module Dcmgr
       # is returned if none of content type header is in HTTP headers.
       # This method is called only when the request method is POST.
       def parsed_request_body
-        mime = @mime_types.first
-        case mime.to_sym
-        when :'application/json', :'text/json'
-          require 'json'
-          hash = JSON.load(request.body)
-          hash.to_mash
-        when :'application/yaml', :'text/yaml'
-          require 'yaml'
-          hash = YAML.load(request.body)
-          hash = hash.to_mash
-        when '', nil
+        # @mime_types should be defined by sinatra/respond_to.rb plugin.
+        if @mime_types.nil?
           # use query string as requested params if Content-Type
           # header was not sent.
           # ActiveResource library tells the one level nested hash which has
           # {'something key'=>real_params} so that dummy key is assinged here.
           hash = {:dummy=>@params}
         else
-          raise "Unsupported format in request.body: #{mime}"
+          mime = @mime_types.first
+          case mime.to_s
+          when 'application/json', 'text/json'
+            require 'json'
+            hash = JSON.load(request.body)
+            hash = hash.to_mash
+          when 'application/yaml', 'text/yaml'
+            require 'yaml'
+            hash = YAML.load(request.body)
+            hash = hash.to_mash
+          else
+            raise "Unsupported body document type: #{mime.to_s}"
+          end
         end
         return hash.values.first
       end
@@ -564,18 +567,18 @@ module Dcmgr
       collection :netfilter_groups do
         operation :index do
           control do
-            @name = params[:id]
             g = (1..30).collect { |i|
               {
                 :id          => i,
-                :name        => "#{@name}_#{i}",
-                :description => "desc_#{@name}_#{i}",
+                :name        => "group_#{i}",
+                :description => "desc_group_#{i}",
                 :rule        => "\ntcp:22,22,0.0.0.0\ntcp:80,80,0.0.0.0\n#tcp:443,443,0.0.0.0\nudp:53,53,0.0.0.0\nicmp:-1,-1,0.0.0.0\n",
                 :account_id  => "a-00000000",
                 :created_at  => "Fri Oct 22 10:50:09 +0900 2010",
                 :updated_at  => "Fri Oct 22 10:50:09 +0900 2010",
               }
             }
+            g = pagenate(g,params[:start],params[:limit])
 
             respond_to { |f|
               f.json { g.to_json }

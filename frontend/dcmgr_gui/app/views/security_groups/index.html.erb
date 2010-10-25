@@ -37,7 +37,7 @@ jQuery(function($){
 			  <a href="javascript:void(0);" class="next"></a>
      </div>
 		</div>
-		<div id="display_volumes" class="display_area">
+		<div id="display_security_groups" class="display_area">
 			<% content_for :javascript_template do %>
 			<script id="securityGroupsListTemplate" type="text/x-jquery-tmpl">
 			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
@@ -48,8 +48,8 @@ jQuery(function($){
 				</tr>
 				{{each(index,item) rows}}
 			   <tr>
-			    {{if item.group_id }}
-						<td style="width:5px"><input type="radio" name="select" value="${item.group_id}" > </td>
+			    {{if item.name }}
+						<td style="width:5px"><input type="radio" name="select" value="${item.name}" > </td>
 					{{else}}
 						<td><input type="radio"> </td>
 					{{/if}}
@@ -82,7 +82,7 @@ jQuery(function($){
 					<tr>
 						<td class="padcell"></td>
 						<td colspan="2">
-						<textarea id="security_group_config" rows="10" cols="10" style="width:630px;height:150px" disabled>${item.config}</textarea><br />
+						<textarea id="security_group_rule" rows="10" cols="10" style="width:630px;height:150px" disabled>${item.rule}</textarea><br />
 						</td>
 					</tr>
 				</table>
