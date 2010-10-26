@@ -395,7 +395,7 @@ module Dcmgr
       end
 
       collection :volumes do
-        operation :show do
+        operation :index do
           description 'Show lists of the volume'
           # params visibility, string, optional
           # params filter, string, optional
@@ -412,6 +412,18 @@ module Dcmgr
             vl = Models::Volume.get_list(@account.canonical_uuid, {:from=>from, :to=>to, :target=>target, :sort=>sort, :filter=>filter})
             respond_to { |f|
               f.json {vl.to_json}
+            }
+          end
+        end
+
+        operation :show do
+          description 'Show the volume status'
+          # params volume_id, string, required
+          control do
+            raise UndefinedVolumeID if params[:volume_id].nil?
+            v = find_by_uuid(:Volume, params[:volume_id])
+            respond_to { |f|
+              f.json { vl.values.to_json}
             }
           end
         end
@@ -526,22 +538,10 @@ module Dcmgr
             }
           end
         end
-
-        operation :detail, :method =>:get, :member =>true do
-          description 'Show the volume status'
-          # params volume_id, string, required
-          control do
-            raise UndefinedVolumeID if params[:volume_id].nil?
-            v = find_by_uuid(:Volume, params[:volume_id])
-            respond_to { |f|
-              f.json { vl.values.to_json}
-            }
-          end
-        end
       end
 
       collection :volume_snapshots do
-        operation :show do
+        operation :index do
           description 'Show lists of the volume_snapshots'
           # params visibility, string, optional
           # params like, string, optional
@@ -570,6 +570,27 @@ module Dcmgr
                   }]
             respond_to { |f|
               f.json { vs.to_json }
+            }
+          end
+        end
+
+        operation :show do
+          description 'Show the volume status'
+          # params volume_id, string, required
+          control do
+            vs = {
+              :id => 1,
+              :uuid => 'snap-00000000',
+              :storage_pool_id => 1,
+              :origin_volume_uuid => 'vol-xxxxxxx',
+              :size => 10,
+              :status => 1,
+              :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
+              :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
+              :visibility => 'public'
+            }
+            respond_to { |f|
+              f.json { vs.to_json}
             }
           end
         end
@@ -628,28 +649,6 @@ module Dcmgr
             }
           end
         end
-
-        operation :detail, :method =>:get, :member =>true do
-          description 'Show the volume status'
-          # params volume_id, string, required
-          control do
-            vs = {
-              :id => 1,
-              :uuid => 'snap-00000000',
-              :storage_pool_id => 1,
-              :origin_volume_uuid => 'vol-xxxxxxx',
-              :size => 10,
-              :status => 1,
-              :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :visibility => 'public'
-            }
-            respond_to { |f|
-              f.json { vs.to_json}
-            }
-          end
-        end
-
       end
 
       collection :netfilter_groups do
