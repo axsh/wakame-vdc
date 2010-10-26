@@ -40,7 +40,7 @@ module Dcmgr::Models
         errors.add(:node_id, "hva node has to be associated: #{self.node_id}")
       end
       
-      unless SUPPORTED_ARCH.member?(self.arch.to_sym)
+      unless SUPPORTED_ARCH.member?(self.arch)
         errors.add(:arch, "unknown architecture type: #{self.arch}")
       end
 
@@ -66,6 +66,7 @@ module Dcmgr::Models
     # @param [Models::Account] account
     # @param [Models::Image] image
     # @param [Models::InstanceSpec] spec
+    # @return [Models::Instance] created new Instance object.
     def create_instance(account, image, spec, &blk)
       raise ArgumentError unless image.is_a?(Image)
       raise ArgumentError unless spec.is_a?(InstanceSpec)
@@ -75,6 +76,11 @@ module Dcmgr::Models
       i.instance_spec = spec
       i.host_pool = self
       i.save
+
+      # TODO: set vnic spec from InstanceSpec
+      vnic = i.add_nic
+      IpLease.lease(vnic)
+      i
     end
 
     def status

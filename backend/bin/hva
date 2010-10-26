@@ -11,13 +11,13 @@ manifest.instance_eval do
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
   load_module Isono::NodeModules::NodeHeartbeat
   
-  config_path File.expand_path('config/hva-config.rb', app_root)
-
   config do |c|
+    c.vm_data_dir = '/var/lib/vm'
   end
-end
 
-VM_BASEDIR='/var/lib/vm'
+  config_path File.expand_path('config/hva.conf', app_root)
+  load_config
+end
 
 require 'fileutils'
 
@@ -30,15 +30,15 @@ class KvmHandler < EndpointBuilder
     logger.info("Booting #{inst_id}")
     #inst = hva.get_instance(inst_id)
 
-    p inst = rpc.request('hva-collector', 'get_instance',  inst_id)
+    inst = rpc.request('hva-collector', 'get_instance',  inst_id)
 
     # setup vm data folder
-    FileUtils.mkdir(File.expand_path("#{inst_id}", VM_BASEDIR))
+    FileUtils.mkdir(File.expand_path("#{inst_id}", node.manifest.config.vm_data_dir))
     # copy image file
     img_src = inst[:image][:source]
     case img_src[:type].to_sym
     when :http
-      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", VM_BASEDIR)
+      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", node.manifest.config.vm_data_dir)
       system("curl --silent -o '#{img_path}' #{img_src[:uri]}")
     else
       raise "Unknown image source type: #{img_src[:type]}"
