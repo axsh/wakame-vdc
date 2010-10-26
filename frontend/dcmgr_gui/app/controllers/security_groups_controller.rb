@@ -8,8 +8,7 @@ class SecurityGroupsController < ApplicationController
   def list
     data = {
       :start => params[:start],
-      :limit => params[:limit],
-      :id    => params[:name]
+      :limit => params[:limit]
     }
     @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.list(data)
     respond_with(@netfilter_group,:to => [:json])

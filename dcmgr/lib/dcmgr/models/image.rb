@@ -39,7 +39,7 @@ module Dcmgr::Models
     end
 
     def to_hash
-      values.dup.merge({:source=>self.source.dup, :description=>description.to_s})
+      super.merge({:source=>self.source.dup, :description=>description.to_s})
     end
     
   end

@@ -14,19 +14,12 @@ module Frontend
     def teardown
     end
 
-    def test_show
-      account_id = 'a-00000000'
-      p @volume.show(account_id)
-    end
-    
-    def test_show_pagenate
-      account_id = 'a-00000000'
+    def test_list
       params = {
         :start => 1,
         :limit => 10
       }
-      p @volume.show(account_id,params).size
-      # p @volume.size
+      p @volume.list(params).size
     end
     
     def test_create
@@ -37,9 +30,8 @@ module Frontend
     end
     
     def test_destroy
-      account_id = 'a-00000000'
-      volume_id = 'v-00000000'
-      p @volume.destroy(account_id,volume_id)
+      volume_id = 'vol-00000000'
+      p @volume.destroy(volume_id)
     end
     
     def test_attach
@@ -59,10 +51,9 @@ module Frontend
       p @volume.status(account_id)
     end
     
-    def test_detail
-      account_id = 'a-00000000'
+    def test_show
       volume_id = 'vol-24f1af01'
-      p @volume.detail(account_id,volume_id)
+      p @volume.show(volume_id)
     end
   end
 end

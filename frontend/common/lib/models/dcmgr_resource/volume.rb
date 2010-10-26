@@ -1,8 +1,13 @@
 module Frontend::Models
   module DcmgrResource
     class Volume < Base
-      def self.show(account_id,params = {})
-        self.get(account_id,params)
+      def self.list(params = {})
+        data = self.find(:all,:params => params)
+        results = []
+        data.each{|row|
+          results << row.attributes
+        }
+        results
       end
     
       def self.create(params)
@@ -12,8 +17,8 @@ module Frontend::Models
         volume
       end
   
-      def self.destroy(account_id,volume_id)
-        self.delete(account_id,{:volume_id => volume_id}).body
+      def self.destroy(volume_id)
+        self.delete(volume_id).body
       end
     
       def self.attach(account_id,instance_id)
@@ -40,12 +45,8 @@ module Frontend::Models
         result
       end
 
-      def self.detail(account_id,volume_id)
-        @collection ||= self.collection_name
-        self.collection_name = File.join(@collection,account_id)
-        result = self.get(:detail,{:volume_id => volume_id})
-        self.collection_name = @collection
-        result
+      def self.show(volume_id)
+        self.get(volume_id)
       end
     end
   end

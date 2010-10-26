@@ -52,11 +52,8 @@ module Dcmgr::Models
       end
     end
 
-    def to_hash_document
-      h = self.values.dup
-      h[:id] = h[:uuid] = self.canonical_uuid
-      h[:status] = self.status
-      h
+    def to_hash
+      super.merge(:status=>self.status)
     end
 
     # Check if the resources exist depending on the HostPool.
@@ -66,12 +63,14 @@ module Dcmgr::Models
     end
     
     # Factory method for Instance model to run on this HostPool.
+    # @param [Models::Account] account
     # @param [Models::Image] image
     # @param [Models::InstanceSpec] spec
-    def create_instance(image, spec, &blk)
+    def create_instance(account, image, spec, &blk)
       raise ArgumentError unless image.is_a?(Image)
       raise ArgumentError unless spec.is_a?(InstanceSpec)
       i = Instance.new &blk
+      i.account_id = account.canonical_uuid
       i.image = image
       i.instance_spec = spec
       i.host_pool = self

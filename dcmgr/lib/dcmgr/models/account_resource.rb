@@ -8,7 +8,9 @@ module Dcmgr::Models
       String :account_id, :null=>false, :index=>true
     end
 
-    many_to_one :account
+    def account
+      Account[self.account_id]
+    end
 
   end
 end
