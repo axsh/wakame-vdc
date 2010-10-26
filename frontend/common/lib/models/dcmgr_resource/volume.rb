@@ -2,8 +2,6 @@ module Frontend::Models
   module DcmgrResource
     class Volume < Base
       def self.list(params = {})
-        #todo:storage_pool_id is not implemented because of the fixed value
-        params[:storage_pool_id] = 'sp-1sx9jeks'
         data = self.find(:all,:params => params)
         results = []
         data.each{|row|
@@ -13,6 +11,9 @@ module Frontend::Models
       end
     
       def self.create(params)
+        #todo:storage_pool_id is not implemented because of the fixed value
+        params[:storage_pool_id] = 'sp-1sx9jeks'
+
         volume = self.new
         volume.volume_size = params[:volume_size]
         volume.save
