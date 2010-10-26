@@ -257,7 +257,7 @@ module Dcmgr
             raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
             
             spec = find_by_uuid(:InstanceSpec, 'is-kpf0pasc')
-            inst = hp.create_instance(wmi, spec) do |i|
+            inst = hp.create_instance(@account, wmi, spec) do |i|
               # TODO: do not use rand() to decide vnc port.
               i.runtime_config = {:vnc_port=>rand(2000)}
             end
