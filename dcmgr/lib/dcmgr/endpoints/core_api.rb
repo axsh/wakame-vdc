@@ -737,9 +737,23 @@ module Dcmgr
         description 'Show lists of the netfilter_groups'
         operation :index do
           control do
-            g = Models::NetfilterGroup.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.values }
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+
+            total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
+            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+
+            res = {
+              :owner_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|i| i.to_hash }
+            }
+
             respond_to { |f|
-              f.json { g.to_json }
+              f.json {res.to_json}
             }
           end
         end
