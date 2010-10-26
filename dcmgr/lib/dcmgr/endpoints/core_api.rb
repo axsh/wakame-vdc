@@ -486,9 +486,15 @@ module Dcmgr
             limit = limit < 1 ? 10 : limit
 
             total_v = Models::Volume.where(:account_id => @account.canonical_uuid)
-            partial_v = total_v.dup.limit(limit, start).order(:id).all.map{ |v| v.to_hash_document }
+            partial_v = total_v.dup.limit(limit, start).order(:id)
+            res = {
+              :owner_total => total_v.count,
+              :start => start,
+              :limit => limit,
+              :results => partial_v.all.map { |v| v.to_hash_document}
+            }
             respond_to { |f|
-              f.json {partial_v.to_json}
+              f.json { res.to_json}
             }
           end
         end
@@ -625,54 +631,37 @@ module Dcmgr
       collection :volume_snapshots do
         operation :index do
           description 'Show lists of the volume_snapshots'
-          # params visibility, string, optional
-          # params like, string, optional
-          # parms sort, string, optional
+          # params start, fixnum, optional 
+          # params limit, fixnum, optional
           control do
-            vs = [{
-                    :id => 1,
-                    :uuid => 'snap-00000000',
-                    :storage_pool_id => 1,
-                    :origin_volume_uuid => 'vol-xxxxxxx',
-                    :size => 10,
-                    :status => 1,
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :visibility => 'public'
-                  },{
-                    :id => 1,
-                    :uuid => 'snap-00000000',
-                    :storage_pool_id => 2,
-                    :origin_volume_id => 'vol-xxxxxxx',
-                    :size => 10,
-                    :status => 1,
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :visibility => 'private'
-                  }]
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+
+            total_vs = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid)
+            partial_vs = total_vs.dup.limit(limit, start).order(:id)
+            res = {
+              :owner_total => total_vs.count,
+              :start => start,
+              :limit => limit,
+              :results => partial_vs.all.map { |vs| vs.to_hash_document}
+            }
             respond_to { |f|
-              f.json { vs.to_json }
+              f.json { res.to_json}
             }
           end
         end
 
         operation :show do
           description 'Show the volume status'
-          # params volume_id, string, required
+          # params id, string, required
           control do
-            vs = {
-              :id => 1,
-              :uuid => 'snap-00000000',
-              :storage_pool_id => 1,
-              :origin_volume_uuid => 'vol-xxxxxxx',
-              :size => 10,
-              :status => 1,
-              :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :visibility => 'public'
-            }
+            snapshot_id = params[:id]
+            raise UndefinedVolumeSnapshotID if snapshot_id.nil?
+            vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
             respond_to { |f|
-              f.json { vs.to_json}
+              f.json { vs.to_hash_document.to_json}
             }
           end
         end
