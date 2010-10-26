@@ -376,18 +376,27 @@ module Dcmgr
       collection :volumes do
         operation :index do
           description 'Show lists of the volume'
-          # param visibility, string, optional
-          # param filter, string, optional
-          # param target, string, optional
-          # param sort, string, optional
           # param start, fixnum, optional
           # param limit, fixnum, optional
           control do
+            start = params[:start].to_i
+            start = start < 1 ? 1 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+
             json = Mock.loadfile('volumes/list')
             vl = JSON.load(json)
-            vl = pagenate(vl,params[:start],params[:limit])
+            total = vl.count
+            vl = pagenate(vl,start,limit)
+
+            res = {
+              :owner_total => total,
+              :start => start,
+              :limit => limit,
+              :resolts => vl
+            }
             respond_to { |f|
-              f.json {vl.to_json}
+              f.json {res.to_json}
             }
           end
         end
@@ -474,30 +483,40 @@ module Dcmgr
       collection :volume_snapshots do
         operation :index do
           description 'Show lists of the volume_snapshots'
-          # param visibility, string, optional
-          # param filter, string, optional
-          # param target, string, optional
-          # param sort, string, optional
           # param start, Fixnum, optional
           # param limit, Fixnum, optional
           control do
+            start = params[:start].to_i
+            start = start < 1 ? 1 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+
             json = Mock.loadfile('volume_snapshots/list')
             vs = JSON.load(json)
-            vs = pagenate(vs,params[:start],params[:limit])
+            total = vs.count
+            vs = pagenate(vs,start,limit)
+
+            res = {
+              :owner_total => total,
+              :start => start,
+              :limit => limit,
+              :resolts => vs
+            }
             respond_to { |f|
-              f.json {vs.to_json}
+              f.json {res.to_json}
             }
           end
         end
 
         operation :show do
           description 'Show the volume status'
-          # param snapshot_id, string, required
+          # param id, string, required
           control do
-            raise UndefinedVolumeSnapshotID if params[:snapshot_id].nil?
+            snapshot_id = params[:id]
+            raise UndefinedVolumeSnapshotID if snapshot_id.nil?
             json = Mock.loadfile('volume_snapshots/details')
             vs = JSON.load(json)
-            vs = vs[params[:snapshot_id]]
+            vs = vs[snapshot_id]
             respond_to { |f|
               f.json { vs.to_json}
             }
