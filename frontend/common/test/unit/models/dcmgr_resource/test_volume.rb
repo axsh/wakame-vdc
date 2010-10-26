@@ -16,10 +16,10 @@ module Frontend
 
     def test_list
       params = {
-        :start => 1,
+        :start => 0,
         :limit => 10
       }
-      p @volume.list(params).size
+      p @volume.list(params)
     end
     
     def test_create

@@ -43,7 +43,7 @@ class VolumesController < ApplicationController
   # GET volumes.json
   def list
     data = {
-      :start => params[:start],
+      :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
     volumes = Frontend::Models::DcmgrResource::Volume.list(data)
