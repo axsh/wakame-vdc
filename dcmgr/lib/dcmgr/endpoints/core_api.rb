@@ -477,21 +477,18 @@ module Dcmgr
       collection :volumes do
         operation :index do
           description 'Show lists of the volume'
-          # params visibility, string, optional
-          # params filter, string, optional
-          # params target, string, optional
-          # params sort, string, optional
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            from = params[:from] if params[:from]
-            to = params[:limit] if params[:limit]
-            target = params[:target] if params[:target]
-            sort = params[:sort] if params[:sort]
-            filter = params[:filter] if params[:filter]
-            vl = Models::Volume.get_list(@account.canonical_uuid, {:from=>from, :to=>to, :target=>target, :sort=>sort, :filter=>filter})
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+
+            total_v = Models::Volume.where(:account_id => @account.canonical_uuid)
+            partial_v = total_v.dup.limit(limit, start).order(:id).all.map{ |v| v.to_hash_document }
             respond_to { |f|
-              f.json {vl.to_json}
+              f.json {partial_v.to_json}
             }
           end
         end
