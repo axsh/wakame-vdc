@@ -77,6 +77,7 @@ DcmgrGUI.prototype.volumePanel = function(){
           "data": data,
           success: function(json,status){
             console.log(json);
+            bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
         });
        $(this).dialog("close");
@@ -108,6 +109,7 @@ DcmgrGUI.prototype.volumePanel = function(){
           "data": data,
           success: function(json,status){
             console.log(json);
+            bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
         });
        c_list.changeStatus('deleting');
