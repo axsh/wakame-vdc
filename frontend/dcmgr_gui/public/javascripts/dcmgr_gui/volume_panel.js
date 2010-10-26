@@ -42,7 +42,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   c_list.setDetailTemplate({
     template_id:'#volumesDetailTemplate',
-    detail_path:'/volumes/list/'
+    detail_path:'/volumes/show/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
@@ -136,7 +136,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     $.each(c_list.checked_list,function(check_id,obj){
       $($('#detail').find('#'+check_id)).remove();
       c_list.checked_list[check_id].c_detail.update({
-        url:DcmgrGUI.Util.getPagePath('/volumes/list/',check_id)
+        url:DcmgrGUI.Util.getPagePath('/volumes/show/',check_id)
       },true);
     });
   });

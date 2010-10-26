@@ -32,11 +32,10 @@ class VolumesController < ApplicationController
   
   # DELETE volumes/delete.json
   def delete
-    account_id = current_account.uuid
     volume_ids = params[:ids]
     response = []
     volume_ids.each do |volume_id|
-      response << Frontend::Models::DcmgrResource::Volume.destroy(account_id,volume_id)
+      response << Frontend::Models::DcmgrResource::Volume.destroy(volume_id)
     end
     render :json => response
   end

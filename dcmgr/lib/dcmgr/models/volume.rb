@@ -102,7 +102,7 @@ module Dcmgr::Models
         vl = vl.grep(data[:target].to_sym, "%#{filter}%")
       end
       vl.all.map{|row|
-        row.values
+        row.to_hash_document
       }
     end
 

@@ -13,12 +13,14 @@ module Frontend::Models
       def self.create(params)
         volume = self.new
         volume.volume_size = params[:volume_size]
+        #todo:storage_pool_id is not implemented because of the fixed value
+        volume.storage_pool_id = 'sp-1sx9jeks'
         volume.save
         volume
       end
   
-      def self.destroy(account_id,volume_id)
-        self.delete(account_id,{:volume_id => volume_id}).body
+      def self.destroy(volume_id)
+        self.delete(volume_id).body
       end
     
       def self.attach(account_id,instance_id)
