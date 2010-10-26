@@ -394,12 +394,13 @@ module Dcmgr
 
         operation :show do
           description 'Show the volume status'
-          # param volume_id, string, required
+          # param id, string, required
           control do
-            raise UndefinedVolumeID if params[:volume_id].nil?
+            volume_id = params[:id]
+            raise UndefinedVolumeID if volume_id.nil?
             json = Mock.loadfile('volumes/details')
             vl = JSON.load(json)
-            vl = vl[params[:volume_id]]
+            vl = vl[volume_id]
             respond_to { |f|
               f.json { vl.to_json}
             }
