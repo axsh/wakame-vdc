@@ -91,6 +91,14 @@ module Dcmgr
         vs.create_volume(account_id)
       end
         
+      def examine_owner(account_resource)
+        if @account.canonical_uuid == account_resource.account_id ||
+            @account.canonical_uuid == 'a-00000000'
+          true
+        end
+        false
+      end
+
       collection :accounts do
         operation :index do
           control do
@@ -327,7 +335,65 @@ module Dcmgr
         end
       end
 
+      collection :images do
+        operation :create do
+          description 'Register new machine image'
+          control do
+            raise NotImplementedError
+          end
+        end
 
+        operation :index do
+          description 'Show list of machine images'
+          control do
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+            
+            total_ds = Models::Image.where(:account_id=>@account.canonical_uuid)
+            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+
+            res = {
+              :owner_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|i| i.to_hash }
+            }
+            
+            respond_to { |f|
+              f.json {res.to_json}
+            }
+          end
+        end
+
+        operation :show do
+          description "Show a machine image details."
+          control do
+            i = find_by_uuid(:Image, params[:id])
+            # TODO: add visibility by account check
+            unless examine_owner(i)
+              raise OperationNotPermitted
+            end
+            respond_to { |f|
+              f.json { i.to_hash.to_json }
+            }
+          end
+        end
+
+        operation :destroy do
+          description 'Delete a machine image'
+          control do
+            i = find_by_uuid(:Image, params[:id])
+            if examine_owner(i)
+              i.delete
+            else
+              raise OperationNotPermitted
+            end
+          end
+        end
+      end
+        
       collection :host_pools do
         operation :create do
           description 'Register a new physical host'
