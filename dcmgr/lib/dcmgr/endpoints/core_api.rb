@@ -219,6 +219,18 @@ module Dcmgr
 
       # Endpoint to handle VM instance.
       collection :instances do
+        description 'Show lists of the instances'
+        operation :index do
+          control do
+            # TODO: crete instance with account_id as param.
+            #insts = Models::Instance.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.values }
+            insts = Models::Instance.filter().all.collect { |row| row.values }
+            respond_to { |f|
+              f.json { insts.to_json }
+            }
+          end
+        end
+
         operation :create do
           description 'Runs a new VM instance'
           # param :image_id, :required
@@ -238,15 +250,19 @@ module Dcmgr
             
             spec = find_by_uuid(:InstanceSpec, 'is-kpf0pasc')
             inst = hp.create_instance(wmi, spec) do |i|
+              # TODO: do not use rand() to decide vnc port.
               i.runtime_config = {:vnc_port=>rand(2000)}
             end
+            # TODO: set vnic spec from InstanceSpec
+            inst.add_nic
 
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
-              # create new volume from 
+              # create new volume from snapshot.
               snapshot_id = wmi.source[:snapshot_id]
               vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
-              
+              vol.instance = inst
+              vol.save
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
@@ -262,7 +278,7 @@ module Dcmgr
         operation :show do
           #param :account_id, :string, :optional
           control do
-            i = Modles::Instance[params[:id]]
+            i = Models::Instance[params[:id]]
             raise UnknownInstance if i.nil?
             
             respond_to { |f|
@@ -379,7 +395,7 @@ module Dcmgr
       end
 
       collection :volumes do
-        operation :show do
+        operation :index do
           description 'Show lists of the volume'
           # params visibility, string, optional
           # params filter, string, optional
@@ -400,21 +416,30 @@ module Dcmgr
           end
         end
 
+        operation :show do
+          description 'Show the volume status'
+          # params volume_id, string, required
+          control do
+            raise UndefinedVolumeID if params[:volume_id].nil?
+            v = find_by_uuid(:Volume, params[:volume_id])
+            respond_to { |f|
+              f.json { vl.values.to_json}
+            }
+          end
+        end
+
         operation :create do
           description 'Create the new volume'
           # params volume_size, string, required
           # params snapshot_id, string, optional
           # params storage_pool_id, string, optional
           control do
-            raise UndefinedRequiredParameter if params[:volume_size].nil? && params[:snapshot_id].nil?
-            if params[:volume_size]
-              raise InvalidVolumeSize if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) || !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
-            end
-            
             if params[:snapshot_id]
               v = create_volume_from_snapshot(@account.canonical_uuid, params[:snapshot_id])
               sp = v.storage_pool
-            else
+            elsif params[:volume_size]
+              raise InvalidVolumeSize if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) || !(params[:volume_size\
+].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
               if params[:storage_pool_id]
                 sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
                 raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
@@ -429,6 +454,8 @@ module Dcmgr
                 Dcmgr.logger.error(e)
                 raise DatabaseError
               end
+            else
+              raise UndefinedRequiredParameter
             end
 
             Dcmgr.messaging.submit("sta-loader.#{sp.values[:node_id]}", 'create', v.canonical_uuid)
@@ -511,22 +538,10 @@ module Dcmgr
             }
           end
         end
-
-        operation :detail, :method =>:get, :member =>true do
-          description 'Show the volume status'
-          # params volume_id, string, required
-          control do
-            raise UndefinedVolumeID if params[:volume_id].nil?
-            v = find_by_uuid(:Volume, params[:volume_id])
-            respond_to { |f|
-              f.json { vl.values.to_json}
-            }
-          end
-        end
       end
 
       collection :volume_snapshots do
-        operation :show do
+        operation :index do
           description 'Show lists of the volume_snapshots'
           # params visibility, string, optional
           # params like, string, optional
@@ -559,52 +574,7 @@ module Dcmgr
           end
         end
 
-        operation :create do
-          description 'Create a new volume snapshot'
-          # params volume_id, string, required
-          # params storage_pool_id, string, optional
-          control do
-            raise UndefinedVolumeID if params[:volume_id].nil?
-
-            v = find_by_uuid(:Volume, params[:volume_id])
-            raise UnknownVolume if v.nil?
-
-            vs = v.create_snapshot(@account.canonical_uuid)
-            sp = vs.storage_pool
-
-            Dcmgr.messaging.submit("sta-loader.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid)
-            respond_to { |f|
-              f.json { vs.to_hash_document.to_json}
-            }
-          end
-        end
-
-        operation :destroy do
-          description 'Delete the volume snapshot'
-          # params snapshot_id, string, required
-          control do
-            vs = { :status => 'deleting', :message => 'deleting the snapshot'}
-            respond_to { |f|
-              f.json { vs.to_json }
-            }
-          end
-        end
-
-        operation :status, :method =>:get, :member =>true do
-          description 'Show the status'
-          control do
-            vs = [{ :id => 1, :uuid => 'snap-xxxxxxx', :status => 1 },
-                  { :id => 2, :uuid => 'snap-xxxxxxx', :status => 0 },
-                  { :id => 3, :uuid => 'snap-xxxxxxx', :status => 3 },
-                  { :id => 4, :uuid => 'snap-xxxxxxx', :status => 2 },
-                  { :id => 5, :uuid => 'snap-xxxxxxx', :status => 4 }]
-            respond_to {|f|
-              f.json { vs.to_json}
-            }
-          end
-        end
-
-        operation :detail, :method =>:get, :member =>true do
+        operation :show do
           description 'Show the volume status'
           # params volume_id, string, required
           control do
@@ -625,6 +595,60 @@ module Dcmgr
           end
         end
 
+        operation :create do
+          description 'Create a new volume snapshot'
+          # params volume_id, string, required
+          # params storage_pool_id, string, optional
+          control do
+            raise UndefinedVolumeID if params[:volume_id].nil?
+
+            v = find_by_uuid(:Volume, params[:volume_id])
+            raise UnknownVolume if v.nil?
+
+            vs = v.create_snapshot(@account.canonical_uuid)
+            sp = vs.storage_pool
+
+            Dcmgr.messaging.request("job.sta-loader.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid) do |req|
+              req.oneshot = true
+            end
+            respond_to { |f|
+              f.json { vs.to_hash_document.to_json}
+            }
+          end
+        end
+
+        operation :destroy do
+          description 'Delete the volume snapshot'
+          # params snapshot_id, string, required
+          control do
+            raise UndefindVolumeSnapshotID if params[:snapshot_id].nil?
+
+            vs = find_by_uuid(:VolumeSnapshot, params[:snapshot_id])
+            raise UnknownVolumeSnapshot if vs.nil?
+            vs = vs.delete_snapshot
+            sp = vs.storage_pool
+            Dcmgr.messaging.request("job.sta-loader.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid) do |req|
+              req.oneshot = true
+            end
+            respond_to { |f|
+              f.json { vs.to_hash_document.to_json }
+            }
+          end
+        end
+
+        operation :status, :method =>:get, :member =>true do
+          description 'Show the status'
+          control do
+            vs = [{ :id => 1, :uuid => 'snap-xxxxxxx', :status => 1 },
+                  { :id => 2, :uuid => 'snap-xxxxxxx', :status => 0 },
+                  { :id => 3, :uuid => 'snap-xxxxxxx', :status => 3 },
+                  { :id => 4, :uuid => 'snap-xxxxxxx', :status => 2 },
+                  { :id => 5, :uuid => 'snap-xxxxxxx', :status => 4 }]
+            respond_to {|f|
+              f.json { vs.to_json}
+            }
+          end
+        end
       end
 
       collection :netfilter_groups do

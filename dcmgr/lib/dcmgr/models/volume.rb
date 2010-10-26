@@ -41,7 +41,7 @@ module Dcmgr::Models
       Fixnum :status, :null=>false, :default=>STATUS_TYPE_REGISTERING
       String :state, :null=>false, :default=> 'registering'
       Fixnum :size, :null=>false
-      String :instance_id
+      Fixnum :instance_id
       String :snapshot_id
       String :host_device_name
       String :guest_device_name
@@ -58,6 +58,7 @@ module Dcmgr::Models
     plugin :serialization, :yaml, :transport_information
     
     many_to_one :storage_pool
+    many_to_one :instance
 
     class DiskError < RuntimeError; end
     class RequestError < RuntimeError; end
@@ -116,7 +117,6 @@ module Dcmgr::Models
     end
 
     def merge_pool_data
-      sp = self.storage_pool
       v = self.to_hash_document
       v.merge(:storage_pool=>storage_pool.to_hash_document)
     end

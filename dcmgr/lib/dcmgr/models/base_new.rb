@@ -106,6 +106,9 @@ module Dcmgr::Models
         tag.unlabel(self.uuid)
       end
 
+      def to_hash()
+        self.values.dup.merge({:id=>canonical_uuid, :uuid=>canonical_uuid})
+      end
     end
 
     module ClassMethods

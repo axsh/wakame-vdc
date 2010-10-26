@@ -374,14 +374,14 @@ module Dcmgr
       end
 
       collection :volumes do
-        operation :show do
+        operation :index do
           description 'Show lists of the volume'
-          # params visibility, string, optional
-          # params filter, string, optional
-          # params target, string, optional
-          # params sort, fixnum, optional
-          # params start, fixnum, optional
-          # params limit, fixnum, optional
+          # param visibility, string, optional
+          # param filter, string, optional
+          # param target, string, optional
+          # param sort, string, optional
+          # param start, fixnum, optional
+          # param limit, fixnum, optional
           control do
             json = Mock.loadfile('volumes/list')
             vl = JSON.load(json)
@@ -392,11 +392,25 @@ module Dcmgr
           end
         end
 
+        operation :show do
+          description 'Show the volume status'
+          # param volume_id, string, required
+          control do
+            raise UndefinedVolumeID if params[:volume_id].nil?
+            json = Mock.loadfile('volumes/details')
+            vl = JSON.load(json)
+            vl = vl[params[:volume_id]]
+            respond_to { |f|
+              f.json { vl.to_json}
+            }
+          end
+        end
+
         operation :create do
           description 'Create the new volume'
-          # params volume_size, string, required
-          # params snapshot_id, string, optional
-          # params private_pool_id, string, optional
+          # param volume_size, string, required
+          # param snapshot_id, string, optional
+          # param private_pool_id, string, optional
           control do
             vl = { :status => 'creating', :messages => 'creating the new volume vol-xxxxxxx'}
             # vl = Models::Volume.create(:size=> params[:volume_size])
@@ -409,7 +423,7 @@ module Dcmgr
 
         operation :destroy do
           description 'Delete the volume'
-          # params volume_id, string, required
+          # param volume_id, string, required
           control do
             vl = { :status => 'deleting', :messages => 'deleting the volume vol-xxxxxxx'}
             respond_to { |f|
@@ -420,8 +434,8 @@ module Dcmgr
 
         operation :attach, :method =>:put, :member =>true do
           description 'Attachd the volume'
-          # params volume_id, string, required
-          # params instance_id, string, required
+          # param volume_id, string, required
+          # param instance_id, string, required
           control do
             vl = { :status => 'attaching', :message => 'attaching the volume of vol-xxxxxx to instance_id'}
             respond_to { |f|
@@ -432,7 +446,7 @@ module Dcmgr
 
         operation :detach, :method =>:put, :member =>true do
           description 'Detachd the volume'
-          # params volume_id, string, required
+          # param volume_id, string, required
           control do
             vl = { :status => 'detaching', :message => 'detaching the volume of instance_id to vol-xxxxxx'}
             respond_to { |f|
@@ -454,60 +468,45 @@ module Dcmgr
             }
           end
         end
-
-        operation :detail, :method =>:get, :member =>true do
-          description 'Show the volume status'
-          # params volume_id, string, required
-          control do
-            raise UndefinedVolumeID if params[:volume_id].nil?
-            json = Mock.loadfile('volumes/details')
-            vl = JSON.load(json)
-            vl = vl[params[:volume_id]]
-            respond_to { |f|
-              f.json { vl.to_json}
-            }
-          end
-        end
       end
 
       collection :volume_snapshots do
-        operation :show do
+        operation :index do
           description 'Show lists of the volume_snapshots'
-          # params visibility, string, optional
-          # params like, string, optional
-          # parms sort, string, optional
+          # param visibility, string, optional
+          # param filter, string, optional
+          # param target, string, optional
+          # param sort, string, optional
+          # param start, Fixnum, optional
+          # param limit, Fixnum, optional
           control do
-            vs = [{
-                    :id => 1,
-                    :uuid => 'snap-00000000',
-                    :storage_pool_id => 1,
-                    :origin_volume_uuid => 'vol-xxxxxxx',
-                    :size => 10,
-                    :status => 1,
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :visibility => 'public'
-                  },{
-                    :id => 1,
-                    :uuid => 'snap-00000000',
-                    :storage_pool_id => 2,
-                    :origin_volume_id => 'vol-xxxxxxx',
-                    :size => 10,
-                    :status => 1,
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :visibility => 'private'
-                  }]
+            json = Mock.loadfile('volume_snapshots/list')
+            vs = JSON.load(json)
+            vs = pagenate(vs,params[:start],params[:limit])
             respond_to { |f|
-              f.json { vs.to_json }
+              f.json {vs.to_json}
+            }
+          end
+        end
+
+        operation :show do
+          description 'Show the volume status'
+          # param snapshot_id, string, required
+          control do
+            raise UndefinedVolumeSnapshotID if params[:snapshot_id].nil?
+            json = Mock.loadfile('volume_snapshots/details')
+            vs = JSON.load(json)
+            vs = vs[params[:snapshot_id]]
+            respond_to { |f|
+              f.json { vs.to_json}
             }
           end
         end
 
         operation :create do
           description 'Create a new volume snapshot'
-          # params volume_id, string, required
-          # params pool_id, string, optional
+          # param volume_id, string, required
+          # param pool_id, string, optional
           control do
             vs = { :status => 'creating', :message => 'creating the new snapshot'}
             respond_to { |f|
@@ -518,7 +517,7 @@ module Dcmgr
 
         operation :destroy do
           description 'Delete the volume snapshot'
-          # params snapshot_id, string, required
+          # param snapshot_id, string, required
           control do
             vs = { :status => 'deleting', :message => 'deleting the snapshot'}
             respond_to { |f|
@@ -540,28 +539,6 @@ module Dcmgr
             }
           end
         end
-
-        operation :detail, :method =>:get, :member =>true do
-          description 'Show the volume status'
-          # params volume_id, string, required
-          control do
-            vs = {
-              :id => 1,
-              :uuid => 'snap-00000000',
-              :storage_pool_id => 1,
-              :origin_volume_uuid => 'vol-xxxxxxx',
-              :size => 10,
-              :status => 1,
-              :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :updated_at => 'Fri Sep 10 14:50:11 +0900 2010',
-              :visibility => 'public'
-            }
-            respond_to { |f|
-              f.json { vs.to_json}
-            }
-          end
-        end
-
       end
 
       collection :netfilter_groups do
