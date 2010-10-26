@@ -487,12 +487,12 @@ module Dcmgr
 
             total_v = Models::Volume.where(:account_id => @account.canonical_uuid)
             partial_v = total_v.dup.limit(limit, start).order(:id)
-            res = {
+            res = [{
               :owner_total => total_v.count,
               :start => start,
               :limit => limit,
               :results => partial_v.all.map { |v| v.to_hash_document}
-            }
+            }]
             respond_to { |f|
               f.json { res.to_json}
             }
@@ -641,12 +641,12 @@ module Dcmgr
 
             total_vs = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid)
             partial_vs = total_vs.dup.limit(limit, start).order(:id)
-            res = {
+            res = [{
               :owner_total => total_vs.count,
               :start => start,
               :limit => limit,
               :results => partial_vs.all.map { |vs| vs.to_hash_document}
-            }
+            }]
             respond_to { |f|
               f.json { res.to_json}
             }
