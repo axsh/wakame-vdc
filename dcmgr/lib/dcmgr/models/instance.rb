@@ -45,9 +45,8 @@ module Dcmgr::Models
       h = h.merge({:user_data => user_data.to_s, # Sequel::BLOB -> String
                     :runtime_config => self.runtime_config, # yaml -> hash
                     :image=>image.to_hash,
-                    :host_pool=>host_pool.to_hash_document,
+                    :host_pool=>host_pool.to_hash,
                     :instance_nics=>instance_nic.map {|n| n.to_hash },
-                    :netfilter_groups=>self.netfilter_groups.map { |g| g.to_hash },
                   }).merge(instance_spec.to_hash)
       h.delete(:host_pool_id)
       h.delete(:image_id)
