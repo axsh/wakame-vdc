@@ -40,7 +40,7 @@ module Dcmgr::Models
         errors.add(:node_id, "hva node has to be associated: #{self.node_id}")
       end
       
-      unless SUPPORTED_ARCH.member?(self.arch.to_sym)
+      unless SUPPORTED_ARCH.member?(self.arch)
         errors.add(:arch, "unknown architecture type: #{self.arch}")
       end
 
