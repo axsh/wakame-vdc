@@ -393,7 +393,7 @@ module Dcmgr
               :owner_total => total,
               :start => start,
               :limit => limit,
-              :resolts => vl
+              :results => vl
             }
             respond_to { |f|
               f.json {res.to_json}
@@ -500,7 +500,7 @@ module Dcmgr
               :owner_total => total,
               :start => start,
               :limit => limit,
-              :resolts => vs
+              :results => vs
             }
             respond_to { |f|
               f.json {res.to_json}
