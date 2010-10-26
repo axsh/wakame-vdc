@@ -418,10 +418,11 @@ module Dcmgr
 
         operation :show do
           description 'Show the volume status'
-          # params volume_id, string, required
+          # params id, string, required
           control do
-            raise UndefinedVolumeID if params[:volume_id].nil?
-            v = find_by_uuid(:Volume, params[:volume_id])
+            volume_id = params[:id]
+            raise UndefinedVolumeID if volume_id.nil?
+            v = find_by_uuid(:Volume, volume_id)
             respond_to { |f|
               f.json { vl.values.to_json}
             }
@@ -467,12 +468,13 @@ module Dcmgr
 
         operation :destroy do
           description 'Delete the volume'
-          # params volume_id, string, required
+          # params id, string, required
           control do
-            raise UndefinedVolumeID if params[:volume_id].nil?
+            volume_id = params[:id]
+            raise UndefinedVolumeID if volume_id.nil?
 
             begin
-              v  = Models::Volume.delete_volume(@account.canonical_uuid, params[:volume_id])
+              v  = Models::Volume.delete_volume(@account.canonical_uuid, volume_id)
             rescue Models::Volume::RequestError => e
               Dcmgr.logger.error(e)
               raise InvalidDeleteRequest
