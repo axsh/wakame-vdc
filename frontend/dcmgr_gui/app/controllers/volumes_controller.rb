@@ -47,9 +47,12 @@ class VolumesController < ApplicationController
       :limit => params[:limit]
     }
     volumes = Frontend::Models::DcmgrResource::Volume.list(data)
-    
     volumes.each do |volume|
       volume["size"] = convert_from_mb_to_gb(volume["size"]).to_s + 'GB'
+      
+      #Now we will not use transport_information　the empty
+      #todo:transport_information not convert from json to ruby
+      volume["transport_information"] = ''
     end
     respond_with(volumes,:to => [:json])
   end
