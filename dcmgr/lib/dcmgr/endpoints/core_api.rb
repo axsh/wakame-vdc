@@ -504,7 +504,7 @@ module Dcmgr
             raise UndefinedVolumeID if volume_id.nil?
             v = find_by_uuid(:Volume, volume_id)
             respond_to { |f|
-              f.json { vl.values.to_json}
+              f.json { v.to_hash_document.to_json}
             }
           end
         end
