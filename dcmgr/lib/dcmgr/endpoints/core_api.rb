@@ -459,7 +459,9 @@ module Dcmgr
               raise UndefinedRequiredParameter
             end
 
-            Dcmgr.messaging.submit("sta-loader.#{sp.values[:node_id]}", 'create', v.canonical_uuid)
+            Dcmgr.messaging.request("job.sta-loader.#{sp.values[:node_id]}", 'create', v.canonical_uuid) do |req|
+              req.oneshot = true
+            end
             respond_to { |f|
               f.json { v.to_hash_document.to_json}
             }
@@ -481,8 +483,9 @@ module Dcmgr
             end
             raise UnknownVolume if v.nil?
             sp = v.storage_pool
-            Dcmgr.messaging.submit("sta-loader.#{sp.values[:node_id]}", 'delete', v.canonical_uuid)
-            # 選択したvolumeの削除をstorage_agentに送る
+            Dcmgr.messaging.request("job.sta-loader.#{sp.values[:node_id]}", 'delete', v.canonical_uuid) do |req|
+              req.oneshot = true
+            end
             respond_to { |f|
               f.json { v.values.to_json}
             }
