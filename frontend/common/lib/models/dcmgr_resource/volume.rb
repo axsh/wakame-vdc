@@ -11,11 +11,10 @@ module Frontend::Models
       end
     
       def self.create(params)
-        #todo:storage_pool_id is not implemented because of the fixed value
-        params[:storage_pool_id] = 'sp-1sx9jeks'
-
         volume = self.new
         volume.volume_size = params[:volume_size]
+        #todo:storage_pool_id is not implemented because of the fixed value
+        volume.storage_pool_id = 'sp-1sx9jeks'
         volume.save
         volume
       end
