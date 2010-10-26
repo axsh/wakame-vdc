@@ -550,7 +550,7 @@ module Dcmgr
                 :id          => i,
                 :name        => "group_#{i}",
                 :description => "desc_group_#{i}",
-                :rule        => "\ntcp:22,22,0.0.0.0\ntcp:80,80,0.0.0.0\n#tcp:443,443,0.0.0.0\nudp:53,53,0.0.0.0\nicmp:-1,-1,0.0.0.0\n",
+                :rule        => "\ntcp:22,22,ip4:0.0.0.0\ntcp:80,80,ip4:0.0.0.0\n#tcp:443,443,ip4:0.0.0.0\nudp:53,53,ip4:0.0.0.0\nicmp:-1,-1,ip4:0.0.0.0\n",
                 :account_id  => "a-00000000",
                 :created_at  => "Fri Oct 22 10:50:09 +0900 2010",
                 :updated_at  => "Fri Oct 22 10:50:09 +0900 2010",
@@ -572,7 +572,7 @@ module Dcmgr
               :id          => 1,
               :name        => @name,
               :description => "desc_#{@name}",
-              :rule        => "\ntcp:22,22,0.0.0.0\ntcp:80,80,0.0.0.0\n#tcp:443,443,0.0.0.0\nudp:53,53,0.0.0.0\nicmp:-1,-1,0.0.0.0\n",
+              :rule        => "\ntcp:22,22,ip4:0.0.0.0\ntcp:80,80,ip4:0.0.0.0\n#tcp:443,443,ip4:0.0.0.0\nudp:53,53,ip4:0.0.0.0\nicmp:-1,-1,ip4:0.0.0.0\n",
               :account_id  => "a-00000000",
               :created_at  => "Fri Oct 22 10:50:09 +0900 2010",
               :updated_at  => "Fri Oct 22 10:50:09 +0900 2010",
@@ -600,7 +600,7 @@ module Dcmgr
             @rule = if params[:rule]
                       params[:rule]
                     else
-                      "\ntcp:22,22,0.0.0.0\ntcp:80,80,0.0.0.0\n#tcp:443,443,0.0.0.0\nudp:53,53,0.0.0.0\nicmp:-1,-1,0.0.0.0\n"
+                      "\ntcp:22,22,ip4:0.0.0.0\ntcp:80,80,ip4:0.0.0.0\n#tcp:443,443,ip4:0.0.0.0\nudp:53,53,ip4:0.0.0.0\nicmp:-1,-1,ip4:0.0.0.0\n"
                     end
 
             g = {
@@ -636,7 +636,7 @@ module Dcmgr
             if params[:rule]
               @rule = params[:rule]
             else
-              @rule = "\ntcp:22,22,0.0.0.0\ntcp:80,80,0.0.0.0\n#tcp:443,443,0.0.0.0\nudp:53,53,0.0.0.0\nicmp:-1,-1,0.0.0.0\n"
+              @rule = "\ntcp:22,22,ip4:0.0.0.0\ntcp:80,80,ip4:0.0.0.0\n#tcp:443,443,ip4:0.0.0.0\nudp:53,53,ip4:0.0.0.0\nicmp:-1,-1,ip4:0.0.0.0\n"
             end
 
             g = {
@@ -663,7 +663,7 @@ module Dcmgr
               :id          => 1,
               :name        => @name,
               :description => "desc_#{@name}",
-              :rule        => "\ntcp:22,22,0.0.0.0\ntcp:80,80,0.0.0.0\n#tcp:443,443,0.0.0.0\nudp:53,53,0.0.0.0\nicmp:-1,-1,0.0.0.0\n",
+              :rule        => "\ntcp:22,22,ip4:0.0.0.0\ntcp:80,80,ip4:0.0.0.0\n#tcp:443,443,ip4:0.0.0.0\nudp:53,53,ip4:0.0.0.0\nicmp:-1,-1,ip4:0.0.0.0\n",
               :account_id  => "a-00000000",
               :created_at  => "Fri Oct 22 10:50:09 +0900 2010",
               :updated_at  => "Fri Oct 22 10:50:09 +0900 2010",
@@ -686,10 +686,10 @@ module Dcmgr
           description 'Show lists of the netfilter_rules'
           control do
             g = [
-                 {:id => 1, :netfilter_group_id => 1, :permission => "tcp:22,22,0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
-                 {:id => 2, :netfilter_group_id => 1, :permission => "tcp:80,80,0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
-                 {:id => 3, :netfilter_group_id => 1, :permission => "udp:53,53,0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
-                 {:id => 4, :netfilter_group_id => 1, :permission => "icmp:-1,-1,0.0.0.0", :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
+                 {:id => 1, :netfilter_group_id => 1, :permission => "tcp:22,22,ip4:0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
+                 {:id => 2, :netfilter_group_id => 1, :permission => "tcp:80,80,ip4:0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
+                 {:id => 3, :netfilter_group_id => 1, :permission => "udp:53,53,ip4:0.0.0.0",  :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
+                 {:id => 4, :netfilter_group_id => 1, :permission => "icmp:-1,-1,ip4:0.0.0.0", :created_at => "Fri Oct 22 11:15:10 +0900 2010", :updated_at => "Fri Oct 22 11:15:10 +0900 2010",},
                 ]
             respond_to { |f|
               f.json { g.to_json }
