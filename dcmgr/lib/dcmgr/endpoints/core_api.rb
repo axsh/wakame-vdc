@@ -275,8 +275,6 @@ module Dcmgr
               # TODO: do not use rand() to decide vnc port.
               i.runtime_config = {:vnc_port=>rand(2000)}
             end
-            # TODO: set vnic spec from InstanceSpec
-            inst.add_nic
 
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN

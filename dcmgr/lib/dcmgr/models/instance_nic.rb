@@ -15,6 +15,7 @@ module Dcmgr::Models
     with_timestamps
 
     many_to_one :instance
+    one_to_one :ip, :class=>IpLease
 
     def to_hash
       h = values.dup.merge(super)

@@ -6,15 +6,15 @@ module Dcmgr::Models
 
     inheritable_schema do
       String :name, :size=>20, :null=>false
-      String :ipv4, :null=>false
+      String :ipv4_gw, :null=>false
       String :netmask, :null=>false
-      String :gw, :null=>false
       Text :description
       index :name, {:unique=>true}
     end
     with_timestamps
 
     many_to_one :host_pool
+    one_to_many :ip_lease
 
     def validate
       super
