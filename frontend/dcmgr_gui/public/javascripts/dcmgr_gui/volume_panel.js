@@ -3,7 +3,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var maxrow = 10;
   var page = 1;
   var list_request = { 
-    "url" : DcmgrGUI.Util.getPagePath('/volumes/show/',page),
+    "url" : DcmgrGUI.Util.getPagePath('/volumes/list/',page),
     "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
   };
     
@@ -42,7 +42,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   c_list.setDetailTemplate({
     template_id:'#volumesDetailTemplate',
-    detail_path:'/volumes/detail/'
+    detail_path:'/volumes/list/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
@@ -126,7 +126,7 @@ DcmgrGUI.prototype.volumePanel = function(){
 
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
-    list_request.url = DcmgrGUI.Util.getPagePath('/volumes/show/',c_list.page);
+    list_request.url = DcmgrGUI.Util.getPagePath('/volumes/list/',c_list.page);
     list_request.data = DcmgrGUI.Util.getPagenateData(c_list.page,c_list.maxrow)
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
@@ -134,7 +134,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     $.each(c_list.checked_list,function(check_id,obj){
       $($('#detail').find('#'+check_id)).remove();
       c_list.checked_list[check_id].c_detail.update({
-        url:DcmgrGUI.Util.getPagePath('/volumes/detail/',check_id)
+        url:DcmgrGUI.Util.getPagePath('/volumes/list/',check_id)
       },true);
     });
   });

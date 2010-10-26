@@ -41,13 +41,13 @@ class VolumesController < ApplicationController
     render :json => response
   end
   
-  # GET volumes/show/1.json
-  def show
+  # GET volumes.json
+  def list
     data = {
       :start => params[:start],
       :limit => params[:limit]
     }
-    volumes = Frontend::Models::DcmgrResource::Volume.show(current_account.uuid,data)
+    volumes = Frontend::Models::DcmgrResource::Volume.list(data)
     
     volumes.each do |volume|
       volume["size"] = convert_from_mb_to_gb(volume["size"]).to_s + 'GB'
@@ -55,10 +55,10 @@ class VolumesController < ApplicationController
     respond_with(volumes,:to => [:json])
   end
   
-  # GET volumes/detail/vol-24f1af4d.json
-  def detail
+  # GET volumes/vol-24f1af4d.json
+  def show
     volume_id = params[:id]
-    detail = Frontend::Models::DcmgrResource::Volume.detail(current_account.uuid,volume_id)
+    detail = Frontend::Models::DcmgrResource::Volume.show(volume_id)
     detail["size"] = convert_from_mb_to_gb(detail["size"]).to_s + 'GB'
     respond_with(detail,:to => [:json])
   end
