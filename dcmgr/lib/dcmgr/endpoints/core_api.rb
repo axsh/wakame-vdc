@@ -227,14 +227,28 @@ module Dcmgr
 
       # Endpoint to handle VM instance.
       collection :instances do
-        description 'Show lists of the instances'
         operation :index do
+          description 'Show list of instances'
+          # params start, fixnum, optional 
+          # params limit, fixnum, optional
           control do
-            # TODO: crete instance with account_id as param.
-            #insts = Models::Instance.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.values }
-            insts = Models::Instance.filter().all.collect { |row| row.values }
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+            
+            total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid)
+            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+
+            res = {
+              :owner_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|i| i.to_hash }
+            }
+            
             respond_to { |f|
-              f.json { insts.to_json }
+              f.json {res.to_json}
             }
           end
         end
