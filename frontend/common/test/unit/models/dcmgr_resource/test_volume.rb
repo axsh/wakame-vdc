@@ -30,9 +30,8 @@ module Frontend
     end
     
     def test_destroy
-      account_id = 'a-00000000'
-      volume_id = 'v-00000000'
-      p @volume.destroy(account_id,volume_id)
+      volume_id = 'vol-00000000'
+      p @volume.destroy(volume_id)
     end
     
     def test_attach
