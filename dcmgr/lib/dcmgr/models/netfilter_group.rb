@@ -12,6 +12,15 @@ module Dcmgr::Models
     end
 
     one_to_many :netfilter_rules
+    one_to_many :instance_netfilter_groups
+
+    def to_hash
+      {
+        :name => name,
+        :description => description,
+        :rules => netfilter_rules.map { |rule| rule.to_hash },
+      }
+    end
 
     def self.create_group(account_id, params)
       grp = self.create(:account_id  => account_id,
