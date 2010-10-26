@@ -408,7 +408,7 @@ module Dcmgr
                                          :hypervisor=>input[:hypervisor]
                                          )
             respond_to { |f|
-              f.json{ hp.to_hash_document.to_json }
+              f.json{ hp.to_hash.to_json }
             }
           end
         end
@@ -421,7 +421,7 @@ module Dcmgr
 
             hp = find_by_uuid(:HostPool, params[:id])
             respond_to { |f|
-              f.json { hp.to_hash_document.to_json }
+              f.json { hp.to_hash.to_json }
             }
           end
         end
