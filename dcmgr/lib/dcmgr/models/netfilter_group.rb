@@ -62,5 +62,11 @@ module Dcmgr::Models
       }
     end
 
+    def instances
+      self.instance_netfilter_groups.map { |instance_netfilter_group|
+        instance_netfilter_group.instance
+      }
+    end
+
   end
 end
