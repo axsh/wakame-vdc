@@ -28,23 +28,34 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
       Process.exec(cmd)
     }
     
-    EM.add_periodic_timer(1) {
-      EM.defer{
-        myinstance.generate_dhcp_conf()
-        system("/bin/kill -HUP #{@dnsmasq_pid}")
-      }
-    }
+    myinstance.refresh_dnsmasq_conf
+
+    event = Isono::NodeModules::EventChannel.new(node)
+
+    event.subscribe('hva/instance_started', '#') do |args|
+      puts "refresh on instance_started: #{args.inspect}"
+      myinstance.refresh_dnsmasq_conf
+    end
     
+    event.subscribe('hva/instance_terminated', '#') do |args|
+      puts "refresh on instance_terminated: #{args.inspect}"
+      myinstance.refresh_dnsmasq_conf
+    end
+  end
+
+
+  def refresh_dnsmasq_conf
     EM.defer {
       begin
-        myinstance.generate_dhcp_conf()
+        generate_dhcp_conf()
         system("/bin/kill -HUP #{@dnsmasq_pid}")
+        logger.info("refreshed dnsmasq conf")
       rescue Exception => e
         p e
       end
     }
   end
-
+  
   def generate_dhcp_conf
     rpc = Isono::NodeModules::RpcChannel.new(node)
     # load entier macaddr,ipaddr pairs for all instances from collector.

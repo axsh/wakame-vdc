@@ -56,7 +56,8 @@ class KvmHandler < EndpointBuilder
                   )
     system(cmd)
     
-    #hva.update_instance(inst_id, {:state=>:running})
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
+    event.publish('hva/instance_started', :args=>[inst_id])
   end
 
   job :run_vol_store do
@@ -99,12 +100,16 @@ class KvmHandler < EndpointBuilder
     end
     puts  cmd
     system(cmd)
+
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
+    event.publish('hva/instance_started', :args=>[inst_id])
   end
   
   job :terminate do
+    inst_id = request.args[0]
     hva = rpc.delegate('hva-collector')
-    inst_id = request.
     logger.info("Booting #{inst_id}")
+    event.publish('hva/instance_terminated', :args=>[inst_id])
   end
 
   job :attach do
@@ -119,6 +124,10 @@ class KvmHandler < EndpointBuilder
 
   def jobreq
     @jobreq ||= Isono::NodeModules::JobChannel.new(@node)
+  end
+
+  def event
+    @event ||= Isono::NodeModules::EventChannel.new(@node)
   end
 
 
