@@ -16,6 +16,7 @@ module Frontend
        autoload :VolumeSnapshot, '../common/lib/models/dcmgr_resource/volume_snapshot'
        autoload :NetfilterGroup, '../common/lib/models/dcmgr_resource/netfilter_group'
        autoload :Instance, '../common/lib/models/dcmgr_resource/instance'
+       autoload :Image, '../common/lib/models/dcmgr_resource/image'
        
        if Rails.env.development?
          autoload :Mock, '../common/lib/models/dcmgr_resource/mock'

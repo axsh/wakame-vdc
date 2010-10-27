@@ -6,21 +6,18 @@ class ImagesController < ApplicationController
   
   # images/show/1.json
   def show
-    json = Frontend::Models::DcmgrResource::Mock.load('images/list')
-    @images = JSON.load(json)
-
-    page = params[:id].to_i
-    limit = 10
-    from = ((page -1) * limit).to_i
-    to = (from + limit -1).to_i
-    respond_with(@images[from..to],:to => [:json])
+    image_id = params[:id]
+    detail = Frontend::Models::DcmgrResource::Image.show(image_id)
+    respond_with(detail,:to => [:json])
   end
-  
-  # images/detail/wmi-96d780f4.json
-  def detail
-    wmi_id = params[:id]
-    json = Frontend::Models::DcmgrResource::Mock.load('images/details')
-    @detail = JSON.load(json)
-    respond_with(@detail[wmi_id],:to => [:json])
+
+    
+  def list
+    data = {
+      :start => params[:start].to_i - 1,
+      :limit => params[:limit]
+    }
+    image = Frontend::Models::DcmgrResource::Image.list(data)
+    respond_with(image[0],:to => [:json])
   end
 end
