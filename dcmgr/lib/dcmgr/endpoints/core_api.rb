@@ -240,12 +240,12 @@ module Dcmgr
             total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid)
             partial_ds  = total_ds.dup.limit(limit, start).order(:id)
 
-            res = {
+            res = [{
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
               :results=> partial_ds.all.map {|i| i.to_api_document }
-            }
+            }]
             
             respond_to { |f|
               f.json {res.to_json}
@@ -366,12 +366,12 @@ module Dcmgr
             total_ds = Models::Image.where(:account_id=>@account.canonical_uuid)
             partial_ds  = total_ds.dup.limit(limit, start).order(:id)
 
-            res = {
+            res = [{
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
               :results=> partial_ds.all.map {|i| i.to_hash }
-            }
+            }]
             
             respond_to { |f|
               f.json {res.to_json}
@@ -732,12 +732,12 @@ module Dcmgr
             total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
             partial_ds  = total_ds.dup.limit(limit, start).order(:id)
 
-            res = {
+            res = [{
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
               :results=> partial_ds.all.map {|i| i.to_hash }
-            }
+            }]
 
             respond_to { |f|
               f.json {res.to_json}
