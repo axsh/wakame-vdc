@@ -105,8 +105,10 @@ module Dcmgr
       def pagenate(data,start,limit) 
         return data unless data.kind_of?(Array)
         if !start.nil? && !limit.nil?
-          from = start.to_i
-          to = limit.to_i
+          start = start.to_i
+          limit = limit.to_i
+          from = start
+          to = (from + limit -1)
           data = data[from..to]         
         end
         data
