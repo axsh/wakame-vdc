@@ -93,5 +93,14 @@ module Dcmgr::Models
       }
     end
 
+    def ips
+      self.instance_nic.map { |nic| nic.ip }
+    end
+
+    def netfilter_group_instances
+      instances = self.netfilter_groups.map { |g| g.instances }
+      instances.flatten!.uniq!
+    end
+
   end
 end
