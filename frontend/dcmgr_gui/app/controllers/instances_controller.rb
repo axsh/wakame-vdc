@@ -4,6 +4,15 @@ class InstancesController < ApplicationController
   def index
   end
   
+  def list
+    data = {
+      :start => params[:start].to_i - 1,
+      :limit => params[:limit]
+    }
+    instances = Frontend::Models::DcmgrResource::Instance.list(data)
+    respond_with(instances[0],:to => [:json])
+  end
+  
   # instance/show/1.json
   def show
     json = Frontend::Models::DcmgrResource::Mock.load('instances/list')

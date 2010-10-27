@@ -1,4 +1,13 @@
 DcmgrGUI.prototype.instancePanel = function(){
+  
+  var total = 0;
+  var maxrow = 10;
+  var page = 1;
+  var list_request = { 
+    "url":DcmgrGUI.Util.getPagePath('/instances/list/',1),
+    "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
+  };
+  
   DcmgrGUI.List.prototype.getEmptyData = function(){
     return [{
       "id":'',
@@ -22,9 +31,12 @@ DcmgrGUI.prototype.instancePanel = function(){
       "owner":'-'
     }
   }
-  
-  var list_request = { "url":DcmgrGUI.Util.getPagePath('/instances/show/',1) };
 
+  var c_pagenate = new DcmgrGUI.Pagenate({
+    row:maxrow,
+    total:total
+  });
+  
   var c_list = new DcmgrGUI.List({
     element_id:'#display_instances',
     template_id:'#instancesListTemplate'
@@ -32,17 +44,14 @@ DcmgrGUI.prototype.instancePanel = function(){
   
   c_list.setDetailTemplate({
     template_id:'#instancesDetailTemplate',
-    detail_path:'/instances/detail/'
+    detail_path:'/instances/show/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
-    c_list.setData(params.data);
+    var instance = params.data.instance;
+    c_pagenate.changeTotal(instance.owner_total);
+    c_list.setData(instance.results);
     c_list.multiCheckList(c_list.detail_template);
-  });
-
-  var c_pagenate = new DcmgrGUI.Pagenate({
-    row:10,
-    total:30 //todo:get total from dcmgr
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -124,7 +133,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
   
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
-    list_request.url = DcmgrGUI.Util.getPagePath('/instances/show/',c_pagenate.current_page);
+    list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_pagenate.current_page);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
     //update detail
@@ -135,7 +144,7 @@ DcmgrGUI.prototype.instancePanel = function(){
       
       //todo:update trigger event for detail
       c_list.checked_list[check_id].c_detail.update({
-        url:DcmgrGUI.Util.getPagePath('/instances/detail/',check_id)
+        url:DcmgrGUI.Util.getPagePath('/instances/show/',check_id)
       },true);
       
     });

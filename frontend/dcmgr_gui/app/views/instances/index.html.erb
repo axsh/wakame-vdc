@@ -52,25 +52,29 @@ jQuery(function($){
 			   <tr>
 			     <th></th>
 			     <th>Instance ID</th>
-			     <th>Owner</th>
 			     <th>WMI ID</th>
-			     <th>State</th>
-			     <th>Private IP</th>
-			     <th>Type</th>
+				   <th>Cpu Core</th>
+		 	     <th>Memory Size</th>
+					 <th>Private IP</th>
+					 <th>State</th>
 			   </tr>
 			   {{each(index,item) rows}}
 			   <tr>
-					{{if item.instance_id }}
-						<td class="center listcheckbox"><input type="checkbox" value="${item.instance_id}" > </td>
+					{{if item.uuid }}
+						<td class="center listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
 					{{else}}
 						<td class="listcheckbox"></td>
 					{{/if}}
-					<td class="instance_id" title="${item.instance_id}">${item.instance_id}</td>
-					<td class="owner" title="${item.owner}">${item.owner}</td>
-					<td class="wmi_id" title="${item.wmi_id}">${item.wmi_id}</td>
-					<td class="vtip center state" title="${item.state}">${item.state}</td>
+					<td class="instance_id" title="${item.uuid}">${item.uuid}</td>
+					<td class="wmi_id" title="">
+					{{each(index,image) item.image}}
+						${image.uuid}
+					{{/each}}
+					</td>
+					<td class="vtip center" title="${item.cpu_cores}">${item.cpu_cores}</td>
+					<td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
 					<td class="vtip center private_ip" title="${item.private_ip}">${item.private_ip}</td>
-					<td class="vtip center type" title="${item.type}">${item.type}</td>
+					<td class="vtip center state" title="${item.state}">${item.state}</td>
 				</tr>
 			   {{/each}}
 			   </table>
