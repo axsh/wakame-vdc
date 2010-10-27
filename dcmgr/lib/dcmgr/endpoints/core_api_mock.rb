@@ -242,14 +242,24 @@ module Dcmgr
         operation :create do
           description 'Runs a new instance'
           # param :image_id, :required
+          # param :host_pool_id :required
           # param :instance_spec_id, :required
           control do
-            hp = Models::HostPool.dataset.first
-            raise NoCandidateTo
-            i = hp.create_instance(params[:image_id])
-
+            i = {
+              :memory_size => 256, 
+              :image_id => "wmi-640cbf3r",
+              :created_at => "Wed Oct 27 16:58:24 +0900 2010", 
+              :network => {"ipaddr"=>"192.168.1.241"}, 
+              :id => "i-umwcbev3", 
+              :volume => {}, 
+              :host_pool_id => "hp-hb4f6f84", 
+              :cpu_cores => 1, 
+              :status => "init", 
+              :state => "init"
+            }
+            
             respond_to { |f|
-              f.json { i.to_hash_document.to_json }
+              f.json { i.to_json }
             }
           end
         end
