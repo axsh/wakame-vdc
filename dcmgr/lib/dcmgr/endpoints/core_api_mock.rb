@@ -389,12 +389,12 @@ module Dcmgr
             total = vl.count
             vl = pagenate(vl,start,limit)
 
-            res = {
+            res = [{
               :owner_total => total,
               :start => start,
               :limit => limit,
               :results => vl
-            }
+            }]
             respond_to { |f|
               f.json {res.to_json}
             }
@@ -496,12 +496,12 @@ module Dcmgr
             total = vs.count
             vs = pagenate(vs,start,limit)
 
-            res = {
+            res = [{
               :owner_total => total,
               :start => start,
               :limit => limit,
               :results => vs
-            }
+            }]
             respond_to { |f|
               f.json {res.to_json}
             }

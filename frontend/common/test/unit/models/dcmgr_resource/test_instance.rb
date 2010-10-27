@@ -22,5 +22,11 @@ module Frontend
       require 'pp'
       pp @instance.list(params)
     end
+    
+    def test_show
+      instance_id = 'i-sahh531g'
+      p @instance.show(instance_id)
+    end
+    
   end
 end

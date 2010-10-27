@@ -60,17 +60,13 @@ jQuery(function($){
 			   </tr>
 			   {{each(index,item) rows}}
 			   <tr>
-					{{if item.uuid }}
-						<td class="center listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
+					{{if item.id }}
+						<td class="center listcheckbox"><input type="checkbox" value="${item.id}" > </td>
 					{{else}}
 						<td class="listcheckbox"></td>
 					{{/if}}
-					<td class="instance_id" title="${item.uuid}">${item.uuid}</td>
-					<td class="wmi_id" title="">
-					{{each(index,image) item.image}}
-						${image.uuid}
-					{{/each}}
-					</td>
+					<td class="instance_id" title="${item.id}">${item.id}</td>
+					<td class="wmi_id" title="">${item.image_id}</td>
 					<td class="vtip center" title="${item.cpu_cores}">${item.cpu_cores}</td>
 					<td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
 					<td class="vtip center private_ip" title="${item.private_ip}">${item.private_ip}</td>
@@ -92,27 +88,27 @@ jQuery(function($){
 			<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
 				<tr>
 					<td class="padcell"></td>
-					<td class="title">WMI ID:</td>
-					<td>${item.wmi_id}</td>
+					<td class="title">Instance ID:</td>
+					<td>${item.id}</td>
 					<td class="padcell"></td>
-					<td class="title">Zone:</td>
-					<td>${item.zone}</td>
+					<td class="title">Wmi ID:</td>
+					<td>${item.image_id}</td>
 				</tr>
 				<tr>
 					<td class="padcell"></td>
-					<td class="title">Security Groups:</td>
-					<td>${item.security_groups}</td>
+					<td class="title">Cpu Cores:</td>
+					<td>${item.cpu_cores}</td>
 					<td class="padcell"></td>
-					<td class="title">Type:</td>
-					<td>${item.type}</td>
+					<td class="title">Memory Size:</td>
+					<td>${item.memory_size}</td>
 				</tr>
 				<tr>
 					<td class="padcell"></td>
 					<td class="title">Status:</td>
-					<td class="state">${item.status}</td>
+					<td class="state">${item.state}</td>
 					<td class="padcell"></td>
-					<td class="title">Owner:</td>
-					<td>${item.owner}</td>
+					<td class="title">Created At:</td>
+					<td>${item.created_at}</td>
 				</tr>
 			</table>
 		</div>
