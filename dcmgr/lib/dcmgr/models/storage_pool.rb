@@ -6,11 +6,11 @@ module Dcmgr::Models
     taggable 'sp'
     with_timestamps
 
-    STATAS_TYPE_REGISTERING = 0
-    STATAS_TYPE_ONLINE = 1
-    STATAS_TYPE_DEGRADE = 2
-    STATAS_TYPE_FAILED = 3
-    STATAS_TYPE_DEREGISTERED = 4
+    STATAS_TYPE_REGISTERING = "registering"
+    STATAS_TYPE_ONLINE = "online"
+    STATAS_TYPE_DEGRADE = "degrade"
+    STATAS_TYPE_FAILED = "failed"
+    STATAS_TYPE_DEREGISTERED = "deregistered"
 
     STATUS_MSGS = {
       STATAS_TYPE_REGISTERING => :registering,
@@ -23,7 +23,7 @@ module Dcmgr::Models
     inheritable_schema do
       String :node_id, :null=>false
       String :export_path, :null=>false
-      Fixnum :status, :null=>false, :default=>STATAS_TYPE_REGISTERING
+      String :status, :null=>false, :default=>STATAS_TYPE_REGISTERING
       Fixnum :offerring_disk_space, :null=>false, :unsigned=>true
       String :transport_type, :null=>false
       String :storage_type, :null=>false
