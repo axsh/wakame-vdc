@@ -382,6 +382,48 @@ module Dcmgr
 
       end
 
+      collection :images do
+        operation :index do
+          description 'Show list of machine images'
+          control do
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+
+            partial_ds = (1..30).collect { |i| {
+            				 :created_at => "Mon Oct 18 18:33:58 +0900 2010",
+                     :updated_at => "Mon Oct 18 18:33:58 +0900 2010",
+                     :uuid => "wmi-640cbf"+sprintf('%02d',i),
+                     :arch => "x86",
+                     :account_id => "a-00000000",
+                     :id => "wmi-640cbf"+sprintf('%02d',i),
+                     :boot_dev_type => 2,
+                     :description => "",
+                     :source => {
+            						:uri => "http://localhost/vdc/tmpmz0N86.qcow2", 
+            						:type => "http"
+            					},
+            				 :state => "init"
+            }}
+            
+            total = partial_ds.count
+            partial_ds = pagenate(partial_ds,params[:start],params[:limit])
+
+            res = [{
+              :owner_total => total,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds
+            }]
+
+            respond_to { |f|
+              f.json {res.to_json}
+            }
+          end
+        end
+      end
+
       collection :volumes do
         operation :index do
           description 'Show lists of the volume'
