@@ -4,6 +4,17 @@ class InstancesController < ApplicationController
   def index
   end
   
+  def create
+    data = {
+      :image_id => params[:image_id],
+      :host_pool_id => params[:host_pool_id],
+      :instance_spec => params[:instance_spec]
+    }
+    
+    instance = Frontend::Models::DcmgrResource::Instance.create(data)
+    render :json => instance
+  end
+  
   def list
     data = {
       :start => params[:start].to_i - 1,

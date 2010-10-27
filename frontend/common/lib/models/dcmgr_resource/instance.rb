@@ -8,6 +8,14 @@ module Frontend::Models
       def self.show(instance_id)
         self.get(instance_id)
       end
+      
+      def self.create(params)
+        instance = self.new
+        instance.image_id = params[:image_id]
+        instance.host_pool_id = params[:host_pool_id]
+        instance.save
+        instance
+      end
     end
   end
 end

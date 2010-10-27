@@ -58,7 +58,8 @@ DcmgrGUI.prototype.imagePanel = function(){
     var image = params.data.image;
     c_pagenate.changeTotal(image.owner_total);
     c_list.setData(image.results);
-    c_list.multiCheckList(c_list.detail_template);
+    // c_list.multiCheckList(c_list.detail_template);
+    c_list.singleCheckList(c_list.detail_template);
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -88,6 +89,45 @@ DcmgrGUI.prototype.imagePanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
   
+  var bt_launch_instance = new DcmgrGUI.Dialog({
+    target:'.launch_instance',
+    width:400,
+    height:200,
+    title:'Launch Instance',
+    path:'/launch_instance',
+    button:{
+     "Launch": function() { 
+       var image_id = $('#image_id').text();
+       var host_pool_id = $('#host_pool_id').text();
+       var instance_spec = $('#instance_spec').text();
+       var data = "image_id="+image_id
+                  +"&host_pool_id="+host_pool_id
+                  +"&instance_spec="+instance_spec;
+       
+       $.ajax({
+          "type": "POST",
+          "async": true,
+          "url": '/instances/create',
+          "dataType": "json",
+          "data": data,
+          success: function(json,status){
+            console.log(json);
+          }
+        });
+       $(this).dialog("close");
+      }
+    }
+  });
+  
+  bt_launch_instance.target.bind('click',function(){
+    var id = c_list.currentChecked();
+    if( id ){
+      bt_launch_instance.open(id);
+    }
+    return false;
+  });
+  
+
   //list
   c_list.setData(null);
   c_list.update(list_request,true);

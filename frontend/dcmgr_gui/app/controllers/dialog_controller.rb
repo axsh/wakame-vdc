@@ -50,4 +50,8 @@ class DialogController < ApplicationController
   def delete_security_group
     @name = params[:ids][0]
   end
+  
+  def launch_instance
+    @image_id = params[:ids][0]
+  end
 end
