@@ -33,12 +33,12 @@ class KvmHandler < EndpointBuilder
     inst = rpc.request('hva-collector', 'get_instance',  inst_id)
 
     # setup vm data folder
-    FileUtils.mkdir(File.expand_path("#{inst_id}", node.manifest.config.vm_data_dir))
+    FileUtils.mkdir(File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir))
     # copy image file
     img_src = inst[:image][:source]
     case img_src[:type].to_sym
     when :http
-      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", node.manifest.config.vm_data_dir)
+      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", @node.manifest.config.vm_data_dir)
       system("curl --silent -o '#{img_path}' #{img_src[:uri]}")
     else
       raise "Unknown image source type: #{img_src[:type]}"
@@ -47,9 +47,17 @@ class KvmHandler < EndpointBuilder
     inst[:disk]
     
     # boot virtual machine
-    system("kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{img_path} -daemonize")
+    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -daemonize",
+                  inst[:instance_spec][:memory_size],
+                  inst[:instance_spec][:cpu_cores],
+                  inst_id,
+                  inst[:runtime_config][:vnc_port],
+                  img_path
+                  )
+    system(cmd)
     
-    #hva.update_instance(inst_id, {:state=>:running})
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
+    event.publish('hva/instance_started', :args=>[inst_id])
   end
 
   job :run_vol_store do
@@ -80,18 +88,28 @@ class KvmHandler < EndpointBuilder
     end
     
     # run vm
-    cmd = "kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-#{inst_id} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{linux_dev_path} -daemonize"
+    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -daemonize",
+                  inst[:instance_spec][:memory_size],
+                  inst[:instance_spec][:cpu_cores],
+                  inst_id,
+                  inst[:runtime_config][:vnc_port],
+                  linux_dev_path
+                  )
     if vnic = inst[:instance_nics].first
       cmd += " -net nic,macaddr=#{vnic[:mac_addr].unpack('A2'*6).join(':')} -net tap,ifname=#{vnic[:vif]}"
     end
     puts  cmd
     system(cmd)
+
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
+    event.publish('hva/instance_started', :args=>[inst_id])
   end
   
   job :terminate do
+    inst_id = request.args[0]
     hva = rpc.delegate('hva-collector')
-    inst_id = request.
     logger.info("Booting #{inst_id}")
+    event.publish('hva/instance_terminated', :args=>[inst_id])
   end
 
   job :attach do
@@ -106,6 +124,10 @@ class KvmHandler < EndpointBuilder
 
   def jobreq
     @jobreq ||= Isono::NodeModules::JobChannel.new(@node)
+  end
+
+  def event
+    @event ||= Isono::NodeModules::EventChannel.new(@node)
   end
 
 

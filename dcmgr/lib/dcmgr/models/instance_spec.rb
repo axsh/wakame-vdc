@@ -15,7 +15,7 @@ module Dcmgr::Models
     with_timestamps
 
     def to_hash
-      values.dup.merge({:config=>config.to_s})
+      super.merge({:config=>config.to_s})
     end
   end
 end
