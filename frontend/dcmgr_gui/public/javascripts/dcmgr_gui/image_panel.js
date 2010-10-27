@@ -1,4 +1,12 @@
 DcmgrGUI.prototype.imagePanel = function(){
+  var total = 0;
+  var maxrow = 10;
+  var page = 1;
+  var list_request = { 
+    "url":DcmgrGUI.Util.getPagePath('/images/list/',page),
+    "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
+  }
+  
   DcmgrGUI.List.prototype.getEmptyData = function(){
     return [{
       "id":'',
@@ -29,32 +37,36 @@ DcmgrGUI.prototype.imagePanel = function(){
             "state_reason":"-"
           }
       }
-      
-  var list_request = { "url":DcmgrGUI.Util.getPagePath('/images/show/',1) }
+  var c_pagenate = new DcmgrGUI.Pagenate({
+    row:maxrow,
+    total:total
+  });
+  
   var c_list = new DcmgrGUI.List({
     element_id:'#display_images',
-    template_id:'#imagesListTemplate'
+    template_id:'#imagesListTemplate',
+    maxrow:maxrow,
+    page:page
   });
       
   c_list.setDetailTemplate({
     template_id:'#imagesDetailTemplate',
-    detail_path:'/images/detail/'
+    detail_path:'/images/show/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
-    c_list.setData(params.data);
+    var image = params.data.image;
+    c_pagenate.changeTotal(image.owner_total);
+    c_list.setData(image.results);
     c_list.multiCheckList(c_list.detail_template);
-  });
-
-  var c_pagenate = new DcmgrGUI.Pagenate({
-    row:10,
-    total:30 //todo:get total from dcmgr
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
   
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
-    list_request.url = DcmgrGUI.Util.getPagePath('/images/show/',c_pagenate.current_page);
+    c_list.page = c_pagenate.current_page;
+    list_request.url = DcmgrGUI.Util.getPagePath('/images/list/',c_pagenate.current_page);
+    list_request.data = DcmgrGUI.Util.getPagenateData(c_list.page,c_list.maxrow)
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
     //update detail
@@ -65,7 +77,7 @@ DcmgrGUI.prototype.imagePanel = function(){
      
      //update
      c_list.checked_list[check_id].c_detail.update({
-       url:DcmgrGUI.Util.getPagePath('/images/detail/',check_id)
+       url:DcmgrGUI.Util.getPagePath('/images/show/',check_id)
      },true);
     });
   });
