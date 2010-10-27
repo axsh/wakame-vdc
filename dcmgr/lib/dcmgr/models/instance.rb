@@ -40,6 +40,8 @@ module Dcmgr::Models
     plugin :serialization
     serialize_attributes :yaml, :runtime_config
 
+    # dump column data as hash with details of associated models.
+    # this is for internal use.
     def to_hash
       h = super
       h = h.merge({:user_data => user_data.to_s, # Sequel::BLOB -> String
@@ -47,10 +49,53 @@ module Dcmgr::Models
                     :image=>image.to_hash,
                     :host_pool=>host_pool.to_hash,
                     :instance_nics=>instance_nic.map {|n| n.to_hash },
-                  }).merge(instance_spec.to_hash)
-      h.delete(:host_pool_id)
-      h.delete(:image_id)
-      h.delete(:instance_spec_id)
+                  })
+      h
+    end
+
+    # returns hash data for API response on
+    # GET instances/[uuid]
+    #
+    # @exmaple Example output data.
+    # { :id=>
+    #   :cpu_cores
+    #   :memory_size
+    #   :image_id
+    #   :network => {'global1'=>{:ipaddr=>'111.111.111.111'}}
+    #   :volume => {'uuid'=>{:guest_device_name=>,}}
+    #   :created_at
+    #   :state
+    #   :status
+    # }
+    def to_api_document
+      h = {
+        :id => canonical_uuid,
+        :cpu_cores   => instance_spec.cpu_cores,
+        :memory_size => instance_spec.memory_size,
+        :image_id    => image.canonical_uuid,
+        :created_at  => self.created_at,
+        :state => self.state,
+        :status => self.status,
+      }
+
+      h[:network] = {}
+      if instance_nic
+        instance_nic.each { |n|
+          if n.ip
+            h[:network][n.ip.network.name] = {:ipaddr=>n.ip.ipv4}
+          end
+        }
+      end
+      
+      h[:volume] = {}
+      if self.volume
+        self.volume.each { |v|
+          h[:volume][v.canonical_uuid] = {
+            :guest_device_name=>v.guest_device_name,
+            :state=>v.state,
+          }
+        }
+      end
       h
     end
 

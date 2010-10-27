@@ -244,7 +244,7 @@ module Dcmgr
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_hash }
+              :results=> partial_ds.all.map {|i| i.to_api_document }
             }
             
             respond_to { |f|
@@ -290,7 +290,7 @@ module Dcmgr
               raise "Unknown boot type"
             end
             respond_to { |f|
-              f.json { inst.to_hash.to_json }
+              f.json { inst.to_api_document.to_json }
             }
           end
         end
@@ -298,11 +298,11 @@ module Dcmgr
         operation :show do
           #param :account_id, :string, :optional
           control do
-            i = Models::Instance[params[:id]]
+            i = find_by_uuid(:Instance, params[:id])
             raise UnknownInstance if i.nil?
             
             respond_to { |f|
-              f.json { i.to_hash.to_json }
+              f.json { i.to_api_document.to_json }
             }
           end
         end
