@@ -49,6 +49,7 @@ module Dcmgr::Models
                     :image=>image.to_hash,
                     :host_pool=>host_pool.to_hash,
                     :instance_nics=>instance_nic.map {|n| n.to_hash },
+                    :instance_spec=>instance_spec.to_hash,
                   })
       h
     end
