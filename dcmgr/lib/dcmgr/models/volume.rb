@@ -5,41 +5,26 @@ module Dcmgr::Models
   class Volume < AccountResource
     taggable 'vol'
 
-    STATUS_TYPE_REGISTERING = 0
-    STATUS_TYPE_ONLINE = 1
-    STATUS_TYPE_OFFLINE = 2
-    STATUS_TYPE_FAILED = 3
+    STATUS_TYPE_REGISTERING = "registering"
+    STATUS_TYPE_ONLINE = "online"
+    STATUS_TYPE_OFFLINE = "offline"
+    STATUS_TYPE_FAILED = "failed"
 
-    STATE_TYPE_REGISTERING = 0
-    STATE_TYPE_CREATING = 1
-    STATE_TYPE_AVAILABLE = 2
-    STATE_TYPE_ATTATING = 3
-    STATE_TYPE_ATTACHED = 4
-    STATE_TYPE_DETACHING = 5
-    STATE_TYPE_FAILED = 6
-    STATE_TYPE_DEREGISTERING = 7
-    STATE_TYPE_DELETING = 8
-    STATE_TYPE_DELETED = 9
-
-    # STATE_MSGS = {
-    #   STATE_TYPE_REGISTERING => :registering,
-    #   STATE_TYPE_CREATING => :creating,
-    #   STATE_TYPE_AVAILABLE => :available,
-    #   STATE_TYPE_ATTATING => :attaching,
-    #   STATE_TYPE_ATTACHED => :attached,
-    #   STATE_TYPE_DETACHING => :detaching,n
-    #   STATE_TYPE_FAILED => :failed,
-    #   STATE_TYPE_DEREGISTERING => :deregistering,
-    #   STATE_TYPE_DELETING => :deleting,
-    #   STATE_TYPE_DELETED => :deleted
-    # }
-
-    # MSG_TO_ID = STATE_MSGS.invert
+    STATE_TYPE_REGISTERING = "registering"
+    STATE_TYPE_CREATING = "creating"
+    STATE_TYPE_AVAILABLE = "available"
+    STATE_TYPE_ATTATING = "attating"
+    STATE_TYPE_ATTACHED = "attached"
+    STATE_TYPE_DETACHING = "detaching"
+    STATE_TYPE_FAILED = "failed"
+    STATE_TYPE_DEREGISTERING = "deregistering"
+    STATE_TYPE_DELETING = "deleting"
+    STATE_TYPE_DELETED = "deleted"
 
     inheritable_schema do
       Fixnum :storage_pool_id, :null=>false
-      Fixnum :status, :null=>false, :default=>STATUS_TYPE_REGISTERING
-      String :state, :null=>false, :default=> 'registering'
+      String :status, :null=>false, :default=>STATUS_TYPE_REGISTERING
+      String :state, :null=>false, :default=>STATE_TYPE_REGISTERING
       Fixnum :size, :null=>false
       Fixnum :instance_id
       String :snapshot_id
@@ -47,6 +32,9 @@ module Dcmgr::Models
       String :guest_device_name
       String :export_path, :null=>false
       Text :transport_information
+      Time :deleted_at
+      Time :attached_at
+      Time :detached_at
     end
     with_timestamps
 
