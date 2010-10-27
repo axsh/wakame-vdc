@@ -166,6 +166,9 @@ class NetfilterHandler < EndpointBuilder
     end
     rules.flatten!
 
+    # group ips
+    p ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+
     # TODO: Clean-up code.
 
     # ebtables
@@ -173,40 +176,49 @@ class NetfilterHandler < EndpointBuilder
 
     # chains
     chains = []
-    protocols = [ 'ip4', 'ip6', 'arp', 'rarp' ]
+    protocols = {
+      'ip4'  => 'ip4',
+      'ip6'  => 'ip6',
+      'arp'  => 'arp',
+      'rarp' => '0x8035'
+    }
     commands = [ 'X', 'N' ]
 
     # make chain names.
     chains << "host_I_#{vif}"
-    chains << "I_#{vif}_host"
-    protocols.each { |protocol|
-      chains << "I_#{vif}_#{protocol}"
+    protocols.each { |k,v|
+      chains << "I_#{vif}_#{k}"
     }
 
-    # initialize chains
     ebtables << "-D FORWARD -o #{vif} -j host_I_#{vif}"
     commands.each { |cmd|
       chains.each { |chain|
         ebtables << "-#{cmd} #{chain}"
       }
     }
+    p ebtables
 
     # jump target
     ebtables << "-A FORWARD -o #{vif} -j host_I_#{vif}"
-    ebtables << "-A host_I_#{vif} -p ip4    -j I_#{vif}_ip4"
-    ebtables << "-A host_I_#{vif} -p ip6    -j I_#{vif}_ip6"
-    ebtables << "-A host_I_#{vif} -p arp    -j I_#{vif}_arp"
-    ebtables << "-A host_I_#{vif} -p 0x8035 -j I_#{vif}_rarp"
+    protocols.each { |k,v|
+      ebtables << "-A host_I_#{vif} -p #{v} -j I_#{vif}_#{k}"
+    }
     ebtables << "-A host_I_#{vif} -p 0x835  -j ACCEPT"
     ebtables << "-A host_I_#{vif}           -j DROP"
 
+    # rules
     self.build_rule(rules).each do |rule|
       case rule[:ip_source]
       when '0.0.0.0'
-        ebtables << "-A I_#{vif}_host --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-dport #{rule[:ip_dport]}"
+        ebtables << "-A I_#{vif}_#{rule[:protocol]} --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-dport #{rule[:ip_dport]} -j ACCEPT"
       else
-        ebtables << "-A I_#{vif}_host --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-source #{rule[:ip_source]} --ip-dport #{rule[:ip_dport]}"
+        ebtables << "-A I_#{vif}_#{rule[:protocol]} --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-source #{rule[:ip_source]} --ip-dport #{rule[:ip_dport]} -j ACCEPT"
       end
+    end
+
+    # group instances
+    ipv4s.each do |ipv4|
+      ebtables << "-A I_#{vif}_ip4 --protocol ip4 --ip-source #{ipv4} -j ACCEPT"
     end
 
     ebtables << "-A I_#{vif}_ip4  -p ip4    -j DROP"
@@ -214,6 +226,7 @@ class NetfilterHandler < EndpointBuilder
     ebtables << "-A I_#{vif}_arp  -p arp    -j DROP"
     ebtables << "-A I_#{vif}_rarp -p 0x8035 -j DROP"
 
+    ebtables.uniq!
     ebtables.each { |ebtable|
       puts "sudo ebtables #{ebtable}"
     }
