@@ -33,12 +33,12 @@ class KvmHandler < EndpointBuilder
     inst = rpc.request('hva-collector', 'get_instance',  inst_id)
 
     # setup vm data folder
-    FileUtils.mkdir(File.expand_path("#{inst_id}", node.manifest.config.vm_data_dir))
+    FileUtils.mkdir(File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir))
     # copy image file
     img_src = inst[:image][:source]
     case img_src[:type].to_sym
     when :http
-      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", node.manifest.config.vm_data_dir)
+      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", @node.manifest.config.vm_data_dir)
       system("curl --silent -o '#{img_path}' #{img_src[:uri]}")
     else
       raise "Unknown image source type: #{img_src[:type]}"
