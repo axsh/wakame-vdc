@@ -2,12 +2,7 @@ module Frontend::Models
   module DcmgrResource
     class Volume < Base
       def self.list(params = {})
-        data = self.find(:all,:params => params)
-        results = []
-        data.each{|row|
-          results << row.attributes
-        }
-        results
+        self.find(:all,:params => params)
       end
     
       def self.create(params)
