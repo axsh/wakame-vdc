@@ -689,11 +689,12 @@ module Dcmgr
 
         operation :destroy do
           description 'Delete the volume snapshot'
-          # params snapshot_id, string, required
+          # params id, string, required
           control do
-            raise UndefindVolumeSnapshotID if params[:snapshot_id].nil?
+            snapshot_id = params[:id]
+            raise UndefindVolumeSnapshotID if snapshot_id.nil?
 
-            vs = find_by_uuid(:VolumeSnapshot, params[:snapshot_id])
+            vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
             raise UnknownVolumeSnapshot if vs.nil?
             vs = vs.delete_snapshot
             sp = vs.storage_pool
