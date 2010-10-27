@@ -27,13 +27,21 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   initialize: function(params) {
     this.element = $('#pagenate');
     this.total = params.total;
-    this.page_count = Math.ceil(params['total'] / params['row']);
+    this.page_count = this.getPageCount(params['total'],params['row']);
     this.current_page = 1;
     this.row = params['row'];
     this.view = $("#viewPagenate").text();
     $('.prev').bind("click",{obj: this},this.updatePage);
     $('.next').bind("click",{obj: this},this.updatePage);
 
+    this.renderPagenate();
+  },
+  getPageCount: function(total,row){
+    return Math.ceil(total / row)
+  },
+  changeTotal: function(total){
+    this.total = total;
+    this.page_count = this.getPageCount(this.total,this.row)
     this.renderPagenate();
   },
   renderPagenate: function(){

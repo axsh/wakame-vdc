@@ -1,5 +1,5 @@
 DcmgrGUI.prototype.volumePanel = function(){
-
+  var total = 0;
   var maxrow = 10;
   var page = 1;
   var list_request = { 
@@ -30,7 +30,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
-    total:30 //todo:get total from dcmgr
+    total:total
   });
   
   var c_list = new DcmgrGUI.List({
@@ -46,8 +46,9 @@ DcmgrGUI.prototype.volumePanel = function(){
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
-    c_list.page = c_pagenate.current_page;
-    c_list.setData(params.data);
+    var volume = params.data.volume;
+    c_pagenate.changeTotal(volume.owner_total);
+    c_list.setData(volume.results);
     c_list.multiCheckList(c_list.detail_template);
   });
   
