@@ -105,10 +105,8 @@ module Dcmgr
       def pagenate(data,start,limit) 
         return data unless data.kind_of?(Array)
         if !start.nil? && !limit.nil?
-          start = start.to_i
-          limit = limit.to_i
-          from = (start - 1)
-          to = (from + limit -1)
+          from = start.to_i
+          to = limit.to_i
           data = data[from..to]         
         end
         data
@@ -305,8 +303,7 @@ module Dcmgr
           end
         end
       end
-
-
+      
       collection :host_pools do
         operation :create do
           description 'Register a new physical host'
@@ -380,7 +377,7 @@ module Dcmgr
           # param limit, fixnum, optional
           control do
             start = params[:start].to_i
-            start = start < 1 ? 1 : start
+            start = start < 1 ? 0 : start
             limit = params[:limit].to_i
             limit = limit < 1 ? 10 : limit
 
@@ -487,7 +484,7 @@ module Dcmgr
           # param limit, Fixnum, optional
           control do
             start = params[:start].to_i
-            start = start < 1 ? 1 : start
+            start = start < 1 ? 0 : start
             limit = params[:limit].to_i
             limit = limit < 1 ? 10 : limit
 
@@ -564,6 +561,12 @@ module Dcmgr
       collection :netfilter_groups do
         operation :index do
           control do
+            
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+            
             g = (1..30).collect { |i|
               {
                 :id          => i,
