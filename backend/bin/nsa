@@ -1,0 +1,95 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+#
+# Naming Service Agent:
+# This agent aims to configure DNS/DHCP daemons or devices to supply
+# IP address and Hostname for Instances.
+require File.expand_path('../../config/path_resolver', __FILE__)
+
+
+require 'eventmachine'
+
+class SuperviseDnsmasq < Isono::NodeModules::Base
+  include Isono::Logger
+
+  config_section do
+    desc "configuration file for dnsmasq dhcp"
+    dhcp_hosts_conf File.expand_path('dnsmasq-dhcp.conf', '/var/tmp/')
+  end
+  
+  initialize_hook do
+    #opts = sprintf("-k --no-hosts --no-resolv --dhcp-hostsfile=%s --conf-file=/dev/null",
+    opts = sprintf("-k --dhcp-hostsfile=%s --no-hosts --no-resolv --conf-file=",
+                   config_section.dhcp_hosts_conf
+                   )
+    cmd = "#{manifest.config.dnsmasq_bin_path} #{opts}"
+
+    @dnsmasq_pid = fork {
+      Process.exec(cmd)
+    }
+    
+    myinstance.refresh_dnsmasq_conf
+
+    event = Isono::NodeModules::EventChannel.new(node)
+
+    event.subscribe('hva/instance_started', '#') do |args|
+      puts "refresh on instance_started: #{args.inspect}"
+      myinstance.refresh_dnsmasq_conf
+    end
+    
+    event.subscribe('hva/instance_terminated', '#') do |args|
+      puts "refresh on instance_terminated: #{args.inspect}"
+      myinstance.refresh_dnsmasq_conf
+    end
+  end
+
+
+  def refresh_dnsmasq_conf
+    EM.defer {
+      begin
+        generate_dhcp_conf()
+        system("/bin/kill -HUP #{@dnsmasq_pid}")
+        logger.info("refreshed dnsmasq conf")
+      rescue Exception => e
+        p e
+      end
+    }
+  end
+  
+  def generate_dhcp_conf
+    rpc = Isono::NodeModules::RpcChannel.new(node)
+    # load entier macaddr,ipaddr pairs for all instances from collector.
+    pairs = rpc.request('hva-collector', 'get_dhcp_conf')
+
+    require 'erb'
+    
+    File.open(config_section.dhcp_hosts_conf, 'w') { |f|
+        f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+<%- pairs.each { |i| -%>
+<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+<%- } -%>
+_EOS_
+    }
+  end
+end
+
+include Isono::Runner::RpcServer
+
+manifest = DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'nsa'
+  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
+  load_module Isono::NodeModules::NodeHeartbeat
+  load_module SuperviseDnsmasq
+  
+  config do |c|
+    c.dnsmasq_bin_path = '/usr/sbin/dnsmasq'
+  end
+
+  config_path File.expand_path('config/nsa.conf', app_root)
+  load_config
+end
+
+
+start(manifest) do
+end
