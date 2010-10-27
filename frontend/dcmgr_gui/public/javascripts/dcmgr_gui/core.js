@@ -133,13 +133,13 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     this.async = async;
     var self = this;
     self.element.trigger('dcmgrGUI.beforeUpdate');
-
     $.ajax({
        async: async||true,
        url: request.url,
        dataType: "json",
        data: request.data,
        success: function(json,status){
+         console.log(json)
          self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
          self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
        }
@@ -245,12 +245,17 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     }
   },
   setData:function(json){
+    var rows = []
     if(!json){
-      json = this.getEmptyData()
+      rows = this.getEmptyData()
+    }else{
+      $.each(json,function(key,value){
+        rows.push(value.result)
+      });
     }
     var row = this.maxrow || 10;
     var data = {
-      rows:DcmgrGUI.Util.setfillData(row,json)
+      rows:DcmgrGUI.Util.setfillData(row,rows)
     };
     this.element.html('');
     if(data.rows){
