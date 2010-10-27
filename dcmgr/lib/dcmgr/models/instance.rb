@@ -16,7 +16,8 @@ module Dcmgr::Models
       Fixnum :instance_spec_id, :null=>false
       String :state, :size=>20, :null=>false, :default=>:init.to_s
       String :status, :size=>20, :null=>false, :default=>:init.to_s
-
+      String :hostname, :null=>false
+      
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
       index :state
