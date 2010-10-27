@@ -54,12 +54,16 @@ DcmgrGUI.prototype.imagePanel = function(){
     detail_path:'/images/show/'
   });
   
+  c_list.element.bind('dcmgrGUI.beforeUpdate',function(){
+    $("#list_load_mask").mask("Loading...");
+  });
+  
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var image = params.data.image;
     c_pagenate.changeTotal(image.owner_total);
     c_list.setData(image.results);
-    // c_list.multiCheckList(c_list.detail_template);
     c_list.singleCheckList(c_list.detail_template);
+    $("#list_load_mask").unmask();
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
