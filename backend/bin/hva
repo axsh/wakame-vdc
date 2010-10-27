@@ -47,7 +47,14 @@ class KvmHandler < EndpointBuilder
     inst[:disk]
     
     # boot virtual machine
-    system("kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-i-#{inst[:uuid]} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{img_path} -daemonize")
+    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -daemonize",
+                  inst[:instance_spec][:memory_size],
+                  inst[:instance_spec][:cpu_cores],
+                  inst_id,
+                  inst[:runtime_config][:vnc_port],
+                  img_path
+                  )
+    system(cmd)
     
     #hva.update_instance(inst_id, {:state=>:running})
   end
@@ -80,7 +87,13 @@ class KvmHandler < EndpointBuilder
     end
     
     # run vm
-    cmd = "kvm -m #{inst[:memory_size]} -smp #{inst[:cpu_cores]} -name vdc-#{inst_id} -vnc :#{inst[:runtime_config][:vnc_port]} -drive file=#{linux_dev_path} -daemonize"
+    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -daemonize",
+                  inst[:instance_spec][:memory_size],
+                  inst[:instance_spec][:cpu_cores],
+                  inst_id,
+                  inst[:runtime_config][:vnc_port],
+                  linux_dev_path
+                  )
     if vnic = inst[:instance_nics].first
       cmd += " -net nic,macaddr=#{vnic[:mac_addr].unpack('A2'*6).join(':')} -net tap,ifname=#{vnic[:vif]}"
     end
