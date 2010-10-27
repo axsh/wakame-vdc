@@ -94,9 +94,10 @@ module Dcmgr
       def examine_owner(account_resource)
         if @account.canonical_uuid == account_resource.account_id ||
             @account.canonical_uuid == 'a-00000000'
-          true
+          return true
+        else
+          return false
         end
-        false
       end
 
       collection :accounts do
