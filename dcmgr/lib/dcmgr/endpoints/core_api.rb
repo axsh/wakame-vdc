@@ -808,7 +808,7 @@ module Dcmgr
             g.rebuild_rule
 
             # refresh netfilter_rules
-            Dcmgr.messaging.event_publish('hva/netfilter_updated',  :args=>[@name])
+            Dcmgr.messaging.event_publish('hva/netfilter_updated', :args=>[g.canonical_uuid])
 
             respond_to { |f|
               f.json { g.values.to_json }
