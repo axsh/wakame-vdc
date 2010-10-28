@@ -17,18 +17,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     event.subscribe('hva/instance_started', '#') do |args|
       puts "refresh on instance_started: #{args.inspect}"
-      myinstance.refresh_netfilter(args)
+      myinstance.refresh_netfilter_by_instance_id(args)
     end
 
     event.subscribe('hva/instance_terminated', '#') do |args|
       puts "refresh on instance_terminated: #{args.inspect}"
-      myinstance.refresh_netfilter(args)
+      myinstance.refresh_netfilter_by_instance_id(args)
     end
 
     event.subscribe('hva/netfilter_updated', '#') do |args|
       puts "refresh on netfilter_updated: #{args.inspect}"
-      # TODO
-      #myinstance.refresh_netfilter(args)
+      myinstance.refresh_netfilter_by_netfilter_group_id(args)
     end
   end
 
@@ -43,7 +42,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
-  def refresh_netfilter(args)
+  def refresh_netfilter_by_instance_id(args)
     inst_id = args[0]
     raise "UnknownInstanceID" if inst_id.nil?
 
@@ -51,6 +50,22 @@ class ServiceNetfilter < Isono::NodeModules::Base
       begin
         refresh_ebtables(inst_id)
         logger.info("refreshed netfilter")
+      rescue Exception => e
+        p e
+      end
+    }
+  end
+
+  def refresh_netfilter_by_netfilter_group_id(args)
+    netfilter_group_id = args[0]
+    raise "UnknownNetfilterGroupID" if netfilter_group_id.nil?
+
+    EM.defer {
+      begin
+        inst_ids = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
+        inst_ids.each { |inst_id|
+          refresh_ebtables(inst_id) unless inst_id.nil?
+        }
       rescue Exception => e
         p e
       end
