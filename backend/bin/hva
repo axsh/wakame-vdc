@@ -60,15 +60,22 @@ class ServiceNetfilter < Isono::NodeModules::Base
     p inst = rpc.request('hva-collector', 'get_instance', inst_id)
     raise "UnknownInstanceID" if inst.nil?
 
-    vif = inst[:instance_nics].first[:vif]
-    p ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
-    rules = ng.map do |g|
-      g[:rules].map { |rule| rule[:permission] }
+    # Does the hva have instance?
+    unless inst[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_id}"
+      return
     end
-    rules.flatten!
+
+    vif = inst[:instance_nics].first[:vif]
+    ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+
+    rules = ng.map { |g|
+      g[:rules].map { |rule| rule[:permission] }
+    }
+    rules.flatten! if rules.size > 0
 
     # group ips
-    p ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
 
     # ebtables
     ebtables = []
