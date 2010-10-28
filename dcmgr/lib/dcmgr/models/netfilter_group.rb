@@ -25,6 +25,7 @@ module Dcmgr::Models
     def self.create_group(account_id, params)
       grp = self.create(:account_id  => account_id,
                         :name        => params[:name],
+                        :rule        => params[:rule],
                         :description => params[:description])
       grp.build_rule
       grp
