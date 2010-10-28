@@ -45,16 +45,11 @@ DcmgrGUI.prototype.volumePanel = function(){
     detail_path:'/volumes/show/'
   });
   
-  c_list.element.bind('dcmgrGUI.beforeUpdate',function(){
-    $("#list_load_mask").mask("Loading...");
-  });
-  
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var volume = params.data.volume;
     c_pagenate.changeTotal(volume.owner_total);
     c_list.setData(volume.results);
     c_list.multiCheckList(c_list.detail_template);
-    $("#list_load_mask").unmask();
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();

@@ -132,16 +132,21 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     this.request = request;
     this.async = async;
     var self = this;
+
+    $("#list_load_mask").mask("Loading...");
     self.element.trigger('dcmgrGUI.beforeUpdate');
     $.ajax({
        async: async||true,
        url: request.url,
        dataType: "json",
        data: request.data,
-       success: function(json,status){
-         console.log(json)
+       success: function(json,status,xhr){
          self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
          self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
+         $("#list_load_mask").unmask();
+       },
+       error: function(xhr, status, error){
+         $("#list_load_mask").unmask();
        }
      });
   },

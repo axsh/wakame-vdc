@@ -41,11 +41,7 @@ DcmgrGUI.prototype.instancePanel = function(){
     element_id:'#display_instances',
     template_id:'#instancesListTemplate'
   });
-  
-  c_list.element.bind('dcmgrGUI.beforeUpdate',function(){
-    $("#list_load_mask").mask("Loading...");
-  });
-  
+    
   c_list.setDetailTemplate({
     template_id:'#instancesDetailTemplate',
     detail_path:'/instances/show/'
@@ -56,7 +52,6 @@ DcmgrGUI.prototype.instancePanel = function(){
     c_pagenate.changeTotal(instance.owner_total);
     c_list.setData(instance.results);
     c_list.multiCheckList(c_list.detail_template);
-    $("#list_load_mask").unmask();
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
