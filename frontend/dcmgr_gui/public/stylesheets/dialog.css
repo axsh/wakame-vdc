@@ -10,5 +10,6 @@
 }
 
 #launch_instance_dialog #view_image_id {
-  padding-left: 0px;
+  padding-top: 2px;
+  padding-right: 4px;
 }
