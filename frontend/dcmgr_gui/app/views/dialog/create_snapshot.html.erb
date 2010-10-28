@@ -1,20 +1,7 @@
-<div id="create_volume_dialog">
-	<table>
-		<tr>
-			<td>Volume:</td>
-			<td>
-				<select>
-					<option value="1">vol-4a005923</option>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				Description:
-			</td>
-			<td>
-				<input type="text">
-			</td>
-		</tr>
-	</table>
-</div>
+<p>Are you sure you want to create the following snapshot?</p>
+<br />
+<ul id="create_snapshots">
+        <% @volume_ids.each do |volume_id| %>
+                <li><%= volume_id %></li>
+        <% end %>
+</ul>

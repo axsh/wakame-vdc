@@ -1,5 +1,7 @@
-<p>Are you sure you want to detach the following volume?</p>
+<p>Are you sure you want to delete the following snapshot?</p>
 <br />
-<li>
-	<ul>snap-844170ef</ul>
-</li>
+<ul id="delete_snapshots">
+        <% @snapshot_ids.each do |snapshot_id| %>
+                <li><%= snapshot_id %></li>
+        <% end %>
+</ul>
