@@ -775,7 +775,6 @@ module Dcmgr
             raise DuplicatedNetfilterGroup unless g.nil?
 
             g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
-
             respond_to { |f|
               f.json { g.values.to_json }
             }
@@ -803,6 +802,9 @@ module Dcmgr
 
             g.save
             g.rebuild_rule
+
+            # refresh netfilter_rules
+            Dcmgr.messaging.event_publish('hva/netfilter_updated',  :args=>[@name])
 
             respond_to { |f|
               f.json { g.values.to_json }
