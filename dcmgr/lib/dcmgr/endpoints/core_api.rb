@@ -312,9 +312,13 @@ module Dcmgr
           description 'Shutdown the instance'
           control do
             i = find_by_uuid(:Instance, params[:id])
-
+            if examine_owner(i)
+            else
+              raise OperationNotPermitted
+            end
+            res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'terminate', i.canonical_uuid)
             respond_to { |f|
-              f.json { i.to_hash.to_json }
+              f.json { i.canonical_uuid }
             }
           end
         end
