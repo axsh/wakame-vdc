@@ -8,6 +8,9 @@ module Dcmgr::Models
       String :name, :size=>20, :null=>false
       String :ipv4_gw, :null=>false
       String :netmask, :null=>false
+      String :domain_name, :null=>false
+      String :dns_server, :null=>false
+      String :metadata_server
       Text :description
       index :name, {:unique=>true}
     end
