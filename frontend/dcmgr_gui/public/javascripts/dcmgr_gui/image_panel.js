@@ -121,7 +121,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   bt_launch_instance.target.bind('click',function(){
     var id = c_list.currentChecked();
     if( id ){
-      bt_launch_instance.open(id);
+      bt_launch_instance.open({"ids":[id]});
     }
     return false;
   });
