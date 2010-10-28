@@ -25,8 +25,8 @@ module Dcmgr::Models
     def self.create_group(account_id, params)
       grp = self.create(:account_id  => account_id,
                         :name        => params[:name],
-                        :description => params[:description],
-                        :rule        => params[:rule])
+                        :rule        => params[:rule],
+                        :description => params[:description])
       grp.build_rule
       grp
     end
@@ -46,6 +46,8 @@ module Dcmgr::Models
     end
 
     def build_rule
+      return if self.rule.nil?
+
       self.rule.split("\n").each { |permission|
         # [ToDo]
         # to make strong parser

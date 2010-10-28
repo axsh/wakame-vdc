@@ -4,22 +4,183 @@
 require File.expand_path('../../config/path_resolver', __FILE__)
 
 include Isono::Runner::RpcServer
+require 'fileutils'
 
-manifest = DEFAULT_MANIFEST.dup
-manifest.instance_eval do
-  node_name 'hva'
-  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
-  load_module Isono::NodeModules::NodeHeartbeat
-  
-  config do |c|
-    c.vm_data_dir = '/var/lib/vm'
+
+class ServiceNetfilter < Isono::NodeModules::Base
+  include Isono::Logger
+
+  initialize_hook do
+    myinstance.init_netfilter
+
+    event = Isono::NodeModules::EventChannel.new(node)
+
+    event.subscribe('hva/instance_started', '#') do |args|
+      puts "refresh on instance_started: #{args.inspect}"
+      myinstance.refresh_netfilter(args)
+    end
+
+    event.subscribe('hva/instance_terminated', '#') do |args|
+      puts "refresh on instance_terminated: #{args.inspect}"
+      myinstance.refresh_netfilter(args)
+    end
   end
 
-  config_path File.expand_path('config/hva.conf', app_root)
-  load_config
+  def init_netfilter
+    EM.defer {
+      begin
+        init_ebtables
+        logger.info("initialize netfilter")
+      rescue Exception => e
+        p e
+      end
+    }
+  end
+
+  def refresh_netfilter(args)
+    inst_id = args[0]
+    raise "UnknownInstanceID" if inst_id.nil?
+
+    EM.defer {
+      begin
+        refresh_ebtables(inst_id)
+        logger.info("refreshed netfilter")
+      rescue Exception => e
+        p e
+      end
+    }
+  end
+
+  def init_ebtables
+    cmd = "sudo ebtables --init-table"
+    puts cmd
+  end
+
+  def refresh_ebtables(inst_id)
+    p inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    raise "UnknownInstanceID" if inst.nil?
+
+    # Does the hva have instance?
+    unless inst[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_id}"
+      return
+    end
+
+    vif = inst[:instance_nics].first[:vif]
+    ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+
+    rules = ng.map { |g|
+      g[:rules].map { |rule| rule[:permission] }
+    }
+    rules.flatten! if rules.size > 0
+
+    # group ips
+    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+
+    # ebtables
+    ebtables = []
+
+    # chains
+    chains = []
+    protocol_map = {
+      'ip4'  => 'ip4',
+      'ip6'  => 'ip6',
+      'arp'  => 'arp',
+      'rarp' => '0x8035'
+    }
+    commands = [ 'X', 'N' ]
+
+    # make chain names.
+    chains << "host_I_#{vif}"
+    protocol_map.each { |k,v|
+      chains << "I_#{vif}_#{k}"
+    }
+
+    ebtables << "-D FORWARD -o #{vif} -j host_I_#{vif}"
+    commands.each { |cmd|
+      chains.each { |chain|
+        ebtables << "-#{cmd} #{chain}"
+      }
+    }
+    p ebtables
+
+    # jump target
+    ebtables << "-A FORWARD -o #{vif} -j host_I_#{vif}"
+    protocol_map.each { |k,v|
+      ebtables << "-A host_I_#{vif} -p #{v} -j I_#{vif}_#{k}"
+    }
+    ebtables << "-A host_I_#{vif} -p 0x835  -j ACCEPT"
+    ebtables << "-A host_I_#{vif}           -j DROP"
+
+    # rules
+    self.build_rule(rules).each do |rule|
+      case rule[:ip_source]
+      when '0.0.0.0'
+        ebtables << "-A I_#{vif}_#{rule[:protocol]} --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-dport #{rule[:ip_dport]} -j ACCEPT"
+      else
+        ebtables << "-A I_#{vif}_#{rule[:protocol]} --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-source #{rule[:ip_source]} --ip-dport #{rule[:ip_dport]} -j ACCEPT"
+      end
+    end
+
+    # group instances
+    ipv4s.each do |ipv4|
+      ebtables << "-A I_#{vif}_ip4 --protocol ip4 --ip-source #{ipv4} -j ACCEPT"
+    end
+
+    ebtables << "-A I_#{vif}_ip4  -p ip4    -j DROP"
+    ebtables << "-A I_#{vif}_ip6  -p ip6    -j DROP"
+    ebtables << "-A I_#{vif}_arp  -p arp    -j DROP"
+    ebtables << "-A I_#{vif}_rarp -p 0x8035 -j DROP"
+
+    ebtables.uniq!
+    ebtables.each { |ebtable|
+      puts "sudo ebtables #{ebtable}"
+    }
+  end
+
+  def build_rule(rules = [])
+    rule_maps = []
+
+    rules.each do |rule|
+      # ex. "tcp:80,80,ip4:0.0.0.0"
+      from_pair, ip_dport, source_pair = rule.split(',')
+
+      ip_protocol, ip_sport = from_pair.split(':')
+      protocol, ip_source   = source_pair.split(':')
+
+      case ip_protocol
+      when 'tcp'
+        rule_maps << {
+          :protocol => protocol,
+          :ip_source => ip_source,
+          :ip_protocol => ip_protocol,
+          :ip_dport => ip_dport,
+        }
+      when 'udp'
+        rule_maps << {
+          :protocol => protocol,
+          :ip_source => ip_source,
+          :ip_protocol => ip_protocol,
+          :ip_dport => ip_dport,
+        }
+      when 'icmp'
+        # through, pending
+      end
+    end
+
+    rule_maps
+  end
+
+  def rpc
+    @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
+  end
+
+  def event
+    @event ||= Isono::NodeModules::EventChannel.new(@node)
+  end
+
 end
 
-require 'fileutils'
 
 class KvmHandler < EndpointBuilder
   include Isono::Logger
@@ -160,140 +321,34 @@ class KvmHandler < EndpointBuilder
 
 end
 
+# TODO: delete debug class
 class NetfilterHandler < EndpointBuilder
-  include Isono::Logger
-
-  # TODO
-  # - flush ebtables in initialization phase.
-  # # ebtables -F
-  # # ebtables -X
-  # # ebtables -Z
-
-  # ebtables:
-  #
-  #  table  | chain
-  # --------+-------------------------------
-  #  filter | INPUT FORWARD OUTPUT
-  #  nat    | PREROUTING OUTPUT POSTROUTING
-  #  broute | BROUTING
-  # ----------------------------------------
   job :refresh do
     inst_id = request.args[0]
-    p inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    vif = inst[:instance_nics].first[:vif]
-
-    p ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
-    rules = ng.map do |g|
-      g[:rules].map { |rule| rule[:permission] }
-    end
-    rules.flatten!
-
-    # group ips
-    p ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
-
-    # TODO: Clean-up code.
-
-    # ebtables
-    ebtables = []
-
-    # chains
-    chains = []
-    protocols = {
-      'ip4'  => 'ip4',
-      'ip6'  => 'ip6',
-      'arp'  => 'arp',
-      'rarp' => '0x8035'
-    }
-    commands = [ 'X', 'N' ]
-
-    # make chain names.
-    chains << "host_I_#{vif}"
-    protocols.each { |k,v|
-      chains << "I_#{vif}_#{k}"
-    }
-
-    ebtables << "-D FORWARD -o #{vif} -j host_I_#{vif}"
-    commands.each { |cmd|
-      chains.each { |chain|
-        ebtables << "-#{cmd} #{chain}"
-      }
-    }
-    p ebtables
-
-    # jump target
-    ebtables << "-A FORWARD -o #{vif} -j host_I_#{vif}"
-    protocols.each { |k,v|
-      ebtables << "-A host_I_#{vif} -p #{v} -j I_#{vif}_#{k}"
-    }
-    ebtables << "-A host_I_#{vif} -p 0x835  -j ACCEPT"
-    ebtables << "-A host_I_#{vif}           -j DROP"
-
-    # rules
-    self.build_rule(rules).each do |rule|
-      case rule[:ip_source]
-      when '0.0.0.0'
-        ebtables << "-A I_#{vif}_#{rule[:protocol]} --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-dport #{rule[:ip_dport]} -j ACCEPT"
-      else
-        ebtables << "-A I_#{vif}_#{rule[:protocol]} --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-source #{rule[:ip_source]} --ip-dport #{rule[:ip_dport]} -j ACCEPT"
-      end
-    end
-
-    # group instances
-    ipv4s.each do |ipv4|
-      ebtables << "-A I_#{vif}_ip4 --protocol ip4 --ip-source #{ipv4} -j ACCEPT"
-    end
-
-    ebtables << "-A I_#{vif}_ip4  -p ip4    -j DROP"
-    ebtables << "-A I_#{vif}_ip6  -p ip6    -j DROP"
-    ebtables << "-A I_#{vif}_arp  -p arp    -j DROP"
-    ebtables << "-A I_#{vif}_rarp -p 0x8035 -j DROP"
-
-    ebtables.uniq!
-    ebtables.each { |ebtable|
-      puts "sudo ebtables #{ebtable}"
-    }
+    event.publish('hva/instance_started', :args=>[inst_id])
   end
 
-  def rpc
-    @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
-  end
-
-
-  def build_rule(rules = [])
-    rule_maps = []
-
-    rules.each do |rule|
-      # ex. "tcp:80,80,ip4:0.0.0.0"
-      from_pair, ip_dport, source_pair = rule.split(',')
-
-      ip_protocol, ip_sport = from_pair.split(':')
-      protocol, ip_source   = source_pair.split(':')
-
-      case ip_protocol
-      when 'tcp'
-        rule_maps << {
-          :protocol => protocol,
-          :ip_source => ip_source,
-          :ip_protocol => ip_protocol,
-          :ip_dport => ip_dport,
-        }
-      when 'udp'
-        rule_maps << {
-          :protocol => protocol,
-          :ip_source => ip_source,
-          :ip_protocol => ip_protocol,
-          :ip_dport => ip_dport,
-        }
-      when 'icmp'
-        # through, pending
-      end
-    end
-
-    rule_maps
+  def event
+    @event ||= Isono::NodeModules::EventChannel.new(@node)
   end
 end
 
 
+
+manifest = DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'hva'
+  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
+  load_module Isono::NodeModules::NodeHeartbeat
+  load_module ServiceNetfilter
+
+  config do |c|
+    c.vm_data_dir = '/var/lib/vm'
+  end
+
+  config_path File.expand_path('config/hva.conf', app_root)
+  load_config
+end
 
 start(manifest) do
   endpoint "kvm-handle.#{@node.node_id}", KvmHandler

@@ -41,7 +41,7 @@ DcmgrGUI.prototype.instancePanel = function(){
     element_id:'#display_instances',
     template_id:'#instancesListTemplate'
   });
-  
+    
   c_list.setDetailTemplate({
     template_id:'#instancesDetailTemplate',
     detail_path:'/instances/show/'

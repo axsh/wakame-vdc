@@ -17,7 +17,7 @@ jQuery(function($){
 
 <div id="mainarea_wide">
 	<h3><img src="images/icon_resource.gif" />Security Groups<a href="javascript:void(0);" class="showhide"></a></h3>
- <div class="maincontent">
+ <div id="list_load_mask" class="maincontent">
 		<div class="controller clearfix">
 		  <a href="javascript:void(0);" class="create_security_group">Create Security Group</a>
 			<a href="javascript:void(0);" class="delete_security_group" >Delete</a>
@@ -45,16 +45,25 @@ jQuery(function($){
 					<th></th>
 					<th>Name</th>
 					<th>Description</th>
+					<th>Action</th>
 				</tr>
 				{{each(index,item) rows}}
 			   <tr>
 			    {{if item.name }}
-						<td style="width:5px"><input type="radio" name="select" value="${item.name}" > </td>
+						<td class="listradiobutton"><input id="${item.name}" type="radio" name="select" value="${item.name}" ></td>
 					{{else}}
-						<td><input type="radio"> </td>
+						<td class="listradiobutton"></td>
 					{{/if}}
 					<td class="vtip" title="name" style="width:100px">${item.name}</td>
 					<td class="vtip" title="description" style="width:500px">${item.description}</td>
+					{{if item.name }}
+					<td class="vtip center" title="action">
+						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.name}">Edit</a>
+					</td>
+					{{else}}
+						<td class="vtip center" title="action"></td>
+					{{/if}}
+					</td>
 				</tr>
 				{{/each}}
 			</table>
@@ -63,7 +72,7 @@ jQuery(function($){
 		</div>
 	</div>
 	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_resource.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_resource.gif" />Detail<a href="javascript:void(0);" class="showhide"></a></h3>
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="securityGroupsDetailTemplate" type="text/x-jquery-tmpl">

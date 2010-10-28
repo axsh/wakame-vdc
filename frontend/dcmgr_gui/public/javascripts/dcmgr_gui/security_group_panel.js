@@ -1,9 +1,9 @@
 DcmgrGUI.prototype.securityGroupPanel = function(){
-  
+  var total = 0;
   var maxrow = 10;
   var page = 1;
   var list_request = { 
-    "url" : DcmgrGUI.Util.getPagePath('/security_groups/list/',1),
+    "url" : DcmgrGUI.Util.getPagePath('/security_groups/list/',page),
     "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
   };
   
@@ -25,7 +25,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
-    total:30 //todo:get total from dcmgr
+    total:total
   });
   
   var c_list = new DcmgrGUI.List({
@@ -39,11 +39,54 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     template_id:'#securityGroupsDetailTemplate',
     detail_path:'/security_groups/show/'
   });
-  
+    
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
-    c_list.page = c_pagenate.current_page;
-    c_list.setData(params.data);
+    var netfilter_group = params.data.netfilter_group;
+    c_pagenate.changeTotal(netfilter_group.owner_total);
+    c_list.setData(netfilter_group.results);
     c_list.singleCheckList(c_list.detail_template);
+
+    var bt_edit_security_group = new DcmgrGUI.Dialog({
+      target:'.edit_security_group',
+      width:500,
+      height:580,
+      title:'Edit Security Group',
+      path:'/edit_security_group',
+      button:{
+        "Yes, Update": function() {
+          
+          var name = $('#security_group_name').val();
+          var description = $('#security_group_description').val();
+          var rule = $('#security_group_rule').val();
+          var data = 'name=' + name
+                    +'&description=' + description
+                    +'&rule=' + rule;
+
+          $.ajax({
+             "type": "PUT",
+             "async": true,
+             "url": '/security_groups/'+ name +'.json',
+             "dataType": "json",
+             "data": data,
+             success: function(json,status){
+               console.log(json);
+               bt_refresh.element.trigger('dcmgrGUI.refresh');
+             }
+          });
+          $(this).dialog("close");
+        }
+      }
+    });
+
+    bt_edit_security_group.target.bind('click',function(event){
+      var id = $(this).attr('id').replace(/edit_([a-z_]+)/,'$1')
+      if( id ){
+        bt_edit_security_group.open({"ids":[id]});
+      }
+      c_list.checkRadioButton(id);
+      $('#detail').html('');
+      return false;
+    });
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -75,8 +118,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   var bt_create_security_group = new DcmgrGUI.Dialog({
     target:'.create_security_group',
-    width:400,
-    height:500,
+    width:500,
+    height:580,
     title:'Create Security Group',
     path:'/create_security_group',
     button:{
@@ -87,22 +130,17 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
        var data = 'name=' + name
                  +'&description=' + description
                  +'&rule=' + rule;
+
+
        if(!name){
          $('#security_group_name').focus();
          return false;
        }
-
-       if(!description){
-         $('#security_group_description').focus();
-         return false;
-       }
-
-       if(!rule){
-         $('#security_group_rule').focus();
-         return false;
-       }
        
-       $('#security_group_name').focus();
+       if(!name.match(/[a-z_]+/)){
+         $('#security_group_name').focus();
+         return false;
+       }
 
        $.ajax({
           "type": "POST",
@@ -156,6 +194,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     }
     return false;
   });
+  
 
   c_list.setData(null);
   c_list.update(list_request,true);

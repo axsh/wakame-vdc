@@ -150,6 +150,5 @@ DcmgrGUI.prototype.volumePanel = function(){
 
   //list
   c_list.setData(null);
-  c_list.update(list_request,true);
-  
+  c_list.update(list_request,true);  
 }

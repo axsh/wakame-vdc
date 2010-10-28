@@ -146,7 +146,9 @@ module Dcmgr::Models
 
     def netfilter_group_instances
       instances = self.netfilter_groups.map { |g| g.instances }
-      instances.flatten!.uniq!
+
+      instances.flatten!.uniq! if instances.size > 0
+      instances
     end
 
   end

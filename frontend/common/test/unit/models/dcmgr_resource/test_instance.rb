@@ -28,5 +28,14 @@ module Frontend
       p @instance.show(instance_id)
     end
     
+    def test_launch_instance
+      params = {
+        :image_id => 'wmi-640cbf3r',
+        :host_pool_id => 'hp-hb4f6f84'
+      }
+      
+      p @instance.create(params)
+    end
+    
   end
 end

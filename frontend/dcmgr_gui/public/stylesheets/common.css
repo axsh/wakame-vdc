@@ -444,7 +444,7 @@ body{
 	float: right;
 	width: 190px;
 }
-#content #mainarea_wide .controller a.instance{
+#content #mainarea_wide .controller a.launch_instance{
 	display: block;
 	float: left;
 	width: 119px;
@@ -747,6 +747,10 @@ body{
 
 #content #mainarea_wide table tr .listcheckbox {
   width:30px;
+  height:25px;
+}
+#content #mainarea_wide table tr .listradiobutton {
+  width:20px;
   height:25px;
 }
 
