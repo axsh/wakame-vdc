@@ -16,6 +16,7 @@ module Dcmgr::Models
 
     def to_hash
       {
+        :id => self.canonical_uuid,
         :name => name,
         :description => description,
         :rules => netfilter_rules.map { |rule| rule.to_hash },
