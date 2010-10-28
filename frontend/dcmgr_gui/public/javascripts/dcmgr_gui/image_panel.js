@@ -91,28 +91,27 @@ DcmgrGUI.prototype.imagePanel = function(){
   var bt_launch_instance = new DcmgrGUI.Dialog({
     target:'.launch_instance',
     width:400,
-    height:200,
+    height:220,
     title:'Launch Instance',
     path:'/launch_instance',
     button:{
      "Launch": function() { 
-       var image_id = $('#image_id').text();
-       var host_pool_id = $('#host_pool_id').text();
-       var instance_spec = $('#instance_spec').text();
+       var image_id = $('#image_id').val();
+       var host_pool_id = $('#host_pool_id').val();
+       var instance_spec = $('#instance_spec').val();
        var data = "image_id="+image_id
                   +"&host_pool_id="+host_pool_id
                   +"&instance_spec="+instance_spec;
-       
        $.ajax({
-          "type": "POST",
-          "async": true,
-          "url": '/instances/create',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            console.log(json);
-          }
-        });
+         "type": "POST",
+         "async": true,
+         "url": '/instances/create',
+         "dataType": "json",
+         "data": data,
+         success: function(json,status){
+           console.log(json);
+         }
+       });
        $(this).dialog("close");
       }
     }
