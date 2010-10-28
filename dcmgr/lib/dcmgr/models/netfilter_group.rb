@@ -17,6 +17,7 @@ module Dcmgr::Models
     def to_hash
       h = super
       h = h.merge({
+                    :rule => rule.to_s,
                     :rules => netfilter_rules.map { |rule| rule.to_hash },
                   })
       #{
