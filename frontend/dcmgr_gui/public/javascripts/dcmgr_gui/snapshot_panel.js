@@ -1,9 +1,9 @@
-DcmgrGUI.prototype.volumePanel = function(){
+DcmgrGUI.prototype.snapshotPanel = function(){
   var total = 0;
   var maxrow = 10;
   var page = 1;
   var list_request = { 
-    "url" : DcmgrGUI.Util.getPagePath('/volumes/list/',page),
+    "url" : DcmgrGUI.Util.getPagePath('/snapshots/list/',page),
     "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
   };
     
@@ -11,7 +11,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     return [{
       "uuid":'',
       "size":'',
-      "snapshot_id":'',
+      "origin_volume_id":'',
       "created_at":'',
       "state":''
     }]
@@ -21,7 +21,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     return {
       "uuid" : "-",
       "size" : "-",
-      "snapshot_id" : "-",
+      "origin_volume_id" : "-",
       "created_at" : "-",
       "updated_at" : "-",
       "state" : "",
@@ -34,21 +34,21 @@ DcmgrGUI.prototype.volumePanel = function(){
   });
   
   var c_list = new DcmgrGUI.List({
-    element_id:'#display_volumes',
-    template_id:'#volumesListTemplate',
+    element_id:'#display_snapshots',
+    template_id:'#snapshotsListTemplate',
     maxrow:maxrow,
     page:page
   });
   
   c_list.setDetailTemplate({
-    template_id:'#volumesDetailTemplate',
-    detail_path:'/volumes/show/'
+    template_id:'#snapshotsDetailTemplate',
+    detail_path:'/snapshots/show/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
-    var volume = params.data.volume;
-    c_pagenate.changeTotal(volume.owner_total);
-    c_list.setData(volume.results);
+    var snapshot = params.data.volume_snapshot;
+    c_pagenate.changeTotal(snapshot.owner_total);
+    c_list.setData(snapshot.results);
     c_list.multiCheckList(c_list.detail_template);
   });
   
@@ -59,17 +59,16 @@ DcmgrGUI.prototype.volumePanel = function(){
     width:400,
     height:200,
     title:'Create Volume',
-    path:'/create_volume',
+    path:'/create_volume_from_snapshot',
     button:{
      "Create": function() { 
-       var volume_size = $('#volume_size').val();
-       var unit = $('#unit').find('option:selected').val();
-       if(!volume_size){
-         $('#volume_size').focus();
-         return false;
-       }
-       var data = "size="+volume_size+"&unit="+unit;
+       var create_volumes = $('#create_volumes').find('li');
+       var ids = []
+       $.each(create_volumes,function(){
+         ids.push($(this).text())
+       })
        
+       var data = $.param({ids:ids})
        $.ajax({
           "type": "POST",
           "async": true,
@@ -86,18 +85,18 @@ DcmgrGUI.prototype.volumePanel = function(){
     }
   });
 
-  var bt_delete_volume = new DcmgrGUI.Dialog({
-    target:'.delete_volume',
+  var bt_delete_snapshot = new DcmgrGUI.Dialog({
+    target:'.delete_snapshot',
     width:400,
     height:200,
-    title:'Delete Volume',
-    path:'/delete_volume',
+    title:'Delete snapshot',
+    path:'/delete_snapshot',
     button:{
      "Close": function() { $(this).dialog("close"); },
      "Yes, Delete": function() { 
-       var delete_volumes = $('#delete_volumes').find('li');
+       var delete_snapshots = $('#delete_snapshots').find('li');
        var ids = []
-       $.each(delete_volumes,function(){
+       $.each(delete_snapshots,function(){
          ids.push($(this).text())
        })
        
@@ -105,7 +104,7 @@ DcmgrGUI.prototype.volumePanel = function(){
        $.ajax({
           "type": "DELETE",
           "async": true,
-          "url": '/volumes/delete',
+          "url": '/snapshots/delete',
           "dataType": "json",
           "data": data,
           success: function(json,status){
@@ -119,53 +118,17 @@ DcmgrGUI.prototype.volumePanel = function(){
     }
   });
   
-  var bt_create_snapshot = new DcmgrGUI.Dialog({
-    target:'.create_snapshot',
-    width:400,
-    height:200,
-    title:'Create Snapshot',
-    path:'/create_snapshot',
-    button:{
-     "Create": function() { 
-       var volume_snapshots = $('#create_snapshots').find('li');
-       var ids = []
-       $.each(volume_snapshots,function(){
-         ids.push($(this).text())
-       })
-
-       var data = $.param({ids:ids})
-       console.log(data)
-       $.ajax({
-          "type": "POST",
-          "async": true,
-          "url": '/snapshots/create',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            console.log(json);
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-        });
-       $(this).dialog("close");
-      }
-    }
-  });
-
   bt_create_volume.target.bind('click',function(){
-    bt_create_volume.open();
+    bt_create_volume.open(c_list.getCheckedInstanceIds());
   });
   
-  bt_delete_volume.target.bind('click',function(){
-    bt_delete_volume.open(c_list.getCheckedInstanceIds());
-  });
-
-  bt_create_snapshot.target.bind('click',function(){
-    bt_create_snapshot.open(c_list.getCheckedInstanceIds());
+  bt_delete_snapshot.target.bind('click',function(){
+    bt_delete_snapshot.open(c_list.getCheckedInstanceIds());
   });
 
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
-    list_request.url = DcmgrGUI.Util.getPagePath('/volumes/list/',c_list.page);
+    list_request.url = DcmgrGUI.Util.getPagePath('/snapshots/list/',c_list.page);
     list_request.data = DcmgrGUI.Util.getPagenateData(c_list.page,c_list.maxrow)
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
@@ -173,7 +136,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     $.each(c_list.checked_list,function(check_id,obj){
       $($('#detail').find('#'+check_id)).remove();
       c_list.checked_list[check_id].c_detail.update({
-        url:DcmgrGUI.Util.getPagePath('/volumes/show/',check_id)
+        url:DcmgrGUI.Util.getPagePath('/snapshots/show/',check_id)
       },true);
     });
   });
@@ -186,5 +149,6 @@ DcmgrGUI.prototype.volumePanel = function(){
 
   //list
   c_list.setData(null);
-  c_list.update(list_request,true);  
+  c_list.update(list_request,true);
+  
 }

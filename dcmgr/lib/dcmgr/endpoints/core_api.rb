@@ -272,20 +272,26 @@ module Dcmgr
             raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
             
             spec = find_by_uuid(:InstanceSpec, 'is-kpf0pasc')
-            inst = hp.create_instance(@account, wmi, spec) do |i|
-              # TODO: do not use rand() to decide vnc port.
-              i.runtime_config = {:vnc_port=>rand(2000)}
-            end
 
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
               # create new volume from snapshot.
               snapshot_id = wmi.source[:snapshot_id]
               vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
+
+              inst = hp.create_instance(@account, wmi, spec) do |i|
+                # TODO: do not use rand() to decide vnc port.
+                i.runtime_config = {:vnc_port=>rand(2000)}
+              end
+
               vol.instance = inst
               vol.save
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
+              inst = hp.create_instance(@account, wmi, spec) do |i|
+                # TODO: do not use rand() to decide vnc port.
+                i.runtime_config = {:vnc_port=>rand(2000)}
+              end
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
             else
               raise "Unknown boot type"
@@ -808,7 +814,7 @@ module Dcmgr
             g.rebuild_rule
 
             # refresh netfilter_rules
-            Dcmgr.messaging.event_publish('hva/netfilter_updated',  :args=>[@name])
+            Dcmgr.messaging.event_publish('hva/netfilter_updated', :args=>[g.canonical_uuid])
 
             respond_to { |f|
               f.json { g.values.to_json }

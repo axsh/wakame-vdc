@@ -5,6 +5,8 @@ require 'eventmachine'
 
 Thread.new { EventMachine.epoll; EventMachine.run }
 
+Signal.trap('EXIT') { EventMachine.stop }
+
 Dcmgr.class_eval {
   def self.messaging
     @messaging_client ||= Isono::MessagingClient.start(conf.amqp_server_uri) do

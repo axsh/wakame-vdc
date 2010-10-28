@@ -8,6 +8,10 @@ class DialogController < ApplicationController
   def create_volume
   end
   
+  def create_volume_from_snapshot
+    @snapshot_ids = params[:ids]
+  end
+
   def attach_volume
   end
   
@@ -20,9 +24,11 @@ class DialogController < ApplicationController
   end
   
   def create_snapshot
+    @volume_ids = params[:ids]
   end
   
   def delete_snapshot
+    @snapshot_ids = params[:ids]
   end
   
   def createkey
