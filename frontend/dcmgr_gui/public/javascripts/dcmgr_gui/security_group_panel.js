@@ -76,8 +76,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   var bt_create_security_group = new DcmgrGUI.Dialog({
     target:'.create_security_group',
-    width:600,
-    height:220,
+    width:500,
+    height:580,
     title:'Create Security Group',
     path:'/create_security_group',
     button:{
@@ -88,22 +88,17 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
        var data = 'name=' + name
                  +'&description=' + description
                  +'&rule=' + rule;
+
+
        if(!name){
          $('#security_group_name').focus();
          return false;
        }
-
-       if(!description){
-         $('#security_group_description').focus();
-         return false;
-       }
-
-       if(!rule){
-         $('#security_group_rule').focus();
-         return false;
-       }
        
-       $('#security_group_name').focus();
+       if(!name.match(/[a-z_]+/)){
+         $('#security_group_name').focus();
+         return false;
+       }
 
        $.ajax({
           "type": "POST",
