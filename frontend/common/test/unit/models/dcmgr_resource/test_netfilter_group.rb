@@ -9,6 +9,7 @@ module Frontend
   class TestNetfilterGroup < Test::Unit::TestCase
     def setup
       @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup
+      @netfilter_group.set_debug
     end
 
     def teardown
@@ -21,12 +22,11 @@ module Frontend
         :rule => '\ntcp:22,22,0.0.0.0\ntcp:80,80,0.0.0.0\n#tcp:443,443,0.0.0.0\nudp:53,53,0.0.0.0\nicmp:-1,-1,0.0.0.0\n'
       }
       p @netfilter_group.create(params)
-      
     end
     
     def test_list
       params = {
-        :start => 1,
+        :start => 0,
         :limit => 10
       }
       p @netfilter_group.list(params)

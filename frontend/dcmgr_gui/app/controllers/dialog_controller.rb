@@ -51,6 +51,9 @@ class DialogController < ApplicationController
     @name = params[:ids][0]
   end
   
+  def edit_security_group
+  end
+  
   def launch_instance
     @image_id = params[:ids][0]
   end

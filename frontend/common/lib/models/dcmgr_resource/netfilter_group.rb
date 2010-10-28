@@ -12,12 +12,7 @@ module Frontend::Models
       end
 
       def self.list(params = {})
-        data = self.find(:all,:params => params)
-        results = []
-        data.each{|row|
-          results << row.attributes
-        }
-        results
+       self.find(:all,:params => params)
       end
 
       def self.show(name)

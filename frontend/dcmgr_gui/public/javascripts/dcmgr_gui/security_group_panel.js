@@ -1,9 +1,9 @@
 DcmgrGUI.prototype.securityGroupPanel = function(){
-  
+  var total = 0;
   var maxrow = 10;
   var page = 1;
   var list_request = { 
-    "url" : DcmgrGUI.Util.getPagePath('/security_groups/list/',1),
+    "url" : DcmgrGUI.Util.getPagePath('/security_groups/list/',page),
     "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
   };
   
@@ -25,7 +25,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
-    total:30 //todo:get total from dcmgr
+    total:total
   });
   
   var c_list = new DcmgrGUI.List({
@@ -41,8 +41,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
-    c_list.page = c_pagenate.current_page;
-    c_list.setData(params.data);
+    var netfilter_group = params.data.netfilter_group;
+    c_pagenate.changeTotal(netfilter_group.owner_total);
+    c_list.setData(netfilter_group.results);
     c_list.singleCheckList(c_list.detail_template);
   });
   
@@ -75,8 +76,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   var bt_create_security_group = new DcmgrGUI.Dialog({
     target:'.create_security_group',
-    width:400,
-    height:500,
+    width:600,
+    height:220,
     title:'Create Security Group',
     path:'/create_security_group',
     button:{
@@ -156,6 +157,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     }
     return false;
   });
+  
 
   c_list.setData(null);
   c_list.update(list_request,true);
