@@ -62,7 +62,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     path:'/create_volume_from_snapshot',
     button:{
      "Create": function() { 
-       var create_volumes = $('#create_volumes').find('li');
+       var create_volumes = $(this).find('#create_volumes').find('li');
        var ids = []
        $.each(create_volumes,function(){
          ids.push($(this).text())
@@ -94,7 +94,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     button:{
      "Close": function() { $(this).dialog("close"); },
      "Yes, Delete": function() { 
-       var delete_snapshots = $('#delete_snapshots').find('li');
+       var delete_snapshots = $(this).find('#delete_snapshots').find('li');
        var ids = []
        $.each(delete_snapshots,function(){
          ids.push($(this).text())

@@ -62,8 +62,8 @@ DcmgrGUI.prototype.volumePanel = function(){
     path:'/create_volume',
     button:{
      "Create": function() { 
-       var volume_size = $('#volume_size').val();
-       var unit = $('#unit').find('option:selected').val();
+       var volume_size = $(this).find('#volume_size').val();
+       var unit = $(this).find('#unit').find('option:selected').val();
        if(!volume_size){
          $('#volume_size').focus();
          return false;
@@ -95,7 +95,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     button:{
      "Close": function() { $(this).dialog("close"); },
      "Yes, Delete": function() { 
-       var delete_volumes = $('#delete_volumes').find('li');
+       var delete_volumes = $(this).find('#delete_volumes').find('li');
        var ids = []
        $.each(delete_volumes,function(){
          ids.push($(this).text())
@@ -127,7 +127,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     path:'/create_snapshot',
     button:{
      "Create": function() { 
-       var volume_snapshots = $('#create_snapshots').find('li');
+       var volume_snapshots = $(this).find('#create_snapshots').find('li');
        var ids = []
        $.each(volume_snapshots,function(){
          ids.push($(this).text())
