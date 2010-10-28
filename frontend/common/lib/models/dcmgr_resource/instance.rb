@@ -16,6 +16,11 @@ module Frontend::Models
         instance.save
         instance
       end
+      
+      def self.destroy(instance_id)
+        self.delete(instance_id).body
+      end
+      
     end
   end
 end
