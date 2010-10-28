@@ -198,6 +198,7 @@ class KvmHandler < EndpointBuilder
     #inst = hva.get_instance(inst_id)
 
     inst = rpc.request('hva-collector', 'get_instance',  inst_id)
+    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'init'
 
     # setup vm data folder
     inst_data_dir = File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir)
@@ -234,6 +235,8 @@ class KvmHandler < EndpointBuilder
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
     logger.info("Booting #{inst_id}")
+    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'init'
+
     # setup vm data folder
     inst_data_dir = File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir)
     FileUtils.mkdir(inst_data_dir)
