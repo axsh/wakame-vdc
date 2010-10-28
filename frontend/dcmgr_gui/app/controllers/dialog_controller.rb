@@ -51,6 +51,9 @@ class DialogController < ApplicationController
   end
   
   def create_security_group
+    @description = ''
+    @rule = ''
+    render :create_and_edit_security_group
   end
   
   def delete_security_group
@@ -58,6 +61,11 @@ class DialogController < ApplicationController
   end
   
   def edit_security_group
+    @name = params[:ids][0]
+    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.show(@name)
+    @description =  @netfilter_group["description"]
+    @rule = @netfilter_group["rule"]
+    render :create_and_edit_security_group
   end
   
   def launch_instance

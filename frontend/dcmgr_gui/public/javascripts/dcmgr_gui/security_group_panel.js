@@ -39,12 +39,54 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     template_id:'#securityGroupsDetailTemplate',
     detail_path:'/security_groups/show/'
   });
-  
+    
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var netfilter_group = params.data.netfilter_group;
     c_pagenate.changeTotal(netfilter_group.owner_total);
     c_list.setData(netfilter_group.results);
     c_list.singleCheckList(c_list.detail_template);
+
+    var bt_edit_security_group = new DcmgrGUI.Dialog({
+      target:'.edit_security_group',
+      width:500,
+      height:580,
+      title:'Edit Security Group',
+      path:'/edit_security_group',
+      button:{
+        "Yes, Update": function() {
+          
+          var name = $('#security_group_name').val();
+          var description = $('#security_group_description').val();
+          var rule = $('#security_group_rule').val();
+          var data = 'name=' + name
+                    +'&description=' + description
+                    +'&rule=' + rule;
+
+          $.ajax({
+             "type": "PUT",
+             "async": true,
+             "url": '/security_groups/'+ name +'.json',
+             "dataType": "json",
+             "data": data,
+             success: function(json,status){
+               console.log(json);
+               bt_refresh.element.trigger('dcmgrGUI.refresh');
+             }
+          });
+          $(this).dialog("close");
+        }
+      }
+    });
+
+    bt_edit_security_group.target.bind('click',function(event){
+      var id = $(this).attr('id').replace(/edit_([a-z_]+)/,'$1')
+      if( id ){
+        bt_edit_security_group.open({"ids":[id]});
+      }
+      c_list.checkRadioButton(id);
+      $('#detail').html('');
+      return false;
+    });
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();

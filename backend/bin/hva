@@ -24,6 +24,12 @@ class ServiceNetfilter < Isono::NodeModules::Base
       puts "refresh on instance_terminated: #{args.inspect}"
       myinstance.refresh_netfilter(args)
     end
+
+    event.subscribe('hva/netfilter_updated', '#') do |args|
+      puts "refresh on netfilter_updated: #{args.inspect}"
+      # TODO
+      #myinstance.refresh_netfilter(args)
+    end
   end
 
   def init_netfilter
@@ -268,8 +274,29 @@ class KvmHandler < EndpointBuilder
   
   job :terminate do
     inst_id = request.args[0]
-    hva = rpc.delegate('hva-collector')
-    logger.info("Booting #{inst_id}")
+
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'running'
+
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:shuttingdown})
+    
+    kvm_pid=`pgrep -u root -f vdc-#{inst_id}`
+    unless $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
+      raise "No such VM process: kvm -name vdc-#{inst_id}"
+    end
+    
+    system("/bin/kill #{kvm_pid}")
+
+    unless inst[:volume].nil?
+      inst[:volume].each { |volid, v|
+        `sudo iscsiadm -m node -T '#{v[:transport_information][:iqn]}' --logout`
+      }
+    end
+
+    # cleanup vm data folder
+    FileUtils.rm_r(File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir))
+    
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:terminated})
     event.publish('hva/instance_terminated', :args=>[inst_id])
   end
 
@@ -321,19 +348,6 @@ class KvmHandler < EndpointBuilder
 
 end
 
-# TODO: delete debug class
-class NetfilterHandler < EndpointBuilder
-  job :refresh do
-    inst_id = request.args[0]
-    event.publish('hva/instance_started', :args=>[inst_id])
-  end
-
-  def event
-    @event ||= Isono::NodeModules::EventChannel.new(@node)
-  end
-end
-
-
 
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
@@ -352,5 +366,4 @@ end
 
 start(manifest) do
   endpoint "kvm-handle.#{@node.node_id}", KvmHandler
-  endpoint "netfilter-handle.#{@node.node_id}", NetfilterHandler
 end

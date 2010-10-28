@@ -54,9 +54,9 @@ jQuery(function($){
 			   {{each(index,item) rows}}
 			   <tr>
 			    {{if item.uuid }}
-						<td style="width:5px"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
+						<td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
 					{{else}}
-						<td style="width:5px"><input type="radio"> </td>
+						<td class="listradiobutton"></td>
 					{{/if}}
 					<td class="vtip" title="title">${item.uuid}</td>
 					<td class="vtip" title="source" style="width:300px">
