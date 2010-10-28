@@ -5,23 +5,10 @@
 	padding: 3px 10px;
 }
 
-#instance_dialog table tr td {
-	padding: 3px 10px;
+#launch_instance_dialog table tr td {
+  padding: 5px 10px;
 }
 
-#instance_dialog table tr td fieldset{
-	
-	border: 1px solid #909090;
-	margin-top: 7px;
-}
-
-#instance_dialog table tr td fieldset legend{
-	margin-left: 8px;
-}
-
-#instance_dialog table tr td fieldset table{
-	margin: 5px;
-}
-#instance_dialog #userdata_button{
-	margin: 5px 5px;
+#launch_instance_dialog #view_image_id {
+  padding-left: 0px;
 }

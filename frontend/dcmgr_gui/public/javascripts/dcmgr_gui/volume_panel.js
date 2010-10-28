@@ -134,7 +134,6 @@ DcmgrGUI.prototype.volumePanel = function(){
        })
 
        var data = $.param({ids:ids})
-       console.log(data)
        $.ajax({
           "type": "POST",
           "async": true,

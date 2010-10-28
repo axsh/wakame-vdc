@@ -9,6 +9,7 @@ module Frontend
   class TestVolume < Test::Unit::TestCase
     def setup
       @instance = Frontend::Models::DcmgrResource::Instance
+      @instance.set_debug
     end
 
     def teardown
@@ -37,5 +38,9 @@ module Frontend
       p @instance.create(params)
     end
     
+    def test_terminate
+      instance_id = 'i-trjjhgq0'
+      p @instance.destroy(instance_id)
+    end
   end
 end

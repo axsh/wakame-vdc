@@ -30,4 +30,13 @@ class InstancesController < ApplicationController
     respond_with(detail,:to => [:json])
   end
   
+  def terminate
+    instance_ids = params[:ids]
+    response = []
+    instance_ids.each do |instance_id|
+      response << Frontend::Models::DcmgrResource::Instance.destroy(instance_id)
+    end
+    render :json => response
+  end
+  
 end

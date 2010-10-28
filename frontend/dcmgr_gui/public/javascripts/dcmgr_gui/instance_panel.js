@@ -110,6 +110,26 @@ DcmgrGUI.prototype.instancePanel = function(){
     button:{
 		  "Close": function() { $(this).dialog("close"); },
 			"Yes, Terminate": function() {
+			  
+			  var terminate_instances = $('#terminate_instances').find('li');
+        var ids = []
+        $.each(terminate_instances,function(){
+          ids.push($(this).text())
+        })
+
+        var data = $.param({ids:ids})
+        $.ajax({
+           "type": "POST",
+           "async": true,
+           "url": '/instances/terminate',
+           "dataType": "json",
+           "data": data,
+           success: function(json,status){
+             console.log(json);
+             bt_refresh.element.trigger('dcmgrGUI.refresh');
+           }
+         });
+			  
 			  c_list.changeStatus('terminating');
 			  $(this).dialog("close");
 			}

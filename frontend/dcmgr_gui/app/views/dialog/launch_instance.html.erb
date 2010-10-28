@@ -1,13 +1,23 @@
-<div id="instance_dialog">
+<div id="launch_instance_dialog">
 	<table>
 		<tr>
-			<td>WMI ID:</td><td id="image_id"><%= @image_id %></td>
+			<td>WMI ID:</td>
+			<td id="view_image_id"><%= @image_id %></td>
+			<input id="image_id" type="hidden" value="<%= @image_id %>">
 		</tr>
 		<tr>
-			<td>HostPool ID:</td><td id="host_pool_id">hp-hb4f6f84</td>
+			<td>HostPool ID:</td>
+			<select name="hostpool_id">
+				<option value="shared">shared
+			</select>
+			<input id="host_pool_id" type="hidden" value="hp-hb4f6f84"></td>
 		</tr>
 		<tr>
-			<td>Instance Spec:</td><td id="instance_spec">is-kpf0pasc</td>
+			<td>Instance Spec:</td>
+			<select name="instance_spec">
+				<option value="m1.small">m1.small
+			</select>
+			<input id="instance_spec" type="hidden" value="is-kpf0pasc"></td>
 		</tr>
 	</table>
 </div>
