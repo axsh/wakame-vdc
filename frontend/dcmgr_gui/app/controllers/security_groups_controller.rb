@@ -39,7 +39,7 @@ class SecurityGroupsController < ApplicationController
   end
   
   def update
-    name = params[:name]
+    name = params[:id]
     data = {
       :description => params[:description],
       :rule => params[:rule]

@@ -11,6 +11,7 @@
 			<td>
 				<% if @name %>
 					<%= @name %>
+					<input type="hidden" id="security_group_name" value="<%= @name %>">
 				<% else %>
 					<input type="text" id="security_group_name" size="20"></td>
 				<% end %>

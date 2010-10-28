@@ -58,8 +58,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
           var name = $('#security_group_name').val();
           var description = $('#security_group_description').val();
           var rule = $('#security_group_rule').val();
-          var data = 'name=' + name
-                    +'&description=' + description
+          var data ='description=' + description
                     +'&rule=' + rule;
 
           $.ajax({
