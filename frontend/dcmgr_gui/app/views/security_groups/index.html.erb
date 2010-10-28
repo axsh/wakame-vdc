@@ -50,14 +50,19 @@ jQuery(function($){
 				{{each(index,item) rows}}
 			   <tr>
 			    {{if item.name }}
-						<td style="width:5px"><input id="${item.name}" type="radio" name="select" value="${item.name}" ></td>
+						<td class="listradiobutton"><input id="${item.name}" type="radio" name="select" value="${item.name}" ></td>
 					{{else}}
-						<td style="width:5px"><input type="radio"> </td>
+						<td class="listradiobutton"></td>
 					{{/if}}
 					<td class="vtip" title="name" style="width:100px">${item.name}</td>
 					<td class="vtip" title="description" style="width:500px">${item.description}</td>
-					<td class="vtip center" title="description">
-						<a href="javascript:void(0);" class="edit_security_group">Edit</a>
+					{{if item.name }}
+					<td class="vtip center" title="action">
+						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.name}">Edit</a>
+					</td>
+					{{else}}
+						<td class="vtip center" title="action"></td>
+					{{/if}}
 					</td>
 				</tr>
 				{{/each}}
@@ -67,7 +72,7 @@ jQuery(function($){
 		</div>
 	</div>
 	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_resource.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_resource.gif" />Detail<a href="javascript:void(0);" class="showhide"></a></h3>
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="securityGroupsDetailTemplate" type="text/x-jquery-tmpl">
