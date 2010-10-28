@@ -15,12 +15,16 @@ module Dcmgr::Models
     one_to_many :instance_netfilter_groups
 
     def to_hash
-      {
-        :id => self.canonical_uuid,
-        :name => name,
-        :description => description,
-        :rules => netfilter_rules.map { |rule| rule.to_hash },
-      }
+      h = super
+      h = h.merge({
+                    :rules => netfilter_rules.map { |rule| rule.to_hash },
+                  })
+      #{
+      #:id => self.canonical_uuid,
+      #:name => name,
+      #:description => description,
+      #:rules => netfilter_rules.map { |rule| rule.to_hash },
+      #}
     end
 
     def self.create_group(account_id, params)
