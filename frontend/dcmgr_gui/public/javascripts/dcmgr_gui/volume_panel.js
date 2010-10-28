@@ -119,12 +119,48 @@ DcmgrGUI.prototype.volumePanel = function(){
     }
   });
   
+  var bt_create_snapshot = new DcmgrGUI.Dialog({
+    target:'.create_snapshot',
+    width:400,
+    height:200,
+    title:'Create Snapshot',
+    path:'/create_snapshot',
+    button:{
+     "Create": function() { 
+       var volume_snapshots = $('#create_snapshots').find('li');
+       var ids = []
+       $.each(volume_snapshots,function(){
+         ids.push($(this).text())
+       })
+
+       var data = $.param({ids:ids})
+       console.log(data)
+       $.ajax({
+          "type": "POST",
+          "async": true,
+          "url": '/snapshots/create',
+          "dataType": "json",
+          "data": data,
+          success: function(json,status){
+            console.log(json);
+            bt_refresh.element.trigger('dcmgrGUI.refresh');
+          }
+        });
+       $(this).dialog("close");
+      }
+    }
+  });
+
   bt_create_volume.target.bind('click',function(){
     bt_create_volume.open();
   });
   
   bt_delete_volume.target.bind('click',function(){
     bt_delete_volume.open(c_list.getCheckedInstanceIds());
+  });
+
+  bt_create_snapshot.target.bind('click',function(){
+    bt_create_snapshot.open(c_list.getCheckedInstanceIds());
   });
 
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
