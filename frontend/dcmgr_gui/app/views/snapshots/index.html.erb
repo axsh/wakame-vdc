@@ -72,7 +72,7 @@
   <div id="detail" class="maincontent">
     <% content_for :javascript_template do %>
     <script id="snapshotsDetailTemplate" type="text/x-jquery-tmpl">
-      <div class="display_area">
+      <div id="${item.uuid}" class="display_area">
 	<h4 class="ptn01">Snapshot ID:<span class="instansid">${item.uuid}</span></h4>
 	<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
 	  <tr>
