@@ -52,6 +52,12 @@ module Dcmgr::Models
                     :instance_nics=>instance_nic.map {|n| n.to_hash },
                     :instance_spec=>instance_spec.to_hash,
                   })
+      h[:volume]={}
+      if self.volume
+        self.volume.each { |v|
+          h[:volume][v.canonical_uuid] = v.to_hash_document
+        }
+      end
       h
     end
 
