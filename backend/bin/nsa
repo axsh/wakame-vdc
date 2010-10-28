@@ -18,8 +18,9 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
   end
   
   initialize_hook do
-    #opts = sprintf("-k --no-hosts --no-resolv --dhcp-hostsfile=%s --conf-file=/dev/null",
-    opts = sprintf("-k --dhcp-hostsfile=%s --no-hosts --no-resolv --conf-file=",
+    opts = sprintf("-k --no-hosts --no-resolv --addn-hosts=%s --dhcp-hostsfile=%s --conf-file=%s",
+                   config_section.dhcp_hosts_conf + ".hosts",
+                   config_section.dhcp_hosts_conf + ".dhcp",
                    config_section.dhcp_hosts_conf
                    )
     cmd = "#{manifest.config.dnsmasq_bin_path} #{opts}"
@@ -43,6 +44,10 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     end
   end
 
+  terminate_hook do
+    Process.kill(@dnsmasq_pid)
+  end
+
 
   def refresh_dnsmasq_conf
     EM.defer {
@@ -59,17 +64,43 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
   def generate_dhcp_conf
     rpc = Isono::NodeModules::RpcChannel.new(node)
     # load entier macaddr,ipaddr pairs for all instances from collector.
-    pairs = rpc.request('hva-collector', 'get_dhcp_conf')
+    confdata = rpc.request('hva-collector', 'get_dhcp_conf')
 
     require 'erb'
     
     File.open(config_section.dhcp_hosts_conf, 'w') { |f|
-        f << ERB.new(<<'_EOS_', nil, '-').result(binding)
-<%- pairs.each { |i| -%>
-<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+#interface=eth0
+dhcp-range=<%= confdata[:ipv4_gw] %>,static,<%= confdata[:netmask] %>
+dhcp-option=option:netmask,<%= confdata[:netmask] %>
+dhcp-option=option:router,<%= confdata[:ipv4_gw] %>
+dhcp-option=option:dns-server,<%= confdata[:dns_server] %>
+dhcp-option=option:domain-name,<%= confdata[:domain_name] %>
+#dhcp-option=option:domain-search,<%= confdata[:domain_name] %>
+<%- confdata[:mac2addr].each { |i| -%>
+#dhcp-host=<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+<%- } -%>
+<%- confdata[:addr2host].each { |i| -%>
+#address=/<%= i[:hostname] %>/<%= i[:ipaddr] %>
 <%- } -%>
 _EOS_
     }
+
+    File.open(config_section.dhcp_hosts_conf + ".dhcp", 'w') { |f|
+      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+<%- confdata[:mac2addr].each { |i| -%>
+<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+<%- } -%>
+_EOS_
+    }    
+
+    File.open(config_section.dhcp_hosts_conf + ".hosts", 'w') { |f|
+      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+<%- confdata[:addr2host].each { |i| -%>
+<%= i[:ipaddr] %>  <%= i[:hostname] %>
+<%- } -%>
+_EOS_
+    }    
   end
 end
 

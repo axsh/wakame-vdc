@@ -21,6 +21,8 @@ module Dcmgr::Models
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
       index :state
+      # TODO: compound unique index for hostname & account_id pair.
+      # index  [:hostname, :account_id], {:unique=>true}
     end
     with_timestamps
     
@@ -41,6 +43,19 @@ module Dcmgr::Models
     plugin :serialization
     serialize_attributes :yaml, :runtime_config
 
+    def validate
+      super
+
+      # TODO: hostname column validation
+    end
+
+    def before_validation
+      super
+
+      self[:hostname] = self.uuid if self.hostname.nil?
+    end
+    
+    
     # dump column data as hash with details of associated models.
     # this is for internal use.
     def to_hash
@@ -132,7 +147,7 @@ module Dcmgr::Models
     def add_nic(vifname=nil, vendor_id=nil)
       vifname ||= "vif-#{self[:uuid]}"
       # TODO: get default vendor ID based on the hypervisor.
-      vendor_id ||= '1f:ff:f1'
+      vendor_id ||= '00:ff:f1'
       nic = InstanceNic.new({:vif=>vifname,
                               :mac_addr=>vendor_id
                             })
@@ -155,6 +170,10 @@ module Dcmgr::Models
 
       instances.flatten!.uniq! if instances.size > 0
       instances
+    end
+
+    def fqdn_hostname
+      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.host_pool.network.domain_name)
     end
 
   end

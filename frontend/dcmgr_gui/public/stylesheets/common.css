@@ -598,7 +598,7 @@ body{
 #content #mainarea_wide .controller a.create_security_group{
 	display: block;
 	float: left;
-	width: 119px;
+	width: 140px;
 	height: 26px;
 	background: url(../images/btn_create_security_group.gif) no-repeat;
 	text-indent: -9999px;
@@ -609,7 +609,7 @@ body{
 #content #mainarea_wide .controller a.delete_security_group{
 	display: block;
 	float: left;
-	width: 119px;
+	width: 140px;
 	height: 26px;
 	background: url(../images/btn_delete_security_group.gif) no-repeat;
 	text-indent: -9999px;
