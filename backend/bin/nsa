@@ -18,7 +18,8 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
   end
   
   initialize_hook do
-    opts = sprintf("-k --no-hosts --no-resolv --conf-file=%s",
+    opts = sprintf("-k --no-hosts --no-resolv --dhcp-hostsfile=%s --conf-file=%s",
+                   config_section.dhcp_hosts_conf + ".dhcp",
                    config_section.dhcp_hosts_conf
                    )
     cmd = "#{manifest.config.dnsmasq_bin_path} #{opts}"
@@ -40,6 +41,10 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
       puts "refresh on instance_terminated: #{args.inspect}"
       myinstance.refresh_dnsmasq_conf
     end
+  end
+
+  terminate_hook do
+    Process.kill(@dnsmasq_pid)
   end
 
 
@@ -72,13 +77,29 @@ dhcp-option=option:dns-server,<%= confdata[:dns_server] %>
 dhcp-option=option:domain-name,<%= confdata[:domain_name] %>
 #dhcp-option=option:domain-search,<%= confdata[:domain_name] %>
 <%- confdata[:mac2addr].each { |i| -%>
-dhcp-host=<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+#dhcp-host=<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
 <%- } -%>
 <%- confdata[:addr2host].each { |i| -%>
-address=<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+#address=/<%= i[:hostname] %>/<%= i[:ipaddr] %>
 <%- } -%>
 _EOS_
     }
+
+    File.open(config_section.dhcp_hosts_conf + ".dhcp", 'w') { |f|
+      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+<%- confdata[:mac2addr].each { |i| -%>
+<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+<%- } -%>
+_EOS_
+    }    
+
+    File.open(config_section.dhcp_hosts_conf + ".hosts", 'w') { |f|
+      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+<%- confdata[:addr2host].each { |i| -%>
+<%= i[:ipaddr] %>  <%= i[:hostname] %>
+<%- } -%>
+_EOS_
+    }    
   end
 end
 
