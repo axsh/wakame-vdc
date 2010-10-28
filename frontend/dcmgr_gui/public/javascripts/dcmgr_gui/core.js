@@ -249,6 +249,9 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
       'ids':ids 
     }
   },
+  checkRadioButton:function(id){
+    $('#'+id).attr("checked", true);
+  },
   setData:function(json){
     var rows = []
     if(!json){
@@ -281,7 +284,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   currentChecked:function(){
     var id = this.element.find("[type='radio']:checked").val();
     if( id ){
-      return {'ids' : [id] }
+      return id;
     }else{
       return null;
     }

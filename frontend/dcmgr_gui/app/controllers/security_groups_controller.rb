@@ -39,8 +39,13 @@ class SecurityGroupsController < ApplicationController
   end
   
   def update
-    name = params[:id]
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.update(name)
+    name = params[:name]
+    data = {
+      :description => params[:description],
+      :rule => params[:rule]
+    }
+    
+    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.update(name,data)
     render :json => @netfilter_group    
   end
   

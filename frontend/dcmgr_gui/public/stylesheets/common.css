@@ -749,6 +749,10 @@ body{
   width:30px;
   height:25px;
 }
+#content #mainarea_wide table tr .listradiobutton {
+  width:20px;
+  height:25px;
+}
 
 
 
