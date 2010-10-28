@@ -7,27 +7,38 @@ class VolumesController < ApplicationController
   
   # POST volumes/create.json
   def create
-    
-    # Convert to MB
-    size = case params[:unit]
-      when 'gb'
-        params[:size].to_i * 1024
-      when 'tb'
-        params[:size].to_i * 1024 * 1024
+    snapshot_ids = params[:ids]
+    if snapshot_ids
+      response = []
+      snapshot_ids.each do |snapshot_id|
+        data = {
+          :snapshot_id => snapshot_id
+        }
+        response << Frontend::Models::DcmgrResource::Volume.create(data)
+      end
+      render :json => response
+    else
+      # Convert to MB
+      size = case params[:unit]
+             when 'gb'
+               params[:size].to_i * 1024
+             when 'tb'
+               params[:size].to_i * 1024 * 1024
+             end
+      
+      # snapshot_id = params[:snapshot_id] #option
+      # storage_pool_id = params[:storage_pool_id] #option
+      
+      data = {
+        :volume_size => size,
+        # :storage_pool_id => storage_pool_id,
+        # :snapshot_id => snapshot_id
+      }
+      
+      @volume = Frontend::Models::DcmgrResource::Volume.create(data)
+
+      render :json => @volume
     end
-        
-    # snapshot_id = params[:snapshot_id] #option
-    # storage_pool_id = params[:storage_pool_id] #option
-    
-    data = {
-      :volume_size => size,
-      # :storage_pool_id => storage_pool_id,
-      # :snapshot_id => snapshot_id
-    }
-    
-    @volume = Frontend::Models::DcmgrResource::Volume.create(data)
-    
-    render :json => @volume
   end
   
   # DELETE volumes/delete.json
