@@ -111,7 +111,7 @@ DcmgrGUI.prototype.instancePanel = function(){
 		  "Close": function() { $(this).dialog("close"); },
 			"Yes, Terminate": function() {
 			  
-			  var terminate_instances = $('#terminate_instances').find('li');
+			  var terminate_instances = $(this).find('#terminate_instances').find('li');
         var ids = []
         $.each(terminate_instances,function(){
           ids.push($(this).text())

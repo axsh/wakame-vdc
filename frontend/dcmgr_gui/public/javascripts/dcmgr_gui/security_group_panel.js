@@ -53,14 +53,13 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       title:'Edit Security Group',
       path:'/edit_security_group',
       button:{
-        "Yes, Update": function() {
-          
-          var name = $('#security_group_name').val();
-          var description = $('#security_group_description').val();
-          var rule = $('#security_group_rule').val();
+        "Yes, Update": function(event) {
+        
+          var name = $(this).find('#security_group_name').val();
+          var description = $(this).find('#security_group_description').val();
+          var rule = $(this).find('#security_group_rule').val();
           var data ='description=' + description
                     +'&rule=' + rule;
-
           $.ajax({
              "type": "PUT",
              "async": true,
@@ -123,9 +122,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     path:'/create_security_group',
     button:{
      "Create": function() { 
-       var name = $('#security_group_name').val();
-       var description = $('#security_group_description').val();
-       var rule = $('#security_group_rule').val();
+       var name = $(this).find('#security_group_name').val();
+       var description = $(this).find('#security_group_description').val();
+       var rule = $(this).find('#security_group_rule').val();
        var data = 'name=' + name
                  +'&description=' + description
                  +'&rule=' + rule;
@@ -189,7 +188,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   bt_delete_security_group.target.bind('click',function(){
     var id = c_list.currentChecked();
     if( id ){
-      bt_delete_security_group.open(id);
+      bt_delete_security_group.open({"ids":[id]});
     }
     return false;
   });

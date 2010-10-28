@@ -96,9 +96,9 @@ DcmgrGUI.prototype.imagePanel = function(){
     path:'/launch_instance',
     button:{
      "Launch": function() { 
-       var image_id = $('#image_id').val();
-       var host_pool_id = $('#host_pool_id').val();
-       var instance_spec = $('#instance_spec').val();
+       var image_id = $(this).find('#image_id').val();
+       var host_pool_id = $(this).find('#host_pool_id').val();
+       var instance_spec = $(this).find('#instance_spec').val();
        var data = "image_id="+image_id
                   +"&host_pool_id="+host_pool_id
                   +"&instance_spec="+instance_spec;
