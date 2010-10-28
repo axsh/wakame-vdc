@@ -615,7 +615,6 @@ module Dcmgr
       collection :netfilter_groups do
         operation :index do
           control do
-            
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
@@ -632,10 +631,18 @@ module Dcmgr
                 :updated_at  => "Fri Oct 22 10:50:09 +0900 2010",
               }
             }
+            total = g.count
             g = pagenate(g,params[:start],params[:limit])
-
+            
+            res = [{
+              :owner_total => total,
+              :start => start,
+              :limit => limit,
+              :results => g
+            }]
+            
             respond_to { |f|
-              f.json { g.to_json }
+              f.json {res.to_json}
             }
           end
         end
