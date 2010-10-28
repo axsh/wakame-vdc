@@ -188,7 +188,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   bt_delete_security_group.target.bind('click',function(){
     var id = c_list.currentChecked();
     if( id ){
-      bt_delete_security_group.open(id);
+      bt_delete_security_group.open({"ids":[id]});
     }
     return false;
   });
