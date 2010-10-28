@@ -200,7 +200,8 @@ class KvmHandler < EndpointBuilder
     inst = rpc.request('hva-collector', 'get_instance',  inst_id)
 
     # setup vm data folder
-    FileUtils.mkdir(File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir))
+    inst_data_dir = File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir)
+    FileUtils.mkdir(inst_data_dir)
     # copy image file
     img_src = inst[:image][:source]
     case img_src[:type].to_sym
@@ -211,15 +212,14 @@ class KvmHandler < EndpointBuilder
       raise "Unknown image source type: #{img_src[:type]}"
     end
 
-    inst[:disk]
-    
     # boot virtual machine
-    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -daemonize",
+    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize",
                   inst[:instance_spec][:memory_size],
                   inst[:instance_spec][:cpu_cores],
                   inst_id,
                   inst[:runtime_config][:vnc_port],
-                  img_path
+                  img_path,
+                  File.expand_path('kvm.pid', inst_data_dir)
                   )
     system(cmd)
     
@@ -234,6 +234,9 @@ class KvmHandler < EndpointBuilder
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
     logger.info("Booting #{inst_id}")
+    # setup vm data folder
+    inst_data_dir = File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir)
+    FileUtils.mkdir(inst_data_dir)
     
     # create volume from snapshot
     jobreq.run("sta-loader.#{vol[:storage_pool][:node_id]}", "create", vol_id)
@@ -255,12 +258,13 @@ class KvmHandler < EndpointBuilder
     end
     
     # run vm
-    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -daemonize",
+    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize",
                   inst[:instance_spec][:memory_size],
                   inst[:instance_spec][:cpu_cores],
                   inst_id,
                   inst[:runtime_config][:vnc_port],
-                  linux_dev_path
+                  linux_dev_path,
+                  File.expand_path('kvm.pid', inst_data_dir)
                   )
     if vnic = inst[:instance_nics].first
       cmd += " -net nic,macaddr=#{vnic[:mac_addr].unpack('A2'*6).join(':')} -net tap,ifname=#{vnic[:vif]}"
