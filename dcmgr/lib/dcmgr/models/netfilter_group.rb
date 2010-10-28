@@ -45,6 +45,8 @@ module Dcmgr::Models
     end
 
     def build_rule
+      return if self.rule.nil?
+
       self.rule.split("\n").each { |permission|
         # [ToDo]
         # to make strong parser
