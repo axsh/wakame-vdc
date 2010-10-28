@@ -24,6 +24,12 @@ class ServiceNetfilter < Isono::NodeModules::Base
       puts "refresh on instance_terminated: #{args.inspect}"
       myinstance.refresh_netfilter(args)
     end
+
+    event.subscribe('hva/netfilter_updated', '#') do |args|
+      puts "refresh on netfilter_updated: #{args.inspect}"
+      # TODO
+      #myinstance.refresh_netfilter(args)
+    end
   end
 
   def init_netfilter
@@ -321,19 +327,6 @@ class KvmHandler < EndpointBuilder
 
 end
 
-# TODO: delete debug class
-class NetfilterHandler < EndpointBuilder
-  job :refresh do
-    inst_id = request.args[0]
-    event.publish('hva/instance_started', :args=>[inst_id])
-  end
-
-  def event
-    @event ||= Isono::NodeModules::EventChannel.new(@node)
-  end
-end
-
-
 
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
@@ -352,5 +345,4 @@ end
 
 start(manifest) do
   endpoint "kvm-handle.#{@node.node_id}", KvmHandler
-  endpoint "netfilter-handle.#{@node.node_id}", NetfilterHandler
 end
