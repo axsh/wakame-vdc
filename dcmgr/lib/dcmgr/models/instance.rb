@@ -101,19 +101,23 @@ module Dcmgr::Models
         :status => self.status,
       }
 
-      h[:network] = {}
+      h[:network] = []
       if instance_nic
         instance_nic.each { |n|
           if n.ip
-            h[:network][n.ip.network.name] = {:ipaddr=>n.ip.ipv4}
+            h[:network] << {
+              :network_name => n.ip.network.name,
+              :ipaddr => n.ip.ipv4
+            }
           end
         }
       end
       
-      h[:volume] = {}
+      h[:volume] = []
       if self.volume
         self.volume.each { |v|
-          h[:volume][v.canonical_uuid] = {
+          h[:volume] << {
+            :vol_id => v.canonical_uuid,
             :guest_device_name=>v.guest_device_name,
             :state=>v.state,
           }
