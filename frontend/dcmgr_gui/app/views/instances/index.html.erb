@@ -69,13 +69,7 @@ jQuery(function($){
 					<td class="wmi_id" title="">${item.image_id}</td>
 					<td class="vtip center" title="${item.cpu_cores}">${item.cpu_cores}</td>
 					<td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
-					<td class="vtip center" title="ip">
-					{{each(index,network) item.network}}
-						{{each(index,global_network) network.global_1}}
-							${global_network.ipaddr}
-						{{/each}}
-					{{/each}}
-					</td>
+					<td class="vtip center" title="ip" style="width:60px">{{each(index,network) item.network}}${network.ipaddr}{{/each}}</td>
 					<td class="vtip center state" title="${item.state}">${item.state}</td>
 				</tr>
 			   {{/each}}
@@ -114,11 +108,7 @@ jQuery(function($){
 					<td class="state">${item.state}</td>
 					<td class="padcell"></td>
 					<td class="title">IP:</td>
-					<td>
-					{{each(index,global_network) item.network}}
-						${global_network.ipaddr}
-					{{/each}}
-					</td>
+					<td>{{each(index,global_network) item.network}}${global_network.ipaddr}{{/each}}</td>
 				</tr>
 				<tr>
 					<td class="padcell"></td>
