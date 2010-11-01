@@ -8,4 +8,8 @@ class AccountsController < ApplicationController
 
     redirect_to :root
   end
+  
+  def index
+    
+  end
 end
