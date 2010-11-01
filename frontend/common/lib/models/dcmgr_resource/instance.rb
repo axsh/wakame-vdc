@@ -21,6 +21,14 @@ module Frontend::Models
         self.delete(instance_id).body
       end
       
+      def self.reboot(instance_id)
+        @collection ||= self.collection_name
+        self.collection_name = File.join(@collection,instance_id)
+        result = self.put(:reboot)
+        self.collection_name = @collection
+        result.body
+      end
+      
     end
   end
 end

@@ -34,13 +34,17 @@ module Frontend
         :image_id => 'wmi-640cbf3r',
         :host_pool_id => 'hp-hb4f6f84'
       }
-      
       p @instance.create(params)
     end
     
     def test_terminate
       instance_id = 'i-trjjhgq0'
       p @instance.destroy(instance_id)
+    end
+    
+    def test_reboot
+      instance_id = 'i-ej1vekxx'
+      p @instance.reboot(instance_id)
     end
   end
 end

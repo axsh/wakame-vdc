@@ -55,7 +55,33 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
+  
+  var instance_action_helper = function(action){
     
+    var instances = $(this).find('#instances').find('li');
+    var ids = [];
+    
+    $.each(instances, function() {
+      ids.push($(this).text());
+    });
+
+    var data = $.param({ids:ids});
+    
+    $.ajax({
+       "type": "POST",
+       "async": true,
+       "url": '/instances/'+ action,
+       "dataType": "json",
+       "data": data,
+       success: function(json, status) {
+         console.log(json);
+         bt_refresh.element.trigger('dcmgrGUI.refresh');
+       }
+     });
+    
+    $(this).dialog("close");
+  };
+  
   var bt_instance_start = new DcmgrGUI.Dialog({
     target:'.start_instances',
     width:400,
@@ -65,9 +91,8 @@ DcmgrGUI.prototype.instancePanel = function(){
     button:{
      "Close": function() { $(this).dialog("close"); },
      "Yes, Start": function() { 
-       c_list.changeStatus('starting');
        $(this).dialog("close");
-      }
+     }
     }
   });
   
@@ -80,7 +105,6 @@ DcmgrGUI.prototype.instancePanel = function(){
 		 button:{
 			"Close": function() { $(this).dialog("close"); },
 			"Yes, Stop": function() {
-			  c_list.changeStatus('stopping');
 			  $(this).dialog("close");
 			}
 		}
@@ -95,8 +119,7 @@ DcmgrGUI.prototype.instancePanel = function(){
 		 button:{
 		  "Close": function() { $(this).dialog("close"); },
 			"Yes, Reboot": function() {
-			  c_list.changeStatus('rebooting');
-			  $(this).dialog("close");
+        instance_action_helper.call(this,'reboot');
 			}
 		}
   });
@@ -110,28 +133,7 @@ DcmgrGUI.prototype.instancePanel = function(){
     button:{
 		  "Close": function() { $(this).dialog("close"); },
 			"Yes, Terminate": function() {
-			  
-			  var terminate_instances = $(this).find('#terminate_instances').find('li');
-        var ids = []
-        $.each(terminate_instances,function(){
-          ids.push($(this).text())
-        })
-
-        var data = $.param({ids:ids})
-        $.ajax({
-           "type": "POST",
-           "async": true,
-           "url": '/instances/terminate',
-           "dataType": "json",
-           "data": data,
-           success: function(json,status){
-             console.log(json);
-             bt_refresh.element.trigger('dcmgrGUI.refresh');
-           }
-         });
-			  
-			  c_list.changeStatus('terminating');
-			  $(this).dialog("close");
+			  instance_action_helper.call(this,'terminate');
 			}
     }
   });
