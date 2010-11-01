@@ -736,24 +736,34 @@ module Dcmgr
         description 'Show lists of the netfilter_groups'
         operation :index do
           control do
+            all   = params[:all].to_i
+
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
             limit = limit < 1 ? 10 : limit
 
-            total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+            # show all?
+            if all != 0
+              g = Models::NetfilterGroup.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.to_tiny_hash }
+              respond_to { |f|
+                f.json { g.to_json }
+              }
+            else
+              total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
+              partial_ds  = total_ds.dup.limit(limit, start).order(:id)
 
-            res = [{
-              :owner_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_hash }
-            }]
+              res = [{
+                       :owner_total => total_ds.count,
+                       :start => start,
+                       :limit => limit,
+                       :results=> partial_ds.all.map {|i| i.to_hash }
+                     }]
 
-            respond_to { |f|
-              f.json {res.to_json}
-            }
+              respond_to { |f|
+                f.json {res.to_json}
+              }
+            end
           end
         end
 
@@ -764,7 +774,7 @@ module Dcmgr
             g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
 
             respond_to { |f|
-              f.json { g.values.to_json }
+              f.json { g.to_json }
             }
           end
         end
