@@ -329,7 +329,7 @@ module Dcmgr
           end
         end
 
-        operation :reboot, :method=>:get, :member=>true do
+        operation :reboot, :method=>:put, :member=>true do
           description 'Reboots the instance'
           control do
             i = find_by_uuid(:Instance, params[:id])
