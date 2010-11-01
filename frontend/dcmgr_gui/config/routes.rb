@@ -56,9 +56,12 @@ DcmgrGui::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   
   match ':controller(/:action(/:id(.:format)))'
+  
   # resources :users
   resource :session, :only => [:new, :create, :destroy]
   
+  match 'accounts',:to => 'acounts#index'
+
   resources :volumes do
     post 'create',:on => :member
   end
