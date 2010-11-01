@@ -9,3 +9,11 @@ if db.is_a?(Sequel::MySQL::Database)
 end
 #require 'logger' 
 #db.loggers << Logger.new(STDOUT)
+
+# Disable TEXT to Sequel::SQL::Blob translation.
+# see the thread: MySQL text turning into blobs
+# http://groups.google.com/group/sequel-talk/browse_thread/thread/d0f4c85abe9b3227/9ceaf291f90111e6
+# lib/sequel/adapters/mysql.rb
+[249, 250, 251, 252].each { |v|
+  Sequel::MySQL::MYSQL_TYPES.delete(v)
+}
