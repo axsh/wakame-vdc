@@ -887,6 +887,91 @@ module Dcmgr
         end
       end
 
+      collection :ssh_key_pair do
+        description "List ssh key pairs in account"
+        operation :index do
+          # params start, fixnum, optional 
+          # params limit, fixnum, optional
+          control do
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+            
+            total_ds = Models::SshKeyPair.where(:account_id=>@account.canonical_uuid)
+            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+
+            res = [{
+              :owner_total => total_ds.count,
+              :filter_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|i| i.to_api_document }
+            }]
+            
+            respond_to { |f|
+              f.json {res.to_json}
+            }
+          end
+        end
+        
+        operation :show do
+          description "Retrieve details about ssh key pair"
+          # params :id required
+          # params :format optional [openssh,putty]
+          control do
+            ssh = find_by_uuid(:SshKeyPair, params[:id])
+            
+            respond_to { |f|
+              f.json {ssh.to_hash.to_json}
+            }
+          end
+        end
+        
+        operation :create do
+          description "Create ssh key pair information"
+          # params :name required key name (<100 chars)
+          # params :download_once optional set true if you do not want
+          #        to save private key info on database.
+          control do
+            keydata = Models::SshKeyPair.generate_key_pair
+            savedata = {
+              :name=>params[:name],
+              :account_id=>@account.canonical_uuid,
+              :public_key=>keydata[:public_key]
+            }
+            if params[:download_once] != 'true'
+              savedata[:private_key]=keydata[:private_key]
+            end
+            ssh = Models::SshKeyPair.create(savedata)
+                                            
+            respond_to { |f|
+              # include private_key data in response even if
+              # it's not going to be stored on DB.
+              f.json {ssh.to_hash.merge(:private_key=>keydata[:private_key]).to_json}
+            }
+          end
+        end
+        
+        operation :destroy do
+          description "Remove ssh key pair information"
+          # params :id required
+          control do
+            ssh = find_by_uuid(:SshKeyPair, params[:id])
+            if examine_owner(ssh)
+              ssh.destroy
+            else
+              raise OperationNotPermitted
+            end
+            
+            respond_to { |f|
+              f.json {ssh.to_hash.to_json}
+            }
+          end
+        end
+
+      end
+
     end
   end
 end
