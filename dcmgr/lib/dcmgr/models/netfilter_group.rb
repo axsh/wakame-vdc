@@ -28,6 +28,13 @@ module Dcmgr::Models
       #}
     end
 
+    def to_tiny_hash
+      {
+        :name => self.name,
+        :uuid => self.canonical_uuid,
+      }
+    end
+
     def self.create_group(account_id, params)
       grp = self.create(:account_id  => account_id,
                         :name        => params[:name],
