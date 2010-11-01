@@ -329,29 +329,8 @@ module Dcmgr
           end
         end
 
-        operation :update do
-          description 'Change vcpu cores or memory size on the instance'
-          control do
-            i = find_by_uuid(:Instance, params[:id])
-          end
-        end
-
         operation :reboot, :method=>:get, :member=>true do
           description 'Reboots the instance'
-          control do
-            i = find_by_uuid(:Instance, params[:id])
-          end
-        end
-
-        operation :resume, :method=>:get, :member=>true do
-          description 'Resume the suspending instance'
-          control do
-            i = find_by_uuid(:Instance, params[:id])
-          end
-        end
-
-        operation :suspend, :method=>:get, :member=>true do
-          description 'Suspend the instance'
           control do
             i = find_by_uuid(:Instance, params[:id])
           end
