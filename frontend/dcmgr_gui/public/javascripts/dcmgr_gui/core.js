@@ -400,28 +400,28 @@ DcmgrGUI.MultiSelectOptions = DcmgrGUI.Class.create({
   initialize: function() {
     
   },
-  move: function(from,to) {
+  move: function(from_select_id,to_select_id) {
     
-    $(from).find('option:selected').each(function(){
+    $(from_select_id).find('option:selected').each(function(){
 
       var select_group_name = $(this).val();
-      var group_name_count = $(to).find("option[value='" +select_group_name+ "']").length;
+      var group_name_count = $(to_select_id).find("option[value='" +select_group_name+ "']").length;
       var empty_option = '<option value=""></option>';
       
-      if($(to).find("option[value='']").length === 0) {
+      if($(to_select_id).find("option[value='']").length === 0) {
         
         if(group_name_count === 0 && select_group_name !== '') {
           var html = '<option value="'+ select_group_name +'">'+ select_group_name +'</option>';
-          $(from).find("option[value='"+ select_group_name +"']").remove();
-          $(to).append(html);
+          $(from_select_id).find("option[value='"+ select_group_name +"']").remove();
+          $(to_select_id).append(html);
         }
 
       } else {
         
-        $(to).find('option').each(function(){
+        $(to_select_id).find('option').each(function(){
 
           if($(this).val() === '' && select_group_name !== '' && group_name_count === 0) {
-            $(from).find("option[value='"+ select_group_name +"']").remove();
+            $(from_select_id).find("option[value='"+ select_group_name +"']").remove();
             $(this).val(select_group_name);
             $(this).text(select_group_name);
             return false;
@@ -430,12 +430,12 @@ DcmgrGUI.MultiSelectOptions = DcmgrGUI.Class.create({
         });
       }
       
-      if($(from).find("option").length === 0) {
-        $(from).append(empty_option);
+      if($(from_select_id).find("option").length === 0) {
+        $(from_select_id).append(empty_option);
       }
       
-      if($(to).find("option").length === 0) {
-        $(to).append(empty_option);
+      if($(to_select_id).find("option").length === 0) {
+        $(to_select_id).append(empty_option);
       }
     });
   }
