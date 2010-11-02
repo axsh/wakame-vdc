@@ -193,11 +193,11 @@ module Dcmgr
     autoload :Base, 'dcmgr/web/base'
     autoload :Public, 'dcmgr/web/public'
     autoload :Private, 'dcmgr/web/private'
-    autoload :Metadata, 'dcmgr/web/metadata'
   end
 
   module Endpoints
     autoload :CoreAPI, 'dcmgr/endpoints/core_api'
+    autoload :Metadata, 'dcmgr/endpoints/metadata'
   end
 
   module NodeModules

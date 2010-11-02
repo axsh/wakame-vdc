@@ -1,16 +1,19 @@
-begin
-  # Try to require the preresolved locked set of gems.
-  require File.expand_path('../../../.bundle/environment', __FILE__)
-rescue LoadError
-  # Fall back on doing an unlocked resolve at runtime.
-  require "rubygems"
-  require "bundler"
-  Bundler.setup
-end
+# -*- coding: utf-8 -*-
+
+require "rubygems"
+require "bundler/setup"
+
 $:.unshift "#{File.dirname(__FILE__)}/../../lib"
 
-require 'sinatra'
 require 'dcmgr'
 
-Dcmgr.configure('../public/dcmgr.conf')
-run Dcmgr::Web::Metadata.new
+if File.exists?('./dcmgr.conf')
+  Dcmgr.configure('./dcmgr.conf')
+elsif File.exists?('../../dcmgr.conf')
+  Dcmgr.configure('../../dcmgr.conf')
+else
+  raise "Could not find the configuration file."
+end
+Dcmgr.run_initializers
+
+run Dcmgr::Endpoints::Metadata.new
