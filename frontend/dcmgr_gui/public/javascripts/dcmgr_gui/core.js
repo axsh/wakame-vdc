@@ -81,6 +81,7 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
     this.height = params['height'];
     this.title = params['title'];
     this.button = params['button'];
+    this.callback = params['callback'] ||null;
   },
   open: function(params){
     //multi select action
@@ -100,7 +101,7 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
   },
   create: function(params){
     this.content = this.element
-        .load(this.path,params)
+        .load(this.path,params,this.callback)
   			.dialog({
   				title: this.title,
   				disable: false,
@@ -393,6 +394,51 @@ DcmgrGUI.Refresh = DcmgrGUI.Class.create({
       self.element.trigger('dcmgrGUI.refresh');
     })
   },
+});
+
+DcmgrGUI.MultiSelectOptions = DcmgrGUI.Class.create({
+  initialize: function() {
+    
+  },
+  move: function(from,to) {
+    
+    $(from).find('option:selected').each(function(){
+
+      var select_group_name = $(this).val();
+      var group_name_count = $(to).find("option[value='" +select_group_name+ "']").length;
+      var empty_option = '<option value=""></option>';
+      
+      if($(to).find("option[value='']").length === 0) {
+        
+        if(group_name_count === 0 && select_group_name !== '') {
+          var html = '<option value="'+ select_group_name +'">'+ select_group_name +'</option>';
+          $(from).find("option[value='"+ select_group_name +"']").remove();
+          $(to).append(html);
+        }
+
+      } else {
+        
+        $(to).find('option').each(function(){
+
+          if($(this).val() === '' && select_group_name !== '' && group_name_count === 0) {
+            $(from).find("option[value='"+ select_group_name +"']").remove();
+            $(this).val(select_group_name);
+            $(this).text(select_group_name);
+            return false;
+          }
+
+        });
+      }
+      
+      if($(from).find("option").length === 0) {
+        $(from).append(empty_option);
+      }
+      
+      if($(to).find("option").length === 0) {
+        $(to).append(empty_option);
+      }
+    });
+  }
 });
 
 DcmgrGUI.prototype = {

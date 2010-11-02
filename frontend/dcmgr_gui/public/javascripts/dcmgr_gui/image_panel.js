@@ -90,10 +90,24 @@ DcmgrGUI.prototype.imagePanel = function(){
   
   var bt_launch_instance = new DcmgrGUI.Dialog({
     target:'.launch_instance',
-    width:400,
-    height:230,
+    width:500,
+    height:400,
     title:'Launch Instance',
     path:'/launch_instance',
+    callback: function(){
+
+      var from_security_group = new DcmgrGUI.MultiSelectOptions();
+      var to_security_group = new DcmgrGUI.MultiSelectOptions();
+      
+      $(this).find('#right_button').click(function(){
+        from_security_group.move('#from_select_list','#to_select_list');
+      });
+
+      $(this).find('#left_button').click(function(){
+        to_security_group.move('#to_select_list','#from_select_list');
+      });
+      
+    },
     button:{
      "Launch": function() { 
        var image_id = $(this).find('#image_id').val();
@@ -124,7 +138,6 @@ DcmgrGUI.prototype.imagePanel = function(){
     }
     return false;
   });
-  
 
   //list
   c_list.setData(null);
