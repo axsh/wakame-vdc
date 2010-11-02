@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 
 require 'extlib'
-require 'sinatra'
+require 'sinatra/base'
 require 'yaml'
 require 'json'
 
@@ -17,10 +18,13 @@ require 'dcmgr'
 # It will return a document which results in a syntax specified in the last extension field. The document contains 
 # over all information that the VM needs for self recoginition.
 module Dcmgr
-  module Web
+  module Endpoints
     class Metadata < Sinatra::Base
 
-      LATEST_PROVIDER_VER_ID='2010-03-01'
+      disable :sessions
+      disable :show_exceptions
+
+      LATEST_PROVIDER_VER_ID='2010-11-01'
       
       get '/' do
         ''
@@ -41,12 +45,14 @@ module Dcmgr
         v = v.gsub(/-/, '')
         
         hash_doc = begin
-                     Module.find_const("::Dcmgr::Web::Metadata::Provider_#{v}").new.document(request.ip)
+                     self.class.find_const("Provider_#{v}").new.document(request.ip)
                    rescue NameError => e
                      raise e if e.is_a? NoMethodError
                      Dcmgr.logger.error("ERROR: Unsupported metadata version: #{v}")
                      Dcmgr.logger.error(e)
-                     raise "Unsupported metadata version: #{v}"
+                     error(404, "Unsupported metadata version: #{v}")
+                   rescue UnknownSourceIpError => e
+                     error(404, "Unknown source IP: #{e.message}")
                    end
 
         return case ext
@@ -63,10 +69,13 @@ module Dcmgr
 
       private 
       def shell_dump(hash)
+        # TODO: values to be shell escaped
         hash.map {|k,v|
           "#{k.to_s.upcase}='#{v}'"
         }.join("\n")
       end
+
+      class UnknownSourceIpError < StandardError; end
 
       # Base class for Metadata provider
       class Provider
@@ -78,22 +87,37 @@ module Dcmgr
         end
       end
 
-      # 2010-03-01 version of metadata provider
-      class Provider_20100301 < Provider
+      # 2010-11-01 version of metadata provider
+      class Provider_20101101 < Provider
+        # {:cpu_cores=>1,
+        #  :memory_size=>100,
+        #  :state=>'running',
+        #  :user_data=>'......',
+        #  :network => [{
+        #    :ip=>'192.168.1.1',
+        #    :name=>'xxxxxx'
+        #  }]
+        # }
         def document(src_ip)
-          inst = Models::Instance.find_by_assigned_ipaddr(src_ip)
-          ret = {:instance_id=>"#{Models::Instance.prefix_uuid}-#{inst[:uuid]}"}
-          # picks keys and values are duplicable from model obj.
-          {:cpus=>:need_cpus,
-            :cpu_mhz=>:need_cpu_mhz,
-            :memory=>:need_memory,
-            :account_id=>:account_id,
-            :status=>:status}.each {|k1,k2|
-            ret[k1] = inst[k2]
+          ip = Models::IpLease.find(:ipv4=>src_ip)
+          if ip.nil? || ip.instance_nic.nil?
+            raise UnknownSourceIpError, src_ip
+          end
+          inst = ip.instance_nic.instance
+          ret = {
+            :instance_id=>inst.canonical_uuid,
+            :cpu_cores=>inst.cpu_cores,
+            :memory_size=>inst.memory_size,
+            :state => inst.state,
+            :user_data=>inst.user_data.to_s,
           }
-          # IP address values
-          ret[:ipaddrs] = inst.ip.map { |i|
-            i[:ip]
+          # IP/network values
+          ret[:network] = inst.nic.map { |nic|
+            {:ip=>nic.ip.ipv4,
+              :name=>nic.ip.network.name,
+            }
+          }
+          ret[:volume] = inst.volume.map { |v|
           }
           ret
         end

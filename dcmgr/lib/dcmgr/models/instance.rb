@@ -31,6 +31,7 @@ module Dcmgr::Models
     many_to_one :host_pool
     one_to_many :volume
     one_to_many :instance_nic
+    alias :nic :instance_nic
     one_to_many :instance_netfilter_groups
 
     subset(:runnings){|f| f.state == :running }
@@ -193,6 +194,20 @@ module Dcmgr::Models
 
     def fqdn_hostname
       sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.host_pool.network.domain_name)
+    end
+
+    # Retrieve all networks belong to this instance
+    # @return [Array[Models::Network]]
+    def networks
+      instance_nic.select { |nic|
+        !nic.ip.nil?
+      }.map { |nic|
+        nic.ip.network
+      }.group_by { |net|
+        net.name
+      }.values.map { |i|
+        i.first
+      }
     end
 
   end
