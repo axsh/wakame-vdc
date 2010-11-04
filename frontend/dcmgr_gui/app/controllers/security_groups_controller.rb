@@ -21,7 +21,6 @@ class SecurityGroupsController < ApplicationController
     respond_with(@netfilter_group,:to => [:json])
   end
 
-  
   def create
     data = {
       :name => params[:name],
@@ -44,9 +43,16 @@ class SecurityGroupsController < ApplicationController
       :description => params[:description],
       :rule => params[:rule]
     }
-    
     @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.update(name,data)
     render :json => @netfilter_group    
+  end
+  
+  def show_groups
+    data = {
+      :all => 1
+    }
+    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.list(data)
+    respond_with(@netfilter_group,:to => [:json])
   end
   
 end

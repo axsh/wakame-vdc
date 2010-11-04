@@ -27,9 +27,11 @@ module Frontend
     def test_list
       params = {
         :start => 0,
-        :limit => 10
+        :limit => 2
       }
-      p @netfilter_group.list(params)
+
+      result = @netfilter_group.list(params)[0]
+      assert_equal(result.results.size,2)
     end
     
     def test_show
@@ -49,6 +51,14 @@ module Frontend
     
     def test_destroy
       p @netfilter_group.destroy(name)
+    end
+    
+    def test_all_group_list
+      params = {
+        :all => 1
+      }
+      result = @netfilter_group.list(params)
+      p result.size
     end
   end
 end
