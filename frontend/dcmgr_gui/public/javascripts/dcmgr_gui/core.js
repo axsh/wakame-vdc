@@ -396,48 +396,61 @@ DcmgrGUI.Refresh = DcmgrGUI.Class.create({
   },
 });
 
-DcmgrGUI.MultiSelectOptions = DcmgrGUI.Class.create({
-  initialize: function() {
+DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
+  
+  initialize: function(params) {
+
+    this.left_select_id = params.left_select_id;
+    this.right_select_id = params.right_select_id;
+    this.data = params.data;
     
+    this.leftSelectionsArray = [];
+    var dataSize = this.data.length;
+    for(var i = 0;i < dataSize ;i++) {
+      var html = '<option name="'+i+'" value="'+ this.data[i]['id'] +'">'+ this.data[i]['name'] +'</option>';
+      this.leftSelectionsArray[i] = $(html);
+    }
+    this.rightSelectionsArray = this.emptyArray(this.data.length);
+    
+    this.refreshOptions(this.left_select_id,this.leftSelectionsArray);
   },
-  move: function(from_select_id,to_select_id) {
-    
-    $(from_select_id).find('option:selected').each(function(){
-
-      var select_group_name = $(this).val();
-      var group_name_count = $(to_select_id).find("option[value='" +select_group_name+ "']").length;
-      var empty_option = '<option value=""></option>';
-      
-      if($(to_select_id).find("option[value='']").length === 0) {
-        
-        if(group_name_count === 0 && select_group_name !== '') {
-          var html = '<option value="'+ select_group_name +'">'+ select_group_name +'</option>';
-          $(from_select_id).find("option[value='"+ select_group_name +"']").remove();
-          $(to_select_id).append(html);
-        }
-
-      } else {
-        
-        $(to_select_id).find('option').each(function(){
-
-          if($(this).val() === '' && select_group_name !== '' && group_name_count === 0) {
-            $(from_select_id).find("option[value='"+ select_group_name +"']").remove();
-            $(this).val(select_group_name);
-            $(this).text(select_group_name);
-            return false;
-          }
-
-        });
+  refreshOptions: function(select_id,selectionsArray){
+    var selectionsSize = selectionsArray.length;
+    $(select_id).html('');
+    for(var i = 0;i < selectionsSize  ;i++) {
+      if(selectionsArray[i] !== null ){
+        $(select_id).append(selectionsArray[i]);
       }
-      
-      if($(from_select_id).find("option").length === 0) {
-        $(from_select_id).append(empty_option);
-      }
-      
-      if($(to_select_id).find("option").length === 0) {
-        $(to_select_id).append(empty_option);
-      }
+    }
+  },
+  emptyArray: function(size) {
+    var data = [];
+    for(var i = 0;i < size  ;i++) {
+      data[i] = null;
+    }
+    return data;
+  },
+  leftToRight: function() {
+    var self = this;
+    $(this.left_select_id).find('option:selected').each(function(){
+      var index = $(this).attr('name');
+      self.leftSelectionsArray[index] = null;
+      self.rightSelectionsArray[index] = this;
+      $(this).remove();
     });
+    
+    this.refreshOptions(this.right_select_id,this.rightSelectionsArray);
+  },
+  rightToLeft: function() {
+    var self = this;
+    $(this.right_select_id).find('option:selected').each(function(){
+      var index = $(this).attr('name');
+      self.leftSelectionsArray[index] = this;
+      self.rightSelectionsArray[index] = null;
+      $(this).remove();
+    });
+    
+    this.refreshOptions(this.left_select_id,this.leftSelectionsArray);
   }
 });
 
