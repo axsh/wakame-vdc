@@ -2,6 +2,7 @@
 
 require 'sinatra/base'
 require 'sinatra/rabbit'
+require 'sinatra/sequel_transaction'
 
 require 'json'
 require 'extlib/hash'
@@ -12,6 +13,7 @@ module Dcmgr
   module Endpoints
     class CoreAPI < Sinatra::Base
       register Sinatra::Rabbit
+      register Sinatra::SequelTransaction
 
       disable :sessions
       disable :show_exceptions
