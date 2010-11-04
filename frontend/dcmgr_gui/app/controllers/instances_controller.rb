@@ -39,4 +39,13 @@ class InstancesController < ApplicationController
     render :json => response
   end
   
+  def reboot
+    instance_ids = params[:ids]
+    response = []
+    instance_ids.each do |instance_id|
+      response << Frontend::Models::DcmgrResource::Instance.reboot(instance_id)
+    end
+    render :json => response
+  end
+  
 end
