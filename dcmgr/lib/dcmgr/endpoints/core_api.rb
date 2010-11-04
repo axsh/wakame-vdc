@@ -281,7 +281,7 @@ module Dcmgr
 
               inst = hp.create_instance(@account, wmi, spec) do |i|
                 # TODO: do not use rand() to decide vnc port.
-                i.runtime_config = {:vnc_port=>rand(2000)}
+                i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
               end
 
               vol.instance = inst
@@ -290,7 +290,7 @@ module Dcmgr
             when Models::Image::BOOT_DEV_LOCAL
               inst = hp.create_instance(@account, wmi, spec) do |i|
                 # TODO: do not use rand() to decide vnc port.
-                i.runtime_config = {:vnc_port=>rand(2000)}
+                i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
               end
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
             else
@@ -565,24 +565,25 @@ module Dcmgr
 
         operation :attach, :method =>:put, :member =>true do
           description 'Attachd the volume'
-          # params volume_id, string, required
+          # params id, string, required
           # params instance_id, string, required
           control do
             require 'yaml'
             raise UndefinedInstanceID if params[:instance_id].nil?
-            raise UndefinedVolumeID if params[:volume_id].nil?
+            raise UndefinedVolumeID if params[:id].nil?
             
             i = find_by_uuid(:Instance, params[:instance_id])
             raise UnknownInstance if i.nil?
 
-            v = i.find_volume(@account.canonical_uuid, params[:volume_id])
+            v = find_by_uuid(:Volume, params[:id])
             raise UnknownVolume if v.nil?
+
+            v.instance = i
+            v.save
 
             opt = v.values.dup
             opt[:transport_information] = YAML.load(opt[:transport_information])
-            Dcmgr.messaging.request("job.kvm-handle.hva-192.168.1.181", 'attach', opt) do |req|
-              req.oneshot = true
-            end
+            res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
             respond_to { |f|
               f.json { v.values.to_json}

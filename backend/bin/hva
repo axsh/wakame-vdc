@@ -229,13 +229,14 @@ class KvmHandler < EndpointBuilder
     end
 
     # boot virtual machine
-    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize",
+    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait",
                   inst[:instance_spec][:memory_size],
                   inst[:instance_spec][:cpu_cores],
                   inst_id,
                   inst[:runtime_config][:vnc_port],
                   img_path,
-                  File.expand_path('kvm.pid', inst_data_dir)
+                  File.expand_path('kvm.pid', inst_data_dir),
+                  inst[:runtime_config][:telnet_port]
                   )
     system(cmd)
     
@@ -278,13 +279,14 @@ class KvmHandler < EndpointBuilder
     end
     
     # run vm
-    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize",
+    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait",
                   inst[:instance_spec][:memory_size],
                   inst[:instance_spec][:cpu_cores],
                   inst_id,
                   inst[:runtime_config][:vnc_port],
                   linux_dev_path,
-                  File.expand_path('kvm.pid', inst_data_dir)
+                  File.expand_path('kvm.pid', inst_data_dir),
+                  inst[:runtime_config][:telnet_port]
                   )
     if vnic = inst[:instance_nics].first
       cmd += " -net nic,macaddr=#{vnic[:mac_addr].unpack('A2'*6).join(':')} -net tap,ifname=#{vnic[:vif]}"
@@ -325,9 +327,65 @@ class KvmHandler < EndpointBuilder
   end
 
   job :attach do
+    inst_id = request.args[0]
+    vol_id = request.args[1]
+
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    vol = rpc.request('sta-collector', 'get_volume', vol_id)
+    puts "Attaching #{vol_id}"
+    raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'available'
+
+    # check under until the dev file is created.
+    # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
+    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{vol[:storage_pool][:ipaddr]}:3260",
+                                                                  vol[:transport_information][:iqn],
+                                                                  vol[:transport_information][:lun]]
+    
+    # attach disk on host os
+    tryagain do
+      lists = `sudo iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}`
+      initiator = `sudo iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'`
+      sleep 1
+      File.exist?(linux_dev_path)
+    end
+
+    rpc.request('sta-collector', 'update', {:volume_id=> vol_id, :state => :attaching, :host_device_name => linux_dev_path}) do |req|
+      req.oneshot = true
+    end
+    puts "Attaching #{vol_id} on #{inst_id}"
+
+    # attach disk on guest os
+    require 'net/telnet'
+    slot_number = nil
+    pci = nil
+
+    telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /(qemu)/){|c| print c}
+    telnet.cmd("pci_add auto storage file=#{linux_dev_path},if=scsi")
+    telnet.waitfor(/(qemu)/){|c|
+      pci_add = c.scan(/^(OK.+domain.+)/).last
+      slot_number = pci_add.first.split(',')[2].split(' ').last if !pci_add.nil?
+    }
+    telnet.cmd("info pci"){|c|
+      pci = c.scan(/.+(Bus.+#{slot_number},.+:)/) 
+    }
+    telnet.close
+    raise "volume has not attached" if pci.nil?
+    rpc.request('sta-collector', 'update', {:volume_id=> vol_id, :state=>:attached, :guest_device_name=>slot_number}) do |req|
+      req.oneshot = true
+    end
+    puts "Attached #{vol_id} on #{inst_id}"
   end
 
   job :detach do
+    inst_id = request.args[0]
+    vol_id = request.args[0]
+
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    vol = rpc.request('sta-collector', 'get_volume', vol_id)
+    puts "Detaching #{vol_id}"
+    raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'attached'
+
+    # detach disk on guest os
   end
 
   def rpc
