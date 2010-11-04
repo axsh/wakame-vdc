@@ -13,3 +13,13 @@
   padding-top: 2px;
   padding-right: 4px;
 }
+
+#launch_instance_dialog #left_select_list {
+	width: 200px;
+	height: 190px;
+}
+
+#launch_instance_dialog #right_select_list {
+	width: 200px;
+	height: 190px;
+}

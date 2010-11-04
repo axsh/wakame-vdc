@@ -91,20 +91,42 @@ DcmgrGUI.prototype.imagePanel = function(){
   var bt_launch_instance = new DcmgrGUI.Dialog({
     target:'.launch_instance',
     width:500,
-    height:400,
+    height:600,
     title:'Launch Instance',
     path:'/launch_instance',
     callback: function(){
 
-      var from_security_group = new DcmgrGUI.MultiSelectOptions();
-      var to_security_group = new DcmgrGUI.MultiSelectOptions();
+      var data = [];
+
+      $.ajax({
+        "type": "GET",
+        "async": false,
+        "url": '/security_groups/all.json',
+        "dataType": "json",
+        "data": "",
+        success: function(json,status){
+          for (var i=0; i < json.length; i++) {
+            var netfilter_group = json[i].netfilter_group;
+            data.push({
+              "id" : netfilter_group.name,
+              "name" : netfilter_group.name
+            });
+          }
+        }
+      });
+              
+      var security_group = new DcmgrGUI.ItemSelector({
+        'left_select_id' : '#left_select_list',
+        'right_select_id' : "#right_select_list",
+        "data" : data
+      });
       
       $(this).find('#right_button').click(function(){
-        from_security_group.move('#from_select_list','#to_select_list');
+        security_group.leftToRight();
       });
 
       $(this).find('#left_button').click(function(){
-        to_security_group.move('#to_select_list','#from_select_list');
+        security_group.rightToLeft();
       });
       
     },
