@@ -62,6 +62,10 @@ DcmgrGui::Application.routes.draw do
   
   match 'accounts',:to => 'acounts#index'
 
+  resource :security_groups do
+    get 'all',:to => 'security_groups#show_groups'
+  end
+
   resources :volumes do
     post 'create',:on => :member
   end
