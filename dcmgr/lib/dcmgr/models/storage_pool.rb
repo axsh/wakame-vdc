@@ -110,7 +110,8 @@ module Dcmgr::Models
                   :transport_type => params[:transport_type],
                   :storage_type => params[:storage_type],
                   :export_path => params[:export_path],
-                  :ipaddr => params[:ipaddr])
+                  :ipaddr => params[:ipaddr],
+                  :snapshot_base_path => params[:snapshot_base_path])
     end
 
     def self.get_lists(uuid)
