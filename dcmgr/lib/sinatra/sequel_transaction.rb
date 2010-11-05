@@ -11,6 +11,7 @@ module Sinatra
       def route_eval(&block)
         db = Sequel::DATABASES.first
 
+        ret = nil
         db.transaction do
           ret = instance_eval(&block)
         end
