@@ -748,8 +748,8 @@ module Dcmgr
         operation :show do
           description 'Show the netfilter_groups'
           control do
-            @name = params[:id]
             g = find_by_uuid(:NetfilterGroup, params[:id])
+            p params[:id]
             raise OperationNotPermitted unless examine_owner(g)
 
             respond_to { |f|
@@ -775,23 +775,20 @@ module Dcmgr
 
             g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
             respond_to { |f|
-              f.json { g.values.to_json }
+              f.json { g.to_hash.to_json }
             }
           end
         end
 
         operation :update do
           description "Update parameters for the netfilter group"
-          # params name, string
           # params description, string
           # params rule, string
           control do
-            @name = params[:id]
-            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
+            g = find_by_uuid(:NetfilterGroup, params[:id])
 
             raise UnknownNetfilterGroup if g.nil?
 
-            g.name = @name
             if params[:description]
               g.description = params[:description]
             end
@@ -806,7 +803,7 @@ module Dcmgr
             Dcmgr.messaging.event_publish('hva/netfilter_updated', :args=>[g.canonical_uuid])
 
             respond_to { |f|
-              f.json { g.values.to_json }
+              f.json { g.to_hash.to_json }
             }
           end
         end
@@ -816,8 +813,7 @@ module Dcmgr
           description "Delete the netfilter group"
 
           control do
-            @name = params[:id]
-            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
+            g = find_by_uuid(:NetfilterGroup, params[:id])
 
             raise UnknownNetfilterGroup if g.nil?
             raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid

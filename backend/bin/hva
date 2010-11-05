@@ -75,6 +75,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   def init_ebtables
     cmd = "sudo ebtables --init-table"
     puts cmd
+    system(cmd)
   end
 
   def refresh_ebtables(inst_id)
@@ -103,35 +104,32 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # chains
     chains = []
-    protocol_map = {
+    protocol_maps = {
       'ip4'  => 'ip4',
-      'ip6'  => 'ip6',
       'arp'  => 'arp',
-      'rarp' => '0x8035'
+      #ip6'  => 'ip6',
+      #rarp' => '0x8035',
     }
-    commands = [ 'X', 'N' ]
 
     # make chain names.
     chains << "host_I_#{vif}"
-    protocol_map.each { |k,v|
+    protocol_maps.each { |k,v|
       chains << "I_#{vif}_#{k}"
     }
 
     ebtables << "-D FORWARD -o #{vif} -j host_I_#{vif}"
-    commands.each { |cmd|
+    [ 'F', 'X', 'N', 'Z' ].each { |cmd|
       chains.each { |chain|
         ebtables << "-#{cmd} #{chain}"
       }
     }
-    p ebtables
 
-    # jump target
+    # chain for VIF
     ebtables << "-A FORWARD -o #{vif} -j host_I_#{vif}"
-    protocol_map.each { |k,v|
+    protocol_maps.each { |k,v|
       ebtables << "-A host_I_#{vif} -p #{v} -j I_#{vif}_#{k}"
     }
-    ebtables << "-A host_I_#{vif} -p 0x835  -j ACCEPT"
-    ebtables << "-A host_I_#{vif}           -j DROP"
+    ebtables << "-A host_I_#{vif} -j DROP"
 
     # rules
     self.build_rule(rules).each do |rule|
@@ -145,17 +143,19 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # group instances
     ipv4s.each do |ipv4|
-      ebtables << "-A I_#{vif}_ip4 --protocol ip4 --ip-source #{ipv4} -j ACCEPT"
+      ebtables << "-A I_#{vif}_ip4 --protocol ip4 --ip-source  #{ipv4} -j ACCEPT"
+      ebtables << "-A I_#{vif}_ip4 --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
 
-    ebtables << "-A I_#{vif}_ip4  -p ip4    -j DROP"
-    ebtables << "-A I_#{vif}_ip6  -p ip6    -j DROP"
-    ebtables << "-A I_#{vif}_arp  -p arp    -j DROP"
-    ebtables << "-A I_#{vif}_rarp -p 0x8035 -j DROP"
+    protocol_maps.each { |k,v|
+      ebtables << "-A I_#{vif}_#{k} -j DROP"
+    }
 
     ebtables.uniq!
     ebtables.each { |ebtable|
-      puts "sudo ebtables #{ebtable}"
+      cmd = "sudo ebtables #{ebtable}"
+      puts cmd
+      system(cmd)
     }
   end
 
