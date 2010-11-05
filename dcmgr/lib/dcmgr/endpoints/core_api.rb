@@ -890,7 +890,7 @@ module Dcmgr
         end
       end
 
-      collection :ssh_key_pair do
+      collection :ssh_key_pairs do
         description "List ssh key pairs in account"
         operation :index do
           # params start, fixnum, optional 
