@@ -42,6 +42,7 @@ module Dcmgr
     define_error(:UnknownVolumeSnapshot, 404)
     define_error(:UndefinedRequiredParameter, 400)
     define_error(:InvalidVolumeSize, 400)
+    define_error(:OutOfHostCapacity, 400)
 
     # netfilter_group
     define_error(:UndefinedNetfilterGroup, 400)

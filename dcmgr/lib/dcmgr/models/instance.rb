@@ -28,6 +28,7 @@ module Dcmgr::Models
     
     many_to_one :image
     many_to_one :instance_spec
+    alias :spec :instance_spec
     many_to_one :host_pool
     one_to_many :volume
     one_to_many :instance_nic

@@ -23,8 +23,9 @@ module Dcmgr::Models
       # TODO: consider the case of multiple nics on multiple network.
       network = instance_nic.instance.host_pool.network
       gwaddr = IPAddress::IPv4.new("#{network.ipv4_gw}/#{network.netmask}")
+      # use SELECT FOR UPDATE to lock rows within same network.
       addrs = (gwaddr.first.to_u32 .. gwaddr.last.to_u32).to_a -
-        [gwaddr.to_u32] - network.ip_lease.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
+        [gwaddr.to_u32] - network.ip_lease_dataset.for_update.all.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
       raise "Out of IP address in this network segment: #{gwaddr.network.to_s}/#{gwaddr.prefix}" if addrs.empty?
       
       leaseaddr = IPAddress::IPv4.parse_u32(addrs[rand(addrs.size).to_i])

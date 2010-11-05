@@ -38,7 +38,8 @@ module Dcmgr
         if model_class.is_a?(Symbol)
           model_class = Models.const_get(model_class)
         end
-        model_class[uuid] || raise(UnknownUUIDResource, uuid.to_s)
+        ret = model_class[uuid] || raise(UnknownUUIDResource, uuid.to_s)
+        ret.lock!
       end
 
       def find_account(account_uuid)
@@ -259,22 +260,31 @@ module Dcmgr
 
         operation :create do
           description 'Runs a new VM instance'
-          # param :image_id, :required
-          # param :instance_spec_id, :required
-          # param :host_pool_id, :optional
-          # param :host_name, :optional
+          # param :image_id, string, :required
+          # param :instance_spec_id, string, :required
+          # param :host_pool_id, string, :optional
+          # param :host_name, string, :optional
+          # param :user_data, string, :optional
+          # param nf_group, array, :optional
+          # param ssh_key, string, :optional
           control do
             wmi = find_by_uuid(:Image, params[:image_id])
+            spec = find_by_uuid(:InstanceSpec, (params[:instance_spec_id] || 'is-kpf0pasc'))
 
             hp = if params[:host_pool_id]
-                   hp = Models::HostPool[params[:host_pool_id]]
+                   hp = Models::HostPool[params[:host_pool_id]].lock!
+                   raise OutOfHostCapacity unless hp.check_capacity(spec)
                  else
                    # TODO: schedule a host pool owned by SharedPool account.
                  end
             
             raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
             
-            spec = find_by_uuid(:InstanceSpec, 'is-kpf0pasc')
+            inst = hp.create_instance(@account, wmi, spec) do |i|
+              # TODO: do not use rand() to decide vnc port.
+              i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
+              i.user_data = params[:user_data]
+            end
 
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
@@ -282,19 +292,10 @@ module Dcmgr
               snapshot_id = wmi.source[:snapshot_id]
               vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
 
-              inst = hp.create_instance(@account, wmi, spec) do |i|
-                # TODO: do not use rand() to decide vnc port.
-                i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
-              end
-
               vol.instance = inst
               vol.save
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
-              inst = hp.create_instance(@account, wmi, spec) do |i|
-                # TODO: do not use rand() to decide vnc port.
-                i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
-              end
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
             else
               raise "Unknown boot type"
