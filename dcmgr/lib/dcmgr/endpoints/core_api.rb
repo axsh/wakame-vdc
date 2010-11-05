@@ -903,7 +903,7 @@ module Dcmgr
               :filter_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_api_document }
+              :results=> partial_ds.all.map {|i| i.to_hash }
             }]
             
             respond_to { |f|
