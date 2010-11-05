@@ -238,10 +238,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
             
             total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
             res = [{
               :owner_total => total_ds.count,
@@ -353,10 +354,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
             
             total_ds = Models::Image.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
             res = [{
               :owner_total => total_ds.count,
@@ -473,10 +475,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
 
             total_v = Models::Volume.where(:account_id => @account.canonical_uuid)
-            partial_v = total_v.dup.limit(limit, start).order(:id)
+            partial_v = total_v.dup.order(:id)
+            partial_v = partial_v.limit(limit, start) if limit.is_a?(Integer)
             res = [{
               :owner_total => total_v.count,
               :start => start,
@@ -628,10 +631,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
 
             total_vs = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid)
-            partial_vs = total_vs.dup.limit(limit, start).order(:id)
+            partial_vs = total_vs.dup.order(:id)
+            partial_vs = partial_vs.limit(limit, start) if limit.is_a?(Integer)
             res = [{
               :owner_total => total_vs.count,
               :start => start,
@@ -718,34 +722,25 @@ module Dcmgr
         description 'Show lists of the netfilter_groups'
         operation :index do
           control do
-            all   = params[:all].to_i
-
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
 
-            # show all?
-            if all != 0
-              g = Models::NetfilterGroup.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.to_tiny_hash }
-              respond_to { |f|
-                f.json { g.to_json }
-              }
-            else
-              total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
-              partial_ds  = total_ds.dup.limit(limit, start).order(:id)
-
-              res = [{
-                       :owner_total => total_ds.count,
-                       :start => start,
-                       :limit => limit,
-                       :results=> partial_ds.all.map {|i| i.to_hash }
-                     }]
-
-              respond_to { |f|
-                f.json {res.to_json}
-              }
-            end
+            total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
+            partial_ds = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
+            
+            res = [{
+                     :owner_total => total_ds.count,
+                     :start => start,
+                     :limit => limit,
+                     :results=> partial_ds.all.map {|i| i.to_hash }
+                   }]
+            
+            respond_to { |f|
+              f.json {res.to_json}
+            }
           end
         end
 
@@ -899,10 +894,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
             
             total_ds = Models::SshKeyPair.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+            partial_ds = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
             res = [{
               :owner_total => total_ds.count,
