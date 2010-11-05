@@ -15,16 +15,16 @@ module Frontend::Models
        self.find(:all,:params => params)
       end
 
-      def self.show(name)
-        self.get(name)
+      def self.show(uuid)
+        self.get(uuid)
       end
                 
-      def self.update(name,params)
-        self.put(name,params).body
+      def self.update(uuid,params)
+        self.put(uuid,params).body
       end
       
-      def self.destroy(name)
-        self.delete(name).body
+      def self.destroy(uuid)
+        self.delete(uuid).body
       end      
     end
   end

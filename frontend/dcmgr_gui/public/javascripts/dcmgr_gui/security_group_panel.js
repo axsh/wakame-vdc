@@ -55,7 +55,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       button:{
         "Yes, Update": function(event) {
         
-          var name = $(this).find('#security_group_name').val();
+          var security_group_id = $(this).find('#security_group_id').val();
           var description = $(this).find('#security_group_description').val();
           var rule = $(this).find('#security_group_rule').val();
           var data ='description=' + description
@@ -63,7 +63,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
           $.ajax({
              "type": "PUT",
              "async": true,
-             "url": '/security_groups/'+ name +'.json',
+             "url": '/security_groups/'+ security_group_id +'.json',
              "dataType": "json",
              "data": data,
              success: function(json,status){
@@ -77,11 +77,11 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     });
 
     bt_edit_security_group.target.bind('click',function(event){
-      var id = $(this).attr('id').replace(/edit_([a-z_]+)/,'$1')
-      if( id ){
-        bt_edit_security_group.open({"ids":[id]});
+      var uuid = $(this).attr('id').replace(/edit_(ng-[a-z0-9]+)/,'$1');
+      if( uuid ){
+        bt_edit_security_group.open({"ids":[uuid]});
       }
-      c_list.checkRadioButton(id);
+      c_list.checkRadioButton(uuid);
       $('#detail').html('');
       return false;
     });
@@ -169,11 +169,11 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     path:'/delete_security_group',
     button:{
      "Yes, Delete": function() { 
-       var name = $('#delete_group_name').text();
+       var security_group_id = $('#security_group_id').val();
        $.ajax({
           "type": "DELETE",
           "async": true,
-          "url": '/security_groups/'+ name +'.json',
+          "url": '/security_groups/'+ security_group_id +'.json',
           "dataType": "json",
           success: function(json,status){
             console.log(json);

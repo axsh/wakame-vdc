@@ -105,11 +105,12 @@ DcmgrGUI.prototype.imagePanel = function(){
         "dataType": "json",
         "data": "",
         success: function(json,status){
-          for (var i=0; i < json.length; i++) {
-            var netfilter_group = json[i].netfilter_group;
+          var results = json.netfilter_group.results;
+          var size = results.length
+          for (var i=0; i < size ; i++) {
             data.push({
-              "id" : netfilter_group.name,
-              "name" : netfilter_group.name
+              "id" : results[i].result.uuid,
+              "name" : results[i].result.name
             });
           }
         }

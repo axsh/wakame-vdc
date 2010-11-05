@@ -16,8 +16,8 @@ class SecurityGroupsController < ApplicationController
   
   # security_groups/detail/s-000001.json
   def show
-    name = params[:id]
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.show(name)
+    uuid = params[:id]
+    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.show(uuid)
     respond_with(@netfilter_group,:to => [:json])
   end
 
@@ -32,27 +32,24 @@ class SecurityGroupsController < ApplicationController
   end
   
   def destroy
-    name = params[:id]
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.destroy(name)
+    uuid = params[:id]
+    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.destroy(uuid)
     render :json => @netfilter_group    
   end
   
   def update
-    name = params[:id]
+    uuid = params[:id]
     data = {
       :description => params[:description],
       :rule => params[:rule]
     }
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.update(name,data)
+    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.update(uuid,data)
     render :json => @netfilter_group    
   end
   
   def show_groups
-    data = {
-      :all => 1
-    }
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.list(data)
-    respond_with(@netfilter_group,:to => [:json])
+    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.list
+    respond_with(@netfilter_group[0],:to => [:json])
   end
   
 end

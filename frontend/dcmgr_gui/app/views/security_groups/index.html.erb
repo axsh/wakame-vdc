@@ -49,8 +49,8 @@ jQuery(function($){
 				</tr>
 				{{each(index,item) rows}}
 			   <tr>
-			    {{if item.name }}
-						<td class="listradiobutton"><input id="${item.name}" type="radio" name="select" value="${item.name}" ></td>
+			    {{if item.uuid }}
+						<td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
 					{{else}}
 						<td class="listradiobutton"></td>
 					{{/if}}
@@ -58,7 +58,7 @@ jQuery(function($){
 					<td class="vtip" title="description" style="width:500px">${item.description}</td>
 					{{if item.name }}
 					<td class="vtip center" title="action">
-						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.name}">Edit</a>
+						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.uuid}">Edit</a>
 					</td>
 					{{else}}
 						<td class="vtip center" title="action"></td>
