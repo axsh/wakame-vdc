@@ -38,7 +38,8 @@ module Dcmgr
         if model_class.is_a?(Symbol)
           model_class = Models.const_get(model_class)
         end
-        model_class[uuid] || raise(UnknownUUIDResource, uuid.to_s)
+        ret = model_class[uuid] || raise(UnknownUUIDResource, uuid.to_s)
+        ret.lock!
       end
 
       def find_account(account_uuid)
@@ -238,10 +239,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
             
             total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
             res = [{
               :owner_total => total_ds.count,
@@ -258,22 +260,31 @@ module Dcmgr
 
         operation :create do
           description 'Runs a new VM instance'
-          # param :image_id, :required
-          # param :instance_spec_id, :required
-          # param :host_pool_id, :optional
-          # param :host_name, :optional
+          # param :image_id, string, :required
+          # param :instance_spec_id, string, :required
+          # param :host_pool_id, string, :optional
+          # param :host_name, string, :optional
+          # param :user_data, string, :optional
+          # param nf_group, array, :optional
+          # param ssh_key, string, :optional
           control do
             wmi = find_by_uuid(:Image, params[:image_id])
+            spec = find_by_uuid(:InstanceSpec, (params[:instance_spec_id] || 'is-kpf0pasc'))
 
             hp = if params[:host_pool_id]
-                   hp = Models::HostPool[params[:host_pool_id]]
+                   hp = Models::HostPool[params[:host_pool_id]].lock!
+                   raise OutOfHostCapacity unless hp.check_capacity(spec)
                  else
                    # TODO: schedule a host pool owned by SharedPool account.
                  end
             
             raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
             
-            spec = find_by_uuid(:InstanceSpec, 'is-kpf0pasc')
+            inst = hp.create_instance(@account, wmi, spec) do |i|
+              # TODO: do not use rand() to decide vnc port.
+              i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
+              i.user_data = params[:user_data]
+            end
 
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
@@ -281,19 +292,10 @@ module Dcmgr
               snapshot_id = wmi.source[:snapshot_id]
               vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
 
-              inst = hp.create_instance(@account, wmi, spec) do |i|
-                # TODO: do not use rand() to decide vnc port.
-                i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
-              end
-
               vol.instance = inst
               vol.save
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
-              inst = hp.create_instance(@account, wmi, spec) do |i|
-                # TODO: do not use rand() to decide vnc port.
-                i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
-              end
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
             else
               raise "Unknown boot type"
@@ -353,10 +355,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
             
             total_ds = Models::Image.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
             res = [{
               :owner_total => total_ds.count,
@@ -473,10 +476,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
 
             total_v = Models::Volume.where(:account_id => @account.canonical_uuid)
-            partial_v = total_v.dup.limit(limit, start).order(:id)
+            partial_v = total_v.dup.order(:id)
+            partial_v = partial_v.limit(limit, start) if limit.is_a?(Integer)
             res = [{
               :owner_total => total_v.count,
               :start => start,
@@ -628,10 +632,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
 
             total_vs = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid)
-            partial_vs = total_vs.dup.limit(limit, start).order(:id)
+            partial_vs = total_vs.dup.order(:id)
+            partial_vs = partial_vs.limit(limit, start) if limit.is_a?(Integer)
             res = [{
               :owner_total => total_vs.count,
               :start => start,
@@ -718,34 +723,25 @@ module Dcmgr
         description 'Show lists of the netfilter_groups'
         operation :index do
           control do
-            all   = params[:all].to_i
-
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
 
-            # show all?
-            if all != 0
-              g = Models::NetfilterGroup.filter(:account_id => @account.canonical_uuid).all.collect { |row| row.to_tiny_hash }
-              respond_to { |f|
-                f.json { g.to_json }
-              }
-            else
-              total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
-              partial_ds  = total_ds.dup.limit(limit, start).order(:id)
-
-              res = [{
-                       :owner_total => total_ds.count,
-                       :start => start,
-                       :limit => limit,
-                       :results=> partial_ds.all.map {|i| i.to_hash }
-                     }]
-
-              respond_to { |f|
-                f.json {res.to_json}
-              }
-            end
+            total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
+            partial_ds = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
+            
+            res = [{
+                     :owner_total => total_ds.count,
+                     :start => start,
+                     :limit => limit,
+                     :results=> partial_ds.all.map {|i| i.to_hash }
+                   }]
+            
+            respond_to { |f|
+              f.json {res.to_json}
+            }
           end
         end
 
@@ -899,10 +895,11 @@ module Dcmgr
             start = params[:start].to_i
             start = start < 1 ? 0 : start
             limit = params[:limit].to_i
-            limit = limit < 1 ? 10 : limit
+            limit = limit < 1 ? nil : limit
             
             total_ds = Models::SshKeyPair.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.limit(limit, start).order(:id)
+            partial_ds = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
             res = [{
               :owner_total => total_ds.count,
