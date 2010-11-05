@@ -749,10 +749,11 @@ module Dcmgr
           description 'Show the netfilter_groups'
           control do
             @name = params[:id]
-            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
+            g = find_by_uuid(:NetfilterGroup, params[:id])
+            raise OperationNotPermitted unless examine_owner(g)
 
             respond_to { |f|
-              f.json { g.to_json }
+              f.json { g.to_hash.to_json }
             }
           end
         end
