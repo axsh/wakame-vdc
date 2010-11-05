@@ -147,6 +147,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
       ebtables << "-A I_#{vif}_ip4 --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
 
+    # dhcp server
+    ebtables << "-A I_#{vif}_ip4 --protocol ip4 --ip-proto udp --ip-sport 67 --ip-dport 68 -j ACCEPT"
+
     protocol_maps.each { |k,v|
       ebtables << "-A I_#{vif}_#{k} -j DROP"
     }
