@@ -9,7 +9,7 @@ module Dcmgr::Models
     inheritable_schema do
       Fixnum :instance_nic_id, :null=>false
       Fixnum :network_id, :null=>false
-      String :ipv4
+      String :ipv4, :size=>50
       
       index :ipv4, {:unique=>true}
     end
