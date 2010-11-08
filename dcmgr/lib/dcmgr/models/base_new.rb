@@ -260,6 +260,13 @@ module Dcmgr::Models
 
   class BaseNew < Sequel::Model
 
+    # force to use row lock on select.
+    def self.set_dataset(ds, opts={})
+      super(ds, opts)
+      @dataset = @dataset.for_update
+      self
+    end
+
     def self.Proxy(klass)
       colnames = klass.schema.columns.map {|i| i[:name] }
       colnames.delete_if(klass.primary_key) if klass.restrict_primary_key?
