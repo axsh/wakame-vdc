@@ -17,12 +17,16 @@ module Dcmgr::Models
       String :state, :size=>20, :null=>false, :default=>:init.to_s
       String :status, :size=>20, :null=>false, :default=>:init.to_s
       String :hostname, :null=>false
+      String :ssh_key_pair_id
       
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
+
+      Time   :terminated_at
       index :state
-      # TODO: compound unique index for hostname & account_id pair.
-      # index  [:hostname, :account_id], {:unique=>true}
+      index :terminated_at
+      # can not use same hostname within an account.
+      index  [:account_id, :hostname], {:unique=>true}
     end
     with_timestamps
     
@@ -54,10 +58,10 @@ module Dcmgr::Models
     def before_validation
       super
 
+      self[:user_data] = '' if self.user_data.nil?
       self[:hostname] = self.uuid if self.hostname.nil?
     end
-    
-    
+
     # dump column data as hash with details of associated models.
     # this is for internal use.
     def to_hash
