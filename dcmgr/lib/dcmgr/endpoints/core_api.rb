@@ -595,11 +595,16 @@ module Dcmgr
 
         operation :detach, :method =>:put, :member =>true do
           description 'Detachd the volume'
-          # params volume_id, string, required
+          # params id, string, required
           control do
-            vl = { :status => 'detaching', :message => 'detaching the volume of instance_id to vol-xxxxxx'}
+            raise UndefinedVolumeID if params[:id].nil?
+
+            v = find_by_uuid(:Volume, params[:id])
+            raise UnknownVolume if v.nil?
+            i = v.instance
+            res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
             respond_to { |f|
-              f.json { vl.to_json}
+              f.json {v.to_hash_document.to_json}
             }
           end
         end

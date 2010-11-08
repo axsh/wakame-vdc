@@ -383,14 +383,35 @@ class KvmHandler < EndpointBuilder
 
   job :detach do
     inst_id = request.args[0]
-    vol_id = request.args[0]
+    vol_id = request.args[1]
 
+    job = Stm::VolumeContext.new(vol_id)
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
-    puts "Detaching #{vol_id}"
+    puts "Detaching #{vol_id} on #{inst_id}"
+    job.stm.state = vol[:state].to_sym
     raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'attached'
 
+    job.stm.on_detach
     # detach disk on guest os
+    require 'net/telnet'
+    pci = nil
+
+    telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /(qemu)/)
+    telnet.cmd("pci_del #{vol[:guest_device_name]}")
+    telnet.cmd("info pci"){|c|
+      pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{vol[:guest_device_name]},.+:)/) 
+    }
+    telnet.close
+    raise "volume has not detached" unless pci.empty?
+    rpc.request('sta-collector', 'update_volume', job.to_hash)
+
+    # iscsi logout
+    job.stm.on_detach
+    job.on_detach
+    puts "iscsi logout #{vol_id}: #{vol[:transport_information][:iqn]}"
+    initiator = `sudo iscsiadm -m node -T '#{vol[:transport_information][:iqn]}' --logout`
+    rpc.request('sta-collector', 'update_volume', job.to_hash)
   end
 
   def rpc
