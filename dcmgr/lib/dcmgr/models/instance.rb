@@ -39,8 +39,8 @@ module Dcmgr::Models
     alias :nic :instance_nic
     one_to_many :instance_netfilter_groups
 
-    subset(:runnings){|f| f.state == :running }
-
+    subset(:lives, {:terminated_at => nil})
+    
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     # Possible column data:

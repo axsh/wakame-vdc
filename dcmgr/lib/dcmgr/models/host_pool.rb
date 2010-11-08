@@ -91,8 +91,8 @@ module Dcmgr::Models
     # @param [InstanceSpec] spec 
     def check_capacity(spec)
       raise TypeError unless spec.is_a?(InstanceSpec)
-      inst_on_hp = self.instances_dataset.for_update.all
-      
+      inst_on_hp = self.instances_dataset.lives.all
+
       (self.offering_cpu_cores > inst_on_hp.inject(0) {|t, i| t += i.spec.cpu_cores } + spec.cpu_cores) &&
         (self.offering_memory_size > inst_on_hp.inject(0) {|t, i| t += i.spec.memory_size } + spec.memory_size)
     end
