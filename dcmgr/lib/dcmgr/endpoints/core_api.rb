@@ -38,8 +38,7 @@ module Dcmgr
         if model_class.is_a?(Symbol)
           model_class = Models.const_get(model_class)
         end
-        ret = model_class[uuid] || raise(UnknownUUIDResource, uuid.to_s)
-        ret.lock!
+        model_class[uuid] || raise(UnknownUUIDResource, uuid.to_s)
       end
 
       def find_account(account_uuid)
