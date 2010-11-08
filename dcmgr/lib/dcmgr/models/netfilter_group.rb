@@ -9,6 +9,7 @@ module Dcmgr::Models
       String :name, :null=>false
       String :description
       Text   :rule
+      index [:account_id, :name], {:unique=>true}
     end
 
     one_to_many :netfilter_rules
