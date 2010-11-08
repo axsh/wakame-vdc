@@ -574,7 +574,6 @@ module Dcmgr
           # params id, string, required
           # params instance_id, string, required
           control do
-            require 'yaml'
             raise UndefinedInstanceID if params[:instance_id].nil?
             raise UndefinedVolumeID if params[:id].nil?
             
@@ -586,9 +585,6 @@ module Dcmgr
 
             v.instance = i
             v.save
-
-            opt = v.values.dup
-            opt[:transport_information] = YAML.load(opt[:transport_information])
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
             respond_to { |f|
