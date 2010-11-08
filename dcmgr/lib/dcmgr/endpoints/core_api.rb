@@ -264,26 +264,41 @@ module Dcmgr
           # param :host_pool_id, string, :optional
           # param :host_name, string, :optional
           # param :user_data, string, :optional
-          # param nf_group, array, :optional
-          # param ssh_key, string, :optional
+          # param :nf_group, array, :optional
+          # param :ssh_key, string, :optional
           control do
             wmi = find_by_uuid(:Image, params[:image_id])
             spec = find_by_uuid(:InstanceSpec, (params[:instance_spec_id] || 'is-kpf0pasc'))
 
-            hp = if params[:host_pool_id]
-                   hp = Models::HostPool[params[:host_pool_id]].lock!
-                   raise OutOfHostCapacity unless hp.check_capacity(spec)
-                 else
-                   # TODO: schedule a host pool owned by SharedPool account.
-                 end
+            if params[:host_pool_id]
+              hp = Models::HostPool[params[:host_pool_id]]
+              raise OutOfHostCapacity unless hp.check_capacity(spec)
+            else
+              # TODO: schedule a host pool owned by SharedPool account.
+            end
             
             raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
-            
+
             inst = hp.create_instance(@account, wmi, spec) do |i|
               # TODO: do not use rand() to decide vnc port.
               i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
-              i.user_data = params[:user_data]
+              i.user_data = params[:user_data] || ''
+
+              if params[:ssh_key]
+                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_id,
+                                                       :name=>params[:ssh_key]).first
+                if ssh_key_pair.nil?
+                  raise UnknownSshKeyPair, "#{params[:ssh_key]}"
+                else
+                  i.ssh_key_pair_id = ssh_key_pair.canonical_uuid
+                end
+              end
             end
+
+            unless params[:nf_group].is_a?(Array)
+              params[:nf_group] = ['default']
+            end
+            inst.join_nfgroup_by_name(@account.canonical_uuid, params[:nf_group])
 
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN

@@ -43,6 +43,7 @@ module Dcmgr
     define_error(:UndefinedRequiredParameter, 400)
     define_error(:InvalidVolumeSize, 400)
     define_error(:OutOfHostCapacity, 400)
+    define_error(:UnknownSshKeyPair, 404)
 
     # netfilter_group
     define_error(:UndefinedNetfilterGroup, 400)

@@ -213,5 +213,19 @@ module Dcmgr::Models
       }
     end
 
+    # Join this instance to the list of netfilter group using group name. 
+    # @param [String] account_id uuid of current account.
+    # @param [String,Array] nfgroup_names 
+    def join_nfgroup_by_name(account_id, nfgroup_names)
+      nfgroup_names = [nfgroup_names] if nfgroup_names.is_a?(String)
+
+      uuids = nfgroup_names.map { |n|
+        ng = NetfilterGroup.for_update.find(:account_id=>account_id,
+                                            :name=>n).first
+        ng.nil? ? nil : ng.canonical_uuid
+      }
+      # clean up nils
+      join_netfilter_group(uuids.compact.uniq)
+    end
   end
 end
