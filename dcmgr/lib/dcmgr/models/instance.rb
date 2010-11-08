@@ -166,7 +166,10 @@ module Dcmgr::Models
       nic.save
     end
 
+    # Join this instance to the list of netfilter group using group's uuid.
+    # @param [String,Array] netfilter_group_uuids 
     def join_netfilter_group(netfilter_group_uuids)
+      netfilter_group_uuids = [netfilter_group_uuids] if netfilter_group_uuids.is_a?(String)
       joined_group_uuids = self.netfilter_groups.map { |netfilter_group|
         netfilter_group.canonical_uuid
       }
@@ -174,7 +177,7 @@ module Dcmgr::Models
       target_group_uuids.uniq!
 
       target_group_uuids.map { |target_group_uuid|
-        if ng = Models::NetfilterGroup[target_group_uuid]
+        if ng = NetfilterGroup[target_group_uuid]
           InstanceNetfilterGroup.create(:instance_id => self.id,
                                         :netfilter_group_id => ng.id)
         end
