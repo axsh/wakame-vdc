@@ -854,31 +854,30 @@ module Dcmgr
         end
       end
 
-      collection :private_pools do
-        operation :show do
-          description 'Show lists of the private_pools'
+      collection :storage_pools do
+        operation :index do
+          description 'Show lists of the storage_pools'
+          # params start, fixnum, optional
+          # params limit, fixnum, optional
           control do
-            pp = [{
-                    :id => 1,
-                    :account_id => 'u-xxxxxxx',
-                    :storage_pool_id => 1,
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010'
-                  },{
-                    :id => 2,
-                    :account_id => 'u-xxxxxxx',
-                    :storage_pool_id => 23,
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010'
-                  },{
-                    :id => 2,
-                    :account_id => 'u-xxxxxxx',
-                    :storage_pool_id => 150,
-                    :created_at => 'Fri Sep 10 14:50:11 +0900 2010',
-                    :updated_at => 'Fri Sep 10 14:50:11 +0900 2010'
-                  }]
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? nil : limit
+
+            total_ds = Models::StoragePool.where(:account_id=>@account.canonical_uuid)
+            partial_ds = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
+
+            res = [{
+              :owner_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|sp| sp.to_hash_document }
+            }]
+
             respond_to { |f|
-              f.json { pp.to_json}
+              f.json { res.to_json}
             }
           end
         end
