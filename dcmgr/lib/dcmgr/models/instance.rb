@@ -38,6 +38,7 @@ module Dcmgr::Models
     one_to_many :instance_nic
     alias :nic :instance_nic
     one_to_many :instance_netfilter_groups
+    many_to_many :netfilter_groups, :join_table=>:instance_netfilter_groups
 
     subset(:lives, {:terminated_at => nil})
     
@@ -177,12 +178,6 @@ module Dcmgr::Models
           InstanceNetfilterGroup.create(:instance_id => self.id,
                                         :netfilter_group_id => ng.id)
         end
-      }
-    end
-
-    def netfilter_groups
-      self.instance_netfilter_groups.map { |instance_netfilter_group|
-        instance_netfilter_group.netfilter_group
       }
     end
 
