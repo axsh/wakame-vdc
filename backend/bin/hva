@@ -6,6 +6,7 @@ require File.expand_path('../../config/path_resolver', __FILE__)
 include Isono::Runner::RpcServer
 require 'fileutils'
 
+require 'stm/volume_context'
 
 class ServiceNetfilter < Isono::NodeModules::Base
   include Isono::Logger
@@ -333,17 +334,20 @@ class KvmHandler < EndpointBuilder
     inst_id = request.args[0]
     vol_id = request.args[1]
 
+    job = Stm::VolumeContext.new(vol_id)
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
     puts "Attaching #{vol_id}"
+    job.stm.state = vol[:state].to_sym
     raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'available'
 
+    job.stm.on_attach
     # check under until the dev file is created.
     # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
     linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{vol[:storage_pool][:ipaddr]}:3260",
                                                                   vol[:transport_information][:iqn],
                                                                   vol[:transport_information][:lun]]
-    
+
     # attach disk on host os
     tryagain do
       lists = `sudo iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}`
@@ -352,30 +356,28 @@ class KvmHandler < EndpointBuilder
       File.exist?(linux_dev_path)
     end
 
-    rpc.request('sta-collector', 'update', {:volume_id=> vol_id, :state => :attaching, :host_device_name => linux_dev_path}) do |req|
-      req.oneshot = true
-    end
+    rpc.request('sta-collector', 'update_volume', job.to_hash(:host_device_name => linux_dev_path))
     puts "Attaching #{vol_id} on #{inst_id}"
+    job.stm.on_attach
+    job.on_attach
 
     # attach disk on guest os
     require 'net/telnet'
     slot_number = nil
     pci = nil
 
-    telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /(qemu)/){|c| print c}
+    telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /(qemu)/)
     telnet.cmd("pci_add auto storage file=#{linux_dev_path},if=scsi")
     telnet.waitfor(/(qemu)/){|c|
       pci_add = c.scan(/^(OK.+domain.+)/).last
       slot_number = pci_add.first.split(',')[2].split(' ').last if !pci_add.nil?
     }
     telnet.cmd("info pci"){|c|
-      pci = c.scan(/.+(Bus.+#{slot_number},.+:)/) 
+      pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{slot_number},.+:)/) 
     }
     telnet.close
     raise "volume has not attached" if pci.nil?
-    rpc.request('sta-collector', 'update', {:volume_id=> vol_id, :state=>:attached, :guest_device_name=>slot_number}) do |req|
-      req.oneshot = true
-    end
+    rpc.request('sta-collector', 'update_volume', job.to_hash(:guest_device_name=>slot_number))
     puts "Attached #{vol_id} on #{inst_id}"
   end
 
