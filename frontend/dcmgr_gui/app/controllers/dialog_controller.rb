@@ -76,4 +76,11 @@ class DialogController < ApplicationController
   def launch_instance
     @image_id = params[:ids][0]
   end
+  
+  def create_ssh_keypair
+  end
+  
+  def delete_ssh_keypair
+    @ssh_keypair_id = params[:ids][0]
+  end
 end

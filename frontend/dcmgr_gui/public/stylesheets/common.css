@@ -572,7 +572,7 @@ body{
 }
 
 
-#content #mainarea_wide .controller a.createkey{
+#content #mainarea_wide .controller a.create_ssh_keypair{
 	display: block;
 	float: left;
 	width: 115px;
@@ -582,7 +582,7 @@ body{
 	font-size: 0;
 	line-height: 0;
 }
-#content #mainarea_wide .controller a.deletekey{
+#content #mainarea_wide .controller a.delete_ssh_keypair{
 	display: block;
 	float: left;
 	margin-left: 7px;
@@ -967,6 +967,59 @@ body{
 #content #mainarea_wide table.ptn07 tr td.padcell{
 	width: 6px;
 	border: none;
+}
+
+/* ptn08 */
+#content #mainarea_wide table.ptn08{
+	margin-left: 20px;
+	width: 660px;
+	border-collapse: collapse;
+}
+#content #mainarea_wide table.ptn08 tr td{
+	padding: 5px;
+	vertical-align: center;
+	border-top: 1px solid #CCCCCC;
+	border-bottom: 1px solid #CCCCCC;
+}
+#content #mainarea_wide table.ptn08 tr td .textblock{
+	display: block;
+	float: left;
+	line-height: 23px;
+}
+#content #mainarea_wide table.ptn08 tr td a.change{
+	display: block;
+	float: left;
+	margin-left: 10px;
+	width: 64px;
+	height: 23px;
+	background: url(../images/btn_change.gif) no-repeat;
+}
+#content #mainarea_wide table.ptn08 tr td a.change:hover{
+	background-position: 0 -23px;
+}
+#content #mainarea_wide table.ptn08 tr td.color1{
+	width: 178px;
+	background: #F5F5EB;
+	text-align: right;
+	vertical-align: middle;
+}
+#content #mainarea_wide table.ptn08 tr td.color2{
+	width: 178px;
+	background: #F3F3F3;
+	text-align: right;
+}
+#content #mainarea_wide table.ptn08 tr td .small{
+	font-size: 80%;
+	line-height: 160%;
+}
+#content #mainarea_wide table.ptn08 tr td input.type01{
+	width: 270px;
+}
+#content #mainarea_wide table.ptn08 tr td input.type02{
+	width: 150px;
+}
+#content #mainarea_wide table.ptn08 tr td select{
+	width: 290px;
 }
 /*------------------------------Add CSS ------------------------------*/
 

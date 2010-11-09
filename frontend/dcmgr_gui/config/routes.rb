@@ -74,6 +74,10 @@ DcmgrGui::Application.routes.draw do
     post 'create',:on => :member
   end
   
+  resources :keypairs do
+    # get 'prk_download'
+  end
+  match 'keypairs/create_ssh_keypair',:via => :get
   # resource :account, :only => [:new]
   match 'accounts/switch' => 'accounts#new',:via => :post
   # match 'signup' => 'users#new', :as => :signup

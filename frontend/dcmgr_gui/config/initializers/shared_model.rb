@@ -17,6 +17,7 @@ module Frontend
        autoload :NetfilterGroup, '../common/lib/models/dcmgr_resource/netfilter_group'
        autoload :Instance, '../common/lib/models/dcmgr_resource/instance'
        autoload :Image, '../common/lib/models/dcmgr_resource/image'
+       autoload :SshKeyPair, '../common/lib/models/dcmgr_resource/ssh_key_pair'
        
        if Rails.env.development?
          autoload :Mock, '../common/lib/models/dcmgr_resource/mock'

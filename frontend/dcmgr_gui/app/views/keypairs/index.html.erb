@@ -1,5 +1,11 @@
 <% content_for :javascript do %>
-<%= javascript_include_tag 'dcmgr_gui' %>
+<%= javascript_include_tag 'dcmgr_gui/sshkeypair_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.sshKeyPairPanel();
+});
+</script>
+
 <% end %>
 <% content_for :stylesheet do %>
 <style type="text/css">
@@ -9,43 +15,86 @@
 <% end %>
 <div id="mainarea_wide">
 	<h3><img src="images/icon_resource.gif" />Access Keys<a href="#" class="showhide"></a></h3>
-	<div class="maincontent">
+	<div id="list_load_mask" class="maincontent">
 		<div class="controller clearfix">
-		  <a href="#" class="createkey" onclick="dcmgrGUI.dialog(this);">Create Key Pair</a>
-		  <a href="#" class="deletekey" onclick="dcmgrGUI.dialog(this);">Delete</a>
-		  <a href="#" class="refresh">Refresh</a>
+		  <a href="javascript:void(0);" class="create_ssh_keypair">Create Key Pair</a>
+		  <a href="javascript:void(0);" class="delete_ssh_keypair">Delete</a>
+		  <a href="javascript:void(0);" class="refresh">Refresh</a>
 		</div>
 		<div class="controller clearfix">
 			<div class="l_float">
 				<span class="text">Viewing:</span>
 				<select class="select">
-					<option>All Key Pairs</option>
+					<option>All SSH Key Pairs</option>
 				</select>
 				<input type="text" class="search" />
 			</div>
-      <div class="r_float">
-			  <a href="#" class="prev"></a>
-			  <p>1 to 2 of 2 Items</p>
-			  <a href="#" class="next"></a>
+      <div id="pagenate" class="r_float">
+			  <a href="javascript:void(0);" class="prev"></a>
+			  <p id="viewPagenate">Items</p>
+			  <a href="javascript:void(0);" class="next"></a>
       </div>
 		</div>
-		<div class="display_area">
+		<div id="display_ssh_keypairs" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="sshKeyPairsListTemplate" type="text/x-jquery-tmpl">
 			<table class="ptn04" frame="void" cellpadding="0" cellspacing="0" border="0">
 				<tr>
 					<th class="icon"></th>
 					<th>Access Key ID</th>
 					<th class="show_key">Secret Access Key</th>
 				</tr>
-				<% 10.times do %>
+				{{each(index,item) rows}}
 				<tr>
-					<td><input type="checkbox" name="" value=""></td>
-					<td>AKIAJJKHR5UZOGZBBWQ</td>
-					<td><a href="#" class="show_key">Show Secret Access Key</a></td>
+		    {{if item.uuid }}
+					<td class="listradiobutton"><input id="${item.id}" type="radio" name="select" value="${item.id}" ></td>
+				{{else}}
+					<td class="listradiobutton"></td>
+				{{/if}}
+					<td>${item.name}</td>
+					<td>
+					{{if item.uuid }}
+					<a href="javascript:void(0);" class="show_key">Show Secret Access Key</a>
+					{{/if}}
+					</td>
 				</tr>
-				<% end %>
-
+				{{/each}}
 			</table>
+			</script>
+			<% end %>
 		</div>
 	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_resource.gif" />Detail<a href="javascript:void(0);" class="showhide"></a></h3>
+ 		<div id="detail" class="maincontent">
+ 			<% content_for :javascript_template do %>
+			<script id="sshKeypairsDetailTemplate" type="text/x-jquery-tmpl">
+			<div class="display_area">
+				<table class="ptn08" frame="void" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Name:</td>
+						<td colspan="7">${item.name}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Fingerprint:</td>
+						<td colspan="7"></td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Created:</td>
+						<td colspan="7">${item.created_at}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Updated:</td>
+						<td colspan="7">${item.updated_at}</td>
+					</tr>
+				</table>
+			</div>
+			</script>
+			<% end %>
+ 		</div><!-- maincontent -->
 	<div id="btm_maincontent_wide_last"></div>
 </div>
