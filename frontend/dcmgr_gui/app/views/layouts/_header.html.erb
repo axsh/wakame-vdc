@@ -6,7 +6,7 @@
 		<li class="app-pas"><h2>Application</h2></li>
 	</ul>
 	<p><span class="greeting">Welcome,
-	<%= link_to(@current_user.login_id,accounts_path) %></span>|
+	<%= @current_user.login_id %></span>|
 		<!-- <a href="#">Help</a><span class="spacer">|</span> -->
 		<!-- <a href="#">Settings</a><span class="spacer">|</span> -->
 		<%= link_to 'Sign Out','/logout'%></p>
