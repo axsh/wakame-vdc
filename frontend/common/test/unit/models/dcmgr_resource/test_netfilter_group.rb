@@ -54,7 +54,8 @@ module Frontend
     
     def test_all_group_list
       result = @netfilter_group.list
-      p result.size
+      data = result[0]
+      assert_equal(data.results.size,data.owner_total)
     end
   end
 end
