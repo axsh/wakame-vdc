@@ -90,7 +90,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   
   var bt_launch_instance = new DcmgrGUI.Dialog({
     target:'.launch_instance',
-    width:500,
+    width:583,
     height:600,
     title:'Launch Instance',
     path:'/launch_instance',

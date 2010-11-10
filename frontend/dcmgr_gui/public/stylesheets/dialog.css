@@ -27,3 +27,37 @@
 #create_ssh_keypair_dialog table tr td {
 	padding: 3px;
 }
+
+#launch_instance_dialog #manipulation {
+  vertical-align: middle;
+}
+
+#launch_instance_dialog #security_group_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin: 3px;
+  width: 480px;
+}
+
+#launch_instance_dialog #security_group_field legend {
+  padding: 0 3px 0 3px;
+}
+
+#launch_instance_dialog #available_groups {
+  padding-left: 54px;
+}
+
+#launch_instance_dialog #launch_in {
+  padding-left: 75px;
+}
+
+#launch_instance_dialog #user_data_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin: 3px;
+  width: 490px;
+}
+
+#launch_instance_dialog #user_data_field legend {
+  padding: 0 3px 0 3px;
+}
