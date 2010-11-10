@@ -74,7 +74,6 @@ DcmgrGUI.prototype.instancePanel = function(){
        "dataType": "json",
        "data": data,
        success: function(json, status) {
-         console.log(json);
          bt_refresh.element.trigger('dcmgrGUI.refresh');
        }
      });

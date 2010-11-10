@@ -67,7 +67,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
              "dataType": "json",
              "data": data,
              success: function(json,status){
-               console.log(json);
                bt_refresh.element.trigger('dcmgrGUI.refresh');
              }
           });
@@ -147,7 +146,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
           "dataType": "json",
           "data": data,
           success: function(json,status){
-            console.log(json);
             bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
        });
@@ -176,7 +174,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
           "url": '/security_groups/'+ security_group_id +'.json',
           "dataType": "json",
           success: function(json,status){
-            console.log(json);
             bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
        });
