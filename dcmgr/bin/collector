@@ -1,6 +1,13 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
+begin
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup(:default, :collector)
+rescue ::Exception => e
+end
+
 require File.expand_path('../../config/path_resolver', __FILE__)
 
 def load_conf

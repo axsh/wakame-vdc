@@ -1,12 +1,17 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
+begin
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup(:default)
+rescue LoadError
+end
+
 require File.expand_path('../../config/path_resolver', __FILE__)
 
 include Isono::Runner::RpcServer
 require 'fileutils'
-
-require 'stm/volume_context'
 
 class ServiceNetfilter < Isono::NodeModules::Base
   include Isono::Logger
@@ -334,7 +339,7 @@ class KvmHandler < EndpointBuilder
     inst_id = request.args[0]
     vol_id = request.args[1]
 
-    job = Stm::VolumeContext.new(vol_id)
+    job = Dcmgr::Stm::VolumeContext.new(vol_id)
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
     puts "Attaching #{vol_id}"
@@ -385,7 +390,7 @@ class KvmHandler < EndpointBuilder
     inst_id = request.args[0]
     vol_id = request.args[1]
 
-    job = Stm::VolumeContext.new(vol_id)
+    job = Dcmgr::Stm::VolumeContext.new(vol_id)
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
     puts "Detaching #{vol_id} on #{inst_id}"

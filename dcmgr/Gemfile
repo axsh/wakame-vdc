@@ -2,11 +2,6 @@
 source "http://rubygems.org"
 
 gem 'rake', '>= 0.8.7'
-gem "rack", ">= 1.2.1"
-gem "sinatra", "1.0"
-gem "json", ">= 1.2.0"
-gem "sequel", "3.16.0"
-gem "mysql", ">= 2.8.1"
 gem 'extlib', '0.9.15'
 gem 'configuration'
 gem 'statemachine', '1.1.1'
@@ -18,4 +13,17 @@ gem 'isono', :git => 'git://github.com/axsh/isono.git'
 group :development do
   gem 'bacon'
   gem "activeresource", "3.0.0"
+end
+
+group :dcmgr do
+  gem "rack", ">= 1.2.1"
+  gem "sinatra", "1.0"
+  gem "json", ">= 1.2.0"
+  gem "sequel", "3.16.0"
+  gem "mysql", ">= 2.8.1"
+end
+
+group :collector do
+  gem "sequel", "3.16.0"
+  gem "mysql", ">= 2.8.1"
 end
