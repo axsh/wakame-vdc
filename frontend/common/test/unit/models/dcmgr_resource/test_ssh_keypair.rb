@@ -50,6 +50,12 @@ module Frontend
     def test_destroy
       p @ssh_key_pair.destroy(@uuid)
     end
+    
+    def test_all_ssh_keypiars
+      result = @ssh_key_pair.list
+      data = result[0]
+      assert_equal(data.results.size,data.owner_total)
+    end
 
   end
 end
