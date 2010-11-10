@@ -56,33 +56,28 @@ DcmgrGui::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   
   match ':controller(/:action(/:id(.:format)))'
-  
-  # resources :users
-  resource :session, :only => [:new, :create, :destroy]
-  
+  match 'keypairs/all' => 'keypairs#show_keypairs',:via => :get
+  match 'keypairs/create_ssh_keypair',:via => :get
+  match 'accounts/switch' => 'accounts#new',:via => :post
   match 'accounts',:to => 'acounts#index'
+  # match 'signup' => 'users#new', :as => :signup
+  # match 'register' => 'users#create', :as => :register
+  match 'login' => 'sessions#new', :as => :login
+  match 'logout' => 'sessions#destroy', :as => :logout
+  
+  resource :session, :only => [:new, :create, :destroy]
 
   resource :security_groups do
     get 'all',:to => 'security_groups#show_groups'
+    post 'create',:on => :member
   end
 
   resources :volumes do
     post 'create',:on => :member
   end
-  
-  resources :security_groups do
-    post 'create',:on => :member
-  end
-  
+
   resources :keypairs do
-    # get 'prk_download'
   end
-  match 'keypairs/create_ssh_keypair',:via => :get
-  # resource :account, :only => [:new]
-  match 'accounts/switch' => 'accounts#new',:via => :post
-  # match 'signup' => 'users#new', :as => :signup
-  # match 'register' => 'users#create', :as => :register
-  match 'login' => 'sessions#new', :as => :login
-  match 'logout' => 'sessions#destroy', :as => :logout
+
   
 end
