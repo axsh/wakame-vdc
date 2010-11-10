@@ -41,4 +41,9 @@ class KeypairsController < ApplicationController
             })
   end
   
+  def show_keypairs
+    @ssh_key_pair = Frontend::Models::DcmgrResource::SshKeyPair.list
+    respond_with(@ssh_key_pair[0],:to => [:json])
+  end
+  
 end

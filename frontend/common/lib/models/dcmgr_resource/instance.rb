@@ -12,7 +12,12 @@ module Frontend::Models
       def self.create(params)
         instance = self.new
         instance.image_id = params[:image_id]
+        instance.instance_spec_id = params[:instance_spec_id]
         instance.host_pool_id = params[:host_pool_id]
+        instance.host_name = params[:host_name]
+        instance.user_data = params[:user_data]
+        instance.nf_group = params[:nf_group]
+        instance.ssh_key = params[:ssh_key]
         instance.save
         instance
       end

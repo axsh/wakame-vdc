@@ -407,7 +407,7 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
     this.leftSelectionsArray = [];
     var dataSize = this.data.length;
     for(var i = 0;i < dataSize ;i++) {
-      var html = '<option name="'+i+'" value="'+ this.data[i]['id'] +'">'+ this.data[i]['name'] +'</option>';
+      var html = '<option id="'+i+'" value="'+ this.data[i]['value'] +'">'+ this.data[i]['name'] +'</option>';
       this.leftSelectionsArray[i] = $(html);
     }
     this.rightSelectionsArray = this.emptyArray(this.data.length);
@@ -433,7 +433,7 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
   leftToRight: function() {
     var self = this;
     $(this.left_select_id).find('option:selected').each(function(){
-      var index = $(this).attr('name');
+      var index = $(this).attr('id');
       self.leftSelectionsArray[index] = null;
       self.rightSelectionsArray[index] = this;
       $(this).remove();
@@ -444,7 +444,7 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
   rightToLeft: function() {
     var self = this;
     $(this.right_select_id).find('option:selected').each(function(){
-      var index = $(this).attr('name');
+      var index = $(this).attr('id');
       self.leftSelectionsArray[index] = this;
       self.rightSelectionsArray[index] = null;
       $(this).remove();

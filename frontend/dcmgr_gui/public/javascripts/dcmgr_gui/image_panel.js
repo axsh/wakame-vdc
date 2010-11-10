@@ -95,61 +95,100 @@ DcmgrGUI.prototype.imagePanel = function(){
     title:'Launch Instance',
     path:'/launch_instance',
     callback: function(){
+      
+      var self = this;
 
-      var data = [];
-
+      //get ssh key pairs
       $.ajax({
         "type": "GET",
-        "async": false,
+        "async": true,
+        "url": '/keypairs/all.json',
+        "dataType": "json",
+        "data": "",
+        success: function(json,status){
+          var results = json.ssh_key_pair.results;
+          var size = results.length;
+          var select_keypair = $(self).find('#ssh_key_pair');
+          for (var i=0; i < size ; i++) {
+            var name = results[i].result.name;
+            var ssh_keypair_id = results[i].result.id;
+            var html = '<option id="'+ ssh_keypair_id +'" value="'+ name +'">'+name+'</option>'
+            select_keypair.append(html);
+          }
+        }
+      });
+        
+      //get security groups
+      $.ajax({
+        "type": "GET",
+        "async": true,
         "url": '/security_groups/all.json',
         "dataType": "json",
         "data": "",
         success: function(json,status){
+          var data = [];
           var results = json.netfilter_group.results;
           var size = results.length
           for (var i=0; i < size ; i++) {
             data.push({
-              "id" : results[i].result.uuid,
+              "value" : results[i].result.uuid,
               "name" : results[i].result.name
             });
           }
+          
+          var security_group = new DcmgrGUI.ItemSelector({
+            'left_select_id' : '#left_select_list',
+            'right_select_id' : "#right_select_list",
+            "data" : data
+          });
+
+          $(self).find('#right_button').click(function(){
+            security_group.leftToRight();
+          });
+
+          $(self).find('#left_button').click(function(){
+            security_group.rightToLeft();
+          });
         }
       });
-              
-      var security_group = new DcmgrGUI.ItemSelector({
-        'left_select_id' : '#left_select_list',
-        'right_select_id' : "#right_select_list",
-        "data" : data
-      });
-      
-      $(this).find('#right_button').click(function(){
-        security_group.leftToRight();
-      });
-
-      $(this).find('#left_button').click(function(){
-        security_group.rightToLeft();
-      });
-      
     },
     button:{
      "Launch": function() { 
        var image_id = $(this).find('#image_id').val();
        var host_pool_id = $(this).find('#host_pool_id').val();
+       var host_name = $(this).find('#host_name').val();
        var instance_spec = $(this).find('#instance_spec').val();
+       var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').text();
+       var launch_in = $(this).find('#right_select_list').find('option');
+       var user_data = $(this).find('#user_data').val();
+       
+       var nf_group = [];
+       $.each(launch_in,function(i){
+         nf_group.push("nf_group[]="+ $(this).text());
+       });
+       var nf_strings = nf_group.join('&');
+       
        var data = "image_id="+image_id
                   +"&host_pool_id="+host_pool_id
-                  +"&instance_spec="+instance_spec;
-       $.ajax({
-         "type": "POST",
-         "async": true,
-         "url": '/instances/create',
-         "dataType": "json",
-         "data": data,
-         success: function(json,status){
-           console.log(json);
-         }
-       });
-       $(this).dialog("close");
+                  +"&instance_spec_id="+instance_spec
+                  +"&host_name="+host_name
+                  +"&user_data="+user_data
+                  +"&"+nf_strings
+                  +"&ssh_key="+ssh_key_pair;
+                  
+        $.ajax({
+          "type": "POST",
+          "async": true,
+          "url": '/instances/create',
+          "dataType": "json",
+          "data": data,
+          success: function(json,status){
+            console.log(json);
+            bt_refresh.element.trigger('dcmgrGUI.refresh');
+          }
+        });
+        
+        $(this).dialog("close");
       }
     }
   });

@@ -7,11 +7,14 @@ class InstancesController < ApplicationController
   def create
     data = {
       :image_id => params[:image_id],
+      :instance_spec_id => params[:instance_spec_id],
       :host_pool_id => params[:host_pool_id],
-      :instance_spec => params[:instance_spec]
+      :host_name => params[:host_name],
+      :user_data => params[:user_data],
+      :nf_group => params[:nf_group],
+      :ssh_key => params[:ssh_key]
     }
-    
-    instance = Frontend::Models::DcmgrResource::Instance.create(data)
+    instance = Frontend::Models::DcmgrResource::Instance.create(params)
     render :json => instance
   end
   
