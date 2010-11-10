@@ -13,10 +13,11 @@ class DialogController < ApplicationController
   end
 
   def attach_volume
+    @volume_id = params[:ids][0]
   end
   
   def detach_volume
-    
+    @volume_ids = params[:ids]
   end
   
   def delete_volume

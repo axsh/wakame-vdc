@@ -147,6 +147,67 @@ DcmgrGUI.prototype.volumePanel = function(){
     }
   });
 
+  var bt_attach_volume = new DcmgrGUI.Dialog({
+	  target:'.attach_volume',
+	  width:400,
+	  height:200,
+	  title:'Attach Volume',
+	  path:'/attach_volume',
+	  button:{
+	      "Close": function() { $(this).dialog("close"); },
+	      "Yes, Attach": function() {
+		  var volume_id = $(this).find('#volume_id').val();
+		  var instance_id = $(this).find('#instance_id').val();
+		  var data = "volume_id=" + volume_id
+		  + "&instance_id=" + instance_id;
+
+		  $.ajax({
+			  "type": "PUT",
+			      "async": true,
+			      "url": '/volumes/attach',
+			      "dataType": "json",
+			      "data": data,
+			      success: function(json,status){
+			      console.log(json);
+			  }
+		      });
+		  $(this).dialog("close");
+ 	      }
+	  }
+  });
+
+  var bt_detach_volume = new DcmgrGUI.Dialog({
+    target:'.detach_volume',
+    width:400,
+    height:200,
+    title:'Detach Volume',
+    path:'/detach_volume',
+    button:{
+     "Close": function() { $(this).dialog("close"); },
+     "Yes, Detach": function() { 
+       var detach_volumes = $(this).find('#detach_volumes').find('li');
+       var ids = []
+       $.each(detach_volumes,function(){
+         ids.push($(this).text())
+       })
+       
+       var data = $.param({ids:ids})
+       $.ajax({
+          "type": "PUT",
+          "async": true,
+          "url": '/volumes/detach',
+          "dataType": "json",
+          "data": data,
+          success: function(json,status){
+            console.log(json);
+            bt_refresh.element.trigger('dcmgrGUI.refresh');
+          }
+        });
+       $(this).dialog("close");
+      }
+    }
+  });
+  
   bt_create_volume.target.bind('click',function(){
     bt_create_volume.open();
   });
@@ -157,6 +218,14 @@ DcmgrGUI.prototype.volumePanel = function(){
 
   bt_create_snapshot.target.bind('click',function(){
     bt_create_snapshot.open(c_list.getCheckedInstanceIds());
+  });
+
+  bt_attach_volume.target.bind('click',function(){
+    bt_attach_volume.open(c_list.getCheckedInstanceIds());
+  });
+
+  bt_detach_volume.target.bind('click',function(){
+    bt_detach_volume.open(c_list.getCheckedInstanceIds());
   });
 
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){

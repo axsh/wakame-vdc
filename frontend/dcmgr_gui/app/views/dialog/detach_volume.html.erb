@@ -1,5 +1,7 @@
 <p>Are you sure you want to detach the following volume?</p>
 <br />
-<li>
-	<ul>vol-6d3369bf</ul>
-</li>
+<ul id="detach_volumes">
+        <% @volume_ids.each do |volume_id| %>
+                <li><%= volume_id %></li>
+        <% end %>
+</ul>

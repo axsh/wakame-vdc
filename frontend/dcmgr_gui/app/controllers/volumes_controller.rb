@@ -68,4 +68,20 @@ class VolumesController < ApplicationController
     detail["size"] = convert_from_mb_to_gb(detail["size"]).to_s + 'GB'
     respond_with(detail,:to => [:json])
   end
+
+  def attach
+    volume_id = params[:volume_id]
+    instance_id = params[:instance_id]
+    response = Frontend::Models::DcmgrResource::Volume.attach(volume_id, instance_id)
+    render :json => response
+  end
+
+  def detach
+    volume_ids = params[:ids]
+    response = []
+    volume_ids.each do |volume_id|
+      response << Frontend::Models::DcmgrResource::Volume.detach(volume_id)
+    end
+    render :json => response
+  end
 end
