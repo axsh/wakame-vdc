@@ -285,8 +285,8 @@ module Dcmgr
               i.user_data = params[:user_data] || ''
 
               if params[:ssh_key]
-                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_id,
-                                                       :name=>params[:ssh_key]).first
+                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,
+                                                       :name=>params[:ssh_key])
                 if ssh_key_pair.nil?
                   raise UnknownSshKeyPair, "#{params[:ssh_key]}"
                 else
