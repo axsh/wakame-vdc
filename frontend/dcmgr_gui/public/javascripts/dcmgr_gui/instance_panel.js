@@ -1,10 +1,9 @@
 DcmgrGUI.prototype.instancePanel = function(){
-  
   var total = 0;
   var maxrow = 10;
   var page = 1;
   var list_request = { 
-    "url":DcmgrGUI.Util.getPagePath('/instances/list/',1),
+    "url" : DcmgrGUI.Util.getPagePath('/instances/list/',1),
     "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
   };
   
@@ -39,7 +38,9 @@ DcmgrGUI.prototype.instancePanel = function(){
   
   var c_list = new DcmgrGUI.List({
     element_id:'#display_instances',
-    template_id:'#instancesListTemplate'
+    template_id:'#instancesListTemplate',
+    maxrow:maxrow,
+    page:page
   });
     
   c_list.setDetailTemplate({
@@ -154,20 +155,17 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
   
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
-    list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_pagenate.current_page);
+    c_list.page = c_pagenate.current_page;
+    list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
+    list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
     //update detail
     $.each(c_list.checked_list,function(check_id,obj){
-      
-      //todo:remove trigger event for detail
       $($('#detail').find('#'+check_id)).remove();
-      
-      //todo:update trigger event for detail
       c_list.checked_list[check_id].c_detail.update({
         url:DcmgrGUI.Util.getPagePath('/instances/show/',check_id)
       },true);
-      
     });
   });
 
