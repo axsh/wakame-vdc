@@ -14,7 +14,7 @@ module Frontend::Models
     class << self
       def authenticate(login_id,password)
         return nil if login_id.nil? || password.nil?
-        u = User.find(:login_id=>login_id, :password => password)
+        u = User.find(:login_id=>login_id, :password => encrypt_password(password))
         u.nil? ? false : u
       end
   
@@ -32,6 +32,11 @@ module Frontend::Models
       
       def primary_account_id(uuid)
         User.find(:uuid => uuid).primary_account_id
+      end
+      
+      def encrypt_password(password)
+        salt = Digest::SHA1.hexdigest(DcmgrGui::Application.config.secret_token)
+        Digest::SHA1.hexdigest("--#{salt}--#{password}--")
       end
     end
   end
