@@ -67,16 +67,18 @@ DcmgrGui::Application.routes.draw do
   
   resource :session, :only => [:new, :create, :destroy]
 
-  resource :security_groups do
-    get 'all',:to => 'security_groups#show_groups'
-    post 'create',:on => :member
-  end
-
   resources :volumes do
     post 'create',:on => :member
   end
 
   resources :keypairs do
+  end
+
+  match 'security_groups/:id' => 'security_groups#update',:via => :put
+  match 'security_groups/:id' => 'security_groups#destroy',:via => :delete
+  resource :security_groups do
+    get 'all',:to => 'security_groups#show_groups'
+    post 'create',:on => :member
   end
 
   
