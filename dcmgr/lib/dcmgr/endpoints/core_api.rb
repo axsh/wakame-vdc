@@ -895,6 +895,20 @@ module Dcmgr
             }
           end
         end
+
+        operation :show do
+          description 'Show the storage_pool status'
+          # params id, string, required
+          control do
+            pool_id = params[:id]
+            raise UndefinedStoragePoolID if pool_id.nil?
+            vs = find_by_uuid(:StoragePool, pool_id)
+            raise UnknownStoragePool if vs.nil?
+            respond_to { |f|
+              f.json { vs.to_hash_document.to_json}
+            }
+          end
+        end
       end
 
       collection :ssh_key_pairs do
