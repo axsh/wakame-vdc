@@ -53,7 +53,7 @@ module Dcmgr
   
   # Add conf/initializers/*.rb loader 
   initializer_hooks {
-    initializers_root = File.expand_path('conf/initializers', DCMGR_ROOT) 
+    initializers_root = File.expand_path('config/initializers', DCMGR_ROOT) 
     
     if File.directory?(initializers_root)
       Dir.glob("#{initializers_root}/*.rb") { |f|
