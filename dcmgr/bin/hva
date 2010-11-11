@@ -371,16 +371,23 @@ class KvmHandler < EndpointBuilder
     slot_number = nil
     pci = nil
 
-    telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /(qemu)/)
-    telnet.cmd("pci_add auto storage file=#{linux_dev_path},if=scsi")
-    telnet.waitfor(/(qemu)/){|c|
-      pci_add = c.scan(/^(OK.+domain.+)/).last
-      slot_number = pci_add.first.split(',')[2].split(' ').last if !pci_add.nil?
-    }
-    telnet.cmd("info pci"){|c|
-      pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{slot_number},.+:)/) 
-    }
-    telnet.close
+    slink = `ls -la #{linux_dev_path}`.scan(/.+\s..\/..\/([a-z]+)/)
+    raise "volume has not attached host os" if slink.nil?
+
+    begin
+      telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /\n\(qemu\) /, "Timeout" => 60, "Waittime" => 0.2)
+      telnet.cmd({"String" => "pci_add auto storage file=/dev/#{slink},if=scsi", "Match" => /.+slot\s[0-9]+.+/}){|c|
+        pci_add = c.scan(/.+slot\s([0-9]+).+/)
+        slot_number = pci_add unless pci_add.empty?
+      }
+      telnet.cmd("info pci"){|c|
+        pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{slot_number},.+:)/)
+      }
+    rescue => e
+      puts e
+    ensure
+      telnet.close
+    end
     raise "volume has not attached" if pci.nil?
     rpc.request('sta-collector', 'update_volume', job.to_hash(:guest_device_name=>slot_number))
     puts "Attached #{vol_id} on #{inst_id}"
@@ -402,12 +409,17 @@ class KvmHandler < EndpointBuilder
     require 'net/telnet'
     pci = nil
 
-    telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /(qemu)/)
-    telnet.cmd("pci_del #{vol[:guest_device_name]}")
-    telnet.cmd("info pci"){|c|
-      pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{vol[:guest_device_name]},.+:)/) 
-    }
-    telnet.close
+    begin
+      telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /\n\(qemu\) /, "Timeout" => 60, "Waittime" => 0.2)
+      telnet.cmd("pci_del #{vol[:guest_device_name]}")
+      telnet.cmd("info pci"){|c|
+        pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{vol[:guest_device_name]},.+:)/)
+      }
+    rescue => e
+      puts e
+    ensure
+      telnet.close
+    end
     raise "volume has not detached" unless pci.empty?
     rpc.request('sta-collector', 'update_volume', job.to_hash)
 
