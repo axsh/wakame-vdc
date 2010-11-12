@@ -94,6 +94,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
       return
     end
 
+    network_id = inst[:host_pool][:network_id]
+    p network = rpc.request('hva-collector', 'get_network', network_id)
+    raise "UnknownNetworkId" if network.nil?
+
     vif     = inst[:instance_nics].first[:vif]
     vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
     ng      = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
@@ -181,8 +185,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
 
     # group nodes.
-    # [ToDo] add DEFATULT_GW, DHCP, DNS
-    ipv4s.each do |ipv4|
+    # [ToDo] DHCP Server
+    ipv4s << network[:ipv4_gw]
+    ipv4s << network[:dns_server]
+    ipv4s.uniq.each do |ipv4|
       cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
 
