@@ -202,6 +202,24 @@ DcmgrGUI.Util.setfillData = function(maxrows,json){
   return json;
 }
 
+DcmgrGUI.Util.getLoadingImage = function(type){
+  switch(type) {
+    case "ball":
+      var image = 'loader_ball.gif'
+    break;
+    
+    case "boxes":
+      var image = 'loader_boxes.gif'
+    break;
+    
+    default:
+      var image = 'loader_ball.gif'
+    break;
+  }
+  return '<img src="images/'+image+'" />';
+}
+
+
 DcmgrGUI.Util.getPagenateData = function(start,limit){
   return "start=" + start + "&" + "limit=" + limit;
 }
