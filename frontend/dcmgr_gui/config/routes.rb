@@ -56,6 +56,14 @@ DcmgrGui::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   
   match ':controller(/:action(/:id(.:format)))'
+
+  match 'instances/total(.:format)' => 'instances#total', :via => :get
+  match 'images/total(.:format)' => 'images#total', :via => :get
+  match 'volumes/total(.:format)' => 'volumes#total', :via => :get
+  match 'snapshots/total(.:format)' => 'snapshots#total', :via => :get
+  match 'security_groups/total(.:format)' => 'security_groups#total', :via => :get
+  match 'keypairs/total(.:format)' => 'keypairs#total', :via => :get
+  
   match 'keypairs/all' => 'keypairs#show_keypairs',:via => :get
   match 'keypairs/create_ssh_keypair',:via => :get
   match 'accounts/switch' => 'accounts#new',:via => :post

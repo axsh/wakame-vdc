@@ -9,8 +9,13 @@ module Frontend
         self.prefix = '/api/'
         
         @@debug = false
-
+        
         class << self
+          
+          def total_resource
+            result = self.find(:first,:params => {:start => 0,:limit => 1})
+            result.owner_total
+          end
           # If headers are not defined in a given subclass, then obtain
           # headers from the superclass.
           
