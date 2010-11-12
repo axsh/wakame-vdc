@@ -4,6 +4,14 @@
 # Naming Service Agent:
 # This agent aims to configure DNS/DHCP daemons or devices to supply
 # IP address and Hostname for Instances.
+
+begin
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup(:default)
+rescue LoadError
+end
+
 require File.expand_path('../../config/path_resolver', __FILE__)
 
 
@@ -56,7 +64,8 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
         system("/bin/kill -HUP #{@dnsmasq_pid}")
         logger.info("refreshed dnsmasq conf")
       rescue Exception => e
-        p e
+        puts "faild failed: #{e.class}"
+        puts e.backtrace
       end
     }
   end

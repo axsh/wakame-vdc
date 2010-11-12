@@ -285,8 +285,8 @@ module Dcmgr
               i.user_data = params[:user_data] || ''
 
               if params[:ssh_key]
-                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_id,
-                                                       :name=>params[:ssh_key]).first
+                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,
+                                                       :name=>params[:ssh_key])
                 if ssh_key_pair.nil?
                   raise UnknownSshKeyPair, "#{params[:ssh_key]}"
                 else
@@ -416,20 +416,27 @@ module Dcmgr
       end
         
       collection :host_pools do
-        operation :create do
-          description 'Register a new physical host'
-          # param :
+        operation :index do
+          description 'Show list of host pools'
           control do
-            raise OperationNotPermitted unless @account.is_a?(Models::Account::SystemAccount::DatacenterAccount)
-            input = parsed_request_body
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? nil : limit
+            
+            total_ds = Models::HostPool.where(:account_id=>@account.canonical_uuid)
+            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
-            hp = Models::HostPool.create(:cpu_cores=>input[:cpu_cores],
-                                         :memory_size=>input[:memory_size],
-                                         :arch=>input[:arch],
-                                         :hypervisor=>input[:hypervisor]
-                                         )
+            res = [{
+              :owner_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|i| i.to_hash }
+            }]
+            
             respond_to { |f|
-              f.json{ hp.to_hash.to_json }
+              f.json {res.to_json}
             }
           end
         end
@@ -438,47 +445,14 @@ module Dcmgr
           description 'Show status of the host'
           #param :account_id, :string, :optional
           control do
-            raise OperationNotPermitted unless @account.is_a?(Models::Account::SystemAccount::DatacenterAccount)
-
             hp = find_by_uuid(:HostPool, params[:id])
+            raise OperationNotPermitted unless examine_owner(hp)
+            
             respond_to { |f|
               f.json { hp.to_hash.to_json }
             }
           end
         end
-
-        operation :destroy do
-          description 'Unregister the existing host'
-          control do
-            raise OperationNotPermitted unless @account.is_a?(Models::Account::SystemAccount::DatacenterAccount)
-
-            hp = find_by_uuid(:HostPool, params[:id])
-            if hp.depend_resources?
-              raise ""
-            end
-            hp.destroy
-          end
-        end
-
-        operation :update do
-          description 'Update parameters for the host'
-          # param :cpu_cores, :optional
-          # param :memory_size, :optional
-          control do
-            raise OperationNotPermitted unless @account.is_a?(Models::Account::SystemAccount::DatacenterAccount)
-
-            hp = find_by_uuid(:HostPool, params[:id])
-            if params[:cpu_cores]
-              hp.offering_cpu_cores = params[:cpu_cores].to_i
-            end
-            if params[:memory_size]
-              hp.offering_memory_size = params[:memory_size].to_i
-            end
-
-            hp.save
-          end
-        end
-
       end
 
       collection :volumes do

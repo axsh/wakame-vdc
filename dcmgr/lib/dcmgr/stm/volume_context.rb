@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'statemachine'
 
-module Stm
+module Dcmgr::Stm
   class VolumeContext < OpenStruct
     attr_reader :stm
 

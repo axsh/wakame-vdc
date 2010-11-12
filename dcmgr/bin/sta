@@ -1,6 +1,13 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
+begin
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup(:default)
+rescue LoadError
+end
+
 require File.expand_path('../../config/path_resolver', __FILE__)
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
@@ -9,7 +16,7 @@ manifest.instance_eval do
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
 
   load_module Isono::NodeModules::NodeHeartbeat
-  load_module Vdc::NodeModules::StaLoader
+  load_module Dcmgr::NodeModules::StaLoader
 end
 
 Isono::Runner::RpcServer.start(manifest) do

@@ -1,6 +1,0 @@
-resource_repos/tmp/
-tmp/
-
-# Bundler ignorance rules
-vendor/
-.bundle/

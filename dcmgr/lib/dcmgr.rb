@@ -53,7 +53,7 @@ module Dcmgr
   
   # Add conf/initializers/*.rb loader 
   initializer_hooks {
-    initializers_root = File.expand_path('conf/initializers', DCMGR_ROOT) 
+    initializers_root = File.expand_path('config/initializers', DCMGR_ROOT) 
     
     if File.directory?(initializers_root)
       Dir.glob("#{initializers_root}/*.rb") { |f|
@@ -75,82 +75,8 @@ module Dcmgr
     @logger
   end
 
-  attr_accessor :location_groups
-
-  def fsuser_auth_type=(type)
-    FsuserAuthorizer.auth_type = type
-  end
-
-  def fsuser_auth_type
-    FsuserAuthorizer.auth_type
-  end
-
-  def fsuser_auth_users=(users)
-    FsuserAuthorizer.auth_users = users
-  end
-
-  def fsuser_auth_users
-    FsuserAuthorizer.auth_users
-  end
-  
-  def hvchttp
-    #@hvchttp ||= HvcHttpMock.new
-    @hvchttp ||= HvcHttp.new
-  end
-
-  attr_writer :hvchttp
-
-  def scheduler
-    @scheduler ||= PhysicalHostScheduler::Algorithm2.new
-  end
-  
-  def scheduler=(scheduler_module)
-    @scheduler = scheduler_module.new
-  end
-
-  def db
-    Dcmgr::Schema.db
-  end
-  
-  def new(config_file, mode=:public)
-    config_file ||= 'dcmgr.conf'
-    configure(config_file)
-    case mode
-    when :public
-      Web::Public
-    when :private
-      Web::Private
-    else
-      raise Exception, "unkowon mode: #{mode}"
-    end
-  end
-
-  autoload :Schema, 'dcmgr/schema'
-  autoload :FsuserAuthorizer, 'dcmgr/fsuser_authorizer'
-  autoload :KeyPairFactory, 'dcmgr/keypair_factory'
-  autoload :PhysicalHostScheduler, 'dcmgr/scheduler'
-  autoload :IPManager, 'dcmgr/ipmanager'
-  autoload :HvcHttp, 'dcmgr/hvchttp'
-  autoload :HvcAccess, 'dcmgr/hvchttp'
-  autoload :HvcHttpMock, 'dcmgr/hvchttp/mock'
-
-  autoload :RoleExecutor, 'dcmgr/evaluator'
-  autoload :Helpers, 'dcmgr/helpers'
-
   module Models
     autoload :Base, 'dcmgr/models/base'
-    autoload :KeyPair, 'dcmgr/models/key_pair'
-    autoload :TagAttribute, 'dcmgr/models/tag_attribute'
-    autoload :IpGroup, 'dcmgr/models/ip_group'
-    autoload :Ip, 'dcmgr/models/ip'
-    autoload :HvController, 'dcmgr/models/hv_controller'
-    autoload :HvAgent, 'dcmgr/models/hv_agent'
-    autoload :ImageStorage, 'dcmgr/models/image_storage'
-    autoload :ImageStorageHost, 'dcmgr/models/image_storage_host'
-    autoload :PhysicalHost, 'dcmgr/models/physical_host'
-    autoload :LocationGroup, 'dcmgr/models/location_group'
-    autoload :Log, 'dcmgr/models/log'
-    autoload :AccountLog, 'dcmgr/models/account_log'
 
     CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,
                           :Image,:HostPool,:RequestLog,:Instance,
@@ -183,18 +109,6 @@ module Dcmgr
     autoload :SshKeyPair, 'dcmgr/models/ssh_key_pair'
   end
 
-  module RestModels
-    autoload :Base, 'dcmgr/rest_models/base'
-    autoload :Public, 'dcmgr/rest_models/public'
-    autoload :Private, 'dcmgr/rest_models/private'
-  end
-
-  module Web
-    autoload :Base, 'dcmgr/web/base'
-    autoload :Public, 'dcmgr/web/public'
-    autoload :Private, 'dcmgr/web/private'
-  end
-
   module Endpoints
     autoload :CoreAPI, 'dcmgr/endpoints/core_api'
     autoload :Metadata, 'dcmgr/endpoints/metadata'
@@ -203,7 +117,11 @@ module Dcmgr
   module NodeModules
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
+    autoload :StaLoader, 'dcmgr/node_modules/sta_loader'
   end
 
-  autoload :CertificatedActiveResource, 'dcmgr/certificated_active_resource'
+  module Stm
+    autoload :VolumeContext, 'dcmgr/stm/volume_context'
+    autoload :Instance, 'dcmgr/stm/instance'
+  end
 end
