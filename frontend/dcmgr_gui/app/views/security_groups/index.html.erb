@@ -72,7 +72,7 @@ jQuery(function($){
 		</div>
 	</div>
 	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_resource.gif" />Detail<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_ttl_detail.gif" />Detail<a href="javascript:void(0);" class="showhide"></a></h3>
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="securityGroupsDetailTemplate" type="text/x-jquery-tmpl">
@@ -93,6 +93,16 @@ jQuery(function($){
 						<td colspan="2">
 						<textarea id="security_group_rule" rows="10" cols="10" style="width:630px;height:150px" disabled>${item.rule}</textarea><br />
 						</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+	         	<td class="title">Created:</td>
+	         	<td colspan="7">${item.created_at}</td>
+					</tr>
+	        <tr>
+	          <td class="padcell"></td>
+	          <td class="title">Updated:</td>
+	          <td colspan="7">${item.updated_at}</td>
 					</tr>
 				</table>
 				<br />

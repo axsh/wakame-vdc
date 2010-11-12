@@ -26,11 +26,13 @@ DcmgrGUI.Class = (function() {
 DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   initialize: function(params) {
     this.element = $('#pagenate');
+    this.view = $("#viewPagenate").text();
     this.total = params.total;
     this.page_count = this.getPageCount(params['total'],params['row']);
     this.current_page = 1;
     this.row = params['row'];
-    this.view = $("#viewPagenate").text();
+    this.start = this.getStartCount();
+    this.offset = this.getOffsetCount();
     $('.prev').bind("click",{obj: this},this.updatePage);
     $('.next').bind("click",{obj: this},this.updatePage);
 
@@ -45,7 +47,9 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     this.renderPagenate();
   },
   renderPagenate: function(){
-    var html = this.current_page + ' to ' + this.page_count + ' of ' + this.page_count;
+    this.start = this.getStartCount();
+    this.offset = this.getOffsetCount();
+    var html = this.start + ' to ' + this.offset + ' of ' + this.total;
     $("#viewPagenate").html(html+' '+this.view);    
   },
   updatePage: function(event){
@@ -68,6 +72,23 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     }
     self.renderPagenate();
     self.element.trigger('dcmgrGUI.updatePagenate');
+  },
+  getOffsetCount: function(){
+    var count = (this.current_page * this.row);
+    
+    if (this.total < count) {
+      return this.total;
+    } else {
+      return count;
+    }
+  },
+  getStartCount: function(){
+    if (this.current_page === 1) {
+      var start = 1;
+    } else {
+      var start = ((this.current_page -1) * this.row) + 1;
+    }
+    return start;
   }
 });
 
@@ -181,14 +202,7 @@ DcmgrGUI.Util.setfillData = function(maxrows,json){
   return json;
 }
 
-DcmgrGUI.Util.getPagenateData = function(page,limit){
-
-  if (page === 1) {
-    var start = 1;
-  } else {
-    var start = ((page -1) * limit) + 1;
-  }
-  
+DcmgrGUI.Util.getPagenateData = function(start,limit){
   return "start=" + start + "&" + "limit=" + limit;
 }
 

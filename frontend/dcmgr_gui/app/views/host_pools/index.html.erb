@@ -1,0 +1,103 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/host_pool_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.hostPoolPanel();
+});
+</script>
+<% end %>
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Host Pools<a href="javascript:void(0);" class="showhide"></a></h3>
+ <div id="list_load_mask" class="maincontent">
+		<div class="controller clearfix">
+    	<a href="javascript:void(0);" class="refresh" style="margin-left:589px">Refresh</a>
+  	</div>
+		<div class="controller clearfix">
+         <div id="pagenate" class="r_float">
+			  	<a href="javascript:void(0);" class="prev"></a>
+			  	<p id="viewPagenate">Instances</p>
+			  	<a href="javascript:void(0);" class="next"></a>
+         </div>
+		</div>
+		<div id="display_host_pools" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="hostPoolsListTemplate" type="text/x-jquery-tmpl">
+			 <table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+			   <tr>
+			     <th></th>
+			     <th>Host Pool ID</th>
+			     <th>Node ID</th>
+				   <th>Hyper Visor</th>
+		 	     <th>CPU Cores</th>
+					 <th>Memory Size</th>
+					 <th>State</th>
+			   </tr>
+			   {{each(index,item) rows}}
+			   <tr>
+					{{if item.uuid }}
+						<td class="center listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
+					{{else}}
+						<td class="listcheckbox"></td>
+					{{/if}}
+					<td class="vtip" title="node_id">${item.uuid}</td>
+					<td class="vtip" title="node_id">${item.node_id}</td>
+					<td class="vitp center" title="hypervisor">${item.hypervisor}</td>
+					<td class="vtip center" title="offering_cpu_cores">${item.offering_cpu_cores}</td>
+					<td class="vtip center" title="offering_memory_size">${item.offering_memory_size}</td>
+					<td class="vtip center state" title="status">${item.status}</td>
+				</tr>
+			   {{/each}}
+			   </table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_ttl_detail.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+	<div id="detail" class="maincontent">
+		<% content_for :javascript_template do %>
+		<script id="hostPoolsDetailTemplate" type="text/x-jquery-tmpl">
+		<div id="${item.id}" class="display_area">
+			<h4 class="ptn01">Host Pool:<span class="instansid">${item.id}</span></h4>
+			<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Host Pool ID:</td>
+					<td>${item.uuid}</td>
+					<td class="padcell"></td>
+					<td class="title">Hyper Visor:</td>
+					<td>${item.hypervisor}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Cpu Cores:</td>
+					<td>${item.offering_cpu_cores}</td>
+					<td class="padcell"></td>
+					<td class="title">Memory Size:</td>
+					<td>${item.offering_memory_size}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Node ID:</td>
+					<td>${item.node_id}</td>
+					<td class="padcell"></td>
+					<td class="title">Status:</td>
+					<td class="state">${item.status}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Created At:</td>
+					<td colspan="7">${item.created_at}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Update At:</td>
+					<td colspan="7">${item.updated_at}</td>
+				</tr>
+			</table>
+		</div>
+		</script>
+		<% end %>
+	</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

@@ -1,0 +1,98 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/storage_pool_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.storagePoolPanel();
+});
+</script>
+<% end %>
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Storage Pools<a href="javascript:void(0);" class="showhide"></a></h3>
+ <div id="list_load_mask" class="maincontent">
+	 	<div class="controller clearfix">
+     	<a href="javascript:void(0);" class="refresh" style="margin-left:589px">Refresh</a>
+   	</div>
+ 		<div class="controller clearfix">
+         <div id="pagenate" class="r_float">
+			  	<a href="javascript:void(0);" class="prev"></a>
+			  	<p id="viewPagenate">Pools</p>
+			  	<a href="javascript:void(0);" class="next"></a>
+         </div>
+		</div>
+		<div id="display_storage_pools" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="storagePoolsListTemplate" type="text/x-jquery-tmpl">
+			 <table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+			   <tr>
+			     <th></th>
+			     <th>StoragePool ID</th>
+			     <th>Node ID</th>
+					 <th>Disk Space</th>
+				   <th>IP</th>
+					 <th>State</th>
+			   </tr>
+			   {{each(index,item) rows}}
+					<tr>
+						{{if item.uuid }}
+							<td class="listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
+						{{else}}
+						<td class="listcheckbox"></td>
+						{{/if}}
+						<td class="vtip" title="uuid">${item.uuid}</td>
+						<td class="vtip" title="node_id">${item.node_id}</td>
+						<td class="vtip center" title="offerring_disk_space">${item.offerring_disk_space}</td>
+						<td class="vtip center" title="ipaddr">${item.ipaddr}</td>
+						<td class="vtip center state" title="status">${item.status}</td>
+					</tr>	
+			   {{/each}}
+			   </table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_ttl_detail.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+	<div id="detail" class="maincontent">
+		<% content_for :javascript_template do %>
+		<script id="storagePoolsDetailTemplate" type="text/x-jquery-tmpl">
+		<div id="${item.uuid}" class="display_area">
+			<h4 class="ptn01">Storage Pool:<span class="uuid">${item.uuid}</span></h4>
+			<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Storage Pool ID:</td>
+					<td>${item.uuid}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">IP:</td>
+					<td>${item.ipaddr}</td>
+					<td class="padcell"></td>
+					<td class="title">Disk Space:</td>
+					<td>${item.offerring_disk_space}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Node ID:</td>
+					<td>${item.node_id}</td>
+					<td class="padcell"></td>
+					<td class="title">Status:</td>
+					<td class="state">${item.status}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Created At:</td>
+					<td colspan="7">${item.created_at}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Update At:</td>
+					<td colspan="7">${item.updated_at}</td>
+				</tr>
+			</table>
+		</div>
+		</script>
+		<% end %>
+	</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

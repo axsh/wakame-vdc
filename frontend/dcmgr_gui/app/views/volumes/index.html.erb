@@ -75,7 +75,7 @@ jQuery(function($){
 		</div>
 	</div>
 	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_resource.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_ttl_detail.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="volumesDetailTemplate" type="text/x-jquery-tmpl">
@@ -95,16 +95,18 @@ jQuery(function($){
 						<td class="title">Snapshot:</td>
 						<td>${item.snapshot_id}</td>
 						<td class="padcell"></td>
-						<td class="title">Created:</td>
-						<td>${item.created_at}</td>
+						<td class="title">Status:</td>
+						<td class="state">${item.state}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Status:</td>
-						<td class="state">${item.state}</td>
+						<td class="title">Created:</td>
+						<td colspan="7">${item.created_at}</td>
+					</tr>
+					<tr>
 						<td class="padcell"></td>
 						<td class="title">Updated:</td>
-						<td>${item.updated_at}</td>
+						<td colspan="7">${item.updated_at}</td>
 					</tr>
 				</table>
 			</div>

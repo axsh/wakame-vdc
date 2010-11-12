@@ -68,38 +68,40 @@
     </div>
   </div>
   <div id="btm_maincontent_wide"></div>
-  <h3><img src="images/icon_resource.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+  <h3><img src="images/icon_ttl_detail.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
   <div id="detail" class="maincontent">
     <% content_for :javascript_template do %>
     <script id="snapshotsDetailTemplate" type="text/x-jquery-tmpl">
       <div id="${item.uuid}" class="display_area">
-	<h4 class="ptn01">Snapshot ID:<span class="instansid">${item.uuid}</span></h4>
-	<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
-	  <tr>
-	    <td class="padcell"></td>
-	    <td class="title">Snapshot:</td>
-	    <td class="volume_size">${item.uuid}</td>
-	    <td class="padcell"></td>
-	    <td class="title">Capacity:</td>
-            <td>${item.size}</td>
-	  </tr>
-
-          <tr>
-            <td class="padcell"></td>
-            <td class="title">OriginVolumeID:</td>
-            <td>${item.origin_volume_id}</td>
-            <td class="padcell"></td>
-            <td class="title">Created:</td>
-            <td>${item.created_at}</td>
-          </tr>
-          <tr>
-            <td class="padcell"></td>
-            <td class="title">Status:</td>
-            <td class="state">${item.state}</td>
-            <td class="padcell"></td>
-            <td class="title">Updated:</td>
-            <td>${item.updated_at}</td>
-	</table>
+			<h4 class="ptn01">Snapshot ID:<span class="instansid">${item.uuid}</span></h4>
+			<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+			  <tr>
+			    <td class="padcell"></td>
+			    <td class="title">Snapshot:</td>
+			    <td class="volume_size">${item.uuid}</td>
+			    <td class="padcell"></td>
+			    <td class="title">Capacity:</td>
+		      <td>${item.size}</td>
+			  </tr>
+		    <tr>
+          <td class="padcell"></td>
+          <td class="title">OriginVolumeID:</td>
+          <td>${item.origin_volume_id}</td>
+          <td class="padcell"></td>
+          <td class="title">Status:</td>
+          <td class="state">${item.state}</td>
+        </tr>
+				<tr>
+					<td class="padcell"></td>
+         	<td class="title">Created:</td>
+         	<td colspan="7">${item.created_at}</td>
+				</tr>
+        <tr>
+          <td class="padcell"></td>
+          <td class="title">Updated:</td>
+          <td colspan="7">${item.updated_at}</td>
+				</tr>
+			</table>
       </div>
     </script>
     <% end %>
