@@ -55,6 +55,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     EM.defer {
       begin
         refresh_ebtables(inst_id)
+        refresh_iptables(inst_id)
         logger.info("refreshed netfilter")
       rescue Exception => e
         p e
@@ -70,7 +71,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
       begin
         inst_ids = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
         inst_ids.each { |inst_id|
-          refresh_ebtables(inst_id) unless inst_id.nil?
+          unless inst_id.nil?
+            refresh_ebtables(inst_id)
+            refresh_iptables(inst_id)
+          end
         }
       rescue Exception => e
         p e
@@ -100,15 +104,15 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     vif     = inst[:instance_nics].first[:vif]
     vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
-    ng      = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
-
-    rules = ng.map { |g|
-      g[:rules].map { |rule| rule[:permission] }
-    }
-    rules.flatten! if rules.size > 0
 
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+
+
+
+
+
+
 
     # xtables commands
     cmds = []
@@ -195,6 +199,155 @@ class ServiceNetfilter < Isono::NodeModules::Base
     # deny,allow
     cmds << "sudo ebtables -A d_#{vif}_arp        -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_host_arp -j DROP"
+
+    cmds.uniq! if cmds.size > 0
+    cmds.compact.each { |cmd|
+      puts cmd
+      system(cmd)
+    }
+  end
+
+  def refresh_iptables(inst_id)
+    p inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    raise "UnknownInstanceID" if inst.nil?
+
+    # Does the hva have instance?
+    unless inst[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_id}"
+      return
+    end
+
+    network_id = inst[:host_pool][:network_id]
+    p network = rpc.request('hva-collector', 'get_network', network_id)
+    raise "UnknownNetworkId" if network.nil?
+
+    vif     = inst[:instance_nics].first[:vif]
+    vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
+
+    # group node IPv4 addresses.
+    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+
+    ng= rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+    rules = ng.map { |g|
+      g[:rules].map { |rule| rule[:permission] }
+    }
+    rules.flatten! if rules.size > 0
+
+    # xtables commands
+    cmds = []
+
+    # support IP protocol
+    protocol_maps = {
+      'tcp'  => 'tcp',
+      'udp'  => 'udp',
+      'icmp' => 'icmp',
+    }
+
+
+
+    # make chain names.
+    chains = []
+    protocol_maps.each { |k,v|
+      chains << "s_#{vif}_#{k}"
+      chains << "d_#{vif}_#{k}"
+    }
+    chains << "s_#{vif}"
+    chains << "d_#{vif}"
+
+    # metadata-server
+    system("sudo iptables -t nat -D PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80 >/dev/null 2>&1")
+    system("sudo iptables -t nat -A PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80")
+
+    # clean rules if exists.
+    system("sudo iptables -nL s_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif} -j s_#{vif}")
+    end
+
+    system("sudo iptables -nL d_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
+    end
+
+
+    [ 'F', 'X' ].each { |cmd|
+      chains.each { |chain|
+        system("sudo iptables -nL #{chain} >/dev/null 2>&1")
+        if $?.exitstatus == 0
+          system("sudo iptables -#{cmd} #{chain}")
+        end
+      }
+    }
+
+
+
+
+    # create user defined chains.
+    [ 'N' ].each { |cmd|
+      chains.each { |chain|
+        cmds << "sudo iptables -#{cmd} #{chain}"
+      }
+    }
+
+    # IP protocol routing
+    [ 's', 'd' ].each do |bound|
+      protocol_maps.each { |k,v|
+        cmds << "sudo iptables -N #{bound}_#{vif}_#{k}"
+        case k
+        when 'tcp'
+          case bound
+          when 's'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+          when 'd'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+          end
+        when 'udp'
+          case bound
+          when 's'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+          when 'd'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+          end
+        when 'icmp'
+          case bound
+          when 's'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+          when 'd'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+          end
+        end
+      }
+    end
+
+    cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif} -j s_#{vif}"
+    cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
+
+    # DHCP
+    # [ToDo] pending. not yet exists.
+    # cmds << "sudo iptables -A s_#{vif}_udp -p udp -s #{dhcp_sv} --sport 67 -j ACCEPT"
+    # cmds << "sudo iptables -A s_#{vif}_udp -p udp               --sport 67 -j DROP"
+
+    # DNS
+    cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network[:dns_server]} --dport 53 -j ACCEPT"
+
+    #
+    # security group
+    #
+
+    # rules
+    build_rule(rules).each do |rule|
+      cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
+    end
+
+    # group nodes
+    ipv4s.each { |addr|
+      cmds << "sudo iptables -A s_#{vif} -d #{addr} -j ACCEPT"
+    }
+
+    # exclude internal subnet.
+    # [ToDo] rename netmask prefix.
+    #cmds << "sudo iptables -A s_#{vif} -d #{network[:ipv4_gw]}/#{network[:prefix]} -j DROP"
+    cmds << "sudo iptables -A s_#{vif} -d #{network[:ipv4_gw]}/#{network[:netmask]} -j DROP"
 
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
