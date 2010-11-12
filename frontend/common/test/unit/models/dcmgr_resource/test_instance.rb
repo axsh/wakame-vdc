@@ -6,7 +6,7 @@ require File.expand_path('../../../../lib/models/dcmgr_resource/base')
 require File.expand_path('../../../../lib/models/dcmgr_resource/instance')
 
 module Frontend
-  class TestVolume < Test::Unit::TestCase
+  class TestInstance < Test::Unit::TestCase
     def setup
       @instance = Frontend::Models::DcmgrResource::Instance
       @instance.set_debug

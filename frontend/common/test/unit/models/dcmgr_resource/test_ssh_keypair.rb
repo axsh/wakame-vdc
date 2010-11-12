@@ -6,7 +6,7 @@ require File.expand_path('../../../../lib/models/dcmgr_resource/base')
 require File.expand_path('../../../../lib/models/dcmgr_resource/ssh_key_pair')
 
 module Frontend
-  class SshKeypair < Test::Unit::TestCase
+  class TestSshKeypair < Test::Unit::TestCase
     def setup
       @ssh_key_pair = Frontend::Models::DcmgrResource::SshKeyPair
       @ssh_key_pair.set_debug
