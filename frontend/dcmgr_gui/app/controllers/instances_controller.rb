@@ -51,4 +51,9 @@ class InstancesController < ApplicationController
     render :json => response
   end
   
+  def total
+   total_resource = Frontend::Models::DcmgrResource::Instance.total_resource
+   render :json => total_resource
+  end
+  
 end

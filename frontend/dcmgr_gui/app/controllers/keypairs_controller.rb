@@ -46,4 +46,9 @@ class KeypairsController < ApplicationController
     respond_with(@ssh_key_pair[0],:to => [:json])
   end
   
+  def total
+   total_resource = Frontend::Models::DcmgrResource::SshKeyPair.total_resource
+   render :json => total_resource
+  end
+  
 end

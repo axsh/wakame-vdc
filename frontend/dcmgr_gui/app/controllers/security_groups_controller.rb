@@ -52,4 +52,8 @@ class SecurityGroupsController < ApplicationController
     respond_with(@netfilter_group[0],:to => [:json])
   end
   
+  def total
+   total_resource = Frontend::Models::DcmgrResource::NetfilterGroup.total_resource
+   render :json => total_resource
+  end
 end

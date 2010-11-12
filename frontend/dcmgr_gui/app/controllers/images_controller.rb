@@ -20,4 +20,9 @@ class ImagesController < ApplicationController
     image = Frontend::Models::DcmgrResource::Image.list(data)
     respond_with(image[0],:to => [:json])
   end
+  
+  def total
+   total_resource = Frontend::Models::DcmgrResource::Image.total_resource
+   render :json => total_resource
+  end
 end

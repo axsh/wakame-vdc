@@ -41,4 +41,9 @@ class SnapshotsController < ApplicationController
     detail["size"] = convert_from_mb_to_gb(detail["size"]).to_s + 'GB'
     respond_with(detail,:to => [:json])
   end
+  
+  def total
+   total_resource = Frontend::Models::DcmgrResource::VolumeSnapshot.total_resource
+   render :json => total_resource
+  end
 end

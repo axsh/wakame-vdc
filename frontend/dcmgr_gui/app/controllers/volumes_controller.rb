@@ -84,4 +84,9 @@ class VolumesController < ApplicationController
     end
     render :json => response
   end
+  
+  def total
+    total_resource = Frontend::Models::DcmgrResource::Volume.total_resource
+    render :json => total_resource
+  end
 end
