@@ -94,22 +94,22 @@ class ServiceNetfilter < Isono::NodeModules::Base
       return
     end
 
-    vif = inst[:instance_nics].first[:vif]
-    ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+    vif     = inst[:instance_nics].first[:vif]
+    vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
+    ng      = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
 
     rules = ng.map { |g|
       g[:rules].map { |rule| rule[:permission] }
     }
     rules.flatten! if rules.size > 0
 
-    # group ips
+    # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
 
-    # ebtables
-    ebtables = []
+    # xtables commands
+    cmds = []
 
-    # chains
-    chains = []
+    # support IP protocol
     protocol_maps = {
       'ip4'  => 'ip4',
       'arp'  => 'arp',
@@ -118,51 +118,80 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     # make chain names.
-    chains << "host_I_#{vif}"
+    chains = []
+    chains << "s_#{vif}"
+    chains << "d_#{vif}"
+    chains << "s_#{vif}_d_host"
     protocol_maps.each { |k,v|
-      chains << "I_#{vif}_#{k}"
+      chains << "s_#{vif}_#{k}"
+      chains << "d_#{vif}_#{k}"
+      chains << "s_#{vif}_d_host_#{k}"
     }
 
-    ebtables << "-D FORWARD -o #{vif} -j host_I_#{vif}"
-    [ 'F', 'X', 'N', 'Z' ].each { |cmd|
+    # clear rules if exists.
+    system("sudo ebtables -L s_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo ebtables -D FORWARD -i #{vif} -j s_#{vif}")
+    end
+
+    system("sudo ebtables -L d_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo ebtables -D FORWARD -o #{vif} -j d_#{vif}")
+    end
+
+    system("sudo ebtables -L s_#{vif}_d_host >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host")
+    end
+
+    [ 'F', 'X' ].each { |cmd|
       chains.each { |chain|
-        ebtables << "-#{cmd} #{chain}"
+        system("sudo ebtables -L #{chain} >/dev/null 2>&1")
+        if $?.exitstatus == 0
+          system("sudo ebtables -#{cmd} #{chain}")
+        end
       }
     }
 
-    # chain for VIF
-    ebtables << "-A FORWARD -o #{vif} -j host_I_#{vif}"
-    protocol_maps.each { |k,v|
-      ebtables << "-A host_I_#{vif} -p #{v} -j I_#{vif}_#{k}"
+    # create user defined chains.
+    [ 'N' ].each { |cmd|
+      chains.each { |chain|
+        cmds << "sudo ebtables -#{cmd} #{chain}"
+      }
     }
-    ebtables << "-A host_I_#{vif} -j DROP"
 
-    # rules
-    self.build_rule(rules).each do |rule|
-      case rule[:ip_source]
-      when '0.0.0.0'
-        ebtables << "-A I_#{vif}_#{rule[:protocol]} --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-dport #{rule[:ip_dport]} -j ACCEPT"
-      else
-        ebtables << "-A I_#{vif}_#{rule[:protocol]} --protocol #{rule[:protocol]} --ip-protocol #{rule[:ip_protocol]} --ip-source #{rule[:ip_source]} --ip-dport #{rule[:ip_dport]} -j ACCEPT"
-      end
-    end
+    # jumt to user defined chains
+    cmds << "sudo ebtables -A FORWARD -i #{vif} -j s_#{vif}"
+    cmds << "sudo ebtables -A FORWARD -o #{vif} -j d_#{vif}"
+    cmds << "sudo ebtables -A INPUT   -i #{vif} -j s_#{vif}_d_host"
 
-    # group instances
+    # IP protocol routing
+    protocol_maps.each { |k,v|
+      cmds << "sudo ebtables -A s_#{vif}        -p #{v} -j s_#{vif}_#{k}"
+      cmds << "sudo ebtables -A d_#{vif}        -p #{v} -j d_#{vif}_#{k}"
+      cmds << "sudo ebtables -A s_#{vif}_d_host -p #{v} -j s_#{vif}_d_host_#{k}"
+    }
+
+    # default drop
+    cmds << "sudo ebtables -A s_#{vif}        -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_d_host -j DROP"
+
+    # anti spoof
+    cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+
+    # group nodes.
+    # [ToDo] add DEFATULT_GW, DHCP, DNS
     ipv4s.each do |ipv4|
-      ebtables << "-A I_#{vif}_ip4 --protocol ip4 --ip-source  #{ipv4} -j ACCEPT"
-      ebtables << "-A I_#{vif}_ip4 --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+      cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
 
-    # dhcp server
-    ebtables << "-A I_#{vif}_ip4 --protocol ip4 --ip-proto udp --ip-sport 67 --ip-dport 68 -j ACCEPT"
+    # deny,allow
+    cmds << "sudo ebtables -A d_#{vif}_arp        -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_d_host_arp -j DROP"
 
-    protocol_maps.each { |k,v|
-      ebtables << "-A I_#{vif}_#{k} -j DROP"
-    }
-
-    ebtables.uniq!
-    ebtables.each { |ebtable|
-      cmd = "sudo ebtables #{ebtable}"
+    cmds.uniq! if cmds.size > 0
+    cmds.compact.each { |cmd|
       puts cmd
       system(cmd)
     }
