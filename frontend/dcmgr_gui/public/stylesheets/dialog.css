@@ -9,6 +9,10 @@
   padding: 5px 10px;
 }
 
+#attach_volume_dialog table tr td {
+	padding: 3px 10px;
+}
+
 #launch_instance_dialog #view_image_id {
   padding-top: 2px;
   padding-right: 4px;
