@@ -19,6 +19,7 @@ module Frontend
        autoload :Image, '../common/lib/models/dcmgr_resource/image'
        autoload :SshKeyPair, '../common/lib/models/dcmgr_resource/ssh_key_pair'
        autoload :StoragePool, '../common/lib/models/dcmgr_resource/storage_pool'
+       autoload :HostPool, '../common/lib/models/dcmgr_resource/host_pool'
        
        if Rails.env.development?
          autoload :Mock, '../common/lib/models/dcmgr_resource/mock'
