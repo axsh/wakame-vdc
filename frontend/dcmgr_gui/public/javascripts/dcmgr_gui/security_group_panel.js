@@ -167,7 +167,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     path:'/delete_security_group',
     button:{
      "Yes, Delete": function() { 
-       var security_group_id = $('#security_group_id').val();
+       var security_group_id = $(this).find('#security_group_id').val();
        $.ajax({
           "type": "DELETE",
           "async": true,
