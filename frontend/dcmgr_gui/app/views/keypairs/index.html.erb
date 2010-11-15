@@ -54,7 +54,11 @@ jQuery(function($){
 					<td>${item.name}</td>
 					<td>
 					{{if item.uuid }}
-					<a href="javascript:void(0);" class="show_key">Show Secret Access Key</a>
+						{{if item.private_key}}
+							<a id="button_${item.uuid}" href="javascript:void(0);" class="show_key">Show Secret Access Key</a>
+						{{else}}
+							<a href="javascript:void(0);" class="show_key">Show Secret Access Key</a>
+						{{/if}}
 					{{/if}}
 					</td>
 				</tr>

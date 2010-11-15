@@ -51,4 +51,14 @@ class KeypairsController < ApplicationController
    render :json => total_resource
   end
   
+  def prk_download
+    uuid = params[:id]
+    @ssh_key_pair = Frontend::Models::DcmgrResource::SshKeyPair.show(uuid)
+    @filename = @ssh_key_pair['name'] + ".pem"
+    send_data(@ssh_key_pair['private_key'],{
+              :filename => @filename,
+              :type => 'application/pgp-encrypted',
+              :status => 200
+            })
+  end
 end

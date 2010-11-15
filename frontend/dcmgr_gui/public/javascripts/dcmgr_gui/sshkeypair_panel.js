@@ -43,6 +43,16 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     c_pagenate.changeTotal(ssh_key_pair.owner_total);
     c_list.setData(ssh_key_pair.results);
     c_list.singleCheckList(c_list.detail_template);
+    
+    c_list.element.find(".show_key").each(function(key,value){
+      var uuid = $(value).attr('id').replace(/button_(ssh-[a-z0-9]+)/,'$1');
+      if(uuid) {
+        $(this).bind('click',function(){
+          c_list.checkRadioButton(uuid);
+          location.href = '/keypairs/prk_download/'+uuid
+        });
+      }
+    })
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -145,7 +155,6 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     }
     return false;
   });
-  
 
   c_list.setData(null);
   c_list.update(list_request,true);
