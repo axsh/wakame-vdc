@@ -4,11 +4,10 @@ module Frontend::Models
     with_timestamps
 
     inheritable_schema do
-      Fixnum :account_id, :null=>false
-      index :account_id
-      Fixnum :user_id, :null=>false
-      index :user_id
-      Fixnum :type_id, :null=>false
+      primary_key :id, :type=>Integer
+      Fixnum :user_id, :null => false
+      Fixnum :account_id, :null => false
+      Fixnum :type_id, :null => false
     end
     
     class << self

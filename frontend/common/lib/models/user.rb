@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 module Frontend::Models
   class User < BaseNew
-    taggable 'u' 
+    taggable 'u'
+    with_timestamps
     plugin :single_table_inheritance, :uuid, :model_map=>{}
     plugin :subclasses
 
     inheritable_schema do
       String :name, :fixed=>true, :size=>200, :null=>false
+      primary_key :id, :type=>Integer
+      String :login_id
+      String :password, :null=>false
+      String :primary_account_id
     end
 
     many_to_many :accounts,:join_table => :users_accounts
