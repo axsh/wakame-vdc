@@ -238,7 +238,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
 
-    ng= rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+    ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
     rules = ng.map { |g|
       g[:rules].map { |rule| rule[:permission] }
     }
@@ -357,8 +357,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # exclude internal subnet.
     # [ToDo] rename netmask prefix.
-    #cmds << "sudo iptables -A s_#{vif} -d #{network[:ipv4_gw]}/#{network[:prefix]} -j DROP"
-    cmds << "sudo iptables -A s_#{vif} -d #{network[:ipv4_gw]}/#{network[:netmask]} -j DROP"
+    p networks = rpc.request('hva-collector', 'get_networks')
+    networks.each { |network|
+      cmds << "sudo iptables -A s_#{vif} -d #{network[:ipv4_gw]}/#{network[:netmask]} -j DROP"
+    }
+
 
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
