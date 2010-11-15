@@ -66,6 +66,7 @@ DcmgrGui::Application.routes.draw do
   
   match 'keypairs/all' => 'keypairs#show_keypairs',:via => :get
   match 'keypairs/create_ssh_keypair',:via => :get
+  match 'keypairs/prk_download/:id' => 'keypairs#prk_download',:via => :get
   match 'accounts/switch' => 'accounts#new',:via => :post
   match 'accounts',:to => 'acounts#index'
   # match 'signup' => 'users#new', :as => :signup

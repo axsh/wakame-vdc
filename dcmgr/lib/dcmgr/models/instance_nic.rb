@@ -7,7 +7,7 @@ module Dcmgr::Models
 
     inheritable_schema do
       Fixnum :instance_id, :null=>false
-      String :vif, :null=>false, :size=>10
+      String :vif, :null=>false, :size=>50
       String :mac_addr, :null=>false, :size=>12
       
       index :mac_addr, {:unique=>true}

@@ -3,9 +3,26 @@
 require 'isono'
 require 'eventmachine'
 
-Thread.new { EventMachine.epoll; EventMachine.run }
-
 Signal.trap('EXIT') { EventMachine.stop }
+
+if defined?(PhusionPassenger)
+  PhusionPassenger.on_event(:starting_worker_process) do |forked|
+    if EventMachine.reactor_running?
+      EventMachine.stop
+      Dcmgr.class_eval {
+        @messaging_client = nil
+      }
+    end
+    Thread.new { EventMachine.epoll; EventMachine.run; }
+    
+    if forked
+     else
+    end
+  end
+else
+  EventMachine.stop if EventMachine.reactor_running?
+  Thread.new { EventMachine.epoll; EventMachine.run; }
+end
 
 Dcmgr.class_eval {
   def self.messaging
