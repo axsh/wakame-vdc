@@ -87,6 +87,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmd = "sudo ebtables --init-table"
     puts cmd
     system(cmd)
+
+    insts = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
+    insts.each { |inst|
+      refresh_ebtables(inst[:id])
+    }
   end
 
   def init_iptables
@@ -96,6 +101,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
         puts cmd
         system(cmd)
       }
+    }
+
+    insts = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
+    insts.each { |inst|
+      refresh_iptables(inst[:id])
     }
   end
 
