@@ -1,17 +1,18 @@
 <div id="informationarea">
 	<div class="title clearfix">
 		<h3>Information</h3>
-		<a href="#"><img src="images/icon_rss.gif" width="20" height="20" /></a>
+		<%= link_to image_tag('icon_rss.gif',:width=> 20, :height => 20),:action => 'rss',:controller => 'information' %>
 	</div>
 	<ul>
+		<% @informations.each do |info| %>
 		<li>
-			<h4 class="date">2010年10月29日</h4>
-			<p>新機能の提供を開始しました。<br />
-				・GUIの提供<br />
-				・KVM対応<br />
-				・EBSとしてZFS対応<br />
-				・セキュリティグループ対応<br />
+			<h4 class="date"><%= info.created_at.strftime("%Y-%m-%d")
+			 %></h4>
+			<h2><%= info.title %></h2>
+			<p>
+			<%= nl2br(info.description) %>
 			</p>
 		</li>
+		<% end %>
 	</ul>
 </div>

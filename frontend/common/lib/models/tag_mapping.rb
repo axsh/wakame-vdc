@@ -15,10 +15,11 @@ module Frontend::Models
     TYPE_IMAGE_STORAGE = 10
 
     inheritable_schema do
+      primary_key :id, :type=>Integer
       Fixnum :tag_id, :null=>false
-      index :tag_id
-      String :uuid, :null=>false, :fixed=>true, :size=>20
-      index :uuid
+      Fixnum :target_type, :size=>2 # see Dcmgr::Models::TagMapping::TYPE_XXXX
+      Fixnum :target_id, :null=>false
+      index [:tag_id, :target_type, :target_id]
     end
     
     many_to_one :tag

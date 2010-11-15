@@ -52,7 +52,7 @@ module Dcmgr::Models
     class RequestError < RuntimeError; end
 
     def before_create
-      # storage_poolに空き容量があるか調べる
+      # check the volume size
       sp = self.storage_pool
       volume_size = Volume.dataset.where(:storage_pool_id=> self.storage_pool_id).get{sum(:size)}
       total_size = sp.offerring_disk_space - volume_size.to_i
