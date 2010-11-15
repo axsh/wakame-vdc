@@ -41,6 +41,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     EM.defer {
       begin
         init_ebtables
+        init_iptables
         logger.info("initialize netfilter")
       rescue Exception => e
         p e
@@ -86,6 +87,16 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmd = "sudo ebtables --init-table"
     puts cmd
     system(cmd)
+  end
+
+  def init_iptables
+    [ 'nat', 'filter' ].each { |table|
+      [ 'F', 'X' ].each { |cmd|
+        cmd = "sudo iptables -t #{table} -#{cmd}"
+        puts cmd
+        system(cmd)
+      }
+    }
   end
 
   def refresh_ebtables(inst_id)
