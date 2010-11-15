@@ -16,4 +16,8 @@ module ApplicationHelper
   def primary_account_id
     Frontend::Models::User.primary_account_id(@current_user.uuid)
   end
+
+  def nl2br(text)
+    text.gsub(/(<.*?>)/, '').gsub(/\n/, '<br />').html_safe
+  end
 end
