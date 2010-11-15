@@ -16,4 +16,13 @@ namespace :db do
     sql = 'insert into users_accounts(user_id,account_id) values(?,?)'
     DB['users_accounts'].with_sql(sql,1,1).first
   end
+  
+  task :add_information => :environment do
+    DB = Frontend::Schema.current_connect
+    publish_date = '2010-11-19 9:00:00'
+    sql = 'insert into information(title,description,created_at,updated_at) values(?,?,?,?)'
+    title = "新機能の提供を開始しました。"
+    description = "・GUIの提供・KVM対応\n・EBSとしてZFS対応\n・セキュリティグループ対応'\n"
+    DB['information'].with_sql(sql,title,description,publish_date,publish_date).first
+  end
 end
