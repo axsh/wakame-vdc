@@ -403,6 +403,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
     # group nodes
+    ipv4s << network[:ipv4_gw]
+    #ipv4s << network[:dns_server]
+    #ipv4s << network[:dhcp_server]
     ipv4s.each { |addr|
       cmds << "sudo iptables -A s_#{vif} -d #{addr} -j ACCEPT"
     }
