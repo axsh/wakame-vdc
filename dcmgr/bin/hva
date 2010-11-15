@@ -23,17 +23,21 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     event.subscribe('hva/instance_started', '#') do |args|
       puts "refresh on instance_started: #{args.inspect}"
-      myinstance.refresh_netfilter_by_instance_id(args)
+      inst_id = args[0]
+      myinstance.refresh_netfilter_by_instance_id(inst_id)
     end
 
     event.subscribe('hva/instance_terminated', '#') do |args|
       puts "refresh on instance_terminated: #{args.inspect}"
-      myinstance.refresh_netfilter_by_instance_id(args)
+      inst_id = args[0]
+      myinstance.delete_netfilter_by_instance_id(inst_id)
+      myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
     end
 
     event.subscribe('hva/netfilter_updated', '#') do |args|
       puts "refresh on netfilter_updated: #{args.inspect}"
-      myinstance.refresh_netfilter_by_netfilter_group_id(args)
+      netfilter_group_id = args[0]
+      myinstance.refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
     end
   end
 
@@ -49,8 +53,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
-  def refresh_netfilter_by_instance_id(args)
-    inst_id = args[0]
+  def refresh_netfilter_by_instance_id(inst_id)
     raise "UnknownInstanceID" if inst_id.nil?
 
     EM.defer {
@@ -64,8 +67,47 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
-  def refresh_netfilter_by_netfilter_group_id(args)
-    netfilter_group_id = args[0]
+  def delete_netfilter_by_instance_id(inst_id)
+    raise "UnknownInstanceID" if inst_id.nil?
+
+    EM.defer {
+      begin
+        delete_ebtables(inst_id)
+        delete_iptables(inst_id)
+        logger.info("deleted netfilter")
+      rescue Exception => e
+        p e
+      end
+    }
+  end
+
+  def refresh_netfilter_by_friend_instance_id(inst_id)
+    raise "UnknownInstanceID" if inst_id.nil?
+
+    EM.defer {
+      begin
+        inst = rpc.request('hva-collector', 'get_instance', inst_id)
+        ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst[:uuid])
+
+        inst_ids = ng.map { |g|
+          rpc.request('hva-collector', 'get_instances_of_netfilter_group', g[:id])
+        }
+
+        if inst_ids.size > 0
+          inst_ids.flatten.uniq.each { |inst_id|
+            unless inst_id.nil?
+              refresh_ebtables(inst_id)
+              refresh_iptables(inst_id)
+            end
+          }
+        end
+      rescue Exception => e
+        p e
+      end
+    }
+  end
+
+  def refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
     raise "UnknownNetfilterGroupID" if netfilter_group_id.nil?
 
     EM.defer {
@@ -96,8 +138,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
   def init_iptables
     [ 'nat', 'filter' ].each { |table|
-      [ 'F', 'X' ].each { |cmd|
-        cmd = "sudo iptables -t #{table} -#{cmd}"
+      [ 'F', 'X' ].each { |xcmd|
+        cmd = "sudo iptables -t #{table} -#{xcmd}"
         puts cmd
         system(cmd)
       }
@@ -110,7 +152,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   def refresh_ebtables(inst_id)
-    p inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
     raise "UnknownInstanceID" if inst.nil?
 
     # Does the hva have instance?
@@ -120,7 +162,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
     network_id = inst[:host_pool][:network_id]
-    p network = rpc.request('hva-collector', 'get_network', network_id)
+    network = rpc.request('hva-collector', 'get_network', network_id)
     raise "UnknownNetworkId" if network.nil?
 
     vif     = inst[:instance_nics].first[:vif]
@@ -173,19 +215,19 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system("sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host")
     end
 
-    [ 'F', 'X' ].each { |cmd|
+    [ 'F', 'X' ].each { |xcmd|
       chains.each { |chain|
         system("sudo ebtables -L #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
-          system("sudo ebtables -#{cmd} #{chain}")
+          system("sudo ebtables -#{xcmd} #{chain}")
         end
       }
     }
 
     # create user defined chains.
-    [ 'N' ].each { |cmd|
+    [ 'N' ].each { |xcmd|
       chains.each { |chain|
-        cmds << "sudo ebtables -#{cmd} #{chain}"
+        cmds << "sudo ebtables -#{xcmd} #{chain}"
       }
     }
 
@@ -229,7 +271,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   def refresh_iptables(inst_id)
-    p inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
     raise "UnknownInstanceID" if inst.nil?
 
     # Does the hva have instance?
@@ -239,7 +281,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
     network_id = inst[:host_pool][:network_id]
-    p network = rpc.request('hva-collector', 'get_network', network_id)
+    network = rpc.request('hva-collector', 'get_network', network_id)
     raise "UnknownNetworkId" if network.nil?
 
     vif     = inst[:instance_nics].first[:vif]
@@ -276,8 +318,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     chains << "d_#{vif}"
 
     # metadata-server
-    [ 'D', 'A' ].each { |cmd|
-      system("sudo iptables -t nat -#{cmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80 >/dev/null 2>&1")
+    [ 'D', 'A' ].each { |xcmd|
+      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80 >/dev/null 2>&1")
     }
 
     # clean rules if exists.
@@ -292,11 +334,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
 
-    [ 'F', 'X' ].each { |cmd|
+    [ 'F', 'X' ].each { |xcmd|
       chains.each { |chain|
         system("sudo iptables -nL #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
-          system("sudo iptables -#{cmd} #{chain}")
+          system("sudo iptables -#{xcmd} #{chain}")
         end
       }
     }
@@ -305,9 +347,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
 
     # create user defined chains.
-    [ 'N' ].each { |cmd|
+    [ 'N' ].each { |xcmd|
       chains.each { |chain|
-        cmds << "sudo iptables -#{cmd} #{chain}"
+        cmds << "sudo iptables -#{xcmd} #{chain}"
       }
     }
 
@@ -368,7 +410,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # exclude internal subnet.
     # [ToDo] rename netmask prefix.
-    p networks = rpc.request('hva-collector', 'get_networks')
+    networks = rpc.request('hva-collector', 'get_networks')
     networks.each { |network|
       cmds << "sudo iptables -A s_#{vif} -d #{network[:ipv4_gw]}/#{network[:netmask]} -j DROP"
     }
@@ -378,6 +420,162 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds.compact.each { |cmd|
       puts cmd
       system(cmd)
+    }
+  end
+
+  def delete_ebtables(inst_id)
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    raise "UnknownInstanceID" if inst.nil?
+
+    # Does the hva have instance?
+    unless inst[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_id}"
+      return
+    end
+
+    #network_id = inst[:host_pool][:network_id]
+    #network = rpc.request('hva-collector', 'get_network', network_id)
+    #raise "UnknownNetworkId" if network.nil?
+
+    vif     = inst[:instance_nics].first[:vif]
+    #vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
+
+    # group node IPv4 addresses.
+    #ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+
+
+
+
+
+
+
+    # xtables commands
+    #cmds = []
+
+    # support IP protocol
+    protocol_maps = {
+      'ip4'  => 'ip4',
+      'arp'  => 'arp',
+      #ip6'  => 'ip6',
+      #rarp' => '0x8035',
+    }
+
+    # make chain names.
+    chains = []
+    chains << "s_#{vif}"
+    chains << "d_#{vif}"
+    chains << "s_#{vif}_d_host"
+    protocol_maps.each { |k,v|
+      chains << "s_#{vif}_#{k}"
+      chains << "d_#{vif}_#{k}"
+      chains << "s_#{vif}_d_host_#{k}"
+    }
+
+    # clear rules if exists.
+    system("sudo ebtables -L s_#{vif}")
+    if $?.exitstatus == 0
+      cmd = "sudo ebtables -D FORWARD -i #{vif} -j s_#{vif}"
+      puts cmd
+      system(cmd)
+    end
+
+    system("sudo ebtables -L d_#{vif}")
+    if $?.exitstatus == 0
+      cmd = "sudo ebtables -D FORWARD -o #{vif} -j d_#{vif}"
+      puts cmd
+      system(cmd)
+    end
+
+    system("sudo ebtables -L s_#{vif}_d_host")
+    if $?.exitstatus == 0
+      cmd = "sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host"
+      puts cmd
+      system(cmd)
+    end
+
+    [ 'F', 'X' ].each { |xcmd|
+      chains.each { |chain|
+        system("sudo ebtables -L #{chain}")
+        if $?.exitstatus == 0
+          cmd = "sudo ebtables -#{xcmd} #{chain}"
+          puts cmd
+          system(cmd)
+        end
+      }
+    }
+  end
+
+  def delete_iptables(inst_id)
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    raise "UnknownInstanceID" if inst.nil?
+
+    # Does the hva have instance?
+    unless inst[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_id}"
+      return
+    end
+
+    network_id = inst[:host_pool][:network_id]
+    network = rpc.request('hva-collector', 'get_network', network_id)
+    raise "UnknownNetworkId" if network.nil?
+
+    vif     = inst[:instance_nics].first[:vif]
+    #vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
+
+    # group node IPv4 addresses.
+    #ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+
+    #ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+    #rules = ng.map { |g|
+    #g[:rules].map { |rule| rule[:permission] }
+    #}
+    #rules.flatten! if rules.size > 0
+
+    # xtables commands
+    cmds = []
+
+    # support IP protocol
+    protocol_maps = {
+      'tcp'  => 'tcp',
+      'udp'  => 'udp',
+      'icmp' => 'icmp',
+    }
+
+
+
+    # make chain names.
+    chains = []
+    protocol_maps.each { |k,v|
+      chains << "s_#{vif}_#{k}"
+      chains << "d_#{vif}_#{k}"
+    }
+    chains << "s_#{vif}"
+    chains << "d_#{vif}"
+
+    # metadata-server
+    [ 'D' ].each { |xcmd|
+      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80 >/dev/null 2>&1")
+    }
+
+    # clean rules if exists.
+    system("sudo iptables -nL s_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif} -j s_#{vif}")
+    end
+
+    system("sudo iptables -nL d_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
+    end
+
+
+    [ 'F', 'X' ].each { |xcmd|
+      chains.each { |chain|
+        system("sudo iptables -nL #{chain} >/dev/null 2>&1")
+        if $?.exitstatus == 0
+          system("sudo iptables -#{xcmd} #{chain}")
+        end
+      }
     }
   end
 
