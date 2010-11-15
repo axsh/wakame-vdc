@@ -552,7 +552,7 @@ module Dcmgr
               req.oneshot = true
             end
             respond_to { |f|
-              f.json { v.values.to_json}
+              f.json { v.to_hash_document.to_json}
             }
           end
         end
@@ -576,7 +576,7 @@ module Dcmgr
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
             respond_to { |f|
-              f.json { v.values.to_json}
+              f.json { v.to_hash_document.to_json}
             }
           end
         end
