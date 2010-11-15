@@ -133,7 +133,6 @@ body{
 	width: 219px;
 }
 
-
 /**********  regionselect  **********/
 
 #content #sidemenu #regionselect{
@@ -1185,7 +1184,10 @@ body{
 	text-decoration: underline;
 }
 
-
+/*------------------------------information------------------------------*/
+#informationarea h2 {
+  font-size: 13px;
+}
 
 /*------------------------------special------------------------------*/
 

@@ -1,0 +1,23 @@
+xml.instruct! :xml, :version => "1.0", :encoding => "UTF-8"
+xml.rss('version' => '2.0') do
+  xml.channel do
+    xml.title @feed_title
+    xml.link(request.protocol + request.host_with_port + url_for(:rss => nil))
+    xml.description(@feed_title)
+    # オリジナルは "en-us"
+    xml.language "jp-jp"
+    xml.ttl "40"
+    # RFC-822 datetime example: Tue, 10 Jun 2003 04:00:00 GMT
+    xml.pubDate(Time.now.strftime("%a, %d %b %Y %H:%M:%S %Z"))
+    @informations.each do |i|
+      xml.item do
+        xml.title(i.title)
+        xml.link(link_to(:conrtoller => 'home', :action => 'index'))
+        xml.description(nl2br(i.description))
+        xml.guid(i.created_at)
+        xml.pubDate(i.created_at)
+        xml.author "axsh Co., Ltd."
+      end
+    end
+  end
+end

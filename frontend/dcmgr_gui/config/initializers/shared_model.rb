@@ -8,6 +8,7 @@ module Frontend
      autoload :TagMapping, '../common/lib/models/tag_mapping'
      autoload :User, '../common/lib/models/user'
      autoload :Authz, '../common/lib/models/authz'
+     autoload :Information, '../common/lib/models/information'
 
      module DcmgrResource
        autoload :Base, '../common/lib/models/dcmgr_resource/base'
@@ -30,3 +31,11 @@ end
 
 @dcmgr_config = YAML::load(ERB.new(IO.read(File.join(Rails.root,'../','common', 'config', 'database.yml'))).result)[Rails.env]
 Frontend::Schema.connect "#{@dcmgr_config['adapter']}://#{@dcmgr_config['host']}/#{@dcmgr_config['database']}?user=#{@dcmgr_config['user']}&password=#{@dcmgr_config['password']}"
+
+Frontend::Config = {
+  :active_resource => {
+    :site => "http://api.dcmgr.ubuntu.local/",
+    :timeout => :json,
+    :prefix => '/api/'
+  }
+}

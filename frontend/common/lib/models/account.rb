@@ -13,12 +13,14 @@ module Frontend::Models
     ENABLED=1
     
     inheritable_schema do
-      String :description, :size=>100
-      Fixnum :enabled, :default=>ENABLED, :null=>false
+      primary_key :id, :type=>Integer
+      String :name
+      Boolean :enable, :default=>true
+      DateTime :deleted_at, :null=>true
+      Boolean :is_deleted, :default=>false
     end
 
     one_to_many  :tags
-    # many_to_many :users ,:left_key => :user_id,:right_key => :account_id,:join_table => :users_accounts
     many_to_many :users,:join_table => :users_accounts
     
     def disable?

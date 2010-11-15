@@ -8,12 +8,11 @@ module Frontend::Models
     plugin :subclasses
     
     inheritable_schema do
-      Fixnum :account_id, :null=>false
+      primary_key :id, :type=>Integer
+      Fixnum :account_id, :null=>false # if 0 system tag
       index :account_id
-      Fixnum :owner_id
-      String :name, :fixed=>true, :size=>200, :null=>false
-      Fixnum :type_id, :null=>false
-      String :attributes
+      Fixnum :owner_id, :null=>false
+      String :name, :fixed=>true, :size=>32, :null=>false
     end
 
     TYPE_NORMAL = 0
