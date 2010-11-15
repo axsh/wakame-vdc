@@ -5,11 +5,12 @@ module Dcmgr::Models
   class Network < BaseNew
 
     inheritable_schema do
-      String :name, :size=>20, :null=>false
+      String :name, :null=>false
       String :ipv4_gw, :null=>false
-      String :netmask, :null=>false
+      Fixnum :prefix, :null=>false, :default=>24, :unsigned=>true
       String :domain_name, :null=>false
       String :dns_server, :null=>false
+      String :dhcp_server, :null=>false
       String :metadata_server
       Text :description
       index :name, {:unique=>true}

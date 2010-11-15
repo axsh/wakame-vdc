@@ -22,10 +22,17 @@ module Dcmgr::Models
       raise TypeError unless instance_nic.is_a?(InstanceNic)
       # TODO: consider the case of multiple nics on multiple network.
       network = instance_nic.instance.host_pool.network
-      gwaddr = IPAddress::IPv4.new("#{network.ipv4_gw}/#{network.netmask}")
+      gwaddr = IPAddress::IPv4.new("#{network.ipv4_gw}/#{network.prefix}")
+      reserved = [gwaddr]
+      reserved << IPAddress::IPv4.new(network.dhcp_server)
+      reserved << IPAddress::IPv4.new(network.dns_server)
+      if network.metadata_server
+        reserved << IPAddress::IPv4.new(network.metadata_server)
+      end
+      reserved = reserved.map {|i| i.to_u32 }
       # use SELECT FOR UPDATE to lock rows within same network.
       addrs = (gwaddr.first.to_u32 .. gwaddr.last.to_u32).to_a -
-        [gwaddr.to_u32] - network.ip_lease_dataset.for_update.all.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
+        reserved - network.ip_lease_dataset.for_update.all.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
       raise "Out of IP address in this network segment: #{gwaddr.network.to_s}/#{gwaddr.prefix}" if addrs.empty?
       
       leaseaddr = IPAddress::IPv4.parse_u32(addrs[rand(addrs.size).to_i])
