@@ -266,8 +266,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     chains << "d_#{vif}"
 
     # metadata-server
-    system("sudo iptables -t nat -D PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80 >/dev/null 2>&1")
-    system("sudo iptables -t nat -A PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80")
+    [ 'D', 'A' ].each { |cmd|
+      system("sudo iptables -t nat -#{cmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80 >/dev/null 2>&1")
+    }
 
     # clean rules if exists.
     system("sudo iptables -nL s_#{vif} >/dev/null 2>&1")
