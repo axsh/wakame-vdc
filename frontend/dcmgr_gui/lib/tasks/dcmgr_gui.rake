@@ -7,10 +7,10 @@ namespace :db do
   task :sample_data => :environment do
     DB = Frontend::Schema.current_connect
     encrypted_password = Frontend::Models::User.encrypt_password('demo')
-    sql = 'insert into users(uuid,login_id,password,primary_account_id) values(?,?,?,?)'
+    sql = 'insert into users(uuid,login_id,password,primary_account_id,created_at,updated_at) values(?,?,?,?,now(),now())'
     DB['users'].with_sql(sql,'00000000','demo',encrypted_password,'00000000').first
 
-    sql = 'insert into accounts(uuid,name,enable) values(?,?,?)'
+    sql = 'insert into accounts(uuid,name,enable,created_at,updated_at) values(?,?,?,now(),now())'
     DB['accounts'].with_sql(sql,'00000000','demo',1).first
 
     sql = 'insert into users_accounts(user_id,account_id) values(?,?)'
