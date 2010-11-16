@@ -111,7 +111,6 @@ DcmgrGUI.prototype.volumePanel = function(){
             bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
         });
-       c_list.changeStatus('deleting');
        $(this).dialog("close");
       }
     }
