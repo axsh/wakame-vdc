@@ -14,7 +14,7 @@ include Isono::Runner::RpcServer
 require 'fileutils'
 
 class ServiceNetfilter < Isono::NodeModules::Base
-  include Isono::Logger
+  include Dcmgr::Logger
 
   initialize_hook do
     myinstance.init_netfilter
@@ -22,20 +22,20 @@ class ServiceNetfilter < Isono::NodeModules::Base
     event = Isono::NodeModules::EventChannel.new(node)
 
     event.subscribe('hva/instance_started', '#') do |args|
-      puts "refresh on instance_started: #{args.inspect}"
+      logger.info("refresh on instance_started: #{args.inspect}")
       inst_id = args[0]
       myinstance.refresh_netfilter_by_instance_id(inst_id)
     end
 
     event.subscribe('hva/instance_terminated', '#') do |args|
-      puts "refresh on instance_terminated: #{args.inspect}"
+      logger.info("refresh on instance_terminated: #{args.inspect}")
       inst_id = args[0]
       myinstance.delete_netfilter_by_instance_id(inst_id)
       myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
     end
 
     event.subscribe('hva/netfilter_updated', '#') do |args|
-      puts "refresh on netfilter_updated: #{args.inspect}"
+      logger.info("refresh on netfilter_updated: #{args.inspect}")
       netfilter_group_id = args[0]
       myinstance.refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
     end
@@ -175,7 +175,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   def refresh_ebtables(inst_map = {})
     # Does the hva have instance?
     unless inst_map[:host_pool][:node_id] == node.node_id
-      puts "no match for the instance: #{inst_map[:uuid]}"
+      logger.warn("no match for the instance: #{inst_map[:uuid]}")
       return
     end
 
@@ -293,7 +293,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   def refresh_iptables(inst_map = {})
     # Does the hva have instance?
     unless inst_map[:host_pool][:node_id] == node.node_id
-      puts "no match for the instance: #{inst_map[:uuid]}"
+      logger.warn "no match for the instance: #{inst_map[:uuid]}"
       return
     end
 
@@ -455,7 +455,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   def delete_ebtables(inst_map = {})
     # Does the hva have instance?
     unless inst_map[:host_pool][:node_id] == node.node_id
-      puts "no match for the instance: #{inst_map[:uuid]}"
+      logger.warn "no match for the instance: #{inst_map[:uuid]}"
       return
     end
 
@@ -533,7 +533,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   def delete_iptables(inst_map = {})
     # Does the hva have instance?
     unless inst_map[:host_pool][:node_id] == node.node_id
-      puts "no match for the instance: #{inst_map[:uuid]}"
+      logger.warn "no match for the instance: #{inst_map[:uuid]}"
       return
     end
 
@@ -670,7 +670,7 @@ end
 
 
 class KvmHandler < EndpointBuilder
-  include Isono::Logger
+  include Dcmgr::Logger
 
   job :run_local_store do
     #hva = rpc.delegate('hva-collector')
@@ -726,7 +726,7 @@ class KvmHandler < EndpointBuilder
     # create volume from snapshot
     jobreq.run("sta-loader.#{vol[:storage_pool][:node_id]}", "create", vol_id)
     
-    puts "volume created on #{vol[:storage_pool][:node_id]}: #{vol_id}"
+    logger.debug("volume created on #{vol[:storage_pool][:node_id]}: #{vol_id}")
     # reload volume info
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
 
@@ -799,7 +799,7 @@ class KvmHandler < EndpointBuilder
     job = Dcmgr::Stm::VolumeContext.new(vol_id)
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
-    puts "Attaching #{vol_id}"
+    logger.info("Attaching #{vol_id}")
     job.stm.state = vol[:state].to_sym
     raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'available'
 
@@ -819,7 +819,7 @@ class KvmHandler < EndpointBuilder
     end
 
     rpc.request('sta-collector', 'update_volume', job.to_hash(:host_device_name => linux_dev_path))
-    puts "Attaching #{vol_id} on #{inst_id}"
+    logger.info("Attaching #{vol_id} on #{inst_id}")
     job.stm.on_attach
     job.on_attach
 
@@ -841,13 +841,13 @@ class KvmHandler < EndpointBuilder
         pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{slot_number},.+:)/)
       }
     rescue => e
-      puts e
+      logger.error(e)
     ensure
       telnet.close
     end
     raise "volume has not attached" if pci.nil?
     rpc.request('sta-collector', 'update_volume', job.to_hash(:guest_device_name=>slot_number))
-    puts "Attached #{vol_id} on #{inst_id}"
+    logger.info("Attached #{vol_id} on #{inst_id}")
   end
 
   job :detach do
@@ -857,7 +857,7 @@ class KvmHandler < EndpointBuilder
     job = Dcmgr::Stm::VolumeContext.new(vol_id)
     inst = rpc.request('hva-collector', 'get_instance', inst_id)
     vol = rpc.request('sta-collector', 'get_volume', vol_id)
-    puts "Detaching #{vol_id} on #{inst_id}"
+    logger.info("Detaching #{vol_id} on #{inst_id}")
     job.stm.state = vol[:state].to_sym
     raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'attached'
 
@@ -873,7 +873,7 @@ class KvmHandler < EndpointBuilder
         pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{vol[:guest_device_name]},.+:)/)
       }
     rescue => e
-      puts e
+      logger.error(e)
     ensure
       telnet.close
     end
@@ -883,7 +883,7 @@ class KvmHandler < EndpointBuilder
     # iscsi logout
     job.stm.on_detach
     job.on_detach
-    puts "iscsi logout #{vol_id}: #{vol[:transport_information][:iqn]}"
+    logger.info("iscsi logout #{vol_id}: #{vol[:transport_information][:iqn]}")
     initiator = `sudo iscsiadm -m node -T '#{vol[:transport_information][:iqn]}' --logout`
     rpc.request('sta-collector', 'update_volume', job.to_hash)
   end

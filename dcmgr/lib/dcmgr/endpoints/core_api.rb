@@ -12,6 +12,7 @@ require 'dcmgr/endpoints/errors'
 module Dcmgr
   module Endpoints
     class CoreAPI < Sinatra::Base
+      include Dcmgr::Logger
       register Sinatra::Rabbit
       register Sinatra::SequelTransaction
 
@@ -525,10 +526,10 @@ module Dcmgr
               begin
                 v = sp.create_volume(@account.canonical_uuid, params[:volume_size])
               rescue Models::Volume::DiskError => e
-                Dcmgr.logger.error(e)
+                logger.error(e)
                 raise OutOfDiskSpace
               rescue Sequel::DatabaseError => e
-                Dcmgr.logger.error(e)
+                logger.error(e)
                 raise DatabaseError
               end
             else
@@ -555,7 +556,7 @@ module Dcmgr
             begin
               v  = Models::Volume.delete_volume(@account.canonical_uuid, volume_id)
             rescue Models::Volume::RequestError => e
-              Dcmgr.logger.error(e)
+              logger.error(e)
               raise InvalidDeleteRequest
             end
             raise UnknownVolume if v.nil?

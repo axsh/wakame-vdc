@@ -62,19 +62,8 @@ module Dcmgr
     end
   }
   
+  autoload :Logger, 'dcmgr/logger'
   
-  def logger=(logger)
-    @logger = logger
-    def @logger.write(str)
-      self << str
-    end
-  end
-
-  def logger
-    self.logger = Logger.new(STDOUT) unless @logger 
-    @logger
-  end
-
   module Models
     autoload :Base, 'dcmgr/models/base'
 

@@ -20,6 +20,7 @@ require 'dcmgr'
 module Dcmgr
   module Endpoints
     class Metadata < Sinatra::Base
+      include Dcmgr::Logger
 
       disable :sessions
       disable :show_exceptions
@@ -48,8 +49,8 @@ module Dcmgr
                      self.class.find_const("Provider_#{v}").new.document(request.ip)
                    rescue NameError => e
                      raise e if e.is_a? NoMethodError
-                     Dcmgr.logger.error("ERROR: Unsupported metadata version: #{v}")
-                     Dcmgr.logger.error(e)
+                     logger.error("ERROR: Unsupported metadata version: #{v}")
+                     logger.error(e)
                      error(404, "Unsupported metadata version: #{v}")
                    rescue UnknownSourceIpError => e
                      error(404, "Unknown source IP: #{e.message}")
