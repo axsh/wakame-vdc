@@ -186,9 +186,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # Does host have vif?
-#    unless valid_vif?(vif)
-#      raise "#{vif} : error fetching interface information: Device not found"
-#    end
+    unless valid_vif?(vif)
+      raise "#{vif} : error fetching interface information: Device not found"
+    end
 
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
@@ -306,9 +306,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # Does host have vif?
-#    unless valid_vif?(vif)
-#      raise "#{vif} : error fetching interface information: Device not found"
-#    end
+    unless valid_vif?(vif)
+      raise "#{vif} : error fetching interface information: Device not found"
+    end
 
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
