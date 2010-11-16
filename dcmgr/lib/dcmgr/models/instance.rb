@@ -227,5 +227,15 @@ module Dcmgr::Models
       # clean up nils
       join_netfilter_group(uuids.compact.uniq)
     end
+
+    def self.lock!
+      super()
+      Image.lock!
+      InstanceSpec.lock!
+      InstanceNic.lock!
+      Volume.lock!
+      VolumeSnapshot.lock!
+      IpLease.lock!
+    end
   end
 end
