@@ -399,7 +399,15 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # rules
     build_rule(rules).each do |rule|
-      cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
+      case rule[:ip_protocol]
+      when 'tcp', 'udp'
+        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
+      when 'icmp'
+        # ToDo: implement
+        # - icmp_type : -1...
+        # - icmp_code : -1...
+        # cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+      end
     end
 
     # group nodes
@@ -581,32 +589,51 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   def build_rule(rules = [])
+    require 'ipaddress'
+
     rule_maps = []
 
     rules.each do |rule|
-      # ex. "tcp:80,80,ip4:0.0.0.0"
+      # ex.
+      # "tcp:22,22,ip4:0.0.0.0"
+      # "udp:53,53,ip4:0.0.0.0"
+      # "icmp:-1,-1,ip4:0.0.0.0"
+
+      # 1st phase
+      # ip_dport    : tcp,udp? 1 - 16bit, icmp: -1
+      # id_port has been separeted in first phase.
       from_pair, ip_dport, source_pair = rule.split(',')
 
+      # 2nd phase
+      # ip_protocol : [ tcp | udp | icmp ]
+      # ip_sport    : tcp,udp? 1 - 16bit, icmp: -1
       ip_protocol, ip_sport = from_pair.split(':')
-      protocol, ip_source   = source_pair.split(':')
+
+      # protocol    : [ ip4 | ip6 ]
+      # ip_source   : ip4? xxx.xxx.xxx.xxx./[0-32], ip6?: not yet supprted.
+      protocol, ip_source = source_pair.split(':')
+
+      # validate
+      next unless protocol == 'ip4'
+      next unless IPAddress.valid?(ip_source)
 
       case ip_protocol
-      when 'tcp'
+      when 'tcp', 'udp'
         rule_maps << {
-          :protocol => protocol,
-          :ip_source => ip_source,
           :ip_protocol => ip_protocol,
-          :ip_dport => ip_dport,
-        }
-      when 'udp'
-        rule_maps << {
-          :protocol => protocol,
-          :ip_source => ip_source,
-          :ip_protocol => ip_protocol,
-          :ip_dport => ip_dport,
+          :ip_sport    => ip_sport.to_i,
+          :ip_dport    => ip_dport.to_i,
+          :protocol    => protocol,
+          :ip_source   => ip_source,
         }
       when 'icmp'
-        # through, pending
+        rule_maps << {
+          :ip_protocol => ip_protocol,
+          :icmp_type   => ip_dport.to_i,
+          :icmp_code   => ip_sport.to_i,
+          :protocol    => protocol,
+          :ip_source   => ip_source,
+        }
       end
     end
 
