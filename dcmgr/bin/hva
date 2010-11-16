@@ -55,13 +55,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
+  # from event_subscriber
   def refresh_netfilter_by_instance_id(inst_id)
     raise "UnknownInstanceID" if inst_id.nil?
 
     EM.defer {
       begin
-        refresh_ebtables(inst_id)
-        refresh_iptables(inst_id)
+        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
+        raise "UnknownInstanceID" if inst_map.nil?
+
+        refresh_ebtables(inst_map)
+        refresh_iptables(inst_map)
         logger.info("refreshed netfilter")
       rescue Exception => e
         p e
@@ -69,13 +73,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
+  # from event_subscriber
   def delete_netfilter_by_instance_id(inst_id)
     raise "UnknownInstanceID" if inst_id.nil?
 
     EM.defer {
       begin
-        delete_ebtables(inst_id)
-        delete_iptables(inst_id)
+        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
+        raise "UnknownInstanceID" if inst_map.nil?
+
+        delete_ebtables(inst_map)
+        delete_iptables(inst_map)
         logger.info("deleted netfilter")
       rescue Exception => e
         p e
@@ -83,23 +91,24 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
+  # from event_subscriber
   def refresh_netfilter_by_friend_instance_id(inst_id)
     raise "UnknownInstanceID" if inst_id.nil?
 
     EM.defer {
       begin
-        inst = rpc.request('hva-collector', 'get_instance', inst_id)
-        ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst[:uuid])
+        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
+        ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
 
-        inst_ids = ng.map { |g|
+        inst_maps = ng.map { |g|
           rpc.request('hva-collector', 'get_instances_of_netfilter_group', g[:id])
         }
 
-        if inst_ids.size > 0
-          inst_ids.flatten.uniq.each { |inst_id|
-            unless inst_id.nil?
-              refresh_ebtables(inst_id)
-              refresh_iptables(inst_id)
+        if inst_maps.size > 0
+          inst_maps.flatten.uniq.each { |inst_map|
+            unless inst_map.nil?
+              refresh_ebtables(inst_map)
+              refresh_iptables(inst_map)
             end
           }
         end
@@ -109,16 +118,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
+  # from event_subscriber
   def refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
     raise "UnknownNetfilterGroupID" if netfilter_group_id.nil?
 
     EM.defer {
       begin
-        inst_ids = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
-        inst_ids.each { |inst_id|
-          unless inst_id.nil?
-            refresh_ebtables(inst_id)
-            refresh_iptables(inst_id)
+        inst_maps = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
+        inst_maps.each { |inst_map|
+          unless inst_map.nil?
+            refresh_ebtables(inst_map)
+            refresh_iptables(inst_map)
           end
         }
       rescue Exception => e
@@ -133,7 +143,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     system(cmd)
 
     inst_maps.each { |inst_map|
-      refresh_ebtables(inst_map[:id])
+      refresh_ebtables(inst_map)
     }
   end
 
@@ -147,36 +157,41 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     inst_maps.each { |inst_map|
-      refresh_iptables(inst_map[:id])
+      refresh_iptables(inst_map)
     }
   end
 
-  def refresh_ebtables(inst_id)
-    inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    raise "UnknownInstanceID" if inst.nil?
+  def valid_vif?(vif)
+    cmd = "ifconfig #{vif} >/dev/null 2>&1"
+    system(cmd)
 
+    if $?.exitstatus == 0
+      true
+    else
+      false
+    end
+  end
+
+  def refresh_ebtables(inst_map = {})
     # Does the hva have instance?
-    unless inst[:host_pool][:node_id] == node.node_id
-      puts "no match for the instance: #{inst_id}"
+    unless inst_map[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_map[:uuid]}"
       return
     end
 
-    network_id = inst[:host_pool][:network_id]
-    network = rpc.request('hva-collector', 'get_network', network_id)
-    raise "UnknownNetworkId" if network.nil?
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
 
-    vif     = inst[:instance_nics].first[:vif]
-    vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
+    vif     = inst_map[:instance_nics].first[:vif]
+    vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # Does host have vif?
-    cmd = "ifconfig #{vif} >/dev/null 2>&1"
-    system(cmd)
-    unless $?.exitstatus == 0
-      raise "#{vif} : error fetching interface information: Device not found"
-    end
+#    unless valid_vif?(vif)
+#      raise "#{vif} : error fetching interface information: Device not found"
+#    end
 
     # group node IPv4 addresses.
-    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
 
 
 
@@ -259,9 +274,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
 
     # group nodes.
-    ipv4s << network[:ipv4_gw]
-    ipv4s << network[:dns_server]
-    ipv4s << network[:dhcp_server]
+    ipv4s << network_map[:ipv4_gw]
+    ipv4s << network_map[:dns_server]
+    ipv4s << network_map[:dhcp_server]
     ipv4s.uniq.each do |ipv4|
       cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
@@ -277,34 +292,28 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
-  def refresh_iptables(inst_id)
-    inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    raise "UnknownInstanceID" if inst.nil?
-
+  def refresh_iptables(inst_map = {})
     # Does the hva have instance?
-    unless inst[:host_pool][:node_id] == node.node_id
-      puts "no match for the instance: #{inst_id}"
+    unless inst_map[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_map[:uuid]}"
       return
     end
 
-    network_id = inst[:host_pool][:network_id]
-    network = rpc.request('hva-collector', 'get_network', network_id)
-    raise "UnknownNetworkId" if network.nil?
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
 
-    vif     = inst[:instance_nics].first[:vif]
-    vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
+    vif     = inst_map[:instance_nics].first[:vif]
+    vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # Does host have vif?
-    cmd = "ifconfig #{vif} >/dev/null 2>&1"
-    system(cmd)
-    unless $?.exitstatus == 0
-      raise "#{vif} : error fetching interface information: Device not found"
-    end
+#    unless valid_vif?(vif)
+#      raise "#{vif} : error fetching interface information: Device not found"
+#    end
 
     # group node IPv4 addresses.
-    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
+    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
 
-    ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+    ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
     rules = ng.map { |g|
       g[:rules].map { |rule| rule[:permission] }
     }
@@ -333,7 +342,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # metadata-server
     [ 'D', 'A' ].each { |xcmd|
-      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80 >/dev/null 2>&1")
+      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
     }
 
     # clean rules if exists.
@@ -401,11 +410,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
 
     # DHCP
-    cmds << "sudo iptables -A s_#{vif}_udp -p udp -s #{network[:dhcp_server]} --sport 67 -j ACCEPT"
+    cmds << "sudo iptables -A s_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
     cmds << "sudo iptables -A s_#{vif}_udp -p udp                             --sport 67 -j DROP"
 
     # DNS
-    cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network[:dns_server]} --dport 53 -j ACCEPT"
+    cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
 
     #
     # security group
@@ -426,17 +435,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
     # group nodes
-    ipv4s << network[:ipv4_gw]
-    #ipv4s << network[:dns_server]
-    #ipv4s << network[:dhcp_server]
+    ipv4s << network_map[:ipv4_gw]
+    #ipv4s << network_map[:dns_server]
+    #ipv4s << network_map[:dhcp_server]
     ipv4s.each { |addr|
       cmds << "sudo iptables -A s_#{vif} -d #{addr} -j ACCEPT"
     }
 
     # exclude internal subnet.
-    networks = rpc.request('hva-collector', 'get_networks')
-    networks.each { |network|
-      cmds << "sudo iptables -A s_#{vif} -d #{network[:ipv4_gw]}/#{network[:prefix]} -j DROP"
+    network_maps = rpc.request('hva-collector', 'get_networks')
+    network_maps.each { |network_map|
+      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j DROP"
     }
 
 
@@ -447,19 +456,15 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
-  def delete_ebtables(inst_id)
-    inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    raise "UnknownInstanceID" if inst.nil?
-
+  def delete_ebtables(inst_map = {})
     # Does the hva have instance?
-    unless inst[:host_pool][:node_id] == node.node_id
-      puts "no match for the instance: #{inst_id}"
+    unless inst_map[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_map[:uuid]}"
       return
     end
 
-    #network_id = inst[:host_pool][:network_id]
-    #network = rpc.request('hva-collector', 'get_network', network_id)
-    #raise "UnknownNetworkId" if network.nil?
+    #network_map = rpc.request('hva-collector', 'get_network', inst[:host_pool][:network_id])
+    #raise "UnknownNetworkId" if network_map.nil?
 
     vif     = inst[:instance_nics].first[:vif]
     #vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
@@ -529,21 +534,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
-  def delete_iptables(inst_id)
-    inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    raise "UnknownInstanceID" if inst.nil?
-
+  def delete_iptables(inst_map = {})
     # Does the hva have instance?
-    unless inst[:host_pool][:node_id] == node.node_id
-      puts "no match for the instance: #{inst_id}"
+    unless inst_map[:host_pool][:node_id] == node.node_id
+      puts "no match for the instance: #{inst_map[:uuid]}"
       return
     end
 
-    network_id = inst[:host_pool][:network_id]
-    network = rpc.request('hva-collector', 'get_network', network_id)
-    raise "UnknownNetworkId" if network.nil?
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
 
-    vif     = inst[:instance_nics].first[:vif]
+    vif     = inst_map[:instance_nics].first[:vif]
     #vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # group node IPv4 addresses.
@@ -578,7 +579,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # metadata-server
     [ 'D' ].each { |xcmd|
-      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network[:metadata_server]}:80 >/dev/null 2>&1")
+      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
     }
 
     # clean rules if exists.
