@@ -73,7 +73,7 @@ DcmgrGUI.prototype.volumePanel = function(){
        $.ajax({
           "type": "POST",
           "async": true,
-          "url": '/volumes/create',
+          "url": '/volumes',
           "dataType": "json",
           "data": data,
           success: function(json,status){
@@ -104,7 +104,7 @@ DcmgrGUI.prototype.volumePanel = function(){
        $.ajax({
           "type": "DELETE",
           "async": true,
-          "url": '/volumes/delete',
+          "url": '/volumes',
           "dataType": "json",
           "data": data,
           success: function(json,status){
@@ -135,7 +135,7 @@ DcmgrGUI.prototype.volumePanel = function(){
        $.ajax({
           "type": "POST",
           "async": true,
-          "url": '/snapshots/create',
+          "url": '/snapshots',
           "dataType": "json",
           "data": data,
           success: function(json,status){

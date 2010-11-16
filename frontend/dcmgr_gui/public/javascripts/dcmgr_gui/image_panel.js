@@ -179,7 +179,7 @@ DcmgrGUI.prototype.imagePanel = function(){
         $.ajax({
           "type": "POST",
           "async": true,
-          "url": '/instances/create',
+          "url": '/instances',
           "dataType": "json",
           "data": data,
           success: function(json,status){
