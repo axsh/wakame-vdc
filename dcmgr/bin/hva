@@ -44,8 +44,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
   def init_netfilter
     EM.defer {
       begin
-        init_ebtables
-        init_iptables
+        inst_maps = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
+
+        init_ebtables(inst_maps)
+        init_iptables(inst_maps)
         logger.info("initialize netfilter")
       rescue Exception => e
         p e
@@ -125,18 +127,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
-  def init_ebtables
+  def init_ebtables(inst_maps = [])
     cmd = "sudo ebtables --init-table"
     puts cmd
     system(cmd)
 
-    insts = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
-    insts.each { |inst|
-      refresh_ebtables(inst[:id])
+    inst_maps.each { |inst_map|
+      refresh_ebtables(inst_map[:id])
     }
   end
 
-  def init_iptables
+  def init_iptables(inst_maps = [])
     [ 'nat', 'filter' ].each { |table|
       [ 'F', 'X' ].each { |xcmd|
         cmd = "sudo iptables -t #{table} -#{xcmd}"
@@ -145,9 +146,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
     }
 
-    insts = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
-    insts.each { |inst|
-      refresh_iptables(inst[:id])
+    inst_maps.each { |inst_map|
+      refresh_iptables(inst_map[:id])
     }
   end
 
