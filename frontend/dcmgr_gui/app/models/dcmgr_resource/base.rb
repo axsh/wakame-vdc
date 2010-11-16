@@ -1,10 +1,10 @@
 module DcmgrResource
   class Base < ActiveResource::Base
-    #todo:config
-    self.site = "http://api.dcmgr.ubuntu.local/"
-    self.timeout = 30
-    self.format = :json
-    self.prefix = '/api/'
+
+    self.site = Config[:site]
+    self.timeout = Config[:timeout]
+    self.format = Config[:format]
+    self.prefix = Config[:prefix]
     
     @@debug = false
     
