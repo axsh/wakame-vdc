@@ -156,22 +156,23 @@ DcmgrGUI.prototype.volumePanel = function(){
 	  button:{
 	      "Close": function() { $(this).dialog("close"); },
 	      "Yes, Attach": function() {
-		  var volume_id = $(this).find('#volume_id').val();
-		  var instance_id = $(this).find('#instance_id').val();
-		  var data = "volume_id=" + volume_id
-		  + "&instance_id=" + instance_id;
+    		  var volume_id = $(this).find('#volume_id').val();
+    		  var instance_id = $(this).find('#instance_id').val();
+    		  var data = "volume_id=" + volume_id
+    		  + "&instance_id=" + instance_id;
 
-		  $.ajax({
-			  "type": "PUT",
-			      "async": true,
-			      "url": '/volumes/attach',
-			      "dataType": "json",
-			      "data": data,
-			      success: function(json,status){
-			  }
-		      });
-		  $(this).dialog("close");
- 	      }
+    		  $.ajax({
+    			  "type": "PUT",
+    	      "async": true,
+    	      "url": '/volumes/attach',
+    	      "dataType": "json",
+    	      "data": data,
+    	      success: function(json,status){
+              bt_refresh.element.trigger('dcmgrGUI.refresh');
+    			  }
+    		  });
+    		  $(this).dialog("close");
+ 	    }
 	  }
   });
 
