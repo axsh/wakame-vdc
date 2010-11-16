@@ -1,0 +1,6 @@
+#------------------------
+# Configuration file for hva.
+#------------------------
+
+# directory to store VM local data.
+config.vm_data_dir = "/home/demo/vm"

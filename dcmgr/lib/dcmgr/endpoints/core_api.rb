@@ -34,6 +34,10 @@ module Dcmgr
         raise DisabledAccount if @account.disable?
       end
 
+      before do
+        Thread.current[Dcmgr::Models::BaseNew::LOCK_TABLES_KEY] = {}
+      end
+
       def find_by_uuid(model_class, uuid)
         if model_class.is_a?(Symbol)
           model_class = Models.const_get(model_class)
@@ -267,6 +271,8 @@ module Dcmgr
           # param :nf_group, array, :optional
           # param :ssh_key, string, :optional
           control do
+            Models::Instance.lock!
+            
             wmi = find_by_uuid(:Image, params[:image_id])
             spec = find_by_uuid(:InstanceSpec, (params[:instance_spec_id] || 'is-kpf0pasc'))
 
@@ -335,6 +341,7 @@ module Dcmgr
         operation :destroy do
           description 'Shutdown the instance'
           control do
+            Models::Instance.lock!
             i = find_by_uuid(:Instance, params[:id])
             if examine_owner(i)
             else
@@ -350,6 +357,7 @@ module Dcmgr
         operation :reboot, :method=>:put, :member=>true do
           description 'Reboots the instance'
           control do
+            Models::Instance.lock!
             i = find_by_uuid(:Instance, params[:id])
           end
         end
@@ -359,6 +367,7 @@ module Dcmgr
         operation :create do
           description 'Register new machine image'
           control do
+            Models::Image.lock!
             raise NotImplementedError
           end
         end
@@ -405,6 +414,7 @@ module Dcmgr
         operation :destroy do
           description 'Delete a machine image'
           control do
+            Models::Image.lock!
             i = find_by_uuid(:Image, params[:id])
             if examine_owner(i)
               i.delete
@@ -500,6 +510,7 @@ module Dcmgr
           # params snapshot_id, string, optional
           # params storage_pool_id, string, optional
           control do
+            Models::Volume.lock!
             if params[:snapshot_id]
               v = create_volume_from_snapshot(@account.canonical_uuid, params[:snapshot_id])
               sp = v.storage_pool
@@ -537,6 +548,7 @@ module Dcmgr
           description 'Delete the volume'
           # params id, string, required
           control do
+            Models::Volume.lock!
             volume_id = params[:id]
             raise UndefinedVolumeID if volume_id.nil?
 
@@ -656,6 +668,7 @@ module Dcmgr
           # params volume_id, string, required
           # params storage_pool_id, string, optional
           control do
+            Models::Volume.lock!
             raise UndefinedVolumeID if params[:volume_id].nil?
 
             v = find_by_uuid(:Volume, params[:volume_id])
@@ -677,6 +690,7 @@ module Dcmgr
           description 'Delete the volume snapshot'
           # params id, string, required
           control do
+            Models::VolumeSnapshot.lock!
             snapshot_id = params[:id]
             raise UndefindVolumeSnapshotID if snapshot_id.nil?
 
@@ -753,6 +767,7 @@ module Dcmgr
           # params description, string
           # params rule, string
           control do
+            Models::NetfilterGroup.lock!
             raise UndefinedNetfilterGroup if params[:name].nil?
 
             @name = params[:name]
@@ -802,6 +817,7 @@ module Dcmgr
           description "Delete the netfilter group"
 
           control do
+            Models::NetfilterGroup.lock!
             g = find_by_uuid(:NetfilterGroup, params[:id])
 
             raise UnknownNetfilterGroup if g.nil?
@@ -933,6 +949,7 @@ module Dcmgr
           # params :download_once optional set true if you do not want
           #        to save private key info on database.
           control do
+            Models::SshKeyPair.lock!
             keydata = Models::SshKeyPair.generate_key_pair
             savedata = {
               :name=>params[:name],
@@ -956,6 +973,7 @@ module Dcmgr
           description "Remove ssh key pair information"
           # params :id required
           control do
+            Models::SshKeyPair.lock!
             ssh = find_by_uuid(:SshKeyPair, params[:id])
             if examine_owner(ssh)
               ssh.destroy
