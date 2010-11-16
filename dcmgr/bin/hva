@@ -421,6 +421,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
         # - icmp_type : -1...
         # - icmp_code : -1...
         # cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} -j ACCEPT"
       end
     end
 
@@ -641,10 +642,16 @@ class ServiceNetfilter < Isono::NodeModules::Base
           :ip_source   => ip_source,
         }
       when 'icmp'
+        # via http://docs.amazonwebservices.com/AWSEC2/latest/CommandLineReference/
+        #
+        # For the ICMP protocol, the ICMP type and code must be specified.
+        # This must be specified in the format type:code where both are integers.
+        # Type, code, or both can be specified as -1, which is a wildcard.
+
         rule_maps << {
           :ip_protocol => ip_protocol,
-          :icmp_type   => ip_dport.to_i,
-          :icmp_code   => ip_sport.to_i,
+          :icmp_type   => -1, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
+          :icmp_code   => -1, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
           :protocol    => protocol,
           :ip_source   => ip_source,
         }
