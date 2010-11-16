@@ -1,10 +1,6 @@
 class DialogController < ApplicationController
   layout false
   
-  def instance
-    @image_id = params[:id]
-  end
-  
   def create_volume
   end
   
@@ -32,9 +28,6 @@ class DialogController < ApplicationController
     @snapshot_ids = params[:ids]
   end
   
-  def createkey
-  end
-  
   def start_instances
     @instance_ids = params[:ids]
   end
@@ -60,13 +53,13 @@ class DialogController < ApplicationController
   
   def delete_security_group
     @uuid = params[:ids][0]
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.show(@uuid)
+    @netfilter_group = DcmgrResource::NetfilterGroup.show(@uuid)
     @name = @netfilter_group['name']
   end
   
   def edit_security_group
     @uuid = params[:ids][0]
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.show(@uuid)
+    @netfilter_group = DcmgrResource::NetfilterGroup.show(@uuid)
     
     @name = @netfilter_group['name'] 
     @description =  @netfilter_group["description"]

@@ -10,14 +10,14 @@ class SecurityGroupsController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.list(data)
+    @netfilter_group = DcmgrResource::NetfilterGroup.list(data)
     respond_with(@netfilter_group[0],:to => [:json])
   end
   
   # security_groups/detail/s-000001.json
   def show
     uuid = params[:id]
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.show(uuid)
+    @netfilter_group = DcmgrResource::NetfilterGroup.show(uuid)
     respond_with(@netfilter_group,:to => [:json])
   end
 
@@ -27,13 +27,13 @@ class SecurityGroupsController < ApplicationController
       :description => params[:description],
       :rule => params[:rule]
     }
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.create(data)
+    @netfilter_group = DcmgrResource::NetfilterGroup.create(data)
     render :json => @netfilter_group
   end
   
   def destroy
     uuid = params[:id]
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.destroy(uuid)
+    @netfilter_group = DcmgrResource::NetfilterGroup.destroy(uuid)
     render :json => @netfilter_group    
   end
   
@@ -43,17 +43,17 @@ class SecurityGroupsController < ApplicationController
       :description => params[:description],
       :rule => params[:rule]
     }
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.update(uuid,data)
+    @netfilter_group = DcmgrResource::NetfilterGroup.update(uuid,data)
     render :json => @netfilter_group    
   end
   
   def show_groups
-    @netfilter_group = Frontend::Models::DcmgrResource::NetfilterGroup.list
+    @netfilter_group = DcmgrResource::NetfilterGroup.list
     respond_with(@netfilter_group[0],:to => [:json])
   end
   
   def total
-   total_resource = Frontend::Models::DcmgrResource::NetfilterGroup.total_resource
+   total_resource = DcmgrResource::NetfilterGroup.total_resource
    render :json => total_resource
   end
 end

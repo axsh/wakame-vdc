@@ -1,5 +1,5 @@
 class HomeController < ApplicationController
   def index
-    @informations = Frontend::Models::Information.all
+    @informations = Information.all
   end
 end

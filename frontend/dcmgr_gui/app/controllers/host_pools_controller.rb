@@ -9,13 +9,13 @@ class HostPoolsController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    host_pools = Frontend::Models::DcmgrResource::HostPool.list(data)
+    host_pools = DcmgrResource::HostPool.list(data)
     respond_with(host_pools[0], :to => [:json])
   end
   
   def show
     host_pool_id = params[:id]
-    detail = Frontend::Models::DcmgrResource::HostPool.show(host_pool_id)
+    detail = DcmgrResource::HostPool.show(host_pool_id)
     respond_with(detail,:to => [:json])
   end
 end
