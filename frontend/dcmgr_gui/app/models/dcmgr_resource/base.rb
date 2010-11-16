@@ -1,10 +1,10 @@
 module DcmgrResource
   class Base < ActiveResource::Base
 
-    self.site = Config[:site]
-    self.timeout = Config[:timeout]
-    self.format = Config[:format]
-    self.prefix = Config[:prefix]
+    # self.site = 'http://your.dcmgr.api.server'
+    self.timeout = 30
+    self.format = :json
+    self.prefix = '/api/'
     
     @@debug = false
     
