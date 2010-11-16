@@ -40,6 +40,13 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     @dnsmasq_pid = fork {
       Process.exec(cmd)
     }
+    begin
+      if !Process.waitpid(@dnsmasq_pid, Process::WNOHANG).nil?
+        abort("dnsmasq is terminated unexpectedly")
+      end
+    rescue Errno::ECHILD
+      abort("Failed to exec dnsmasq process.")
+    end
     
     myinstance.refresh_dnsmasq_conf
 
@@ -57,7 +64,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
   end
 
   terminate_hook do
-    Process.kill(@dnsmasq_pid)
+    system("/bin/kill #{@dnsmasq_pid}")
   end
 
 
