@@ -9,13 +9,13 @@ class StoragePoolsController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    strage_pools = Frontend::Models::DcmgrResource::StoragePool.list(data)
+    strage_pools = DcmgrResource::StoragePool.list(data)
     respond_with(strage_pools[0], :to => [:json])
   end
   
   def show
     storage_pool_id = params[:id]
-    detail = Frontend::Models::DcmgrResource::StoragePool.show(storage_pool_id)
+    detail = DcmgrResource::StoragePool.show(storage_pool_id)
     respond_with(detail,:to => [:json])
   end
 end

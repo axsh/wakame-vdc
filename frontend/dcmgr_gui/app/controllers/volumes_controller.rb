@@ -5,7 +5,6 @@ class VolumesController < ApplicationController
   def index
   end
   
-  # POST volumes/create.json
   def create
     snapshot_ids = params[:ids]
     if snapshot_ids
@@ -14,7 +13,7 @@ class VolumesController < ApplicationController
         data = {
           :snapshot_id => snapshot_id
         }
-        response << Frontend::Models::DcmgrResource::Volume.create(data)
+        response << DcmgrResource::Volume.create(data)
       end
       render :json => response
     else
@@ -35,36 +34,34 @@ class VolumesController < ApplicationController
         # :snapshot_id => snapshot_id
       }
       
-      @volume = Frontend::Models::DcmgrResource::Volume.create(data)
+      @volume = DcmgrResource::Volume.create(data)
 
       render :json => @volume
     end
   end
   
-  # DELETE volumes/delete.json
-  def delete
+  def destroy
     volume_ids = params[:ids]
     response = []
     volume_ids.each do |volume_id|
-      response << Frontend::Models::DcmgrResource::Volume.destroy(volume_id)
+      response << DcmgrResource::Volume.destroy(volume_id)
     end
     render :json => response
   end
   
-  # GET volumes.json
   def list
     data = {
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    volumes = Frontend::Models::DcmgrResource::Volume.list(data)
+    volumes = DcmgrResource::Volume.list(data)
     respond_with(volumes[0],:to => [:json])
   end
   
   # GET volumes/vol-24f1af4d.json
   def show
     volume_id = params[:id]
-    detail = Frontend::Models::DcmgrResource::Volume.show(volume_id)
+    detail = DcmgrResource::Volume.show(volume_id)
     detail["size"] = convert_from_mb_to_gb(detail["size"]).to_s + 'GB'
     respond_with(detail,:to => [:json])
   end
@@ -72,7 +69,7 @@ class VolumesController < ApplicationController
   def attach
     volume_id = params[:volume_id]
     instance_id = params[:instance_id]
-    response = Frontend::Models::DcmgrResource::Volume.attach(volume_id, instance_id)
+    response = DcmgrResource::Volume.attach(volume_id, instance_id)
     render :json => response
   end
 
@@ -80,13 +77,13 @@ class VolumesController < ApplicationController
     volume_ids = params[:ids]
     response = []
     volume_ids.each do |volume_id|
-      response << Frontend::Models::DcmgrResource::Volume.detach(volume_id)
+      response << DcmgrResource::Volume.detach(volume_id)
     end
     render :json => response
   end
   
   def total
-    total_resource = Frontend::Models::DcmgrResource::Volume.total_resource
+    total_resource = DcmgrResource::Volume.total_resource
     render :json => total_resource
   end
 end

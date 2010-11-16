@@ -39,12 +39,12 @@ module Authentication
   end
     
   def current_account
-    @current_account ||= Frontend::Models::Account.find(:uuid => self.current_user.primary_account_id)
+    @current_account ||= Account.find(:uuid => self.current_user.primary_account_id)
   end
   
   #overwrite
   def login_from_session
-    self.current_user = Frontend::Models::User.get_user(session[:uuid]) if session[:uuid]
+    self.current_user = User.get_user(session[:uuid]) if session[:uuid]
   end
 
   def logout_killing_session!

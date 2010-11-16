@@ -10,11 +10,11 @@ module ApplicationHelper
   end
   
   def show_accounts
-    Frontend::Models::User.account_name_with_uuid(@current_user.uuid)
+    User.account_name_with_uuid(@current_user.uuid)
   end
   
   def primary_account_id
-    Frontend::Models::User.primary_account_id(@current_user.uuid)
+    User.primary_account_id(@current_user.uuid)
   end
 
   def nl2br(text)

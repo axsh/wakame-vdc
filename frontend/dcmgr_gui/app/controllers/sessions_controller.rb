@@ -3,11 +3,11 @@ class SessionsController < ApplicationController
   skip_before_filter :login_required
   
   def new
-    @user =  Frontend::Models::User.new
+    @user =  User.new
   end
   
   def create
-    user = Frontend::Models::User.authenticate(params[:login], params[:password])
+    user = User.authenticate(params[:login], params[:password])
     if user
       self.current_user = user
       redirect_back_or_default('/', :notice => "Logged in successfully")

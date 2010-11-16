@@ -7,7 +7,7 @@ class ImagesController < ApplicationController
   # images/show/1.json
   def show
     image_id = params[:id]
-    detail = Frontend::Models::DcmgrResource::Image.show(image_id)
+    detail = DcmgrResource::Image.show(image_id)
     respond_with(detail,:to => [:json])
   end
 
@@ -17,12 +17,12 @@ class ImagesController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    image = Frontend::Models::DcmgrResource::Image.list(data)
+    image = DcmgrResource::Image.list(data)
     respond_with(image[0],:to => [:json])
   end
   
   def total
-   total_resource = Frontend::Models::DcmgrResource::Image.total_resource
+   total_resource = DcmgrResource::Image.total_resource
    render :json => total_resource
   end
 end

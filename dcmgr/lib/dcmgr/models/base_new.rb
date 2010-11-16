@@ -260,13 +260,34 @@ module Dcmgr::Models
 
   class BaseNew < Sequel::Model
 
-    # force to use row lock on select.
-    def self.set_dataset(ds, opts={})
-      super(ds, opts)
-      @dataset = @dataset.for_update
-      self
+    LOCK_TABLES_KEY='__locked_tables'
+    
+    def self.lock!
+      locktbls = Thread.current[LOCK_TABLES_KEY]
+      if locktbls
+        locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s]=1
+      end
     end
-
+    
+    def self.unlock!
+      locktbls = Thread.current[LOCK_TABLES_KEY]
+      if locktbls
+        locktbls.delete(self.db.uri.to_s + @dataset.first_source_alias.to_s)
+      end
+    end
+    
+    def self.dataset
+      locktbls = Thread.current[LOCK_TABLES_KEY]
+      if locktbls && locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s]
+        @dataset.opts = @dataset.opts.merge({:lock=>:update})
+      else
+        @dataset.opts = @dataset.opts.merge({:lock=>nil})
+      end
+      @dataset
+    end
+    
+    
+    
     def self.Proxy(klass)
       colnames = klass.schema.columns.map {|i| i[:name] }
       colnames.delete_if(klass.primary_key) if klass.restrict_primary_key?

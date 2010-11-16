@@ -73,7 +73,7 @@ DcmgrGUI.prototype.volumePanel = function(){
        $.ajax({
           "type": "POST",
           "async": true,
-          "url": '/volumes/create',
+          "url": '/volumes',
           "dataType": "json",
           "data": data,
           success: function(json,status){
@@ -104,14 +104,13 @@ DcmgrGUI.prototype.volumePanel = function(){
        $.ajax({
           "type": "DELETE",
           "async": true,
-          "url": '/volumes/delete',
+          "url": '/volumes',
           "dataType": "json",
           "data": data,
           success: function(json,status){
             bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
         });
-       c_list.changeStatus('deleting');
        $(this).dialog("close");
       }
     }
@@ -135,7 +134,7 @@ DcmgrGUI.prototype.volumePanel = function(){
        $.ajax({
           "type": "POST",
           "async": true,
-          "url": '/snapshots/create',
+          "url": '/snapshots',
           "dataType": "json",
           "data": data,
           success: function(json,status){
@@ -156,23 +155,23 @@ DcmgrGUI.prototype.volumePanel = function(){
 	  button:{
 	      "Close": function() { $(this).dialog("close"); },
 	      "Yes, Attach": function() {
-		  var volume_id = $(this).find('#volume_id').val();
-		  var instance_id = $(this).find('#instance_id').val();
-		  var data = "volume_id=" + volume_id
-		  + "&instance_id=" + instance_id;
+    		  var volume_id = $(this).find('#volume_id').val();
+    		  var instance_id = $(this).find('#instance_id').val();
+    		  var data = "volume_id=" + volume_id
+    		  + "&instance_id=" + instance_id;
 
-		  $.ajax({
-			  "type": "PUT",
-			      "async": true,
-			      "url": '/volumes/attach',
-			      "dataType": "json",
-			      "data": data,
-			      success: function(json,status){
-			      console.log(json);
-			  }
-		      });
-		  $(this).dialog("close");
- 	      }
+    		  $.ajax({
+    			  "type": "PUT",
+    	      "async": true,
+    	      "url": '/volumes/attach',
+    	      "dataType": "json",
+    	      "data": data,
+    	      success: function(json,status){
+              bt_refresh.element.trigger('dcmgrGUI.refresh');
+    			  }
+    		  });
+    		  $(this).dialog("close");
+ 	    }
 	  }
   });
 
@@ -199,7 +198,6 @@ DcmgrGUI.prototype.volumePanel = function(){
           "dataType": "json",
           "data": data,
           success: function(json,status){
-            console.log(json);
             bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
         });

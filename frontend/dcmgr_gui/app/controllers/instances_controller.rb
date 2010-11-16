@@ -14,7 +14,7 @@ class InstancesController < ApplicationController
       :nf_group => params[:nf_group],
       :ssh_key => params[:ssh_key]
     }
-    instance = Frontend::Models::DcmgrResource::Instance.create(params)
+    instance = DcmgrResource::Instance.create(params)
     render :json => instance
   end
   
@@ -23,13 +23,13 @@ class InstancesController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    instances = Frontend::Models::DcmgrResource::Instance.list(data)
+    instances = DcmgrResource::Instance.list(data)
     respond_with(instances[0],:to => [:json])
   end
   
   def show
     instance_id = params[:id]
-    detail = Frontend::Models::DcmgrResource::Instance.show(instance_id)
+    detail = DcmgrResource::Instance.show(instance_id)
     respond_with(detail,:to => [:json])
   end
   
@@ -37,7 +37,7 @@ class InstancesController < ApplicationController
     instance_ids = params[:ids]
     response = []
     instance_ids.each do |instance_id|
-      response << Frontend::Models::DcmgrResource::Instance.destroy(instance_id)
+      response << DcmgrResource::Instance.destroy(instance_id)
     end
     render :json => response
   end
@@ -46,13 +46,13 @@ class InstancesController < ApplicationController
     instance_ids = params[:ids]
     response = []
     instance_ids.each do |instance_id|
-      response << Frontend::Models::DcmgrResource::Instance.reboot(instance_id)
+      response << DcmgrResource::Instance.reboot(instance_id)
     end
     render :json => response
   end
   
   def total
-   total_resource = Frontend::Models::DcmgrResource::Instance.total_resource
+   total_resource = DcmgrResource::Instance.total_resource
    render :json => total_resource
   end
   

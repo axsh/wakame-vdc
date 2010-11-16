@@ -72,7 +72,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
        $.ajax({
           "type": "POST",
           "async": true,
-          "url": '/volumes/create',
+          "url": '/volumes',
           "dataType": "json",
           "data": data,
           success: function(json,status){

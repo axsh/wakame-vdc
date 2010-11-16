@@ -1,12 +1,12 @@
 namespace :db do
   desc 'Initialize database'
   task :init => :environment do
-    Frontend::Schema::create!
+    Schema::create!
   end
   
   task :sample_data => :environment do
-    DB = Frontend::Schema.current_connect
-    encrypted_password = Frontend::Models::User.encrypt_password('demo')
+    DB = Schema.current_connect
+    encrypted_password = User.encrypt_password('demo')
     sql = 'insert into users(uuid,login_id,password,primary_account_id,created_at,updated_at) values(?,?,?,?,now(),now())'
     DB['users'].with_sql(sql,'00000000','demo',encrypted_password,'00000000').first
 
@@ -18,7 +18,7 @@ namespace :db do
   end
   
   task :add_information => :environment do
-    DB = Frontend::Schema.current_connect
+    DB = Schema.current_connect
     publish_date = '2010-11-19 9:00:00'
     sql = 'insert into information(title,description,created_at,updated_at) values(?,?,?,?)'
     title = "新機能の提供を開始しました。"

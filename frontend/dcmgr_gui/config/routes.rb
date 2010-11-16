@@ -1,94 +1,107 @@
 DcmgrGui::Application.routes.draw do
-  # The priority is based upon order of creation:
-  # first created -> highest priority.
-
-  # Sample of regular route:
-  #   match 'products/:id' => 'catalog#view'
-  # Keep in mind you can assign values other than :controller and :action
-
-  # Sample of named route:
-  #   match 'products/:id/purchase' => 'catalog#purchase', :as => :purchase
-  # This route can be invoked with purchase_url(:id => product.id)
-
-  # Sample resource route (maps HTTP verbs to controller actions automatically):
-  #   resources :products
-
-  # Sample resource route with options:
-  #   resources :products do
-  #     member do
-  #       get 'short'
-  #       post 'toggle'
-  #     end
-  #
-  #     collection do
-  #       get 'sold'
-  #     end
-  #   end
-
-  # Sample resource route with sub-resources:
-  #   resources :products do
-  #     resources :comments, :sales
-  #     resource :seller
-  #   end
-
-  # Sample resource route with more complex sub-resources
-  #   resources :products do
-  #     resources :comments
-  #     resources :sales do
-  #       get 'recent', :on => :collection
-  #     end
-  #   end
-
-  # Sample resource route within a namespace:
-  #   namespace :admin do
-  #     # Directs /admin/products/* to Admin::ProductsController
-  #     # (app/controllers/admin/products_controller.rb)
-  #     resources :products
-  #   end
-
-  # You can have the root of your site routed with "root"
-  # just remember to delete public/index.html.
   root :to => "home#index"
 
-  # See how all your routes lay out with "rake routes"
-
-  # This is a legacy wild controller route that's not recommended for RESTful applications.
-  # Note: This route will make all actions in every controller accessible via GET requests.
+  # match ':controller(/:action(/:id))'
   
-  match ':controller(/:action(/:id(.:format)))'
-
-  match 'instances/total(.:format)' => 'instances#total', :via => :get
-  match 'images/total(.:format)' => 'images#total', :via => :get
-  match 'volumes/total(.:format)' => 'volumes#total', :via => :get
-  match 'snapshots/total(.:format)' => 'snapshots#total', :via => :get
-  match 'security_groups/total(.:format)' => 'security_groups#total', :via => :get
-  match 'keypairs/total(.:format)' => 'keypairs#total', :via => :get
+  #account
+  post   'accounts/switch' ,:to => 'accounts#new'
+  get    'accounts' ,:to => 'acounts#index'
   
-  match 'keypairs/all' => 'keypairs#show_keypairs',:via => :get
-  match 'keypairs/create_ssh_keypair',:via => :get
-  match 'keypairs/prk_download/:id' => 'keypairs#prk_download',:via => :get
-  match 'accounts/switch' => 'accounts#new',:via => :post
-  match 'accounts',:to => 'acounts#index'
-  # match 'signup' => 'users#new', :as => :signup
-  # match 'register' => 'users#create', :as => :register
-  match 'login' => 'sessions#new', :as => :login
-  match 'logout' => 'sessions#destroy', :as => :logout
+  #dialog
+  get    'dialog/create_volume', :to => 'dialog#create_volume'
+  post   'dialog/create_volume_from_snapshot', :to => 'dialog#create_volume_from_snapshot'
+  post   'dialog/attach_volume', :to => 'dialog#attach_volume'
+  post   'dialog/detach_volume', :to => 'dialog#detach_volume'
+  post   'dialog/delete_volume', :to => 'dialog#delete_volume'
+  post   'dialog/create_snapshot', :to => 'dialog#create_snapshot'
+  post   'dialog/delete_snapshot', :to => 'dialog#delete_snapshot'
+  post   'dialog/start_instances', :to => 'dialog#start_instances'
+  post   'dialog/stop_instances', :to => 'dialog#stop_instances'
+  post   'dialog/reboot_instances', :to => 'dialog#reboot_instances'
+  post   'dialog/terminate_instances', :to => 'dialog#terminate_instances'
+  get    'dialog/create_security_group', :to => 'dialog#create_security_group'
+  post   'dialog/delete_security_group', :to => 'dialog#delete_security_group'
+  post   'dialog/edit_security_group', :to => 'dialog#edit_security_group'
+  post   'dialog/launch_instance', :to => 'dialog#launch_instance'
+  get    'dialog/create_ssh_keypair', :to => 'dialog#create_ssh_keypair'
+  post   'dialog/delete_ssh_keypair', :to => 'dialog#delete_ssh_keypair'
   
+  #home
+  get    'home' ,:to => 'home#index'
+  
+  #host_pools
+  get    'host_pools' ,:to => 'host_pools#index'
+  get    'host_pools/list/:id' ,:to => 'host_pools#list'
+  get    'host_pools/show/:id' ,:to => 'host_pools#show'
+  
+  #images
+  get    'images' ,:to => 'images#index'
+  get    'images/total',:to => 'images#total'
+  get    'images/list/:id' ,:to => 'images#list'
+  get    'images/show/:id' ,:to => 'images#show'
+  
+  
+  #information
+  get    'information' ,:to => 'information#index'
+  get    'information/rss' ,:to => 'information#rss'
+  
+  #instances
+  get    'instances' ,:to => 'instances#index'
+  get    'instances/total' ,:to => 'instances#total'
+  get    'instances/list/:id', :to => 'instances#list'
+  post   'instances/terminate' ,:to => 'instances#terminate'
+  post   'instances/reboot' ,:to => 'instances#reboot'
+  post   'instances' ,:to => 'instances#create'
+  get    'instances/show/:id' ,:to => 'instances#show'
+  
+  #kepairs
+  get    'keypairs' ,:to => 'keypairs#index'
+  get    'keypairs/list/:id' ,:to => 'keypairs#list'
+  get    'keypairs/create_ssh_keypair' ,:to => 'keypairs#create_ssh_keypair'
+  get    'keypairs/all' ,:to => 'keypairs#show_keypairs'
+  get    'keypairs/total' ,:to => 'keypairs#total'
+  get    'keypairs/prk_download/:id' ,:to => 'keypairs#prk_download'
+  get    'keypairs/show/:id' ,:to => 'keypairs#show'
+  delete 'keypairs/:id' ,:to => 'keypairs#destroy'
+  
+  #security_groups
+  get    'security_groups' ,:to => 'security_groups#index'
+  get    'security_groups/list/:id' ,:to => 'security_groups#list'
+  get    'security_groups/all' ,:to => 'security_groups#show_groups'
+  get    'security_groups/total' ,:to => 'security_groups#total'
+  get    'security_groups/show/:id' ,:to => 'security_groups#show'
+  post   'security_groups' ,:to => 'security_groups#create'
+  delete 'security_groups/:id' ,:to => 'security_groups#destroy'
+  put    'security_groups/:id' ,:to => 'security_groups#update'
+  
+  #snapshots
+  get    'snapshots' ,:to => 'snapshots#index'
+  get    'snapshots/list/:id' ,:to => 'snapshots#list'
+  get    'snapshots/total' ,:to => 'snapshots#total'
+  get    'snapshots/show/:id' ,:to => 'snapshots#show'
+  post   'snapshots' ,:to => 'snapshots#create'
+  delete 'snapshots/:id' ,:to => 'snapshots#destroy'
+  
+  #sessions
+  get    'login' => 'sessions#new', :as => :login
+  get    'logout' => 'sessions#destroy', :as => :logout
   resource :session, :only => [:new, :create, :destroy]
-
-  resources :volumes do
-    post 'create',:on => :member
-  end
-
-  resources :keypairs do
-  end
-
-  match 'security_groups/:id' => 'security_groups#update',:via => :put
-  match 'security_groups/:id' => 'security_groups#destroy',:via => :delete
-  resource :security_groups do
-    get 'all',:to => 'security_groups#show_groups'
-    post 'create',:on => :member
-  end
-
   
+  #storage_pools
+  get    'storage_pools' ,:to => 'storage_pools#index'
+  get    'storage_pools/list/:id' ,:to => 'storage_pools#list'
+  get    'storage_pools/show/:id' ,:to => 'storage_pools#show'
+  
+  #users
+  
+  #volumes
+  get    'volumes' ,:to => 'volumes#index'
+  get    'volumes/list/:id' ,:to => 'volumes#list'
+  put    'volumes/attach' ,:to => 'volumes#attach'
+  put    'volumes/detach' ,:to => 'volumes#detach'
+  get    'volumes/total' ,:to => 'volumes#total'
+  get    'volumes/show/:id' ,:to => 'volumes#show'
+  post   'volumes' ,:to => 'volumes#create'
+  delete 'volumes' ,:to => 'volumes#destroy'
+
 end
