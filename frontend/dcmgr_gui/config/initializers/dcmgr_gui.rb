@@ -1,5 +1,5 @@
 ActiveResource::Base.class_eval do 
-  self.site = 'http://http://your.dcmgr.api.server/'
+  self.site = 'http://your.dcmgr.api.server/'
 end
 
 @dcmgr_config = YAML::load(ERB.new(IO.read(File.join(Rails.root, 'config', 'database.yml'))).result)[Rails.env]
