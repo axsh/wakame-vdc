@@ -26,6 +26,10 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
   end
   
   initialize_hook do
+    if manifest.config.network_name.nil?
+      abort("network_name is not set yet in nsa.conf")
+    end
+    
     opts = sprintf("-k --no-hosts --no-resolv --addn-hosts=%s --dhcp-hostsfile=%s --conf-file=%s",
                    config_section.dhcp_hosts_conf + ".hosts",
                    config_section.dhcp_hosts_conf + ".dhcp",
@@ -73,7 +77,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
   def generate_dhcp_conf
     rpc = Isono::NodeModules::RpcChannel.new(node)
     # load entier macaddr,ipaddr pairs for all instances from collector.
-    confdata = rpc.request('hva-collector', 'get_dhcp_conf')
+    confdata = rpc.request('hva-collector', 'get_dhcp_conf', manifest.config.network_name)
 
     require 'erb'
     
@@ -124,6 +128,7 @@ manifest.instance_eval do
   
   config do |c|
     c.dnsmasq_bin_path = '/usr/sbin/dnsmasq'
+    c.network_name = nil
   end
 
   config_path File.expand_path('config/nsa.conf', app_root)
