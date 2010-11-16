@@ -169,7 +169,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # Does host have vif?
-    cmd = "ifconfig #{vif} 2>&1 >/dev/null"
+    cmd = "ifconfig #{vif} >/dev/null 2>&1"
     system(cmd)
     unless $?.exitstatus == 0
       raise "#{vif} : error fetching interface information: Device not found"
@@ -295,7 +295,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # Does host have vif?
-    cmd = "ifconfig #{vif} 2>&1 >/dev/null"
+    cmd = "ifconfig #{vif} >/dev/null 2>&1"
     system(cmd)
     unless $?.exitstatus == 0
       raise "#{vif} : error fetching interface information: Device not found"
