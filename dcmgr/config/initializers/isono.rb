@@ -6,19 +6,28 @@ require 'eventmachine'
 Signal.trap('EXIT') { EventMachine.stop }
 
 if defined?(PhusionPassenger)
-  PhusionPassenger.on_event(:starting_worker_process) do |forked|
-    if EventMachine.reactor_running?
-      EventMachine.stop
-      Dcmgr.class_eval {
-        @messaging_client = nil
-      }
-    end
-    Thread.new { EventMachine.epoll; EventMachine.run; }
-    
-    if forked
-     else
-    end
+  if PhusionPassenger::VERSION_STRING =~ /^3\.0\./
+   blk = proc { |forked|
+      if EventMachine.reactor_running?
+        EventMachine.stop
+        Dcmgr.class_eval {
+          @messaging_client = nil
+        }
+      end
+      Thread.new { EventMachine.epoll; EventMachine.run; }
+    }
+  else
+   blk = proc {
+      if EventMachine.reactor_running?
+        EventMachine.stop
+        Dcmgr.class_eval {
+          @messaging_client = nil
+        }
+      end
+      Thread.new { EventMachine.epoll; EventMachine.run; }
+    }
   end
+  PhusionPassenger.on_event(:starting_worker_process, &blk)
 else
   EventMachine.stop if EventMachine.reactor_running?
   Thread.new { EventMachine.epoll; EventMachine.run; }
