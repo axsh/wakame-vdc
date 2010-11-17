@@ -16,8 +16,6 @@ module DcmgrResource
     def self.create(params)
       snapshot = self.new
       snapshot.volume_id = params[:volume_id]
-      #todo:storage_pool_id is not implemented because of the fixed value
-      snapshot.storage_pool_id = 'sp-1sx9jeks'
       snapshot.save
       snapshot
     end
