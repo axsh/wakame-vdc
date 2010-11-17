@@ -95,79 +95,95 @@ DcmgrGUI.prototype.imagePanel = function(){
     title:'Launch Instance',
     path:'/launch_instance',
     callback: function(){
-      
       var self = this;
       
-      //get host_pools
-      $.ajax({
-        "type": "GET",
-        "async": true,
-        "url": '/host_pools/show_host_pools.json',
-        "dataType": "json",
-        success: function(json,status){
-          var results = json.host_pool.results;
-          var size = results.length;
-          var select_host_pool = $(self).find('#host_pool');
-          for (var i=0; i < size ; i++) {
-            var uuid = results[i].result.uuid;
-            var html = '<option value="'+ uuid +'">'+uuid+'</option>';
-            select_host_pool.append(html);
-          }
-        }
-      });
+      var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
+      $(this).find('#select_host_pool').empty().html(loading_image);
+      $(this).find('#select_ssh_key_pair').empty().html(loading_image);
+      $(this).find("#left_select_list").mask("Loading...");
       
-      //get ssh key pairs
-      $.ajax({
-        "type": "GET",
-        "async": true,
-        "url": '/keypairs/all.json',
-        "dataType": "json",
-        "data": "",
-        success: function(json,status){
-          var results = json.ssh_key_pair.results;
-          var size = results.length;
-          var select_keypair = $(self).find('#ssh_key_pair');
-          for (var i=0; i < size ; i++) {
-            var name = results[i].result.name;
-            var ssh_keypair_id = results[i].result.id;
-            var html = '<option id="'+ ssh_keypair_id +'" value="'+ name +'">'+name+'</option>'
-            select_keypair.append(html);
-          }
-        }
-      });
-        
-      //get security groups
-      $.ajax({
-        "type": "GET",
-        "async": true,
-        "url": '/security_groups/all.json',
-        "dataType": "json",
-        "data": "",
-        success: function(json,status){
-          var data = [];
-          var results = json.netfilter_group.results;
-          var size = results.length
-          for (var i=0; i < size ; i++) {
-            data.push({
-              "value" : results[i].result.uuid,
-              "name" : results[i].result.name
-            });
-          }
-          
-          var security_group = new DcmgrGUI.ItemSelector({
-            'left_select_id' : '#left_select_list',
-            'right_select_id' : "#right_select_list",
-            "data" : data
-          });
+      parallel({
+        //get host_pools
+        host_pools: 
+          $.ajax({
+            "type": "GET",
+            "async": true,
+            "url": '/host_pools/show_host_pools.json',
+            "dataType": "json",
+            success: function(json,status){
+              var select_html = '<select id="host_pool" name="host_pool"></select>';
+              $(self).find('#select_host_pool').empty().html(select_html);
+              
+              var results = json.host_pool.results;
+              var size = results.length;
+              var select_host_pool = $(self).find('#host_pool');
+              for (var i=0; i < size ; i++) {
+                var uuid = results[i].result.uuid;
+                var html = '<option value="'+ uuid +'">'+uuid+'</option>';
+                select_host_pool.append(html);
+              }
+            }
+          }),
+        //get ssh key pairs
+        ssh_keypairs: 
+          $.ajax({
+            "type": "GET",
+            "async": true,
+            "url": '/keypairs/all.json',
+            "dataType": "json",
+            "data": "",
+            success: function(json,status){
+              var select_html = '<select id="ssh_key_pair" name="host_pool"></select>';
+              $(self).find('#select_ssh_key_pair').empty().html(select_html);
+              
+              var results = json.ssh_key_pair.results;
+              var size = results.length;
+              var select_keypair = $(self).find('#ssh_key_pair');
+              for (var i=0; i < size ; i++) {
+                var name = results[i].result.name;
+                var ssh_keypair_id = results[i].result.id;
+                var html = '<option id="'+ ssh_keypair_id +'" value="'+ name +'">'+name+'</option>'
+                select_keypair.append(html);
+              }
+            }
+        }),
+        //get security groups
+        security_groups: 
+          $.ajax({
+            "type": "GET",
+            "async": true,
+            "url": '/security_groups/all.json',
+            "dataType": "json",
+            "data": "",
+            success: function(json,status){
+              var data = [];
+              var results = json.netfilter_group.results;
+              var size = results.length
+              for (var i=0; i < size ; i++) {
+                data.push({
+                  "value" : results[i].result.uuid,
+                  "name" : results[i].result.name
+                });
+              }
 
-          $(self).find('#right_button').click(function(){
-            security_group.leftToRight();
-          });
+              var security_group = new DcmgrGUI.ItemSelector({
+                'left_select_id' : '#left_select_list',
+                'right_select_id' : "#right_select_list",
+                "data" : data
+              });
 
-          $(self).find('#left_button').click(function(){
-            security_group.rightToLeft();
-          });
-        }
+              $(self).find('#right_button').click(function(){
+                security_group.leftToRight();
+              });
+
+              $(self).find('#left_button').click(function(){
+                security_group.rightToLeft();
+              });
+            }
+          })
+      }).next(function(results) {
+        bt_launch_instance.disabledButton('Launch',false);
+        $("#left_select_list").unmask();
       });
     },
     button:{
@@ -203,10 +219,13 @@ DcmgrGUI.prototype.imagePanel = function(){
            bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
         });
-        
         $(this).dialog("close");
       }
     }
+  });
+  
+  bt_launch_instance.element.bind('dialogopen',function(){
+    bt_launch_instance.disabledButton('Launch',true);    
   });
   
   bt_launch_instance.target.bind('click',function(){
