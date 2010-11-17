@@ -24,13 +24,16 @@ class ServiceNetfilter < Isono::NodeModules::Base
     event.subscribe('hva/instance_started', '#') do |args|
       logger.info("refresh on instance_started: #{args.inspect}")
       inst_id = args[0]
+      logger.info("refresh_netfilter_by_instance_id: #{inst_id}")
       myinstance.refresh_netfilter_by_instance_id(inst_id)
     end
 
     event.subscribe('hva/instance_terminated', '#') do |args|
       logger.info("refresh on instance_terminated: #{args.inspect}")
       inst_id = args[0]
+      logger.info("delete_netfilter_by_instance_id: #{inst_id}")
       myinstance.delete_netfilter_by_instance_id(inst_id)
+      logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
       myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
     end
 
@@ -168,7 +171,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     if $?.exitstatus == 0
       true
     else
-      puts "#{vif}: error fetching interface information: Device not found"
+      logger.warn("#{vif}: error fetching interface information: Device not found")
       false
     end
   end
@@ -187,16 +190,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # Does host have vif?
-    return unless valid_vif?(vif)
+    unless valid_vif?(vif)
+      delete_ebtables(inst_map)
+      return
+    end
 
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
-
-
-
-
-
-
 
     # xtables commands
     cmds = []
@@ -269,8 +269,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo ebtables -A s_#{vif}_d_host -j DROP"
 
     # anti spoof
-    cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
-    cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+    #cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    #cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
 
     # group nodes.
     ipv4s << network_map[:ipv4_gw]
@@ -305,7 +305,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     # Does host have vif?
-    return unless valid_vif?(vif)
+    unless valid_vif?(vif)
+      logger.debug("delete_iptables: #{vif} ...")
+      delete_iptables(inst_map)
+      return
+    end
 
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
@@ -326,8 +330,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
       'icmp' => 'icmp',
     }
 
-
-
     # make chain names.
     chains = []
     protocol_maps.each { |k,v|
@@ -338,7 +340,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     chains << "d_#{vif}"
 
     # metadata-server
-    [ 'D', 'A' ].each { |xcmd|
+    [ 'A' ].each { |xcmd|
       system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
     }
 
@@ -460,20 +462,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
       return
     end
 
-    #network_map = rpc.request('hva-collector', 'get_network', inst[:host_pool][:network_id])
-    #raise "UnknownNetworkId" if network_map.nil?
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
 
-    vif     = inst[:instance_nics].first[:vif]
-    #vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
-
-    # group node IPv4 addresses.
-    #ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
-
-
-
-
-
-
+    vif     = inst_map[:instance_nics].first[:vif]
 
     # xtables commands
     #cmds = []
@@ -498,21 +490,21 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     # clear rules if exists.
-    system("sudo ebtables -L s_#{vif}")
+    system("sudo ebtables -L s_#{vif} >/dev/null 2>&1")
     if $?.exitstatus == 0
       cmd = "sudo ebtables -D FORWARD -i #{vif} -j s_#{vif}"
       puts cmd
       system(cmd)
     end
 
-    system("sudo ebtables -L d_#{vif}")
+    system("sudo ebtables -L d_#{vif} >/dev/null 2>&1")
     if $?.exitstatus == 0
       cmd = "sudo ebtables -D FORWARD -o #{vif} -j d_#{vif}"
       puts cmd
       system(cmd)
     end
 
-    system("sudo ebtables -L s_#{vif}_d_host")
+    system("sudo ebtables -L s_#{vif}_d_host >/dev/null 2>&1")
     if $?.exitstatus == 0
       cmd = "sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host"
       puts cmd
@@ -521,7 +513,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     [ 'F', 'X' ].each { |xcmd|
       chains.each { |chain|
-        system("sudo ebtables -L #{chain}")
+        system("sudo ebtables -L #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
           cmd = "sudo ebtables -#{xcmd} #{chain}"
           puts cmd
@@ -529,6 +521,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         end
       }
     }
+
+    logger.debug("delete_ebtables: #{vif} done.")
   end
 
   def delete_iptables(inst_map = {})
@@ -542,17 +536,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
     raise "UnknownNetworkId" if network_map.nil?
 
     vif     = inst_map[:instance_nics].first[:vif]
-    #vif_mac = inst[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
-
-    # group node IPv4 addresses.
-    #ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_id)
-
-    #ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
-    #rules = ng.map { |g|
-    #g[:rules].map { |rule| rule[:permission] }
-    #}
-    #rules.flatten! if rules.size > 0
-
     # xtables commands
     cmds = []
 
@@ -562,8 +545,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
       'udp'  => 'udp',
       'icmp' => 'icmp',
     }
-
-
 
     # make chain names.
     chains = []
@@ -599,6 +580,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         end
       }
     }
+
+    logger.debug("delete_iptables: #{vif} done.")
   end
 
   def build_rule(rules = [])
