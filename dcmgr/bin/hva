@@ -24,15 +24,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
     event.subscribe('hva/instance_started', '#') do |args|
       logger.info("refresh on instance_started: #{args.inspect}")
       inst_id = args[0]
-      logger.info("refresh_netfilter_by_instance_id: #{inst_id}")
-      myinstance.refresh_netfilter_by_instance_id(inst_id)
+      logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
+      myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
     end
 
     event.subscribe('hva/instance_terminated', '#') do |args|
       logger.info("refresh on instance_terminated: #{args.inspect}")
       inst_id = args[0]
-      logger.info("delete_netfilter_by_instance_id: #{inst_id}")
-      myinstance.delete_netfilter_by_instance_id(inst_id)
       logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
       myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
     end
@@ -52,42 +50,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
         init_ebtables(inst_maps) if @node.manifest.config.enable_ebtables
         init_iptables(inst_maps) if @node.manifest.config.enable_iptables
         logger.info("initialize netfilter")
-      rescue Exception => e
-        p e
-      end
-    }
-  end
-
-  # from event_subscriber
-  def refresh_netfilter_by_instance_id(inst_id)
-    raise "UnknownInstanceID" if inst_id.nil?
-
-    EM.defer {
-      begin
-        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
-        raise "UnknownInstanceID" if inst_map.nil?
-
-        refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-        refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
-        logger.info("refreshed netfilter")
-      rescue Exception => e
-        p e
-      end
-    }
-  end
-
-  # from event_subscriber
-  def delete_netfilter_by_instance_id(inst_id)
-    raise "UnknownInstanceID" if inst_id.nil?
-
-    EM.defer {
-      begin
-        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
-        raise "UnknownInstanceID" if inst_map.nil?
-
-        delete_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-        delete_iptables(inst_map) if @node.manifest.config.enable_iptables
-        logger.info("deleted netfilter")
       rescue Exception => e
         p e
       end
@@ -177,6 +139,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   def refresh_ebtables(inst_map = {})
+    logger.debug("refresh_ebtables: #{inst_map[:uuid]} ...")
+
     # Does the hva have instance?
     unless inst_map[:host_pool][:node_id] == node.node_id
       logger.warn("no match for the instance: #{inst_map[:uuid]}")
@@ -191,7 +155,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # Does host have vif?
     unless valid_vif?(vif)
-      delete_ebtables(inst_map)
+      flush_ebtables(inst_map)
       return
     end
 
@@ -277,7 +241,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ipv4s << network_map[:dns_server]
     ipv4s << network_map[:dhcp_server]
     ipv4s.uniq.each do |ipv4|
-      cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+      cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
 
     # deny,allow
@@ -289,9 +253,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
       puts cmd
       system(cmd)
     }
+
+    logger.debug("refresh_ebtables: #{inst_map[:uuid]} done.")
   end
 
   def refresh_iptables(inst_map = {})
+    logger.debug("refresh_iptables: #{inst_map[:uuid]} ...")
+
     # Does the hva have instance?
     unless inst_map[:host_pool][:node_id] == node.node_id
       logger.warn "no match for the instance: #{inst_map[:uuid]}"
@@ -306,8 +274,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # Does host have vif?
     unless valid_vif?(vif)
-      logger.debug("delete_iptables: #{vif} ...")
-      delete_iptables(inst_map)
+      flush_iptables(inst_map)
       return
     end
 
@@ -355,7 +322,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
     end
 
-
     [ 'F', 'X' ].each { |xcmd|
       chains.each { |chain|
         system("sudo iptables -nL #{chain} >/dev/null 2>&1")
@@ -364,9 +330,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
         end
       }
     }
-
-
-
 
     # create user defined chains.
     [ 'N' ].each { |xcmd|
@@ -447,15 +410,18 @@ class ServiceNetfilter < Isono::NodeModules::Base
       cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j DROP"
     }
 
-
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
       puts cmd
       system(cmd)
     }
+
+    logger.debug("refresh_iptables: #{inst_map[:uuid]} done.")
   end
 
-  def delete_ebtables(inst_map = {})
+  def flush_ebtables(inst_map = {})
+    logger.debug("flush_ebtables: #{inst_map[:uuid]} ...")
+
     # Does the hva have instance?
     unless inst_map[:host_pool][:node_id] == node.node_id
       logger.warn "no match for the instance: #{inst_map[:uuid]}"
@@ -522,10 +488,12 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
     }
 
-    logger.debug("delete_ebtables: #{vif} done.")
+    logger.debug("flush_ebtables: #{inst_map[:uuid]} #{vif} done.")
   end
 
-  def delete_iptables(inst_map = {})
+  def flush_iptables(inst_map = {})
+    logger.debug("flush_iptables: #{inst_map[:uuid]} ...")
+
     # Does the hva have instance?
     unless inst_map[:host_pool][:node_id] == node.node_id
       logger.warn "no match for the instance: #{inst_map[:uuid]}"
@@ -571,7 +539,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
     end
 
-
     [ 'F', 'X' ].each { |xcmd|
       chains.each { |chain|
         system("sudo iptables -nL #{chain} >/dev/null 2>&1")
@@ -581,7 +548,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
     }
 
-    logger.debug("delete_iptables: #{vif} done.")
+    logger.debug("flush_iptables: #{inst_map[:uuid]} #{vif} done.")
   end
 
   def build_rule(rules = [])
