@@ -46,8 +46,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       begin
         inst_maps = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
 
-        init_ebtables(inst_maps)
-        init_iptables(inst_maps)
+        init_ebtables(inst_maps) if @node.manifest.config.enable_ebtables
+        init_iptables(inst_maps) if @node.manifest.config.enable_iptables
         logger.info("initialize netfilter")
       rescue Exception => e
         p e
@@ -64,8 +64,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
         raise "UnknownInstanceID" if inst_map.nil?
 
-        refresh_ebtables(inst_map)
-        refresh_iptables(inst_map)
+        refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+        refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
         logger.info("refreshed netfilter")
       rescue Exception => e
         p e
@@ -82,8 +82,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
         raise "UnknownInstanceID" if inst_map.nil?
 
-        delete_ebtables(inst_map)
-        delete_iptables(inst_map)
+        delete_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+        delete_iptables(inst_map) if @node.manifest.config.enable_iptables
         logger.info("deleted netfilter")
       rescue Exception => e
         p e
@@ -107,8 +107,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         if inst_maps.size > 0
           inst_maps.flatten.uniq.each { |inst_map|
             unless inst_map.nil?
-              refresh_ebtables(inst_map)
-              refresh_iptables(inst_map)
+              refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+              refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
             end
           }
         end
@@ -127,8 +127,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         inst_maps = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
         inst_maps.each { |inst_map|
           unless inst_map.nil?
-            refresh_ebtables(inst_map)
-            refresh_iptables(inst_map)
+            refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+            refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
           end
         }
       rescue Exception => e
@@ -168,6 +168,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     if $?.exitstatus == 0
       true
     else
+      puts "#{vif}: error fetching interface information: Device not found"
       false
     end
   end
@@ -940,6 +941,8 @@ manifest.instance_eval do
 
   config do |c|
     c.vm_data_dir = '/var/lib/vm'
+    c.enable_ebtables = true
+    c.enable_iptables = true
   end
 
   config_path File.expand_path('config/hva.conf', app_root)
