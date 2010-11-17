@@ -24,15 +24,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     event.subscribe('hva/instance_started', '#') do |args|
       logger.info("refresh on instance_started: #{args.inspect}")
       inst_id = args[0]
-      logger.info("refresh_netfilter_by_instance_id: #{inst_id}")
-      myinstance.refresh_netfilter_by_instance_id(inst_id)
+      # logger.info("refresh_netfilter_by_instance_id: #{inst_id}")
+      # myinstance.refresh_netfilter_by_instance_id(inst_id)
+      logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
+      myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
     end
 
     event.subscribe('hva/instance_terminated', '#') do |args|
       logger.info("refresh on instance_terminated: #{args.inspect}")
       inst_id = args[0]
-      logger.info("delete_netfilter_by_instance_id: #{inst_id}")
-      myinstance.delete_netfilter_by_instance_id(inst_id)
+      # logger.info("delete_netfilter_by_instance_id: #{inst_id}")
+      # myinstance.delete_netfilter_by_instance_id(inst_id)
       logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
       myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
     end
@@ -58,41 +60,41 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
   end
 
-  # from event_subscriber
-  def refresh_netfilter_by_instance_id(inst_id)
-    raise "UnknownInstanceID" if inst_id.nil?
+#  # from event_subscriber
+#  def refresh_netfilter_by_instance_id(inst_id)
+#    raise "UnknownInstanceID" if inst_id.nil?
+#
+#    EM.defer {
+#      begin
+#        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
+#        raise "UnknownInstanceID" if inst_map.nil?
+#
+#        refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+#        refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+#        logger.info("refreshed netfilter")
+#      rescue Exception => e
+#        p e
+#      end
+#    }
+#  end
 
-    EM.defer {
-      begin
-        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
-        raise "UnknownInstanceID" if inst_map.nil?
-
-        refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-        refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
-        logger.info("refreshed netfilter")
-      rescue Exception => e
-        p e
-      end
-    }
-  end
-
-  # from event_subscriber
-  def delete_netfilter_by_instance_id(inst_id)
-    raise "UnknownInstanceID" if inst_id.nil?
-
-    EM.defer {
-      begin
-        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
-        raise "UnknownInstanceID" if inst_map.nil?
-
-        delete_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-        delete_iptables(inst_map) if @node.manifest.config.enable_iptables
-        logger.info("deleted netfilter")
-      rescue Exception => e
-        p e
-      end
-    }
-  end
+#  # from event_subscriber
+#  def delete_netfilter_by_instance_id(inst_id)
+#    raise "UnknownInstanceID" if inst_id.nil?
+#
+#    EM.defer {
+#      begin
+#        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
+#        raise "UnknownInstanceID" if inst_map.nil?
+#
+#        delete_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+#        delete_iptables(inst_map) if @node.manifest.config.enable_iptables
+#        logger.info("deleted netfilter")
+#      rescue Exception => e
+#        p e
+#      end
+#    }
+#  end
 
   # from event_subscriber
   def refresh_netfilter_by_friend_instance_id(inst_id)
