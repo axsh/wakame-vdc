@@ -24,6 +24,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     event.subscribe('hva/instance_started', '#') do |args|
       logger.info("refresh on instance_started: #{args.inspect}")
       inst_id = args[0]
+      logger.info("refresh_netfilter_by_instance_id: #{inst_id}")
       myinstance.refresh_netfilter_by_instance_id(inst_id)
     end
 
@@ -461,6 +462,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
       return
     end
 
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
+
+    vif     = inst_map[:instance_nics].first[:vif]
+
     # xtables commands
     #cmds = []
 
@@ -484,21 +490,21 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     # clear rules if exists.
-    system("sudo ebtables -L s_#{vif}")
+    system("sudo ebtables -L s_#{vif} >/dev/null 2>&1")
     if $?.exitstatus == 0
       cmd = "sudo ebtables -D FORWARD -i #{vif} -j s_#{vif}"
       puts cmd
       system(cmd)
     end
 
-    system("sudo ebtables -L d_#{vif}")
+    system("sudo ebtables -L d_#{vif} >/dev/null 2>&1")
     if $?.exitstatus == 0
       cmd = "sudo ebtables -D FORWARD -o #{vif} -j d_#{vif}"
       puts cmd
       system(cmd)
     end
 
-    system("sudo ebtables -L s_#{vif}_d_host")
+    system("sudo ebtables -L s_#{vif}_d_host >/dev/null 2>&1")
     if $?.exitstatus == 0
       cmd = "sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host"
       puts cmd
@@ -507,7 +513,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     [ 'F', 'X' ].each { |xcmd|
       chains.each { |chain|
-        system("sudo ebtables -L #{chain}")
+        system("sudo ebtables -L #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
           cmd = "sudo ebtables -#{xcmd} #{chain}"
           puts cmd
