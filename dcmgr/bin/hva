@@ -724,7 +724,7 @@ class KvmHandler < EndpointBuilder
     FileUtils.mkdir(inst_data_dir)
     
     # create volume from snapshot
-    jobreq.run("sta-loader.#{vol[:storage_pool][:node_id]}", "create", vol_id)
+    jobreq.run("zfs-handle.#{vol[:storage_pool][:node_id]}", "create_volume", vol_id)
     
     logger.debug("volume created on #{vol[:storage_pool][:node_id]}: #{vol_id}")
     # reload volume info

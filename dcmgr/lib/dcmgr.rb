@@ -112,6 +112,7 @@ module Dcmgr
 
   module Stm
     autoload :VolumeContext, 'dcmgr/stm/volume_context'
+    autoload :SnapshotContext, 'dcmgr/stm/snapshot_context'
     autoload :Instance, 'dcmgr/stm/instance'
   end
 end
