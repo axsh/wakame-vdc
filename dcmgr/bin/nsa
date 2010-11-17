@@ -18,7 +18,7 @@ require File.expand_path('../../config/path_resolver', __FILE__)
 require 'eventmachine'
 
 class SuperviseDnsmasq < Isono::NodeModules::Base
-  include Isono::Logger
+  include Dcmgr::Logger
 
   config_section do
     desc "configuration file for dnsmasq dhcp"
@@ -53,12 +53,12 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     event = Isono::NodeModules::EventChannel.new(node)
 
     event.subscribe('hva/instance_started', '#') do |args|
-      puts "refresh on instance_started: #{args.inspect}"
+      logger.info("refresh on instance_started: #{args.inspect}")
       myinstance.refresh_dnsmasq_conf
     end
     
     event.subscribe('hva/instance_terminated', '#') do |args|
-      puts "refresh on instance_terminated: #{args.inspect}"
+      logger.info("refresh on instance_terminated: #{args.inspect}")
       myinstance.refresh_dnsmasq_conf
     end
   end
@@ -75,8 +75,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
         system("/bin/kill -HUP #{@dnsmasq_pid}")
         logger.info("refreshed dnsmasq conf")
       rescue Exception => e
-        puts "faild failed: #{e.class}"
-        puts e.backtrace
+        logger.error(e)
       end
     }
   end
