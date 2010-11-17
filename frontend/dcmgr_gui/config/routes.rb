@@ -33,6 +33,7 @@ DcmgrGui::Application.routes.draw do
   get    'host_pools' ,:to => 'host_pools#index'
   get    'host_pools/list/:id' ,:to => 'host_pools#list'
   get    'host_pools/show/:id' ,:to => 'host_pools#show'
+  get    'host_pools/show_host_pools' ,:to => 'host_pools#show_host_pools'
   
   #images
   get    'images' ,:to => 'images#index'

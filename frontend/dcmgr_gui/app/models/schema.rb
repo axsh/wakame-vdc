@@ -44,8 +44,8 @@ module Schema
   end
   
   def models
-    @models ||= [Models::Account, Models::User,
-                 Models::Authz,Models::Tag,Models::TagMapping,Models::Information
+    @models ||= [Account, User,
+                 Authz,Tag,TagMapping,Information
                 ].freeze
   end
 end

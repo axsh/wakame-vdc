@@ -18,4 +18,9 @@ class HostPoolsController < ApplicationController
     detail = DcmgrResource::HostPool.show(host_pool_id)
     respond_with(detail,:to => [:json])
   end
+  
+  def show_host_pools
+    host_pools = DcmgrResource::HostPool.list
+    respond_with(host_pools[0],:to => [:json])
+  end
 end
