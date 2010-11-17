@@ -536,9 +536,7 @@ module Dcmgr
               raise UndefinedRequiredParameter
             end
 
-            Dcmgr.messaging.request("job.sta-loader.#{sp.values[:node_id]}", 'create', v.canonical_uuid) do |req|
-              req.oneshot = true
-            end
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid)
             respond_to { |f|
               f.json { v.to_hash_document.to_json}
             }
@@ -561,9 +559,8 @@ module Dcmgr
             end
             raise UnknownVolume if v.nil?
             sp = v.storage_pool
-            Dcmgr.messaging.request("job.sta-loader.#{sp.values[:node_id]}", 'delete', v.canonical_uuid) do |req|
-              req.oneshot = true
-            end
+
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'delete_volume', v.canonical_uuid)
             respond_to { |f|
               f.json { v.to_hash_document.to_json}
             }
@@ -678,9 +675,7 @@ module Dcmgr
             vs = v.create_snapshot(@account.canonical_uuid)
             sp = vs.storage_pool
 
-            Dcmgr.messaging.request("job.sta-loader.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid) do |req|
-              req.oneshot = true
-            end
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid)
             respond_to { |f|
               f.json { vs.to_hash_document.to_json}
             }
@@ -699,9 +694,8 @@ module Dcmgr
             raise UnknownVolumeSnapshot if vs.nil?
             vs = vs.delete_snapshot
             sp = vs.storage_pool
-            Dcmgr.messaging.request("job.sta-loader.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid) do |req|
-              req.oneshot = true
-            end
+
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid)
             respond_to { |f|
               f.json { vs.to_hash_document.to_json }
             }
