@@ -4,3 +4,7 @@
 
 # directory to store VM local data.
 config.vm_data_dir = "/home/demo/vm"
+
+# netfilter
+config.enable_ebtables = true
+config.enable_iptables = true

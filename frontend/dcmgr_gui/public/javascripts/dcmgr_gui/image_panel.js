@@ -97,7 +97,25 @@ DcmgrGUI.prototype.imagePanel = function(){
     callback: function(){
       
       var self = this;
-
+      
+      //get host_pools
+      $.ajax({
+        "type": "GET",
+        "async": true,
+        "url": '/host_pools/show_host_pools.json',
+        "dataType": "json",
+        success: function(json,status){
+          var results = json.host_pool.results;
+          var size = results.length;
+          var select_host_pool = $(self).find('#host_pool');
+          for (var i=0; i < size ; i++) {
+            var uuid = results[i].result.uuid;
+            var html = '<option value="'+ uuid +'">'+uuid+'</option>';
+            select_host_pool.append(html);
+          }
+        }
+      });
+      
       //get ssh key pairs
       $.ajax({
         "type": "GET",
@@ -155,13 +173,12 @@ DcmgrGUI.prototype.imagePanel = function(){
     button:{
      "Launch": function() { 
        var image_id = $(this).find('#image_id').val();
-       var host_pool_id = $(this).find('#host_pool_id').val();
+       var host_pool_id = $(this).find('#host_pool').find('option:selected').val();
        var host_name = $(this).find('#host_name').val();
        var instance_spec = $(this).find('#instance_spec').val();
        var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').text();
        var launch_in = $(this).find('#right_select_list').find('option');
        var user_data = $(this).find('#user_data').val();
-       
        var nf_group = [];
        $.each(launch_in,function(i){
          nf_group.push("nf_group[]="+ $(this).text());
@@ -183,7 +200,7 @@ DcmgrGUI.prototype.imagePanel = function(){
           "dataType": "json",
           "data": data,
           success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
+           bt_refresh.element.trigger('dcmgrGUI.refresh');
           }
         });
         
