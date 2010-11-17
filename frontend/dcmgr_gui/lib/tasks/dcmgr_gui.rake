@@ -26,3 +26,11 @@ namespace :db do
     DB['information'].with_sql(sql,title,description,publish_date,publish_date).first
   end
 end
+
+namespace :admin do
+  desc 'Create user'
+  task :create_user,[:login_id,:password] => :environment do |t,args|
+    password = encrypted_password = User.encrypt_password(args[:password])
+    User.create(:login_id => args[:login_id],:password => password)
+  end
+end
