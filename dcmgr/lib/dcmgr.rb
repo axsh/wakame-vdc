@@ -71,7 +71,7 @@ module Dcmgr
     CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,
                           :Image,:HostPool,:RequestLog,:Instance,
                           :NetfilterGroup, :NetfilterRule,
-                          :StorageAgent,:StoragePool,:Volume,:VolumeSnapshot,
+                          :StoragePool,:Volume,:VolumeSnapshot,
                           :InstanceNetfilterGroup,
                           :InstanceSpec, :InstanceNic, :Network, :IpLease,
                           :SshKeyPair].freeze
@@ -85,7 +85,6 @@ module Dcmgr
     autoload :HostPool, 'dcmgr/models/host_pool'
     autoload :RequestLog, 'dcmgr/models/request_log'
     autoload :FrontendSystem, 'dcmgr/models/frontend_system'
-    autoload :StorageAgent, 'dcmgr/models/storage_agent'
     autoload :StoragePool, 'dcmgr/models/storage_pool'
     autoload :Volume, 'dcmgr/models/volume'
     autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
