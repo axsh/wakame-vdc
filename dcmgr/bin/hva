@@ -339,7 +339,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     chains << "d_#{vif}"
 
     # metadata-server
-    [ 'D', 'A' ].each { |xcmd|
+    [ 'A' ].each { |xcmd|
       system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
     }
 
