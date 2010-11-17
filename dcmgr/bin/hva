@@ -277,7 +277,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ipv4s << network_map[:dns_server]
     ipv4s << network_map[:dhcp_server]
     ipv4s.uniq.each do |ipv4|
-      cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+      cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
 
     # deny,allow
