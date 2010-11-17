@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/axsh/isono.git
-  revision: 3caabddb030277a6707430a5a7dd3ae3b220b12a
+  revision: d44cd9f64bf2be963e9fda8a4195386c5cea62bc
   specs:
     isono (0.0.1)
       amqp (>= 0.6.7)
@@ -26,11 +26,12 @@ GEM
     configuration (1.1.0)
     eventmachine (0.12.10)
     extlib (0.9.15)
-    i18n (0.4.1)
+    i18n (0.4.2)
     ipaddress (0.7.0)
     json (1.4.6)
-    log4r (1.1.8)
+    log4r (1.1.9)
     mysql (2.8.1)
+    open4 (1.0.1)
     rack (1.2.1)
     rake (0.8.7)
     ruby-hmac (0.4.0)
@@ -51,6 +52,7 @@ DEPENDENCIES
   isono!
   json (>= 1.2.0)
   mysql (>= 2.8.1)
+  open4 (= 1.0.1)
   rack (>= 1.2.1)
   rake (>= 0.8.7)
   ruby-hmac
