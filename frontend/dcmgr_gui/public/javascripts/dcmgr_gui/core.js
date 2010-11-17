@@ -117,6 +117,15 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
     }
     this.content.dialog('open');
   },
+  disabledButton: function(buttonName,disabled){
+    var widget = this.content
+                  .dialog('widget')
+                  .find(".ui-button-text:contains('"+ buttonName +"')")
+                  .parent();
+    if( widget ) {
+      widget.button("option", "disabled", disabled);
+    }       
+  },
   close: function(){
     this.content.dialog('close');
   },
