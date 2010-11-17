@@ -18,4 +18,10 @@ class StoragePoolsController < ApplicationController
     detail = DcmgrResource::StoragePool.show(storage_pool_id)
     respond_with(detail,:to => [:json])
   end
+  
+  def show_storage_pools
+    storage_pools = DcmgrResource::StoragePool.list
+    respond_with(storage_pools[0],:to => [:json])
+  end
+  
 end

@@ -8,8 +8,7 @@ module DcmgrResource
       volume = self.new
       volume.volume_size = params[:volume_size]
       volume.snapshot_id = params[:snapshot_id]
-      #todo:storage_pool_id is not implemented because of the fixed value
-      volume.storage_pool_id = 'sp-1sx9jeks'
+      volume.storage_pool_id = params[:storage_pool_id]
       volume.save
       volume
     end

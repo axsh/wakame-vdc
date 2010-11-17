@@ -92,6 +92,7 @@ DcmgrGui::Application.routes.draw do
   get    'storage_pools' ,:to => 'storage_pools#index'
   get    'storage_pools/list/:id' ,:to => 'storage_pools#list'
   get    'storage_pools/show/:id' ,:to => 'storage_pools#show'
+  get    'storage_pools/show_storage_pools' ,:to => 'storage_pools#show_storage_pools'
   
   #users
   

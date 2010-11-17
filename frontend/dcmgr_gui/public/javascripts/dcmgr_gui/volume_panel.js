@@ -60,15 +60,53 @@ DcmgrGUI.prototype.volumePanel = function(){
     height:200,
     title:'Create Volume',
     path:'/create_volume',
+    callback: function(){
+      var self = this;
+      
+      var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
+      $(this).find('#select_storage_pool').empty().html(loading_image);
+
+      $.ajax({
+        "type": "GET",
+        "async": true,
+        "url": '/storage_pools/show_storage_pools.json',
+        "dataType": "json",
+        success: function(json,status){
+          var select_html = '<select id="storage_pool" name="storage_pool"></select>';
+          $(self).find('#select_storage_pool').empty().html(select_html);
+          var results = json.storage_pool.results;
+          var size = results.length;
+          var select_storage_pool = $(self).find('#storage_pool');
+          for (var i=0; i < size ; i++) {
+            var uuid = results[i].result.uuid;
+            var html = '<option value="'+ uuid +'">'+uuid+'</option>';
+            select_storage_pool.append(html);
+          }
+          
+          $(self).find('#volume_size').keyup(function(){
+            if( $(this).val() ) {
+              bt_create_volume.disabledButton('Create',false);
+            } else {
+              bt_create_volume.disabledButton('Create',true);    
+            }
+          });
+          
+          if( $(self).find('#volume_size').val() ) {
+            bt_create_volume.disabledButton('Create',false);
+          }
+        }
+      });
+    },
     button:{
      "Create": function() { 
        var volume_size = $(this).find('#volume_size').val();
        var unit = $(this).find('#unit').find('option:selected').val();
+       var storage_pool_id = $(this).find('#storage_pool').find('option:selected').val();
        if(!volume_size){
          $('#volume_size').focus();
          return false;
        }
-       var data = "size="+volume_size+"&unit="+unit;
+       var data = "size="+volume_size+"&unit="+unit+"&storage_pool_id="+storage_pool_id;
        
        $.ajax({
           "type": "POST",
@@ -83,6 +121,10 @@ DcmgrGUI.prototype.volumePanel = function(){
        $(this).dialog("close");
       }
     }
+  });
+  
+  bt_create_volume.element.bind('dialogopen',function(){  
+    bt_create_volume.disabledButton('Create',true);    
   });
 
   var bt_delete_volume = new DcmgrGUI.Dialog({
