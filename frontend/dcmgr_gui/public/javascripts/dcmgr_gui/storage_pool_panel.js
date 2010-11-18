@@ -41,10 +41,17 @@ DcmgrGUI.prototype.storagePoolPanel = function(){
     maxrow:maxrow,
     page:page
   });
-    
+  
+  var detail_filter = new DcmgrGUI.Filter();
+  detail_filter.add(function(data){
+    data.item.offerring_disk_space = DcmgrGUI.Converter.fromMBtoGB(data.item.offerring_disk_space);
+    return data;
+  });
+  
   c_list.setDetailTemplate({
     template_id:'#storagePoolsDetailTemplate',
-    detail_path:'/storage_pools/show/'
+    detail_path:'/storage_pools/show/',
+    filter: detail_filter
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
@@ -52,6 +59,15 @@ DcmgrGUI.prototype.storagePoolPanel = function(){
     c_pagenate.changeTotal(storage_pool.owner_total);
     c_list.setData(storage_pool.results);
     c_list.multiCheckList(c_list.detail_template);
+  });
+  
+  c_list.filter.add(function(data){
+    var results = data.storage_pool.results;
+    var size = results.length;
+    for(var i = 0; i < size; i++) {
+      results[i].result.offerring_disk_space = DcmgrGUI.Converter.fromMBtoGB(results[i].result.offerring_disk_space);
+    }
+    return data;
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
