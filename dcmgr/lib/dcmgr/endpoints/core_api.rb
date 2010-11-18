@@ -98,6 +98,7 @@ module Dcmgr
       # when matches the Exception class exactly. I expect to match
       # whole subclasses of APIError so that override handle_exception!().
       def handle_exception!(boom)
+        logger.error(boom)
         if boom.kind_of?(APIError)
           @env['sinatra.error'] = boom
           error(boom.status_code, boom.class.to_s)

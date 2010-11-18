@@ -39,6 +39,7 @@ module Dcmgr::Models
     alias :nic :instance_nic
     one_to_many :instance_netfilter_groups
     many_to_many :netfilter_groups, :join_table=>:instance_netfilter_groups
+    many_to_one :ssh_key_pair
 
     subset(:lives, {:terminated_at => nil})
     
@@ -93,6 +94,8 @@ module Dcmgr::Models
     #   :image_id
     #   :network => {'global1'=>{:ipaddr=>'111.111.111.111'}}
     #   :volume => {'uuid'=>{:guest_device_name=>,}}
+    #   :ssh_key_pair => 'xxxxx',
+    #   :netfilter_group => ['rule1', 'rule2']
     #   :created_at
     #   :state
     #   :status
@@ -106,9 +109,15 @@ module Dcmgr::Models
         :created_at  => self.created_at,
         :state => self.state,
         :status => self.status,
+        :ssh_key_pair => nil,
+        :network => [],
+        :volume => [],
+        :netfilter_group => [],
       }
+      if self.ssh_key_pair
+        h[:ssh_key_pair] = self.ssh_key_pair.name
+      end
 
-      h[:network] = []
       if instance_nic
         instance_nic.each { |n|
           if n.ip
@@ -120,7 +129,6 @@ module Dcmgr::Models
         }
       end
       
-      h[:volume] = []
       if self.volume
         self.volume.each { |v|
           h[:volume] << {
@@ -128,6 +136,12 @@ module Dcmgr::Models
             :guest_device_name=>v.guest_device_name,
             :state=>v.state,
           }
+        }
+      end
+
+      if self.netfilter_groups
+        self.netfilter_groups.each { |n|
+          h[:netfilter_group] << n.name
         }
       end
       h

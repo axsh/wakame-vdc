@@ -62,8 +62,10 @@ module Authentication
   end
   
   def login_required
-    uuid = 'a-'+current_user.primary_account_id
-    ActiveResource::Connection.set_vdc_account_uuid(uuid)
+    if current_user
+      uuid = 'a-'+current_user.primary_account_id
+      ActiveResource::Connection.set_vdc_account_uuid(uuid)
+    end
     authorized? || access_denied
   end
   
