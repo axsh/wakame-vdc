@@ -643,9 +643,95 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
 end
 
+require 'shellwords'
+raise "Shellword is old version." unless Shellwords.respond_to?(:shellescape)
+require 'open4'
+
+module CliHelper
+  class TimeoutError < RuntimeError; end
+  
+  def tryagain(opts={:timeout=>60, :retry=>3}, &blk)
+    timedout = false
+    curthread = Thread.current
+
+    timersig = EventMachine.add_timer(opts[:timeout]) {
+      timedout = true
+      if curthread
+        curthread.raise(TimeoutError.new("timeout"))
+        curthread.pass
+      end
+    }
+
+    begin
+      count = 0
+      begin
+        break if blk.call
+      end while !timedout && ((count += 1) < opts[:retry])
+    rescue TimeoutError => e
+      raise e
+    ensure
+      curthread = nil
+      EventMachine.cancel_timer(timersig) rescue nil
+    end
+  end
+
+  class CommandError < StandardError
+    attr_reader :stderr, :stdout
+    def initialize(msg, stdout, stderr)
+      super(msg)
+      @stdout = stdout
+      @stderr = stderr
+    end
+  end
+  
+  def sh(cmd, args=[], opts={})
+    opts = opts.merge({:expect_exitcode=>0})
+    cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a) })
+
+    outbuf = errbuf = ''
+    blk = proc {|pid, stdin, stdout, stderr|
+      stdin.close
+      outbuf = stdout
+      errbuf = stderr
+    }
+    stat = Open4::popen4(cmd, &blk)
+    if self.respond_to? :logger
+      logger.debug("Exec command (pid=#{pid}): #{cmd}")
+      logger.debug("STDOUT:\n#{outbuf}\nSTDERR:\n#{errbuf}")
+    end
+    if stat.exitstatus != opts[:expect_exitcode]
+      raise CommandError, "Unexpected exit code=#{stat.extstatus} (expected=#{opts{:expect_exitcode}})",
+         outbuf, errbuf
+    end
+    true
+  end
+end
+
+require 'net/telnet'
+
+module KvmHelper
+  # Establish telnet connection to KVM monitor console
+  def connect_monitor(port, &blk)
+    begin
+      telnet = ::Net::Telnet.new("Host" => "localhost",
+                                 "Port"=>port.to_s,
+                                 "Prompt" => /\n\(qemu\) /,
+                                 "Timeout" => 60,
+                                 "Waittime" => 0.2)
+
+      blk.call(telnet)
+    rescue => e
+      logger.error(e) if self.respond_to?(:logger)
+    ensure
+      telnet.close
+    end
+  end
+end
 
 class KvmHandler < EndpointBuilder
   include Dcmgr::Logger
+  include CliHelper
+  include KvmHelper
 
   job :run_local_store do
     #hva = rpc.delegate('hva-collector')
@@ -664,22 +750,23 @@ class KvmHandler < EndpointBuilder
     case img_src[:type].to_sym
     when :http
       img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", @node.manifest.config.vm_data_dir)
-      system("curl --silent -o '#{img_path}' #{img_src[:uri]}")
+      sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
     else
       raise "Unknown image source type: #{img_src[:type]}"
     end
 
     # boot virtual machine
-    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait",
-                  inst[:instance_spec][:memory_size],
-                  inst[:instance_spec][:cpu_cores],
-                  inst_id,
-                  inst[:runtime_config][:vnc_port],
-                  img_path,
-                  File.expand_path('kvm.pid', inst_data_dir),
-                  inst[:runtime_config][:telnet_port]
-                  )
-    system(cmd)
+    cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+    args = [
+            inst[:instance_spec][:memory_size],
+            inst[:instance_spec][:cpu_cores],
+            inst_id,
+            inst[:runtime_config][:vnc_port],
+            img_path,
+            File.expand_path('kvm.pid', inst_data_dir),
+            inst[:runtime_config][:telnet_port]
+           ]
+    sh(cmd, args)
     
     rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
     event.publish('hva/instance_started', :args=>[inst_id])
@@ -713,28 +800,29 @@ class KvmHandler < EndpointBuilder
     
     # attach disk
     tryagain do
-      lists = `sudo iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}`
-      initiator = `sudo iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'`
+      sh("iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}")
+      sh("iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'")
       sleep 1
       File.exist?(linux_dev_path)
     end
     
     # run vm
-    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait",
-                  inst[:instance_spec][:memory_size],
-                  inst[:instance_spec][:cpu_cores],
-                  inst_id,
-                  inst[:runtime_config][:vnc_port],
-                  linux_dev_path,
-                  File.expand_path('kvm.pid', inst_data_dir),
-                  inst[:runtime_config][:telnet_port]
-                  )
+    cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+    args=[inst[:instance_spec][:memory_size],
+          inst[:instance_spec][:cpu_cores],
+          inst_id,
+          inst[:runtime_config][:vnc_port],
+          linux_dev_path,
+          File.expand_path('kvm.pid', inst_data_dir),
+          inst[:runtime_config][:telnet_port]
+          ]
     if vnic = inst[:instance_nics].first
-      cmd += " -net nic,macaddr=#{vnic[:mac_addr].unpack('A2'*6).join(':')} -net tap,ifname=#{vnic[:vif]}"
+      cmd += " -net nic,macaddr=%s -net tap,ifname=%s"
+      args << vnic[:mac_addr].unpack('A2'*6).join(':')
+      args << vnic[:vif]
     end
-    puts  cmd
-    system(cmd)
-
+    sh(cmd, args)
+    
     rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
     event.publish('hva/instance_started', :args=>[inst_id])
   end
@@ -752,11 +840,11 @@ class KvmHandler < EndpointBuilder
       raise "No such VM process: kvm -name vdc-#{inst_id}"
     end
     
-    system("/bin/kill #{kvm_pid}")
+    sh("/bin/kill #{kvm_pid}")
 
     unless inst[:volume].nil?
       inst[:volume].each { |volid, v|
-        `sudo iscsiadm -m node -T '#{v[:transport_information][:iqn]}' --logout`
+        sh("iscsiadm -m node -T '#{v[:transport_information][:iqn]}' --logout")
       }
     end
 
@@ -787,8 +875,8 @@ class KvmHandler < EndpointBuilder
 
     # attach disk on host os
     tryagain do
-      lists = `sudo iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}`
-      initiator = `sudo iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'`
+      sh("iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}")
+      sh("iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'")
       sleep 1
       File.exist?(linux_dev_path)
     end
@@ -874,35 +962,6 @@ class KvmHandler < EndpointBuilder
   def event
     @event ||= Isono::NodeModules::EventChannel.new(@node)
   end
-
-
-  class TimeoutError < RuntimeError; end
-  
-  def tryagain(opts={:timeout=>60, :retry=>3}, &blk)
-    timedout = false
-    curthread = Thread.current
-
-    timersig = EventMachine.add_timer(opts[:timeout]) {
-      timedout = true
-      if curthread
-        curthread.raise(TimeoutError.new("timeout"))
-        curthread.pass
-      end
-    }
-
-    begin
-      count = 0
-      begin
-        break if blk.call
-      end while !timedout && ((count += 1) < opts[:retry])
-    rescue TimeoutError => e
-      raise e
-    ensure
-      curthread = nil
-      EventMachine.cancel_timer(timersig) rescue nil
-    end
-  end
-
 end
 
 

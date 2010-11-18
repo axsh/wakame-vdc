@@ -7,6 +7,7 @@ gem 'configuration'
 gem 'statemachine', '1.1.1'
 gem 'ruby-hmac'
 gem 'ipaddress', '0.7.0'
+gem 'open4', '1.0.1'
 
 gem 'isono', :git => 'git://github.com/axsh/isono.git'
 
