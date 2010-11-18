@@ -90,6 +90,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     File.open(config_section.dhcp_hosts_conf, 'w') { |f|
       f << ERB.new(<<'_EOS_', nil, '-').result(binding)
 #interface=eth0
+server=8.8.8.8
 dhcp-range=<%= confdata[:ipv4_gw] %>,static,<%= confdata[:netmask] %>
 dhcp-option=option:netmask,<%= confdata[:netmask] %>
 dhcp-option=option:router,<%= confdata[:ipv4_gw] %>
