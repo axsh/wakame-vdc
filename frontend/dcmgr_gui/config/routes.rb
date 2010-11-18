@@ -4,7 +4,7 @@ DcmgrGui::Application.routes.draw do
   # match ':controller(/:action(/:id))'
   
   #account
-  post   'accounts/switch' ,:to => 'accounts#new'
+  post   'accounts/switch' ,:to => 'accounts#switch'
   get    'accounts' ,:to => 'acounts#index'
   
   #dialog
