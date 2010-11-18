@@ -38,4 +38,14 @@ namespace :admin do
     password = encrypted_password = User.encrypt_password(args[:password])
     User.create(:login_id => args[:login_id],:password => password)
   end
+  
+  desc 'Create account'
+  task :create_account,[:user_id,:name] => :environment do |t,args|
+    result = Account.create(:name => args[:name],
+                   :enable => 1
+                   )
+    DB = Schema.current_connect
+    sql = 'insert into users_accounts(user_id,account_id) values(?,?)'
+    DB['users_accounts'].with_sql(sql,args[:user_id],result.id).first
+  end
 end
