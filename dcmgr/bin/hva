@@ -711,7 +711,7 @@ require 'net/telnet'
 
 module KvmHelper
   # Establish telnet connection to KVM monitor console
-  def connect_monitor(post, &blk)
+  def connect_monitor(port, &blk)
     begin
       telnet = ::Net::Telnet.new("Host" => "localhost",
                                  "Port"=>port.to_s,
