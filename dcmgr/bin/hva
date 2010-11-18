@@ -686,7 +686,7 @@ module CliHelper
   
   def sh(cmd, args=[], opts={})
     opts = opts.merge({:expect_exitcode=>0})
-    cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a) })
+    cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a.to_s) })
 
     outbuf = errbuf = ''
     blk = proc {|pid, stdin, stdout, stderr|
@@ -696,7 +696,7 @@ module CliHelper
     }
     stat = Open4::popen4(cmd, &blk)
     if self.respond_to? :logger
-      logger.debug("Exec command (pid=#{pid}): #{cmd}")
+      logger.debug("Exec command (pid=#{stat.pid}): #{cmd}")
       logger.debug("STDOUT:\n#{outbuf}\nSTDERR:\n#{errbuf}")
     end
     if stat.exitstatus != opts[:expect_exitcode]

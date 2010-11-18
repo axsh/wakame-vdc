@@ -17,6 +17,7 @@ module Dcmgr::Models
       Fixnum :size, :null=>false
       Fixnum :status, :null=>false, :default=>0
       String :state, :null=>false, :default=>STATE_TYPE_REGISTERING
+      index :storage_pool_id
     end
     with_timestamps
 

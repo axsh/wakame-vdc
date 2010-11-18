@@ -234,8 +234,8 @@ module Dcmgr::Models
       nfgroup_names = [nfgroup_names] if nfgroup_names.is_a?(String)
 
       uuids = nfgroup_names.map { |n|
-        ng = NetfilterGroup.for_update.find(:account_id=>account_id,
-                                            :name=>n).first
+        ng = NetfilterGroup.for_update.filter(:account_id=>account_id,
+                                              :name=>n).first
         ng.nil? ? nil : ng.canonical_uuid
       }
       # clean up nils
