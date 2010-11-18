@@ -84,7 +84,7 @@ module Dcmgr::Models
     end
 
     def status
-      node.state
+      node.nil? ? :offline : node.state
     end
 
     # Returns true/false if the host pool has enough capacity to run the spec.
