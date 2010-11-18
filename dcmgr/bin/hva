@@ -389,7 +389,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
     end
 
-
     cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif} -j s_#{vif}"
     cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
 
@@ -400,10 +399,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     # DNS
     cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
 
-    #
     # security group
-    #
-
     # rules
     build_rule(rules).each do |rule|
       case rule[:ip_protocol]
@@ -418,18 +414,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       end
     end
 
-    # exclude internal subnet.
-#    network_maps = rpc.request('hva-collector', 'get_networks')
-#    network_maps.each { |network_map|
-#      #cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j DROP"
-#      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j s_#{vif}_drop"
-#    }
-#    cmds << "sudo iptables -A s_#{vif} -j s_#{vif}_drop"
-
     # drop other routings
-    # - d_#{vif}_*
     protocol_maps.each { |k,v|
-      #cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j DROP"
       cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j d_#{vif}_#{k}_drop"
     }
 
