@@ -23,6 +23,34 @@ DcmgrGUI.Class = (function() {
     }
 })();
 
+DcmgrGUI.Filter = DcmgrGUI.Class.create({
+  initialize: function(){
+    this.filters = [];
+  },
+  add: function(filter){
+    this.filters.push(filter);
+  },
+  execute: function(data){
+    this.apply(0,data);
+  },
+  apply: function(index,data){
+    if (this.filters[index] && typeof this.filters[index] === "function") {
+      this.filters[index](data);
+      var next_index = index + 1;
+      if (this.filters[next_index]) {
+        this.apply(next_index,data);
+      } else {
+        return data;
+      };
+    }
+  }
+});
+
+DcmgrGUI.Converter = {};
+DcmgrGUI.Converter.fromMBtoGB = function(data){
+  return Math.ceil(data/1024) + 'GB';
+};
+
 DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   initialize: function(params) {
     this.element = $('#pagenate');
@@ -151,13 +179,17 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
 
 DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
   initialize: function(params){
-    this.id = params.id;
-    this.element = $(params.element_id);
+    if (params.element_id) {
+      this.element = $(params.element_id);
+    } else {
+      this.element = $('<div></div>');
+    }
+    
     this.template = params.template_id;
     this.events = this.events||[];
-    
     //prototype.register_event function add to call before initialize function
     this.bind_events();
+    this.filter = new DcmgrGUI.Filter();
   },
   update:function(request,async){
     this.request = request;
@@ -172,6 +204,7 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
        dataType: "json",
        data: request.data,
        success: function(json,status,xhr){
+         self.filter.execute(json); 
          self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
          self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
        },
@@ -237,8 +270,7 @@ DcmgrGUI.Util.getPagenateData = function(start,limit){
 
 DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   initialize: function(params){
-    this.element = $(params.element_id);
-    this.template = params.template_id;
+    DcmgrGUI.ContentBase.prototype.initialize(params);
     this.checked_list = {};
     this.detail_template = {};
     this.maxrow = params.maxrow
@@ -341,7 +373,6 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
         
         if($(this).is(':checked')){
           var c_detail = new DcmgrGUI.Detail({
-            element_id:$('<div></div>'),
             template_id:params.template_id
           });
           
@@ -383,7 +414,6 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
             c_detail:new DcmgrGUI.Detail({
               //id is to search element key
               id:check_id,
-              element_id:$('<div></div>'),
               template_id:params.template_id
             })
           }
@@ -399,6 +429,11 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
               if(!params.data){
                 data.item = self.checked_list[check_id].c_detail.getEmptyData();
               }
+              
+              if (self.detail_template.filter) {
+                self.detail_template.filter.execute(data);
+              };
+              self.checked_list[check_id].c_detail.filter.execute(data);
               
               if(data.item){
                 $( self.checked_list[check_id].c_detail.template )

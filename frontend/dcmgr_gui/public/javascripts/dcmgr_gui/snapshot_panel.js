@@ -40,9 +40,16 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     page:page
   });
   
+  var detail_filter = new DcmgrGUI.Filter();
+  detail_filter.add(function(data){
+    data.item.size = DcmgrGUI.Converter.fromMBtoGB(data.item.size);
+    return data;
+  });
+  
   c_list.setDetailTemplate({
     template_id:'#snapshotsDetailTemplate',
-    detail_path:'/snapshots/show/'
+    detail_path:'/snapshots/show/',
+    filter: detail_filter
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
@@ -50,6 +57,15 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     c_pagenate.changeTotal(snapshot.owner_total);
     c_list.setData(snapshot.results);
     c_list.multiCheckList(c_list.detail_template);
+  });
+  
+  c_list.filter.add(function(data){
+    var results = data.volume_snapshot.results;
+    var size = results.length;
+    for(var i = 0; i < size; i++) {
+      results[i].result.size = DcmgrGUI.Converter.fromMBtoGB(results[i].result.size);
+    }
+    return data;
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
