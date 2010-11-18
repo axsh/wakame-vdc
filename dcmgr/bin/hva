@@ -390,13 +390,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
     build_rule(rules).each do |rule|
       case rule[:ip_protocol]
       when 'tcp', 'udp'
-        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
+        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
       when 'icmp'
         # ToDo: implement
         # - icmp_type : -1...
         # - icmp_code : -1...
-        # cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
-        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]}    -s #{rule[:ip_source]} -j ACCEPT"
+        # cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} -j ACCEPT"
       end
     end
 
@@ -582,7 +582,21 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
       # validate
       next unless protocol == 'ip4'
-      next unless IPAddress.valid?(ip_source)
+      # next unless IPAddress.valid?(ip_source)
+      # normalize ip_source
+      begin
+        ip = IPAddress(ip_source)
+        ip_source = case ip.u32
+                    when 0
+                      "#{ip.address}/0"
+                    else
+                      "#{ip.address}/#{ip.prefix}"
+                    end
+
+      rescue Exception => e
+        p e
+        return
+      end
 
       case ip_protocol
       when 'tcp', 'udp'
