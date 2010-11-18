@@ -19,4 +19,3 @@ DcmgrGui::Application.config.secret_token = "019f403202066d3f19e7a5c0e6c3d142989
 #for development
 rake db:init
 rake db:sample_data
-rake db:add_information
