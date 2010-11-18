@@ -352,21 +352,24 @@ class ServiceNetfilter < Isono::NodeModules::Base
           when 's'
             cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         when 'udp'
           case bound
           when 's'
             cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         when 'icmp'
           case bound
           when 's'
             cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         end
       }
