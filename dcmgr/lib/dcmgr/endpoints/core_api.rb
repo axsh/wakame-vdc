@@ -80,6 +80,20 @@ module Dcmgr
         return hash.values.first
       end
 
+      def response_to(res)
+        mime = @mime_types.first unless @mime_types.nil?
+        case mime.to_s
+        when 'application/yaml', 'text/yaml'
+          content_type 'yaml'
+          res.to_yaml
+        when 'application/xml', 'text/xml'
+          raise NotImplementedError
+        else
+          content_type 'json'
+          res.to_json
+        end
+      end
+
       # I am not going to use error(ex, &blk) hook since it works only
       # when matches the Exception class exactly. I expect to match
       # whole subclasses of APIError so that override handle_exception!().
