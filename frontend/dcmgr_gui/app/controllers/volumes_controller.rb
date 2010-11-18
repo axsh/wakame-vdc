@@ -60,7 +60,6 @@ class VolumesController < ApplicationController
   def show
     volume_id = params[:id]
     detail = DcmgrResource::Volume.show(volume_id)
-    detail["size"] = convert_from_mb_to_gb(detail["size"]).to_s + 'GB'
     respond_with(detail,:to => [:json])
   end
 

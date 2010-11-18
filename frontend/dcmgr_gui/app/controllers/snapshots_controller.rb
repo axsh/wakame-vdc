@@ -38,7 +38,6 @@ class SnapshotsController < ApplicationController
   def show
     snapshot_id = params[:id]
     detail = DcmgrResource::VolumeSnapshot.show(snapshot_id)
-    detail["size"] = convert_from_mb_to_gb(detail["size"]).to_s + 'GB'
     respond_with(detail,:to => [:json])
   end
   
