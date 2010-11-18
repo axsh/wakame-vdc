@@ -289,7 +289,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # metadata-server
     [ 'A' ].each { |xcmd|
-      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
+      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80")
     }
 
     # create user defined chains.
@@ -351,11 +351,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
 
     # DHCP
-    cmds << "sudo iptables -A s_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
-    cmds << "sudo iptables -A s_#{vif}_udp -p udp --sport 67 -j s_#{vif}_udp_drop"
-
-    # DNS
-    cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
+    cmds << "sudo iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
+    cmds << "sudo iptables -A d_#{vif}_udp -p udp --sport 67 -j s_#{vif}_udp_drop"
 
     # security group
     # rules
