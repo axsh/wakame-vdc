@@ -109,12 +109,15 @@ module Dcmgr::Models
         :created_at  => self.created_at,
         :state => self.state,
         :status => self.status,
+        :ssh_key_pair => nil,
+        :network => [],
+        :volume => [],
+        :netfilter_group => [],
       }
       if self.ssh_key_pair
         h[:ssh_key_pair] = self.ssh_key_pair.name
       end
 
-      h[:network] = []
       if instance_nic
         instance_nic.each { |n|
           if n.ip
@@ -126,7 +129,6 @@ module Dcmgr::Models
         }
       end
       
-      h[:volume] = []
       if self.volume
         self.volume.each { |v|
           h[:volume] << {
@@ -137,7 +139,6 @@ module Dcmgr::Models
         }
       end
 
-      h[:netfilter_group] = []
       if self.netfilter_groups
         self.netfilter_groups.each { |n|
           h[:netfilter_group] << n.name
