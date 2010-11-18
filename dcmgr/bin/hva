@@ -350,7 +350,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ipv4s << network_map[:ipv4_gw]
     ipv4s.each { |addr|
       cmds << "sudo iptables -A d_#{vif} -s #{addr} -j ACCEPT"
-      cmds << "sudo iptables -A s_#{vif} -d #{addr} -j ACCEPT"
     }
 
     # IP protocol routing
@@ -387,8 +386,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
             cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         end
-
-        cmds << "sudo iptables -A #{bound}_#{vif}_#{k} -j #{bound}_#{vif}_#{k}_drop"
       }
     end
 
@@ -427,7 +424,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 #      #cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j DROP"
 #      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j s_#{vif}_drop"
 #    }
-    cmds << "sudo iptables -A s_#{vif} -j s_#{vif}_drop"
+#    cmds << "sudo iptables -A s_#{vif} -j s_#{vif}_drop"
 
     # drop other routings
     # - d_#{vif}_*
@@ -435,6 +432,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
       #cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j DROP"
       cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j d_#{vif}_#{k}_drop"
     }
+
+    # IP protocol routing
+    [ 'd' ].each do |bound|
+      protocol_maps.each { |k,v|
+        cmds << "sudo iptables -A #{bound}_#{vif}_#{k} -j #{bound}_#{vif}_#{k}_drop"
+      }
+    end
 
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
