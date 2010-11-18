@@ -337,7 +337,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
         when 'icmp'
           case bound
           when 's'
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
             #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
             cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED,RELATED -p #{k} -j ACCEPT"
@@ -350,9 +350,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif} -j s_#{vif}"
     cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
 
-    # DHCP
+    # DHCP Server
     cmds << "sudo iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
-    cmds << "sudo iptables -A d_#{vif}_udp -p udp --sport 67 -j s_#{vif}_udp_drop"
+    cmds << "sudo iptables -A d_#{vif}_udp -p udp --sport 67 -j d_#{vif}_udp_drop"
+    # ToDo: if within same network
+    cmds << "sudo iptables -A s_#{vif}_icmp -p icmp -d #{network_map[:dhcp_server]} -j s_#{vif}_icmp_drop"
+
+    # DNS Server
+    cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
+    cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} -j s_#{vif}_udp_drop"
+    # ToDo: if within same network
+    cmds << "sudo iptables -A s_#{vif}_icmp -p icmp -d #{network_map[:dns_server]} -j s_#{vif}_icmp_drop"
 
     # security group
     # rules
