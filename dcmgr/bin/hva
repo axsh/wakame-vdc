@@ -695,7 +695,10 @@ module CliHelper
       errbuf = stderr
     }
     stat = Open4::popen4(cmd, &blk)
-    logger.debug("Exec command (pid=#{pid}): #{cmd}") if self.respond_to? :logger
+    if self.respond_to? :logger
+      logger.debug("Exec command (pid=#{pid}): #{cmd}")
+      logger.debug("STDOUT:\n#{outbuf}\nSTDERR:\n#{errbuf}")
+    end
     if stat.exitstatus != opts[:expect_exitcode]
       raise CommandError, "Unexpected exit code=#{stat.extstatus} (expected=#{opts{:expect_exitcode}})",
          outbuf, errbuf
@@ -747,22 +750,23 @@ class KvmHandler < EndpointBuilder
     case img_src[:type].to_sym
     when :http
       img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", @node.manifest.config.vm_data_dir)
-      system("curl --silent -o '#{img_path}' #{img_src[:uri]}")
+      sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
     else
       raise "Unknown image source type: #{img_src[:type]}"
     end
 
     # boot virtual machine
-    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait",
-                  inst[:instance_spec][:memory_size],
-                  inst[:instance_spec][:cpu_cores],
-                  inst_id,
-                  inst[:runtime_config][:vnc_port],
-                  img_path,
-                  File.expand_path('kvm.pid', inst_data_dir),
-                  inst[:runtime_config][:telnet_port]
-                  )
-    system(cmd)
+    cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+    args = [
+            inst[:instance_spec][:memory_size],
+            inst[:instance_spec][:cpu_cores],
+            inst_id,
+            inst[:runtime_config][:vnc_port],
+            img_path,
+            File.expand_path('kvm.pid', inst_data_dir),
+            inst[:runtime_config][:telnet_port]
+           ]
+    sh(cmd, args)
     
     rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
     event.publish('hva/instance_started', :args=>[inst_id])
@@ -796,28 +800,29 @@ class KvmHandler < EndpointBuilder
     
     # attach disk
     tryagain do
-      lists = `sudo iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}`
-      initiator = `sudo iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'`
+      sh("iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}")
+      sh("iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'")
       sleep 1
       File.exist?(linux_dev_path)
     end
     
     # run vm
-    cmd = sprintf("kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait",
-                  inst[:instance_spec][:memory_size],
-                  inst[:instance_spec][:cpu_cores],
-                  inst_id,
-                  inst[:runtime_config][:vnc_port],
-                  linux_dev_path,
-                  File.expand_path('kvm.pid', inst_data_dir),
-                  inst[:runtime_config][:telnet_port]
-                  )
+    cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+    args=[inst[:instance_spec][:memory_size],
+          inst[:instance_spec][:cpu_cores],
+          inst_id,
+          inst[:runtime_config][:vnc_port],
+          linux_dev_path,
+          File.expand_path('kvm.pid', inst_data_dir),
+          inst[:runtime_config][:telnet_port]
+          ]
     if vnic = inst[:instance_nics].first
-      cmd += " -net nic,macaddr=#{vnic[:mac_addr].unpack('A2'*6).join(':')} -net tap,ifname=#{vnic[:vif]}"
+      cmd += " -net nic,macaddr=%s -net tap,ifname=%s"
+      args << vnic[:mac_addr].unpack('A2'*6).join(':')
+      args << vnic[:vif]
     end
-    puts  cmd
-    system(cmd)
-
+    sh(cmd, args)
+    
     rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
     event.publish('hva/instance_started', :args=>[inst_id])
   end
@@ -835,11 +840,11 @@ class KvmHandler < EndpointBuilder
       raise "No such VM process: kvm -name vdc-#{inst_id}"
     end
     
-    system("/bin/kill #{kvm_pid}")
+    sh("/bin/kill #{kvm_pid}")
 
     unless inst[:volume].nil?
       inst[:volume].each { |volid, v|
-        `sudo iscsiadm -m node -T '#{v[:transport_information][:iqn]}' --logout`
+        sh("iscsiadm -m node -T '#{v[:transport_information][:iqn]}' --logout")
       }
     end
 
@@ -870,8 +875,8 @@ class KvmHandler < EndpointBuilder
 
     # attach disk on host os
     tryagain do
-      lists = `sudo iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}`
-      initiator = `sudo iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'`
+      sh("iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}")
+      sh("iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'")
       sleep 1
       File.exist?(linux_dev_path)
     end
