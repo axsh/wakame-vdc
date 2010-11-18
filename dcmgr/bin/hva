@@ -583,7 +583,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
       # validate
       next unless protocol == 'ip4'
       # next unless IPAddress.valid?(ip_source)
-      # normalize ip_source
+
+      # IPAddress does't support prefix '0'.
+      ip_addr, prefix = ip_source.split('/', 2)
+      if prefix.to_i == 0
+        ip_source = ip_addr
+      end
+
       begin
         ip = IPAddress(ip_source)
         ip_source = case ip.u32
@@ -595,7 +601,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
       rescue Exception => e
         p e
-        return
+        next
       end
 
       case ip_protocol
