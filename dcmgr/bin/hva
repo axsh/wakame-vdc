@@ -118,7 +118,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
   def init_iptables(inst_maps = [])
     [ 'nat', 'filter' ].each { |table|
-      [ 'F', 'X' ].each { |xcmd|
+      [ 'F', 'Z', 'X' ].each { |xcmd|
         cmd = "sudo iptables -t #{table} -#{xcmd}"
         puts cmd
         system(cmd)
@@ -204,7 +204,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system("sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host")
     end
 
-    [ 'F', 'X' ].each { |xcmd|
+    [ 'F', 'Z', 'X' ].each { |xcmd|
       chains.each { |chain|
         system("sudo ebtables -L #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
@@ -326,7 +326,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
     end
 
-    [ 'F', 'X' ].each { |xcmd|
+    [ 'F', 'Z', 'X' ].each { |xcmd|
       chains.each { |chain|
         system("sudo iptables -nL #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
@@ -353,6 +353,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
             cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
             #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state RELATED,ESTABLISHED -p #{k} -j ACCEPT"
             cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         when 'udp'
@@ -361,6 +362,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
             cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
             #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED -p #{k} -j ACCEPT"
             cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         when 'icmp'
@@ -369,6 +371,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
             cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
             #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED,RELATED     -p #{k} -j ACCEPT"
             cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         end
@@ -419,9 +422,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # drop other routings
     # - d_#{vif}_*
-#    protocol_maps.each { |k,v|
-#      cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j DROP"
-#    }
+    protocol_maps.each { |k,v|
+      cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j DROP"
+    }
 
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
@@ -490,7 +493,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system(cmd)
     end
 
-    [ 'F', 'X' ].each { |xcmd|
+    [ 'F', 'Z', 'X' ].each { |xcmd|
       chains.each { |chain|
         system("sudo ebtables -L #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
@@ -552,7 +555,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
     end
 
-    [ 'F', 'X' ].each { |xcmd|
+    [ 'F', 'Z', 'X' ].each { |xcmd|
       chains.each { |chain|
         system("sudo iptables -nL #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
