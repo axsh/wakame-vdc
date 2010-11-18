@@ -157,9 +157,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif     = inst_map[:instance_nics].first[:vif]
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
+    flush_ebtables(inst_map)
+
     # Does host have vif?
     unless valid_vif?(vif)
-      flush_ebtables(inst_map)
       return
     end
 
@@ -188,30 +189,30 @@ class ServiceNetfilter < Isono::NodeModules::Base
       chains << "s_#{vif}_d_host_#{k}"
     }
 
-    # clear rules if exists.
-    system("sudo ebtables -L s_#{vif} >/dev/null 2>&1")
-    if $?.exitstatus == 0
-      system("sudo ebtables -D FORWARD -i #{vif} -j s_#{vif}")
-    end
-
-    system("sudo ebtables -L d_#{vif} >/dev/null 2>&1")
-    if $?.exitstatus == 0
-      system("sudo ebtables -D FORWARD -o #{vif} -j d_#{vif}")
-    end
-
-    system("sudo ebtables -L s_#{vif}_d_host >/dev/null 2>&1")
-    if $?.exitstatus == 0
-      system("sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host")
-    end
-
-    [ 'F', 'Z', 'X' ].each { |xcmd|
-      chains.each { |chain|
-        system("sudo ebtables -L #{chain} >/dev/null 2>&1")
-        if $?.exitstatus == 0
-          system("sudo ebtables -#{xcmd} #{chain}")
-        end
-      }
-    }
+#    # clear rules if exists.
+#    system("sudo ebtables -L s_#{vif} >/dev/null 2>&1")
+#    if $?.exitstatus == 0
+#      system("sudo ebtables -D FORWARD -i #{vif} -j s_#{vif}")
+#    end
+#
+#    system("sudo ebtables -L d_#{vif} >/dev/null 2>&1")
+#    if $?.exitstatus == 0
+#      system("sudo ebtables -D FORWARD -o #{vif} -j d_#{vif}")
+#    end
+#
+#    system("sudo ebtables -L s_#{vif}_d_host >/dev/null 2>&1")
+#    if $?.exitstatus == 0
+#      system("sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host")
+#    end
+#
+#    [ 'F', 'Z', 'X' ].each { |xcmd|
+#      chains.each { |chain|
+#        system("sudo ebtables -L #{chain} >/dev/null 2>&1")
+#        if $?.exitstatus == 0
+#          system("sudo ebtables -#{xcmd} #{chain}")
+#        end
+#      }
+#    }
 
     # create user defined chains.
     [ 'N' ].each { |xcmd|
@@ -276,9 +277,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif     = inst_map[:instance_nics].first[:vif]
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
+    flush_iptables(inst_map)
+
     # Does host have vif?
     unless valid_vif?(vif)
-      flush_iptables(inst_map)
       return
     end
 
@@ -315,25 +317,25 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
     }
 
-    # clean rules if exists.
-    system("sudo iptables -nL s_#{vif} >/dev/null 2>&1")
-    if $?.exitstatus == 0
-      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif} -j s_#{vif}")
-    end
-
-    system("sudo iptables -nL d_#{vif} >/dev/null 2>&1")
-    if $?.exitstatus == 0
-      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
-    end
-
-    [ 'F', 'Z', 'X' ].each { |xcmd|
-      chains.each { |chain|
-        system("sudo iptables -nL #{chain} >/dev/null 2>&1")
-        if $?.exitstatus == 0
-          system("sudo iptables -#{xcmd} #{chain}")
-        end
-      }
-    }
+#    # clean rules if exists.
+#    system("sudo iptables -nL s_#{vif} >/dev/null 2>&1")
+#    if $?.exitstatus == 0
+#      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif} -j s_#{vif}")
+#    end
+#
+#    system("sudo iptables -nL d_#{vif} >/dev/null 2>&1")
+#    if $?.exitstatus == 0
+#      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
+#    end
+#
+#    [ 'F', 'Z', 'X' ].each { |xcmd|
+#      chains.each { |chain|
+#        system("sudo iptables -nL #{chain} >/dev/null 2>&1")
+#        if $?.exitstatus == 0
+#          system("sudo iptables -#{xcmd} #{chain}")
+#        end
+#      }
+#    }
 
     # create user defined chains.
     [ 'N' ].each { |xcmd|
@@ -449,9 +451,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     vif     = inst_map[:instance_nics].first[:vif]
 
-    # xtables commands
-    #cmds = []
-
     # support IP protocol
     protocol_maps = {
       'ip4'  => 'ip4',
@@ -520,8 +519,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
     raise "UnknownNetworkId" if network_map.nil?
 
     vif     = inst_map[:instance_nics].first[:vif]
-    # xtables commands
-    cmds = []
 
     # support IP protocol
     protocol_maps = {
