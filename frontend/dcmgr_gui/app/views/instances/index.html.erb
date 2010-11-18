@@ -112,8 +112,18 @@ jQuery(function($){
 				</tr>
 				<tr>
 					<td class="padcell"></td>
+					<td class="title">SSH Key Pair:</td>
+					<td colspan="7">${item.ssh_key_pair}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
 					<td class="title">Created At:</td>
 					<td colspan="7">${item.created_at}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Security Groups:</td>
+					<td>{{each(index,nf) item.netfilter_group}}${nf}<br />{{/each}}</td>
 				</tr>
 			</table>
 		</div>
