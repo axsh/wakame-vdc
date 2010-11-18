@@ -414,6 +414,12 @@ class ServiceNetfilter < Isono::NodeModules::Base
       cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j DROP"
     }
 
+    # drop other routings
+    # - d_#{vif}_*
+    protocol_maps.each { |k,v|
+      cmds << "sudo iptables -A d_#{vif}_#{k} -j DROP"
+    }
+
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
       puts cmd
