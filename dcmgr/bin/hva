@@ -686,7 +686,7 @@ module CliHelper
   
   def sh(cmd, args=[], opts={})
     opts = opts.merge({:expect_exitcode=>0})
-    cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a) })
+    cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a.to_s) })
 
     outbuf = errbuf = ''
     blk = proc {|pid, stdin, stdout, stderr|
