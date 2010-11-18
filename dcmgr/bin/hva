@@ -357,6 +357,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     [ 's', 'd' ].each do |bound|
       protocol_maps.each { |k,v|
         cmds << "sudo iptables -N #{bound}_#{vif}_#{k}"
+
         case k
         when 'tcp'
           case bound
@@ -386,8 +387,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
             cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         end
+
+        cmds << "sudo iptables -A #{bound}_#{vif}_#{k} -j #{bound}_#{vif}_#{k}_drop"
       }
     end
+
 
     cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif} -j s_#{vif}"
     cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
