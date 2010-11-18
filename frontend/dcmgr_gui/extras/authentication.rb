@@ -26,7 +26,6 @@
 #
 
 module Authentication
-  
   #overwrite
   def current_user
     @current_user ||= login_from_session unless @current_user == false
@@ -63,6 +62,8 @@ module Authentication
   end
   
   def login_required
+    uuid = 'a-'+current_user.primary_account_id
+    ActiveResource::Connection.set_vdc_account_uuid(uuid)
     authorized? || access_denied
   end
   

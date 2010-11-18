@@ -25,6 +25,13 @@ module DcmgrResource
     ActiveResource::Connection.class_eval do 
 
       private
+      
+      def default_header
+        @default_header = {
+          'X-VDC-ACCOUNT-UUID' => self.class.send(:class_variable_get,:@@vdc_account_uuid)
+        }
+      end
+      
       def configure_http(http)
         http = apply_ssl_options(http)
 
