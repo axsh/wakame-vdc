@@ -339,7 +339,18 @@ class ServiceNetfilter < Isono::NodeModules::Base
     [ 'N' ].each { |xcmd|
       chains.each { |chain|
         cmds << "sudo iptables -#{xcmd} #{chain}"
+
+        cmds << "sudo iptables -N #{chain}_drop"
+        cmds << "sudo iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix '#{chain} DROP:'"
+        cmds << "sudo iptables -A #{chain}_drop -j DROP"
       }
+    }
+
+    # group nodes
+    ipv4s << network_map[:ipv4_gw]
+    ipv4s.each { |addr|
+      cmds << "sudo iptables -A d_#{vif} -s #{addr} -j ACCEPT"
+      cmds << "sudo iptables -A s_#{vif} -d #{addr} -j ACCEPT"
     }
 
     # IP protocol routing
@@ -371,7 +382,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
             cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
             #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED,RELATED     -p #{k} -j ACCEPT"
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED,RELATED -p #{k} -j ACCEPT"
             cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         end
@@ -406,24 +417,19 @@ class ServiceNetfilter < Isono::NodeModules::Base
       end
     end
 
-    # group nodes
-    ipv4s << network_map[:ipv4_gw]
-    #ipv4s << network_map[:dns_server]
-    #ipv4s << network_map[:dhcp_server]
-    ipv4s.each { |addr|
-      cmds << "sudo iptables -A s_#{vif} -d #{addr} -j ACCEPT"
-    }
-
     # exclude internal subnet.
-    network_maps = rpc.request('hva-collector', 'get_networks')
-    network_maps.each { |network_map|
-      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j DROP"
-    }
+#    network_maps = rpc.request('hva-collector', 'get_networks')
+#    network_maps.each { |network_map|
+#      #cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j DROP"
+#      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:ipv4_gw]}/#{network_map[:prefix]} -j s_#{vif}_drop"
+#    }
+    cmds << "sudo iptables -A s_#{vif} -j s_#{vif}_drop"
 
     # drop other routings
     # - d_#{vif}_*
     protocol_maps.each { |k,v|
-      cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j DROP"
+      #cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j DROP"
+      cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j d_#{vif}_#{k}_drop"
     }
 
     cmds.uniq! if cmds.size > 0
@@ -535,9 +541,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
     protocol_maps.each { |k,v|
       chains << "s_#{vif}_#{k}"
       chains << "d_#{vif}_#{k}"
+      chains << "s_#{vif}_#{k}_drop"
+      chains << "d_#{vif}_#{k}_drop"
     }
     chains << "s_#{vif}"
     chains << "d_#{vif}"
+    chains << "s_#{vif}_drop"
+    chains << "d_#{vif}_drop"
 
     # metadata-server
     [ 'D' ].each { |xcmd|
