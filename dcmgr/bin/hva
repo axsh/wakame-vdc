@@ -209,6 +209,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     # default drop
+    cmds << "sudo ebtables -A s_#{vif}        --log-level warning --log-ip --log-arp --log-prefix 's_#{vif} DROP:'        -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_host --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_d_host DROP:' -j CONTINUE"
     cmds << "sudo ebtables -A s_#{vif}        -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_host -j DROP"
 
@@ -225,6 +227,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
     # deny,allow
+    cmds << "sudo ebtables -A d_#{vif}_arp        --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_arp DROP:'        -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_d_host_arp DROP:' -j CONTINUE"
     cmds << "sudo ebtables -A d_#{vif}_arp        -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_host_arp -j DROP"
 
