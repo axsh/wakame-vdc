@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-require 'logger'
-require 'configuration'
 
 module Dcmgr
-  extend self
+  VERSION='0.0.0'
 
   class << self
     def conf
@@ -16,6 +14,7 @@ module Dcmgr
       if config_path.is_a?(String)
         raise "Could not find configration file: #{config_path}" unless File.exists?(config_path)
 
+        require 'configuration'
         code= <<-__END
         Configuration('global') do
           #{File.read(config_path)}
