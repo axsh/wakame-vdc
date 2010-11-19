@@ -58,3 +58,85 @@ _ENDCMD
   sh "bundle install"
 end
 
+desc 'build gem packages'
+task :gem do
+  require 'rubygems'
+  require 'rake/gempackagetask'
+
+  spec = Gem::Specification.new do |s|
+    s.platform = Gem::Platform::RUBY
+    s.version = Dcmgr::VERSION
+    s.authors = ['axsh Ltd.']
+    s.email = ['dev@axsh.net']
+    s.homepage = 'http://wakame.jp/'
+    s.name = 'wakame-vdc-dcmgr'
+    s.summary = "Datacenter management toolkit for IaaS Cloud: datacenter manager and support modules"
+    s.description = ''
+    s.require_path = 'lib'
+    s.required_ruby_version = '>= 1.8.7'
+
+    s.files = Dir['config/**/*.rb', 'lib/**/*.rb', 'web/api/public/**/*.*',
+                  'web/metadata/public/**/*.*'] + 
+      %w(Rakefile LICENSE NOTICE 
+         web/api/config.ru web/metadata/config.ru config/dcmgr.conf.example)
+
+    s.bindir='bin'
+    s.executables = %w(collector)
+
+    s.add_dependency "isono", ">= 0.1.0", "< 0.2"
+    s.add_dependency "eventmachine", "0.12.10"
+    s.add_dependency "log4r"
+    s.add_dependency "extlib", '0.9.15'
+    s.add_dependency "configuration"
+    s.add_dependency "statemachine", '1.1.1'
+    s.add_dependency "ruby-hmac"
+    s.add_dependency "ipaddress", '0.7.0'
+    s.add_dependency "rack", ">= 1.2.1"
+    s.add_dependency "sinatra", "1.0"
+    s.add_dependency "json", ">= 1.2.0"
+    s.add_dependency "sequel", "3.16.0"
+    s.add_dependency "mysql", ">= 2.8.1"
+
+    s.add_development_dependency 'bacon'
+    s.add_development_dependency 'rake'
+  end
+
+  File.open("#{spec.name}.gemspec", 'w'){|f| f.write(spec.to_ruby) }
+  sh "gem build #{spec.name}.gemspec"
+
+  spec = Gem::Specification.new do |s|
+    s.platform = Gem::Platform::RUBY
+    s.version = Dcmgr::VERSION
+    s.authors = ['axsh Ltd.']
+    s.email = ['dev@axsh.net']
+    s.homepage = 'http://wakame.jp/'
+    s.name = 'wakame-vdc-agents'
+    s.summary = "Datacenter management toolkit for IaaS Cloud: agent modules"
+    s.description = ''
+    s.require_path = 'lib'
+    s.required_ruby_version = '>= 1.8.7'
+
+    s.files = Dir['config/**/*.rb', 'lib/**/*.rb'] +
+      %w(Rakefile LICENSE NOTICE
+         config/hva.conf.example config/nsa.conf.example)
+
+    s.bindir='bin'
+    s.executables = %w(hva sta nsa)
+
+    s.add_dependency "isono", ">= 0.1.0", "< 0.2"
+    s.add_dependency "eventmachine", "0.12.10"
+    s.add_dependency "log4r"
+    s.add_dependency "extlib", '0.9.15'
+    s.add_dependency "configuration"
+    s.add_dependency "statemachine", '1.1.1'
+    s.add_dependency "ruby-hmac"
+    s.add_dependency "ipaddress", '0.7.0'
+    s.add_dependency "open4"
+
+    s.add_development_dependency 'bacon'
+    s.add_development_dependency 'rake'
+  end
+  
+  File.open("#{spec.name}.gemspec", 'w'){|f| f.write(spec.to_ruby) }
+  sh "gem build #{spec.name}.gemspec"
+end
