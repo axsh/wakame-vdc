@@ -1,0 +1,14 @@
+<div id="header">
+	<h1><a href="/">Wakame Inexhaustible Supply of Cloud Fuel.</a></h1>
+	<ul id="tab">
+		<li class="infra-act"><h2><a href="#">Infrastructure</a></h2></li>
+		<li class="plat-pas"><h2>Platform</h2></li>
+		<li class="app-pas"><h2>Application</h2></li>
+	</ul>
+	<p><span class="greeting">Welcome,
+	<%= @current_user.login_id %></span>|
+		<!-- <a href="#">Help</a><span class="spacer">|</span> -->
+		<!-- <a href="#">Settings</a><span class="spacer">|</span> -->
+		<%= link_to 'Sign Out','/logout'%></p>
+</div>
+<div id="content_header"></div>

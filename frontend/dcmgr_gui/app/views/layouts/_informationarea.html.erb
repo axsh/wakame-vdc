@@ -1,0 +1,18 @@
+<div id="informationarea">
+	<div class="title clearfix">
+		<h3>Information</h3>
+		<%= link_to image_tag('icon_rss.gif',:width=> 20, :height => 20),:action => 'rss',:controller => 'information' %>
+	</div>
+	<ul>
+		<% @informations.each do |info| %>
+		<li>
+			<h4 class="date"><%= info.created_at.strftime("%Y-%m-%d")
+			 %></h4>
+			<h2><%= info.title %></h2>
+			<p>
+			<%= nl2br(info.description) %>
+			</p>
+		</li>
+		<% end %>
+	</ul>
+</div>

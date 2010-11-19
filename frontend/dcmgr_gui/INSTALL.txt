@@ -1,0 +1,21 @@
+
+#Create database
+mysql -uroot
+> create database wakame_dcmgr_gui default character set utf8;
+> grant all on wakame_dcmgr_gui.* to wakame_dcmgr_gui@localhost identified by 'passwd';
+
+#create salt for user.password
+rails console
+>ActiveSupport::SecureRandom.hex(30)
+=> "019f403202066d3f19e7a5c0e6c3d142989446aa65c13bb3c30c129695db"
+
+#Change config.secret_token in config/initializers/secret_token.rb 
+DcmgrGui::Application.config.secret_token = "019f403202066d3f19e7a5c0e6c3d142989446aa65c13bb3c30c129695db"
+
+#Edit dcmgi api server
+#config/initializers/dcmgr_gui.rb
+# :site => "http://your.dcmgrguiserver/"
+
+#for development
+rake db:init
+rake db:sample_data

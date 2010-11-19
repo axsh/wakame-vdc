@@ -1,0 +1,55 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/dashboard_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.dashboardPanel();
+});
+</script>
+<% end %>
+<div id="mainarea" class="grid2">
+	<h3><img src="images/icon_resource.gif" />My Resource</h3>
+	<div class="maincontent">
+		<p class="lead">You are using the following Wakame-vdc resources.</p>
+		<a href="javascript:void(0);" class="refresh">refresh</a>
+		<ul class="resource clearfix">
+			<li>
+				<img src="images/icon_resource01.gif" width="20" height="20" /><a href="/instances">
+				<span id="total_instance">0</span> Instances</a>
+			</li>
+			<li>
+				<img src="images/icon_resource02.gif" width="20" height="20" /><a href="/images">
+				<span id="total_image">0</span> Machine Images</a>
+				</li>
+		</ul>
+		<ul class="resource clearfix">
+			<li>
+				<img src="images/icon_resource03.gif" width="20" height="20" /><a href="/volumes">
+				<span id="total_volume">0</span> Volumes</a>
+				</li>
+			<li>
+				<img src="images/icon_resource03.gif" width="20" height="20" /><a href="/snapshots">
+				<span id="total_snapshot">0</span> Snapshots</a>
+			</li>
+		</ul>
+		<ul class="resource clearfix">
+			<li>
+				<img src="images/icon_resource04.gif" width="20" height="20" /><a href="/security_groups">
+				<span id="total_security_group">0</span> Security Groups</a>
+			</li>
+			<li>
+				<img src="images/icon_resource04.gif" width="20" height="20" /><a href="/keypairs">
+				<span id="total_keypair">0</span> Key Pairs</a>
+			</li>
+		</ul>
+		<div class="spacer20"></div>
+		<div class="spacer20"></div>
+		<div class="spacer20"></div>
+		<div class="spacer20"></div>
+		<div class="spacer20"></div>
+		<div class="spacer20"></div>
+		<div class="spacer20"></div>
+		<div class="spacer20"></div>
+	</div>
+	<div class="btm_maincontent mbt10"></div>
+</div>
+<%= render :partial => 'layouts/informationarea'%>

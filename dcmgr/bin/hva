@@ -1,0 +1,972 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+begin
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup(:default)
+rescue LoadError
+end
+
+require File.expand_path('../../config/path_resolver', __FILE__)
+
+include Isono::Runner::RpcServer
+require 'fileutils'
+
+class ServiceNetfilter < Isono::NodeModules::Base
+  include Dcmgr::Logger
+
+  initialize_hook do
+    @worker_thread = Isono::ThreadPool.new(1)
+
+    @worker_thread.pass {
+      myinstance.init_netfilter
+    }
+
+    event = Isono::NodeModules::EventChannel.new(node)
+
+    event.subscribe('hva/instance_started', '#') do |args|
+      @worker_thread.pass {
+        logger.info("refresh on instance_started: #{args.inspect}")
+        inst_id = args[0]
+        logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
+        myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
+      }
+    end
+
+    event.subscribe('hva/instance_terminated', '#') do |args|
+      @worker_thread.pass {
+        logger.info("refresh on instance_terminated: #{args.inspect}")
+        inst_id = args[0]
+        logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
+        myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
+      }
+    end
+
+    event.subscribe('hva/netfilter_updated', '#') do |args|
+      @worker_thread.pass {
+        logger.info("refresh on netfilter_updated: #{args.inspect}")
+        netfilter_group_id = args[0]
+        myinstance.refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
+      }
+    end
+  end
+
+  def init_netfilter
+    begin
+      inst_maps = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
+
+      init_ebtables(inst_maps) if @node.manifest.config.enable_ebtables
+      init_iptables(inst_maps) if @node.manifest.config.enable_iptables
+      logger.info("initialize netfilter")
+    rescue Exception => e
+      p e
+    end
+  end
+
+  # from event_subscriber
+  def refresh_netfilter_by_friend_instance_id(inst_id)
+    raise "UnknownInstanceID" if inst_id.nil?
+
+    begin
+      inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
+      ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
+
+      inst_maps = ng.map { |g|
+        rpc.request('hva-collector', 'get_instances_of_netfilter_group', g[:id])
+      }
+
+      if inst_maps.size > 0
+        inst_maps.flatten.uniq.each { |inst_map|
+          unless inst_map.nil?
+            refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+            refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+          end
+        }
+      end
+    rescue Exception => e
+      p e
+    end
+  end
+
+  # from event_subscriber
+  def refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
+    raise "UnknownNetfilterGroupID" if netfilter_group_id.nil?
+
+    begin
+      inst_maps = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
+      inst_maps.each { |inst_map|
+        unless inst_map.nil?
+          refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+          refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+        end
+      }
+    rescue Exception => e
+      p e
+    end
+  end
+
+  def init_ebtables(inst_maps = [])
+    cmd = "sudo ebtables --init-table"
+    puts cmd
+    system(cmd)
+
+    inst_maps.each { |inst_map|
+      refresh_ebtables(inst_map)
+    }
+  end
+
+  def init_iptables(inst_maps = [])
+    [ 'nat', 'filter' ].each { |table|
+      [ 'F', 'Z', 'X' ].each { |xcmd|
+        cmd = "sudo iptables -t #{table} -#{xcmd}"
+        puts cmd
+        system(cmd)
+      }
+    }
+
+    inst_maps.each { |inst_map|
+      refresh_iptables(inst_map)
+    }
+  end
+
+  def valid_vif?(vif)
+    cmd = "ifconfig #{vif} >/dev/null 2>&1"
+    system(cmd)
+
+    if $?.exitstatus == 0
+      true
+    else
+      logger.warn("#{vif}: error fetching interface information: Device not found")
+      false
+    end
+  end
+
+  def refresh_ebtables(inst_map = {})
+    logger.debug("refresh_ebtables: #{inst_map[:uuid]} ...")
+
+    # Does the hva have instance?
+    unless inst_map[:host_pool][:node_id] == node.node_id
+      logger.warn("no match for the instance: #{inst_map[:uuid]}")
+      return
+    end
+
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
+
+    vif     = inst_map[:instance_nics].first[:vif]
+    vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
+
+    flush_ebtables(inst_map)
+
+    # Does host have vif?
+    unless valid_vif?(vif)
+      return
+    end
+
+    # group node IPv4 addresses.
+    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
+
+    # xtables commands
+    cmds = []
+
+    # support IP protocol
+    protocol_maps = {
+      'ip4'  => 'ip4',
+      'arp'  => 'arp',
+      #ip6'  => 'ip6',
+      #rarp' => '0x8035',
+    }
+
+    # make chain names.
+    chains = []
+    chains << "s_#{vif}"
+    chains << "d_#{vif}"
+    chains << "s_#{vif}_d_host"
+    protocol_maps.each { |k,v|
+      chains << "s_#{vif}_#{k}"
+      chains << "d_#{vif}_#{k}"
+      chains << "s_#{vif}_d_host_#{k}"
+    }
+
+    # create user defined chains.
+    [ 'N' ].each { |xcmd|
+      chains.each { |chain|
+        cmds << "sudo ebtables -#{xcmd} #{chain}"
+      }
+    }
+
+    # jumt to user defined chains
+    cmds << "sudo ebtables -A FORWARD -i #{vif} -j s_#{vif}"
+    cmds << "sudo ebtables -A FORWARD -o #{vif} -j d_#{vif}"
+    cmds << "sudo ebtables -A INPUT   -i #{vif} -j s_#{vif}_d_host"
+
+    # IP protocol routing
+    protocol_maps.each { |k,v|
+      cmds << "sudo ebtables -A s_#{vif}        -p #{v} -j s_#{vif}_#{k}"
+      cmds << "sudo ebtables -A d_#{vif}        -p #{v} -j d_#{vif}_#{k}"
+      cmds << "sudo ebtables -A s_#{vif}_d_host -p #{v} -j s_#{vif}_d_host_#{k}"
+    }
+
+    # default drop
+    cmds << "sudo ebtables -A s_#{vif}        --log-level warning --log-ip --log-arp --log-prefix 's_#{vif} DROP:'        -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_host --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_d_host DROP:' -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}        -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_d_host -j DROP"
+
+    # anti spoof
+    #cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    #cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+
+    # group nodes.
+    ipv4s << network_map[:ipv4_gw]
+    ipv4s << network_map[:dns_server]
+    ipv4s << network_map[:dhcp_server]
+    ipv4s.uniq.each do |ipv4|
+      cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+    end
+
+    # deny,allow
+    cmds << "sudo ebtables -A d_#{vif}_arp        --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_arp DROP:'        -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_d_host_arp DROP:' -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_arp        -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_d_host_arp -j DROP"
+
+    cmds.uniq! if cmds.size > 0
+    cmds.compact.each { |cmd|
+      puts cmd
+      system(cmd)
+    }
+
+    logger.debug("refresh_ebtables: #{inst_map[:uuid]} done.")
+  end
+
+  def refresh_iptables(inst_map = {})
+    logger.debug("refresh_iptables: #{inst_map[:uuid]} ...")
+
+    # Does the hva have instance?
+    unless inst_map[:host_pool][:node_id] == node.node_id
+      logger.warn "no match for the instance: #{inst_map[:uuid]}"
+      return
+    end
+
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
+
+    vif     = inst_map[:instance_nics].first[:vif]
+    vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
+
+    flush_iptables(inst_map)
+
+    # Does host have vif?
+    unless valid_vif?(vif)
+      return
+    end
+
+    # group node IPv4 addresses.
+    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
+
+    ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
+    rules = ng.map { |g|
+      g[:rules].map { |rule| rule[:permission] }
+    }
+    rules.flatten! if rules.size > 0
+
+    # xtables commands
+    cmds = []
+
+    # support IP protocol
+    protocol_maps = {
+      'tcp'  => 'tcp',
+      'udp'  => 'udp',
+      'icmp' => 'icmp',
+    }
+
+    # make chain names.
+    chains = []
+    protocol_maps.each { |k,v|
+      chains << "s_#{vif}_#{k}"
+      chains << "d_#{vif}_#{k}"
+    }
+    chains << "s_#{vif}"
+    chains << "d_#{vif}"
+
+    # metadata-server
+    [ 'A' ].each { |xcmd|
+      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80")
+    }
+
+    # create user defined chains.
+    [ 'N' ].each { |xcmd|
+      chains.each { |chain|
+        cmds << "sudo iptables -#{xcmd} #{chain}"
+
+        # logger & drop
+        cmds << "sudo iptables -N #{chain}_drop"
+        cmds << "sudo iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix '#{chain} DROP:'"
+        cmds << "sudo iptables -A #{chain}_drop -j DROP"
+      }
+    }
+
+    # group nodes
+    ipv4s << network_map[:ipv4_gw]
+    ipv4s.each { |addr|
+      cmds << "sudo iptables -A d_#{vif} -s #{addr} -j ACCEPT"
+    }
+
+    # IP protocol routing
+    [ 's', 'd' ].each do |bound|
+      protocol_maps.each { |k,v|
+        cmds << "sudo iptables -N #{bound}_#{vif}_#{k}"
+
+        case k
+        when 'tcp'
+          case bound
+          when 's'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+          when 'd'
+            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state RELATED,ESTABLISHED -p #{k} -j ACCEPT"
+            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+          end
+        when 'udp'
+          case bound
+          when 's'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+          when 'd'
+            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED -p #{k} -j ACCEPT"
+            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+          end
+        when 'icmp'
+          case bound
+          when 's'
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+          when 'd'
+            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED,RELATED -p #{k} -j ACCEPT"
+            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+          end
+        end
+      }
+    end
+
+    cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif} -j s_#{vif}"
+    cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
+
+    ##
+    ## ACCEPT
+    ##
+    # DHCP Server
+    cmds << "sudo iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
+    #cmds << "sudo iptables -A d_#{vif}_udp -p udp --sport 67 -j d_#{vif}_udp_drop"
+    # DNS Server
+    cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
+
+    ##
+    ## DROP
+    ##
+    protocol_maps.each { |k,v|
+      # DHCP
+      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:dhcp_server]} -p #{k} -j s_#{vif}_#{k}_drop"
+      # DNS
+      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:dns_server]} -p #{k} -j s_#{vif}_#{k}_drop"
+    }
+
+    # security group
+    # rules
+    build_rule(rules).each do |rule|
+      case rule[:ip_protocol]
+      when 'tcp', 'udp'
+        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
+      when 'icmp'
+        # ToDo: implement
+        # - icmp_type : -1...
+        # - icmp_code : -1...
+        # cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} -j ACCEPT"
+      end
+    end
+
+    # drop other routings
+    protocol_maps.each { |k,v|
+      cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j d_#{vif}_#{k}_drop"
+    }
+
+    # IP protocol routing
+    [ 'd' ].each do |bound|
+      protocol_maps.each { |k,v|
+        cmds << "sudo iptables -A #{bound}_#{vif}_#{k} -j #{bound}_#{vif}_#{k}_drop"
+      }
+    end
+
+    cmds.uniq! if cmds.size > 0
+    cmds.compact.each { |cmd|
+      puts cmd
+      system(cmd)
+    }
+
+    logger.debug("refresh_iptables: #{inst_map[:uuid]} done.")
+  end
+
+  def flush_ebtables(inst_map = {})
+    logger.debug("flush_ebtables: #{inst_map[:uuid]} ...")
+
+    # Does the hva have instance?
+    unless inst_map[:host_pool][:node_id] == node.node_id
+      logger.warn "no match for the instance: #{inst_map[:uuid]}"
+      return
+    end
+
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
+
+    vif     = inst_map[:instance_nics].first[:vif]
+
+    # support IP protocol
+    protocol_maps = {
+      'ip4'  => 'ip4',
+      'arp'  => 'arp',
+      #ip6'  => 'ip6',
+      #rarp' => '0x8035',
+    }
+
+    # make chain names.
+    chains = []
+    chains << "s_#{vif}"
+    chains << "d_#{vif}"
+    chains << "s_#{vif}_d_host"
+    protocol_maps.each { |k,v|
+      chains << "s_#{vif}_#{k}"
+      chains << "d_#{vif}_#{k}"
+      chains << "s_#{vif}_d_host_#{k}"
+    }
+
+    # clear rules if exists.
+    system("sudo ebtables -L s_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      cmd = "sudo ebtables -D FORWARD -i #{vif} -j s_#{vif}"
+      puts cmd
+      system(cmd)
+    end
+
+    system("sudo ebtables -L d_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      cmd = "sudo ebtables -D FORWARD -o #{vif} -j d_#{vif}"
+      puts cmd
+      system(cmd)
+    end
+
+    system("sudo ebtables -L s_#{vif}_d_host >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      cmd = "sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host"
+      puts cmd
+      system(cmd)
+    end
+
+    [ 'F', 'Z', 'X' ].each { |xcmd|
+      chains.each { |chain|
+        system("sudo ebtables -L #{chain} >/dev/null 2>&1")
+        if $?.exitstatus == 0
+          cmd = "sudo ebtables -#{xcmd} #{chain}"
+          puts cmd
+          system(cmd)
+        end
+      }
+    }
+
+    logger.debug("flush_ebtables: #{inst_map[:uuid]} #{vif} done.")
+  end
+
+  def flush_iptables(inst_map = {})
+    logger.debug("flush_iptables: #{inst_map[:uuid]} ...")
+
+    # Does the hva have instance?
+    unless inst_map[:host_pool][:node_id] == node.node_id
+      logger.warn "no match for the instance: #{inst_map[:uuid]}"
+      return
+    end
+
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    raise "UnknownNetworkId" if network_map.nil?
+
+    vif     = inst_map[:instance_nics].first[:vif]
+
+    # support IP protocol
+    protocol_maps = {
+      'tcp'  => 'tcp',
+      'udp'  => 'udp',
+      'icmp' => 'icmp',
+    }
+
+    # make chain names.
+    chains = []
+    protocol_maps.each { |k,v|
+      chains << "s_#{vif}_#{k}"
+      chains << "d_#{vif}_#{k}"
+      chains << "s_#{vif}_#{k}_drop"
+      chains << "d_#{vif}_#{k}_drop"
+    }
+    chains << "s_#{vif}"
+    chains << "d_#{vif}"
+    chains << "s_#{vif}_drop"
+    chains << "d_#{vif}_drop"
+
+    # metadata-server
+    [ 'D' ].each { |xcmd|
+      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
+    }
+
+    # clean rules if exists.
+    system("sudo iptables -nL s_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif} -j s_#{vif}")
+    end
+
+    system("sudo iptables -nL d_#{vif} >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
+    end
+
+    [ 'F', 'Z', 'X' ].each { |xcmd|
+      chains.each { |chain|
+        system("sudo iptables -nL #{chain} >/dev/null 2>&1")
+        if $?.exitstatus == 0
+          system("sudo iptables -#{xcmd} #{chain}")
+        end
+      }
+    }
+
+    logger.debug("flush_iptables: #{inst_map[:uuid]} #{vif} done.")
+  end
+
+  def build_rule(rules = [])
+    require 'ipaddress'
+
+    rule_maps = []
+
+    rules.each do |rule|
+      # ex.
+      # "tcp:22,22,ip4:0.0.0.0"
+      # "udp:53,53,ip4:0.0.0.0"
+      # "icmp:-1,-1,ip4:0.0.0.0"
+
+      # 1st phase
+      # ip_dport    : tcp,udp? 1 - 16bit, icmp: -1
+      # id_port has been separeted in first phase.
+      from_pair, ip_dport, source_pair = rule.split(',')
+
+      # 2nd phase
+      # ip_protocol : [ tcp | udp | icmp ]
+      # ip_sport    : tcp,udp? 1 - 16bit, icmp: -1
+      ip_protocol, ip_sport = from_pair.split(':')
+
+      # protocol    : [ ip4 | ip6 ]
+      # ip_source   : ip4? xxx.xxx.xxx.xxx./[0-32], ip6?: not yet supprted.
+      protocol, ip_source = source_pair.split(':')
+
+      # validate
+      next unless protocol == 'ip4'
+      # next unless IPAddress.valid?(ip_source)
+
+      # IPAddress does't support prefix '0'.
+      ip_addr, prefix = ip_source.split('/', 2)
+      if prefix.to_i == 0
+        ip_source = ip_addr
+      end
+
+      begin
+        ip = IPAddress(ip_source)
+        ip_source = case ip.u32
+                    when 0
+                      "#{ip.address}/0"
+                    else
+                      "#{ip.address}/#{ip.prefix}"
+                    end
+
+      rescue Exception => e
+        p e
+        next
+      end
+
+      case ip_protocol
+      when 'tcp', 'udp'
+        rule_maps << {
+          :ip_protocol => ip_protocol,
+          :ip_sport    => ip_sport.to_i,
+          :ip_dport    => ip_dport.to_i,
+          :protocol    => protocol,
+          :ip_source   => ip_source,
+        }
+      when 'icmp'
+        # via http://docs.amazonwebservices.com/AWSEC2/latest/CommandLineReference/
+        #
+        # For the ICMP protocol, the ICMP type and code must be specified.
+        # This must be specified in the format type:code where both are integers.
+        # Type, code, or both can be specified as -1, which is a wildcard.
+
+        rule_maps << {
+          :ip_protocol => ip_protocol,
+          :icmp_type   => -1, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
+          :icmp_code   => -1, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+          :protocol    => protocol,
+          :ip_source   => ip_source,
+        }
+      end
+    end
+
+    rule_maps
+  end
+
+  def rpc
+    @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
+  end
+
+  def event
+    @event ||= Isono::NodeModules::EventChannel.new(@node)
+  end
+
+end
+
+require 'shellwords'
+raise "Shellword is old version." unless Shellwords.respond_to?(:shellescape)
+require 'open4'
+
+module CliHelper
+  class TimeoutError < RuntimeError; end
+  
+  def tryagain(opts={:timeout=>60, :retry=>3}, &blk)
+    timedout = false
+    curthread = Thread.current
+
+    timersig = EventMachine.add_timer(opts[:timeout]) {
+      timedout = true
+      if curthread
+        curthread.raise(TimeoutError.new("timeout"))
+        curthread.pass
+      end
+    }
+
+    begin
+      count = 0
+      begin
+        break if blk.call
+      end while !timedout && ((count += 1) < opts[:retry])
+    rescue TimeoutError => e
+      raise e
+    ensure
+      curthread = nil
+      EventMachine.cancel_timer(timersig) rescue nil
+    end
+  end
+
+  class CommandError < StandardError
+    attr_reader :stderr, :stdout
+    def initialize(msg, stdout, stderr)
+      super(msg)
+      @stdout = stdout
+      @stderr = stderr
+    end
+  end
+  
+  def sh(cmd, args=[], opts={})
+    opts = opts.merge({:expect_exitcode=>0})
+    cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a.to_s) })
+
+    outbuf = errbuf = ''
+    blk = proc {|pid, stdin, stdout, stderr|
+      stdin.close
+      outbuf = stdout
+      errbuf = stderr
+    }
+    stat = Open4::popen4(cmd, &blk)
+    if self.respond_to? :logger
+      logger.debug("Exec command (pid=#{stat.pid}): #{cmd}")
+      logger.debug("STDOUT:\n#{outbuf}\nSTDERR:\n#{errbuf}")
+    end
+    if stat.exitstatus != opts[:expect_exitcode]
+      raise CommandError, "Unexpected exit code=#{stat.extstatus} (expected=#{opts{:expect_exitcode}})",
+         outbuf, errbuf
+    end
+    true
+  end
+end
+
+require 'net/telnet'
+
+module KvmHelper
+  # Establish telnet connection to KVM monitor console
+  def connect_monitor(port, &blk)
+    begin
+      telnet = ::Net::Telnet.new("Host" => "localhost",
+                                 "Port"=>port.to_s,
+                                 "Prompt" => /\n\(qemu\) /,
+                                 "Timeout" => 60,
+                                 "Waittime" => 0.2)
+
+      blk.call(telnet)
+    rescue => e
+      logger.error(e) if self.respond_to?(:logger)
+    ensure
+      telnet.close
+    end
+  end
+end
+
+class KvmHandler < EndpointBuilder
+  include Dcmgr::Logger
+  include CliHelper
+  include KvmHelper
+
+  job :run_local_store do
+    #hva = rpc.delegate('hva-collector')
+    inst_id = request.args[0]
+    logger.info("Booting #{inst_id}")
+    #inst = hva.get_instance(inst_id)
+
+    inst = rpc.request('hva-collector', 'get_instance',  inst_id)
+    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'init'
+
+    # setup vm data folder
+    inst_data_dir = File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir)
+    FileUtils.mkdir(inst_data_dir)
+    # copy image file
+    img_src = inst[:image][:source]
+    case img_src[:type].to_sym
+    when :http
+      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", @node.manifest.config.vm_data_dir)
+      sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
+    else
+      raise "Unknown image source type: #{img_src[:type]}"
+    end
+
+    # boot virtual machine
+    cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+    args = [
+            inst[:instance_spec][:memory_size],
+            inst[:instance_spec][:cpu_cores],
+            inst_id,
+            inst[:runtime_config][:vnc_port],
+            img_path,
+            File.expand_path('kvm.pid', inst_data_dir),
+            inst[:runtime_config][:telnet_port]
+           ]
+    sh(cmd, args)
+    
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
+    event.publish('hva/instance_started', :args=>[inst_id])
+  end
+
+  job :run_vol_store do
+    inst_id = request.args[0]
+    vol_id = request.args[1]
+    
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    vol = rpc.request('sta-collector', 'get_volume', vol_id)
+    logger.info("Booting #{inst_id}")
+    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'init'
+
+    # setup vm data folder
+    inst_data_dir = File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir)
+    FileUtils.mkdir(inst_data_dir)
+    
+    # create volume from snapshot
+    jobreq.run("zfs-handle.#{vol[:storage_pool][:node_id]}", "create_volume", vol_id)
+    
+    logger.debug("volume created on #{vol[:storage_pool][:node_id]}: #{vol_id}")
+    # reload volume info
+    vol = rpc.request('sta-collector', 'get_volume', vol_id)
+
+    # check under until the dev file is created.
+    # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
+    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{vol[:storage_pool][:ipaddr]}:3260",
+                                                                  vol[:transport_information][:iqn],
+                                                                  vol[:transport_information][:lun]]
+    
+    # attach disk
+    tryagain do
+      sh("iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}")
+      sh("iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'")
+      sleep 1
+      File.exist?(linux_dev_path)
+    end
+    
+    # run vm
+    cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+    args=[inst[:instance_spec][:memory_size],
+          inst[:instance_spec][:cpu_cores],
+          inst_id,
+          inst[:runtime_config][:vnc_port],
+          linux_dev_path,
+          File.expand_path('kvm.pid', inst_data_dir),
+          inst[:runtime_config][:telnet_port]
+          ]
+    if vnic = inst[:instance_nics].first
+      cmd += " -net nic,macaddr=%s -net tap,ifname=%s"
+      args << vnic[:mac_addr].unpack('A2'*6).join(':')
+      args << vnic[:vif]
+    end
+    sh(cmd, args)
+    
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
+    event.publish('hva/instance_started', :args=>[inst_id])
+  end
+  
+  job :terminate do
+    inst_id = request.args[0]
+
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'running'
+
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:shuttingdown})
+    
+    kvm_pid=`pgrep -u root -f vdc-#{inst_id}`
+    unless $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
+      raise "No such VM process: kvm -name vdc-#{inst_id}"
+    end
+    
+    sh("/bin/kill #{kvm_pid}")
+
+    unless inst[:volume].nil?
+      inst[:volume].each { |volid, v|
+        sh("iscsiadm -m node -T '#{v[:transport_information][:iqn]}' --logout")
+      }
+    end
+
+    # cleanup vm data folder
+    FileUtils.rm_r(File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir))
+    
+    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:terminated})
+    event.publish('hva/instance_terminated', :args=>[inst_id])
+  end
+
+  job :attach do
+    inst_id = request.args[0]
+    vol_id = request.args[1]
+
+    job = Dcmgr::Stm::VolumeContext.new(vol_id)
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    vol = rpc.request('sta-collector', 'get_volume', vol_id)
+    logger.info("Attaching #{vol_id}")
+    job.stm.state = vol[:state].to_sym
+    raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'available'
+
+    job.stm.on_attach
+    # check under until the dev file is created.
+    # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
+    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{vol[:storage_pool][:ipaddr]}:3260",
+                                                                  vol[:transport_information][:iqn],
+                                                                  vol[:transport_information][:lun]]
+
+    # attach disk on host os
+    tryagain do
+      sh("iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}")
+      sh("iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'")
+      sleep 1
+      File.exist?(linux_dev_path)
+    end
+
+    rpc.request('sta-collector', 'update_volume', job.to_hash(:host_device_name => linux_dev_path))
+    logger.info("Attaching #{vol_id} on #{inst_id}")
+    job.stm.on_attach
+    job.on_attach
+
+    # attach disk on guest os
+    require 'net/telnet'
+    slot_number = nil
+    pci = nil
+
+    slink = `ls -la #{linux_dev_path}`.scan(/.+\s..\/..\/([a-z]+)/)
+    raise "volume has not attached host os" if slink.nil?
+
+    begin
+      telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /\n\(qemu\) /, "Timeout" => 60, "Waittime" => 0.2)
+      telnet.cmd({"String" => "pci_add auto storage file=/dev/#{slink},if=scsi", "Match" => /.+slot\s[0-9]+.+/}){|c|
+        pci_add = c.scan(/.+slot\s([0-9]+).+/)
+        slot_number = pci_add unless pci_add.empty?
+      }
+      telnet.cmd("info pci"){|c|
+        pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{slot_number},.+:)/)
+      }
+    rescue => e
+      logger.error(e)
+    ensure
+      telnet.close
+    end
+    raise "volume has not attached" if pci.nil?
+    rpc.request('sta-collector', 'update_volume', job.to_hash(:guest_device_name=>slot_number))
+    logger.info("Attached #{vol_id} on #{inst_id}")
+  end
+
+  job :detach do
+    inst_id = request.args[0]
+    vol_id = request.args[1]
+
+    job = Dcmgr::Stm::VolumeContext.new(vol_id)
+    inst = rpc.request('hva-collector', 'get_instance', inst_id)
+    vol = rpc.request('sta-collector', 'get_volume', vol_id)
+    logger.info("Detaching #{vol_id} on #{inst_id}")
+    job.stm.state = vol[:state].to_sym
+    raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'attached'
+
+    job.stm.on_detach
+    # detach disk on guest os
+    require 'net/telnet'
+    pci = nil
+
+    begin
+      telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /\n\(qemu\) /, "Timeout" => 60, "Waittime" => 0.2)
+      telnet.cmd("pci_del #{vol[:guest_device_name]}")
+      telnet.cmd("info pci"){|c|
+        pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{vol[:guest_device_name]},.+:)/)
+      }
+    rescue => e
+      logger.error(e)
+    ensure
+      telnet.close
+    end
+    raise "volume has not detached" unless pci.empty?
+    rpc.request('sta-collector', 'update_volume', job.to_hash)
+
+    # iscsi logout
+    job.stm.on_detach
+    job.on_detach
+    logger.info("iscsi logout #{vol_id}: #{vol[:transport_information][:iqn]}")
+    initiator = `sudo iscsiadm -m node -T '#{vol[:transport_information][:iqn]}' --logout`
+    rpc.request('sta-collector', 'update_volume', job.to_hash)
+  end
+
+  def rpc
+    @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
+  end
+
+  def jobreq
+    @jobreq ||= Isono::NodeModules::JobChannel.new(@node)
+  end
+
+  def event
+    @event ||= Isono::NodeModules::EventChannel.new(@node)
+  end
+end
+
+
+manifest = DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'hva'
+  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
+  load_module Isono::NodeModules::NodeHeartbeat
+  load_module ServiceNetfilter
+
+  config do |c|
+    c.vm_data_dir = '/var/lib/vm'
+    c.enable_ebtables = true
+    c.enable_iptables = true
+  end
+
+  config_path File.expand_path('config/hva.conf', app_root)
+  load_config
+end
+
+start(manifest) do
+  endpoint "kvm-handle.#{@node.node_id}", KvmHandler
+end

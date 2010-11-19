@@ -1,0 +1,9 @@
+#------------------------
+# Configuration file for dcmgr, metadata and collector.
+#------------------------
+
+# Database connection string
+database_url 'mysql://localhost/dcmgr?user=root'
+# AMQP broker to be connected.
+amqp_server_uri 'amqp://192.168.2.25/'
+

@@ -1,0 +1,200 @@
+{
+  "i-5c5fe70a" : {
+    "instance_id" : "i-5c5fe70a",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70b" : {
+    "instance_id" : "i-5c5fe70b",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70c" : {
+    "instance_id" : "i-5c5fe70c",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70d" : {
+    "instance_id" : "i-5c5fe70d",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70e" : {
+    "instance_id" : "i-5c5fe70e",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70f" : {
+    "instance_id" : "i-5c5fe70f",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70g" : {
+    "instance_id" : "i-5c5fe70g",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70h" : {
+    "instance_id" : "i-5c5fe70h",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70i" : {
+    "instance_id" : "i-5c5fe70i",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70j" : {
+    "instance_id" : "i-5c5fe70j",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70k" : {
+    "instance_id" : "i-5c5fe70k",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70l" : {
+    "instance_id" : "i-5c5fe70l",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70m" : {
+    "instance_id" : "i-5c5fe70m",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70n" : {
+    "instance_id" : "i-5c5fe70n",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70o" : {
+    "instance_id" : "i-5c5fe70o",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70p" : {
+    "instance_id" : "i-5c5fe70p",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70q" : {
+    "instance_id" : "i-5c5fe70q",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70r" : {
+    "instance_id" : "i-5c5fe70r",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70s" : {
+    "instance_id" : "i-5c5fe70s",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70t" : {
+    "instance_id" : "i-5c5fe70t",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70u" : {
+    "instance_id" : "i-5c5fe70u",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  },
+  "i-5c5fe70v" : {
+    "instance_id" : "i-5c5fe70v",
+    "wmi_id" : "wmi-000001",
+    "zone" : "wakame-1a",
+    "security_groups" : "default",
+    "type" : "m1.small",
+    "status" : "running",
+    "owner" : "U-1Vtrr6d"
+  }
+}

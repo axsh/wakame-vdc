@@ -1,19 +1,30 @@
 
-source :gemcutter
+source "http://rubygems.org"
 
-gem "rack", "1.1.0"
-gem "sinatra", "0.9.4"
-gem "json", "1.4.6"
-gem "sequel", "3.9.0"
-gem "mysql", "2.8.1"
-gem "activeresource", "2.3.5"
-gem "hpricot", "0.8.2"
+gem 'rake', '>= 0.8.7'
+gem 'extlib', '0.9.15'
+gem 'configuration'
+gem 'statemachine', '1.1.1'
+gem 'ruby-hmac'
+gem 'ipaddress', '0.7.0'
+gem 'open4', '1.0.1'
 
-gem 'extlib', '0.9.14'
-
-gem 'rake', '0.8.7'
+gem 'isono', :git => 'git://github.com/axsh/isono.git'
 
 group :development do
-  gem "rspec", "2.0.1"
-  gem "shotgun", '0.8'
+  gem 'bacon'
+  gem "activeresource", "3.0.0"
+end
+
+group :dcmgr do
+  gem "rack", ">= 1.2.1"
+  gem "sinatra", "1.0"
+  gem "json", ">= 1.2.0"
+  gem "sequel", "3.16.0"
+  gem "mysql", ">= 2.8.1"
+end
+
+group :collector do
+  gem "sequel", "3.16.0"
+  gem "mysql", ">= 2.8.1"
 end

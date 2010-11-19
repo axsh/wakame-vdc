@@ -1,0 +1,7 @@
+<p>Are you sure you want to create the following snapshot?</p>
+<br />
+<ul id="create_snapshots">
+        <% @volume_ids.each do |volume_id| %>
+                <li><%= volume_id %></li>
+        <% end %>
+</ul>

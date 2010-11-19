@@ -1,0 +1,70 @@
+<div id="launch_instance_dialog">
+	<table>
+		<tr>
+			<td>WMI ID:</td>
+			<td id="view_image_id"><%= @image_id %></td>
+			<input id="image_id" type="hidden" value="<%= @image_id %>">
+		</tr>
+		<tr>
+			<td>Host:</td>
+			<td id="select_host_pool">
+			</td>
+		</tr>
+		<tr>
+			<td>Host Name:</td>
+			<td><input id="host_name" type="text" value=""></td>
+		</tr>
+		<tr>
+			<td>Instance Spec:</td>
+			<td>
+			<select name="instance_spec">
+				<option value="m1.small">m1.small
+			</select>
+			<input id="instance_spec" type="hidden" value="is-kpf0pasc">
+			</td>
+		</tr>
+		<tr>
+			<td>SSH Key Pair:</td>
+			<td id="select_ssh_key_pair"></td>
+		</tr>
+	</table>
+
+	<fieldset id="security_group_field">
+		<legend>Security Group</legend><legend>
+		</legend><table cellspacing="5" cellpadding="5">
+		<tbody>
+			<tr><th><span id="available_groups">Available Groups</span></th>
+			<th></th>
+			<th><span id="launch_in">Launch in</span></th>
+		</tr><tr>
+		    <td>
+		        <select id="left_select_list" size="5" multiple="multiple" name="left_select_list"></select>
+		    </td>
+				<td id="manipulation">
+					<button id="right_button">&gt;</button>
+					<br> <br>
+					<button id="left_button">&lt;</button>
+				</td>
+		    <td>
+		        <select id="right_select_list" size="5" multiple="multiple" name="right_select_list">
+		        </select>
+		    </td>
+			</tr>
+		</tbody>
+	</table>
+	</fieldset>
+	<br />
+		
+	<fieldset id="user_data_field">
+	<legend>User Data</legend>
+	<table cellspacing="5" cellpadding="5">
+		<tbody>
+		<tr>
+			<td colspan="2">
+				<textarea cols="56" rows="5" name="user_data" id="user_data"></textarea>
+			</td>
+		</tr>
+		</tbody>
+		</table>
+	</fieldset>
+</div>

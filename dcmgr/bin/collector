@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+begin
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup(:default, :collector)
+rescue ::Exception => e
+end
+
+require File.expand_path('../../config/path_resolver', __FILE__)
+
+def load_conf
+  require 'ostruct'
+  conf = OpenStruct.new
+  
+  load_ctx = Object.new
+  load_ctx.instance_eval {
+    @conf = conf
+    def method_missing(m, *args)
+      @conf.send("#{m}=", *args)
+    end
+  }
+  
+  load_ctx.instance_eval(File.read(File.expand_path('../../dcmgr.conf', __FILE__)))
+  conf
+end
+
+manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'collector'
+  node_instance_id 'master'
+
+  load_module Isono::NodeModules::DataStore
+  load_module Dcmgr::NodeModules::StaCollector
+  load_module Isono::NodeModules::NodeCollector
+  load_module Isono::NodeModules::JobCollector
+  load_module Dcmgr::NodeModules::HvaCollector
+
+  config do |c|
+    conf = load_conf()
+    c.data_store.database_dsn = conf.database_url
+  end
+end
+
+Isono::Runner::RpcServer.start(manifest)

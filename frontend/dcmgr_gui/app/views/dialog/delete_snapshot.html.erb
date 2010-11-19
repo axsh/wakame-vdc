@@ -1,0 +1,7 @@
+<p>Are you sure you want to delete the following snapshot?</p>
+<br />
+<ul id="delete_snapshots">
+        <% @snapshot_ids.each do |snapshot_id| %>
+                <li><%= snapshot_id %></li>
+        <% end %>
+</ul>

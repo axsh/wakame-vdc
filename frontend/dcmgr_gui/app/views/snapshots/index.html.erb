@@ -1,0 +1,110 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/snapshot_panel.js' %>
+<script type="text/javascript">
+  jQuery(function($){
+  dcmgrGUI.snapshotPanel();
+  });
+</script>
+<% end %>
+<% content_for :stylesheet do %>
+<style type="text/css">
+  .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+  .ui-dialog .ui-dialog-content {margin:5px;}
+</style>
+<% end %>
+<div id="mainarea_wide">
+  <h3><img src="images/icon_resource.gif" />Snapshots<a href="javascript:void(0);" class="showhide"></a></h3>
+  <div  id="list_load_mask" class="maincontent">
+    <div class="controller clearfix">
+      <a href="javascript:void(0);" class="create_volume" style="margin-left:7px">Create Volume</a>
+      <a href="javascript:void(0);" class="delete_snapshot">Delete Snapshot</a>
+      
+      <a href="javascript:void(0);" class="refresh" style="margin-left:335px">Refresh</a>
+    </div>
+    <div class="controller clearfix">
+      <!-- <div class="l_float">
+				<span class="text">Viewing:</span>
+				<select class="select">
+	  			<option>All Volumes</option>
+				</select>
+				<input type="text" class="search" />
+      </div> -->
+      <div id="pagenate" class="r_float">
+	<a href="javascript:void(0);" class="prev"></a>
+	<p id="viewPagenate">Snapshots</p>
+	<a href="javascript:void(0);" class="next"></a>
+      </div>
+    </div>
+    <div id="display_snapshots" class="display_area">
+      <% content_for :javascript_template do %>
+      <script id="snapshotsListTemplate" type="text/x-jquery-tmpl">
+      <table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+	  <th></th>
+	  <th>Snapshot ID</th>
+	  <th>Capacity</th>
+	  <th>OriginVolumeID</th>
+	  <th>Created</th>
+	  <th>Status</th>
+	</tr>
+        {{each(index,item) rows}}
+	<tr>
+	  {{if item.uuid }}
+          <td class="listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
+          {{else}}
+          <td class="listcheckbox"></td>
+          {{/if}}
+	  <td class="vtip" title="volume-id">${item.uuid}</td>
+	  <td class="vtip center" title="capacity">${item.size}</td>
+	  <td class="vtip" title="snapshot">${item.origin_volume_id}</td>
+	  <td class="vtip" title="created">${item.created_at}</td>
+	  <td class="vtip center" title="status">${item.state}</td>
+
+	</tr>
+	{{/each}}
+      </table>
+      </script>
+      <% end %>
+    </div>
+  </div>
+  <div id="btm_maincontent_wide"></div>
+  <h3><img src="images/icon_ttl_detail.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+  <div id="detail" class="maincontent">
+    <% content_for :javascript_template do %>
+    <script id="snapshotsDetailTemplate" type="text/x-jquery-tmpl">
+      <div id="${item.uuid}" class="display_area">
+			<h4 class="ptn01">Snapshot ID:<span class="instansid">${item.uuid}</span></h4>
+			<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+			  <tr>
+			    <td class="padcell"></td>
+			    <td class="title">Snapshot:</td>
+			    <td class="volume_size">${item.uuid}</td>
+			    <td class="padcell"></td>
+			    <td class="title">Capacity:</td>
+		      <td>${item.size}</td>
+			  </tr>
+		    <tr>
+          <td class="padcell"></td>
+          <td class="title">OriginVolumeID:</td>
+          <td>${item.origin_volume_id}</td>
+          <td class="padcell"></td>
+          <td class="title">Status:</td>
+          <td class="state">${item.state}</td>
+        </tr>
+				<tr>
+					<td class="padcell"></td>
+         	<td class="title">Created:</td>
+         	<td colspan="7">${item.created_at}</td>
+				</tr>
+        <tr>
+          <td class="padcell"></td>
+          <td class="title">Updated:</td>
+          <td colspan="7">${item.updated_at}</td>
+				</tr>
+			</table>
+      </div>
+    </script>
+    <% end %>
+  </div><!-- maincontent -->
+  <div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

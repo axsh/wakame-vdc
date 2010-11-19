@@ -1,0 +1,67 @@
+/* Dialog
+----------------------------------*/
+
+#create_volume_dialog table tr td {
+	padding: 3px 10px;
+}
+
+#launch_instance_dialog table tr td {
+  padding: 5px 10px;
+}
+
+#attach_volume_dialog table tr td {
+	padding: 3px 10px;
+}
+
+#launch_instance_dialog #view_image_id {
+  padding-top: 2px;
+  padding-right: 4px;
+}
+
+#launch_instance_dialog #left_select_list {
+	width: 200px;
+	height: 190px;
+}
+
+#launch_instance_dialog #right_select_list {
+	width: 200px;
+	height: 190px;
+}
+
+#create_ssh_keypair_dialog table tr td {
+	padding: 3px;
+}
+
+#launch_instance_dialog #manipulation {
+  vertical-align: middle;
+}
+
+#launch_instance_dialog #security_group_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin: 3px;
+  width: 480px;
+}
+
+#launch_instance_dialog #security_group_field legend {
+  padding: 0 3px 0 3px;
+}
+
+#launch_instance_dialog #available_groups {
+  padding-left: 54px;
+}
+
+#launch_instance_dialog #launch_in {
+  padding-left: 75px;
+}
+
+#launch_instance_dialog #user_data_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin: 3px;
+  width: 490px;
+}
+
+#launch_instance_dialog #user_data_field legend {
+  padding: 0 3px 0 3px;
+}

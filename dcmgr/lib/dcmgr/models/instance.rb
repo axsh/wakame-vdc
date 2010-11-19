@@ -1,139 +1,255 @@
-module Dcmgr
-  module Models
-    class Instance < Base
-      set_dataset :instances
-      set_prefix_uuid 'I'
+# -*- coding: utf-8 -*-
+
+module Dcmgr::Models
+  # Model class which represents Virtual Machine or Isolated Instace
+  # running on HostPool.
+  #
+  # @exmaple Create new instance
+  #  hp = HostPool['hp-xxxxx']
+  #  inst = hp.create_instance()
+  class Instance < AccountResource
+    taggable 'i'
+
+    inheritable_schema do
+      Fixnum :host_pool_id, :null=>false
+      Fixnum :image_id, :null=>false
+      Fixnum :instance_spec_id, :null=>false
+      String :state, :size=>20, :null=>false, :default=>:init.to_s
+      String :status, :size=>20, :null=>false, :default=>:init.to_s
+      String :hostname, :null=>false
+      String :ssh_key_pair_id
       
-      many_to_one :account
-      many_to_one :user
+      Text :user_data, :null=>false, :default=>''
+      Text :runtime_config, :null=>false, :default=>''
 
-      many_to_one :image_storage
-      many_to_one :hv_agent
+      Time   :terminated_at
+      index :state
+      index :terminated_at
+      # can not use same hostname within an account.
+      index  [:account_id, :hostname], {:unique=>true}
+    end
+    with_timestamps
+    
+    many_to_one :image
+    many_to_one :instance_spec
+    alias :spec :instance_spec
+    many_to_one :host_pool
+    one_to_many :volume
+    one_to_many :instance_nic
+    alias :nic :instance_nic
+    one_to_many :instance_netfilter_groups
+    many_to_many :netfilter_groups, :join_table=>:instance_netfilter_groups
+    many_to_one :ssh_key_pair
 
-      many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id,
-      :conditions=>{:target_type=>TagMapping::TYPE_INSTANCE}
+    subset(:lives, {:terminated_at => nil})
+    
+    # serialization plugin must be defined at the bottom of all class
+    # method calls.
+    # Possible column data:
+    #   kvm:
+    # {:vnc_port=>11}
+    plugin :serialization
+    serialize_attributes :yaml, :runtime_config
 
-      module ExtendIpAssoc
-        def find_by_group_name(group_name)
-          filter(:ip_group_id=>IpGroup.find(:name=>group_name).id)
-        end
+    def validate
+      super
+
+      # TODO: hostname column validation
+    end
+
+    def before_validation
+      super
+
+      self[:user_data] = '' if self.user_data.nil?
+      self[:hostname] = self.uuid if self.hostname.nil?
+    end
+
+    # dump column data as hash with details of associated models.
+    # this is for internal use.
+    def to_hash
+      h = super
+      h = h.merge({:user_data => user_data.to_s, # Sequel::BLOB -> String
+                    :runtime_config => self.runtime_config, # yaml -> hash
+                    :image=>image.to_hash,
+                    :host_pool=>host_pool.to_hash,
+                    :instance_nics=>instance_nic.map {|n| n.to_hash },
+                    :instance_spec=>instance_spec.to_hash,
+                  })
+      h[:volume]={}
+      if self.volume
+        self.volume.each { |v|
+          h[:volume][v.canonical_uuid] = v.to_hash_document
+        }
       end
-      one_to_many :ip, :extend=>ExtendIpAssoc
+      h
+    end
 
-      def self.find_by_uuid_with_user(uuid, user)
-        instance = find(:uuid=>trim_uuid(uuid))
-        unless user.accounts.index(instance.account)
-          return false
-        end
-        instance
-      end
-
-      STATUS_TYPE_OFFLINE = 0
-      STATUS_TYPE_RUNNING = 1
-      STATUS_TYPE_ONLINE = 2
-      STATUS_TYPE_TERMINATING = 3
-
-      STATUS_TYPES = {
-        STATUS_TYPE_OFFLINE => :offline,
-        STATUS_TYPE_RUNNING => :running,
-        STATUS_TYPE_ONLINE => :online,
-        STATUS_TYPE_TERMINATING => :terminating,
+    # returns hash data for API response on
+    # GET instances/[uuid]
+    #
+    # @exmaple Example output data.
+    # { :id=>
+    #   :cpu_cores
+    #   :memory_size
+    #   :image_id
+    #   :network => {'global1'=>{:ipaddr=>'111.111.111.111'}}
+    #   :volume => {'uuid'=>{:guest_device_name=>,}}
+    #   :ssh_key_pair => 'xxxxx',
+    #   :netfilter_group => ['rule1', 'rule2']
+    #   :created_at
+    #   :state
+    #   :status
+    # }
+    def to_api_document
+      h = {
+        :id => canonical_uuid,
+        :cpu_cores   => instance_spec.cpu_cores,
+        :memory_size => instance_spec.memory_size,
+        :image_id    => image.canonical_uuid,
+        :created_at  => self.created_at,
+        :state => self.state,
+        :status => self.status,
+        :ssh_key_pair => nil,
+        :network => [],
+        :volume => [],
+        :netfilter_group => [],
       }
-      
-      set_dataset filter({~:status => Instance::STATUS_TYPE_OFFLINE} |
-                         ({:status => Instance::STATUS_TYPE_OFFLINE} & (:status_updated_at > Time.now - 3600)))
+      if self.ssh_key_pair
+        h[:ssh_key_pair] = self.ssh_key_pair.name
+      end
 
-      # look up an instance keyed by the assigned ip address.
-      def self.find_by_assigned_ipaddr(ipaddr)
-        ipobj = Ip.find(:ip=>ipaddr) || raise("Unknown IP address in the pool.")
-        raise("The address is not leased to any hosts.") if ipobj.instance_id.nil?
-        find(:id=>ipobj.instance_id)
+      if instance_nic
+        instance_nic.each { |n|
+          if n.ip
+            h[:network] << {
+              :network_name => n.ip.network.name,
+              :ipaddr => n.ip.ipv4
+            }
+          end
+        }
       end
       
-      def physical_host
-        if self.hv_agent
-          self.hv_agent.physical_host
-        else
-          nil
-        end
-      end
-
-      def status_sym
-        STATUS_TYPES[self.status]
-      end
-
-      def status_sym=(sym)
-        match = STATUS_TYPES.find{|k,v| v == sym}
-        return nil unless match
-        self.status = match[0]
-      end
-
-      def ip_addresses
-        self.ip.each{|ip| ip.ip}
-      end
-
-      def mac_addresses
-        self.ip.each{|ip| ip.mac}
-      end
-
-      def before_create
-        super
-        self.status = STATUS_TYPE_OFFLINE unless self.status
-        self.status_updated_at = Time.now
-        Dcmgr::logger.debug "before create: status = %s" % self.status
-        unless self.hv_agent
-          physical_host = PhysicalHost.assign(self)
-          self.hv_agent = physical_host.hv_agents[0]
-        end
-      end
-
-      def after_create
-        super
-        Dcmgr::IPManager.assign_ips(self)
-      end
-
-      def validate
-        errors.add(:account, "can't empty") unless self.account
-        errors.add(:user, "can't empty") unless self.user
-        
-        # errors.add(:hv_agent, "can't empty") unless self.hv_agent
-        errors.add(:image_storage, "can't empty") unless self.image_storage
-
-        errors.add(:need_cpus, "can't empty") unless self.need_cpus
-        errors.add(:need_cpu_mhz, "can't empty") unless self.need_cpu_mhz
-        errors.add(:need_memory, "can't empty") unless self.need_memory
-      end
-
-      def run
-        hvc = hv_agent.hv_controller
-        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
-          vnic_list = ['newbr0'].map {|i|
-            ip = ip_dataset.find_by_group_name(i).first
-            {:mac=>ip.mac, :ip=>ip.ip, :bridge=>i}
+      if self.volume
+        self.volume.each { |v|
+          h[:volume] << {
+            :vol_id => v.canonical_uuid,
+            :guest_device_name=>v.guest_device_name,
+            :state=>v.state,
           }
-          res = http.run_instance(hv_agent.ip, uuid,
-                                  {:cpus=>need_cpus,
-                                    :cpu_mhz => need_cpu_mhz,
-                                    :memory=>need_memory,
-                                    :vnic=>vnic_list,
-                                    :image_storage_uri=> image_storage.storage_url
-                                  })
-          raise "can't controll hvc server" unless res.first["status"] == 200
         }
       end
 
-      def shutdown
-        hvc = hv_agent.hv_controller
-        Dcmgr::hvchttp.open(hvc.access_host, hvc.access_port) {|http|
-          res = http.terminate_instance(hv_agent.ip, uuid)
-          raise "hvc operation failed: #{res.first['message']}" if res.first['status'] != 200
+      if self.netfilter_groups
+        self.netfilter_groups.each { |n|
+          h[:netfilter_group] << n.name
         }
       end
+      h
+    end
 
-      def reboot
-        shutdown
-        run
-      end
+    # Returns the hypervisor type for the instance.
+    def hypervisor
+      self.host_pool.hypervisor
+    end
+
+    # Returns the architecture type of the image
+    def arch
+      self.image.arch
+    end
+
+    def cpu_cores
+      self.instance_spec.cpu_cores
+    end
+
+    def memory_size
+      self.instance_spec.memory_size
+    end
+
+    def config
+      self.instance_spec.config
+    end
+
+    def add_nic(vifname=nil, vendor_id=nil)
+      vifname ||= "vif-#{self[:uuid]}"
+      # TODO: get default vendor ID based on the hypervisor.
+      vendor_id ||= '00:ff:f1'
+      nic = InstanceNic.new({:vif=>vifname,
+                              :mac_addr=>vendor_id
+                            })
+      nic.instance = self
+      nic.save
+    end
+
+    # Join this instance to the list of netfilter group using group's uuid.
+    # @param [String,Array] netfilter_group_uuids 
+    def join_netfilter_group(netfilter_group_uuids)
+      netfilter_group_uuids = [netfilter_group_uuids] if netfilter_group_uuids.is_a?(String)
+      joined_group_uuids = self.netfilter_groups.map { |netfilter_group|
+        netfilter_group.canonical_uuid
+      }
+      target_group_uuids = netfilter_group_uuids.uniq - joined_group_uuids.uniq
+      target_group_uuids.uniq!
+
+      target_group_uuids.map { |target_group_uuid|
+        if ng = NetfilterGroup[target_group_uuid]
+          InstanceNetfilterGroup.create(:instance_id => self.id,
+                                        :netfilter_group_id => ng.id)
+        end
+      }
+    end
+
+    def ips
+      self.instance_nic.map { |nic| nic.ip }
+    end
+
+    def netfilter_group_instances
+      instances = self.netfilter_groups.map { |g| g.instances }
+
+      instances.flatten!.uniq! if instances.size > 0
+      instances
+    end
+
+    def fqdn_hostname
+      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.host_pool.network.domain_name)
+    end
+
+    # Retrieve all networks belong to this instance
+    # @return [Array[Models::Network]]
+    def networks
+      instance_nic.select { |nic|
+        !nic.ip.nil?
+      }.map { |nic|
+        nic.ip.network
+      }.group_by { |net|
+        net.name
+      }.values.map { |i|
+        i.first
+      }
+    end
+
+    # Join this instance to the list of netfilter group using group name. 
+    # @param [String] account_id uuid of current account.
+    # @param [String,Array] nfgroup_names 
+    def join_nfgroup_by_name(account_id, nfgroup_names)
+      nfgroup_names = [nfgroup_names] if nfgroup_names.is_a?(String)
+
+      uuids = nfgroup_names.map { |n|
+        ng = NetfilterGroup.for_update.filter(:account_id=>account_id,
+                                              :name=>n).first
+        ng.nil? ? nil : ng.canonical_uuid
+      }
+      # clean up nils
+      join_netfilter_group(uuids.compact.uniq)
+    end
+
+    def self.lock!
+      super()
+      Image.lock!
+      InstanceSpec.lock!
+      InstanceNic.lock!
+      Volume.lock!
+      VolumeSnapshot.lock!
+      IpLease.lock!
     end
   end
 end

@@ -1,0 +1,114 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/security_group_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.securityGroupPanel();
+});
+</script>
+
+<% end %>
+
+<% content_for :stylesheet do %>
+<style type="text/css">
+	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+	.ui-dialog .ui-dialog-content {margin:5px;}
+</style>
+<% end %>
+
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Security Groups<a href="javascript:void(0);" class="showhide"></a></h3>
+ <div id="list_load_mask" class="maincontent">
+		<div class="controller clearfix">
+		  <a href="javascript:void(0);" class="create_security_group">Create Security Group</a>
+			<a href="javascript:void(0);" class="delete_security_group" >Delete</a>
+			<a href="javascript:void(0);" class="refresh" style="margin-left:302px">Refresh</a>
+		</div>
+		<div class="controller clearfix">
+			<!-- <div class="l_float">
+							<span class="text">Viewing:</span>
+							<select class="select" style="width:130px">
+								<option>All Security Groups</option>
+							</select>
+							<input type="text" class="search" />
+						</div> -->
+     <div id="pagenate" class="r_float">
+			  <a href="javascript:void(0);" class="prev"></a>
+				<p id="viewPagenate">Items</p>
+			  <a href="javascript:void(0);" class="next"></a>
+     </div>
+		</div>
+		<div id="display_security_groups" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="securityGroupsListTemplate" type="text/x-jquery-tmpl">
+			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<th></th>
+					<th>Name</th>
+					<th>Description</th>
+					<th>Action</th>
+				</tr>
+				{{each(index,item) rows}}
+			   <tr>
+			    {{if item.uuid }}
+						<td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
+					{{else}}
+						<td class="listradiobutton"></td>
+					{{/if}}
+					<td class="vtip" title="name" style="width:100px">${item.name}</td>
+					<td class="vtip" title="description" style="width:500px">${item.description}</td>
+					{{if item.name }}
+					<td class="vtip center" title="action">
+						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.uuid}">Edit</a>
+					</td>
+					{{else}}
+						<td class="vtip center" title="action"></td>
+					{{/if}}
+					</td>
+				</tr>
+				{{/each}}
+			</table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_ttl_detail.gif" />Detail<a href="javascript:void(0);" class="showhide"></a></h3>
+ 		<div id="detail" class="maincontent">
+ 			<% content_for :javascript_template do %>
+			<script id="securityGroupsDetailTemplate" type="text/x-jquery-tmpl">
+			<div class="display_area">
+				<table class="ptn07" frame="void" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Name:</td>
+						<td>${item.name}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Description:</td>
+						<td>${item.description}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td colspan="2">
+						<textarea id="security_group_rule" rows="10" cols="10" style="width:630px;height:150px" disabled>${item.rule}</textarea><br />
+						</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+	         	<td class="title">Created:</td>
+	         	<td colspan="7">${item.created_at}</td>
+					</tr>
+	        <tr>
+	          <td class="padcell"></td>
+	          <td class="title">Updated:</td>
+	          <td colspan="7">${item.updated_at}</td>
+					</tr>
+				</table>
+				<br />
+			</div>
+			</script>
+			<% end %>
+ 		</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

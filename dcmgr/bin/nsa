@@ -1,0 +1,147 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+#
+# Naming Service Agent:
+# This agent aims to configure DNS/DHCP daemons or devices to supply
+# IP address and Hostname for Instances.
+
+begin
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup(:default)
+rescue LoadError
+end
+
+require File.expand_path('../../config/path_resolver', __FILE__)
+
+
+require 'eventmachine'
+
+class SuperviseDnsmasq < Isono::NodeModules::Base
+  include Dcmgr::Logger
+
+  config_section do
+    desc "configuration file for dnsmasq dhcp"
+    dhcp_hosts_conf File.expand_path('dnsmasq-dhcp.conf', '/var/tmp/')
+  end
+  
+  initialize_hook do
+    if manifest.config.network_name.nil?
+      abort("network_name is not set yet in nsa.conf")
+    end
+    
+    opts = sprintf("-k --no-hosts --no-resolv --addn-hosts=%s --dhcp-hostsfile=%s --conf-file=%s",
+                   config_section.dhcp_hosts_conf + ".hosts",
+                   config_section.dhcp_hosts_conf + ".dhcp",
+                   config_section.dhcp_hosts_conf
+                   )
+    cmd = "#{manifest.config.dnsmasq_bin_path} #{opts}"
+
+    @dnsmasq_pid = fork {
+      Process.exec(cmd)
+    }
+    begin
+      if !Process.waitpid(@dnsmasq_pid, Process::WNOHANG).nil?
+        abort("dnsmasq is terminated unexpectedly")
+      end
+    rescue Errno::ECHILD
+      abort("Failed to exec dnsmasq process.")
+    end
+    
+    myinstance.refresh_dnsmasq_conf
+
+    event = Isono::NodeModules::EventChannel.new(node)
+
+    event.subscribe('hva/instance_started', '#') do |args|
+      logger.info("refresh on instance_started: #{args.inspect}")
+      myinstance.refresh_dnsmasq_conf
+    end
+    
+    event.subscribe('hva/instance_terminated', '#') do |args|
+      logger.info("refresh on instance_terminated: #{args.inspect}")
+      myinstance.refresh_dnsmasq_conf
+    end
+  end
+
+  terminate_hook do
+    system("/bin/kill #{@dnsmasq_pid}")
+  end
+
+
+  def refresh_dnsmasq_conf
+    EM.defer {
+      begin
+        generate_dhcp_conf()
+        system("/bin/kill -HUP #{@dnsmasq_pid}")
+        logger.info("refreshed dnsmasq conf")
+      rescue Exception => e
+        logger.error(e)
+      end
+    }
+  end
+  
+  def generate_dhcp_conf
+    rpc = Isono::NodeModules::RpcChannel.new(node)
+    # load entier macaddr,ipaddr pairs for all instances from collector.
+    confdata = rpc.request('hva-collector', 'get_dhcp_conf', manifest.config.network_name)
+
+    require 'erb'
+    
+    File.open(config_section.dhcp_hosts_conf, 'w') { |f|
+      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+#interface=eth0
+server=8.8.8.8
+dhcp-range=<%= confdata[:ipv4_gw] %>,static,<%= confdata[:netmask] %>
+dhcp-option=option:netmask,<%= confdata[:netmask] %>
+dhcp-option=option:router,<%= confdata[:ipv4_gw] %>
+dhcp-option=option:dns-server,<%= confdata[:dns_server] %>
+dhcp-option=option:domain-name,<%= confdata[:domain_name] %>
+#dhcp-option=option:domain-search,<%= confdata[:domain_name] %>
+<%- confdata[:mac2addr].each { |i| -%>
+#dhcp-host=<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+<%- } -%>
+<%- confdata[:addr2host].each { |i| -%>
+#address=/<%= i[:hostname] %>/<%= i[:ipaddr] %>
+<%- } -%>
+_EOS_
+    }
+
+    File.open(config_section.dhcp_hosts_conf + ".dhcp", 'w') { |f|
+      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+<%- confdata[:mac2addr].each { |i| -%>
+<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+<%- } -%>
+_EOS_
+    }    
+
+    File.open(config_section.dhcp_hosts_conf + ".hosts", 'w') { |f|
+      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
+<%- confdata[:addr2host].each { |i| -%>
+<%= i[:ipaddr] %>  <%= i[:hostname] %>
+<%- } -%>
+_EOS_
+    }    
+  end
+end
+
+include Isono::Runner::RpcServer
+
+manifest = DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'nsa'
+  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
+  load_module Isono::NodeModules::NodeHeartbeat
+  load_module SuperviseDnsmasq
+  
+  config do |c|
+    c.dnsmasq_bin_path = '/usr/sbin/dnsmasq'
+    c.network_name = nil
+  end
+
+  config_path File.expand_path('config/nsa.conf', app_root)
+  load_config
+end
+
+
+start(manifest) do
+end

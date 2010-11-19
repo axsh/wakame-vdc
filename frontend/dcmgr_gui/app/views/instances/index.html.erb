@@ -1,0 +1,134 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/instance_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.instancePanel();
+});
+</script>
+<% end %>
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Instances<a href="javascript:void(0);" class="showhide"></a></h3>
+ <div id="list_load_mask" class="maincontent">
+		<div class="controller clearfix">
+		  <div id="instanceaction">Instance Actions</div>
+      <ul id="actionlist">
+        <li id="actionparent">Instance Actions</li>
+				<ul id="instanceaction">
+					<li class="terminate_instances"><a href="javascript:void(0);">Terminate</a></li>
+					<li class="reboot_instances" ><a href="javascript:void(0);">Reboot</a></li>
+					<!-- <li class="stop_instances"><a href="javascript:void(0);">Stop</a></li> -->
+					<!-- <li class="start_instances"><a href="javascript:void(0);">Start</a></li> -->
+				</ul>
+		  </ul>
+			<a href="javascript:void(0);" class="refresh" style="margin-left:456px">Refresh</a>
+		</div>
+		<div class="controller clearfix">
+			<!-- <div class="l_float">
+							<span class="text">Viewing:</span>
+							<select class="select">
+								<option>All Instances</option>
+								<option>Running Instances</option>
+								<option>Stopped Instances</option>
+								<option>Tarminated Instances</option>
+							</select>
+							<select class="type">
+								<option>All Instance Types</option>
+								<option>Standard Instances</option>
+								<option>High Memory Instance</option>
+								<option>High CPU Instances</option>
+							</select>
+							<input type="text" class="search" />
+						</div> -->
+         <div id="pagenate" class="r_float">
+			  	<a href="javascript:void(0);" class="prev"></a>
+			  	<p id="viewPagenate">Instances</p>
+			  	<a href="javascript:void(0);" class="next"></a>
+         </div>
+		</div>
+		<div id="display_instances" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="instancesListTemplate" type="text/x-jquery-tmpl">
+			 <table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+			   <tr>
+			     <th></th>
+			     <th>Instance ID</th>
+			     <th>WMI ID</th>
+				   <th>CPU Cores</th>
+		 	     <th>Memory Size</th>
+					 <th>IP</th>
+					 <th>State</th>
+			   </tr>
+			   {{each(index,item) rows}}
+			   <tr>
+					{{if item.id }}
+						<td class="center listcheckbox"><input type="checkbox" value="${item.id}" > </td>
+					{{else}}
+						<td class="listcheckbox"></td>
+					{{/if}}
+					<td class="instance_id" title="${item.id}">${item.id}</td>
+					<td class="wmi_id" title="">${item.image_id}</td>
+					<td class="vtip center" title="${item.cpu_cores}">${item.cpu_cores}</td>
+					<td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
+					<td class="vtip center" title="ip" style="width:60px">{{each(index,network) item.network}}${network.ipaddr}{{/each}}</td>
+					<td class="vtip center state" title="${item.state}">${item.state}</td>
+				</tr>
+			   {{/each}}
+			   </table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_ttl_detail.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+	<div id="detail" class="maincontent">
+		<% content_for :javascript_template do %>
+		<script id="instancesDetailTemplate" type="text/x-jquery-tmpl">
+		<div id="${item.id}" class="display_area">
+			<h4 class="ptn01">Instance:<span class="instansid">${item.id}</span></h4>
+			<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Instance ID:</td>
+					<td>${item.id}</td>
+					<td class="padcell"></td>
+					<td class="title">Wmi ID:</td>
+					<td>${item.image_id}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Cpu Cores:</td>
+					<td>${item.cpu_cores}</td>
+					<td class="padcell"></td>
+					<td class="title">Memory Size:</td>
+					<td>${item.memory_size}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Status:</td>
+					<td class="state">${item.state}</td>
+					<td class="padcell"></td>
+					<td class="title">IP:</td>
+					<td>{{each(index,global_network) item.network}}${global_network.ipaddr}{{/each}}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">SSH Key Pair:</td>
+					<td colspan="7">${item.ssh_key_pair}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Created At:</td>
+					<td colspan="7">${item.created_at}</td>
+				</tr>
+				<tr>
+					<td class="padcell"></td>
+					<td class="title">Security Groups:</td>
+					<td>{{each(index,nf) item.netfilter_group}}${nf}<br />{{/each}}</td>
+				</tr>
+			</table>
+		</div>
+		</script>
+		<% end %>
+	</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

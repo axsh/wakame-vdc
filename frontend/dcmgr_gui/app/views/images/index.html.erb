@@ -1,0 +1,126 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/image_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.imagePanel();
+});
+</script>
+<% end %>
+
+<% content_for :stylesheet do %>
+<style type="text/css">
+	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+	.ui-dialog .ui-dialog-content {margin:5px;}
+</style>
+<% end %>
+
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" />Machine Images<a href="javascript:void(0);" class="showhide"></a></h3>
+ <div id="list_load_mask" class="maincontent">
+		<div class="controller clearfix">
+		  <a href="javascript:void(0);" class="launch_instance">Launch Instance</a>
+			<!-- <a href="javascript:void(0);" class="register_new_ami">Register New AMI</a> -->
+			<!-- <a href="javascript:void(0);" class="de_register">De-register</a> -->
+			<a href="javascript:void(0);" class="refresh" style="margin-left:470px">Refresh</a>
+		</div>
+		<div class="controller clearfix">
+			<!-- <div class="l_float">
+							<span class="text">Viewing:</span>
+							<select class="select">
+								<option>Owned By Me</option>
+							</select>
+							<select class="type">
+								<option>All Platforms</option>
+							</select>
+							<input type="text" class="search" />
+						</div> -->
+     <div id="pagenate" class="r_float">
+			  <a href="javascript:void(0);" class="prev"></a>
+			  <p id="viewPagenate">WMIs</p>
+			  <a href="javascript:void(0);" class="next"></a>
+     </div>
+		</div>
+		<div id="display_images" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="imagesListTemplate" type="text/x-jquery-tmpl">
+			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<th></th>
+					<th>WMI ID</th>
+					<th>Source</th>
+					<th>Owner</th>
+					<th>State</th>
+				</tr>
+			   {{each(index,item) rows}}
+			   <tr>
+			    {{if item.uuid }}
+						<td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
+					{{else}}
+						<td class="listradiobutton"></td>
+					{{/if}}
+					<td class="vtip" title="title">${item.uuid}</td>
+					<td class="vtip" title="source" style="width:300px">
+					{{each(index,source) item.source}}
+						${source.uri}
+					{{/each}}
+					</td>
+					<td class="vtip" title="owner">${item.account_id}</td>
+					<td class="vtip center" title="state">${item.state}</td>
+				</tr>
+				{{/each}}
+			</table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_ttl_detail.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+ 		<div id="detail" class="maincontent">
+			<% content_for :javascript_template do %>
+			<script id="imagesDetailTemplate" type="text/x-jquery-tmpl">
+			<div id="${item.wmi_id}" class="display_area">
+				<h4 class="ptn01">WMI ID:<span class="instansid">${item.uuid}</span></h4>
+				<table class="ptn06" frame="void" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">WMI ID:</td>
+						<td colspan="7">${item.uuid}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Description:</td>
+						<td colspan="7">${item.description}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Source:</td>
+						<td colspan="7">${item.source.uri}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Owner:</td>
+						<td>${item.account_id}</td>
+						<td class="padcell"></td>
+						<td class="title">Arch:</td>
+						<td>${item.arch}</td>
+						<td class="padcell"></td>
+						<td class="title">Status:</td>
+						<td>${item.state}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Created At:</td>
+						<td colspan="7">${item.created_at}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title">Updated At:</td>
+						<td colspan="7">${item.updated_at}</td>
+					</tr>
+				</table>
+			</div>
+			</script>
+			<% end %>
+	</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->
