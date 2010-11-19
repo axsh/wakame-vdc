@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 
-require "rubygems"
-require "bundler/setup"
-
+begin
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup(:default, :dcmgr)
+rescue ::Exception => e
+end
 $:.unshift "#{File.dirname(__FILE__)}/../../lib"
 
 require 'dcmgr'
 
-if File.exists?('./dcmgr.conf')
-  Dcmgr.configure('./dcmgr.conf')
-elsif File.exists?('../../dcmgr.conf')
-  Dcmgr.configure('../../dcmgr.conf')
+if File.exists?('../../config/dcmgr.conf')
+  Dcmgr.configure('../../config/dcmgr.conf')
 else
-  raise "Could not find the configuration file."
+  raise "Could not find the config/dcmgr.conf configuration file."
 end
 Dcmgr.run_initializers
 
