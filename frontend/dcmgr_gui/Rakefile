@@ -5,3 +5,38 @@ require File.expand_path('../config/application', __FILE__)
 require 'rake'
 
 DcmgrGui::Application.load_tasks
+
+$LOAD_PATH.unshift File.expand_path('../../../dcmgr/lib', __FILE__)
+
+desc "build gem packages"
+task :gem do
+  require 'rubygems'
+  require 'rake/gempackagetask'
+  require 'dcmgr'
+  
+  spec = Gem::Specification.new do |s|
+    s.platform = Gem::Platform::RUBY
+    s.version = Dcmgr::VERSION
+    s.authors = ['axsh Ltd.']
+    s.email = ['dev@axsh.net']
+    s.name = 'wakame-vdc-webui'
+    s.summary = "Datacenter management toolkit for IaaS Cloud: UI frontend"
+    s.required_ruby_version = '>= 1.8.7'
+
+    s.files = Dir['app/**/*.{rb,erb}','lib/**/*.rb',
+                  'config/**/*.{rb,yml}', 'db/**/*.rb',
+                  'extras/**/*.rb', 'public/**/*.*',
+                  'lib/**/*.{rb,rake}', 'test/**/*.rb',
+                  'vendor/plugins/**/*.*', 'tmp/',
+                  'script/*', 'test/**/*.rb', 'doc/**/*.*'] +
+      %w(Rakefile config.ru README LICENSE NOTICE INSTALL.txt tmp)
+
+    s.add_dependency "rails", '3.0.0'
+    s.add_dependency 'mysql','2.8.1'
+    s.add_dependency 'sequel','3.15.0'
+    s.add_dependency 'json','1.4.6'
+  end
+  
+  File.open("#{spec.name}.gemspec", 'w'){|f| f.write(spec.to_ruby) }
+  sh "gem build #{spec.name}.gemspec"
+end
