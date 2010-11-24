@@ -718,126 +718,115 @@ class KvmHandler < EndpointBuilder
   include CliHelper
   include KvmHelper
 
-  job :run_local_store do
-    #hva = rpc.delegate('hva-collector')
-    inst_id = request.args[0]
-    logger.info("Booting #{inst_id}")
-    #inst = hva.get_instance(inst_id)
-
-    inst = rpc.request('hva-collector', 'get_instance',  inst_id)
-    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'init'
-
-    # setup vm data folder
-    inst_data_dir = File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir)
-    FileUtils.mkdir(inst_data_dir)
-    # copy image file
-    img_src = inst[:image][:source]
-    case img_src[:type].to_sym
-    when :http
-      img_path = File.expand_path("#{inst_id}/#{inst[:uuid]}", @node.manifest.config.vm_data_dir)
-      sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
-    else
-      raise "Unknown image source type: #{img_src[:type]}"
-    end
-
-    # boot virtual machine
-    cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
-    args = [
-            inst[:instance_spec][:memory_size],
-            inst[:instance_spec][:cpu_cores],
-            inst_id,
-            inst[:runtime_config][:vnc_port],
-            img_path,
-            File.expand_path('kvm.pid', inst_data_dir),
-            inst[:runtime_config][:telnet_port]
-           ]
-    sh(cmd, args)
-    
-    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
-    event.publish('hva/instance_started', :args=>[inst_id])
-  end
-
-  job :run_vol_store do
-    inst_id = request.args[0]
-    vol_id = request.args[1]
-    
-    inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    vol = rpc.request('sta-collector', 'get_volume', vol_id)
-    logger.info("Booting #{inst_id}")
-    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'init'
-
-    # setup vm data folder
-    inst_data_dir = File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir)
-    FileUtils.mkdir(inst_data_dir)
-    
-    # create volume from snapshot
-    jobreq.run("zfs-handle.#{vol[:storage_pool][:node_id]}", "create_volume", vol_id)
-    
-    logger.debug("volume created on #{vol[:storage_pool][:node_id]}: #{vol_id}")
-    # reload volume info
-    vol = rpc.request('sta-collector', 'get_volume', vol_id)
-
-    # check under until the dev file is created.
-    # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{vol[:storage_pool][:ipaddr]}:3260",
-                                                                  vol[:transport_information][:iqn],
-                                                                  vol[:transport_information][:lun]]
-    
-    # attach disk
-    tryagain do
-      sh("iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}")
-      sh("iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'")
-      sleep 1
-      File.exist?(linux_dev_path)
-    end
-    
+  def run_kvm(os_devpath)
     # run vm
     cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
-    args=[inst[:instance_spec][:memory_size],
-          inst[:instance_spec][:cpu_cores],
-          inst_id,
-          inst[:runtime_config][:vnc_port],
-          linux_dev_path,
-          File.expand_path('kvm.pid', inst_data_dir),
-          inst[:runtime_config][:telnet_port]
+    args=[@inst[:instance_spec][:memory_size],
+          @inst[:instance_spec][:cpu_cores],
+          @inst_id,
+          @inst[:runtime_config][:vnc_port],
+          os_devpath,
+          File.expand_path('kvm.pid', @inst_data_dir),
+          @inst[:runtime_config][:telnet_port]
           ]
-    if vnic = inst[:instance_nics].first
+    if vnic = @inst[:instance_nics].first
       cmd += " -net nic,macaddr=%s -net tap,ifname=%s"
       args << vnic[:mac_addr].unpack('A2'*6).join(':')
       args << vnic[:vif]
     end
     sh(cmd, args)
     
-    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:running})
-    event.publish('hva/instance_started', :args=>[inst_id])
+    rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:running})
+    event.publish('hva/instance_started', :args=>[@inst_id])
+  end
+
+  job :run_local_store do
+    @inst_id = request.args[0]
+    logger.info("Booting #{@inst_id}")
+
+    @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
+    raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'init'
+
+    # setup vm data folder
+    @inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
+    FileUtils.mkdir(@inst_data_dir)
+    # copy image file
+    img_src = @inst[:image][:source]
+    case img_src[:type].to_sym
+    when :http
+      img_path = File.expand_path("#{@inst[:uuid]}", @inst_data_dir)
+      sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
+    else
+      raise "Unknown image source type: #{img_src[:type]}"
+    end
+
+    run_kvm(img_path)
+  end
+
+  job :run_vol_store do
+    @inst_id = request.args[0]
+    @vol_id = request.args[1]
+    
+    @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+    @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
+    logger.info("Booting #{@inst_id}")
+    raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'init'
+
+    # setup vm data folder
+    @inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
+    FileUtils.mkdir(@inst_data_dir)
+    
+    # create volume from snapshot
+    jobreq.run("zfs-handle.#{@vol[:storage_pool][:node_id]}", "create_volume", @vol_id)
+    
+    logger.debug("volume created on #{@vol[:storage_pool][:node_id]}: #{@vol_id}")
+    # reload volume info
+    @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
+
+    # check under until the dev file is created.
+    # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
+    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
+                                                                  @vol[:transport_information][:iqn],
+                                                                  @vol[:transport_information][:lun]]
+    
+    # attach disk
+    tryagain do
+      sh("iscsiadm -m discovery -t sendtargets -p #{@vol[:storage_pool][:ipaddr]}")
+      sh("iscsiadm -m node -l -T '#{@vol[:transport_information][:iqn]}' --portal '#{@vol[:storage_pool][:ipaddr]}:3260'")
+      sleep 1
+      File.exist?(linux_dev_path)
+    end
+    
+    # run vm
+    run_kvm(linux_dev_path)
   end
   
   job :terminate do
-    inst_id = request.args[0]
+    @inst_id = request.args[0]
 
-    inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    raise "Invalid instance state: #{inst[:state]}" unless inst[:state].to_s == 'running'
+    @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+    raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
 
-    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:shuttingdown})
+    rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
     
-    kvm_pid=`pgrep -u root -f vdc-#{inst_id}`
+    kvm_pid=`pgrep -u root -f vdc-#{@inst_id}`
     unless $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
-      raise "No such VM process: kvm -name vdc-#{inst_id}"
+      raise "No such VM process: kvm -name vdc-#{@inst_id}"
     end
     
     sh("/bin/kill #{kvm_pid}")
 
-    unless inst[:volume].nil?
-      inst[:volume].each { |volid, v|
+    unless @inst[:volume].nil?
+      @inst[:volume].each { |volid, v|
         sh("iscsiadm -m node -T '#{v[:transport_information][:iqn]}' --logout")
       }
     end
 
     # cleanup vm data folder
-    FileUtils.rm_r(File.expand_path("#{inst_id}", @node.manifest.config.vm_data_dir))
+    FileUtils.rm_r(File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir))
     
-    rpc.request('hva-collector', 'update_instance',  inst_id, {:state=>:terminated})
-    event.publish('hva/instance_terminated', :args=>[inst_id])
+    rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:terminated})
+    event.publish('hva/instance_terminated', :args=>[@inst_id])
   end
 
   job :attach do
