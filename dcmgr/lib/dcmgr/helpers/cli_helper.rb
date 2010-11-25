@@ -22,13 +22,18 @@ module Dcmgr
           end
         }
 
+        count = opts[:retry]
         begin
-          count = 0
           begin
             break if blk.call
-          end while !timedout && ((count += 1) < opts[:retry])
+          end while !timedout && ((count -= 1) >= 0)
         rescue TimeoutError => e
           raise e
+        rescue RuntimeError => e
+          if respond_to?(:logger)
+            logger.debug("Caught Error. To be retrying....: #{e}")
+          end
+          retry if (count -= 1) >= 0
         ensure
           curthread = nil
           EventMachine.cancel_timer(timersig) rescue nil
