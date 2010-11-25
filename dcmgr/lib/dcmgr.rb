@@ -112,4 +112,8 @@ module Dcmgr
     autoload :SnapshotContext, 'dcmgr/stm/snapshot_context'
     autoload :Instance, 'dcmgr/stm/instance'
   end
+
+  module Helpers
+    autoload :CliHelper, 'dcmgr/helpers/cli_helper'
+  end
 end
