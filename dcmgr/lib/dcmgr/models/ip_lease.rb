@@ -33,7 +33,6 @@ module Dcmgr::Models
       end
       reserved = reserved.map {|i| i.to_u32 }
       # use SELECT FOR UPDATE to lock rows within same network.
-      p (start_ip.to_u32 .. last_ip.to_u32).to_a
       addrs = (start_ip.to_u32 .. last_ip.to_u32).to_a -
         reserved - network.ip_lease_dataset.for_update.all.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
       raise "Out of IP address in this network segment: #{gwaddr.network.to_s}/#{gwaddr.prefix}" if addrs.empty?
