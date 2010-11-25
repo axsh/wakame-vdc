@@ -22,6 +22,8 @@ module Dcmgr::Models
       raise TypeError unless instance_nic.is_a?(InstanceNic)
       # TODO: consider the case of multiple nics on multiple network.
       network = instance_nic.instance.host_pool.network
+      raise "Network (#{network.name}) does not support dynamic IP assignment." unless network.lease_dynamic?
+      start_ip, last_ip = network.dhcp_lease_range
       gwaddr = IPAddress::IPv4.new("#{network.ipv4_gw}/#{network.prefix}")
       reserved = [gwaddr]
       reserved << IPAddress::IPv4.new(network.dhcp_server)
@@ -31,7 +33,8 @@ module Dcmgr::Models
       end
       reserved = reserved.map {|i| i.to_u32 }
       # use SELECT FOR UPDATE to lock rows within same network.
-      addrs = (gwaddr.first.to_u32 .. gwaddr.last.to_u32).to_a -
+      p (start_ip.to_u32 .. last_ip.to_u32).to_a
+      addrs = (start_ip.to_u32 .. last_ip.to_u32).to_a -
         reserved - network.ip_lease_dataset.for_update.all.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
       raise "Out of IP address in this network segment: #{gwaddr.network.to_s}/#{gwaddr.prefix}" if addrs.empty?
       
