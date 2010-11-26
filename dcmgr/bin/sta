@@ -149,14 +149,16 @@ class ZfsHandler < EndpointBuilder
   job :delete_snapshot do
     snapshot_id = request.args[0]
     job = Dcmgr::Stm::SnapshotContext.new(snapshot_id)
-    sdata = rpc.request('sta-collector', 'get_snapshot', snapshot_id) unless snapshot_id.nil?
+    sdata = rpc.request('sta-collector', 'get_snapshot', snapshot_id)
     data = rpc.request('sta-collector', 'get_volume', sdata[:origin_volume_id])
     logger.info("deleting snapshot: #{snapshot_id}")
     raise "Invalid snapshot state: #{sdata[:state]}" unless sdata[:state].to_s == 'deleting'
     job.stm.state=sdata[:state].to_sym
     job.stm.on_delete
 
-    snap_delete = `rm -rf #{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap`
+    system("rm -rf #{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap")
+    raise "snapshot has not be deleted" if $?.exitstatus != 0
+
     rpc.request('sta-collector', 'update_snapshot', job.to_hash)
     logger.info("deleted snapshot: #{snapshot_id}")
   end

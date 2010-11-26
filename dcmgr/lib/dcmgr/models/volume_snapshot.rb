@@ -23,6 +23,8 @@ module Dcmgr::Models
 
     many_to_one :storage_pool
 
+    class RequestError < RuntimeError; end
+
     def to_hash_document
       h = self.values.dup
       h[:id] = h[:uuid] = self.canonical_uuid
@@ -39,9 +41,13 @@ module Dcmgr::Models
       Volume[origin_volume_id]
     end
 
-    def delete_snapshot
-      self.state = STATE_TYPE_DELETING
-      self.save_changes
+    def self.delete_snapshot(account_id, uuid)
+      vs = self.dataset.where(:account_id => account_id).where(:uuid => uuid.split('-').last).first
+      if vs.state.to_sym != :available
+        raise RequestError, "invalid delete request"
+      end
+      vs.state = :deleting
+      vs.save_changes
     end
   end
 end

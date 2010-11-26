@@ -707,9 +707,13 @@ module Dcmgr
             snapshot_id = params[:id]
             raise UndefindVolumeSnapshotID if snapshot_id.nil?
 
-            vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
+            begin
+              vs  = Models::VolumeSnapshot.delete_snapshot(@account.canonical_uuid, snapshot_id)
+            rescue Models::VolumeSnapshot::RequestError => e
+              logger.error(e)
+              raise InvalidDeleteRequest
+            end
             raise UnknownVolumeSnapshot if vs.nil?
-            vs = vs.delete_snapshot
             sp = vs.storage_pool
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid)
