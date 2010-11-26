@@ -81,8 +81,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
         bt_edit_security_group.open({"ids":[uuid]});
       }
       c_list.checkRadioButton(uuid);
-      $('#detail').html('');
-      return false;
     });
   });
   
