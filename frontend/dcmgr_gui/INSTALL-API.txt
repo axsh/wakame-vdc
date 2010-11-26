@@ -1,0 +1,14 @@
+# Edit './config/initializers/proxy.rb'.
+
+# Configuration:
+#
+# config/initializers/proxy.rb
+
+# Start the nginx proxy server.
+> rake api:create_proxy_config
+> rake api:start_proxy
+
+# Start the auth server.
+> rackup -D -o localhost -p 8081 config-api.ru
+# or...
+> rake api:start_auth
