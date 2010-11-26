@@ -27,6 +27,7 @@ module Dcmgr::Models
       String :state, :null=>false, :default=>STATE_TYPE_REGISTERING
       Fixnum :size, :null=>false
       Fixnum :instance_id
+      Fixnum :boot_dev, :null=>false, :default=>0
       String :snapshot_id
       String :host_device_name
       String :guest_device_name

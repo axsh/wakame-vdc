@@ -329,6 +329,7 @@ module Dcmgr
               snapshot_id = wmi.source[:snapshot_id]
               vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
 
+              vol.boot_dev = 1
               vol.instance = inst
               vol.save
               res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
@@ -616,6 +617,8 @@ module Dcmgr
             v = find_by_uuid(:Volume, params[:id])
             raise UnknownVolume if v.nil?
             i = v.instance
+            # the volume as the boot device can not be detached.
+            raise DetachVolumeFailure, "boot device can not be detached" if v.boot_dev == 1
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
             respond_to { |f|
               f.json {v.to_hash_document.to_json}

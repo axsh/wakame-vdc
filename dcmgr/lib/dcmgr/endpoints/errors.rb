@@ -45,6 +45,7 @@ module Dcmgr
     define_error(:OutOfHostCapacity, 400)
     define_error(:UnknownSshKeyPair, 404)
     define_error(:UndefinedStoragePoolID, 400)
+    define_error(:DetachVolumeFailure, 400)
 
     # netfilter_group
     define_error(:UndefinedNetfilterGroup, 400)
