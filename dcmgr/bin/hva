@@ -673,6 +673,41 @@ class KvmHandler < EndpointBuilder
     sh(cmd, args)
   end
 
+  def attach_volume_to_host
+    # check under until the dev file is created.
+    # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
+    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
+                                                                  @vol[:transport_information][:iqn],
+                                                                  @vol[:transport_information][:lun]]
+    
+    tryagain do
+      next true if File.exist?(linux_dev_path)
+      
+      sh("iscsiadm -m discovery -t sendtargets -p %s", [@vol[:storage_pool][:ipaddr]])
+      sh("iscsiadm -m node -l -T '%s' --portal '%s'",
+         [@vol[:transport_information][:iqn], @vol[:storage_pool][:ipaddr]])
+      sleep 1
+    end
+
+    rpc.request('sta-collector', 'update_volume', {
+                  :volume_id=>@vol_id,
+                  :state=>:attaching,
+                  :host_device_name => linux_dev_path})
+  end
+
+  def detach_volume_from_host
+    # iscsi logout
+    sh("iscsiadm -m node -T '%s' --logout", [@vol[:transport_information][:iqn]])
+
+    rpc.request('sta-collector', 'update_volume', {
+                  :volume_id=>@vol_id,
+                  :state=>:available,
+                  :host_device_name=>nil,
+                  :instance_id=>nil,
+                })
+    event.publish('hva/volume_detached', :args=>[@inst_id, @vol_id])
+  end
+
   def update_instance_state(opts, ev)
     raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
     rpc.request('hva-collector', 'update_instance', @inst_id, opts)
@@ -736,6 +771,7 @@ class KvmHandler < EndpointBuilder
     @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
 
     rpc.request('sta-collector', 'update_volume', {:volume_id=>@vol_id, :state=>:attaching})
+    logger.info("Attaching #{@vol_id} on #{@inst_id}")
     # check under until the dev file is created.
     # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
     linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
@@ -743,13 +779,8 @@ class KvmHandler < EndpointBuilder
                                                                   @vol[:transport_information][:lun]]
     
     # attach disk
-    tryagain do
-      sh("iscsiadm -m discovery -t sendtargets -p #{@vol[:storage_pool][:ipaddr]}")
-      sh("iscsiadm -m node -l -T '#{@vol[:transport_information][:iqn]}' --portal '#{@vol[:storage_pool][:ipaddr]}:3260'")
-      sleep 1
-      File.exist?(linux_dev_path)
-    end
-    
+    attach_volume_to_host
+
     # run vm
     run_kvm(linux_dev_path)
     update_instance_state({:state=>:running}, 'hva/instance_started')
@@ -777,7 +808,10 @@ class KvmHandler < EndpointBuilder
       
       unless @inst[:volume].nil?
         @inst[:volume].each { |volid, v|
-          sh("iscsiadm -m node -T '#{v[:transport_information][:iqn]}' --logout")
+          @vol_id = volid
+          @vol = v
+          # force to continue detaching volumes during termination.
+          detach_volume_from_host rescue logger.error($!)
         }
       end
       
@@ -790,47 +824,44 @@ class KvmHandler < EndpointBuilder
   end
 
   job :attach do
-    inst_id = request.args[0]
-    vol_id = request.args[1]
+    @inst_id = request.args[0]
+    @vol_id = request.args[1]
 
-    job = Dcmgr::Stm::VolumeContext.new(vol_id)
-    inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    vol = rpc.request('sta-collector', 'get_volume', vol_id)
-    logger.info("Attaching #{vol_id}")
-    job.stm.state = vol[:state].to_sym
-    raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'available'
+    @job = Dcmgr::Stm::VolumeContext.new(@vol_id)
+    @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+    @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
+    logger.info("Attaching #{@vol_id}")
+    @job.stm.state = @vol[:state].to_sym
+    raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'available'
 
-    job.stm.on_attach
+    @job.stm.on_attach
+    rpc.request('sta-collector', 'update_volume', {:volume_id=>@vol_id, :state=>:attaching})
     # check under until the dev file is created.
     # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{vol[:storage_pool][:ipaddr]}:3260",
-                                                                  vol[:transport_information][:iqn],
-                                                                  vol[:transport_information][:lun]]
+    linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
+                                                                  @vol[:transport_information][:iqn],
+                                                                  @vol[:transport_information][:lun]]
 
     # attach disk on host os
-    tryagain do
-      sh("iscsiadm -m discovery -t sendtargets -p #{vol[:storage_pool][:ipaddr]}")
-      sh("iscsiadm -m node -l -T '#{vol[:transport_information][:iqn]}' --portal '#{vol[:storage_pool][:ipaddr]}:3260'")
-      sleep 1
-      File.exist?(linux_dev_path)
-    end
+    attach_volume_to_host
 
-    rpc.request('sta-collector', 'update_volume', job.to_hash(:host_device_name => linux_dev_path))
-    logger.info("Attaching #{vol_id} on #{inst_id}")
-    job.stm.on_attach
-    job.on_attach
+    logger.info("Attaching #{@vol_id} on #{@inst_id}")
+    @job.stm.on_attach
+    @job.on_attach
 
     # attach disk on guest os
     require 'net/telnet'
     slot_number = nil
     pci = nil
 
-    slink = `ls -la #{linux_dev_path}`.scan(/.+\s..\/..\/([a-z]+)/)
-    raise "volume has not attached host os" if slink.nil?
-
+    sddev = File.expand_path(File.readlink(linux_dev_path), '/dev/disk/by-path')
     begin
-      telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /\n\(qemu\) /, "Timeout" => 60, "Waittime" => 0.2)
-      telnet.cmd({"String" => "pci_add auto storage file=/dev/#{slink},if=scsi", "Match" => /.+slot\s[0-9]+.+/}){|c|
+      telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{@inst[:runtime_config][:telnet_port]}", "Prompt" => /\n\(qemu\) /, "Timeout" => 60, "Waittime" => 0.2)
+      # success message:
+      #   OK domain 0, bus 0, slot 4, function 0
+      # error message:
+      #   failed to add file=/dev/xxxx,if=virtio
+      telnet.cmd({"String" => "pci_add auto storage file=#{sddev},if=scsi",  "Match" => /.+slot\s[0-9]+.+/}){|c|
         pci_add = c.scan(/.+slot\s([0-9]+).+/)
         slot_number = pci_add unless pci_add.empty?
       }
@@ -843,31 +874,39 @@ class KvmHandler < EndpointBuilder
       telnet.close
     end
     raise "volume has not attached" if pci.nil?
-    rpc.request('sta-collector', 'update_volume', job.to_hash(:guest_device_name=>slot_number))
-    logger.info("Attached #{vol_id} on #{inst_id}")
+    rpc.request('sta-collector', 'update_volume', @job.to_hash(:guest_device_name=>slot_number))
+    logger.info("Attached #{@vol_id} on #{@inst_id}")
   end
 
   job :detach do
-    inst_id = request.args[0]
-    vol_id = request.args[1]
+    @inst_id = request.args[0]
+    @vol_id = request.args[1]
 
-    job = Dcmgr::Stm::VolumeContext.new(vol_id)
-    inst = rpc.request('hva-collector', 'get_instance', inst_id)
-    vol = rpc.request('sta-collector', 'get_volume', vol_id)
-    logger.info("Detaching #{vol_id} on #{inst_id}")
-    job.stm.state = vol[:state].to_sym
-    raise "Invalid volume state: #{vol[:state]}" unless vol[:state].to_s == 'attached'
+    @job = Dcmgr::Stm::VolumeContext.new(@vol_id)
+    @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+    @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
+    logger.info("Detaching #{@vol_id} on #{@inst_id}")
+    @job.stm.state = @vol[:state].to_sym
+    raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'attached'
 
-    job.stm.on_detach
+    @job.stm.on_detach
+    rpc.request('sta-collector', 'update_volume', @job.to_hash)
     # detach disk on guest os
     require 'net/telnet'
     pci = nil
 
     begin
-      telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{inst[:runtime_config][:telnet_port]}", "Prompt" => /\n\(qemu\) /, "Timeout" => 60, "Waittime" => 0.2)
-      telnet.cmd("pci_del #{vol[:guest_device_name]}")
+      telnet = ::Net::Telnet.new("Host" => "localhost", "Port"=>"#{@inst[:runtime_config][:telnet_port]}", "Prompt" => /\n\(qemu\) /, "Timeout" => 60, "Waittime" => 0.2)
+      telnet.cmd("pci_del #{@vol[:guest_device_name]}")
+      #
+      #  Bus  0, device   4, function 0:
+      #    SCSI controller: PCI device 1af4:1001
+      #      IRQ 0.
+      #      BAR0: I/O at 0x1000 [0x103f].
+      #      BAR1: 32 bit memory at 0x08000000 [0x08000fff].
+      #      id ""
       telnet.cmd("info pci"){|c|
-        pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{vol[:guest_device_name]},.+:)/)
+        pci = c.scan(/^(.+[a-zA-z]+.+[0-9],.+device.+#{@vol[:guest_device_name]},.+:)/)
       }
     rescue => e
       logger.error(e)
@@ -875,14 +914,11 @@ class KvmHandler < EndpointBuilder
       telnet.close
     end
     raise "volume has not detached" unless pci.empty?
-    rpc.request('sta-collector', 'update_volume', job.to_hash)
 
-    # iscsi logout
-    job.stm.on_detach
-    job.on_detach
-    logger.info("iscsi logout #{vol_id}: #{vol[:transport_information][:iqn]}")
-    initiator = `sudo iscsiadm -m node -T '#{vol[:transport_information][:iqn]}' --logout`
-    rpc.request('sta-collector', 'update_volume', job.to_hash)
+    detach_volume_from_host
+    
+    @job.stm.on_detach
+    @job.on_detach
   end
 
   def rpc
