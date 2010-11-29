@@ -53,6 +53,7 @@ DcmgrGUI.Converter.fromMBtoGB = function(data){
 
 DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   initialize: function(params) {
+    var self = this;
     this.element = $('#pagenate');
     this.view = $("#viewPagenate").text();
     this.total = params.total;
@@ -61,8 +62,48 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     this.row = params['row'];
     this.start = this.getStartCount();
     this.offset = this.getOffsetCount();
-    $('.prev').bind("click",{obj: this},this.updatePage);
-    $('.next').bind("click",{obj: this},this.updatePage);
+    this.prev = DcmgrGUI.Util.createUIButton(this.element.find('.prev'),{
+      disabled : true,
+      text : false
+    });
+    
+    this.next = DcmgrGUI.Util.createUIButton(this.element.find('.next'),{
+      text : false
+    });
+    
+    this.prev.bind("click",{obj: this},function(event){
+      var self = event.data.obj;
+      if (self.prev.button("option","disabled")) { 
+        return false 
+      };
+
+      self.updatePage.call(this,event);
+
+      if (self.current_page === 1) {
+        self.prev.button("option", "disabled", true);
+        self.next.button("option", "disabled", false);
+      } else {
+        self.prev.button("option", "disabled", false);
+        self.next.button("option", "disabled", false);
+      }
+    });
+    
+    this.next.bind("click",{obj: this},function(event){
+      var self = event.data.obj;
+      if (self.next.button("option","disabled")) { 
+        return false 
+      };
+      
+      self.updatePage.call(this,event);
+      
+      if (self.current_page === self.page_count) {
+        self.prev.button("option", "disabled", false);
+        self.next.button("option", "disabled", true);
+      } else {
+        self.prev.button("option", "disabled", false);
+        self.next.button("option", "disabled", false);
+      }
+    });
 
     this.renderPagenate();
   },
@@ -81,10 +122,9 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     $("#viewPagenate").html(html+' '+this.view);    
   },
   updatePage: function(event){
-
     var self = event.data.obj;
-    var name = $(this).attr('class');
-    
+    var name = $(this).attr('class').split(' ')[0];
+
     if(self.current_page >= 1 && self.current_page < self.page_count) {
       if(name === 'next'){
         self.next_page = self.current_page +1;
@@ -266,6 +306,20 @@ DcmgrGUI.Util.getLoadingImage = function(type){
 
 DcmgrGUI.Util.getPagenateData = function(start,limit){
   return "start=" + start + "&" + "limit=" + limit;
+}
+
+DcmgrGUI.Util.createUIButton = function(element,options){
+  return element
+          .button(options)
+          .removeClass("ui-state-default")
+          .removeClass("ui-button")
+          .removeClass("ui-corner-all")
+          .hover(function(){
+            element.removeClass("ui-state-hover");
+          })
+          .focus(function(){
+            element.removeClass("ui-state-focus");
+          });
 }
 
 DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
