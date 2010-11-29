@@ -467,7 +467,7 @@ body{
 }
 
 #content #mainarea_wide ul#actionlist{
-	position: fixed;
+	position: absolute;
 	margin: 26px 0 0 7px;
   /margin: 32px 0 0 -552px;
 	padding: 0;
@@ -1106,7 +1106,7 @@ body{
 }
 
 #content #mainarea_wide ul#volumelist{
-	position: fixed;
+	position: absolute;
 	margin: 26px 0 0 126px;
 	/margin: 32px 0 0 -552px;
 	padding: 0;
