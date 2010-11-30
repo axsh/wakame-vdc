@@ -11,7 +11,7 @@ require 'rake/clean'
 require 'dcmgr'
 
 task :environment do
-  Dcmgr.configure 'dcmgr.conf'
+  Dcmgr.configure 'config/dcmgr.conf'
   Dcmgr.run_initializers
 end
 
