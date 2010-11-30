@@ -47,7 +47,7 @@ module Dcmgr::Models
     # method calls.
     # Possible column data:
     #   kvm:
-    # {:vnc_port=>11}
+    # {:vnc_port=>11, :telnet_port=>1111}
     plugin :serialization
     serialize_attributes :yaml, :runtime_config
 
@@ -62,6 +62,7 @@ module Dcmgr::Models
 
       self[:user_data] = '' if self.user_data.nil?
       self[:hostname] = self.uuid if self.hostname.nil?
+      true
     end
 
     # dump column data as hash with details of associated models.
