@@ -14,8 +14,28 @@ module Dcmgr::Models
     end
     with_timestamps
 
+    # serialization plugin must be defined at the bottom of all class
+    # method calls.
+    # Possible column data:
+    #   hypervisor=kvm:
+    # {:block_driver=>'virtio', :nic_driver=>'virtio'}
+    plugin :serialization
+    serialize_attributes :yaml, :config
+
+    def before_validate
+      default_config =
+        case self.hypervisor
+        when HostPool::HYPERVISOR_KVM
+          {:block_driver=>'virtio', :nic_driver=>'virtio'}
+        end
+
+      self.config = default_config.merge(self.config || {})
+      true
+    end
+
     def to_hash
-      super.merge({:config=>config.to_s})
+      super.merge({:config=>self.config, # yaml -> Hash
+                  })
     end
   end
 end
