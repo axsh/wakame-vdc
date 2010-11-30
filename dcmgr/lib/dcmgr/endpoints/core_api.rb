@@ -594,9 +594,11 @@ module Dcmgr
             
             i = find_by_uuid(:Instance, params[:instance_id])
             raise UnknownInstance if i.nil?
+            raise InvalidInstanceState unless i.live? && i.state == 'running'
 
             v = find_by_uuid(:Volume, params[:id])
             raise UnknownVolume if v.nil?
+            raise AttachVolumeFailure, "Volume is attached to running instance." if v.instance
 
             v.instance = i
             v.save
@@ -616,9 +618,11 @@ module Dcmgr
 
             v = find_by_uuid(:Volume, params[:id])
             raise UnknownVolume if v.nil?
-            i = v.instance
+            raise DetachVolumeFailure, "Volume is not attached to any instance." if v.instance.nil?
             # the volume as the boot device can not be detached.
             raise DetachVolumeFailure, "boot device can not be detached" if v.boot_dev == 1
+            i = v.instance
+            raise InvalidInstanceState unless i.live? && i.state == 'running'
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
             respond_to { |f|
               f.json {v.to_hash_document.to_json}

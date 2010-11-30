@@ -266,5 +266,10 @@ module Dcmgr::Models
       VolumeSnapshot.lock!
       IpLease.lock!
     end
+
+    def live?
+      self.terminated_at.nil?
+    end
+    
   end
 end

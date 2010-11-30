@@ -46,6 +46,8 @@ module Dcmgr
     define_error(:UnknownSshKeyPair, 404)
     define_error(:UndefinedStoragePoolID, 400)
     define_error(:DetachVolumeFailure, 400)
+    define_error(:AttachVolumeFailure, 400)
+    define_error(:InvalidInstanceState, 400)
 
     # netfilter_group
     define_error(:UndefinedNetfilterGroup, 400)
