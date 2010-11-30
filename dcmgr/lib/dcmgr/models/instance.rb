@@ -55,6 +55,20 @@ module Dcmgr::Models
       super
 
       # TODO: hostname column validation
+
+      # check runtime_config column
+      case self.hypervisor
+      when HostPool::HYPERVISOR_KVM
+        r1 = self.runtime_config
+        self.host_pool.instances.each { |i|
+          next true if i.id == self.id
+          r2 = i.runtime_config
+          unless r1[:vnc_port] != r2[:vnc_port] && r1[:telnet_port] != r2[:telnet_port]
+            errors.add(:runtime_config, "#{self.canonical_uuid}.runtime_config conflicted with #{i.canonical_uuid}")
+            break
+          end
+        }
+      end
     end
 
     def before_validation
