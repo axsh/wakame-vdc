@@ -7,7 +7,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'dcmgr'
 
-Dcmgr.configure(File.expand_path('../../dcmgr.conf', __FILE__))
+Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
 Dcmgr.run_initializers
 
 require 'irb'
