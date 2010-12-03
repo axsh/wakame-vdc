@@ -667,7 +667,7 @@ class KvmHandler < EndpointBuilder
           @inst[:runtime_config][:telnet_port]
           ]
     if vnic = @inst[:instance_nics].first
-      cmd += " -net nic,macaddr=%s -net tap,ifname=%s"
+      cmd += " -net nic,macaddr=%s -net tap,ifname=%s,script=/usr/bin/qemu-ifup,downscript=/usr/bin/qemu-ifdown"
       args << vnic[:mac_addr].unpack('A2'*6).join(':')
       args << vnic[:vif]
     end
