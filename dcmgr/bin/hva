@@ -112,7 +112,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     system(cmd)
 
     inst_maps.each { |inst_map|
-      refresh_ebtables(inst_map)
+      refresh_ebtables(inst_map, false)
     }
   end
 
@@ -126,7 +126,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     inst_maps.each { |inst_map|
-      refresh_iptables(inst_map)
+      refresh_iptables(inst_map, false)
     }
   end
 
@@ -142,7 +142,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
   end
 
-  def refresh_ebtables(inst_map = {})
+  def refresh_ebtables(inst_map = {}, with_flush = 1)
     logger.debug("refresh_ebtables: #{inst_map[:uuid]} ...")
 
     # Does the hva have instance?
@@ -157,7 +157,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif     = inst_map[:instance_nics].first[:vif]
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
-    flush_ebtables(inst_map)
+    if with_flush
+      flush_ebtables(inst_map)
+    end
 
     # Does host have vif?
     unless valid_vif?(vif)
@@ -241,7 +243,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     logger.debug("refresh_ebtables: #{inst_map[:uuid]} done.")
   end
 
-  def refresh_iptables(inst_map = {})
+  def refresh_iptables(inst_map = {}, with_flush = 1)
     logger.debug("refresh_iptables: #{inst_map[:uuid]} ...")
 
     # Does the hva have instance?
@@ -256,7 +258,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif     = inst_map[:instance_nics].first[:vif]
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
-    flush_iptables(inst_map)
+    if with_flush
+      flush_iptables(inst_map)
+    end
 
     # Does host have vif?
     unless valid_vif?(vif)
