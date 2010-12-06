@@ -217,12 +217,12 @@ module Dcmgr::Models
       self.instance_nic.map { |nic| nic.ip }
     end
 
-    def netfilter_group_instances
-      instances = self.netfilter_groups.map { |g| g.instances }
-
-      instances.flatten!.uniq! if instances.size > 0
-      instances
-    end
+#    def netfilter_group_instances
+#      instances = self.netfilter_groups.map { |g| g.instances }
+#
+#      instances.flatten!.uniq! if instances.size > 0
+#      instances
+#    end
 
     def fqdn_hostname
       sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.host_pool.network.domain_name)
