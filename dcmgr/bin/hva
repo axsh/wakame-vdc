@@ -384,11 +384,16 @@ class ServiceNetfilter < Isono::NodeModules::Base
       when 'tcp', 'udp'
         cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
       when 'icmp'
-        # ToDo: implement
-        # - icmp_type : -1...
-        # - icmp_code : -1...
-        # cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
-        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} -j ACCEPT"
+        # icmp
+        #   This extension can be used if `--protocol icmp' is specified. It provides the following option:
+        #   [!] --icmp-type {type[/code]|typename}
+        #     This allows specification of the ICMP type, which can be a numeric ICMP type, type/code pair, or one of the ICMP type names shown by the command
+        #      iptables -p icmp -h
+        if rule[:icmp_type] == -1 && rule[:icmp_code] == -1
+          cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} -j ACCEPT"
+        else
+          cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+        end
       end
     end
 
@@ -609,10 +614,31 @@ class ServiceNetfilter < Isono::NodeModules::Base
         # This must be specified in the format type:code where both are integers.
         # Type, code, or both can be specified as -1, which is a wildcard.
 
+        icmp_type = ip_dport.to_i
+        icmp_code = ip_sport.to_i
+
+        # icmp_type
+        case icmp_type
+        when -1
+        when 0, 3, 5, 8, 11, 12, 13, 14, 15, 16, 17, 18
+        else
+          next
+        end
+
+        # icmp_code
+        case icmp_code
+        when -1
+        when 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+          # when icmp_type equals -1 icmp_code must equal -1.
+          next if icmp_type == -1
+        else
+          next
+        end
+
         rule_maps << {
           :ip_protocol => ip_protocol,
-          :icmp_type   => -1, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
-          :icmp_code   => -1, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+          :icmp_type   => ip_dport.to_i, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
+          :icmp_code   => ip_sport.to_i, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
           :protocol    => protocol,
           :ip_source   => ip_source,
         }
