@@ -222,16 +222,15 @@ class ServiceNetfilter < Isono::NodeModules::Base
     #cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
 
     # group nodes.
-    ipv4s << network_map[:ipv4_gw]
-
     # Detect these joined networks.
     joined_network = IPAddress("#{network_map[:ipv4_gw]}/#{network_map[:prefix]}")
     [ network_map[:dns_server], network_map[:dhcp_server] ].each { |ipv4addr|
       next unless joined_network.include? IPAddress(ipv4addr)
       ipv4s << ipv4addr
     }
+    ipv4s << network_map[:ipv4_gw]
 
-    ipv4s.uniq.each do |ipv4|
+    ipv4s.uniq.reverse_each do |ipv4|
       cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
 
@@ -321,7 +320,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # group nodes
     ipv4s << network_map[:ipv4_gw]
-    ipv4s.each { |addr|
+    ipv4s.uniq.reverse_each { |addr|
       cmds << "sudo iptables -A d_#{vif} -s #{addr} -j ACCEPT"
     }
 
