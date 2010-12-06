@@ -12,6 +12,7 @@ require File.expand_path('../../config/path_resolver', __FILE__)
 
 include Isono::Runner::RpcServer
 require 'fileutils'
+require 'ipaddress'
 
 class ServiceNetfilter < Isono::NodeModules::Base
   include Dcmgr::Logger
@@ -222,8 +223,14 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # group nodes.
     ipv4s << network_map[:ipv4_gw]
-    ipv4s << network_map[:dns_server]
-    ipv4s << network_map[:dhcp_server]
+
+    # Detect these joined networks.
+    joined_network = IPAddress("#{network_map[:ipv4_gw]}/#{network_map[:prefix]}")
+    [ network_map[:dns_server], network_map[:dhcp_server] ].each { |ipv4addr|
+      next unless joined_network.include? IPAddress(ipv4addr)
+      ipv4s << ipv4addr
+    }
+
     ipv4s.uniq.each do |ipv4|
       cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
     end
@@ -550,8 +557,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   def build_rule(rules = [])
-    require 'ipaddress'
-
     rule_maps = []
 
     rules.each do |rule|
