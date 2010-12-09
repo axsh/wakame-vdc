@@ -237,8 +237,14 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
     ipv4s << network_map[:ipv4_gw]
 
+    own_ipv4 = Isono::Util.default_gw_ipaddr
     ipv4s.uniq.reverse_each do |ipv4|
-      cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+      case ipv4
+      when own_ipv4
+        cmds << "sudo ebtables -A s_#{vif}_d_host_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
+      else
+        cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+      end
     end
 
     # deny,allow
@@ -376,6 +382,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ##
     # DHCP Server
     cmds << "sudo iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
+    cmds << "sudo iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 68 -j ACCEPT"
+
     #cmds << "sudo iptables -A d_#{vif}_udp -p udp --sport 67 -j d_#{vif}_udp_drop"
     # DNS Server
     cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
