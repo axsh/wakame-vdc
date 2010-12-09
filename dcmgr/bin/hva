@@ -77,6 +77,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
         rpc.request('hva-collector', 'get_instances_of_netfilter_group', g[:id])
       }
 
+      # my instance_id
+      unless inst_map.nil?
+        refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+        refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+      end
+
+      # friend instance(s)
       if inst_maps.size > 0
         inst_maps.flatten.uniq.each { |inst_map|
           unless inst_map.nil?
@@ -235,7 +242,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
     # deny,allow
-    cmds << "sudo ebtables -A d_#{vif}_arp        --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_arp D:'        -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_arp        --log-level warning --log-ip --log-arp --log-prefix 'd_#{vif}_arp D:'        -j CONTINUE"
     cmds << "sudo ebtables -A s_#{vif}_d_host_arp --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_d_host_arp D:' -j CONTINUE"
     cmds << "sudo ebtables -A d_#{vif}_arp        -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_host_arp -j DROP"
