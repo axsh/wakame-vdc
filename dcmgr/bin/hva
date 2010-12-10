@@ -78,12 +78,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
 
       # my instance_id
-      unless inst_map.nil?
-        refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-        refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
-      end
+#      unless inst_map.nil?
+#        refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+#        refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+#      end
 
       # friend instance(s)
+#      p inst_maps
       if inst_maps.size > 0
         inst_maps.flatten.uniq.each { |inst_map|
           unless inst_map.nil?
