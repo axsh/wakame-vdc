@@ -89,6 +89,7 @@ module Dcmgr::Models
                     :host_pool=>host_pool.to_hash,
                     :instance_nics=>instance_nic.map {|n| n.to_hash },
                     :instance_spec=>instance_spec.to_hash,
+                    :ips => instance_nic.map { |n| n.ip.ipv4 if n.ip },
                   })
       h[:volume]={}
       if self.volume
