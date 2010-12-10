@@ -5,7 +5,7 @@ begin
   require 'rubygems'
   require 'bundler'
   Bundler.setup(:default)
-rescue Exception 
+rescue Exception
 end
 
 require File.expand_path('../../config/path_resolver', __FILE__)
@@ -31,7 +31,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
         logger.info("refresh on instance_started: #{args.inspect}")
         inst_id = args[0]
         logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
-        myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
+        myinstance.refresh_netfilter_by_friend_instance_id(inst_id, 'started')
       }
     end
 
@@ -40,7 +40,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
         logger.info("refresh on instance_terminated: #{args.inspect}")
         inst_id = args[0]
         logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
-        myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
+        myinstance.refresh_netfilter_by_friend_instance_id(inst_id, 'terminated')
       }
     end
 
@@ -66,7 +66,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   # from event_subscriber
-  def refresh_netfilter_by_friend_instance_id(inst_id)
+  def refresh_netfilter_by_friend_instance_id(inst_id, state = 'started')
     raise "UnknownInstanceID" if inst_id.nil?
 
     begin
@@ -78,13 +78,15 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
 
       # my instance_id
-#      unless inst_map.nil?
-#        refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-#        refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
-#      end
+      # when terminated?
+      if state == 'terminated'
+        unless inst_map.nil?
+          refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
+          refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+        end
+      end
 
       # friend instance(s)
-#      p inst_maps
       if inst_maps.size > 0
         inst_maps.flatten.uniq.each { |inst_map|
           unless inst_map.nil?
@@ -245,11 +247,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
 
-    # * -> guest
     # broadcast
-    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00 --log-ip --log-arp --log-prefix 'Amc d_#{vif}_arp:' -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00                                                     -j   ACCEPT"
-    # others
+    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp                          --arp-mac-dst 00:00:00:00:00:00 --log-ip --log-arp --log-prefix 'Amc d_#{vif}_arp:'     -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00 --log-ip --log-arp --log-prefix 'Amc d_#{vif}_hst_arp:' -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp                          --arp-mac-dst 00:00:00:00:00:00                                                         -j   ACCEPT"
+    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00                                                         -j   ACCEPT"
+
+    # *->guest
     cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_arp:'       -j CONTINUE"
     cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_s_hst_arp:' -j CONTINUE"
     cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
