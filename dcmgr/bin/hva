@@ -192,13 +192,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
     chains = []
     chains << "s_#{vif}"
     chains << "d_#{vif}"
-    chains << "s_#{vif}_d_host"
-    chains << "d_#{vif}_s_host"
+    chains << "s_#{vif}_d_hst"
+    chains << "d_#{vif}_s_hst"
     protocol_maps.each { |k,v|
       chains << "s_#{vif}_#{k}"
       chains << "d_#{vif}_#{k}"
-      chains << "s_#{vif}_d_host_#{k}"
-      chains << "d_#{vif}_s_host_#{k}"
+      chains << "s_#{vif}_d_hst_#{k}"
+      chains << "d_#{vif}_s_hst_#{k}"
     }
 
     # create user defined chains.
@@ -211,34 +211,57 @@ class ServiceNetfilter < Isono::NodeModules::Base
     # jumt to user defined chains
     cmds << "sudo ebtables -A FORWARD -i #{vif} -j s_#{vif}"
     cmds << "sudo ebtables -A FORWARD -o #{vif} -j d_#{vif}"
-    cmds << "sudo ebtables -A INPUT   -i #{vif} -j s_#{vif}_d_host"
-    cmds << "sudo ebtables -A OUTPUT  -o #{vif} -j d_#{vif}_s_host"
+    cmds << "sudo ebtables -A INPUT   -i #{vif} -j s_#{vif}_d_hst"
+    cmds << "sudo ebtables -A OUTPUT  -o #{vif} -j d_#{vif}_s_hst"
 
     # IP protocol routing
     protocol_maps.each { |k,v|
       cmds << "sudo ebtables -A s_#{vif}        -p #{v} -j s_#{vif}_#{k}"
       cmds << "sudo ebtables -A d_#{vif}        -p #{v} -j d_#{vif}_#{k}"
-      cmds << "sudo ebtables -A s_#{vif}_d_host -p #{v} -j s_#{vif}_d_host_#{k}"
-      cmds << "sudo ebtables -A d_#{vif}_s_host -p #{v} -j d_#{vif}_s_host_#{k}"
+      cmds << "sudo ebtables -A s_#{vif}_d_hst -p #{v} -j s_#{vif}_d_hst_#{k}"
+      cmds << "sudo ebtables -A d_#{vif}_s_hst -p #{v} -j d_#{vif}_s_hst_#{k}"
     }
 
     # default drop
-    cmds << "sudo ebtables -A s_#{vif}        --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}:' -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_d_host --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_host:' -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}        -j DROP"
-    cmds << "sudo ebtables -A s_#{vif}_d_host -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}       --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}:'       -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_hst --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_hst:' -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}       -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_d_hst -j DROP"
 
-    # anti spoof: arp
+    # anti spoof
+
+    # !!!test test test test!!!
+    #vif_mac = 'f5:f5:f5:f5:f5:f5'
+    #ipv4s << '192.168.2.22'
+
+    # anti spoof: mac
     # guest -> *
-    cmds << "sudo ebtables -A s_#{vif}_arp        --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'D> s_#{vif}_arp:'        -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'D> s_#{vif}_d_host_arp:' -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_arp        --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
-    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_arp:'        -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_d_hst_arp:' -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
     # * -> guest
-    cmds << "sudo ebtables -A d_#{vif}_arp        --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'D> d_#{vif}_arp:'        -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_s_host_arp --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'D> d_#{vif}_s_host_arp:' -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_arp        --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
-    cmds << "sudo ebtables -A d_#{vif}_s_host_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_arp:'        -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_s_hst_arp:' -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+
+    # anti spoof: ip
+    inst_map[:ips].each { |ipv4|
+      # !!!test!!!
+      #ipv4 = '192.168.2.147'
+
+      # guest -> *
+      cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_arp:'        -j CONTINUE"
+      cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_d_hst_arp:' -j CONTINUE"
+      cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} -j DROP"
+      cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} -j DROP"
+      # * -> guest
+      cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-dst ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip d_#{vif}_arp:'       -j CONTINUE"
+      cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-dst ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip d_#{vif}_s_hst_arp:' -j CONTINUE"
+      cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-dst ! #{ipv4} -j DROP"
+      cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-dst ! #{ipv4} -j DROP"
+    }
 
     # group nodes.
     # Detect these joined networks.
@@ -253,17 +276,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ipv4s.uniq.reverse_each do |ipv4|
       case ipv4
       when own_ipv4
-        cmds << "sudo ebtables -A s_#{vif}_d_host_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
+        cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
       else
         cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
       end
     end
 
     # deny,allow
-    cmds << "sudo ebtables -A d_#{vif}_arp        --log-level warning --log-ip --log-arp --log-prefix 'D d_#{vif}_arp:'  -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_host_arp:' -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_arp        -j DROP"
-    cmds << "sudo ebtables -A s_#{vif}_d_host_arp -j DROP"
+    cmds << "sudo ebtables -A d_#{vif}_arp       --log-level warning --log-ip --log-arp --log-prefix 'D d_#{vif}_arp:'       -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_hst_arp:' -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_arp       -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_d_hst_arp -j DROP"
 
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
