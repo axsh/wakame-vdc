@@ -193,10 +193,12 @@ class ServiceNetfilter < Isono::NodeModules::Base
     chains << "s_#{vif}"
     chains << "d_#{vif}"
     chains << "s_#{vif}_d_host"
+    chains << "d_#{vif}_s_host"
     protocol_maps.each { |k,v|
       chains << "s_#{vif}_#{k}"
       chains << "d_#{vif}_#{k}"
       chains << "s_#{vif}_d_host_#{k}"
+      chains << "d_#{vif}_s_host_#{k}"
     }
 
     # create user defined chains.
@@ -210,23 +212,33 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo ebtables -A FORWARD -i #{vif} -j s_#{vif}"
     cmds << "sudo ebtables -A FORWARD -o #{vif} -j d_#{vif}"
     cmds << "sudo ebtables -A INPUT   -i #{vif} -j s_#{vif}_d_host"
+    cmds << "sudo ebtables -A OUTPUT  -o #{vif} -j d_#{vif}_s_host"
 
     # IP protocol routing
     protocol_maps.each { |k,v|
       cmds << "sudo ebtables -A s_#{vif}        -p #{v} -j s_#{vif}_#{k}"
       cmds << "sudo ebtables -A d_#{vif}        -p #{v} -j d_#{vif}_#{k}"
       cmds << "sudo ebtables -A s_#{vif}_d_host -p #{v} -j s_#{vif}_d_host_#{k}"
+      cmds << "sudo ebtables -A d_#{vif}_s_host -p #{v} -j d_#{vif}_s_host_#{k}"
     }
 
     # default drop
-    cmds << "sudo ebtables -A s_#{vif}        --log-level warning --log-ip --log-arp --log-prefix 's_#{vif} D:'        -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_d_host --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_d_host D:' -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}        --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}:' -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_host --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_host:' -j CONTINUE"
     cmds << "sudo ebtables -A s_#{vif}        -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_host -j DROP"
 
-    # anti spoof
-    #cmds << "sudo ebtables -A s_#{vif}_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
-    #cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+    # anti spoof: arp
+    # guest -> *
+    cmds << "sudo ebtables -A s_#{vif}_arp        --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'D> s_#{vif}_arp:'        -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'D> s_#{vif}_d_host_arp:' -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_arp        --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    # * -> guest
+    cmds << "sudo ebtables -A d_#{vif}_arp        --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'D> d_#{vif}_arp:'        -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_s_host_arp --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'D> d_#{vif}_s_host_arp:' -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_arp        --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+    cmds << "sudo ebtables -A d_#{vif}_s_host_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
 
     # group nodes.
     # Detect these joined networks.
@@ -248,8 +260,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
     # deny,allow
-    cmds << "sudo ebtables -A d_#{vif}_arp        --log-level warning --log-ip --log-arp --log-prefix 'd_#{vif}_arp D:'        -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --log-level warning --log-ip --log-arp --log-prefix 's_#{vif}_d_host_arp D:' -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_arp        --log-level warning --log-ip --log-arp --log-prefix 'D d_#{vif}_arp:'  -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_d_host_arp --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_host_arp:' -j CONTINUE"
     cmds << "sudo ebtables -A d_#{vif}_arp        -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_host_arp -j DROP"
 
@@ -326,7 +338,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
         # logger & drop
         cmds << "sudo iptables -N #{chain}_drop"
-        cmds << "sudo iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix '#{chain} D:'"
+        cmds << "sudo iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix 'D #{chain}:'"
         cmds << "sudo iptables -A #{chain}_drop -j DROP"
       }
     }
