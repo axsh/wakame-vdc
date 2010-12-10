@@ -177,6 +177,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
 
+    # hva ipv4
+    own_ipv4 = Isono::Util.default_gw_ipaddr
+
     # xtables commands
     cmds = []
 
@@ -216,8 +219,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # IP protocol routing
     protocol_maps.each { |k,v|
-      cmds << "sudo ebtables -A s_#{vif}        -p #{v} -j s_#{vif}_#{k}"
-      cmds << "sudo ebtables -A d_#{vif}        -p #{v} -j d_#{vif}_#{k}"
+      cmds << "sudo ebtables -A s_#{vif}       -p #{v} -j s_#{vif}_#{k}"
+      cmds << "sudo ebtables -A d_#{vif}       -p #{v} -j d_#{vif}_#{k}"
       cmds << "sudo ebtables -A s_#{vif}_d_hst -p #{v} -j s_#{vif}_d_hst_#{k}"
       cmds << "sudo ebtables -A d_#{vif}_s_hst -p #{v} -j d_#{vif}_s_hst_#{k}"
     }
@@ -236,12 +239,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # anti spoof: mac
     # guest -> *
-    cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_arp:'        -j CONTINUE"
+    cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_arp:'       -j CONTINUE"
     cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_d_hst_arp:' -j CONTINUE"
     cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+
     # * -> guest
-    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_arp:'        -j CONTINUE"
+    # broadcast
+    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00 --log-ip --log-arp --log-prefix 'Amc d_#{vif}_arp:' -j CONTINUE"
+    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00                                                     -j   ACCEPT"
+    # others
+    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_arp:'       -j CONTINUE"
     cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_s_hst_arp:' -j CONTINUE"
     cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
     cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
@@ -252,7 +260,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       #ipv4 = '192.168.2.147'
 
       # guest -> *
-      cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_arp:'        -j CONTINUE"
+      cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_arp:'       -j CONTINUE"
       cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_d_hst_arp:' -j CONTINUE"
       cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} -j DROP"
       cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} -j DROP"
@@ -272,7 +280,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
     ipv4s << network_map[:ipv4_gw]
 
-    own_ipv4 = Isono::Util.default_gw_ipaddr
     ipv4s.uniq.reverse_each do |ipv4|
       case ipv4
       when own_ipv4
@@ -500,11 +507,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
     chains = []
     chains << "s_#{vif}"
     chains << "d_#{vif}"
-    chains << "s_#{vif}_d_host"
+    chains << "s_#{vif}_d_hst"
+    chains << "d_#{vif}_s_hst"
     protocol_maps.each { |k,v|
       chains << "s_#{vif}_#{k}"
       chains << "d_#{vif}_#{k}"
-      chains << "s_#{vif}_d_host_#{k}"
+      chains << "s_#{vif}_d_hst_#{k}"
+      chains << "d_#{vif}_s_hst_#{k}"
     }
 
     # clear rules if exists.
@@ -522,9 +531,16 @@ class ServiceNetfilter < Isono::NodeModules::Base
       system(cmd)
     end
 
-    system("sudo ebtables -L s_#{vif}_d_host >/dev/null 2>&1")
+    system("sudo ebtables -L s_#{vif}_d_hst >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_host"
+      cmd = "sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_hst"
+      puts cmd
+      system(cmd)
+    end
+
+    system("sudo ebtables -L d_#{vif}_s_hst >/dev/null 2>&1")
+    if $?.exitstatus == 0
+      cmd = "sudo ebtables -D OUTPUT -o #{vif} -j d_#{vif}_s_hst"
       puts cmd
       system(cmd)
     end
