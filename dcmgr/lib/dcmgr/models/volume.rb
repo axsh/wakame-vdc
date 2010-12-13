@@ -42,6 +42,9 @@ module Dcmgr::Models
     end
     with_timestamps
 
+    many_to_one :storage_pool
+    many_to_one :instance
+
     plugin ArchiveChangedColumn, :histories
     
     # serialization plugin must be defined at the bottom of all class
@@ -51,9 +54,6 @@ module Dcmgr::Models
     # {:iqn=>'iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc', :lun=>0}
     plugin :serialization, :yaml, :transport_information
     
-    many_to_one :storage_pool
-    many_to_one :instance
-
     class DiskError < RuntimeError; end
     class RequestError < RuntimeError; end
 
