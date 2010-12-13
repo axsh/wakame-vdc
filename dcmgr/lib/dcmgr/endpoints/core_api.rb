@@ -1030,6 +1030,104 @@ module Dcmgr
 
       end
 
+      collection :network do
+        description "List networks in account"
+        operation :index do
+          # params start, fixnum, optional 
+          # params limit, fixnum, optional
+          control do
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? nil : limit
+            
+            total_ds = Models::Network.where(:account_id=>@account.canonical_uuid)
+            partial_ds = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
+
+            res = [{
+              :owner_total => total_ds.count,
+              :filter_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|i| i.to_hash }
+            }]
+            
+            respond_to { |f|
+              f.json {res.to_json}
+            }
+          end
+        end
+        
+        operation :show do
+          description "Retrieve details about a network"
+          # params :id required
+          control do
+            nw = find_by_uuid(:Network, params[:id])
+            
+            respond_to { |f|
+              f.json {nw.to_hash.to_json}
+            }
+          end
+        end
+        
+        operation :create do
+          description "Create new network"
+          # params :gw required default gateway address of the network
+          # params :prefix optional  netmask bit length. it will be
+          #               set 24 if none.
+          # params :description optional description for the network
+          control do
+            Models::Network.lock!
+            savedata = {
+              :account_id=>@account.canonical_uuid,
+              :ipv4_gw => params[:gw],
+              :prefix => params[:prefix].to_i,
+              :description => params[:description],
+            }
+            nw = Models::Network.create(savedata)
+                                            
+            respond_to { |f|
+              # include private_key data in response even if
+              # it's not going to be stored on DB.
+              f.json {nw.to_hash.to_json}
+            }
+          end
+        end
+        
+        operation :destroy do
+          description "Remove network information"
+          # params :id required
+          control do
+            Models::Network.lock!
+            nw = find_by_uuid(:Network, params[:id])
+            if examine_owner(nw)
+              nw.destroy
+            else
+              raise OperationNotPermitted
+            end
+            
+            respond_to { |f|
+              f.json {nw.to_hash.to_json}
+            }
+          end
+        end
+
+        operation :reserve, :method =>:put, :member=>true do
+          description 'Register reserved IP address to the network'
+          # params id, string, required
+          # params ipaddr, [String,Array], required
+          control do
+            Models::IpLease.lock!
+            nw = find_by_uuid(:Network, params[:id])
+
+            (ipaddr.is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
+              nw.add_reserved(ip)
+            }
+          end
+        end
+      end
+      
     end
   end
 end
