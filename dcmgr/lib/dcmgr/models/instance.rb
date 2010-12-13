@@ -22,7 +22,7 @@ module Dcmgr::Models
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
 
-      Time   :terminated_at
+      Time :terminated_at
       index :state
       index :terminated_at
     end
@@ -157,8 +157,8 @@ module Dcmgr::Models
     #   :cpu_cores
     #   :memory_size
     #   :image_id
-    #   :network => {'global1'=>{:ipaddr=>'111.111.111.111'}}
-    #   :volume => {'uuid'=>{:guest_device_name=>,}}
+    #   :network => [{:network_name=>'nw-xxxxxxx', :ipaddr=>'111.111.111.111'}]
+    #   :volume => [{'uuid'=>{:guest_device_name=>,}]
     #   :ssh_key_pair => 'xxxxx',
     #   :netfilter_group => ['rule1', 'rule2']
     #   :created_at
@@ -318,6 +318,5 @@ module Dcmgr::Models
     def live?
       self.terminated_at.nil?
     end
-    
   end
 end
