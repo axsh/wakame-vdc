@@ -30,7 +30,7 @@ module Dcmgr::Models
         end
 
       self.config = default_config.merge(self.config || {})
-      true
+      super
     end
 
     def to_hash
