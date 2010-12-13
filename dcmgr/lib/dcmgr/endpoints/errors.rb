@@ -48,6 +48,7 @@ module Dcmgr
     define_error(:DetachVolumeFailure, 400)
     define_error(:AttachVolumeFailure, 400)
     define_error(:InvalidInstanceState, 400)
+    define_error(:DuplicateHostname, 400)
 
     # netfilter_group
     define_error(:UndefinedNetfilterGroup, 400)

@@ -19,16 +19,13 @@ module Dcmgr::Models
       
       String :arch, :size=>10, :null=>false # :x86, :x86_64
       String :hypervisor, :size=>30, :null=>false
-      Fixnum :network_id, :null=>false
 
       Fixnum :offering_cpu_cores,   :null=>false, :unsigned=>true
       Fixnum :offering_memory_size, :null=>false, :unsigned=>true
-      Fixnum :allow_memory_overcommit, :null=>false, :default=>1
     end
     
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
-    many_to_one :network
 
     def after_initialize
       super
@@ -66,10 +63,12 @@ module Dcmgr::Models
     # @param [Models::Account] account
     # @param [Models::Image] image
     # @param [Models::InstanceSpec] spec
+    # @param [Models::Network] network
     # @return [Models::Instance] created new Instance object.
-    def create_instance(account, image, spec, &blk)
+    def create_instance(account, image, spec, network, &blk)
       raise ArgumentError unless image.is_a?(Image)
       raise ArgumentError unless spec.is_a?(InstanceSpec)
+      raise ArgumentError unless network.is_a?(Network)
       i = Instance.new &blk
       i.account_id = account.canonical_uuid
       i.image = image
@@ -77,9 +76,8 @@ module Dcmgr::Models
       i.host_pool = self
       i.save
 
-      # TODO: set vnic spec from InstanceSpec
-      vnic = i.add_nic
-      IpLease.lease(vnic)
+      vnic = i.add_nic(network)
+      IpLease.lease(vnic, network)
       i
     end
 

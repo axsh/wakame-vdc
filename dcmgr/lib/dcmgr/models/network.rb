@@ -3,21 +3,18 @@
 require 'ipaddress'
 
 module Dcmgr::Models
-  # Network definitions in the DC.
-  class Network < BaseNew
+  # IP network definitions.
+  class Network < AccountResource
+    taggable 'nw'
 
     inheritable_schema do
-      String :name, :null=>false
       String :ipv4_gw, :null=>false
       Fixnum :prefix, :null=>false, :default=>24, :unsigned=>true
-      String :domain_name, :null=>false
-      String :dns_server, :null=>false
-      String :dhcp_server, :null=>false
-      String :dhcp_start_ip
-      Fixnum :dhcp_range, :unsigned=>true
+      String :domain_name
+      String :dns_server
+      String :dhcp_server
       String :metadata_server
       Text :description
-      index :name, {:unique=>true}
     end
     with_timestamps
 
@@ -26,18 +23,16 @@ module Dcmgr::Models
 
     def validate
       super
-      errors.add(:prefix, "prefix must be >= 32: #{self.prefix}") if self.prefix > 32
       
-      if self.dhcp_start_ip
-        start = IPAddress("#{dhcp_start_ip}/#{prefix}")
-        gw = IPAddress("#{ipv4_gw}/#{prefix}")
-        if start.subnet != gw.subnet
-          errors.add(:ipv4_gw, "ipv4_gw (#{ipv4_gw}/#{prefix}) is mismatch with dhcp_start_ip (#{dhcp_start_ip}/#{prefix})")
-        end
-        range_last = IPAddress::IPv4.parse_u32(start.to_u32 + self.dhcp_range, self.prefix)
-        if start.last < range_last
-          errors.add(:dhcp_range, "dhcp_range is too long: >#{start.last.to_u32 - start.to_u32}")
-        end
+      # validate ipv4 syntax
+      begin
+        IPAddress::IPv4.new("#{self.ipv4_gw}")
+      rescue => e
+        errors.add(:ipv4_gw, "Invalid IP address syntax: #{self.ipv4_gw}")
+      end
+
+      unless (1..31).include?(self.prefix.to_i)
+        errors.add(:prefix, "prefix must be 1-31: #{self.prefix}")
       end
     end
 
@@ -45,15 +40,20 @@ module Dcmgr::Models
       values.dup.merge({:description=>description.to_s})
     end
 
-    def lease_dynamic?
-      !self.dhcp_start_ip.nil?
+    def ipaddress
+      IPAddress::IPv4.new("#{self.ipv4_gw}/#{self.prefix}")
     end
-    
-    def dhcp_lease_range
-      start_ip = IPAddress("#{dhcp_start_ip}/#{prefix}")
-      last_ip = IPAddress::IPv4.parse_u32(start_ip.to_u32 + self.dhcp_range, self.prefix)
-      [start_ip, last_ip]
+
+    # check if the given IP addess is in the range of this network.
+    # @param [String] ipaddr IP address
+    def include?(ipaddr)
+      ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
+      self.ipaddress.network.include?(ipaddr)
     end
-    
+
+    # register reserved IP address in this network
+    def add_reserved(ipaddr)
+      add_ip_lease(:ipv4=>ipaddr, :type=>IpLease::TYPE_RESERVED)
+    end
   end
 end

@@ -287,6 +287,7 @@ module Dcmgr
           # param :user_data, string, :optional
           # param :nf_group, array, :optional
           # param :ssh_key, string, :optional
+          # param :network_id, string, :optional
           control do
             Models::Instance.lock!
             
@@ -302,10 +303,27 @@ module Dcmgr
             
             raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
 
-            inst = hp.create_instance(@account, wmi, spec) do |i|
+            # look up params[:network] in following order:
+            # 1. fetch as uuid nw-xxxxx
+            # TODO: 2. fetch as network pool name
+            # TODO: 3. assign default shared network if nil.
+            network = Models::Network[params[:network_id]]
+            raise "Can not find the network: #{params[:network_id]}" if network.nil?
+
+            inst = hp.create_instance(@account, wmi, spec, network) do |i|
               # TODO: do not use rand() to decide vnc port.
               i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
               i.user_data = params[:user_data] || ''
+              # set only when not nil as the table column has not null
+              # condition.
+              if params[:hostname]
+                if Models::Instance::ValidationMethods.hostname_uniqueness(@account.canonical_uuid,
+                                                                           params[:hostname])
+                  i.hostname = params[:hostname]
+                else
+                  raise DuplicateHostname
+                end
+              end
 
               if params[:ssh_key]
                 ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,

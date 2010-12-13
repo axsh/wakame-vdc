@@ -3,18 +3,19 @@
 module Dcmgr::Models
   # Network interface for running instance.
   class InstanceNic < BaseNew
-    taggable 'nic'
+    taggable 'vif'
 
     inheritable_schema do
       Fixnum :instance_id, :null=>false
-      String :vif, :null=>false, :size=>50
+      Fixnum :network_id, :null=>false
       String :mac_addr, :null=>false, :size=>12
       
-      index :mac_addr, {:unique=>true}
+      index :mac_addr
     end
     with_timestamps
 
     many_to_one :instance
+    many_to_one :network
     one_to_one :ip, :class=>IpLease
 
     def to_hash
@@ -24,28 +25,31 @@ module Dcmgr::Models
     end
 
     def before_validation
-      super
-      m = normalize_mac_addr(self[:mac_addr])
-      if m.size == 6
-        # mac_addr looks like to only have vendor ID part so that
-        # generate unique value for node ID part.
-        mvendor = m
-        begin
-          m = mvendor + ("%02x%02x%02x" % [rand(0xff),rand(0xff),rand(0xff)])
-        end while self.class.find(:mac_addr=> m)
-        self[:mac_addr] = m
+      newlease=nil
+      m = self[:mac_addr] = normalize_mac_addr(self[:mac_addr])
+      if m
+        if m.size == 6
+          newlease = MacLease.lease(m)
+        else
+          MacLease.create(:mac_addr=>m)
+        end
+      else
+        newlease = MacLease.lease()
       end
-      true
+      self[:mac_addr] = newlease.mac_addr if newlease
+      
+      super
+    end
+
+    def after_destroy
+      MacLease.destroy(:mac_addr=>self.mac_addr)
+      super
     end
 
     def validate
       super
 
-      unless self.mac_addr.size == 12
-        errors.add(:mac_addr, "Invalid mac address length: #{self.mac_addr}")
-      end
-
-      unless self.mac_addr =~ /^[0-9a-f]{12}$/
+      unless self.mac_addr.size == 12 && self.mac_addr =~ /^[0-9a-f]{12}$/
         errors.add(:mac_addr, "Invalid mac address syntax: #{self.mac_addr}")
       end
     end

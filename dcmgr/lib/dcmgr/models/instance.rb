@@ -16,7 +16,7 @@ module Dcmgr::Models
       Fixnum :instance_spec_id, :null=>false
       String :state, :size=>20, :null=>false, :default=>:init.to_s
       String :status, :size=>20, :null=>false, :default=>:init.to_s
-      String :hostname, :null=>false
+      String :hostname, :null=>false, :size=>32
       String :ssh_key_pair_id
       
       Text :user_data, :null=>false, :default=>''
@@ -25,8 +25,6 @@ module Dcmgr::Models
       Time   :terminated_at
       index :state
       index :terminated_at
-      # can not use same hostname within an account.
-      index  [:account_id, :hostname], {:unique=>true}
     end
     with_timestamps
     
@@ -53,11 +51,39 @@ module Dcmgr::Models
     plugin :serialization
     serialize_attributes :yaml, :runtime_config
 
+    module ValidationMethods
+      def self.hostname_uniqueness(account_id, hostname)
+        HostnameLease.filter(:account_id=>account_id, :hostname=>hostname).empty?
+      end
+    end
+
     def validate
       super
 
-      # TODO: hostname column validation
+      unless self.hostname =~ /\A[0-9a-z][0-9a-z\-]{0,31}\Z/
+        errors.add(:hostname, "Invalid hostname syntax")
+      end
 
+      # uniqueness check for hostname
+      if changed_columns.include?(:hostname)
+        proc_test = lambda {
+          unless ValidationMethods.hostname_uniqueness(self.account_id, self.hostname)
+            errors.add(:hostname, "Duplicated hostname: #{self.hostname}")
+          end
+        }
+        
+        if new?
+          proc_test.call
+        else
+          orig = self.dup.refresh
+          # do nothing if orig.hostname == self.hostname
+          if orig.hostname != self.hostname
+            proc_test.call
+          end
+        end
+        @update_hostname = true
+      end
+      
       # check runtime_config column
       case self.hypervisor
       when HostPool::HYPERVISOR_KVM
@@ -74,11 +100,32 @@ module Dcmgr::Models
     end
 
     def before_validation
+      self[:user_data] ||= ''
+      self[:hostname] ||= self.uuid
+      self[:hostname] = self[:hostname].downcase
       super
+    end
 
-      self[:user_data] = '' if self.user_data.nil?
-      self[:hostname] = self.uuid if self.hostname.nil?
-      true
+    def before_save
+      if @update_hostname
+        if new?
+          HostnameLease.create(:account_id=>self.account_id,
+                               :hostname=>self.hostname)
+        else
+          orig = self.dup.refresh
+          # do nothing if orig.hostname == self.hostname
+          if orig.hostname != self.hostname
+            
+            orig_name = HostnameLease.filter(:account_id=>self.account_id,
+                                             :hostname=>orig.hostname).first
+            orig_name.hostname = self.hostname
+            orig_name.save
+          end
+        end
+        @update_hostname = false
+      end
+      
+      super
     end
 
     # dump column data as hash with details of associated models.
@@ -140,7 +187,7 @@ module Dcmgr::Models
         instance_nic.each { |n|
           if n.ip
             h[:network] << {
-              :network_name => n.ip.network.name,
+              :network_name => n.network.canonical_uuid,
               :ipaddr => n.ip.ipv4
             }
           end
@@ -187,13 +234,11 @@ module Dcmgr::Models
       self.instance_spec.config
     end
 
-    def add_nic(vifname=nil, vendor_id=nil)
-      vifname ||= "vif-#{self[:uuid]}"
+    def add_nic(network, vendor_id=nil)
       # TODO: get default vendor ID based on the hypervisor.
       vendor_id ||= '00:ff:f1'
-      nic = InstanceNic.new({:vif=>vifname,
-                              :mac_addr=>vendor_id
-                            })
+      nic = InstanceNic.new(:mac_addr=>vendor_id)
+      nic.network = network
       nic.instance = self
       nic.save
     end
@@ -228,7 +273,7 @@ module Dcmgr::Models
 #    end
 
     def fqdn_hostname
-      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.host_pool.network.domain_name)
+      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.network.domain_name)
     end
 
     # Retrieve all networks belong to this instance
@@ -239,7 +284,7 @@ module Dcmgr::Models
       }.map { |nic|
         nic.ip.network
       }.group_by { |net|
-        net.name
+        net.canonical_uuid
       }.values.map { |i|
         i.first
       }
