@@ -32,6 +32,17 @@ module Dcmgr::Models
       h
     end
 
+    # Hash data for API response.
+    def to_api_document
+      h = {
+        :id => self.canonical_uuid,
+        :state => self.state,
+        :size => self.size,
+        :origin_volume_id => self.origin_volume_id,
+        :created_at => self.created_at,
+      }
+    end
+
     # create volume inherite from this snapshot for the account.
     # limitation: inherit volume is created on same storage_pool.
     def create_volume(account_id)

@@ -96,7 +96,7 @@ module Dcmgr::Models
         vl = vl.grep(data[:target].to_sym, "%#{filter}%")
       end
       vl.all.map{|row|
-        row.to_hash_document
+        row.to_api_document
       }
     end
 
@@ -121,6 +121,20 @@ module Dcmgr::Models
       # yaml -> hash translation
       h[:transport_information]=self.transport_information
       h
+    end
+
+    # Hash data for API response.
+    def to_api_document
+      h = {
+        :id => self.canonical_uuid,
+        :size => self.size,
+        :snapshot_id => self.snapshot_id,
+        :created_at => self.created_at,
+        :attached_at => self.attached_at,
+        :state => self.state,
+        :instance_id => (self.instance && self.instance.canonical_uuid),
+        :deleted_at => self.deleted_at,
+      }
     end
 
     def create_snapshot(account_id)

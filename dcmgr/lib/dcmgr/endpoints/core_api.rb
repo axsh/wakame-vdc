@@ -519,7 +519,7 @@ module Dcmgr
               :owner_total => total_v.count,
               :start => start,
               :limit => limit,
-              :results => partial_v.all.map { |v| v.to_hash_document}
+              :results => partial_v.all.map { |v| v.to_api_document}
             }]
             respond_to { |f|
               f.json { res.to_json}
@@ -535,7 +535,7 @@ module Dcmgr
             raise UndefinedVolumeID if volume_id.nil?
             v = find_by_uuid(:Volume, volume_id)
             respond_to { |f|
-              f.json { v.to_hash_document.to_json}
+              f.json { v.to_api_document.to_json}
             }
           end
         end
@@ -573,7 +573,7 @@ module Dcmgr
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid)
             respond_to { |f|
-              f.json { v.to_hash_document.to_json}
+              f.json { v.to_api_document.to_json}
             }
           end
         end
@@ -597,7 +597,7 @@ module Dcmgr
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'delete_volume', v.canonical_uuid)
             respond_to { |f|
-              f.json { v.to_hash_document.to_json}
+              f.json { v.to_api_document.to_json}
             }
           end
         end
@@ -623,7 +623,7 @@ module Dcmgr
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
             respond_to { |f|
-              f.json { v.to_hash_document.to_json}
+              f.json { v.to_api_document.to_json}
             }
           end
         end
@@ -643,7 +643,7 @@ module Dcmgr
             raise InvalidInstanceState unless i.live? && i.state == 'running'
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
             respond_to { |f|
-              f.json {v.to_hash_document.to_json}
+              f.json {v.to_api_document.to_json}
             }
           end
         end
@@ -681,7 +681,7 @@ module Dcmgr
               :owner_total => total_vs.count,
               :start => start,
               :limit => limit,
-              :results => partial_vs.all.map { |vs| vs.to_hash_document}
+              :results => partial_vs.all.map { |vs| vs.to_api_document}
             }]
             respond_to { |f|
               f.json { res.to_json}
@@ -697,7 +697,7 @@ module Dcmgr
             raise UndefinedVolumeSnapshotID if snapshot_id.nil?
             vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
             respond_to { |f|
-              f.json { vs.to_hash_document.to_json}
+              f.json { vs.to_api_document.to_json}
             }
           end
         end
@@ -719,7 +719,7 @@ module Dcmgr
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid)
             respond_to { |f|
-              f.json { vs.to_hash_document.to_json}
+              f.json { vs.to_api_document.to_json}
             }
           end
         end
@@ -743,7 +743,7 @@ module Dcmgr
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid)
             respond_to { |f|
-              f.json { vs.to_hash_document.to_json }
+              f.json { vs.to_api_document.to_json }
             }
           end
         end
