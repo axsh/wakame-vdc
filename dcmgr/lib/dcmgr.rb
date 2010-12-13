@@ -73,7 +73,7 @@ module Dcmgr
                           :StoragePool,:Volume,:VolumeSnapshot,
                           :InstanceNetfilterGroup,
                           :InstanceSpec, :InstanceNic, :Network, :IpLease,
-                          :SshKeyPair].freeze
+                          :SshKeyPair, :History, :HostnameLease, :MacLease].freeze
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
     autoload :Tag, 'dcmgr/models/tag'
