@@ -41,6 +41,8 @@ module Dcmgr::Models
     many_to_many :netfilter_groups, :join_table=>:instance_netfilter_groups
     many_to_one :ssh_key_pair
 
+    plugin ArchiveChangedColumn, :histories
+    
     subset(:lives, {:terminated_at => nil})
     
     # serialization plugin must be defined at the bottom of all class

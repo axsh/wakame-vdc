@@ -256,7 +256,115 @@ module Dcmgr::Models
     end
     
   end
-  
+
+  # This plugin is to archive the changes on each column of the model
+  # to a history table.
+  # 
+  # plugin ArchiveChangedColumn, :your_history_table
+  #  or
+  # plugin ArchiveChangedColumn
+  # history_dataset = DB[:history_table]
+  #
+  # The history table should have the schema below:
+  # schema do
+  #   Fixnum :id, :null=>false, :primary_key=>true
+  #   String :uuid, :size=>50, :null=>false
+  #   String :attr, :null=>false
+  #   String :vchar_value, :null=>true
+  #   String :blob_value, :null=>true, :text=>true
+  #   Time  :created_at, :null=>false
+  #   index [:uuid, :created_at]
+  #   index [:uuid, :attr]
+  # end
+  module ArchiveChangedColumn
+    def self.configure(model, history_table=nil)
+      model.history_dataset = case history_table
+                              when NilClass
+                                nil
+                              when String,Symbol
+                                model.db.from(history_table)
+                              when Class
+                                raise "Unknown type" unless history_table < Sequel::Model
+                                history_table.dataset
+                              when Sequel::Dataset
+                                history_table
+                              else
+                                raise "Unknown type"
+                              end
+    end
+    
+    module ClassMethods
+      def history_dataset=(ds)
+        @history_ds = ds
+      end
+      
+      def history_dataset
+        @history_ds
+      end
+    end
+
+    module InstanceMethods
+      def history_snapshot(at)
+        raise TypeError unless at.is_a?(Time)
+
+        if self.created_at > at || (!self.terminated_at.nil? && self.terminated_at < at)
+          raise "#{at} is not in the range of the object's life span."
+        end
+        
+        ss = self.dup
+        #  SELECT * FROM (SELECT * FROM `instance_histories` WHERE
+        #  (`uuid` = 'i-ezsrs132') AND created_at <= '2010-11-30 23:08:05'
+        #  ORDER BY created_at DESC) AS a GROUP BY a.attr;
+        ds = self.class.history_dataset.filter('uuid=? AND created_at <= ?', self.canonical_uuid, at).order(:created_at.desc)
+        ds = ds.from_self.group_by(:attr)
+        ds.all.each { |h|
+          if !h[:blob_value].nil?
+            ss.send("#{h[:attr]}=", typecast_value(h[:attr], h[:blob_value]))
+          else
+            ss.send("#{h[:attr]}=", typecast_value(h[:attr], h[:vchar_value]))
+          end
+        }
+        # take care for serialized columns by serialization plugin.
+        ss.deserialized_values.clear if ss.respond_to?(:deserialized_values)
+        
+        ss
+      end
+
+      def before_create
+        return false if super == false
+        @columns_stored = self.columns
+      end
+
+      def before_update
+        return false if super == false
+        @columns_stored = self.changed_columns
+      end
+      
+      def after_save
+        super
+        return if @columns_stored.nil?
+        common_rec = {
+          :uuid=>self.canonical_uuid,
+          :created_at => Time.now,
+        }
+        
+        @columns_stored.each { |c|
+          hist_rec = common_rec.dup
+          hist_rec[:attr] = c.to_s
+          
+          coldef = self.class.db_schema[c]
+          case coldef[:type]
+          when :text,:blob
+            hist_rec[:blob_value]= (new? ? (self[c] || coldef[:default]) : self[c])
+          else
+            hist_rec[:vchar_value]=(new? ? (self[c] || coldef[:default]) : self[c])
+          end
+          self.class.history_dataset.insert(hist_rec)
+        }
+        @columns_stored = nil
+      end
+    end
+  end
 
   class BaseNew < Sequel::Model
 

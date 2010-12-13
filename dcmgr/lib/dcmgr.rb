@@ -95,6 +95,7 @@ module Dcmgr
     autoload :IpLease, 'dcmgr/models/ip_lease'
     autoload :InstanceNetfilterGroup, 'dcmgr/models/instance_netfilter_group'
     autoload :SshKeyPair, 'dcmgr/models/ssh_key_pair'
+    autoload :History, 'dcmgr/models/history'
   end
 
   module Endpoints

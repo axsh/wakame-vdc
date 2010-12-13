@@ -22,6 +22,7 @@ module Dcmgr::Models
     with_timestamps
 
     many_to_one :storage_pool
+    plugin ArchiveChangedColumn, :histories
 
     class RequestError < RuntimeError; end
 

@@ -42,6 +42,8 @@ module Dcmgr::Models
     end
     with_timestamps
 
+    plugin ArchiveChangedColumn, :histories
+    
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     # Possible column data:
