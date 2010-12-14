@@ -31,7 +31,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         logger.info("refresh on instance_started: #{args.inspect}")
         inst_id = args[0]
         logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
-        myinstance.refresh_netfilter_by_friend_instance_id(inst_id, 'started')
+        #myinstance.refresh_netfilter_by_friend_instance_id(inst_id, 'started')
+        myinstance.init_netfilter
       }
     end
 
@@ -40,7 +41,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         logger.info("refresh on instance_terminated: #{args.inspect}")
         inst_id = args[0]
         logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
-        myinstance.refresh_netfilter_by_friend_instance_id(inst_id, 'terminated')
+        #myinstance.refresh_netfilter_by_friend_instance_id(inst_id, 'terminated')
+        myinstance.init_netfilter
       }
     end
 
@@ -48,7 +50,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       @worker_thread.pass {
         logger.info("refresh on netfilter_updated: #{args.inspect}")
         netfilter_group_id = args[0]
-        myinstance.refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
+        #myinstance.refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
+        myinstance.init_netfilter
       }
     end
   end
@@ -190,8 +193,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     protocol_maps = {
       'ip4'  => 'ip4',
       'arp'  => 'arp',
-      #ip6'  => 'ip6',
-      #rarp' => '0x8035',
+      #'ip6'  => 'ip6',
+      #'rarp' => '0x8035',
     }
 
     # make chain names.
@@ -299,6 +302,12 @@ class ServiceNetfilter < Isono::NodeModules::Base
     cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_hst_arp:' -j CONTINUE"
     cmds << "sudo ebtables -A d_#{vif}_arp       -j DROP"
     cmds << "sudo ebtables -A s_#{vif}_d_hst_arp -j DROP"
+
+    # debug: others
+    #cmds << "sudo ebtables -A s_#{vif}_d_hst_ip4 --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip s_#{vif}_d_hst_ip4:' -j CONTINUE"
+    #cmds << "sudo ebtables -A d_#{vif}_s_hst_ip4 --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip d_#{vif}_s_hst_ip4:' -j CONTINUE"
+    #cmds << "sudo ebtables -A s_#{vif}_ip4       --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip s_#{vif}_ip4:'       -j CONTINUE"
+    #cmds << "sudo ebtables -A d_#{vif}_ip4       --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip d_#{vif}_ip4:'       -j CONTINUE"
 
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
@@ -504,8 +513,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     protocol_maps = {
       'ip4'  => 'ip4',
       'arp'  => 'arp',
-      #ip6'  => 'ip6',
-      #rarp' => '0x8035',
+      #'ip6'  => 'ip6',
+      #'rarp' => '0x8035',
     }
 
     # make chain names.
