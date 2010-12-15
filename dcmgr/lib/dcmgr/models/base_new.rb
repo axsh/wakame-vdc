@@ -50,6 +50,7 @@ module Dcmgr::Models
           column(:uuid, String, :size=>8, :null=>false, :fixed=>true, :unique=>true)
         end
       }
+      model.many_to_many :tags, :dataset=>lambda { Tag.join(TagMapping.table_name, :tag_id=>:id, :uuid=>self.canonical_uuid); }
     end
 
     module InstanceMethods
@@ -65,6 +66,12 @@ module Dcmgr::Models
         self[:uuid] ||= Array.new(8) do UUID_TABLE[rand(UUID_TABLE.size)]; end.join
       end
 
+      # model hook
+      def after_destroy
+        super
+        TagMapping.filter(:uuid=>self.canonical_uuid).delete
+      end
+
       # Returns canonicalized uuid which has the form of
       # "{uuid_prefix}-{uuid}".
       def canonical_uuid
@@ -74,36 +81,56 @@ module Dcmgr::Models
 
       # Put the tag on the object.
       #
-      # This method just delegates the method call of Tag#label().
-      # @params [Models::Tag,String] tag_or_tag_uuid 'tag-xxxx' is expected when the type is string
-      def label_tag(tag_or_tag_uuid)
-        tag = case tag_or_tag_uuid
+      # @params [Models::Tag,String,Symbol] arg1
+      # @params [String,NilClass] arg2
+      # @params [String,NilClass] arg3
+      # 
+      # @example
+      # lable_tag('tag-xxxxx')
+      # t = Tag['tag-xxxx']
+      # label_tag(t)
+      # label_tag(:NetworkPool, 'newname1', 'account_id')
+      def label_tag(arg1, arg2=nil, arg3=nil)
+        tag = case arg1
               when String
-                Tag[tag_or_tag_uuid]
+                Tag[arg1]
+              when Symbol
+                acctid = arg3 || self.respond_to?(:account_id) ? self.account_id : raise("Unknown Account ID")
+                Dcmgr::Tags.const_get(arg1).find_or_create(:account_id=>acctid, :name=>arg2)
               when Tag
-                tag_or_tag_uuid
+                arg1
               else
-                raise ArgumentError, "Invalid type: #{tag_or_tag_uuid.class}"
+                raise ArgumentError, "Invalid type: #{arg1.class}"
               end
-        
-        tag.label(self.uuid)
+        raise "Root Tag class can not be used" unless tag.class < Tag
+        tag.label(self.canonical_uuid)
       end
 
       # Remove the labeled tag from the object
       #
-      # This method just delegates the method call of Tag#unlabel().
-      # @params [Models::Tag,String] tag_or_tag_uuid 'tag-xxxx' is expected when the type is string
-      def unlabel_tag(tag_or_tag_uuid)
-        tag = case tag_or_tag_uuid
+      # @params [Models::Tag,String,Symbol] arg1
+      # @params [String,NilClass] arg2
+      # @params [String,NilClass] arg3
+      #
+      # @example
+      # unlable_tag('tag-xxxxx')
+      # t = Tag['tag-xxxx']
+      # unlabel_tag(t)
+      # unlabel_tag(:NetworkPool, 'newname1', 'account_id')
+      def unlabel_tag(arg1, arg2=nil, arg3=nil)
+        tag = case arg1
               when String
-                Tag[tag_or_tag_uuid]
+                Tag[arg1]
+              when Symbol
+                acctid = arg3 || self.respond_to?(:account_id) ? self.account_id : raise("Unknown Account ID")
+                Dcmgr::Tags.const_get(arg1).find(:account_id=>acctid, :name=>arg2)
               when Tag
-                tag_or_tag_uuid
+                arg1
               else
-                raise ArgumentError, "Invalid type: #{tag_or_tag_uuid.class}"
+                raise ArgumentError, "Invalid type: #{arg1.class}"
               end
 
-        tag.unlabel(self.uuid)
+        tag.unlabel(self.canonical_uuid)
       end
 
       def to_hash()

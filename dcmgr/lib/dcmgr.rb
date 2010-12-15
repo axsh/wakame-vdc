@@ -119,4 +119,6 @@ module Dcmgr
   module Helpers
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
   end
+
+  autoload :Tags, 'dcmgr/tags'
 end
