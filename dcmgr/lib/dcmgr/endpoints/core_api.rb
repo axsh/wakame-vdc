@@ -1030,9 +1030,10 @@ module Dcmgr
 
       end
 
-      collection :network do
-        description "List networks in account"
+      collection :networks do
+        description "Networks for account"
         operation :index do
+          description "List networks in account"
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
@@ -1064,6 +1065,7 @@ module Dcmgr
           # params :id required
           control do
             nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
             
             respond_to { |f|
               f.json {nw.to_hash.to_json}
@@ -1101,11 +1103,8 @@ module Dcmgr
           control do
             Models::Network.lock!
             nw = find_by_uuid(:Network, params[:id])
-            if examine_owner(nw)
-              nw.destroy
-            else
-              raise OperationNotPermitted
-            end
+            examine_owner(nw) || raise(OperationNotPermitted)
+            nw.destroy
             
             respond_to { |f|
               f.json {nw.to_hash.to_json}
@@ -1120,12 +1119,68 @@ module Dcmgr
           control do
             Models::IpLease.lock!
             nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
 
             (ipaddr.is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
               nw.add_reserved(ip)
             }
+            response_to({})
           end
         end
+
+        operation :release, :method =>:put, :member=>true do
+          description 'Unregister reserved IP address from the network'
+          # params id, string, required
+          # params ipaddr, [String,Array], required
+          control do
+            Models::IpLease.lock!
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
+
+            (ipaddr.is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
+              nw.delete_reserved(ip)
+            }
+            response_to({})
+          end
+        end
+
+        operation :add_pool, :method=>:put, :member=>true do
+          description 'Label network pool name'
+           # param :name required
+          control do
+            Models::Tag.lock!
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
+            nw.label_tag(:NetworkPool, params[:name], @account.canonical_uuid)
+            response_to({})
+          end
+        end
+        
+        operation :del_pool, :method=>:put, :member=>true do
+          description 'Unlabel network pool name'
+          # param :name required
+          control do
+            Models::Tag.lock!
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
+            
+            nw.unlabel_tag(:NetworkPool, params[:name], @account.canonical_uuid)
+            response_to({})
+          end
+        end
+        
+        operation :get_pool, :method=>:get, :member=>true do
+          description 'List network pool name'
+          # param :name required
+          control do
+            Models::Tag.lock!
+             nw = find_by_uuid(:Network, params[:id])
+             examine_owner(nw) || raise(OperationNotPermitted)
+
+             res = nw.tags_dataset.filter(:type_id=>Tags.type_id(:NetworkPool)).all.map{|i| i.to_api_document }
+             response_to(res)
+           end
+         end
       end
       
     end
