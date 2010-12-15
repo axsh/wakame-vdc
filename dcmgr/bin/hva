@@ -639,6 +639,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     rule_maps = []
 
     rules.each do |rule|
+      rule = rule.strip.gsub(/[\s\t]+/, '')
+
       # ex.
       # "tcp:22,22,ip4:0.0.0.0"
       # "udp:53,53,ip4:0.0.0.0"
