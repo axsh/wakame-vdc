@@ -127,6 +127,7 @@ module Dcmgr::Models
     def to_api_document
       h = {
         :id => self.canonical_uuid,
+        :uuid => self.canonical_uuid,
         :size => self.size,
         :snapshot_id => self.snapshot_id,
         :created_at => self.created_at,

@@ -36,6 +36,7 @@ module Dcmgr::Models
     def to_api_document
       h = {
         :id => self.canonical_uuid,
+        :uuid => self.canonical_uuid,
         :state => self.state,
         :size => self.size,
         :origin_volume_id => self.origin_volume_id,
