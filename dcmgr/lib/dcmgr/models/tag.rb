@@ -1,27 +1,59 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Models
-  class Tag < BaseNew
+  # Tag is a label which groups arbitrary resource(s) having canonical
+  # uuid. A tag object consists of three items: Account ID, Type, Name
+  # 
+  # Account ID is top level scope that represents the owner of the
+  # tag. Each tag instance is created in the scope of the account.
+  # 
+  # Type field is second level scope to filter the object out to be
+  # labeled. If the tag is only for grouping resource A, it will fail
+  # at labling the tag other than resource A.
+  #
+  # Name represents the instance ID of the tag. This is a string that
+  # must be unique in the scope of Account ID and Type.
+  # Below is Type & Name matrix in single account:
+  # TypeA, name1
+  # TypeA, name1 # can not create
+  # TypeB, name2 # ok
+  # TypeB, name1 # nop
+  # 
+  # The resource can be labeled is called "Taggable" resource. The
+  # model framework is provided to declare simply.
+  # 
+  # class A < Dcmgr::Models::Base
+  #   taggable 'xxx'
+  # end
+  #
+  # @example Retrieve tag
+  # t = Tag.declare(account_id, :NetworkPool, 'xxxxx')
+  # t.mapped_uuids # => ['nw-11111', 'nw-22222' ,'nw-33333']
+  #
+  # @example Lable a tag from tag
+  # t = Tag.declare(account_id, :NetworkPool, 'nwgroup1')
+  # t.lable('nw-xxxxx')
+  # t.lable('nw-yyyyy')
+  # 
+  # @example Label a tag from resource
+  # t = Tag.declare(account_id, :NetworkPool, 'nwgroup1')
+  # nw = Network['nw-44444']
+  # nw.label_tag(t)
+  # nw.label_tag('tag-xxxxx')
+  class Tag < AccountResource
     taggable('tag')
-    with_timestamps
-    plugin :single_table_inheritance, :type_id, :model_map=>{}
-    plugin :subclasses
-    
-    inheritable_schema do
-      Fixnum :account_id, :null=>false
-      index :account_id
-      Fixnum :owner_id
-      String :name, :fixed=>true, :size=>200, :null=>false
-      Fixnum :type_id, :null=>false
-      String :attributes
-    end
 
-    TYPE_NORMAL = 0
-    TYPE_AUTH = 1
+    inheritable_schema do
+      Fixnum :type_id, :null=>false
+      String :name, :null=>false
+      String :attributes
+
+      index [:account_id, :type_id, :name], {:unique=>true}
+    end
+    with_timestamps
 
     many_to_one :account
     
-    #one_to_many :tag_mappings, :dataset=>proc{ TagMapping.dataset.filter(:tag_id=>self.id) } do
     one_to_many :mapped_uuids, :class=>TagMapping do |ds|
       ds.instance_eval {
         def exists?(canonical_uuid)
@@ -31,12 +63,18 @@ module Dcmgr::Models
       ds
     end
 
+    # sti plugin has to be loaded at lower position.
+    plugin :subclasses
+    plugin :single_table_inheritance, :type_id,
+         :key_map=>proc {|v| Dcmgr::Tags::MODEL_MAP[v.to_s.split('Dcmgr::Tags::').last.to_sym] },
+         :model_map=>proc {|v| Dcmgr::Tags.const_get(Dcmgr::Tags::KEY_MAP[v]) }
+
     class UnacceptableTagType < StandardError
       def initialize(msg, tag, taggable)
         super(msg)
 
-        raise ArgumentError, "Expected #{Tag.class}: #{tag.class}"  unless tag.is_a?(Tag)
-        raise ArgumentError, "Expected #{Taggable.class}: #{tag.class}"  unless taggable.is_a?(Taggable)
+        raise ArgumentError, "Expected child of #{Tag} but #{tag.class}"  unless tag.is_a?(Tag)
+        raise ArgumentError, "Expected kind of #{Taggable} but #{taggable.class}"  unless taggable.kind_of?(Taggable)
         @tag = tag
         @taggable = taggable
       end
@@ -48,65 +86,57 @@ module Dcmgr::Models
     def labeled?(canonical_uuid)
       # TODO: check if the uuid exists
       
-      !TagMapping.filter(:uuid=>canonical_uuid, :tag_id=>self.pk).empty?
+      !TagMapping.filter(:tag_id=>self.pk, :uuid=>canonical_uuid).empty?
     end
-    
-    def label(canonical_uuid)
-      tgt = Taggable.find(canonical_uuid)
+
+    # Associate the tag to the taggable object.
+    #
+    # @params [Models::Taggable,String] taggable_or_uuid
+    def label(taggable_or_uuid)
+      tgt = case taggable_or_uuid
+            when String
+              Taggable.find(taggable_or_uuid)
+            when Models::Taggable
+              taggable_or_uuid
+            else
+              raise TypeError
+            end
       
-      raise(UnacceptableTagType, self, tgt) if accept_mapping?(tgt)
-      raise(TagAlreadyLabeled) if labeled?(canonical_uuid)
-      TagMapping.create(:uuid=>canonical_uuid, :tag_id=>self.pk)
+      raise(UnacceptableTagType.new("", self, tgt)) unless accept_mapping?(tgt)
+      raise(TagAlreadyLabeled) if labeled?(tgt.canonical_uuid)
+      TagMapping.create(:uuid=>tgt.canonical_uuid, :tag_id=>self.pk)
       self
     end
 
-    def unlabel(canonical_uuid)
-      t = TagMapping.find(:uuid=>canonical_uuid, :tag_id=>self.pk) || raise(TagAlreadyUnlabeled)
-      t.delete
+    def lable_ifnot(t)
+      begin
+        lable(t)
+      rescue TagAlreadyLabeled
+      end
+      self
+    end
+
+    # Disassociate the tag from the taggable object.
+    # 
+    # @params [Models::Taggable,String] taggable_or_uuid
+    def unlabel(taggable_or_uuid)
+      tgt = case taggable_or_uuid
+            when String
+              Taggable.find(taggable_or_uuid) || raise("Not found Taggable object: #{taggable_or_uuid}")
+            when Models::Taggable
+              taggable_or_uuid
+            else
+              raise TypeError
+            end
+      t = TagMapping.find(:tag_id=>self.pk, :uuid=>tgt.canonical_uuid) || raise(TagAlreadyUnlabeled)
+      t.destroy
       self
     end
     
-    #many_to_many :tags, :join_table=>:tag_mappings, :left_key=>:target_id, :conditions=>{:target_type=>TagMapping::TYPE_TAG}
-    
-    #many_to_one :owner, :class=>:User
-    
-    #one_to_many :tag_attributes, :one_to_one=>true
-
     def self.find_tag_class(name)
       self.subclasses.find { |m|
-        m.to_s.sub(/^#{self.class}::/, '') == name
+        m == name || m.split('::').last == name
       }
-    end
-
-    # STI class variable setter, getter methods.
-    class << self
-      
-      # Declare the integer number for the tag.
-      # 
-      # Also set the value to sti map in class Tag.
-      # class Tag1 < Tag
-      #   type_id 123456
-      # end
-      # 
-      # puts Tag1.type_id # == 123456
-      def type_id(type_id=nil)
-        if type_id.is_a?(Fixnum)
-          @type_id = type_id
-          Tag.sti_model_map[type_id] = self
-          Tag.sti_key_map[self.to_s] = type_id
-        end
-        @type_id || raise("#{self}.type_id is unset. Please set the unique number for the tag instance.")
-      end
-
-
-      # Set or read description of the Tag class.
-      def description(desc=nil)
-        if desc
-          @description = desc
-        end
-        @description
-      end
-
     end
 
     # Check the object class type before associating to the Tag.
@@ -116,11 +146,19 @@ module Dcmgr::Models
       raise NotImplementedError 
     end
 
-    def after_initialize
+    # model hook
+    def before_destroy
+      return false if !mapped_uuids_dataset.empty?
       super
-      self[:type_id] = self.class.type_id
     end
 
+    def self.lock!
+      super
+      TagMapping.lock!
+    end
+
+    def to_api_document
+      to_hash.merge({:type_id=>self.class.to_s.split('::').last})
+    end
   end
 end
-

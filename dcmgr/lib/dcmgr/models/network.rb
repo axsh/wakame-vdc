@@ -18,7 +18,6 @@ module Dcmgr::Models
     end
     with_timestamps
 
-    many_to_one :host_pool
     one_to_many :ip_lease
 
     def validate
