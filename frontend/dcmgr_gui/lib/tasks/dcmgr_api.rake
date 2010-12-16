@@ -25,7 +25,7 @@ namespace :api do
   end
   
   task :start_auth => :environment do |t,args|
-    exec "rackup -D -o localhost -p 8081 config-api.ru"
+    exec "rackup -o localhost -p 8081 config-api.ru"
     
     puts "Auth server up and runing"
   end
