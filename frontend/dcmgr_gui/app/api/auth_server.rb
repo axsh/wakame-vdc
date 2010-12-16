@@ -2,14 +2,6 @@ module DcmgrGui
   class AuthServer < Sinatra::Base
     use Rack::MethodOverride
 
-    # Move to a dedicated file.
-    configure :development do
-#      set :host, DcmgrGui::Application.config.server_name
-#      set :port, DcmgrGui::Application.config.auth_port
-      set :host, "localhost"
-      set :port, 3000
-    end
-
     def protected!
       unless authorized?
         response['WWW-Authenticate'] = %(Basic realm="Wakame dcmgr authorization.")
