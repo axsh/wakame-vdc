@@ -165,10 +165,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
       return
     end
 
-    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:instance_nics].first[:network_id])
     raise "UnknownNetworkId" if network_map.nil?
 
-    vif     = inst_map[:instance_nics].first[:vif]
+    vif     = inst_map[:instance_nics].first[:uuid]
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     if with_flush
@@ -327,10 +327,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
       return
     end
 
-    network_map = rpc.request('hva-collector', 'get_network', inst_map[:host_pool][:network_id])
+    network_map = rpc.request('hva-collector', 'get_network', inst_map[:instance_nics].first[:network_id])
     raise "UnknownNetworkId" if network_map.nil?
 
-    vif     = inst_map[:instance_nics].first[:vif]
+    vif     = inst_map[:instance_nics].first[:uuid]
     vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
 
     if with_flush
@@ -785,7 +785,7 @@ class KvmHandler < EndpointBuilder
     if vnic = @inst[:instance_nics].first
       cmd += " -net nic,macaddr=%s -net tap,ifname=%s,script=/usr/bin/qemu-ifup,downscript=/usr/bin/qemu-ifdown"
       args << vnic[:mac_addr].unpack('A2'*6).join(':')
-      args << vnic[:vif]
+      args << vnic[:uuid]
     end
     sh(cmd, args)
   end
