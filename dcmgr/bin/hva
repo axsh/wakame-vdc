@@ -299,6 +299,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     ipv4s << network_map[:ipv4_gw]
 
+    p ipv4s.uniq
     ipv4s.uniq.reverse_each do |ipv4|
       case ipv4
       when own_ipv4
@@ -650,6 +651,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     rules.each do |rule|
       rule = rule.strip.gsub(/[\s\t]+/, '')
+      from_group = false
       ipv4s = []
 
       # ex.
@@ -671,9 +673,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
       # ip_source   : ip4? xxx.xxx.xxx.xxx./[0-32], ip6? (not yet supprted), #{netfilter_group_id}
       protocol, ip_source = source_pair.split(':')
 
-      # validate
-      # TODO: allow account_id format
-
       begin
         s = StringScanner.new(protocol)
         until s.eos?
@@ -688,6 +687,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
               ip_source = ip_addr
             end
           when s.scan(/a-\w{8}/)
+            from_group = true
             inst_maps = rpc.request('hva-collector', 'get_instances_of_account_netfilter_group', protocol, ip_source)
             inst_maps.each { |inst_map|
               ipv4s << inst_map[:ips]
@@ -702,7 +702,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       end
 
       begin
-        if ipv4s.size == 0
+        if from_group == false
+          "from_group:(#{from_group}) ip_source -> #{ip_source}"
           ip = IPAddress(ip_source)
           ip_source = case ip.u32
                       when 0
@@ -720,7 +721,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
       case ip_protocol
       when 'tcp', 'udp'
-        if ipv4s.size == 0
+        if from_group == false
           rule_maps << {
             :ip_protocol => ip_protocol,
             :ip_sport    => ip_sport.to_i,
@@ -767,7 +768,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
           next
         end
 
-        if ipv4s.size == 0
+        if from_group == false
           rule_maps << {
             :ip_protocol => ip_protocol,
             :icmp_type   => ip_dport.to_i, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
