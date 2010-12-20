@@ -5,5 +5,5 @@
 # path for dnsmaq binary
 config.dnsmasq_bin_path='/usr/sbin/dnsmasq'
 
-# network name to distribute dhcp/dns managed by this nsa
-config.network_name='network1'
+# UUID of Network or NetworkPool to be delivered DHCP.
+config.network_name='tag-xxxxxx'

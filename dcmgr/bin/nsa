@@ -14,7 +14,7 @@ end
 
 require File.expand_path('../../config/path_resolver', __FILE__)
 
-
+require 'erb'
 require 'eventmachine'
 
 class SuperviseDnsmasq < Isono::NodeModules::Base
@@ -29,6 +29,19 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     if manifest.config.network_name.nil?
       abort("network_name is not set yet in nsa.conf")
     end
+
+    # check the dnsmasq binary version
+    @conf_ver_253 = false
+    if `#{manifest.config.dnsmasq_bin_path} -version`.split("\n").first =~ /Dnsmasq version ([\d\.]+)/
+      verstr = $1.split('.')
+      if verstr[0].to_i == 2 && verstr[1].to_i >= 53
+        @conf_ver_253 = true
+      end
+      logger.info("Using dnsmasq v#{verstr}: configuration version #{@conf_ver_253 ? '>= 2.53' : '< 2.53'}")
+    else
+      logger.warn("Failed to detect dnsmasq binary version")
+    end
+    
     
     opts = sprintf("-k --no-hosts --no-resolv --addn-hosts=%s --dhcp-hostsfile=%s --conf-file=%s",
                    config_section.dhcp_hosts_conf + ".hosts",
@@ -85,42 +98,55 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     # load entier macaddr,ipaddr pairs for all instances from collector.
     confdata = rpc.request('hva-collector', 'get_dhcp_conf', manifest.config.network_name)
 
-    require 'erb'
-    
-    File.open(config_section.dhcp_hosts_conf, 'w') { |f|
-      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
-#interface=eth0
+      render_conf(config_section.dhcp_hosts_conf, binding, <<'_EOS_') 
 server=8.8.8.8
-dhcp-range=<%= confdata[:ipv4_gw] %>,static,<%= confdata[:netmask] %>
-dhcp-option=option:netmask,<%= confdata[:netmask] %>
-dhcp-option=option:router,<%= confdata[:ipv4_gw] %>
-dhcp-option=option:dns-server,<%= confdata[:dns_server] %>
-dhcp-option=option:domain-name,<%= confdata[:domain_name] %>
-#dhcp-option=option:domain-search,<%= confdata[:domain_name] %>
-<%- confdata[:mac2addr].each { |i| -%>
-#dhcp-host=<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
+<%- confdata.each { |nwid, v| -%>
+<%- if @conf_ver_253 -%>
+dhcp-range=set:<%= nwid %>,<%= v[:ipv4_first] %>,static,<%= v[:netmask] %>
+dhcp-option=tag:<%= nwid %>,option:netmask,<%= v[:netmask] %>
+dhcp-option=tag:<%= nwid %>,option:router,<%= v[:ipv4_gw] %>
+dhcp-option=tag:<%= nwid %>,option:dns-server,<%= v[:dns_server] %>
+dhcp-option=tag:<%= nwid %>,option:domain-name,<%= v[:domain_name] %>
+#dhcp-option=tag:<%= nwid %>,option:domain-search,<%= v[:domain_name] %>
+<%- else # if @conf_ver_253 -%>
+dhcp-range=net:<%= nwid %>,<%= v[:ipv4_first] %>,static,<%= v[:netmask] %>
+dhcp-option=<%= nwid %>,option:netmask,<%= v[:netmask] %>
+dhcp-option=<%= nwid %>,option:router,<%= v[:ipv4_gw] %>
+dhcp-option=<%= nwid %>,option:dns-server,<%= v[:dns_server] %>
+dhcp-option=<%= nwid %>,option:domain-name,<%= v[:domain_name] %>
+#dhcp-option=<%= nwid %>,option:domain-search,<%= v[:domain_name] %>
+<%- end # if @conf_ver_253 -%>
+<%- v[:mac2addr].each { |i| -%>
+#dhcp-host=<%= i[:mac_addr] %>,net:<%= nwid %>,<%= i[:ipaddr] %>
 <%- } -%>
-<%- confdata[:addr2host].each { |i| -%>
+<%- v[:addr2host].each { |i| -%>
 #address=/<%= i[:hostname] %>/<%= i[:ipaddr] %>
 <%- } -%>
-_EOS_
-    }
-
-    File.open(config_section.dhcp_hosts_conf + ".dhcp", 'w') { |f|
-      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
-<%- confdata[:mac2addr].each { |i| -%>
-<%= i[:mac_addr] %>,<%= i[:ipaddr] %>
 <%- } -%>
 _EOS_
-    }    
 
-    File.open(config_section.dhcp_hosts_conf + ".hosts", 'w') { |f|
-      f << ERB.new(<<'_EOS_', nil, '-').result(binding)
-<%- confdata[:addr2host].each { |i| -%>
+    render_conf(config_section.dhcp_hosts_conf + ".dhcp", binding, <<'_EOS_') 
+<%- confdata.each { |nwid, v| -%>
+<%-   v[:mac2addr].each { |i| -%>
+<%= i[:mac_addr] %>,net:<%= nwid %>,<%= i[:ipaddr] %>,infinite
+<%-   } -%>
+<%- } -%>
+_EOS_
+
+    render_conf(config_section.dhcp_hosts_conf + ".hosts", binding, <<'_EOS_')
+<%- confdata.each { |nwid, v| -%>
+<%-   v[:addr2host].each { |i| -%>
 <%= i[:ipaddr] %>  <%= i[:hostname] %>
+<%-   } -%>
 <%- } -%>
 _EOS_
-    }    
+  end
+
+  private
+  def render_conf(file, bind, templ)
+    File.open(file, 'w') { |f|
+      f << ERB.new(templ, nil, '-').result(bind)
+    }
   end
 end
 
