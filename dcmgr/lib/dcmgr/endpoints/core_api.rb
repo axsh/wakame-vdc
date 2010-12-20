@@ -282,7 +282,7 @@ module Dcmgr
           description 'Runs a new VM instance'
           # param :image_id, string, :required
           # param :instance_spec_id, string, :required
-          # param :host_pool_id, string, :optional
+          # param :host_id, string, :optional
           # param :host_name, string, :optional
           # param :user_data, string, :optional
           # param :nf_group, array, :optional
@@ -294,23 +294,64 @@ module Dcmgr
             wmi = find_by_uuid(:Image, params[:image_id])
             spec = find_by_uuid(:InstanceSpec, (params[:instance_spec_id] || 'is-kpf0pasc'))
 
-            if params[:host_pool_id]
-              hp = Models::HostPool[params[:host_pool_id]]
-              raise OutOfHostCapacity unless hp.check_capacity(spec)
+            # look up params[:host_id] in following order:
+            # 1. assume the host pool name.
+            # 2. assume hp-xxxxx or tag-xxxxx style uuid
+            # 3. assign default shared host pool.
+            params[:host_id] ||= params[:host_pool_id]
+            hostnode = pool = nil
+            if params[:host_id]
+              if pool = Tags::HostPool.find(:account_id=>@account.canonical_uuid,
+                                            :name=>params[:host_id])
+                # Pattern 1st
+              elsif hostnode = Models::Taggable.find(params[:host_id])
+                # Pattern 2nd
+                case hostnode
+                when Models::HostPool
+                when Tags::HostPool
+                  hostnode = hostnode.pick(spec)
+                else
+                  raise UnknownHostPool, "Could not find the host: #{params[:host_id]}"
+                end
+              end
             else
-              # TODO: schedule a host pool owned by SharedPool account.
+              # Pattern 3rd
+              pool = Tags::HostPool[Dcmgr.conf.default_shared_host_pool]
+              hostnode = pool.pick(spec)
             end
-            
-            raise UnknownHostPool, "Could not find host pool: #{params[:host_pool_id]}" if hp.nil?
+            raise UnknownHostPool, "Could not find host pool: #{params[:host_id]}" if hostnode.nil?
+            raise OutOfHostCapacity unless hostnode.check_capacity(spec)
 
-            # look up params[:network] in following order:
-            # 1. fetch as uuid nw-xxxxx
-            # TODO: 2. fetch as network pool name
-            # TODO: 3. assign default shared network if nil.
-            network = Models::Network[params[:network_id]]
-            raise "Can not find the network: #{params[:network_id]}" if network.nil?
+            # look up params[:network_id] in following order:
+            # 1. assume the network pool name.
+            # 2. assume nw-xxxxx or tag-xxxxx style uuid
+            # 3. assign default shared network pool.
+            # then randomly choose one network from the pool object.
+            network = pool = nil
+            if params[:network_id]
+              if pool = Tags::NetworkPool.find(:account_id=>@account.canonical_uuid,
+                                               :name=>params[:network_id])
+                # Pattern 1st
+                network = pool.pick
+              elsif network = Models::Taggable.find(params[:network_id])
+                # Pattern 2nd
+                case network
+                when Models::Network
+                when Tags::NeworkPool
+                  network = network.pick
+                else
+                  raise "Unknown network uuid: #{params[:network_id]}"
+                end
+              end
+            else
+              # Pattern 3rd
+              pool = Tags::NetworkPool[Dcmgr.conf.default_shared_network_pool]
+              network = pool.pick
+            end
+            raise "Can not find the network" if network.nil?
+            raise "Out of IP addresses in the network" unless network.available_ip_nums > 0
 
-            inst = hp.create_instance(@account, wmi, spec, network) do |i|
+            inst = hostnode.create_instance(@account, wmi, spec, network) do |i|
               # TODO: do not use rand() to decide vnc port.
               i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
               i.user_data = params[:user_data] || ''
@@ -350,9 +391,9 @@ module Dcmgr
               vol.boot_dev = 1
               vol.instance = inst
               vol.save
-              res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
+              res = Dcmgr.messaging.submit("kvm-handle.#{hostnode.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
-              res = Dcmgr.messaging.submit("kvm-handle.#{hp.node_id}", 'run_local_store', inst.canonical_uuid)
+              res = Dcmgr.messaging.submit("kvm-handle.#{hostnode.node_id}", 'run_local_store', inst.canonical_uuid)
             else
               raise "Unknown boot type"
             end

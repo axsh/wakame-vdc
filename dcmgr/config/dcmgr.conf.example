@@ -7,3 +7,8 @@ database_url 'mysql://localhost/dcmgr?user=root'
 # AMQP broker to be connected.
 amqp_server_uri 'amqp://192.168.2.25/'
 
+# UUID for shared host pool.
+default_shared_host_pool 'tag-xxxxxxxx'
+
+# UUID for shared network pool.
+default_shared_network_pool 'tag-xxxxxxxx'

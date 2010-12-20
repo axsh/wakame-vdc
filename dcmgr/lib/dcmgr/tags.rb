@@ -21,8 +21,12 @@ module Dcmgr::Tags
       to.is_a?(Dcmgr::Models::Network)
     end
 
-    def networks_dataset
-      TagMappings.filter()
+    def pick()
+      lst = mapped_uuids.map { |t|
+        Dcmgr::Models::Network[t.uuid]
+      }.sort_by{ |n|
+        n.available_ip_nums
+      }.reverse.first
     end
   end
   
@@ -30,6 +34,16 @@ module Dcmgr::Tags
     def accept_mapping?(to)
       to.is_a?(Dcmgr::Models::HostNode)
     end
+
+    def pick(spec)
+      mapped_uuids.map { |t|
+        Dcmgr::Models::HostPool[t.uuid]
+      }.find_all { |h|
+        h.check_capacity(spec)
+      }.sort_by { |h|
+        h.instances.count
+      }.reverse.first
+    end    
   end
   
   class StoragePool < Models::Tag

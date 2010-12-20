@@ -54,5 +54,9 @@ module Dcmgr::Models
     def add_reserved(ipaddr)
       add_ip_lease(:ipv4=>ipaddr, :type=>IpLease::TYPE_RESERVED)
     end
+
+    def available_ip_nums
+      self.ipaddress.hosts.size - self.ip_lease_dataset.count
+    end
   end
 end
