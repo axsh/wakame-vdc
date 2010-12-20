@@ -43,7 +43,8 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     end
     
     
-    opts = sprintf("-k --no-hosts --no-resolv --addn-hosts=%s --dhcp-hostsfile=%s --conf-file=%s",
+    opts = sprintf("-k --no-hosts --no-resolv --leasefile-ro --dhcp-leasefile=/dev/null " +
+                   "--addn-hosts=%s --dhcp-hostsfile=%s --conf-file=%s",
                    config_section.dhcp_hosts_conf + ".hosts",
                    config_section.dhcp_hosts_conf + ".dhcp",
                    config_section.dhcp_hosts_conf
