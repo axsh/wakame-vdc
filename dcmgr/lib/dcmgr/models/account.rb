@@ -3,10 +3,6 @@
 module Dcmgr::Models
   class Account < BaseNew
     taggable 'a'
-    with_timestamps
-    plugin :single_table_inheritance, :uuid, :model_map=>{}
-    plugin :subclasses
-
     # pk has to be overwritten by the STI subclasses.
     unrestrict_primary_key
 
@@ -17,8 +13,14 @@ module Dcmgr::Models
       String :description, :size=>100
       Fixnum :enabled, :default=>ENABLED, :null=>false
     end
+    with_timestamps
 
-    one_to_many  :tags
+    one_to_many  :tags, :dataset=>lambda { Tag.filter(:account_id=>self.canonical_uuid); }
+
+    # sti plugin has to be loaded at lower position.
+    plugin :subclasses
+    plugin :single_table_inheritance, :uuid, :model_map=>{}
+    
 
     def disable?
       self.enabled == DISABLED
