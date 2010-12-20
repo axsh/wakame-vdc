@@ -60,8 +60,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     begin
       inst_maps = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
 
-      init_ebtables(inst_maps) if @node.manifest.config.enable_ebtables
       init_iptables(inst_maps) if @node.manifest.config.enable_iptables
+      init_ebtables(inst_maps) if @node.manifest.config.enable_ebtables
       logger.info("initialize netfilter")
     rescue Exception => e
       p e
@@ -84,8 +84,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       # when terminated?
       if state == 'terminated'
         unless inst_map.nil?
-          refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
           refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+          refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
         end
       end
 
@@ -93,8 +93,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       if inst_maps.size > 0
         inst_maps.flatten.uniq.each { |inst_map|
           unless inst_map.nil?
-            refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
             refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+            refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
           end
         }
       end
@@ -111,8 +111,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       inst_maps = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
       inst_maps.each { |inst_map|
         unless inst_map.nil?
-          refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
           refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
+          refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
         end
       }
     rescue Exception => e
@@ -182,6 +182,12 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
+
+    ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
+    rules = ng.map { |g|
+      g[:rules].map { |rule| rule[:permission] }
+    }
+    rules.flatten! if rules.size > 0
 
     # hva ipv4
     own_ipv4 = Isono::Util.default_gw_ipaddr
@@ -286,6 +292,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
       next unless joined_network.include? IPAddress(ipv4addr)
       ipv4s << ipv4addr
     }
+    build_rule(rules).each do |rule|
+      next unless joined_network.include? IPAddress(rule[:ip_source])
+      ipv4s << rule[:ip_source]
+    end
+
     ipv4s << network_map[:ipv4_gw]
 
     ipv4s.uniq.reverse_each do |ipv4|
@@ -455,7 +466,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     # security group
-    # rules
     build_rule(rules).each do |rule|
       case rule[:ip_protocol]
       when 'tcp', 'udp'
@@ -640,6 +650,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     rules.each do |rule|
       rule = rule.strip.gsub(/[\s\t]+/, '')
+      ipv4s = []
 
       # ex.
       # "tcp:22,22,ip4:0.0.0.0"
@@ -656,29 +667,52 @@ class ServiceNetfilter < Isono::NodeModules::Base
       # ip_sport    : tcp,udp? 1 - 16bit, icmp: -1
       ip_protocol, ip_sport = from_pair.split(':')
 
-      # protocol    : [ ip4 | ip6 ]
-      # ip_source   : ip4? xxx.xxx.xxx.xxx./[0-32], ip6?: not yet supprted.
+      # protocol    : [ ip4 | ip6 | #{account_id} ]
+      # ip_source   : ip4? xxx.xxx.xxx.xxx./[0-32], ip6? (not yet supprted), #{netfilter_group_id}
       protocol, ip_source = source_pair.split(':')
 
       # validate
-      next unless protocol == 'ip4'
-      # next unless IPAddress.valid?(ip_source)
+      # TODO: allow account_id format
 
-      # IPAddress does't support prefix '0'.
-      ip_addr, prefix = ip_source.split('/', 2)
-      if prefix.to_i == 0
-        ip_source = ip_addr
+      begin
+        s = StringScanner.new(protocol)
+        until s.eos?
+          case
+          when s.scan(/ip6/)
+            # TODO#FUTURE: support IPv6 address format
+            next
+          when s.scan(/ip4/)
+            # IPAddress does't support prefix '0'.
+            ip_addr, prefix = ip_source.split('/', 2)
+            if prefix.to_i == 0
+              ip_source = ip_addr
+            end
+          when s.scan(/a-\w{8}/)
+            inst_maps = rpc.request('hva-collector', 'get_instances_of_account_netfilter_group', protocol, ip_source)
+            inst_maps.each { |inst_map|
+              ipv4s << inst_map[:ips]
+            }
+          else
+            raise "unexpected protocol '#{s.peep(20)}'"
+          end
+        end
+      rescue Exception => e
+        p e
+        next
       end
 
       begin
-        ip = IPAddress(ip_source)
-        ip_source = case ip.u32
-                    when 0
-                      "#{ip.address}/0"
-                    else
-                      "#{ip.address}/#{ip.prefix}"
-                    end
-
+        if ipv4s.size == 0
+          ip = IPAddress(ip_source)
+          ip_source = case ip.u32
+                      when 0
+                        "#{ip.address}/0"
+                      else
+                        "#{ip.address}/#{ip.prefix}"
+                      end
+        else
+          ipv4s = ipv4s.flatten.uniq
+        end
       rescue Exception => e
         p e
         next
@@ -686,13 +720,25 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
       case ip_protocol
       when 'tcp', 'udp'
-        rule_maps << {
-          :ip_protocol => ip_protocol,
-          :ip_sport    => ip_sport.to_i,
-          :ip_dport    => ip_dport.to_i,
-          :protocol    => protocol,
-          :ip_source   => ip_source,
-        }
+        if ipv4s.size == 0
+          rule_maps << {
+            :ip_protocol => ip_protocol,
+            :ip_sport    => ip_sport.to_i,
+            :ip_dport    => ip_dport.to_i,
+            :protocol    => protocol,
+            :ip_source   => ip_source,
+          }
+        else
+          ipv4s.each { |ip|
+            rule_maps << {
+              :ip_protocol => ip_protocol,
+              :ip_sport    => ip_sport.to_i,
+              :ip_dport    => ip_dport.to_i,
+              :protocol    => 'ip4',
+              :ip_source   => ip,
+            }
+          }
+        end
       when 'icmp'
         # via http://docs.amazonwebservices.com/AWSEC2/latest/CommandLineReference/
         #
@@ -721,13 +767,25 @@ class ServiceNetfilter < Isono::NodeModules::Base
           next
         end
 
-        rule_maps << {
-          :ip_protocol => ip_protocol,
-          :icmp_type   => ip_dport.to_i, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
-          :icmp_code   => ip_sport.to_i, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-          :protocol    => protocol,
-          :ip_source   => ip_source,
-        }
+        if ipv4s.size == 0
+          rule_maps << {
+            :ip_protocol => ip_protocol,
+            :icmp_type   => ip_dport.to_i, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
+            :icmp_code   => ip_sport.to_i, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+            :protocol    => protocol,
+            :ip_source   => ip_source,
+          }
+        else
+          ipv4s.each { |ip|
+            rule_maps << {
+              :ip_protocol => ip_protocol,
+              :icmp_type   => ip_dport.to_i, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
+              :icmp_code   => ip_sport.to_i, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+              :protocol    => 'ip4',
+              :ip_source   => ip,
+            }
+          }
+        end
       end
     end
 
