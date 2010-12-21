@@ -121,7 +121,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   def init_ebtables(inst_maps = [])
-    cmd = "sudo ebtables --init-table"
+    cmd = "ebtables --init-table"
     puts cmd
     system(cmd)
 
@@ -133,7 +133,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   def init_iptables(inst_maps = [])
     [ 'nat', 'filter' ].each { |table|
       [ 'F', 'Z', 'X' ].each { |xcmd|
-        cmd = "sudo iptables -t #{table} -#{xcmd}"
+        cmd = "iptables -t #{table} -#{xcmd}"
         puts cmd
         system(cmd)
       }
@@ -222,29 +222,29 @@ class ServiceNetfilter < Isono::NodeModules::Base
     # create user defined chains.
     [ 'N' ].each { |xcmd|
       chains.each { |chain|
-        cmds << "sudo ebtables -#{xcmd} #{chain}"
+        cmds << "ebtables -#{xcmd} #{chain}"
       }
     }
 
     # jumt to user defined chains
-    cmds << "sudo ebtables -A FORWARD -i #{vif} -j s_#{vif}"
-    cmds << "sudo ebtables -A FORWARD -o #{vif} -j d_#{vif}"
-    cmds << "sudo ebtables -A INPUT   -i #{vif} -j s_#{vif}_d_hst"
-    cmds << "sudo ebtables -A OUTPUT  -o #{vif} -j d_#{vif}_s_hst"
+    cmds << "ebtables -A FORWARD -i #{vif} -j s_#{vif}"
+    cmds << "ebtables -A FORWARD -o #{vif} -j d_#{vif}"
+    cmds << "ebtables -A INPUT   -i #{vif} -j s_#{vif}_d_hst"
+    cmds << "ebtables -A OUTPUT  -o #{vif} -j d_#{vif}_s_hst"
 
     # IP protocol routing
     protocol_maps.each { |k,v|
-      cmds << "sudo ebtables -A s_#{vif}       -p #{v} -j s_#{vif}_#{k}"
-      cmds << "sudo ebtables -A d_#{vif}       -p #{v} -j d_#{vif}_#{k}"
-      cmds << "sudo ebtables -A s_#{vif}_d_hst -p #{v} -j s_#{vif}_d_hst_#{k}"
-      cmds << "sudo ebtables -A d_#{vif}_s_hst -p #{v} -j d_#{vif}_s_hst_#{k}"
+      cmds << "ebtables -A s_#{vif}       -p #{v} -j s_#{vif}_#{k}"
+      cmds << "ebtables -A d_#{vif}       -p #{v} -j d_#{vif}_#{k}"
+      cmds << "ebtables -A s_#{vif}_d_hst -p #{v} -j s_#{vif}_d_hst_#{k}"
+      cmds << "ebtables -A d_#{vif}_s_hst -p #{v} -j d_#{vif}_s_hst_#{k}"
     }
 
     # default drop
-    cmds << "sudo ebtables -A s_#{vif}       --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}:'       -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_d_hst --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_hst:' -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}       -j DROP"
-    cmds << "sudo ebtables -A s_#{vif}_d_hst -j DROP"
+    cmds << "ebtables -A s_#{vif}       --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}:'       -j CONTINUE"
+    cmds << "ebtables -A s_#{vif}_d_hst --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_hst:' -j CONTINUE"
+    cmds << "ebtables -A s_#{vif}       -j DROP"
+    cmds << "ebtables -A s_#{vif}_d_hst -j DROP"
 
     # anti spoof
 
@@ -254,22 +254,22 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # anti spoof: mac
     # guest -> *
-    cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_arp:'       -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_d_hst_arp:' -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
-    cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    cmds << "ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_arp:'       -j CONTINUE"
+    cmds << "ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc s_#{vif}_d_hst_arp:' -j CONTINUE"
+    cmds << "ebtables -A s_#{vif}_arp       --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
+    cmds << "ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-mac-src ! #{vif_mac} -j DROP"
 
     # broadcast
-    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp                          --arp-mac-dst 00:00:00:00:00:00 --log-ip --log-arp --log-prefix 'Amc d_#{vif}_arp:'     -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00 --log-ip --log-arp --log-prefix 'Amc d_#{vif}_hst_arp:' -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp                          --arp-mac-dst 00:00:00:00:00:00                                                         -j   ACCEPT"
-    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00                                                         -j   ACCEPT"
+    cmds << "ebtables -A d_#{vif}_arp       --protocol arp                          --arp-mac-dst 00:00:00:00:00:00 --log-ip --log-arp --log-prefix 'Amc d_#{vif}_arp:'     -j CONTINUE"
+    cmds << "ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00 --log-ip --log-arp --log-prefix 'Amc d_#{vif}_hst_arp:' -j CONTINUE"
+    cmds << "ebtables -A d_#{vif}_arp       --protocol arp                          --arp-mac-dst 00:00:00:00:00:00                                                         -j   ACCEPT"
+    cmds << "ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-src=#{own_ipv4} --arp-mac-dst 00:00:00:00:00:00                                                         -j   ACCEPT"
 
     # *->guest
-    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_arp:'       -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_s_hst_arp:' -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
-    cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+    cmds << "ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_arp:'       -j CONTINUE"
+    cmds << "ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} --log-ip --log-arp --log-prefix 'Dmc d_#{vif}_s_hst_arp:' -j CONTINUE"
+    cmds << "ebtables -A d_#{vif}_arp       --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
+    cmds << "ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-mac-dst ! #{vif_mac} -j DROP"
 
     # anti spoof: ip
     inst_map[:ips].each { |ipv4|
@@ -277,15 +277,15 @@ class ServiceNetfilter < Isono::NodeModules::Base
       #ipv4 = '192.168.2.147'
 
       # guest -> *
-      cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_arp:'       -j CONTINUE"
-      cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_d_hst_arp:' -j CONTINUE"
-      cmds << "sudo ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} -j DROP"
-      cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} -j DROP"
+      cmds << "ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_arp:'       -j CONTINUE"
+      cmds << "ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif}_d_hst_arp:' -j CONTINUE"
+      cmds << "ebtables -A s_#{vif}_arp       --protocol arp --arp-ip-src ! #{ipv4} -j DROP"
+      cmds << "ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} -j DROP"
       # * -> guest
-      cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-dst ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip d_#{vif}_arp:'       -j CONTINUE"
-      cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-dst ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip d_#{vif}_s_hst_arp:' -j CONTINUE"
-      cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-dst ! #{ipv4} -j DROP"
-      cmds << "sudo ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-dst ! #{ipv4} -j DROP"
+      cmds << "ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-dst ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip d_#{vif}_arp:'       -j CONTINUE"
+      cmds << "ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-dst ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip d_#{vif}_s_hst_arp:' -j CONTINUE"
+      cmds << "ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-dst ! #{ipv4} -j DROP"
+      cmds << "ebtables -A d_#{vif}_s_hst_arp --protocol arp --arp-ip-dst ! #{ipv4} -j DROP"
     }
 
     # group nodes.
@@ -308,28 +308,28 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ipv4s.uniq.reverse_each do |ipv4|
       if ipv4 == own_ipv4
         # [guest]<->[parent host]
-        cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
+        cmds << "ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
       elsif child_ipv4s.include?(ipv4)
         # [parent host]([guest]<->[guest])
-        cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
-        cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+        cmds << "ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
+        cmds << "ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
       else
         # [guest]<->[other guest]
-        cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+        cmds << "ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
       end
     end
 
     # deny,allow
-    cmds << "sudo ebtables -A d_#{vif}_arp       --log-level warning --log-ip --log-arp --log-prefix 'D d_#{vif}_arp:'       -j CONTINUE"
-    cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_hst_arp:' -j CONTINUE"
-    cmds << "sudo ebtables -A d_#{vif}_arp       -j DROP"
-    cmds << "sudo ebtables -A s_#{vif}_d_hst_arp -j DROP"
+    cmds << "ebtables -A d_#{vif}_arp       --log-level warning --log-ip --log-arp --log-prefix 'D d_#{vif}_arp:'       -j CONTINUE"
+    cmds << "ebtables -A s_#{vif}_d_hst_arp --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif}_d_hst_arp:' -j CONTINUE"
+    cmds << "ebtables -A d_#{vif}_arp       -j DROP"
+    cmds << "ebtables -A s_#{vif}_d_hst_arp -j DROP"
 
     # debug: others
-    #cmds << "sudo ebtables -A s_#{vif}_d_hst_ip4 --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip s_#{vif}_d_hst_ip4:' -j CONTINUE"
-    #cmds << "sudo ebtables -A d_#{vif}_s_hst_ip4 --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip d_#{vif}_s_hst_ip4:' -j CONTINUE"
-    #cmds << "sudo ebtables -A s_#{vif}_ip4       --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip s_#{vif}_ip4:'       -j CONTINUE"
-    #cmds << "sudo ebtables -A d_#{vif}_ip4       --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip d_#{vif}_ip4:'       -j CONTINUE"
+    #cmds << "ebtables -A s_#{vif}_d_hst_ip4 --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip s_#{vif}_d_hst_ip4:' -j CONTINUE"
+    #cmds << "ebtables -A d_#{vif}_s_hst_ip4 --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip d_#{vif}_s_hst_ip4:' -j CONTINUE"
+    #cmds << "ebtables -A s_#{vif}_ip4       --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip s_#{vif}_ip4:'       -j CONTINUE"
+    #cmds << "ebtables -A d_#{vif}_ip4       --protocol ip4 --log-level warning --log-ip --log-arp --log-prefix '#ip d_#{vif}_ip4:'       -j CONTINUE"
 
     cmds.uniq! if cmds.size > 0
     cmds.compact.each { |cmd|
@@ -394,93 +394,93 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # metadata-server
     [ 'A' ].each { |xcmd|
-      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80")
+      system("iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80")
     }
 
     # create user defined chains.
     [ 'N' ].each { |xcmd|
       chains.each { |chain|
-        cmds << "sudo iptables -#{xcmd} #{chain}"
+        cmds << "iptables -#{xcmd} #{chain}"
 
         # logger & drop
-        cmds << "sudo iptables -N #{chain}_drop"
-        cmds << "sudo iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix 'D #{chain}:'"
-        cmds << "sudo iptables -A #{chain}_drop -j DROP"
+        cmds << "iptables -N #{chain}_drop"
+        cmds << "iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix 'D #{chain}:'"
+        cmds << "iptables -A #{chain}_drop -j DROP"
       }
     }
 
     # group nodes
     ipv4s << network_map[:ipv4_gw]
     ipv4s.uniq.reverse_each { |addr|
-      cmds << "sudo iptables -A d_#{vif} -s #{addr} -j ACCEPT"
+      cmds << "iptables -A d_#{vif} -s #{addr} -j ACCEPT"
     }
 
     # IP protocol routing
     [ 's', 'd' ].each do |bound|
       protocol_maps.each { |k,v|
-        cmds << "sudo iptables -N #{bound}_#{vif}_#{k}"
+        cmds << "iptables -N #{bound}_#{vif}_#{k}"
 
         case k
         when 'tcp'
           case bound
           when 's'
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
-            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state RELATED,ESTABLISHED -p #{k} -j ACCEPT"
-            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+            #cmds << "iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "iptables -A #{bound}_#{vif} -m state --state RELATED,ESTABLISHED -p #{k} -j ACCEPT"
+            cmds << "iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         when 'udp'
           case bound
           when 's'
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
-            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED -p #{k} -j ACCEPT"
-            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+            #cmds << "iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "iptables -A #{bound}_#{vif} -m state --state ESTABLISHED -p #{k} -j ACCEPT"
+            cmds << "iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         when 'icmp'
           case bound
           when 's'
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
           when 'd'
-            #cmds << "sudo iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
-            cmds << "sudo iptables -A #{bound}_#{vif} -m state --state ESTABLISHED,RELATED -p #{k} -j ACCEPT"
-            cmds << "sudo iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+            #cmds << "iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+            cmds << "iptables -A #{bound}_#{vif} -m state --state ESTABLISHED,RELATED -p #{k} -j ACCEPT"
+            cmds << "iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
           end
         end
       }
     end
 
-    cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif} -j s_#{vif}"
-    cmds << "sudo iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
+    cmds << "iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif} -j s_#{vif}"
+    cmds << "iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
 
     ##
     ## ACCEPT
     ##
     # DHCP Server
-    cmds << "sudo iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
-    cmds << "sudo iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 68 -j ACCEPT"
+    cmds << "iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
+    cmds << "iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 68 -j ACCEPT"
 
-    #cmds << "sudo iptables -A d_#{vif}_udp -p udp --sport 67 -j d_#{vif}_udp_drop"
+    #cmds << "iptables -A d_#{vif}_udp -p udp --sport 67 -j d_#{vif}_udp_drop"
     # DNS Server
-    cmds << "sudo iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
+    cmds << "iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
 
     ##
     ## DROP
     ##
     protocol_maps.each { |k,v|
       # DHCP
-      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:dhcp_server]} -p #{k} -j s_#{vif}_#{k}_drop"
+      cmds << "iptables -A s_#{vif} -d #{network_map[:dhcp_server]} -p #{k} -j s_#{vif}_#{k}_drop"
       # DNS
-      cmds << "sudo iptables -A s_#{vif} -d #{network_map[:dns_server]} -p #{k} -j s_#{vif}_#{k}_drop"
+      cmds << "iptables -A s_#{vif} -d #{network_map[:dns_server]} -p #{k} -j s_#{vif}_#{k}_drop"
     }
 
     # security group
     build_rule(rules).each do |rule|
       case rule[:ip_protocol]
       when 'tcp', 'udp'
-        cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
+        cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
       when 'icmp'
         # icmp
         #   This extension can be used if `--protocol icmp' is specified. It provides the following option:
@@ -488,22 +488,22 @@ class ServiceNetfilter < Isono::NodeModules::Base
         #     This allows specification of the ICMP type, which can be a numeric ICMP type, type/code pair, or one of the ICMP type names shown by the command
         #      iptables -p icmp -h
         if rule[:icmp_type] == -1 && rule[:icmp_code] == -1
-          cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} -j ACCEPT"
+          cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} -j ACCEPT"
         else
-          cmds << "sudo iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+          cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
         end
       end
     end
 
     # drop other routings
     protocol_maps.each { |k,v|
-      cmds << "sudo iptables -A d_#{vif}_#{k} -p #{k} -j d_#{vif}_#{k}_drop"
+      cmds << "iptables -A d_#{vif}_#{k} -p #{k} -j d_#{vif}_#{k}_drop"
     }
 
     # IP protocol routing
     [ 'd' ].each do |bound|
       protocol_maps.each { |k,v|
-        cmds << "sudo iptables -A #{bound}_#{vif}_#{k} -j #{bound}_#{vif}_#{k}_drop"
+        cmds << "iptables -A #{bound}_#{vif}_#{k} -j #{bound}_#{vif}_#{k}_drop"
       }
     end
 
@@ -552,39 +552,39 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     # clear rules if exists.
-    system("sudo ebtables -L s_#{vif} >/dev/null 2>&1")
+    system("ebtables -L s_#{vif} >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "sudo ebtables -D FORWARD -i #{vif} -j s_#{vif}"
+      cmd = "ebtables -D FORWARD -i #{vif} -j s_#{vif}"
       puts cmd
       system(cmd)
     end
 
-    system("sudo ebtables -L d_#{vif} >/dev/null 2>&1")
+    system("ebtables -L d_#{vif} >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "sudo ebtables -D FORWARD -o #{vif} -j d_#{vif}"
+      cmd = "ebtables -D FORWARD -o #{vif} -j d_#{vif}"
       puts cmd
       system(cmd)
     end
 
-    system("sudo ebtables -L s_#{vif}_d_hst >/dev/null 2>&1")
+    system("ebtables -L s_#{vif}_d_hst >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "sudo ebtables -D INPUT -i #{vif} -j s_#{vif}_d_hst"
+      cmd = "ebtables -D INPUT -i #{vif} -j s_#{vif}_d_hst"
       puts cmd
       system(cmd)
     end
 
-    system("sudo ebtables -L d_#{vif}_s_hst >/dev/null 2>&1")
+    system("ebtables -L d_#{vif}_s_hst >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "sudo ebtables -D OUTPUT -o #{vif} -j d_#{vif}_s_hst"
+      cmd = "ebtables -D OUTPUT -o #{vif} -j d_#{vif}_s_hst"
       puts cmd
       system(cmd)
     end
 
     [ 'F', 'Z', 'X' ].each { |xcmd|
       chains.each { |chain|
-        system("sudo ebtables -L #{chain} >/dev/null 2>&1")
+        system("ebtables -L #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
-          cmd = "sudo ebtables -#{xcmd} #{chain}"
+          cmd = "ebtables -#{xcmd} #{chain}"
           puts cmd
           system(cmd)
         end
@@ -630,25 +630,25 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # metadata-server
     [ 'D' ].each { |xcmd|
-      system("sudo iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
+      system("iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
     }
 
     # clean rules if exists.
-    system("sudo iptables -nL s_#{vif} >/dev/null 2>&1")
+    system("iptables -nL s_#{vif} >/dev/null 2>&1")
     if $?.exitstatus == 0
-      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif} -j s_#{vif}")
+      system("iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif} -j s_#{vif}")
     end
 
-    system("sudo iptables -nL d_#{vif} >/dev/null 2>&1")
+    system("iptables -nL d_#{vif} >/dev/null 2>&1")
     if $?.exitstatus == 0
-      system("sudo iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
+      system("iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
     end
 
     [ 'F', 'Z', 'X' ].each { |xcmd|
       chains.each { |chain|
-        system("sudo iptables -nL #{chain} >/dev/null 2>&1")
+        system("iptables -nL #{chain} >/dev/null 2>&1")
         if $?.exitstatus == 0
-          system("sudo iptables -#{xcmd} #{chain}")
+          system("iptables -#{xcmd} #{chain}")
         end
       }
     }
