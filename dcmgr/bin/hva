@@ -180,6 +180,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
       return
     end
 
+    # guest nodes in HyperVisor.
+    alive_inst_maps = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
+
     # group node IPv4 addresses.
     ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
 
@@ -298,14 +301,21 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
 
     ipv4s << network_map[:ipv4_gw]
+    child_ipv4s = alive_inst_maps.map { |alive_inst_map|
+      alive_inst_map[:ips]
+    }.flatten.uniq.compact
 
-    p ipv4s.uniq
     ipv4s.uniq.reverse_each do |ipv4|
-      case ipv4
-      when own_ipv4
+      if ipv4 == own_ipv4
+        # [guest]<->[parent host]
         cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
+      elsif child_ipv4s.include?(ipv4)
+        # [parent host]([guest]<->[guest])
+        cmds << "sudo ebtables -A s_#{vif}_d_hst_arp --protocol arp --arp-ip-dst #{ipv4} -j ACCEPT"
+        cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
       else
-        cmds << "sudo ebtables -A d_#{vif}_arp --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
+        # [guest]<->[other guest]
+        cmds << "sudo ebtables -A d_#{vif}_arp       --protocol arp --arp-ip-src #{ipv4} -j ACCEPT"
       end
     end
 
