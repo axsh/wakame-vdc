@@ -338,7 +338,7 @@ module Dcmgr
                 # Pattern 2nd
                 case network
                 when Models::Network
-                when Tags::NeworkPool
+                when Tags::NetworkPool
                   network = network.pick
                 else
                   raise "Unknown network uuid: #{params[:network_id]}"
