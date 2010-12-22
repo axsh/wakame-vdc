@@ -61,7 +61,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       inst_maps = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
 
       viftable_map = {}
-      inst_maps = inst_maps.each { |inst_map|
+      inst_maps = inst_maps.map { |inst_map|
         viftable_map[ inst_map[:ips].first ] = inst_map[:instance_nics].first[:uuid]
 
         # Does the hva have instance?
@@ -72,7 +72,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
         # Does host have vif?
         next unless valid_vif?(inst_map[:instance_nics].first[:uuid])
         inst_maps
-      }
+      }.flatten.uniq.compact
 
       init_iptables(inst_maps) if @node.manifest.config.enable_iptables
       init_ebtables(inst_maps, viftable_map) if @node.manifest.config.enable_ebtables
@@ -161,19 +161,16 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     logger.debug("basic_cmds ...")
     basic_cmds.flatten.uniq.each { |cmd|
-#      p cmd
       system(cmd)
     }
 
     logger.debug("group_cmds ...")
     group_cmds.flatten.uniq.each { |cmd|
-#      p cmd
       system(cmd)
     }
 
     logger.debug("final_cmds ...")
     final_cmds.flatten.uniq.each { |cmd|
-#      p cmd
       system(cmd)
     }
   end
