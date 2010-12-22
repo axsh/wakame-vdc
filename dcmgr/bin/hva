@@ -919,6 +919,66 @@ module KvmHelper
   end
 end
 
+class InstanceMonitor < Isono::NodeModules::Base
+  include KvmHelper
+  include Dcmgr::Logger
+
+  initialize_hook do
+    @thread_pool = Isono::ThreadPool.new(1)
+    @monitor = EventMachine::PeriodicTimer.new(5) {
+      @thread_pool.pass {
+        myinstance.check_instance
+      }
+    }
+  end
+
+  terminate_hook do
+    @monitor.cancel
+    @thread_pool.shutdown
+  end
+
+  def check_instance()
+    instlst = rpc.request('hva-collector', 'get_alive_instances', manifest.node_id)
+    instlst.find_all{|i| i[:state] == 'running' }.each { |i|
+      begin
+        check_kvm_process(i)
+      rescue Exception => e
+        if i[:status] == 'online'
+          logger.error("#{e.class}, #{e.message}")
+          
+          rpc.request('hva-collector', 'update_instance', i[:uuid], {:status=>:offline}) { |req|
+            req.oneshot = true
+          }
+          event.publish('hva/fault_instance', :args=>[i[:uuid]])
+        end
+        next
+      end
+
+      if i[:status] != 'online'
+        rpc.request('hva-collector', 'update_instance', i[:uuid], {:status=>:online}) { |req|
+          req.oneshot = true
+        }
+      end
+    }
+  end
+
+  private
+  def check_kvm_process(i)
+    pid = File.read(File.expand_path("#{i[:uuid]}/kvm.pid", node.manifest.config.vm_data_dir)).to_i
+    unless File.exists?(File.expand_path(pid.to_s, '/proc'))
+      raise "Unable to find the pid of kvm process: #{pid}"
+    end
+  end
+
+  def rpc
+    @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
+  end
+
+  def event
+    @event ||= Isono::NodeModules::EventChannel.new(@node)
+  end
+end
+
 class KvmHandler < EndpointBuilder
   include Dcmgr::Logger
   include Dcmgr::Helpers::CliHelper
@@ -978,6 +1038,15 @@ class KvmHandler < EndpointBuilder
     event.publish('hva/volume_detached', :args=>[@inst_id, @vol_id])
   end
 
+  def terminate_instance
+    kvm_pid=`pgrep -u root -f vdc-#{@inst_id}`
+    if $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
+      sh("/bin/kill #{kvm_pid}")
+    else
+      logger.error("Can not find the KVM process. Skipping: kvm -name vdc-#{@inst_id}")
+    end
+  end
+
   def update_instance_state(opts, ev)
     raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
     rpc.request('hva-collector', 'update_instance', @inst_id, opts)
@@ -995,12 +1064,12 @@ class KvmHandler < EndpointBuilder
     logger.info("Booting #{@inst_id}")
 
     @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
-    raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'init'
+    raise "Invalid instance state: #{@inst[:state]}" unless %w(init failingover).member?(@inst[:state].to_s)
 
     rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
     # setup vm data folder
     @inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
-    FileUtils.mkdir(@inst_data_dir)
+    FileUtils.mkdir(@inst_data_dir) unless File.exists?(@inst_data_dir)
     # copy image file
     img_src = @inst[:image][:source]
     case img_src[:type].to_sym
@@ -1025,13 +1094,13 @@ class KvmHandler < EndpointBuilder
     @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
     @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
     logger.info("Booting #{@inst_id}")
-    raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'init'
-
+    raise "Invalid instance state: #{@inst[:state]}" unless %w(init failingover).member?(@inst[:state].to_s)
+    
     rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
-
+    
     # setup vm data folder
     @inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
-    FileUtils.mkdir(@inst_data_dir)
+    FileUtils.mkdir(@inst_data_dir) unless File.exists?(@inst_data_dir)
     
     # create volume from snapshot
     jobreq.run("zfs-handle.#{@vol[:storage_pool][:node_id]}", "create_volume", @vol_id)
@@ -1062,20 +1131,15 @@ class KvmHandler < EndpointBuilder
   
   job :terminate do
     @inst_id = request.args[0]
-
+    
     @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
     raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
-
+    
     begin
       rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
       
-      kvm_pid=`pgrep -u root -f vdc-#{@inst_id}`
-      unless $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
-        raise "No such VM process: kvm -name vdc-#{@inst_id}"
-      end
-      
-      sh("/bin/kill #{kvm_pid}")
-      
+      terminate_instance
+
       unless @inst[:volume].nil?
         @inst[:volume].each { |volid, v|
           @vol_id = volid
@@ -1093,7 +1157,31 @@ class KvmHandler < EndpointBuilder
     end
   end
 
-  job :attach do
+  # just do terminate instance and unmount volumes not to affect
+  # state management.
+  # called from HA at which the faluty instance get cleaned properly.
+  job :cleanup do
+    @inst_id = request.args[0]
+    
+    @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+    raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
+
+    begin
+      terminate_instance
+
+      unless @inst[:volume].nil?
+        @inst[:volume].each { |volid, v|
+          @vol_id = volid
+          @vol = v
+          # force to continue detaching volumes during termination.
+          detach_volume_from_host rescue logger.error($!)
+        }
+      end
+    end
+    
+  end
+
+  job :attach, proc {
     @inst_id = request.args[0]
     @vol_id = request.args[1]
 
@@ -1223,6 +1311,7 @@ manifest.instance_eval do
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
   load_module Isono::NodeModules::NodeHeartbeat
   load_module ServiceNetfilter
+  load_module InstanceMonitor
 
   config do |c|
     c.vm_data_dir = '/var/lib/vm'

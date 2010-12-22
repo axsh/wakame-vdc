@@ -108,6 +108,7 @@ module Dcmgr
   module NodeModules
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
+    autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
   end
 
   module Stm

@@ -288,6 +288,7 @@ module Dcmgr
           # param :nf_group, array, :optional
           # param :ssh_key, string, :optional
           # param :network_id, string, :optional
+          # param :ha_enabled, string, :optional
           control do
             Models::Instance.lock!
             
@@ -374,6 +375,10 @@ module Dcmgr
                 else
                   i.ssh_key_pair_id = ssh_key_pair.canonical_uuid
                 end
+              end
+
+              if params[:ha_enabled] == 'true'
+                i.ha_enabled = 1
               end
             end
 

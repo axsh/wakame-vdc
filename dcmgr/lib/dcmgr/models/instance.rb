@@ -18,6 +18,7 @@ module Dcmgr::Models
       String :status, :size=>20, :null=>false, :default=>:init.to_s
       String :hostname, :null=>false, :size=>32
       String :ssh_key_pair_id
+      Fixnum :ha_enabled, :null=>false, :default=>0
       
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
