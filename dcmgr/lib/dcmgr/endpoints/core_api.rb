@@ -302,6 +302,8 @@ module Dcmgr
             params[:host_id] ||= params[:host_pool_id]
             hostnode = pool = nil
             if params[:host_id]
+              # TODO: smart way to preload model libs.
+              Models::HostPool; Tags::HostPool;
               if pool = Tags::HostPool.find(:account_id=>@account.canonical_uuid,
                                             :name=>params[:host_id])
                 # Pattern 1st
@@ -330,6 +332,8 @@ module Dcmgr
             # then randomly choose one network from the pool object.
             network = pool = nil
             if params[:network_id]
+              # TODO: smart way to preload model libs.
+              Models::Network; Tags::NetworkPool;
               if pool = Tags::NetworkPool.find(:account_id=>@account.canonical_uuid,
                                                :name=>params[:network_id])
                 # Pattern 1st
