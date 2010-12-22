@@ -60,9 +60,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
     begin
       inst_maps = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
 
-      arptable_map = {}
+      viftable_map = {}
       inst_maps = inst_maps.map { |inst_map|
-        arptable_map[ inst_map[:ips].first ] = inst_map[:instance_nics].first[:uuid]
+        viftable_map[ inst_map[:ips].first ] = inst_map[:instance_nics].first[:uuid]
 
         # Does the hva have instance?
         unless inst_map[:host_pool][:node_id] == node.node_id
@@ -75,7 +75,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }.flatten.uniq.compact
 
       init_iptables(inst_maps) if @node.manifest.config.enable_iptables
-      init_ebtables(inst_maps, arptable_map) if @node.manifest.config.enable_ebtables
+      init_ebtables(inst_maps, viftable_map) if @node.manifest.config.enable_ebtables
       logger.info("initialize netfilter")
     rescue Exception => e
       p e
@@ -134,7 +134,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 #    end
 #  end
 
-  def init_ebtables(inst_maps = [], arptable_map = {})
+  def init_ebtables(inst_maps = [], viftable_map = {})
     cmd = "ebtables --init-table"
     puts cmd
     system(cmd)
@@ -151,11 +151,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
 
       basic_cmds << build_ebtables_basic_part(vif_map, inst_map)
-      group_cmds << build_ebtables_group_part(vif_map, inst_map, arptable_map)
+      group_cmds << build_ebtables_group_part(vif_map, inst_map, viftable_map)
       final_cmds << build_ebtables_final_part(vif_map)
     }
 
-    arptable_map.each { |k,v|
+    viftable_map.each { |k,v|
       p "#{v} <-> #{k}"
     }
 
@@ -201,7 +201,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
   end
 
-#  def refresh_ebtables(inst_map = {}, arptable_map = {})
+#  def refresh_ebtables(inst_map = {}, viftable_map = {})
 #    logger.debug("refresh_ebtables: #{inst_map[:uuid]} ...")
 #
 #    vif_map = {
@@ -211,7 +211,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 #
 #    # xtables commands
 #    basic_cmds = build_ebtables_basic_part(vif_map, inst_map)
-#    group_cmds = build_ebtables_group_part(vif_map, inst_map, arptable_map)
+#    group_cmds = build_ebtables_group_part(vif_map, inst_map, viftable_map)
 #    final_cmds = build_ebtables_final_part(vif_map)
 #
 #    logger.debug("refresh_ebtables: #{inst_map[:uuid]} done.")
@@ -314,7 +314,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
 
-  def build_ebtables_group_part(vif_map, inst_map, arptable_map)
+  def build_ebtables_group_part(vif_map, inst_map, viftable_map)
     group_cmds = []
     hva_ipv4 = Isono::Util.default_gw_ipaddr
 
@@ -358,7 +358,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
         group_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp --protocol arp --arp-ip-src #{vif_map[:ipv4]} --arp-ip-dst #{ipv4} --log-ip --log-arp --log-prefix 'Afw s_#{vif_map[:uuid]}_d_hst_arp:' -j CONTINUE"
         group_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp --protocol arp --arp-ip-src #{vif_map[:ipv4]} --arp-ip-dst #{ipv4} -j ACCEPT"
       elsif guest_ipv4s.include?(ipv4)
-        #p "#{vif_map[:uuid]}(#{vif_map[:ipv4]}) -> [guest] #{arptable_map[ipv4]}(#{ipv4})"
+        #p "#{vif_map[:uuid]}(#{vif_map[:ipv4]}) -> [guest] #{viftable_map[ipv4]}(#{ipv4})"
 
         # guest->guest
         group_cmds << "ebtables -A d_#{vif_map[:uuid]}_arp       --protocol arp --arp-ip-src #{ipv4} --arp-ip-dst #{vif_map[:ipv4]} --log-ip --log-arp --log-prefix 'Afw d_#{vif_map[:uuid]}_arp:'       -j CONTINUE"
@@ -367,14 +367,14 @@ class ServiceNetfilter < Isono::NodeModules::Base
         group_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp --protocol arp --arp-ip-src #{vif_map[:ipv4]} --arp-ip-dst #{ipv4} --log-ip --log-arp --log-prefix 'Afw s_#{vif_map[:uuid]}_d_hst_arp:' -j CONTINUE"
         group_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp --protocol arp --arp-ip-src #{vif_map[:ipv4]} --arp-ip-dst #{ipv4} -j ACCEPT"
 
-        unless arptable_map[ipv4].nil?
+        unless viftable_map[ipv4].nil?
           # guest->guest
-          group_cmds << "ebtables -A d_#{arptable_map[ipv4]}_arp       --protocol arp --arp-ip-src #{vif_map[:ipv4]} --arp-ip-dst #{ipv4} --log-ip --log-arp --log-prefix 'Arv d_#{arptable_map[ipv4]}_arp:' -j CONTINUE"
-          group_cmds << "ebtables -A d_#{arptable_map[ipv4]}_arp       --protocol arp --arp-ip-src #{vif_map[:ipv4]} --arp-ip-dst #{ipv4} -j ACCEPT"
+          group_cmds << "ebtables -A d_#{viftable_map[ipv4]}_arp       --protocol arp --arp-ip-src #{vif_map[:ipv4]} --arp-ip-dst #{ipv4} --log-ip --log-arp --log-prefix 'Arv d_#{viftable_map[ipv4]}_arp:' -j CONTINUE"
+          group_cmds << "ebtables -A d_#{viftable_map[ipv4]}_arp       --protocol arp --arp-ip-src #{vif_map[:ipv4]} --arp-ip-dst #{ipv4} -j ACCEPT"
 
           # guest->host
-          group_cmds << "ebtables -A s_#{arptable_map[ipv4]}_d_hst_arp --protocol arp --arp-ip-src #{ipv4} --arp-ip-dst #{vif_map[:ipv4]} --log-ip --log-arp --log-prefix 'Arv s_#{arptable_map[ipv4]}_d_hst_arp:' -j CONTINUE"
-          group_cmds << "ebtables -A s_#{arptable_map[ipv4]}_d_hst_arp --protocol arp --arp-ip-src #{ipv4} --arp-ip-dst #{vif_map[:ipv4]} -j ACCEPT"
+          group_cmds << "ebtables -A s_#{viftable_map[ipv4]}_d_hst_arp --protocol arp --arp-ip-src #{ipv4} --arp-ip-dst #{vif_map[:ipv4]} --log-ip --log-arp --log-prefix 'Arv s_#{viftable_map[ipv4]}_d_hst_arp:' -j CONTINUE"
+          group_cmds << "ebtables -A s_#{viftable_map[ipv4]}_d_hst_arp --protocol arp --arp-ip-src #{ipv4} --arp-ip-dst #{vif_map[:ipv4]} -j ACCEPT"
         end
       else
         #p "#{vif_map[:uuid]}(#{vif_map[:ipv4]}) -> [other] ***-******** (#{ipv4})"
