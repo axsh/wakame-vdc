@@ -984,11 +984,20 @@ class KvmHandler < EndpointBuilder
           @inst[:runtime_config][:telnet_port]
           ]
     if vnic = @inst[:instance_nics].first
-      cmd += " -net nic,macaddr=%s -net tap,ifname=%s,script=/usr/bin/qemu-ifup,downscript=/usr/bin/qemu-ifdown"
+      cmd += " -net nic,macaddr=%s -net tap,ifname=%s,script=,downscript="
       args << vnic[:mac_addr].unpack('A2'*6).join(':')
       args << vnic[:uuid]
     end
     sh(cmd, args)
+
+    unless vnic.nil?
+      switch=`/sbin/ip route list | awk '/^default / { print $5 }'`.strip
+      unless $?.exitstatus == 0
+        raise "No bridge interface."
+      end
+      sh("/sbin/ifconfig %s 0.0.0.0 up", [vnic[:uuid]])
+      sh("/usr/sbin/brctl addif %s %s", [switch, vnic[:uuid]])
+    end
   end
 
   def attach_volume_to_host
