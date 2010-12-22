@@ -359,23 +359,25 @@ module Dcmgr::Models
 
       def before_create
         return false if super == false
-        @columns_stored = self.columns
+        store_changes(self.columns)
+        true
       end
 
       def before_update
         return false if super == false
-        @columns_stored = self.changed_columns
+        store_changes(self.changed_columns)
+        true
       end
       
-      def after_save
-        super
-        return if @columns_stored.nil?
+      private
+      def store_changes(cols_stored)
+        return if cols_stored.nil? || cols_stored.empty?
         common_rec = {
           :uuid=>self.canonical_uuid,
           :created_at => Time.now,
         }
         
-        @columns_stored.each { |c|
+        cols_stored.each { |c|
           hist_rec = common_rec.dup
           hist_rec[:attr] = c.to_s
           
@@ -388,7 +390,6 @@ module Dcmgr::Models
           end
           self.class.history_dataset.insert(hist_rec)
         }
-        @columns_stored = nil
       end
     end
   end
