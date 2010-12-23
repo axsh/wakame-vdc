@@ -101,6 +101,9 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
 
       render_conf(config_section.dhcp_hosts_conf, binding, <<'_EOS_') 
 server=8.8.8.8
+log-facility=/var/log/dnsmasq.log
+#log-queries
+log-dhcp
 <%- confdata.each { |nwid, v| -%>
 <%- if @conf_ver_253 -%>
 dhcp-range=set:<%= nwid %>,<%= v[:ipv4_first] %>,static,<%= v[:netmask] %>
