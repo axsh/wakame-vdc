@@ -129,6 +129,29 @@ module Dcmgr::Models
       super
     end
 
+    def before_destroy
+      HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
+      self.instance_nic.each { |o| o.destroy }
+      self.instance_netfilter_groups.each{|o| o.destroy }
+      self.volume.each { |v|
+        v.instance_id = nil
+        v.state = :available
+        v.save
+      }
+      super
+    end
+
+    # override Sequel::Model#_delete not to delete rows but to set
+    # delete flags.
+    def _delete
+      if live?
+        self.terminated_at = Time.now
+        self.state = :terminated
+        self.status = :offline
+        self.save
+      end
+    end
+    
     # dump column data as hash with details of associated models.
     # this is for internal use.
     def to_hash

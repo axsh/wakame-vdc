@@ -41,8 +41,9 @@ module Dcmgr::Models
       super
     end
 
-    def after_destroy
-      MacLease.destroy(:mac_addr=>self.mac_addr)
+    def before_destroy
+      MacLease.find(:mac_addr=>self.mac_addr).destroy
+      ip && ip.destroy
       super
     end
 
