@@ -991,10 +991,24 @@ class KvmHandler < EndpointBuilder
     sh(cmd, args)
 
     unless vnic.nil?
-      switch=`/sbin/ip route list | awk '/^default / { print $5 }'`.strip
-      unless $?.exitstatus == 0
-        raise "No bridge interface."
-      end
+# via /usr/bin/qemu-ifup
+#      switch=`/sbin/ip route list | awk '/^default / { print $5 }'`.strip
+#      unless $?.exitstatus == 0
+#        raise "No bridge interface."
+#      end
+      network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
+
+      # TODO
+      # $ vconfig add eth0 #{vlan_id}
+      #
+      # $ brctl addbr br#{vlan_id}
+      # $ brclt addif br#{vlan_id} eth0.#{vlan_id}
+      #
+      # $ ifconfig eth0.#{vlan_id} 0.0.0.0 up
+      # $ ifcofnig br#{vlan_id} 0.0.0.0 up
+
+      switch = "br#{network_map[:vlan_id]}"
+
       sh("/sbin/ifconfig %s 0.0.0.0 up", [vnic[:uuid]])
       sh("/usr/sbin/brctl addif %s %s", [switch, vnic[:uuid]])
     end
