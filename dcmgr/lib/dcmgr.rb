@@ -73,7 +73,9 @@ module Dcmgr
                           :StoragePool,:Volume,:VolumeSnapshot,
                           :InstanceNetfilterGroup,
                           :InstanceSpec, :InstanceNic, :Network, :IpLease,
-                          :SshKeyPair, :History, :HostnameLease, :MacLease].freeze
+                          :SshKeyPair, :History, :HostnameLease, :MacLease,
+                          :VlanLease,
+                         ].freeze
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
     autoload :Tag, 'dcmgr/models/tag'
@@ -98,6 +100,7 @@ module Dcmgr
     autoload :History, 'dcmgr/models/history'
     autoload :HostnameLease, 'dcmgr/models/hostname_lease'
     autoload :MacLease, 'dcmgr/models/mac_lease'
+    autoload :VlanLease, 'dcmgr/models/vlan_lease'
   end
 
   module Endpoints

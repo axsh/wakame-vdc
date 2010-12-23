@@ -14,11 +14,13 @@ module Dcmgr::Models
       String :dns_server
       String :dhcp_server
       String :metadata_server
+      Fixnum :vlan_lease_id, :null=>false
       Text :description
     end
     with_timestamps
 
     one_to_many :ip_lease
+    many_to_one :vlan_lease
 
     def validate
       super
@@ -36,7 +38,12 @@ module Dcmgr::Models
     end
 
     def to_hash
-      values.dup.merge({:description=>description.to_s})
+      h = self.values.dup
+      h.delete(:vlan_lease_id)
+      h.merge({
+                :description=>description.to_s,
+                :vlan_id => vlan_lease.tag_id,
+              })
     end
 
     def ipaddress
