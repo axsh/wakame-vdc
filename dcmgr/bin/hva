@@ -785,7 +785,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
       begin
         if from_group == false
-          "from_group:(#{from_group}) ip_source -> #{ip_source}"
+          #p "from_group:(#{from_group}) ip_source -> #{ip_source}"
           ip = IPAddress(ip_source)
           ip_source = case ip.u32
                       when 0
@@ -1216,7 +1216,6 @@ class KvmHandler < EndpointBuilder
     pci_devaddr = nil
 
     sddev = File.expand_path(File.readlink(linux_dev_path), '/dev/disk/by-path')
-    
     connect_monitor(@inst[:runtime_config][:telnet_port]) { |t|
       # success message:
       #   OK domain 0, bus 0, slot 4, function 0
@@ -1248,7 +1247,7 @@ class KvmHandler < EndpointBuilder
     rpc.request('sta-collector', 'update_volume', @job.to_hash(:guest_device_name=>pci_devaddr.join(':')))
     event.publish('hva/volume_attached', :args=>[@inst_id, @vol_id])
     logger.info("Attached #{@vol_id} on #{@inst_id}")
-  end
+  }
 
   job :detach do
     @inst_id = request.args[0]
