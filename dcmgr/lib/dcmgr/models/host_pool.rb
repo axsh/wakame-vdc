@@ -22,6 +22,8 @@ module Dcmgr::Models
 
       Fixnum :offering_cpu_cores,   :null=>false, :unsigned=>true
       Fixnum :offering_memory_size, :null=>false, :unsigned=>true
+
+      index :node_id
     end
     
     one_to_many :instances

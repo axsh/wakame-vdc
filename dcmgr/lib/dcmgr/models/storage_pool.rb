@@ -29,6 +29,8 @@ module Dcmgr::Models
       String :storage_type, :null=>false
       String :ipaddr, :null=>false
       String :snapshot_base_path, :null=>false
+
+      index :node_id
     end
 
     one_to_many :volumes
