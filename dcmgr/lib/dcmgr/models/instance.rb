@@ -144,12 +144,10 @@ module Dcmgr::Models
     # override Sequel::Model#_delete not to delete rows but to set
     # delete flags.
     def _delete
-      if live?
-        self.terminated_at = Time.now
-        self.state = :terminated
-        self.status = :offline
-        self.save
-      end
+      self.terminated_at ||= Time.now
+      self.state = :terminated if self.state != :terminated
+      self.status = :offline if self.status != :offline
+      self.save
     end
     
     # dump column data as hash with details of associated models.
