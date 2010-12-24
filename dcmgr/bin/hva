@@ -972,6 +972,24 @@ class KvmHandler < EndpointBuilder
   include Dcmgr::Helpers::CliHelper
   include KvmHelper
 
+  def find_nic(ifindex = 2)
+    ifindex_map = {}
+    Dir.glob("/sys/class/net/*/ifindex").each do |ifindex_path|
+      device_name = File.split(File.split(ifindex_path).first)[1]
+      ifindex_num = File.readlines(ifindex_path).first.strip
+      ifindex_map[ifindex_num] = device_name
+    end
+    #p ifindex_map
+    ifindex_map[ifindex.to_s]
+  end
+
+  def nic_state(if_name = 'eth0')
+    operstate_path = "/sys/class/net/#{if_name}/operstate"
+    if File.exists?(operstate_path)
+      File.readlines(operstate_path).first.strip
+    end
+  end
+
   def run_kvm(os_devpath)
     # run vm
     cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
@@ -991,25 +1009,34 @@ class KvmHandler < EndpointBuilder
     sh(cmd, args)
 
     unless vnic.nil?
-# via /usr/bin/qemu-ifup
-#      switch=`/sbin/ip route list | awk '/^default / { print $5 }'`.strip
-#      unless $?.exitstatus == 0
-#        raise "No bridge interface."
-#      end
       network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
 
-      # TODO
-      # $ vconfig add eth0 #{vlan_id}
-      #
-      # $ brctl addbr br#{vlan_id}
-      # $ brclt addif br#{vlan_id} eth0.#{vlan_id}
-      #
-      # $ ifconfig eth0.#{vlan_id} 0.0.0.0 up
-      # $ ifcofnig br#{vlan_id} 0.0.0.0 up
-      switch = "br0.#{network_map[:vlan_id]}"
+      # physical interface
+      physical_if = find_nic(@node.manifest.config.hv_ifindex)
+      raise "UnknownPhysicalNIC" if physical_if.nil?
+
+      # vlan interface
+      vlan_if = "#{physical_if}.#{network_map[:vlan_id]}"
+      unless FileTest.exist?("/sys/class/net/#{vlan_if}/ifindex")
+        sh("/sbin/vconfig add #{physical_if} #{network_map[:vlan_id]}")
+      end
+
+      # bridge interface
+      bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
+      unless FileTest.exist?("/sys/class/net/#{bridge_if}/ifindex")
+        sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+        sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
+      end
+
+      # interface up? down?
+      [ vlan_if, bridge_if ].each do |ifname|
+        if nic_state(ifname) == "down"
+          sh("/sbin/ifconfig #{ifname} 0.0.0.0 up")
+        end
+      end
 
       sh("/sbin/ifconfig %s 0.0.0.0 up", [vnic[:uuid]])
-      sh("/usr/sbin/brctl addif %s %s", [switch, vnic[:uuid]])
+      sh("/usr/sbin/brctl addif %s %s", [bridge_if, vnic[:uuid]])
     end
   end
 
@@ -1326,6 +1353,8 @@ manifest.instance_eval do
     c.vm_data_dir = '/var/lib/vm'
     c.enable_ebtables = true
     c.enable_iptables = true
+    c.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
+    c.bridge_prefix   = 'br'
   end
 
   config_path File.expand_path('config/hva.conf', app_root)
