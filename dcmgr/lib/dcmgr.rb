@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  VERSION='10.11.0'
+  VERSION='10.12.0'
 
   class << self
     def conf
