@@ -14,3 +14,6 @@ config.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
 
 # bridge device name prefix
 config.bridge_prefix   = 'br'
+
+# bridge device name novlan
+config.bridge_novlan   = 'br0'
