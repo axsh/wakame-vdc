@@ -26,12 +26,6 @@ module Dcmgr::Models
 
     class RequestError < RuntimeError; end
 
-    def to_hash_document
-      h = self.values.dup
-      h[:id] = h[:uuid] = self.canonical_uuid
-      h
-    end
-
     # Hash data for API response.
     def to_api_document
       h = {

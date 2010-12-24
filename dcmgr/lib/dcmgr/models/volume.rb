@@ -111,13 +111,12 @@ module Dcmgr::Models
     end
 
     def merge_pool_data
-      v = self.to_hash_document
-      v.merge(:storage_pool=>storage_pool.to_hash_document)
+      v = self.to_hash
+      v.merge(:storage_pool=>storage_pool.to_hash)
     end
 
-    def to_hash_document
-      h = self.values.dup
-      h[:id] = h[:uuid] = h[:export_path] = self.canonical_uuid
+    def to_hash
+      h = super
       # yaml -> hash translation
       h[:transport_information]=self.transport_information
       h

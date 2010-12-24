@@ -167,7 +167,7 @@ module Dcmgr::Models
       h[:volume]={}
       if self.volume
         self.volume.each { |v|
-          h[:volume][v.canonical_uuid] = v.to_hash_document
+          h[:volume][v.canonical_uuid] = v.to_hash
         }
       end
       h

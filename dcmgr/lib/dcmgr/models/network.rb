@@ -38,7 +38,7 @@ module Dcmgr::Models
     end
 
     def to_hash
-      h = self.values.dup
+      h = super
       h.delete(:vlan_lease_id)
       h.merge({
                 :description=>description.to_s,

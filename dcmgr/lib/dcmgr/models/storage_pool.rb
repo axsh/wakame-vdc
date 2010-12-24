@@ -47,12 +47,6 @@ module Dcmgr::Models
       end
     end
 
-    def to_hash_document
-      h = self.values.dup
-      h[:id] = h[:uuid] = self.canonical_uuid
-      h
-    end
-
     def state_machine
       model = self
       st = Statemachine.build do

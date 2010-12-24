@@ -30,13 +30,6 @@ module Dcmgr::Models
       self.enabled == ENABLED
     end
 
-    def to_hash_document
-      h = self.values.dup
-      h[:id] = h[:uuid] = self.canonical_uuid
-      h
-    end
-
-
     # STI class variable setter, getter methods.
     class << self
       def default_values

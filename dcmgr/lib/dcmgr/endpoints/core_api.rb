@@ -933,7 +933,7 @@ module Dcmgr
             raise UndefinedStoragePoolID if pool_id.nil?
             vs = find_by_uuid(:StoragePool, pool_id)
             raise UnknownStoragePool if vs.nil?
-            response_to(vs.to_hash_document)
+            response_to(vs.to_hash)
           end
         end
       end
