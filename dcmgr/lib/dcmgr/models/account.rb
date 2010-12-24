@@ -93,6 +93,18 @@ module Dcmgr::Models
         self.enabled = Account::ENABLED
       end
     end
+
+    SystemAccount.define_account(:SharedPoolAccount) do
+      pk 101
+      uuid 'shpoolxx'
+      description 'system account for shared resources'
+
+      # SahredPoolAccount is always enabled.
+      def before_save
+        super
+        self.enabled = Account::ENABLED
+      end
+    end
     
   end
 end
