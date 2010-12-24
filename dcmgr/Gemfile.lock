@@ -1,8 +1,8 @@
 GIT
   remote: git://github.com/axsh/isono.git
-  revision: b82fb672129d23338e9512801ccd65611d0c284b
+  revision: eeceab1c1756e44c9e3fb970b420968a66adf884
   specs:
-    isono (0.0.1)
+    isono (0.1.0)
       amqp (>= 0.6.7)
       eventmachine (>= 0.12.10)
       log4r
@@ -23,7 +23,7 @@ GEM
       eventmachine (>= 0.12.4)
     bacon (1.1.0)
     builder (2.1.2)
-    configuration (1.1.0)
+    configuration (1.2.0)
     eventmachine (0.12.10)
     extlib (0.9.15)
     i18n (0.4.2)
