@@ -132,9 +132,7 @@ module Dcmgr
         operation :show do
           control do
             a = find_account(params[:id])
-            respond_to { |f|
-              f.json { a.to_hash_document.to_json }
-            }
+            response_to(a.to_hash)
           end
         end
 
@@ -142,9 +140,7 @@ module Dcmgr
           description 'Register a new account'
           control do
             a = Models::Account.create()
-            respond_to { |f|
-              f.json { a.to_hash_document.to_json }
-            }
+            response_to(a.to_hash)
           end
         end
 
@@ -157,9 +153,7 @@ module Dcmgr
             a = find_account(params[:id])
             a.destroy
 
-            respond_to { |f|
-              f.json { {} }
-            }
+            response_to([a.canonical_uuid])
           end
         end
 
@@ -272,9 +266,7 @@ module Dcmgr
               :results=> partial_ds.all.map {|i| i.to_api_document }
             }]
             
-            respond_to { |f|
-              f.json {res.to_json}
-            }
+            response_to(res)
           end
         end
 
@@ -406,9 +398,8 @@ module Dcmgr
             else
               raise "Unknown boot type"
             end
-            respond_to { |f|
-              f.json { inst.to_api_document.to_json }
-            }
+            
+            response_to(inst.to_api_document)
           end
         end
 
@@ -418,9 +409,7 @@ module Dcmgr
             i = find_by_uuid(:Instance, params[:id])
             raise UnknownInstance if i.nil?
             
-            respond_to { |f|
-              f.json { i.to_api_document.to_json }
-            }
+            response_to(i.to_api_document)
           end
         end
 
@@ -434,9 +423,7 @@ module Dcmgr
               raise OperationNotPermitted
             end
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'terminate', i.canonical_uuid)
-            respond_to { |f|
-              f.json { i.canonical_uuid }
-            }
+            response_to([i.canonical_uuid])
           end
         end
 
@@ -477,9 +464,7 @@ module Dcmgr
               :results=> partial_ds.all.map {|i| i.to_hash }
             }]
             
-            respond_to { |f|
-              f.json {res.to_json}
-            }
+            response_to(res)
           end
         end
 
@@ -491,9 +476,7 @@ module Dcmgr
             unless examine_owner(i)
               raise OperationNotPermitted
             end
-            respond_to { |f|
-              f.json { i.to_hash.to_json }
-            }
+            response_to(i.to_hash)
           end
         end
 
@@ -507,6 +490,7 @@ module Dcmgr
             else
               raise OperationNotPermitted
             end
+            response_to([i.canonical_uuid])
           end
         end
       end
@@ -531,9 +515,7 @@ module Dcmgr
               :results=> partial_ds.all.map {|i| i.to_hash }
             }]
             
-            respond_to { |f|
-              f.json {res.to_json}
-            }
+            response_to(res)
           end
         end
 
@@ -544,9 +526,7 @@ module Dcmgr
             hp = find_by_uuid(:HostPool, params[:id])
             raise OperationNotPermitted unless examine_owner(hp)
             
-            respond_to { |f|
-              f.json { hp.to_hash.to_json }
-            }
+            response_to(hp.to_hash)
           end
         end
       end
@@ -571,9 +551,7 @@ module Dcmgr
               :limit => limit,
               :results => partial_v.all.map { |v| v.to_api_document}
             }]
-            respond_to { |f|
-              f.json { res.to_json}
-            }
+            response_to(res)
           end
         end
 
@@ -584,9 +562,7 @@ module Dcmgr
             volume_id = params[:id]
             raise UndefinedVolumeID if volume_id.nil?
             v = find_by_uuid(:Volume, volume_id)
-            respond_to { |f|
-              f.json { v.to_api_document.to_json}
-            }
+            response_to(v.to_api_document)
           end
         end
 
@@ -622,9 +598,7 @@ module Dcmgr
             end
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid)
-            respond_to { |f|
-              f.json { v.to_api_document.to_json}
-            }
+            response_to(v.to_api_document)
           end
         end
 
@@ -646,9 +620,7 @@ module Dcmgr
             sp = v.storage_pool
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'delete_volume', v.canonical_uuid)
-            respond_to { |f|
-              f.json { v.to_api_document.to_json}
-            }
+            response_to([v.canonical_uuid])
           end
         end
 
@@ -672,9 +644,7 @@ module Dcmgr
             v.save
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
-            respond_to { |f|
-              f.json { v.to_api_document.to_json}
-            }
+            response_to(v.to_api_document)
           end
         end
 
@@ -692,9 +662,7 @@ module Dcmgr
             i = v.instance
             raise InvalidInstanceState unless i.live? && i.state == 'running'
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
-            respond_to { |f|
-              f.json {v.to_api_document.to_json}
-            }
+            response_to(v.to_api_document)
           end
         end
 
@@ -733,9 +701,7 @@ module Dcmgr
               :limit => limit,
               :results => partial_vs.all.map { |vs| vs.to_api_document}
             }]
-            respond_to { |f|
-              f.json { res.to_json}
-            }
+            response_to(res)
           end
         end
 
@@ -746,9 +712,7 @@ module Dcmgr
             snapshot_id = params[:id]
             raise UndefinedVolumeSnapshotID if snapshot_id.nil?
             vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
-            respond_to { |f|
-              f.json { vs.to_api_document.to_json}
-            }
+            response_to(vs.to_api_document)
           end
         end
 
@@ -768,9 +732,7 @@ module Dcmgr
             sp = vs.storage_pool
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid)
-            respond_to { |f|
-              f.json { vs.to_api_document.to_json}
-            }
+            response_to(vs.to_api_document)
           end
         end
 
@@ -792,9 +754,7 @@ module Dcmgr
             sp = vs.storage_pool
 
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid)
-            respond_to { |f|
-              f.json { vs.to_api_document.to_json }
-            }
+            response_to([vs.canonical_uuid])
           end
         end
 
@@ -833,9 +793,7 @@ module Dcmgr
                      :results=> partial_ds.all.map {|i| i.to_hash }
                    }]
             
-            respond_to { |f|
-              f.json {res.to_json}
-            }
+            response_to(res)
           end
         end
 
@@ -843,12 +801,9 @@ module Dcmgr
           description 'Show the netfilter_groups'
           control do
             g = find_by_uuid(:NetfilterGroup, params[:id])
-            p params[:id]
             raise OperationNotPermitted unless examine_owner(g)
 
-            respond_to { |f|
-              f.json { g.to_hash.to_json }
-            }
+            response_to(g.to_hash)
           end
         end
 
@@ -869,9 +824,7 @@ module Dcmgr
             raise DuplicatedNetfilterGroup unless g.nil?
 
             g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
-            respond_to { |f|
-              f.json { g.to_hash.to_json }
-            }
+            response_to(g.to_hash)
           end
         end
 
@@ -897,9 +850,7 @@ module Dcmgr
             # refresh netfilter_rules
             Dcmgr.messaging.event_publish('hva/netfilter_updated', :args=>[g.canonical_uuid])
 
-            respond_to { |f|
-              f.json { g.to_hash.to_json }
-            }
+            response_to(g.to_hash)
           end
         end
 
@@ -914,9 +865,8 @@ module Dcmgr
             raise UnknownNetfilterGroup if g.nil?
             raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
 
-            respond_to { |f|
-              f.json { g.destroy_group.values.to_json }
-            }
+            g.destroy
+            response_to([g.canonical_uuid])
           end
         end
 
@@ -942,9 +892,7 @@ module Dcmgr
               }
             end
 
-            respond_to { |f|
-              f.json { rules.to_json }
-            }
+            response_to(rules)
           end
         end
       end
@@ -968,12 +916,10 @@ module Dcmgr
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|sp| sp.to_hash_document }
+              :results=> partial_ds.all.map {|sp| sp.to_hash }
             }]
 
-            respond_to { |f|
-              f.json { res.to_json}
-            }
+            response_to(res)
           end
         end
 
@@ -985,9 +931,7 @@ module Dcmgr
             raise UndefinedStoragePoolID if pool_id.nil?
             vs = find_by_uuid(:StoragePool, pool_id)
             raise UnknownStoragePool if vs.nil?
-            respond_to { |f|
-              f.json { vs.to_hash_document.to_json}
-            }
+            response_to(vs.to_hash_document)
           end
         end
       end
@@ -1015,9 +959,7 @@ module Dcmgr
               :results=> partial_ds.all.map {|i| i.to_hash }
             }]
             
-            respond_to { |f|
-              f.json {res.to_json}
-            }
+            response_to(res)
           end
         end
         
@@ -1028,9 +970,7 @@ module Dcmgr
           control do
             ssh = find_by_uuid(:SshKeyPair, params[:id])
             
-            respond_to { |f|
-              f.json {ssh.to_hash.to_json}
-            }
+            response_to(ssh.to_hash)
           end
         end
         
@@ -1052,11 +992,9 @@ module Dcmgr
             end
             ssh = Models::SshKeyPair.create(savedata)
                                             
-            respond_to { |f|
-              # include private_key data in response even if
-              # it's not going to be stored on DB.
-              f.json {ssh.to_hash.merge(:private_key=>keydata[:private_key]).to_json}
-            }
+            # include private_key data in response even if
+            # it's not going to be stored on DB.
+            response_to(ssh.to_hash.merge(:private_key=>keydata[:private_key]))
           end
         end
         
@@ -1072,9 +1010,7 @@ module Dcmgr
               raise OperationNotPermitted
             end
             
-            respond_to { |f|
-              f.json {ssh.to_hash.to_json}
-            }
+            response_to([ssh.canonical_uuid])
           end
         end
 
@@ -1104,9 +1040,7 @@ module Dcmgr
               :results=> partial_ds.all.map {|i| i.to_hash }
             }]
             
-            respond_to { |f|
-              f.json {res.to_json}
-            }
+            response_to(res)
           end
         end
         
@@ -1117,9 +1051,7 @@ module Dcmgr
             nw = find_by_uuid(:Network, params[:id])
             examine_owner(nw) || raise(OperationNotPermitted)
             
-            respond_to { |f|
-              f.json {nw.to_hash.to_json}
-            }
+            response_to(nw.to_hash)
           end
         end
         
@@ -1139,11 +1071,7 @@ module Dcmgr
             }
             nw = Models::Network.create(savedata)
                                             
-            respond_to { |f|
-              # include private_key data in response even if
-              # it's not going to be stored on DB.
-              f.json {nw.to_hash.to_json}
-            }
+            response_to(nw.to_hash)
           end
         end
         
@@ -1156,9 +1084,7 @@ module Dcmgr
             examine_owner(nw) || raise(OperationNotPermitted)
             nw.destroy
             
-            respond_to { |f|
-              f.json {nw.to_hash.to_json}
-            }
+            response_to([nw.canonical_uuid])
           end
         end
 
