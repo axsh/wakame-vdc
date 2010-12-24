@@ -7,8 +7,8 @@ module Dcmgr::Models
 
     inheritable_schema do
       Fixnum :tag_id, :null=>false
-      Fixnum :network_id, :null=>false
-      index [:account_id, :tag_id], {:unique=>true}
+
+      index :tag_id, {:unique=>true}
     end
     with_timestamps
 
