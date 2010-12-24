@@ -12,6 +12,6 @@ module Dcmgr::Models
     end
     with_timestamps
 
-    one_to_many :network
+    one_to_many :networks
   end
 end
