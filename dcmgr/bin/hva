@@ -1015,18 +1015,28 @@ class KvmHandler < EndpointBuilder
       physical_if = find_nic(@node.manifest.config.hv_ifindex)
       raise "UnknownPhysicalNIC" if physical_if.nil?
 
-      # vlan interface
-      vlan_if = "#{physical_if}.#{network_map[:vlan_id]}"
-      unless FileTest.exist?("/sys/class/net/#{vlan_if}/ifindex")
-        sh("/sbin/vconfig add #{physical_if} #{network_map[:vlan_id]}")
+      if network_map[:vlan_id] == 0
+        # bridge interface
+        p bridge_if = @node.manifest.config.bridge_novlan
+        unless FileTest.exist?("/sys/class/net/#{bridge_if}/ifindex")
+          sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+          sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
+        end
+      else
+        # vlan interface
+        vlan_if = "#{physical_if}.#{network_map[:vlan_id]}"
+        unless FileTest.exist?("/sys/class/net/#{vlan_if}/ifindex")
+          sh("/sbin/vconfig add #{physical_if} #{network_map[:vlan_id]}")
+        end
+
+        # bridge interface
+        bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
+        unless FileTest.exist?("/sys/class/net/#{bridge_if}/ifindex")
+          sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+          sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
+        end
       end
 
-      # bridge interface
-      bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
-      unless FileTest.exist?("/sys/class/net/#{bridge_if}/ifindex")
-        sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-        sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
-      end
 
       # interface up? down?
       [ vlan_if, bridge_if ].each do |ifname|
@@ -1355,6 +1365,7 @@ manifest.instance_eval do
     c.enable_iptables = true
     c.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
     c.bridge_prefix   = 'br'
+    c.bridge_novlan   = 'br0'
   end
 
   config_path File.expand_path('config/hva.conf', app_root)
