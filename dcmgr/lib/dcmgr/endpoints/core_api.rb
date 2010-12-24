@@ -577,8 +577,10 @@ module Dcmgr
               v = create_volume_from_snapshot(@account.canonical_uuid, params[:snapshot_id])
               sp = v.storage_pool
             elsif params[:volume_size]
-              raise InvalidVolumeSize if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) || !(params[:volume_size\
-].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
+              if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
+                  !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
+                raise InvalidVolumeSize
+              end
               if params[:storage_pool_id]
                 sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
                 raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
