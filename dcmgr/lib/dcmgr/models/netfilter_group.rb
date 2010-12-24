@@ -49,10 +49,11 @@ module Dcmgr::Models
       NetfilterRule.filter(:netfilter_group_id => self.id).destroy
     end
 
-    def destroy_group
+    def before_destroy
       self.flush_rule
-      self.destroy
+      super
     end
+    alias :destroy_group :destroy
 
     def rebuild_rule
       self.flush_rule
