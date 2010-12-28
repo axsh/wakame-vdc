@@ -547,7 +547,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
     build_rule(rules).each do |rule|
       case rule[:ip_protocol]
       when 'tcp', 'udp'
-        cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_dport]} -j ACCEPT"
+        if rule[:ip_fport] == rule[:ip_tport]
+          cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]} -j ACCEPT"
+        else
+          cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]}:#{rule[:ip_tport]} -j ACCEPT"
+        end
       when 'icmp'
         # icmp
         #   This extension can be used if `--protocol icmp' is specified. It provides the following option:
@@ -737,19 +741,19 @@ class ServiceNetfilter < Isono::NodeModules::Base
       # "icmp:-1,-1,ip4:0.0.0.0"
 
       # 1st phase
-      # ip_dport    : tcp,udp? 1 - 16bit, icmp: -1
+      # ip_tport    : tcp,udp? 1 - 16bit, icmp: -1
       # id_port has been separeted in first phase.
-      from_pair, ip_dport, source_pair = rule.split(',')
+      from_pair, ip_tport, source_pair = rule.split(',')
 
       # TODO: more strict validations
       next if from_pair.nil?
-      next if ip_dport.nil?
+      next if ip_tport.nil?
       next if source_pair.nil?
 
       # 2nd phase
       # ip_protocol : [ tcp | udp | icmp ]
-      # ip_sport    : tcp,udp? 1 - 16bit, icmp: -1
-      ip_protocol, ip_sport = from_pair.split(':')
+      # ip_fport    : tcp,udp? 1 - 16bit, icmp: -1
+      ip_protocol, ip_fport = from_pair.split(':')
 
       # protocol    : [ ip4 | ip6 | #{account_id} ]
       # ip_source   : ip4? xxx.xxx.xxx.xxx./[0-32], ip6? (not yet supprted), #{netfilter_group_id}
@@ -803,24 +807,29 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
       case ip_protocol
       when 'tcp', 'udp'
-        if from_group == false
-          rule_maps << {
-            :ip_protocol => ip_protocol,
-            :ip_sport    => ip_sport.to_i,
-            :ip_dport    => ip_dport.to_i,
-            :protocol    => protocol,
-            :ip_source   => ip_source,
-          }
-        else
-          ipv4s.each { |ip|
+        ip_fport = ip_fport.to_i
+        ip_tport = ip_tport.to_i
+
+        if ip_fport <= ip_tport
+          if from_group == false
             rule_maps << {
               :ip_protocol => ip_protocol,
-              :ip_sport    => ip_sport.to_i,
-              :ip_dport    => ip_dport.to_i,
-              :protocol    => 'ip4',
-              :ip_source   => ip,
+              :ip_fport    => ip_fport,
+              :ip_tport    => ip_tport,
+              :protocol    => protocol,
+              :ip_source   => ip_source,
             }
-          }
+          else
+            ipv4s.each { |ip|
+              rule_maps << {
+                :ip_protocol => ip_protocol,
+                :ip_fport    => ip_fport,
+                :ip_tport    => ip_tport,
+                :protocol    => 'ip4',
+                :ip_source   => ip,
+              }
+            }
+          end
         end
       when 'icmp'
         # via http://docs.amazonwebservices.com/AWSEC2/latest/CommandLineReference/
@@ -829,8 +838,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         # This must be specified in the format type:code where both are integers.
         # Type, code, or both can be specified as -1, which is a wildcard.
 
-        icmp_type = ip_dport.to_i
-        icmp_code = ip_sport.to_i
+        icmp_type = ip_fport.to_i
+        icmp_code = ip_tport.to_i
 
         # icmp_type
         case icmp_type
@@ -853,8 +862,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         if from_group == false
           rule_maps << {
             :ip_protocol => ip_protocol,
-            :icmp_type   => ip_dport.to_i, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
-            :icmp_code   => ip_sport.to_i, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+            :icmp_type   => ip_tport.to_i, # ip_tport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
+            :icmp_code   => ip_fport.to_i, # ip_fport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
             :protocol    => protocol,
             :ip_source   => ip_source,
           }
@@ -862,8 +871,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
           ipv4s.each { |ip|
             rule_maps << {
               :ip_protocol => ip_protocol,
-              :icmp_type   => ip_dport.to_i, # ip_dport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
-              :icmp_code   => ip_sport.to_i, # ip_sport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+              :icmp_type   => ip_tport.to_i, # ip_tport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
+              :icmp_code   => ip_fport.to_i, # ip_fport.to_i, # -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
               :protocol    => 'ip4',
               :ip_source   => ip,
             }
