@@ -17,3 +17,6 @@ config.bridge_prefix   = 'br'
 
 # bridge device name novlan
 config.bridge_novlan   = 'br0'
+
+# display netfitler commands
+config.verbose_netfilter = false
