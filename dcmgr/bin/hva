@@ -14,8 +14,41 @@ include Isono::Runner::RpcServer
 require 'fileutils'
 require 'ipaddress'
 
+
+module NicHelper
+  def find_nic(ifindex = 2)
+    ifindex_map = {}
+    Dir.glob("/sys/class/net/*/ifindex").each do |ifindex_path|
+      device_name = File.split(File.split(ifindex_path).first)[1]
+      ifindex_num = File.readlines(ifindex_path).first.strip
+      ifindex_map[ifindex_num] = device_name
+    end
+    #p ifindex_map
+    ifindex_map[ifindex.to_s]
+  end
+
+  def nic_state(if_name = 'eth0')
+    operstate_path = "/sys/class/net/#{if_name}/operstate"
+    if File.exists?(operstate_path)
+      File.readlines(operstate_path).first.strip
+    end
+  end
+
+  def valid_nic?(nic)
+    ifindex_path = "/sys/class/net/#{nic}/ifindex"
+    if FileTest.exist?(ifindex_path)
+      true
+    else
+      logger.warn("#{nic}: error fetching interface information: Device not found")
+      false
+    end
+  end
+end
+
+
 class ServiceNetfilter < Isono::NodeModules::Base
   include Dcmgr::Logger
+  include NicHelper
 
   initialize_hook do
     @worker_thread = Isono::ThreadPool.new(1)
@@ -67,7 +100,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
           next
         end
         # Does host have vif?
-        next unless valid_vif?(inst_map[:instance_nics].first[:uuid])
+        next unless valid_nic?(inst_map[:instance_nics].first[:uuid])
         inst_maps
       }.flatten.uniq.compact
 
@@ -84,7 +117,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     raise "UnknownInstanceID" if inst_id.nil?
 
     begin
-      ng_maps = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+      p ng_maps = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
       # get friend instance(s)
       friend_inst_maps = ng_maps.map { |ng_map|
         rpc.request('hva-collector', 'get_instances_of_netfilter_group', ng_map[:id])
@@ -97,7 +130,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       if uuids.flatten.uniq.size > 0
         init_netfilter
       else
-        # 1->0
+        # group_instance: 1->0
         inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
         init_netfilter if inst_map[:host_pool][:node_id] == node.node_id
       end
@@ -144,12 +177,28 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
   end
 
+  def do_exec(cmds)
+    recmds = []
+
+    recmds << "/bin/cat <<'___EOS___' | /bin/bash"
+    cmds.flatten.uniq.each { |cmd|
+      puts cmd if @node.manifest.config.verbose_netfilter == true
+      recmds << cmd
+    }
+    recmds << "___EOS___"
+
+    logger.debug("rule line(s): #{recmds.size - 2}")
+    system(recmds.join("\n"))
+  end
+
+
   def init_ebtables(inst_maps = [], viftable_map = {})
+    init_cmds  = []
     basic_cmds = []
     group_cmds = []
     final_cmds = []
 
-    basic_cmds << "ebtables --init-table"
+    init_cmds << "ebtables --init-table"
 
     inst_maps.each { |inst_map|
       vif_map = build_vif_map(inst_map)
@@ -160,25 +209,21 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     viftable_map.each { |k,v|
-      logger.debug("#{v} <=> #{k}")
+      logger.debug("viftable: #{v} <=> #{k}")
     }
 
-    logger.debug("basic_cmds ...")
-    basic_cmds.flatten.uniq.each { |cmd| system(cmd) }
-    logger.debug("group_cmds ...")
-    group_cmds.flatten.uniq.each { |cmd| system(cmd) }
-    logger.debug("final_cmds ...")
-    final_cmds.flatten.uniq.each { |cmd| system(cmd) }
+    do_exec([init_cmds, basic_cmds, group_cmds, final_cmds])
   end
 
   def init_iptables(inst_maps = [])
+    init_cmds  = []
     basic_cmds = []
     group_cmds = []
     final_cmds = []
 
     [ 'nat', 'filter' ].each { |table|
       [ 'F', 'Z', 'X' ].each { |xcmd|
-        basic_cmds << "iptables -t #{table} -#{xcmd}"
+        init_cmds << "iptables -t #{table} -#{xcmd}"
       }
     }
 
@@ -190,24 +235,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       final_cmds << build_iptables_final_part(vif_map)
     }
 
-    logger.debug("basic_cmds ...")
-    basic_cmds.flatten.uniq.each { |cmd| system(cmd) }
-    logger.debug("group_cmds ...")
-    group_cmds.flatten.uniq.each { |cmd| system(cmd) }
-    logger.debug("final_cmds ...")
-    final_cmds.flatten.uniq.each { |cmd| system(cmd) }
-  end
-
-  def valid_vif?(vif)
-    cmd = "ifconfig #{vif} >/dev/null 2>&1"
-    system(cmd)
-
-    if $?.exitstatus == 0
-      true
-    else
-      logger.warn("#{vif}: error fetching interface information: Device not found")
-      false
-    end
+    do_exec([init_cmds, basic_cmds, group_cmds, final_cmds])
   end
 
 
@@ -566,6 +594,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
 
+=begin
   def flush_ebtables(inst_map = {})
     logger.debug("flush_ebtables: #{inst_map[:uuid]} ...")
 
@@ -638,7 +667,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     logger.debug("flush_ebtables: #{inst_map[:uuid]} #{vif_map[:uuid]} done.")
   end
+=end
 
+=begin
   def flush_iptables(inst_map = {}, vif_map = {})
     logger.debug("flush_iptables: #{inst_map[:uuid]} ...")
 
@@ -696,6 +727,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     logger.debug("flush_iptables: #{inst_map[:uuid]} #{vif_map[:uuid]} done.")
   end
+=end
 
   def build_rule(rules = [])
     rule_maps = []
@@ -950,24 +982,7 @@ class KvmHandler < EndpointBuilder
   include Dcmgr::Logger
   include Dcmgr::Helpers::CliHelper
   include KvmHelper
-
-  def find_nic(ifindex = 2)
-    ifindex_map = {}
-    Dir.glob("/sys/class/net/*/ifindex").each do |ifindex_path|
-      device_name = File.split(File.split(ifindex_path).first)[1]
-      ifindex_num = File.readlines(ifindex_path).first.strip
-      ifindex_map[ifindex_num] = device_name
-    end
-    #p ifindex_map
-    ifindex_map[ifindex.to_s]
-  end
-
-  def nic_state(if_name = 'eth0')
-    operstate_path = "/sys/class/net/#{if_name}/operstate"
-    if File.exists?(operstate_path)
-      File.readlines(operstate_path).first.strip
-    end
-  end
+  include NicHelper
 
   def run_kvm(os_devpath)
     # run vm
@@ -997,20 +1012,20 @@ class KvmHandler < EndpointBuilder
       if network_map[:vlan_id] == 0
         # bridge interface
         bridge_if = @node.manifest.config.bridge_novlan
-        unless FileTest.exist?("/sys/class/net/#{bridge_if}/ifindex")
+        unless valid_nic?(bridge_if)
           sh("/usr/sbin/brctl addbr %s",    [bridge_if])
           sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
         end
       else
         # vlan interface
         vlan_if = "#{physical_if}.#{network_map[:vlan_id]}"
-        unless FileTest.exist?("/sys/class/net/#{vlan_if}/ifindex")
+        if valid_nic?(vlan_if)
           sh("/sbin/vconfig add #{physical_if} #{network_map[:vlan_id]}")
         end
 
         # bridge interface
         bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
-        unless FileTest.exist?("/sys/class/net/#{bridge_if}/ifindex")
+        if valid_nic?(bridge_if)
           sh("/usr/sbin/brctl addbr %s",    [bridge_if])
           sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
         end
@@ -1345,6 +1360,7 @@ manifest.instance_eval do
     c.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
     c.bridge_prefix   = 'br'
     c.bridge_novlan   = 'br0'
+    c.verbose_netfilter = false
   end
 
   config_path File.expand_path('config/hva.conf', app_root)
