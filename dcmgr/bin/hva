@@ -117,7 +117,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     raise "UnknownInstanceID" if inst_id.nil?
 
     begin
-      p ng_maps = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+      ng_maps = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
       # get friend instance(s)
       friend_inst_maps = ng_maps.map { |ng_map|
         rpc.request('hva-collector', 'get_instances_of_netfilter_group', ng_map[:id])
@@ -613,7 +613,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
       # id_port has been separeted in first phase.
       from_pair, ip_tport, source_pair = rule.split(',')
 
-      # TODO: more strict validations
       next if from_pair.nil?
       next if ip_tport.nil?
       next if source_pair.nil?
@@ -677,6 +676,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
       when 'tcp', 'udp'
         ip_fport = ip_fport.to_i
         ip_tport = ip_tport.to_i
+
+        # validate port range
+        [ ip_fport, ip_tport ].each do |port|
+          next unless port >= 1 && port <= 65535
+        end
 
         if ip_fport <= ip_tport
           if from_group == false
