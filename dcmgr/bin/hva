@@ -180,12 +180,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
   def do_exec(cmds)
     recmds = []
 
-    recmds << "/bin/cat <<'___EOS___' | /bin/bash"
+    eos = "__EOS_#{Isono::Util.gen_id}___"
+    recmds << "/bin/cat <<'#{eos}' | /bin/bash"
     cmds.flatten.uniq.each { |cmd|
       puts cmd if @node.manifest.config.verbose_netfilter == true
       recmds << cmd
     }
-    recmds << "___EOS___"
+    recmds << "#{eos}"
 
     logger.debug("rule line(s): #{recmds.size - 2}")
     system(recmds.join("\n"))
