@@ -30,9 +30,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       @worker_thread.pass {
         logger.info("refresh on instance_started: #{args.inspect}")
         inst_id = args[0]
-        #logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
-        #myinstance.refresh_netfilter_by_friend_instance_id(inst_id, 'started')
-        myinstance.init_netfilter
+        logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
+        myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
       }
     end
 
@@ -40,9 +39,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       @worker_thread.pass {
         logger.info("refresh on instance_terminated: #{args.inspect}")
         inst_id = args[0]
-        #logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
-        #myinstance.refresh_netfilter_by_friend_instance_id(inst_id, 'terminated')
-        myinstance.init_netfilter
+        logger.info("refresh_netfilter_by_friend_instance_id: #{inst_id}")
+        myinstance.refresh_netfilter_by_friend_instance_id(inst_id)
       }
     end
 
@@ -50,8 +48,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       @worker_thread.pass {
         logger.info("refresh on netfilter_updated: #{args.inspect}")
         netfilter_group_id = args[0]
-        #myinstance.refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
-        myinstance.init_netfilter
+        myinstance.refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
       }
     end
   end
@@ -83,72 +80,79 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   # from event_subscriber
-#  def refresh_netfilter_by_friend_instance_id(inst_id, state = 'started')
-#    raise "UnknownInstanceID" if inst_id.nil?
-#
-#    begin
-#      inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
-#      ng = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
-#
-#      inst_maps = ng.map { |g|
-#        rpc.request('hva-collector', 'get_instances_of_netfilter_group', g[:id])
-#      }
-#
-#      # my instance_id
-#      # when terminated?
-#      if state == 'terminated'
-#        unless inst_map.nil?
-#          refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
-#          refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-#        end
-#      end
-#
-#      # friend instance(s)
-#      if inst_maps.size > 0
-#        inst_maps.flatten.uniq.each { |inst_map|
-#          unless inst_map.nil?
-#            refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
-#            refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-#          end
-#        }
-#      end
-#    rescue Exception => e
-#      p e
-#    end
-#  end
+  def refresh_netfilter_by_friend_instance_id(inst_id)
+    raise "UnknownInstanceID" if inst_id.nil?
+
+    begin
+      ng_maps = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_id)
+      # get friend instance(s)
+      friend_inst_maps = ng_maps.map { |ng_map|
+        rpc.request('hva-collector', 'get_instances_of_netfilter_group', ng_map[:id])
+      }.flatten.uniq
+      guest_inst_maps = rpc.request('hva-collector', 'get_alive_instances', node.node_id)
+
+      uuids = friend_inst_maps.map { |inst_map| inst_map[:uuid] } & guest_inst_maps.map  { |inst_map| inst_map[:uuid] }
+      logger.info("my guest instance(s)?: #{uuids.inspect}")
+
+      if uuids.flatten.uniq.size > 0
+        init_netfilter
+      else
+        # 1->0
+        inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
+        init_netfilter if inst_map[:host_pool][:node_id] == node.node_id
+      end
+    rescue Exception => e
+      p e
+    end
+  end
 
   # from event_subscriber
-#  def refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
-#    raise "UnknownNetfilterGroupID" if netfilter_group_id.nil?
-#
-#    begin
-#      inst_maps = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
-#      inst_maps.each { |inst_map|
-#        unless inst_map.nil?
-#          refresh_iptables(inst_map) if @node.manifest.config.enable_iptables
-#          refresh_ebtables(inst_map) if @node.manifest.config.enable_ebtables
-#        end
-#      }
-#    rescue Exception => e
-#      p e
-#    end
-#  end
+  def refresh_netfilter_by_joined_netfilter_group_id(netfilter_group_id)
+    raise "UnknownNetfilterGroupID" if netfilter_group_id.nil?
+
+    begin
+      inst_maps = rpc.request('hva-collector', 'get_instances_of_netfilter_group', netfilter_group_id)
+      init_netfilter if inst_maps.size > 0
+    rescue Exception => e
+      p e
+    end
+  end
+
+  def build_vif_map(inst_map = {})
+    vif_map = {
+      :uuid  => inst_map[:instance_nics].first[:uuid],
+      :mac   => inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':'),
+      :ipv4  => inst_map[:ips].first,
+    }
+  end
+
+  def protocol_map(type)
+    case type
+    when :iptables
+      {
+        'tcp'  => 'tcp',
+        'udp'  => 'udp',
+        'icmp' => 'icmp',
+      }
+    when :ebtables
+      {
+        'ip4'  => 'ip4',
+        'arp'  => 'arp',
+        #'ip6'  => 'ip6',
+        #'rarp' => '0x8035',
+      }
+    end
+  end
 
   def init_ebtables(inst_maps = [], viftable_map = {})
-    cmd = "ebtables --init-table"
-    puts cmd
-    system(cmd)
-
     basic_cmds = []
     group_cmds = []
     final_cmds = []
 
+    basic_cmds << "ebtables --init-table"
+
     inst_maps.each { |inst_map|
-      vif_map = {
-        :uuid  => inst_map[:instance_nics].first[:uuid],
-        :mac   => inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':'),
-        :ipv4  => inst_map[:ips].first,
-      }
+      vif_map = build_vif_map(inst_map)
 
       basic_cmds << build_ebtables_basic_part(vif_map, inst_map)
       group_cmds << build_ebtables_group_part(vif_map, inst_map, viftable_map)
@@ -156,37 +160,42 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     viftable_map.each { |k,v|
-      p "#{v} <-> #{k}"
+      logger.debug("#{v} <=> #{k}")
     }
 
     logger.debug("basic_cmds ...")
-    basic_cmds.flatten.uniq.each { |cmd|
-      system(cmd)
-    }
-
+    basic_cmds.flatten.uniq.each { |cmd| system(cmd) }
     logger.debug("group_cmds ...")
-    group_cmds.flatten.uniq.each { |cmd|
-      system(cmd)
-    }
-
+    group_cmds.flatten.uniq.each { |cmd| system(cmd) }
     logger.debug("final_cmds ...")
-    final_cmds.flatten.uniq.each { |cmd|
-      system(cmd)
-    }
+    final_cmds.flatten.uniq.each { |cmd| system(cmd) }
   end
 
   def init_iptables(inst_maps = [])
+    basic_cmds = []
+    group_cmds = []
+    final_cmds = []
+
     [ 'nat', 'filter' ].each { |table|
       [ 'F', 'Z', 'X' ].each { |xcmd|
-        cmd = "iptables -t #{table} -#{xcmd}"
-        puts cmd
-        system(cmd)
+        basic_cmds << "iptables -t #{table} -#{xcmd}"
       }
     }
 
     inst_maps.each { |inst_map|
-      refresh_iptables(inst_map, false)
+      vif_map = build_vif_map(inst_map)
+
+      basic_cmds << build_iptables_basic_part(vif_map, inst_map)
+      group_cmds << build_iptables_group_part(vif_map, inst_map)
+      final_cmds << build_iptables_final_part(vif_map)
     }
+
+    logger.debug("basic_cmds ...")
+    basic_cmds.flatten.uniq.each { |cmd| system(cmd) }
+    logger.debug("group_cmds ...")
+    group_cmds.flatten.uniq.each { |cmd| system(cmd) }
+    logger.debug("final_cmds ...")
+    final_cmds.flatten.uniq.each { |cmd| system(cmd) }
   end
 
   def valid_vif?(vif)
@@ -201,21 +210,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
     end
   end
 
-#  def refresh_ebtables(inst_map = {}, viftable_map = {})
-#    logger.debug("refresh_ebtables: #{inst_map[:uuid]} ...")
-#
-#    vif_map = {
-#      :uuid => inst_map[:instance_nics].first[:uuid],
-#      :mac  => inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':'),
-#    }
-#
-#    # xtables commands
-#    basic_cmds = build_ebtables_basic_part(vif_map, inst_map)
-#    group_cmds = build_ebtables_group_part(vif_map, inst_map, viftable_map)
-#    final_cmds = build_ebtables_final_part(vif_map)
-#
-#    logger.debug("refresh_ebtables: #{inst_map[:uuid]} done.")
-#  end
 
   def build_ebtables_basic_part(vif_map, inst_map)
     basic_cmds = []
@@ -226,12 +220,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ################################
 
     # support IP protocol
-    protocol_maps = {
-      'ip4'  => 'ip4',
-      'arp'  => 'arp',
-      #'ip6'  => 'ip6',
-      #'rarp' => '0x8035',
-    }
+    protocol_map = protocol_map(:ebtables)
 
     # make chain names.
     chains = []
@@ -239,7 +228,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     chains << "d_#{vif_map[:uuid]}"
     chains << "s_#{vif_map[:uuid]}_d_hst"
     chains << "d_#{vif_map[:uuid]}_s_hst"
-    protocol_maps.each { |k,v|
+    protocol_map.each { |k,v|
       chains << "s_#{vif_map[:uuid]}_#{k}"
       chains << "d_#{vif_map[:uuid]}_#{k}"
       chains << "s_#{vif_map[:uuid]}_d_hst_#{k}"
@@ -264,7 +253,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     basic_cmds << "ebtables -A OUTPUT  -o #{vif_map[:uuid]} -j d_#{vif_map[:uuid]}_s_hst"
 
     # IP protocol routing
-    protocol_maps.each { |k,v|
+    protocol_map.each { |k,v|
       basic_cmds << "ebtables -A s_#{vif_map[:uuid]}       -p #{v} -j s_#{vif_map[:uuid]}_#{k}"
       basic_cmds << "ebtables -A d_#{vif_map[:uuid]}       -p #{v} -j d_#{vif_map[:uuid]}_#{k}"
       basic_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst -p #{v} -j s_#{vif_map[:uuid]}_d_hst_#{k}"
@@ -402,155 +391,137 @@ class ServiceNetfilter < Isono::NodeModules::Base
     final_cmds
   end
 
-  def refresh_iptables(inst_map = {}, with_flush = 1)
-    logger.debug("refresh_iptables: #{inst_map[:uuid]} ...")
 
-    # Does the hva have instance?
-    unless inst_map[:host_pool][:node_id] == node.node_id
-      logger.warn "no match for the instance: #{inst_map[:uuid]}"
-      return
-    end
+  def build_iptables_basic_part(vif_map, inst_map)
+    basic_cmds = []
 
     network_map = rpc.request('hva-collector', 'get_network', inst_map[:instance_nics].first[:network_id])
     raise "UnknownNetworkId" if network_map.nil?
 
-    vif     = inst_map[:instance_nics].first[:uuid]
-    vif_mac = inst_map[:instance_nics].first[:mac_addr].unpack('A2'*6).join(':')
-
-    if with_flush
-      flush_iptables(inst_map)
-    end
-
-    # Does host have vif?
-    unless valid_vif?(vif)
-      return
-    end
-
-
-
-
-    # group node IPv4 addresses.
-    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
-
-    ng_maps = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
-    rules = ng_maps.map { |ng_map|
-      ng_map[:rules].map { |rule| rule[:permission] }
-    }.flatten
-
-
-
-
-    # xtables commands
-    cmds = []
+    ################################
+    ## 0. chain name
+    ################################
 
     # support IP protocol
-    protocol_maps = {
-      'tcp'  => 'tcp',
-      'udp'  => 'udp',
-      'icmp' => 'icmp',
-    }
+    protocol_map = protocol_map(:iptables)
 
     # make chain names.
     chains = []
-    protocol_maps.each { |k,v|
-      chains << "s_#{vif}_#{k}"
-      chains << "d_#{vif}_#{k}"
+    protocol_map.each { |k,v|
+      chains << "s_#{vif_map[:uuid]}_#{k}"
+      chains << "d_#{vif_map[:uuid]}_#{k}"
     }
-    chains << "s_#{vif}"
-    chains << "d_#{vif}"
+    chains << "s_#{vif_map[:uuid]}"
+    chains << "d_#{vif_map[:uuid]}"
+
+    ################################
+    ## 1. basic part
+    ################################
 
     # metadata-server
     [ 'A' ].each { |xcmd|
-      system("iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80")
+      basic_cmds << "iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif_map[:uuid]} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80"
     }
 
     # create user defined chains.
     [ 'N' ].each { |xcmd|
       chains.each { |chain|
-        cmds << "iptables -#{xcmd} #{chain}"
+        basic_cmds << "iptables -#{xcmd} #{chain}"
 
         # logger & drop
-        cmds << "iptables -N #{chain}_drop"
-        cmds << "iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix 'D #{chain}:'"
-        cmds << "iptables -A #{chain}_drop -j DROP"
+        basic_cmds << "iptables -N #{chain}_drop"
+        basic_cmds << "iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix 'D #{chain}:'"
+        basic_cmds << "iptables -A #{chain}_drop -j DROP"
       }
     }
 
     # group nodes
+    # group node IPv4 addresses.
+    ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
     ipv4s << network_map[:ipv4_gw]
     ipv4s.uniq.reverse_each { |addr|
-      cmds << "iptables -A d_#{vif} -s #{addr} -j ACCEPT"
+      basic_cmds << "iptables -A d_#{vif_map[:uuid]} -s #{addr} -j ACCEPT"
     }
 
     # IP protocol routing
     [ 's', 'd' ].each do |bound|
-      protocol_maps.each { |k,v|
-        cmds << "iptables -N #{bound}_#{vif}_#{k}"
+      protocol_map.each { |k,v|
+        basic_cmds << "iptables -N #{bound}_#{vif_map[:uuid]}_#{k}"
 
         case k
         when 'tcp'
           case bound
           when 's'
-            cmds << "iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif_map[:uuid]}_#{k}"
           when 'd'
-            #cmds << "iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
-            cmds << "iptables -A #{bound}_#{vif} -m state --state RELATED,ESTABLISHED -p #{k} -j ACCEPT"
-            cmds << "iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -m state --state RELATED,ESTABLISHED -p #{k} -j ACCEPT"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -p #{k} -j #{bound}_#{vif_map[:uuid]}_#{k}"
           end
         when 'udp'
           case bound
           when 's'
-            cmds << "iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vif_map[:uuid]}_#{k}"
           when 'd'
-            #cmds << "iptables -A #{bound}_#{vif} -m state --state     ESTABLISHED -p #{k} -j #{bound}_#{vif}_#{k}"
-            cmds << "iptables -A #{bound}_#{vif} -m state --state ESTABLISHED -p #{k} -j ACCEPT"
-            cmds << "iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -m state --state ESTABLISHED -p #{k} -j ACCEPT"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -p #{k} -j #{bound}_#{vif_map[:uuid]}_#{k}"
           end
         when 'icmp'
           case bound
           when 's'
-            cmds << "iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif_map[:uuid]}_#{k}"
           when 'd'
-            #cmds << "iptables -A #{bound}_#{vif} -m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vif}_#{k}"
-            cmds << "iptables -A #{bound}_#{vif} -m state --state ESTABLISHED,RELATED -p #{k} -j ACCEPT"
-            cmds << "iptables -A #{bound}_#{vif} -p #{k} -j #{bound}_#{vif}_#{k}"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -m state --state ESTABLISHED,RELATED -p #{k} -j ACCEPT"
+            basic_cmds << "iptables -A #{bound}_#{vif_map[:uuid]} -p #{k} -j #{bound}_#{vif_map[:uuid]}_#{k}"
           end
         end
       }
     end
 
-    cmds << "iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif} -j s_#{vif}"
-    cmds << "iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}"
+    basic_cmds << "iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-in  #{vif_map[:uuid]} -j s_#{vif_map[:uuid]}"
+    basic_cmds << "iptables -A FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif_map[:uuid]} -j d_#{vif_map[:uuid]}"
 
     ##
     ## ACCEPT
     ##
     # DHCP Server
-    cmds << "iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
-    cmds << "iptables -A d_#{vif}_udp -p udp -s #{network_map[:dhcp_server]} --sport 68 -j ACCEPT"
+    basic_cmds << "iptables -A d_#{vif_map[:uuid]}_udp -p udp -s #{network_map[:dhcp_server]} --sport 67 -j ACCEPT"
+    basic_cmds << "iptables -A d_#{vif_map[:uuid]}_udp -p udp -s #{network_map[:dhcp_server]} --sport 68 -j ACCEPT"
 
-    #cmds << "iptables -A d_#{vif}_udp -p udp --sport 67 -j d_#{vif}_udp_drop"
     # DNS Server
-    cmds << "iptables -A s_#{vif}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
+    basic_cmds << "iptables -A s_#{vif_map[:uuid]}_udp -p udp -d #{network_map[:dns_server]} --dport 53 -j ACCEPT"
 
     ##
     ## DROP
     ##
-    protocol_maps.each { |k,v|
+    protocol_map.each { |k,v|
       # DHCP
-      cmds << "iptables -A s_#{vif} -d #{network_map[:dhcp_server]} -p #{k} -j s_#{vif}_#{k}_drop"
+      basic_cmds << "iptables -A s_#{vif_map[:uuid]} -d #{network_map[:dhcp_server]} -p #{k} -j s_#{vif_map[:uuid]}_#{k}_drop"
       # DNS
-      cmds << "iptables -A s_#{vif} -d #{network_map[:dns_server]} -p #{k} -j s_#{vif}_#{k}_drop"
+      basic_cmds << "iptables -A s_#{vif_map[:uuid]} -d #{network_map[:dns_server]} -p #{k} -j s_#{vif_map[:uuid]}_#{k}_drop"
     }
+
+    basic_cmds
+  end
+
+  def build_iptables_group_part(vif_map, inst_map)
+    group_cmds = []
+
+    ################################
+    ## 2. group part
+    ################################
+    ng_maps = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
+    rules = ng_maps.map { |ng_map|
+      ng_map[:rules].map { |rule| rule[:permission] }
+    }.flatten
 
     # security group
     build_rule(rules).each do |rule|
       case rule[:ip_protocol]
       when 'tcp', 'udp'
         if rule[:ip_fport] == rule[:ip_tport]
-          cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]} -j ACCEPT"
+          group_cmds << "iptables -A d_#{vif_map[:uuid]}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]} -j ACCEPT"
         else
-          cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]}:#{rule[:ip_tport]} -j ACCEPT"
+          group_cmds << "iptables -A d_#{vif_map[:uuid]}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --dport #{rule[:ip_fport]}:#{rule[:ip_tport]} -j ACCEPT"
         end
       when 'icmp'
         # icmp
@@ -559,33 +530,41 @@ class ServiceNetfilter < Isono::NodeModules::Base
         #     This allows specification of the ICMP type, which can be a numeric ICMP type, type/code pair, or one of the ICMP type names shown by the command
         #      iptables -p icmp -h
         if rule[:icmp_type] == -1 && rule[:icmp_code] == -1
-          cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} -j ACCEPT"
+          group_cmds << "iptables -A d_#{vif_map[:uuid]}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} -j ACCEPT"
         else
-          cmds << "iptables -A d_#{vif}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
+          group_cmds << "iptables -A d_#{vif_map[:uuid]}_#{rule[:ip_protocol]} -p #{rule[:ip_protocol]} -s #{rule[:ip_source]} --icmp-type #{rule[:icmp_type]}/#{rule[:icmp_code]} -j ACCEPT"
         end
       end
     end
 
+    group_cmds
+  end
+
+  def build_iptables_final_part(vif_map)
+    final_cmds = []
+
+    # support IP protocol
+    protocol_map = protocol_map(:iptables)
+
+    ################################
+    ## 3. final part
+    ################################
+
     # drop other routings
-    protocol_maps.each { |k,v|
-      cmds << "iptables -A d_#{vif}_#{k} -p #{k} -j d_#{vif}_#{k}_drop"
+    protocol_map.each { |k,v|
+      final_cmds << "iptables -A d_#{vif_map[:uuid]}_#{k} -p #{k} -j d_#{vif_map[:uuid]}_#{k}_drop"
     }
 
     # IP protocol routing
     [ 'd' ].each do |bound|
-      protocol_maps.each { |k,v|
-        cmds << "iptables -A #{bound}_#{vif}_#{k} -j #{bound}_#{vif}_#{k}_drop"
+      protocol_map.each { |k,v|
+        final_cmds << "iptables -A #{bound}_#{vif_map[:uuid]}_#{k} -j #{bound}_#{vif_map[:uuid]}_#{k}_drop"
       }
     end
 
-    cmds.uniq! if cmds.size > 0
-    cmds.compact.each { |cmd|
-      #puts cmd
-      system(cmd)
-    }
-
-    logger.debug("refresh_iptables: #{inst_map[:uuid]} done.")
+    final_cmds
   end
+
 
   def flush_ebtables(inst_map = {})
     logger.debug("flush_ebtables: #{inst_map[:uuid]} ...")
@@ -602,51 +581,46 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif     = inst_map[:instance_nics].first[:vif]
 
     # support IP protocol
-    protocol_maps = {
-      'ip4'  => 'ip4',
-      'arp'  => 'arp',
-      #'ip6'  => 'ip6',
-      #'rarp' => '0x8035',
-    }
+    protocol_map = protocol_map(:ebtables)
 
     # make chain names.
     chains = []
-    chains << "s_#{vif}"
-    chains << "d_#{vif}"
-    chains << "s_#{vif}_d_hst"
-    chains << "d_#{vif}_s_hst"
-    protocol_maps.each { |k,v|
-      chains << "s_#{vif}_#{k}"
-      chains << "d_#{vif}_#{k}"
-      chains << "s_#{vif}_d_hst_#{k}"
-      chains << "d_#{vif}_s_hst_#{k}"
+    chains << "s_#{vif_map[:uuid]}"
+    chains << "d_#{vif_map[:uuid]}"
+    chains << "s_#{vif_map[:uuid]}_d_hst"
+    chains << "d_#{vif_map[:uuid]}_s_hst"
+    protocol_map.each { |k,v|
+      chains << "s_#{vif_map[:uuid]}_#{k}"
+      chains << "d_#{vif_map[:uuid]}_#{k}"
+      chains << "s_#{vif_map[:uuid]}_d_hst_#{k}"
+      chains << "d_#{vif_map[:uuid]}_s_hst_#{k}"
     }
 
     # clear rules if exists.
-    system("ebtables -L s_#{vif} >/dev/null 2>&1")
+    system("ebtables -L s_#{vif_map[:uuid]} >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "ebtables -D FORWARD -i #{vif} -j s_#{vif}"
+      cmd = "ebtables -D FORWARD -i #{vif_map[:uuid]} -j s_#{vif_map[:uuid]}"
       puts cmd
       system(cmd)
     end
 
-    system("ebtables -L d_#{vif} >/dev/null 2>&1")
+    system("ebtables -L d_#{vif_map[:uuid]} >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "ebtables -D FORWARD -o #{vif} -j d_#{vif}"
+      cmd = "ebtables -D FORWARD -o #{vif_map[:uuid]} -j d_#{vif_map[:uuid]}"
       puts cmd
       system(cmd)
     end
 
-    system("ebtables -L s_#{vif}_d_hst >/dev/null 2>&1")
+    system("ebtables -L s_#{vif_map[:uuid]}_d_hst >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "ebtables -D INPUT -i #{vif} -j s_#{vif}_d_hst"
+      cmd = "ebtables -D INPUT -i #{vif_map[:uuid]} -j s_#{vif_map[:uuid]}_d_hst"
       puts cmd
       system(cmd)
     end
 
-    system("ebtables -L d_#{vif}_s_hst >/dev/null 2>&1")
+    system("ebtables -L d_#{vif_map[:uuid]}_s_hst >/dev/null 2>&1")
     if $?.exitstatus == 0
-      cmd = "ebtables -D OUTPUT -o #{vif} -j d_#{vif}_s_hst"
+      cmd = "ebtables -D OUTPUT -o #{vif_map[:uuid]} -j d_#{vif_map[:uuid]}_s_hst"
       puts cmd
       system(cmd)
     end
@@ -662,10 +636,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
     }
 
-    logger.debug("flush_ebtables: #{inst_map[:uuid]} #{vif} done.")
+    logger.debug("flush_ebtables: #{inst_map[:uuid]} #{vif_map[:uuid]} done.")
   end
 
-  def flush_iptables(inst_map = {})
+  def flush_iptables(inst_map = {}, vif_map = {})
     logger.debug("flush_iptables: #{inst_map[:uuid]} ...")
 
     # Does the hva have instance?
@@ -680,39 +654,35 @@ class ServiceNetfilter < Isono::NodeModules::Base
     vif     = inst_map[:instance_nics].first[:vif]
 
     # support IP protocol
-    protocol_maps = {
-      'tcp'  => 'tcp',
-      'udp'  => 'udp',
-      'icmp' => 'icmp',
-    }
+    protocol_map = protocol_map(:iptables)
 
     # make chain names.
     chains = []
-    protocol_maps.each { |k,v|
-      chains << "s_#{vif}_#{k}"
-      chains << "d_#{vif}_#{k}"
-      chains << "s_#{vif}_#{k}_drop"
-      chains << "d_#{vif}_#{k}_drop"
+    protocol_map.each { |k,v|
+      chains << "s_#{vif_map[:uuid]}_#{k}"
+      chains << "d_#{vif_map[:uuid]}_#{k}"
+      chains << "s_#{vif_map[:uuid]}_#{k}_drop"
+      chains << "d_#{vif_map[:uuid]}_#{k}_drop"
     }
-    chains << "s_#{vif}"
-    chains << "d_#{vif}"
-    chains << "s_#{vif}_drop"
-    chains << "d_#{vif}_drop"
+    chains << "s_#{vif_map[:uuid]}"
+    chains << "d_#{vif_map[:uuid]}"
+    chains << "s_#{vif_map[:uuid]}_drop"
+    chains << "d_#{vif_map[:uuid]}_drop"
 
     # metadata-server
     [ 'D' ].each { |xcmd|
-      system("iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
+      system("iptables -t nat -#{xcmd} PREROUTING -m physdev --physdev-is-bridged --physdev-in #{vif_map[:uuid]} -s 0.0.0.0 -d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination #{network_map[:metadata_server]}:80 >/dev/null 2>&1")
     }
 
     # clean rules if exists.
-    system("iptables -nL s_#{vif} >/dev/null 2>&1")
+    system("iptables -nL s_#{vif_map[:uuid]} >/dev/null 2>&1")
     if $?.exitstatus == 0
-      system("iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif} -j s_#{vif}")
+      system("iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-in #{vif_map[:uuid]} -j s_#{vif_map[:uuid]}")
     end
 
-    system("iptables -nL d_#{vif} >/dev/null 2>&1")
+    system("iptables -nL d_#{vif_map[:uuid]} >/dev/null 2>&1")
     if $?.exitstatus == 0
-      system("iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif} -j d_#{vif}")
+      system("iptables -D FORWARD -m physdev --physdev-is-bridged --physdev-out #{vif_map[:uuid]} -j d_#{vif_map[:uuid]}")
     end
 
     [ 'F', 'Z', 'X' ].each { |xcmd|
@@ -724,7 +694,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       }
     }
 
-    logger.debug("flush_iptables: #{inst_map[:uuid]} #{vif} done.")
+    logger.debug("flush_iptables: #{inst_map[:uuid]} #{vif_map[:uuid]} done.")
   end
 
   def build_rule(rules = [])
@@ -1026,7 +996,7 @@ class KvmHandler < EndpointBuilder
 
       if network_map[:vlan_id] == 0
         # bridge interface
-        p bridge_if = @node.manifest.config.bridge_novlan
+        bridge_if = @node.manifest.config.bridge_novlan
         unless FileTest.exist?("/sys/class/net/#{bridge_if}/ifindex")
           sh("/usr/sbin/brctl addbr %s",    [bridge_if])
           sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
