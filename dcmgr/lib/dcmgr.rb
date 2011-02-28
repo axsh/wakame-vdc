@@ -28,8 +28,16 @@ module Dcmgr
       self
     end
 
-    def run_initializers()
+    def run_initializers(*files)
       raise "Complete the configuration prior to run_initializers()." if @conf.nil?
+
+      @files ||= []
+      if files.length == 0
+        @files << "*"
+      else
+      	@files = files
+      end
+      
       initializer_hooks.each { |n|
         n.call
       }
@@ -42,7 +50,6 @@ module Dcmgr
       end
       @initializer_hooks
     end
-
   end
 
   initializer_hooks {
@@ -54,12 +61,14 @@ module Dcmgr
   # Add conf/initializers/*.rb loader 
   initializer_hooks {
     initializers_root = File.expand_path('config/initializers', DCMGR_ROOT) 
-    
-    if File.directory?(initializers_root)
-      Dir.glob("#{initializers_root}/*.rb") { |f|
-        ::Kernel.load(f)
-      }
-    end
+
+    @files.each { |file|  
+      if File.directory?(initializers_root)
+        Dir.glob("#{initializers_root}/#{file}.rb") { |f|
+          ::Kernel.load(f)
+        }
+      end
+    }
   }
   
   autoload :Logger, 'dcmgr/logger'
