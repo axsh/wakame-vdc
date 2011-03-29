@@ -192,28 +192,28 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
                   .parent();
     if( widget ) {
       widget.button("option", "disabled", disabled);
-    }       
+    }
   },
   close: function(){
     this.content.dialog('close');
   },
   create: function(params){
     this.content = this.element
-        .load(this.path,params,this.callback)
-  			.dialog({
-  				title: this.title,
-  				disable: false,
-  				autoOpen: false,
-  				bgiframe: true,
-  				width: this.width,
-  				height: this.height,
-  				modal: true,
-  				resizable: true,
-  				closeOnEscape: true,
-  				closeText: 'hide',
-  				draggable:false,
-  				buttons: this.button
-  	});
+                       .load(this.path,params,this.callback)
+                       .dialog({
+                           title: this.title,
+                           disable: false,
+                           autoOpen: false,
+                           bgiframe: true,
+                           width: this.width,
+                           height: this.height,
+                           modal: true,
+                           resizable: true,
+                           closeOnEscape: true,
+                           closeText: 'hide',
+                           draggable:false,
+                           buttons: this.button
+                       });
   }
 });
 
