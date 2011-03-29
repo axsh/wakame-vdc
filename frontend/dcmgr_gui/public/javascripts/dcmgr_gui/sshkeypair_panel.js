@@ -43,7 +43,6 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     c_pagenate.changeTotal(ssh_key_pair.owner_total);
     c_list.setData(ssh_key_pair.results);
     c_list.singleCheckList(c_list.detail_template);
-    
     c_list.element.find(".show_key").each(function(key,value){
       var uuid = $(value).attr('id').replace(/button_(ssh-[a-z0-9]+)/,'$1');
       if(uuid) {
@@ -146,6 +145,13 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
        $(this).dialog("close");
       }
     }
+  });
+  
+  $(bt_create_ssh_keypair.target).button({ disabled: false });
+  $(bt_delete_ssh_keypair.target).button({ disabled: true });
+
+  c_list.event.attach('enable_delete_button', function(){
+    $(bt_delete_ssh_keypair.target).button({ disabled: false });
   });
   
   bt_delete_ssh_keypair.target.bind('click', function() {
