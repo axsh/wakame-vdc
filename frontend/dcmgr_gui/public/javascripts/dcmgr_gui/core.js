@@ -224,11 +224,8 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     } else {
       this.element = $('<div></div>');
     }
-    
+    this.event = new DcmgrGUI.Event();
     this.template = params.template_id;
-    this.events = this.events||[];
-    //prototype.register_event function add to call before initialize function
-    this.bind_events();
     this.filter = new DcmgrGUI.Filter();
   },
   update:function(request,async){
@@ -256,17 +253,6 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
        }
      });
   },
-  register_event:function(name,handler){
-    this.events = this.events||[]
-    this.events.push({
-      "name":name,
-      "handler":handler
-    })
-  },bind_events:function(){
-    for(var i in this.events){
-      this.element.bind(this.events[i].name,this.events[i].handler);
-    }
-  }
 });
 
 DcmgrGUI.Util = {};
@@ -321,6 +307,28 @@ DcmgrGUI.Util.createUIButton = function(element,options){
             element.removeClass("ui-state-focus");
           });
 }
+
+DcmgrGUI.Event = DcmgrGUI.Class.create({
+
+  initialize: function(){
+    this.events = {}
+  },
+  attach: function(event_name, func){
+    if(!this.events[event_name] && typeof func === "function") {
+      this.events[event_name] = func;
+    }
+  },
+  detach: function(event_name){
+    if(this.events[event_name]) {
+      delete this.events[event_name];
+    }
+  },
+  fire: function(event_name){
+    if(this.events[event_name]) {
+      this.events[event_name]();
+    }
+  }
+});
 
 DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   initialize: function(params){
