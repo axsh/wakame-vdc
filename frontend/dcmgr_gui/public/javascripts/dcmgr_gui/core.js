@@ -224,7 +224,6 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     } else {
       this.element = $('<div></div>');
     }
-    this.event = new DcmgrGUI.Event();
     this.template = params.template_id;
     this.filter = new DcmgrGUI.Filter();
   },
@@ -330,6 +329,32 @@ DcmgrGUI.Event = DcmgrGUI.Class.create({
   }
 });
 
+DcmgrGUI.Notification = DcmgrGUI.Class.create({
+
+  initialize: function() {
+    this.topics = {};
+  },
+  create_topic: function(topic_id) {
+    if(!this.topics[topic_id]) {
+      this.topics[topic_id] = null;
+    }
+  },
+  subscribe: function(topic_id, target, method_name, options) {
+    this.topics[topic_id] = {'target': target,
+                             'method_name': method_name,
+                             'options': options}
+  },
+  publish: function(topic_id) {
+    if(this.topics[topic_id]) {
+      var topic = this.topics[topic_id];
+      var target = topic['target'];
+      var method_name = topic['method_name'];
+      target[method_name](topic['options']);
+    }
+  }
+
+});
+
 DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   initialize: function(params){
     DcmgrGUI.ContentBase.prototype.initialize(params);
@@ -337,7 +362,6 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.detail_template = {};
     this.maxrow = params.maxrow
     this.page = params.page
-    
     var self = this;
 
     this.element.bind('dcmgrGUI.afterUpdate',function(event){
@@ -373,7 +397,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.element.bind('dcmgrGUI.updateList',function(event,params){
       self.update(params.request,true)
     });
-    
+    dcmgrGUI.notification.create_topic('checked_radio');
   },
   setDetailTemplate:function(template){
     this.detail_template = template;
@@ -434,6 +458,9 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
         var check_id = $(this).val();
         
         if($(this).is(':checked')){
+          
+          dcmgrGUI.notification.publish('checked_radio');
+          
           var c_detail = new DcmgrGUI.Detail({
             template_id:params.template_id
           });
