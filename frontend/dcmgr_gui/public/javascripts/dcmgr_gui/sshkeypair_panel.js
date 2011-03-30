@@ -150,9 +150,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   $(bt_create_ssh_keypair.target).button({ disabled: false });
   $(bt_delete_ssh_keypair.target).button({ disabled: true });
 
-  c_list.event.attach('enable_delete_button', function(){
-    $(bt_delete_ssh_keypair.target).button({ disabled: false });
-  });
+  dcmgrGUI.notification.subscribe('checked_radio', bt_delete_ssh_keypair, 'enable_button');
   
   bt_delete_ssh_keypair.target.bind('click', function() {
     var id = c_list.currentChecked();
