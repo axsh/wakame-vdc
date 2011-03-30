@@ -106,6 +106,9 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     });
 
     this.renderPagenate();
+    
+    //create topics
+    dcmgrGUI.notification.create_topic('change_pagenate');
   },
   getPageCount: function(total,row){
     return Math.ceil(total / row)
@@ -140,6 +143,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     }
     self.renderPagenate();
     self.element.trigger('dcmgrGUI.updatePagenate');
+    dcmgrGUI.notification.publish('change_pagenate');
   },
   getOffsetCount: function(){
     var count = (this.current_page * this.row);
@@ -199,6 +203,9 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
   },
   enable_button: function(){
     $(this.target).button({ disabled: false });
+  },
+  disable_button: function(){
+    $(this.target).button({ disabled: true });
   },
   create: function(params){
     this.content = this.element

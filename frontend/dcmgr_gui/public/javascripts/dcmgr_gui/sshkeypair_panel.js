@@ -44,12 +44,15 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     c_list.setData(ssh_key_pair.results);
     c_list.singleCheckList(c_list.detail_template);
     c_list.element.find(".show_key").each(function(key,value){
+      $(this).button({ disabled: false });
       var uuid = $(value).attr('id').replace(/button_(ssh-[a-z0-9]+)/,'$1');
       if(uuid) {
         $(this).bind('click',function(){
           c_list.checkRadioButton(uuid);
           location.href = '/keypairs/prk_download/'+uuid
         });
+      }else {
+        $(this).button({ disabled: true });
       }
     })
   });
@@ -57,7 +60,6 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   var bt_refresh  = new DcmgrGUI.Refresh();
   
   bt_refresh.element.bind('dcmgrGUI.refresh', function(){
-    
     //Update list element
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/keypairs/list/', c_list.page);
@@ -147,10 +149,12 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     }
   });
   
+  dcmgrGUI.notification.subscribe('checked_radio', bt_delete_ssh_keypair, 'enable_button');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_ssh_keypair, 'disable_button');
+  
   $(bt_create_ssh_keypair.target).button({ disabled: false });
   $(bt_delete_ssh_keypair.target).button({ disabled: true });
-
-  dcmgrGUI.notification.subscribe('checked_radio', bt_delete_ssh_keypair, 'enable_button');
+  bt_refresh.element.button({ disabled: false });
   
   bt_delete_ssh_keypair.target.bind('click', function() {
     var id = c_list.currentChecked();
