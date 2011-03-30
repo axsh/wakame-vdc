@@ -87,5 +87,6 @@ jQuery(function($){
 	//global
   dcmgrGUI = new DcmgrGUI;
 	dcmgrGUI.initialize();
+  dcmgrGUI.notification = new DcmgrGUI.Notification;
 });
 //]]>
