@@ -51,7 +51,8 @@ module Dcmgr::Models
           end
           default_values[:uuid] = uuid
         end
-        default_values[:uuid] || raise("#{self}.uuid is unset. Set the unique number")
+        raise("#{self}.uuid is unset. Set the unique number") unless default_values[:uuid]
+        "#{uuid_prefix}-#{default_values[:uuid]}"
       end
 
       def description(description=nil)
