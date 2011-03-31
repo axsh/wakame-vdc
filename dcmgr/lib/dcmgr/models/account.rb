@@ -83,15 +83,15 @@ module Dcmgr::Models
       }
 
       # create shared resource pool tags
-      Tags::HostPool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
-                            :uuid=>'shhost',
-                            :name=>"default_shared_hosts")
-      Tags::NetworkPool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
-                               :uuid=>'shnet',
-                               :name=>"default_shared_networks")
-      Tags::StoragePool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
-                               :uuid=>'shstor',
-                               :name=>"default_shared_storages")
+      Dcmgr::Tags::HostPool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
+                                   :uuid=>'shhost',
+                                   :name=>"default_shared_hosts")
+      Dcmgr::Tags::NetworkPool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
+                                      :uuid=>'shnet',
+                                      :name=>"default_shared_networks")
+      Dcmgr::Tags::StoragePool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
+                                      :uuid=>'shstor',
+                                      :name=>"default_shared_storages")
     end
     
     SystemAccount.define_account(:DatacenterAccount) do
