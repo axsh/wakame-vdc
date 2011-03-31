@@ -12,3 +12,9 @@ default_shared_host_pool 'tag-xxxxxxxx'
 
 # UUID for shared network pool.
 default_shared_network_pool 'tag-xxxxxxxx'
+
+# system wide limit size in MB for creating new volume.
+# (not affect at cloning from snapshot)
+create_volume_max_size 3000
+create_volume_min_size 10
+
