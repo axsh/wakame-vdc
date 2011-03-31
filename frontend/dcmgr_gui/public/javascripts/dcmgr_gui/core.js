@@ -565,7 +565,8 @@ DcmgrGUI.Detail = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
 
 DcmgrGUI.Refresh = DcmgrGUI.Class.create({
   initialize: function(){
-    this.element = $('.refresh');
+    this.target = '.refresh'
+    this.element = $(this.target);
     var self = this;
     self.element.live('click',function(){
       self.element.trigger('dcmgrGUI.refresh');
