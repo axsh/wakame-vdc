@@ -346,20 +346,25 @@ DcmgrGUI.Notification = DcmgrGUI.Class.create({
   },
   create_topic: function(topic_id) {
     if(!this.topics[topic_id]) {
-      this.topics[topic_id] = null;
+      this.topics[topic_id] = [];
     }
   },
   subscribe: function(topic_id, target, method_name, options) {
-    this.topics[topic_id] = {'target': target,
-                             'method_name': method_name,
-                             'options': options}
+    if( this.topics[topic_id] ) {
+      this.topics[topic_id].push({'target': target,
+                                  'method_name': method_name,
+                                  'options': options})
+    }
   },
   publish: function(topic_id) {
     if(this.topics[topic_id]) {
-      var topic = this.topics[topic_id];
-      var target = topic['target'];
-      var method_name = topic['method_name'];
-      target[method_name](topic['options']);
+      var size = this.topics[topic_id].length;
+      for (i=0; i < size; i++) {
+        var topic = this.topics[topic_id][i];
+        var target = topic['target'];
+        var method_name = topic['method_name'];
+        target[method_name](topic['options']);
+      }
     }
   }
 
