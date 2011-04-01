@@ -32,7 +32,7 @@ module Dcmgr::Tags
   
   class HostPool < Models::Tag
     def accept_mapping?(to)
-      to.is_a?(Dcmgr::Models::HostNode)
+      to.is_a?(Dcmgr::Models::HostPool)
     end
 
     def pick(spec)
@@ -48,7 +48,7 @@ module Dcmgr::Tags
   
   class StoragePool < Models::Tag
     def accept_mapping?(to)
-      to.is_a?(Dcmgr::Models::StorageNode)
+      to.is_a?(Dcmgr::Models::StoragePool)
     end
   end
 end
