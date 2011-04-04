@@ -356,8 +356,13 @@ class ServiceNetfilter < Isono::NodeModules::Base
       ng_map[:rules].map { |rule| rule[:permission] }
     }.flatten
     build_rule(rules).each do |rule|
-      next unless joined_network.include? IPAddress(rule[:ip_source])
-      same_subnet_ipv4s << rule[:ip_source]
+      begin
+        # <ArgumentError: Invalid IP "0.0.0.0">
+        next unless joined_network.include? IPAddress(rule[:ip_source])
+        same_subnet_ipv4s << rule[:ip_source]
+      rescue Exception => e
+        p e
+      end
     end
     same_subnet_ipv4s << network_map[:ipv4_gw]
 
@@ -634,7 +639,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
             # TODO#FUTURE: support IPv6 address format
             next
           when s.scan(/ip4/)
-            # IPAddress does't support prefix '0'.
+            # IPAddress doesn't support prefix '0'.
             ip_addr, prefix = ip_source.split('/', 2)
             if prefix.to_i == 0
               ip_source = ip_addr
