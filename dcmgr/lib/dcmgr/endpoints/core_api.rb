@@ -284,8 +284,8 @@ module Dcmgr
           control do
             Models::Instance.lock!
             
-            wmi = find_by_uuid(:Image, params[:image_id])
-            spec = find_by_uuid(:InstanceSpec, (params[:instance_spec_id] || 'is-kpf0pasc'))
+            wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
+            spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
             # look up params[:host_id] in following order:
             # 1. assume the host pool name.
