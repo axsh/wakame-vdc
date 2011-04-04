@@ -121,8 +121,13 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   renderPagenate: function(){
     this.start = this.getStartCount();
     this.offset = this.getOffsetCount();
-    var html = this.start + ' to ' + this.offset + ' of ' + this.total;
-    $("#viewPagenate").html(html+' '+this.view);    
+    if (this.start !== 0 && this.offset !==0 ) {
+      var html = this.start + ' to ' + this.offset + ' of ' + this.total;
+      html += ' ' + this.view
+    } else{
+      var html = '';
+    }
+    $("#viewPagenate").html(html);
   },
   updatePage: function(event){
     var self = event.data.obj;
