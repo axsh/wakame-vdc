@@ -20,12 +20,6 @@ module Dcmgr
       disable :show_exceptions
 
       before do
-        request.env['dcmgr.frotend_system.id'] = 1
-        request.env['HTTP_X_VDC_REQUESTER_TOKEN']='u-xxxxxx'
-        request.env['HTTP_X_VDC_ACCOUNT_UUID']='a-00000000'
-      end
-
-      before do
         @params = parsed_request_body if request.post?
         @account = Models::Account[request.env['HTTP_X_VDC_ACCOUNT_UUID']]
         @requester_token = request.env['HTTP_X_VDC_REQUESTER_TOKEN']
