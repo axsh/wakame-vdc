@@ -29,6 +29,7 @@ DcmgrGUI.prototype.dashboardPanel = function(){
     });
     
   });
- 
+
+  $(bt_refresh.target).button({ disabled: false });
   bt_refresh.element.trigger('dcmgrGUI.refresh');
 }

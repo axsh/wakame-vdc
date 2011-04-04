@@ -82,6 +82,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       }
       c_list.checkRadioButton(uuid);
     });
+    
+    $(bt_edit_security_group.target).button({ disabled: false });
+    
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -188,7 +191,13 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     return false;
   });
   
-
+  dcmgrGUI.notification.subscribe('checked_radio', bt_delete_security_group, 'enable_button');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_security_group, 'disable_button');
+  
+  $(bt_create_security_group.target).button({ disabled: false });
+  $(bt_delete_security_group.target).button({ disabled: true });
+  $(bt_refresh.target).button({ disabled: false });
+  
   c_list.setData(null);
   c_list.update(list_request,true);
 }

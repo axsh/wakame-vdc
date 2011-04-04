@@ -412,6 +412,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.element.bind('dcmgrGUI.updateList',function(event,params){
       self.update(params.request,true)
     });
+    dcmgrGUI.notification.create_topic('checked_box');
     dcmgrGUI.notification.create_topic('checked_radio');
   },
   setDetailTemplate:function(template){
@@ -510,7 +511,9 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
         var check_id = $(this).val();
         
         if($(this).is(':checked')){
-
+          
+          dcmgrGUI.notification.publish('checked_box');
+          
           //step1:onclick checkbox and generate detail object
           self.checked_list[check_id] = {
             //+1 is to remove table header

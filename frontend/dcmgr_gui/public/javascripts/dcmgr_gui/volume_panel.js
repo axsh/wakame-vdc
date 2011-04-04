@@ -304,7 +304,17 @@ DcmgrGUI.prototype.volumePanel = function(){
     $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
-
+  
+  dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enable_button');
+  dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enable_button');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disable_button');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disable_button');
+  
+  $(bt_create_volume.target).button({ disabled: false });
+  $(bt_delete_volume.target).button({ disabled: true });
+  $(bt_create_snapshot.target).button({ disabled: true });
+  $(bt_refresh.target).button({ disabled: false });
+  
   //list
   c_list.setData(null);
   c_list.update(list_request,true);  

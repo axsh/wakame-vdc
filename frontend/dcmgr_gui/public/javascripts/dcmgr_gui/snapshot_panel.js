@@ -161,6 +161,13 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
 
+  dcmgrGUI.notification.subscribe('checked_box', bt_delete_snapshot, 'enable_button');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_snapshot, 'disable_button');
+
+  $(bt_create_volume.target).button({ disabled: false });
+  $(bt_delete_snapshot.target).button({ disabled: true });
+  $(bt_refresh.target).button({ disabled: false });
+  
   //list
   c_list.setData(null);
   c_list.update(list_request,true);

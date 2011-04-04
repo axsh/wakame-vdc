@@ -235,7 +235,9 @@ DcmgrGUI.prototype.imagePanel = function(){
     }
     return false;
   });
-
+  
+  $(bt_launch_instance.target).button({ disabled: false });
+  $(bt_refresh.target).button({ disabled: false });
   //list
   c_list.setData(null);
   c_list.update(list_request,true);
