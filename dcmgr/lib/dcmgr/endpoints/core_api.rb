@@ -11,19 +11,33 @@ require 'dcmgr/endpoints/errors'
 
 module Dcmgr
   module Endpoints
+    # HTTP Header constants for request credentials.
+    HTTP_X_VDC_REQUESTER_TOKEN='HTTP_X_VDC_REQUESTER_TOKEN'.freeze
+    HTTP_X_VDC_ACCOUNT_UUID='HTTP_X_VDC_ACCOUNT_UUID'.freeze
+
+    RACK_FRONTEND_SYSTEM_ID='dcmgr.frotend_system.id'
+    
     class CoreAPI < Sinatra::Base
       include Dcmgr::Logger
       register Sinatra::Rabbit
       register Sinatra::SequelTransaction
+
+      use Dcmgr::RequestLogger
 
       disable :sessions
       disable :show_exceptions
 
       before do
         @params = parsed_request_body if request.post?
-        @account = Models::Account[request.env['HTTP_X_VDC_ACCOUNT_UUID']]
-        @requester_token = request.env['HTTP_X_VDC_REQUESTER_TOKEN']
-        #@frontend = Models::FrontendSystem[request.env['dcmgr.frotend_system.id']]
+        if request.env[HTTP_X_VDC_ACCOUNT_UUID].to_s == ''
+          raise InvalidRequestCredentials
+        else
+          @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+          raise InvalidRequestCredentials if @account.nil?
+        end
+         
+        @requester_token = request.env[HTTP_X_VDC_REQUESTER_TOKEN]
+        #@frontend = Models::FrontendSystem[request.env[RACK_FRONTEND_SYSTEM_ID]]
 
         #raise InvalidRequestCredentials if !(@account && @frontend)
         raise DisabledAccount if @account.disable?

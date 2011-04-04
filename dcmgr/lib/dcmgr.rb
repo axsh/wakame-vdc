@@ -135,4 +135,6 @@ module Dcmgr
   end
 
   autoload :Tags, 'dcmgr/tags'
+
+  autoload :RequestLogger, 'dcmgr/request_logger'
 end
