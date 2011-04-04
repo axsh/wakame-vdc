@@ -7,7 +7,7 @@
 <div id="create_security_group_dialog">
 	<table>
 		<tr>
-			<td>Name:</td>
+			<td><%= t("dialog.create_and_edit_security_group.name") %>:</td>
 			<td>
 				<% if @name %>
 					<%= @name %>
@@ -18,11 +18,11 @@
 				<input type="hidden" id="security_group_id" value="<%= @uuid %>">
 		</tr>
 		<tr>
-			<td>Description:</td>
+			<td><%= t("dialog.create_and_edit_security_group.description") %>:</td>
 			<td><input type="text" id="security_group_description" size="43" value="<%= @description %>"></td>
 		</tr>
 		<tr>
-			<td>Rule:</td>
+			<td><%= t("dialog.create_and_edit_security_group.rule") %>:</td>
 		</tr>
 		<tr>
 			<td colspan="2">

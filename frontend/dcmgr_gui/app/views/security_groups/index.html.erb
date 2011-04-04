@@ -16,12 +16,12 @@ jQuery(function($){
 <% end %>
 
 <div id="mainarea_wide">
-	<h3><img src="images/icon_resource.gif" />Security Groups<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_resource.gif" /><%= t("security_groups.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
  <div id="list_load_mask" class="maincontent">
 		<div class="controller clearfix">
-		  <a href="javascript:void(0);" class="create_security_group">Create Security Group</a>
-			<a href="javascript:void(0);" class="delete_security_group" >Delete</a>
-			<a href="javascript:void(0);" class="refresh" style="margin-left:302px">Refresh</a>
+		  <a href="javascript:void(0);" class="create_security_group"><%= t("security_groups.button.create_security_group") %></a>
+			<a href="javascript:void(0);" class="delete_security_group" ><%= t("security_groups.button.delete_security_group") %></a>
+			<a href="javascript:void(0);" class="refresh" style="margin-left:292px"><%=  t("button.refresh") %></a>
 		</div>
 		<div class="controller clearfix">
 			<!-- <div class="l_float">
@@ -58,7 +58,7 @@ jQuery(function($){
 					<td class="vtip" title="description" style="width:500px">${item.description}</td>
 					{{if item.name }}
 					<td class="vtip center" title="action">
-						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.uuid}">Edit</a>
+						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.uuid}"><%= t("security_groups.button.edit_security_group") %></a>
 					</td>
 					{{else}}
 						<td class="vtip center" title="action"></td>
@@ -72,7 +72,7 @@ jQuery(function($){
 		</div>
 	</div>
 	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_ttl_detail.gif" />Detail<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_ttl_detail.gif" /><%= t("security_groups.details.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="securityGroupsDetailTemplate" type="text/x-jquery-tmpl">
@@ -80,12 +80,12 @@ jQuery(function($){
 				<table class="ptn07" frame="void" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Name:</td>
+						<td class="title"><%= t("security_groups.details.name") %>:</td>
 						<td>${item.name}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Description:</td>
+						<td class="title"><%= t("security_groups.details.description") %>:</td>
 						<td>${item.description}</td>
 					</tr>
 					<tr>
@@ -96,12 +96,12 @@ jQuery(function($){
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-	         	<td class="title">Created:</td>
+	         	<td class="title"><%= t("security_groups.details.created_at") %>:</td>
 	         	<td colspan="7">${item.created_at}</td>
 					</tr>
 	        <tr>
 	          <td class="padcell"></td>
-	          <td class="title">Updated:</td>
+	          <td class="title"><%= t("security_groups.details.updated_at") %>:</td>
 	          <td colspan="7">${item.updated_at}</td>
 					</tr>
 				</table>

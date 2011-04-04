@@ -14,12 +14,12 @@ jQuery(function($){
 </style>
 <% end %>
 <div id="mainarea_wide">
-	<h3><img src="images/icon_resource.gif" />Key Pairs<a href="#" class="showhide"></a></h3>
+	<h3><img src="images/icon_resource.gif" /><%= t('keypairs.header') %><a href="#" class="showhide"></a></h3>
 	<div id="list_load_mask" class="maincontent">
 		<div class="controller clearfix">
-		  <a href="javascript:void(0);" class="create_ssh_keypair">Create Key Pair</a>
-		  <a href="javascript:void(0);" class="delete_ssh_keypair">Delete</a>
-		  <a href="javascript:void(0);" class="refresh">Refresh</a>
+		  <a href="javascript:void(0);" class="create_ssh_keypair"><%= t('keypairs.button.create_keypair') %></a>
+		  <a href="javascript:void(0);" class="delete_ssh_keypair"><%= t('keypairs.button.delete_keypair') %></a>
+		  <a href="javascript:void(0);" class="refresh" style="margin-left:-9px"><%= t('button.refresh') %></a>
 		</div>
 		<div class="controller clearfix">
 			<!-- <div class="l_float">
@@ -41,8 +41,8 @@ jQuery(function($){
 			<table class="ptn04" frame="void" cellpadding="0" cellspacing="0" border="0">
 				<tr>
 					<th class="icon"></th>
-					<th>Access Key ID</th>
-					<th class="show_key">Secret Access Key</th>
+					<th><%= t('keypairs.list.access_key_id') %></th>
+					<th class="header_show_key"><%= t('keypairs.list.secret_access_key') %></th>
 				</tr>
 				{{each(index,item) rows}}
 				<tr>
@@ -55,9 +55,9 @@ jQuery(function($){
 					<td>
 					{{if item.uuid }}
 						{{if item.private_key}}
-							<a id="button_${item.uuid}" href="javascript:void(0);" class="show_key">Show Secret Access Key</a>
+							<a id="button_${item.uuid}" href="javascript:void(0);" class="show_key"><%= t('keypairs.button.show_secret_accesskey') %></a>
 						{{else}}
-							<a href="javascript:void(0);" class="show_key">Show Secret Access Key</a>
+							<a href="javascript:void(0);" class="show_key"><%= t('keypairs.button.show_secret_accesskey') %></a>
 						{{/if}}
 					{{/if}}
 					</td>
@@ -69,7 +69,7 @@ jQuery(function($){
 		</div>
 	</div>
 	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_ttl_detail.gif" />Detail<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_ttl_detail.gif" /><%= t('keypairs.details.header') %><a href="javascript:void(0);" class="showhide"></a></h3>
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="sshKeypairsDetailTemplate" type="text/x-jquery-tmpl">
@@ -77,22 +77,22 @@ jQuery(function($){
 				<table class="ptn08" frame="void" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Name:</td>
+						<td class="title"><%= t('keypairs.details.name') %>:</td>
 						<td colspan="7">${item.name}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Fingerprint:</td>
+						<td class="title"><%= t('keypairs.details.fingerprint') %>:</td>
 						<td colspan="7"></td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Created:</td>
+						<td class="title"><%= t('keypairs.details.created_at') %>:</td>
 						<td colspan="7">${item.created_at}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Updated:</td>
+						<td class="title"><%= t('keypairs.details.updated_at') %>:</td>
 						<td colspan="7">${item.updated_at}</td>
 					</tr>
 				</table>

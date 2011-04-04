@@ -15,13 +15,13 @@ jQuery(function($){
 <% end %>
 
 <div id="mainarea_wide">
-	<h3><img src="images/icon_resource.gif" />Machine Images<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_resource.gif" /><%= t("machine_images.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
  <div id="list_load_mask" class="maincontent">
 		<div class="controller clearfix">
-		  <a href="javascript:void(0);" class="launch_instance">Launch Instance</a>
+		  <a href="javascript:void(0);" class="launch_instance"><%= t("machine_images.button.launch_instance") %></a>
 			<!-- <a href="javascript:void(0);" class="register_new_ami">Register New AMI</a> -->
 			<!-- <a href="javascript:void(0);" class="de_register">De-register</a> -->
-			<a href="javascript:void(0);" class="refresh" style="margin-left:470px">Refresh</a>
+			<a href="javascript:void(0);" class="refresh" style="margin-left:463px"><%= t("button.refresh") %></a>
 		</div>
 		<div class="controller clearfix">
 			<!-- <div class="l_float">
@@ -46,10 +46,10 @@ jQuery(function($){
 			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
 				<tr>
 					<th></th>
-					<th>WMI ID</th>
-					<th>Source</th>
-					<th>Owner</th>
-					<th>State</th>
+					<th><%= t("machine_images.list.wmi_id") %></th>
+					<th><%= t("machine_images.list.source") %></th>
+					<th><%= t("machine_images.list.owner") %></th>
+					<th><%= t("machine_images.list.state") %></th>
 				</tr>
 			   {{each(index,item) rows}}
 			   <tr>
@@ -79,42 +79,42 @@ jQuery(function($){
 			<% content_for :javascript_template do %>
 			<script id="imagesDetailTemplate" type="text/x-jquery-tmpl">
 			<div id="${item.wmi_id}" class="display_area">
-				<h4 class="ptn01">WMI ID:<span class="instansid">${item.uuid}</span></h4>
+				<h4 class="ptn01"><%= t("machine_images.details.wmi_id") %>:<span class="instansid">${item.uuid}</span></h4>
 				<table class="ptn06" frame="void" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">WMI ID:</td>
+						<td class="title"><%= t("machine_images.details.wmi_id") %>:</td>
 						<td colspan="7">${item.uuid}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Description:</td>
+						<td class="title"><%= t("machine_images.details.description") %>:</td>
 						<td colspan="7">${item.description}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Source:</td>
+						<td class="title"><%= t("machine_images.details.source") %>:</td>
 						<td colspan="7">${item.source.uri}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Owner:</td>
+						<td class="title"><%= t("machine_images.details.owner") %>:</td>
 						<td>${item.account_id}</td>
 						<td class="padcell"></td>
-						<td class="title">Arch:</td>
+						<td class="title"><%= t("machine_images.details.arch") %>:</td>
 						<td>${item.arch}</td>
 						<td class="padcell"></td>
-						<td class="title">Status:</td>
+						<td class="title"><%= t("machine_images.details.status") %>:</td>
 						<td>${item.state}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Created At:</td>
+						<td class="title"><%= t("machine_images.details.created_at") %>:</td>
 						<td colspan="7">${item.created_at}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Updated At:</td>
+						<td class="title"><%= t("machine_images.details.updated_at") %>:</td>
 						<td colspan="7">${item.updated_at}</td>
 					</tr>
 				</table>

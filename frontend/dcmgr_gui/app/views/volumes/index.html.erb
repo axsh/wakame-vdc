@@ -15,18 +15,18 @@ jQuery(function($){
 <% end %>
 
 <div id="mainarea_wide">
-	<h3><img src="images/icon_resource.gif" />Volumes<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_resource.gif" /><%= t("volumes.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
  <div id="list_load_mask" class="maincontent">
 		<div class="controller clearfix">
-		  <a href="javascript:void(0);" class="create_volume">Create Volume</a>
-		  <div id="volumeaction">Volume Actions</div>
+		  <a href="javascript:void(0);" class="create_volume"><%= t("volumes.button.create_volume") %></a>
+		  <div id="volumeaction"><%= t("volumes.volume_actions.header") %></div>
     		  <ul id="volumelist">
-		    <li class="attach_volume"><a href="javascript:void(0);">Attach Volume</a></li>
-		    <li class="detach_volume"><a href="javascript:void(0);">Detach Volume</a></li>
+		    <li class="attach_volume"><a href="javascript:void(0);"><%= t("volumes.volume_actions.attach_volume") %></a></li>
+		    <li class="detach_volume"><a href="javascript:void(0);"><%= t("volumes.volume_actions.detach_volume") %></a></li>
 	  	  </ul>
-		  <a href="javascript:void(0);" class="delete_volume" >Delete</a>
-		  <a href="javascript:void(0);" class="create_snapshot">Create Snapshot</a>
-		  <a href="javascript:void(0);" class="refresh" style="margin-left:85px">Refresh</a>
+		  <a href="javascript:void(0);" class="delete_volume" ><%= t("volumes.button.delete_volume") %></a>
+		  <a href="javascript:void(0);" class="create_snapshot"><%= t("volumes.button.create_snapshot") %></a>
+		  <a href="javascript:void(0);" class="refresh" style="margin-left:72px"><%= t("button.refresh") %></a>
 		</div>
 		<div class="controller clearfix">
 			<!-- <div class="l_float">
@@ -48,11 +48,11 @@ jQuery(function($){
 			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
 				<tr>
 					<th></th>
-					<th>Volume ID</th>
-					<th>Capacity</th>
-					<th>Snapshot</th>
-					<th>Created</th>
-					<th>Status</th>
+					<th><%= t("volumes.list.volume_id") %></th>
+					<th><%= t("volumes.list.capacity") %></th>
+					<th><%= t("volumes.list.snapshot_id") %></th>
+					<th><%= t("volumes.list.created") %></th>
+					<th><%= t("volumes.list.status") %></th>
 				</tr>
 				{{each(index,item) rows}}
 			   <tr>
@@ -74,37 +74,37 @@ jQuery(function($){
 		</div>
 	</div>
 	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_ttl_detail.gif" />Details<a href="javascript:void(0);" class="showhide"></a></h3>
+	<h3><img src="images/icon_ttl_detail.gif" /><%= t("volumes.details.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
  		<div id="detail" class="maincontent">
  			<% content_for :javascript_template do %>
 			<script id="volumesDetailTemplate" type="text/x-jquery-tmpl">
 			<div id="${item.uuid}" class="display_area">
-				<h4 class="ptn01">VolumeId:<span class="instansid">${item.uuid}</span></h4>
+				<h4 class="ptn01"><%= t("volumes.details.volume_id") %>:<span class="instansid">${item.uuid}</span></h4>
 				<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Volume ID:</td>
+						<td class="title"><%= t("volumes.details.volume_id") %>:</td>
 						<td class="volume_size">${item.uuid}</td>
 						<td class="padcell"></td>
-						<td class="title">Capacity:</td>
+						<td class="title"><%= t("volumes.details.capacity") %>:</td>
 						<td>${item.size}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Snapshot:</td>
+						<td class="title"><%= t("volumes.details.snapshot_id") %>:</td>
 						<td>${item.snapshot_id}</td>
 						<td class="padcell"></td>
-						<td class="title">Status:</td>
+						<td class="title"><%= t("volumes.details.status") %>:</td>
 						<td class="state">${item.state}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Created:</td>
+						<td class="title"><%= t("volumes.details.created_at") %>:</td>
 						<td colspan="7">${item.created_at}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
-						<td class="title">Updated:</td>
+						<td class="title"><%= t("volumes.details.updated_at") %>:</td>
 						<td colspan="7">${item.updated_at}</td>
 					</tr>
 				</table>

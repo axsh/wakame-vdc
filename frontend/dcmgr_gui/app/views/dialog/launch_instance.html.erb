@@ -1,21 +1,21 @@
 <div id="launch_instance_dialog">
 	<table>
 		<tr>
-			<td>WMI ID:</td>
+			<td><%= t("dialog.launch_instance.wmi_id") %>:</td>
 			<td id="view_image_id"><%= @image_id %></td>
 			<input id="image_id" type="hidden" value="<%= @image_id %>">
 		</tr>
 		<tr>
-			<td>Host:</td>
+			<td><%= t("dialog.launch_instance.host") %>:</td>
 			<td id="select_host_pool">
 			</td>
 		</tr>
 		<tr>
-			<td>Host Name:</td>
+			<td><%= t("dialog.launch_instance.host_name") %>:</td>
 			<td><input id="host_name" type="text" value=""></td>
 		</tr>
 		<tr>
-			<td>Instance Spec:</td>
+			<td><%= t("dialog.launch_instance.instance_spec") %>:</td>
 			<td>
 			<select name="instance_spec">
 				<option value="m1.small">m1.small
@@ -24,18 +24,18 @@
 			</td>
 		</tr>
 		<tr>
-			<td>SSH Key Pair:</td>
+			<td><%= t("dialog.launch_instance.ssh_key_pair") %>:</td>
 			<td id="select_ssh_key_pair"></td>
 		</tr>
 	</table>
 
 	<fieldset id="security_group_field">
-		<legend>Security Group</legend><legend>
+		<legend><%= t("dialog.launch_instance.security_group") %></legend><legend>
 		</legend><table cellspacing="5" cellpadding="5">
 		<tbody>
-			<tr><th><span id="available_groups">Available Groups</span></th>
+			<tr><th><span id="available_groups"><%= t("dialog.launch_instance.available_groups") %></span></th>
 			<th></th>
-			<th><span id="launch_in">Launch in</span></th>
+			<th><span id="launch_in"><%= t("dialog.launch_instance.launch_in") %></span></th>
 		</tr><tr>
 		    <td>
 		        <select id="left_select_list" size="5" multiple="multiple" name="left_select_list"></select>
@@ -56,7 +56,7 @@
 	<br />
 		
 	<fieldset id="user_data_field">
-	<legend>User Data</legend>
+	<legend><%= t("dialog.launch_instance.user_data") %></legend>
 	<table cellspacing="5" cellpadding="5">
 		<tbody>
 		<tr>

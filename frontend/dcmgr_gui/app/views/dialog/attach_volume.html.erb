@@ -1,12 +1,12 @@
 <div id="attach_volume_dialog">
   <table>
     <tr>
-      <td>Volume ID:</td>
+      <td><%= t("dialog.attach_volume.volume_id") %>:</td>
       <td id="view_volume_id"><%= @volume_id %></td>
       <input id="volume_id" type="hidden" value="<%= @volume_id %>">
     </tr>
     <tr>
-      <td>Instance ID:</td>
+      <td><%= t("dialog.attach_volume.instance_id") %>:</td>
       <td><input id="instance_id" type="text" value=""></td>
     </tr>
   </table>

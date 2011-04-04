@@ -15,7 +15,7 @@
 	<div style="padding:5px;">
 			<%= form_tag session_path do -%>
 			<fieldset>
-				<legend><h3>Sign In</h3></legend>
+				<legend><h3><%= t("login.sign_in") %></h3></legend>
 			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag 'user' %><br />
 			<%= text_field_tag 'login', @login %></p>
 			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag 'password' %><br />
