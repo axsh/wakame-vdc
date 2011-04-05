@@ -418,6 +418,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
       self.update(params.request,true)
     });
     dcmgrGUI.notification.create_topic('checked_box');
+    dcmgrGUI.notification.create_topic('unchecked_box');
     dcmgrGUI.notification.create_topic('checked_radio');
   },
   setDetailTemplate:function(template){
@@ -511,12 +512,17 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   },
   multiCheckList:function(params){
     var self = this;
-    this.element.find("[type='checkbox']").each(function(key,value){
+    var checkboxies = this.element.find("[type='checkbox']");
+    checkboxies.each(function(key,value){
+      
       $(this).click(function(){
         var check_id = $(this).val();
         
+        if(!checkboxies.is(':checked')){
+          dcmgrGUI.notification.publish('unchecked_box');
+        }
+        
         if($(this).is(':checked')){
-          
           dcmgrGUI.notification.publish('checked_box');
           
           //step1:onclick checkbox and generate detail object
@@ -531,7 +537,8 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
           }
           
           //step2:bind event dcmgrGUI.contentChange
-          self.checked_list[check_id].c_detail.element.bind('dcmgrGUI.contentChange',function(event,params){
+          var detail_element = self.checked_list[check_id].c_detail.element;
+          detail_element.bind('dcmgrGUI.contentChange',function(event,params){
             if(self.checked_list[check_id]){
             
               //step4:marge data in template
