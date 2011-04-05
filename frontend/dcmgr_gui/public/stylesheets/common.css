@@ -268,7 +268,7 @@ body{
 #content #mainarea .maincontent a.refresh{
   float: left;
   display: block;
-  margin: 15px 0 0 38px;
+  margin: 10px 0 0 38px;
   width: 89px;
   height: 28px;
 }
@@ -441,7 +441,7 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
+	height: 23px;
 	font-size: 11px;
 	line-height: 0;
 }
@@ -567,7 +567,7 @@ body{
   display: block;
   float: left;
 	width: 115px;
-	height: 26px;
+	height: 23px;
   font-size: 12px;
   line-height: 0;
 }
@@ -577,7 +577,7 @@ body{
 	margin-left: 7px;
 	margin-right: 401px;
 	width: 66px;
-	height: 26px;
+	height: 23px;
   font-size: 12px;
 	line-height: 0;
 }
@@ -586,7 +586,7 @@ body{
 	display: block;
 	float: left;
 	width: 140px;
-	height: 26px;
+	height: 23px;
 	font-size: 11px;
 	line-height: 0;
 }
@@ -595,7 +595,7 @@ body{
 	display: block;
 	float: left;
 	width: 140px;
-	height: 26px;
+	height: 23px;
 	font-size: 11px;
 	line-height: 0;
   margin-left: 7px;
@@ -605,7 +605,7 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
+	height: 23px;
 	background: url(../images/btn_update_security_group.gif) no-repeat;
 	text-indent: -9999px;
 	font-size: 0;
@@ -616,7 +616,7 @@ body{
 	display: block;
 	float: left;
 	width: 89px;
-	height: 28px;
+	height: 23px;
   font-size: 12px;
 	line-height: 0;
 }
@@ -1024,7 +1024,7 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
+	height: 23px;
 	font-size: 11px;
 	line-height: 0;
 }
@@ -1033,7 +1033,7 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
+	height: 23px;
 	font-size: 11px;
 	line-height: 0;
 	margin-left:7px;
@@ -1043,7 +1043,7 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
+	height: 23px;
 	font-size: 11px;
 	line-height: 0;
 	margin-left:7px;
@@ -1053,7 +1053,7 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
+	height: 23px;
 	font-size: 11px;
 	line-height: 0;
   margin-left:7px;
