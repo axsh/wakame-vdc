@@ -4,7 +4,11 @@ require 'logger'
 module Dcmgr
   module Logger
 
-    @logdev = ::Logger::LogDevice.new(STDOUT)
+    # for passenger, messages in STDOUT are not appeared in
+    # error.log. $> is changed in initializers/logger.rb as per the
+    # server environment. so that here also refers $> instead of STDOUT or
+    # STDERR constant.
+    @logdev = ::Logger::LogDevice.new($>)
 
     def self.default_logdev
       @logdev
