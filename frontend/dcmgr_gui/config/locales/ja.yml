@@ -3,7 +3,7 @@
 
 ja:
   button:
-    refresh: "更新"
+    refresh: "Refresh"
   dialog:
     create_ssh_keypair:
       keypair_name: "Key Pair Name"
