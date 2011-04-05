@@ -66,8 +66,8 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
       disabled : true,
       text : false
     });
-    
     this.next = DcmgrGUI.Util.createUIButton(this.element.find('.next'),{
+      disabled : true,
       text : false
     });
     
@@ -115,6 +115,13 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   },
   changeTotal: function(total){
     this.total = total;
+    
+    if(this.total > (this.current_page * this.row)) {
+      this.next.button("option", "disabled", false);
+    }else{
+      this.next.button("option", "disabled", true);
+    }
+    
     this.page_count = this.getPageCount(this.total,this.row)
     this.renderPagenate();
   },
