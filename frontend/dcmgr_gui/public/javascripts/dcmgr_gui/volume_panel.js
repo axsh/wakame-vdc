@@ -307,6 +307,8 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enable_button');
   dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enable_button');
+  dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_volume, 'disable_button');
+  dcmgrGUI.notification.subscribe('unchecked_box', bt_create_snapshot, 'disable_button');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disable_button');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disable_button');
   
