@@ -10,6 +10,7 @@ gem 'ipaddress', '0.7.0'
 gem 'open4', '1.0.1'
 
 gem 'isono', :git => 'git://github.com/axsh/isono.git'
+gem 'amqp', '0.6.7' # for isono
 
 group :development do
   gem 'bacon'
