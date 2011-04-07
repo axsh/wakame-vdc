@@ -22,13 +22,13 @@ end
 
 group :dcmgr do
   gem "rack", ">= 1.2.1"
-  gem "sinatra", "1.0"
+  gem "sinatra", "1.2.1"
   gem "json", ">= 1.2.0"
-  gem "sequel", "3.16.0"
+  gem "sequel", "3.21.0"
   gem "mysql", ">= 2.8.1"
 end
 
 group :collector do
-  gem "sequel", "3.16.0"
+  gem "sequel", "3.21.0"
   gem "mysql", ">= 2.8.1"
 end
