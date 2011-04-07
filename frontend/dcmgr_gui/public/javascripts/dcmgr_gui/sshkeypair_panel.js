@@ -87,7 +87,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     target:'.create_ssh_keypair',
     width:400,
     height:200,
-    title:'Create SSH Key Pair',
+    title:$.i18n.prop('create_ssh_keypair_header'),
     path:'/create_ssh_keypair',
     callback: function(){
       var html = '<iframe src="javascript:false" name="hiddenIframe" style="display:none"></iframe>';
@@ -130,7 +130,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     target: '.delete_ssh_keypair',
     width: 400,
     height: 200,
-    title: 'Delete SSH Keypair',
+    title: $.i18n.prop('delete_ssh_keypair_header'),
     path: '/delete_ssh_keypair',
     button:{
      "Yes, Delete": function() { 

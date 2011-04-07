@@ -130,7 +130,7 @@ DcmgrGUI.prototype.instancePanel = function(){
      target:'.reboot_instances',
      width:400,
 		 height:200,
-		 title:'Reboot Instances',
+		 title:$.i18n.prop('reboot_instances_header'),
 		 path:'/reboot_instances',
 		 button:{
 		  "Close": function() { $(this).dialog("close"); },
@@ -144,7 +144,7 @@ DcmgrGUI.prototype.instancePanel = function(){
     target:'.terminate_instances',
     width:400,
     height:200,
-    title:'Terminate Instances',
+    title:$.i18n.prop('terminate_instances_header'),
     path:'/terminate_instances',
     button:{
 		  "Close": function() { $(this).dialog("close"); },

@@ -50,7 +50,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       target:'.edit_security_group',
       width:500,
       height:580,
-      title:'Edit Security Group',
+      title:$.i18n.prop('edit_security_group_header'),
       path:'/edit_security_group',
       button:{
         "Yes, Update": function(event) {
@@ -118,7 +118,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     target:'.create_security_group',
     width:500,
     height:580,
-    title:'Create Security Group',
+    title:$.i18n.prop('create_security_group_header'),
     path:'/create_security_group',
     button:{
      "Create": function() { 
@@ -164,7 +164,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     target:'.delete_security_group',
     width:400,
     height:200,
-    title:'Delete Security Group',
+    title:$.i18n.prop('delete_security_group_header'),
     path:'/delete_security_group',
     button:{
      "Yes, Delete": function() { 

@@ -74,7 +74,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     target:'.create_volume',
     width:400,
     height:200,
-    title:'Create Volume',
+    title:$.i18n.prop('create_volume_header'),
     path:'/create_volume_from_snapshot',
     button:{
      "Create": function() { 
@@ -104,7 +104,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     target:'.delete_snapshot',
     width:400,
     height:200,
-    title:'Delete snapshot',
+    title:$.i18n.prop('delete_snapshot_header'),
     path:'/delete_snapshot',
     button:{
      "Close": function() { $(this).dialog("close"); },

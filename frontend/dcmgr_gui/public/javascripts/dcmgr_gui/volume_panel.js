@@ -74,7 +74,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     target:'.create_volume',
     width:400,
     height:200,
-    title:'Create Volume',
+    title:$.i18n.prop('create_volume_header'),
     path:'/create_volume',
     callback: function(){
       var self = this;
@@ -147,7 +147,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     target:'.delete_volume',
     width:400,
     height:200,
-    title:'Delete Volume',
+    title:$.i18n.prop('delete_volume_header'),
     path:'/delete_volume',
     button:{
      "Close": function() { $(this).dialog("close"); },
@@ -178,7 +178,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     target:'.create_snapshot',
     width:400,
     height:200,
-    title:'Create Snapshot',
+    title:$.i18n.prop('create_snapshot_header'),
     path:'/create_snapshot',
     button:{
      "Create": function() { 
@@ -208,7 +208,7 @@ DcmgrGUI.prototype.volumePanel = function(){
 	  target:'.attach_volume',
 	  width:400,
 	  height:200,
-	  title:'Attach Volume',
+	  title:$.i18n.prop('attach_volume_header'),
 	  path:'/attach_volume',
 	  button:{
 	      "Close": function() { $(this).dialog("close"); },
@@ -237,7 +237,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     target:'.detach_volume',
     width:400,
     height:200,
-    title:'Detach Volume',
+    title:$.i18n.prop('detach_volume_header'),
     path:'/detach_volume',
     button:{
      "Close": function() { $(this).dialog("close"); },

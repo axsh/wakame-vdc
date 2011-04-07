@@ -92,7 +92,7 @@ DcmgrGUI.prototype.imagePanel = function(){
     target:'.launch_instance',
     width:583,
     height:600,
-    title:'Launch Instance',
+    title:$.i18n.prop('launch_instance_header'),
     path:'/launch_instance',
     callback: function(){
       var self = this;
