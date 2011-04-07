@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'isono'
+
 module Dcmgr::Models
   class HostPool < AccountResource
     taggable 'hp'
