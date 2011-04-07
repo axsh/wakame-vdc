@@ -30,15 +30,19 @@ GEM
     ipaddress (0.7.0)
     json (1.4.6)
     log4r (1.1.9)
+    mime-types (1.16)
     mysql (2.8.1)
     open4 (1.0.1)
     rack (1.2.1)
     rake (0.8.7)
+    rest-client (1.6.1)
+      mime-types (>= 1.16)
     ruby-hmac (0.4.0)
     sequel (3.16.0)
     sinatra (1.0)
       rack (>= 1.0)
     statemachine (1.1.1)
+    thor (0.14.6)
 
 PLATFORMS
   ruby
@@ -55,7 +59,9 @@ DEPENDENCIES
   open4 (= 1.0.1)
   rack (>= 1.2.1)
   rake (>= 0.8.7)
+  rest-client
   ruby-hmac
   sequel (= 3.16.0)
   sinatra (= 1.0)
   statemachine (= 1.1.1)
+  thor

@@ -8,6 +8,8 @@ gem 'statemachine', '1.1.1'
 gem 'ruby-hmac'
 gem 'ipaddress', '0.7.0'
 gem 'open4', '1.0.1'
+gem 'thor', '0.14.6'
+
 
 gem 'isono', :git => 'git://github.com/axsh/isono.git'
 gem 'amqp', '0.6.7' # for isono
@@ -15,6 +17,7 @@ gem 'amqp', '0.6.7' # for isono
 group :development do
   gem 'bacon'
   gem "activeresource", "3.0.0"
+  gem 'rest-client'
 end
 
 group :dcmgr do
