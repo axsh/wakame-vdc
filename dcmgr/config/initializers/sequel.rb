@@ -19,3 +19,6 @@ end
 [249, 250, 251, 252].each { |v|
   Sequel::MySQL::MYSQL_TYPES.delete(v)
 }
+
+# Set timezone to UTC
+Sequel.default_timezone = :utc

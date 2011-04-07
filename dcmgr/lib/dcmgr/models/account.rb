@@ -51,7 +51,8 @@ module Dcmgr::Models
           end
           default_values[:uuid] = uuid
         end
-        default_values[:uuid] || raise("#{self}.uuid is unset. Set the unique number")
+        raise("#{self}.uuid is unset. Set the unique number") unless default_values[:uuid]
+        "#{uuid_prefix}-#{default_values[:uuid]}"
       end
 
       def description(description=nil)
@@ -80,8 +81,19 @@ module Dcmgr::Models
       Account.subclasses.each { |m|
         Account.create(m.default_values.dup)
       }
-    end
 
+      # create shared resource pool tags
+      Dcmgr::Tags::HostPool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
+                                   :uuid=>'shhost',
+                                   :name=>"default_shared_hosts")
+      Dcmgr::Tags::NetworkPool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
+                                      :uuid=>'shnet',
+                                      :name=>"default_shared_networks")
+      Dcmgr::Tags::StoragePool.create(:account_id=>SystemAccount::SharedPoolAccount.uuid,
+                                      :uuid=>'shstor',
+                                      :name=>"default_shared_storages")
+    end
+    
     SystemAccount.define_account(:DatacenterAccount) do
       pk 100
       uuid '00000000'

@@ -11,25 +11,33 @@ require 'dcmgr/endpoints/errors'
 
 module Dcmgr
   module Endpoints
+    # HTTP Header constants for request credentials.
+    HTTP_X_VDC_REQUESTER_TOKEN='HTTP_X_VDC_REQUESTER_TOKEN'.freeze
+    HTTP_X_VDC_ACCOUNT_UUID='HTTP_X_VDC_ACCOUNT_UUID'.freeze
+
+    RACK_FRONTEND_SYSTEM_ID='dcmgr.frotend_system.id'
+    
     class CoreAPI < Sinatra::Base
       include Dcmgr::Logger
       register Sinatra::Rabbit
       register Sinatra::SequelTransaction
 
+      use Dcmgr::RequestLogger
+
       disable :sessions
       disable :show_exceptions
 
       before do
-        request.env['dcmgr.frotend_system.id'] = 1
-        request.env['HTTP_X_VDC_REQUESTER_TOKEN']='u-xxxxxx'
-        request.env['HTTP_X_VDC_ACCOUNT_UUID']='a-00000000'
-      end
-
-      before do
         @params = parsed_request_body if request.post?
-        @account = Models::Account[request.env['HTTP_X_VDC_ACCOUNT_UUID']]
-        @requester_token = request.env['HTTP_X_VDC_REQUESTER_TOKEN']
-        #@frontend = Models::FrontendSystem[request.env['dcmgr.frotend_system.id']]
+        if request.env[HTTP_X_VDC_ACCOUNT_UUID].to_s == ''
+          raise InvalidRequestCredentials
+        else
+          @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+          raise InvalidRequestCredentials if @account.nil?
+        end
+         
+        @requester_token = request.env[HTTP_X_VDC_REQUESTER_TOKEN]
+        #@frontend = Models::FrontendSystem[request.env[RACK_FRONTEND_SYSTEM_ID]]
 
         #raise InvalidRequestCredentials if !(@account && @frontend)
         raise DisabledAccount if @account.disable?
@@ -98,11 +106,12 @@ module Dcmgr
       # when matches the Exception class exactly. I expect to match
       # whole subclasses of APIError so that override handle_exception!().
       def handle_exception!(boom)
-        logger.error(boom)
         if boom.kind_of?(APIError)
           @env['sinatra.error'] = boom
-          error(boom.status_code, boom.class.to_s)
+          Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+          error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message}))
         else
+          logger.error(boom)
           super
         end
       end
@@ -284,8 +293,8 @@ module Dcmgr
           control do
             Models::Instance.lock!
             
-            wmi = find_by_uuid(:Image, params[:image_id])
-            spec = find_by_uuid(:InstanceSpec, (params[:instance_spec_id] || 'is-kpf0pasc'))
+            wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
+            spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
             # look up params[:host_id] in following order:
             # 1. assume the host pool name.

@@ -49,6 +49,8 @@ module Dcmgr
     define_error(:AttachVolumeFailure, 400)
     define_error(:InvalidInstanceState, 400)
     define_error(:DuplicateHostname, 400)
+    define_error(:UnknownImageID, 404)
+    define_error(:UnknownInstanceSpec, 404)
 
     # netfilter_group
     define_error(:UndefinedNetfilterGroup, 400)

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/version'
+
 module Dcmgr
-  VERSION='10.12.0'
 
   class << self
     def conf
@@ -134,4 +135,6 @@ module Dcmgr
   end
 
   autoload :Tags, 'dcmgr/tags'
+
+  autoload :RequestLogger, 'dcmgr/request_logger'
 end
