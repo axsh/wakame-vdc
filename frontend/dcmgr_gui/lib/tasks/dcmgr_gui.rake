@@ -68,6 +68,17 @@ namespace :admin do
                 end
               end
             end
+            
+            if key == 'button'
+              data[key].keys.each do |i18n_key|
+                i18n_value = data[key][i18n_key]
+                if i18n_value
+                  i18n_table.push({:key => "#{i18n_key}_button",
+                                   :value => i18n_value})
+                end
+              end
+            end
+            
           end
         end
         
