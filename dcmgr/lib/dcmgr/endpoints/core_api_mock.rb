@@ -241,6 +241,43 @@ module Dcmgr
       end
       
       collection :instances do
+        operation :index do
+          description 'Show list of instances'
+          control do
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? 10 : limit
+
+            partial_ds = (1..30).collect { |i| {
+                 :id => "i-123456" + ('%02d' % i).to_s,
+                 :image_id => 'wmi-12345678',
+                 :cpu_cores => 1,
+                 :memory_size => 256,
+                 :network => [{
+                   :ipaddr => '192.168.0.%d' % i,
+                  }],
+                :state => 'running',
+                :status => 'running'
+              }
+            }
+
+            total = partial_ds.count
+            partial_ds = pagenate(partial_ds,params[:start],params[:limit])
+
+            res = [{
+              :owner_total => total,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds
+            }]
+
+            respond_to { |f|
+              f.json {res.to_json}
+            }
+          end
+        end
+      
         operation :create do
           description 'Runs a new instance'
           # param :image_id, :required
@@ -267,11 +304,23 @@ module Dcmgr
         end
 
         operation :show do
-          #param :account_id, :string, :optional
           control do
-            i = Modles::Instance[params[:id]]
+            i = {
+                :id => params[:id],
+                :image_id => 'wmi-12345678',
+                :cpu_cores => 1,
+                :memory_size => 256,
+                :network => [{
+                  :ipaddr => '192.168.0.1',
+                }],
+                :state => 'running',
+                :status => 'running',
+                :ssh_key_pair => nil,
+                :netfilter_group => {},
+                :created_at => "Wed Oct 27 16:58:24 +0900 2010",
+            }
             respond_to { |f|
-              f.json { i.to_hash_document.to_json }
+              f.json { i.to_json }
             }
           end
         end
