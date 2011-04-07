@@ -305,12 +305,12 @@ DcmgrGUI.prototype.volumePanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
   
-  dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enable_button');
-  dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enable_button');
-  dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_volume, 'disable_button');
-  dcmgrGUI.notification.subscribe('unchecked_box', bt_create_snapshot, 'disable_button');
-  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disable_button');
-  dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disable_button');
+  dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enableDialogButton');
+  dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enableDialogButton');
+  dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_volume, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('unchecked_box', bt_create_snapshot, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disableDialogButton');
   
   $(bt_create_volume.target).button({ disabled: false });
   $(bt_delete_volume.target).button({ disabled: true });

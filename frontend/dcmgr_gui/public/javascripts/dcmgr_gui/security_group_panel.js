@@ -191,8 +191,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     return false;
   });
   
-  dcmgrGUI.notification.subscribe('checked_radio', bt_delete_security_group, 'enable_button');
-  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_security_group, 'disable_button');
+  dcmgrGUI.notification.subscribe('checked_radio', bt_delete_security_group, 'enableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_security_group, 'disableDialogButton');
   
   $(bt_create_security_group.target).button({ disabled: false });
   $(bt_delete_security_group.target).button({ disabled: true });

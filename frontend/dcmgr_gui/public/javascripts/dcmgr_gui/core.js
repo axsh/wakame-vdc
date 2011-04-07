@@ -213,10 +213,10 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
   close: function(){
     this.content.dialog('close');
   },
-  enable_button: function(){
+  enableDialogButton: function(){
     $(this.target).button({ disabled: false });
   },
-  disable_button: function(){
+  disableDialogButton: function(){
     $(this.target).button({ disabled: true });
   },
   create: function(params){

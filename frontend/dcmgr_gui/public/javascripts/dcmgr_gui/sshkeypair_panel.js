@@ -149,8 +149,8 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     }
   });
   
-  dcmgrGUI.notification.subscribe('checked_radio', bt_delete_ssh_keypair, 'enable_button');
-  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_ssh_keypair, 'disable_button');
+  dcmgrGUI.notification.subscribe('checked_radio', bt_delete_ssh_keypair, 'enableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_ssh_keypair, 'disableDialogButton');
   
   $(bt_create_ssh_keypair.target).button({ disabled: false });
   $(bt_delete_ssh_keypair.target).button({ disabled: true });
