@@ -1,20 +1,27 @@
+
 # Sample localization file for English. Add more files in this directory for other locales.
 # See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
 en:
   button:
     refresh: "Refresh"
+    terminate: "Terminate"
+    reboot: "Reboot"
+    create: "Create"
+    update: "Update"
+    delete: "Yes, Delete"
+    close: "Close"
+    attach: "Yes, Attach"
+    detach: "Yes, Detach"
   dialog:
-    create_ssh_keypair:
-      keypair_name: "Key Pair Name"
-      download_once: "Download Once"
-    delete_ssh_keypair:
-      message: "Are you sure you want to delete the following key pair?"
     terminate_instances:
+      header: "Terminate Instances"
       message: "Are you sure you want to terminate this instance?"
     reboot_instances:
+      header: "Reboot Instances"
       message: "Are you sure you want to reboot this instance?"
     launch_instance:
+      header: "Launch Instance"
       wmi_id: "WMI ID"
       host: "Host"
       host_name: "Host Name"
@@ -25,30 +32,45 @@ en:
       launch_in: "Launch in"
       user_data: "User Data"
     create_volume:
+      header: "Create Volume"
       size: "Size"
       storage: "Storage"
     attach_volume:
+      header: "Attach Volume"
       volume_id: "Volume ID"
       instance_id: "Instance ID"
     detach_volume:
+      header: "Detach Volume"
       message: "Are you sure you want to detach the following volume?"
     delete_volume:
+      header: "Delete Volume"
       message: "Are you sure you want to delete the following volume?"
     create_snapshot:
+      header: "Create Snapshot"
       message: "Are you sure you want to create the following snapshot?"
     create_volume_from_snapshot:
+      header: "Create Volume "
       message: "Are you sure you want to create the following volume?"
     delete_snapshot:
+      header: "Delete Snapshot"
       message: "Are you sure you want to delete the following snapshot?"
+    create_security_group:
+      header: "Create Security Group"
+    edit_security_group:
+      header: "Edit Security Group"
     create_and_edit_security_group:
       name: "Name"
       description: "Description"
       rule: "Rule"
     delete_security_group:
+      header: "Delete Security Group"
       message: "Are you sure you want to delete the following security_group?"
-    edit_security_group:
-      name: "Name"
-      description: "Description"
+    create_ssh_keypair:
+      header: "Create SSH Key Pair"
+      keypair_name: "Key Pair Name"
+      download_once: "Download Once"
+    delete_ssh_keypair:
+      message: "Are you sure you want to delete the following key pair?"
   login:
     sign_in: "Sign In"
   information:
