@@ -3,6 +3,10 @@
 # See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
 en:
+  header:
+    welcome_message: "Welcome,"
+    login_name_suffix: ""
+    sign_out: "Sign Out"
   button:
     refresh: "Refresh"
     terminate: "Terminate"
@@ -74,6 +78,8 @@ en:
       message: "Are you sure you want to delete the following key pair?"
   login:
     sign_in: "Sign In"
+    user: "User"
+    password: "Password"
   information:
     header: "Information"
   dashboard:

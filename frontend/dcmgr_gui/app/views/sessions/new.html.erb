@@ -16,9 +16,9 @@
 			<%= form_tag session_path do -%>
 			<fieldset>
 				<legend><h3><%= t("login.sign_in") %></h3></legend>
-			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag 'user' %><br />
+			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag t("login.user") %><br />
 			<%= text_field_tag 'login', @login %></p>
-			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag 'password' %><br />
+			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag t("login.password") %><br />
 			<%= password_field_tag 'password', nil %></p>
 			</fieldset>
 			<p><%= submit_tag 'login' %></p>
