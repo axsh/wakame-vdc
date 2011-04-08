@@ -161,11 +161,13 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
 
+  dcmgrGUI.notification.subscribe('checked_box', bt_create_volume, 'enableDialogButton');
   dcmgrGUI.notification.subscribe('checked_box', bt_delete_snapshot, 'enableDialogButton');
+  dcmgrGUI.notification.subscribe('unchecked_box', bt_create_volume, 'disableDialogButton');
   dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_snapshot, 'disableDialogButton');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_snapshot, 'disableDialogButton');
 
-  $(bt_create_volume.target).button({ disabled: false });
+  $(bt_create_volume.target).button({ disabled: true });
   $(bt_delete_snapshot.target).button({ disabled: true });
   $(bt_refresh.target).button({ disabled: false });
   
