@@ -28,6 +28,10 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     }
   }
   
+  var create_button_name = $.i18n.prop('create_button');
+  var delete_button_name = $.i18n.prop('delete_button');
+  var close_button_name = $.i18n.prop('close_button');
+  
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
     total:total
@@ -70,66 +74,68 @@ DcmgrGUI.prototype.snapshotPanel = function(){
   
   var bt_refresh  = new DcmgrGUI.Refresh();
   
+  var create_volume_button = {};
+  create_volume_button[create_button_name] = function() { 
+    var create_volumes = $(this).find('#create_volumes').find('li');
+    var ids = []
+    $.each(create_volumes,function(){
+     ids.push($(this).text())
+    })
+
+    var data = $.param({ids:ids})
+    $.ajax({
+      "type": "POST",
+      "async": true,
+      "url": '/volumes',
+      "dataType": "json",
+      "data": data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    $(this).dialog("close");
+  }
+  
   var bt_create_volume = new DcmgrGUI.Dialog({
     target:'.create_volume',
     width:400,
     height:200,
     title:$.i18n.prop('create_volume_header'),
     path:'/create_volume_from_snapshot',
-    button:{
-     "Create": function() { 
-       var create_volumes = $(this).find('#create_volumes').find('li');
-       var ids = []
-       $.each(create_volumes,function(){
-         ids.push($(this).text())
-       })
-       
-       var data = $.param({ids:ids})
-       $.ajax({
-          "type": "POST",
-          "async": true,
-          "url": '/volumes',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-        });
-       $(this).dialog("close");
-      }
-    }
+    button: create_volume_button
   });
+  
+  var delete_snapshot_buttons = {};
+  delete_snapshot_buttons[close_button_name] = function() { $(this).dialog("close"); }
+  delete_snapshot_buttons[delete_button_name] = function() { 
+    var delete_snapshots = $(this).find('#delete_snapshots').find('li');
+    var ids = []
+    $.each(delete_snapshots,function(){
+     ids.push($(this).text())
+    })
 
+    var data = $.param({ids:ids})
+    $.ajax({
+      "type": "DELETE",
+      "async": true,
+      "url": '/snapshots/delete',
+      "dataType": "json",
+      "data": data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    c_list.changeStatus('deleting');
+    $(this).dialog("close");
+  }
+  
   var bt_delete_snapshot = new DcmgrGUI.Dialog({
     target:'.delete_snapshot',
     width:400,
     height:200,
     title:$.i18n.prop('delete_snapshot_header'),
     path:'/delete_snapshot',
-    button:{
-     "Close": function() { $(this).dialog("close"); },
-     "Yes, Delete": function() { 
-       var delete_snapshots = $(this).find('#delete_snapshots').find('li');
-       var ids = []
-       $.each(delete_snapshots,function(){
-         ids.push($(this).text())
-       })
-       
-       var data = $.param({ids:ids})
-       $.ajax({
-          "type": "DELETE",
-          "async": true,
-          "url": '/snapshots/delete',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-        });
-       c_list.changeStatus('deleting');
-       $(this).dialog("close");
-      }
-    }
+    button: delete_snapshot_buttons
   });
   
   bt_create_volume.target.bind('click',function(){

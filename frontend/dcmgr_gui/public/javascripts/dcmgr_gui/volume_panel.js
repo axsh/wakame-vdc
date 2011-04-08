@@ -46,6 +46,12 @@ DcmgrGUI.prototype.volumePanel = function(){
     return data;
   });
   
+  var attach_button_name = $.i18n.prop('attach_button');
+  var detach_button_name = $.i18n.prop('detach_button');
+  var close_button_name = $.i18n.prop('close_button');
+  var create_button_name = $.i18n.prop('create_button');
+  var delete_button_name = $.i18n.prop('delete_button');
+  
   c_list.setDetailTemplate({
     template_id:'#volumesDetailTemplate',
     detail_path:'/volumes/show/',
@@ -70,6 +76,30 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   var bt_refresh  = new DcmgrGUI.Refresh();
   
+  var create_volume_button = {};
+  create_volume_button[create_button_name] = function() {
+    var volume_size = $(this).find('#volume_size').val();
+    var unit = $(this).find('#unit').find('option:selected').val();
+    var storage_pool_id = $(this).find('#storage_pool').find('option:selected').val();
+    if(!volume_size){
+     $('#volume_size').focus();
+     return false;
+    }
+    var data = "size="+volume_size+"&unit="+unit+"&storage_pool_id="+storage_pool_id;
+
+    $.ajax({
+      "type": "POST",
+      "async": true,
+      "url": '/volumes',
+      "dataType": "json",
+      "data": data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    $(this).dialog("close");
+  }
+
   var bt_create_volume = new DcmgrGUI.Dialog({
     target:'.create_volume',
     width:400,
@@ -78,10 +108,8 @@ DcmgrGUI.prototype.volumePanel = function(){
     path:'/create_volume',
     callback: function(){
       var self = this;
-      
       var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
       $(this).find('#select_storage_pool').empty().html(loading_image);
-
       $.ajax({
         "type": "GET",
         "async": true,
@@ -101,78 +129,78 @@ DcmgrGUI.prototype.volumePanel = function(){
           
           $(self).find('#volume_size').keyup(function(){
             if( $(this).val() ) {
-              bt_create_volume.disabledButton('Create',false);
+              bt_create_volume.disabledButton(0, false);
             } else {
-              bt_create_volume.disabledButton('Create',true);    
+              bt_create_volume.disabledButton(0 ,true);
             }
           });
           
           if( $(self).find('#volume_size').val() ) {
-            bt_create_volume.disabledButton('Create',false);
+            bt_create_volume.disabledButton(0 ,false);
           }
         }
       });
     },
-    button:{
-     "Create": function() { 
-       var volume_size = $(this).find('#volume_size').val();
-       var unit = $(this).find('#unit').find('option:selected').val();
-       var storage_pool_id = $(this).find('#storage_pool').find('option:selected').val();
-       if(!volume_size){
-         $('#volume_size').focus();
-         return false;
-       }
-       var data = "size="+volume_size+"&unit="+unit+"&storage_pool_id="+storage_pool_id;
-       
-       $.ajax({
-          "type": "POST",
-          "async": true,
-          "url": '/volumes',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-        });
-       $(this).dialog("close");
-      }
-    }
+    button:　create_volume_button
   });
   
-  bt_create_volume.element.bind('dialogopen',function(){  
-    bt_create_volume.disabledButton('Create',true);    
+  bt_create_volume.element.bind('dialogopen',function(){
+    bt_create_volume.disabledButton(0, true);
   });
 
+  var delete_volume_buttons = {};
+  delete_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  delete_volume_buttons[delete_button_name] = function() { 
+    var delete_volumes = $(this).find('#delete_volumes').find('li');
+    var ids = []
+    $.each(delete_volumes,function(){
+     ids.push($(this).text())
+    })
+
+    var data = $.param({ids:ids})
+    $.ajax({
+      "type": "DELETE",
+      "async": true,
+      "url": '/volumes',
+      "dataType": "json",
+      "data": data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    $(this).dialog("close");
+  }
+  
   var bt_delete_volume = new DcmgrGUI.Dialog({
     target:'.delete_volume',
     width:400,
     height:200,
     title:$.i18n.prop('delete_volume_header'),
     path:'/delete_volume',
-    button:{
-     "Close": function() { $(this).dialog("close"); },
-     "Yes, Delete": function() { 
-       var delete_volumes = $(this).find('#delete_volumes').find('li');
-       var ids = []
-       $.each(delete_volumes,function(){
-         ids.push($(this).text())
-       })
-       
-       var data = $.param({ids:ids})
-       $.ajax({
-          "type": "DELETE",
-          "async": true,
-          "url": '/volumes',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-        });
-       $(this).dialog("close");
-      }
-    }
+    button: delete_volume_buttons
   });
+  
+  var create_snapshot_buttons = {};
+  create_snapshot_buttons[create_button_name] = function() {
+    var volume_snapshots = $(this).find('#create_snapshots').find('li');
+    var ids = []
+    $.each(volume_snapshots,function(){
+     ids.push($(this).text())
+    })
+
+    var data = $.param({ids:ids})
+    $.ajax({
+      "type": "POST",
+      "async": true,
+      "url": '/snapshots',
+      "dataType": "json",
+      "data": data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    $(this).dialog("close");
+  }
   
   var bt_create_snapshot = new DcmgrGUI.Dialog({
     target:'.create_snapshot',
@@ -180,88 +208,69 @@ DcmgrGUI.prototype.volumePanel = function(){
     height:200,
     title:$.i18n.prop('create_snapshot_header'),
     path:'/create_snapshot',
-    button:{
-     "Create": function() { 
-       var volume_snapshots = $(this).find('#create_snapshots').find('li');
-       var ids = []
-       $.each(volume_snapshots,function(){
-         ids.push($(this).text())
-       })
+    button: create_snapshot_buttons
+  });
+  
+  attach_volume_buttons = {};
+  attach_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  attach_volume_buttons[attach_button_name] = function() {
+    var volume_id = $(this).find('#volume_id').val();
+    var instance_id = $(this).find('#instance_id').val();
+    var data = "volume_id=" + volume_id
+    + "&instance_id=" + instance_id;
 
-       var data = $.param({ids:ids})
-       $.ajax({
-          "type": "POST",
-          "async": true,
-          "url": '/snapshots',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-        });
-       $(this).dialog("close");
+    $.ajax({
+      "type": "PUT",
+      "async": true,
+      "url": '/volumes/attach',
+      "dataType": "json",
+      "data": data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
-    }
-  });
-
+    });
+    $(this).dialog("close");
+  }
+  
   var bt_attach_volume = new DcmgrGUI.Dialog({
-	  target:'.attach_volume',
-	  width:400,
-	  height:200,
-	  title:$.i18n.prop('attach_volume_header'),
-	  path:'/attach_volume',
-	  button:{
-	      "Close": function() { $(this).dialog("close"); },
-	      "Yes, Attach": function() {
-    		  var volume_id = $(this).find('#volume_id').val();
-    		  var instance_id = $(this).find('#instance_id').val();
-    		  var data = "volume_id=" + volume_id
-    		  + "&instance_id=" + instance_id;
-
-    		  $.ajax({
-    			  "type": "PUT",
-    	      "async": true,
-    	      "url": '/volumes/attach',
-    	      "dataType": "json",
-    	      "data": data,
-    	      success: function(json,status){
-              bt_refresh.element.trigger('dcmgrGUI.refresh');
-    			  }
-    		  });
-    		  $(this).dialog("close");
- 	    }
-	  }
+    target:'.attach_volume',
+    width:400,
+    height:200,
+    title:$.i18n.prop('attach_volume_header'),
+    path:'/attach_volume',
+    button: attach_volume_buttons
   });
+  
+  detach_volume_buttons = {}
+  detach_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  detach_volume_buttons[detach_button_name] = function() { 
+    var detach_volumes = $(this).find('#detach_volumes').find('li');
+    var ids = []
+    $.each(detach_volumes,function(){
+     ids.push($(this).text())
+    })
 
+    var data = $.param({ids:ids})
+    $.ajax({
+      "type": "PUT",
+      "async": true,
+      "url": '/volumes/detach',
+      "dataType": "json",
+      "data": data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    $(this).dialog("close");
+  }
+  
   var bt_detach_volume = new DcmgrGUI.Dialog({
     target:'.detach_volume',
     width:400,
     height:200,
     title:$.i18n.prop('detach_volume_header'),
     path:'/detach_volume',
-    button:{
-     "Close": function() { $(this).dialog("close"); },
-     "Yes, Detach": function() { 
-       var detach_volumes = $(this).find('#detach_volumes').find('li');
-       var ids = []
-       $.each(detach_volumes,function(){
-         ids.push($(this).text())
-       })
-       
-       var data = $.param({ids:ids})
-       $.ajax({
-          "type": "PUT",
-          "async": true,
-          "url": '/volumes/detach',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-        });
-       $(this).dialog("close");
-      }
-    }
+    button: detach_volume_buttons
   });
   
   bt_create_volume.target.bind('click',function(){

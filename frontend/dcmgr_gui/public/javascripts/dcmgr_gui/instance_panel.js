@@ -30,6 +30,10 @@ DcmgrGUI.prototype.instancePanel = function(){
       "owner":'-'
     }
   }
+  
+  var close_button_name = $.i18n.prop('close_button');
+  var terminate_button_name = $.i18n.prop('terminate_button');
+  var reboot_button_name = $.i18n.prop('reboot_button');
 
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
@@ -126,32 +130,32 @@ DcmgrGUI.prototype.instancePanel = function(){
 		}
   });
   
+  var instance_reboot_buttons = {};
+  instance_reboot_buttons[close_button_name] = function() { $(this).dialog("close"); }
+  instance_reboot_buttons[reboot_button_name] = function() {
+    instance_action_helper.call(this,'reboot');
+  }
   var bt_instance_reboot = new DcmgrGUI.Dialog({
      target:'.reboot_instances',
      width:400,
-		 height:200,
-		 title:$.i18n.prop('reboot_instances_header'),
-		 path:'/reboot_instances',
-		 button:{
-		  "Close": function() { $(this).dialog("close"); },
-			"Yes, Reboot": function() {
-        instance_action_helper.call(this,'reboot');
-			}
-		}
+     height:200,
+     title:$.i18n.prop('reboot_instances_header'),
+     path:'/reboot_instances',
+     button: instance_reboot_buttons
   });
   
+  var instance_terminate_buttons = {};
+  instance_terminate_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  instance_terminate_buttons[terminate_button_name] = function() {
+    instance_action_helper.call(this,'terminate');
+  }
   var bt_instance_terminate = new DcmgrGUI.Dialog({
     target:'.terminate_instances',
     width:400,
     height:200,
     title:$.i18n.prop('terminate_instances_header'),
     path:'/terminate_instances',
-    button:{
-		  "Close": function() { $(this).dialog("close"); },
-			"Yes, Terminate": function() {
-			  instance_action_helper.call(this,'terminate');
-			}
-    }
+    button: instance_terminate_buttons
   });
   
   bt_instance_start.target.bind('click',function(){

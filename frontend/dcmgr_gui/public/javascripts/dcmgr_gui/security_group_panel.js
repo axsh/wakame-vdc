@@ -23,6 +23,10 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     }
   }
   
+  var create_button_name = $.i18n.prop('create_button');
+  var delete_button_name = $.i18n.prop('delete_button');
+  var update_button_name = $.i18n.prop('update_button');
+  
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
     total:total
@@ -46,33 +50,33 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     c_list.setData(netfilter_group.results);
     c_list.singleCheckList(c_list.detail_template);
 
+    var edit_security_group_button = {};
+    edit_security_group_button[update_button_name] = function(event) {
+      var security_group_id = $(this).find('#security_group_id').val();
+      var description = $(this).find('#security_group_description').val();
+      var rule = $(this).find('#security_group_rule').val();
+      var data ='description=' + description
+                +'&rule=' + rule;
+      $.ajax({
+         "type": "PUT",
+         "async": true,
+         "url": '/security_groups/'+ security_group_id +'.json',
+         "dataType": "json",
+         "data": data,
+         success: function(json,status){
+           bt_refresh.element.trigger('dcmgrGUI.refresh');
+         }
+      });
+      $(this).dialog("close");
+    }
+    
     var bt_edit_security_group = new DcmgrGUI.Dialog({
       target:'.edit_security_group',
       width:500,
       height:580,
       title:$.i18n.prop('edit_security_group_header'),
       path:'/edit_security_group',
-      button:{
-        "Yes, Update": function(event) {
-        
-          var security_group_id = $(this).find('#security_group_id').val();
-          var description = $(this).find('#security_group_description').val();
-          var rule = $(this).find('#security_group_rule').val();
-          var data ='description=' + description
-                    +'&rule=' + rule;
-          $.ajax({
-             "type": "PUT",
-             "async": true,
-             "url": '/security_groups/'+ security_group_id +'.json',
-             "dataType": "json",
-             "data": data,
-             success: function(json,status){
-               bt_refresh.element.trigger('dcmgrGUI.refresh');
-             }
-          });
-          $(this).dialog("close");
-        }
-      }
+      button: edit_security_group_button
     });
 
     bt_edit_security_group.target.bind('click',function(event){
@@ -114,51 +118,66 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
   
+  var create_security_group_button = {};
+  create_security_group_button[create_button_name] = function() { 
+    var name = $(this).find('#security_group_name').val();
+    var description = $(this).find('#security_group_description').val();
+    var rule = $(this).find('#security_group_rule').val();
+    var data = 'name=' + name
+             +'&description=' + description
+             +'&rule=' + rule;
+
+    if(!name){
+     $('#security_group_name').focus();
+     return false;
+    }
+
+    if(!name.match(/[a-z_]+/)){
+     $('#security_group_name').focus();
+     return false;
+    }
+
+    $.ajax({
+      "type": "POST",
+      "async": true,
+      "url": '/security_groups.json',
+      "dataType": "json",
+      "data": data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+
+    $(this).dialog("close");
+  }
+  
   var bt_create_security_group = new DcmgrGUI.Dialog({
     target:'.create_security_group',
     width:500,
     height:580,
     title:$.i18n.prop('create_security_group_header'),
     path:'/create_security_group',
-    button:{
-     "Create": function() { 
-       var name = $(this).find('#security_group_name').val();
-       var description = $(this).find('#security_group_description').val();
-       var rule = $(this).find('#security_group_rule').val();
-       var data = 'name=' + name
-                 +'&description=' + description
-                 +'&rule=' + rule;
-
-
-       if(!name){
-         $('#security_group_name').focus();
-         return false;
-       }
-       
-       if(!name.match(/[a-z_]+/)){
-         $('#security_group_name').focus();
-         return false;
-       }
-
-       $.ajax({
-          "type": "POST",
-          "async": true,
-          "url": '/security_groups.json',
-          "dataType": "json",
-          "data": data,
-          success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-       });
-       
-       $(this).dialog("close");
-      }
-    }
+    button: create_security_group_button
   });
   
   bt_create_security_group.target.bind('click',function(){
     bt_create_security_group.open();
   });
+  
+  var delete_security_group_button = {};
+  delete_security_group_button[delete_button_name] = function() { 
+    var security_group_id = $(this).find('#security_group_id').val();
+    $.ajax({
+      "type": "DELETE",
+      "async": true,
+      "url": '/security_groups/'+ security_group_id +'.json',
+      "dataType": "json",
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    $(this).dialog("close");
+  }
   
   var bt_delete_security_group = new DcmgrGUI.Dialog({
     target:'.delete_security_group',
@@ -166,21 +185,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     height:200,
     title:$.i18n.prop('delete_security_group_header'),
     path:'/delete_security_group',
-    button:{
-     "Yes, Delete": function() { 
-       var security_group_id = $(this).find('#security_group_id').val();
-       $.ajax({
-          "type": "DELETE",
-          "async": true,
-          "url": '/security_groups/'+ security_group_id +'.json',
-          "dataType": "json",
-          success: function(json,status){
-            bt_refresh.element.trigger('dcmgrGUI.refresh');
-          }
-       });
-       $(this).dialog("close");
-      }
-    }
+    button: delete_security_group_button
   });
   
   bt_delete_security_group.target.bind('click',function(){
