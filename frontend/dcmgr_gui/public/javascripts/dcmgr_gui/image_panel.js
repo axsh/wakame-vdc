@@ -139,7 +139,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
       $(this).find('#select_host_pool').empty().html(loading_image);
       $(this).find('#select_ssh_key_pair').empty().html(loading_image);
-      $(this).find("#left_select_list").mask("Loading...");
+      $(this).find("#left_select_list").mask($.i18n.prop('loading_parts'));
       
       parallel({
         //get host_pools

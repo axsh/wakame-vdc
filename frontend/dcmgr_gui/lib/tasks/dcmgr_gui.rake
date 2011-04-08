@@ -59,6 +59,7 @@ namespace :admin do
         i18n_table = []
         if data.is_a? Hash
           data.keys.each do |key|
+            
             if key == 'dialog'
               data[key].keys.each do |i18n_key|
                 i18n_value = data[key][i18n_key]['header']
@@ -69,11 +70,11 @@ namespace :admin do
               end
             end
             
-            if key == 'button'
+            if ['button', 'parts'].include? key
               data[key].keys.each do |i18n_key|
                 i18n_value = data[key][i18n_key]
                 if i18n_value
-                  i18n_table.push({:key => "#{i18n_key}_button",
+                  i18n_table.push({:key => "#{i18n_key}_#{key}",
                                    :value => i18n_value})
                 end
               end

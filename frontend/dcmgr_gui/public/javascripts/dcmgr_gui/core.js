@@ -256,7 +256,7 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     this.async = async;
     var self = this;
 
-    $("#list_load_mask").mask("Loading...");
+    $("#list_load_mask").mask($.i18n.prop('loading_parts'));
     self.element.trigger('dcmgrGUI.beforeUpdate');
     $.ajax({
        async: async||true,

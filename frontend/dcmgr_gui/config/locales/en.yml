@@ -18,6 +18,8 @@ en:
     attach: "Yes, Attach"
     detach: "Yes, Detach"
     launch: "Launch"
+  parts:
+    loading: "Loading..."
   dialog:
     terminate_instances:
       header: "Terminate Instances"
