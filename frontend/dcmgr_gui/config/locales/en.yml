@@ -13,6 +13,7 @@ en:
     close: "Close"
     attach: "Yes, Attach"
     detach: "Yes, Detach"
+    launch: "Launch"
   dialog:
     terminate_instances:
       header: "Terminate Instances"
