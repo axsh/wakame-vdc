@@ -70,7 +70,7 @@ namespace :admin do
               end
             end
             
-            if ['button', 'parts'].include? key
+            if ['button', 'parts', 'pagenate'].include? key
               data[key].keys.each do |i18n_key|
                 i18n_value = data[key][i18n_key]
                 if i18n_value
