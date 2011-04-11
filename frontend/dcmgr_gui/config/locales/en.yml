@@ -18,6 +18,9 @@ en:
     attach: "Yes, Attach"
     detach: "Yes, Detach"
     launch: "Launch"
+  pagenate:
+    page: "{0} Page"
+    total: "Total {0}"
   parts:
     loading: "Loading..."
   dialog:
