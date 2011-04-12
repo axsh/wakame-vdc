@@ -285,14 +285,6 @@ DcmgrGUI.prototype.volumePanel = function(){
     bt_create_snapshot.open(c_list.getCheckedInstanceIds());
   });
 
-  bt_attach_volume.target.bind('click',function(){
-    bt_attach_volume.open(c_list.getCheckedInstanceIds());
-  });
-
-  bt_detach_volume.target.bind('click',function(){
-    bt_detach_volume.open(c_list.getCheckedInstanceIds());
-  });
-
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/volumes/list/',c_list.page);
@@ -325,6 +317,21 @@ DcmgrGUI.prototype.volumePanel = function(){
   $(bt_delete_volume.target).button({ disabled: true });
   $(bt_create_snapshot.target).button({ disabled: true });
   $(bt_refresh.target).button({ disabled: false });
+  
+  $('#volume_action').selectmenu({
+    width: 150,
+    menuWidth: 150,
+    handleWidth: 26,
+    style:'dropdown',
+    select: function(event){
+      var select_action = $(this).val()
+      if (select_action == "attach_volume") {
+        bt_attach_volume.open(c_list.getCheckedInstanceIds());
+      }else if(select_action == "detach_volume") {
+        bt_detach_volume.open(c_list.getCheckedInstanceIds());
+      }
+    }
+  });
   
   //list
   c_list.setData(null);

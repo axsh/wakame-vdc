@@ -166,13 +166,13 @@ DcmgrGUI.prototype.instancePanel = function(){
     bt_instance_stop.open(c_list.getCheckedInstanceIds());
   });
 
-  bt_instance_reboot.target.bind('click',function(){
-    bt_instance_reboot.open(c_list.getCheckedInstanceIds());
-  });
+  // bt_instance_reboot.target.bind('click',function(){
+  //   bt_instance_reboot.open(c_list.getCheckedInstanceIds());
+  // });
 
-  bt_instance_terminate.target.bind('click',function(){
-    bt_instance_terminate.open(c_list.getCheckedInstanceIds());
-  });
+  // bt_instance_terminate.target.bind('click',function(){
+  //   bt_instance_terminate.open(c_list.getCheckedInstanceIds());
+  // });
   
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
@@ -196,6 +196,22 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
   
   $(bt_refresh.target).button({ disabled: false });
+  
+  $('#instance_action').selectmenu({
+    width: 150,
+    menuWidth: 150,
+    handleWidth: 26,
+    style:'dropdown',
+    select: function(event){
+      var select_action = $(this).val()
+      if (select_action == "terminate") {
+        bt_instance_terminate.open(c_list.getCheckedInstanceIds());
+      }else if(select_action == "reboot") {
+        bt_instance_reboot.open(c_list.getCheckedInstanceIds());
+      }
+    }
+  });
+  
   //list
   c_list.setData(null);
   c_list.update(list_request,true);
