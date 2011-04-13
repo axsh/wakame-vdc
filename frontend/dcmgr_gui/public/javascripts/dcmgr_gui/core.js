@@ -149,7 +149,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     this.start = this.getStartCount();
     this.offset = this.getOffsetCount();
     if (this.start !== 0 && this.offset !==0 ) {
-      var current_page = '<input type="text" id="current_page" style="width:20px;height:9px" value="'+ this.current_page +'">';
+      var current_page = '<input type="text" id="current_page" style="width:20px;height:13px" value="'+ this.current_page +'">';
       var page = $.i18n.prop('page_pagenate', [this.page_count])
       var total = $.i18n.prop('total_pagenate', [this.total])
       var html = current_page + ' / ' + page + ' : ' + total;
