@@ -3,8 +3,14 @@
 			<%= form_for :accounts,:url => accounts_switch_path,:remote => true do |f| %>
 				<%= t('sidemenu.change_account') %>：&nbsp;<%= f.select "account_uuid",show_accounts,{:selected => primary_account_id} %>
 			<% end %>
+			<div style="margin-top:10px">
+			<%= t('sidemenu.change_language') %>:&nbsp;
+     	<%= form_for :select_language, :remote => false, :url => request.url, :html => {:id => :select_language, :method => :get,:style => "display: inline"} do |f| %>
+      <%= f.select(:locale, @locale, :selected => session[:locale]) %>
+      <% end %>&nbsp;
+      </div>
+    	
 	</div>
-
 	<!-- <div id="regionselect"><img src="images/listicon_useast.gif" />US East</div>
 	<ul id="regionmenu">
 		<li><a href="#" id="list-useast"><img src="images/listicon_useast.gif" />US East</a></li>
@@ -54,5 +60,6 @@
 			</ul>
 		</li> -->
 	</ul>
-	<div class="sidemenu_bottom"></div>
+	<div class="sidemenu_bottom">
+	</div>
 </div>
