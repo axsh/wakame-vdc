@@ -197,7 +197,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   
   $(bt_refresh.target).button({ disabled: false });
   
-  $('#instance_action').selectmenu({
+  var selectmenu = $('#instance_action').selectmenu({
     width: 150,
     menuWidth: 150,
     handleWidth: 26,
@@ -211,6 +211,10 @@ DcmgrGUI.prototype.instancePanel = function(){
       }
     }
   });
+
+  selectmenu.data('selectmenu').disableButton();
+  dcmgrGUI.notification.subscribe('checked_box', selectmenu.data('selectmenu'), 'enableButton');
+  dcmgrGUI.notification.subscribe('unchecked_box', selectmenu.data('selectmenu'), 'disableButton');
   
   //list
   c_list.setData(null);

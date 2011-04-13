@@ -502,7 +502,24 @@ $.widget("ui.selectmenu", {
 			menuTop += this.newelement.height();
 			this.list.css('top', menuTop); 
 		}
-	}
+	},
+	enableButton: function(){
+    this.newelement.button({disabled: false})
+    this.newelement.removeClass('ui-button');
+    this.newelement.removeClass('ui-button-text-only');
+    var self = this;
+    this.element.bind('change', function(){
+      var select_menu = $(self.list[0]);
+      select_menu.removeClass('ui-selectmenu-open');
+      var button = $(self.newelement);
+      button.addClass('ui-corner-all');
+    })
+  },
+  disableButton: function(){
+    this.newelement.button({disabled: true})
+    this.newelement.removeClass('ui-button');
+    this.newelement.removeClass('ui-button-text-only')
+  }
 });
 
 $.extend($.ui.selectmenu, {

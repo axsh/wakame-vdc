@@ -318,7 +318,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   $(bt_create_snapshot.target).button({ disabled: true });
   $(bt_refresh.target).button({ disabled: false });
   
-  $('#volume_action').selectmenu({
+  var selectmenu = $('#volume_action').selectmenu({
     width: 150,
     menuWidth: 150,
     handleWidth: 26,
@@ -332,7 +332,11 @@ DcmgrGUI.prototype.volumePanel = function(){
       }
     }
   });
-  
+ 
+  selectmenu.data('selectmenu').disableButton();
+  dcmgrGUI.notification.subscribe('checked_box', selectmenu.data('selectmenu'), 'enableButton');
+  dcmgrGUI.notification.subscribe('unchecked_box', selectmenu.data('selectmenu'), 'disableButton');
+   
   //list
   c_list.setData(null);
   c_list.update(list_request,true);  
