@@ -166,14 +166,6 @@ DcmgrGUI.prototype.instancePanel = function(){
     bt_instance_stop.open(c_list.getCheckedInstanceIds());
   });
 
-  // bt_instance_reboot.target.bind('click',function(){
-  //   bt_instance_reboot.open(c_list.getCheckedInstanceIds());
-  // });
-
-  // bt_instance_terminate.target.bind('click',function(){
-  //   bt_instance_terminate.open(c_list.getCheckedInstanceIds());
-  // });
-  
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
@@ -195,8 +187,6 @@ DcmgrGUI.prototype.instancePanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
   
-  $(bt_refresh.target).button({ disabled: false });
-  
   var selectmenu = $('#instance_action').selectmenu({
     width: 150,
     menuWidth: 150,
@@ -211,10 +201,12 @@ DcmgrGUI.prototype.instancePanel = function(){
       }
     }
   });
-
+  $(bt_refresh.target).button({ disabled: false });
   selectmenu.data('selectmenu').disableButton();
+  
   dcmgrGUI.notification.subscribe('checked_box', selectmenu.data('selectmenu'), 'enableButton');
   dcmgrGUI.notification.subscribe('unchecked_box', selectmenu.data('selectmenu'), 'disableButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', selectmenu.data('selectmenu'), 'disableButton');
   
   //list
   c_list.setData(null);

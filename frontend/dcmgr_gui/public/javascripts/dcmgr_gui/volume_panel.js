@@ -305,19 +305,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
-  
-  dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enableDialogButton');
-  dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enableDialogButton');
-  dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_volume, 'disableDialogButton');
-  dcmgrGUI.notification.subscribe('unchecked_box', bt_create_snapshot, 'disableDialogButton');
-  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disableDialogButton');
-  dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disableDialogButton');
-  
-  $(bt_create_volume.target).button({ disabled: false });
-  $(bt_delete_volume.target).button({ disabled: true });
-  $(bt_create_snapshot.target).button({ disabled: true });
-  $(bt_refresh.target).button({ disabled: false });
-  
+
   var selectmenu = $('#volume_action').selectmenu({
     width: 150,
     menuWidth: 150,
@@ -334,6 +322,18 @@ DcmgrGUI.prototype.volumePanel = function(){
   });
  
   selectmenu.data('selectmenu').disableButton();
+  $(bt_create_volume.target).button({ disabled: false });
+  $(bt_delete_volume.target).button({ disabled: true });
+  $(bt_create_snapshot.target).button({ disabled: true });
+  $(bt_refresh.target).button({ disabled: false });
+    
+  dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enableDialogButton');
+  dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enableDialogButton');
+  dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_volume, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('unchecked_box', bt_create_snapshot, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', selectmenu.data('selectmenu'), 'disableButton');
   dcmgrGUI.notification.subscribe('checked_box', selectmenu.data('selectmenu'), 'enableButton');
   dcmgrGUI.notification.subscribe('unchecked_box', selectmenu.data('selectmenu'), 'disableButton');
    
