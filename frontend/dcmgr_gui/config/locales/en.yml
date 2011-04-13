@@ -257,6 +257,7 @@ en:
       updated_at: "Updated"
   sidemenu:
     change_account: "Change Account"
+    change_language: "Change Language"
     summary:
       header: "SUMMARY"
       dashboard: "DashBoard"
