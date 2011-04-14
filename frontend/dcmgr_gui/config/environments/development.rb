@@ -22,6 +22,7 @@ DcmgrGui::Application.configure do
 
   # Only use best-standards-support built into browsers
   config.action_dispatch.best_standards_support = :builtin
+  config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
 end
 
 require 'pp'
