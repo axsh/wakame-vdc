@@ -32,7 +32,7 @@ DcmgrGui::Application.configure do
   config.proxy_root_user = 'root'
 
   # Setting authentication server
-  config.auth_host = "localhost"
+  config.auth_host = "127.0.0.1"
   config.auth_port = 3000
   
   config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
