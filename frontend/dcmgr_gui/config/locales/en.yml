@@ -18,6 +18,11 @@ en:
     attach: "Yes, Attach"
     detach: "Yes, Detach"
     launch: "Launch"
+  selectmenu:
+    select_action: "Select an Action"
+  pagenate:
+    page: "{0} Page"
+    total: "Total {0}"
   parts:
     loading: "Loading..."
   dialog:
@@ -252,6 +257,7 @@ en:
       updated_at: "Updated"
   sidemenu:
     change_account: "Change Account"
+    change_language: "Change Language"
     summary:
       header: "SUMMARY"
       dashboard: "DashBoard"

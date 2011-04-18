@@ -285,14 +285,6 @@ DcmgrGUI.prototype.volumePanel = function(){
     bt_create_snapshot.open(c_list.getCheckedInstanceIds());
   });
 
-  bt_attach_volume.target.bind('click',function(){
-    bt_attach_volume.open(c_list.getCheckedInstanceIds());
-  });
-
-  bt_detach_volume.target.bind('click',function(){
-    bt_detach_volume.open(c_list.getCheckedInstanceIds());
-  });
-
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/volumes/list/',c_list.page);
@@ -313,19 +305,38 @@ DcmgrGUI.prototype.volumePanel = function(){
     $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
-  
+
+  var selectmenu = $('#volume_action').selectmenu({
+    width: 150,
+    menuWidth: 150,
+    handleWidth: 26,
+    style:'dropdown',
+    select: function(event){
+      var select_action = $(this).val()
+      if (select_action == "attach_volume") {
+        bt_attach_volume.open(c_list.getCheckedInstanceIds());
+      }else if(select_action == "detach_volume") {
+        bt_detach_volume.open(c_list.getCheckedInstanceIds());
+      }
+    }
+  });
+ 
+  selectmenu.data('selectmenu').disableButton();
+  $(bt_create_volume.target).button({ disabled: false });
+  $(bt_delete_volume.target).button({ disabled: true });
+  $(bt_create_snapshot.target).button({ disabled: true });
+  $(bt_refresh.target).button({ disabled: false });
+    
   dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enableDialogButton');
   dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enableDialogButton');
   dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_volume, 'disableDialogButton');
   dcmgrGUI.notification.subscribe('unchecked_box', bt_create_snapshot, 'disableDialogButton');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disableDialogButton');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disableDialogButton');
-  
-  $(bt_create_volume.target).button({ disabled: false });
-  $(bt_delete_volume.target).button({ disabled: true });
-  $(bt_create_snapshot.target).button({ disabled: true });
-  $(bt_refresh.target).button({ disabled: false });
-  
+  dcmgrGUI.notification.subscribe('change_pagenate', selectmenu.data('selectmenu'), 'disableButton');
+  dcmgrGUI.notification.subscribe('checked_box', selectmenu.data('selectmenu'), 'enableButton');
+  dcmgrGUI.notification.subscribe('unchecked_box', selectmenu.data('selectmenu'), 'disableButton');
+   
   //list
   c_list.setData(null);
   c_list.update(list_request,true);  

@@ -1029,6 +1029,26 @@ body{
 	line-height: 0;
 }
 
+#volume_action-button {
+  display: block;
+  margin-left:7px;
+  font-size: 11px;
+  height:23px;
+}
+#volume_action-menu {
+  font-size: 11px;
+}
+
+#instance_action-button {
+  display: block;
+  margin-left:7px;
+  font-size: 11px;
+  height:23px;
+}
+#instance_action-menu {
+  font-size: 11px;
+}
+
 #content #mainarea_wide .controller a.delete_volume{
 	display: block;
 	float: left;
@@ -1051,12 +1071,13 @@ body{
 
 #content #mainarea_wide .controller a.create_snapshot{
 	display: block;
-	float: left;
+  float: left;
 	width: 119px;
 	height: 23px;
 	font-size: 11px;
 	line-height: 0;
   margin-left:7px;
+  margin-right:7px;
 }
 
 #content #mainarea_wide .controller #volumeaction{

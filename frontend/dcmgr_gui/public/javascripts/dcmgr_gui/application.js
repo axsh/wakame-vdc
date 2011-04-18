@@ -83,10 +83,15 @@ jQuery(function($){
     $(this).parent('form').submit();
     return false;
 	});
-	
+
+  $('#select_language_locale').bind('change', function(){
+    $('#select_language')[0].submit();
+	})
+		
 	//global
   dcmgrGUI = new DcmgrGUI;
 	dcmgrGUI.initialize();
   dcmgrGUI.notification = new DcmgrGUI.Notification;
+  
 });
 //]]>

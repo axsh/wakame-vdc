@@ -78,14 +78,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
       };
 
       self.updatePage.call(this,event);
-
-      if (self.current_page === 1) {
-        self.prev.button("option", "disabled", true);
-        self.next.button("option", "disabled", false);
-      } else {
-        self.prev.button("option", "disabled", false);
-        self.next.button("option", "disabled", false);
-      }
+      self.changeArrowButton();
     });
     
     this.next.bind("click",{obj: this},function(event){
@@ -95,20 +88,27 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
       };
       
       self.updatePage.call(this,event);
-      
-      if (self.current_page === self.page_count) {
-        self.prev.button("option", "disabled", false);
-        self.next.button("option", "disabled", true);
-      } else {
-        self.prev.button("option", "disabled", false);
-        self.next.button("option", "disabled", false);
-      }
+      self.changeArrowButton();
     });
 
     this.renderPagenate();
     
     //create topics
     dcmgrGUI.notification.create_topic('change_pagenate');
+  },
+  changeArrowButton: function() {
+    if (this.current_page === 1){
+      this.prev.button("option", "disabled", true);
+      this.next.button("option", "disabled", false);
+    }else{
+      if (this.current_page === this.page_count) {
+        this.prev.button("option", "disabled", false);
+        this.next.button("option", "disabled", true);
+      } else {
+        this.prev.button("option", "disabled", false);
+        this.next.button("option", "disabled", false);
+      }
+    }
   },
   getPageCount: function(total,row){
     return Math.ceil(total / row)
@@ -125,20 +125,46 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     this.page_count = this.getPageCount(this.total,this.row)
     this.renderPagenate();
   },
+  changePage: function() {
+    var self = this;
+    var current_page = $('#viewPagenate').find("#current_page");
+    if(current_page.length != 0) {
+      current_page.bind("focus", function(){
+        this.select();
+      });
+      
+      current_page.bind("keypress", function(event){
+        if(event.keyCode == 13) {
+          var page = parseInt(current_page.val());
+          self.current_page = page;
+          self.page = page;
+          event.data = {'obj': self};
+          self.updatePage.call(this, event);
+          self.changeArrowButton();
+        }
+      });
+    }
+  },
   renderPagenate: function(){
     this.start = this.getStartCount();
     this.offset = this.getOffsetCount();
     if (this.start !== 0 && this.offset !==0 ) {
-      var html = this.start + ' to ' + this.offset + ' of ' + this.total;
+      var current_page = '<input type="text" id="current_page" style="width:20px;height:13px" value="'+ this.current_page +'">';
+      var page = $.i18n.prop('page_pagenate', [this.page_count])
+      var total = $.i18n.prop('total_pagenate', [this.total])
+      var html = current_page + ' / ' + page + ' : ' + total;
       html += ' ' + this.view
     } else{
       var html = '';
     }
     $("#viewPagenate").html(html);
+    this.changePage()
   },
   updatePage: function(event){
     var self = event.data.obj;
-    var name = $(this).attr('class').split(' ')[0];
+    if($(this).attr('class')) {
+      var name = $(this).attr('class').split(' ')[0];
+    }
 
     if(self.current_page >= 1 && self.current_page < self.page_count) {
       if(name === 'next'){

@@ -1,5 +1,6 @@
 <% content_for :javascript do %>
 <%= javascript_include_tag 'dcmgr_gui/volume_panel.js' %>
+<%= javascript_include_tag 'ui.selectmenu.js' %>
 <script type="text/javascript">
 jQuery(function($){
 	dcmgrGUI.volumePanel();
@@ -11,6 +12,7 @@ jQuery(function($){
 <style type="text/css">
 	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
 	.ui-dialog .ui-dialog-content {margin:5px;}
+  .ui-selectmenu-status { margin-top: 1px; }
 </style>
 <% end %>
 
@@ -19,15 +21,18 @@ jQuery(function($){
  <div id="list_load_mask" class="maincontent">
 		<div class="controller clearfix">
 		  <a href="javascript:void(0);" class="create_volume"><%= t("volumes.button.create_volume") %></a>
-		  <div id="volumeaction"><%= t("volumes.volume_actions.header") %></div>
-    		  <ul id="volumelist">
-		    <li class="attach_volume"><a href="javascript:void(0);"><%= t("volumes.volume_actions.attach_volume") %></a></li>
-		    <li class="detach_volume"><a href="javascript:void(0);"><%= t("volumes.volume_actions.detach_volume") %></a></li>
-	  	  </ul>
 		  <a href="javascript:void(0);" class="delete_volume" ><%= t("volumes.button.delete_volume") %></a>
 		  <a href="javascript:void(0);" class="create_snapshot"><%= t("volumes.button.create_snapshot") %></a>
-		  <a href="javascript:void(0);" class="refresh" style="margin-left:72px"><%= t("button.refresh") %></a>
+		  <select name="volume_action" id="volume_action" style="height:10px">
+        <option value="" selected="selected"><%= t("selectmenu.select_action") %></option>
+        <optgroup label="Action">
+  				<option class="attach_volume" value="attach_volume"><%= t("volumes.volume_actions.attach_volume") %></option>
+  				<option class="detach_volume" value="detach_volume"><%= t("volumes.volume_actions.detach_volume") %></option>
+  			</optgroup>
+			</select>
+		  <a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%= t("button.refresh") %></a>
 		</div>
+		
 		<div class="controller clearfix">
 			<!-- <div class="l_float">
 				<span class="text">Viewing:</span>
@@ -38,7 +43,7 @@ jQuery(function($){
 			</div> -->
      <div id="pagenate" class="r_float">
 			  <a href="javascript:void(0);" class="prev"></a>
-				<p id="viewPagenate">Volumes</p>
+				<p id="viewPagenate"></p>
 			  <a href="javascript:void(0);" class="next"></a>
      </div>
 		</div>
