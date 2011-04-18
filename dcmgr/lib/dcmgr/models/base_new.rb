@@ -4,8 +4,6 @@ require 'sequel/model'
 
 
 module Dcmgr::Models
-  class InvalidUUIDError < StandardError; end
-  class UUIDPrefixDuplication < StandardError; end
     
   # Sequal::Model plugin to inject the Taggable feature to the model
   # class.
