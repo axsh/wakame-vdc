@@ -13,7 +13,7 @@ require 'erb'
 class StoragePoolCli < Thor
   include Dcmgr::Models
   
-  desc "register NODE_ID", "Register a new storage pool node"
+  desc "add NODE_ID", "Register a new storage pool node"
   method_option :base_path, :type => :string, :aliases => '-b', :required => true, :desc => "Base path to store volume files"
   method_option :snapshot_base_path, :type => :string, :aliases => '-n', :required => true, :desc => "Base path to store snapshot files"
   method_option :disk_space, :type => :numeric, :aliases => "-s", :required => true, :desc => "Amount of disk size to be exported (in MB)."
@@ -21,7 +21,7 @@ class StoragePoolCli < Thor
   method_option :ipaddr, :type => :string, :aliases => "-i", :required=>true, :desc => "IP address of transport target"
   method_option :storage_type, :type => :string, :aliases => "-o", :default=>'zfs', :desc => "Storage type [zfs]"
   method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this."
-  def register(node_id)
+  def add(node_id)
     unless (options[:force] == false && Isono::Models::NodeState.exists?(:node_id=>options[:node_id]))
       abort("Node ID is not registered yet: #{options[:node_id]}")
     end
@@ -39,8 +39,8 @@ class StoragePoolCli < Thor
     puts sp.canonical_uuid
   end
 
-  desc "deregister UUID", "Deregister a storage pool node"
-  def deregister(uuid)
+  desc "del UUID", "Deregister a storage pool node"
+  def del(uuid)
     sp = StoragePool[uuid] || raise(Thor::Error.new("Unknown storage pool node: #{uuid}"))
     sp.delete
   end
