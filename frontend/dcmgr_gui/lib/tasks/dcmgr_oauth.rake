@@ -15,8 +15,8 @@ namespace :oauth do
                                :user_id => user.id
                               )
     end
-    puts "consumer_key=#{oauth_consumer.secret}"
-    puts "secret_key=#{oauth_consumer.key}"
+    puts "consumer_key=#{oauth_consumer.key}"
+    puts "secret_key=#{oauth_consumer.secret}"
   end
   
   desc 'Create table'
