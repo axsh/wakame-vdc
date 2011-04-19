@@ -22,6 +22,20 @@ DcmgrGui::Application.configure do
 
   # Only use best-standards-support built into browsers
   config.action_dispatch.best_standards_support = :builtin
+  
+  # Config authentication for WebAPI
+  # Setting proxy server
+  config.proxy_host = "127.0.0.1"
+  config.proxy_port = 8080
+  config.proxy_dcmgr_host = "127.0.0.1"
+  config.proxy_dcmgr_port = 9001
+  config.proxy_root_user = 'root'
+
+  # Setting authentication server
+  config.auth_host = "127.0.0.1"
+  config.auth_port = 3000
+  
+  config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
 end
 
 require 'pp'

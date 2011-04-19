@@ -266,18 +266,12 @@ body{
 	line-height: 140%;
 }
 #content #mainarea .maincontent a.refresh{
-	float: left;
-	display: block;
-	margin: 15px 0 0 38px;
-	width: 89px;
-	height: 28px;
-	background: url(../images/btn_refresh.gif) no-repeat;
-	text-indent: -9999px;
+  float: left;
+  display: block;
+  margin: 10px 0 0 38px;
+  width: 89px;
+  height: 28px;
 }
-#content #mainarea .maincontent a.refresh:hover{
-	background: url(../images/btn_refresh.gif) 0px -28px;
-}
-
 
 /**********  resource-list  **********/
 
@@ -447,10 +441,8 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
-	background: url(../images/btn_launch.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+	font-size: 11px;
 	line-height: 0;
 }
 #content #mainarea_wide .controller #instanceaction{
@@ -572,14 +564,12 @@ body{
 
 
 #content #mainarea_wide .controller a.create_ssh_keypair{
-	display: block;
-	float: left;
+  display: block;
+  float: left;
 	width: 115px;
-	height: 26px;
-	background: url(../images/btn_createkey.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
-	line-height: 0;
+	height: 23px;
+  font-size: 12px;
+  line-height: 0;
 }
 #content #mainarea_wide .controller a.delete_ssh_keypair{
 	display: block;
@@ -587,10 +577,8 @@ body{
 	margin-left: 7px;
 	margin-right: 401px;
 	width: 66px;
-	height: 26px;
-	background: url(../images/btn_deletekey.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+  font-size: 12px;
 	line-height: 0;
 }
 
@@ -598,10 +586,8 @@ body{
 	display: block;
 	float: left;
 	width: 140px;
-	height: 26px;
-	background: url(../images/btn_create_security_group.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+	font-size: 11px;
 	line-height: 0;
 }
 
@@ -609,19 +595,17 @@ body{
 	display: block;
 	float: left;
 	width: 140px;
-	height: 26px;
-	background: url(../images/btn_delete_security_group.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+	font-size: 11px;
 	line-height: 0;
-	margin-left: 7px;
+  margin-left: 7px;
 }
 
 #content #mainarea_wide .controller a.update_security_group{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
+	height: 23px;
 	background: url(../images/btn_update_security_group.gif) no-repeat;
 	text-indent: -9999px;
 	font-size: 0;
@@ -632,15 +616,11 @@ body{
 	display: block;
 	float: left;
 	width: 89px;
-	height: 28px;
-	background: url(../images/btn_refresh.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+  font-size: 12px;
 	line-height: 0;
 }
-#content #mainarea_wide .controller a.refresh:hover{
-	background: url(../images/btn_refresh.gif) 0 -28px;
-}
+
 #content #mainarea_wide .controller .text{
 	display: block;
 	float: left;
@@ -703,9 +683,6 @@ body{
 	background-position: 0 -30px;
 }
 
-
-
-
 #content #mainarea_wide .display_area{
 	padding-bottom: 15px;
 	width: 660px;
@@ -729,8 +706,6 @@ body{
 	color: #5399E7;
 }
 
-
-
 #content #mainarea_wide #btm_maincontent_wide{
 	margin-bottom: 10px;
 	width: 700px;
@@ -752,12 +727,6 @@ body{
   width:20px;
   height:25px;
 }
-
-
-
-
-
-
 
 /**********  table  **********/
 
@@ -786,6 +755,13 @@ body{
 }
 #content #mainarea_wide table.ptn01 tr td.center{
 	text-align: center;
+}
+
+#content #mainarea_wide table.ptn01 tr td a.edit_security_group{
+  display: block;
+	width: 40px;
+	font-size: 10px;
+	line-height: 0;
 }
 
 /* ptn02 */
@@ -871,23 +847,22 @@ body{
 #content #mainarea_wide table.ptn04 tr th.icon{
 	width: 20px;
 }
-#content #mainarea_wide table.ptn04 tr th.show_key{
-	width: 136px;
-	text-align: center;
+#content #mainarea_wide table.ptn04 tr th.header_show_key{
+  width: 136px;
+  text-align: center;
 }
 #content #mainarea_wide table.ptn04 tr td{
 	padding: 5px;
 	border: 1px solid #cccccc;
 	vertical-align: middle;
 }
+
 #content #mainarea_wide table.ptn04 tr td a.show_key{
-	display: block;
+  display: block;
 	width: 146px;
 	height: 22px;
-	text-indent: -9999px;
-	font-size: 0;
+	font-size: 10px;
 	line-height: 0;
-	background: url(../images/btn_show_accesskey.png) no-repeat;
 }
 #content #mainarea_wide table.ptn04 tr td a.show_key:hover{
 	background-position: 0 -22px;
@@ -1049,21 +1024,37 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
-	background: url(../images/btn_create_volume.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+	font-size: 11px;
 	line-height: 0;
+}
+
+#volume_action-button {
+  display: block;
+  margin-left:7px;
+  font-size: 11px;
+  height:23px;
+}
+#volume_action-menu {
+  font-size: 11px;
+}
+
+#instance_action-button {
+  display: block;
+  margin-left:7px;
+  font-size: 11px;
+  height:23px;
+}
+#instance_action-menu {
+  font-size: 11px;
 }
 
 #content #mainarea_wide .controller a.delete_volume{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
-	background: url(../images/btn_delete_volume.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+	font-size: 11px;
 	line-height: 0;
 	margin-left:7px;
 }
@@ -1072,24 +1063,21 @@ body{
 	display: block;
 	float: left;
 	width: 119px;
-	height: 26px;
-	background: url(../images/btn_delete_snapshot.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+	font-size: 11px;
 	line-height: 0;
 	margin-left:7px;
 }
 
 #content #mainarea_wide .controller a.create_snapshot{
 	display: block;
-	float: left;
+  float: left;
 	width: 119px;
-	height: 26px;
-	background: url(../images/btn_create_snapshot.gif) no-repeat;
-	text-indent: -9999px;
-	font-size: 0;
+	height: 23px;
+	font-size: 11px;
 	line-height: 0;
   margin-left:7px;
+  margin-right:7px;
 }
 
 #content #mainarea_wide .controller #volumeaction{

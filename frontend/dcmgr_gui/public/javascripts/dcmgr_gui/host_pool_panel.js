@@ -76,7 +76,7 @@ DcmgrGUI.prototype.hostPoolPanel = function(){
     $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
-  
+  $(bt_refresh.target).button({ disabled: false });
   //list
   c_list.setData(null);
   c_list.update(list_request,true);

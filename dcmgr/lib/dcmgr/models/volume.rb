@@ -32,6 +32,7 @@ module Dcmgr::Models
       String :host_device_name
       String :guest_device_name
       String :export_path, :null=>false
+#      String :intermediate_path, :null=>false
       Text :transport_information
       Time :deleted_at
       Time :attached_at
@@ -61,7 +62,7 @@ module Dcmgr::Models
       # check the volume size
       sp = self.storage_pool
       volume_size = Volume.dataset.where(:storage_pool_id=> self.storage_pool_id).get{sum(:size)}
-      total_size = sp.offerring_disk_space - volume_size.to_i
+      total_size = sp.offering_disk_space - volume_size.to_i
       if self.size > total_size
         raise DiskError, "out of disk space"
       end

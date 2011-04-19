@@ -7,38 +7,38 @@ jQuery(function($){
 </script>
 <% end %>
 <div id="mainarea" class="grid2">
-	<h3><img src="images/icon_resource.gif" />My Resource</h3>
+	<h3><img src="images/icon_resource.gif" /><%= t("dashboard.resource.header") %></h3>
 	<div class="maincontent">
-		<p class="lead">You are using the following Wakame-vdc resources.</p>
-		<a href="javascript:void(0);" class="refresh">refresh</a>
+		<p class="lead"><%= t("dashboard.resource.message") %></p>
+		<p><a href="javascript:void(0);" class="refresh"><%= t('button.refresh') %></a></p>
 		<ul class="resource clearfix">
 			<li>
 				<img src="images/icon_resource01.gif" width="20" height="20" /><a href="/instances">
-				<span id="total_instance">0</span> Instances</a>
+				<span id="total_instance">0</span> <%= t("dashboard.resource.instance") %></a>
 			</li>
 			<li>
 				<img src="images/icon_resource02.gif" width="20" height="20" /><a href="/images">
-				<span id="total_image">0</span> Machine Images</a>
+				<span id="total_image">0</span> <%= t("dashboard.resource.machine_images") %></a>
 				</li>
 		</ul>
 		<ul class="resource clearfix">
 			<li>
 				<img src="images/icon_resource03.gif" width="20" height="20" /><a href="/volumes">
-				<span id="total_volume">0</span> Volumes</a>
+				<span id="total_volume">0</span> <%= t("dashboard.resource.volumes") %></a>
 				</li>
 			<li>
 				<img src="images/icon_resource03.gif" width="20" height="20" /><a href="/snapshots">
-				<span id="total_snapshot">0</span> Snapshots</a>
+				<span id="total_snapshot">0</span> <%= t("dashboard.resource.snapshots") %></a>
 			</li>
 		</ul>
 		<ul class="resource clearfix">
 			<li>
 				<img src="images/icon_resource04.gif" width="20" height="20" /><a href="/security_groups">
-				<span id="total_security_group">0</span> Security Groups</a>
+				<span id="total_security_group">0</span> <%= t("dashboard.resource.security_groups") %></a>
 			</li>
 			<li>
 				<img src="images/icon_resource04.gif" width="20" height="20" /><a href="/keypairs">
-				<span id="total_keypair">0</span> Key Pairs</a>
+				<span id="total_keypair">0</span> <%= t("dashboard.resource.key_pairs") %></a>
 			</li>
 		</ul>
 		<div class="spacer20"></div>

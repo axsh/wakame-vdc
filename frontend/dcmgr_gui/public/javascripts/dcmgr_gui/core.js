@@ -66,8 +66,8 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
       disabled : true,
       text : false
     });
-    
     this.next = DcmgrGUI.Util.createUIButton(this.element.find('.next'),{
+      disabled : true,
       text : false
     });
     
@@ -78,14 +78,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
       };
 
       self.updatePage.call(this,event);
-
-      if (self.current_page === 1) {
-        self.prev.button("option", "disabled", true);
-        self.next.button("option", "disabled", false);
-      } else {
-        self.prev.button("option", "disabled", false);
-        self.next.button("option", "disabled", false);
-      }
+      self.changeArrowButton();
     });
     
     this.next.bind("click",{obj: this},function(event){
@@ -95,35 +88,83 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
       };
       
       self.updatePage.call(this,event);
-      
-      if (self.current_page === self.page_count) {
-        self.prev.button("option", "disabled", false);
-        self.next.button("option", "disabled", true);
-      } else {
-        self.prev.button("option", "disabled", false);
-        self.next.button("option", "disabled", false);
-      }
+      self.changeArrowButton();
     });
 
     this.renderPagenate();
+    
+    //create topics
+    dcmgrGUI.notification.create_topic('change_pagenate');
+  },
+  changeArrowButton: function() {
+    if (this.current_page === 1){
+      this.prev.button("option", "disabled", true);
+      this.next.button("option", "disabled", false);
+    }else{
+      if (this.current_page === this.page_count) {
+        this.prev.button("option", "disabled", false);
+        this.next.button("option", "disabled", true);
+      } else {
+        this.prev.button("option", "disabled", false);
+        this.next.button("option", "disabled", false);
+      }
+    }
   },
   getPageCount: function(total,row){
     return Math.ceil(total / row)
   },
   changeTotal: function(total){
     this.total = total;
+    
+    if(this.total > (this.current_page * this.row)) {
+      this.next.button("option", "disabled", false);
+    }else{
+      this.next.button("option", "disabled", true);
+    }
+    
     this.page_count = this.getPageCount(this.total,this.row)
     this.renderPagenate();
+  },
+  changePage: function() {
+    var self = this;
+    var current_page = $('#viewPagenate').find("#current_page");
+    if(current_page.length != 0) {
+      current_page.bind("focus", function(){
+        this.select();
+      });
+      
+      current_page.bind("keypress", function(event){
+        if(event.keyCode == 13) {
+          var page = parseInt(current_page.val());
+          self.current_page = page;
+          self.page = page;
+          event.data = {'obj': self};
+          self.updatePage.call(this, event);
+          self.changeArrowButton();
+        }
+      });
+    }
   },
   renderPagenate: function(){
     this.start = this.getStartCount();
     this.offset = this.getOffsetCount();
-    var html = this.start + ' to ' + this.offset + ' of ' + this.total;
-    $("#viewPagenate").html(html+' '+this.view);    
+    if (this.start !== 0 && this.offset !==0 ) {
+      var current_page = '<input type="text" id="current_page" style="width:20px;height:13px" value="'+ this.current_page +'">';
+      var page = $.i18n.prop('page_pagenate', [this.page_count])
+      var total = $.i18n.prop('total_pagenate', [this.total])
+      var html = current_page + ' / ' + page + ' : ' + total;
+      html += ' ' + this.view
+    } else{
+      var html = '';
+    }
+    $("#viewPagenate").html(html);
+    this.changePage()
   },
   updatePage: function(event){
     var self = event.data.obj;
-    var name = $(this).attr('class').split(' ')[0];
+    if($(this).attr('class')) {
+      var name = $(this).attr('class').split(' ')[0];
+    }
 
     if(self.current_page >= 1 && self.current_page < self.page_count) {
       if(name === 'next'){
@@ -140,6 +181,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     }
     self.renderPagenate();
     self.element.trigger('dcmgrGUI.updatePagenate');
+    dcmgrGUI.notification.publish('change_pagenate');
   },
   getOffsetCount: function(){
     var count = (this.current_page * this.row);
@@ -185,35 +227,43 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
     }
     this.content.dialog('open');
   },
-  disabledButton: function(buttonName,disabled){
-    var widget = this.content
-                  .dialog('widget')
-                  .find(".ui-button-text:contains('"+ buttonName +"')")
-                  .parent();
+  getWidgetButton: function(num) {
+    var widget = $(this.content.dialog('widget')
+                    .find(".ui-button-text")[num])
+    return widget;
+  },
+  disabledButton: function(num, disabled){
+    var widget = this.getWidgetButton(num);
     if( widget ) {
-      widget.button("option", "disabled", disabled);
-    }       
+      widget.parent().button("option", "disabled", disabled);
+    }
   },
   close: function(){
     this.content.dialog('close');
   },
+  enableDialogButton: function(){
+    $(this.target).button({ disabled: false });
+  },
+  disableDialogButton: function(){
+    $(this.target).button({ disabled: true });
+  },
   create: function(params){
     this.content = this.element
-        .load(this.path,params,this.callback)
-  			.dialog({
-  				title: this.title,
-  				disable: false,
-  				autoOpen: false,
-  				bgiframe: true,
-  				width: this.width,
-  				height: this.height,
-  				modal: true,
-  				resizable: true,
-  				closeOnEscape: true,
-  				closeText: 'hide',
-  				draggable:false,
-  				buttons: this.button
-  	});
+                       .load(this.path,params,this.callback)
+                       .dialog({
+                           title: this.title,
+                           disable: false,
+                           autoOpen: false,
+                           bgiframe: true,
+                           width: this.width,
+                           height: this.height,
+                           modal: true,
+                           resizable: true,
+                           closeOnEscape: true,
+                           closeText: 'hide',
+                           draggable:false,
+                           buttons: this.button
+                       });
   }
 });
 
@@ -224,11 +274,7 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     } else {
       this.element = $('<div></div>');
     }
-    
     this.template = params.template_id;
-    this.events = this.events||[];
-    //prototype.register_event function add to call before initialize function
-    this.bind_events();
     this.filter = new DcmgrGUI.Filter();
   },
   update:function(request,async){
@@ -236,7 +282,7 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     this.async = async;
     var self = this;
 
-    $("#list_load_mask").mask("Loading...");
+    $("#list_load_mask").mask($.i18n.prop('loading_parts'));
     self.element.trigger('dcmgrGUI.beforeUpdate');
     $.ajax({
        async: async||true,
@@ -256,17 +302,6 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
        }
      });
   },
-  register_event:function(name,handler){
-    this.events = this.events||[]
-    this.events.push({
-      "name":name,
-      "handler":handler
-    })
-  },bind_events:function(){
-    for(var i in this.events){
-      this.element.bind(this.events[i].name,this.events[i].handler);
-    }
-  }
 });
 
 DcmgrGUI.Util = {};
@@ -322,6 +357,59 @@ DcmgrGUI.Util.createUIButton = function(element,options){
           });
 }
 
+DcmgrGUI.Event = DcmgrGUI.Class.create({
+
+  initialize: function(){
+    this.events = {}
+  },
+  attach: function(event_name, func){
+    if(!this.events[event_name] && typeof func === "function") {
+      this.events[event_name] = func;
+    }
+  },
+  detach: function(event_name){
+    if(this.events[event_name]) {
+      delete this.events[event_name];
+    }
+  },
+  fire: function(event_name){
+    if(this.events[event_name]) {
+      this.events[event_name]();
+    }
+  }
+});
+
+DcmgrGUI.Notification = DcmgrGUI.Class.create({
+
+  initialize: function() {
+    this.topics = {};
+  },
+  create_topic: function(topic_id) {
+    if(!this.topics[topic_id]) {
+      this.topics[topic_id] = [];
+    }
+  },
+  subscribe: function(topic_id, target, method_name, options) {
+    if( this.topics[topic_id] ) {
+      this.topics[topic_id].push({'target': target,
+                                  'method_name': method_name,
+                                  'options': options})
+    }
+  },
+  publish: function(topic_id) {
+    if(this.topics[topic_id]) {
+      var size = this.topics[topic_id].length;
+      for (i=0; i < size; i++) {
+        var topic = this.topics[topic_id][i];
+        var target = topic['target'];
+        var method_name = topic['method_name'];
+        target[method_name](topic['options']);
+      }
+    }
+  }
+
+});
+
 DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   initialize: function(params){
     DcmgrGUI.ContentBase.prototype.initialize(params);
@@ -329,7 +417,6 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.detail_template = {};
     this.maxrow = params.maxrow
     this.page = params.page
-    
     var self = this;
 
     this.element.bind('dcmgrGUI.afterUpdate',function(event){
@@ -365,7 +452,9 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.element.bind('dcmgrGUI.updateList',function(event,params){
       self.update(params.request,true)
     });
-    
+    dcmgrGUI.notification.create_topic('checked_box');
+    dcmgrGUI.notification.create_topic('unchecked_box');
+    dcmgrGUI.notification.create_topic('checked_radio');
   },
   setDetailTemplate:function(template){
     this.detail_template = template;
@@ -426,6 +515,9 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
         var check_id = $(this).val();
         
         if($(this).is(':checked')){
+          
+          dcmgrGUI.notification.publish('checked_radio');
+          
           var c_detail = new DcmgrGUI.Detail({
             template_id:params.template_id
           });
@@ -455,12 +547,19 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   },
   multiCheckList:function(params){
     var self = this;
-    this.element.find("[type='checkbox']").each(function(key,value){
+    var checkboxies = this.element.find("[type='checkbox']");
+    checkboxies.each(function(key,value){
+      
       $(this).click(function(){
         var check_id = $(this).val();
         
+        if(!checkboxies.is(':checked')){
+          dcmgrGUI.notification.publish('unchecked_box');
+        }
+        
         if($(this).is(':checked')){
-
+          dcmgrGUI.notification.publish('checked_box');
+          
           //step1:onclick checkbox and generate detail object
           self.checked_list[check_id] = {
             //+1 is to remove table header
@@ -473,7 +572,8 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
           }
           
           //step2:bind event dcmgrGUI.contentChange
-          self.checked_list[check_id].c_detail.element.bind('dcmgrGUI.contentChange',function(event,params){
+          var detail_element = self.checked_list[check_id].c_detail.element;
+          detail_element.bind('dcmgrGUI.contentChange',function(event,params){
             if(self.checked_list[check_id]){
             
               //step4:marge data in template
@@ -520,7 +620,8 @@ DcmgrGUI.Detail = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
 
 DcmgrGUI.Refresh = DcmgrGUI.Class.create({
   initialize: function(){
-    this.element = $('.refresh');
+    this.target = '.refresh'
+    this.element = $(this.target);
     var self = this;
     self.element.live('click',function(){
       self.element.trigger('dcmgrGUI.refresh');

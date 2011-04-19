@@ -24,7 +24,7 @@ module Dcmgr::Models
       String :node_id, :null=>false
       String :export_path, :null=>false
       String :status, :null=>false, :default=>STATAS_TYPE_REGISTERING
-      Fixnum :offerring_disk_space, :null=>false, :unsigned=>true
+      Fixnum :offering_disk_space, :null=>false, :unsigned=>true
       String :transport_type, :null=>false
       String :storage_type, :null=>false
       String :ipaddr, :null=>false
@@ -102,7 +102,7 @@ module Dcmgr::Models
     def self.create_pool(params)
       self.create(:account_id => params[:account_id],
                   :node_id => params[:node_id],
-                  :offerring_disk_space => params[:offerring_disk_space],
+                  :offering_disk_space => params[:offering_disk_space],
                   :transport_type => params[:transport_type],
                   :storage_type => params[:storage_type],
                   :export_path => params[:export_path],
