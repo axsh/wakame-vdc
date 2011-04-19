@@ -16,7 +16,7 @@ module Dcmgr::Models
 
     many_to_one :instance
     many_to_one :network
-    one_to_one :ip, :class=>IpLease
+    one_to_many :ip, :class=>IpLease
 
     def to_hash
       h = values.dup.merge(super)
@@ -43,7 +43,7 @@ module Dcmgr::Models
 
     def before_destroy
       MacLease.find(:mac_addr=>self.mac_addr).destroy
-      ip && ip.destroy
+      ip_dataset.destroy
       super
     end
 

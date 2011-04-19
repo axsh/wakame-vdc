@@ -160,7 +160,7 @@ module Dcmgr::Models
                     :host_pool=>host_pool.to_hash,
                     :instance_nics=>instance_nic.map {|n| n.to_hash },
                     :instance_spec=>instance_spec.to_hash,
-                    :ips => instance_nic.map { |n| n.ip.ipv4 if n.ip },
+                    :ips => instance_nic.map { |n| n.ip.map {|i| i.ipv4} if n.ip }.flatten,
                   })
       h[:volume]={}
       if self.volume
@@ -210,7 +210,7 @@ module Dcmgr::Models
           if n.ip
             h[:network] << {
               :network_name => n.network.canonical_uuid,
-              :ipaddr => n.ip.ipv4
+              :ipaddr => n.ip.map {|lease| lease.ipv4}
             }
           end
         }

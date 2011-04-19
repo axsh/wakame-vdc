@@ -32,6 +32,7 @@ module Dcmgr::Models
       String :host_device_name
       String :guest_device_name
       String :export_path, :null=>false
+#      String :intermediate_path, :null=>false
       Text :transport_information
       Time :deleted_at
       Time :attached_at

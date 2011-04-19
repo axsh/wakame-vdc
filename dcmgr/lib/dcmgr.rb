@@ -75,6 +75,8 @@ module Dcmgr
   autoload :Logger, 'dcmgr/logger'
   
   module Models
+    class InvalidUUIDError < StandardError; end
+    class UUIDPrefixDuplication < StandardError; end
     autoload :Base, 'dcmgr/models/base'
 
     CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,

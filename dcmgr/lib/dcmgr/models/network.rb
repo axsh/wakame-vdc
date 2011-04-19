@@ -15,12 +15,16 @@ module Dcmgr::Models
       String :dhcp_server
       String :metadata_server
       Fixnum :vlan_lease_id, :null=>false
+      Fixnum :nat_network_id
       Text :description
     end
     with_timestamps
 
     one_to_many :ip_lease
     many_to_one :vlan_lease
+    
+    many_to_one :nat_network, :key => :nat_network_id, :class => self
+    one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
     def validate
       super
