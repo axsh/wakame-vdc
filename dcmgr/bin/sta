@@ -29,7 +29,7 @@ class ZfsHandler < EndpointBuilder
     job.stm.state=data[:state].to_sym
     job.stm.on_create
 
-    vol_path = "#{data[:storage_pool][:export_path]}/#{data[:export_path]}"
+    vol_path = "#{data[:storage_pool][:export_path]}/#{data[:uuid]}"
     `zfs list #{File.dirname(vol_path)} > /dev/null 2>&1`
     if $?.exitstatus != 0
       # create parent filesystem
@@ -65,7 +65,7 @@ class ZfsHandler < EndpointBuilder
       end
     end
 
-    rpc.request('sta-collector', 'update_volume', job.to_hash(:export_path=>data[:export_path]))
+    rpc.request('sta-collector', 'update_volume', job.to_hash(:export_path=>data[:uuid]))
     logger.info("created new volume: #{volume_id}")
 
     job.stm.on_register
@@ -95,8 +95,8 @@ class ZfsHandler < EndpointBuilder
 
     # deregisterd iscsi target
     job.stm.on_delete
-    vr = `zfs shareiscsi=off #{data[:storage_pool][:export_path]}/#{data[:export_path]}`
-    il = `iscsitadm list target #{data[:storage_pool][:export_path]}/#{data[:export_path]}`
+    vr = `zfs shareiscsi=off #{data[:storage_pool][:export_path]}/#{data[:uuid]}`
+    il = `iscsitadm list target #{data[:storage_pool][:export_path]}/#{data[:uuid]}`
     unless il.empty?
       raise "iscsi target has not deleted: #{volume_id} iqn: #{data[:transport_information][:iqn]}"
     end
@@ -107,8 +107,8 @@ class ZfsHandler < EndpointBuilder
     # delete volume
     job.stm.on_delete
     job.on_delete
-    v = `zfs destroy #{data[:storage_pool][:export_path]}/#{data[:export_path]}`
-    vl = `zfs list #{data[:storage_pool][:export_path]}/#{data[:export_path]}`
+    v = `zfs destroy #{data[:storage_pool][:export_path]}/#{data[:uuid]}`
+    vl = `zfs list #{data[:storage_pool][:export_path]}/#{data[:uuid]}`
     unless vl.empty?  
       raise "volume has not deleted: #{volume_id}"
     end
@@ -127,7 +127,7 @@ class ZfsHandler < EndpointBuilder
     job.stm.state=sdata[:state].to_sym
     job.stm.on_create
 
-    vol_path = "#{data[:storage_pool][:export_path]}/#{data[:export_path]}"
+    vol_path = "#{data[:storage_pool][:export_path]}/#{data[:uuid]}"
     snap_dir = "#{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}"
     unless File.exist?(snap_dir)
       # create a directory to save snapshot
