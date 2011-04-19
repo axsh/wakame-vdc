@@ -3,3 +3,278 @@
 # See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
 ja:
+  header:
+    welcome_message: "ようこそ"
+    login_name_suffix: "さん"
+    sign_out: "サインアウト"
+  button:
+    refresh: "更新"
+    terminate: "停止"
+    reboot: "再起動"
+    create: "作成"
+    update: "更新"
+    delete: "削除"
+    close: "閉じる"
+    attach: "アタッチ"
+    detach: "デタッチ"
+    launch: "Launch"
+  selectmenu:
+    select_action: "アクション"
+  pagenate:
+    page: "{0} ページ"
+    total: "全{0}件"
+  parts:
+    loading: "読み込み中..."
+  dialog:
+    terminate_instances:
+      header: "インスタンスを停止"
+      message: "インスタンスを停止します。よろしいですか?"
+    reboot_instances:
+      header: "インスタンスを再起動"
+      message: "インスタンスを再起動します。よろしいですか？"
+    launch_instance:
+      header: "Launch Instance"
+      wmi_id: "WMI ID"
+      host: "ホスト"
+      host_name: "ホスト名"
+      instance_spec: "スペック"
+      ssh_key_pair: "SSHキーペア"
+      security_group: "セキュリティーグループ"
+      available_groups: "Available Groups"
+      launch_in: "Launch in"
+      user_data: "ユーザデータ"
+    create_volume:
+      header: "ボリュームを作成"
+      size: "サイズ"
+      storage: "ストレージ"
+    attach_volume:
+      header: "ボリュームをアタッチ"
+      volume_id: "ボリュームID"
+      instance_id: "インスタンスID"
+    detach_volume:
+      header: "ボリュームをデタッチ"
+      message: "ボリュームをデタッチします。よろしいですか？"
+    delete_volume:
+      header: "ボリュームを削除"
+      message: "ボリュームを削除します。よろしいですか？"
+    create_snapshot:
+      header: "スナップショットを作成"
+      message: "スナップショットを作成します。よろしいですか？"
+    create_volume_from_snapshot:
+      header: "ボリュームを作成"
+      message: "ボリュームを作成します。よろしいですか？"
+    delete_snapshot:
+      header: "スナップショットを削除"
+      message: "スナップをショットを削除します。よろしいですか？"
+    create_security_group:
+      header: "セキュリティグループを作成"
+    edit_security_group:
+      header: "セキュリティグループを編集"
+    create_and_edit_security_group:
+      name: "セキュリティグループを編集"
+      description: "詳細"
+      rule: "ルール"
+    delete_security_group:
+      header: "セキュリティーグループを削除"
+      message: "セキュリティーグループを削除します。よろしいですか？"
+    create_ssh_keypair:
+      header: "キーペアを作成"
+      keypair_name: "キーペア名"
+      download_once: "1回限り"
+    delete_ssh_keypair:
+      header: "キーペアを削除"
+      message: "キーペアを削除します。よろしいですか？"
+  login:
+    sign_in: "ログイン"
+    user: "ユーザー"
+    password: "パスワード"
+  information:
+    header: "お知らせ"
+  dashboard:
+    resource:
+      header: "リソース"
+      message: "リソース一覧"
+      instance: "インスタンス"
+      machine_images: "マシンイメージ"
+      volumes: "ボリューム"
+      snapshots: "スナップショット"
+      security_groups: "セキュリティグループ"
+      key_pairs: "キーペア"
+  instances:
+    header: "インスタンス"
+    instance_actions:
+      header: "アクション"
+      terminate: "停止"
+      reboot: "再起動"
+    list:
+      instance_id: "インスタンスID"
+      wmi_id: "WMI ID"
+      cpu_cores: "CPUコア数"
+      memory_size: "メモリーサイズ"
+      ip: "IP"
+      state: "状態"
+    details:
+      header: "詳細"
+      instance: "インスタンス"
+      instance_id: "インスタンスID"
+      wmi_id: "WMI ID"
+      cpu_cores: "CPUコア数"
+      memory_size: "メモリーサイズ"
+      status: "状態"
+      ip: "IP"
+      ssh_key_pair: "SSHキーペア"
+      created_at: "作成日"
+      security_groups: "セキュリティグループ"
+  hostpools:
+    header: "ホストプール"
+    list:
+      host_pool_id: "ホストプールID"
+      node_id: "ノードID"
+      hyper_visor: "ハイパーパイザ"
+      cpu_cores: "CPUコア数"
+      memory_size: "メモリーサイズ"
+      state: "状態"
+    details:
+      header: "詳細"
+      host_pool_id: "ホストプールID"
+      hyper_visor: "ハイパーバイザ"
+      cpu_cores: "CPUコア数"
+      memory_size: "メモリーサイズ"
+      node_id: "ノードID"
+      status: "状態"
+      created_at: "作成日"
+      updated_at: "更新日"
+  machine_images:
+    header: "マシンイメージ"
+    button:
+      launch_instance: "起動"
+    list:
+      wmi_id: "WMI ID"
+      source: "保存場所"
+      owner: "オーナー"
+      state: "状態"
+    details:
+      header: "詳細"
+      wmi_id: "WMI ID"
+      description: "詳細"
+      source: "保存場所"
+      owner: "オーナー"
+      arch: "アーキテクチャ"
+      status: "状態"
+      created_at: "作成日"
+      updated_at: "更新日"
+  volumes:
+    header: "ボリューム"
+    button:
+      create_volume: "ボリュームを作成"
+      delete_volume: "ボリュームを削除"
+      create_snapshot: "スナップショットを作成"
+    volume_actions:
+      header: "アクション"
+      attach_volume: "アタッチ"
+      detach_volume: "デタッチ"
+    list:
+      volume_id: "ボリュームID"
+      capacity: "容量"
+      snapshot_id: "スナップショットID"
+      created: "作成日"
+      status: "状態"
+    details:
+      header: "状態"
+      volume_id: "ボリュームID"
+      capacity: "容量"
+      snapshot_id: "スナップショットID"
+      status: "状態"
+      created_at: "作成日"
+      updated_at: "更新日"
+  snapshots:
+    header: "スナップショット"
+    button:
+      create_volume: "ボリュームを作成"
+      delete_snapshot: "スナップショットを削除"
+    list:
+      snapshot_id: "スナップショットID"
+      capacity: "容量"
+      origin_volume_id: "ボリューム元ID"
+      created: "作成日"
+      status: "状態"
+    details:
+      header: "詳細"
+      snapshot_id: "スナップショットID"
+      snapshot: "スナップショット"
+      capacity: "容量"
+      origin_volume_id: "ボリューム元ID"
+      status: "状態"
+      created_at: "作成日"
+      updated_at: "更新日"
+  storage_pools:
+    header: "ストレージプール"
+    list:
+      storage_pool_id: "ストレージプールID"
+      node_id: "ノードID"
+      disk_space: "ディスク容量"
+      ip: "IP"
+      status: "状態"
+    details:
+      header: "詳細"
+      sub_header: "ストレージプール"
+      storage_pool_id: "ストレージプールID"
+      ip: "IP"
+      disk_space: "ディスク容量"
+      node_id: "ノードID"
+      status: "状態"
+      created_at: "作成日"
+      updated_at: "更新日"
+  security_groups:
+    header: "セキュリティグループ"
+    button:
+      create_security_group: "セキュリティグループを作成"
+      delete_security_group: "セキュリティグループを削除"
+      edit_security_group: "編集"
+    list:
+      name: "名前"
+      descriptions: "詳細"
+      action: "アクション"
+    details:
+      header: "詳細"
+      name: "名前"
+      description: "詳細"
+      created_at: "作成日"
+      updated_at: "更新日"
+  keypairs:
+    header: "キーペア"
+    button:
+      create_keypair: "キーペアを作成"
+      delete_keypair: "削除"
+      show_secret_accesskey: "シークレットキーを取得"
+    list:
+      access_key_id: "アクセスキーID"
+      secret_access_key: "シークレットキー"
+    details:
+      header: "詳細"
+      name: "名前"
+      fingerprint: "フィンガープリント"
+      created_at: "作成日"
+      updated_at: "更新日"
+  sidemenu:
+    change_account: "アカウント変更"
+    change_language: "言語選択"
+    summary:
+      header: "サマリー"
+      dashboard: "ダッシュボード"
+    instances:
+      header: "インスタンス"
+      instances: "インスタンス"
+      host_pools: "ホストプール"
+    images:
+      header: "イメージ"
+      machine_images: "マシンイメージ"
+    block_store:
+      header: "ブロックストア"
+      volumes: "ボリューム"
+      snapshots: "スナップショット"
+      storage_pools: "ストレージプール"
+    network_security:
+      header: "セキュリティー"
+      security_groups: "セキュリティグループ"
+      key_pairs: "キーペア"
