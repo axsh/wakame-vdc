@@ -14,7 +14,6 @@ include Isono::Runner::RpcServer
 require 'fileutils'
 require 'ipaddress'
 
-
 module NicHelper
   def find_nic(ifindex = 2)
     ifindex_map = {}
@@ -45,10 +44,84 @@ module NicHelper
   end
 end
 
+module Nat
+  include NicHelper
+  include Dcmgr::Logger
+  # Returns iptables commands for natting _internal_ip_ to _external_ip_.
+  # IP addresses can be passed either as strings in cidr notation or instances of IPAddress.  
+  # You will need to respond to arp requests for the external ip. The arp_respond method takes care of that.  
+  def nat_ip(internal_ip,external_ip)
+    internal_ip = IPAddress(internal_ip) if internal_ip.is_a?(String)
+    external_ip = IPAddress(external_ip) if external_ip.is_a?(String)
+    
+    raise "Invalid IP address: #{internal_ip}" unless internal_ip.is_a?(IPAddress)
+    raise "Invalid IP address: #{external_ip}" unless external_ip.is_a?(IPAddress)
+    
+    cmds = []
+    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} ! -d #{internal_ip.address}/#{internal_ip.prefix} -j SNAT --to #{external_ip.address}"
+    cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j DNAT --to #{internal_ip.address}"
+    
+    logger.info "Natting #{internal_ip.address} to #{external_ip.address}"
+    
+    cmds
+  end
+  
+  # Takes an instance and nats it.
+  # If the instance is in a network that has a nat_network mapped to it,
+  # it will receive a second ip lease for that network. This lease will then be
+  # natted to the ip the instance already had in its own network.
+  # For example if 192.168.0.0/24 is natted to 172.16.0.0/16, then
+  # an instance with ip 192.168.0.10 might be natted to ip 172.16.46.23.
+  def nat_instance(inst_map)
+    nat_cmd = []
+    #TODO: Check if inst_map really is an instance map... if that's possible
+    
+    inst_map[:instance_nics].each {
+      |nic|       
+      in_nw = rpc.request('hva-collector', 'get_network', nic[:network_id]) 
+      nat_ips = rpc.request('hva-collector', 'get_nat_leases', nic[:uuid])   
+      
+      #Get the internal ip for this nic
+      inside_ip = IPAddress rpc.request('hva-collector', 'get_iplease_for_nic', nic[:uuid])        
+      
+      #output the commands to nat this nic and answer arp requests for its outside ip
+      nat_ips.each { |outside_ip|
+        nat_cmd << nat_ip(inside_ip,outside_ip)
+        nat_cmd << arp_respond(outside_ip)
+      }
+    }
+    
+    nat_cmd    
+  end
+  
+  # Returns ebtables command to respond to ARP requests for the address _ip_.
+  def arp_respond(ip)
+    ip = IPAddress(ip) if ip.is_a?(String)    
+    raise "Invalid IP address: #{ip}" unless ip.is_a?(IPAddress)
+  
+    #Get the mac address for our physical nic
+    nic = find_nic(@node.manifest.config.hv_ifindex)
+    #TODO: Find a prettier way to get the mac address
+    mac_addr = %x{ifconfig | grep '#{nic}' | tr -s ' ' | cut -d ' ' -f5}.chomp
+    
+    logger.info "Replying ARP requests for address: #{ip.address}"
+    
+    "ebtables -t nat -A PREROUTING -p arp --arp-ip-dst #{ip.address} --arp-opcode REQUEST -j arpreply --arpreply-mac #{mac_addr}"
+  end
+  
+  def is_natted_ip?(ip)
+    ip = IPAddress(ip) if ip.is_a?(String)
+    #TODO: put in a proper argumenterror here
+    raise "Invalid IP address: #{ip}" unless ip.is_a?(IPAddress)
+    
+    rpc.request('hva-collector', 'is_natted_ip?', ip.address) 
+  end
+end
 
 class ServiceNetfilter < Isono::NodeModules::Base
   include Dcmgr::Logger
   include NicHelper
+  include Nat
 
   initialize_hook do
     @worker_thread = Isono::ThreadPool.new(1)
@@ -104,11 +177,14 @@ class ServiceNetfilter < Isono::NodeModules::Base
         inst_maps
       }.flatten.uniq.compact
 
-      init_iptables(inst_maps) if @node.manifest.config.enable_iptables
+      init_iptables(inst_maps) if @node.manifest.config.enable_iptables     
       init_ebtables(inst_maps, viftable_map) if @node.manifest.config.enable_ebtables
+      
+      init_static_nat(inst_maps) if @node.manifest.config.enable_iptables && @node.manifest.config.enable_ebtables
+            
       logger.info("initialize netfilter")
-    rescue Exception => e
-      p e
+    #rescue Exception => e
+      #p e
     end
   end
 
@@ -134,8 +210,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
         init_netfilter if inst_map[:host_pool][:node_id] == node.node_id
       end
-    rescue Exception => e
-      p e
+    #rescue Exception => e
+      #p e
     end
   end
 
@@ -197,14 +273,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     init_cmds  = []
     basic_cmds = []
     group_cmds = []
+    nat_cmds   = []
     final_cmds = []
 
     init_cmds << "ebtables --init-table"
+    #Clear the nat table. This table is only used in build_ebtables_nat_part
+    init_cmds << "ebtables -t nat --init-table"
 
     inst_maps.each { |inst_map|
       vif_map = build_vif_map(inst_map)
 
-      basic_cmds << build_ebtables_basic_part(vif_map, inst_map)
+      basic_cmds << build_ebtables_basic_part(vif_map, inst_map)            
       group_cmds << build_ebtables_group_part(vif_map, inst_map, viftable_map)
       final_cmds << build_ebtables_final_part(vif_map)
     }
@@ -220,6 +299,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     init_cmds  = []
     basic_cmds = []
     group_cmds = []
+    nat_cmds   = []
     final_cmds = []
 
     [ 'nat', 'filter' ].each { |table|
@@ -239,6 +319,15 @@ class ServiceNetfilter < Isono::NodeModules::Base
     do_exec([init_cmds, basic_cmds, group_cmds, final_cmds])
   end
 
+  def init_static_nat(inst_maps = [])
+    nat_cmds = []
+    
+    inst_maps.each { |inst_map|
+      nat_cmds << nat_instance(inst_map)
+    }
+    
+    do_exec(nat_cmds)
+  end
 
   def build_ebtables_basic_part(vif_map, inst_map)
     basic_cmds = []
@@ -316,6 +405,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # anti spoof: ipv4
     inst_map[:ips].each { |ipv4|
+      next if is_natted_ip? ipv4
       # guest -> *
       basic_cmds << "ebtables -A s_#{vif_map[:uuid]}_arp       --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif_map[:uuid]}_arp:'       -j CONTINUE"
       basic_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif_map[:uuid]}_d_hst_arp:' -j CONTINUE"
@@ -339,16 +429,17 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ################################
     ## 2. group part
     ################################
-    same_subnet_ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
+    same_subnet_ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])    
+    same_subnet_ipv4s.delete_if {|ipv4| is_natted_ip? ipv4}
 
-    # detect node joined network(s).
     network_map = rpc.request('hva-collector', 'get_network', inst_map[:instance_nics].first[:network_id])
     raise "UnknownNetworkId" if network_map.nil?
     joined_network = IPAddress("#{network_map[:ipv4_gw]}/#{network_map[:prefix]}")
+    
     [ network_map[:dns_server], network_map[:dhcp_server] ].each { |ipv4|
-      next unless joined_network.include? IPAddress(ipv4)
+      next unless joined_network.include? IPAddress(ipv4)      
       same_subnet_ipv4s << ipv4
-    }
+    }	    
 
     # network resource node(s)
     ng_maps = rpc.request('hva-collector', 'get_netfilter_groups_of_instance', inst_map[:uuid])
@@ -408,7 +499,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     group_cmds
   end
-
 
   def build_ebtables_final_part(vif_map)
     final_cmds = []
