@@ -165,6 +165,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
       viftable_map = {}
       inst_maps = inst_maps.map { |inst_map|
+        p inst_map
         viftable_map[ inst_map[:ips].first ] = inst_map[:instance_nics].first[:uuid]
 
         # Does the hva have instance?
@@ -183,8 +184,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
       init_static_nat(inst_maps) if @node.manifest.config.enable_iptables && @node.manifest.config.enable_ebtables
             
       logger.info("initialize netfilter")
-    #rescue Exception => e
-      #p e
+    rescue Exception => e
+      p e
     end
   end
 
@@ -210,8 +211,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
         inst_map = rpc.request('hva-collector', 'get_instance', inst_id)
         init_netfilter if inst_map[:host_pool][:node_id] == node.node_id
       end
-    #rescue Exception => e
-      #p e
+    rescue Exception => e
+      p e
     end
   end
 
@@ -405,7 +406,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
     # anti spoof: ipv4
     inst_map[:ips].each { |ipv4|
-      next if is_natted_ip? ipv4
+      #next if is_natted_ip? ipv4
       # guest -> *
       basic_cmds << "ebtables -A s_#{vif_map[:uuid]}_arp       --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif_map[:uuid]}_arp:'       -j CONTINUE"
       basic_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp --protocol arp --arp-ip-src ! #{ipv4} --log-ip --log-arp --log-prefix 'Dip s_#{vif_map[:uuid]}_d_hst_arp:' -j CONTINUE"
@@ -429,8 +430,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ################################
     ## 2. group part
     ################################
-    same_subnet_ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])    
-    same_subnet_ipv4s.delete_if {|ipv4| is_natted_ip? ipv4}
+    same_subnet_ipv4s = rpc.request('hva-collector', 'get_group_instance_ipv4s', inst_map[:uuid])
 
     network_map = rpc.request('hva-collector', 'get_network', inst_map[:instance_nics].first[:network_id])
     raise "UnknownNetworkId" if network_map.nil?
