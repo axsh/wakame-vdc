@@ -27,15 +27,20 @@ DcmgrGui::Application.configure do
   # Setting proxy server
   config.proxy_host = "127.0.0.1"
   config.proxy_port = 8080
+  config.proxy_scheme = "http"
   config.proxy_dcmgr_host = "127.0.0.1"
   config.proxy_dcmgr_port = 9001
   config.proxy_root_user = 'root'
+  config.proxy_nginx = '/opt/nginx/sbin/nginx'
 
   # Setting authentication server
   config.auth_host = "127.0.0.1"
   config.auth_port = 3000
-  
+  config.auth_root_user = 'root'
+
   config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
+
+  #config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect'
 end
 
 require 'pp'

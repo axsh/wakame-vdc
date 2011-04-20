@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'isono'
+
+require 'thor'
+require 'thor/group'
+require 'erb'
+
+
+#################
+# CLI main part
+
+Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
+Dcmgr.run_initializers('sequel')
+
+class RootCli < Thor
+  register(Dcmgr::Cli::Network,  Dcmgr::Cli::Network.namespace, "network sub-command", "Operations for network information")
+  register(Dcmgr::Cli::Host, Dcmgr::Cli::Host.namespace, "host sub-command", "Operations for host node")
+  register(Dcmgr::Cli::Storage, Dcmgr::Cli::Storage.namespace, "storage sub-command", "Operations for storage node")
+end
+
+RootCli.start

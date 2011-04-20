@@ -1,16 +1,11 @@
-#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-
-require 'dcmgr/rubygems'
-require 'dcmgr'
+require 'thor'
 require 'isono'
 
-require 'thor'
-require 'erb'
-
-class HostPoolCli < Thor
+module Dcmgr::Cli
+class Host < Base
+  namespace :host
   include Dcmgr::Models
   
   desc "add NODE_ID", "Register a new host pool node"
@@ -58,14 +53,4 @@ Node ID\tState
 __END
   end
 end
-
-
-
-#################
-# CLI main part
-
-
-Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
-Dcmgr.run_initializers('sequel')
-
-HostPoolCli.start
+end

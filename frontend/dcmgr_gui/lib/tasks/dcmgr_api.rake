@@ -13,14 +13,38 @@ namespace :api do
   task :start_proxy => :environment do |t,args|
     
     user = DcmgrGui::Application.config.proxy_root_user
-    exec "sudo -u #{user} nginx -c #{Dir.getwd}/config/proxy.conf"
+    nginx = DcmgrGui::Application.config.proxy_nginx
+    exec "sudo -u #{user} #{nginx} -c #{Dir.getwd}/config/proxy.conf"
     puts "Nginx proxy server up and running."
   end
 
   desc 'Stop proxy server'
   task :stop_proxy => :environment do |t,args|
     user = DcmgrGui::Application.config.proxy_root_user
-    exec "sudo -u #{user} nginx -s stop -c #{Dir.getwd}/config/proxy.conf"
+    nginx = DcmgrGui::Application.config.proxy_nginx
+    exec "sudo -u #{user} #{nginx} -s stop -c #{Dir.getwd}/config/proxy.conf"
     puts "Nginx proxy server shut down."
   end
+
+  desc 'Start auth server'
+  task :start_auth_server => :environment do |t,args|
+    rackup_file = "#{Dir.getwd}/app/api/config.ru"
+    pid_file = "/var/run/wakame-auth.pid"
+    host = DcmgrGui::Application.config.auth_host
+    port = DcmgrGui::Application.config.auth_port
+    command = "sudo rackup #{rackup_file} -D -o #{host} -p #{port} -P #{pid_file}"
+    exec "#{command} > /dev/null || exit 0"
+    puts "Auth server up and running."
+  end
+  
+  desc 'Stop auth server'
+  task :stop_auth_server => :environment do |t,args|
+    pid_file = "/var/run/wakame-auth.pid"
+    if File.exists? pid_file
+      command = "sudo kill -SIGINT `cat #{pid_file}`"
+      exec command
+      puts "Auth server shut down."
+    end
+  end
+
 end
