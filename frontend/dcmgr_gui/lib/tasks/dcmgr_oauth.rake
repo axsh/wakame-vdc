@@ -1,8 +1,19 @@
 namespace :oauth do
   desc 'Create oauth consumer'
-  task :create_consumer,[:login_id] => :environment do |t,args|
+  task :create_consumer,[:uuid] => :environment do |t,args|
     
-    user = User.find(:login_id => args[:login_id])
+    if args[:uuid].nil?
+      puts 'Please set the uuid.'
+      exit(0)
+    end
+
+    uuid = args[:uuid].split('-')[1]
+    user = User.find(:uuid => uuid)
+    
+    if user.nil?
+      puts "User not found."
+      exit(0)
+    end
     
     oauth_consumer = OauthConsumer.find(:user_id => user.id)
     
