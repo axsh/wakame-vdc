@@ -165,7 +165,6 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
       viftable_map = {}
       inst_maps = inst_maps.map { |inst_map|
-        p inst_map
         viftable_map[ inst_map[:ips].first ] = inst_map[:instance_nics].first[:uuid]
 
         # Does the hva have instance?
