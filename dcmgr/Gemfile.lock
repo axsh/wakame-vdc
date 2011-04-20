@@ -67,4 +67,4 @@ DEPENDENCIES
   sequel (= 3.21.0)
   sinatra (= 1.2.1)
   statemachine (= 1.1.1)
-  thor
+  thor (= 0.14.6)

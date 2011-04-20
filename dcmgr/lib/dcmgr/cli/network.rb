@@ -65,6 +65,24 @@ class Network < Base
     abort("Invalid UUID Format: #{uuid}")
   end
 
+  desc "nat UUID [options]", "Set or clear nat mapping for a network."
+  method_option :nat_network_id, :type => :string, :aliases => "-n", :desc => "The network that this network will be natted to."
+  method_option :clear, :type => :boolean, :aliases => "-c", :desc => "Clears a previously natted network."
+  def nat(uuid)
+    in_nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+    ex_nw = M::Network[options[:nat_network_id]] || abort("Unknown network UUID: #{uuid}") unless options[:nat_network_id].nil?
+
+    if options[:clear] then
+      in_nw.set_only({:nat_network_id => nil},:nat_network_id)
+      in_nw.save_changes
+    else
+      in_nw.set_only({:nat_network_id => ex_nw.id},:nat_network_id)
+      in_nw.save_changes
+    end
+  rescue InvalidUUIDError => e
+    abort("Invalid UUID Format: #{uuid}")
+  end
+
   desc "show [UUID] [options]", "Show network(s)"
   method_option :vlan_id, :type => :numeric, :aliases => "-l", :desc => "Show networks in the VLAN ID"
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "Show networks with the account"
@@ -97,7 +115,7 @@ __END
         cond[:vlan_lease_id] = vlan.id
       end
 
-      nw = Network.filter(cond).all
+      nw = M::Network.filter(cond).all
       puts ERB.new(<<__END, nil, '-').result(binding)
 <%- nw.each { |row| -%>
 <%= row.canonical_uuid %>\t<%= row.ipaddress.network %>/<%= row.prefix %>\t<%= (row.vlan_lease && row.vlan_lease.tag_id) %>

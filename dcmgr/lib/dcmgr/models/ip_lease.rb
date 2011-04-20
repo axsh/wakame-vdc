@@ -36,6 +36,10 @@ module Dcmgr::Models
       end
     end
 
+    def is_natted?
+      instance_nic.network_id != network_id
+    end
+
     def self.lease(instance_nic, network)
       raise TypeError unless instance_nic.is_a?(InstanceNic)
       raise TypeError unless network.is_a?(Network)

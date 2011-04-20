@@ -160,7 +160,8 @@ module Dcmgr::Models
                     :host_pool=>host_pool.to_hash,
                     :instance_nics=>instance_nic.map {|n| n.to_hash },
                     :instance_spec=>instance_spec.to_hash,
-                    :ips => instance_nic.map { |n| n.ip.map {|i| i.ipv4} if n.ip }.flatten,
+                    :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
+                    :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                   })
       h[:volume]={}
       if self.volume
@@ -210,7 +211,8 @@ module Dcmgr::Models
           if n.ip
             h[:network] << {
               :network_name => n.network.canonical_uuid,
-              :ipaddr => n.ip.map {|lease| lease.ipv4}
+              :ipaddr => n.ip.map {|lease| lease.ipv4 unless lease.is_natted?}.compact,
+              :nat_addr => n.ip.map {|lease| lease.ipv4 if lease.is_natted?}.compact
             }
           end
         }
