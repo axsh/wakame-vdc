@@ -1,18 +1,11 @@
-#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-
-require 'dcmgr/rubygems'
-require 'dcmgr'
-require 'isono'
-
 require 'thor'
-require 'erb'
-require 'ipaddress'
 
-class NetworkCli < Thor
-  include Dcmgr::Models
+module Dcmgr::Cli
+class Network < Base
+  namespace :network
+  M=Dcmgr::Models
   
   desc "add [options]", "Register a new network entry"
   method_option :ipv4_gw, :type => :string, :required => true, :desc => "Gateway address for IPv4 network."
@@ -32,23 +25,23 @@ class NetworkCli < Thor
                 0
               end
     
-    nw = Network.create({:ipv4_gw => options[:ipv4_gw],
-                          :prefix => options[:prefix],
-                          :dns_server => options[:dns_server],
-                          :domain_name => options[:domain_name],
-                          :dhcp_server => options[:dhcp_server],
-                          :metadata_server => options[:metadata_server],
-                          :description => options[:description],
-                          :account_id => options[:account_id],
-                          :vlan_lease_id => vlan_pk,
-                         })
+    nw = M::Network.create({:ipv4_gw => options[:ipv4_gw],
+                             :prefix => options[:prefix],
+                             :dns_server => options[:dns_server],
+                             :domain_name => options[:domain_name],
+                             :dhcp_server => options[:dhcp_server],
+                             :metadata_server => options[:metadata_server],
+                             :description => options[:description],
+                             :account_id => options[:account_id],
+                             :vlan_lease_id => vlan_pk,
+                           })
 
     puts nw.canonical_uuid
   end
 
   desc "del UUID", "Deregister a network entry"
   def del(uuid)
-    nw = Network[uuid] || abort("Unknown network UUID: #{uuid}")
+    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
     nw.delete
   rescue InvalidUUIDError => e
     abort("Invalid UUID Format: #{uuid}")
@@ -65,7 +58,7 @@ class NetworkCli < Thor
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this."
   def modify(uuid)
-    nw = Network[uuid] || abort("Unknown network UUID: #{uuid}")
+    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
     nw.set_only(options, [:ipv4_gw, :prefix, :domain_name, :dns_server, :dhcp_server, :metadata_server, :vlan_id, :description, :account_id])
     nw.save_changes
   rescue InvalidUUIDError => e
@@ -77,7 +70,7 @@ class NetworkCli < Thor
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "Show networks with the account"
   def show(uuid=nil)
     if uuid
-      nw = Network[uuid] || raise(Thor::Error, "Unknown network UUID: #{uuid}")
+      nw = M::Network[uuid] || raise(Thor::Error, "Unknown network UUID: #{uuid}")
       puts ERB.new(<<__END, nil, '-').result(binding)
 Network UUID: <%= nw.canonical_uuid %>
 
@@ -112,15 +105,6 @@ __END
 __END
     end
   end
+
 end
-
-
-
-#################
-# CLI main part
-
-
-Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
-Dcmgr.run_initializers('sequel')
-
-NetworkCli.start
+end

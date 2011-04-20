@@ -139,4 +139,11 @@ module Dcmgr
   autoload :Tags, 'dcmgr/tags'
 
   autoload :RequestLogger, 'dcmgr/request_logger'
+
+  module Cli
+    autoload :Base, 'dcmgr/cli/base'
+    autoload :Network, 'dcmgr/cli/network'
+    autoload :Host, 'dcmgr/cli/host'
+    autoload :Storage, 'dcmgr/cli/storage'
+  end
 end
