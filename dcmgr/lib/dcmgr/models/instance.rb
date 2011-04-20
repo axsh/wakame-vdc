@@ -211,7 +211,8 @@ module Dcmgr::Models
           if n.ip
             h[:network] << {
               :network_name => n.network.canonical_uuid,
-              :ipaddr => n.ip.map {|lease| lease.ipv4}
+              :ipaddr => n.ip.map {|lease| lease.ipv4 unless lease.is_natted?}.compact,
+              :nat_addr => n.ip.map {|lease| lease.ipv4 if lease.is_natted?}.compact
             }
           end
         }
