@@ -113,12 +113,10 @@ DcmgrGUI.prototype.imagePanel = function(){
               +"&user_data="+user_data
               +"&"+nf_strings
               +"&ssh_key="+ssh_key_pair;
-          
-    $.ajax({
-      "type": "POST",
-      "async": true,
+    
+    request = new DcmgrGUI.Request;
+    request.post({
       "url": '/instances',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
        bt_refresh.element.trigger('dcmgrGUI.refresh');
@@ -141,14 +139,13 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#select_ssh_key_pair').empty().html(loading_image);
       $(this).find("#left_select_list").mask($.i18n.prop('loading_parts'));
       
+      var request = new DcmgrGUI.Request;
+      
       parallel({
         //get host_pools
         host_pools: 
-          $.ajax({
-            "type": "GET",
-            "async": true,
+          request.get({
             "url": '/host_pools/show_host_pools.json',
-            "dataType": "json",
             success: function(json,status){
               var select_html = '<select id="host_pool" name="host_pool"></select>';
               $(self).find('#select_host_pool').empty().html(select_html);
@@ -165,16 +162,13 @@ DcmgrGUI.prototype.imagePanel = function(){
           }),
         //get ssh key pairs
         ssh_keypairs: 
-          $.ajax({
-            "type": "GET",
-            "async": true,
+          request.get({
             "url": '/keypairs/all.json',
-            "dataType": "json",
             "data": "",
             success: function(json,status){
               var select_html = '<select id="ssh_key_pair" name="host_pool"></select>';
               $(self).find('#select_ssh_key_pair').empty().html(select_html);
-              
+
               var results = json.ssh_key_pair.results;
               var size = results.length;
               var select_keypair = $(self).find('#ssh_key_pair');
@@ -188,11 +182,8 @@ DcmgrGUI.prototype.imagePanel = function(){
         }),
         //get security groups
         security_groups: 
-          $.ajax({
-            "type": "GET",
-            "async": true,
+          request.get({
             "url": '/security_groups/all.json',
-            "dataType": "json",
             "data": "",
             success: function(json,status){
               var data = [];

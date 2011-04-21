@@ -86,12 +86,10 @@ DcmgrGUI.prototype.volumePanel = function(){
      return false;
     }
     var data = "size="+volume_size+"&unit="+unit+"&storage_pool_id="+storage_pool_id;
-
-    $.ajax({
-      "type": "POST",
-      "async": true,
+    
+    var request = new DcmgrGUI.Request;
+    request.post({
       "url": '/volumes',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
@@ -110,11 +108,10 @@ DcmgrGUI.prototype.volumePanel = function(){
       var self = this;
       var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
       $(this).find('#select_storage_pool').empty().html(loading_image);
-      $.ajax({
-        "type": "GET",
-        "async": true,
+      
+      var request = new DcmgrGUI.Request;
+      request.get({
         "url": '/storage_pools/show_storage_pools.json',
-        "dataType": "json",
         success: function(json,status){
           var select_html = '<select id="storage_pool" name="storage_pool"></select>';
           $(self).find('#select_storage_pool').empty().html(select_html);
@@ -157,17 +154,17 @@ DcmgrGUI.prototype.volumePanel = function(){
      ids.push($(this).text())
     })
 
-    var data = $.param({ids:ids})
-    $.ajax({
-      "type": "DELETE",
-      "async": true,
+    var data = $.param({ids:ids});
+    
+    var request = new DcmgrGUI.Request;
+    request.delete({
       "url": '/volumes',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
+    
     $(this).dialog("close");
   }
   
@@ -188,17 +185,17 @@ DcmgrGUI.prototype.volumePanel = function(){
      ids.push($(this).text())
     })
 
-    var data = $.param({ids:ids})
-    $.ajax({
-      "type": "POST",
-      "async": true,
+    var data = $.param({ids:ids});
+    
+    var request = new DcmgrGUI.Request;
+    request.post({
       "url": '/snapshots',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
+    
     $(this).dialog("close");
   }
   
@@ -219,16 +216,15 @@ DcmgrGUI.prototype.volumePanel = function(){
     var data = "volume_id=" + volume_id
     + "&instance_id=" + instance_id;
 
-    $.ajax({
-      "type": "PUT",
-      "async": true,
+    var request = new DcmgrGUI.Request;
+    request.put({
       "url": '/volumes/attach',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
+    
     $(this).dialog("close");
   }
   
@@ -250,17 +246,17 @@ DcmgrGUI.prototype.volumePanel = function(){
      ids.push($(this).text())
     })
 
-    var data = $.param({ids:ids})
-    $.ajax({
-      "type": "PUT",
-      "async": true,
+    var data = $.param({ids:ids});
+    
+    var request = new DcmgrGUI.Request;
+    request.put({
       "url": '/volumes/detach',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
+    
     $(this).dialog("close");
   }
   
