@@ -263,6 +263,7 @@ module Dcmgr::Models
       vendor_id ||= '00:ff:f1'
       nic = InstanceNic.new(:mac_addr=>vendor_id)
       nic.network = network
+      nic.nat_network = network.nat_network
       nic.instance = self
       nic.save
     end

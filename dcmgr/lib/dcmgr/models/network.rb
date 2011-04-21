@@ -50,6 +50,10 @@ module Dcmgr::Models
               })
     end
 
+    def nat_network
+      Network.find(:id => self.nat_network_id)
+    end
+
     def ipaddress
       IPAddress::IPv4.new("#{self.ipv4_gw}/#{self.prefix}")
     end
