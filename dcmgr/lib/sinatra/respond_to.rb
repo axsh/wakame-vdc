@@ -41,6 +41,9 @@ module Sinatra
       #
       # and the format will automatically be available in <tt>format</tt>
       app.before do
+
+        response['Content-Type'] = '' 
+        
         # Let through sinatra image urls in development
         next if self.class.development? && request.path_info =~ %r{/__sinatra__/.*?.png}
 
