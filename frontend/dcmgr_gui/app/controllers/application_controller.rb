@@ -5,16 +5,18 @@ class ApplicationController < ActionController::Base
   before_filter :set_locale
 
   def set_locale
-    if session[:locale]
-      language = params[:select_language] if params[:select_language]
-      if language
-        I18n.locale = language[:locale] if language
-      end
+    language = params[:select_language] if params[:select_language]
+    if language
+      I18n.locale = language['locale']
     else
-      I18n.locale = I18n.default_locale.to_s
+      if session[:locale]
+        I18n.locale = session[:locale]
+      else
+        I18n.locale = I18n.default_locale.to_s
+      end
     end
-    session[:locale] = I18n.locale
     
+    session[:locale] = I18n.locale
     @locale = Array.new
     @locale.push(['English','en'])
     @locale.push(['日本語','ja'])
