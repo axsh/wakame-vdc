@@ -131,7 +131,7 @@ module Dcmgr::Models
 
       # sum() returns nil if there is no instance rows.
       lives_weight = self.class.filter(:account_id=>self.account_id).lives.sum(:quota_weight) || 0.0
-      unless self.account.quota.instance_total_weight <= lives_weight
+      unless lives_weight <= self.account.quota.instance_total_weight
         raise "Out of quota limit: #{self.account_id}'s current weight capacity: #{lives_weight} (<= #{self.account.quota.instance_total_weight})"
       end
 
