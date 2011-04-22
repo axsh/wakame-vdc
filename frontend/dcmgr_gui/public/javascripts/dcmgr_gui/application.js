@@ -87,22 +87,23 @@ jQuery(function($){
   $('#select_language_locale').bind('change', function(){
     $('#select_language')[0].submit();
 	})
-	
+  
   $(document).ajaxError(function(e, xhr, settings, exception) {
-    
+    var message = '';
     if(xhr.status==0){
-      alert('Please Check Your Network.');
+      message = 'Please Check Your Network.';
     }else if(xhr.status==404){
-      alert('Requested URL not found.');
+      message = 'Requested URL not found.';
     }else if(xhr.status==500){
-      alert('Internel Server Error.');
+      message = 'Internal Server Error';
     }else if(e=='parsererror'){
-      alert('Parsing JSON Request failed.');
+      message = 'Parsing JSON Request failed.';
     }else if(e=='timeout'){
-      alert('Request Time out.');
+      message = 'Request Time out.';
     }else {
-      alert('Unknow Error.\n'+x.responseText);
+      message = 'Unknow Error.\n'+x.responseText;
     }
+    Sexy.error(message);
   });
   
 	//global
