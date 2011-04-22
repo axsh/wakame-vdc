@@ -6,15 +6,26 @@ namespace :db do
   
   task :sample_data => :environment do
     User.create(:uuid => '00000000',
-                :login_id => 'demo',
-                :password => User.encrypt_password('demo'),
+                :login_id => 'wakame',
+                :password => User.encrypt_password('wakame'),
                 :primary_account_id => '00000000'
                 )
 
-    Account.create(:uuid => '00000000',
-                   :name => 'demo',
+    Account.create(:uuid => 'shpoolxx',
+                   :name => 'wakame',
                    :enable => 1
                    )
+                   
+    User.create(:uuid => 'shpoolxx',
+               :login_id => 'demo',
+               :password => User.encrypt_password('demo'),
+               :primary_account_id => 'shpoolxx'
+               )
+
+    Account.create(:uuid => '00000000',
+                  :name => 'demo',
+                  :enable => 1
+                  )
 
     sql = 'insert into users_accounts(user_id,account_id) values(?,?)'
     DB = Schema.current_connect
