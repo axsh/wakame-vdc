@@ -7,14 +7,20 @@ database_url 'mysql://localhost/dcmgr?user=root'
 # AMQP broker to be connected.
 amqp_server_uri 'amqp://192.168.2.25/'
 
-# UUID for shared host pool.
-default_shared_host_pool 'tag-xxxxxxxx'
+# UUID for shared host pool or group.
+default_shared_host_pool 'tag-shhost'
 
-# UUID for shared network pool.
-default_shared_network_pool 'tag-xxxxxxxx'
+# UUID for shared network pool or group.
+default_shared_network_pool 'tag-shnet'
+
+# UUID for shared storage pool or group.
+default_shared_storage_pool 'tag-shstor'
 
 # system wide limit size in MB for creating new volume.
 # (not affect at cloning from snapshot)
 create_volume_max_size 3000
 create_volume_min_size 10
 
+# Default account quota limit
+account_instance_total_weight 100.0
+account_volume_total_size 100000 # 100GB

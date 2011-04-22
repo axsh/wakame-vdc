@@ -86,7 +86,7 @@ module Dcmgr
                           :InstanceNetfilterGroup,
                           :InstanceSpec, :InstanceNic, :Network, :IpLease,
                           :SshKeyPair, :History, :HostnameLease, :MacLease,
-                          :VlanLease,
+                          :VlanLease, :Quota,
                          ].freeze
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
@@ -113,6 +113,7 @@ module Dcmgr
     autoload :HostnameLease, 'dcmgr/models/hostname_lease'
     autoload :MacLease, 'dcmgr/models/mac_lease'
     autoload :VlanLease, 'dcmgr/models/vlan_lease'
+    autoload :Quota, 'dcmgr/models/quota'
   end
 
   module Endpoints
