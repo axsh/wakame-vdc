@@ -13,7 +13,7 @@ module Dcmgr::Models
       Fixnum :instance_nic_id
       Fixnum :network_id, :null=>false
       String :ipv4, :size=>50
-      Fixnum :type, :null=>false, :default=>TYPE_AUTO
+      Fixnum :alloc_type, :null=>false, :default=>TYPE_AUTO
       Text :description
       
       index [:network_id, :ipv4], {:unique=>true}
