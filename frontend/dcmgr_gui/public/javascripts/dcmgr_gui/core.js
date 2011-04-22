@@ -23,6 +23,33 @@ DcmgrGUI.Class = (function() {
     }
 })();
 
+DcmgrGUI.Request = DcmgrGUI.Class.create({
+  initialize: function(){
+    
+  },
+  get: function(params){
+    params['type'] = 'GET';
+    return this._request(params);
+  },
+  put: function(params){
+    params['type'] = 'PUT';
+    return this._request(params)
+  },
+  post: function(params){
+    params['type'] = 'POST';
+    return this._request(params);
+  },
+  delete: function(params){
+    params['type'] = 'DELETE';
+    return this._request(params);
+  },
+  _request: function(params){
+    params['async'] = true;
+    params['dataType'] = 'json';
+    return $.ajax(params);
+  }
+});
+  
 DcmgrGUI.Filter = DcmgrGUI.Class.create({
   initialize: function(){
     this.filters = [];
@@ -277,30 +304,25 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
     this.template = params.template_id;
     this.filter = new DcmgrGUI.Filter();
   },
-  update:function(request,async){
-    this.request = request;
-    this.async = async;
+  update:function(params,async){
     var self = this;
 
     $("#list_load_mask").mask($.i18n.prop('loading_parts'));
     self.element.trigger('dcmgrGUI.beforeUpdate');
-    $.ajax({
-       async: async||true,
-       url: request.url,
-       dataType: "json",
-       data: request.data,
-       success: function(json,status,xhr){
-         self.filter.execute(json); 
-         self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
-         self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
-       },
-       complete: function(xhr, status) {
-         $("#list_load_mask").unmask();
-       },
-       error: function(xhr, status, error){
-         alert('Dcmgr connection '+status);
-       }
-     });
+
+    var request = new DcmgrGUI.Request;
+    request.get({
+      url: params.url,
+      data: params.data,
+      success: function(json,status,xhr){
+        self.filter.execute(json); 
+        self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
+        self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
+      },
+      complete: function(xhr, status) {
+        $("#list_load_mask").unmask();
+      }
+    });
   },
 });
 
