@@ -98,6 +98,9 @@ Tag VLAN: <%= nw.vlan_lease_id == 0 ? 'none' : nw.vlan_lease.tag_id %>
 IPv4:
   Network address: <%= nw.ipaddress.network %>/<%= nw.prefix %>
   Gateway address: <%= nw.ipv4_gw %>
+<%- if nw.nat_network_id -%>
+  Outside NAT network address: <%= nw.nat_network.ipaddress.network %>/<%= nw.nat_network.prefix %> (<%= nw.nat_network.canonical_uuid %>)
+<%- end -%>
 DHCP Information:
   DHCP Server: <%= nw.dhcp_server %>
   DNS Server: <%= nw.dns_server %>
