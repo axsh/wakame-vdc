@@ -3,9 +3,9 @@
 #------------------------
 
 # Database connection string
-database_url 'mysql://localhost/dcmgr?user=root'
+database_url 'mysql://localhost/wakame_dcmgr?user=root'
 # AMQP broker to be connected.
-amqp_server_uri 'amqp://192.168.2.25/'
+amqp_server_uri 'amqp://localhost/'
 
 # UUID for shared host pool or group.
 default_shared_host_pool 'tag-shhost'

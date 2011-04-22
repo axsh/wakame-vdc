@@ -119,7 +119,7 @@ module Dcmgr
       def create_volume_from_snapshot(account_id, snapshot_id)
         vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
         raise UnknownVolumeSnapshot if vs.nil?
-        raise InvalidRequestCredentials unless vs.state.to_s == 'available'
+        raise InvalidVolumeSnapshotState, "Invalid snapshot state (expect 'available'): #{vs.state.to_s}" unless vs.state.to_s == 'available'
         vs.create_volume(account_id)
       end
         
@@ -129,126 +129,6 @@ module Dcmgr
           return true
         else
           return false
-        end
-      end
-
-      collection :accounts do
-        operation :index do
-          control do
-          end
-        end
-
-        operation :show do
-          control do
-            a = find_account(params[:id])
-            response_to(a.to_hash)
-          end
-        end
-
-        operation :create do
-          description 'Register a new account'
-          control do
-            a = Models::Account.create()
-            response_to(a.to_hash)
-          end
-        end
-
-        operation :destroy do
-          description 'Unregister the account.'
-          # Associated resources all have to be destroied prior to
-          # removing the account.
-          #param :id, :string, :required
-          control do
-            a = find_account(params[:id])
-            a.destroy
-
-            response_to([a.canonical_uuid])
-          end
-        end
-
-        operation :enable, :method=>:get, :member=>true do
-          description 'Enable the account for all operations'
-          control do
-            a = find_account(params[:id])
-            a.enabled = Models::Account::ENABLED
-            a.save
-
-            respond_to { |f|
-              f.json { {} }
-            }
-          end
-        end
-
-        operation :disable, :method=>:get, :member=>true do
-          description 'Disable the account for all operations'
-          control do
-            a = find_account(params[:id])
-            a.enabled = Models::Account::DISABLED
-            a.save
-
-            respond_to { |f|
-              f.json { {} }
-            }
-          end
-        end
-
-        operation :add_tag, :method=>:get, :member=>true do
-          description 'Add a tag belongs to the account'
-          #param :tag_name, :string, :required
-          control do
-            a = find_account(params[:id])
-
-            tag_class = Models::Tags.find_tag_class(params[:tag_name])
-            raise "UnknownTagClass: #{params[:tag_name]}" if tag_class.nil?
-
-            a.add_tag(tag_class.new(:name=>params[:name]))
-          end
-        end
-
-        operation :remove_tag, :method=>:get, :member=>true do
-          description 'Unlink the associated tag of the account'
-          #param :tag_id, :string, :required
-          control do
-            a = find_account(params[:id])
-            t = a.tags_dataset.filter(:uuid=>params[:tag_id]).first
-            if t
-              a.remove_tag(t)
-            else
-              raise "Unknown or disassociated tag for #{a.cuuid}: #{params[:tag_id]}"
-            end
-          end
-        end
-      end
-
-      collection :tags do
-        operation :create do
-          description 'Register new tag to the account'
-          #param :tag_name, :string, :required
-          #param :type_id, :fixnum, :optional
-          #param :account_id, :string, :optional
-          control do
-            tag_class = Models::Tag.find_tag_class(params[:tag_name])
-
-            tag_class.create
-
-          end
-        end
-
-        operation :show do
-          #param :account_id, :string, :optional
-          control do
-          end
-        end
-
-        operation :destroy do
-          description 'Create a new user'
-          control do
-          end
-        end
-
-        operation :update do
-          control do
-          end
         end
       end
 
@@ -265,7 +145,7 @@ module Dcmgr
             limit = limit < 1 ? nil : limit
             
             total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = total_ds.dup.order(:id)
             partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
             res = [{
@@ -354,8 +234,8 @@ module Dcmgr
               pool = Tags::NetworkPool[Dcmgr.conf.default_shared_network_pool]
               network = pool.pick
             end
-            raise "Can not find the network" if network.nil?
-            raise "Out of IP addresses in the network" unless network.available_ip_nums > 0
+            raise UnknownNetworkID, "Can not find the network" if network.nil?
+            raise OutOfNetworkCapacity, "Out of IP addresses in the network" unless network.available_ip_nums > 0
 
             inst = hostnode.create_instance(@account, wmi, spec, network) do |i|
               # TODO: do not use rand() to decide vnc port.
@@ -395,7 +275,7 @@ module Dcmgr
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
               # create new volume from snapshot.
-              snapshot_id = wmi.source[:snapshot_id]
+              snapshot_id = wmi.metadata[:snapshot_id]
               vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
 
               vol.boot_dev = 1
@@ -405,7 +285,7 @@ module Dcmgr
             when Models::Image::BOOT_DEV_LOCAL
               res = Dcmgr.messaging.submit("kvm-handle.#{hostnode.node_id}", 'run_local_store', inst.canonical_uuid)
             else
-              raise "Unknown boot type"
+              raise "Unknown boot device type"
             end
             
             response_to(inst.to_api_document)
@@ -441,6 +321,10 @@ module Dcmgr
           control do
             Models::Instance.lock!
             i = find_by_uuid(:Instance, params[:id])
+            if examine_owner(i)
+            else
+              raise OperationNotPermitted
+            end
           end
         end
       end
@@ -1182,7 +1066,7 @@ module Dcmgr
             limit = limit < 1 ? nil : limit
             
             total_ds = Models::InstanceSpec.where(:account_id=>[@account.canonical_uuid,
-                                                                Models::Account::SystemAccout::SharedPoolAccount.uuid,
+                                                                Models::Account::SystemAccount::SharedPoolAccount.uuid,
                                                                ])
             partial_ds  = total_ds.dup.order(:id)
             partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
