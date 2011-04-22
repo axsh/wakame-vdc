@@ -38,5 +38,11 @@ module Dcmgr::Models
       super.merge({:config=>self.config, # yaml -> Hash
                   })
     end
+
+    def to_api_document
+      doc = to_hash
+      doc.delete(:config)
+      doc
+    end
   end
 end

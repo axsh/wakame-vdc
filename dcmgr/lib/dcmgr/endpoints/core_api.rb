@@ -1169,6 +1169,35 @@ module Dcmgr
            end
          end
       end
+
+      collection :instance_specs do
+        operation :index do
+          description 'Show list of instance template'
+          # params start, fixnum, optional 
+          # params limit, fixnum, optional
+          control do
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? nil : limit
+            
+            total_ds = Models::InstanceSpec.where(:account_id=>[@account.canonical_uuid,
+                                                                Models::Account::SystemAccout::SharedPoolAccount.uuid,
+                                                               ])
+            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
+
+            res = [{
+              :owner_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|i| i.to_api_document }
+            }]
+            
+            response_to(res)
+          end
+        end
+      end
       
     end
   end
