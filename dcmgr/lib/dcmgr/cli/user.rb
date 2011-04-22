@@ -1,48 +1,45 @@
-#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-#begin
-  #require 'rubygems'
-  #require 'bundler'
-  #Bundler.setup(:default)
-#rescue Exception
-#end
-
-#EMPTY_RECORD="<NULL>"
-
-#TODO: add thor to bundle install
-#require 'thor'
 require 'sequel'
-#require 'yaml'
-
-#get the database details
-#TODO:get this path in a less hard-coded way?
-content = File.new(File.expand_path('../../../../../frontend/dcmgr_gui/config/database.yml', __FILE__)).read
-settings = YAML::load content
-
-#load the database variables
-#TODO: get environment from RAILS_ENV
-db_environment = 'development'
-db_adapter = settings[db_environment]['adapter']
-db_host    = settings[db_environment]['host']
-db_name    = settings[db_environment]['database']
-db_user    = settings[db_environment]['user']
-db_pwd     = settings[db_environment]['password']
-
-#Connect to the database
-#url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
-#DB = Sequel.connect(url)
-
-#load the cli environment
-$LOAD_PATH.unshift File.expand_path('../../../frontend/dcmgr_gui/config', __FILE__)
-$LOAD_PATH.unshift File.expand_path('../../../frontend/dcmgr_gui/app/models', __FILE__)
-
-require 'environment-cli'
+require 'yaml'
 
 #TODO: Print only the first line of an exception?
 module Dcmgr::Cli
-  class UsersCli < Thor
+  class UsersCli < Base
     namespace :user
+
+    EMPTY_RECORD="<NULL>"
+
+    no_tasks {
+      def before_task
+        # Setup DB connections and load paths for dcmgr_gui
+        root_dir = File.expand_path('../../../', __FILE__)
+        
+        #get the database details
+        #TODO:get this path in a less hard-coded way?
+        content = File.new(File.expand_path('../../frontend/dcmgr_gui/config/database.yml', root_dir)).read
+        settings = YAML::load content
+        
+        #load the database variables
+        #TODO: get environment from RAILS_ENV
+        db_environment = 'development'
+        db_adapter = settings[db_environment]['adapter']
+        db_host    = settings[db_environment]['host']
+        db_name    = settings[db_environment]['database']
+        db_user    = settings[db_environment]['user']
+        db_pwd     = settings[db_environment]['password']
+        
+        #Connect to the database
+        #url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
+        #DB = Sequel.connect(url)
+        
+        #load the cli environment
+        $LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/config', root_dir)
+        $LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/app/models', root_dir)
+        
+        require 'environment-cli'
+      end
+    }
     
     desc "create", "Create a new user."
     method_option :name, :type => :string, :required => true, :aliases => "-n", :desc => "The name for the new user." #Maximum size: 200

@@ -1,45 +1,50 @@
 # -*- coding: utf-8 -*-
 
-require 'thor'
-
-EMPTY_RECORD="<NULL>"
-
-#get the database details
-#TODO:get this path in a less hard-coded way?
-content = File.new(File.expand_path('../../../../../frontend/dcmgr_gui/config/database.yml', __FILE__)).read
-settings = YAML::load content
-
-#load the database variables
-#TODO: get environment from RAILS_ENV
-db_environment = 'development'
-db_adapter     = settings[db_environment]['adapter']
-db_host        = settings[db_environment]['host']
-db_name        = settings[db_environment]['database']
-db_user        = settings[db_environment]['user']
-db_pwd         = settings[db_environment]['password']
-
-#Connect to the database
-url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
-DB = Sequel.connect(url)
-
-#load the cli environment
-$LOAD_PATH.unshift File.expand_path('../../../../../frontend/dcmgr_gui/config', __FILE__)
-$LOAD_PATH.unshift File.expand_path('../../../../../frontend/dcmgr_gui/app/models', __FILE__)
-#$LOAD_PATH.unshift File.expand_path('../../dcmgr/lib/dcmgr/models', __FILE__)
-#require 'account'
-require 'environment-cli'
-
-#Associate the models with their respective database
-Account.db = DB
-User.db = DB
-#Dcmgr::Models::Account.db = DB_back
+require 'sequel'
+require 'yaml'
 
 #TODO: Make sure :desc is filled in for every option
 module Dcmgr::Cli
   class AccountCli < Base
     namespace :account
     M=Dcmgr::Models
-    
+    EMPTY_RECORD="<NULL>"
+
+    no_tasks {
+      def before_task
+        # Setup DB connections and load paths for dcmgr_gui
+        root_dir = File.expand_path('../../../', __FILE__)
+        
+        #get the database details
+        #TODO:get this path in a less hard-coded way?
+        content = File.new(File.expand_path('../../frontend/dcmgr_gui/config/database.yml', root_dir)).read
+        settings = YAML::load content
+        
+        #load the database variables
+        #TODO: get environment from RAILS_ENV
+        db_environment = 'development'
+        db_adapter     = settings[db_environment]['adapter']
+        db_host        = settings[db_environment]['host']
+        db_name        = settings[db_environment]['database']
+        db_user        = settings[db_environment]['user']
+        db_pwd         = settings[db_environment]['password']
+        
+        #Connect to the database
+        url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
+        db = Sequel.connect(url)
+        
+        #load the cli environment
+        $LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/config', root_dir)
+        $LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/app/models', root_dir)
+        #require 'account'
+        require 'environment-cli'
+        
+        #Associate the models with their respective database
+        Account.db = db
+        User.db = db
+      end
+    }
+
     desc "create", "Create a new account."
     #method_option :uuid, :type => :string, :required => true, :aliases => "-u", :desc => "The uuid for the new user." #Size: 8
     method_option :name, :type => :string, :aliases => "-n", :desc => "The name for the new account." #Maximum size: 255
