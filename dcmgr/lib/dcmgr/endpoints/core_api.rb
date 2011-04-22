@@ -93,12 +93,12 @@ module Dcmgr
         case mime.to_s
         when 'application/yaml', 'text/yaml'
           content_type 'yaml'
-          res.to_yaml
+          body res.to_yaml
         when 'application/xml', 'text/xml'
           raise NotImplementedError
         else
           content_type 'json'
-          res.to_json
+          body res.to_json
         end
       end
 
