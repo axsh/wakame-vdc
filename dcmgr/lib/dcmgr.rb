@@ -142,6 +142,8 @@ module Dcmgr
   autoload :RequestLogger, 'dcmgr/request_logger'
 
   module Cli
+    require 'dcmgr/cli/errors'
+
     autoload :Base, 'dcmgr/cli/base'
     autoload :Network, 'dcmgr/cli/network'
     autoload :Host, 'dcmgr/cli/host'

@@ -19,7 +19,7 @@ class Network < Base
   method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this."
   def add
     vlan_pk = if options[:vlan_id].to_i > 0
-                vlan = VlanLease.find(:tag_id=>options[:vlan_id]) || abort("Invalid or Unknown VLAN ID: #{options[:vlan_id]}")
+                vlan = VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
                 vlan.id
               else
                 0
@@ -37,14 +37,16 @@ class Network < Base
                            })
 
     puts nw.canonical_uuid
+  rescue => e
+    Error.raise(e, 101)
   end
 
   desc "del UUID", "Deregister a network entry"
   def del(uuid)
-    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
     nw.delete
-  rescue InvalidUUIDError => e
-    abort("Invalid UUID Format: #{uuid}")
+  rescue => e
+    Error.raise(e, 101)
   end
 
   desc "modify UUID [options]", "Update network information"
@@ -58,19 +60,19 @@ class Network < Base
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this."
   def modify(uuid)
-    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
     nw.set_only(options, [:ipv4_gw, :prefix, :domain_name, :dns_server, :dhcp_server, :metadata_server, :vlan_id, :description, :account_id])
     nw.save_changes
-  rescue InvalidUUIDError => e
-    abort("Invalid UUID Format: #{uuid}")
+  rescue => e
+    Error.raise(e, 101)
   end
 
   desc "nat UUID [options]", "Set or clear nat mapping for a network."
   method_option :nat_network_id, :type => :string, :aliases => "-n", :desc => "The network that this network will be natted to."
   method_option :clear, :type => :boolean, :aliases => "-c", :desc => "Clears a previously natted network."
   def nat(uuid)
-    in_nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
-    ex_nw = M::Network[options[:nat_network_id]] || abort("Unknown network UUID: #{uuid}") unless options[:nat_network_id].nil?
+    in_nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
+    ex_nw = M::Network[options[:nat_network_id]] || Error.raise("Unknown network UUID: #{uuid}", 100) unless options[:nat_network_id].nil?
 
     if options[:clear] then
       in_nw.set_only({:nat_network_id => nil},:nat_network_id)
@@ -79,8 +81,8 @@ class Network < Base
       in_nw.set_only({:nat_network_id => ex_nw.id},:nat_network_id)
       in_nw.save_changes
     end
-  rescue InvalidUUIDError => e
-    abort("Invalid UUID Format: #{uuid}")
+  rescue => e
+    Error.raise(e, 101)
   end
 
   desc "show [UUID] [options]", "Show network(s)"
@@ -88,7 +90,7 @@ class Network < Base
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "Show networks with the account"
   def show(uuid=nil)
     if uuid
-      nw = M::Network[uuid] || raise(Thor::Error, "Unknown network UUID: #{uuid}")
+      nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
       puts ERB.new(<<__END, nil, '-').result(binding)
 Network UUID: <%= nw.canonical_uuid %>
 
@@ -126,37 +128,39 @@ __END
 
   desc "show_lease UUID", "Show IPs used in the network"
   def show_lease(uuid)
-    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
 
     print ERB.new(<<__END, nil, '-').result(binding)
 <%- nw.ip_lease_dataset.order(:ipv4).all.each { |l| -%>
 <%= "%-20s  %-15s" % [l.ipv4, M::IpLease::TYPE_MESSAGES[l.alloc_type]] %>
 <%- } -%>
 __END
+  rescue => e
+    Error.raise(e, 100)
   end
 
   desc "add_reserved UUID IPADDR", "Add reserved IP to the network"
   def add_reserved(uuid, ipaddr)
-    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
 
     if nw.ipaddress.include?(IPAddress(ipaddr))
       nw.ip_lease_dataset.add_reserved(ipaddr)
     else
-      abort("IP address is out of range: #{ipaddr} => #{nw.ipaddress.network}/#{nw.ipaddress.prefix}")
+      Error.raise("IP address is out of range: #{ipaddr} => #{nw.ipaddress.network}/#{nw.ipaddress.prefix}")
     end
   rescue => e
-    abort(e.message)
+    Error.raise(e, 101)
   end
 
   desc "del_reserved UUID IPADDR", "Delete reserved IP from the network"
   def del_reserved(uuid, ipaddr)
-    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
 
     if nw.ip_lease_dataset.filter(:ipv4=>ipaddr).delete == 0
-      abort("The IP is not reserved in network #{uuid}: #{ipaddr}")
+      Error.raise("The IP is not reserved in network #{uuid}: #{ipaddr}", 100)
     end
   rescue => e
-    abort(e.message)
+    Error.raise(e, 101)
   end
 end
 end
