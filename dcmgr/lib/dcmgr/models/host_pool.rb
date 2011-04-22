@@ -77,6 +77,7 @@ module Dcmgr::Models
       i.account_id = account.canonical_uuid
       i.image = image
       i.instance_spec = spec
+      i.quota_weight = spec.quota_weight
       i.host_pool = self
       i.save
 

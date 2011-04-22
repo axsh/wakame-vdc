@@ -10,6 +10,7 @@ module Dcmgr::Models
       
       Fixnum :cpu_cores, :null=>false, :unsigned=>true
       Fixnum :memory_size, :null=>false, :unsigned=>true
+      Float  :quota_weight, :null=>false, :default=>1.0
       Text :config, :null=>false, :default=>''
     end
     with_timestamps

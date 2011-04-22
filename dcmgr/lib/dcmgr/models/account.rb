@@ -16,6 +16,7 @@ module Dcmgr::Models
     with_timestamps
 
     one_to_many  :tags, :dataset=>lambda { Tag.filter(:account_id=>self.canonical_uuid); }
+    one_to_one :quota, :class=>Quota, :key=>:account_id
 
     # sti plugin has to be loaded at lower position.
     plugin :subclasses
@@ -29,6 +30,12 @@ module Dcmgr::Models
     def enable?
       self.enabled == ENABLED
     end
+
+    def after_create
+      self.quota = Quota.create
+      super
+    end
+    
 
     # STI class variable setter, getter methods.
     class << self

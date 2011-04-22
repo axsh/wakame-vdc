@@ -19,6 +19,7 @@ module Dcmgr::Models
       String :hostname, :null=>false, :size=>32
       String :ssh_key_pair_id
       Fixnum :ha_enabled, :null=>false, :default=>0
+      Float  :quota_weight, :null=>false, :default=>0.0
       
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
@@ -125,7 +126,12 @@ module Dcmgr::Models
         end
         @update_hostname = false
       end
-      
+
+      lives_weight = self.filter(:account_id=>self.account_id).lives.sum(:quota_weight)
+      unless self.account.quota.instance_total_weight <= lives_weight
+        raise "Out of quota limit: #{self.account_id}'s current weight capacity: #{lives_weight} (<= #{self.account.quota.instance_total_weight})"
+      end
+
       super
     end
 
