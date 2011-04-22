@@ -6,7 +6,7 @@ EMPTY_RECORD="<NULL>"
 
 #get the database details
 #TODO:get this path in a less hard-coded way?
-content = File.new("../../frontend/dcmgr_gui/config/database.yml").read
+content = File.new(File.expand_path('../../../../../frontend/dcmgr_gui/config/database.yml', __FILE__)).read
 settings = YAML::load content
 
 #load the database variables
