@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+require 'thor'
+
 module Dcmgr::Cli
   class Base < Thor
     protected
