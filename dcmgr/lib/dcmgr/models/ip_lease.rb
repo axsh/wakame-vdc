@@ -8,6 +8,12 @@ module Dcmgr::Models
     TYPE_AUTO=0
     TYPE_RESERVED=1
     TYPE_MANUAL=2
+
+    TYPE_MESSAGES={
+      TYPE_AUTO=>'auto',
+      TYPE_RESERVED=>'reserved',
+      TYPE_MANUAL=>'manual'
+    }
     
     inheritable_schema do
       Fixnum :instance_nic_id

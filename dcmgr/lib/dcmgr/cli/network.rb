@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require 'thor'
+require 'ipaddress'
 
 module Dcmgr::Cli
 class Network < Base
@@ -124,5 +124,39 @@ __END
     end
   end
 
+  desc "show_lease UUID", "Show IPs used in the network"
+  def show_lease(uuid)
+    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+
+    print ERB.new(<<__END, nil, '-').result(binding)
+<%- nw.ip_lease_dataset.order(:ipv4).all.each { |l| -%>
+<%= "%-20s  %-15s" % [l.ipv4, M::IpLease::TYPE_MESSAGES[l.alloc_type]] %>
+<%- } -%>
+__END
+  end
+
+  desc "add_reserved UUID IPADDR", "Add reserved IP to the network"
+  def add_reserved(uuid, ipaddr)
+    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+
+    if nw.ipaddress.include?(IPAddress(ipaddr))
+      nw.ip_lease_dataset.add_reserved(ipaddr)
+    else
+      abort("IP address is out of range: #{ipaddr} => #{nw.ipaddress.network}/#{nw.ipaddress.prefix}")
+    end
+  rescue => e
+    abort(e.message)
+  end
+
+  desc "del_reserved UUID IPADDR", "Delete reserved IP from the network"
+  def del_reserved(uuid, ipaddr)
+    nw = M::Network[uuid] || abort("Unknown network UUID: #{uuid}")
+
+    if nw.ip_lease_dataset.filter(:ipv4=>ipaddr).delete == 0
+      abort("The IP is not reserved in network #{uuid}: #{ipaddr}")
+    end
+  rescue => e
+    abort(e.message)
+  end
 end
 end
