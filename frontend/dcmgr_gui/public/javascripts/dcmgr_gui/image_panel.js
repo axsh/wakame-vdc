@@ -96,7 +96,7 @@ DcmgrGUI.prototype.imagePanel = function(){
     var image_id = $(this).find('#image_id').val();
     var host_pool_id = $(this).find('#host_pool').find('option:selected').val();
     var host_name = $(this).find('#host_name').val();
-    var instance_spec = $(this).find('#instance_spec').val();
+    var instance_spec_id = $(this).find('#instance_specs').val();
     var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').text();
     var launch_in = $(this).find('#right_select_list').find('option');
     var user_data = $(this).find('#user_data').val();
@@ -108,7 +108,7 @@ DcmgrGUI.prototype.imagePanel = function(){
 
     var data = "image_id="+image_id
               +"&host_pool_id="+host_pool_id
-              +"&instance_spec_id="+instance_spec
+              +"&instance_spec_id="+instance_spec_id
               +"&host_name="+host_name
               +"&user_data="+user_data
               +"&"+nf_strings
@@ -157,6 +157,24 @@ DcmgrGUI.prototype.imagePanel = function(){
                 var uuid = results[i].result.uuid;
                 var html = '<option value="'+ uuid +'">'+uuid+'</option>';
                 select_host_pool.append(html);
+              }
+            }
+          }),
+        //get instance_specs
+        instance_specs: 
+          request.get({
+            "url": '/instance_specs/all.json',
+            success: function(json,status){
+              var select_html = '<select id="instance_specs" name="instance_specs"></select>';
+              $(self).find('#select_instance_specs').empty().html(select_html);
+
+              var results = json.instance_spec.results;
+              var size = results.length;
+              var select_instance_specs = $(self).find('#instance_specs');
+              for (var i=0; i < size ; i++) {
+                var uuid = results[i].result.uuid;
+                var html = '<option value="'+ uuid +'">'+uuid+'</option>';
+                select_instance_specs.append(html);
               }
             }
           }),
