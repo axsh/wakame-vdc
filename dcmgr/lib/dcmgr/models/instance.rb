@@ -20,6 +20,8 @@ module Dcmgr::Models
       String :ssh_key_pair_id
       Fixnum :ha_enabled, :null=>false, :default=>0
       Float  :quota_weight, :null=>false, :default=>0.0
+      Fixnum :cpu_cores, :null=>false, :unsigned=>true
+      Fixnum :memory_size, :null=>false, :unsigned=>true
       
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
@@ -197,8 +199,8 @@ module Dcmgr::Models
     def to_api_document
       h = {
         :id => canonical_uuid,
-        :cpu_cores   => instance_spec.cpu_cores,
-        :memory_size => instance_spec.memory_size,
+        :cpu_cores   => cpu_cores,
+        :memory_size => memory_size,
         :image_id    => image.canonical_uuid,
         :created_at  => self.created_at,
         :state => self.state,
@@ -250,14 +252,6 @@ module Dcmgr::Models
     # Returns the architecture type of the image
     def arch
       self.image.arch
-    end
-
-    def cpu_cores
-      self.instance_spec.cpu_cores
-    end
-
-    def memory_size
-      self.instance_spec.memory_size
     end
 
     def config
