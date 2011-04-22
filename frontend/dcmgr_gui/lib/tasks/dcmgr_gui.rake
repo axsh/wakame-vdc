@@ -11,7 +11,7 @@ namespace :db do
                 :primary_account_id => '00000000'
                 )
 
-    Account.create(:uuid => 'shpoolxx',
+    Account.create(:uuid => '00000000',
                    :name => 'wakame',
                    :enable => 1
                    )
@@ -22,7 +22,7 @@ namespace :db do
                :primary_account_id => 'shpoolxx'
                )
 
-    Account.create(:uuid => '00000000',
+    Account.create(:uuid => 'shpoolxx',
                   :name => 'demo',
                   :enable => 1
                   )
@@ -30,6 +30,7 @@ namespace :db do
     sql = 'insert into users_accounts(user_id,account_id) values(?,?)'
     DB = Schema.current_connect
     DB['users_accounts'].with_sql(sql,1,1).first
+    DB['users_accounts'].with_sql(sql,2,2).first
 
     publish_date = '2010-11-19 9:00:00'
     title = "新機能の提供を開始しました。"
