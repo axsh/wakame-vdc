@@ -129,7 +129,7 @@ module Dcmgr::Models
         @update_hostname = false
       end
 
-      lives_weight = self.filter(:account_id=>self.account_id).lives.sum(:quota_weight)
+      lives_weight = self.class.filter(:account_id=>self.account_id).lives.sum(:quota_weight)
       unless self.account.quota.instance_total_weight <= lives_weight
         raise "Out of quota limit: #{self.account_id}'s current weight capacity: #{lives_weight} (<= #{self.account.quota.instance_total_weight})"
       end
