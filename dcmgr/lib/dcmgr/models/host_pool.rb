@@ -108,6 +108,13 @@ module Dcmgr::Models
         (self.offering_memory_size > inst_on_hp.inject(0) {|t, i| t += i.spec.memory_size } + spec.memory_size)
     end
     
+    def to_api_document
+      {:arch => self.arch,
+        :hypervisor => self.hypervisor,
+        :offering_cpu_cores => self.offering_cpu_cores,
+        :offering_memory_size => self.offering_memory_size,
+      }
+    end
     
   end
 end

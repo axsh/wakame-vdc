@@ -521,7 +521,7 @@ module Dcmgr
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_hash }
+              :results=> partial_ds.all.map {|i| i.to_api_document }
             }]
             
             response_to(res)
@@ -535,7 +535,7 @@ module Dcmgr
             hp = find_by_uuid(:HostPool, params[:id])
             raise OperationNotPermitted unless examine_owner(hp)
             
-            response_to(hp.to_hash)
+            response_to(hp.to_api_document)
           end
         end
       end
@@ -927,7 +927,7 @@ module Dcmgr
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|sp| sp.to_hash }
+              :results=> partial_ds.all.map {|sp| sp.to_api_document }
             }]
 
             response_to(res)
@@ -942,7 +942,7 @@ module Dcmgr
             raise UndefinedStoragePoolID if pool_id.nil?
             vs = find_by_uuid(:StoragePool, pool_id)
             raise UnknownStoragePool if vs.nil?
-            response_to(vs.to_hash)
+            response_to(vs.to_api_document)
           end
         end
       end
