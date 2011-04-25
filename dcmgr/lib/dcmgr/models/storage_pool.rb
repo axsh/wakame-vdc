@@ -31,6 +31,12 @@ module Dcmgr::Models
       end
     end
 
+    def to_hash
+      h = values.dup.merge(super)
+      h.delete(:node_id)
+      h
+    end
+
     def self.create_pool(params)
       self.create(:account_id => params[:account_id],
                   :node_id => params[:node_id],
@@ -65,7 +71,9 @@ module Dcmgr::Models
     end
 
     def to_hash
-      super.dup.merge({:status=>self.status})
+      h = super.dup.merge({:status=>self.status})
+      h.delete(:node_id)
+      h
     end
   end
 end
