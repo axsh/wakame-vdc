@@ -1,29 +1,12 @@
 # -*- coding: utf-8 -*-
-require 'statemachine'
 
 module Dcmgr::Models
   class StoragePool < AccountResource
     taggable 'sp'
-    with_timestamps
 
-    STATAS_TYPE_REGISTERING = "registering"
-    STATAS_TYPE_ONLINE = "online"
-    STATAS_TYPE_DEGRADE = "degrade"
-    STATAS_TYPE_FAILED = "failed"
-    STATAS_TYPE_DEREGISTERED = "deregistered"
-
-    STATUS_MSGS = {
-      STATAS_TYPE_REGISTERING => :registering,
-      STATAS_TYPE_ONLINE => :online,
-      STATAS_TYPE_DEGRADE => :degrade,
-      STATAS_TYPE_FAILED => :failed,
-      STATAS_TYPE_DEREGISTERED => :deregistered
-    }
-    
     inheritable_schema do
       String :node_id, :null=>false
       String :export_path, :null=>false
-      String :status, :null=>false, :default=>STATAS_TYPE_REGISTERING
       Fixnum :offering_disk_space, :null=>false, :unsigned=>true
       String :transport_type, :null=>false
       String :storage_type, :null=>false
@@ -32,11 +15,12 @@ module Dcmgr::Models
 
       index :node_id
     end
+    with_timestamps
 
     one_to_many :volumes
     one_to_many :volume_snapshots
     
-    many_to_one :storage_agents
+    many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
     
     def before_validation
       export_path = self.export_path
@@ -45,58 +29,6 @@ module Dcmgr::Models
         export_path.shift
         self.export_path = export_path.join('/')
       end
-    end
-
-    def state_machine
-      model = self
-      st = Statemachine.build do
-        superstate :storage_condition do
-          trans :registering, :on_success, :online
-          trans :registering, :on_error, :degrade
-          trans :online, :on_success, :online
-          trans :online, :on_error, :degrade
-          trans :degrade, :on_success, :online
-          trans :degrade, :on_error, :degrade
-
-          event :on_fail, :failed
-          event :on_deregistered, :deregistered
-        end
-
-        trans :failed, :on_success, :online
-        trans :failed, :on_error, :degrade
-        trans :failed, :on_deregistered, :deregistered
-
-        on_entry_of :registering, proc {
-          model.status = STATAS_TYPE_REGISTERING
-        }
-
-        on_entry_of :online, proc {
-          model.status = STATAS_TYPE_ONLINE
-        }
-
-        on_entry_of :degrade, proc {
-          model.status = STATAS_TYPE_DEGRADE
-        }
-
-        on_entry_of :failed, proc {
-          model.status = STATAS_TYPE_FAILED
-        }
-
-        on_entry_of :deregistered, proc {
-          model.status = STATAS_TYPE_DEREGISTERED
-        }
-      end
-
-      if self[:status]
-        if st.has_state(STATUS_MSGS[self[:status]].to_sym)
-          st.state = STATUS_MSGS[self[:status]].to_sym
-        else
-          raise "Unknown state: #{self[:status]}"
-        end
-      else
-        st.reset
-      end
-      st
     end
 
     def self.create_pool(params)
@@ -125,6 +57,15 @@ module Dcmgr::Models
                         :storage_pool_id => self.id,
                         :snapshot_id => snapshot_id,
                         :size =>size)
+    end
+
+    # Show status of the agent.
+    def status
+      node.nil? ? :offline : node.state
+    end
+
+    def to_hash
+      super.dup.merge({:status=>self.status})
     end
   end
 end
