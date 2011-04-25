@@ -71,9 +71,14 @@ module Dcmgr::Models
     end
 
     def to_hash
-      h = super.dup.merge({:status=>self.status})
-      h.delete(:node_id)
-      h
+      super.merge({:status=>self.status})
+    end
+
+    def to_api_document
+      {:transport_type => self.transport_type,
+        :storage_type => self.storage_type,
+        :offering_disk_space => self.offering_disk_space,
+      }
     end
   end
 end
