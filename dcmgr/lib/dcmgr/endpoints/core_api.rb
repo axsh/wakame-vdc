@@ -109,7 +109,7 @@ module Dcmgr
         if boom.kind_of?(APIError)
           @env['sinatra.error'] = boom
           Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
-          error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message}))
+          error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
         else
           logger.error(boom)
           super
