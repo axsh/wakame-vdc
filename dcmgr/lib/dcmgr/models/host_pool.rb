@@ -54,9 +54,7 @@ module Dcmgr::Models
     end
 
     def to_hash
-      h = super.merge(:status=>self.status)
-      h.delete(:node_id)
-      h
+      super.merge(:status=>self.status)
     end
 
     # Check if the resources exist depending on the HostPool.
