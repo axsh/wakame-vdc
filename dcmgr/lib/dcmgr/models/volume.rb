@@ -140,6 +140,7 @@ module Dcmgr::Models
         :state => self.state,
         :instance_id => (self.instance && self.instance.canonical_uuid),
         :deleted_at => self.deleted_at,
+        :detached_at => self.detached_at,
       }
     end
 
