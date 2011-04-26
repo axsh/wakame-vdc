@@ -140,7 +140,24 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find("#left_select_list").mask($.i18n.prop('loading_parts'));
       
       var request = new DcmgrGUI.Request;
-      
+      var is_ready = {
+        'host_pool': false,
+        'instance_spec': false,
+        'ssh_keypair': false,
+        'security_groups': false,
+      };
+
+      var ready = function(data) {
+        if(data['host_pool'] == true &&
+           data['instance_spec'] == true &&
+           data['ssh_keypair'] == true &&
+           data['security_group'] == true) {  
+          bt_launch_instance.disabledButton(0, false);
+        } else {
+          bt_launch_instance.disabledButton(0, true);
+        }
+      }
+ 
       parallel({
         //get host_pools
         host_pools: 
@@ -154,9 +171,12 @@ DcmgrGUI.prototype.imagePanel = function(){
               var size = results.length;
               var select_host_pool = $(self).find('#host_pool');
               for (var i=0; i < size ; i++) {
-                var uuid = results[i].result.uuid;
-                var html = '<option value="'+ uuid +'">'+uuid+'</option>';
-                select_host_pool.append(html);
+                if(results[i].result.status == 'online') {
+                  is_ready['host_pool'] = true;
+                  var uuid = results[i].result.uuid;
+                  var html = '<option value="'+ uuid +'">'+uuid+'</option>';
+                  select_host_pool.append(html);
+                }
               }
             }
           }),
@@ -171,6 +191,10 @@ DcmgrGUI.prototype.imagePanel = function(){
               var results = json.instance_spec.results;
               var size = results.length;
               var select_instance_specs = $(self).find('#instance_specs');
+              if(size > 0) { 
+                is_ready['instance_spec'] = true;
+              }
+
               for (var i=0; i < size ; i++) {
                 var uuid = results[i].result.uuid;
                 var html = '<option value="'+ uuid +'">'+uuid+'</option>';
@@ -190,6 +214,10 @@ DcmgrGUI.prototype.imagePanel = function(){
               var results = json.ssh_key_pair.results;
               var size = results.length;
               var select_keypair = $(self).find('#ssh_key_pair');
+              if(size > 0) {
+                is_ready['ssh_keypair'] = true;
+              }
+
               for (var i=0; i < size ; i++) {
                 var name = results[i].result.name;
                 var ssh_keypair_id = results[i].result.id;
@@ -206,7 +234,7 @@ DcmgrGUI.prototype.imagePanel = function(){
             success: function(json,status){
               var data = [];
               var results = json.netfilter_group.results;
-              var size = results.length
+              var size = results.length;
               for (var i=0; i < size ; i++) {
                 data.push({
                   "value" : results[i].result.uuid,
@@ -219,18 +247,29 @@ DcmgrGUI.prototype.imagePanel = function(){
                 'right_select_id' : "#right_select_list",
                 "data" : data
               });
+              
+              var on_ready = function(size){
+                if(size > 0) {
+                  is_ready['security_group'] = true;
+                  ready(is_ready);
+                } else {
+                  is_ready['security_group'] = false;
+                  ready(is_ready);
+                }
+              }
 
               $(self).find('#right_button').click(function(){
                 security_group.leftToRight();
+                on_ready(security_group.getRightSelectionCount());
               });
 
               $(self).find('#left_button').click(function(){
                 security_group.rightToLeft();
+                on_ready(security_group.getRightSelectionCount());
               });
             }
           })
       }).next(function(results) {
-        bt_launch_instance.disabledButton('Launch',false);
         $("#left_select_list").unmask();
       });
     },
@@ -238,7 +277,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   });
   
   bt_launch_instance.element.bind('dialogopen',function(){
-    bt_launch_instance.disabledButton('Launch',true);    
+    bt_launch_instance.disabledButton(0, true);
   });
   
   bt_launch_instance.target.bind('click',function(){

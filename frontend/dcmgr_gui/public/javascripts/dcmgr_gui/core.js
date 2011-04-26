@@ -711,7 +711,17 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
     });
     
     this.refreshOptions(this.left_select_id,this.leftSelectionsArray);
+  },
+  getRightSelectionCount: function(){
+    var count = 0;
+    $.each(this.rightSelectionsArray,function(key, value){
+     if(value != null) {
+      count++;
+     } 
+    });
+    return count;
   }
+
 });
 
 DcmgrGUI.ToolTip　= DcmgrGUI.Class.create({
