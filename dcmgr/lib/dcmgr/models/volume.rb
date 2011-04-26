@@ -37,9 +37,11 @@ module Dcmgr::Models
       Time :deleted_at
       Time :attached_at
       Time :detached_at
+
       index :storage_pool_id
       index :instance_id
       index :snapshot_id
+      index :deleted_at
     end
     with_timestamps
 
