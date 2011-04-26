@@ -68,11 +68,11 @@ class Network < Base
   end
 
   desc "nat UUID [options]", "Set or clear nat mapping for a network."
-  method_option :nat_network_id, :type => :string, :aliases => "-n", :desc => "The network that this network will be natted to."
+  method_option :outside_network_id, :type => :string, :aliases => "-o", :desc => "The network that this network will be natted to."
   method_option :clear, :type => :boolean, :aliases => "-c", :desc => "Clears a previously natted network."
   def nat(uuid)
     in_nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
-    ex_nw = M::Network[options[:nat_network_id]] || Error.raise("Unknown network UUID: #{uuid}", 100) unless options[:nat_network_id].nil?
+    ex_nw = M::Network[options[:outside_network_id]] || Error.raise("Unknown network UUID: #{uuid}", 100) unless options[:outside_network_id].nil?
 
     if options[:clear] then
       in_nw.set_only({:nat_network_id => nil},:nat_network_id)
