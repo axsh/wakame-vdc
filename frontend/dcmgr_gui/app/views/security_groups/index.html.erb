@@ -1,5 +1,8 @@
 <% content_for :javascript do %>
 <%= javascript_include_tag 'dcmgr_gui/security_group_panel.js' %>
+<%= javascript_include_tag 'jquery.cluetip.min.js' %>
+<%= javascript_include_tag 'jquery.hoverIntent.js' %>
+
 <script type="text/javascript">
 jQuery(function($){
 	dcmgrGUI.securityGroupPanel();
@@ -9,6 +12,7 @@ jQuery(function($){
 <% end %>
 
 <% content_for :stylesheet do %>
+<%= stylesheet_link_tag 'jquery.cluetip.css' %>
 <style type="text/css">
 	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
 	.ui-dialog .ui-dialog-content {margin:5px;}

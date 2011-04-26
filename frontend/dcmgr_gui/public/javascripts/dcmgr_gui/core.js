@@ -240,6 +240,8 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
     this.title = params['title'];
     this.button = params['button'];
     this.callback = params['callback'] ||null;
+    
+    dcmgrGUI.notification.create_topic('close_dialog');
   },
   open: function(params){
     //multi select action
@@ -289,7 +291,10 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
                            closeOnEscape: true,
                            closeText: 'hide',
                            draggable:false,
-                           buttons: this.button
+                           buttons: this.button,
+                           close: function(event, ui) {
+                             dcmgrGUI.notification.publish('close_dialog');
+                           }
                        });
   }
 });
@@ -706,6 +711,20 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
     });
     
     this.refreshOptions(this.left_select_id,this.leftSelectionsArray);
+  }
+});
+
+DcmgrGUI.ToolTip　= DcmgrGUI.Class.create({
+  initialize: function(params) {
+    this.target = params.target;
+    this.element = $(params.element);
+  },
+  create: function(params){
+    this.content = this.element.find(this.target)
+                       .cluetip(params);
+  },
+  close: function(){
+    this.content.trigger('hideCluetip');
   }
 });
 

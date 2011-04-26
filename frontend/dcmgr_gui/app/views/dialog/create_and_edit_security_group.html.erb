@@ -22,11 +22,14 @@
 			<td><input type="text" id="security_group_description" size="43" value="<%= @description %>"></td>
 		</tr>
 		<tr>
-			<td><%= t("dialog.create_and_edit_security_group.rule") %>:</td>
+			<td><%= t("dialog.create_and_edit_security_group.rule") %> [<span rel="#rule_help" id="security_group_help" title="Rule Help" style="color:red">?</span>]:</td>
 		</tr>
 		<tr>
 			<td colspan="2">
-				<textarea id="security_group_rule" rows="10" cols="10" style="width:442px;height:320px"><%= @rule %></textarea></td>
+				<textarea id="security_group_rule" rows="10" cols="10" style="width:442px;height:320px" ><%= @rule %></textarea></td>
 		</tr>
 	</table>
+	<div id="rule_help">
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+  </div>
 </div>
