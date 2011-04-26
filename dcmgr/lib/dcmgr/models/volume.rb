@@ -80,11 +80,6 @@ module Dcmgr::Models
       super
     end
 
-    def before_save
-      self.updated_at = Time.now
-      super
-    end
-
     def self.get_list(account_id, *args)
       data = args.first
       vl = self.dataset.where(:account_id=>account_id)
