@@ -72,6 +72,11 @@ module Dcmgr::Models
         raise DiskError, "out of disk space"
       end
 
+      # TODO: Here may not be the right place for capacity validation.
+      per_account_totoal = self.class.filter(:account_id=>self.account_id).lives.sum(:size).to_i
+      if self.account.quota.volume_total_size < per_account_totoal + self.size.to_i
+        raise DiskError, "Out of account quota: #{self.account.quota.volume_total_size}, #{self.size.to_i}, #{per_account_totoal}"
+      end
       super
     end
 
