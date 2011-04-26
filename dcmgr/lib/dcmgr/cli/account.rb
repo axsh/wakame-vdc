@@ -90,6 +90,43 @@ module Dcmgr::Cli
       puts "New account created with id #{new_acc.uuid}"
     end
     
+    desc "show", "Show all accounts currently in the database"    
+    method_option :deleted, :type => :boolean, :default => false, :aliases => "-d", :desc => "Show deleted accounts."
+    def show(uuid = nil)
+      #TODO: Put associations in here
+      if uuid
+	back_acc = M::Account[uuid] || raise(Thor::Error, "Unknown Account UUID: #{uuid}")
+	acc = Account[uuid] || raise(Thor::Error, "Unknown Account UUID: #{uuid}")
+        puts ERB.new(<<__END, nil, '-').result(binding)
+Account UUID: <%= back_acc.canonical_uuid %>
+<%- if back_acc.enabled -%>
+Enabled:
+  Yes
+<%- else -%>
+Enabled:
+  No
+<%- end -%>
+Name:
+  <%= acc.name %>
+<%- if back_acc.description -%>
+Description:
+  <%= back_acc.description %>
+<%- end -%>
+<%- if acc.is_deleted -%>
+Deleted at:
+  <%= acc.deleted_at %>
+<%- end -%>
+__END
+      else	
+	  acc = Account.filter(:is_deleted => (options[:deleted] || false )).all
+	puts ERB.new(<<__END, nil, '-').result(binding)
+<%- acc.each { |row| -%>
+<%= row.canonical_uuid %>\t<%= row.name %>
+<%- } -%>
+__END
+      end
+    end
+    
     desc "describe", "Show all accounts currently in the database"
     method_option :id, :type => :string, :aliases => "-i", :desc => "The uuid for the account to show."
     method_option :times, :type => :boolean, :aliases => "-t", :desc => "Print the times when the user was created and last updated."
