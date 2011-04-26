@@ -48,6 +48,8 @@ module Dcmgr::Models
 
     plugin ArchiveChangedColumn, :histories
     
+    subset(:lives, {:deleted_at => nil})
+
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     # Possible column data:
@@ -59,9 +61,10 @@ module Dcmgr::Models
     class RequestError < RuntimeError; end
 
     def before_create
-      # check the volume size
       sp = self.storage_pool
-      volume_size = Volume.dataset.where(:storage_pool_id=> self.storage_pool_id).get{sum(:size)}
+      volume_size = sp.volumes_dataset.lives.sum(:size).to_i
+      # check if the sum of available volume and new volume is under
+      # the limit of offering capacity.
       total_size = sp.offering_disk_space - volume_size.to_i
       if self.size > total_size
         raise DiskError, "out of disk space"
