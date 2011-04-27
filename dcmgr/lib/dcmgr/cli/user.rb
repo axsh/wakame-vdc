@@ -8,8 +8,6 @@ module Dcmgr::Cli
   class UsersCli < Base
     namespace :user
 
-    EMPTY_RECORD="<NULL>"
-
     no_tasks {
       def before_task
         # Setup DB connections and load paths for dcmgr_gui
@@ -53,13 +51,13 @@ module Dcmgr::Cli
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def add
       if options[:name].length > 200
-        raise "User name can not be longer than 200 characters"
+        Error.raise("User name can not be longer than 200 characters", 100)
       elsif options[:login_id] != nil && options[:login_id].length > 255
-        raise "User login_id can not be longer than 255 characters"
+        Error.raise("User login_id can not be longer than 255 characters",100)
       elsif options[:password].length > 255
-        raise "User password can not be longer than 255 characters"
+        Error.raise("User password can not be longer than 255 characters", 100)
       elsif options[:primary_account_id] != nil && options[:primary_account_id].length > 255
-        raise "User primary_account_id can not be longer than 255 characters"
+        Error.raise(Thor::Error, "User primary_account_id can not be longer than 255 characters",100)
       else
         #Set values to be inserted
         pwd_hash = User.encrypt_password(options[:password])
@@ -67,7 +65,7 @@ module Dcmgr::Cli
         now = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"
         
         #Check if the primary account uuid exists
-        raise "Primary account id doesn't exit." if options[:primary_account_id] != nil && Account.filter(:uuid => options[:primary_account_id]).empty?
+        Error.raise("Unknown Account UUID #{options[:primary_account_id]}",100) if options[:primary_account_id] != nil && Account[options[:primary_account_id]].nil?
         
         #Put them in there
         new_user = User.create(
@@ -75,21 +73,23 @@ module Dcmgr::Cli
                                :created_at          => now,
                                :updated_at          => now,
                                :login_id            => options[:login_id],
-                               :password            => pwd_hash,
-                               :primary_account_id  => options[:primary_account_id]
+                               :password            => pwd_hash
                                )
         
-        puts new_user.canonical_uuid# if options[:verbose]
-        
-        #Associate the new user with his primary account			
-        new_user.add_account Account.find(:uuid => options[:primary_account_id]) unless options[:primary_account_id] == nil
+        unless options[:primary_account_id] == nil
+          prim_acc = Account[options[:primary_account_id]]
+          new_user.add_account(prim_acc)
+          new_user.primary_account_id = prim_acc.uuid
+          new_user.save
+        end        
+        puts new_user.canonical_uuid
       end
     end
 
     desc "show [UUID] [options]", "Show one user or all users currently in the database"        
     def show(uuid = nil)
       if uuid        
-        user = User[uuid] || raise(Thor::Error, "Unknown User UUID: #{uuid}")
+        user = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
         puts ERB.new(<<__END, nil, '-').result(binding)
 User UUID: <%= user.canonical_uuid %>
 Name:
@@ -128,13 +128,13 @@ __END
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def modify(uuid)
       if options[:name] != nil && options[:name].length > 200
-        raise "User name can not be longer than 200 characters"
+        Error.raise("User name can not be longer than 200 characters",100)
       elsif options[:login_id] != nil && options[:login_id].length > 255
-        raise "User login_id can not be longer than 255 characters"
+        Error.raise("User login_id can not be longer than 255 characters",100)
       elsif options[:password] != nil && options[:password].length > 255
-        raise "User password can not be longer than 255 characters"
+        Error.raise("User password can not be longer than 255 characters",100)
       elsif options[:primary_account_id] != nil && options[:primary_account_id].length > 255
-        raise "User primary_account_id can not be longer than 255 characters"
+        Error.raise("User primary_account_id can not be longer than 255 characters",100)
       else
         time = Time.new()
         now = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"			
@@ -143,7 +143,7 @@ __END
         uuid = Account.uuid(options[:uuid]) unless options[:uuid] == nil
         unless options[:primary_account_id] == nil
           auuid = options[:primary_account_id]
-          raise(Thor::Error, "Unknown Account UUID #{auuid}") if Account[auuid].nil?
+          Error.raise("Unknown Account UUID #{auuid}",100) if Account[auuid].nil?
         end
         
         #this variables will be set in case any change to a user is made. Used to determine if update_at needs to be set.
@@ -188,7 +188,7 @@ __END
     desc "del UUID", "Delete an existing user."    
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def del(uuid)
-      to_delete = User[uuid] || raise(Thor::Error, "Unknown User UUID: #{uuid}")
+      to_delete = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
       
       relations = to_delete.accounts
       for ss in 0...relations.length do
@@ -205,7 +205,7 @@ __END
     method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to associate these user with. Any non-existing or non numeral id will be ignored" 
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def associate(uuid)      
-      user = User[uuid] || raise(Thor::Error, "Unknown User UUID: #{uuid}")
+      user = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
       options[:account_ids].each { |a|
         if Account[a].nil?
           puts "Unknown Account UUID: #{a}" if options[:verbose]
@@ -223,7 +223,7 @@ __END
     method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to dissociate these user from. Any non-existing or non numeral id will be ignored" 
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def dissociate(uuid)
-      user = User[uuid] || raise(Thor::Error, "Unknown User UUID: #{uuid}")
+      user = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
       options[:account_ids].each { |a|
         if Account[a].nil?
           puts "Unknown Account UUID: #{a}" if options[:verbose]
