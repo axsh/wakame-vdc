@@ -30,14 +30,18 @@ module Dcmgr::Cli
         db_pwd     = settings[db_environment]['password']
         
         #Connect to the database
-        #url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
-        #DB = Sequel.connect(url)
+        url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
+        db = Sequel.connect(url)
         
         #load the cli environment
         $LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/config', root_dir)
         $LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/app/models', root_dir)
         
         require 'environment-cli'
+        require 'user'
+        require 'account'
+        User.db = db
+        Account.db = db
       end
     }
     
