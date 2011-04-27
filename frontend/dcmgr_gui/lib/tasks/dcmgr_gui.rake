@@ -45,6 +45,38 @@ namespace :db do
 end
 
 namespace :admin do
+  desc 'Create information'
+  task :create_information,[:url] => :environment do |t, args|
+    require 'nokogiri'
+    require 'open-uri'
+    
+    if args[:url].nil?
+      puts 'Please set the url.'
+      exit(0)
+    end
+
+    xml = args[:url]
+    doc = Nokogiri::XML(open(xml))
+
+    @links = doc.xpath('//item').map do |i|
+      {'title' => i.xpath('title'), 
+       'link' => i.xpath('link'), 
+       'description' => i.xpath('description'),
+       'created_at' => i.xpath('pubDate')
+      }
+    end 
+
+    #Rest information table
+    Information.truncate
+
+    @links.each do |item|
+      Information.create(:title => item['title'].text,
+                         :description => item['description'].text,
+                         :link => item['link'].text,
+                         :created_at => DateTime.parse(item['created_at'].text))
+    end
+  end
+
   desc 'Create user'
   task :create_user,[:login_id,:password] => :environment do |t,args|
     password = encrypted_password = User.encrypt_password(args[:password])
