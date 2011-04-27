@@ -8,12 +8,14 @@ class SessionsController < ApplicationController
   
   def create
     user = User.authenticate(params[:login], params[:password])
+    @error_message = ''
+
     if user
       self.current_user = user
       redirect_back_or_default('/', :notice => "Logged in successfully")
     else
-      # note_failed_signin
-      @login       = params[:login]
+      @error_message = I18n.t('error_message.sign_in')
+      @login = params[:login]
       render :action => 'new'
     end
   end
