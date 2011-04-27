@@ -32,7 +32,12 @@ module Dcmgr
         if request.env[HTTP_X_VDC_ACCOUNT_UUID].to_s == ''
           raise InvalidRequestCredentials
         else
-          @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+          begin
+            @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+          rescue => e
+            logger.error(e)
+            raise InvalidRequestCredentials, "#{e.message}"
+          end
           raise InvalidRequestCredentials if @account.nil?
         end
          
@@ -847,7 +852,7 @@ module Dcmgr
               :filter_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_hash }
+              :results=> partial_ds.all.map {|i| i.to_api_document }
             }]
             
             response_to(res)
@@ -861,7 +866,7 @@ module Dcmgr
           control do
             ssh = find_by_uuid(:SshKeyPair, params[:id])
             
-            response_to(ssh.to_hash)
+            response_to(ssh.to_api_document)
           end
         end
         
@@ -876,16 +881,27 @@ module Dcmgr
             savedata = {
               :name=>params[:name],
               :account_id=>@account.canonical_uuid,
-              :public_key=>keydata[:public_key]
+              :public_key=>keydata[:public_key],
+              :finger_print => keydata[:finger_print],
             }
             if params[:download_once] != 'true'
               savedata[:private_key]=keydata[:private_key]
             end
-            ssh = Models::SshKeyPair.create(savedata)
+            
+            if !Models::SshKeyPair.filter(:account_id=>@account.canonical_uuid,
+                                          :name => params[:name]).empty?
+              raise DuplicateSshKeyName, params[:name]
+            end
+              
+            begin
+              ssh = Models::SshKeyPair.create(savedata)
+            rescue => e
+              raise DatabaseError, e.message
+            end
                                             
             # include private_key data in response even if
             # it's not going to be stored on DB.
-            response_to(ssh.to_hash.merge(:private_key=>keydata[:private_key]))
+            response_to(ssh.to_api_document.merge(:private_key=>keydata[:private_key]))
           end
         end
         
