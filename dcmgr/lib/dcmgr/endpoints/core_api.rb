@@ -32,7 +32,12 @@ module Dcmgr
         if request.env[HTTP_X_VDC_ACCOUNT_UUID].to_s == ''
           raise InvalidRequestCredentials
         else
-          @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+          begin
+            @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+          rescue => e
+            logger.error(e)
+            raise InvalidRequestCredentials, "#{e.message}"
+          end
           raise InvalidRequestCredentials if @account.nil?
         end
          
