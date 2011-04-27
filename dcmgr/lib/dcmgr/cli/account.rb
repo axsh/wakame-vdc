@@ -8,7 +8,7 @@ module Dcmgr::Cli
   class AccountCli < Base
     namespace :account
     M=Dcmgr::Models
-    EMPTY_RECORD="<NULL>"
+    #EMPTY_RECORD="<NULL>"
 
     no_tasks {
       def before_task
@@ -45,12 +45,12 @@ module Dcmgr::Cli
       end
     }
 
-    desc "create", "Create a new account."
+    desc "add", "Create a new account."
     #method_option :uuid, :type => :string, :required => true, :aliases => "-u", :desc => "The uuid for the new user." #Size: 8
     method_option :name, :type => :string, :aliases => "-n", :desc => "The name for the new account." #Maximum size: 255
     method_option :description, :type => :string, :aliases => "-d", :desc => "The description for this account."
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
-    def create
+    def add
       #Check if the data we got is valid
       if options[:name] != nil && options[:name].length > 255
         raise "Account name can not be longer than 255 characters."
@@ -87,7 +87,7 @@ module Dcmgr::Cli
                      :name       => name
                      )
       
-      puts "New account created with id #{new_acc.uuid}"
+      puts new_acc.canonical_uuid
     end
     
     desc "show", "Show all accounts currently in the database"    
@@ -128,66 +128,6 @@ __END
 <%- } -%>
 __END
       end
-    end
-    
-    desc "describe", "Show all accounts currently in the database"
-    method_option :id, :type => :string, :aliases => "-i", :desc => "The uuid for the account to show."
-    method_option :times, :type => :boolean, :aliases => "-t", :desc => "Print the times when the user was created and last updated."
-    method_option :associations, :type => :boolean, :aliases => "-a", :desc => "Print the user uuid(s) that the account is associated with."
-    def describe
-      #Known issue: crashes on 0000-00-00 00:00:00 timestamp
-      #TODO: print this out prettier but still easy to use grep on => USE ERB
-      
-      header = "uuid | name | description | enabled"
-      header += " | created at | last updated at" if options[:times]
-      header += " | associated users" if options[:associations]
-      
-      puts header
-      
-      if options[:id] == nil
-        accounts = Account.filter(:is_deleted => false).all
-      else
-        accounts = Account.filter(:uuid => options[:id],:is_deleted => false).all
-      end
-      
-      accounts.each { |u|
-        #prepare empty values
-        uuid = EMPTY_RECORD
-        name = EMPTY_RECORD
-        desc = EMPTY_RECORD
-
-        #set values that aren't empty
-        #id = u[:id]
-        name = u.name unless u.name == nil
-        uuid = u.uuid unless u.uuid == nil
-        acc_back = Dcmgr::Models::Account.find(:uuid => uuid)
-        desc = acc_back.description unless acc_back.description == nil
-        enabled = u.enable
-	
-        #Print it all
-        print "#{uuid} | #{name} | #{desc} | #{enabled}"
-	
-        if options[:times]
-          print " | #{u.created_at}"
-          print " | #{u.updated_at}"
-        end
-	
-        if options[:associations]
-          #TODO: manipulate this string a bit better
-          associations = "" 
-          #DB[:users_accounts].filter(:account_id => id).all {
-          u.users.each { |a|
-            associations += "#{a.uuid}"
-            associations += ", "
-	  }
-          associations = associations[0,associations.length-2]
-          associations = EMPTY_RECORD if associations == nil
-          
-          print " | #{associations}"
-        end
-	
-        print "\n"
-      }
     end
     
     desc "update", "Update an existing account."
