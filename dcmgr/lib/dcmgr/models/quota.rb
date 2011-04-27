@@ -9,6 +9,8 @@ module Dcmgr::Models
       Fixnum :account_id, :null=>false
       Float  :instance_total_weight
       Fixnum :volume_total_size
+
+      index :account_id
     end
     with_timestamps
 

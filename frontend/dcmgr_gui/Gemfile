@@ -6,6 +6,7 @@ gem 'sequel','3.15.0'
 gem 'json','1.4.6'
 gem 'oauth','0.4.1'
 gem 'i18n', '0.4.2'
+gem 'nokogiri', '1.4.4'
 group :production do
   gem 'unicorn', '3.5.0'
 end
