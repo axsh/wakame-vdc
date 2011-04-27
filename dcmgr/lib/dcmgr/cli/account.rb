@@ -47,6 +47,7 @@ module Dcmgr::Cli
 
     desc "add [options]", "Create a new account."
     method_option :name, :type => :string, :aliases => "-n", :desc => "The name for the new account." #Maximum size: 255
+    method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new account."
     method_option :description, :type => :string, :aliases => "-d", :desc => "The description for this account."
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def add
@@ -62,12 +63,13 @@ module Dcmgr::Cli
       time = Time.new()
       now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"      
       name = options[:name]
+      id = Account.uuid(Account.trim_uuid(options[:uuid]))
       
       #Put them in the backend
-      new_acc = Dcmgr::Models::Account.create(    
-                                              :description => options[:description],
-                                              :enabled     => Dcmgr::Models::Account::ENABLED
-                                              )
+      fields = {:description => options[:description], :enabled => M::Account::ENABLED}
+      fields.merge!({:uuid => id}) unless options[:uuid].nil?      
+      
+      new_acc = M::Account.create(fields)
       
       #This should never happen as long as the databases remain synchronized.
       begin
