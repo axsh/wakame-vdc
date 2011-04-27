@@ -135,6 +135,7 @@ en:
       state: "State"
     details:
       header: "Details"
+      host_pool: "Host Pool"
       host_pool_id: "Host Pool ID"
       hyper_visor: "Hyper Visor"
       cpu_cores: "CPU Cores"
