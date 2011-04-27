@@ -93,10 +93,9 @@ module Dcmgr::Cli
     desc "show", "Show all accounts currently in the database"    
     method_option :deleted, :type => :boolean, :default => false, :aliases => "-d", :desc => "Show deleted accounts."
     def show(uuid = nil)
-      #TODO: Put associations in here
       if uuid
-	back_acc = M::Account[uuid] || raise(Thor::Error, "Unknown Account UUID: #{uuid}")
-	acc = Account[uuid] || raise(Thor::Error, "Unknown Account UUID: #{uuid}")
+        back_acc = M::Account[uuid] || raise(Thor::Error, "Unknown Account UUID: #{uuid}")
+        acc = Account[uuid] || raise(Thor::Error, "Unknown Account UUID: #{uuid}")
         puts ERB.new(<<__END, nil, '-').result(binding)
 Account UUID: <%= back_acc.canonical_uuid %>
 <%- if back_acc.enabled -%>
@@ -116,10 +115,14 @@ Description:
 Deleted at:
   <%= acc.deleted_at %>
 <%- end -%>
+Associated users:
+<%- acc.users.each { |row| -%>
+  <%= row.canonical_uuid %>\t<%= row.name %>
+<%- } -%>      
 __END
       else	
-	  acc = Account.filter(:is_deleted => (options[:deleted] || false )).all
-	puts ERB.new(<<__END, nil, '-').result(binding)
+        acc = Account.filter(:is_deleted => (options[:deleted] || false )).all
+        puts ERB.new(<<__END, nil, '-').result(binding)
 <%- acc.each { |row| -%>
 <%= row.canonical_uuid %>\t<%= row.name %>
 <%- } -%>
