@@ -55,6 +55,10 @@ module Dcmgr::Models
       end
     end
 
+    def to_api_document
+      to_hash
+    end
+
     private
     def self.randstr
       Array.new(10) {  (('a'..'z').to_a + (0..9).to_a)[rand(36)] }.join
