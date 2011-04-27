@@ -90,5 +90,7 @@ module Dcmgr
     define_error(:UnknownNetfilterGroup, 400, '133')
     define_error(:NetfilterGroupNotPermitted, 400, '134')
     define_error(:DuplicatedNetfilterGroup, 400, '135')
+
+    define_error(:DuplicateSshKeyName, 400, '136')
   end
 end

@@ -881,12 +881,23 @@ module Dcmgr
             savedata = {
               :name=>params[:name],
               :account_id=>@account.canonical_uuid,
-              :public_key=>keydata[:public_key]
+              :public_key=>keydata[:public_key],
+              :finger_print => keydata[:finger_print],
             }
             if params[:download_once] != 'true'
               savedata[:private_key]=keydata[:private_key]
             end
-            ssh = Models::SshKeyPair.create(savedata)
+            
+            if !Models::SshKeyPair.filter(:account_id=>@account.canonical_uuid,
+                                          :name => params[:name]).empty?
+              raise DuplicateSshKeyName, params[:name]
+            end
+              
+            begin
+              ssh = Models::SshKeyPair.create(savedata)
+            rescue => e
+              raise DatabaseError, e.message
+            end
                                             
             # include private_key data in response even if
             # it's not going to be stored on DB.
