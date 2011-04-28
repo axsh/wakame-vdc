@@ -39,7 +39,7 @@ DcmgrGui::Application.configure do
   config.auth_root_user = 'root'
 
   config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
-
+  config.i18n.default_locale = :en
   #config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect'
 end
 
