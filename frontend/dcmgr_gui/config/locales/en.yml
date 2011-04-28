@@ -20,6 +20,7 @@ en:
     launch: "Launch"
   selectmenu:
     select_action: "Select an Action"
+    select_region: "Region: "
   pagenate:
     page: "{0} Page"
     total: "Total {0}"

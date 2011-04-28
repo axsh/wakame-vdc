@@ -105,11 +105,31 @@ jQuery(function($){
     }
     Sexy.error(message);
   });
-  
+
+  //Region selectmenu
+  $('#regionmenu').selectmenu({
+    width: 208,
+    menuWidth: 208,
+    style:'dropdown',
+    icons: [
+      {find: '.script', icon: 'ui-icon-script'},
+      {find: '.image', icon: 'ui-icon-image'}
+    ],
+    select: function(event){
+      console.log($(this).val());
+    }
+  });
+
+  $('#regionmenu-button').css('font-size', '13px')
+                         .css('height', '25px');
+
+  $('a[id^="ui-selectmenu-item"]').css('font-size', '13px')
+                         .css('height', '17px')  
+
 	//global
   dcmgrGUI = new DcmgrGUI;
-	dcmgrGUI.initialize();
+  dcmgrGUI.initialize();
   dcmgrGUI.notification = new DcmgrGUI.Notification;
-  
+
 });
 //]]>
