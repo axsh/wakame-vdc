@@ -45,6 +45,7 @@ module Dcmgr::Cli
     
     desc "add [options]", "Create a new user."
     method_option :name, :type => :string, :required => true, :aliases => "-n", :desc => "The name for the new user." #Maximum size: 200
+    method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new user."
     method_option :login_id, :type => :string, :aliases => "-l", :desc => "Optional: The login_id for the new user." #Maximum size: 255
     method_option :password, :type => :string, :required => true, :aliases => "-p", :desc => "The password for the new user." #Maximum size: 255
     method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "Optional: The primary account to associate this user with." #Maximum size: 255
@@ -61,28 +62,24 @@ module Dcmgr::Cli
       else
         #Set values to be inserted
         pwd_hash = User.encrypt_password(options[:password])
-        time = Time.new()
-        now = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"
         
         #Check if the primary account uuid exists
         Error.raise("Unknown Account UUID #{options[:primary_account_id]}",100) if options[:primary_account_id] != nil && Account[options[:primary_account_id]].nil?
         
         #Put them in there
-        new_user = User.create(
-                               :name                => options[:name],                               
-                               :created_at          => now,
-                               :updated_at          => now,
-                               :login_id            => options[:login_id],
-                               :password            => pwd_hash
-                               )
+        fields = {:name => options[:name], :login_id => options[:login_id], :password => pwd_hash}
+        fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
+        new_uuid = super(User,fields)
         
+        #TODO: put this in the model instead
         unless options[:primary_account_id] == nil
+          new_user = User[new_uuid]
           prim_acc = Account[options[:primary_account_id]]
           new_user.add_account(prim_acc)
           new_user.primary_account_id = prim_acc.uuid
           new_user.save
         end        
-        puts new_user.canonical_uuid
+        puts new_uuid
       end
     end
 

@@ -8,6 +8,7 @@ class Network < Base
   M=Dcmgr::Models
   
   desc "add [options]", "Register a new network entry"
+  method_option :uuid, :type => :string, :aliases => "-u", :desc => "UUID of the network."
   method_option :ipv4_gw, :type => :string, :required => true, :desc => "Gateway address for IPv4 network."
   method_option :prefix, :type => :numeric, :default=>24, :desc => "IP network mask size (1 < prefix < 32)."
   method_option :domain_name, :type => :string, :desc => "DNS domain name of the network."
@@ -25,18 +26,20 @@ class Network < Base
                 0
               end
     
-    nw = M::Network.create({:ipv4_gw => options[:ipv4_gw],
-                             :prefix => options[:prefix],
-                             :dns_server => options[:dns_server],
-                             :domain_name => options[:domain_name],
-                             :dhcp_server => options[:dhcp_server],
-                             :metadata_server => options[:metadata_server],
-                             :description => options[:description],
-                             :account_id => options[:account_id],
-                             :vlan_lease_id => vlan_pk,
-                           })
+    fields = {
+       :ipv4_gw => options[:ipv4_gw],
+       :prefix => options[:prefix],
+       :dns_server => options[:dns_server],
+       :domain_name => options[:domain_name],
+       :dhcp_server => options[:dhcp_server],
+       :metadata_server => options[:metadata_server],
+       :description => options[:description],
+       :account_id => options[:account_id],
+       :vlan_lease_id => vlan_pk,
+    }
+    fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
 
-    puts nw.canonical_uuid
+    puts super(M::Network,fields)
   rescue => e
     Error.raise(e, 101)
   end

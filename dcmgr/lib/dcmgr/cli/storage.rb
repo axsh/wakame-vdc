@@ -9,6 +9,7 @@ class Storage < Base
   include Dcmgr::Models
   
   desc "add NODE_ID", "Register a new storage pool node"
+  method_option :uuid, :type => :string, :aliases => "-u", :desc => "The uuid for the new storage pool."
   method_option :base_path, :type => :string, :aliases => '-b', :required => true, :desc => "Base path to store volume files"
   method_option :snapshot_base_path, :type => :string, :aliases => '-n', :required => true, :desc => "Base path to store snapshot files"
   method_option :disk_space, :type => :numeric, :aliases => "-s", :required => true, :desc => "Amount of disk size to be exported (in MB)."
@@ -21,17 +22,18 @@ class Storage < Base
       abort("Node ID is not registered yet: #{options[:node_id]}")
     end
 
-    sp = StoragePool.create({:node_id=>options[:node_id],
-                              :offering_disk_space=>options[:disk_space],
-                              :transport_type=>options[:transport_type],
-                              :storage_type=>options[:storage_type],
-                              :export_path=>options[:base_path],
-                              :snapshot_base_path => options[:snapshot_base_path],
-                              :ipaddr=>options[:ipaddr],
-                              :account_id=>options[:account_id],
-                            })
-
-    puts sp.canonical_uuid
+    fields = {:node_id=>options[:node_id],
+              :offering_disk_space=>options[:disk_space],
+              :transport_type=>options[:transport_type],
+              :storage_type=>options[:storage_type],
+              :export_path=>options[:base_path],
+              :snapshot_base_path => options[:snapshot_base_path],
+              :ipaddr=>options[:ipaddr],
+              :account_id=>options[:account_id],
+    }
+    fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
+    
+    puts super(StoragePool,fields)
   end
 
   desc "del UUID", "Deregister a storage pool node"
