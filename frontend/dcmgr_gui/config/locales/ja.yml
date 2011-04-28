@@ -20,6 +20,7 @@ ja:
     launch: "Launch"
   selectmenu:
     select_action: "アクション"
+    select_region: "データセンタ: "
   pagenate:
     page: "{0} ページ"
     total: "全{0}件"
@@ -278,3 +279,5 @@ ja:
       header: "セキュリティー"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
+  error_message:
+    sign_in: "ユーザーは未登録です。"
