@@ -114,6 +114,11 @@ Description:
 Deleted at:
   <%= acc.deleted_at %>
 <%- end -%>
+<%- unless back_acc.quota.nil? -%>
+Quota information:
+  Instance total weight: <%= back_acc.quota.instance_total_weight %>
+  Volume total size: <%= back_acc.quota.volume_total_size %>
+<%- end -%>
 <%- unless acc.users.empty? -%>
 Associated users:
 <%- acc.users.each { |row| -%>
