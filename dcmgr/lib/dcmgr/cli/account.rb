@@ -8,7 +8,6 @@ module Dcmgr::Cli
   class AccountCli < Base
     namespace :account
     M=Dcmgr::Models
-    #EMPTY_RECORD="<NULL>"
 
     no_tasks {
       def before_task
@@ -187,6 +186,8 @@ __END
       to_delete.deleted_at = now
       
       to_delete_back = Dcmgr::Models::Account[uuid]
+      puts "Deleting quota for account #{uuid}." if options[:verbose]
+      to_delete_back.quota.delete
       to_delete_back.delete unless to_delete_back.nil?
       
       puts "Account #{uuid} has been deleted." if options[:verbose]
@@ -201,11 +202,11 @@ __END
       to_delete_back.save unless to_delete_back.nil?
     end
     
-    desc "enable UUID [options]", "Enable an account."    
+    desc "enable UUID [options]", "Enable an account."
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def enable(uuid)
       time = Time.new()
-      now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"      
+      now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"
       
       to_enable = Account[uuid]
       Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_enable == nil or to_enable.is_deleted
@@ -252,7 +253,7 @@ __END
     end
     
     desc "associate UUID", "Associate an account with a user or multiple users."
-    method_option :users, :type => :array, :required => true, :aliases => "-u", :desc => "The id of the users to associate with the account. Any non-existing uuid will be ignored"    
+    method_option :users, :type => :array, :required => true, :aliases => "-u", :desc => "The uuid of the users to associate with the account. Any non-existing uuid will be ignored"    
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def associate(uuid)      
       account = Account[uuid] || Error.raise("Unknown frontend account UUID: #{uuid}", 100)
@@ -271,8 +272,7 @@ __END
     end
     
     desc "dissociate UUID", "Dissociate an account from a user or multiple users."
-    method_option :users, :type => :array, :required => true, :aliases => "-u", :desc => "The id of the users to dissociate from the account. Any non-existing or non numeral id will be ignored"
-    #method_option :id, :type => :string, :required => true, :aliases => "-i", :desc => "The id of the acount to dissociate these users from." 
+    method_option :users, :type => :array, :required => true, :aliases => "-u", :desc => "The uuid of the users to dissociate from the account. Any non-existing or non numeral id will be ignored"
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def dissociate(uuid)
       account = Account[uuid] || Error.raise("Unknown frontend account UUID: #{uuid}", 100)
@@ -295,6 +295,19 @@ __END
           end
         end
       }
+    end
+    
+    desc "quota UUID [options]","Set quota settings for an account."
+    method_option :weight, :type => :numeric, :aliases => "-w", :desc => "The instance total weight to set this account's quota to."
+    method_option :size, :type => :numeric, :aliases => "-s", :desc => "The volume total size to set this account's quota to."
+    def quota(uuid)
+      account = M::Account[uuid] || Error.raise("Unknown backend account UUID: #{uuid}", 100)
+      account.quota.instance_total_weight = options[:weight] unless options[:weight].nil?
+      account.quota.volume_total_size = options[:size] unless options[:size].nil?
+      time = Time.new()
+      now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"
+      account.quota.updated_at = now
+      account.quota.save
     end
     
   end
