@@ -20,7 +20,15 @@ module Dcmgr::Models
     end
     with_timestamps
 
-    one_to_many :ip_lease
+    module IpLeaseMethods
+      def add_reserved(ipaddr, description=nil)
+        model.create(:network_id=>model_object.id,
+                     :ipv4=>ipaddr,
+                     :alloc_type=>IpLease::TYPE_RESERVED,
+                     :description=>description)
+      end
+    end
+    one_to_many :ip_lease, :extend=>IpLeaseMethods
     many_to_one :vlan_lease
     
     many_to_one :nat_network, :key => :nat_network_id, :class => self

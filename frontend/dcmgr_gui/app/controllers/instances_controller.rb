@@ -52,8 +52,19 @@ class InstancesController < ApplicationController
   end
   
   def total
-   total_resource = DcmgrResource::Instance.total_resource
-   render :json => total_resource
+   all_resource_count = DcmgrResource::Instance.total_resource
+   all_resources = DcmgrResource::Instance.find(:all,:params => {:start => 0, :limit => all_resource_count})
+   resources = all_resources[0].results
+   terminated_resource_count = 0
+   unless resources.empty?   
+     resources.each do |item|
+       if item.state == 'terminated'
+         terminated_resource_count += 1;
+       end
+     end 
+   end 
+   total = all_resource_count - terminated_resource_count
+   render :json => total
   end
   
 end

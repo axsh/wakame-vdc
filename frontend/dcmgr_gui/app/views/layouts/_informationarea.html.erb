@@ -8,9 +8,9 @@
 		<li>
 			<h4 class="date"><%= info.created_at.strftime("%Y-%m-%d")
 			 %></h4>
-			<h2><%= info.title %></h2>
-			<p>
-			<%= nl2br(info.description) %>
+     <h2><%= link_to info.title, info.link, {'target' => '_blank'} %></h2>
+      <p style="margin-top:3px">
+      <%= nl2br(info.description) %>
 			</p>
 		</li>
 		<% end %>

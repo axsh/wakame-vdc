@@ -36,6 +36,16 @@ module Dcmgr::Models
       unless HostPool::SUPPORTED_ARCH.member?(self.arch)
         errors.add(:arch, "Unsupported arch type: #{self.arch}")
       end
+      
+      # validate source
+      md = self.source
+      case md[:type]
+      when :http
+        errors.add(:source, "Unknown image URI") if md[:uri].blank?
+      when :volume
+        errors.add(:source, "Unknown snapshot ID") if md[:snapshot_id].blank?
+        errors.add(:source, "Unknown account ID") if md[:account_id].blank?
+      end
     end
 
     def to_hash

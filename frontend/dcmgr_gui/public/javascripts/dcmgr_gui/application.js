@@ -87,7 +87,25 @@ jQuery(function($){
   $('#select_language_locale').bind('change', function(){
     $('#select_language')[0].submit();
 	})
-		
+  
+  $(document).ajaxError(function(e, xhr, settings, exception) {
+    var message = '';
+    if(xhr.status==0){
+      message = 'Please Check Your Network.';
+    }else if(xhr.status==404){
+      message = 'Requested URL not found.';
+    }else if(xhr.status==500){
+      message = 'Internal Server Error';
+    }else if(e=='parsererror'){
+      message = 'Parsing JSON Request failed.';
+    }else if(e=='timeout'){
+      message = 'Request Time out.';
+    }else {
+      message = 'Unknow Error.\n'+x.responseText;
+    }
+    Sexy.error(message);
+  });
+  
 	//global
   dcmgrGUI = new DcmgrGUI;
 	dcmgrGUI.initialize();

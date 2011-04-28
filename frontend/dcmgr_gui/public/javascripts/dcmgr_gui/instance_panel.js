@@ -88,16 +88,14 @@ DcmgrGUI.prototype.instancePanel = function(){
 
     var data = $.param({ids:ids});
     
-    $.ajax({
-       "type": "POST",
-       "async": true,
-       "url": '/instances/'+ action,
-       "dataType": "json",
-       "data": data,
-       success: function(json, status) {
-         bt_refresh.element.trigger('dcmgrGUI.refresh');
-       }
-     });
+    var request = new DcmgrGUI.Request;
+    request.post({
+      "url": '/instances/'+ action,
+      "data": data,
+      success: function(json, status) {
+       bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
     
     $(this).dialog("close");
   };

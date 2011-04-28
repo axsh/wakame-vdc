@@ -133,15 +133,15 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   var delete_ssh_keypair_button = {};
   delete_ssh_keypair_button[delete_button_name] = function() { 
     var ssh_keypair_id = $(this).find('#ssh_keypair_id').val();
-    $.ajax({
-      "type": "DELETE",
-      "async": true,
+    
+    var request = new DcmgrGUI.Request;
+    request.delete({
       "url": '/keypairs/'+ ssh_keypair_id +'.json',
-      "dataType": "json",
       success: function(json, status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
+    
     $(this).dialog("close");
   }
   

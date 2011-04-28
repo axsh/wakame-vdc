@@ -379,8 +379,10 @@ class ServiceNetfilter < Isono::NodeModules::Base
     }
 
     # default drop
-    basic_cmds << "ebtables -A s_#{vif_map[:uuid]}       --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif_map[:uuid]}:'       -j CONTINUE"
-    basic_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif_map[:uuid]}_d_hst:' -j CONTINUE"
+    if @node.manifest.config.packet_drop_log
+      basic_cmds << "ebtables -A s_#{vif_map[:uuid]}       --log-level 4 --log-ip --log-arp --log-prefix 'D s_#{vif_map[:uuid]}:'       -j CONTINUE"
+      basic_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst --log-level 4 --log-ip --log-arp --log-prefix 'D s_#{vif_map[:uuid]}_d_hst:' -j CONTINUE"
+    end
     basic_cmds << "ebtables -A s_#{vif_map[:uuid]}       -j DROP"
     basic_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst -j DROP"
 
@@ -506,8 +508,8 @@ class ServiceNetfilter < Isono::NodeModules::Base
     ## 3. final part
     ################################
     # deny,allow
-    final_cmds << "ebtables -A d_#{vif_map[:uuid]}_arp       --log-level warning --log-ip --log-arp --log-prefix 'D d_#{vif_map[:uuid]}_arp:'       -j CONTINUE"
-    final_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp --log-level warning --log-ip --log-arp --log-prefix 'D s_#{vif_map[:uuid]}_d_hst_arp:' -j CONTINUE"
+    final_cmds << "ebtables -A d_#{vif_map[:uuid]}_arp       --log-level 4 --log-ip --log-arp --log-prefix 'D d_#{vif_map[:uuid]}_arp:'       -j CONTINUE"
+    final_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp --log-level 4 --log-ip --log-arp --log-prefix 'D s_#{vif_map[:uuid]}_d_hst_arp:' -j CONTINUE"
     final_cmds << "ebtables -A d_#{vif_map[:uuid]}_arp       -j DROP"
     final_cmds << "ebtables -A s_#{vif_map[:uuid]}_d_hst_arp -j DROP"
 
@@ -553,7 +555,9 @@ class ServiceNetfilter < Isono::NodeModules::Base
 
         # logger & drop
         basic_cmds << "iptables -N #{chain}_drop"
-        basic_cmds << "iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix 'D #{chain}:'"
+        if @node.manifest.config.packet_drop_log
+          basic_cmds << "iptables -A #{chain}_drop -j LOG --log-level 4 --log-prefix 'D #{chain}:'"
+        end
         basic_cmds << "iptables -A #{chain}_drop -j DROP"
       }
     }
@@ -1325,6 +1329,7 @@ manifest.instance_eval do
     c.bridge_prefix   = 'br'
     c.bridge_novlan   = 'br0'
     c.verbose_netfilter = false
+    c.packet_drop_log   = false
   end
 
   config_path File.expand_path('config/hva.conf', app_root)

@@ -16,12 +16,17 @@
 			<%= form_tag session_path do -%>
 			<fieldset>
 				<legend><h3><%= t("login.sign_in") %></h3></legend>
+        <% if @error_message %>
+        <div style="background-color: yellow; width: 200px; height: 12px;">
+          <div style="padding-left:10px; color:red;"><%= @error_message %></div>
+        </div>
+        <% end %>
 			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag t("login.user") %><br />
 			<%= text_field_tag 'login', @login %></p>
 			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag t("login.password") %><br />
 			<%= password_field_tag 'password', nil %></p>
-			</fieldset>
-			<p><%= submit_tag 'login' %></p>
+      <fieldset>
+      <p><%= submit_tag 'login' %></p>
 			<% end -%>
 	</div>
 </div>

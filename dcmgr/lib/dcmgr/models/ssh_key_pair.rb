@@ -9,6 +9,7 @@ module Dcmgr::Models
 
     inheritable_schema do
       String :name, :size=>100, :null=>false
+      String :finger_print, :size=>100, :null=>false
       Text :public_key, :null=>false
       Text :private_key, :null=>true
       
@@ -35,15 +36,27 @@ module Dcmgr::Models
         unless $?.exitstatus == 0
           raise "Failed to run ssh-keygen: exitcode=#{$?.exitstatus}"
         end
+
+        # get finger print of pkey file
+        fp = `ssh-keygen -l -f #{pkey}`
+        unless $?.exitstatus == 0
+          raise "Failed to collect finger print value"
+        end
+        fp = fp.split(/\s+/)[1]
         
         {:private_key=>IO.read(pkey),
-          :public_key=>IO.read(pubkey)}
+          :public_key=>IO.read(pubkey),
+          :finger_print => fp}
       rescue
         # clean up tmp key files
         [pkey, pubkey].each { |i|
           File.unlink(i) if File.exist?(i)
         }
       end
+    end
+
+    def to_api_document
+      to_hash
     end
 
     private

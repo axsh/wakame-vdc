@@ -37,9 +37,11 @@ module Dcmgr::Models
       Time :deleted_at
       Time :attached_at
       Time :detached_at
+
       index :storage_pool_id
       index :instance_id
       index :snapshot_id
+      index :deleted_at
     end
     with_timestamps
 
@@ -48,6 +50,8 @@ module Dcmgr::Models
 
     plugin ArchiveChangedColumn, :histories
     
+    subset(:lives, {:deleted_at => nil})
+
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     # Possible column data:
@@ -59,19 +63,20 @@ module Dcmgr::Models
     class RequestError < RuntimeError; end
 
     def before_create
-      # check the volume size
       sp = self.storage_pool
-      volume_size = Volume.dataset.where(:storage_pool_id=> self.storage_pool_id).get{sum(:size)}
+      volume_size = sp.volumes_dataset.lives.sum(:size).to_i
+      # check if the sum of available volume and new volume is under
+      # the limit of offering capacity.
       total_size = sp.offering_disk_space - volume_size.to_i
       if self.size > total_size
         raise DiskError, "out of disk space"
       end
 
-      super
-    end
-
-    def before_save
-      self.updated_at = Time.now
+      # TODO: Here may not be the right place for capacity validation.
+      per_account_totoal = self.class.filter(:account_id=>self.account_id).lives.sum(:size).to_i
+      if self.account.quota.volume_total_size < per_account_totoal + self.size.to_i
+        raise DiskError, "Out of account quota: #{self.account.quota.volume_total_size}, #{self.size.to_i}, #{per_account_totoal}"
+      end
       super
     end
 
@@ -135,6 +140,7 @@ module Dcmgr::Models
         :state => self.state,
         :instance_id => (self.instance && self.instance.canonical_uuid),
         :deleted_at => self.deleted_at,
+        :detached_at => self.detached_at,
       }
     end
 

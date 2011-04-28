@@ -23,6 +23,37 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     }
   }
   
+  var config_tooltip = {
+    cluezIndex: 10000,
+    width: 420,
+    height: 320,
+    waitImage: false,
+    positionBy: 'auto',
+    ajaxCache: false,
+    dropShadow: true,
+    dropShadowSteps: 6,
+    arrows: true,
+    cursor: '',
+    sticky: true,
+    closePosition: 'title',
+    closeText: 'Close',
+    mouseOutClose: false,
+    local: true,
+    localIdPrefix: null,
+    localIdSuffix: null,
+    hideLocal: true,
+  };
+  
+  var security_group_button_callback = function(){
+    var security_group_help = new DcmgrGUI.ToolTip({
+      'target': '#security_group_help',
+      'element': this
+    });
+    $(this).find('#rule_help').hide();
+    security_group_help.create(config_tooltip);
+    dcmgrGUI.notification.subscribe('close_dialog', security_group_help, 'close');
+  }
+
   var create_button_name = $.i18n.prop('create_button');
   var delete_button_name = $.i18n.prop('delete_button');
   var update_button_name = $.i18n.prop('update_button');
@@ -57,16 +88,16 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       var rule = $(this).find('#security_group_rule').val();
       var data ='description=' + description
                 +'&rule=' + rule;
-      $.ajax({
-         "type": "PUT",
-         "async": true,
-         "url": '/security_groups/'+ security_group_id +'.json',
-         "dataType": "json",
-         "data": data,
-         success: function(json,status){
-           bt_refresh.element.trigger('dcmgrGUI.refresh');
-         }
+
+      var request = new DcmgrGUI.Request;
+      request.put({
+        "url": '/security_groups/'+ security_group_id +'.json',
+        "data": data,
+        success: function(json,status){
+         bt_refresh.element.trigger('dcmgrGUI.refresh');
+        }
       });
+      
       $(this).dialog("close");
     }
     
@@ -76,7 +107,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       height:580,
       title:$.i18n.prop('edit_security_group_header'),
       path:'/edit_security_group',
-      button: edit_security_group_button
+      button: edit_security_group_button,
+      callback: security_group_button_callback
     });
 
     bt_edit_security_group.target.bind('click',function(event){
@@ -136,12 +168,10 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
      $('#security_group_name').focus();
      return false;
     }
-
-    $.ajax({
-      "type": "POST",
-      "async": true,
+    
+    var request = new DcmgrGUI.Request;
+    request.post({
       "url": '/security_groups.json',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
@@ -157,7 +187,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     height:580,
     title:$.i18n.prop('create_security_group_header'),
     path:'/create_security_group',
-    button: create_security_group_button
+    button: create_security_group_button,
+    callback: security_group_button_callback 
   });
   
   bt_create_security_group.target.bind('click',function(){
@@ -167,15 +198,14 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   var delete_security_group_button = {};
   delete_security_group_button[delete_button_name] = function() { 
     var security_group_id = $(this).find('#security_group_id').val();
-    $.ajax({
-      "type": "DELETE",
-      "async": true,
+    var request = new DcmgrGUI.Request;
+    request.delete({
       "url": '/security_groups/'+ security_group_id +'.json',
-      "dataType": "json",
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
+    
     $(this).dialog("close");
   }
   

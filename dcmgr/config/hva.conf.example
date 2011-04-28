@@ -20,3 +20,6 @@ config.bridge_novlan   = 'br0'
 
 # display netfitler commands
 config.verbose_netfilter = false
+
+# netfilter log output flag
+config.packet_drop_log = false

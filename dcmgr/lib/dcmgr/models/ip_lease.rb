@@ -8,12 +8,18 @@ module Dcmgr::Models
     TYPE_AUTO=0
     TYPE_RESERVED=1
     TYPE_MANUAL=2
+
+    TYPE_MESSAGES={
+      TYPE_AUTO=>'auto',
+      TYPE_RESERVED=>'reserved',
+      TYPE_MANUAL=>'manual'
+    }
     
     inheritable_schema do
       Fixnum :instance_nic_id
       Fixnum :network_id, :null=>false
       String :ipv4, :size=>50
-      Fixnum :type, :null=>false, :default=>TYPE_AUTO
+      Fixnum :alloc_type, :null=>false, :default=>TYPE_AUTO
       Text :description
       
       index [:network_id, :ipv4], {:unique=>true}

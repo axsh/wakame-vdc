@@ -32,7 +32,12 @@ module Dcmgr
         if request.env[HTTP_X_VDC_ACCOUNT_UUID].to_s == ''
           raise InvalidRequestCredentials
         else
-          @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+          begin
+            @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+          rescue => e
+            logger.error(e)
+            raise InvalidRequestCredentials, "#{e.message}"
+          end
           raise InvalidRequestCredentials if @account.nil?
         end
          
@@ -93,12 +98,12 @@ module Dcmgr
         case mime.to_s
         when 'application/yaml', 'text/yaml'
           content_type 'yaml'
-          res.to_yaml
+          body res.to_yaml
         when 'application/xml', 'text/xml'
           raise NotImplementedError
         else
           content_type 'json'
-          res.to_json
+          body res.to_json
         end
       end
 
@@ -109,7 +114,7 @@ module Dcmgr
         if boom.kind_of?(APIError)
           @env['sinatra.error'] = boom
           Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
-          error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message}))
+          error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
         else
           logger.error(boom)
           super
@@ -129,126 +134,6 @@ module Dcmgr
           return true
         else
           return false
-        end
-      end
-
-      collection :accounts do
-        operation :index do
-          control do
-          end
-        end
-
-        operation :show do
-          control do
-            a = find_account(params[:id])
-            response_to(a.to_hash)
-          end
-        end
-
-        operation :create do
-          description 'Register a new account'
-          control do
-            a = Models::Account.create()
-            response_to(a.to_hash)
-          end
-        end
-
-        operation :destroy do
-          description 'Unregister the account.'
-          # Associated resources all have to be destroied prior to
-          # removing the account.
-          #param :id, :string, :required
-          control do
-            a = find_account(params[:id])
-            a.destroy
-
-            response_to([a.canonical_uuid])
-          end
-        end
-
-        operation :enable, :method=>:get, :member=>true do
-          description 'Enable the account for all operations'
-          control do
-            a = find_account(params[:id])
-            a.enabled = Models::Account::ENABLED
-            a.save
-
-            respond_to { |f|
-              f.json { {} }
-            }
-          end
-        end
-
-        operation :disable, :method=>:get, :member=>true do
-          description 'Disable the account for all operations'
-          control do
-            a = find_account(params[:id])
-            a.enabled = Models::Account::DISABLED
-            a.save
-
-            respond_to { |f|
-              f.json { {} }
-            }
-          end
-        end
-
-        operation :add_tag, :method=>:get, :member=>true do
-          description 'Add a tag belongs to the account'
-          #param :tag_name, :string, :required
-          control do
-            a = find_account(params[:id])
-
-            tag_class = Models::Tags.find_tag_class(params[:tag_name])
-            raise "UnknownTagClass: #{params[:tag_name]}" if tag_class.nil?
-
-            a.add_tag(tag_class.new(:name=>params[:name]))
-          end
-        end
-
-        operation :remove_tag, :method=>:get, :member=>true do
-          description 'Unlink the associated tag of the account'
-          #param :tag_id, :string, :required
-          control do
-            a = find_account(params[:id])
-            t = a.tags_dataset.filter(:uuid=>params[:tag_id]).first
-            if t
-              a.remove_tag(t)
-            else
-              raise "Unknown or disassociated tag for #{a.cuuid}: #{params[:tag_id]}"
-            end
-          end
-        end
-      end
-
-      collection :tags do
-        operation :create do
-          description 'Register new tag to the account'
-          #param :tag_name, :string, :required
-          #param :type_id, :fixnum, :optional
-          #param :account_id, :string, :optional
-          control do
-            tag_class = Models::Tag.find_tag_class(params[:tag_name])
-
-            tag_class.create
-
-          end
-        end
-
-        operation :show do
-          #param :account_id, :string, :optional
-          control do
-          end
-        end
-
-        operation :destroy do
-          description 'Create a new user'
-          control do
-          end
-        end
-
-        operation :update do
-          control do
-          end
         end
       end
 
@@ -521,7 +406,7 @@ module Dcmgr
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_hash }
+              :results=> partial_ds.all.map {|i| i.to_api_document }
             }]
             
             response_to(res)
@@ -535,7 +420,7 @@ module Dcmgr
             hp = find_by_uuid(:HostPool, params[:id])
             raise OperationNotPermitted unless examine_owner(hp)
             
-            response_to(hp.to_hash)
+            response_to(hp.to_api_document)
           end
         end
       end
@@ -927,7 +812,7 @@ module Dcmgr
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|sp| sp.to_hash }
+              :results=> partial_ds.all.map {|sp| sp.to_api_document }
             }]
 
             response_to(res)
@@ -942,7 +827,7 @@ module Dcmgr
             raise UndefinedStoragePoolID if pool_id.nil?
             vs = find_by_uuid(:StoragePool, pool_id)
             raise UnknownStoragePool if vs.nil?
-            response_to(vs.to_hash)
+            response_to(vs.to_api_document)
           end
         end
       end
@@ -967,7 +852,7 @@ module Dcmgr
               :filter_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_hash }
+              :results=> partial_ds.all.map {|i| i.to_api_document }
             }]
             
             response_to(res)
@@ -981,7 +866,7 @@ module Dcmgr
           control do
             ssh = find_by_uuid(:SshKeyPair, params[:id])
             
-            response_to(ssh.to_hash)
+            response_to(ssh.to_api_document)
           end
         end
         
@@ -996,16 +881,27 @@ module Dcmgr
             savedata = {
               :name=>params[:name],
               :account_id=>@account.canonical_uuid,
-              :public_key=>keydata[:public_key]
+              :public_key=>keydata[:public_key],
+              :finger_print => keydata[:finger_print],
             }
             if params[:download_once] != 'true'
               savedata[:private_key]=keydata[:private_key]
             end
-            ssh = Models::SshKeyPair.create(savedata)
+            
+            if !Models::SshKeyPair.filter(:account_id=>@account.canonical_uuid,
+                                          :name => params[:name]).empty?
+              raise DuplicateSshKeyName, params[:name]
+            end
+              
+            begin
+              ssh = Models::SshKeyPair.create(savedata)
+            rescue => e
+              raise DatabaseError, e.message
+            end
                                             
             # include private_key data in response even if
             # it's not going to be stored on DB.
-            response_to(ssh.to_hash.merge(:private_key=>keydata[:private_key]))
+            response_to(ssh.to_api_document.merge(:private_key=>keydata[:private_key]))
           end
         end
         
@@ -1168,6 +1064,35 @@ module Dcmgr
              response_to(res)
            end
          end
+      end
+
+      collection :instance_specs do
+        operation :index do
+          description 'Show list of instance template'
+          # params start, fixnum, optional 
+          # params limit, fixnum, optional
+          control do
+            start = params[:start].to_i
+            start = start < 1 ? 0 : start
+            limit = params[:limit].to_i
+            limit = limit < 1 ? nil : limit
+            
+            total_ds = Models::InstanceSpec.where(:account_id=>[@account.canonical_uuid,
+                                                                Models::Account::SystemAccount::SharedPoolAccount.uuid,
+                                                               ])
+            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
+
+            res = [{
+              :owner_total => total_ds.count,
+              :start => start,
+              :limit => limit,
+              :results=> partial_ds.all.map {|i| i.to_api_document }
+            }]
+            
+            response_to(res)
+          end
+        end
       end
       
     end

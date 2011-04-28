@@ -55,6 +55,9 @@ DcmgrGui::Application.routes.draw do
   post   'instances' ,:to => 'instances#create'
   get    'instances/show/:id' ,:to => 'instances#show'
   
+  #instance_specs
+  get    'instance_specs/all' ,:to => 'instance_specs#show_instance_specs'
+  
   #kepairs
   get    'keypairs' ,:to => 'keypairs#index'
   get    'keypairs/list/:id' ,:to => 'keypairs#list'

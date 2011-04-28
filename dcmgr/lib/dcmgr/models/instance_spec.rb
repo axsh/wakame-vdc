@@ -10,6 +10,7 @@ module Dcmgr::Models
       
       Fixnum :cpu_cores, :null=>false, :unsigned=>true
       Fixnum :memory_size, :null=>false, :unsigned=>true
+      Float  :quota_weight, :null=>false, :default=>1.0
       Text :config, :null=>false, :default=>''
     end
     with_timestamps
@@ -36,6 +37,12 @@ module Dcmgr::Models
     def to_hash
       super.merge({:config=>self.config, # yaml -> Hash
                   })
+    end
+
+    def to_api_document
+      doc = to_hash
+      doc.delete(:config)
+      doc
     end
   end
 end

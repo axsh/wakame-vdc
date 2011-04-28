@@ -77,6 +77,9 @@ module Dcmgr::Models
       i.account_id = account.canonical_uuid
       i.image = image
       i.instance_spec = spec
+      i.cpu_cores = spec.cpu_cores
+      i.memory_size = spec.memory_size
+      i.quota_weight = spec.quota_weight
       i.host_pool = self
       i.save
 
@@ -103,6 +106,9 @@ module Dcmgr::Models
         (self.offering_memory_size > inst_on_hp.inject(0) {|t, i| t += i.spec.memory_size } + spec.memory_size)
     end
     
+    def to_api_document
+      to_hash
+    end
     
   end
 end

@@ -83,16 +83,16 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     })
 
     var data = $.param({ids:ids})
-    $.ajax({
-      "type": "POST",
-      "async": true,
+    
+    var request = new DcmgrGUI.Request;
+    request.post({
       "url": '/volumes',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
+    
     $(this).dialog("close");
   }
   
@@ -114,12 +114,11 @@ DcmgrGUI.prototype.snapshotPanel = function(){
      ids.push($(this).text())
     })
 
-    var data = $.param({ids:ids})
-    $.ajax({
-      "type": "DELETE",
-      "async": true,
+    var data = $.param({ids:ids});
+    
+    var request = new DcmgrGUI.Request;
+    request.delete({
       "url": '/snapshots/delete',
-      "dataType": "json",
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');

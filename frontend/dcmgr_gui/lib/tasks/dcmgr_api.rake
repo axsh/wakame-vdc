@@ -58,8 +58,8 @@ namespace :api do
     elsif mode == 'unicorn'
       begin
         require 'unicorn'
-      rescue => e
-        exit(0)
+      rescue ::LoadError => e
+        abort(e.message)
       end
       command = "#{command} -c #{Dir.getwd}/config/auth_server.conf"
     end

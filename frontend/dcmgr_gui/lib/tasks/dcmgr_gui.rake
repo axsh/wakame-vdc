@@ -6,19 +6,31 @@ namespace :db do
   
   task :sample_data => :environment do
     User.create(:uuid => '00000000',
-                :login_id => 'demo',
-                :password => User.encrypt_password('demo'),
+                :login_id => 'wakame',
+                :password => User.encrypt_password('wakame'),
                 :primary_account_id => '00000000'
                 )
 
     Account.create(:uuid => '00000000',
-                   :name => 'demo',
+                   :name => 'wakame',
                    :enable => 1
                    )
+                   
+    User.create(:uuid => 'shpoolxx',
+               :login_id => 'demo',
+               :password => User.encrypt_password('demo'),
+               :primary_account_id => 'shpoolxx'
+               )
+
+    Account.create(:uuid => 'shpoolxx',
+                  :name => 'demo',
+                  :enable => 1
+                  )
 
     sql = 'insert into users_accounts(user_id,account_id) values(?,?)'
     DB = Schema.current_connect
     DB['users_accounts'].with_sql(sql,1,1).first
+    DB['users_accounts'].with_sql(sql,2,2).first
 
     publish_date = '2010-11-19 9:00:00'
     title = "新機能の提供を開始しました。"
@@ -33,6 +45,38 @@ namespace :db do
 end
 
 namespace :admin do
+  desc 'Create information'
+  task :create_information,[:url] => :environment do |t, args|
+    require 'nokogiri'
+    require 'open-uri'
+    
+    if args[:url].nil?
+      puts 'Please set the url.'
+      exit(0)
+    end
+
+    xml = args[:url]
+    doc = Nokogiri::XML(open(xml))
+
+    @links = doc.xpath('//item').map do |i|
+      {'title' => i.xpath('title'), 
+       'link' => i.xpath('link'), 
+       'description' => i.xpath('description'),
+       'created_at' => i.xpath('pubDate')
+      }
+    end 
+
+    #Rest information table
+    Information.truncate
+
+    @links.each do |item|
+      Information.create(:title => item['title'].text,
+                         :description => item['description'].text,
+                         :link => item['link'].text,
+                         :created_at => DateTime.parse(item['created_at'].text))
+    end
+  end
+
   desc 'Create user'
   task :create_user,[:login_id,:password] => :environment do |t,args|
     password = encrypted_password = User.encrypt_password(args[:password])
