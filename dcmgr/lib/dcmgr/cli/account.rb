@@ -189,7 +189,7 @@ __END
       to_delete_back = Dcmgr::Models::Account[uuid]
       to_delete_back.delete unless to_delete_back.nil?
       
-      puts "Account #{id} has been deleted." if options[:verbose]
+      puts "Account #{uuid} has been deleted." if options[:verbose]
       
       relations = to_delete.users
       for ss in 0...relations.length do
