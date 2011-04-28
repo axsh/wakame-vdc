@@ -69,10 +69,7 @@ module Dcmgr::Models
     end
 
     def to_api_document
-      {:transport_type => self.transport_type,
-        :storage_type => self.storage_type,
-        :offering_disk_space => self.offering_disk_space,
-      }
+      to_hash
     end
   end
 end

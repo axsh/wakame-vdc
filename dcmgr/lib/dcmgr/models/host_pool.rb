@@ -107,11 +107,7 @@ module Dcmgr::Models
     end
     
     def to_api_document
-      {:arch => self.arch,
-        :hypervisor => self.hypervisor,
-        :offering_cpu_cores => self.offering_cpu_cores,
-        :offering_memory_size => self.offering_memory_size,
-      }
+      to_hash
     end
     
   end
