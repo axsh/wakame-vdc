@@ -81,7 +81,7 @@ class ZfsHandler < EndpointBuilder
     # :transport_information => {:iqn => "iqn.1986-03.com.sun:02:787bca42-9639-44e4-f115-f5b06ed31817", :lun => 0}
     opt = {:iqn => il[0].split(": ").last, :lun=>il[6].split(": ").last.to_i}
 
-    rpc.request('sta-collector', 'update_volume', job.to_hash(:transport_information=>opt, :export_path=>data[:uuid])))
+    rpc.request('sta-collector', 'update_volume', job.to_hash(:transport_information=>opt, :export_path=>data[:uuid]))
     logger.info("registered iscsi target: #{volume_id}")
   end
 
