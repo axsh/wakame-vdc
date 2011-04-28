@@ -25,6 +25,20 @@ module Dcmgr::Cli
       def after_task
       end
     }
-  
+    
+    def add(model,fields)
+      raise ArgumentError unless fields.is_a? Hash
+      #TODO: Check if model is a Sequel::Model
+      #raise ArgumentError unless model.is_a? Sequel::Model
+      
+      #TODO: Check UUID syntax
+      fields[:uuid] = model.trim_uuid(fields[:uuid]) if fields.has_key?(:uuid)      
+      
+      #Create database fields
+      new_record = model.create(fields)
+      
+      #Return uuid if there is one
+      new_record.canonical_uuid #if model.respond_to? "canonical_uuid"
+    end
   end
 end

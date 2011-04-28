@@ -58,35 +58,24 @@ module Dcmgr::Cli
         raise "Account description can not be longer than 100 chracters."
       end
       
-      #Prepare the values to insert
-      time = Time.new()
-      now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"      
-      name = options[:name]
-      id = Account.uuid(Account.trim_uuid(options[:uuid]))
-      
       #Put them in the backend
       fields = {:description => options[:description], :enabled => M::Account::ENABLED}
-      fields.merge!({:uuid => id}) unless options[:uuid].nil?      
+      fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
       
-      new_acc = M::Account.create(fields)
-      
+      new_uuid = super(M::Account,fields)
+
       #This should never happen as long as the databases remain synchronized.
       begin
-        raise "A uuid collision occurred. This means the account databases are not synchronized." if Account.find(:uuid=>new_acc.uuid) != nil
+        raise "A uuid collision occurred. This means the account databases are not synchronized." if Account[new_uuid] != nil
       rescue
-        new_acc.delete
+        M::Account[new_uuid].delete
         raise 
       end
       
       #Put them in the frontend
-      Account.create(
-                     :uuid       => new_acc.uuid,
-                     :created_at => now,
-                     :updated_at => now,
-                     :name       => name
-                     )
+      super(Account,{:uuid => new_uuid,:name => options[:name]})
       
-      puts new_acc.canonical_uuid
+      puts new_uuid
     end
     
     desc "show [UUID] [options]", "Show all accounts currently in the database"    
