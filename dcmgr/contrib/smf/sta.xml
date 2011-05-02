@@ -4,7 +4,7 @@
 <!--
  Service manifest for wakame-vdc storage target agent.
 -->
-<service_bundle type='manifest' name='WAKAMvdc:sta'>
+<service_bundle type='manifest' name='wakame-vdc:sta'>
   <service name='application/wakame-vdc/sta' type='service' version='1'>
     <dependency
       name='multi-user'
