@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM
+          "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!--
+ Service manifest for wakame-vdc storage target agent.
+-->
+<service_bundle type='manifest' name='WAKAMvdc:sta'>
+  <service name='application/wakame-vdc/sta' type='service' version='1'>
+    <dependency
+      name='multi-user'
+      type='service'
+      grouping='require_all'
+      restart_on='none'>
+      <service_fmri value='svc:/milestone/multi-user' />
+    </dependency>
+
+    <dependency
+        name='filesystem_minimal'
+        grouping='require_all'
+        restart_on='none'
+        type='service'>
+        <service_fmri value='svc:/system/filesystem/minimal' />
+    </dependency>
+
+    <dependency
+        name='network'
+        grouping='optional_all'
+        restart_on='restart'
+        type='service'>
+        <service_fmri value='svc:/milestone/network' />
+    </dependency>
+
+    <exec_method
+       type='method'
+       name='stop'
+       exec=':kill'
+       timeout_seconds='60'>
+    </exec_method>
+
+    <property_group name='startd' type='framework'>
+      <propval name='duration' type='astring' value='child' />
+      <propval name='ignore_error' type='astring' value='core,signal' />
+    </property_group>
+
+    <instance name='default' enabled='false'>
+      <exec_method
+          type='method'
+          name='start'
+          exec='./bin/sta -s %{config/amqp_server} 2&gt;&amp;1'
+          timeout_seconds='60'>
+        <!--
+            exec='./bin/sta -i %{config/node_id} -s %{config/amqp_server} 2&gt;&amp;1'
+        -->
+        <method_context working_directory="/export/home/demo/wakame-vdc/dcmgr">
+          <method_credential user='root' group='root' />
+        </method_context>
+      </exec_method>
+
+      <property_group name='config' type='application'>
+        <propval name='amqp_server' type='astring'
+                 value='amqp://localhost/' />
+        <!--
+            <propval name='node_id' type='astring'
+            value='sta-xxx.xxx.xxx' />
+        -->
+      </property_group>
+
+      <template>
+        <common_name>
+          <loctext xml:lang='C'>
+            Wakame-VDC storage target agent (default)
+          </loctext>
+        </common_name>
+      </template>
+
+    </instance>
+
+    <stability value='Unstable'/>
+  </service>
+</service_bundle>

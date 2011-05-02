@@ -1,0 +1,82 @@
+
+
+Install SMF manifest:
+ # svccfg import contrib/smf/sta.xml
+
+See config params for the default sta instance:
+ # svccfg -s sta:default listprop
+
+start                              method
+start/group                        astring  root
+start/timeout_seconds              count    60
+start/type                         astring  method
+start/use_profile                  boolean  false
+start/user                         astring  root
+start/exec                         astring  "./bin/sta -s %{config/amqp_server} | tee -a %{config/logfile} 2>&1"
+start/working_directory            astring  /export/home/demo/wakame-vdc/dcmgr
+config                             application
+config/amqp_server                 astring  amqp://localhost/
+tm_common_name                     template
+tm_common_name/C                   ustring  "Wakame-VDC storage target
+agent (default)"
+general                            framework
+general/enabled                    boolean  false
+restarter                          framework    NONPERSISTENT
+restarter/auxiliary_state          astring  none
+restarter/start_pid                count    16117
+restarter/start_method_timestamp   time     1304331923.648866000
+restarter/start_method_waitstatus  integer  0
+restarter/logfile                  astring
+/var/svc/log/application-wakame-vdc-sta:default.log
+restarter/contract                 count
+restarter/next_state               astring  none
+restarter/state                    astring  disabled
+restarter/state_timestamp          time     1304331923.978610000
+restarter_actions                  framework    NONPERSISTENT
+restarter_actions/refresh          integer
+restarter_actions/auxiliary_tty    boolean  true
+restarter_actions/auxiliary_fmri   astring  svc:/network/ssh:default
+
+
+Set AMQP server destination:
+ # svccfg -s sta:default setprop config/amqp_server = amqp://newhost.com/
+ # svccfg -s sta:default refresh
+
+Set (if you changed the install directory):
+ # svccfg -s sta:default setprop start/working_directory = /your/fav/directory
+ # svccfg -s sta:default refresh
+
+Confirm the current runtime configuration:
+ # svcs -lv sta:default 
+fmri         svc:/application/wakame-vdc/sta:default
+name         Wakame-VDC storage target agent (default)
+enabled      false
+state        disabled
+next_state   none
+state_time   May  2, 2011 07:31:34 PM JST
+logfile      /var/svc/log/application-wakame-vdc-sta:default.log
+restarter    svc:/system/svc/restarter:default
+contract_id
+dependency   require_all/none svc:/milestone/multi-user (online)
+dependency   require_all/none svc:/system/filesystem/minimal (online)
+dependency   optional_all/restart svc:/milestone/network (online)
+config (application)
+config/logfile (astring) = /var/log/sta.log
+config/amqp_server (astring) = amqp://newhost.com/
+
+
+Start/Stop/Restart sta:
+ # svcadm enable sta
+ # svcadm disable sta
+ # svcadm restart sta 
+
+ See "man svcadm" for more details.
+
+See log messages to stdout:
+ # svcs -x sta
+svc:/application/wakame-vdc/sta:default (Wakame-VDC storage target agent (default))
+ State: online since May  2, 2011 07:36:49 PM JST
+   See: /var/svc/log/application-wakame-vdc-sta:default.log
+Impact: None.
+
+ Then check the log file "/var/svc/log/application-wakame-vdc-sta:default.log"
