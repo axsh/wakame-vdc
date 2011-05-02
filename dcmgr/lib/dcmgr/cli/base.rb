@@ -31,8 +31,11 @@ module Dcmgr::Cli
       #TODO: Check if model is a Sequel::Model
       #raise ArgumentError unless model.is_a? Sequel::Model
       
-      #TODO: Check UUID syntax
-      fields[:uuid] = model.trim_uuid(fields[:uuid]) if fields.has_key?(:uuid)      
+      if fields.has_key? :uuid
+        trimmed_id = model.trim_uuid(fields[:uuid])
+        Error.raise("UUID syntax invalid: #{fields[:uuid]}",100) unless model.check_trimmed_uuid_format(trimmed_id)
+        fields[:uuid] = trimmed_id
+      end
       
       #Create database fields
       new_record = model.create(fields)

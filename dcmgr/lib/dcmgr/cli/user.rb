@@ -60,7 +60,7 @@ module Dcmgr::Cli
       elsif options[:primary_account_id] != nil && options[:primary_account_id].length > 255
         Error.raise(Thor::Error, "User primary_account_id can not be longer than 255 characters",100)
       else
-        #Set values to be inserted
+        #Encrypt the password
         pwd_hash = User.encrypt_password(options[:password])
         
         #Check if the primary account uuid exists
