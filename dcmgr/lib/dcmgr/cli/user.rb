@@ -66,8 +66,15 @@ module Dcmgr::Cli
         #Check if the primary account uuid exists
         Error.raise("Unknown Account UUID #{options[:primary_account_id]}",100) if options[:primary_account_id] != nil && Account[options[:primary_account_id]].nil?
         
+        #The login id is needed to log into the web ui. Therefore we set it to name if it isn't provided.
+        if options[:login_id].nil?
+          login_id = options[:name]
+        else
+          login_id = options[:login_id]
+        end
+        
         #Put them in there
-        fields = {:name => options[:name], :login_id => options[:login_id], :password => pwd_hash}
+        fields = {:name => options[:name], :login_id => login_id, :password => pwd_hash}
         fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
         new_uuid = super(User,fields)
         
