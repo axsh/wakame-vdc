@@ -53,7 +53,7 @@ module Dcmgr::Models
       def uuid(uuid=nil)
         if uuid.is_a?(String)
           uuid = uuid.downcase
-          if uuid !~ /^[a-z0-9]{8}$/
+          unless self.check_trimmed_uuid_format(self.trim_uuid(uuid))
             raise "Invalid syntax of uuid: #{uuid}"
           end
           default_values[:uuid] = uuid
