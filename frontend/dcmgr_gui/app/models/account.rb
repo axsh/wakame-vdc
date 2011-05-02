@@ -36,6 +36,23 @@ class Account < BaseNew
     h
   end
 
+  # This method makes sure that when destroy is called, the record isn't actually deleted but just flagged as deleted.
+  # All it's relations do get deleted though.
+  #def before_destroy
+    #relations = self.users
+    #for ss in 0...relations.length do
+      #puts "Deleting association with user #{relations[0].uuid}." #if options[:verbose]
+      #self.remove_user(relations[0])		  
+    #end
+    
+    #time = Time.new()
+    #now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"
+    
+    #self.is_deleted = true
+    #self.deleted_at = now
+    
+    #false
+  #end
 
   # STI class variable setter, getter methods.
   class << self
@@ -53,7 +70,7 @@ class Account < BaseNew
     def uuid(uuid=nil)
       if uuid.is_a?(String)
         uuid = uuid.downcase
-        if uuid !~ /^[a-z0-9]{8}$/
+        unless self.check_trimmed_uuid_format(uuid)
           raise "Invalid syntax of uuid: #{uuid}"
         end
         default_values[:uuid] = uuid
