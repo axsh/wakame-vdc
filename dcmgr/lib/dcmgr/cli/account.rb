@@ -170,30 +170,16 @@ __END
     #TODO: show account to confirm deletion
     desc "del UUID [options]", "Deletes an existing account."    
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
-    def del(uuid)				
-      time = Time.new()
-      now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"      
-      
+    def del(uuid)
       to_delete = Account[uuid] || Error.raise("Unknown frontend account UUID: #{uuid}", 100)
-
-      to_delete.is_deleted = true
-      to_delete.deleted_at = now
+      to_delete.destroy
       
       to_delete_back = Dcmgr::Models::Account[uuid]
       puts "Deleting quota for account #{uuid}." if options[:verbose]
-      to_delete_back.quota.delete
-      to_delete_back.delete unless to_delete_back.nil?
+      to_delete_back.quota.destroy unless to_delete_back.quota.nil?
+      to_delete_back.destroy unless to_delete_back.nil?
       
       puts "Account #{uuid} has been deleted." if options[:verbose]
-      
-      relations = to_delete.users
-      for ss in 0...relations.length do
-        puts "Deleting association with user #{relations[0].uuid}." if options[:verbose]
-        to_delete.remove_user(relations[0])		  
-      end
-      
-      to_delete.save
-      to_delete_back.save unless to_delete_back.nil?
     end
     
     desc "enable UUID [options]", "Enable an account."
