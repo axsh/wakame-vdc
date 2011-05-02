@@ -194,12 +194,6 @@ __END
     def del(uuid)
       to_delete = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
       
-      relations = to_delete.accounts
-      for ss in 0...relations.length do
-        puts "Deleting association with account #{relations[0].canonical_uuid}." if options[:verbose]
-        to_delete.remove_account(relations[0])		  
-      end
-      
       #Delete user
       to_delete.destroy
       puts "User #{uuid} has been deleted." if options[:verbose]

@@ -15,6 +15,15 @@ class User < BaseNew
 
   many_to_many :accounts,:join_table => :users_accounts
   
+  # Removes all relations to accounts before deleting the record
+  def before_destroy
+    relations = self.accounts
+    for ss in 0...relations.length do
+      self.remove_account(relations[0])		  
+    end
+    true
+  end
+  
   class << self
     def authenticate(login_id,password)
       return nil if login_id.nil? || password.nil?
