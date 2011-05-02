@@ -36,6 +36,11 @@ module Dcmgr::Models
       super
     end
     
+    def before_destroy
+      self.quota.destroy unless self.quota.nil?
+      super
+    end
+    
 
     # STI class variable setter, getter methods.
     class << self

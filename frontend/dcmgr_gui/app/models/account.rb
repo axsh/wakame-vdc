@@ -43,7 +43,7 @@ class Account < BaseNew
       self.remove_user(relations[0])		  
     end
     
-    true
+    super
   end
   
   # override Sequel::Model#_delete not to delete rows but to set

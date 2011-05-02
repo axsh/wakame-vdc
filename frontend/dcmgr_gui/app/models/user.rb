@@ -21,7 +21,7 @@ class User < BaseNew
     for ss in 0...relations.length do
       self.remove_account(relations[0])		  
     end
-    true
+    super
   end
   
   class << self

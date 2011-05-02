@@ -171,13 +171,8 @@ __END
     desc "del UUID [options]", "Deletes an existing account."    
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def del(uuid)
-      to_delete = Account[uuid] || Error.raise("Unknown frontend account UUID: #{uuid}", 100)
-      to_delete.destroy
-      
-      to_delete_back = Dcmgr::Models::Account[uuid]
-      puts "Deleting quota for account #{uuid}." if options[:verbose]
-      to_delete_back.quota.destroy unless to_delete_back.quota.nil?
-      to_delete_back.destroy unless to_delete_back.nil?
+      super(Account,uuid)
+      super(M::Account,uuid)
       
       puts "Account #{uuid} has been deleted." if options[:verbose]
     end
