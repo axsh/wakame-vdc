@@ -185,6 +185,11 @@ module Dcmgr::Models
         raise InvalidUUIDError, "Invalid uuid or unsupported uuid: #{p_uuid} in #{self}"
       end
 
+      # Checks the general uuid syntax
+      def check_trimmed_uuid_format(uuid)
+        uuid.match(/^[a-z0-9 ]*$/) && uuid.length <= 8
+      end
+
       # Checks the uuid syntax if it is for the Taggable class.
       def check_uuid_format(uuid)
         uuid =~ /^#{self.uuid_prefix}-/
