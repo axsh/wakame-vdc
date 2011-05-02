@@ -192,10 +192,7 @@ __END
     desc "del UUID", "Delete an existing user."    
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def del(uuid)
-      to_delete = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
-      
-      #Delete user
-      to_delete.destroy
+      super(User,uuid)
       puts "User #{uuid} has been deleted." if options[:verbose]
     end
     

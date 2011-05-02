@@ -43,5 +43,10 @@ module Dcmgr::Cli
       #Return uuid if there is one
       new_record.canonical_uuid #if model.respond_to? "canonical_uuid"
     end
+    
+    def del(model,uuid)
+      to_delete = model[uuid] || UnknownUUIDError.raise(uuid)
+      to_delete.destroy
+    end
   end
 end
