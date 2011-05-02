@@ -28,6 +28,8 @@ if defined?(PhusionPassenger)
     }
   end
   PhusionPassenger.on_event(:starting_worker_process, &blk)
+elsif defined?(::Unicorn)
+  # See after_fork() section in the unicorn configuration file.
 else
   EventMachine.stop if EventMachine.reactor_running?
   Thread.new { EventMachine.epoll; EventMachine.run; }
