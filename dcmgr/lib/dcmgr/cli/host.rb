@@ -39,8 +39,7 @@ class Host < Base
 
   desc "del UUID", "Deregister a host pool node"
   def del(uuid)
-    hp = HostPool[uuid] || raise(Thor::Error.new("Unknown storage pool node: #{uuid}"))
-    hp.delete
+    super(HostPool,uuid)
   end
 
   desc "shownodes", "Show node (agents)"

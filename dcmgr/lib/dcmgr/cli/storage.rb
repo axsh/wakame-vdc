@@ -38,8 +38,7 @@ class Storage < Base
 
   desc "del UUID", "Deregister a storage pool node"
   def del(uuid)
-    sp = StoragePool[uuid] || raise(Thor::Error.new("Unknown storage pool node: #{uuid}"))
-    sp.delete
+    super(StoragePool,uuid)
   end
 
   desc "shownodes", "Show node (agents)"

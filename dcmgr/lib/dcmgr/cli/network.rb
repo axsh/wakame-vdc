@@ -46,10 +46,7 @@ class Network < Base
 
   desc "del UUID", "Deregister a network entry"
   def del(uuid)
-    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
-    nw.delete
-  rescue => e
-    Error.raise(e, 101)
+    super(M::Network,uuid)
   end
 
   desc "modify UUID [options]", "Update network information"
