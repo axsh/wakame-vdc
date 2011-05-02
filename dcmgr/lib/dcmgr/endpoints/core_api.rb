@@ -759,7 +759,8 @@ module Dcmgr
             g = find_by_uuid(:NetfilterGroup, params[:id])
 
             raise UnknownNetfilterGroup if g.nil?
-            raise NetfilterGroupNotPermitted if g.account_id != @account.canonical_uuid
+            raise OperationNotPermitted if g.instances.size > 0
+            raise OperationNotPermitted unless examine_owner(g)
 
             g.destroy
             response_to([g.canonical_uuid])
