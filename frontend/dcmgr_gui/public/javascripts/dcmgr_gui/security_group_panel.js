@@ -25,8 +25,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   var config_tooltip = {
     cluezIndex: 10000,
-    width: 420,
-    height: 320,
+    width: 450,
+    height: 450,
     waitImage: false,
     positionBy: 'auto',
     ajaxCache: false,

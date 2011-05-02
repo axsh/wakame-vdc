@@ -30,6 +30,39 @@
 		</tr>
 	</table>
 	<div id="rule_help">
-    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+   <pre>
+SYNOPSIS
+
+  "protocol", "from port", "to port",   "source cidr" 
+  "protocol", "from port", "to port",   "source account_id:group" 
+  "protocol", "icmp type", "icmp code", "source cidr" 
+  "protocol", "icmp type", "icmp code", "source account_id:group" 
+
+PARAMETERS
+
+  protocol:
+   tcp, udp, icmp
+
+  from port:
+   1 .. 65535
+
+  to port:
+   1 .. 65535
+
+  icmp type:
+   -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18
+   '-1' means wild card.
+
+  icmp code:
+    -1 or 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 
+   '-1' means wild card.
+
+  source account:group
+    ex. a-trustedx:default
+
+  source cidr:
+    ex. 0.0.0.0/0, 192.168.0.0/24
+
+   </pre> 
   </div>
 </div>
