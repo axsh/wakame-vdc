@@ -60,11 +60,7 @@ class Network < Base
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this."
   def modify(uuid)
-    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
-    nw.set_only(options, [:ipv4_gw, :prefix, :domain_name, :dns_server, :dhcp_server, :metadata_server, :vlan_id, :description, :account_id])
-    nw.save_changes
-  rescue => e
-    Error.raise(e, 101)
+    super(M::Network,uuid,options)
   end
 
   desc "nat UUID [options]", "Set or clear nat mapping for a network."

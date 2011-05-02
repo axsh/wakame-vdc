@@ -48,5 +48,19 @@ module Dcmgr::Cli
       to_delete = model[uuid] || UnknownUUIDError.raise(uuid)
       to_delete.destroy
     end
+    
+    def modify(model,uuid,fields)
+      raise ArgumentError unless fields.is_a? Hash
+      to_modify = model[uuid] || UnknownUUIDError.raise(uuid)
+      
+      #Use a copy of the fields hash so this method can work with frozen hashes
+      fields_nonil = fields.merge({})
+      #Don't update empty fields
+      fields_nonil.delete_if {|key,value| value.nil?}
+      
+      to_modify.set(fields_nonil)
+      to_modify.updated_at = Time.now if to_modify.with_timestamps?
+      to_modify.save_changes
+    end
   end
 end

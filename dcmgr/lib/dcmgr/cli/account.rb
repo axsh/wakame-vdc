@@ -135,35 +135,8 @@ __END
       elsif options[:description] != nil && options[:description].length > 100
         raise "Description can not be longer than 100 characters."
       else
-        time = Time.new()
-        now = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"			
-        to_be_updated = Account[uuid] || Error.raise("Unknown frontend account UUID: #{uuid}", 100)
-        to_be_updated_back = M::Account[uuid] || Error.raise("Unknown backend account UUID: #{uuid}", 100)
-        
-        #this flag will be set in case any change to an account is made. Used to determine if updated_at needs to be set.
-        changed = false
-        
-        unless options[:description] == nil
-          to_be_updated_back.description = options[:description]
-          changed = true
-        end
-        
-        unless options[:name] == nil
-          #to_be_updated.update(:name => options[:name]) 
-          to_be_updated.name = options[:name]
-          puts "Account #{options[:id]}'s name changed to #{options[:name]}" if options[:verbose]
-          changed = true
-        end
-        
-        if changed
-          #to_be_updated.update(:updated_at => now)
-          to_be_updated.updated_at = now
-          to_be_updated_back.updated_at = now
-          to_be_updated.save
-          to_be_updated_back.save
-        else
-          puts "Nothing to do." if options[:verbose]
-        end
+        super(Account,uuid,{:name => options[:name]})
+        super(M::Account,uuid,{:description => options[:description]})
       end
     end
     

@@ -250,6 +250,10 @@ class BaseNew < Sequel::Model
     s
   end
 
+  # Returns true if this Model has time stamps
+  def with_timestamps?
+    self.columns.include?(:created_at) && self.columns.include?(:updated_at)
+  end
 
   # Callback when the initial data is setup to the database.
   def self.install_data
