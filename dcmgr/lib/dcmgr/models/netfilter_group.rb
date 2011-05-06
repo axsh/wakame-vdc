@@ -50,6 +50,8 @@ module Dcmgr::Models
     end
 
     def before_destroy
+      return false if self.instances.size > 0
+
       self.flush_rule
       super
     end

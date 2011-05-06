@@ -149,7 +149,7 @@ module Dcmgr
             limit = params[:limit].to_i
             limit = limit < 1 ? nil : limit
             
-            total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid)
+            total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid).alives_and_recent_termed
             partial_ds  = total_ds.dup.order(:id)
             partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
@@ -759,10 +759,16 @@ module Dcmgr
             g = find_by_uuid(:NetfilterGroup, params[:id])
 
             raise UnknownNetfilterGroup if g.nil?
-            raise OperationNotPermitted if g.instances.size > 0
             raise OperationNotPermitted unless examine_owner(g)
 
-            g.destroy
+            # raise OperationNotPermitted if g.instances.size > 0
+            begin
+              g.destroy
+            rescue => e
+              # logger.error(e)
+              raise OperationNotPermitted
+            end
+
             response_to([g.canonical_uuid])
           end
         end
