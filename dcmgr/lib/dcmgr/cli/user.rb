@@ -114,7 +114,7 @@ Associated accounts:
 <%- } -%>
 <%- end -%>
 __END
-      else	
+      else
         user = User.all
         puts ERB.new(<<__END, nil, '-').result(binding)
 <%- user.each { |row| -%>
@@ -129,63 +129,16 @@ __END
     method_option :login_id, :type => :string, :aliases => "-l", :desc => "The new login_id for the user." #Maximum size: 255
     method_option :password, :type => :string, :aliases => "-p", :desc => "The new password for the user." #Maximum size: 255
     method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "The new primary account to associate this user with."
-    method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def modify(uuid)
-      if options[:name] != nil && options[:name].length > 200
-        Error.raise("User name can not be longer than 200 characters",100)
-      elsif options[:login_id] != nil && options[:login_id].length > 255
-        Error.raise("User login_id can not be longer than 255 characters",100)
-      elsif options[:password] != nil && options[:password].length > 255
-        Error.raise("User password can not be longer than 255 characters",100)
-      elsif options[:primary_account_id] != nil && options[:primary_account_id].length > 255
-        Error.raise("User primary_account_id can not be longer than 255 characters",100)
-      else
-        time = Time.new()
-        now = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"			
-        to_be_updated = User[uuid] || raise(Thor::Error, "Unknown User UUID: #{uuid}")
-                
-        uuid = Account.uuid(options[:uuid]) unless options[:uuid] == nil
-        unless options[:primary_account_id] == nil
-          auuid = options[:primary_account_id]
-          Error.raise("Unknown Account UUID #{auuid}",100) if Account[auuid].nil?
-        end
-        
-        #this variables will be set in case any change to a user is made. Used to determine if update_at needs to be set.
-        changed = false
-        
-        unless options[:name] == nil
-          to_be_updated.name = options[:name]
-          puts "User #{uuid}'s name changed to #{options[:name]}" if options[:verbose]
-          changed = true
-        end
-        
-        unless options[:login_id] == nil
-          to_be_updated.login_id = options[:login_id]
-          puts "User #{uuid}'s login id changed to #{options[:login_id]}" if options[:verbose]
-          changed = true
-        end
-        
-        unless options[:password] == nil
-          to_be_updated.password = User.encrypt_password(options[:password])
-          puts "User #{uuid}'s password changed" if options[:verbose]
-          changed = true
-        end		  
-        
-        unless options[:primary_account_id] == nil
-          acc = Account[auuid]
-          to_be_updated.primary_account_id = acc.uuid
-          puts "User #{uuid}'s primary account uuid changed to #{auuid}" if options[:verbose]   
-          to_be_updated.add_account(acc) unless to_be_updated.accounts.include? acc
-          changed = true
-        end
-        
-        if changed
-          to_be_updated.updated_at = now
-          to_be_updated.save
-        else
-          puts "Nothing to do." if options[:verbose]
-        end
-      end
+      Error.raise("User name can not be longer than 200 characters",100) if options[:name] != nil && options[:name].length > 200
+      Error.raise("User login_id can not be longer than 255 characters",100) if options[:login_id] != nil && options[:login_id].length > 255
+      Error.raise("User password can not be longer than 255 characters",100) if options[:password] != nil && options[:password].length > 255
+      Error.raise("User primary_account_id can not be longer than 255 characters",100) if options[:primary_account_id] != nil && options[:primary_account_id].length > 255
+      
+      fields = options.merge({})
+      fields[:primary_account_id] = Account.trim_uuid(options[:primary_account_id]) unless options[:primary_account_id].nil?
+      
+      super(User,uuid,fields)
     end
 
     #TODO: allow deletion of multiple id's at once

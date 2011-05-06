@@ -128,16 +128,12 @@ __END
     desc "modify UUID [options]", "Modify an existing account."    
     method_option :name, :type => :string, :aliases => "-n", :desc => "The new name for the account." #Maximum size: 200    
     method_option :description, :type => :string, :aliases => "-d", :desc => "The new description for the account."
-    method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
+    #method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def modify(uuid)
-      if options[:name] != nil && options[:name].length > 255
-        raise "Account name can not be longer than 255 characters."
-      elsif options[:description] != nil && options[:description].length > 100
-        raise "Description can not be longer than 100 characters."
-      else
-        super(Account,uuid,{:name => options[:name]})
-        super(M::Account,uuid,{:description => options[:description]})
-      end
+      raise "Account name can not be longer than 255 characters." if options[:name] != nil && options[:name].length > 255
+      raise "Description can not be longer than 100 characters." if options[:description] != nil && options[:description].length > 100
+      super(Account,uuid,{:name => options[:name]})
+      super(M::Account,uuid,{:description => options[:description]})
     end
     
     #TODO: show account to confirm deletion
@@ -153,9 +149,6 @@ __END
     desc "enable UUID [options]", "Enable an account."
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def enable(uuid)
-      time = Time.new()
-      now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"
-      
       to_enable = Account[uuid]
       Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_enable == nil or to_enable.is_deleted
       to_enable_back = M::Account[uuid] || Error.raise("Unknown backend account UUID: #{uuid}", 100)
@@ -164,11 +157,11 @@ __END
         puts "Account #{uuid} is already enabled." if options[:verbose]
       else      
         to_enable.enable = Account::ENABLED
-        to_enable.updated_at = now     
+        to_enable.updated_at = Time.now.utc.iso8601
         to_enable.save   
 	        
         to_enable_back.enabled = Dcmgr::Models::Account::ENABLED
-        to_enable_back.updated_at = now
+        to_enable_back.updated_at = Time.now.utc.iso8601
         to_enable_back.save
 	
         puts "Account #{uuid} has been enabled." if options[:verbose]
@@ -178,9 +171,6 @@ __END
     desc "disable UUID [options]", "Disable an account."    
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def disable(uuid)
-      time = Time.new()
-      now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"      
-      
       to_disable = Account[uuid]
       Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_disable == nil or to_disable.is_deleted
       to_disable_back = M::Account[uuid] || Error.raise("Unknown backend account UUID: #{uuid}", 100)
@@ -189,11 +179,11 @@ __END
         puts "Account #{id} is already disabled." if options[:verbose]
       else
         to_disable.enable = Account::DISABLED
-        to_disable.updated_at = now
+        to_disable.updated_at = Time.now.utc.iso8601
         to_disable.save
         
         to_disable_back.enabled = M::Account::DISABLED
-        to_disable_back.updated_at = now
+        to_disable_back.updated_at = Time.now.utc.iso8601
         to_disable_back.save
         
         puts "Account #{uuid} has been disabled." if options[:verbose]
@@ -249,12 +239,10 @@ __END
     method_option :weight, :type => :numeric, :aliases => "-w", :desc => "The instance total weight to set this account's quota to."
     method_option :size, :type => :numeric, :aliases => "-s", :desc => "The volume total size to set this account's quota to."
     def quota(uuid)
-      account = M::Account[uuid] || Error.raise("Unknown backend account UUID: #{uuid}", 100)
+      account = M::Account[uuid] || UnknownUUIDError.raise(uuid)
       account.quota.instance_total_weight = options[:weight] unless options[:weight].nil?
       account.quota.volume_total_size = options[:size] unless options[:size].nil?
-      time = Time.new()
-      now  = Sequel.string_to_datetime "#{time.year}-#{time.month}-#{time.day} #{time.hour}:#{time.min}:#{time.sec}"
-      account.quota.updated_at = now
+      account.quota.updated_at = Time.now.utc.iso8601
       account.quota.save
     end
     

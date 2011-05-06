@@ -59,7 +59,7 @@ module Dcmgr::Cli
       fields_nonil.delete_if {|key,value| value.nil?}
       
       to_modify.set(fields_nonil)
-      to_modify.updated_at = Time.now if to_modify.with_timestamps?
+      to_modify.updated_at = Time.now.utc.iso8601 if to_modify.with_timestamps?
       to_modify.save_changes
     end
   end
