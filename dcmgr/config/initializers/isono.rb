@@ -5,34 +5,29 @@ require 'eventmachine'
 
 Signal.trap('EXIT') { EventMachine.stop }
 
+def restart_reactor_and_messaging_client
+  if EventMachine.reactor_running?
+    EventMachine.stop
+    Dcmgr.class_eval {
+      @messaging_client = nil
+    }
+  end
+  Thread.new { EventMachine.epoll; EventMachine.run; }
+end
+
 if defined?(PhusionPassenger)
   if PhusionPassenger::VERSION_STRING =~ /^3\.0\./
-   blk = proc { |forked|
-      if EventMachine.reactor_running?
-        EventMachine.stop
-        Dcmgr.class_eval {
-          @messaging_client = nil
-        }
-      end
-      Thread.new { EventMachine.epoll; EventMachine.run; }
+    blk = proc { |forked|
+      restart_reactor_and_messaging_client
     }
   else
-   blk = proc {
-      if EventMachine.reactor_running?
-        EventMachine.stop
-        Dcmgr.class_eval {
-          @messaging_client = nil
-        }
-      end
-      Thread.new { EventMachine.epoll; EventMachine.run; }
+    blk = proc {
+      restart_reactor_and_messaging_client
     }
   end
   PhusionPassenger.on_event(:starting_worker_process, &blk)
-elsif defined?(::Unicorn)
-  # See after_fork() section in the unicorn configuration file.
 else
-  EventMachine.stop if EventMachine.reactor_running?
-  Thread.new { EventMachine.epoll; EventMachine.run; }
+  restart_reactor_and_messaging_client
 end
 
 Dcmgr.class_eval {
