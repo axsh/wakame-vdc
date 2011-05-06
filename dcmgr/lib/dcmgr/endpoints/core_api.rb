@@ -149,7 +149,7 @@ module Dcmgr
             limit = params[:limit].to_i
             limit = limit < 1 ? nil : limit
             
-            total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid)
+            total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid).alives_and_recent_termed
             partial_ds  = total_ds.dup.order(:id)
             partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
