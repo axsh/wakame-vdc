@@ -138,7 +138,7 @@ module Dcmgr
   end
 
   autoload :Tags, 'dcmgr/tags'
-
+  autoload :Time, 'ext/time.rb'
   autoload :RequestLogger, 'dcmgr/request_logger'
 
   module Cli

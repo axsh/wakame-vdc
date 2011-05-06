@@ -4,7 +4,6 @@ require 'sequel/model'
 
 
 module Dcmgr::Models
-    
   # Sequal::Model plugin to inject the Taggable feature to the model
   # class.
   #

@@ -93,7 +93,7 @@ module Dcmgr::Cli
     desc "show [UUID] [options]", "Show one user or all users currently in the database"        
     def show(uuid = nil)
       if uuid        
-        user = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
+        user = User[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
 User UUID: <%= user.canonical_uuid %>
 Name:
@@ -153,11 +153,11 @@ __END
     method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to associate these user with. Any non-existing or non numeral id will be ignored" 
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def associate(uuid)      
-      user = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
+      user = User[uuid] || UnknownUUIDError.raise(uuid)
       options[:account_ids].each { |a|
         if Account[a].nil?
           puts "Unknown Account UUID: #{a}" if options[:verbose]
-        elsif !user.accounts.index(Account[a]).nil?#user.accounts[a] != nil
+        elsif !user.accounts.index(Account[a]).nil?
           puts "User #{uuid} is already associated with account #{a}." if options[:verbose]
         else
           user.add_account(Account[a])
@@ -171,7 +171,7 @@ __END
     method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to dissociate these user from. Any non-existing or non numeral id will be ignored" 
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def dissociate(uuid)
-      user = User[uuid] || Error.raise("Unknown User UUID: #{uuid}",100)
+      user = User[uuid] || UnknownUUIDError.raise(uuid)
       options[:account_ids].each { |a|
         if Account[a].nil?
           puts "Unknown Account UUID: #{a}" if options[:verbose]
