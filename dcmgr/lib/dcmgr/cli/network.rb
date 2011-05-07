@@ -19,7 +19,7 @@ class Network < Base
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this."
   def add
-    vlan_pk = if options[:vlan_id].to_i > 0
+    vlan_pk = if options[:vlan_id].to_i >= 0
                 vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
                 vlan.id
               else
