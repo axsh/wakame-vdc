@@ -44,7 +44,7 @@ DcmgrGUI.prototype.storagePoolPanel = function(){
   
   var detail_filter = new DcmgrGUI.Filter();
   detail_filter.add(function(data){
-    data.item.offerring_disk_space = DcmgrGUI.Converter.fromMBtoGB(data.item.offerring_disk_space);
+    data.item.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(data.item.offering_disk_space);
     return data;
   });
   
@@ -65,7 +65,7 @@ DcmgrGUI.prototype.storagePoolPanel = function(){
     var results = data.storage_pool.results;
     var size = results.length;
     for(var i = 0; i < size; i++) {
-      results[i].result.offerring_disk_space = DcmgrGUI.Converter.fromMBtoGB(results[i].result.offering_disk_space);
+      results[i].result.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(results[i].result.offering_disk_space);
     }
     return data;
   });
