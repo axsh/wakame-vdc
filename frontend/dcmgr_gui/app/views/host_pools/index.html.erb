@@ -25,8 +25,7 @@ jQuery(function($){
              <table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
                <tr>
                  <th></th>
-                 <th><%= t("hostpools.list.host_pool_id") %></th>
-                 <th><%= t("hostpools.list.node_id") %></th>
+                 <th style="width:150px"><%= t("hostpools.list.host_pool_id") %></th>
                    <th><%= t("hostpools.list.hyper_visor") %></th>
                   <th><%= t("hostpools.list.cpu_cores") %></th>
                      <th><%= t("hostpools.list.memory_size") %></th>
@@ -39,8 +38,7 @@ jQuery(function($){
                     {{else}}
                         <td class="listcheckbox"></td>
                     {{/if}}
-                    <td class="vtip" title="node_id">${item.uuid}</td>
-                    <td class="vtip" title="node_id">${item.node_id}</td>
+                    <td class="vtip" title="uuid">${item.uuid}</td>
                     <td class="vitp center" title="hypervisor">${item.hypervisor}</td>
                     <td class="vtip center" title="offering_cpu_cores">${item.offering_cpu_cores}</td>
                     <td class="vtip center" title="offering_memory_size">${item.offering_memory_size}</td>
@@ -78,11 +76,8 @@ jQuery(function($){
                 </tr>
                 <tr>
                     <td class="padcell"></td>
-                    <td class="title"><%= t("hostpools.details.node_id") %>:</td>
-                    <td>${item.node_id}</td>
-                    <td class="padcell"></td>
                     <td class="title"><%= t("hostpools.details.status") %>:</td>
-                    <td class="state">${item.status}</td>
+                    <td class="state" colspan="7">${item.status}</td>
                 </tr>
                 <tr>
                     <td class="padcell"></td>
