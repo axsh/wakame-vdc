@@ -168,8 +168,7 @@ manifest.instance_eval do
     c.network_name = nil
   end
 
-  config_path File.expand_path('config/nsa.conf', app_root)
-  load_config
+  load_config File.expand_path('config/nsa.conf', app_root)
 end
 
 

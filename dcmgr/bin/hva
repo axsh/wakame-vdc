@@ -1332,8 +1332,7 @@ manifest.instance_eval do
     c.packet_drop_log   = false
   end
 
-  config_path File.expand_path('config/hva.conf', app_root)
-  load_config
+  load_config File.expand_path('config/hva.conf', app_root)
 end
 
 start(manifest) do
