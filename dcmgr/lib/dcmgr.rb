@@ -151,5 +151,6 @@ module Dcmgr
     autoload :AccountCli, 'dcmgr/cli/account'
     autoload :UsersCli, 'dcmgr/cli/user'
     autoload :Vlan, 'dcmgr/cli/vlan'
+    autoload :Image, 'dcmgr/cli/image'
   end
 end

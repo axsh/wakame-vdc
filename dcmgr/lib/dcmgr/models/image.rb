@@ -42,10 +42,10 @@ module Dcmgr::Models
       md = self.source
       case md[:type]
       when :http
-        errors.add(:source, "Unknown image URI") if md[:uri].blank?
+        errors.add(:source, "Unknown image URI") if md[:uri].nil? || md[:uri].empty?
       when :volume
-        errors.add(:source, "Unknown snapshot ID") if md[:snapshot_id].blank?
-        errors.add(:source, "Unknown account ID") if md[:account_id].blank?
+        errors.add(:source, "Unknown snapshot ID") if VolumeSnapshot[:snapshot_id].nil?#md[:snapshot_id].nil? || md[:snapshot_id].empty?
+        errors.add(:source, "Unknown account ID") if Account[:account_id].nil?#md[:account_id].nil? || md[:account_id].empty?
       end
     end
 
