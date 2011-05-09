@@ -65,7 +65,7 @@ DcmgrGUI.prototype.storagePoolPanel = function(){
     var results = data.storage_pool.results;
     var size = results.length;
     for(var i = 0; i < size; i++) {
-      results[i].result.offerring_disk_space = DcmgrGUI.Converter.fromMBtoGB(results[i].result.offerring_disk_space);
+      results[i].result.offerring_disk_space = DcmgrGUI.Converter.fromMBtoGB(results[i].result.offering_disk_space);
     }
     return data;
   });
