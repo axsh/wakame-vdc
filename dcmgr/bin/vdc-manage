@@ -29,7 +29,8 @@ end
 
 begin
   RootCli.start
-rescue Dcmgr::Cli::Error => e
+rescue => e
+  e = Dcmgr::Cli::Error.new(e,101) unless e.is_a?(Dcmgr::Cli::Error)
   STDERR.puts "ERROR: " + e.message
   if e.respond_to?(:exit_code)
     exit(e.exit_code)

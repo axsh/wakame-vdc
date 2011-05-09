@@ -40,8 +40,6 @@ class Network < Base
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
 
     puts super(M::Network,fields)
-  rescue => e
-    Error.raise(e, 101)
   end
 
   desc "del UUID", "Deregister a network entry"
@@ -77,8 +75,6 @@ class Network < Base
       in_nw.set_only({:nat_network_id => ex_nw.id},:nat_network_id)
       in_nw.save_changes
     end
-  rescue => e
-    Error.raise(e, 101)
   end
 
   desc "show [UUID] [options]", "Show network(s)"
@@ -134,8 +130,6 @@ __END
 <%= "%-20s  %-15s" % [l.ipv4, M::IpLease::TYPE_MESSAGES[l.alloc_type]] %>
 <%- } -%>
 __END
-  rescue => e
-    Error.raise(e, 100)
   end
 
   desc "add_reserved UUID IPADDR", "Add reserved IP to the network"
@@ -147,8 +141,6 @@ __END
     else
       Error.raise("IP address is out of range: #{ipaddr} => #{nw.ipaddress.network}/#{nw.ipaddress.prefix}")
     end
-  rescue => e
-    Error.raise(e, 101)
   end
 
   desc "del_reserved UUID IPADDR", "Delete reserved IP from the network"
@@ -158,8 +150,6 @@ __END
     if nw.ip_lease_dataset.filter(:ipv4=>ipaddr).delete == 0
       Error.raise("The IP is not reserved in network #{uuid}: #{ipaddr}", 100)
     end
-  rescue => e
-    Error.raise(e, 101)
   end
 end
 end
