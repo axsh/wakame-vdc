@@ -58,6 +58,10 @@ module Dcmgr::Models
               })
     end
 
+    def to_api_document
+      to_hash
+    end
+
     def nat_network
       Network.find(:id => self.nat_network_id)
     end

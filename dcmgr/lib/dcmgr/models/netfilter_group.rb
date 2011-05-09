@@ -28,6 +28,10 @@ module Dcmgr::Models
       #:rules => netfilter_rules.map { |rule| rule.to_hash },
       #}
     end
+    
+    def to_api_document
+      to_hash
+    end
 
     def to_tiny_hash
       {

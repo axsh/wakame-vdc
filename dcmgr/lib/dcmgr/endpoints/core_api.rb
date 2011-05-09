@@ -355,7 +355,7 @@ module Dcmgr
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_hash }
+              :results=> partial_ds.all.map {|i| i.to_api_document }
             }]
             
             response_to(res)
@@ -370,7 +370,7 @@ module Dcmgr
             unless examine_owner(i)
               raise OperationNotPermitted
             end
-            response_to(i.to_hash)
+            response_to(i.to_api_document)
           end
         end
 
@@ -686,7 +686,7 @@ module Dcmgr
                      :owner_total => total_ds.count,
                      :start => start,
                      :limit => limit,
-                     :results=> partial_ds.all.map {|i| i.to_hash }
+                     :results=> partial_ds.all.map {|i| i.to_api_document }
                    }]
             
             response_to(res)
@@ -699,7 +699,7 @@ module Dcmgr
             g = find_by_uuid(:NetfilterGroup, params[:id])
             raise OperationNotPermitted unless examine_owner(g)
 
-            response_to(g.to_hash)
+            response_to(g.to_api_document)
           end
         end
 
@@ -720,7 +720,7 @@ module Dcmgr
             raise DuplicatedNetfilterGroup unless g.nil?
 
             g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
-            response_to(g.to_hash)
+            response_to(g.to_api_document)
           end
         end
 
@@ -746,7 +746,7 @@ module Dcmgr
             # refresh netfilter_rules
             Dcmgr.messaging.event_publish('hva/netfilter_updated', :args=>[g.canonical_uuid])
 
-            response_to(g.to_hash)
+            response_to(g.to_api_document)
           end
         end
 
@@ -951,7 +951,7 @@ module Dcmgr
               :filter_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_hash }
+              :results=> partial_ds.all.map {|i| i.to_api_document }
             }]
             
             response_to(res)
@@ -965,7 +965,7 @@ module Dcmgr
             nw = find_by_uuid(:Network, params[:id])
             examine_owner(nw) || raise(OperationNotPermitted)
             
-            response_to(nw.to_hash)
+            response_to(nw.to_api_document)
           end
         end
         
@@ -985,7 +985,7 @@ module Dcmgr
             }
             nw = Models::Network.create(savedata)
                                             
-            response_to(nw.to_hash)
+            response_to(nw.to_api_document)
           end
         end
         
