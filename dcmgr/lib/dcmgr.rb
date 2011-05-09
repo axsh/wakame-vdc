@@ -150,5 +150,6 @@ module Dcmgr
     autoload :Storage, 'dcmgr/cli/storage'
     autoload :AccountCli, 'dcmgr/cli/account'
     autoload :UsersCli, 'dcmgr/cli/user'
+    autoload :Vlan, 'dcmgr/cli/vlan'
   end
 end

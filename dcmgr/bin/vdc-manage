@@ -24,6 +24,7 @@ class RootCli < Thor
   register(Dcmgr::Cli::Storage, Dcmgr::Cli::Storage.namespace, "storage sub-command", "Operations for storage node")
   register(Dcmgr::Cli::AccountCli, Dcmgr::Cli::AccountCli.namespace, "account sub-command", "Operations for accounts")
   register(Dcmgr::Cli::UsersCli, Dcmgr::Cli::UsersCli.namespace, "user sub-command", "Operations for users")
+  register(Dcmgr::Cli::Vlan, Dcmgr::Cli::Vlan.namespace, "user sub-command", "Operations for vlan leases")
 end
 
 
