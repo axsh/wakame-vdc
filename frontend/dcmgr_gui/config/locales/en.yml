@@ -21,6 +21,7 @@ en:
   selectmenu:
     select_action: "Select an Action"
     select_region: "Region: "
+    select_region_first: "Japan"
   pagenate:
     page: "{0} Page"
     total: "Total {0}"
