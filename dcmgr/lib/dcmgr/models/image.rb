@@ -52,6 +52,10 @@ module Dcmgr::Models
     def to_hash
       super.merge({:source=>self.source.dup, :description=>description.to_s})
     end
+
+    def to_api_document
+      to_hash
+    end
     
   end
 end
