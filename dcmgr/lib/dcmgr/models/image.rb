@@ -14,6 +14,7 @@ module Dcmgr::Models
       Text :source, :null=>false
       String :arch, :size=>10, :null=>false
       Text :description
+      Boolean :is_public, :null=>false, :default=>false
       #Fixnum :parent_image_id
 
       String :state, :size=>20, :null=>false, :default=>:init.to_s
