@@ -3,7 +3,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   var maxrow = 10;
   var page = 1;
   var list_request = { 
-    "url":DcmgrGUI.Util.getPagePath('/images/list/',page),
+    "url":DcmgrGUI.Util.getPagePath('/machine_images/list/',page),
     "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
   }
   
@@ -54,7 +54,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       
   c_list.setDetailTemplate({
     template_id:'#imagesDetailTemplate',
-    detail_path:'/images/show/'
+    detail_path:'/machine_images/show/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
@@ -68,7 +68,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
-    list_request.url = DcmgrGUI.Util.getPagePath('/images/list/',c_pagenate.current_page);
+    list_request.url = DcmgrGUI.Util.getPagePath('/machine_images/list/',c_pagenate.current_page);
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
@@ -80,7 +80,7 @@ DcmgrGUI.prototype.imagePanel = function(){
      
      //update
      c_list.checked_list[check_id].c_detail.update({
-       url:DcmgrGUI.Util.getPagePath('/images/show/',check_id)
+       url:DcmgrGUI.Util.getPagePath('/machine_images/show/',check_id)
      },true);
     });
   });

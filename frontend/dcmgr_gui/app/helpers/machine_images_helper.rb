@@ -1,0 +1,2 @@
+module MachineImagesHelper
+end

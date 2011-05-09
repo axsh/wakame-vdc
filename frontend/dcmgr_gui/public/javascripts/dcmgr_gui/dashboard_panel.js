@@ -14,7 +14,7 @@ DcmgrGUI.prototype.dashboardPanel = function(){
     
     parallel({
       total_instance: $.getJSON('/instances/total.json'),
-      total_image: $.getJSON('/images/total.json'),
+      total_image: $.getJSON('/machine_images/total.json'),
       total_volume: $.getJSON('/volumes/total.json'),
       total_snapshot: $.getJSON('/snapshots/total.json'),
       total_security_group: $.getJSON('/security_groups/total.json'),

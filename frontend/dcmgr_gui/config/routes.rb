@@ -35,11 +35,11 @@ DcmgrGui::Application.routes.draw do
   get    'host_pools/show/:id' ,:to => 'host_pools#show'
   get    'host_pools/show_host_pools' ,:to => 'host_pools#show_host_pools'
   
-  #images
-  get    'images' ,:to => 'images#index'
-  get    'images/total',:to => 'images#total'
-  get    'images/list/:id' ,:to => 'images#list'
-  get    'images/show/:id' ,:to => 'images#show'
+  #machine_images
+  get    'machine_images' ,:to => 'machine_images#index'
+  get    'machine_images/total',:to => 'machine_images#total'
+  get    'machine_images/list/:id' ,:to => 'machine_images#list'
+  get    'machine_images/show/:id' ,:to => 'machine_images#show'
   
   
   #information

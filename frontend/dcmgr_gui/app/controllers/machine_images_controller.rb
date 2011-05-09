@@ -1,10 +1,9 @@
-class ImagesController < ApplicationController
+class MachineImagesController < ApplicationController
   respond_to :json
   
   def index
   end
   
-  # images/show/1.json
   def show
     image_id = params[:id]
     detail = DcmgrResource::Image.show(image_id)
