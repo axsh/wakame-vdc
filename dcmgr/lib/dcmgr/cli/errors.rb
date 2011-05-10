@@ -19,7 +19,7 @@ module Dcmgr::Cli
   
   class UnknownUUIDError < Error
     def initialize(uuid,exit_code=100)
-      super("Unknown UUID #{uuid}")
+      super("Unknown UUID '#{uuid}'.")
     end
     
     def self.raise(uuid,exit_code=100)

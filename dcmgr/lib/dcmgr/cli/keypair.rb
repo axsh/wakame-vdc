@@ -12,7 +12,7 @@ module Dcmgr::Cli
     method_option :public_key, :type => :string, :aliases => "-pub", :desc => "The path to the public key.", :required => true
     method_option :private_key, :type => :string, :aliases => "-pri", :desc => "The path to the private key.", :required => true
     def add
-      UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil? && !options[:account_id].nil?
+      UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       Error.Raise "Private key file doesn't exist" unless File.exists?(options[:private_key])
       Error.Raise "Public key file doesn't exist" unless File.exists?(options[:public_key])
       
