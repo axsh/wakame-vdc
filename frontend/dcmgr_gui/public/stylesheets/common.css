@@ -585,7 +585,7 @@ body{
 #content #mainarea_wide .controller a.create_security_group{
 	display: block;
 	float: left;
-	width: 160px;
+	width: 15em;
 	height: 23px;
 	font-size: 11px;
 	line-height: 0;
@@ -594,7 +594,7 @@ body{
 #content #mainarea_wide .controller a.delete_security_group{
 	display: block;
 	float: left;
-	width: 160px;
+	width: 15em;
 	height: 23px;
 	font-size: 11px;
 	line-height: 0;
@@ -1062,7 +1062,7 @@ body{
 #content #mainarea_wide .controller a.delete_snapshot{
 	display: block;
 	float: left;
-	width: 140px;
+	width: 13em;
 	height: 23px;
 	font-size: 11px;
 	line-height: 0;
@@ -1072,7 +1072,7 @@ body{
 #content #mainarea_wide .controller a.create_snapshot{
 	display: block;
   float: left;
-	width: 140px;
+	width: 13em;
 	height: 23px;
 	font-size: 11px;
 	line-height: 0;
