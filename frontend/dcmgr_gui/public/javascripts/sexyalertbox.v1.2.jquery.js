@@ -348,9 +348,9 @@ jQuery.fn.extend({
     preloadImages: function() {
       var img = new Array(2);
       img[0] = new Image();img[1] = new Image();img[2] = new Image();
-      img[0].src = this.Box.css('background-image').replace(new RegExp("url\\(\"?([^']*)\"\"?\\)", 'gi'), "$1");
-      img[1].src = this.InBox.css('background-image').replace(new RegExp("url\\(\"?([^']*)\"\"?\\)", 'gi'), "$1");
-      img[2].src = this.Contenedor.css('background-image').replace(new RegExp("url\\(\"?([^']*)\"\"?\\)", 'gi'), "$1");
+      img[0].src = this.Box.css('background-image').replace(new RegExp('url\\((.*)\\)', 'gi'), "$1").replace(/"/g,'');
+      img[1].src = this.InBox.css('background-image').replace(new RegExp('url\\((.*)\\)', 'gi'), "$1").replace(/"/g,'');
+      img[2].src = this.Contenedor.css('background-image').replace(new RegExp('url\\((.*)\\)', 'gi'), "$1").replace(/"/g,'');
     },
     
 
