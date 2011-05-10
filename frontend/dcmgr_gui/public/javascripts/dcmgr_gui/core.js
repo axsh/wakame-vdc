@@ -329,7 +329,7 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
         $("#list_load_mask").unmask();
       }
     });
-  },
+  }
 });
 
 DcmgrGUI.Util = {};
@@ -654,7 +654,7 @@ DcmgrGUI.Refresh = DcmgrGUI.Class.create({
     self.element.live('click',function(){
       self.element.trigger('dcmgrGUI.refresh');
     })
-  },
+  }
 });
 
 DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
