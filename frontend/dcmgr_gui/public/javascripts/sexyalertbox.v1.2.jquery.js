@@ -351,7 +351,6 @@ jQuery.fn.extend({
       img[0].src = this.Box.css('background-image').replace(new RegExp("url\\(\"?([^']*)\"\"?\\)", 'gi'), "$1");
       img[1].src = this.InBox.css('background-image').replace(new RegExp("url\\(\"?([^']*)\"\"?\\)", 'gi'), "$1");
       img[2].src = this.Contenedor.css('background-image').replace(new RegExp("url\\(\"?([^']*)\"\"?\\)", 'gi'), "$1");
-      console.log(img) 
     },
     
 
