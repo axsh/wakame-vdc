@@ -154,5 +154,6 @@ module Dcmgr
     autoload :Image, 'dcmgr/cli/image'
     autoload :KeyPair, 'dcmgr/cli/keypair'
     autoload :Group, 'dcmgr/cli/group'
+    autoload :Spec, 'dcmgr/cli/spec'
   end
 end
