@@ -759,7 +759,7 @@ body{
 
 #content #mainarea_wide table.ptn01 tr td a.edit_security_group{
   display: block;
-	width: 40px;
+	width: 5em;
 	font-size: 10px;
 	line-height: 0;
 }
