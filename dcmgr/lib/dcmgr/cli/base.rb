@@ -30,12 +30,11 @@ module Dcmgr::Cli
       raise ArgumentError unless options.is_a? Hash
       #TODO: Check if model is a Sequel::Model
       #raise ArgumentError unless model.is_a? Sequel::Model
-      fields = options.merge({})
+      fields = options.dup
       
-      if fields.has_key? "uuid"
-        trimmed_id = model.trim_uuid(fields[:uuid])
-        Error.raise("UUID syntax invalid: #{fields[:uuid]}",100) unless model.check_trimmed_uuid_format(trimmed_id)
-        fields[:uuid] = trimmed_id
+      if fields.has_key?("uuid") || fields.has_key?(:uuid)
+        fields[:uuid] = model.trim_uuid(fields[:uuid]) if model.check_uuid_format(fields[:uuid])
+        Error.raise("UUID syntax invalid: #{fields[:uuid]}",100) unless model.check_trimmed_uuid_format(fields[:uuid])
       end
       
       #Create database fields
