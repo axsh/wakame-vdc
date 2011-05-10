@@ -117,7 +117,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     var data = $.param({ids:ids});
     
     var request = new DcmgrGUI.Request;
-    request.delete({
+    request.del({
       "url": '/snapshots/delete',
       "data": data,
       success: function(json,status){

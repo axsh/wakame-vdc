@@ -157,7 +157,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     var data = $.param({ids:ids});
     
     var request = new DcmgrGUI.Request;
-    request.delete({
+    request.del({
       "url": '/volumes',
       "data": data,
       success: function(json,status){

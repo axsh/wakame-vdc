@@ -39,10 +39,11 @@ DcmgrGUI.Request = DcmgrGUI.Class.create({
     params['type'] = 'POST';
     return this._request(params);
   },
-  delete: function(params){
+  del: function(params){
     params['type'] = 'DELETE';
     return this._request(params);
   },
+
   _request: function(params){
     params['async'] = true;
     params['dataType'] = 'json';

@@ -135,7 +135,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     var ssh_keypair_id = $(this).find('#ssh_keypair_id').val();
     
     var request = new DcmgrGUI.Request;
-    request.delete({
+    request.del({
       "url": '/keypairs/'+ ssh_keypair_id +'.json',
       success: function(json, status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');

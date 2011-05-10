@@ -199,7 +199,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   delete_security_group_button[delete_button_name] = function() { 
     var security_group_id = $(this).find('#security_group_id').val();
     var request = new DcmgrGUI.Request;
-    request.delete({
+    request.del({
       "url": '/security_groups/'+ security_group_id +'.json',
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
