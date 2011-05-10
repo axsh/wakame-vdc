@@ -47,7 +47,7 @@ jQuery(function($){
 				<tr>
 					<th></th>
 					<th><%= t("machine_images.list.wmi_id") %></th>
-					<th><%= t("machine_images.list.source") %></th>
+					<th><%= t("machine_images.list.description") %></th>
 					<th><%= t("machine_images.list.owner") %></th>
 					<th><%= t("machine_images.list.state") %></th>
 				</tr>
@@ -59,8 +59,8 @@ jQuery(function($){
 						<td class="listradiobutton"></td>
 					{{/if}}
 					<td class="vtip" title="title">${item.uuid}</td>
-					<td class="vtip" title="source" style="width:300px">
-					{{each(index,source) item.source}}
+					<td class="vtip" title="description" style="width:300px">
+					{{each(index,source) item.description}}
 						${source.uri}
 					{{/each}}
 					</td>
@@ -90,11 +90,6 @@ jQuery(function($){
 						<td class="padcell"></td>
 						<td class="title"><%= t("machine_images.details.description") %>:</td>
 						<td colspan="7">${item.description}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t("machine_images.details.source") %>:</td>
-						<td colspan="7">${item.source.uri}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>

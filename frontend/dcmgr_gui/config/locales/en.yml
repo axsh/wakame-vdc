@@ -152,6 +152,7 @@ en:
       launch_instance: "Launch Instance"
     list:
       wmi_id: "WMI ID"
+      description: "Description"
       source: "Source"
       owner: "Owner"
       state: "State"
