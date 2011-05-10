@@ -9,7 +9,6 @@ module Dcmgr
     end
 
     def call(env)
-      ::Kernel.srand($$ + Time.now.usec + (env['HTTP_X_REAL_IP'] || env['HTTP_X_FORWARDED_FOR'] || env['REMOTE_ADDR']).to_i)
       dup._call(env)
     end
     
