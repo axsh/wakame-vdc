@@ -24,7 +24,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
       "origin_volume_id" : "-",
       "created_at" : "-",
       "updated_at" : "-",
-      "state" : "",
+      "state" : ""
     }
   }
   

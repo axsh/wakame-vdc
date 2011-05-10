@@ -41,7 +41,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     local: true,
     localIdPrefix: null,
     localIdSuffix: null,
-    hideLocal: true,
+    hideLocal: true
   };
   
   var security_group_button_callback = function(){

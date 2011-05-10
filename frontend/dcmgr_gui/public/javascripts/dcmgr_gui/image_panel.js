@@ -144,7 +144,7 @@ DcmgrGUI.prototype.imagePanel = function(){
         'host_pool': false,
         'instance_spec': false,
         'ssh_keypair': false,
-        'security_groups': false,
+        'security_groups': false
       };
 
       var ready = function(data) {
