@@ -29,6 +29,8 @@ class ZfsHandler < EndpointBuilder
     job.stm.state=data[:state].to_sym
     job.stm.on_create
 
+    rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:creating, :export_path=>data[:uuid]})
+
     vol_path = "#{data[:storage_pool][:export_path]}/#{data[:uuid]}"
     `zfs list #{File.dirname(vol_path)} > /dev/null 2>&1`
     if $?.exitstatus != 0
@@ -65,7 +67,6 @@ class ZfsHandler < EndpointBuilder
       end
     end
 
-    rpc.request('sta-collector', 'update_volume', job.to_hash(:export_path=>data[:uuid]))
     logger.info("created new volume: #{volume_id}")
 
     job.stm.on_register
@@ -81,7 +82,7 @@ class ZfsHandler < EndpointBuilder
     # :transport_information => {:iqn => "iqn.1986-03.com.sun:02:787bca42-9639-44e4-f115-f5b06ed31817", :lun => 0}
     opt = {:iqn => il[0].split(": ").last, :lun=>il[6].split(": ").last.to_i}
 
-    rpc.request('sta-collector', 'update_volume', job.to_hash(:transport_information=>opt, :export_path=>data[:uuid]))
+    rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:available, :transport_information=>opt})
     logger.info("registered iscsi target: #{volume_id}")
   end
 
@@ -101,7 +102,7 @@ class ZfsHandler < EndpointBuilder
       raise "iscsi target has not deleted: #{volume_id} iqn: #{data[:transport_information][:iqn]}"
     end
 
-    rpc.request('sta-collector', 'update_volume', job.to_hash)
+    rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:deleting})
     logger.info("deregistered iscsi target: #{volume_id} iqn: #{data[:transport_information][:iqn]}")
 
     # delete volume
@@ -113,7 +114,7 @@ class ZfsHandler < EndpointBuilder
       raise "volume has not deleted: #{volume_id}"
     end
 
-    rpc.request('sta-collector', 'update_volume', job.to_hash)
+    rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
     logger.info("deleted volume: #{volume_id}")
   end
 
@@ -127,6 +128,8 @@ class ZfsHandler < EndpointBuilder
     job.stm.state=sdata[:state].to_sym
     job.stm.on_create
 
+    logger.info("creating new snapshot: #{snapshot_id}")
+
     vol_path = "#{data[:storage_pool][:export_path]}/#{data[:uuid]}"
     snap_dir = "#{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}"
     unless File.exist?(snap_dir)
@@ -135,14 +138,12 @@ class ZfsHandler < EndpointBuilder
       logger.info("create a directory: #{snap_dir}")
     end
     snap = `zfs snapshot #{vol_path}@#{sdata[:uuid]}`
-    rpc.request('sta-collector', 'update_snapshot', job.to_hash)
-    logger.info("creating new snapshot: #{snapshot_id}")
 
     job.stm.on_create
     snap_send = `zfs send #{vol_path}@#{sdata[:uuid]} > #{snap_dir}/#{sdata[:uuid]}.zsnap`
     snap_delete = `zfs destroy #{vol_path}@#{sdata[:uuid]}`
 
-    rpc.request('sta-collector', 'update_snapshot', job.to_hash)
+    rpc.request('sta-collector', 'update_snapshot', snapshot_id, {:state=>:available})
     logger.info("created new snapshot: #{snapshot_id}")
   end
 
@@ -156,10 +157,12 @@ class ZfsHandler < EndpointBuilder
     job.stm.state=sdata[:state].to_sym
     job.stm.on_delete
 
+    logger.info("deleting snapshot: #{snapshot_id}")
+
     system("rm -rf #{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap")
     raise "snapshot has not be deleted" if $?.exitstatus != 0
 
-    rpc.request('sta-collector', 'update_snapshot', job.to_hash)
+    rpc.request('sta-collector', 'update_snapshot', snapshot_id, {:state=>:deleted})
     logger.info("deleted snapshot: #{snapshot_id}")
   end
 
