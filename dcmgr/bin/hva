@@ -935,7 +935,11 @@ class InstanceMonitor < Isono::NodeModules::Base
 
   private
   def check_kvm_process(i)
-    pid = File.read(File.expand_path("#{i[:uuid]}/kvm.pid", node.manifest.config.vm_data_dir)).to_i
+    kvm_pid_path = File.expand_path("#{i[:uuid]}/kvm.pid", node.manifest.config.vm_data_dir)
+    unless File.exists?(kvm_pid_path)
+      raise "Unable to find the kvm.pid file: #{i[:uuid]}"
+    end
+    pid = File.read(kvm_pid_path).to_i
     unless File.exists?(File.expand_path(pid.to_s, '/proc'))
       raise "Unable to find the pid of kvm process: #{pid}"
     end
