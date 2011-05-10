@@ -26,12 +26,14 @@ class RootCli < Thor
   register(Dcmgr::Cli::UsersCli, Dcmgr::Cli::UsersCli.namespace, "user sub-command", "Operations for users")
   register(Dcmgr::Cli::Vlan, Dcmgr::Cli::Vlan.namespace, "vlan sub-command", "Operations for vlan leases")
   register(Dcmgr::Cli::Image, Dcmgr::Cli::Image.namespace, "image sub-command", "Operations for machine images")
+  register(Dcmgr::Cli::KeyPair, Dcmgr::Cli::KeyPair.namespace, "keypair sub-command", "Operations for key pairs.")
 end
 
 
 begin
   RootCli.start
 rescue => e
+  raise
   e = Dcmgr::Cli::Error.new(e,101) unless e.is_a?(Dcmgr::Cli::Error)
   STDERR.puts "ERROR: " + e.message
   if e.respond_to?(:exit_code)

@@ -32,7 +32,7 @@ module Dcmgr::Cli
           Error.raise("Source needs to be either 'http' or 'volume'.",100)
       end
       
-      super(M::Image,fields)
+      puts super(M::Image,fields)
     end
   end
 end
