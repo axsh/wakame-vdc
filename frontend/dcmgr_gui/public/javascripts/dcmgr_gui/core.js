@@ -234,7 +234,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
 DcmgrGUI.Dialog = DcmgrGUI.Class.create({
   initialize: function(params) {
     this.target = $(params['target']);
-    this.element = $('<div></div>')
+    this.element = $('<div></div>');
     this.path_prefix = '/dialog';
     this.path = this.path_prefix + params['path'];
     this.width = params['width'];
@@ -279,8 +279,13 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
     $(this.target).button({ disabled: true });
   },
   create: function(params){
+    //initialize
+    this.element = $('<div></div>');
+    
     this.content = this.element
-                       .load(this.path,params,this.callback)
+                       .load(this.path + '?_=' + (new Date()).getTime(),
+                             params,
+                             this.callback)
                        .dialog({
                            title: this.title,
                            disable: false,
