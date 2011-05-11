@@ -49,6 +49,15 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       'target': '#security_group_help',
       'element': this
     });
+    
+    $(this).find('#security_group_name').keyup(function(){
+      if( $(this).val() ) {
+        bt_create_security_group.disabledButton(0, false);
+      } else {
+        bt_create_security_group.disabledButton(0 ,true);
+      }
+    });
+
     $(this).find('#rule_help').hide();
     security_group_help.create(config_tooltip);
     dcmgrGUI.notification.subscribe('close_dialog', security_group_help, 'close');
@@ -193,6 +202,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   bt_create_security_group.target.bind('click',function(){
     bt_create_security_group.open();
+    bt_create_security_group.disabledButton(0, true);
   });
   
   var delete_security_group_button = {};
