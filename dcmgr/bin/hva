@@ -177,11 +177,11 @@ class ServiceNetfilter < Isono::NodeModules::Base
         inst_maps
       }.flatten.uniq.compact
 
-      init_iptables(inst_maps) if @node.manifest.config.enable_iptables     
+      init_iptables(inst_maps) if @node.manifest.config.enable_iptables
       init_ebtables(inst_maps, viftable_map) if @node.manifest.config.enable_ebtables
-      
       init_static_nat(inst_maps) if @node.manifest.config.enable_iptables && @node.manifest.config.enable_ebtables
-            
+      sleep 1
+
       logger.info("initialize netfilter")
     rescue Exception => e
       p e
