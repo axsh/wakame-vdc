@@ -28,8 +28,7 @@ module Dcmgr::Cli
     
     def add(model,options)
       raise ArgumentError unless options.is_a? Hash
-      #TODO: Check if model is a Sequel::Model
-      #raise ArgumentError unless model.is_a? Sequel::Model
+      raise "Unknown type" unless model < Sequel::Model
       fields = options.dup
       
       if fields.has_key?("uuid") || fields.has_key?(:uuid)

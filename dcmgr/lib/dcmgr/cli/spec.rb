@@ -14,6 +14,7 @@ module Dcmgr::Cli
     method_option :config, :type => :string, :aliases => "-co", :desc => "The configuration for the new instance specifications."
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
+      UnsupportedArchError.raise(options[:arch]) unless HostPool::SUPPORTED_ARCH.member?(options[:arch])
       
       puts super(M::InstanceSpec,options.merge({:hypervisor => M::HostPool::HYPERVISOR_KVM}))
     end

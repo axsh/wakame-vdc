@@ -19,10 +19,20 @@ module Dcmgr::Cli
   
   class UnknownUUIDError < Error
     def initialize(uuid,exit_code=100)
-      super("Unknown UUID '#{uuid}'.")
+      super("Unknown UUID: '#{uuid}'.")
     end
     
     def self.raise(uuid,exit_code=100)
+      super
+    end
+  end
+  
+  class UnsupportedArchError < Error
+    def initialize(arch,exit_code=100)
+      super("Unsupported arch type: '#{arch}'.")
+    end
+    
+    def self.raise(arch,exit_code=100)
       super
     end
   end

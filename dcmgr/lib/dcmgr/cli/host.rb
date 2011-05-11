@@ -17,9 +17,7 @@ class Host < Base
   method_option :arch, :type => :string, :aliases => "-r", :default=>'x86_64', :desc => "The CPU architecture type. [x86, x86_64]"
   method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this."
   def add(node_id)
-    unless HostPool::SUPPORTED_ARCH.member?(options[:arch])
-      abort("Unsupported arch type: #{options[:arch]}")
-    end
+    UnsupportedArchError.raise(options[:arch]) unless HostPool::SUPPORTED_ARCH.member?(options[:arch])
 
     unless (options[:force] == false && Isono::Models::NodeState.exists?(:node_id=>options[:node_id]))
       abort("Node ID is not registered yet: #{options[:node_id]}")
