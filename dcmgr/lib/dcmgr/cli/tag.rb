@@ -10,7 +10,7 @@ module Dcmgr::Cli
     method_option :account_id, :type => :string, :aliases => "-a", :desc => "The UUID of the account that this tag belongs to.", :required => true
     method_option :type_id, :type => :numeric, :aliases => "-t", :desc => "The type for the new tag.", :required => true
     method_option :name, :type => :string, :aliases => "-n", :desc => "The name for the new tag.", :required => true
-    method_option :attributed, :type => :string, :aliases => "-at", :desc => "The attributes for the new tag."
+    method_option :attributes, :type => :string, :aliases => "-at", :desc => "The attributes for the new tag."
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       Error.raise("Invalid type_id: '#{options[:type_id]}'. Valid types are '#{Dcmgr::Tags::KEY_MAP.keys.join(", ")}'.",100) unless Dcmgr::Tags::KEY_MAP.member? options[:type_id]
