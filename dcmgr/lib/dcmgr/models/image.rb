@@ -53,8 +53,21 @@ module Dcmgr::Models
       super.merge({:source=>self.source.dup, :description=>description.to_s})
     end
 
-    def to_api_document
-      to_hash
+    # note on "lookup_account_id":
+    # the source column sometime contains the information which
+    # should not be shown to other accounts. so that the method takes
+    # an argument who is looking into then filters the data in source
+    # column accordingly.
+    def to_api_document(lookup_account_id)
+      h = to_hash
+      if self.account_id == lookup_account_id
+      else
+        if h[:source][:type] == :http
+          # do not show URI for non-owner accounts.
+          h[:source][:uri] = nil
+        end
+      end
+      h
     end
     
   end

@@ -355,7 +355,7 @@ module Dcmgr
               :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_api_document }
+              :results=> partial_ds.all.map {|i| i.to_api_document(@account.canonical_uuid) }
             }]
             
             response_to(res)
@@ -370,7 +370,7 @@ module Dcmgr
             unless examine_owner(i)
               raise OperationNotPermitted
             end
-            response_to(i.to_api_document)
+            response_to(i.to_api_document(@account.canonical_uuid))
           end
         end
 
