@@ -28,7 +28,8 @@ module Dcmgr::Cli
     
     def add(model,options)
       raise ArgumentError unless options.is_a? Hash
-      raise "Unknown type" unless model < Sequel::Model
+      UnknownModelError.raise(model) unless model < Dcmgr::Models::BaseNew
+      
       fields = options.dup
       
       if fields.has_key?("uuid") || fields.has_key?(:uuid)
@@ -44,11 +45,13 @@ module Dcmgr::Cli
     end
     
     def del(model,uuid)
+      UnknownModelError.raise(model) unless model < Dcmgr::Models::BaseNew
       to_delete = model[uuid] || UnknownUUIDError.raise(uuid)
       to_delete.destroy
     end
     
     def modify(model,uuid,fields)
+      UnknownModelError.raise(model) unless model < Dcmgr::Models::BaseNew
       raise ArgumentError unless fields.is_a? Hash
       to_modify = model[uuid] || UnknownUUIDError.raise(uuid)
       

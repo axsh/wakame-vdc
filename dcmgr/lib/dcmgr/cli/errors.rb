@@ -36,4 +36,14 @@ module Dcmgr::Cli
       super
     end
   end
+  
+  class UnknownModelError < Error
+    def initialize(model,exit_code=100)
+      super("Not a wakame-vdc model: '#{model}'.")
+    end
+    
+    def self.raise(model,exit_code=100)
+      super
+    end
+  end
 end
