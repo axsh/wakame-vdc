@@ -17,6 +17,7 @@ module Dcmgr::Cli
     method_option :state, :type => :string, :aliases => "-st", :default => "init", :desc => "The state for the new machine image."
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
+      UnsupportedArchError.raise(options[:arch]) unless HostPool::SUPPORTED_ARCH.member?(options[:arch])
       #TODO: Check if :state is a valid state
       fields = options.dup
       fields.delete(:uri)

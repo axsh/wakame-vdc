@@ -155,5 +155,6 @@ module Dcmgr
     autoload :KeyPair, 'dcmgr/cli/keypair'
     autoload :Group, 'dcmgr/cli/group'
     autoload :Spec, 'dcmgr/cli/spec'
+    autoload :Tag, 'dcmgr/cli/tag'
   end
 end

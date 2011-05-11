@@ -53,7 +53,7 @@ module Dcmgr::Models
     # it was difficult for me to write exprs in virtual row syntax as
     # per subset(). ;-(
     def_dataset_method(:alives_and_recent_termed) {
-      filter("terminated_at IS NULL OR terminated_at <= ?", (Time.now.utc - RECENT_TERMED_PERIOD))
+      filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - RECENT_TERMED_PERIOD))
     }
     
     # serialization plugin must be defined at the bottom of all class
