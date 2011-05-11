@@ -13,10 +13,11 @@
 					<%= @name %>
 					<input type="hidden" id="security_group_name" value="<%= @name %>">
 				<% else %>
-					<input type="text" id="security_group_name" size="20"></td>
+					<input type="text" id="security_group_name" size="20">
 				<% end %>
 				<input type="hidden" id="security_group_id" value="<%= @uuid %>">
-		</tr>
+		  </td>
+    </tr>
 		<tr>
 			<td><%= t("dialog.create_and_edit_security_group.description") %>:</td>
 			<td><input type="text" id="security_group_description" size="43" value="<%= @description %>"></td>
