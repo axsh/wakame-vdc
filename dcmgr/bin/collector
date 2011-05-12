@@ -1,14 +1,11 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-begin
-  require 'rubygems'
-  require 'bundler'
-  Bundler.setup(:default, :collector)
-rescue ::Exception => e
-end
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-require File.expand_path('../../config/path_resolver', __FILE__)
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'isono'
 
 Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
 

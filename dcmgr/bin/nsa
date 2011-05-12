@@ -5,14 +5,11 @@
 # This agent aims to configure DNS/DHCP daemons or devices to supply
 # IP address and Hostname for Instances.
 
-begin
-  require 'rubygems'
-  require 'bundler'
-  Bundler.setup(:default)
-rescue Exception
-end
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-require File.expand_path('../../config/path_resolver', __FILE__)
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'isono'
 
 require 'erb'
 require 'eventmachine'
