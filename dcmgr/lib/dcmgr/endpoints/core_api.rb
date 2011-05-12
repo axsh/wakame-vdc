@@ -643,6 +643,10 @@ module Dcmgr
             Models::VolumeSnapshot.lock!
             snapshot_id = params[:id]
             raise UndefindVolumeSnapshotID if snapshot_id.nil?
+            
+            v = find_by_uuid(:VolumeSnapshot, snapshot_id)
+            raise UnknownVolumeSnapshot if v.nil?
+            raise InvalidRequestCredentials unless v.state == "available"
 
             begin
               vs  = Models::VolumeSnapshot.delete_snapshot(@account.canonical_uuid, snapshot_id)
