@@ -505,6 +505,10 @@ module Dcmgr
             Models::Volume.lock!
             volume_id = params[:id]
             raise UndefinedVolumeID if volume_id.nil?
+            
+            vol = find_by_uuid(:Volume, volume_id)
+            raise UnknownVolume if vol.nil?
+            raise InvalidRequestCredentials unless vol.state == "available"
 
             begin
               v  = Models::Volume.delete_volume(@account.canonical_uuid, volume_id)
