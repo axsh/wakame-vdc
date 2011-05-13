@@ -45,18 +45,33 @@ module Nat
   include NicHelper
   include Dcmgr::Logger
   # Returns iptables commands for natting _internal_ip_ to _external_ip_.
+  # _exception_ips_ is an array of ips for which _internal_ip_ will not be natted.
+  # In other words, any connections from a natted instance will show _external_ip_ as their source addres except connections to ips in _exception_ips_
   # IP addresses can be passed either as strings in cidr notation or instances of IPAddress.  
   # You will need to respond to arp requests for the external ip. The arp_respond method takes care of that.  
-  def nat_ip(internal_ip,external_ip)
+  def nat_ip(internal_ip,external_ip,exception_ips)
     internal_ip = IPAddress(internal_ip) if internal_ip.is_a?(String)
     external_ip = IPAddress(external_ip) if external_ip.is_a?(String)
     
     raise "Invalid IP address: #{internal_ip}" unless internal_ip.is_a?(IPAddress)
     raise "Invalid IP address: #{external_ip}" unless external_ip.is_a?(IPAddress)
+    raise ArgumentError unless exception_ips.is_a?(Array)
+    
+    exception_ips = exception_ips.map{|ip| 
+      if ip.is_a?(String)
+        IPAddress(ip)
+      elsif !ip.is_a?(IPAddress)
+        nil
+      end
+    }.compact
     
     cmds = []
-    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} ! -d #{internal_ip.address}/#{internal_ip.prefix} -j LOG --log-prefix 'Snat '"
-    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} ! -d #{internal_ip.address}/#{internal_ip.prefix} -j SNAT --to #{external_ip.address}"
+
+    exception_ips.each { |ex_ip|
+      cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -d #{ex_ip.address}/#{ex_ip.prefix} -j ACCEPT"
+    }
+    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -j SNAT --to #{external_ip.address}"
+    
     cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j LOG --log-prefix 'Dnat '"
     cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j DNAT --to #{internal_ip.address}"
     
@@ -77,15 +92,16 @@ module Nat
     
     inst_map[:instance_nics].each {
       |nic|       
-      in_nw = rpc.request('hva-collector', 'get_network', nic[:network_id]) 
+      #in_nw = rpc.request('hva-collector', 'get_network', nic[:network_id]) 
       nat_ips = rpc.request('hva-collector', 'get_nat_leases', nic[:uuid])   
       
       #Get the internal ip for this nic
-      inside_ip = IPAddress rpc.request('hva-collector', 'get_iplease_for_nic', nic[:uuid])        
+      inside_ip = IPAddress rpc.request('hva-collector', 'get_iplease_for_nic', nic[:uuid])
+      exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid])
       
       #output the commands to nat this nic and answer arp requests for its outside ip
       nat_ips.each { |outside_ip|
-        nat_cmd << nat_ip(inside_ip,outside_ip)
+        nat_cmd << nat_ip(inside_ip,outside_ip,exception_ips)
         nat_cmd << arp_respond(outside_ip)
       }
     }
