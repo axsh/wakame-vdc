@@ -55,7 +55,9 @@ module Nat
     raise "Invalid IP address: #{external_ip}" unless external_ip.is_a?(IPAddress)
     
     cmds = []
+    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} ! -d #{internal_ip.address}/#{internal_ip.prefix} -j LOG --log-prefix 'Snat '"
     cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} ! -d #{internal_ip.address}/#{internal_ip.prefix} -j SNAT --to #{external_ip.address}"
+    cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j LOG --log-prefix 'Dnat '"
     cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j DNAT --to #{internal_ip.address}"
     
     logger.info "Natting #{internal_ip.address} to #{external_ip.address}"
