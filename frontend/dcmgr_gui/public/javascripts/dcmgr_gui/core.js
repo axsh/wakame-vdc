@@ -278,6 +278,9 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
   disableDialogButton: function(){
     $(this.target).button({ disabled: true });
   },
+  is_disabled: function(){
+    return $(this.target).button("option", "disabled");
+  },
   create: function(params){
     //initialize
     this.element = $('<div></div>');
@@ -417,6 +420,8 @@ DcmgrGUI.Notification = DcmgrGUI.Class.create({
 
   initialize: function() {
     this.topics = {};
+    this.evaluation_list = {};
+    this.subscription_id = 1;
   },
   create_topic: function(topic_id) {
     if(!this.topics[topic_id]) {
@@ -427,7 +432,21 @@ DcmgrGUI.Notification = DcmgrGUI.Class.create({
     if( this.topics[topic_id] ) {
       this.topics[topic_id].push({'target': target,
                                   'method_name': method_name,
-                                  'options': options})
+                                  'options': options,
+                                  'subscription_id': this.subscription_id})
+      var subscription_id = this.subscription_id;
+      this.subscription_id += 1;
+      return subscription_id;
+    }
+  },
+  add_evaluation: function(subscription_id, logic) {
+    this.evaluation_list[subscription_id] = logic;
+  },
+  evaluate: function(subscription_id) {
+    if(jQuery.isFunction(this.evaluation_list[subscription_id])) {
+      return this.evaluation_list[subscription_id]();
+    } else{
+      return true;
     }
   },
   publish: function(topic_id) {
@@ -437,7 +456,9 @@ DcmgrGUI.Notification = DcmgrGUI.Class.create({
         var topic = this.topics[topic_id][i];
         var target = topic['target'];
         var method_name = topic['method_name'];
-        target[method_name](topic['options']);
+        if(this.evaluate(topic['subscription_id'])) {
+          target[method_name](topic['options']);
+        }
       }
     }
   }
@@ -493,7 +514,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
   setDetailTemplate:function(template){
     this.detail_template = template;
   },
-  getCheckedInstanceIds:function(checked_list){
+  getCheckedInstanceIds:function(){
     var ids = []
     for(var id in this.checked_list){
       ids.push(id);
@@ -542,6 +563,18 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
       return null;
     }
   },
+  currentMultiChecked:function(){
+    var checked_list = this.element.find("[type='checkbox']:checked");
+    var ids = [];
+    
+    $.each(checked_list, function(key, item){
+     ids.push($(item).val());
+    })
+    
+    return {
+      'ids':ids
+    }
+  },
   singleCheckList:function(params){
     var self = this;
     this.element.find("[type='radio']").each(function(key,value){
@@ -586,10 +619,6 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
       
       $(this).click(function(){
         var check_id = $(this).val();
-        
-        if(!checkboxies.is(':checked')){
-          dcmgrGUI.notification.publish('unchecked_box');
-        }
         
         if($(this).is(':checked')){
           dcmgrGUI.notification.publish('checked_box');
@@ -637,12 +666,12 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
           },true);
 
         }else{
+          dcmgrGUI.notification.publish('unchecked_box');
           //remove detail
           if(self.checked_list[check_id]){
-           $($('#detail').find('#'+check_id)).remove();
-           delete self.checked_list[check_id]
-         }
-          
+            $($('#detail').find('#'+check_id)).remove();
+            delete self.checked_list[check_id]
+          }
         }
       });
     })

@@ -161,6 +161,7 @@ DcmgrGUI.prototype.volumePanel = function(){
       "url": '/volumes',
       "data": data,
       success: function(json,status){
+        bt_delete_volume.disableDialogButton();
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
@@ -274,11 +275,15 @@ DcmgrGUI.prototype.volumePanel = function(){
   });
   
   bt_delete_volume.target.bind('click',function(){
-    bt_delete_volume.open(c_list.getCheckedInstanceIds());
+    if(!bt_delete_volume.is_disabled()) {
+      bt_delete_volume.open(c_list.getCheckedInstanceIds());
+    }
   });
 
   bt_create_snapshot.target.bind('click',function(){
-    bt_create_snapshot.open(c_list.getCheckedInstanceIds());
+    if(!bt_create_snapshot.is_disabled()) { 
+      bt_create_snapshot.open(c_list.getCheckedInstanceIds());
+    }
   });
 
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
@@ -322,17 +327,45 @@ DcmgrGUI.prototype.volumePanel = function(){
   $(bt_delete_volume.target).button({ disabled: true });
   $(bt_create_snapshot.target).button({ disabled: true });
   $(bt_refresh.target).button({ disabled: false });
-    
-  dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enableDialogButton');
-  dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enableDialogButton');
-  dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_volume, 'disableDialogButton');
-  dcmgrGUI.notification.subscribe('unchecked_box', bt_create_snapshot, 'disableDialogButton');
+  
+  var state_check = function() {
+    var ids = c_list.currentMultiChecked()['ids'];
+    var is_available = false;
+    var flag = true;
+
+    $.each(ids, function(key, uuid){
+      var row_id = '#row-'+uuid;
+      var state = $(row_id).find('.state').text();
+      if(state == 'available') {
+        is_available = true;
+      } else{
+        flag = false;
+      }
+    });
+
+    if(is_available == true && flag == true){
+      bt_delete_volume.enableDialogButton();
+      bt_create_snapshot.enableDialogButton();
+      selectmenu.data('selectmenu').enableButton();
+    }else{
+      bt_delete_volume.disableDialogButton();
+      bt_create_snapshot.disableDialogButton();
+      selectmenu.data('selectmenu').disableButton();
+    }
+    return false;
+  }
+
+
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('checked_box', bt_delete_volume, 'enableDialogButton'), state_check);
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('checked_box', bt_create_snapshot, 'enableDialogButton'), state_check);
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_volume, 'disableDialogButton'), state_check);
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('unchecked_box', bt_create_snapshot, 'disableDialogButton'), state_check);
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('checked_box', selectmenu.data('selectmenu'), 'enableButton'), state_check);
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('unchecked_box', selectmenu.data('selectmenu'), 'disableButton'), state_check);
   dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disableDialogButton');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disableDialogButton');
   dcmgrGUI.notification.subscribe('change_pagenate', selectmenu.data('selectmenu'), 'disableButton');
-  dcmgrGUI.notification.subscribe('checked_box', selectmenu.data('selectmenu'), 'enableButton');
-  dcmgrGUI.notification.subscribe('unchecked_box', selectmenu.data('selectmenu'), 'disableButton');
-   
+  
   //list
   c_list.setData(null);
   c_list.update(list_request,true);  

@@ -48,7 +48,7 @@
 	  <th><%= t("snapshots.list.status") %></th>
 	</tr>
         {{each(index,item) rows}}
-	<tr>
+	<tr id="row-${item.uuid}">
 	  {{if item.uuid }}
           <td class="listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
           {{else}}
@@ -58,7 +58,7 @@
 	  <td class="vtip center" title="capacity">${item.size}</td>
 	  <td class="vtip" title="snapshot">${item.origin_volume_id}</td>
 	  <td class="vtip" title="created">${item.created_at}</td>
-	  <td class="vtip center" title="status">${item.state}</td>
+	  <td class="state vtip center" title="status">${item.state}</td>
 
 	</tr>
 	{{/each}}

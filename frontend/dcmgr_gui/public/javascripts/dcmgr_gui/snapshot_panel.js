@@ -92,7 +92,6 @@ DcmgrGUI.prototype.snapshotPanel = function(){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
-    
     $(this).dialog("close");
   }
   
@@ -121,6 +120,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
       "url": '/snapshots/delete',
       "data": data,
       success: function(json,status){
+        bt_delete_snapshot.disableDialogButton();
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
@@ -138,11 +138,15 @@ DcmgrGUI.prototype.snapshotPanel = function(){
   });
   
   bt_create_volume.target.bind('click',function(){
-    bt_create_volume.open(c_list.getCheckedInstanceIds());
+    if(!bt_create_volume.is_disabled()) {
+      bt_create_volume.open(c_list.getCheckedInstanceIds());
+    }
   });
   
   bt_delete_snapshot.target.bind('click',function(){
-    bt_delete_snapshot.open(c_list.getCheckedInstanceIds());
+    if(!bt_delete_snapshot.is_disabled()) {
+      bt_delete_snapshot.open(c_list.getCheckedInstanceIds());
+    }
   });
 
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
@@ -150,7 +154,6 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     list_request.url = DcmgrGUI.Util.getPagePath('/snapshots/list/',c_list.page);
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
-    
     //update detail
     $.each(c_list.checked_list,function(check_id,obj){
       $($('#detail').find('#'+check_id)).remove();
@@ -166,10 +169,35 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
 
-  dcmgrGUI.notification.subscribe('checked_box', bt_create_volume, 'enableDialogButton');
-  dcmgrGUI.notification.subscribe('checked_box', bt_delete_snapshot, 'enableDialogButton');
-  dcmgrGUI.notification.subscribe('unchecked_box', bt_create_volume, 'disableDialogButton');
-  dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_snapshot, 'disableDialogButton');
+  var state_check = function() {
+    var ids = c_list.currentMultiChecked()['ids'];
+    var is_available = false;
+    var flag = true;
+
+    $.each(ids, function(key, uuid){
+      var row_id = '#row-'+uuid;
+      var state = $(row_id).find('.state').text();
+      if(state == 'available') {
+        is_available = true;
+      } else{
+        flag = false;
+      }
+    });
+
+    if(is_available == true && flag == true){
+      bt_create_volume.enableDialogButton();
+      bt_delete_snapshot.enableDialogButton();
+    }else{
+      bt_create_volume.disableDialogButton();
+      bt_delete_snapshot.disableDialogButton();
+    }
+    return false;
+  }
+
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('checked_box', bt_create_volume, 'enableDialogButton'), state_check);
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('checked_box', bt_delete_snapshot, 'enableDialogButton'), state_check);
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('unchecked_box', bt_create_volume, 'disableDialogButton'), state_check);
+  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_snapshot, 'disableDialogButton'), state_check);
   dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_snapshot, 'disableDialogButton');
 
   $(bt_create_volume.target).button({ disabled: true });
