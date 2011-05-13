@@ -18,6 +18,7 @@ module Dcmgr::Models
       #Fixnum :parent_image_id
 
       String :state, :size=>20, :null=>false, :default=>:init.to_s
+      index :is_public
     end
 
     # serialize plugin must be defined at the bottom of all class

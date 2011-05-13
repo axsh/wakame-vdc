@@ -347,7 +347,7 @@ module Dcmgr
             limit = params[:limit].to_i
             limit = limit < 1 ? nil : limit
             
-            total_ds = Models::Image.where(:account_id=>@account.canonical_uuid)
+            total_ds = Models::Image.where(:account_id=>@account.canonical_uuid).or(:is_public=>true)
             partial_ds  = total_ds.dup.order(:id)
             partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
@@ -366,8 +366,7 @@ module Dcmgr
           description "Show a machine image details."
           control do
             i = find_by_uuid(:Image, params[:id])
-            # TODO: add visibility by account check
-            unless examine_owner(i)
+            if !(examine_owner(i) || i.is_public)
               raise OperationNotPermitted
             end
             response_to(i.to_api_document(@account.canonical_uuid))
