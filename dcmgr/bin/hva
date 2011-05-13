@@ -1,14 +1,11 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-begin
-  require 'rubygems'
-  require 'bundler'
-  Bundler.setup(:default)
-rescue Exception
-end
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-require File.expand_path('../../config/path_resolver', __FILE__)
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'isono'
 
 include Isono::Runner::RpcServer
 require 'fileutils'
@@ -58,7 +55,9 @@ module Nat
     raise "Invalid IP address: #{external_ip}" unless external_ip.is_a?(IPAddress)
     
     cmds = []
+    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} ! -d #{internal_ip.address}/#{internal_ip.prefix} -j LOG --log-prefix 'Snat '"
     cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} ! -d #{internal_ip.address}/#{internal_ip.prefix} -j SNAT --to #{external_ip.address}"
+    cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j LOG --log-prefix 'Dnat '"
     cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j DNAT --to #{internal_ip.address}"
     
     logger.info "Natting #{internal_ip.address} to #{external_ip.address}"
@@ -182,7 +181,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       init_static_nat(inst_maps) if @node.manifest.config.enable_iptables && @node.manifest.config.enable_ebtables
       sleep 1
 
-      logger.info("initialize netfilter")
+      logger.info("initialized netfilter")
     rescue Exception => e
       p e
     end
@@ -303,11 +302,19 @@ class ServiceNetfilter < Isono::NodeModules::Base
     nat_cmds   = []
     final_cmds = []
 
-    [ 'nat', 'filter' ].each { |table|
+    [ 'raw', 'nat', 'filter' ].each { |table|
       [ 'F', 'Z', 'X' ].each { |xcmd|
         init_cmds << "iptables -t #{table} -#{xcmd}"
       }
     }
+
+    # via http://backreference.org/2010/06/11/iptables-debugging/
+    # To debug ipv4 packets.
+    # $ sudo tail -F /var/log/kern.log | grep TRACE:
+    if @node.manifest.config.debug_iptables
+      init_cmds << "iptables -t raw -A OUTPUT -p icmp -j TRACE"
+      init_cmds << "iptables -t raw -A PREROUTING -p icmp -j TRACE"
+    end
 
     inst_maps.each { |inst_map|
       vif_map = build_vif_map(inst_map)
@@ -1344,6 +1351,7 @@ manifest.instance_eval do
     c.bridge_novlan   = 'br0'
     c.verbose_netfilter = false
     c.packet_drop_log   = false
+    c.debug_iptables    = false
   end
 
   load_config File.expand_path('config/hva.conf', app_root)

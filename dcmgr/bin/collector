@@ -1,30 +1,13 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-begin
-  require 'rubygems'
-  require 'bundler'
-  Bundler.setup(:default, :collector)
-rescue ::Exception => e
-end
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-require File.expand_path('../../config/path_resolver', __FILE__)
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'isono'
 
-def load_conf
-  require 'ostruct'
-  conf = OpenStruct.new
-  
-  load_ctx = Object.new
-  load_ctx.instance_eval {
-    @conf = conf
-    def method_missing(m, *args)
-      @conf.send("#{m}=", *args)
-    end
-  }
-  
-  load_ctx.instance_eval(File.read(File.expand_path('../../config/dcmgr.conf', __FILE__)))
-  conf
-end
+Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
@@ -39,8 +22,7 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::InstanceHA
 
   config do |c|
-    conf = load_conf()
-    c.data_store.database_dsn = conf.database_url
+    c.data_store.database_dsn = Dcmgr.conf.database_url
   end
 end
 
