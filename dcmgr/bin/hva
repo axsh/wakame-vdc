@@ -181,7 +181,7 @@ class ServiceNetfilter < Isono::NodeModules::Base
       init_static_nat(inst_maps) if @node.manifest.config.enable_iptables && @node.manifest.config.enable_ebtables
       sleep 1
 
-      logger.info("initialize netfilter")
+      logger.info("initialized netfilter")
     rescue Exception => e
       p e
     end
