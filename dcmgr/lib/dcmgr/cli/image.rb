@@ -54,5 +54,10 @@ module Dcmgr::Cli
 
     register AddOperation, 'add', "add IMAGE_TYPE [options]", "Add image metadata [#{AddOperation.tasks.keys.join(', ')}]"
 
+    desc "del IMAGE_ID", "Delete registered machine image."
+    def del(image_id)
+      UnknownUUIDError.raise(image_id) if M::Image[image_id].nil?
+      super(M::Image, image_id)
+    end
   end
 end
