@@ -302,11 +302,19 @@ class ServiceNetfilter < Isono::NodeModules::Base
     nat_cmds   = []
     final_cmds = []
 
-    [ 'nat', 'filter' ].each { |table|
+    [ 'raw', 'nat', 'filter' ].each { |table|
       [ 'F', 'Z', 'X' ].each { |xcmd|
         init_cmds << "iptables -t #{table} -#{xcmd}"
       }
     }
+
+    # via http://backreference.org/2010/06/11/iptables-debugging/
+    # To debug ipv4 packets.
+    # $ sudo tail -F /var/log/kern.log | grep TRACE:
+    if @node.manifest.config.debug_iptables
+      init_cmds << "iptables -t raw -A OUTPUT -p icmp -j TRACE"
+      init_cmds << "iptables -t raw -A PREROUTING -p icmp -j TRACE"
+    end
 
     inst_maps.each { |inst_map|
       vif_map = build_vif_map(inst_map)
@@ -1343,6 +1351,7 @@ manifest.instance_eval do
     c.bridge_novlan   = 'br0'
     c.verbose_netfilter = false
     c.packet_drop_log   = false
+    c.debug_iptables    = false
   end
 
   load_config File.expand_path('config/hva.conf', app_root)

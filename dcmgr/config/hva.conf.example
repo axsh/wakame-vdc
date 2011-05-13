@@ -23,3 +23,6 @@ config.verbose_netfilter = false
 
 # netfilter log output flag
 config.packet_drop_log = false
+
+# debug netfilter
+config.debug_iptables = true
