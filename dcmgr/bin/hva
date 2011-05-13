@@ -49,33 +49,45 @@ module Nat
   # In other words, any connections from a natted instance will show _external_ip_ as their source addres except connections to ips in _exception_ips_
   # IP addresses can be passed either as strings in cidr notation or instances of IPAddress.  
   # You will need to respond to arp requests for the external ip. The arp_respond method takes care of that.  
-  def nat_ip(internal_ip,external_ip,exception_ips)
+  def nat_ip(internal_ip,external_ip,inside_exception_ips = [],outside_exception_ips = [])
     internal_ip = IPAddress(internal_ip) if internal_ip.is_a?(String)
     external_ip = IPAddress(external_ip) if external_ip.is_a?(String)
     
     raise "Invalid IP address: #{internal_ip}" unless internal_ip.is_a?(IPAddress)
     raise "Invalid IP address: #{external_ip}" unless external_ip.is_a?(IPAddress)
-    raise ArgumentError unless exception_ips.is_a?(Array)
+    raise ArgumentError unless inside_exception_ips.is_a?(Array)
+    raise ArgumentError unless outside_exception_ips.is_a?(Array)
     
-    exception_ips = exception_ips.map{|ip| 
+    # Little blocky to convert strings to IPAddress objects
+    str_to_ip = Proc.new {|ip| 
       if ip.is_a?(String)
         IPAddress(ip)
       elsif !ip.is_a?(IPAddress)
         nil
       end
-    }.compact
+    }
+    
+    #Apply the above block on the ips to be excluded from nat
+    inside_exception_ips  = inside_exception_ips.map(&str_to_ip).compact
+    outside_exception_ips = outside_exception_ips.map(&str_to_ip).compact
     
     cmds = []
 
-    exception_ips.each { |ex_ip|
+    inside_exception_ips.each { |ex_ip|
+
       cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -d #{ex_ip.address}/#{ex_ip.prefix} -j ACCEPT"
     }
+    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -j LOG --log-prefix 'Snat '"
     cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -j SNAT --to #{external_ip.address}"
     
+    
+    outside_exception_ips.each { |ex_ip|
+      cmds << "iptables -t nat -A PREROUTING -s #{internal_ip.address} -d #{ex_ip.address}/#{ex_ip.prefix} -j ACCEPT"
+    }
     cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j LOG --log-prefix 'Dnat '"
     cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j DNAT --to #{internal_ip.address}"
     
-    logger.info "Natting #{internal_ip.address} to #{external_ip.address}"
+    logger.debug "Natting #{internal_ip.address} to #{external_ip.address}"
     
     cmds
   end
@@ -97,11 +109,12 @@ module Nat
       
       #Get the internal ip for this nic
       inside_ip = IPAddress rpc.request('hva-collector', 'get_iplease_for_nic', nic[:uuid])
-      exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid])
+      inside_exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid])
+      outside_exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid],:outside)
       
       #output the commands to nat this nic and answer arp requests for its outside ip
       nat_ips.each { |outside_ip|
-        nat_cmd << nat_ip(inside_ip,outside_ip,exception_ips)
+        nat_cmd << nat_ip(inside_ip,outside_ip,inside_exception_ips,outside_exception_ips)
         nat_cmd << arp_respond(outside_ip)
       }
     }
@@ -119,7 +132,7 @@ module Nat
     #TODO: Find a prettier way to get the mac address
     mac_addr = %x{ifconfig | grep '#{nic}' | tr -s ' ' | cut -d ' ' -f5}.chomp
     
-    logger.info "Replying ARP requests for address: #{ip.address}"
+    logger.debug "Replying ARP requests for address: #{ip.address}"
     
     "ebtables -t nat -A PREROUTING -p arp --arp-ip-dst #{ip.address} --arp-opcode REQUEST -j arpreply --arpreply-mac #{mac_addr}"
   end
