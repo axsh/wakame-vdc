@@ -38,6 +38,7 @@ DcmgrGUI.prototype.imagePanel = function(){
           }
       }
   
+  var close_button_name = $.i18n.prop('close_button'); 
   var launch_button_name = $.i18n.prop('launch_button');
   
   var c_pagenate = new DcmgrGUI.Pagenate({
@@ -91,8 +92,9 @@ DcmgrGUI.prototype.imagePanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
   
-  var launch_instance_button = {};
-  launch_instance_button[launch_button_name] = function() {
+  var launch_instance_buttons = {};
+  launch_instance_buttons[close_button_name] = function() { $(this).dialog("close"); };  
+  launch_instance_buttons[launch_button_name] = function() {
     var image_id = $(this).find('#image_id').val();
     var host_pool_id = $(this).find('#host_pool').find('option:selected').val();
     var host_name = $(this).find('#host_name').val();
@@ -151,10 +153,10 @@ DcmgrGUI.prototype.imagePanel = function(){
         if(data['host_pool'] == true &&
            data['instance_spec'] == true &&
            data['ssh_keypair'] == true &&
-           data['security_group'] == true) {  
-          bt_launch_instance.disabledButton(0, false);
+           data['security_groups'] == true) {  
+          bt_launch_instance.disabledButton(1, false);
         } else {
-          bt_launch_instance.disabledButton(0, true);
+          bt_launch_instance.disabledButton(1, true);
         }
       }
  
@@ -250,10 +252,10 @@ DcmgrGUI.prototype.imagePanel = function(){
               
               var on_ready = function(size){
                 if(size > 0) {
-                  is_ready['security_group'] = true;
+                  is_ready['security_groups'] = true;
                   ready(is_ready);
                 } else {
-                  is_ready['security_group'] = false;
+                  is_ready['security_groups'] = false;
                   ready(is_ready);
                 }
               }
@@ -273,17 +275,14 @@ DcmgrGUI.prototype.imagePanel = function(){
         $("#left_select_list").unmask();
       });
     },
-    button: launch_instance_button
-  });
-  
-  bt_launch_instance.element.bind('dialogopen',function(){
-    bt_launch_instance.disabledButton(0, true);
+    button: launch_instance_buttons
   });
   
   bt_launch_instance.target.bind('click',function(){
     var id = c_list.currentChecked();
     if( id ){
       bt_launch_instance.open({"ids":[id]});
+      bt_launch_instance.disabledButton(1, true);
     }
     return false;
   });

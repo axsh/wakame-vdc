@@ -76,8 +76,9 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   var bt_refresh  = new DcmgrGUI.Refresh();
   
-  var create_volume_button = {};
-  create_volume_button[create_button_name] = function() {
+  var create_volume_buttons = {};
+  create_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  create_volume_buttons[create_button_name] = function() {
     var volume_size = $(this).find('#volume_size').val();
     var unit = $(this).find('#unit').find('option:selected').val();
     var storage_pool_id = $(this).find('#storage_pool').find('option:selected').val();
@@ -126,25 +127,19 @@ DcmgrGUI.prototype.volumePanel = function(){
           
           $(self).find('#volume_size').keyup(function(){
             if( $(this).val() ) {
-              bt_create_volume.disabledButton(0, false);
+              
+              bt_create_volume.disabledButton(1, false);
             } else {
-              bt_create_volume.disabledButton(0 ,true);
+              bt_create_volume.disabledButton(1 ,true);
             }
           });
           
-          if( $(self).find('#volume_size').val() ) {
-            bt_create_volume.disabledButton(0 ,false);
-          }
         }
       });
     },
-    button:　create_volume_button
+    button:　create_volume_buttons
   });
   
-  bt_create_volume.element.bind('dialogopen',function(){
-    bt_create_volume.disabledButton(0, true);
-  });
-
   var delete_volume_buttons = {};
   delete_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
   delete_volume_buttons[delete_button_name] = function() { 
@@ -179,6 +174,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   });
   
   var create_snapshot_buttons = {};
+  create_snapshot_buttons[close_button_name] = function() { $(this).dialog("close"); }; 
   create_snapshot_buttons[create_button_name] = function() {
     var volume_snapshots = $(this).find('#create_snapshots').find('li');
     var ids = []
@@ -272,6 +268,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   bt_create_volume.target.bind('click',function(){
     bt_create_volume.open();
+    bt_create_volume.disabledButton(1, true);
   });
   
   bt_delete_volume.target.bind('click',function(){
@@ -345,6 +342,7 @@ DcmgrGUI.prototype.volumePanel = function(){
         flag = false;
       }
     });
+    
     if (flag == true){
       if(is_available == true){
         bt_delete_volume.enableDialogButton();
@@ -352,16 +350,23 @@ DcmgrGUI.prototype.volumePanel = function(){
         selectmenu.data('selectmenu').enableButton();
       }
 
-      if (is_attached== true){
+      if (is_attached == true){
         bt_delete_volume.disableDialogButton();
         bt_create_snapshot.enableDialogButton();
         selectmenu.data('selectmenu').enableButton();
-     }
+      }
+      
+      if (is_available == false && is_attached == false) {
+        bt_delete_volume.disableDialogButton();
+        bt_create_snapshot.disableDialogButton();
+        selectmenu.data('selectmenu').disableButton();
+      }
     } else{
       bt_delete_volume.disableDialogButton();
       bt_create_snapshot.disableDialogButton();
       selectmenu.data('selectmenu').disableButton();
     }
+    
     return false;
   }
 

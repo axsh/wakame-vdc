@@ -74,8 +74,9 @@ DcmgrGUI.prototype.snapshotPanel = function(){
   
   var bt_refresh  = new DcmgrGUI.Refresh();
   
-  var create_volume_button = {};
-  create_volume_button[create_button_name] = function() { 
+  var create_volume_buttons = {};
+  create_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  create_volume_buttons[create_button_name] = function() { 
     var create_volumes = $(this).find('#create_volumes').find('li');
     var ids = []
     $.each(create_volumes,function(){
@@ -101,7 +102,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     height:200,
     title:$.i18n.prop('create_volume_header'),
     path:'/create_volume_from_snapshot',
-    button: create_volume_button
+    button: create_volume_buttons
   });
   
   var delete_snapshot_buttons = {};

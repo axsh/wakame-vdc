@@ -52,9 +52,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     
     $(this).find('#security_group_name').keyup(function(){
       if( $(this).val() ) {
-        bt_create_security_group.disabledButton(0, false);
+        bt_create_security_group.disabledButton(1, false);
       } else {
-        bt_create_security_group.disabledButton(0 ,true);
+        bt_create_security_group.disabledButton(1 ,true);
       }
     });
 
@@ -66,7 +66,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   var create_button_name = $.i18n.prop('create_button');
   var delete_button_name = $.i18n.prop('delete_button');
   var update_button_name = $.i18n.prop('update_button');
-  
+  var close_button_name = $.i18n.prop('close_button');
+
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
     total:total
@@ -90,8 +91,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     c_list.setData(netfilter_group.results);
     c_list.singleCheckList(c_list.detail_template);
 
-    var edit_security_group_button = {};
-    edit_security_group_button[update_button_name] = function(event) {
+    var edit_security_group_buttons = {};
+    edit_security_group_buttons[close_button_name] = function() { $(this).dialog("close"); };
+    edit_security_group_buttons[update_button_name] = function(event) {
       var security_group_id = $(this).find('#security_group_id').val();
       var description = $(this).find('#security_group_description').val();
       var rule = $(this).find('#security_group_rule').val();
@@ -116,7 +118,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       height:580,
       title:$.i18n.prop('edit_security_group_header'),
       path:'/edit_security_group',
-      button: edit_security_group_button,
+      button: edit_security_group_buttons,
       callback: security_group_button_callback
     });
 
@@ -159,8 +161,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
   
-  var create_security_group_button = {};
-  create_security_group_button[create_button_name] = function() { 
+  var create_security_group_buttons = {};
+  create_security_group_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  create_security_group_buttons[create_button_name] = function() { 
     var name = $(this).find('#security_group_name').val();
     var description = $(this).find('#security_group_description').val();
     var rule = $(this).find('#security_group_rule').val();
@@ -196,17 +199,18 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     height:580,
     title:$.i18n.prop('create_security_group_header'),
     path:'/create_security_group',
-    button: create_security_group_button,
+    button: create_security_group_buttons,
     callback: security_group_button_callback 
   });
   
   bt_create_security_group.target.bind('click',function(){
     bt_create_security_group.open();
-    bt_create_security_group.disabledButton(0, true);
+    bt_create_security_group.disabledButton(1, true);
   });
   
-  var delete_security_group_button = {};
-  delete_security_group_button[delete_button_name] = function() { 
+  var delete_security_group_buttons = {};
+  delete_security_group_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  delete_security_group_buttons[delete_button_name] = function() { 
     var security_group_id = $(this).find('#security_group_id').val();
     var request = new DcmgrGUI.Request;
     request.del({
@@ -225,7 +229,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     height:200,
     title:$.i18n.prop('delete_security_group_header'),
     path:'/delete_security_group',
-    button: delete_security_group_button
+    button: delete_security_group_buttons
   });
   
   bt_delete_security_group.target.bind('click',function(){

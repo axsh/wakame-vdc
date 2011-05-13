@@ -23,7 +23,8 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   
   var create_button_name = $.i18n.prop('create_button');
   var delete_button_name = $.i18n.prop('delete_button');
-  
+  var close_button_name = $.i18n.prop('close_button');
+ 
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
     total:total
@@ -86,8 +87,9 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
   
-  var create_ssh_keypair_button = {};
-  create_ssh_keypair_button[create_button_name] = function() { 
+  var create_ssh_keypair_buttons = {};
+  create_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  create_ssh_keypair_buttons[create_button_name] = function() { 
     var name = $(this).find('#ssh_keypair_name').val();
     var download_once = $(this).find('#ssh_keypair_download_once').attr('checked');
 
@@ -123,15 +125,16 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
       var html = '<iframe src="javascript:false" name="hiddenIframe" style="display:none"></iframe>';
       $(this).find('#create_ssh_keypair_dialog').append(html);
     },
-    button: create_ssh_keypair_button
+    button: create_ssh_keypair_buttons
   });
   
   bt_create_ssh_keypair.target.bind('click', function(){
     bt_create_ssh_keypair.open();
   });
   
-  var delete_ssh_keypair_button = {};
-  delete_ssh_keypair_button[delete_button_name] = function() { 
+  var delete_ssh_keypair_buttons = {};
+  delete_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  delete_ssh_keypair_buttons[delete_button_name] = function() { 
     var ssh_keypair_id = $(this).find('#ssh_keypair_id').val();
     
     var request = new DcmgrGUI.Request;
@@ -151,7 +154,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     height: 200,
     title: $.i18n.prop('delete_ssh_keypair_header'),
     path: '/delete_ssh_keypair',
-    button: delete_ssh_keypair_button
+    button: delete_ssh_keypair_buttons
   });
   
   dcmgrGUI.notification.subscribe('checked_radio', bt_delete_ssh_keypair, 'enableDialogButton');
