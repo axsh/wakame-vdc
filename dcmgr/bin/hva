@@ -74,7 +74,6 @@ module Nat
     cmds = []
 
     inside_exception_ips.each { |ex_ip|
-
       cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -d #{ex_ip.address}/#{ex_ip.prefix} -j ACCEPT"
     }
     cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -j LOG --log-prefix 'Snat '"
