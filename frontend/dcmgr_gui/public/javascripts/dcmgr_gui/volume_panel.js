@@ -231,6 +231,15 @@ DcmgrGUI.prototype.volumePanel = function(){
     height:200,
     title:$.i18n.prop('attach_volume_header'),
     path:'/attach_volume',
+    callback: function() {
+      $(this).find('#instance_id').keyup(function(){
+        if( $(this).val() ) {
+          bt_attach_volume.disabledButton(1, false);
+        } else {
+          bt_attach_volume.disabledButton(1, true);
+        }
+      });
+    },
     button: attach_volume_buttons
   });
   
@@ -326,6 +335,7 @@ DcmgrGUI.prototype.volumePanel = function(){
 
         if(is_attached == true && flag == true) {
           bt_attach_volume.open(c_list.getCheckedInstanceIds());
+          bt_attach_volume.disabledButton(1, true);
         }
       }else if(select_action == "detach_volume") {
         var is_detached = false;
