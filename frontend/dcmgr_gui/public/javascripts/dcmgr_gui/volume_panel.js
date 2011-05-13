@@ -331,6 +331,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var state_check = function() {
     var ids = c_list.currentMultiChecked()['ids'];
     var is_available = false;
+    var is_attached = false;
     var flag = true;
 
     $.each(ids, function(key, uuid){
@@ -338,16 +339,25 @@ DcmgrGUI.prototype.volumePanel = function(){
       var state = $(row_id).find('.state').text();
       if(state == 'available') {
         is_available = true;
+      } else if(state == 'attached') {
+        is_attached = true;
       } else{
         flag = false;
       }
     });
+    if (flag == true){
+      if(is_available == true){
+        bt_delete_volume.enableDialogButton();
+        bt_create_snapshot.enableDialogButton();
+        selectmenu.data('selectmenu').enableButton();
+      }
 
-    if(is_available == true && flag == true){
-      bt_delete_volume.enableDialogButton();
-      bt_create_snapshot.enableDialogButton();
-      selectmenu.data('selectmenu').enableButton();
-    }else{
+      if (is_attached== true){
+        bt_delete_volume.disableDialogButton();
+        bt_create_snapshot.enableDialogButton();
+        selectmenu.data('selectmenu').enableButton();
+     }
+    } else{
       bt_delete_volume.disableDialogButton();
       bt_create_snapshot.disableDialogButton();
       selectmenu.data('selectmenu').disableButton();
