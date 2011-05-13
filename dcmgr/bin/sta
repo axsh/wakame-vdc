@@ -121,7 +121,7 @@ class ZfsHandler < EndpointBuilder
     sdata = rpc.request('sta-collector', 'get_snapshot', snapshot_id) unless snapshot_id.nil?
     data = rpc.request('sta-collector', 'get_volume', sdata[:origin_volume_id])
     logger.info("create new snapshot: #{snapshot_id}")
-    raise "Invalid volume state: #{data[:state]}" unless data[:state].to_s == 'available'
+    raise "Invalid volume state: #{data[:state]}" unless data[:state].to_s == 'available' || data[:state].to_s == 'attached'
     job.stm.state=sdata[:state].to_sym
     job.stm.on_create
 
