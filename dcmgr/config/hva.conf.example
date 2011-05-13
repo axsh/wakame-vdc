@@ -25,4 +25,4 @@ config.verbose_netfilter = false
 config.packet_drop_log = false
 
 # debug netfilter
-config.debug_iptables = true
+config.debug_iptables = false
