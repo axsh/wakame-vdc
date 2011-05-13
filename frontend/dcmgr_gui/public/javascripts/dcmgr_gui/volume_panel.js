@@ -312,9 +312,37 @@ DcmgrGUI.prototype.volumePanel = function(){
     select: function(event){
       var select_action = $(this).val()
       if (select_action == "attach_volume") {
-        bt_attach_volume.open(c_list.getCheckedInstanceIds());
+        var is_attached = false;
+        var flag = true;
+        $.each(c_list.getCheckedInstanceIds(), function(key, uuid){
+          var row_id = '#row-'+uuid;
+          var state = $(row_id).find('.state').text();
+          if(state == 'available' && state != 'attached') {
+            is_attached = true;
+          } else {
+            flag = false;
+          }
+        });
+
+        if(is_attached == true && flag == true) {
+          bt_attach_volume.open(c_list.getCheckedInstanceIds());
+        }
       }else if(select_action == "detach_volume") {
-        bt_detach_volume.open(c_list.getCheckedInstanceIds());
+        var is_detached = false;
+        var flag = true;
+        $.each(c_list.getCheckedInstanceIds(), function(key, uuid){
+          var row_id = '#row-'+uuid;
+          var state = $(row_id).find('.state').text();
+          if(state == 'attached') {
+            is_detached = true;
+          } else {
+            flag = false;
+          }
+        });
+        
+        if(is_detached == true && flag == true) {
+          bt_detach_volume.open(c_list.getCheckedInstanceIds());
+        }
       }
     }
   });
