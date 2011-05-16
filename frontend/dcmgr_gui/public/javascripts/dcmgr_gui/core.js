@@ -80,6 +80,48 @@ DcmgrGUI.Converter.fromMBtoGB = function(data){
   return Math.ceil(data/1024) + 'GB';
 };
 
+DcmgrGUI.date = {};
+DcmgrGUI.date.parseISO8601 = function (str) {
+  /*
+   Reference: http://anentropic.wordpress.com/2009/06/25/javascript-iso8601-parser-and-pretty-dates/
+  */
+  
+  // we assume str is a UTC date ending in 'Z'
+  var parts = str.split('T'),
+  dateParts = parts[0].split('-'),
+  timeParts = parts[1].split('Z'),
+  timeSubParts = timeParts[0].split(':'),
+  timeSecParts = timeSubParts[2].split('.'),
+  timeHours = Number(timeSubParts[0]),
+  _date = new Date;
+
+  _date.setUTCFullYear(Number(dateParts[0]));
+  _date.setUTCMonth(Number(dateParts[1]));
+  _date.setUTCDate(Number(dateParts[2]));
+  _date.setUTCHours(Number(timeHours));
+  _date.setUTCMinutes(Number(timeSubParts[1]));
+  _date.setUTCSeconds(Number(timeSecParts[0]));
+  if (timeSecParts[1]) _date.setUTCMilliseconds(Number(timeSecParts[1]));
+
+  // by using setUTC methods the date has already been converted to local time(?)
+  return _date;
+};
+
+DcmgrGUI.date.getI18n = function(date_str){
+
+  var convert = function(value) {
+    return ("0" + value).slice(-2);
+  }
+
+  return $.i18n.prop('display_date', [date_str.getUTCFullYear(), 
+                                   convert(date_str.getUTCMonth()), 
+                                   convert(date_str.getUTCDate()), 
+                                   convert(date_str.getUTCHours()), 
+                                   convert(date_str.getUTCMinutes()), 
+                                   convert(date_str.getUTCSeconds())
+                                   ]);
+};
+
 DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   initialize: function(params) {
     var self = this;
