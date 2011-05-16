@@ -44,52 +44,6 @@ end
 module Nat
   include NicHelper
   include Dcmgr::Logger
-  # Returns iptables commands for natting _internal_ip_ to _external_ip_.
-  # _exception_ips_ is an array of ips for which _internal_ip_ will not be natted.
-  # In other words, any connections from a natted instance will show _external_ip_ as their source addres except connections to ips in _exception_ips_
-  # IP addresses can be passed either as strings in cidr notation or instances of IPAddress.  
-  # You will need to respond to arp requests for the external ip. The arp_respond method takes care of that.  
-  def nat_ip(internal_ip,external_ip,inside_exception_ips = [],outside_exception_ips = [])
-    internal_ip = IPAddress(internal_ip) if internal_ip.is_a?(String)
-    external_ip = IPAddress(external_ip) if external_ip.is_a?(String)
-    
-    raise "Invalid IP address: #{internal_ip}" unless internal_ip.is_a?(IPAddress)
-    raise "Invalid IP address: #{external_ip}" unless external_ip.is_a?(IPAddress)
-    raise ArgumentError unless inside_exception_ips.is_a?(Array)
-    raise ArgumentError unless outside_exception_ips.is_a?(Array)
-    
-    # Little blocky to convert strings to IPAddress objects
-    str_to_ip = Proc.new {|ip| 
-      if ip.is_a?(String)
-        IPAddress(ip)
-      elsif !ip.is_a?(IPAddress)
-        nil
-      end
-    }
-    
-    #Apply the above block on the ips to be excluded from nat
-    inside_exception_ips  = inside_exception_ips.map(&str_to_ip).compact
-    outside_exception_ips = outside_exception_ips.map(&str_to_ip).compact
-    
-    cmds = []
-
-    inside_exception_ips.each { |ex_ip|
-      cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -d #{ex_ip.address}/#{ex_ip.prefix} -j ACCEPT"
-    }
-    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -j LOG --log-prefix 'Snat '"
-    cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -j SNAT --to #{external_ip.address}"
-    
-    
-    outside_exception_ips.each { |ex_ip|
-      cmds << "iptables -t nat -A PREROUTING -s #{internal_ip.address} -d #{ex_ip.address}/#{ex_ip.prefix} -j ACCEPT"
-    }
-    cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j LOG --log-prefix 'Dnat '"
-    cmds << "iptables -t nat -A PREROUTING -d #{external_ip.address} -j DNAT --to #{internal_ip.address}"
-    
-    logger.debug "Natting #{internal_ip.address} to #{external_ip.address}"
-    
-    cmds
-  end
   
   # Takes an instance and nats it.
   # If the instance is in a network that has a nat_network mapped to it,
@@ -99,26 +53,69 @@ module Nat
   # an instance with ip 192.168.0.10 might be natted to ip 172.16.46.23.
   def nat_instance(inst_map)
     nat_cmd = []
-    #TODO: Check if inst_map really is an instance map... if that's possible
+    raise ArgumentError unless inst_map.is_a?(Hash)
     
     inst_map[:instance_nics].each {
       |nic|       
-      #in_nw = rpc.request('hva-collector', 'get_network', nic[:network_id]) 
-      nat_ips = rpc.request('hva-collector', 'get_nat_leases', nic[:uuid])   
+      nat_ips = rpc.request('hva-collector', 'get_nat_leases', nic[:uuid]).map {|ip| IPAddress(ip)}
       
       #Get the internal ip for this nic
-      inside_ip = IPAddress rpc.request('hva-collector', 'get_iplease_for_nic', nic[:uuid])
-      inside_exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid])
-      outside_exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid],:outside)
+      internal_ip = IPAddress rpc.request('hva-collector', 'get_iplease_for_nic', nic[:uuid])
+      inside_exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid]).map {|ip| IPAddress(ip)}
+      outside_exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid],:outside).map {|ip| IPAddress(ip)}
       
       #output the commands to nat this nic and answer arp requests for its outside ip
-      nat_ips.each { |outside_ip|
-        nat_cmd << nat_ip(inside_ip,outside_ip,inside_exception_ips,outside_exception_ips)
-        nat_cmd << arp_respond(outside_ip)
+      friend_ipset  = inst_map[:uuid] + "_friend_ips"
+      nat_ips.each { |external_ip|
+        if @node.manifest.config.use_ipset
+          
+          nat_cmd << "ipset -N #{friend_ipset} iphash"
+          
+          inside_exception_ips.each { |ex_ip|
+            nat_cmd << "ipset -A #{friend_ipset} #{ex_ip.address}"
+          }
+          
+          # The good rules that use ipset
+          postrouting_command = "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -m set ! --match-set #{friend_ipset} dst"
+          prerouting_command = "iptables -t nat -A PREROUTING -d #{external_ip.address} -m set ! --match-set #{friend_ipset} src"
+        else
+          # The ugly rules to use in case ipset is not installed
+          postrouting_command = "iptables -t nat -A POSTROUTING -s #{internal_ip.address}"
+          prerouting_command = "iptables -t nat -A PREROUTING -d #{external_ip.address}"
+        end
+        
+        # Build the final nat rules and log any packets that traverse them
+        nat_cmd << postrouting_command  + " -j LOG --log-prefix 'Snat '"
+        nat_cmd << postrouting_command  + " -j SNAT --to #{external_ip.address}"
+        
+        nat_cmd << prerouting_command + " -j LOG --log-prefix 'Dnat '"
+        nat_cmd << prerouting_command + " -j DNAT --to #{internal_ip.address}"
+        
+        logger.debug "Natting #{internal_ip.address} to #{external_ip.address}"
+            
+        nat_cmd << arp_respond(external_ip)
       }
     }
     
-    nat_cmd    
+    nat_cmd
+  end
+  
+  def nat_exceptions(inst_map)
+    inside_exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid]).map {|ip| IPAddress(ip)}
+    outside_exception_ips = rpc.request('hva-collector','get_group_instance_ipv4s',inst_map[:uuid],:outside).map {|ip| IPAddress(ip)}
+    
+    cmds = []
+    inst_map[:instance_nics].each { |nic|
+      internal_ip = IPAddress(rpc.request('hva-collector', 'get_iplease_for_nic', nic[:uuid]))
+      inside_exception_ips.each { |ex_ip|
+        cmds << "iptables -t nat -A POSTROUTING -s #{internal_ip.address} -d #{ex_ip.address}/#{ex_ip.prefix} -j ACCEPT"
+      }
+      outside_exception_ips.each { |ex_ip|
+        cmds << "iptables -t nat -A PREROUTING -s #{internal_ip.address} -d #{ex_ip.address}/#{ex_ip.prefix} -j ACCEPT"
+      }
+    }
+    
+    cmds
   end
   
   # Returns ebtables command to respond to ARP requests for the address _ip_.
@@ -335,6 +332,14 @@ class ServiceNetfilter < Isono::NodeModules::Base
         init_cmds << "iptables -t #{table} -#{xcmd}"
       }
     }
+    
+    #TODO: Make an option in the config file to use ipset
+    use_ipset = true
+    if use_ipset
+      ['F','X'].each { |xcmd|
+        init_cmds << "ipset -#{xcmd}"
+      }
+    end
 
     # via http://backreference.org/2010/06/11/iptables-debugging/
     # To debug ipv4 packets.
@@ -356,13 +361,15 @@ class ServiceNetfilter < Isono::NodeModules::Base
   end
 
   def init_static_nat(inst_maps = [])
-    nat_cmds = []
+    accept_cmds = []
+    nat_cmds    = []
     
     inst_maps.each { |inst_map|
-      nat_cmds << nat_instance(inst_map)
+      accept_cmds << nat_exceptions(inst_map) unless @node.manifest.config.use_ipset
+      nat_cmds    << nat_instance(inst_map)
     }
     
-    do_exec(nat_cmds)
+    do_exec([accept_cmds,nat_cmds])
   end
 
   def build_ebtables_basic_part(vif_map, inst_map)
