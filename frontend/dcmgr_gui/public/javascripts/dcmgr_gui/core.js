@@ -646,16 +646,16 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
           var c_detail = new DcmgrGUI.Detail({
             template_id:params.template_id
           });
-          
+           
           c_detail.element.bind('dcmgrGUI.contentChange',function(event,params){
             var data = { item:params.data }
-            
             //initialize
             if(!params.data){
               data.item = self.getEmptyData();
             }
-            
+
             if(data.item){
+              self.detail_filter.execute(data);
               $('#detail').html($( c_detail.template ).tmpl(data));
             }
           });
@@ -705,12 +705,10 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
                 data.item = self.checked_list[check_id].c_detail.getEmptyData();
               }
               
-              if (self.detail_template.filter) {
-                self.detail_template.filter.execute(data);
-              };
               self.checked_list[check_id].c_detail.filter.execute(data);
               
               if(data.item){
+                self.detail_filter.execute(data);
                 $( self.checked_list[check_id].c_detail.template )
                   .tmpl(data)
                   .appendTo( $('#detail') );
