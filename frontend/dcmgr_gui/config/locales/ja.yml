@@ -27,6 +27,8 @@ ja:
     total: "全{0}件"
   parts:
     loading: "読み込み中..."
+  date:
+    display: "{0}年{1}月{2}日 {3}時{4}分{5}秒"
   dialog:
     terminate_instances:
       header: "インスタンスを停止"
