@@ -514,6 +514,22 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.detail_template = {};
     this.maxrow = params.maxrow
     this.page = params.page
+    this.detail_filter = new DcmgrGUI.Filter(); 
+    this.detail_filter.add(function(data){
+      
+      if(data.item.created_at) {
+        data.item.created_at = DcmgrGUI.date.parseISO8601(data.item.created_at);
+        data.item.created_at = DcmgrGUI.date.getI18n(data.item.created_at);
+      }
+
+      if(data.item.updated_at) {
+        data.item.updated_at = DcmgrGUI.date.parseISO8601(data.item.updated_at);
+        data.item.updated_at = DcmgrGUI.date.getI18n(data.item.updated_at);
+      }
+
+      return data;
+    });
+
     var self = this;
 
     this.element.bind('dcmgrGUI.afterUpdate',function(event){
