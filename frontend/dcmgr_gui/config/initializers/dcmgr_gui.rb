@@ -16,5 +16,5 @@ ActiveResource::Base.class_eval do
   self.site = @dcmgr_gui_config['dcmgr_site'] 
 end
 
-@dcmgr_config = YAML::load(ERB.new(IO.read(File.join(Rails.root, 'config', 'database.yml'))).result)[Rails.env]
+@dcmgr_config = YAML::load(IO.read(File.join(Rails.root, 'config', 'database.yml')))[Rails.env]
 Schema.connect "#{@dcmgr_config['adapter']}://#{@dcmgr_config['host']}/#{@dcmgr_config['database']}?user=#{@dcmgr_config['user']}&password=#{@dcmgr_config['password']}"
