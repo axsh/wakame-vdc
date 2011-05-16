@@ -150,6 +150,10 @@ module Dcmgr::Models
         :detached_at => self.detached_at,
       }
     end
+    
+    def ready_to_take_snapshot?
+      %w(available attached).member?(self.state)
+    end
 
     def create_snapshot(account_id)
       vs = VolumeSnapshot.create(:account_id=>account_id,

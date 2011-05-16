@@ -625,7 +625,7 @@ module Dcmgr
 
             v = find_by_uuid(:Volume, params[:volume_id])
             raise UnknownVolume if v.nil?
-            raise InvalidRequestCredentials unless v.state == "available" || v.state == "attached"
+            raise InvalidRequestCredentials unless v.ready_to_take_snapshot?
 
             vs = v.create_snapshot(@account.canonical_uuid)
             sp = vs.storage_pool
