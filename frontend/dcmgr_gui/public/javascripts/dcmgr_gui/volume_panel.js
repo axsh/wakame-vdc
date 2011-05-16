@@ -40,12 +40,6 @@ DcmgrGUI.prototype.volumePanel = function(){
     page:page
   });
   
-  var detail_filter = new DcmgrGUI.Filter();
-  detail_filter.add(function(data){
-    data.item.size = DcmgrGUI.Converter.fromMBtoGB(data.item.size);
-    return data;
-  });
-  
   var attach_button_name = $.i18n.prop('attach_button');
   var detach_button_name = $.i18n.prop('detach_button');
   var close_button_name = $.i18n.prop('close_button');
@@ -54,8 +48,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   c_list.setDetailTemplate({
     template_id:'#volumesDetailTemplate',
-    detail_path:'/volumes/show/',
-    filter: detail_filter
+    detail_path:'/volumes/show/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
@@ -71,6 +64,21 @@ DcmgrGUI.prototype.volumePanel = function(){
     for(var i = 0; i < size; i++) {
       results[i].result.size = DcmgrGUI.Converter.fromMBtoGB(results[i].result.size);
     }
+    return data;
+  });
+  
+  c_list.filter.add(function(data){
+    var results = data.volume.results;
+    var size = results.length;
+    for(var i = 0; i < size; i++) {
+      results[i].result.created_at = DcmgrGUI.date.parseISO8601(results[i].result.created_at);
+      results[i].result.created_at = DcmgrGUI.date.getI18n(results[i].result.created_at);
+    }
+    return data;
+  });
+
+  c_list.detail_filter.add(function(data){
+    data.item.size = DcmgrGUI.Converter.fromMBtoGB(data.item.size);
     return data;
   });
   

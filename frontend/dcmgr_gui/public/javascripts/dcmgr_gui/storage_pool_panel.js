@@ -42,16 +42,9 @@ DcmgrGUI.prototype.storagePoolPanel = function(){
     page:page
   });
   
-  var detail_filter = new DcmgrGUI.Filter();
-  detail_filter.add(function(data){
-    data.item.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(data.item.offering_disk_space);
-    return data;
-  });
-  
   c_list.setDetailTemplate({
     template_id:'#storagePoolsDetailTemplate',
-    detail_path:'/storage_pools/show/',
-    filter: detail_filter
+    detail_path:'/storage_pools/show/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
@@ -67,6 +60,11 @@ DcmgrGUI.prototype.storagePoolPanel = function(){
     for(var i = 0; i < size; i++) {
       results[i].result.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(results[i].result.offering_disk_space);
     }
+    return data;
+  });
+  
+  c_list.detail_filter.add(function(data){
+    data.item.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(data.item.offering_disk_space);
     return data;
   });
   
