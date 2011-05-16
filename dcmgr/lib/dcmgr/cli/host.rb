@@ -8,23 +8,23 @@ class Host < Base
   namespace :host
   include Dcmgr::Models
   
-  desc "add NODE_ID", "Register a new host pool node"
+  desc "add NODE_ID [options]", "Register a new host pool node"
   method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new host pool."
   method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force to create new entry."
   method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default=>1, :desc => "Number of cpu cores to be offered."
   method_option :memory_size, :type => :numeric, :aliases => "-m", :default=>1000, :desc => "Amount of memory to be offered (in MB)."
   method_option :hypervisor, :type => :string, :aliases => "-p", :default=>'kvm', :desc => "The hypervisor name"
-  method_option :arch, :type => :string, :aliases => "-r", :default=>'x86_64', :desc => "The CPU architecture type. [x86, x86_64]"
+  method_option :arch, :type => :string, :aliases => "-r", :default=>'x86_64', :desc => "The CPU architecture type. [#{HostPool::SUPPORTED_ARCH.join(', ')}]"
   method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this."
   def add(node_id)
     UnsupportedArchError.raise(options[:arch]) unless HostPool::SUPPORTED_ARCH.member?(options[:arch])
 
-    unless (options[:force] == false && Isono::Models::NodeState.exists?(:node_id=>options[:node_id]))
-      abort("Node ID is not registered yet: #{options[:node_id]}")
+    if (options[:force] == false && Isono::Models::NodeState.filter(:node_id=>node_id).first == nil)
+      abort("Node ID is not registered yet: #{node_id}")
     end
     
     fields = {
-              :node_id=>options[:node_id],
+              :node_id=>node_id,
               :offering_cpu_cores=>options[:cpu_cores],
               :offering_memory_size=>options[:memory_size],
               :hypervisor=>options[:hypervisor],
