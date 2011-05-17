@@ -8,7 +8,7 @@ class Storage < Base
   namespace :storage
   include Dcmgr::Models
   
-  desc "add NODE_ID", "Register a new storage pool node"
+  desc "add NODE_ID [options]", "Register a new storage node"
   method_option :uuid, :type => :string, :aliases => "-u", :desc => "The uuid for the new storage pool."
   method_option :base_path, :type => :string, :aliases => '-b', :required => true, :desc => "Base path to store volume files"
   method_option :snapshot_base_path, :type => :string, :aliases => '-n', :required => true, :desc => "Base path to store snapshot files"
@@ -36,7 +36,7 @@ class Storage < Base
     puts super(StoragePool,fields)
   end
 
-  desc "del UUID", "Deregister a storage pool node"
+  desc "del UUID", "Deregister a storage node"
   def del(uuid)
     super(StoragePool,uuid)
   end
