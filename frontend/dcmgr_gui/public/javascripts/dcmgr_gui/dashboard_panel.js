@@ -19,6 +19,14 @@ DcmgrGUI.prototype.dashboardPanel = function(){
       total_snapshot: $.getJSON('/snapshots/total.json'),
       total_security_group: $.getJSON('/security_groups/total.json'),
       total_keypair: $.getJSON('/keypairs/total.json')
+    }).error(function (e) {
+      this.cancel();
+      $("#total_instance").empty().html('');
+      $("#total_image").empty().html('');
+      $("#total_volume").empty().html('');
+      $("#total_snapshot").empty().html('');
+      $("#total_security_group").empty().html('');
+      $("#total_keypair").empty().html('');
     }).next(function(results) {
       $('#total_instance').html(results.total_instance);
       $('#total_image').html(results.total_image);

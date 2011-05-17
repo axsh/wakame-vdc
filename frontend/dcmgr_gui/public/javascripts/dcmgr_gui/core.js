@@ -833,5 +833,15 @@ DcmgrGUI.ToolTip　= DcmgrGUI.Class.create({
 DcmgrGUI.prototype = {
   initialize:function(){
     $.deferred.define();
+    this.config = {
+      error_popup: true,
+      error_popup_once: true
+    };
+  },
+  getConfig: function(key){
+    return this.config[key];
+  },
+  setConfig: function(key, value) {
+    this.config[key] = value;
   }
 }

@@ -4,6 +4,11 @@
 //<![CDATA[
 jQuery(function($){
 
+  //global
+  dcmgrGUI = new DcmgrGUI;
+  dcmgrGUI.initialize();
+  dcmgrGUI.notification = new DcmgrGUI.Notification;
+
 	//サイドメニュー開閉関数
 	var regionpos = 0;
 	$('#regionselect').click(function () {
@@ -103,7 +108,13 @@ jQuery(function($){
     }else {
       message = 'Unknow Error.\n'+x.responseText;
     }
-    Sexy.error(message);
+    
+    if(dcmgrGUI.getConfig('error_popup')) {
+      Sexy.error(message);
+      if(dcmgrGUI.getConfig('error_popup_once')) {
+        dcmgrGUI.setConfig('error_popup', false);
+      }
+    }
   });
 
   //Region selectmenu
@@ -125,11 +136,6 @@ jQuery(function($){
 
   $('a[id^="ui-selectmenu-item"]').css('font-size', '13px')
                          .css('height', '17px')  
-
-	//global
-  dcmgrGUI = new DcmgrGUI;
-  dcmgrGUI.initialize();
-  dcmgrGUI.notification = new DcmgrGUI.Notification;
 
 });
 //]]>
