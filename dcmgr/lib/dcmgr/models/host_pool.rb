@@ -37,8 +37,13 @@ module Dcmgr::Models
 
     def validate
       super
-      unless self.node_id =~ /^hva-/
-        errors.add(:node_id, "hva node has to be associated: #{self.node_id}")
+      # for compatibility: hva.xxx or hva-xxxx
+      unless self.node_id =~ /^hva[-.]/
+        errors.add(:node_id, "is invalid ID: #{self.node_id}")
+      end
+
+      if h = self.class.filter(:node_id=>self.node_id).first
+        errors.add(:node_id, " #{self.node_id} is already been associated to #{h.canonical_uuid} ")
       end
       
       unless SUPPORTED_ARCH.member?(self.arch)
