@@ -127,6 +127,7 @@ module Dcmgr
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
+    autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
   end
 
   module Stm
@@ -158,5 +159,10 @@ module Dcmgr
     autoload :Group, 'dcmgr/cli/group'
     autoload :Spec, 'dcmgr/cli/spec'
     autoload :Tag, 'dcmgr/cli/tag'
+  end
+
+  module Rpc
+    autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
+    autoload :KvmHelper, 'dcmgr/rpc/hva_handler'
   end
 end
