@@ -41,14 +41,42 @@ class Storage < Base
     super(StoragePool,uuid)
   end
 
+  desc "show [UUID]", "Show list of storage nodes and details."
+  def show(uuid=nil)
+    if uuid
+      st = StoragePool[uuid]
+      puts ERB.new(<<__END, nil, '-').result(binding)
+UUID: <%= st.canonical_uuid %>
+Node ID: <%= st.node_id %>
+Disk space (offerring): <%= st.offering_disk_space %>MB
+Storage: <%= st.storage_type %>
+Transport: <%= st.transport_type %>
+IP Address: <%= st.ipaddr %>
+Export path: <%= st.export_path %>
+Snapshot base path: <%= st.snapshot_base_path %>
+Created: <%= st.created_at %>
+Last updated: <%= st.updated_at %>
+__END
+    else
+      cond = {}
+      all = StoragePool.filter(cond).all
+      puts ERB.new(<<__END, nil, '-').result(binding)
+UUID            Node ID              State
+<%- all.each { |row| -%>
+<%= "%-15s %-20s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
+<%- } -%>
+__END
+    end
+  end
+
   desc "shownodes", "Show node (agents)"
   def shownodes
     nodes = Isono::Models::NodeState.filter.all
-    
+
     puts ERB.new(<<__END, nil, '-').result(binding)
-Node ID\tState
+Node ID              State
 <%- nodes.each { |row| -%>
-<%= row.node_id %>\t<%= row.state %>
+<%= "%-20s %-10s" % [row.node_id, row.state] %>
 <%- } -%>
 __END
   end
