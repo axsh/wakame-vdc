@@ -1,20 +1,11 @@
 # -*- coding: utf-8 -*-
 
-begin
-  require 'rubygems'
-  require 'bundler'
-  Bundler.setup(:default, :dcmgr)
-rescue ::Exception => e
-end
-$:.unshift "#{File.dirname(__FILE__)}/../../lib"
+$LOAD_PATH.unshift "#{File.dirname(__FILE__)}/../../lib"
 
+require 'dcmgr/rubygems'
 require 'dcmgr'
 
-if File.exists?('../../config/dcmgr.conf')
-  Dcmgr.configure('../../config/dcmgr.conf')
-else
-  raise "Could not find the config/dcmgr.conf configuration file."
-end
+Dcmgr.configure(File.expand_path('../../../config/dcmgr.conf', __FILE__))
 Dcmgr.run_initializers
 
 run Dcmgr::Endpoints::Metadata.new
