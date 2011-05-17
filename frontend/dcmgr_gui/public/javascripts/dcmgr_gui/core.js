@@ -830,6 +830,36 @@ DcmgrGUI.ToolTip　= DcmgrGUI.Class.create({
   }
 });
 
+DcmgrGUI.Logger = DcmgrGUI.Class.create({
+  initialize: function() {
+    this.stack = [];
+  },
+  push: function(type, item) {
+    this.stack.push({
+      'type': type,
+      'item': item
+    });
+  },
+  getLog: function(limit, type) {
+    var size = this.stack.length;
+    var results = [];
+    var count = 0;
+    var limit = limit || this.stack.length;
+    var type = 'ajaxError';
+    for(var i=0; i< size; i++) {
+      if(this.stack[i].type == type) {
+        if(count < limit) {
+          results.push(this.stack[i]);
+          count +=1;
+        } else {
+          break;
+        }
+      }
+    }
+    return results;
+  }
+});
+
 DcmgrGUI.prototype = {
   initialize:function(){
     $.deferred.define();
@@ -837,6 +867,8 @@ DcmgrGUI.prototype = {
       error_popup: true,
       error_popup_once: true
     };
+
+    this.logger = new DcmgrGUI.Logger();
   },
   getConfig: function(key){
     return this.config[key];

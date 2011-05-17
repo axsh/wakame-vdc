@@ -108,7 +108,9 @@ jQuery(function($){
     }else {
       message = 'Unknow Error.\n'+x.responseText;
     }
-    
+
+    dcmgrGUI.logger.push(e.type, xhr);
+
     if(dcmgrGUI.getConfig('error_popup')) {
       Sexy.error(message);
       if(dcmgrGUI.getConfig('error_popup_once')) {
