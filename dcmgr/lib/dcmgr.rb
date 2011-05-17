@@ -126,6 +126,7 @@ module Dcmgr
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
+    autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
   end
 
   module Stm
