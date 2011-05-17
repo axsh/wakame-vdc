@@ -8,7 +8,7 @@ class Host < Base
   namespace :host
   include Dcmgr::Models
   
-  desc "add NODE_ID [options]", "Register a new host pool node"
+  desc "add NODE_ID [options]", "Register a new host node"
   method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new host pool."
   method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force to create new entry."
   method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default=>1, :desc => "Number of cpu cores to be offered."
@@ -35,7 +35,7 @@ class Host < Base
     puts super(HostPool,fields)
   end
 
-  desc "del UUID", "Deregister a host pool node"
+  desc "del UUID", "Deregister a host node."
   def del(uuid)
     super(HostPool,uuid)
   end
