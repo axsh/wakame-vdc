@@ -13,8 +13,8 @@ module Dcmgr::Cli
     method_option :private_key, :type => :string, :aliases => "-pri", :desc => "The path to the private key.", :required => true
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
-      Error.Raise "Private key file doesn't exist" unless File.exists?(options[:private_key])
-      Error.Raise "Public key file doesn't exist" unless File.exists?(options[:public_key])
+      Error.raise "Private key file doesn't exist",100 unless File.exists?(options[:private_key])
+      Error.raise "Public key file doesn't exist",100 unless File.exists?(options[:public_key])
       
       fields = options.dup
       
