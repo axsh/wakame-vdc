@@ -136,6 +136,7 @@ module Dcmgr
 
   module Helpers
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
+    autoload :NicHelper, 'dcmgr/helpers/nic_helper'
   end
 
   autoload :Tags, 'dcmgr/tags'
