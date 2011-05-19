@@ -60,5 +60,31 @@ module Dcmgr::Cli
       UnknownUUIDError.raise(image_id) if M::Image[image_id].nil?
       super(M::Image, image_id)
     end
+
+    desc "show [IMAGE_ID]", "Show list of machine image and details."
+    def show(uuid=nil)
+      if uuid
+        img = M::Image[uuid]
+        print ERB.new(<<__END, nil, '-').result(binding)
+UUID: <%= img.canonical_uuid %>
+Boot Type: <%= img.boot_dev_type %>
+Arch: <%= img.arch %>
+<%- if img.description -%>
+Description:
+<%= img.description %>
+<%- end -%>
+Is Public: <%= img.is_public %>
+State: <%= img.state %>
+__END
+      else
+        cond = {}
+        imgs = M::Image.filter(cond).all
+        print ERB.new(<<__END, nil, '-').result(binding)
+<%- imgs.each { |row| -%>
+<%= "%-20s  %-15s %-15s" % [row.canonical_uuid, row.boot_dev_type, row.arch] %>
+<%- } -%>
+__END
+      end
+    end
   end
 end
