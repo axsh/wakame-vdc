@@ -326,6 +326,8 @@ module Dcmgr
           description 'Reboots the instance'
           control do
             i = find_by_uuid(:Instance, params[:id])
+            Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'reboot', i.canonical_uuid)
+            response_to({})
           end
         end
       end

@@ -382,6 +382,15 @@ module Dcmgr
         @job.on_detach
       end
 
+      job :reboot, proc {
+        @inst_id = request.args[0]
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+        
+        connect_monitor(@inst[:runtime_config][:telnet_port]) { |t|
+          t.cmd("system_reset")
+        }
+      }
+
       def rpc
         @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
       end
