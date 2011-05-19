@@ -92,5 +92,9 @@ module Dcmgr
     define_error(:DuplicatedNetfilterGroup, 400, '135')
 
     define_error(:DuplicateSshKeyName, 400, '136')
+    define_error(:InvalidImageID, 400, '137')
+    define_error(:InvalidInstanceSpec, 400, '138')
+    define_error(:UndefinedInstanceID, 404, '139')
+    define_error(:InvalidVolumeState, 400, '140')
   end
 end
