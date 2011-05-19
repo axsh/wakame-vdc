@@ -509,7 +509,7 @@ module Dcmgr
             
             vol = find_by_uuid(:Volume, volume_id)
             raise UnknownVolume if vol.nil?
-            raise InvalidRequestCredentials unless vol.state == "available"
+            raise InvalidVolumeState unless vol.state == "available"
 
             begin
               v  = Models::Volume.delete_volume(@account.canonical_uuid, volume_id)
@@ -630,7 +630,7 @@ module Dcmgr
 
             v = find_by_uuid(:Volume, params[:volume_id])
             raise UnknownVolume if v.nil?
-            raise InvalidRequestCredentials unless v.ready_to_take_snapshot?
+            raise InvalidVolumeState unless v.ready_to_take_snapshot?
 
             vs = v.create_snapshot(@account.canonical_uuid)
             sp = vs.storage_pool
@@ -651,7 +651,7 @@ module Dcmgr
             
             v = find_by_uuid(:VolumeSnapshot, snapshot_id)
             raise UnknownVolumeSnapshot if v.nil?
-            raise InvalidRequestCredentials unless v.state == "available"
+            raise InvalidVolumeState unless v.state == "available"
 
             begin
               vs  = Models::VolumeSnapshot.delete_snapshot(@account.canonical_uuid, snapshot_id)
