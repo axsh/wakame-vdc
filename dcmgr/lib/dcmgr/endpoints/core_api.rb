@@ -286,8 +286,10 @@ module Dcmgr
               vol.boot_dev = 1
               vol.instance = inst
               vol.save
+              commit_transaction
               res = Dcmgr.messaging.submit("kvm-handle.#{hostnode.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
+              commit_transaction
               res = Dcmgr.messaging.submit("kvm-handle.#{hostnode.node_id}", 'run_local_store', inst.canonical_uuid)
             else
               raise "Unknown boot type"
@@ -310,7 +312,6 @@ module Dcmgr
         operation :destroy do
           description 'Shutdown the instance'
           control do
-            Models::Instance.lock!
             i = find_by_uuid(:Instance, params[:id])
             if examine_owner(i)
             else
@@ -324,7 +325,6 @@ module Dcmgr
         operation :reboot, :method=>:put, :member=>true do
           description 'Reboots the instance'
           control do
-            Models::Instance.lock!
             i = find_by_uuid(:Instance, params[:id])
           end
         end
@@ -492,6 +492,7 @@ module Dcmgr
               raise UndefinedRequiredParameter
             end
 
+            commit_transaction
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid)
             response_to(v.to_api_document)
           end
@@ -501,7 +502,6 @@ module Dcmgr
           description 'Delete the volume'
           # params id, string, required
           control do
-            Models::Volume.lock!
             volume_id = params[:id]
             raise UndefinedVolumeID if volume_id.nil?
             
@@ -518,6 +518,7 @@ module Dcmgr
             raise UnknownVolume if v.nil?
             sp = v.storage_pool
 
+            commit_transaction
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'delete_volume', v.canonical_uuid)
             response_to([v.canonical_uuid])
           end
@@ -541,6 +542,7 @@ module Dcmgr
 
             v.instance = i
             v.save
+            commit_transaction
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
             response_to(v.to_api_document)
@@ -560,6 +562,7 @@ module Dcmgr
             raise DetachVolumeFailure, "boot device can not be detached" if v.boot_dev == 1
             i = v.instance
             raise InvalidInstanceState unless i.live? && i.state == 'running'
+            commit_transaction
             res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
             response_to(v.to_api_document)
           end
@@ -630,6 +633,7 @@ module Dcmgr
             vs = v.create_snapshot(@account.canonical_uuid)
             sp = vs.storage_pool
 
+            commit_transaction
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid)
             response_to(vs.to_api_document)
           end
@@ -656,6 +660,7 @@ module Dcmgr
             raise UnknownVolumeSnapshot if vs.nil?
             sp = vs.storage_pool
 
+            commit_transaction
             res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid)
             response_to([vs.canonical_uuid])
           end
@@ -750,6 +755,7 @@ module Dcmgr
             g.save
             g.rebuild_rule
 
+            commit_transaction
             # refresh netfilter_rules
             Dcmgr.messaging.event_publish('hva/netfilter_updated', :args=>[g.canonical_uuid])
 

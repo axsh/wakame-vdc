@@ -5,17 +5,27 @@ require 'sequel'
 
 module Sinatra
   # wrap routed request with sequel transaction block.
+  # note: this is NOT thread safe. please ensure not to be used in the
+  # multi-threaded apps.
   module SequelTransaction
     module Helpers
+      # TODO: abstract database connection. it means that do not use
+      # Sequel::DATABASE.first where to get the connection.
+      
+      public
+      # commit manually before return from the request block
+      def commit_transaction
+        db = Sequel::DATABASES.first
+        db << db.__send__(:commit_transaction_sql)
+      end
+      
       private
       def route_eval(&block)
         db = Sequel::DATABASES.first
 
-        ret = nil
         db.transaction do
-          ret = instance_eval(&block)
+          super(&block)
         end
-        throw :halt, ret
       end
     end
 

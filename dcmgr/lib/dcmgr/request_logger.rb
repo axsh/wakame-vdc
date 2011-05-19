@@ -26,7 +26,9 @@ module Dcmgr
         @log.response_msg = e.message
         raise e
       ensure
-        @log.save
+        Models::RequestLog.db.transaction do
+          @log.save
+        end
       end
     end
 

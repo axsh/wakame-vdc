@@ -399,11 +399,18 @@ module Dcmgr::Models
   class BaseNew < Sequel::Model
 
     LOCK_TABLES_KEY='__locked_tables'
+
+    def self.default_row_lock_mode=(mode)
+      raise ArgumentError unless [nil, :share, :update].member?(mode)
+      @default_row_lock_mode = mode
+    end
     
-    def self.lock!
+    def self.lock!(mode=nil)
+      raise ArgumentError unless [nil, :share, :update].member?(mode)
+      mode ||= @default_row_lock_mode
       locktbls = Thread.current[LOCK_TABLES_KEY]
       if locktbls
-        locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s]=1
+        locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s]=mode
       end
     end
     
@@ -416,8 +423,9 @@ module Dcmgr::Models
     
     def self.dataset
       locktbls = Thread.current[LOCK_TABLES_KEY]
-      if locktbls && locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s]
-        @dataset.opts = @dataset.opts.merge({:lock=>:update})
+      if locktbls && (mode = locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s])
+        # lock mode: :share or :update
+        @dataset.opts = @dataset.opts.merge({:lock=>mode})
       else
         @dataset.opts = @dataset.opts.merge({:lock=>nil})
       end

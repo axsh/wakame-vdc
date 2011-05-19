@@ -2,14 +2,15 @@
 
 require 'sequel'
 db = Sequel.connect(Dcmgr.conf.database_url)
-#require 'logger' 
-#db.loggers << Logger.new(STDOUT)
+require 'logger' 
+db.loggers << Logger.new(STDERR)
 if db.is_a?(Sequel::MySQL::Database)
   Sequel::MySQL.default_charset = 'utf8'
   Sequel::MySQL.default_collate = 'utf8_general_ci'
   Sequel::MySQL.default_engine = 'InnoDB'
 
   db << "SET AUTOCOMMIT=0"
+  Dcmgr::Models::BaseNew.default_row_lock_mode = nil
 end
 
 # Disable TEXT to Sequel::SQL::Blob translation.
