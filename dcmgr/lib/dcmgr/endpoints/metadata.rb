@@ -202,7 +202,6 @@ module Dcmgr
         # http://169.254.169.254/latest/meta-data/public-hostname
         # http://169.254.169.254/latest/meta-data/ramdisk-id
         # http://169.254.169.254/latest/meta-data/reservation-id
-        # http://169.254.169.254/latest/meta-data/user-data
         def wmi_id(src_ip)
           get_instance_from_ip(src_ip).image.cuuid
         end
@@ -263,6 +262,10 @@ module Dcmgr
           get_instance_from_ip(src_ip).netfilter_groups.map { |grp|
             grp.name
           }.join("\n")
+        end
+        
+        def user_data(src_ip)
+          get_instance_from_ip(src_ip).user_data
         end
       end
     end
