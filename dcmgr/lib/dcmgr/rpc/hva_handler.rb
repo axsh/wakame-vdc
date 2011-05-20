@@ -31,66 +31,16 @@ module Dcmgr
       include KvmHelper
       include Dcmgr::Helpers::NicHelper
 
-      def run_kvm(os_devpath)
-        # run vm
-        cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
-        args=[@inst[:instance_spec][:memory_size],
-              @inst[:instance_spec][:cpu_cores],
-              @inst_id,
-              @inst[:runtime_config][:vnc_port],
-              os_devpath,
-              File.expand_path('kvm.pid', @inst_data_dir),
-              @inst[:runtime_config][:telnet_port]
-             ]
-        if vnic = @inst[:instance_nics].first
-          cmd += " -net nic,macaddr=%s -net tap,ifname=%s,script=,downscript="
-          args << vnic[:mac_addr].unpack('A2'*6).join(':')
-          args << vnic[:uuid]
+      def select_hypervisor
+        hypervisor = @inst[:instance_spec][:hypervisor]
+        case hypervisor
+        when "kvm"
+          @hv = Dcmgr::Drivers::Kvm.new
+        when "lxc"
+          @hv = Dcmgr::Drivers::Lxc.new
+        else
+          raise "Unknown hypervisor type: #{hypervisor}"
         end
-        sh(cmd, args)
-
-        unless vnic.nil?
-          network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
-
-          # physical interface
-          physical_if = find_nic(@node.manifest.config.hv_ifindex)
-          raise "UnknownPhysicalNIC" if physical_if.nil?
-
-          if network_map[:vlan_id] == 0
-            # bridge interface
-            bridge_if = @node.manifest.config.bridge_novlan
-            unless valid_nic?(bridge_if)
-              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-              sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
-            end
-          else
-            # vlan interface
-            vlan_if = "#{physical_if}.#{network_map[:vlan_id]}"
-            if valid_nic?(vlan_if)
-              sh("/sbin/vconfig add #{physical_if} #{network_map[:vlan_id]}")
-            end
-
-            # bridge interface
-            bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
-            if valid_nic?(bridge_if)
-              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-              sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
-            end
-          end
-
-
-          # interface up? down?
-          [ vlan_if, bridge_if ].each do |ifname|
-            if nic_state(ifname) == "down"
-              sh("/sbin/ifconfig #{ifname} 0.0.0.0 up")
-            end
-          end
-
-          sh("/sbin/ifconfig %s 0.0.0.0 up", [vnic[:uuid]])
-          sh("/usr/sbin/brctl addif %s %s", [bridge_if, vnic[:uuid]])
-        end
-
-        sleep 1
       end
 
       def attach_volume_to_host
@@ -155,6 +105,9 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(init failingover).member?(@inst[:state].to_s)
 
+        # select hypervisor :kvm, :lxc
+        select_hypervisor
+
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
         # setup vm data folder
         @inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
@@ -165,7 +118,16 @@ module Dcmgr
         sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
         sleep 1
 
-        run_kvm(img_path)
+        vnic = @inst[:instance_nics].first
+        network_map = nil
+        unless vnic.nil?
+          network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
+        end
+
+        @hv.run_instance(@inst, {:node=>@node,
+                           :inst_data_dir=>@inst_data_dir,
+                           :os_devpath=>img_path,
+                           :network_map=>network_map})
         update_instance_state({:state=>:running}, 'hva/instance_started')
       }, proc {
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
