@@ -74,6 +74,11 @@ module Dcmgr
         devnum
       end
 
+      def detach_volume_from_guest(vol, inst)
+        devnum = vol[:guest_device_name]
+        sh("echo \"b #{devnum} rwm\" > /cgroup/#{inst[:uuid]}/devices.deny")
+      end
+
     end
   end
 end

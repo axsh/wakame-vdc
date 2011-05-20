@@ -291,26 +291,14 @@ module Dcmgr
         logger.info("Detaching #{@vol_id} on #{@inst_id}")
         raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'attached'
 
+        # select hypervisor :kvm, :lxc
+        select_hypervisor
+
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:detaching, :detached_at=>nil})
         # detach disk on guest os
-        pci_devaddr = @vol[:guest_device_name]
+        @hv.detach_volume_from_guest(@vol, @inst)
 
-        connect_monitor(@inst[:runtime_config][:telnet_port]) { |t|
-          t.cmd("pci_del #{pci_devaddr}")
-          #
-          #  Bus  0, device   4, function 0:
-          #    SCSI controller: PCI device 1af4:1001
-          #      IRQ 0.
-          #      BAR0: I/O at 0x1000 [0x103f].
-          #      BAR1: 32 bit memory at 0x08000000 [0x08000fff].
-          #      id ""
-          c = t.cmd("info pci")
-          pci_devaddr = pci_devaddr.split(':')
-          unless c.split(/\n/).grep(/\s+Bus\s+#{pci_devaddr[1].to_i(16)}, device\s+#{pci_devaddr[2].to_i(16)}, function/).empty?
-            raise "Detached disk device still be attached in qemu-kvm: #{pci_devaddr.join(':')}"
-          end
-        }
-
+        # detach disk on host os
         detach_volume_from_host
       end
 
