@@ -142,7 +142,6 @@ module Dcmgr
   end
 
   autoload :Tags, 'dcmgr/tags'
-  autoload :RequestLogger, 'dcmgr/request_logger'
 
   module Cli
     require 'dcmgr/cli/errors'
@@ -164,5 +163,10 @@ module Dcmgr
   module Rpc
     autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
     autoload :KvmHelper, 'dcmgr/rpc/hva_handler'
+  end
+
+  # namespace for custom Rack HTTP middleware.
+  module Rack
+    autoload :RequestLogger, 'dcmgr/rack/request_logger'
   end
 end

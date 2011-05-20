@@ -22,7 +22,7 @@ module Dcmgr
       register Sinatra::Rabbit
       register Sinatra::SequelTransaction
 
-      use Dcmgr::RequestLogger
+      use Dcmgr::Rack::RequestLogger
 
       disable :sessions
       disable :show_exceptions

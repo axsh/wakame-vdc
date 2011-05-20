@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-module Dcmgr
-  # Rack middleware for loggin each API request
+module Dcmgr::Rack
+  # Rack middleware for logging each API request.
   class RequestLogger
     HTTP_X_VDC_REQUEST_ID='HTTP_X_VDC_REQUEST_ID'.freeze
     HEADER_X_VDC_REQUEST_ID='X-VDC-Request-ID'.freeze
@@ -17,7 +17,7 @@ module Dcmgr
     end
     
     def _call(env)
-      @log = Models::RequestLog.new
+      @log = Dcmgr::Models::RequestLog.new
       log_env(env)
       begin
         ret = @app.call(env)
@@ -34,7 +34,7 @@ module Dcmgr
         @log.response_msg = e.message
         raise e
       ensure
-        Models::RequestLog.db.transaction do
+        Dcmgr::Models::RequestLog.db.transaction do
           @log.save
         end
       end
