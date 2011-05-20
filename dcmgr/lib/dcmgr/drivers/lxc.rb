@@ -65,11 +65,11 @@ module Dcmgr
 
       def attach_volume_to_guest(inst, linux_dev_path)
         sddev = File.expand_path(File.readlink(linux_dev_path), '/dev/disk/by-path')
-        ls_la = `ls -la #{sddev}`
-        if ls_la =~ /brw-rw---- [0-9] root disk ([0-9]+), ([0-9]+) [0-9]+-[0-9]+-[0-9]+ [0-9]+:[0-9]+ #{sddev}/m
-          devnum = [$1, $2].join(":")
-        else
-        end
+
+        # find major number and minor number to device file
+        stat = File.stat(sddev)
+        devnum = [stat.rdev_major,stat.rdev_minor].join(':')
+        
         sh("echo \"b #{devnum} rwm\" > /cgroup/#{inst[:uuid]}/devices.allow")
         devnum
       end
