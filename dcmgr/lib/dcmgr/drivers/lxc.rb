@@ -57,6 +57,12 @@ module Dcmgr
         sh("lxc-start -n %s -l DEBUG -o %s/%s.log -d", [inst[:uuid], inst_data_dir, inst[:uuid]])
       end
 
+      def terminate_instance(inst_id, inst_data_dir)
+        sh("lxc-stop -n #{inst_id}")
+        sh("lxc-destroy -n #{inst_id}")
+        sh("umount #{inst_data_dir}/rootfs")
+      end
+
     end
   end
 end

@@ -78,14 +78,18 @@ module Dcmgr
       end
 
       def terminate_instance
-        kvm_pid=`pgrep -u root -f vdc-#{@inst_id}`
-        if $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
-          sh("/bin/kill #{kvm_pid}")
+        hypervisor = @inst[:instance_spec][:hypervisor]
+        case hypervisor
+        when "kvm"
+          @hv.terminate_instance(@inst_id)
+        when "lxc"
+          inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
+          @hv.terminate_instance(@inst_id, inst_data_dir)
         else
-          logger.error("Can not find the KVM process. Skipping: kvm -name vdc-#{@inst_id}")
+          raise "Unknown hypervisor type: #{hypervisor}"
         end
       end
-
+      
       def update_instance_state(opts, ev)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
         rpc.request('hva-collector', 'update_instance', @inst_id, opts)
@@ -181,6 +185,9 @@ module Dcmgr
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
+
+        # select hypervisor :kvm, :lxc
+        select_hypervisor
 
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})

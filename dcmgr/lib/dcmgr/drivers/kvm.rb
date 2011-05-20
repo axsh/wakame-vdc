@@ -68,6 +68,15 @@ module Dcmgr
         sleep 1
       end
 
+      def terminate_instance(inst_id)
+        kvm_pid=`pgrep -u root -f vdc-#{inst_id}`
+        if $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
+          sh("/bin/kill #{kvm_pid}")
+        else
+          logger.error("Can not find the KVM process. Skipping: kvm -name vdc-#{inst_id}")
+        end
+      end
+
     end
   end
 end
