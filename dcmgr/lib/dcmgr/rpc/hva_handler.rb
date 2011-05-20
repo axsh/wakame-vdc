@@ -147,6 +147,9 @@ module Dcmgr
         logger.info("Booting #{@inst_id}")
         raise "Invalid instance state: #{@inst[:state]}" unless %w(init failingover).member?(@inst[:state].to_s)
 
+        # select hypervisor :kvm, :lxc
+        select_hypervisor
+
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
 
         # setup vm data folder
@@ -172,7 +175,16 @@ module Dcmgr
         attach_volume_to_host
         
         # run vm
-        run_kvm(linux_dev_path)
+        vnic = @inst[:instance_nics].first
+        network_map = nil
+        unless vnic.nil?
+          network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
+        end
+
+        @hv.run_instance(@inst, {:node=>@node,
+                         :inst_data_dir=>@inst_data_dir,
+                         :os_devpath=>linux_dev_path,
+                         :network_map=>network_map})
         update_instance_state({:state=>:running}, 'hva/instance_started')
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
       }, proc {
