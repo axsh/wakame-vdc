@@ -95,18 +95,45 @@ jQuery(function($){
   
   $(document).ajaxError(function(e, xhr, settings, exception) {
     var message = '';
-    if(xhr.status==0){
+    if(xhr.status == 0){
       message = 'Please Check Your Network.';
-    }else if(xhr.status==404){
-      message = 'Requested URL not found.';
-    }else if(xhr.status==500){
-      message = 'Internal Server Error';
-    }else if(e=='parsererror'){
+    }else if(e == 'parsererror'){
       message = 'Parsing JSON Request failed.';
-    }else if(e=='timeout'){
+    }else if(e == 'timeout'){
       message = 'Request Time out.';
     }else {
-      message = 'Unknow Error.\n'+x.responseText;
+      
+      var is_dcmgr = function() {
+        
+        try{
+          var r = $.parseJSON(xhr.responseText);
+        } catch(e) {
+          dcmgrGUI.logger.push(e.type, xhr);
+          return false
+        }
+        
+        if( r ) {
+          if(r.code && r.error && r.message) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      }
+      
+      if(is_dcmgr()) {
+        var r = $.parseJSON(xhr.responseText);
+        var code = r.code;
+        var body = r.message.replace('Dcmgr::Endpoints::', '');
+      } else{
+        var code = xhr.status;
+        var body = xhr.statusText;
+      }
+      
+      message = "<div id='error_box'>"
+              + "<div class='error_code'>" + $.i18n.prop('code_error_box') + ': ' + code + '</div>'
+              + "<div class='error_body'>" + body + '</div>'
+              + '</div>';
     }
 
     dcmgrGUI.logger.push(e.type, xhr);

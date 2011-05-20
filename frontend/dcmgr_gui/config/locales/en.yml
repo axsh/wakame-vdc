@@ -283,5 +283,7 @@ en:
       header: "NETWORK & SECURITY"
       security_groups: "Security Groups"
       key_pairs: "Key Pairs"
+  error_box:
+    code: 'ErrorCode'
   error_message:
     sign_in: "User not found."

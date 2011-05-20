@@ -283,5 +283,7 @@ ja:
       header: "セキュリティー"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
+  error_box:
+    code: "エラーコード"
   error_message:
     sign_in: "ユーザーは未登録です。"

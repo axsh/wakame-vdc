@@ -3,6 +3,42 @@ class ApplicationController < ActionController::Base
   include Authentication
   before_filter :login_required
   before_filter :set_locale
+  
+  def dispatch(name, request)
+    begin 
+      super
+      @_request = request
+      @_env = request.env
+      @_env['action_controller.instance'] = self
+      process(name)
+    rescue Sequel::DatabaseConnectionError => e
+      response.status = 500
+      response.body = 'Database connection faild.'
+    rescue ActiveResource::ConnectionError => e 
+      if is_dcmgr?(e.response.body)
+        response.status = e.response.code 
+        response.body = e.response.body
+      else
+        raise
+      end
+    end
+    to_a
+  end
+
+  def is_dcmgr?(response_data)
+    begin
+      if json = JSON.parser.new(response_data)
+        data = json.parse()
+        if data.key?('error') && data.key?('code') && data.key?('message')
+          true
+        else
+          false
+        end
+      end
+    rescue JSON::ParserError, TypeError
+      false
+    end
+  end
 
   def set_locale
     language = params[:select_language] if params[:select_language]

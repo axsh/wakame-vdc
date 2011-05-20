@@ -1207,6 +1207,14 @@ body{
 	margin-bottom: 0;
 }
 
+#error_box .error_code {
+  font-size: 14px;
+}
+
+#error_box .error_body {
+  padding-top: 10px;
+  font-size: 14px;
+}
 /*----clearfix----*/
 
 .clearfix:after {

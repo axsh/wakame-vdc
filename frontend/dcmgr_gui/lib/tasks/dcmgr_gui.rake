@@ -114,7 +114,7 @@ namespace :admin do
               end
             end
             
-            if ['button', 'parts', 'pagenate', 'date'].include? key
+            if ['button', 'parts', 'pagenate', 'date', 'error_box'].include? key
               data[key].keys.each do |i18n_key|
                 i18n_value = data[key][i18n_key]
                 if i18n_value
