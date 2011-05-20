@@ -3,9 +3,13 @@
 module Dcmgr
   # Rack middleware for loggin each API request
   class RequestLogger
-    def initialize(app)
+    HTTP_X_VDC_REQUEST_ID='HTTP_X_VDC_REQUEST_ID'.freeze
+    HEADER_X_VDC_REQUEST_ID='X-VDC-Request-ID'.freeze
+    
+    def initialize(app, with_header=true)
       raise TypeError unless app.is_a?(Dcmgr::Endpoints::CoreAPI)
       @app = app
+      @with_header = with_header
     end
 
     def call(env)
@@ -20,6 +24,10 @@ module Dcmgr
         @log.response_status = ret[0]
         @log.response_msg = ''
 
+        # inject X-VDC-Request-ID header
+        if @with_header
+          ret[1] = (ret[1] || {}).merge({HEADER_X_VDC_REQUEST_ID=>@log.request_id})
+        end
         return ret
       rescue ::Exception => e
         @log.response_status = 999
