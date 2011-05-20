@@ -8,8 +8,6 @@ require 'dcmgr'
 require 'isono'
 
 include Isono::Runner::RpcServer
-require 'fileutils'
-require 'ipaddress'
 
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do

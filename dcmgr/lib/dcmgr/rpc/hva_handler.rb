@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'isono'
 require 'net/telnet'
+require 'fileutils'
 
 module Dcmgr
   module Rpc
