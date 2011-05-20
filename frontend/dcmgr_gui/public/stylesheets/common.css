@@ -688,6 +688,10 @@ body{
 	width: 660px;
 }
 
+#content #mainarea_wide .uuid {
+  width: 90px;
+}
+
 #content #mainarea_wide .display_area h4.ptn01{
 	margin: 0 0 5px 20px;
 	padding: 0;
