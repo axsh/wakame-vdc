@@ -15,20 +15,7 @@ def restart_reactor_and_messaging_client
   Thread.new { EventMachine.epoll; EventMachine.run; }
 end
 
-if defined?(PhusionPassenger)
-  if PhusionPassenger::VERSION_STRING =~ /^3\.0\./
-    blk = proc { |forked|
-      restart_reactor_and_messaging_client
-    }
-  else
-    blk = proc {
-      restart_reactor_and_messaging_client
-    }
-  end
-  PhusionPassenger.on_event(:starting_worker_process, &blk)
-else
-  restart_reactor_and_messaging_client
-end
+restart_reactor_and_messaging_client
 
 Dcmgr.class_eval {
   def self.messaging

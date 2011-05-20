@@ -168,5 +168,6 @@ module Dcmgr
   # namespace for custom Rack HTTP middleware.
   module Rack
     autoload :RequestLogger, 'dcmgr/rack/request_logger'
+    autoload :RunInitializer, 'dcmgr/rack/run_initializer'
   end
 end

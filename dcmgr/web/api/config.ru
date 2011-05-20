@@ -6,6 +6,8 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 
 Dcmgr.configure(File.expand_path('../../../config/dcmgr.conf', __FILE__))
-Dcmgr.run_initializers
 
+use Dcmgr::Rack::RunInitializer, lambda {
+  Dcmgr.run_initializers
+}
 run Dcmgr::Endpoints::CoreAPI.new
