@@ -72,7 +72,14 @@ jQuery(function($){
 					<td class="wmi_id" title="">${item.image_id}</td>
 					<td class="vtip center" title="${item.cpu_cores}">${item.cpu_cores}</td>
 					<td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
-					<td class="vtip center" title="ip" style="width:60px">{{each(index,network) item.network}}${network.ipaddr}{{/each}}</td>
+					<td class="vtip center" title="ip" style="width:60px">
+          {{each(index,network) item.network}}
+            {{if network.nat_addr.length === 0 }}
+              ${network.ipaddr}
+            {{else}}
+              ${network.nat_addr}
+            {{/if}}
+          {{/each}}</td>
 					<td class="vtip center state" title="${item.state}">${item.state}</td>
 				</tr>
 			   {{/each}}
@@ -110,13 +117,16 @@ jQuery(function($){
 					<td class="title"><%= t("instances.details.status") %>:</td>
 					<td class="state">${item.status}</td>
 					<td class="padcell"></td>
-					<td class="title">IP:</td>
-					<td>{{each(index,global_network) item.network}}${global_network.ipaddr}{{/each}}</td>
+					<td class="title">Global IP:</td>
+					<td>{{each(index,global_network) item.network}}${global_network.nat_addr}{{/each}}</td>
 				</tr>
 				<tr>
 					<td class="padcell"></td>
 					<td class="title"><%= t("instances.details.ssh_key_pair") %>:</td>
-					<td colspan="7">${item.ssh_key_pair}</td>
+					<td>${item.ssh_key_pair}</td>
+          <td class="padcell"></td>
+					<td class="title">Local IP:</td>
+					<td>{{each(index,global_network) item.network}}${global_network.ipaddr}{{/each}}</td>
 				</tr>
 				<tr>
 					<td class="padcell"></td>
