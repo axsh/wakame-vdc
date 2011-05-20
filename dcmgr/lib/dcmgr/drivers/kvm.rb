@@ -77,6 +77,47 @@ module Dcmgr
         end
       end
 
+      def attach_volume_to_guest(inst, linux_dev_path)
+        # pci_devddr consists of three hex numbers with colon separator.
+        #  dom <= 0xffff && bus <= 0xff && val <= 0x1f
+        # see: qemu-0.12.5/hw/pci.c
+        # /*
+        # * Parse [[<domain>:]<bus>:]<slot>, return -1 on error
+        # */
+        # static int pci_parse_devaddr(const char *addr, int *domp, int *busp, unsigned *slotp)
+        pci_devaddr = nil
+
+        sddev = File.expand_path(File.readlink(linux_dev_path), '/dev/disk/by-path')
+        connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+          # success message:
+          #   OK domain 0, bus 0, slot 4, function 0
+          # error message:
+          #   failed to add file=/dev/xxxx,if=virtio
+          c = t.cmd("pci_add auto storage file=#{sddev},if=scsi")
+          # Note: pci_parse_devaddr() called in "pci_add" uses strtoul()
+          # with base 16 so that the input is expected in hex. however
+          # at the result display, void pci_device_hot_add_print() uses
+          # %d for showing bus and slot addresses. use hex to preserve
+          # those values to keep consistent.
+          if c =~ /\nOK domain ([0-9a-fA-F]+), bus ([0-9a-fA-F]+), slot ([0-9a-fA-F]+), function/m
+            # numbers in OK result is decimal. convert them to hex.
+            pci_devaddr = [$1, $2, $3].map{|i| i.to_i.to_s(16) }
+          else
+            raise "Error in qemu console: #{c}"
+          end
+
+          # double check the pci address.
+          c = t.cmd("info pci")
+
+          # static void pci_info_device(PCIBus *bus, PCIDevice *d)
+          # called in "info pci" gets back PCI bus info with %d.
+          if c.split(/\n/).grep(/^\s+Bus\s+#{pci_devaddr[1].to_i(16)}, device\s+#{pci_devaddr[2].to_i(16)}, function/).empty?
+            raise "Could not find new disk device attached to qemu-kvm: #{pci_devaddr.join(':')}"
+          end
+        }
+        pci_devaddr.join(':')
+      end
+
     end
   end
 end

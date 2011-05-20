@@ -63,6 +63,17 @@ module Dcmgr
         sh("umount #{inst_data_dir}/rootfs")
       end
 
+      def attach_volume_to_guest(inst, linux_dev_path)
+        sddev = File.expand_path(File.readlink(linux_dev_path), '/dev/disk/by-path')
+        ls_la = `ls -la #{sddev}`
+        if ls_la =~ /brw-rw---- [0-9] root disk ([0-9]+), ([0-9]+) [0-9]+-[0-9]+-[0-9]+ [0-9]+:[0-9]+ #{sddev}/m
+          devnum = [$1, $2].join(":")
+        else
+        end
+        sh("echo \"b #{devnum} rwm\" > /cgroup/#{inst[:uuid]}/devices.allow")
+        devnum
+      end
+
     end
   end
 end
