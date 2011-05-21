@@ -570,19 +570,6 @@ module Dcmgr
           end
         end
 
-        operation :status, :method =>:get, :member =>true do
-          description 'Show the status'
-          control do
-            vl = [{ :id => 1, :uuid => 'vol-xxxxxxx', :status => 1 },
-                  { :id => 2, :uuid => 'vol-xxxxxxx', :status => 0 },
-                  { :id => 3, :uuid => 'vol-xxxxxxx', :status => 3 },
-                  { :id => 4, :uuid => 'vol-xxxxxxx', :status => 2 },
-                  { :id => 5, :uuid => 'vol-xxxxxxx', :status => 4 }]
-            respond_to {|f|
-              f.json { vl.to_json}
-            }
-          end
-        end
       end
 
       collection :volume_snapshots do
@@ -668,19 +655,6 @@ module Dcmgr
           end
         end
 
-        operation :status, :method =>:get, :member =>true do
-          description 'Show the status'
-          control do
-            vs = [{ :id => 1, :uuid => 'snap-xxxxxxx', :status => 1 },
-                  { :id => 2, :uuid => 'snap-xxxxxxx', :status => 0 },
-                  { :id => 3, :uuid => 'snap-xxxxxxx', :status => 3 },
-                  { :id => 4, :uuid => 'snap-xxxxxxx', :status => 2 },
-                  { :id => 5, :uuid => 'snap-xxxxxxx', :status => 4 }]
-            respond_to {|f|
-              f.json { vs.to_json}
-            }
-          end
-        end
       end
 
       collection :netfilter_groups do
