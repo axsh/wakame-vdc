@@ -124,7 +124,8 @@ module Dcmgr
       def create_volume_from_snapshot(account_id, snapshot_id)
         vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
         raise UnknownVolumeSnapshot if vs.nil?
-        raise InvalidRequestCredentials unless vs.state.to_s == 'available'
+        raise InvalidVolumeState unless vs.state.to_s == 'available'
+
         vs.create_volume(account_id)
       end
         
