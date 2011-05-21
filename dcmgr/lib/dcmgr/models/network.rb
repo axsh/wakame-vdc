@@ -14,7 +14,7 @@ module Dcmgr::Models
       String :dns_server
       String :dhcp_server
       String :metadata_server
-      Fixnum :vlan_lease_id, :null=>false
+      Fixnum :vlan_lease_id, :null=>false, :default=>0
       Fixnum :nat_network_id
       Text :description
     end
@@ -54,7 +54,7 @@ module Dcmgr::Models
       h.delete(:vlan_lease_id)
       h.merge({
                 :description=>description.to_s,
-                :vlan_id => vlan_lease.tag_id,
+                :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
               })
     end
 
