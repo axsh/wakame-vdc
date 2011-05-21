@@ -275,14 +275,11 @@ module Dcmgr
         @inst_id = request.args[0]
         @vol_id = request.args[1]
 
-        @job = Dcmgr::Stm::VolumeContext.new(@vol_id)
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         logger.info("Attaching #{@vol_id}")
-        @job.stm.state = @vol[:state].to_sym
         raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'available'
 
-        @job.stm.on_attach
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:attaching, :attached_at=>nil})
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
@@ -294,8 +291,6 @@ module Dcmgr
         attach_volume_to_host
 
         logger.info("Attaching #{@vol_id} on #{@inst_id}")
-        @job.stm.on_attach
-        @job.on_attach
 
         # attach disk on guest os
 
@@ -349,14 +344,11 @@ module Dcmgr
         @inst_id = request.args[0]
         @vol_id = request.args[1]
 
-        @job = Dcmgr::Stm::VolumeContext.new(@vol_id)
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         logger.info("Detaching #{@vol_id} on #{@inst_id}")
-        @job.stm.state = @vol[:state].to_sym
         raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'attached'
 
-        @job.stm.on_detach
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:detaching, :detached_at=>nil})
         # detach disk on guest os
         pci_devaddr = @vol[:guest_device_name]
@@ -378,9 +370,6 @@ module Dcmgr
         }
 
         detach_volume_from_host
-
-        @job.stm.on_detach
-        @job.on_detach
       end
 
       job :reboot, proc {
