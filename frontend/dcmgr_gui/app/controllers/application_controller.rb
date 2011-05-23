@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 class ApplicationController < ActionController::Base
   protect_from_forgery
   include Authentication
@@ -7,10 +9,6 @@ class ApplicationController < ActionController::Base
   def dispatch(name, request)
     begin 
       super
-      @_request = request
-      @_env = request.env
-      @_env['action_controller.instance'] = self
-      process(name)
     rescue Sequel::DatabaseConnectionError => e
       response.status = 500
       response.body = 'Database connection faild.'
