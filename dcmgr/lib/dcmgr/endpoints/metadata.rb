@@ -2,6 +2,7 @@
 
 require 'extlib'
 require 'sinatra/base'
+require 'sinatra/sequel_transaction'
 require 'yaml'
 require 'json'
 
@@ -21,6 +22,7 @@ module Dcmgr
   module Endpoints
     class Metadata < Sinatra::Base
       include Dcmgr::Logger
+      register Sinatra::SequelTransaction
 
       disable :sessions
       disable :show_exceptions
@@ -254,8 +256,8 @@ module Dcmgr
         end
         
         def public_keys(src_ip)
-          pair = get_instance_from_ip(src_ip).ssh_key_pair
-          return pair.public_key unless pair.nil?
+          pair = get_instance_from_ip(src_ip).ssh_key_pair_id
+          return Models::SshKeyPair[pair].public_key unless pair.nil?
         end
         
         def security_groups(src_ip)
