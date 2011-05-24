@@ -143,7 +143,7 @@ class ZfsHandler < EndpointBuilder
     system("rm -rf #{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap")
     raise "snapshot has not be deleted" if $?.exitstatus != 0
 
-    rpc.request('sta-collector', 'update_snapshot', snapshot_id, {:state=>:deleted})
+    rpc.request('sta-collector', 'update_snapshot', snapshot_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
     logger.info("deleted snapshot: #{snapshot_id}")
   end
 

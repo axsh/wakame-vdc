@@ -584,7 +584,7 @@ module Dcmgr
             limit = params[:limit].to_i
             limit = limit < 1 ? nil : limit
 
-            total_vs = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid)
+            total_vs = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid).alives_and_recent_termed
             partial_vs = total_vs.dup.order(:id)
             partial_vs = partial_vs.limit(limit, start) if limit.is_a?(Integer)
             res = [{
