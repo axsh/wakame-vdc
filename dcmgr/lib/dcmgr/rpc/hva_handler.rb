@@ -161,14 +161,9 @@ module Dcmgr
         FileUtils.mkdir(@inst_data_dir) unless File.exists?(@inst_data_dir)
         # copy image file
         img_src = @inst[:image][:source]
-        case img_src[:type].to_sym
-        when :http
-          img_path = File.expand_path("#{@inst[:uuid]}", @inst_data_dir)
-          sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
-          sleep 1
-        else
-          raise "Unknown image source type: #{img_src[:type]}"
-        end
+        img_path = File.expand_path("#{@inst[:uuid]}", @inst_data_dir)
+        sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
+        sleep 1
 
         run_kvm(img_path)
         update_instance_state({:state=>:running}, 'hva/instance_started')

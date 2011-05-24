@@ -24,9 +24,8 @@ module Dcmgr::Models
     # serialize plugin must be defined at the bottom of all class
     # method calls.
     # Possible source column data:
-    # vdc volume:
-    # {:type=>:vdcvol, :account_id=>'a-xxxxx', :snapshot_id=>'snap-xxxxxx'}
-    # {:type=>:http, :uri=>'http://localhost/xxx/xxx'}
+    # {:snapshot_id=>'snap-xxxxxx'}
+    # {:uri=>'http://localhost/xxx/xxx'}
     plugin :serialization
     serialize_attributes :yaml, :source
     
@@ -41,12 +40,11 @@ module Dcmgr::Models
       
       # validate source
       md = self.source
-      case md[:type]
-      when :http
-        errors.add(:source, "Unknown image URI") if md[:uri].nil? || md[:uri].empty?
-      when :volume
-        errors.add(:source, "Unknown snapshot ID") if VolumeSnapshot[:snapshot_id].nil?#md[:snapshot_id].nil? || md[:snapshot_id].empty?
-        errors.add(:source, "Unknown account ID") if Account[:account_id].nil?#md[:account_id].nil? || md[:account_id].empty?
+      case self.boot_dev_type
+      when BOOT_DEV_LOCAL
+        errors.add(:source, "Unknown image URI") if md[:uri].nil? || md[:uri] == ''
+      when BOOT_DEV_SAN
+        errors.add(:source, "Unknown snapshot ID") if md[:snapshot_id].nil? || md[:snapshot_id] == '' || VolumeSnapshot[md[:snapshot_id]].nil?
       end
     end
 

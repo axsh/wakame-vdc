@@ -22,7 +22,6 @@ module Dcmgr::Cli
         fields = options.dup
         fields[:boot_dev_type]=M::Image::BOOT_DEV_LOCAL
         fields[:source] = {
-          :type => "http",
           :uri => uri,
         }
         puts add(M::Image, fields)
