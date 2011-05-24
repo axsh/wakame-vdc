@@ -584,14 +584,14 @@ module Dcmgr
             limit = params[:limit].to_i
             limit = limit < 1 ? nil : limit
 
-            total_vs = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid).alives_and_recent_termed
-            partial_vs = total_vs.dup.order(:id)
-            partial_vs = partial_vs.limit(limit, start) if limit.is_a?(Integer)
+            total_ds = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid).alives_and_recent_termed
+            partial_ds = total_ds.dup.order(:id)
+            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
             res = [{
-              :owner_total => total_vs.count,
+              :owner_total => total_ds.count,
               :start => start,
               :limit => limit,
-              :results => partial_vs.all.map { |vs| vs.to_api_document}
+              :results => partial_ds.all.map { |vs| vs.to_api_document}
             }]
             response_to(res)
           end
