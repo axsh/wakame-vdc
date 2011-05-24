@@ -90,6 +90,19 @@ module Dcmgr
         end
       end
       
+      def reboot_instance
+        hypervisor = @inst[:instance_spec][:hypervisor]
+        case hypervisor
+        when "kvm"
+          @hv.reboot_instance(@inst)
+        when "lxc"
+          inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
+          @hv.reboot_instance(@inst, inst_data_dir)
+        else
+          raise "Unknown hypervisor type: #{hypervisor}"
+        end
+      end
+
       def update_instance_state(opts, ev)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
         rpc.request('hva-collector', 'update_instance', @inst_id, opts)
@@ -272,7 +285,9 @@ module Dcmgr
         logger.info("Attaching #{@vol_id} on #{@inst_id}")
 
         # attach disk on guest os
-        pci_devaddr = @hv.attach_volume_to_guest(@inst, linux_dev_path)
+        inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
+        pci_devaddr = @hv.attach_volume_to_guest(@inst, {:linux_dev_path=>linux_dev_path,
+                                                   :inst_data_dir=>inst_data_dir})
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attached,
@@ -296,7 +311,10 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:detaching, :detached_at=>nil})
         # detach disk on guest os
-        @hv.detach_volume_from_guest(@vol, @inst)
+        inst_data_dir = File.expand_path("#{@inst[:uuid]}", @node.manifest.config.vm_data_dir)
+        @hv.detach_volume_from_guest(@vol[:guest_device_name], {:telnet_port=>@inst[:runtime_config][:telnet_port],
+                                     :inst_id=>@inst[:uuid],
+                                     :inst_data_dir=>inst_data_dir})
 
         # detach disk on host os
         detach_volume_from_host
@@ -305,10 +323,12 @@ module Dcmgr
       job :reboot, proc {
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
-        
-        connect_monitor(@inst[:runtime_config][:telnet_port]) { |t|
-          t.cmd("system_reset")
-        }
+
+        # select_hypervisor :kvm, :lxc
+        select_hypervisor
+
+        # reboot instance
+        reboot_instance
       }
 
       def rpc

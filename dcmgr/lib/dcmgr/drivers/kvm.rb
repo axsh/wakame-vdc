@@ -77,7 +77,13 @@ module Dcmgr
         end
       end
 
-      def attach_volume_to_guest(inst, linux_dev_path)
+      def reboot_instance(inst)
+        connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+          t.cmd("system_reset")
+        }
+      end
+
+      def attach_volume_to_guest(inst, data)
         # pci_devddr consists of three hex numbers with colon separator.
         #  dom <= 0xffff && bus <= 0xff && val <= 0x1f
         # see: qemu-0.12.5/hw/pci.c
@@ -87,7 +93,7 @@ module Dcmgr
         # static int pci_parse_devaddr(const char *addr, int *domp, int *busp, unsigned *slotp)
         pci_devaddr = nil
 
-        sddev = File.expand_path(File.readlink(linux_dev_path), '/dev/disk/by-path')
+        sddev = File.expand_path(File.readlink(data[:linux_dev_path]), '/dev/disk/by-path')
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           # success message:
           #   OK domain 0, bus 0, slot 4, function 0
@@ -118,10 +124,10 @@ module Dcmgr
         pci_devaddr.join(':')
       end
 
-      def detach_volume_from_guest(vol, inst)
-        pci_devaddr = vol[:guest_device_name]
+      def detach_volume_from_guest(guest_device_name, data)
+        pci_devaddr = guest_device_name
 
-        connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+        connect_monitor(data[:telnet_port]) { |t|
           t.cmd("pci_del #{pci_devaddr}")
           #
           #  Bus  0, device   4, function 0:
