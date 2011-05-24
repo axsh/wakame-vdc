@@ -20,6 +20,19 @@ module DcmgrResource
       def set_debug(debug = true)
         @@debug = debug
       end
+
+      def get_resource_state_count(resources, state)
+        resource_count = 0
+        unless resources.empty?   
+          resources.each do |item|
+            if item.state == state
+              resource_count += 1;
+            end
+          end 
+        end
+        resource_count
+      end
+ 
     end
     
     ActiveResource::Connection.class_eval do 

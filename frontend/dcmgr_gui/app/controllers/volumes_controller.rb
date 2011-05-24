@@ -80,7 +80,11 @@ class VolumesController < ApplicationController
   end
   
   def total
-    total_resource = DcmgrResource::Volume.total_resource
-    render :json => total_resource
+    all_resource_count = DcmgrResource::Volume.total_resource
+    all_resources = DcmgrResource::Volume.find(:all,:params => {:start => 0, :limit => all_resource_count})
+    resources = all_resources[0].results
+    deleted_resource_count = DcmgrResource::Volume.get_resource_state_count(resources, 'deleted')
+    total = all_resource_count - deleted_resource_count
+    render :json => total
   end
 end
