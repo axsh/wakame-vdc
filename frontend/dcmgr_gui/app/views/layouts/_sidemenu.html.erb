@@ -17,46 +17,46 @@
  </select>
 </fieldset>
 	<div class="sidemenu_top"></div><ul class="classify_parent">
-		<li class="parent"><h3><img src="images/icon_summary.gif" width="20" height="20" /><%= t("sidemenu.summary.header") %></h3>
+		<li class="parent"><h3><img src="/images/icon_summary.gif" width="20" height="20" /><%= t("sidemenu.summary.header") %></h3>
 			<ul>
-				<%= li_link_to_current(t("sidemenu.summary.dashboard"),'home')%>
+				<%= li_link_to_current(t("sidemenu.summary.dashboard"), 'home', 'index')%>
 			</ul>
 		</li>
-		<li class="parent"><h3><img src="images/icon_instances.gif" width="20" height="20" /><%= t("sidemenu.instances.header") %></h3>
+		<li class="parent"><h3><img src="/images/icon_instances.gif" width="20" height="20" /><%= t("sidemenu.instances.header") %></h3>
 			<ul>
-				<%= li_link_to_current(t("sidemenu.instances.instances"),'instances')%>
+				<%= li_link_to_current(t("sidemenu.instances.instances"), 'instances', 'index')%>
 			</ul>
 			<ul>
-				<%= li_link_to_current(t("sidemenu.instances.host_pools"),'host_pools')%>
-			</ul>
-		</li>
-		<li class="parent"><h3><img src="images/icon_images.gif" width="20" height="20" /><%= t("sidemenu.images.header") %></h3>
-			<ul>
-				<%= li_link_to_current(t("sidemenu.images.machine_images"),'machine_images')%>
+				<%= li_link_to_current(t("sidemenu.instances.host_pools"), 'host_pools', 'index')%>
 			</ul>
 		</li>
-		<li class="parent"><h3><img src="images/icon_blockstore.gif" width="20" height="20" /><%= t("sidemenu.block_store.header") %></h3>
+		<li class="parent"><h3><img src="/images/icon_images.gif" width="20" height="20" /><%= t("sidemenu.images.header") %></h3>
 			<ul>
-				<%= li_link_to_current(t("sidemenu.block_store.volumes"),'volumes')%>
-			</ul>
-			<ul>
-				<%= li_link_to_current(t("sidemenu.block_store.snapshots"),'snapshots')%>
-			</ul>
-			<ul>
-				<%= li_link_to_current(t("sidemenu.block_store.storage_pools"),'storage_pools')%>
+				<%= li_link_to_current(t("sidemenu.images.machine_images"), 'machine_images', 'index')%>
 			</ul>
 		</li>
-		<li class="parent"><h3><img src="images/icon_security.gif" width="20" height="20" /><%= t("sidemenu.network_security.header") %></h3>
+		<li class="parent"><h3><img src="/images/icon_blockstore.gif" width="20" height="20" /><%= t("sidemenu.block_store.header") %></h3>
 			<ul>
-				<%= li_link_to_current(t("sidemenu.network_security.security_groups"),'security_groups')%>
+				<%= li_link_to_current(t("sidemenu.block_store.volumes"), 'volumes', 'index')%>
 			</ul>
 			<ul>
-				<%= li_link_to_current(t("sidemenu.network_security.key_pairs"),'keypairs')%>
+				<%= li_link_to_current(t("sidemenu.block_store.snapshots"), 'snapshots', 'index')%>
+			</ul>
+			<ul>
+				<%= li_link_to_current(t("sidemenu.block_store.storage_pools"), 'storage_pools', 'index')%>
 			</ul>
 		</li>
-		<!-- <li class="parent"><h3><img src="images/icon_information.gif" width="20" height="20" />INFORMATION</h3>
+		<li class="parent"><h3><img src="/images/icon_security.gif" width="20" height="20" /><%= t("sidemenu.network_security.header") %></h3>
 			<ul>
-				<%= li_link_to_current('Service Status','information')%>
+				<%= li_link_to_current(t("sidemenu.network_security.security_groups"), 'security_groups', 'index')%>
+			</ul>
+			<ul>
+				<%= li_link_to_current(t("sidemenu.network_security.key_pairs"), 'keypairs', 'index')%>
+			</ul>
+		</li>
+		<!-- <li class="parent"><h3><img src="/images/icon_information.gif" width="20" height="20" />INFORMATION</h3>
+			<ul>
+				<%= li_link_to_current('Service Status', 'information', 'index')%>
 			</ul>
 		</li> -->
 	</ul>

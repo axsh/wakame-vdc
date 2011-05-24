@@ -1,10 +1,10 @@
 module ApplicationHelper
   
-  def li_link_to_current(name, controller)
-    if current_page?(:controller => controller)
-      str = '<li class="current">' + link_to(name,controller) + '</li>'
+  def li_link_to_current(name, controller_name, action_name)
+    if current_page?(:controller => controller_name)
+      str = '<li class="current">' + link_to(name, {:controller => controller_name, :action => action_name}) + '</li>'
     else
-      str = '<li>' + link_to(name,controller) + '</li>'
+      str = '<li>' + link_to(name, {:controller => controller_name, :action => action_name}) + '</li>'
     end
     str.html_safe
   end
