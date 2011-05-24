@@ -104,28 +104,24 @@ jQuery(function($){
     }else {
       
       var is_dcmgr = function() {
-        
-        try{
-          var r = $.parseJSON(xhr.responseText);
-        } catch(e) {
-          dcmgrGUI.logger.push(e.type, xhr);
-          return false
-        }
-        
-        if( r ) {
-          if(r.code && r.error && r.message) {
+        if(xhr.getResponseHeader("X-Vdc-Request-Id")) {
             return true;
-          } else {
+        } else {
             return false;
-          }
         }
       }
       
       if(is_dcmgr()) {
-        var r = $.parseJSON(xhr.responseText);
-        var code = r.code;
-        var body = r.message.replace('Dcmgr::Endpoints::', '');
-      } else{
+        try {
+          var r = $.parseJSON(xhr.responseText);
+          var code = r.code;
+          var body = r.message.replace('Dcmgr::Endpoints::', '');
+        } catch(e) {
+          var code = '400'
+          var body = 'Parsing JSON Request failed.';
+          dcmgrGUI.logger.push(e.type, xhr);
+        }  
+              } else{
         var code = xhr.status;
         var body = xhr.statusText;
       }

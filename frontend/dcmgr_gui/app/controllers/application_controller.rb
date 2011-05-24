@@ -13,9 +13,10 @@ class ApplicationController < ActionController::Base
       response.status = 500
       response.body = 'Database connection faild.'
     rescue ActiveResource::ConnectionError => e 
-      if is_dcmgr?(e.response.body)
+      if is_dcmgr?(e)
         response.status = e.response.code 
         response.body = e.response.body
+        response['X-Vdc-Request-Id'] = e.response['X-Vdc-Request-Id']  
       else
         raise
       end
@@ -24,16 +25,9 @@ class ApplicationController < ActionController::Base
   end
 
   def is_dcmgr?(response_data)
-    begin
-      if json = JSON.parser.new(response_data)
-        data = json.parse()
-        if data.key?('error') && data.key?('code') && data.key?('message')
-          true
-        else
-          false
-        end
-      end
-    rescue JSON::ParserError, TypeError
+    if response_data.response['X-Vdc-Request-Id']
+      true
+    else
       false
     end
   end
