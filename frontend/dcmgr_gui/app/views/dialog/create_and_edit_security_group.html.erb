@@ -1,37 +1,36 @@
 <style type="text/css">
-	table td {
-		padding-top :10px;
-		padding-left :5px;
+	#create_security_group_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
 	}
 </style>
 <div id="create_security_group_dialog">
-	<table>
-		<tr>
-			<td><%= t("dialog.create_and_edit_security_group.name") %>:</td>
-			<td>
-				<% if @name %>
-					<%= @name %>
-					<input type="hidden" id="security_group_name" value="<%= @name %>">
-				<% else %>
-					<input type="text" id="security_group_name" size="20">
-				<% end %>
-				<input type="hidden" id="security_group_id" value="<%= @uuid %>">
-		  </td>
-    </tr>
-		<tr>
-			<td><%= t("dialog.create_and_edit_security_group.description") %>:</td>
-			<td><input type="text" id="security_group_description" size="43" value="<%= @description %>"></td>
-		</tr>
-		<tr>
-			<td><%= t("dialog.create_and_edit_security_group.rule") %> [<span rel="#rule_help" id="security_group_help" title="Rule Help" style="color:red">?</span>]:</td>
-		</tr>
-		<tr>
-			<td colspan="2">
-				<textarea id="security_group_rule" rows="10" cols="10" style="width:442px;height:320px" ><%= @rule %></textarea></td>
-		</tr>
-	</table>
-	<div id="rule_help">
-   <pre>
+		<div id="security_group_name">
+    <p>
+      <%= t("dialog.create_and_edit_security_group.name") %>
+		</p>
+    <% if @name %>
+				<%= @name %>
+				<input type="hidden" id="security_group_name" value="<%= @name %>">
+			<% else %>
+				<input type="text" id="security_group_name" size="20">
+			<% end %>
+			<input type="hidden" id="security_group_id" value="<%= @uuid %>">
+    </div>
+    <div id="security_group_description">
+    <p>
+      <%= t("dialog.create_and_edit_security_group.description") %>
+    </p> 
+		  <input type="text" id="security_group_description" size="43" value="<%= @description %>">
+    </div>
+    <div id="security_group_rule">
+    <p>
+      <%= t("dialog.create_and_edit_security_group.rule") %> [<span rel="#rule_help" id="security_group_help" title="Rule Help" style="color:red">?</span>]
+    </p>
+    </div>
+			<textarea id="security_group_rule" rows="10" cols="10" style="width:442px;height:320px" ><%= @rule %></textarea>
+  <div id="rule_help">
+  <pre>
 SYNOPSIS
 
   "protocol", "from port", "to port",   "source cidr" 
