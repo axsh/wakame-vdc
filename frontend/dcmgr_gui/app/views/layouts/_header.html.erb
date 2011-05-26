@@ -5,10 +5,10 @@
 		<li class="plat-pas"><h2>Platform</h2></li>
 		<li class="app-pas"><h2>Application</h2></li>
 	</ul>
-	<p><span class="greeting"><%= t("header.welcome_message") %>
-	<%= @current_user.login_id %><%= t("header.login_name_suffix") %></span>|
-		<!-- <a href="#">Help</a><span class="spacer">|</span> -->
-		<!-- <a href="#">Settings</a><span class="spacer">|</span> -->
-		<%= link_to t("header.sign_out"),'/logout'%></p>
+	<p>
+    <span class="greeting"><%= t("header.welcome_message") %>
+	  <%= @current_user.login_id %><%= t("header.login_name_suffix") %>&nbsp;|&nbsp;<%= link_to(t("header.settings"), '/accounts') %>&nbsp;|&nbsp;<%= link_to t("header.sign_out"),'/logout'%>
+    </span>
+  </p>
 </div>
 <div id="content_header"></div>

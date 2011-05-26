@@ -5,6 +5,7 @@
 en:
   header:
     welcome_message: "Welcome,"
+    settings: "Settings"
     login_name_suffix: ""
     sign_out: "Sign Out"
   button:

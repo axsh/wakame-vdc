@@ -5,6 +5,7 @@
 ja:
   header:
     welcome_message: "ようこそ"
+    settings: "設定"
     login_name_suffix: "さん"
     sign_out: "サインアウト"
   button:
