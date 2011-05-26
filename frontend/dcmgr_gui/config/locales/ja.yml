@@ -75,7 +75,7 @@ ja:
     edit_security_group:
       header: "セキュリティグループを編集"
     create_and_edit_security_group:
-      name: "セキュリティグループを編集"
+      name: "セキュリティグループ名"
       description: "詳細"
       rule: "ルール"
     delete_security_group:
