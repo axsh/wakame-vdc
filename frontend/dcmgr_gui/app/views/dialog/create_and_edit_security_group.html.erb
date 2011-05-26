@@ -6,9 +6,7 @@
 </style>
 <div id="create_security_group_dialog">
 		<div id="security_group_name_field">
-    <p>
-      <%= t("dialog.create_and_edit_security_group.name") %>
-		</p>
+    <p><%= t("dialog.create_and_edit_security_group.name") %></p>
     <% if @name %>
         <input type="text" id="security_group_name" size="20" value="<%= @name %>" disabled>
 			<% else %>
