@@ -1215,6 +1215,66 @@ body{
   padding-top: 10px;
   font-size: 14px;
 }
+
+#content #mainarea_wide #change_password_form {
+  margin-left: 10px;
+  float: left;
+}
+
+#content #mainarea_wide #change_password_form p{
+  margin-bottom: 10px;
+}
+
+#content #mainarea_wide #change_password_form p label{
+  margin-left: 1px;
+}
+
+#content #mainarea_wide #breadCrumb.breadCrumb.module.account {
+  margin: -5px 0 10px 10px;
+  width: 668px;
+}
+
+#content #mainarea_wide .maincontent.account {
+  height: 500px;
+}
+
+#content #mainarea_wide #account_top {
+  margin-left: 10px;
+}
+
+#content #mainarea_wide #account_top blockquote {
+  padding: 10px;
+  width: 660px;
+}
+
+#content #mainarea_wide #account_top h4 {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+#content #mainarea_wide #account_top p {
+  padding-top: 5px;
+  padding-left: 4px;
+}
+
+#content #mainarea_wide #account_top #account_password {
+  text-align: right;
+  padding-right: 20px;
+}
+
+#content #mainarea_wide #account_top #account_submit {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.error_message {
+  color: red;
+}
+
+.required {
+  color: red;
+}
+
 /*----clearfix----*/
 
 .clearfix:after {
