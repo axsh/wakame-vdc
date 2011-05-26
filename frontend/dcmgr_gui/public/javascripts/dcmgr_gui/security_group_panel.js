@@ -115,7 +115,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     var bt_edit_security_group = new DcmgrGUI.Dialog({
       target:'.edit_security_group',
       width:500,
-      height:580,
+      height:590,
       title:$.i18n.prop('edit_security_group_header'),
       path:'/edit_security_group',
       button: edit_security_group_buttons,
@@ -196,7 +196,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   var bt_create_security_group = new DcmgrGUI.Dialog({
     target:'.create_security_group',
     width:500,
-    height:580,
+    height:590,
     title:$.i18n.prop('create_security_group_header'),
     path:'/create_security_group',
     button: create_security_group_buttons,
