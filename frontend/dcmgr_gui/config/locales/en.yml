@@ -93,6 +93,21 @@ en:
     password: "Password"
   information:
     header: "Information"
+  accounts:
+    header: "My Accounts"
+    top:
+      information: "Information"
+      last_login: "Last Login"
+      settings: "Settings"
+      timezone: "Time Zone"
+      locale: "Locale"
+      submit: "Update"
+    password:
+      header: "Change Password"
+      password: "Password"
+      new_password: "New Password"
+      confirm_password: "Confirm Password"
+      submit: "Submit"
   dashboard:
     resource:
       header: "My Resource"
@@ -287,3 +302,5 @@ en:
     code: 'ErrorCode'
   error_message:
     sign_in: "User not found."
+    change_password1: "New password and confirm password are differenet."
+    change_password2: "Password is different."

@@ -94,6 +94,21 @@ ja:
     password: "パスワード"
   information:
     header: "お知らせ"
+  accounts:
+    header: "アカウント"
+    top:
+      information: "インフォメーション"
+      last_login: "最終ログイン時刻"
+      settings: "設定"
+      timezone: "タイムゾーン"
+      locale: "言語"
+      submit: "更新"
+    password:
+      header: "パスワード変更"
+      password: "パスワード"
+      new_password: "新規パスワード"
+      confirm_password: "確認用パスワード"
+      submit: "更新"
   dashboard:
     resource:
       header: "リソース"
@@ -287,3 +302,5 @@ ja:
     code: "エラーコード"
   error_message:
     sign_in: "ユーザーは未登録です。"
+    change_password1: "新規パスワードと確認用パスワードが異なります。"
+    change_password2: "パスワードが異なります。"
