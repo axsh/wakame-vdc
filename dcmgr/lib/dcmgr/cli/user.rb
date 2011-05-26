@@ -136,6 +136,7 @@ __END
       Error.raise("User primary_account_id can not be longer than 255 characters",100) if options[:primary_account_id] != nil && options[:primary_account_id].length > 255
       
       fields = options.merge({})
+      fields[:password] = User.encrypt_password(options[:password])
       fields[:primary_account_id] = Account.trim_uuid(options[:primary_account_id]) unless options[:primary_account_id].nil?
       
       super(User,uuid,fields)
