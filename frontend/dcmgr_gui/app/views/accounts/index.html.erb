@@ -13,7 +13,7 @@ jQuery(function($){
 	<h3><img src="images/icon_resource.gif" /><%= t("accounts.header") %></h3>
   <div class="maincontent account">
     <div id="account_top">
-      <div id="account_password"><%= link_to 'Change Password',:action => 'password' %></a></div>
+      <div id="account_password"><%= link_to t("accounts.password.header"), :action => 'password' %></a></div>
       <div id="account_information">
         <blockquote>
           <h4><%= t("accounts.top.information") %></h4>
