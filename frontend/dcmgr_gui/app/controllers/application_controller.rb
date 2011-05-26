@@ -44,10 +44,15 @@ class ApplicationController < ActionController::Base
       end
     end
     
+    @locales = get_locales 
     session[:locale] = I18n.locale
-    @locale = Array.new
-    @locale.push(['English','en'])
-    @locale.push(['日本語','ja'])
+  end
+
+  def get_locales
+    locales = Array.new
+    locales.push(['English','en'])
+    locales.push(['日本語','ja'])
+    locales
   end
 
   private
