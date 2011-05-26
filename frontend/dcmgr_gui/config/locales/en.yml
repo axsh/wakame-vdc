@@ -101,7 +101,7 @@ en:
       last_login: "Last Login"
       settings: "Settings"
       timezone: "Time Zone"
-      locale: "Locale"
+      locale: "Language"
       submit: "Update"
     password:
       header: "Change Password"
