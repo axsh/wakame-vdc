@@ -12,6 +12,7 @@ class SessionsController < ApplicationController
 
     if user
       self.current_user = user
+      User.update_last_login(user.id)
       redirect_back_or_default('/', :notice => "Logged in successfully")
     else
       @error_message = I18n.t('error_message.sign_in')

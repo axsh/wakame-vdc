@@ -6,15 +6,22 @@ class User < BaseNew
   plugin :subclasses
 
   inheritable_schema do
+    Time   :last_login_at, :null=>false
     String :name, :fixed=>true, :size=>200, :null=>false
     primary_key :id, :type=>Integer
     String :login_id
     String :password, :null=>false
     String :primary_account_id
+  
   end
 
   many_to_many :accounts,:join_table => :users_accounts
-  
+ 
+  def before_create
+    set(:last_login_at => Time.now.utc)
+    super
+  end
+ 
   # Removes all relations to accounts before deleting the record
   def before_destroy
     relations = self.accounts
@@ -50,6 +57,12 @@ class User < BaseNew
     def encrypt_password(password)
       salt = Digest::SHA1.hexdigest(DcmgrGui::Application.config.secret_token)
       Digest::SHA1.hexdigest("--#{salt}--#{password}--")
+    end
+
+    def update_last_login(user_id)
+      u = User.find(:id => user_id)
+      u.last_login_at = Time.now
+      u.save
     end
   end
 end
