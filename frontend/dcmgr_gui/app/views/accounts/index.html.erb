@@ -1,68 +1,38 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/account_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+	dcmgrGUI.accountPanel();
+});
+</script>
+<% end %>
+<style type="text/css">
+	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+</style>
 <div id="mainarea_wide">
-	<h3><img src="images/icon_resource.gif" />Personal Information<a href="#" class="showhide"></a></h3>
-	<div class="maincontent">
-		<div class="display_area">
-			<table class="ptn05" frame="void" cellpadding="0" cellspacing="0" border="0">
-				<tr>
-					<td class="color1">Full name:</td>
-					<td><span class="textblock">thedesignium</span><a href="#" class="change"></a></td>
-				</tr>
-				<tr>
-					<td class="color1">E-mail Address/ID:</td>
-					<td>contact_with@thedesignium.com</td>
-				</tr>
-				<tr>
-					<td class="color1">Password:</td>
-					<td class="special">************</td>
-				</tr>
-				<tr>
-					<td class="color2">Address Line 1:</td>
-					<td><input type="text" class="type01" /><br />
-							<span class="small">Street address, P.O. box, company name, c/o</span>
-					</td>
-				</tr>
-				<tr>
-					<td class="color2">Address Line 2:</td>
-					<td><input type="text" class="type01" /><br />
-							<span class="small">Apartment, suite, unite, building, floor, etc.</span>
-					</td>
-				</tr>
-				<tr>
-					<td class="color2">City:</td>
-					<td><input type="text" class="type02" /></td>
-				</tr>
-				<tr>
-					<td class="color2">State, Province or Region:</td>
-					<td><input type="text" class="type02" /></td>
-				</tr>
-				<tr>
-					<td class="color2">ZIP or Postal Code:</td>
-					<td><input type="text" class="type02" /></td>
-				</tr>
-				<tr>
-					<td class="color2">Country:</td>
-					<td>
-						<select>
-							<option>Japan</option>
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<td class="color2">Phone number:</td>
-					<td><input type="text" class="type02" /></td>
-				</tr>
-				<tr>
-					<td class="color2">Company Name:</td>
-					<td><input type="text" class="type02" /></td>
-				</tr>
-				<tr>
-					<td class="color2">Web Site URL:</td>
-					<td><input type="text" class="type02" /></td>
-				</tr>
-			</table>
-		</div>
-		<a href="#" class="savechange"></a>
-		<div class="spacer10"></div>
-	</div>
-	<div id="btm_maincontent_wide_last"></div>
-</div>
+	<h3><img src="images/icon_resource.gif" /><%= t("accounts.header") %></h3>
+  <div class="maincontent account">
+    <div id="account_top">
+      <div id="account_password"><%= link_to 'Change Password',:action => 'password' %></a></div>
+      <div id="account_information">
+        <blockquote>
+          <h4><%= t("accounts.top.information") %></h4>
+          <hr />
+          <p><%= t("accounts.top.last_login") %>: <span id="last_login_at"><%= @current_user.last_login_at.utc.iso8601 %></span></p>
+        </blockquote>
+      </div><!-- account_information -->
+      <div id="account_settings">
+      <% form_for :account, :url=>{:action => 'password'}, :html => {:id => "settings_form"} do |f| %>
+        <blockquote>
+        <h4><%= t("accounts.top.settings") %></h4>
+        <hr />
+        <p><%= t("accounts.top.timezone") %></p>
+        <p><%= t("accounts.top.locale") %></p>
+        <p id="account_submit"><%= f.submit t("accounts.top.submit") %></p>
+      <% end %>
+      </blockquote>
+      </div><!-- account_settings -->
+    </div><!-- account_top -->
+  </div><!-- maincontent -->
+  <div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->
