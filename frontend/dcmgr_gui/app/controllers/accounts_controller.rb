@@ -10,7 +10,21 @@ class AccountsController < ApplicationController
   end
   
   def index
-    
+
+  end
+
+  def update_settings
+    account = params[:account]
+    if account
+      
+      setting_params = {
+        :time_zone => account[:time_zone],
+        :locale => account[:locale],
+      }
+
+      User.update_settings(@current_user.id, setting_params)
+    end
+    redirect_to :action => 'index'
   end
 
   def password

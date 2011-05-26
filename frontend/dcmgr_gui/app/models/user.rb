@@ -12,12 +12,15 @@ class User < BaseNew
     String :login_id
     String :password, :null=>false
     String :primary_account_id
-  
+    String :locale, :size=>255, :null => false
+    String :time_zone, :size=>255, :null => false
   end
 
   many_to_many :accounts,:join_table => :users_accounts
  
   def before_create
+    set(:locale => I18n.default_locale.to_s)
+    set(:time_zone => Time.zone.name)
     set(:last_login_at => Time.now.utc)
     super
   end
@@ -62,6 +65,14 @@ class User < BaseNew
     def update_last_login(user_id)
       u = User.find(:id => user_id)
       u.last_login_at = Time.now
+      u.save
+    end
+
+    def update_settings(user_id, params)
+      u = User.find(:id => user_id)
+      p params
+      u.time_zone = params[:time_zone] || u.time_zone
+      u.locale = params[:locale] || u.locale
       u.save
     end
   end

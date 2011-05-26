@@ -22,12 +22,17 @@ jQuery(function($){
         </blockquote>
       </div><!-- account_information -->
       <div id="account_settings">
-      <% form_for :account, :url=>{:action => 'password'}, :html => {:id => "settings_form"} do |f| %>
+      <% form_for :account, :url=>{:action => 'update_settings'}, :html => {:id => "settings_form"} do |f| %>
         <blockquote>
         <h4><%= t("accounts.top.settings") %></h4>
         <hr />
-        <p><%= t("accounts.top.timezone") %></p>
-        <p><%= t("accounts.top.locale") %></p>
+        <div id="account_top_timezone">
+        <span><%= t("accounts.top.timezone") %></span><%= f.time_zone_select( :time_zone, nil, :default => @current_user.time_zone, :include_blank => true) %>
+        </div>
+        <div id="account_top_locale">
+        <span><%= t("accounts.top.locale") %></span>
+        <%= f.select(:locale, @locales, :selected => session[:locale], :selected => @current_user.locale) %>
+        </div>
         <p id="account_submit"><%= f.submit t("accounts.top.submit") %></p>
       <% end %>
       </blockquote>

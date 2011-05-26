@@ -6,7 +6,7 @@
 			<div style="margin-top:10px">
 			<%= t('sidemenu.change_language') %>:&nbsp;
      	<%= form_for :select_language, :remote => false, :url => request.url, :html => {:id => :select_language, :method => :get,:style => "display: inline"} do |f| %>
-      <%= f.select(:locale, @locales, :selected => session[:locale]) %>
+      <%= f.select(:locale, @locales, :selected => @locale) %>
       <% end %>&nbsp;
       </div>
     	

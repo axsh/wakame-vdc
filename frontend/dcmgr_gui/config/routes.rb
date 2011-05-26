@@ -8,6 +8,7 @@ DcmgrGui::Application.routes.draw do
   get    'accounts' ,:to => 'accounts#index'
   get    'accounts/password' ,:to => 'accounts#password'
   post   'accounts/password' ,:to => 'accounts#password'
+  post   'accounts/update_settings', :to => 'accounts#update_settings'
 
   #dialog
   get    'dialog/create_volume', :to => 'dialog#create_volume'
