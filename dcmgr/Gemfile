@@ -11,8 +11,7 @@ gem 'open4', '1.0.1'
 gem 'thor', '0.14.6'
 
 
-gem 'isono', :git => 'git://github.com/axsh/isono.git'
-gem 'amqp', '0.6.7' # for isono
+gem 'isono', '0.2.0'
 
 group :development do
   gem 'bacon'
