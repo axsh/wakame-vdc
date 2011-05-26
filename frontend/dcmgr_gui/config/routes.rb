@@ -5,8 +5,10 @@ DcmgrGui::Application.routes.draw do
   
   #account
   post   'accounts/switch' ,:to => 'accounts#switch'
-  get    'accounts' ,:to => 'acounts#index'
-  
+  get    'accounts' ,:to => 'accounts#index'
+  get    'accounts/password' ,:to => 'accounts#password'
+  post   'accounts/password' ,:to => 'accounts#password'
+
   #dialog
   get    'dialog/create_volume', :to => 'dialog#create_volume'
   post   'dialog/create_volume_from_snapshot', :to => 'dialog#create_volume_from_snapshot'
@@ -25,7 +27,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/launch_instance', :to => 'dialog#launch_instance'
   get    'dialog/create_ssh_keypair', :to => 'dialog#create_ssh_keypair'
   post   'dialog/delete_ssh_keypair', :to => 'dialog#delete_ssh_keypair'
-  
+
   #home
   get    'home' ,:to => 'home#index'
   
