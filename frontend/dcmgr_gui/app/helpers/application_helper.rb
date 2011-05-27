@@ -20,4 +20,8 @@ module ApplicationHelper
   def nl2br(text)
     text.gsub(/(<.*?>)/, '').gsub(/\n/, '<br />').html_safe
   end
+
+  def user_last_login_at
+    @current_user.last_login_at.utc.iso8601
+  end
 end
