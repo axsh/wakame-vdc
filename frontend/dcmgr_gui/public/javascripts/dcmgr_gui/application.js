@@ -152,7 +152,6 @@ jQuery(function($){
       {find: '.image', icon: 'ui-icon-image'}
     ],
     select: function(event){
-      console.log($(this).val());
     }
   });
 
