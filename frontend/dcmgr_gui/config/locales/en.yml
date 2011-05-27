@@ -29,7 +29,7 @@ en:
   parts:
     loading: "Loading..."
   date:
-    display: "{0}-{1}-{2}T{3}:{4}:{5}Z"
+    display: "{0}-{1}-{2} {3}:{4}:{5}"
   dialog:
     terminate_instances:
       header: "Terminate Instances"

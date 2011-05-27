@@ -10,16 +10,6 @@
 <%= yield :stylesheet %>
 <%= javascript_include_tag 'jquery-1.4.2.min.js' %>
 <%= javascript_include_tag 'jquery.i18n.properties-min.js' %>
-<script type="text/javascript">
-  jQuery(function($){
-    $.i18n.properties({
-        name:'Messages',
-        path:'/i18n/',
-        mode:'both',
-        language: '<%= I18n.locale %>'
-    });
-  });
-</script>
 <%= javascript_include_tag 'jsdeferred.jquery.js' %>
 <%= javascript_include_tag 'jquery.tmpl.js' %>
 <%= javascript_include_tag 'jquery.loadmask.min.js' %>
@@ -29,7 +19,18 @@
 <%= javascript_include_tag 'ui.selectmenu.js' %>
 <%= javascript_include_tag 'dcmgr_gui/core.js' %>
 <%= javascript_include_tag 'dcmgr_gui/application.js' %>
-
+<script type="text/javascript">
+  jQuery(function($){
+    $.i18n.properties({
+        name:'Messages',
+        path:'/i18n/',
+        mode:'both',
+        language: '<%= I18n.locale %>'
+    });
+    dcmgrGUI.setConfig('time_zone', '<%= @current_user.time_zone %>');
+    dcmgrGUI.setConfig('time_zone_utc_offset', <%= ActiveSupport::TimeZone[@current_user.time_zone].utc_offset %>); 
+  });
+</script>
 <%= yield :javascript %>
 <%= csrf_meta_tag %>
 <link rel="shortcut icon" href="favicon.ico" />

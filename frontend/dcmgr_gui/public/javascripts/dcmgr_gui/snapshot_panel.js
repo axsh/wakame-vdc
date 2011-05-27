@@ -70,6 +70,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     var size = results.length;
     for(var i = 0; i < size; i++) {
       results[i].result.created_at = DcmgrGUI.date.parseISO8601(results[i].result.created_at);
+      results[i].result.created_at = DcmgrGUI.date.setTimezoneOffset(results[i].result.created_at, dcmgrGUI.getConfig('time_zone_utc_offset'));
       results[i].result.created_at = DcmgrGUI.date.getI18n(results[i].result.created_at);
     }
     return data;

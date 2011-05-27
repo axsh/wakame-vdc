@@ -107,6 +107,11 @@ DcmgrGUI.date.parseISO8601 = function (str) {
   return _date;
 };
 
+DcmgrGUI.date.setTimezoneOffset = function(date_str, utc_offset){
+  date_str.setUTCSeconds(utc_offset);
+  return date_str;
+}
+
 DcmgrGUI.date.getI18n = function(date_str){
 
   var convert = function(value) {
@@ -519,11 +524,13 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
       
       if(data.item.created_at) {
         data.item.created_at = DcmgrGUI.date.parseISO8601(data.item.created_at);
+        data.item.created_at = DcmgrGUI.date.setTimezoneOffset(data.item.created_at, dcmgrGUI.getConfig('time_zone_utc_offset'));
         data.item.created_at = DcmgrGUI.date.getI18n(data.item.created_at);
       }
 
       if(data.item.updated_at) {
         data.item.updated_at = DcmgrGUI.date.parseISO8601(data.item.updated_at);
+        data.item.updated_at = DcmgrGUI.date.setTimezoneOffset(data.item.updated_at, dcmgrGUI.getConfig('time_zone_utc_offset'));
         data.item.updated_at = DcmgrGUI.date.getI18n(data.item.updated_at);
       }
 
