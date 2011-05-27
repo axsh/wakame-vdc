@@ -11,7 +11,7 @@ gem 'open4', '1.0.1'
 gem 'thor', '0.14.6'
 
 
-gem 'isono', '0.2.0'
+gem 'isono', '0.2.1'
 
 group :development do
   gem 'bacon'
