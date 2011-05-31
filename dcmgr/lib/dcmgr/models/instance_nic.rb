@@ -19,6 +19,12 @@ module Dcmgr::Models
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
     many_to_one :network
     one_to_many :ip, :class=>IpLease
+    one_to_many(:direct_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
+      ds.where(:network_id=>self.network_id)
+    end
+    one_to_many(:nat_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
+      ds.where(:network_id=>self.nat_network_id)
+    end
 
     def to_hash
       h = values.dup.merge(super)

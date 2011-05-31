@@ -17,6 +17,7 @@ module Dcmgr::Models
       Fixnum :vlan_lease_id, :null=>false, :default=>0
       Fixnum :nat_network_id
       Text :description
+      index :nat_network_id
     end
     with_timestamps
 

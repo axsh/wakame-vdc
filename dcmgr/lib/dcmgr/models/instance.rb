@@ -205,6 +205,7 @@ module Dcmgr::Models
     #   :created_at
     #   :state
     #   :status
+    #   :vif => {'vif-xxxxx'=>{:ipv4=>{:address=>'8.8.8.8', :nat_address=>'9.9.9.9.9'}}}
     # }
     def to_api_document
       h = {
@@ -219,6 +220,7 @@ module Dcmgr::Models
         :network => [],
         :volume => [],
         :netfilter_group => [],
+        :vif = {},
       }
       if self.ssh_key_pair
         h[:ssh_key_pair] = self.ssh_key_pair.name
@@ -226,11 +228,31 @@ module Dcmgr::Models
 
       if instance_nic
         instance_nic.each { |n|
-          if n.ip
-            h[:network] << {
-              :network_name => n.network.canonical_uuid,
-              :ipaddr => n.ip.map {|lease| lease.ipv4 unless lease.is_natted?}.compact,
-              :nat_addr => n.ip.map {|lease| lease.ipv4 if lease.is_natted?}.compact
+          direct_lease_ds = n.direct_ip_lease
+          next if direct_lease_ds.first
+          outside_lease_ds = n.nat_outside_lease
+          
+          h[:network] << {
+            :network_name => n.network.canonical_uuid,
+            :ipaddr => direct_lease_ds.all.map {|lease| lease.ipv4 }.compact,
+            :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact
+          }
+        }
+      end
+
+      if instance_nic
+        instance_nic.each { |vif|
+          direct_lease = vif.direct_ip_lease.first
+          if direct_lease.nil?
+            h[:vif][vif.canonical_uuid] = nil
+          else
+            outside_lease = direct_lease.nat_outside_lease
+            
+            h[:vif][vif.canonical_uuid] = {
+              :ipv4 => {
+                :address=> direct_lease.ipv4,
+                :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
+              },
             }
           end
         }

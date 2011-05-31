@@ -23,6 +23,7 @@ module Dcmgr::Models
       Text :description
       
       index [:network_id, :ipv4], {:unique=>true}
+      index [:instance_nic_id, :network_id]
     end
     with_timestamps
 
@@ -42,8 +43,33 @@ module Dcmgr::Models
       end
     end
 
+    # check if the current lease is for NAT outside address lease.
+    # @return [TrueClass,FalseClass] return true if the lease is for NAT outside.
     def is_natted?
       instance_nic.network_id != network_id
+    end
+
+    # get the lease of NAT outside network.
+    # @return [IpLease,nil]
+    #    if the IpLease has a pair NAT address it will return
+    #    outside IpLease.
+    def nat_outside_lease
+      if self.network.nat_network_id
+        self.class.find(:instance_nic_id=>self.instance_nic.id, :network_id=>self.network.nat_network_id)
+      else
+        nil
+      end
+    end
+
+    # get the lease of NAT inside network.
+    # @return [IpLease,nil] IpLease (outside) will return inside
+    #     IpLease.
+    def nat_inside_lease
+      if self.network.nat_network_id.nil?
+        self.class.find(:instance_nic_id=>self.instance_nic.id, :network_id=>nil)
+      else
+        nil
+      end
     end
 
     def self.lease(instance_nic, network)
