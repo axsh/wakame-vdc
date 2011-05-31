@@ -15,6 +15,7 @@ module Dcmgr::Models
     ARCH_X86_64=:x86_64.to_s
 
     SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
+    SUPPORTED_HYPERVISOR=[HYPERVISOR_KVM]
 
     inheritable_schema do
       String :node_id, :size=>80, :null=>true
