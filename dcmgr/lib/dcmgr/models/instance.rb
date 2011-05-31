@@ -252,7 +252,7 @@ module Dcmgr::Models
             ent[:ipv4] = {
               :address=> direct_lease.ipv4,
               :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
-            },
+            }
           end
           h[:vif] << ent
         }
