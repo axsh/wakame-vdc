@@ -220,7 +220,7 @@ module Dcmgr::Models
         :network => [],
         :volume => [],
         :netfilter_group => [],
-        :vif = {},
+        :vif => {},
       }
       if self.ssh_key_pair
         h[:ssh_key_pair] = self.ssh_key_pair.name
