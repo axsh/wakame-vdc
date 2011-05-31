@@ -220,7 +220,7 @@ module Dcmgr::Models
         :network => [],
         :volume => [],
         :netfilter_group => [],
-        :vif => {},
+        :vif => [],
       }
       if self.ssh_key_pair
         h[:ssh_key_pair] = self.ssh_key_pair.name
@@ -242,19 +242,19 @@ module Dcmgr::Models
 
       if instance_nic
         instance_nic.each { |vif|
+          ent = {
+            :vif_id=>vif.canonical_uuid,
+          }
           direct_lease = vif.direct_ip_lease.first
           if direct_lease.nil?
-            h[:vif][vif.canonical_uuid] = nil
           else
             outside_lease = direct_lease.nat_outside_lease
-            
-            h[:vif][vif.canonical_uuid] = {
-              :ipv4 => {
-                :address=> direct_lease.ipv4,
-                :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
-              },
-            }
+            ent[:ipv4] = {
+              :address=> direct_lease.ipv4,
+              :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
+            },
           end
+          h[:vif] << ent
         }
       end
       
