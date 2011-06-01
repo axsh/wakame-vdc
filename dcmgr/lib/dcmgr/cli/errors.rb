@@ -46,4 +46,14 @@ module Dcmgr::Cli
       super
     end
   end
+
+  class UnsupportedHypervisorError < Error
+    def initialize(arch,exit_code=100)
+      super("Unsupported hypervisor type: '#{arch}'.")
+    end
+    
+    def self.raise(arch,exit_code=100)
+      super
+    end
+  end
 end
