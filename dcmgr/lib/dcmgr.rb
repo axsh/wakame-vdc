@@ -56,7 +56,9 @@ module Dcmgr
 
   initializer_hooks {
     Dcmgr.class_eval {
-      DCMGR_ROOT = ENV['DCMGR_ROOT'] || File.expand_path('../../', __FILE__)
+      unless defined?(DCMGR_ROOT)
+        DCMGR_ROOT = ENV['DCMGR_ROOT'] || File.expand_path('../../', __FILE__)
+      end
     }
   }
   
