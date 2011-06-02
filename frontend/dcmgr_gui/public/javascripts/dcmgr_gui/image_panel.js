@@ -247,7 +247,8 @@ DcmgrGUI.prototype.imagePanel = function(){
               var security_group = new DcmgrGUI.ItemSelector({
                 'left_select_id' : '#left_select_list',
                 'right_select_id' : "#right_select_list",
-                "data" : data
+                "data" : data,
+                'target' : self
               });
               
               var on_ready = function(size){

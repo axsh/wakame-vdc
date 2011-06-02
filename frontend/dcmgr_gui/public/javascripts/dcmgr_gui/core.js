@@ -758,7 +758,7 @@ DcmgrGUI.Refresh = DcmgrGUI.Class.create({
 DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
   
   initialize: function(params) {
-
+    this.element = $(params.target);
     this.left_select_id = params.left_select_id;
     this.right_select_id = params.right_select_id;
     this.data = params.data;
@@ -778,7 +778,7 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
     $(select_id).html('');
     for(var i = 0;i < selectionsSize  ;i++) {
       if(selectionsArray[i] !== null ){
-        $(select_id).append(selectionsArray[i]);
+        this.element.find(select_id).append(selectionsArray[i]);
       }
     }
   },
@@ -791,7 +791,7 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
   },
   leftToRight: function() {
     var self = this;
-    $(this.left_select_id).find('option:selected').each(function(){
+    this.element.find(this.left_select_id).find('option:selected').each(function(){
       var index = $(this).attr('id');
       self.leftSelectionsArray[index] = null;
       self.rightSelectionsArray[index] = this;
@@ -802,7 +802,7 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
   },
   rightToLeft: function() {
     var self = this;
-    $(this.right_select_id).find('option:selected').each(function(){
+    this.element.find(this.right_select_id).find('option:selected').each(function(){
       var index = $(this).attr('id');
       self.leftSelectionsArray[index] = this;
       self.rightSelectionsArray[index] = null;
