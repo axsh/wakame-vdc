@@ -18,7 +18,7 @@ ja:
     close: "閉じる"
     attach: "アタッチ"
     detach: "デタッチ"
-    launch: "Launch"
+    launch: "起動"
   selectmenu:
     select_action: "アクション"
     select_region: "データセンタ: "
@@ -38,15 +38,15 @@ ja:
       header: "インスタンスを再起動"
       message: "インスタンスを再起動します。よろしいですか？"
     launch_instance:
-      header: "Launch Instance"
+      header: "インスタンスを起動"
       wmi_id: "WMI ID"
       host: "ホスト"
       host_name: "ホスト名"
       instance_spec: "スペック"
       ssh_key_pair: "SSHキーペア"
-      security_group: "セキュリティーグループ"
-      available_groups: "Available Groups"
-      launch_in: "Launch in"
+      security_group: "セキュリティーグループ設定"
+      available_groups: "セキュリティーグループ"
+      launch_in: "選択済み"
       user_data: "ユーザデータ"
     create_volume:
       header: "ボリュームを作成"

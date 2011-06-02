@@ -47,12 +47,8 @@
   padding: 0 3px 0 3px;
 }
 
-#launch_instance_dialog #available_groups {
-  padding-left: 54px;
-}
-
-#launch_instance_dialog #launch_in {
-  padding-left: 75px;
+#launch_instance_dialog #security_group_field table tr th {
+  text-align: center;
 }
 
 #launch_instance_dialog #user_data_field {
