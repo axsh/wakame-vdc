@@ -201,7 +201,7 @@ ja:
       created: "作成日"
       status: "状態"
     details:
-      header: "状態"
+      header: "詳細"
       volume_id: "ボリュームID"
       capacity: "容量"
       snapshot_id: "スナップショットID"
