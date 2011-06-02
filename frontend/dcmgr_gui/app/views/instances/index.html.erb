@@ -73,11 +73,11 @@ jQuery(function($){
 					<td class="vtip center" title="${item.cpu_cores}">${item.cpu_cores}</td>
 					<td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
 					<td class="vtip center" title="ip" style="width:60px">
-          {{each(index,network) item.network}}
-            {{if network.nat_addr.length === 0 }}
-              ${network.ipaddr}
+          {{each(index,network) item.vif}}
+            {{if network.vif.ipv4.ipv4.nat_address === undefined}}
+              ${network.vif.ipv4.ipv4.nat_address}
             {{else}}
-              ${network.nat_addr}
+              ${network.vif.ipv4.ipv4.address}
             {{/if}}
           {{/each}}</td>
 					<td class="vtip center state" title="${item.state}">${item.state}</td>
@@ -115,10 +115,10 @@ jQuery(function($){
 				<tr>
 					<td class="padcell"></td>
 					<td class="title"><%= t("instances.details.status") %>:</td>
-					<td class="state">${item.status}</td>
+					<td class="state">${item.state}</td>
 					<td class="padcell"></td>
 					<td class="title">Global IP:</td>
-					<td>{{each(index,global_network) item.network}}${global_network.nat_addr}{{/each}}</td>
+					<td>{{each(index,network) item.vif}}${network.ipv4.nat_address}{{/each}}</td>
 				</tr>
 				<tr>
 					<td class="padcell"></td>
@@ -126,7 +126,7 @@ jQuery(function($){
 					<td>${item.ssh_key_pair}</td>
           <td class="padcell"></td>
 					<td class="title">Local IP:</td>
-					<td>{{each(index,global_network) item.network}}${global_network.ipaddr}{{/each}}</td>
+					<td>{{each(index,network) item.vif}}${network.ipv4.address}{{/each}}</td>
 				</tr>
 				<tr>
 					<td class="padcell"></td>
