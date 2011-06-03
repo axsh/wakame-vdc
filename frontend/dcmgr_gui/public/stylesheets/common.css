@@ -435,7 +435,7 @@ body{
 }
 #content #mainarea_wide .controller .r_float{
 	float: right;
-	width: 190px;
+	width: 200px;
 }
 #content #mainarea_wide .controller a.launch_instance{
 	display: block;
