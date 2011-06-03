@@ -80,6 +80,20 @@ DcmgrGUI.Converter.fromMBtoGB = function(data){
   return Math.ceil(data/1024) + 'GB';
 };
 
+DcmgrGUI.Converter.unit = function(data, unit_type){
+  var unit = '';
+  switch(unit_type) {
+    case 'megabyte':
+      unit = 'MB'
+    break;
+
+    case 'gigabyte':
+      unit = 'GB'
+    break;
+  }
+  return  data + unit;
+};
+
 DcmgrGUI.date = {};
 DcmgrGUI.date.parseISO8601 = function (str) {
   /*

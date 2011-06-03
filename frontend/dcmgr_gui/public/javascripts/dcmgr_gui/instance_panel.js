@@ -47,16 +47,9 @@ DcmgrGUI.prototype.instancePanel = function(){
     page:page
   });
   
-  var detail_filter = new DcmgrGUI.Filter();
-  detail_filter.add(function(data){
-    data.item.memory_size = data.item.memory_size + 'MB';
-    return data;
-  });
-    
   c_list.setDetailTemplate({
     template_id:'#instancesDetailTemplate',
-    detail_path:'/instances/show/',
-    filter: detail_filter
+    detail_path:'/instances/show/'
   });
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
@@ -70,11 +63,16 @@ DcmgrGUI.prototype.instancePanel = function(){
     var results = data.instance.results;
     var size = results.length;
     for(var i = 0; i < size; i++) {
-      results[i].result.memory_size = results[i].result.memory_size + 'MB';
+      results[i].result.memory_size = DcmgrGUI.Converter.unit(results[i].result.memory_size, 'megabyte');
     }
     return data;
   });
   
+  c_list.detail_filter.add(function(data){
+    data.item.memory_size = DcmgrGUI.Converter.unit(data.item.memory_size, 'megabyte');
+    return data;
+  });
+ 
   var bt_refresh  = new DcmgrGUI.Refresh();
   
   var instance_action_helper = function(action){
