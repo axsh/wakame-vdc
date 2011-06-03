@@ -229,7 +229,7 @@ module Dcmgr::Models
       if instance_nic
         instance_nic.each { |n|
           direct_lease_ds = n.direct_ip_lease
-          next if direct_lease_ds.first
+          next if direct_lease_ds.first.nil?
           outside_lease_ds = n.nat_outside_lease
           
           h[:network] << {
