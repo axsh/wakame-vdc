@@ -199,9 +199,35 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
   $(bt_refresh.target).button({ disabled: false });
   selectmenu.data('selectmenu').disableButton();
+
+  var actions = {};
+  actions.changeButtonState = function() {
+    var ids = c_list.currentMultiChecked()['ids'];
+    var is_running = false;
+    var flag = true;
+    $.each(ids, function(key, uuid){
+      var row_id = '#row-'+uuid;
+      var state = $(row_id).find('.state').text();
+      if(state == 'running') {
+        is_running = true;
+      } else{
+        flag = false;
+      }
+    });
+    
+    if (flag == true){
+      if(is_running == true) {
+        selectmenu.data('selectmenu').enableButton();
+      } else {
+        selectmenu.data('selectmenu').disableButton();
+      }
+    } else{
+      selectmenu.data('selectmenu').disableButton();
+    }
+  }
   
-  dcmgrGUI.notification.subscribe('checked_box', selectmenu.data('selectmenu'), 'enableButton');
-  dcmgrGUI.notification.subscribe('unchecked_box', selectmenu.data('selectmenu'), 'disableButton');
+  dcmgrGUI.notification.subscribe('checked_box', actions, 'changeButtonState');
+  dcmgrGUI.notification.subscribe('unchecked_box', actions, 'changeButtonState');
   dcmgrGUI.notification.subscribe('change_pagenate', selectmenu.data('selectmenu'), 'disableButton');
   
   //list

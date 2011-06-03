@@ -62,7 +62,7 @@ jQuery(function($){
 					 <th><%= t("instances.list.state") %></th>
 			   </tr>
 			   {{each(index,item) rows}}
-			   <tr>
+			   <tr id="row-${item.id}">
 					{{if item.id }}
 						<td class="center listcheckbox"><input type="checkbox" value="${item.id}" > </td>
 					{{else}}
@@ -80,8 +80,8 @@ jQuery(function($){
               ${network.vif.ipv4.ipv4.address}
             {{/if}}
           {{/each}}</td>
-					<td class="vtip center state" title="${item.state}">${item.state}</td>
-				</tr>
+					<td class="state vtip center" title="status">${item.state}</td>
+        </tr>
 			   {{/each}}
 			   </table>
 			</script>
