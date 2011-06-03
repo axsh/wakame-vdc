@@ -179,7 +179,8 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
 
-  var state_check = function() {
+  var actions = {};
+  actions.changeButtonState = function() {
     var ids = c_list.currentMultiChecked()['ids'];
     var is_available = false;
     var flag = true;
@@ -201,13 +202,10 @@ DcmgrGUI.prototype.snapshotPanel = function(){
       bt_create_volume.disableDialogButton();
       bt_delete_snapshot.disableDialogButton();
     }
-    return false;
   }
 
-  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('checked_box', bt_create_volume, 'enableDialogButton'), state_check);
-  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('checked_box', bt_delete_snapshot, 'enableDialogButton'), state_check);
-  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('unchecked_box', bt_create_volume, 'disableDialogButton'), state_check);
-  dcmgrGUI.notification.add_evaluation(dcmgrGUI.notification.subscribe('unchecked_box', bt_delete_snapshot, 'disableDialogButton'), state_check);
+  dcmgrGUI.notification.subscribe('checked_box', actions, 'changeButtonState');
+  dcmgrGUI.notification.subscribe('unchecked_box', actions, 'changeButtonState');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_snapshot, 'disableDialogButton');
 
   $(bt_create_volume.target).button({ disabled: true });
