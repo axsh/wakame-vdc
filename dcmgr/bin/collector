@@ -22,7 +22,11 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::InstanceHA
 
   config do |c|
-    c.data_store.database_dsn = Dcmgr.conf.database_url
+    c.data_store.connection_block = proc {
+      require 'sequel'
+      next if Sequel::DATABASES.first
+      Dcmgr.run_initializers('sequel')
+    }
   end
 end
 
