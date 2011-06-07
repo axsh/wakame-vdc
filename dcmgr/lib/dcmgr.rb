@@ -172,4 +172,9 @@ module Dcmgr
     autoload :RequestLogger, 'dcmgr/rack/request_logger'
     autoload :RunInitializer, 'dcmgr/rack/run_initializer'
   end
+  
+  module Drivers
+    autoload :SnapshotStorage, 'dcmgr/drivers/snapshot_storage'
+    autoload :S3Storage, 'dcmgr/drivers/s3_storage'
+  end
 end
