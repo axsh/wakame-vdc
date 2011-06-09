@@ -17,6 +17,7 @@ module Dcmgr::Models
       String :state, :size=>20, :null=>false, :default=>:init.to_s
       String :status, :size=>20, :null=>false, :default=>:init.to_s
       String :hostname, :null=>false, :size=>32
+      # TODO: remove ssh_key_pair_id column
       String :ssh_key_pair_id
       Fixnum :ha_enabled, :null=>false, :default=>0
       Float  :quota_weight, :null=>false, :default=>0.0
@@ -25,6 +26,7 @@ module Dcmgr::Models
       
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
+      Text :ssh_key_data, :null=>true
 
       Time :terminated_at
       index :state
@@ -41,6 +43,7 @@ module Dcmgr::Models
     alias :nic :instance_nic
     one_to_many :instance_netfilter_groups
     many_to_many :netfilter_groups, :join_table=>:instance_netfilter_groups
+    # TODO: remove ssh_key_pair_id column
     many_to_one :ssh_key_pair
 
     plugin ArchiveChangedColumn, :histories
@@ -63,6 +66,8 @@ module Dcmgr::Models
     # {:vnc_port=>11, :telnet_port=>1111}
     plugin :serialization
     serialize_attributes :yaml, :runtime_config
+    # equal to SshKeyPair#to_hash
+    serialize_attributes :yaml, :ssh_key_data
 
     module ValidationMethods
       def self.hostname_uniqueness(account_id, hostname)
@@ -222,8 +227,8 @@ module Dcmgr::Models
         :netfilter_group => [],
         :vif => [],
       }
-      if self.ssh_key_pair
-        h[:ssh_key_pair] = self.ssh_key_pair.name
+      if self.ssh_key_data
+        h[:ssh_key_pair] = self.ssh_key_data[:name]
       end
 
       if instance_nic
@@ -375,5 +380,13 @@ module Dcmgr::Models
     def live?
       self.terminated_at.nil?
     end
+
+    def set_ssh_key_pair(ssh_key_pair)
+      raise ArgumentError unless ssh_key_pair.is_a?(SshKeyPair)
+      self.ssh_key_data = ssh_key_pair.to_hash
+      # TODO: remove ssh_key_pair_id column
+      self.ssh_key_pair_id = ssh_key_pair.canonical_uuid
+    end
+    
   end
 end

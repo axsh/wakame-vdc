@@ -256,8 +256,9 @@ module Dcmgr
         end
         
         def public_keys(src_ip)
-          pair = get_instance_from_ip(src_ip).ssh_key_pair_id
-          return Models::SshKeyPair[pair].public_key unless pair.nil?
+          i = get_instance_from_ip(src_ip)
+          # ssh_key_data is possible to be nil.
+          i.ssh_key_data.nil? ? '' : i.ssh_key_data[:public_key]
         end
         
         def security_groups(src_ip)
