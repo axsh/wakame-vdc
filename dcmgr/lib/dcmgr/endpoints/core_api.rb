@@ -351,7 +351,7 @@ module Dcmgr
             limit = limit < 1 ? nil : limit
             
             total_ds = Models::Image.where(:account_id=>@account.canonical_uuid).or(:is_public=>true)
-            partial_ds  = total_ds.dup.order(:id)
+            partial_ds = total_ds.dup.order(:id)
             partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
             res = [{
