@@ -1,20 +1,21 @@
 module Dcmgr
   module Drivers
-    class Kvm
+    class Kvm < Hypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Rpc::KvmHelper
       include Dcmgr::Helpers::NicHelper
 
-      def run_instance(inst, data)
+      def run_instance(hc)
         # run vm
+        inst = hc.inst
         cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
         args=[inst[:instance_spec][:memory_size],
               inst[:instance_spec][:cpu_cores],
               inst[:uuid],
               inst[:runtime_config][:vnc_port],
-              data[:os_devpath],
-              File.expand_path('kvm.pid', data[:inst_data_dir]),
+              hc.os_devpath,
+              File.expand_path('kvm.pid', hc.inst_data_dir),
               inst[:runtime_config][:telnet_port]
              ]
         if vnic = inst[:instance_nics].first
@@ -25,65 +26,30 @@ module Dcmgr
         sh(cmd, args)
 
         unless vnic.nil?
-          node = data[:node]
-          network_map = data[:network_map]
-
-          # physical interface
-          physical_if = find_nic(node.manifest.config.hv_ifindex)
-          raise "UnknownPhysicalNIC" if physical_if.nil?
-
-          if network_map[:vlan_id] == 0
-            # bridge interface
-            bridge_if = node.manifest.config.bridge_novlan
-            unless valid_nic?(bridge_if)
-              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-              sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
-            end
-          else
-            # vlan interface
-            vlan_if = "#{physical_if}.#{network_map[:vlan_id]}"
-            if valid_nic?(vlan_if)
-              sh("/sbin/vconfig add #{physical_if} #{network_map[:vlan_id]}")
-            end
-
-            # bridge interface
-            bridge_if = "#{node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
-            if valid_nic?(bridge_if)
-              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-              sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
-            end
-          end
-
-          # interface up? down?
-          [ vlan_if, bridge_if ].each do |ifname|
-            if nic_state(ifname) == "down"
-              sh("/sbin/ifconfig #{ifname} 0.0.0.0 up")
-            end
-          end
-
           sh("/sbin/ifconfig %s 0.0.0.0 up", [vnic[:uuid]])
-          sh("/usr/sbin/brctl addif %s %s", [bridge_if, vnic[:uuid]])
+          sh("/usr/sbin/brctl addif %s %s", [hc.bridge_if, vnic[:uuid]])
         end
 
         sleep 1
       end
 
-      def terminate_instance(inst_id)
-        kvm_pid=`pgrep -u root -f vdc-#{inst_id}`
+      def terminate_instance(hc)
+        kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
         if $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
           sh("/bin/kill #{kvm_pid}")
         else
-          logger.error("Can not find the KVM process. Skipping: kvm -name vdc-#{inst_id}")
+          logger.error("Can not find the KVM process. Skipping: kvm -name vdc-#{hc.inst_id}")
         end
       end
 
-      def reboot_instance(inst)
+      def reboot_instance(hc)
+        inst = hc.inst
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           t.cmd("system_reset")
         }
       end
 
-      def attach_volume_to_guest(inst, data)
+      def attach_volume_to_guest(hc)
         # pci_devddr consists of three hex numbers with colon separator.
         #  dom <= 0xffff && bus <= 0xff && val <= 0x1f
         # see: qemu-0.12.5/hw/pci.c
@@ -92,8 +58,9 @@ module Dcmgr
         # */
         # static int pci_parse_devaddr(const char *addr, int *domp, int *busp, unsigned *slotp)
         pci_devaddr = nil
+        inst = hc.inst
 
-        sddev = File.expand_path(File.readlink(data[:linux_dev_path]), '/dev/disk/by-path')
+        sddev = File.expand_path(File.readlink(hc.os_devpath), '/dev/disk/by-path')
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           # success message:
           #   OK domain 0, bus 0, slot 4, function 0
@@ -124,10 +91,12 @@ module Dcmgr
         pci_devaddr.join(':')
       end
 
-      def detach_volume_from_guest(guest_device_name, data)
-        pci_devaddr = guest_device_name
+      def detach_volume_from_guest(hc)
+        inst = hc.inst
+        vol = hc.vol
+        pci_devaddr = vol[:guest_device_name]
 
-        connect_monitor(data[:telnet_port]) { |t|
+        connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           t.cmd("pci_del #{pci_devaddr}")
           #
           #  Bus  0, device   4, function 0:

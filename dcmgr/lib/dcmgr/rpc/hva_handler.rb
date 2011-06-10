@@ -32,26 +32,16 @@ module Dcmgr
       include Dcmgr::Helpers::NicHelper
 
       def select_hypervisor
-        hypervisor = @inst[:instance_spec][:hypervisor]
-        case hypervisor
-        when "kvm"
-          @hv = Dcmgr::Drivers::Kvm.new
-        when "lxc"
-          @hv = Dcmgr::Drivers::Lxc.new
-        else
-          raise "Unknown hypervisor type: #{hypervisor}"
-        end
+        @hv = Dcmgr::Drivers::Hypervisor.select_hypervisor(@inst[:instance_spec][:hypervisor])
       end
 
       def attach_volume_to_host
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-        linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
-                                                                      @vol[:transport_information][:iqn],
-                                                                      @vol[:transport_information][:lun]]
+        get_linux_dev_path
 
         tryagain do
-          next true if File.exist?(linux_dev_path)
+          next true if File.exist?(@os_devpath)
 
           sh("iscsiadm -m discovery -t sendtargets -p %s", [@vol[:storage_pool][:ipaddr]])
           sh("iscsiadm -m node -l -T '%s' --portal '%s'",
@@ -62,7 +52,7 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attaching,
                       :attached_at => nil,
-                      :host_device_name => linux_dev_path})
+                      :host_device_name => @os_devpath})
       end
 
       def detach_volume_from_host
@@ -78,30 +68,9 @@ module Dcmgr
       end
 
       def terminate_instance
-        hypervisor = @inst[:instance_spec][:hypervisor]
-        case hypervisor
-        when "kvm"
-          @hv.terminate_instance(@inst_id)
-        when "lxc"
-          inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
-          @hv.terminate_instance(@inst_id, inst_data_dir)
-        else
-          raise "Unknown hypervisor type: #{hypervisor}"
-        end
+        @hv.terminate_instance(HvaContext.new(self))
       end
       
-      def reboot_instance
-        hypervisor = @inst[:instance_spec][:hypervisor]
-        case hypervisor
-        when "kvm"
-          @hv.reboot_instance(@inst)
-        when "lxc"
-          inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
-          @hv.reboot_instance(@inst, inst_data_dir)
-        else
-          raise "Unknown hypervisor type: #{hypervisor}"
-        end
-      end
 
       def update_instance_state(opts, ev)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
@@ -115,6 +84,57 @@ module Dcmgr
         event.publish(ev, :args=>[@vol_id])
       end
 
+      def check_interface
+        vnic = @inst[:instance_nics].first
+        unless vnic.nil?
+          network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
+
+          # physical interface
+          physical_if = find_nic(@node.manifest.config.hv_ifindex)
+          raise "UnknownPhysicalNIC" if physical_if.nil?
+
+          if network_map[:vlan_id] == 0
+            # bridge interface
+            bridge_if = @node.manifest.config.bridge_novlan
+            unless valid_nic?(bridge_if)
+              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+              sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
+            end
+          else
+            # vlan interface
+            vlan_if = "#{physical_if}.#{network_map[:vlan_id]}"
+            unless valid_nic?(vlan_if)
+              sh("/sbin/vconfig add #{physical_if} #{network_map[:vlan_id]}")
+            end
+
+            # bridge interface
+            bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
+            unless valid_nic?(bridge_if)
+              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+              sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
+            end
+          end
+
+          # interface up? down?
+          [ vlan_if, bridge_if ].each do |ifname|
+            if nic_state(ifname) == "down"
+              sh("/sbin/ifconfig #{ifname} 0.0.0.0 up")
+            end
+          end
+          sleep 1
+          bridge_if
+        end
+      end
+
+
+      def get_linux_dev_path
+        # check under until the dev file is created.
+        # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
+        @os_devpath = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
+                                                                      @vol[:transport_information][:iqn],
+                                                                      @vol[:transport_information][:lun]]
+      end
+
       job :run_local_store, proc {
         @inst_id = request.args[0]
         logger.info("Booting #{@inst_id}")
@@ -125,26 +145,21 @@ module Dcmgr
         # select hypervisor :kvm, :lxc
         select_hypervisor
 
+        # create hva context
+        hc = HvaContext.new(self)
+
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
         # setup vm data folder
-        @inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
-        FileUtils.mkdir(@inst_data_dir) unless File.exists?(@inst_data_dir)
+        inst_data_dir = hc.inst_data_dir
+        FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
         # copy image file
         img_src = @inst[:image][:source]
-        img_path = File.expand_path("#{@inst[:uuid]}", @inst_data_dir)
-        sh("curl --silent -o '#{img_path}' #{img_src[:uri]}")
+        @os_devpath = File.expand_path("#{@inst[:uuid]}", inst_data_dir)
+        sh("curl --silent -o '#{@os_devpath}' #{img_src[:uri]}")
         sleep 1
 
-        vnic = @inst[:instance_nics].first
-        network_map = nil
-        unless vnic.nil?
-          network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
-        end
-
-        @hv.run_instance(@inst, {:node=>@node,
-                           :inst_data_dir=>@inst_data_dir,
-                           :os_devpath=>img_path,
-                           :network_map=>network_map})
+        @bridge_if = check_interface
+        @hv.run_instance(hc)
         update_instance_state({:state=>:running}, 'hva/instance_started')
       }, proc {
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
@@ -163,11 +178,14 @@ module Dcmgr
         # select hypervisor :kvm, :lxc
         select_hypervisor
 
+        # create hva context
+        hc = HvaContext.new(self)
+
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
 
         # setup vm data folder
-        @inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
-        FileUtils.mkdir(@inst_data_dir) unless File.exists?(@inst_data_dir)
+        inst_data_dir = hc.inst_data_dir
+        FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
 
         # create volume from snapshot
         jobreq.run("zfs-handle.#{@vol[:storage_pool][:node_id]}", "create_volume", @vol_id)
@@ -180,24 +198,14 @@ module Dcmgr
         logger.info("Attaching #{@vol_id} on #{@inst_id}")
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-        linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
-                                                                      @vol[:transport_information][:iqn],
-                                                                      @vol[:transport_information][:lun]]
+        get_linux_dev_path
 
         # attach disk
         attach_volume_to_host
         
         # run vm
-        vnic = @inst[:instance_nics].first
-        network_map = nil
-        unless vnic.nil?
-          network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
-        end
-
-        @hv.run_instance(@inst, {:node=>@node,
-                         :inst_data_dir=>@inst_data_dir,
-                         :os_devpath=>linux_dev_path,
-                         :network_map=>network_map})
+        @bridge_if = check_interface
+        @hv.run_instance(HvaContext.new(self))
         update_instance_state({:state=>:running}, 'hva/instance_started')
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
       }, proc {
@@ -275,9 +283,7 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:attaching, :attached_at=>nil})
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-        linux_dev_path = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
-                                                                      @vol[:transport_information][:iqn],
-                                                                      @vol[:transport_information][:lun]]
+        get_linux_dev_path
 
         # attach disk on host os
         attach_volume_to_host
@@ -285,9 +291,7 @@ module Dcmgr
         logger.info("Attaching #{@vol_id} on #{@inst_id}")
 
         # attach disk on guest os
-        inst_data_dir = File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)
-        pci_devaddr = @hv.attach_volume_to_guest(@inst, {:linux_dev_path=>linux_dev_path,
-                                                   :inst_data_dir=>inst_data_dir})
+        pci_devaddr = @hv.attach_volume_to_guest(HvaContext.new(self))
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attached,
@@ -311,10 +315,7 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:detaching, :detached_at=>nil})
         # detach disk on guest os
-        inst_data_dir = File.expand_path("#{@inst[:uuid]}", @node.manifest.config.vm_data_dir)
-        @hv.detach_volume_from_guest(@vol[:guest_device_name], {:telnet_port=>@inst[:runtime_config][:telnet_port],
-                                     :inst_id=>@inst[:uuid],
-                                     :inst_data_dir=>inst_data_dir})
+        @hv.detach_volume_from_guest(HvaContext.new(self))
 
         # detach disk on host os
         detach_volume_from_host
@@ -327,8 +328,11 @@ module Dcmgr
         # select_hypervisor :kvm, :lxc
         select_hypervisor
 
+        # check interface
+        @bridge_if = check_interface
+
         # reboot instance
-        reboot_instance
+        @hv.reboot_instance(HvaContext.new(self))
       }
 
       def rpc
@@ -343,5 +347,42 @@ module Dcmgr
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end
     end
+
+    class HvaContext
+
+      def initialize(hvahandler)
+        raise "Invalid Class: #{hvahandler}" unless hvahandler.instance_of?(HvaHandler)
+        @hva = hvahandler
+      end
+
+      def node
+        @hva.instance_variable_get(:@node)
+      end
+
+      def inst_id
+        @hva.instance_variable_get(:@inst_id)
+      end
+
+      def inst
+        @hva.instance_variable_get(:@inst)
+      end
+
+      def os_devpath
+        @hva.instance_variable_get(:@os_devpath)
+      end
+
+      def bridge_if
+        @hva.instance_variable_get(:@bridge_if)
+      end
+
+      def vol
+        @hva.instance_variable_get(:@vol)
+      end
+
+      def inst_data_dir
+        File.expand_path("#{inst_id}", node.manifest.config.vm_data_dir)
+      end
+    end
+
   end
 end

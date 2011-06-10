@@ -176,6 +176,7 @@ module Dcmgr
   module Drivers
     autoload :SnapshotStorage, 'dcmgr/drivers/snapshot_storage'
     autoload :S3Storage, 'dcmgr/drivers/s3_storage'
+    autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
     autoload :Kvm , 'dcmgr/drivers/kvm'
     autoload :Lxc , 'dcmgr/drivers/lxc'
   end
