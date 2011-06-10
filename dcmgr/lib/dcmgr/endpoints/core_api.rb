@@ -264,7 +264,7 @@ module Dcmgr
                 if ssh_key_pair.nil?
                   raise UnknownSshKeyPair, "#{params[:ssh_key]}"
                 else
-                  i.set_ssh_key(ssh_key_pair)
+                  i.set_ssh_key_pair(ssh_key_pair)
                 end
               end
 
