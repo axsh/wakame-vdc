@@ -87,6 +87,7 @@ en:
       keypair_name: "Key Pair Name"
       download_once: "Download Once"
     delete_ssh_keypair:
+      header: "Delete SSH Key Pair"
       message: "Are you sure you want to delete the following key pair?"
   login:
     sign_in: "Sign In"
