@@ -58,10 +58,10 @@ jQuery(function($){
 					<td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
 					<td class="vtip center" title="ip" style="width:60px">
           {{each(index,network) item.vif}}
-            {{if network.vif.ipv4.ipv4.nat_address === undefined}}
-              ${network.vif.ipv4.ipv4.nat_address}
-            {{else}}
+            {{if network.vif.ipv4.ipv4.nat_address === null}}
               ${network.vif.ipv4.ipv4.address}
+            {{else}}
+              ${network.vif.ipv4.ipv4.nat_address}
             {{/if}}
           {{/each}}</td>
 					<td class="state vtip center" title="status">${item.state}</td>
