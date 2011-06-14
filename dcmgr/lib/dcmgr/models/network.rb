@@ -14,6 +14,7 @@ module Dcmgr::Models
       String :dns_server
       String :dhcp_server
       String :metadata_server
+      Fixnum :metadata_server_port
       Fixnum :vlan_lease_id, :null=>false, :default=>0
       Fixnum :nat_network_id
       Text :description
