@@ -2,7 +2,7 @@
 
 module Dcmgr::Drivers
   
-  class S3Storage < SnapshotStorage
+  class IIJGIOStorage < SnapshotStorage
    
     def download(keyname, filename, path) 
       cmd = "get %s %s %s" 

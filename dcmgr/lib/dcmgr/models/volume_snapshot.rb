@@ -66,5 +66,14 @@ module Dcmgr::Models
       vs.state = :deleting
       vs.save_changes
     end
+    
+    def self.store_local?(destination)
+      if destination.nil?
+        true 
+      else
+        false
+      end 
+    end 
+
   end
 end

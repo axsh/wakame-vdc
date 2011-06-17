@@ -468,10 +468,14 @@ module Dcmgr
           # params snapshot_id, string, optional
           # params storage_pool_id, string, optional
           control do
+            destination_key = nil
             Models::Volume.lock!
             if params[:snapshot_id]
               v = create_volume_from_snapshot(@account.canonical_uuid, params[:snapshot_id])
               sp = v.storage_pool
+              unless Models::VolumeSnapshot.store_local?(params[:destination])
+                destination_key = Dcmgr::StorageService.generate_destination_key(params[:destination], @account.canonical_uuid, params[:snapshot_id])
+              end
             elsif params[:volume_size]
               if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
                   !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
@@ -496,7 +500,7 @@ module Dcmgr
             end
 
             commit_transaction
-            res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid)
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid, destination_key)
             response_to(v.to_api_document)
           end
         end
@@ -622,9 +626,13 @@ module Dcmgr
 
             vs = v.create_snapshot(@account.canonical_uuid)
             sp = vs.storage_pool
-
             commit_transaction
-            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid)
+
+            unless Models::VolumeSnapshot.store_local?(params[:destination])
+              destination_key = Dcmgr::StorageService.generate_destination_key(params[:destination], @account.canonical_uuid, vs.canonical_uuid)
+            end
+
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, destination_key)
             response_to(vs.to_api_document)
           end
         end
@@ -635,12 +643,13 @@ module Dcmgr
           control do
             Models::VolumeSnapshot.lock!
             snapshot_id = params[:id]
+            destination_key = nil
             raise UndefindVolumeSnapshotID if snapshot_id.nil?
             
             v = find_by_uuid(:VolumeSnapshot, snapshot_id)
             raise UnknownVolumeSnapshot if v.nil?
             raise InvalidVolumeState unless v.state == "available"
-
+            
             begin
               vs  = Models::VolumeSnapshot.delete_snapshot(@account.canonical_uuid, snapshot_id)
             rescue Models::VolumeSnapshot::RequestError => e
@@ -651,7 +660,12 @@ module Dcmgr
             sp = vs.storage_pool
 
             commit_transaction
-            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid)
+             
+            unless Models::VolumeSnapshot.store_local?(params[:destination])
+              destination_key = Dcmgr::StorageService.generate_destination_key(params[:destination], @account.canonical_uuid, vs.canonical_uuid)
+            end
+
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, destination_key)
             response_to([vs.canonical_uuid])
           end
         end

@@ -1,0 +1,12 @@
+---
+s3:
+  driver: "s3"
+  bucket: ""
+  access_key: ""
+  secret_key: ""
+iijgio:
+  driver: "iijgio"
+  bucket: ""
+  access_key: ""
+  secret_key: ""
+

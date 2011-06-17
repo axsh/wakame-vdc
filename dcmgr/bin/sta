@@ -15,6 +15,7 @@ class ZfsHandler < EndpointBuilder
   
   job :create_volume do
     volume_id = request.args[0]
+    dest = Dcmgr::StorageService.get_destination(request.args[1])
     data = rpc.request('sta-collector', 'get_volume', volume_id)
     raise "Invalid volume state: #{data[:state]}" unless data[:state].to_s == 'registering'
 
@@ -35,10 +36,33 @@ class ZfsHandler < EndpointBuilder
     end
 
     if sdata
+      zsnap_dir = "#{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/" 
+      zsnap_filename = "#{sdata[:uuid]}.zsnap"
+      zsnap_file = File.join(zsnap_dir, zsnap_filename)
+      
+      unless File.exists?(zsnap_file)
+        if Dcmgr::StorageService.has_driver?(dest[:driver])
+          begin
+            storage = Dcmgr::StorageService.new(dest[:driver], dest[:access_key], dest[:secret_key])
+            key = "#{dest[:path]}#{dest[:key]}"
+            bucket = storage.bucket(dest[:bucket])
+            bucket.download(key, zsnap_filename, zsnap_dir)
+            logger.info("download to #{dest[:driver]}: #{key}")
+          rescue => e 
+            logger.error(e.message)
+            raise "snapshot not downloaded" if $?.exitstatus != 0
+          end
+        end
+      end
+      
       # create volume from snapshot
-      v = `zfs receive #{vol_path} < #{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap`
-      if $?.exitstatus != 0
-        raise "volume already exists: #{volume_id}"
+      if File.exists?(zsnap_file)
+        v = `zfs receive #{vol_path} < #{zsnap_file}`
+        if $?.exitstatus != 0
+          raise "volume already exists: #{volume_id}"
+        end
+      else
+        raise "snapshot file isn't exists: #{zsnap_file}"
       end
 
       v = `zfs destroy #{vol_path}@#{sdata[:uuid]}`
@@ -120,6 +144,7 @@ class ZfsHandler < EndpointBuilder
 
   job :create_snapshot do
     snapshot_id = request.args[0]
+    dest = Dcmgr::StorageService.get_destination(request.args[1])
     sdata = rpc.request('sta-collector', 'get_snapshot', snapshot_id) unless snapshot_id.nil?
     data = rpc.request('sta-collector', 'get_volume', sdata[:origin_volume_id])
     logger.info("create new snapshot: #{snapshot_id}")
@@ -135,9 +160,24 @@ class ZfsHandler < EndpointBuilder
       logger.info("create a directory: #{snap_dir}")
     end
     snap = `zfs snapshot #{vol_path}@#{sdata[:uuid]}`
-
-    snap_send = `zfs send #{vol_path}@#{sdata[:uuid]} > #{snap_dir}/#{sdata[:uuid]}.zsnap`
+    zsnap_file = "#{snap_dir}/#{sdata[:uuid]}.zsnap"
+    snap_send = `zfs send #{vol_path}@#{sdata[:uuid]} > #{zsnap_file}`
     snap_delete = `zfs destroy #{vol_path}@#{sdata[:uuid]}`
+    
+    if Dcmgr::StorageService.has_driver?(dest[:driver])
+      begin
+        storage = Dcmgr::StorageService.new(dest[:driver], dest[:access_key], dest[:secret_key])
+        key = "#{dest[:path]}#{dest[:key]}"
+        bucket = storage.bucket(dest[:bucket])
+        bucket.upload(key, "#{zsnap_file}")    
+        logger.info("upload to #{dest[:driver]}: #{key}")
+      rescue => e 
+        logger.error(e.message)
+        raise "snapshot has not be uploaded" if $?.exitstatus != 0
+      ensure
+        system("rm -rf #{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap")
+      end
+    end
 
     rpc.request('sta-collector', 'update_snapshot', snapshot_id, {:state=>:available})
     logger.info("created new snapshot: #{snapshot_id}")
@@ -145,15 +185,28 @@ class ZfsHandler < EndpointBuilder
 
   job :delete_snapshot do
     snapshot_id = request.args[0]
+    dest = Dcmgr::StorageService.get_destination(request.args[1])
     sdata = rpc.request('sta-collector', 'get_snapshot', snapshot_id)
     data = rpc.request('sta-collector', 'get_volume', sdata[:origin_volume_id])
     logger.info("deleting snapshot: #{snapshot_id}")
     raise "Invalid snapshot state: #{sdata[:state]}" unless sdata[:state].to_s == 'deleting'
 
     logger.info("deleting snapshot: #{snapshot_id}")
-
-    system("rm -rf #{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap")
-    raise "snapshot has not be deleted" if $?.exitstatus != 0
+    if Dcmgr::StorageService.has_driver?(dest[:driver])
+      begin
+        storage = Dcmgr::StorageService.new(dest[:driver], dest[:access_key], dest[:secret_key])
+        key = "#{dest[:path]}#{dest[:key]}"
+        bucket = storage.bucket(dest[:bucket])
+        bucket.delete(key)    
+        logger.info("delete sanpshot : #{key}")
+      rescue => e 
+        logger.error(e.message)
+        raise "snapshot has not be deleted" if $?.exitstatus != 0
+      end
+    else
+      system("rm -rf #{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap")
+      raise "snapshot has not be deleted" if $?.exitstatus != 0
+    end
 
     rpc.request('sta-collector', 'update_snapshot', snapshot_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
     logger.info("deleted snapshot: #{snapshot_id}")
