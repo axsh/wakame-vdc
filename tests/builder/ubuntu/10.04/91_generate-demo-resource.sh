@@ -10,25 +10,17 @@ unset GEM_PATH
 unset RUBYOPT
 
 
-switch=$(/sbin/ip route list | awk '/^default / { print $5 }')
-ipaddr=$(/sbin/ip addr show ${switch} | grep -w inet | awk '{print $2}')
-ipv4_gw=$(/sbin/ip route list | awk '/^default / { print $3 }')
+ipaddr="${ipaddr:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')}"
+ipv4_gw="${ipv4_gw:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $3}')}"
 
+prefix="${prefix:-$(/sbin/ip route show | awk '$9 == ip { sub(/.*\//, "", $1); print $1; }' ip=$ipaddr)}"
 
-prefix=${ipaddr##*/}
-myaddr=${ipaddr%%/*}
-hostaddr=${myaddr}
-network=$(echo ${myaddr} | cut -d. -f1-3)
+dns_server=${dns_server:-${ipaddr}}
+dhcp_server=${dhcp_server:-${ipaddr}}
+metadata_server=${metadata_server:-${ipaddr}}
 
-dns_server=${myaddr}
-dhcp_server=${myaddr}
-metadata_server=${myaddr}
-metadata_port=9002
-
-dhcp_start_ip=${network}.150
-dhcp_range=10
-local_store_path=/home/wakame/vdc/store
-account_id=a-shpoolxx
+local_store_path=${local_store_path:-/home/wakame/vdc/store}
+account_id=${account_id:-"a-shpoolxx"}
 
 vmimage_uuid=lucid0
 vmimage_file=${vmimage_uuid}.qcow2
@@ -37,21 +29,8 @@ vmimage_s3=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/${vmimage_fil
 #cat <<EOS | egrep -v ^# | mysql -uroot wakame_dcmgr
 generate_sql() {
   cat <<EOS | egrep -v ^#
-TRUNCATE TABLE host_pools;
-TRUNCATE TABLE networks;
-TRUNCATE TABLE images;
-TRUNCATE TABLE instance_specs;
-TRUNCATE TABLE instances;
-TRUNCATE TABLE instance_nics;
-TRUNCATE TABLE ip_leases;
-TRUNCATE TABLE ssh_key_pairs;
-TRUNCATE TABLE netfilter_groups;
-TRUNCATE TABLE netfilter_rules;
-TRUNCATE TABLE vlan_leases;
-TRUNCATE TABLE tag_mappings;
-
 INSERT INTO host_pools VALUES
- (1,'${account_id}','demohost',now(),now(),'hva.${hostaddr}','x86','kvm',100,400000);
+ (1,'${account_id}','demohost',now(),now(),'hva.demo1','x86','kvm',100,400000);
 
 # null is nat_netrowk_id column.
 INSERT INTO networks VALUES
@@ -91,23 +70,8 @@ EOS
 generate_sql | cat -n
 generate_sql | mysql -uroot wakame_dcmgr
 
-
-[ -d /var/lib/vm/ ] || {
-  mkdir /var/lib/vm/
-  chown wakame:wakame /var/lib/vm/
-  chmod 755 /var/lib/vm/
-}
-
-
-{
-cat<<EOS
-# wakame system configuration
-[ -d /home/wakame/vdc ] || {
-  mkdir /home/wakame/vdc
-}
-
 [ -d ${local_store_path} ] || {
-  mkdir ${local_store_path}
+  mkdir -p ${local_store_path}
 }
 
 [ -f ${local_store_path}/${vmimage_file} ] || {
@@ -115,8 +79,5 @@ cat<<EOS
   wget ${vmimage_s3}
   gunzip ${vmimage_file}.gz
 }
-EOS
-} | su - wakame -c /bin/bash
-
 
 exit 0
