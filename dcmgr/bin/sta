@@ -150,8 +150,6 @@ class ZfsHandler < EndpointBuilder
     logger.info("create new snapshot: #{snapshot_id}")
     raise "Invalid volume state: #{data[:state]}" unless data[:state].to_s == 'available' || data[:state].to_s == 'attached'
 
-    logger.info("creating new snapshot: #{snapshot_id}")
-
     vol_path = "#{data[:storage_pool][:export_path]}/#{data[:uuid]}"
     snap_dir = "#{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}"
     unless File.exist?(snap_dir)
