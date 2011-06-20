@@ -92,11 +92,11 @@ class ZfsHandler < EndpointBuilder
     if $?.exitstatus != 0
       raise "failed iscsi target request: #{volume_id}"
     end
-    il = `iscsitadm list target -v #{data[:storage_pool][:export_path]}/#{data[:uuid]}`
+    il = sh("iscsitadm list target -v %s", ["#{data[:storage_pool][:export_path]}/#{data[:uuid]}"])
     if $?.exitstatus != 0
       raise "iscsi target has not be created #{volume_id}"
     end
-    il = il.downcase.split("\n").select {|row| row.strip!}
+    il = il[:stdout].downcase.split("\n").select {|row| row.strip!}
     # :transport_information => {:iqn => "iqn.1986-03.com.sun:02:787bca42-9639-44e4-f115-f5b06ed31817", :lun => 0}
     opt = {:iqn => il[0].split(": ").last, :lun=>il[6].split(": ").last.to_i}
 
