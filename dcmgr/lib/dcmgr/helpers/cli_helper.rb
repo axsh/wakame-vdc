@@ -71,7 +71,7 @@ module Dcmgr
           raise CommandError.new("Unexpected exit code=#{stat.exitstatus} (expected=#{opts[:expect_exitcode]})", \
             outbuf, errbuf)
         end
-        true
+        {:stdout => outbuf, :stderr => errbuf}
       end
     end
 
