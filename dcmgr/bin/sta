@@ -28,10 +28,10 @@ class ZfsHandler < EndpointBuilder
     rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:creating, :export_path=>data[:uuid]})
 
     vol_path = "#{data[:storage_pool][:export_path]}/#{data[:uuid]}"
-    `zfs list #{File.dirname(vol_path)} > /dev/null 2>&1`
+    `/usr/sbin/zfs list #{File.dirname(vol_path)} > /dev/null 2>&1`
     if $?.exitstatus != 0
       # create parent filesystem
-      `zfs create -p #{File.dirname(vol_path)}`
+      `/usr/sbin/zfs create -p #{File.dirname(vol_path)}`
       logger.info("create parent filesystem: #{File.dirname(vol_path)}")
     end
 
@@ -57,7 +57,7 @@ class ZfsHandler < EndpointBuilder
       
       # create volume from snapshot
       if File.exists?(zsnap_file)
-        v = `zfs receive #{vol_path} < #{zsnap_file}`
+        v = `/usr/sbin/zfs receive #{vol_path} < #{zsnap_file}`
         if $?.exitstatus != 0
           raise "volume already exists: #{volume_id}"
         end
@@ -65,22 +65,22 @@ class ZfsHandler < EndpointBuilder
         raise "snapshot file isn't exists: #{zsnap_file}"
       end
 
-      v = `zfs destroy #{vol_path}@#{sdata[:uuid]}`
+      v = `/usr/sbin/zfs destroy #{vol_path}@#{sdata[:uuid]}`
       if $?.exitstatus != 0
         raise "volume snapshot has not deleted: #{volume_id}@#{sdata[:uuid]}"
       end
 
-      vl = `zfs list #{vol_path}`
+      vl = `/usr/sbin/zfs list #{vol_path}`
       if vl.nil? || $?.exitstatus != 0
         raise "volume has not be created: #{volume_id}"
       end
     else
       # create volume
-      v = `zfs create -p -V #{data[:size]}m #{vol_path}`
+      v = `/usr/sbin/zfs create -p -V #{data[:size]}m #{vol_path}`
       if $?.exitstatus != 0
         raise "volume already exists: #{volume_id}"
       end
-      vl = `zfs list #{vol_path}`
+      vl = `/usr/sbin/zfs list #{vol_path}`
       if vl.nil? || $?.exitstatus != 0
         raise "volume has not be created: #{volume_id}"
       end
@@ -88,7 +88,7 @@ class ZfsHandler < EndpointBuilder
 
     logger.info("created new volume: #{volume_id}")
 
-    vr = `zfs shareiscsi=on #{data[:storage_pool][:export_path]}/#{data[:uuid]}`
+    vr = `/usr/sbin/zfs shareiscsi=on #{data[:storage_pool][:export_path]}/#{data[:uuid]}`
     if $?.exitstatus != 0
       raise "failed iscsi target request: #{volume_id}"
     end
@@ -159,10 +159,10 @@ class ZfsHandler < EndpointBuilder
       `mkdir -p #{snap_dir}`
       logger.info("create a directory: #{snap_dir}")
     end
-    snap = `zfs snapshot #{vol_path}@#{sdata[:uuid]}`
+    snap = `/usr/sbin/zfs snapshot #{vol_path}@#{sdata[:uuid]}`
     zsnap_file = "#{snap_dir}/#{sdata[:uuid]}.zsnap"
-    snap_send = `zfs send #{vol_path}@#{sdata[:uuid]} > #{zsnap_file}`
-    snap_delete = `zfs destroy #{vol_path}@#{sdata[:uuid]}`
+    snap_send = `/usr/sbin/zfs send #{vol_path}@#{sdata[:uuid]} > #{zsnap_file}`
+    snap_delete = `/usr/sbin/zfs destroy #{vol_path}@#{sdata[:uuid]}`
     
     if Dcmgr::StorageService.has_driver?(dest[:driver])
       begin
