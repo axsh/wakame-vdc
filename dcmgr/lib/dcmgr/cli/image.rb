@@ -20,6 +20,7 @@ module Dcmgr::Cli
         UnsupportedArchError.raise(options[:arch]) unless M::HostPool::SUPPORTED_ARCH.member?(options[:arch])
         
         full_path = File.expand_path(location)
+        File.exists?(full_path) || Error.raise("File not found: #{full_path}",100)
         
         #TODO: Check if :state is a valid state
         fields = options.dup
