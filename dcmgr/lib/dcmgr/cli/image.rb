@@ -9,20 +9,23 @@ module Dcmgr::Cli
     class AddOperation < Base
       namespace :add
 
-      desc "local URI [options]", "Register local store machine image."
+      desc "local IMAGE_LOCATION [options]", "Register local store machine image."
       method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new machine image."
       method_option :account_id, :type => :string, :aliases => "-a", :required => true, :desc => "The UUID of the account that this machine image belongs to."
       method_option :arch, :type => :string, :default => 'x86_64', :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
       method_option :is_public, :type => :boolean, :aliases => "-p", :default => false, :desc => "A flag that determines whether the new machine image is public or not."
       method_option :state, :type => :string, :aliases => "-st", :default => "init", :desc => "The state for the new machine image."
-      def local(uri)
+      def local(location)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostPool::SUPPORTED_ARCH.member?(options[:arch])
+        
+        full_path = File.expand_path(location)
+        
         #TODO: Check if :state is a valid state
         fields = options.dup
         fields[:boot_dev_type]=M::Image::BOOT_DEV_LOCAL
         fields[:source] = {
-          :uri => uri,
+          :uri => "file://#{full_path}",
         }
         puts add(M::Image, fields)
       end
