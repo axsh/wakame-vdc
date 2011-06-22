@@ -17,6 +17,7 @@ module Dcmgr::Models
       Fixnum :size, :null=>false
       Fixnum :status, :null=>false, :default=>0
       String :state, :null=>false, :default=>STATE_TYPE_REGISTERING
+      String :destination_key, :null=>false 
       Time   :deleted_at
       index :storage_pool_id
       index  :deleted_at
@@ -43,6 +44,7 @@ module Dcmgr::Models
         :state => self.state,
         :size => self.size,
         :origin_volume_id => self.origin_volume_id,
+        :destination => self.destination,
         :created_at => self.created_at,
         :deleted_at => self.deleted_at,
       }
@@ -57,6 +59,14 @@ module Dcmgr::Models
     def origin_volume
       Volume[origin_volume_id]
     end
+    
+    def snapshot_filename
+      "#{self.canonical_uuid}.zsnap"
+    end
+    
+    def destination
+      self.destination_key.split('@')[0]
+    end
 
     def self.delete_snapshot(account_id, uuid)
       vs = self.dataset.where(:account_id => account_id).where(:uuid => uuid.split('-').last).first
@@ -67,12 +77,13 @@ module Dcmgr::Models
       vs.save_changes
     end
     
+    def update_destination_key(account_id, destination_key)
+      self.destination_key = destination_key
+      self.save_changes
+    end
+
     def self.store_local?(destination)
-      if destination.nil?
-        true 
-      else
-        false
-      end 
+      destination.nil?
     end 
 
   end

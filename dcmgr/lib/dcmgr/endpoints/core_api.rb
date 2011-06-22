@@ -458,14 +458,12 @@ module Dcmgr
           # params snapshot_id, string, optional
           # params storage_pool_id, string, optional
           control do
-            destination_key = nil
             Models::Volume.lock!
             if params[:snapshot_id]
               v = create_volume_from_snapshot(@account.canonical_uuid, params[:snapshot_id])
               sp = v.storage_pool
-              unless Models::VolumeSnapshot.store_local?(params[:destination])
-                destination_key = Dcmgr::StorageService.generate_destination_key(params[:destination], @account.canonical_uuid, params[:snapshot_id])
-              end
+              vs = find_by_uuid(:VolumeSnapshot, params[:snapshot_id])
+              repository_address = Dcmgr::StorageService.repository_address(vs.destination_key)
             elsif params[:volume_size]
               if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
                   !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
@@ -490,7 +488,7 @@ module Dcmgr
             end
 
             commit_transaction
-            res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid, destination_key)
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid, repository_address)
             response_to(v.to_api_document)
           end
         end
@@ -566,7 +564,12 @@ module Dcmgr
         end
 
       end
-
+      
+      get '/api/volume_snapshots/upload_destination' do
+        config_data = StorageService::snapshot_repository_config
+        response_to([{:results => config_data.keys}])
+      end
+      
       collection :volume_snapshots do
         operation :index do
           description 'Show lists of the volume_snapshots'
@@ -601,16 +604,14 @@ module Dcmgr
             v = find_by_uuid(:Volume, params[:volume_id])
             raise UnknownVolume if v.nil?
             raise InvalidVolumeState unless v.ready_to_take_snapshot?
-
             vs = v.create_snapshot(@account.canonical_uuid)
             sp = vs.storage_pool
+            destination_key = Dcmgr::StorageService.destination_key(@account.canonical_uuid, params[:destination], sp.snapshot_base_path, vs.snapshot_filename)
+            vs.update_destination_key(@account.canonical_uuid, destination_key)
             commit_transaction
-
-            unless Models::VolumeSnapshot.store_local?(params[:destination])
-              destination_key = Dcmgr::StorageService.generate_destination_key(params[:destination], @account.canonical_uuid, vs.canonical_uuid)
-            end
-
-            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, destination_key)
+            
+            repository_address = Dcmgr::StorageService.repository_address(destination_key)
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, repository_address)
             response_to(vs.to_api_document)
           end
         end
@@ -621,12 +622,13 @@ module Dcmgr
           control do
             Models::VolumeSnapshot.lock!
             snapshot_id = params[:id]
-            destination_key = nil
             raise UndefindVolumeSnapshotID if snapshot_id.nil?
             
             v = find_by_uuid(:VolumeSnapshot, snapshot_id)
             raise UnknownVolumeSnapshot if v.nil?
             raise InvalidVolumeState unless v.state == "available"
+            
+            destination_key = v.destination_key
             
             begin
               vs  = Models::VolumeSnapshot.delete_snapshot(@account.canonical_uuid, snapshot_id)
@@ -639,11 +641,8 @@ module Dcmgr
 
             commit_transaction
              
-            unless Models::VolumeSnapshot.store_local?(params[:destination])
-              destination_key = Dcmgr::StorageService.generate_destination_key(params[:destination], @account.canonical_uuid, vs.canonical_uuid)
-            end
-
-            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, destination_key)
+            repository_address = Dcmgr::StorageService.repository_address(destination_key)
+            res = Dcmgr.messaging.submit("zfs-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
             response_to([vs.canonical_uuid])
           end
         end

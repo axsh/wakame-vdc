@@ -9,6 +9,12 @@ module Dcmgr
       @account[:secret_key] = secret_key
     end
     
+    def self.snapshot_repository_config
+      config_filename = 'snapshot_repository.yml'
+      config_path = File.join(File.expand_path(DCMGR_ROOT), 'config')
+      YAML.load_file(File.join(config_path, config_filename))
+    end
+
     def self.has_driver?(driver)
       %w(S3 IIJGIO).include? driver.upcase
     end
@@ -29,48 +35,58 @@ module Dcmgr
       @driver
     end
 
-    def self.get_destination(destination_key)
-      if destination_key.nil?
-        return {
-          :driver => 'local'
-        }
+    def self.repository(repository_address)
+      if repository_address.nil?
+        return {} 
       end
-
-      keys = destination_key.split(":")
+      tmp = repository_address.split(',')
+      destination_key = tmp[0]
+      dest = destination_key.match(/^([a-z0-9_]+)@([a-z0-9_-]+):([a-z0-9_-]+):([a-z0-9_\-\/]+)(snap-[a-z0-9]+\.zsnap)+$/)
+      if dest.nil?
+        raise "Invalid format: #{repository_address}"
+      end 
+          
       h = { 
-        :driver => keys[0],
-        :bucket => keys[1],
-        :key => keys[2],
-        :path => keys[3],
-        :access_key => keys[4],
-        :secret_key => keys[5],
+        :destination => dest[1],
+        :driver => dest[2],
+        :bucket => dest[3],
+        :path => dest[4],
+        :filename => dest[5],
+        :access_key => tmp[1],
+        :secret_key => tmp[2],
       }   
     end 
-  
-    def self.generate_destination_key(destination, account_id, filename)
-    
-      format = '%s:%s:%s:%s:%s:%s'
 
-      config_path = File.join(File.expand_path('../../'), 'config')
-      config_filename = 'snapshot_repository.yml'
-      config_data = YAML.load_file(File.join(config_path, config_filename))
-      config = config_data[destination]
-    
-      if config
-        driver = config['driver']
-        bucket = config['bucket']
-        path = "snapshots/#{account_id}/"
-        key = "#{filename}.zsnap"
-        access_key = config['access_key']
-        secret_key = config['secret_key']
+    def self.repository_address(destination_key)
+      format = '%s,%s,%s'
+      config_data = self.snapshot_repository_config
+      destination = destination_key.split('@')[0]
+      
+      if destination == 'local'
+        config = {:access_key => '', :secret_key => ''}
       else
-        driver = 'local'
-        bucket = key = path = ''
-        access_key = secret_key = ''
-      end 
+        config = config_data[destination]
+      end
+      
+      sprintf(format, *[destination_key, config["access_key"], config["secret_key"]])
+    end
 
-      sprintf(format, *[driver, bucket, key, path, access_key, secret_key])
-    end 
-
+    def self.destination_key(account_id, destination, store_path, filename)
+      format = '%s@%s:%s:%s'
+      if destination == 'local'
+        config = {
+          "driver" => "local",
+          "bucket" => "none"
+        }
+      else
+        config_data = snapshot_repository_config
+        config = config_data[destination]
+        if config.nil?
+          raise "Destination isn't exists"
+        end
+        store_path = "snapshots/#{account_id}/"
+      end
+      sprintf(format, *[destination, config["driver"], config["bucket"], File.join(store_path, filename)])
+    end
   end
 end
