@@ -25,7 +25,6 @@ module Dcmgr::Cli
     def show(uuid=nil)
       if uuid
         group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
-        #p group.netfilter_rules
         puts ERB.new(<<__END, nil, '-').result(binding)
 Group UUID:\t<%= group.canonical_uuid %>
 Account id:\t<%= group.account_id %>
@@ -49,8 +48,17 @@ __END
     method_option :name, :type => :string, :aliases => "-n", :desc => "The name for this security group."
     method_option :description, :type => :string, :aliases => "-d", :desc => "The description for this new security group."
     def modify(uuid)
+      UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
       super(M::NetfilterGroup,uuid,options)
     end
+    
+    #desc "addinstance UUID [options]", "Add an instance to a security group"
+    #method_option :instance, :type => :string, :aliases => "-i", :required => :true, :desc => "The instance to add to the group"
+    #def addinstance(uuid)
+      #group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
+      #p group.methods
+      ##TODO: finish this method
+    #end
     
     desc "addrule UUID [options]", "Add a rule to a security group"
     method_option :rule, :type => :string, :aliases => "-r", :desc => "The new rule to be added."
