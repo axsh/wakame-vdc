@@ -217,6 +217,7 @@ ja:
       snapshot_id: "スナップショットID"
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
+      destination: "保存先"
       created: "作成日"
       status: "状態"
     details:
@@ -225,6 +226,7 @@ ja:
       snapshot: "スナップショット"
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
+      destination: "保存先"
       status: "状態"
       created_at: "作成日"
       updated_at: "更新日"

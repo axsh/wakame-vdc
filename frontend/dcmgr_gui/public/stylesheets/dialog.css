@@ -61,3 +61,7 @@
 #launch_instance_dialog #user_data_field legend {
   padding: 0 3px 0 3px;
 }
+
+#create_snapshost_dialog #create_snapshots {
+  padding-top: 10px;
+}

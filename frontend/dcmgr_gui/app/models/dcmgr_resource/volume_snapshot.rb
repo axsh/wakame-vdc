@@ -16,6 +16,7 @@ module DcmgrResource
     def self.create(params)
       snapshot = self.new
       snapshot.volume_id = params[:volume_id]
+      snapshot.destination = params[:destination]
       snapshot.save
       snapshot
     end
@@ -29,6 +30,11 @@ module DcmgrResource
       self.collection_name = File.join(@collection,account_id)
       result = self.get(:status)
       self.collection_name = @collection
+      result
+    end
+    
+    def self.upload_destination
+      result = self.get(:upload_destination)
       result
     end
   end

@@ -1,4 +1,5 @@
 
+  
 # Sample localization file for English. Add more files in this directory for other locales.
 # See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
@@ -218,6 +219,7 @@ en:
       snapshot_id: "Snapshot ID"
       capacity: "Capacity"
       origin_volume_id: "OriginVolume ID"
+      destination: "Destination"
       created: "Created"
       status: "Status"
     details:
@@ -226,6 +228,7 @@ en:
       snapshot: "Snapshot"
       capacity: "Capacity"
       origin_volume_id: "OriginVolumeID"
+      destination: "Destiantion"
       status: "Status"
       created_at: "Created At"
       updated_at: "Updated At"

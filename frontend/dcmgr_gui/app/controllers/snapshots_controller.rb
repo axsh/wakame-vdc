@@ -7,14 +7,16 @@ class SnapshotsController < ApplicationController
 
   def create
     volume_ids = params[:ids]
-    response = []
+    destination = params[:destination]
+    res = []
     volume_ids.each do |volume_id|
       data = {
-        :volume_id => volume_id
+        :volume_id => volume_id,
+        :destination => destination
       }
-      response << DcmgrResource::VolumeSnapshot.create(data)
+      res << DcmgrResource::VolumeSnapshot.create(data)
     end
-    render :json => response
+    render :json => res
   end
 
   def destroy
@@ -48,5 +50,10 @@ class SnapshotsController < ApplicationController
     deleted_resource_count = DcmgrResource::VolumeSnapshot.get_resource_state_count(resources, 'deleted')
     total = all_resource_count - deleted_resource_count
     render :json => total
+  end
+  
+  def upload_destination
+    destinations = DcmgrResource::VolumeSnapshot.upload_destination
+    render :json => destinations[0]
   end
 end

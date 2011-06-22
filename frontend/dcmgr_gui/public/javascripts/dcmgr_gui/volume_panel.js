@@ -186,13 +186,13 @@ DcmgrGUI.prototype.volumePanel = function(){
   create_snapshot_buttons[close_button_name] = function() { $(this).dialog("close"); }; 
   create_snapshot_buttons[create_button_name] = function() {
     var volume_snapshots = $(this).find('#create_snapshots').find('li');
+    var destination = $(this).find('#destination').val();
     var ids = []
     $.each(volume_snapshots,function(){
      ids.push($(this).text())
     })
 
-    var data = $.param({ids:ids});
-    
+    var data = $.param({ids:ids, destination:destination});
     var request = new DcmgrGUI.Request;
     request.post({
       "url": '/snapshots',
@@ -208,10 +208,30 @@ DcmgrGUI.prototype.volumePanel = function(){
   var bt_create_snapshot = new DcmgrGUI.Dialog({
     target:'.create_snapshot',
     width:400,
-    height:200,
+    height:250,
     title:$.i18n.prop('create_snapshot_header'),
     path:'/create_snapshot',
-    button: create_snapshot_buttons
+    button: create_snapshot_buttons,
+    callback: function() {
+      var self = this;
+      var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
+      $(this).find('#select_destination').empty().html(loading_image);
+      
+      var request = new DcmgrGUI.Request;
+      request.get({
+        "url": '/snapshots/upload_destination',
+        success: function(json,status){
+          var select_html = '<select name="destination" id="destination"></select>';
+          $(self).find('#select_destination').empty().html(select_html);
+          var select_destination = '<option>local</option>';
+          $.each(json.results, function(key, value) {
+            select_destination += '<option>'+value+'</option>';
+          });
+          $(self).find("#destination").empty().html(select_destination);
+          bt_create_snapshot.disabledButton(1, false);
+        }
+      });
+    }
   });
   
   attach_volume_buttons = {};
@@ -298,6 +318,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   bt_create_snapshot.target.bind('click',function(){
     if(!bt_create_snapshot.is_disabled()) { 
       bt_create_snapshot.open(c_list.getCheckedInstanceIds());
+      bt_create_snapshot.disabledButton(1, true);
     }
   });
 

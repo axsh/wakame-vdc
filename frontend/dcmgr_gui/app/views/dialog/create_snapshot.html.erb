@@ -1,7 +1,14 @@
+<div id="create_snapshost_dialog">
 <p><%= t("dialog.create_snapshot.message") %></p>
+<% form_tag :action => "create_snapshot" do %>
 <br />
+store to:&nbsp;  
+<span id="select_destination">
+</span>
 <ul id="create_snapshots">
-        <% @volume_ids.each do |volume_id| %>
-                <li><%= volume_id %></li>
-        <% end %>
+  <% @volume_ids.each do |volume_id| %>
+    <li><%= volume_id %></li>
+  <% end %>
 </ul>
+<% end %>
+</div>

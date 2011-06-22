@@ -88,7 +88,8 @@ DcmgrGui::Application.routes.draw do
   get    'snapshots/show/:id' ,:to => 'snapshots#show'
   post   'snapshots' ,:to => 'snapshots#create'
   delete 'snapshots/:id' ,:to => 'snapshots#destroy'
-  
+  get    'snapshots/upload_destination',:to => 'snapshots#upload_destination'
+
   #sessions
   get    'login' => 'sessions#new', :as => :login
   get    'logout' => 'sessions#destroy', :as => :logout
