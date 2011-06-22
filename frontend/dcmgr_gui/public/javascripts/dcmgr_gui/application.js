@@ -102,7 +102,6 @@ jQuery(function($){
     }else if(e == 'timeout'){
       message = 'Request Time out.';
     }else {
-      
       var is_dcmgr = function() {
         if(xhr.getResponseHeader("X-Vdc-Request-Id")) {
             return true;
@@ -117,11 +116,11 @@ jQuery(function($){
           var code = r.code;
           var body = r.message.replace('Dcmgr::Endpoints::', '');
         } catch(e) {
-          var code = '400'
-          var body = 'Parsing JSON Request failed.';
+          var code = xhr.status;
+          var body = 'Request faild.'
           dcmgrGUI.logger.push(e.type, xhr);
         }  
-              } else{
+      } else{
         var code = xhr.status;
         var body = xhr.statusText;
       }
