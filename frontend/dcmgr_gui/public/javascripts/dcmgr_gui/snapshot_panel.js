@@ -183,6 +183,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
   actions.changeButtonState = function() {
     var ids = c_list.currentMultiChecked()['ids'];
     var is_available = false;
+    var is_deleting = false;
     var flag = true;
 
     $.each(ids, function(key, uuid){
@@ -190,6 +191,8 @@ DcmgrGUI.prototype.snapshotPanel = function(){
       var state = $(row_id).find('.state').text();
       if(state == 'available') {
         is_available = true;
+      } else if(state == 'deleting') {
+        is_deleting = true;
       } else{
         flag = false;
       }
@@ -201,6 +204,10 @@ DcmgrGUI.prototype.snapshotPanel = function(){
     }else{
       bt_create_volume.disableDialogButton();
       bt_delete_snapshot.disableDialogButton();
+    }
+
+    if(is_deleting == true) {
+      bt_delete_snapshot.enableDialogButton();
     }
   }
 

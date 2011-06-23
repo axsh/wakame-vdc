@@ -398,6 +398,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     var ids = c_list.currentMultiChecked()['ids'];
     var is_available = false;
     var is_attached = false;
+    var is_deregistering = false;
     var flag = true;
 
     $.each(ids, function(key, uuid){
@@ -407,11 +408,13 @@ DcmgrGUI.prototype.volumePanel = function(){
         is_available = true;
       } else if(state == 'attached') {
         is_attached = true;
+      } else if(state == 'deregistering') {
+        is_deregistering = true;
       } else{
         flag = false;
       }
     });
-    
+
     if (flag == true){
 
       if(is_available == true && is_attached == true) {
@@ -436,6 +439,10 @@ DcmgrGUI.prototype.volumePanel = function(){
         bt_delete_volume.disableDialogButton();
         bt_create_snapshot.disableDialogButton();
         selectmenu.data('selectmenu').disableButton();
+      }
+
+      if (is_deregistering == true) {
+        bt_delete_volume.enableDialogButton();
       }
 
     } else{

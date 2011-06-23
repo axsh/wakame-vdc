@@ -204,19 +204,22 @@ DcmgrGUI.prototype.instancePanel = function(){
   actions.changeButtonState = function() {
     var ids = c_list.currentMultiChecked()['ids'];
     var is_running = false;
+    var is_shutting_down = false;
     var flag = true;
     $.each(ids, function(key, uuid){
       var row_id = '#row-'+uuid;
       var state = $(row_id).find('.state').text();
       if(state == 'running') {
         is_running = true;
+      } else if(state =='shuttingdown') {
+        is_shutting_down = true;
       } else{
         flag = false;
       }
     });
     
     if (flag == true){
-      if(is_running == true) {
+      if(is_running == true || is_shutting_down) {
         selectmenu.data('selectmenu').enableButton();
       } else {
         selectmenu.data('selectmenu').disableButton();
