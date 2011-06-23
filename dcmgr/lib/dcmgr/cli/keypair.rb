@@ -6,27 +6,63 @@ module Dcmgr::Cli
     M = Dcmgr::Models
 
     desc "add [options]", "Register a new key pair."
-    method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new key pair."
-    method_option :account_id, :type => :string, :aliases => "-a", :desc => "The UUID of the account this key pair belongs to.", :required => true
-    method_option :name, :type => :string, :aliases => "-n", :desc => "The name for this key pair.", :required => true
-    method_option :public_key, :type => :string, :aliases => "-pub", :desc => "The path to the public key.", :required => true
-    method_option :private_key, :type => :string, :aliases => "-pri", :desc => "The path to the private key.", :required => true
+    method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new key pair"
+    method_option :account_id, :type => :string, :aliases => "-a", :desc => "The UUID of the account this key pair belongs to", :required => true
+    method_option :name, :type => :string, :aliases => "-n", :desc => "The name for this key pair", :required => true
+    method_option :public_key, :type => :string, :aliases => "-pub", :desc => "The path to the public key", :required => true
+    method_option :private_key, :type => :string, :aliases => "-pri", :desc => "The path to the private key", :required => true
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
-      Error.raise "Private key file doesn't exist",100 unless File.exists?(options[:private_key])
-      Error.raise "Public key file doesn't exist",100 unless File.exists?(options[:public_key])
+      private_key_path = File.expand_path(options[:private_key])
+      public_key_path = File.expand_path(options[:public_key])
+      Error.raise "Private key file doesn't exist",100 unless File.exists?(private_key_path)
+      Error.raise "Public key file doesn't exist",100 unless File.exists?(public_key_path)
       
       fields = options.dup
       
       #Get the keys from their respective files.
-      #TODO: Make this work with ~ for home directory
-      fields[:public_key] = File.open(options[:public_key]) {|f| f.readline}
-      fields[:private_key] = File.open(options[:private_key]) {|f| f.readlines.map.join}
+      fields[:public_key] = File.open(public_key_path) {|f| f.readline}
+      fields[:private_key] = File.open(private_key_path) {|f| f.readlines.map.join}
       
       #Generate the fingerprint from the public key file
       fields[:finger_print] = %x{ssh-keygen -lf #{options[:public_key]} | cut -d ' ' -f2}.chomp
       
       puts super(M::SshKeyPair,fields)
     end
+    
+    desc "modify UUID [options]", "Modify an existing key pair"
+    method_option :account_id, :type => :string, :aliases => "-a", :desc => "The UUID of the account this key pair belongs to"
+    method_option :name, :type => :string, :aliases => "-n", :desc => "The name for this key pair"
+    def modify(uuid)
+      UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
+      super(M::SshKeyPair,uuid,options)
+    end
+    
+    desc "del UUID", "Delete an existing keypair"
+    def del(uuid)
+      super(M::SshKeyPair,uuid)
+    end
+    
+    desc "show [UUID] [options]", "Show network(s)"
+    def show(uuid=nil)
+      if uuid
+        keypair = M::SshKeyPair[uuid] || UnknownUUIDError.raise(uuid)
+        puts ERB.new(<<__END, nil, '-').result(binding)
+Keypair UUID: <%= keypair.canonical_uuid %>
+Account id: <%= keypair.account_id %>
+Name: <%= keypair.name%>
+Finger print: <%= keypair.finger_print %>
+Public Key:
+<%= keypair.public_key%>
+__END
+      else
+        puts ERB.new(<<__END, nil, '-').result(binding)
+<%- M::SshKeyPair.each { |row| -%>
+<%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= row.name %>\t<%= row.finger_print %>
+<%- } -%>
+__END
+      end
+    end
+    
   end
 end

@@ -7,9 +7,9 @@ module Dcmgr::Models
     taggable 'hp'
     with_timestamps
 
-    HYPERVISOR_XEN_34=:'xen-3.4'
-    HYPERVISOR_XEN_40=:'xen-4.0'
-    HYPERVISOR_KVM=:'kvm'
+    HYPERVISOR_XEN_34='xen-3.4'
+    HYPERVISOR_XEN_40='xen-4.0'
+    HYPERVISOR_KVM='kvm'
 
     ARCH_X86=:x86.to_s
     ARCH_X86_64=:x86_64.to_s
@@ -43,7 +43,7 @@ module Dcmgr::Models
         errors.add(:node_id, "is invalid ID: #{self.node_id}")
       end
 
-      if h = self.class.filter(:node_id=>self.node_id).first
+      if (h = self.class.filter(:node_id=>self.node_id).first) && h.id != self.id
         errors.add(:node_id, " #{self.node_id} is already been associated to #{h.canonical_uuid} ")
       end
       
