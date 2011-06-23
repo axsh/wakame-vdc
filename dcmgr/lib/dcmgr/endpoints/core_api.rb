@@ -138,6 +138,50 @@ module Dcmgr
         end
       end
 
+      def select_index(model_class, data)
+        if model_class.is_a?(Symbol)
+          model_class = Models.const_get(model_class)
+        end
+
+        start = data[:start].to_i
+        start = start < 1 ? 0 : start
+        limit = data[:limit].to_i
+        limit = limit < 1 ? nil : limit
+
+        if %w(Dcmgr::Models::InstanceSpec).member?(model_class.to_s)
+          total_ds = model_class.where(:account_id=>[@account.canonical_uuid,
+                                                              Models::Account::SystemAccount::SharedPoolAccount.uuid,
+                                                             ])
+        else
+          total_ds = model_class.where(:account_id=>@account.canonical_uuid)
+        end
+        
+        if %w(Dcmgr::Models::Instance Dcmgr::Models::Volume Dcmgr::Models::VolumeSnapshot).member?(model_class.to_s)
+          total_ds = total_ds.alives_and_recent_termed
+        end
+        if %w(Dcmgr::Models::Image).member?(model_class.to_s)
+          total_ds = total_ds.or(:is_public=>true)
+        end
+
+        partial_ds  = total_ds.dup.order(:id.desc)
+        partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
+
+        results = partial_ds.all.map {|i|
+          if %w(Dcmgr::Models::Image).member?(model_class.to_s)
+            i.to_api_document(@account.canonical_uuid)
+          else
+            i.to_api_document
+          end
+        }
+
+        res = [{
+                 :owner_total => total_ds.count,
+                 :start => start,
+                 :limit => limit,
+                 :results=> results
+               }]
+      end
+
       # Endpoint to handle VM instance.
       collection :instances do
         operation :index do
@@ -145,22 +189,8 @@ module Dcmgr
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-            
-            total_ds = Models::Instance.where(:account_id=>@account.canonical_uuid).alives_and_recent_termed
-            partial_ds  = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-
-            res = [{
-              :owner_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_api_document }
-            }]
-            
+            res = select_index(:Instance, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -345,22 +375,8 @@ module Dcmgr
         operation :index do
           description 'Show list of machine images'
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-            
-            total_ds = Models::Image.where(:account_id=>@account.canonical_uuid).or(:is_public=>true)
-            partial_ds = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-
-            res = [{
-              :owner_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_api_document(@account.canonical_uuid) }
-            }]
-            
+            res = select_index(:Image, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -395,22 +411,8 @@ module Dcmgr
         operation :index do
           description 'Show list of host pools'
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-            
-            total_ds = Models::HostPool.where(:account_id=>@account.canonical_uuid)
-            partial_ds  = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-
-            res = [{
-              :owner_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_api_document }
-            }]
-            
+            res = select_index(:HostPool, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -433,20 +435,8 @@ module Dcmgr
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-
-            total_v = Models::Volume.where(:account_id => @account.canonical_uuid).alives_and_recent_termed
-            partial_v = total_v.dup.order(:id)
-            partial_v = partial_v.limit(limit, start) if limit.is_a?(Integer)
-            res = [{
-              :owner_total => total_v.count,
-              :start => start,
-              :limit => limit,
-              :results => partial_v.all.map { |v| v.to_api_document}
-            }]
+            res = select_index(:Volume, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -583,20 +573,8 @@ module Dcmgr
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-
-            total_ds = Models::VolumeSnapshot.where(:account_id => @account.canonical_uuid).alives_and_recent_termed
-            partial_ds = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-            res = [{
-              :owner_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results => partial_ds.all.map { |vs| vs.to_api_document}
-            }]
+            res = select_index(:VolumeSnapshot, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -676,22 +654,8 @@ module Dcmgr
         description 'Show lists of the netfilter_groups'
         operation :index do
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-
-            total_ds = Models::NetfilterGroup.where(:account_id=>@account.canonical_uuid)
-            partial_ds = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-            
-            res = [{
-                     :owner_total => total_ds.count,
-                     :start => start,
-                     :limit => limit,
-                     :results=> partial_ds.all.map {|i| i.to_api_document }
-                   }]
-            
+            res = select_index(:NetfilterGroup, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -810,22 +774,8 @@ module Dcmgr
           # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-
-            total_ds = Models::StoragePool.where(:account_id=>@account.canonical_uuid)
-            partial_ds = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-
-            res = [{
-              :owner_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results=> partial_ds.all.map {|sp| sp.to_api_document }
-            }]
-
+            res = select_index(:StoragePool, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -849,23 +799,8 @@ module Dcmgr
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-            
-            total_ds = Models::SshKeyPair.where(:account_id=>@account.canonical_uuid)
-            partial_ds = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-
-            res = [{
-              :owner_total => total_ds.count,
-              :filter_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_api_document }
-            }]
-            
+            res = select_index(:SshKeyPair, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -941,23 +876,8 @@ module Dcmgr
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-            
-            total_ds = Models::Network.where(:account_id=>@account.canonical_uuid)
-            partial_ds = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-
-            res = [{
-              :owner_total => total_ds.count,
-              :filter_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_api_document }
-            }]
-            
+            res = select_index(:Network, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
@@ -1083,24 +1003,8 @@ module Dcmgr
           # params start, fixnum, optional 
           # params limit, fixnum, optional
           control do
-            start = params[:start].to_i
-            start = start < 1 ? 0 : start
-            limit = params[:limit].to_i
-            limit = limit < 1 ? nil : limit
-            
-            total_ds = Models::InstanceSpec.where(:account_id=>[@account.canonical_uuid,
-                                                                Models::Account::SystemAccount::SharedPoolAccount.uuid,
-                                                               ])
-            partial_ds  = total_ds.dup.order(:id)
-            partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-
-            res = [{
-              :owner_total => total_ds.count,
-              :start => start,
-              :limit => limit,
-              :results=> partial_ds.all.map {|i| i.to_api_document }
-            }]
-            
+            res = select_index(:InstanceSpec, {:start => params[:start],
+                                 :limit => params[:limit]})
             response_to(res)
           end
         end
