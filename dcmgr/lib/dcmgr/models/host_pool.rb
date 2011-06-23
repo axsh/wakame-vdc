@@ -7,9 +7,9 @@ module Dcmgr::Models
     taggable 'hp'
     with_timestamps
 
-    HYPERVISOR_XEN_34=:'xen-3.4'
-    HYPERVISOR_XEN_40=:'xen-4.0'
-    HYPERVISOR_KVM=:'kvm'
+    HYPERVISOR_XEN_34='xen-3.4'
+    HYPERVISOR_XEN_40='xen-4.0'
+    HYPERVISOR_KVM='kvm'
 
     ARCH_X86=:x86.to_s
     ARCH_X86_64=:x86_64.to_s

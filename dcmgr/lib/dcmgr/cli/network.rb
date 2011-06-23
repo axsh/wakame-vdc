@@ -15,6 +15,7 @@ class Network < Base
   method_option :dns_server, :type => :string, :desc => "IP address for DNS server of the network"
   method_option :dhcp_server, :type => :string, :desc => "IP address for DHCP server of the network"
   method_option :metadata_server, :type => :string, :desc => "IP address for metadata server of the network"
+  method_option :metadata_server_port, :type => :string, :desc => "Port for the metadata server of the network" 
   method_option :vlan_id, :type => :numeric, :default=>0, :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network."
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this."
@@ -33,6 +34,7 @@ class Network < Base
        :domain_name => options[:domain_name],
        :dhcp_server => options[:dhcp_server],
        :metadata_server => options[:metadata_server],
+       :metadata_server_port => options[:metadata_server_port],
        :description => options[:description],
        :account_id => options[:account_id],
        :vlan_lease_id => vlan_pk,
@@ -54,6 +56,7 @@ class Network < Base
   method_option :dns_server, :type => :string, :desc => "IP address for DNS server of the network"
   method_option :dhcp_server, :type => :string, :desc => "IP address for DHCP server of the network"
   method_option :metadata_server, :type => :string, :desc => "IP address for metadata server of the network"
+  method_option :metadata_server_port, :type => :string, :desc => "Port for the metadata server of the network" 
   method_option :vlan_id, :type => :numeric, :desc => "Tag VLAN (802.1Q) ID of the network"
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this."
