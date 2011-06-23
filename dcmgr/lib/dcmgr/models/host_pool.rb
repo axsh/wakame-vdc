@@ -43,7 +43,7 @@ module Dcmgr::Models
         errors.add(:node_id, "is invalid ID: #{self.node_id}")
       end
 
-      if h = self.class.filter(:node_id=>self.node_id).first
+      if (h = self.class.filter(:node_id=>self.node_id).first) && h.id != self.id
         errors.add(:node_id, " #{self.node_id} is already been associated to #{h.canonical_uuid} ")
       end
       

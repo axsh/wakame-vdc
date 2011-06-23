@@ -26,10 +26,10 @@ class RootCli < Thor
   register(Dcmgr::Cli::UsersCli, Dcmgr::Cli::UsersCli.namespace, "user sub-command", "Operations for users")
   register(Dcmgr::Cli::Vlan, Dcmgr::Cli::Vlan.namespace, "vlan sub-command", "Operations for vlan leases")
   register(Dcmgr::Cli::Image, Dcmgr::Cli::Image.namespace, "image sub-command", "Operations for machine images")
-  register(Dcmgr::Cli::KeyPair, Dcmgr::Cli::KeyPair.namespace, "keypair sub-command", "Operations for key pairs.")
-  register(Dcmgr::Cli::Group, Dcmgr::Cli::Group.namespace, "group sub-command", "Operations for security groups.")
-  register(Dcmgr::Cli::Spec, Dcmgr::Cli::Spec.namespace, "spec sub-command", "Operations for instance specifications.")
-  register(Dcmgr::Cli::Tag, Dcmgr::Cli::Tag.namespace, "tag sub-command", "Operations for tags.")
+  register(Dcmgr::Cli::KeyPair, Dcmgr::Cli::KeyPair.namespace, "keypair sub-command", "Operations for key pairs")
+  register(Dcmgr::Cli::Group, Dcmgr::Cli::Group.namespace, "group sub-command", "Operations for security groups")
+  register(Dcmgr::Cli::Spec, Dcmgr::Cli::Spec.namespace, "spec sub-command", "Operations for instance specifications")
+  register(Dcmgr::Cli::Tag, Dcmgr::Cli::Tag.namespace, "tag sub-command", "Operations for tags")
 end
 
 

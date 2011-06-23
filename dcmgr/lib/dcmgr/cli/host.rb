@@ -9,13 +9,13 @@ class Host < Base
   include Dcmgr::Models
   
   desc "add NODE_ID [options]", "Register a new host node"
-  method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new host pool."
-  method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force to create new entry."
-  method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default=>1, :desc => "Number of cpu cores to be offered."
-  method_option :memory_size, :type => :numeric, :aliases => "-m", :default=>1000, :desc => "Amount of memory to be offered (in MB)."
+  method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new host pool"
+  method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force to create new entry"
+  method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default=>1, :desc => "Number of cpu cores to be offered"
+  method_option :memory_size, :type => :numeric, :aliases => "-m", :default=>1024, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :aliases => "-p", :default=>'kvm', :desc => "The hypervisor name"
   method_option :arch, :type => :string, :aliases => "-r", :default=>'x86_64', :desc => "The CPU architecture type. [#{HostPool::SUPPORTED_ARCH.join(', ')}]"
-  method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this."
+  method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this"
   def add(node_id)
     UnsupportedArchError.raise(options[:arch]) unless HostPool::SUPPORTED_ARCH.member?(options[:arch])
 
@@ -34,13 +34,26 @@ class Host < Base
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     puts super(HostPool,fields)
   end
+  
+  desc "modify UUID [options]", "Modify a registered host node"
+  method_option :cpu_cores, :type => :numeric, :aliases => "-c", :desc => "Number of cpu cores to be offered"
+  method_option :memory_size, :type => :numeric, :aliases => "-m", :desc => "Amount of memory to be offered (in MB)"
+  method_option :hypervisor, :type => :string, :aliases => "-p", :desc => "The hypervisor name"
+  def modify(uuid)
+    fields = {
+              :offering_memory_size=>options[:memory_size],
+              :offering_cpu_cores=>options[:cpu_cores],
+              :hypervisor=>options[:hypervisor]
+    }
+    super(HostPool,uuid,fields)
+  end
 
-  desc "del UUID", "Deregister a host node."
+  desc "del UUID", "Deregister a host node"
   def del(uuid)
     super(HostPool,uuid)
   end
 
-  desc "show [UUID]", "Show list of host nodes and details."
+  desc "show [UUID]", "Show list of host nodes and details"
   def show(uuid=nil)
     if uuid
       host = HostPool[uuid]
