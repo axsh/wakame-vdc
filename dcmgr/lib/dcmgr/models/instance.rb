@@ -41,7 +41,6 @@ module Dcmgr::Models
     one_to_many :volume
     one_to_many :instance_nic
     alias :nic :instance_nic
-    one_to_many :instance_netfilter_groups
     many_to_many :netfilter_groups, :join_table=>:instance_netfilter_groups
     # TODO: remove ssh_key_pair_id column
     many_to_one :ssh_key_pair

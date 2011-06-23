@@ -52,13 +52,23 @@ __END
       super(M::NetfilterGroup,uuid,options)
     end
     
-    #desc "addinstance UUID [options]", "Add an instance to a security group"
-    #method_option :instance, :type => :string, :aliases => "-i", :required => :true, :desc => "The instance to add to the group"
-    #def addinstance(uuid)
-      #group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
-      #p group.methods
-      ##TODO: finish this method
-    #end
+    desc "apply UUID [options]", "Apply a security group to an instance"
+    method_option :instance, :type => :string, :aliases => "-i", :required => :true, :desc => "The instance to apply the group to"
+    def apply(uuid)
+      group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
+      instance = M::Instance[options[:instance]] || UnknownUUIDError.raise(options[:instance])
+      Error.raise("Group #{uuid} is already applied to instance #{options[:instance]}.",100) if group.instances.member?(instance)
+      group.add_instance(instance)
+    end
+    
+    desc "remove UUID [options]", "Remove a security group from an instance"
+    method_option :instance, :type => :string, :aliases => "-i", :required => :true, :desc => "The instance to remove the group from"
+    def remove(uuid)
+      group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
+      instance = M::Instance[options[:instance]] || UnknownUUIDError.raise(options[:instance])
+      Error.raise("Group #{uuid} is not applied to instance #{options[:instance]}.",100) unless group.instances.member?(instance)
+      group.remove_instance(instance)
+    end
     
     desc "addrule UUID [options]", "Add a rule to a security group"
     method_option :rule, :type => :string, :aliases => "-r", :desc => "The new rule to be added."

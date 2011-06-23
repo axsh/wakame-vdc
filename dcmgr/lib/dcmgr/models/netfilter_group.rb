@@ -13,7 +13,7 @@ module Dcmgr::Models
     end
 
     one_to_many :netfilter_rules
-    one_to_many :instance_netfilter_groups
+    many_to_many :instances,:join_table => :instance_netfilter_groups
 
     def to_hash
       h = super
@@ -82,12 +82,6 @@ module Dcmgr::Models
         NetfilterRule.create(:netfilter_group_id => self.id,
                              :permission         => permission)
 
-      }
-    end
-
-    def instances
-      self.instance_netfilter_groups.map { |instance_netfilter_group|
-        instance_netfilter_group.instance
       }
     end
 
