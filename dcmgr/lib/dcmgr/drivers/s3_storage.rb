@@ -3,7 +3,9 @@
 module Dcmgr::Drivers
   
   class S3Storage < SnapshotStorage
-   
+
+    include Dcmgr::Logger
+
     def download(keyname, filename, path) 
       cmd = "get %s %s %s" 
       args = [@bucket, keyname, File.join(path, filename)]
