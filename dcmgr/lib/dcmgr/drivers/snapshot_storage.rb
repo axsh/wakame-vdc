@@ -28,7 +28,7 @@ module Dcmgr::Drivers
     end
     
     def execute(cmd, args)
-      script_root_path = File.join(File.expand_path('.'), 'script')
+      script_root_path = File.join(File.expand_path('../../../../',__FILE__), 'script')
       script = File.join(script_root_path, 'storage_service')
       cmd = "/usr/bin/env #{@env.join(' ')} %s " + cmd
       args = [script] + args
