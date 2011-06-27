@@ -154,7 +154,7 @@ module Dcmgr::Models
     def before_destroy
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
       self.instance_nic.each { |o| o.destroy }
-      self.instance_netfilter_groups.each{|o| o.destroy }
+      self.remove_all_netfilter_groups
       self.volume.each { |v|
         v.instance_id = nil
         v.state = :available
