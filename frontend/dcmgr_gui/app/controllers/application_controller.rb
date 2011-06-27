@@ -5,6 +5,12 @@ class ApplicationController < ActionController::Base
   include Authentication
   before_filter :login_required
   before_filter :set_locale
+  before_filter :set_application
+
+
+  def set_application
+    @site = DCMGR_GUI_SITE
+  end
   
   def dispatch(name, request)
     begin 
