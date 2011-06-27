@@ -223,9 +223,12 @@ DcmgrGUI.prototype.volumePanel = function(){
         success: function(json,status){
           var select_html = '<select name="destination" id="destination"></select>';
           $(self).find('#select_destination').empty().html(select_html);
-          var select_destination = '<option>local</option>';
-          $.each(json.results, function(key, value) {
-            select_destination += '<option>'+value+'</option>';
+          $.each(json.results, function(key, item) {
+            if (item.destination_id == 'local') {
+              select_destination += '<option value=' + item.destination_id + ' selected>' + item.destination_name + '</option>';
+            } else {
+              select_destination += '<option value=' + item.destination_id + '>' + item.destination_name + '</option>';
+            }
           });
           $(self).find("#destination").empty().html(select_destination);
           bt_create_snapshot.disabledButton(1, false);

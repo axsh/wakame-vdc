@@ -58,7 +58,7 @@
 	  <td class="vtip" title="volume-id">${item.uuid}</td>
 	  <td class="vtip center" title="capacity">${item.size}</td>
 	  <td class="vtip" title="snapshot">${item.origin_volume_id}</td>
-	  <td class="vtip" title="destination">${item.destination}</td>
+	  <td class="vtip" title="destination">${item.destination_name}</td>
 	  <td class="vtip" title="created">${item.created_at}</td>
 	  <td class="state vtip center" title="status">${item.state}</td>
 
@@ -96,7 +96,7 @@
 		    <tr>
           <td class="padcell"></td>
           <td class="title"><%= t("snapshots.details.destination") %>:</td>
-          <td class="state">${item.destination}</td>
+          <td class="state">${item.destination_name}</td>
         </tr>
         <tr>
 					<td class="padcell"></td>
