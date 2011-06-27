@@ -55,7 +55,7 @@ INSERT INTO host_pools VALUES
 
 # null is nat_netrowk_id column.
 INSERT INTO networks VALUES
- (1, '${account_id}', 'demonet', '${ipv4_gw}', ${prefix}, 'vdc.local', '${dns_server}', '${dhcp_server}', '${metadata_server}', ${metadata_port}, 1, null, 'demo', now(), now());
+ (1, '${account_id}', 'demonet', '${ipv4_gw}', ${prefix}, 'vdc.local', '${dns_server}', '${dhcp_server}', '${metadata_server}', ${metadata_port},null, 1, null, 'demo', now(), now());
 INSERT INTO vlan_leases VALUES
  (1, '${account_id}', 'demovlan', 0, now(), now());
 

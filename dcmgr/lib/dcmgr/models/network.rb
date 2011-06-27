@@ -15,6 +15,7 @@ module Dcmgr::Models
       String :dhcp_server
       String :metadata_server
       Fixnum :metadata_server_port
+      Fixnum :bandwidth #in Mbit/s
       Fixnum :vlan_lease_id, :null=>false, :default=>0
       Fixnum :nat_network_id
       Text :description
@@ -55,6 +56,7 @@ module Dcmgr::Models
       h = super
       h.delete(:vlan_lease_id)
       h.merge({
+                :bandwidth_mark=>self[:id],
                 :description=>description.to_s,
                 :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
               })
