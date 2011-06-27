@@ -44,7 +44,8 @@ module Dcmgr::Models
         :state => self.state,
         :size => self.size,
         :origin_volume_id => self.origin_volume_id,
-        :destination => self.destination,
+        :destination_id => self.destination,
+        :destination_name => self.display_name, 
         :created_at => self.created_at,
         :deleted_at => self.deleted_at,
       }
@@ -54,6 +55,12 @@ module Dcmgr::Models
     # limitation: inherit volume is created on same storage_pool.
     def create_volume(account_id)
       storage_pool.create_volume(account_id, self.size, self.canonical_uuid)
+    end
+
+    def display_name
+      repository_config = Dcmgr::StorageService.snapshot_repository_config
+      repository = repository_config[self.destination]
+      repository['display_name']
     end
 
     def origin_volume

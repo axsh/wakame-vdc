@@ -566,8 +566,20 @@ module Dcmgr
       end
       
       get '/api/volume_snapshots/upload_destination' do
-        config_data = StorageService::snapshot_repository_config
-        response_to([{:results => config_data.keys}])
+        c = StorageService::snapshot_repository_config.dup
+        tmp = c['local']
+        c.delete('local')
+        results = {}
+        results = c.collect {|item| {
+          :destination_id => item[0],
+          :destination_name => item[1]["display_name"]
+          }
+        }
+        results.unshift({
+          :destination_id => 'local', 
+          :destination_name => tmp['display_name']
+        })
+        response_to([{:results => results}])
       end
       
       collection :volume_snapshots do

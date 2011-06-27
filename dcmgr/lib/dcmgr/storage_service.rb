@@ -2,6 +2,9 @@
 
 module Dcmgr
   class StorageService
+
+    @snapshot_repository_config = nil
+    
     def initialize(provider, access_key, secret_key)
       @account = {}
       @account[:provider] = provider.upcase
@@ -10,9 +13,12 @@ module Dcmgr
     end
     
     def self.snapshot_repository_config
-      config_filename = 'snapshot_repository.yml'
-      config_path = File.join(File.expand_path(DCMGR_ROOT), 'config')
-      YAML.load_file(File.join(config_path, config_filename))
+      if @snapshot_repository_config.nil?
+        config_file = YAML.load_file(File.join(File.expand_path(DCMGR_ROOT), 'config', 'snapshot_repository.yml'))
+        @snapshot_repository_config = config_file
+      else
+        @snapshot_repository_config
+      end
     end
 
     def self.has_driver?(driver)
