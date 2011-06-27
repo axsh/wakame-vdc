@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
 require 'sequel'
-db = Sequel.connect(Dcmgr.conf.database_url)
+if Sequel::DATABASES.first.nil?
+  db = Sequel.connect(Dcmgr.conf.database_url)
+else
+  db = Sequel::DATABASES.first
+end
+
 #require 'logger' 
 #db.loggers << Logger.new(STDERR)
 if db.is_a?(Sequel::MySQL::Database)

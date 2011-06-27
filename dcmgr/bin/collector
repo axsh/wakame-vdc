@@ -24,7 +24,7 @@ manifest.instance_eval do
   config do |c|
     c.data_store.connection_block = proc {
       require 'sequel'
-      next if Sequel::DATABASES.first
+      next if Isono::NodeModules::DataStore.disconnected? == false 
       Dcmgr.run_initializers('sequel')
     }
   end
