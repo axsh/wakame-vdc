@@ -1,5 +1,5 @@
 DCMGR_GUI_SITE = {
-  :title => 'Wakame Inexhaustible Supply of Cloud Fuel.',
+  :title => 'Wakame UI',
   :meta => {
     :keywords => 'あくしゅ,axsh,wakame',
     :description => 'Wakame UI'
