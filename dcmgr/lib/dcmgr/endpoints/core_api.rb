@@ -33,7 +33,9 @@ module Dcmgr
           raise InvalidRequestCredentials
         else
           begin
-            @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]]
+            # find or create account entry.
+            @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]] || \
+                        Models::Account.create(:uuid=>Models::Account.trim_uuid(request.env[HTTP_X_VDC_ACCOUNT_UUID]))
           rescue => e
             logger.error(e)
             raise InvalidRequestCredentials, "#{e.message}"
