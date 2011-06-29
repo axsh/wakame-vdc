@@ -159,6 +159,21 @@ __END
       puts "User #{uuid} has been deleted." if options[:verbose]
     end
     
+    desc "primacc UUID", "Set or get the primary account for a user"
+    method_option :account_id, :type => :string, :aliases => "-a", :desc => "The id of the new primary account"
+    def primacc(uuid)
+      user = User[uuid] || UnknownUUIDError.raise(uuid)
+      
+      if options[:account_id]
+        acc = Account[options[:account_id]] || UnknownUUIDError.raise(options[:account_id])
+        user.primary_account_id = acc.uuid
+        user.save
+        user.add_account(acc) unless user.accounts.member?(acc)
+      else
+        puts Account.uuid_prefix + "-" + user.primary_account_id
+      end
+    end
+    
     desc "associate UUID", "Associate a user with one or multiple accounts."
     method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to associate these user with. Any non-existing or non numeral id will be ignored" 
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
@@ -171,7 +186,10 @@ __END
           puts "User #{uuid} is already associated with account #{a}." if options[:verbose]
         else
           user.add_account(Account[a])
-          
+          if user.primary_account_id.nil?
+            user.primary_account_id = Account.trim_uuid(a)
+            user.save
+          end
           puts "User #{uuid} successfully associated with account #{a}." if options[:verbose]
         end
       }

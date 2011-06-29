@@ -211,7 +211,12 @@ __END
         elsif !account.users.index(User[u]).nil?
           puts "Account #{uuid} is already associated with user #{u}." if options[:verbose]
         else
-          account.add_user(User[u])
+          user = User[u]
+          account.add_user(user)
+          if user.primary_account_id.nil?
+            user.primary_account_id = account.uuid
+            user.save
+          end          
           
           puts "Account #{uuid} successfully associated with user #{u}." if options[:verbose]
         end
