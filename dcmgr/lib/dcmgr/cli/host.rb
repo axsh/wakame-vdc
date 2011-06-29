@@ -58,19 +58,21 @@ class Host < Base
     if uuid
       host = HostPool[uuid]
       puts ERB.new(<<__END, nil, '-').result(binding)
-UUID: <%= host.canonical_uuid %>
-Node ID: <%= host.node_id %>
-CPU Cores (offerring): <%= host.offering_cpu_cores %>
-Memory (offerring): <%= host.offering_memory_size %>MB
-Hypervisor: <%= host.hypervisor %>
-Created: <%= host.created_at %>
-Last updated: <%= host.updated_at %>
+Host UUID:
+  <%= host.canonical_uuid %>
+Node ID:
+  <%= host.node_id %>
+CPU Cores (offerring):
+  <%= host.offering_cpu_cores %>
+Memory (offerring):
+  <%= host.offering_memory_size %>MB
+Hypervisor:
+  <%= host.hypervisor %>
 __END
     else
       cond = {}
       all = HostPool.filter(cond).all
       puts ERB.new(<<__END, nil, '-').result(binding)
-UUID            Node ID              State
 <%- all.each { |row| -%>
 <%= "%-15s %-20s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
 <%- } -%>

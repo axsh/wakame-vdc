@@ -21,18 +21,25 @@ module Dcmgr::Cli
       super(M::NetfilterGroup,uuid)
     end
     
-    desc "show [UUID] [options]", "Show security group(s)"
+    desc "show [UUID]", "Show security group(s)"
     def show(uuid=nil)
       if uuid
         group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-Group UUID:\t<%= group.canonical_uuid %>
-Account id:\t<%= group.account_id %>
-Description:\t<%= group.description %>
+Group UUID:
+  <%= group.canonical_uuid %>
+Account id:
+  <%= group.account_id %>
+<%- if group.description -%>
+Description:
+  <%= group.description %>
+<%- end -%>
+<%- unless group.netfilter_rules.empty? -%>
 Rules:
 <%- group.netfilter_rules.each { |rule| -%>
-<%= rule.permission %>
+  <%= rule.permission %>
 <%- } -%>
+<%- end -%>
 __END
       else
         puts ERB.new(<<__END, nil, '-').result(binding)
@@ -71,7 +78,7 @@ __END
     end
     
     desc "addrule UUID [options]", "Add a rule to a security group"
-    method_option :rule, :type => :string, :aliases => "-r", :desc => "The new rule to be added."
+    method_option :rule, :type => :string, :aliases => "-r", :desc => "The new rule to be added"
     def addrule(g_uuid)
       UnknownUUIDError.raise(g_uuid) if M::NetfilterGroup[g_uuid].nil?
       

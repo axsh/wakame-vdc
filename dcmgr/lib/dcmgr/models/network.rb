@@ -62,6 +62,21 @@ module Dcmgr::Models
               })
     end
 
+    def before_destroy
+      #Make sure no other networks are natted to this one
+      Network.filter(:nat_network_id => self[:id]).each { |n|
+        n.nat_network_id = nil
+        n.save
+      }
+      
+      #Delete all reserved ipleases in this network
+      self.ip_lease_dataset.filter(:alloc_type => IpLease::TYPE_RESERVED).each { |i|
+        i.destroy
+      }
+      
+      super
+    end
+
     def to_api_document
       to_hash
     end

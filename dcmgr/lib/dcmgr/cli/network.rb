@@ -8,17 +8,18 @@ class Network < Base
   M=Dcmgr::Models
   
   desc "add [options]", "Register a new network entry"
-  method_option :uuid, :type => :string, :aliases => "-u", :desc => "UUID of the network."
-  method_option :ipv4_gw, :type => :string, :required => true, :desc => "Gateway address for IPv4 network."
-  method_option :prefix, :type => :numeric, :default=>24, :desc => "IP network mask size (1 < prefix < 32)."
-  method_option :domain_name, :type => :string, :desc => "DNS domain name of the network."
-  method_option :dns_server, :type => :string, :desc => "IP address for DNS server of the network"
-  method_option :dhcp_server, :type => :string, :desc => "IP address for DHCP server of the network"
-  method_option :metadata_server, :type => :string, :desc => "IP address for metadata server of the network"
-  method_option :metadata_server_port, :type => :string, :desc => "Port for the metadata server of the network" 
-  method_option :vlan_id, :type => :numeric, :default=>0, :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network."
-  method_option :description, :type => :string, :desc => "Description for the network"
-  method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this."
+  method_option :uuid, :type => :string, :aliases => "-u", :desc => "UUID of the network"
+  method_option :ipv4_gw, :type => :string, :aliases => "-g", :required => true, :desc => "Gateway address for IPv4 network"
+  method_option :prefix, :type => :numeric, :default=>24, :aliases => "-p", :desc => "IP network mask size (1 < prefix < 32)"
+  method_option :domain, :type => :string, :aliases => "-m", :desc => "DNS domain name of the network"
+  method_option :dns, :type => :string, :aliases => "-n", :desc => "IP address for DNS server of the network"
+  method_option :dhcp, :type => :string, :aliases => "-c", :desc => "IP address for DHCP server of the network"
+  method_option :metadata, :type => :string, :aliases => "-t", :desc => "IP address for metadata server of the network"
+  method_option :metadata_port, :type => :string, :aliases => "--tp", :desc => "Port for the metadata server of the network"
+  method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
+  method_option :vlan_id, :type => :numeric, :default=>0, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
+  method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
+  method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this"
   def add
     vlan_pk = if options[:vlan_id].to_i > 0
                 vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
@@ -30,13 +31,14 @@ class Network < Base
     fields = {
        :ipv4_gw => options[:ipv4_gw],
        :prefix => options[:prefix],
-       :dns_server => options[:dns_server],
-       :domain_name => options[:domain_name],
-       :dhcp_server => options[:dhcp_server],
-       :metadata_server => options[:metadata_server],
-       :metadata_server_port => options[:metadata_server_port],
+       :dns_server => options[:dns],
+       :domain_name => options[:domain],
+       :dhcp_server => options[:dhcp],
+       :metadata_server => options[:metadata],
+       :metadata_server_port => options[:metadata_port],
        :description => options[:description],
        :account_id => options[:account_id],
+       :bandwidth => options[:bandwidth],
        :vlan_lease_id => vlan_pk,
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
@@ -50,23 +52,44 @@ class Network < Base
   end
 
   desc "modify UUID [options]", "Update network information"
-  method_option :ipv4_gw, :type => :string, :desc => "Gateway address for IPv4 network."
-  method_option :prefix, :type => :numeric, :desc => "IP network mask size (1 < prefix < 32)."
-  method_option :domain_name, :type => :string, :desc => "DNS domain name of the network."
-  method_option :dns_server, :type => :string, :desc => "IP address for DNS server of the network"
-  method_option :dhcp_server, :type => :string, :desc => "IP address for DHCP server of the network"
-  method_option :metadata_server, :type => :string, :desc => "IP address for metadata server of the network"
-  method_option :metadata_server_port, :type => :string, :desc => "Port for the metadata server of the network" 
-  method_option :vlan_id, :type => :numeric, :desc => "Tag VLAN (802.1Q) ID of the network"
-  method_option :description, :type => :string, :desc => "Description for the network"
-  method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this."
+  method_option :ipv4_gw, :type => :string, :aliases => "-g", :desc => "Gateway address for IPv4 network"
+  method_option :prefix, :type => :numeric, :aliases => "-p", :desc => "IP network mask size (1 < prefix < 32)"
+  method_option :domain, :type => :string, :aliases => "-m", :desc => "DNS domain name of the network"
+  method_option :dns, :type => :string, :aliases => "-n", :desc => "IP address for DNS server of the network"
+  method_option :dhcp, :type => :string, :aliases => "-c", :desc => "IP address for DHCP server of the network"
+  method_option :metadata, :type => :string, :aliases => "-t", :desc => "IP address for metadata server of the network"
+  method_option :metadata_port, :type => :string, :aliases => "--tp", :desc => "Port for the metadata server of the network" 
+  method_option :vlan_id, :type => :numeric, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
+  method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
+  method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
+  method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this"
   def modify(uuid)
-    super(M::Network,uuid,options)
+    vlan_pk = if options[:vlan_id].to_i > 0
+                vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
+                vlan.id
+              else
+                0
+              end
+    
+    fields = {
+       :ipv4_gw => options[:ipv4_gw],
+       :prefix => options[:prefix],
+       :dns_server => options[:dns],
+       :domain_name => options[:domain],
+       :dhcp_server => options[:dhcp],
+       :metadata_server => options[:metadata],
+       :metadata_server_port => options[:metadata_port],
+       :description => options[:description],
+       :account_id => options[:account_id],
+       :bandwidth => options[:bandwidth],
+       :vlan_lease_id => vlan_pk,
+    }
+    super(M::Network,uuid,fields)
   end
 
-  desc "nat UUID [options]", "Set or clear nat mapping for a network."
-  method_option :outside_network_id, :type => :string, :aliases => "-o", :desc => "The network that this network will be natted to."
-  method_option :clear, :type => :boolean, :aliases => "-c", :desc => "Clears a previously natted network."
+  desc "nat UUID [options]", "Set or clear nat mapping for a network"
+  method_option :outside_network_id, :type => :string, :aliases => "-o", :desc => "The network that this network will be natted to"
+  method_option :clear, :type => :boolean, :aliases => "-c", :desc => "Clears a previously natted network"
   def nat(uuid)
     in_nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
     ex_nw = M::Network[options[:outside_network_id]] || Error.raise("Unknown network UUID: #{uuid}", 100) unless options[:outside_network_id].nil?
@@ -87,9 +110,10 @@ class Network < Base
     if uuid
       nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
       puts ERB.new(<<__END, nil, '-').result(binding)
-Network UUID: <%= nw.canonical_uuid %>
-
-Tag VLAN: <%= nw.vlan_lease_id == 0 ? 'none' : nw.vlan_lease.tag_id %>
+Network UUID:
+  <%= nw.canonical_uuid %>
+Tag VLAN:
+  <%= nw.vlan_lease_id == 0 ? 'none' : nw.vlan_lease.tag_id %>
 IPv4:
   Network address: <%= nw.ipaddress.network %>/<%= nw.prefix %>
   Gateway address: <%= nw.ipv4_gw %>
@@ -101,6 +125,12 @@ DHCP Information:
   DNS Server: <%= nw.dns_server %>
 <%- if nw.metadata_server -%>
   Metadata Server: <%= nw.metadata_server %>
+<%- end -%>
+Bandwidth:
+<%- if nw.bandwidth.nil? -%>
+  unlimited
+<%- else -%>
+  <%= nw.bandwidth %> Mbit/s
 <%- end -%>
 <%- if nw.description -%>
 Description:
@@ -124,8 +154,8 @@ __END
     end
   end
 
-  desc "show_lease UUID", "Show IPs used in the network"
-  def show_lease(uuid)
+  desc "leases UUID", "Show IPs used in the network"
+  def leases(uuid)
     nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
 
     print ERB.new(<<__END, nil, '-').result(binding)
@@ -135,23 +165,25 @@ __END
 __END
   end
 
-  desc "add_reserved UUID IPADDR", "Add reserved IP to the network"
-  def add_reserved(uuid, ipaddr)
-    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
+  desc "reserve UUID", "Add reserved IP to the network"
+  method_option :ipv4, :type => :string, :aliases => "-i", :required => true, :desc => "The ip address to reserve"
+  def reserve(uuid)
+    nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
 
-    if nw.ipaddress.include?(IPAddress(ipaddr))
-      nw.ip_lease_dataset.add_reserved(ipaddr)
+    if nw.ipaddress.include?(IPAddress(options[:ipv4]))
+      nw.ip_lease_dataset.add_reserved(options[:ipv4])
     else
-      Error.raise("IP address is out of range: #{ipaddr} => #{nw.ipaddress.network}/#{nw.ipaddress.prefix}")
+      Error.raise("IP address is out of range: #{options[:ipv4]} => #{nw.ipaddress.network}/#{nw.ipaddress.prefix}",100)
     end
   end
 
-  desc "del_reserved UUID IPADDR", "Delete reserved IP from the network"
-  def del_reserved(uuid, ipaddr)
-    nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
+  desc "release UUID", "Release a reserved IP from the network"
+  method_option :ipv4, :type => :string, :aliases => "-i", :required => true, :desc => "The ip address to release"
+  def release(uuid)
+    nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
 
-    if nw.ip_lease_dataset.filter(:ipv4=>ipaddr).delete == 0
-      Error.raise("The IP is not reserved in network #{uuid}: #{ipaddr}", 100)
+    if nw.ip_lease_dataset.filter(:ipv4=>options[:ipv4]).delete == 0
+      Error.raise("The IP is not reserved in network #{uuid}: #{options[:ipv4]}", 100)
     end
   end
 end
