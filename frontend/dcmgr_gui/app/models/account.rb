@@ -14,6 +14,7 @@ class Account < BaseNew
   inheritable_schema do
     primary_key :id, :type=>Integer
     String :name
+    String :description
     Boolean :enable, :default=>true
     DateTime :deleted_at, :null=>true
     Boolean :is_deleted, :default=>false
@@ -23,11 +24,11 @@ class Account < BaseNew
   many_to_many :users,:join_table => :users_accounts
   
   def disable?
-    self.enabled == DISABLED
+    not self.enable
   end
 
   def enable?
-    self.enabled == ENABLED
+    self.enable
   end
 
   def to_hash_document

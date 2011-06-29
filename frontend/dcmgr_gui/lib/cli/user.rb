@@ -4,44 +4,44 @@ require 'sequel'
 require 'yaml'
 
 #TODO: Print only the first line of an exception?
-module Dcmgr::Cli
-  class UsersCli < Base
+module Cli
+  class UserCli < Base
     namespace :user
 
-    no_tasks {
-      def before_task
-        # Setup DB connections and load paths for dcmgr_gui
-        root_dir = File.expand_path('../../../', __FILE__)
+    #no_tasks {
+      #def before_task
+        ## Setup DB connections and load paths for dcmgr_gui
+        #root_dir = File.expand_path('../../../', __FILE__)
         
-        #get the database details
-        #TODO:get this path in a less hard-coded way?
-        content = File.new(File.expand_path('../../frontend/dcmgr_gui/config/database.yml', root_dir)).read
-        settings = YAML::load content
+        ##get the database details
+        ##TODO:get this path in a less hard-coded way?
+        #content = File.new(File.expand_path('../../frontend/dcmgr_gui/config/database.yml', root_dir)).read
+        #settings = YAML::load content
         
-        #load the database variables
-        #TODO: get environment from RAILS_ENV
-        db_environment = 'development'
-        db_adapter = settings[db_environment]['adapter']
-        db_host    = settings[db_environment]['host']
-        db_name    = settings[db_environment]['database']
-        db_user    = settings[db_environment]['user']
-        db_pwd     = settings[db_environment]['password']
+        ##load the database variables
+        ##TODO: get environment from RAILS_ENV
+        #db_environment = 'development'
+        #db_adapter = settings[db_environment]['adapter']
+        #db_host    = settings[db_environment]['host']
+        #db_name    = settings[db_environment]['database']
+        #db_user    = settings[db_environment]['user']
+        #db_pwd     = settings[db_environment]['password']
         
-        #Connect to the database
-        url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
-        db = Sequel.connect(url)
+        ##Connect to the database
+        #url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
+        #db = Sequel.connect(url)
         
-        #load the cli environment
-        $LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/config', root_dir)
-        $LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/app/models', root_dir)
+        ##load the cli environment
+        #$LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/config', root_dir)
+        #$LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/app/models', root_dir)
         
-        require 'environment-cli'
-        require 'user'
-        require 'account'
-        User.db = db
-        Account.db = db
-      end
-    }
+        #require 'environment-cli'
+        #require 'user'
+        #require 'account'
+        #User.db = db
+        #Account.db = db
+      #end
+    #}
     
     desc "add [options]", "Create a new user."
     method_option :name, :type => :string, :required => true, :aliases => "-n", :desc => "The name for the new user." #Maximum size: 200
@@ -49,7 +49,7 @@ module Dcmgr::Cli
     method_option :login_id, :type => :string, :aliases => "-l", :desc => "Optional: The login_id for the new user." #Maximum size: 255
     method_option :password, :type => :string, :required => true, :aliases => "-p", :desc => "The password for the new user." #Maximum size: 255
     method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "Optional: The primary account to associate this user with." #Maximum size: 255
-    method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
+    #method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def add
       if options[:name].length > 200
         Error.raise("User name can not be longer than 200 characters", 100)
@@ -85,7 +85,7 @@ module Dcmgr::Cli
           new_user.add_account(prim_acc)
           new_user.primary_account_id = prim_acc.uuid
           new_user.save
-        end        
+        end
         puts new_uuid
       end
     end
@@ -95,7 +95,8 @@ module Dcmgr::Cli
       if uuid        
         user = User[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-User UUID: <%= user.canonical_uuid %>
+User UUID:
+  <%= user.canonical_uuid %>
 Name:
   <%= user.name %>
 <%- if user.login_id -%>
@@ -105,12 +106,20 @@ Login ID:
 <%- if user.primary_account_id -%>
 Primary Account:
 <%- prim_acc = Account.find(:uuid => user.primary_account_id) -%>
+  <%- if prim_acc.class == Account -%>
   <%= prim_acc.canonical_uuid %>\t<%= prim_acc.name %>
+<%- else -%>
+  <%= Account.uuid_prefix%>-<%= prim_acc.uuid %>\t<%= prim_acc.name %>
+<%- end -%>
 <%- end -%>
 <%- unless user.accounts.empty? -%>
 Associated accounts:
 <%- user.accounts.each { |row| -%>
+<%- if row.class == Account -%>
   <%= row.canonical_uuid %>\t<%= row.name %>
+<%- else -%>
+  <%= Account.uuid_prefix%>-<%= row.uuid %>\t<%= row.name %>
+<%- end -%>
 <%- } -%>
 <%- end -%>
 __END
@@ -128,7 +137,7 @@ __END
     method_option :name, :type => :string, :aliases => "-n", :desc => "The new name for the user." #Maximum size: 200    
     method_option :login_id, :type => :string, :aliases => "-l", :desc => "The new login_id for the user." #Maximum size: 255
     method_option :password, :type => :string, :aliases => "-p", :desc => "The new password for the user." #Maximum size: 255
-    method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "The new primary account to associate this user with."
+    #method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "The new primary account to associate this user with."
     def modify(uuid)
       Error.raise("User name can not be longer than 200 characters",100) if options[:name] != nil && options[:name].length > 200
       Error.raise("User login_id can not be longer than 255 characters",100) if options[:login_id] != nil && options[:login_id].length > 255
@@ -163,7 +172,7 @@ __END
         else
           user.add_account(Account[a])
           
-          puts "User #{uid} successfully associated with account #{a}." if options[:verbose]
+          puts "User #{uuid} successfully associated with account #{a}." if options[:verbose]
         end
       }
     end

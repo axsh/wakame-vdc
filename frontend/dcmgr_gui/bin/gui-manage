@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+require 'rubygems'
+require 'thor'
+require 'thor/group'
+require 'erb'
+
+$LOAD_PATH.unshift File.expand_path('../../config', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+#require 'environment-cli'
+require 'environment'
+
+$LOAD_PATH.unshift File.expand_path('../../app/models',__FILE__)
+
+#Connect the database
+settings = YAML::load File.new(File.expand_path('../../config/database.yml', __FILE__)).read
+
+db_environment = 'development'
+db_adapter = settings[db_environment]['adapter']
+db_host    = settings[db_environment]['host']
+db_name    = settings[db_environment]['database']
+db_user    = settings[db_environment]['user']
+db_pwd     = settings[db_environment]['password']
+
+#Connect to the database
+url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
+Sequel.connect(url)
+#Account.db = User.db = db = Sequel.connect(url)
+
+#Require the database models
+require 'base_new'
+require 'account'
+require 'user'
+
+module Cli
+  require 'cli/errors'
+
+  autoload :Base, 'cli/base'
+  autoload :AccountCli, 'cli/account'
+  autoload :UserCli, 'cli/user'
+  autoload :Error, 'cli/errors'
+end
+
+
+class RootCli < Thor
+  register(Cli::AccountCli, Cli::AccountCli.namespace, "account sub-command", "Operations for accounts")
+  register(Cli::UserCli, Cli::UserCli.namespace, "user sub-command", "Operations for users")
+end
+
+begin
+  RootCli.start
+rescue => e
+  e = Cli::Error.new(e,101) unless e.is_a?(Cli::Error)
+  STDERR.puts "ERROR: " + e.message
+  if e.respond_to?(:exit_code)
+    exit(e.exit_code)
+  else
+    exit(1)
+  end
+end
