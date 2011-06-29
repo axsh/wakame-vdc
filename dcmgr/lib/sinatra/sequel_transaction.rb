@@ -21,10 +21,15 @@ module Sinatra
       
       private
       def route_eval(&block)
+        
         db = Sequel::DATABASES.first
-
-        db.transaction do
-          super(&block)
+        begin
+          db.transaction do
+             super(&block)
+          end
+        rescue Sequel::DatabaseError, Sequel::DatabaseConnectionError => e
+          db.disconnect
+          raise e
         end
       end
     end
