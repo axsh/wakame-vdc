@@ -80,7 +80,7 @@ task :gem do
     s.bindir='bin'
     s.executables = %w(collector)
 
-    s.add_dependency "isono", "0.2.2"
+    s.add_dependency "isono", "0.2.3"
     s.add_dependency "log4r"
     s.add_dependency "extlib", '0.9.15'
     s.add_dependency "configuration"
@@ -119,7 +119,7 @@ task :gem do
     s.bindir='bin'
     s.executables = %w(hva sta nsa)
 
-    s.add_dependency "isono", "0.2.2"
+    s.add_dependency "isono", "0.2.3"
     s.add_dependency "log4r"
     s.add_dependency "extlib", '0.9.15'
     s.add_dependency "configuration"
