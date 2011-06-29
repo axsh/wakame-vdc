@@ -34,7 +34,7 @@ module Dcmgr::Rack
         @log.response_msg = e.message
         raise e
       ensure
-        Dcmgr::Models::RequestLog.db.transaction do
+        @log.class.db.transaction do
           @log.save
         end
       end
@@ -45,7 +45,11 @@ module Dcmgr::Rack
     # @params [Hash] env
     def log_env(env)
       #@log.frontend_system_id = env[Dcmgr::Endpoints::RACK_FRONTEND_SYSTEM_ID].to_s
-      @log.account_id = env[Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID]
+      if env[Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID].nil? || env[Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID] == ''
+        @log.account_id = 'nil'
+      else
+        @log.account_id = env[Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID]
+      end
       @log.requester_token = env[Dcmgr::Endpoints::HTTP_X_VDC_REQUESTER_TOKEN]
       @log.request_method = env['REQUEST_METHOD']
       @log.api_path = env['PATH_INFO']
