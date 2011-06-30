@@ -13,8 +13,8 @@ class Account < BaseNew
   
   inheritable_schema do
     primary_key :id, :type=>Integer
-    String :name
-    String :description
+    String :name, :null=>false
+    String :description, :default=>""
     Boolean :enable, :default=>true
     DateTime :deleted_at, :null=>true
     Boolean :is_deleted, :default=>false

@@ -79,14 +79,20 @@ module Dcmgr::Cli
       if uuid
         img = M::Image[uuid]
         print ERB.new(<<__END, nil, '-').result(binding)
-UUID: <%= img.canonical_uuid %>
-Boot Type: <%= img.boot_dev_type %>
-Arch: <%= img.arch %>
+UUID:
+  <%= img.canonical_uuid %>
+Boot Type:
+  <%= img.boot_dev_type %>
+Arch:
+  <%= img.arch %>
 <%- if img.description -%>
-Description: <%= img.description %>
+Description:
+  <%= img.description %>
 <%- end -%>
-Is Public: <%= img.is_public %>
-State: <%= img.state %>
+Is Public:
+  <%= img.is_public %>
+State:
+  <%= img.state %>
 __END
       else
         cond = {}

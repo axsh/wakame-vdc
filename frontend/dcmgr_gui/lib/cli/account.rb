@@ -45,9 +45,9 @@ module Cli
     #}
 
     desc "add [options]", "Create a new account."
-    method_option :name, :type => :string, :aliases => "-n", :desc => "The name for the new account." #Maximum size: 255
+    method_option :name, :type => :string, :aliases => "-n", :required => true, :desc => "The name for the new account." #Maximum size: 255
     method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new account."
-    method_option :description, :type => :string, :aliases => "-d", :desc => "The description for this account."
+    method_option :description, :type => :string, :aliases => "-d", :default => "", :desc => "The description for this account."
     #method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def add
       #Check if the data we got is valid
