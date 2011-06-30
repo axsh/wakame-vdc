@@ -1,0 +1,75 @@
+#!/bin/bash
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+LANG=C
+LC_ALL=C
+
+LOGFILE=/var/log/$(basename $0).log
+USER=ubuntu
+SSHDIR=/home/${USER}/.ssh/
+KEYSPATH=${SSHDIR}/authorized_keys
+
+get_metadata() {
+  param=$1
+  for i in {1..100}; do
+    curl -s http://169.254.169.254/latest/meta-data/${param} && exit 0
+    sleep 3
+  done
+  exit 1
+}
+
+logger() {
+  cat | tee -a ${LOGFILE}
+}
+
+#Add the metadata server to the routing table
+for i in {1..1200}; do
+  DEFAULT_GW=`ip route get 8.8.8.8 | head -n 1 | cut -d ' ' -f3`
+  echo ... ${i} DEFAULT_GW=${DEFAULT_GW} | logger
+  [ -z "${DEFAULT_GW}" ] || break
+  sleep 3
+done
+route add 169.254.169.254 gateway $DEFAULT_GW
+
+# Set up the host name
+#HN=`curl -s http://169.254.169.254/latest/meta-data/local-hostname`
+HN=`get_metadata local-hostname`
+if [ -n "$HN" ]; then
+  echo "Setting the hostname"
+  grep -q "$HN" /etc/hostname
+  if [ $? -ne 0 ]; then
+    hostname $HN
+    echo $HN > /etc/hostname
+  fi
+  
+  # Add it to the hosts file if not there yet
+  grep -q "$HN" /etc/hosts
+  if [ $? -ne 0 ]; then
+    echo '127.0.0.1 '$HN >> /etc/hosts
+  fi
+fi
+
+# Set up the authorized keys for the users to login
+#KEYS=`curl -s http://169.254.169.254/latest/meta-data/public-keys`
+KEYS=`get_metadata public-keys`
+if [ -n "$KEYS" ]; then
+  echo "Setting authorized keys" | logger
+  [ -d ${SSHDIR} ] || {
+    mkdir -m 700 ${SSHDIR}
+    chown ${USER}:${USER} ${SSHDIR}
+  }
+  # Check if the keys are already authorized
+  grep -q "$KEYS" $KEYSPATH
+  if [ $? -ne 0 ]; then
+    echo $KEYS > $KEYSPATH
+    chmod 600 $KEYSPATH
+    chown ${USER} $KEYSPATH
+  fi
+fi
+
+# Generate ssh host keys
+if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+  echo "Generating ssh host keys"
+  dpkg-reconfigure openssh-server
+fi
+
