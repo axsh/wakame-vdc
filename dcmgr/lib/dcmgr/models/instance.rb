@@ -176,15 +176,15 @@ module Dcmgr::Models
     # this is for internal use.
     def to_hash
       h = super
-      h = h.merge({:user_data => user_data.to_s, # Sequel::BLOB -> String
+      h.merge!({:user_data => user_data.to_s, # Sequel::BLOB -> String
                     :runtime_config => self.runtime_config, # yaml -> hash
                     :image=>image.to_hash,
                     :host_pool=>host_pool.to_hash,
                     :instance_nics=>instance_nic.map {|n| n.to_hash },
-                    :instance_spec=>instance_spec.to_hash,
                     :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                     :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
-                  })
+              })
+      h.merge!({:instance_spec=>instance_spec.to_hash}) unless instance_spec.nil?
       h[:volume]={}
       if self.volume
         self.volume.each { |v|

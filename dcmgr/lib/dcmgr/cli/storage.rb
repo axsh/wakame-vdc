@@ -10,8 +10,8 @@ class Storage < Base
   
   desc "add NODE_ID [options]", "Register a new storage node"
   method_option :uuid, :type => :string, :aliases => "-u", :desc => "The uuid for the new storage pool."
-  method_option :base_path, :type => :string, :aliases => '-b', :required => true, :desc => "Base path to store volume files"
-  method_option :snapshot_base_path, :type => :string, :aliases => '-n', :required => true, :desc => "Base path to store snapshot files"
+  method_option :base_path, :type => :string, :aliases => "-b", :required => true, :desc => "Base path to store volume files"
+  method_option :snapshot_base_path, :type => :string, :aliases => "-n", :required => true, :desc => "Base path to store snapshot files"
   method_option :disk_space, :type => :numeric, :aliases => "-s", :required => true, :desc => "Amount of disk size to be exported (in MB)."
   method_option :transport_type, :type => :string, :aliases => "-t", :default=>'iscsi', :desc => "Transport type [iscsi]"
   method_option :ipaddr, :type => :string, :aliases => "-i", :required=>true, :desc => "IP address of transport target"
@@ -41,27 +41,32 @@ class Storage < Base
     super(StoragePool,uuid)
   end
 
-  desc "show [UUID]", "Show list of storage nodes and details."
+  desc "show [UUID]", "Show list of storage nodes and details"
   def show(uuid=nil)
     if uuid
       st = StoragePool[uuid]
       puts ERB.new(<<__END, nil, '-').result(binding)
-UUID: <%= st.canonical_uuid %>
-Node ID: <%= st.node_id %>
-Disk space (offerring): <%= st.offering_disk_space %>MB
-Storage: <%= st.storage_type %>
-Transport: <%= st.transport_type %>
-IP Address: <%= st.ipaddr %>
-Export path: <%= st.export_path %>
-Snapshot base path: <%= st.snapshot_base_path %>
-Created: <%= st.created_at %>
-Last updated: <%= st.updated_at %>
+UUID:
+  <%= st.canonical_uuid %>
+Node ID:
+  <%= st.node_id %>
+Disk space (offerring):
+  <%= st.offering_disk_space %>MB
+Storage:
+  <%= st.storage_type %>
+Transport:
+  <%= st.transport_type %>
+IP Address:
+  <%= st.ipaddr %>
+Export path:
+  <%= st.export_path %>
+Snapshot base path:
+  <%= st.snapshot_base_path %>
 __END
     else
       cond = {}
       all = StoragePool.filter(cond).all
       puts ERB.new(<<__END, nil, '-').result(binding)
-UUID            Node ID              State
 <%- all.each { |row| -%>
 <%= "%-15s %-20s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
 <%- } -%>
@@ -74,7 +79,6 @@ __END
     nodes = Isono::Models::NodeState.filter.all
 
     puts ERB.new(<<__END, nil, '-').result(binding)
-Node ID              State
 <%- nodes.each { |row| -%>
 <%= "%-20s %-10s" % [row.node_id, row.state] %>
 <%- } -%>
