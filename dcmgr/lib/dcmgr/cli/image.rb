@@ -82,7 +82,7 @@ module Dcmgr::Cli
 UUID:
   <%= img.canonical_uuid %>
 Boot Type:
-  <%= img.boot_dev_type %>
+  <%= img.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>
 Arch:
   <%= img.arch %>
 <%- if img.description -%>
@@ -99,7 +99,7 @@ __END
         imgs = M::Image.filter(cond).all
         print ERB.new(<<__END, nil, '-').result(binding)
 <%- imgs.each { |row| -%>
-<%= "%-20s  %-15s %-15s" % [row.canonical_uuid, row.boot_dev_type, row.arch] %>
+<%= row.canonical_uuid %>\t<%= row.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>\t<%= row.arch %>
 <%- } -%>
 __END
       end
