@@ -44,7 +44,7 @@ class Storage < Base
   desc "show [UUID]", "Show list of storage nodes and details"
   def show(uuid=nil)
     if uuid
-      st = StoragePool[uuid]
+      st = StoragePool[uuid] || UnknownUUIDError.raise(uuid)
       puts ERB.new(<<__END, nil, '-').result(binding)
 UUID:
   <%= st.canonical_uuid %>

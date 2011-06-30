@@ -108,7 +108,7 @@ class Network < Base
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "Show networks with the account"
   def show(uuid=nil)
     if uuid
-      nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
+      nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
       puts ERB.new(<<__END, nil, '-').result(binding)
 Network UUID:
   <%= nw.canonical_uuid %>

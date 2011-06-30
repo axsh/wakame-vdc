@@ -62,7 +62,7 @@ class Host < Base
   desc "show [UUID]", "Show list of host nodes and details"
   def show(uuid=nil)
     if uuid
-      host = HostPool[uuid]
+      host = HostPool[uuid] || UnknownUUIDError.raise(uuid)
       puts ERB.new(<<__END, nil, '-').result(binding)
 Host UUID:
   <%= host.canonical_uuid %>

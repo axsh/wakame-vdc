@@ -77,7 +77,7 @@ module Dcmgr::Cli
     desc "show [IMAGE_ID]", "Show list of machine image and details"
     def show(uuid=nil)
       if uuid
-        img = M::Image[uuid]
+        img = M::Image[uuid] || UnknownUUIDError.raise(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
 UUID:
   <%= img.canonical_uuid %>

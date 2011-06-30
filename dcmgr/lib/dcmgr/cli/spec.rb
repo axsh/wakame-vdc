@@ -48,7 +48,7 @@ module Dcmgr::Cli
     desc "show [UUID]", "Show list of machine spec and details"
     def show(uuid=nil)
       if uuid
-        spec = M::InstanceSpec[uuid]
+        spec = M::InstanceSpec[uuid] || UnknownUUIDError.raise(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
 UUID:
   <%= spec.canonical_uuid %>
