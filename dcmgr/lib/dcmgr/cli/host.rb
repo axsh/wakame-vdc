@@ -13,11 +13,13 @@ class Host < Base
   method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force to create new entry"
   method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default=>1, :desc => "Number of cpu cores to be offered"
   method_option :memory_size, :type => :numeric, :aliases => "-m", :default=>1024, :desc => "Amount of memory to be offered (in MB)"
-  method_option :hypervisor, :type => :string, :aliases => "-p", :default=>'kvm', :desc => "The hypervisor name"
+  method_option :hypervisor, :type => :string, :aliases => "-p", :default=>'kvm', :desc => "The hypervisor name. [#{HostPool::SUPPORTED_HYPERVISOR.join(', ')}]"
   method_option :arch, :type => :string, :aliases => "-r", :default=>'x86_64', :desc => "The CPU architecture type. [#{HostPool::SUPPORTED_ARCH.join(', ')}]"
   method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this"
   def add(node_id)
+    UnknownUUIDError.raise(options[:account_id]) if Account[options[:account_id]].nil?
     UnsupportedArchError.raise(options[:arch]) unless HostPool::SUPPORTED_ARCH.member?(options[:arch])
+    UnsupportedHypervisorError.raise(options[:hypervisor]) unless HostPool::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
 
     if (options[:force] == false && Isono::Models::NodeState.filter(:node_id=>node_id).first == nil)
       abort("Node ID is not registered yet: #{node_id}")
@@ -37,12 +39,16 @@ class Host < Base
   
   desc "modify UUID [options]", "Modify a registered host node"
   method_option :cpu_cores, :type => :numeric, :aliases => "-c", :desc => "Number of cpu cores to be offered"
+  method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this"
   method_option :memory_size, :type => :numeric, :aliases => "-m", :desc => "Amount of memory to be offered (in MB)"
-  method_option :hypervisor, :type => :string, :aliases => "-p", :desc => "The hypervisor name"
+  method_option :hypervisor, :type => :string, :aliases => "-p", :desc => "The hypervisor name. [#{HostPool::SUPPORTED_HYPERVISOR.join(', ')}]"
   def modify(uuid)
+    UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && Account[options[:account_id]].nil?
+    UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || HostPool::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
     fields = {
               :offering_memory_size=>options[:memory_size],
               :offering_cpu_cores=>options[:cpu_cores],
+              :account_id=>options[:account_id],
               :hypervisor=>options[:hypervisor]
     }
     super(HostPool,uuid,fields)
