@@ -24,9 +24,18 @@ function retry {
   return 0
 }
 
+NL=`echo -ne '\015'`
+
 function screen_it {
-  retry 3 screen -L -S vdc -X screen -t $1
-  screen -L -S vdc -p $1 -X stuff "$2$NL"
+  local title=$1
+  local cmd=$2
+
+  # read cmd lines from stdin
+  [[ -z "$cmd"  ]] && {
+    cmd="$cmd `read`"
+  }
+  retry 3 screen -L -S vdc -X screen -t $title
+  screen -L -S vdc -p $title -X stuff "${cmd}$NL"
 }
 
 function setup_base {
