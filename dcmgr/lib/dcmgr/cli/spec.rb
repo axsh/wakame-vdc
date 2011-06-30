@@ -8,7 +8,7 @@ module Dcmgr::Cli
     desc "add [options]", "Register a new machine spec"
     method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new machine spec"
     method_option :account_id, :type => :string, :aliases => "-a", :required => true, :desc => "The UUID of the account that this machine spec belongs to"
-    method_option :arch, :type => :string, :default => 'x86_64', :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
+    method_option :arch, :type => :string, :default => 'x86_64', :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
     method_option(:hypervisor, :type => :string, :aliases => "-p", :default => M::HostPool::HYPERVISOR_KVM.to_s,
                   :desc => "The hypervisor type for the new instance. [#{M::HostPool::SUPPORTED_HYPERVISOR.join(', ')}]")
     method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default => 1, :desc => "The initial cpu cores for the new instance"
@@ -26,14 +26,13 @@ module Dcmgr::Cli
     
     desc "modify UUID [options]", "Modify an existing machine spec"
     method_option :account_id, :type => :string, :aliases => "-a", :desc => "The UUID of the account that this machine spec belongs to"
-    method_option :arch, :type => :string, :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
+    method_option :arch, :type => :string, :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
     method_option(:hypervisor, :type => :string, :aliases => "-p",
                   :desc => "The hypervisor type for the new instance. [#{M::HostPool::SUPPORTED_HYPERVISOR.join(', ')}]")
     method_option :cpu_cores, :type => :numeric, :aliases => "-c", :desc => "The initial cpu cores for the new instance"
     method_option :memory_size, :type => :numeric, :aliases => "-m", :desc => "The memory size for the new instance"
     method_option :quota_weight, :type => :numeric, :aliases => "-w", :desc => "The cost weight factor for the new instance"
     def modify(uuid)
-      #p options[:arch]
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
       UnsupportedArchError.raise(options[:arch]) unless options[:arch].nil? || M::HostPool::SUPPORTED_ARCH.member?(options[:arch])
       UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || M::HostPool::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
@@ -51,15 +50,22 @@ module Dcmgr::Cli
       if uuid
         spec = M::InstanceSpec[uuid]
         print ERB.new(<<__END, nil, '-').result(binding)
-UUID: <%= spec.canonical_uuid %>
-Account ID: <%= spec.account_id %>
-Hypervisor: <%= spec.hypervisor %>
-Arch: <%= spec.arch %>
-CPU Cores: <%= spec.cpu_cores %>
-Memory Size: <%= spec.memory_size %>
-Quota Weight: <%= spec.quota_weight %>
+UUID:
+  <%= spec.canonical_uuid %>
+Account ID:
+  <%= spec.account_id %>
+Hypervisor:
+  <%= spec.hypervisor %>
+Arch:
+  <%= spec.arch %>
+CPU Cores:
+  <%= spec.cpu_cores %>
+Memory Size:
+  <%= spec.memory_size %>
+Quota Weight:
+  <%= spec.quota_weight %>
 Hypervisor Configuration:
-<%= spec.config.inspect %>
+  <%= spec.config.inspect %>
 __END
       else
         cond = {}
