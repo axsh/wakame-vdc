@@ -34,9 +34,12 @@ module Dcmgr::Cli
       if uuid
         lease = M::VlanLease[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-Vlan Lease UUID: <%= lease.canonical_uuid %>
-Account id: <%= lease.account_id %>
-Tag id: <%= lease.tag_id %>
+Vlan Lease UUID:
+  <%= lease.canonical_uuid %>
+Account id:
+  <%= lease.account_id %>
+Tag id:
+  <%= lease.tag_id %>
 __END
       else
         puts ERB.new(<<__END, nil, '-').result(binding)
