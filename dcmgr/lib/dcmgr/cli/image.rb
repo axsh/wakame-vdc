@@ -15,7 +15,7 @@ module Dcmgr::Cli
       method_option :arch, :type => :string, :default => 'x86_64', :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
       method_option :is_public, :type => :boolean, :aliases => "-p", :default => false, :desc => "A flag that determines whether the new machine image is public or not"
       method_option :description, :type => :string, :aliases => "-d", :desc => "An arbitrary description of the new machine image"
-      method_option :state, :type => :string, :aliases => "-s", :default => "init", :desc => "The state for the new machine image"
+      #method_option :state, :type => :string, :aliases => "-s", :default => "init", :desc => "The state for the new machine image"
       def local(location)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostPool::SUPPORTED_ARCH.member?(options[:arch])
@@ -38,7 +38,7 @@ module Dcmgr::Cli
       method_option :arch, :type => :string, :default => 'x86_64', :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
       method_option :is_public, :type => :boolean, :aliases => "-p", :default => false, :desc => "A flag that determines whether the new machine image is public or not."
       method_option :description, :type => :string, :aliases => "-d", :desc => "An arbitrary description of the new machine image"
-      method_option :state, :type => :string, :aliases => "-s", :default => "init", :desc => "The state for the new machine image"
+      #method_option :state, :type => :string, :aliases => "-s", :default => "init", :desc => "The state for the new machine image"
       def volume(snapshot_id)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostPool::SUPPORTED_ARCH.member?(options[:arch])
