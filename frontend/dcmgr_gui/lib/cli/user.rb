@@ -60,9 +60,6 @@ module Cli
       elsif options[:primary_account_id] != nil && options[:primary_account_id].length > 255
         Error.raise(Thor::Error, "User primary_account_id can not be longer than 255 characters",100)
       else
-        #Encrypt the password
-        pwd_hash = User.encrypt_password(options[:password])
-        
         #Check if the primary account uuid exists
         Error.raise("Unknown Account UUID #{options[:primary_account_id]}",100) if options[:primary_account_id] != nil && Account[options[:primary_account_id]].nil?
         
@@ -72,6 +69,12 @@ module Cli
         else
           login_id = options[:login_id]
         end
+        
+        #Check if username is available
+        Error.raise("Login id already in use: '#{login_id}'.",100) unless User.find(:name => login_id).nil?
+        
+        #Encrypt the password
+        pwd_hash = User.encrypt_password(options[:password])
         
         #Put them in there
         fields = {:name => options[:name], :login_id => login_id, :password => pwd_hash}

@@ -9,7 +9,7 @@ class User < BaseNew
     Time   :last_login_at, :null=>false
     String :name, :fixed=>true, :size=>200, :null=>false
     primary_key :id, :type=>Integer
-    String :login_id
+    String :login_id, :unique=>true
     String :password, :null=>false
     String :primary_account_id
     String :locale, :size=>255, :null => false
