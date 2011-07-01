@@ -13,6 +13,11 @@ screenrc_path=${tmp_path}/screenrc
 [[ -f "/etc/lsb-release" ]] && . /etc/lsb-release
 
 DISTRIB_ID=$(echo "${DISTRIB_ID:-ubuntu}" | tr 'A-Z' 'a-z')
+[ -d ${builder_path}/${DISTRIB_ID}/${DISTRIB_RELEASE} ] || {
+  DISTRIB_RELEASE=$(ls -d ${builder_path}/${DISTRIB_ID}/* | tail -1)
+  [ -z ${DISTRIB_RELEASE} ] && abort "Cannot detect your using distribution."
+  DISTRIB_RELEASE=$(basename ${DISTRIB_RELEASE})
+}
 
 ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
 
