@@ -11,8 +11,6 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'environment'
 
-$LOAD_PATH.unshift File.expand_path('../../app/models',__FILE__)
-
 module Cli
   require 'cli/errors'
 
