@@ -7,41 +7,6 @@ require 'yaml'
 module Cli
   class UserCli < Base
     namespace :user
-
-    #no_tasks {
-      #def before_task
-        ## Setup DB connections and load paths for dcmgr_gui
-        #root_dir = File.expand_path('../../../', __FILE__)
-        
-        ##get the database details
-        ##TODO:get this path in a less hard-coded way?
-        #content = File.new(File.expand_path('../../frontend/dcmgr_gui/config/database.yml', root_dir)).read
-        #settings = YAML::load content
-        
-        ##load the database variables
-        ##TODO: get environment from RAILS_ENV
-        #db_environment = 'development'
-        #db_adapter = settings[db_environment]['adapter']
-        #db_host    = settings[db_environment]['host']
-        #db_name    = settings[db_environment]['database']
-        #db_user    = settings[db_environment]['user']
-        #db_pwd     = settings[db_environment]['password']
-        
-        ##Connect to the database
-        #url = "#{db_adapter}://#{db_host}/#{db_name}?user=#{db_user}&password=#{db_pwd}"
-        #db = Sequel.connect(url)
-        
-        ##load the cli environment
-        #$LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/config', root_dir)
-        #$LOAD_PATH.unshift File.expand_path('../../frontend/dcmgr_gui/app/models', root_dir)
-        
-        #require 'environment-cli'
-        #require 'user'
-        #require 'account'
-        #User.db = db
-        #Account.db = db
-      #end
-    #}
     
     desc "add [options]", "Create a new user."
     method_option :name, :type => :string, :required => true, :aliases => "-n", :desc => "The name for the new user." #Maximum size: 200
@@ -49,7 +14,6 @@ module Cli
     method_option :login_id, :type => :string, :aliases => "-l", :desc => "Optional: The login_id for the new user." #Maximum size: 255
     method_option :password, :type => :string, :required => true, :aliases => "-p", :desc => "The password for the new user." #Maximum size: 255
     method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "Optional: The primary account to associate this user with." #Maximum size: 255
-    #method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def add
       if options[:name].length > 200
         Error.raise("User name can not be longer than 200 characters", 100)
@@ -140,7 +104,6 @@ __END
     method_option :name, :type => :string, :aliases => "-n", :desc => "The new name for the user." #Maximum size: 200    
     method_option :login_id, :type => :string, :aliases => "-l", :desc => "The new login_id for the user." #Maximum size: 255
     method_option :password, :type => :string, :aliases => "-p", :desc => "The new password for the user." #Maximum size: 255
-    #method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "The new primary account to associate this user with."
     def modify(uuid)
       Error.raise("User name can not be longer than 200 characters",100) if options[:name] != nil && options[:name].length > 200
       Error.raise("User login_id can not be longer than 255 characters",100) if options[:login_id] != nil && options[:login_id].length > 255
