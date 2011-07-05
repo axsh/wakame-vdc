@@ -10,7 +10,7 @@ class Host < Base
   
   desc "add NODE_ID [options]", "Register a new host node"
   method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new host pool"
-  #method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force to create new entry"
+  method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force new entry creation"
   method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default=>1, :desc => "Number of cpu cores to be offered"
   method_option :memory_size, :type => :numeric, :aliases => "-m", :default=>1024, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :aliases => "-p", :default=>'kvm', :desc => "The hypervisor name. [#{HostPool::SUPPORTED_HYPERVISOR.join(', ')}]"
@@ -21,7 +21,7 @@ class Host < Base
     UnsupportedArchError.raise(options[:arch]) unless HostPool::SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless HostPool::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
 
-    if (options[:force] == false && Isono::Models::NodeState.filter(:node_id=>node_id).first == nil)
+    unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
       abort("Node ID is not registered yet: #{node_id}")
     end
     
