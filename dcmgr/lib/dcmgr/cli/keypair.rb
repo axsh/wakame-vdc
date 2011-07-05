@@ -10,12 +10,12 @@ module Dcmgr::Cli
     method_option :account_id, :type => :string, :aliases => "-a", :desc => "The UUID of the account this key pair belongs to", :required => true
     method_option :name, :type => :string, :aliases => "-n", :desc => "The name for this key pair", :required => true
     method_option :public_key, :type => :string, :aliases => "-p", :desc => "The path to the public key", :required => true
-    method_option :private_key, :type => :string, :aliases => "-r", :desc => "The path to the private key", :required => true
+    method_option :private_key, :type => :string, :aliases => "-r", :desc => "The path to the private key"
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       private_key_path = File.expand_path(options[:private_key])
       public_key_path = File.expand_path(options[:public_key])
-      Error.raise "Private key file doesn't exist",100 unless File.exists?(private_key_path)
+      Error.raise "Private key file doesn't exist",100 unless File.exists?(private_key_path) || not options[:private_key]
       Error.raise "Public key file doesn't exist",100 unless File.exists?(public_key_path)
       
       fields = options.dup
