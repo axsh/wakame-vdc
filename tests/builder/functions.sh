@@ -49,10 +49,16 @@ function setup_base {
 }
 
 function cleanup {
-  screen -S vdc -X quit
+  screen -ls vdc | egrep -q vdc && {
+    screen -S vdc -X quit
+  }
 
-  sudo killall dnsmasq
-  sudo killall kvm
+  ps -ef | egrep 'bin/[d]nsmasq' -q && {
+    sudo killall dnsmasq
+  }
+  ps -ef | egrep 'bin/[k]vm' -q && {
+    sudo killall kvm
+  }
 
   [ -f /var/run/wakame-proxy.pid ] && \
     sudo nginx -s stop -c${prefix_path}/frontend/dcmgr_gui/config/proxy.conf
@@ -75,7 +81,7 @@ function cleanup {
     done
   done
 
-  [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] && \
+  [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] || : && \
     echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | sudo /bin/sh
 }
 
