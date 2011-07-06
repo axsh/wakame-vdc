@@ -100,7 +100,7 @@ echo $PATH | grep "`gem environment gemdir`/bin" > /dev/null || {
   export PATH="$(gem environment gemdir)/bin:$PATH"
 }
 
-alias rake="bundle exec rake"
+rake_cmd="bundle exec rake"
 dbnames="wakame_dcmgr wakame_dcmgr_gui"
 for dbname in ${dbnames}; do
   yes | mysqladmin -uroot drop   ${dbname}
@@ -112,8 +112,8 @@ echo ... cd ${prefix_path}/dcmgr
 cd ${prefix_path}/dcmgr
 tasks="db:init"
 for task in ${tasks}; do
-  echo ... rake ${task}
-           rake ${task}
+  echo ... ${rake_cmd} ${task}
+           ${rake_cmd} ${task}
 done
 
 
@@ -126,13 +126,13 @@ tasks="
  admin:generate_i18n
 "
 for task in ${tasks}; do
-  echo ... rake ${task}
-           rake ${task}
+  echo ... ${rake_cmd} ${task}
+           ${rake_cmd} ${task}
 done
 
 
-echo ... rake oauth:create_consumer[${account_id}]
-oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
+echo ... ${rake_cmd} oauth:create_consumer[${account_id}]
+oauth_keys=$(${rake_cmd} oauth:create_consumer[${account_id}] | egrep -v '^\(in')
 eval ${oauth_keys}
 unset oauth_keys
 
