@@ -81,8 +81,10 @@ function cleanup {
     done
   done
 
-  [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] || : && \
-    echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | sudo /bin/sh
+  [ -d ${prefix_path}/frontend/dcmgr_gui/log/ ] && {
+    [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] || : && \
+      echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | sudo /bin/sh
+  }
 }
 
 # kick the builder script. 
