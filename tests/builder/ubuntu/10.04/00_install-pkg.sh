@@ -33,9 +33,9 @@ rubygems_debs="
 "
 
 # debian packages
-apt-get update
-apt-get -y upgrade
-apt-get -y install ${deb_pkgs}
+sudo apt-get update
+sudo apt-get -y upgrade
+sudo apt-get -y install ${deb_pkgs}
 
 cd /tmp
 for rubygems_deb in ${rubygems_debs}; do
@@ -43,6 +43,6 @@ for rubygems_deb in ${rubygems_debs}; do
     wget http://us.archive.ubuntu.com/ubuntu/pool/universe/libg/libgems-ruby/${rubygems_deb}
   }
 done
-dpkg -i ${rubygems_debs}
+sudo dpkg -i ${rubygems_debs}
 
 exit 0
