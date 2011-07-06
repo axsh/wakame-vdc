@@ -90,7 +90,7 @@ case ${mode} in
 esac
 
 
-sudo /etc/init.d/rabbitmq-server stop
+sudo /etc/init.d/rabbitmq-server status && sudo /etc/init.d/rabbitmq-server stop
 [ -f /var/lib/rabbitmq/mnesia/ ] && sudo rm -rf /var/lib/rabbitmq/mnesia/
 sudo /etc/init.d/rabbitmq-server start
 
