@@ -74,17 +74,17 @@ function cleanup {
   done
 
   # netfilter
-  sudo ebtables --init-table
+  which ebtables && sudo ebtables --init-table || :
   for table in nat filter; do
     for xcmd in F Z X; do
-      sudo iptables -t ${table} -${xcmd}
+      which iptables && sudo iptables -t ${table} -${xcmd} || :
     done
   done
 
   [ -d ${prefix_path}/frontend/dcmgr_gui/log/ ] && {
     [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] || : && \
       echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | sudo /bin/sh
-  }
+  } || :
 }
 
 # kick the builder script. 
