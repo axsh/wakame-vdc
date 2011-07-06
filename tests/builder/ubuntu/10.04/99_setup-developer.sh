@@ -2,6 +2,26 @@
 
 work_dir=${work_dir:?"work_dir needs to be set"}
 
+
+#
+# MySQL
+#
+dcmgr_dbname=wakame_dcmgr
+dcmgr_dbuser=root
+webui_dbname=wakame_dcmgr_gui
+webui_dbpass=passwd
+
+echo "# Configure Database for MySQL ..."
+yes | mysqladmin -uroot drop ${dcmgr_dbname} >/dev/null 2>&1
+yes | mysqladmin -uroot drop ${webui_dbname} >/dev/null 2>&1
+
+cat <<EOS | mysql -uroot
+create database ${dcmgr_dbname} default character set utf8;
+create database ${webui_dbname} default character set utf8;
+grant all on ${webui_dbname}.* to ${webui_dbname}@localhost identified by '${webui_dbpass:-passwd}'
+EOS
+
+
 #
 # packages
 #
@@ -15,8 +35,8 @@ deb_pkgs="
 # ruby gems packages
 gem_pkgs="
  bundler
- rake
 "
+# rake was deleted
 
 #
 # install
