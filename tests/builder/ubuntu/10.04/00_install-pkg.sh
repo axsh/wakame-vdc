@@ -12,6 +12,7 @@ builder_path=${builder_path:?"builder_path needs to be set"}
 
 # core packages
 deb_pkgs="
+ ebtables iptables
  openssh-server openssh-client
  ruby ruby-dev libopenssl-ruby1.8
  rdoc1.8 irb1.8
