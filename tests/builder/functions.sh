@@ -74,10 +74,10 @@ function cleanup {
   done
 
   # netfilter
-  which ebtables && sudo ebtables --init-table || :
+  which ebtables >/dev/null && sudo ebtables --init-table || :
   for table in nat filter; do
     for xcmd in F Z X; do
-      which iptables && sudo iptables -t ${table} -${xcmd} || :
+      which iptables >/dev/null && sudo iptables -t ${table} -${xcmd} || :
     done
   done
 
