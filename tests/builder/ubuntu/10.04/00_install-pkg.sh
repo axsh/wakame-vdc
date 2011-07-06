@@ -34,9 +34,9 @@ rubygems_debs="
 "
 
 # debian packages
-sudo apt-get update
-sudo apt-get -y upgrade
-sudo apt-get -y install ${deb_pkgs}
+sudo DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get update
+sudo DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y upgrade
+sudo DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y install ${deb_pkgs}
 
 cd /tmp
 for rubygems_deb in ${rubygems_debs}; do
