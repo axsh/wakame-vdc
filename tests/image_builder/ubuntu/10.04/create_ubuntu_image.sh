@@ -20,7 +20,7 @@ echo "Checking if ubuntu-vm-builder is installed"
 builderinstalled=`aptitude search '~i ^ubuntu-vm-builder'`
 if [ -z "$builderinstalled" ]; then
   echo "Ubuntu-vm-builder not found ... Installing"
-  apt-get install ubuntu-vm-builder
+  apt-get install -y ubuntu-vm-builder
 else
   echo "Ubuntu-vm-builder found"
 fi
