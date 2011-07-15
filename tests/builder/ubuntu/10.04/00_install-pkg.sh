@@ -20,7 +20,7 @@ deb_pkgs="
  curl libcurl4-openssl-dev
  mysql-server mysql-client libmysqlclient16-dev
  rabbitmq-server
- qemu-kvm kvm-pxe iptables ebtables ubuntu-vm-builder
+ qemu-kvm kvm-pxe lxc iptables ebtables ubuntu-vm-builder
  dnsmasq
  open-iscsi open-iscsi-utils
  nginx
