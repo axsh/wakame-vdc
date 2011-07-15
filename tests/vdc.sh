@@ -58,6 +58,8 @@ vmimage_uuid=lucid0
 vmimage_file=${vmimage_uuid}.qcow2
 vmimage_s3="http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/${vmimage_file}.gz"
 
+hypervisor=kvm
+
 #
 # build option params
 #

@@ -26,11 +26,14 @@ vmimage_uuid=lucid0
 vmimage_file=${vmimage_uuid}.qcow2
 vmimage_s3=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/${vmimage_file}.gz
 
+hypervisor=${hypervisor:?"hypervisor needs to be set"}
+
+
 #cat <<EOS | egrep -v ^# | mysql -uroot wakame_dcmgr
 generate_sql() {
   cat <<EOS | egrep -v ^#
 INSERT INTO host_pools VALUES
- (1,'${account_id}','demohost',now(),now(),'hva.demo1','x86','kvm',100,400000);
+ (1,'${account_id}','demohost',now(),now(),'hva.demo1','x86','${hypervisor}',100,400000);
 
 # null is nat_netrowk_id column.
 INSERT INTO networks VALUES
@@ -48,7 +51,7 @@ INSERT INTO images VALUES
  (1,'${account_id}','${vmimage_uuid}',now(),now(),2,'--- \r\n:type: :http\r\n:uri: file://${local_store_path}/${vmimage_file}\r\n','x86', "Ubuntu 10.04 Server i386", 0,'init');
 
 INSERT INTO instance_specs VALUES
- (1,'${account_id}','demospec','kvm','x86',1,256,1,'',now(),now());
+ (1,'${account_id}','demospec','${hypervisor}','x86',1,256,1,'',now(),now());
 
 INSERT INTO netfilter_groups VALUES
  (1,'${account_id}','demonfgr',now(),now(),'default','demo','tcp:22,22,ip4:0.0.0.0\ntcp:80,80,ip4:0.0.0.0\nudp:53,53,ip4:0.0.0.0\nicmp:-1,-1,ip4:0.0.0.0\n');
