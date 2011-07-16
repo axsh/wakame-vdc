@@ -33,5 +33,5 @@ manifest.instance_eval do
 end
 
 start(manifest) do
-  endpoint "kvm-handle.#{@node.node_id}", Dcmgr::Rpc::HvaHandler
+  endpoint "hva-handle.#{@node.node_id}", Dcmgr::Rpc::HvaHandler
 end

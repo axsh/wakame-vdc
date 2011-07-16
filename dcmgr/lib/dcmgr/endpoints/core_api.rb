@@ -320,10 +320,10 @@ module Dcmgr
               vol.instance = inst
               vol.save
               commit_transaction
-              res = Dcmgr.messaging.submit("kvm-handle.#{hostnode.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
+              res = Dcmgr.messaging.submit("hva-handle.#{hostnode.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
             when Models::Image::BOOT_DEV_LOCAL
               commit_transaction
-              res = Dcmgr.messaging.submit("kvm-handle.#{hostnode.node_id}", 'run_local_store', inst.canonical_uuid)
+              res = Dcmgr.messaging.submit("hva-handle.#{hostnode.node_id}", 'run_local_store', inst.canonical_uuid)
             else
               raise "Unknown boot type"
             end
@@ -350,7 +350,7 @@ module Dcmgr
             else
               raise OperationNotPermitted
             end
-            res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'terminate', i.canonical_uuid)
+            res = Dcmgr.messaging.submit("hva-handle.#{i.host_pool.node_id}", 'terminate', i.canonical_uuid)
             response_to([i.canonical_uuid])
           end
         end
@@ -359,7 +359,7 @@ module Dcmgr
           description 'Reboots the instance'
           control do
             i = find_by_uuid(:Instance, params[:id])
-            Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'reboot', i.canonical_uuid)
+            Dcmgr.messaging.submit("hva-handle.#{i.host_pool.node_id}", 'reboot', i.canonical_uuid)
             response_to({})
           end
         end
@@ -540,7 +540,7 @@ module Dcmgr
             v.instance = i
             v.save
             commit_transaction
-            res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+            res = Dcmgr.messaging.submit("hva-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
             response_to(v.to_api_document)
           end
@@ -560,7 +560,7 @@ module Dcmgr
             i = v.instance
             raise InvalidInstanceState unless i.live? && i.state == 'running'
             commit_transaction
-            res = Dcmgr.messaging.submit("kvm-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+            res = Dcmgr.messaging.submit("hva-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
             response_to(v.to_api_document)
           end
         end
