@@ -56,9 +56,27 @@ function cleanup {
   ps -ef | egrep 'bin/[d]nsmasq' -q && {
     sudo killall dnsmasq
   }
-  ps -ef | egrep 'bin/[k]vm' -q && {
-    sudo killall kvm
-  }
+
+  case ${hypervisor} in
+  kvm)
+    ps -ef | egrep 'bin/[k]vm' -q && {
+      sudo killall kvm
+    }
+   ;;
+  lxc)
+    for container_name in $(lxc-ls); do
+      echo ... ${container_name}
+      sudo lxc-destroy -n ${container_name}
+    done
+    unset container_name
+
+    mount | egrep ${vmdir_path} | awk '{print $3}' | while read line ;do
+      echo ... ${line}
+      sudo umount ${line}
+    done
+    unset line
+   ;;
+  esac
 
   [ -f /var/run/wakame-proxy.pid ] && \
     sudo nginx -s stop -c${prefix_path}/frontend/dcmgr_gui/config/proxy.conf
