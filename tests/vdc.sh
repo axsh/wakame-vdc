@@ -7,7 +7,6 @@ abs_path=$(cd $(dirname $0) && pwd)
 prefix_path=$(cd ${abs_path}/../ && pwd)
 builder_path=${prefix_path}/tests/builder
 tmp_path=${prefix_path}/tmp
-vmdir_paht=$tmp_path}/vm
 screenrc_path=${tmp_path}/screenrc
 
 . $builder_path/functions.sh
