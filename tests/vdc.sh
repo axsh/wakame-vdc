@@ -54,6 +54,9 @@ metadata_server=${ipaddr}
 # local store demo machine image 
 local_store_path="$tmp_path/images"
 
+# virtual machine
+vmdir_path=${tmp_path}/instances
+
 vmimage_uuid=lucid0
 vmimage_file=${vmimage_uuid}.qcow2
 vmimage_s3="http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/${vmimage_file}.gz"
