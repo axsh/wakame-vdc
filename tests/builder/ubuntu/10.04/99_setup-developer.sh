@@ -131,7 +131,7 @@ cat <<EOS  > nsa.conf
 config.dnsmasq_bin_path='/usr/sbin/dnsmasq'
 
 # network name to distribute dhcp/dns managed by this nsa
-config.network_name='nw-shnet'
+config.network_name='tag-shnet'
 
 config.logging = true
 EOS
