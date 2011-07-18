@@ -74,6 +74,16 @@ module Dcmgr
         sh("echo \"#{@inst_id}\" > #{@inst_data_dir}/rootfs/etc/hostname")
       end
 
+      def mount_cgroup
+        `mount -t cgroup | egrep -q cgroup`
+        if $?.exitstatus != 0
+          require 'fileutils'
+          mount_point = "/cgroup"
+          FileUtils.mkdir(mount_point) unless File.exists?(mount_point)
+          sh("mount none -t cgroup #{mount_point}")
+        end
+      end
+
       def run_instance(hc)
         # run lxc
         @inst = hc.inst
@@ -105,6 +115,7 @@ module Dcmgr
         config_name = create_config
         create_fstab
         setup_container
+        mount_cgroup
 
         sh("lxc-create -f %s -n %s", [config_name, @inst[:uuid]])
         sh("sudo lxc-start -n %s -d -l DEBUG -o %s/%s.log", [@inst[:uuid], @inst_data_dir, @inst[:uuid]])
