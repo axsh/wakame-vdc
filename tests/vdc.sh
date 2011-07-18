@@ -157,14 +157,14 @@ logfile flush 1
 EOS
 
   screen -L -d -m -S vdc -t vdc -c $screenrc_path || abort "Failed to start new screen session"
-  screen_it collector "cd ${prefix_path}/dcmgr/; ./bin/collector | tee ${tmp_path}/vdc-collector.log;"
-  screen_it nsa       "cd ${prefix_path}/dcmgr; ./bin/nsa -i demo1 | tee ${tmp_path}/vdc-nsa.log;"
-  screen_it hva       "cd ${prefix_path}/dcmgr; ./bin/hva -i demo1 | tee ${tmp_path}/vdc-hva.log;"
-  screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata; bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru | tee ${tmp_path}/vdc-metadata.log;"
-  screen_it api       "cd ${prefix_path}/dcmgr/web/api;      bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru | tee ${tmp_path}/vdc-api.log;"
-  screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui; bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru | tee ${tmp_path}/vdc-auth.log;"
+  screen_it collector "cd ${prefix_path}/dcmgr/ && ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
+  screen_it nsa       "cd ${prefix_path}/dcmgr/ && ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
+  screen_it hva       "cd ${prefix_path}/dcmgr/ && ./bin/hva -i demo1 2>&1 | tee ${tmp_path}/vdc-hva.log"
+  screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata && bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
+  screen_it api       "cd ${prefix_path}/dcmgr/web/api      && bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
+  screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui && bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
   screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
-  screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config; bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru | tee ${tmp_path}/vdc-webui.log;"
+  screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
 
 }
 
