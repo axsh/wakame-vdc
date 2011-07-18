@@ -22,15 +22,46 @@ metadata_server=${metadata_server:-${ipaddr}}
 local_store_path=${local_store_path:-/home/wakame/vdc/store}
 account_id=${account_id:-"a-shpoolxx"}
 
-vmimage_uuid=lucid0
-vmimage_file=${vmimage_uuid}.qcow2
-vmimage_s3=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/${vmimage_file}.gz
-
 hypervisor=${hypervisor:?"hypervisor needs to be set"}
+vmimage_s3_prefix=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
+
+case ${hypervisor} in
+kvm)
+  vmimage_uuid=lucid0
+  vmimage_dist_name=ubuntu
+  vmimage_dist_ver=10.04
+  vmimage_arch=i386
+  vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
+  vmimage_file=${vmimage_uuid}.qcow2
+  vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
+  ;;
+lxc)
+  vmimage_uuid=lucid0
+  vmimage_dist_name=ubuntu
+  vmimage_dist_ver=10.04
+  vmimage_arch=amd64
+  vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
+  vmimage_file=${vmimage_dist_name}-${vmimage_dist_ver}_without-metadata_${hypervisor}_${vmimage_arch}.raw
+  vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
+  ;;
+*)
+  echo "unknown hypervisor type" >&2
+  exit 1
+  ;;
+esac
 
 
 #cat <<EOS | egrep -v ^# | mysql -uroot wakame_dcmgr
 generate_sql() {
+  case ${vmimage_arch} in
+  i386)
+    images_arch=x86
+    ;;
+  amd64)
+    images_arch=x86_64
+    ;;
+  esac
+
   cat <<EOS | egrep -v ^#
 INSERT INTO host_pools VALUES
  (1,'${account_id}','demohost',now(),now(),'hva.demo1','x86','${hypervisor}',100,400000);
@@ -48,7 +79,7 @@ INSERT INTO tag_mappings VALUES
 
 
 INSERT INTO images VALUES
- (1,'${account_id}','${vmimage_uuid}',now(),now(),2,'--- \r\n:type: :http\r\n:uri: file://${local_store_path}/${vmimage_file}\r\n','x86', "Ubuntu 10.04 Server i386", 0,'init');
+ (1,'${account_id}','${vmimage_uuid}',now(),now(),2,'--- \r\n:type: :http\r\n:uri: file://${local_store_path}/${vmimage_file}\r\n','${images_arch}', "${vmimage_desc}", 0,'init');
 
 INSERT INTO instance_specs VALUES
  (1,'${account_id}','demospec','${hypervisor}','x86',1,256,1,'',now(),now());
