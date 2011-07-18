@@ -66,7 +66,7 @@ function cleanup {
   lxc)
     for container_name in $(lxc-ls); do
       echo ... ${container_name}
-      sudo lxc-destroy -n ${container_name}
+      sudo lxc-destroy -n ${container_name} || sudo lxc-kill -n ${container_name}
     done
     unset container_name
 
