@@ -56,19 +56,14 @@ function bundle_update() {
   local dir=$1
 
   [ -d $dir ] || exit 1
+  # run in subshell to keep cwd.
+  (
   cd $dir
 
   [ -d vendor/bundle ] && rm -rf vendor/bundle
-  [ -d .bundle ] || mkdir .bundle
-  cat <<EOS > .bundle/config
-BUNDLE_DISABLE_SHARED_GEMS: "1" 
-BUNDLE_WITHOUT: "" 
-BUNDLE_PATH: vendor/bundle
-EOS
-
-  echo "... bundle install"
-  pwd
-  bundle install
+  # this oneliner will generate .bundle/config.
+  shlog bundle install --path=vendor/bundle
+  )
 }
 
 echo "before bundle_update"
