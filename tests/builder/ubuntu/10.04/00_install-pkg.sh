@@ -33,6 +33,10 @@ rubygems_debs="
  rubygems1.8_1.3.7-3_all.deb
 "
 
+# host configuration
+hostname | diff /etc/hostname - >/dev/null || hostname > /etc/hostname
+egrep -v '^#' /etc/hosts | egrep -q $(hostname) || echo 127.0.0.1 $(hostname) >> /etc/hosts
+
 # debian packages
 DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get update
 DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y upgrade
