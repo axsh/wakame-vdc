@@ -79,6 +79,7 @@ module Dcmgr
           hash = {:dummy=>@params}
         else
           mime = @mime_types.first
+          begin
           case mime.to_s
           when 'application/json', 'text/json'
             require 'json'
@@ -90,6 +91,10 @@ module Dcmgr
             hash = hash.to_mash
           else
             raise "Unsupported body document type: #{mime.to_s}"
+          end
+          rescue => e
+            # fall back to query string params
+            hash = {:dummy=>@params}
           end
         end
         return hash.values.first
