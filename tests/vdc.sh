@@ -61,6 +61,7 @@ vmimage_file=${vmimage_uuid}.qcow2
 vmimage_s3="http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/${vmimage_file}.gz"
 
 hypervisor=kvm
+ci_archive_dir=$prefix_path/../results
 
 #
 # build option params
@@ -81,68 +82,39 @@ done
 unset opts
 mode=$1
 
-#
-# main
-#
+alias rake="bundle exec rake"
+shopt -s expand_aliases
 
-[[ $UID = 0 ]] || abort "Need to run with root privilege"
-cleanup
+function run_standalone() {
+  # forece reset and restart rabbitmq
+  /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
+  [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
+  /etc/init.d/rabbitmq-server start
 
-case ${mode} in
-  install)
-    setup_base
-    exit 0;
-    ;;
-  *)
-    ;;
-esac
+  echo $PATH | grep "`gem environment gemdir`/bin" > /dev/null || { 
+    export PATH="$(gem environment gemdir)/bin:$PATH"
+  }
 
-
-/etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
-[ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
-/etc/init.d/rabbitmq-server start
-
-echo $PATH | grep "`gem environment gemdir`/bin" > /dev/null || { 
-  export PATH="$(gem environment gemdir)/bin:$PATH"
-}
-
-rake_cmd="bundle exec rake"
-dbnames="wakame_dcmgr wakame_dcmgr_gui"
-for dbname in ${dbnames}; do
-  yes | mysqladmin -uroot drop   ${dbname}
-        mysqladmin -uroot create ${dbname}
-done
+  rake_cmd="bundle exec rake"
+  dbnames="wakame_dcmgr wakame_dcmgr_gui"
+  for dbname in ${dbnames}; do
+    yes | mysqladmin -uroot drop   ${dbname}
+    mysqladmin -uroot create ${dbname}
+  done
 
 
-echo ... cd ${prefix_path}/dcmgr
-cd ${prefix_path}/dcmgr
-tasks="db:init"
-for task in ${tasks}; do
-  echo ... ${rake_cmd} ${task}
-           ${rake_cmd} ${task}
-done
+  shlog cd ${prefix_path}/dcmgr
+  shlog rake db:init
 
 
-cd ${prefix_path}/frontend/dcmgr_gui
-# db
-tasks="
- db:init
- db:sample_data
- oauth:create_table
- admin:generate_i18n
-"
-for task in ${tasks}; do
-  echo ... ${rake_cmd} ${task}
-           ${rake_cmd} ${task}
-done
+  shlog cd ${prefix_path}/frontend/dcmgr_gui
+  shlog rake db:init db:sample_data admin:generate_i18n oauth:create_table
 
+  echo ... rake oauth:create_consumer[${account_id}]
+  local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
+  eval ${oauth_keys}
 
-echo ... ${rake_cmd} oauth:create_consumer[${account_id}]
-oauth_keys=$(${rake_cmd} oauth:create_consumer[${account_id}] | egrep -v '^\(in')
-eval ${oauth_keys}
-unset oauth_keys
-
-cat <<EOS > ./oauth_client.rb
+  cat <<EOS > ./oauth_client.rb
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
@@ -163,19 +135,19 @@ req = "/api/netfilter_groups"
 res = consumer.request(:get, req, nil, {}, {'X-VDC-ACCOUNT-UUID' => '${account_id}'})
 p res.body
 EOS
-chmod +x ./oauth_client.rb
+  chmod +x ./oauth_client.rb
 
 
-# generate demo data
-run_builder "91_generate-demo-resource.sh"
-sleep 1
+  # generate demo data
+  run_builder "91_generate-demo-resource.sh"
+  sleep 1
 
-# screen
-cd ${prefix_path}
-echo "Creating screen windows... wait 5 seconds."
+  # screen
+  cd ${prefix_path}
+  echo "Creating screen windows..."
 
-# screen configuration file
-/bin/cat <<EOS > $screenrc_path
+  # screen configuration file
+  /bin/cat <<EOS > $screenrc_path
 escape ^z^z
 hardstatus on
 hardstatus alwayslastline "[%m/%d %02c] %-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<" 
@@ -184,22 +156,79 @@ logfile ${tmp_path}/screenlog.%t
 logfile flush 1
 EOS
 
-cd ${prefix_path}
-screen -L -d -m -S vdc -t vdc -c $screenrc_path || abort "Failed to start new screen session"
-screen_it collector "cd ${prefix_path}/dcmgr/; ./bin/collector | tee ${tmp_path}/vdc-collector.log;"
-screen_it nsa       "cd ${prefix_path}/dcmgr; ./bin/nsa -i demo1 | tee ${tmp_path}/vdc-nsa.log;"
-screen_it hva       "cd ${prefix_path}/dcmgr; ./bin/hva -i demo1 | tee ${tmp_path}/vdc-hva.log;"
-screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata; bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru | tee ${tmp_path}/vdc-metadata.log;"
-screen_it api       "cd ${prefix_path}/dcmgr/web/api;      bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru | tee ${tmp_path}/vdc-api.log;"
-screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui; bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru | tee ${tmp_path}/vdc-auth.log;"
-screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
-screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config; bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru | tee ${tmp_path}/vdc-webui.log;"
-screen_it test      "echo Enjoy wakame-vdc.; echo \* http://${ipaddr}:${webui_port}/; cd ${prefix_path}/frontend/dcmgr_gui; ./oauth_client.rb; "
-screen -S vdc -x
+  screen -L -d -m -S vdc -t vdc -c $screenrc_path || abort "Failed to start new screen session"
+  screen_it collector "cd ${prefix_path}/dcmgr/; ./bin/collector | tee ${tmp_path}/vdc-collector.log;"
+  screen_it nsa       "cd ${prefix_path}/dcmgr; ./bin/nsa -i demo1 | tee ${tmp_path}/vdc-nsa.log;"
+  screen_it hva       "cd ${prefix_path}/dcmgr; ./bin/hva -i demo1 | tee ${tmp_path}/vdc-hva.log;"
+  screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata; bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru | tee ${tmp_path}/vdc-metadata.log;"
+  screen_it api       "cd ${prefix_path}/dcmgr/web/api;      bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru | tee ${tmp_path}/vdc-api.log;"
+  screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui; bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru | tee ${tmp_path}/vdc-auth.log;"
+  screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
+  screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config; bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru | tee ${tmp_path}/vdc-webui.log;"
 
+}
+
+function run_developer() {
+  run_standalone
+  screen_it test "echo Enjoy wakame-vdc.; echo \* http://${ipaddr}:${webui_port}/; cd ${prefix_path}/frontend/dcmgr_gui; ./oauth_client.rb; "
+  # attach the shell.
+  screen -S vdc -x
+}
+
+
+function run_standalone_integration_test {
+  cd $prefix_path/tests/spec
+  bundle install
+  # run integrate test specs. 
+  bundle exec rspec . 
+  return $?
+}
+
+
+function ci_post_process {
+  local sig=$1
+  local ci_result=$2
+
+  # make log archive and save to archiving folder.
+  [[ -d $ci_archive_dir ]] && {
+    cd $prefix_path
+    tar cf "${sig}.tar" ./tmp/screenlog.* ./tmp/spec.log
+    mv ${sig}.tar $ci_archive_dir
+  }
+
+}
+
+#
+# main
+#
+
+[[ $UID = 0 ]] || abort "Need to run with root privilege"
+cleanup
+
+excode=0
+case ${mode} in
+  install)
+    setup_base
+    ;;
+  standalone:ci)
+    # disable shell exit on error which caused by test cases.
+    set +e
+    (
+     run_standalone
+     run_standalone_integration_test
+    )
+    excode=$?
+    set -e
+    screen -S vdc -X quit
+    ci_post_process `date +%Y%h%d%H%M` $excode
+    ;;
+  *)
+    run_developer
+    ;;
+esac
 
 #
 cleanup
 
 
-exit 0
+exit $excode

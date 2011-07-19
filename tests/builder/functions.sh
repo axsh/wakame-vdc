@@ -78,9 +78,6 @@ function cleanup {
    ;;
   esac
 
-  [ -f /var/run/wakame-proxy.pid ] && \
-    sudo nginx -s stop -c${prefix_path}/frontend/dcmgr_gui/config/proxy.conf
-
   for component in collector nsa hva; do
     pid=$(ps awwx | egrep "[b]in/${component}" | awk '{print $1}')
     [ -z "${pid}" ] || sudo kill ${pid}
@@ -124,5 +121,8 @@ function run_builder {
   return 0
 }
 
-
+function shlog {
+  echo $*
+  eval $*
+}
 
