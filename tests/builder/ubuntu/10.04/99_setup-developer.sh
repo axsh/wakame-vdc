@@ -41,7 +41,7 @@ gem_pkgs="
 #
 # install
 #
-sudo DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y install ${deb_pkgs}
+DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y install ${deb_pkgs}
 
 for gem_pkg in ${gem_pkgs}; do
   gem query -l -i -n "${gem_pkg}" > /dev/null || {

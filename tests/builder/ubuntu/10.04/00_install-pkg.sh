@@ -34,9 +34,9 @@ rubygems_debs="
 "
 
 # debian packages
-sudo DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get update
-sudo DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y upgrade
-sudo DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y install ${deb_pkgs}
+DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get update
+DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y upgrade
+DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y install ${deb_pkgs}
 
 cd /tmp
 for rubygems_deb in ${rubygems_debs}; do
@@ -44,6 +44,6 @@ for rubygems_deb in ${rubygems_debs}; do
     wget http://us.archive.ubuntu.com/ubuntu/pool/universe/libg/libgems-ruby/${rubygems_deb}
   }
 done
-sudo dpkg -i ${rubygems_debs}
+dpkg -i ${rubygems_debs}
 
 exit 0

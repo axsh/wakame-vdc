@@ -49,30 +49,32 @@ function setup_base {
 }
 
 function cleanup {
-  screen -ls vdc | egrep -q vdc && {
-    screen -S vdc -X quit
-  }
+  which screen >/dev/null && {
+    screen -ls vdc | egrep -q vdc && {
+      screen -S vdc -X quit
+    }
+  } || :
 
   ps -ef | egrep 'bin/[d]nsmasq' -q && {
-    sudo killall dnsmasq
+    killall dnsmasq
   }
 
   case ${hypervisor} in
   kvm)
     ps -ef | egrep 'bin/[k]vm' -q && {
-      sudo killall kvm
+      killall kvm
     }
    ;;
   lxc)
     for container_name in $(lxc-ls); do
       echo ... ${container_name}
-      sudo lxc-destroy -n ${container_name} || sudo lxc-kill -n ${container_name}
+      lxc-destroy -n ${container_name} || lxc-kill -n ${container_name}
     done
     unset container_name
 
     mount | egrep ${vmdir_path} | awk '{print $3}' | while read line ;do
       echo ... ${line}
-      sudo umount ${line}
+      umount ${line}
     done
     unset line
    ;;
@@ -80,25 +82,25 @@ function cleanup {
 
   for component in collector nsa hva; do
     pid=$(ps awwx | egrep "[b]in/${component}" | awk '{print $1}')
-    [ -z "${pid}" ] || sudo kill ${pid}
+    [ -z "${pid}" ] || kill ${pid}
   done
 
   for port in ${ports}; do
     pid=$(ps awwx | egrep "[r]ackup -p ${port}" | awk '{print $1}')
-    [ -z "${pid}" ] || sudo kill -9 ${pid}
+    [ -z "${pid}" ] || kill -9 ${pid}
   done
 
   # netfilter
-  which ebtables >/dev/null && sudo ebtables --init-table || :
+  which ebtables >/dev/null && ebtables --init-table || :
   for table in nat filter; do
     for xcmd in F Z X; do
-      which iptables >/dev/null && sudo iptables -t ${table} -${xcmd} || :
+      which iptables >/dev/null && iptables -t ${table} -${xcmd} || :
     done
   done
 
   [ -d ${prefix_path}/frontend/dcmgr_gui/log/ ] && {
     [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] || : && \
-      echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | sudo /bin/sh
+      echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | /bin/sh
   } || :
 }
 
