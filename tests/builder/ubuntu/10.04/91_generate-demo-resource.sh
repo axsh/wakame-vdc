@@ -20,6 +20,7 @@ prefix="${prefix:-$(/sbin/ip route show | awk '$9 == ip { sub(/.*\//, "", $1); p
 dns_server=${dns_server:-${ipaddr}}
 dhcp_server=${dhcp_server:-${ipaddr}}
 metadata_server=${metadata_server:-${ipaddr}}
+sta_server=${sta_server:-${ipaddr}}
 
 local_store_path=${local_store_path?"local_store_path needs to be set"}
 account_id=${account_id:-"a-shpoolxx"}
@@ -64,7 +65,7 @@ esac
 
 cd ${work_dir}/dcmgr/
 shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r $(uname -m)
-shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool -s $((1024 * 1024)) -i ${ipaddr} -n /export/home/wakame/vdc/sta/snap
+shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool -s $((1024 * 1024)) -i ${sta_server} -n /export/home/wakame/vdc/sta/snap
 
 # vlan
 #shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demovlan    -a ${account_id}
