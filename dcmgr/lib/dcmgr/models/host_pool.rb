@@ -10,12 +10,13 @@ module Dcmgr::Models
     HYPERVISOR_XEN_34='xen-3.4'
     HYPERVISOR_XEN_40='xen-4.0'
     HYPERVISOR_KVM='kvm'
+    HYPERVISOR_LXC='lxc'
 
     ARCH_X86=:x86.to_s
     ARCH_X86_64=:x86_64.to_s
 
     SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
-    SUPPORTED_HYPERVISOR=[HYPERVISOR_KVM]
+    SUPPORTED_HYPERVISOR=[HYPERVISOR_KVM, HYPERVISOR_LXC]
 
     inheritable_schema do
       String :node_id, :size=>80, :null=>true
