@@ -11,6 +11,10 @@ module Dcmgr::Cli
     method_option :name, :type => :string, :aliases => "-n", :desc => "The name for this key pair", :required => true
     method_option :public_key, :type => :string, :aliases => "-p", :desc => "The path to the public key", :required => true
     method_option :private_key, :type => :string, :aliases => "-r", :desc => "The path to the private key"
+
+    require 'dcmgr/helpers/cli_helper'
+    include Dcmgr::Helpers::CliHelper
+
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       private_key_path = File.expand_path(options[:private_key])
@@ -25,7 +29,8 @@ module Dcmgr::Cli
       fields[:private_key] = File.open(private_key_path) {|f| f.readlines.map.join}
       
       #Generate the fingerprint from the public key file
-      fields[:finger_print] = %x{ssh-keygen -lf #{options[:public_key]} | cut -d ' ' -f2}.chomp
+      res = sh("ssh-keygen -lf #{options[:public_key]}")
+      fields[:finger_print] = res[:stdout].split(' ')[1]
       
       puts super(M::SshKeyPair,fields)
     end
