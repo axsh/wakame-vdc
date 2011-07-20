@@ -80,15 +80,14 @@ shlog ./bin/vdc-manage tag map tag-shstor -o sp-demostor
 shlog ./bin/vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -u wmi-${vmimage_uuid} -r ${images_arch} -d "${vmimage_desc}" -s init
 shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r $(uname -m) -p ${hypervisor} -c 1 -m 256 -w 1
 
-shlog ./bin/vdc-manage group add -u demofgr -a ${account_id} -n default -d demo
+shlog ./bin/vdc-manage group add -u  ng-demofgr -a ${account_id} -n default -d demo
 shlog ./bin/vdc-manage group addrule ng-demofgr -r  tcp:22,22,ip4:0.0.0.0
 shlog ./bin/vdc-manage group addrule ng-demofgr -r  tcp:80,80,ip4:0.0.0.0
 shlog ./bin/vdc-manage group addrule ng-demofgr -r  udp:53,53,ip4:0.0.0.0
 shlog ./bin/vdc-manage group addrule ng-demofgr -r icmp:-1,-1,ip4:0.0.0.0
 
 cat <<'EOS' > /tmp/pub.pem
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZhAOcHSe4aY8GwwLCJ4Et3qUBcyVPokFoCyCrtTZJVUU++B9554ahiVcrQCbfuDlaXV2ZCfIND+5N1UEk5umMoQG1aPBw9Nz9wspMpWiTKGOAm99yR9aZeNbUi8zAfyYnjrpuRUKCH1UPmh6EDaryFNDsxInmaZZ6701PgT++cZ3Vy
-/r1bmb93YvpV+hfaL/FmY3Cu8n+WJSoJQZ4eCMJ+4Pw/pkxjfuLUw3mFl40RVAlwlTuf1I4bB/m1mjlmirBEU6+CWLGYUNWDKaFBpJcGB6sXoQDS4FvlV92tUAEKIBWG5ma0EXBdJQBi1XxSCU2p7XMX8DhS7Gj/TSu7011 wakame-vdc.pem
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZhAOcHSe4aY8GwwLCJ4Et3qUBcyVPokFoCyCrtTZJVUU++B9554ahiVcrQCbfuDlaXV2ZCfIND+5N1UEk5umMoQG1aPBw9Nz9wspMpWiTKGOAm99yR9aZeNbUi8zAfyYnjrpuRUKCH1UPmh6EDaryFNDsxInmaZZ6701PgT++cZ3Vy/r1bmb93YvpV+hfaL/FmY3Cu8n+WJSoJQZ4eCMJ+4Pw/pkxjfuLUw3mFl40RVAlwlTuf1I4bB/m1mjlmirBEU6+CWLGYUNWDKaFBpJcGB6sXoQDS4FvlV92tUAEKIBWG5ma0EXBdJQBi1XxSCU2p7XMX8DhS7Gj/TSu7011 wakame-vdc.pem
 EOS
 
 cat <<'EOS' > /tmp/pri.pem
@@ -121,8 +120,10 @@ PxIk/VB7tQxkp4Rtv005mWHPUYlh8x4lMqiVAhPJzEBfN9UEfkrk
 -----END RSA PRIVATE KEY-----
 EOS
 
-shlog ./bin/vdc-manage keypair add -a ${account_id} -u demo -n demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
+shlog ./bin/vdc-manage keypair add -a ${account_id} -u ssh-demo -n demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
 
+[ -f /tmp/pub.pem ] && rm -f /tmp/pub.pem
+[ -f /tmp/pri.pem ] && rm -f /tmp/pri.pem
 
 [ -d ${local_store_path} ] || {
   mkdir -p ${local_store_path}
