@@ -1,5 +1,7 @@
 #!/bin/sh
 
+work_dir=${work_dir:?"work_dir needs to be set"}
+
 export LANG=C
 export LC_ALL=C
 export DEBIAN_FRONTEND=noninteractive
@@ -19,7 +21,7 @@ dns_server=${dns_server:-${ipaddr}}
 dhcp_server=${dhcp_server:-${ipaddr}}
 metadata_server=${metadata_server:-${ipaddr}}
 
-local_store_path=${local_store_path:-/home/wakame/vdc/store}
+local_store_path=${local_store_path?"local_store_path needs to be set"}
 account_id=${account_id:-"a-shpoolxx"}
 
 hypervisor=${hypervisor:?"hypervisor needs to be set"}
@@ -50,59 +52,77 @@ lxc)
   ;;
 esac
 
-
-#cat <<EOS | egrep -v ^# | mysql -uroot wakame_dcmgr
-generate_sql() {
-  case ${vmimage_arch} in
-  i386)
-    images_arch=x86
-    ;;
-  amd64)
-    images_arch=x86_64
-    ;;
-  esac
-
-  cat <<EOS | egrep -v ^#
-INSERT INTO host_pools VALUES
- (1,'${account_id}','demohost',now(),now(),'hva.demo1','x86','${hypervisor}',100,400000);
-
-# null is nat_netrowk_id column.
-INSERT INTO networks VALUES
- (1, '${account_id}', 'demonet', '${ipv4_gw}', ${prefix}, 'vdc.local', '${dns_server}', '${dhcp_server}', '${metadata_server}', ${metadata_port},null, 1, null, 'demo', now(), now());
-INSERT INTO vlan_leases VALUES
- (1, '${account_id}', 'demovlan', 0, now(), now());
-
-INSERT INTO tag_mappings VALUES
- (1, 1, 'hp-demohost'),
- (2, 2, 'nw-demonet'),
- (3, 3, 'sp-demostor');
+case ${vmimage_arch} in
+i386)
+  images_arch=x86
+  ;;
+amd64)
+  images_arch=x86_64
+  ;;
+esac
 
 
-INSERT INTO images VALUES
- (1,'${account_id}','${vmimage_uuid}',now(),now(),2,'--- \r\n:type: :http\r\n:uri: file://${local_store_path}/${vmimage_file}\r\n','${images_arch}', "${vmimage_desc}", 0,'init');
+cd ${work_dir}/dcmgr/
+shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r $(uname -m)
+shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool -s $((1024 * 1024)) -i ${ipaddr} -n /export/home/wakame/vdc/sta/snap
 
-INSERT INTO instance_specs VALUES
- (1,'${account_id}','demospec','${hypervisor}','x86',1,256,1,'',now(),now());
+# vlan
+#shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demovlan    -a ${account_id}
+#shlog ./bin/vdc-manage network add           -u   nw-demonet                      --ipv4_gw ${ipv4_gw} --prefix ${prefix} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --vlan_id 1 --description demo
+# non vlan
+shlog ./bin/vdc-manage network add           -u   nw-demonet                      --ipv4_gw ${ipv4_gw} --prefix ${prefix} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
 
-INSERT INTO netfilter_groups VALUES
- (1,'${account_id}','demonfgr',now(),now(),'default','demo','tcp:22,22,ip4:0.0.0.0\ntcp:80,80,ip4:0.0.0.0\nudp:53,53,ip4:0.0.0.0\nicmp:-1,-1,ip4:0.0.0.0\n');
-INSERT INTO netfilter_rules VALUES
- (1,now(),now(),1,'tcp:22,22,ip4:0.0.0.0'),
- (2,now(),now(),1,'tcp:80,80,ip4:0.0.0.0'),
- (3,now(),now(),1,'udp:53,53,ip4:0.0.0.0'),
- (4,now(),now(),1,'icmp:-1,-1,ip4:0.0.0.0');
 
-INSERT INTO ssh_key_pairs VALUES
- (1,'${account_id}','demopair','demo', '91:a1:28:8e:08:43:0f:06:82:ec:aa:a7:cc:1f:8e:8c',
-'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZhAOcHSe4aY8GwwLCJ4Et3qUBcyVPokFoCyCrtTZJVUU++B9554ahiVcrQCbfuDlaXV2ZCfIND+5N1UEk5umMoQG1aPBw9Nz9wspMpWiTKGOAm99yR9aZeNbUi8zAfyYnjrpuRUKCH1UPmh6EDaryFNDsxInmaZZ6701PgT++cZ3Vy/r1bmb93YvpV+hfaL/FmY3Cu8n+WJSoJQZ4eCMJ+4Pw/pkxjfuLUw3mFl40RVAlwlTuf1I4bB/m1mjlmirBEU6+CWLGYUNWDKaFBpJcGB6sXoQDS4FvlV92tUAEKIBWG5ma0EXBdJQBi1XxSCU2p7XMX8DhS7Gj/TSu7011 wakame-vdc.pem\n',
-'-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA2YQDnB0nuGmPBsMCwieBLd6lAXMlT6JBaAsgq7U2SVVFPvgf\neeeGoYlXK0Am37g5Wl1dmQnyDQ/uTdVBJObpjKEBtWjwcPTc/cLKTKVokyhjgJvf\nckfWmXjW1IvMwH8mJ466bkVCgh9VD5oehA2q8hTQ7MSJ5mmWeu9NT4E/vnGd1cv6\n9W5m/d2L6VfoX2i/xZmNwrvJ/liUqCUGeHgjCfuD8P6ZMY37i1MN5hZeNEVQJcJU\n7n9SOGwf5tZo5ZoqwRFOvglixmFDVgymhQaSXBgerF6EA0uBb5VfdrVABCiAVhuZ\nmtBFwXSUAYtV8UglNqe1zF/A4Uuxo/00ru9NdQIDAQABAoIBAC/WHakerFadOGxH\nRPsIDxvUZDuOZD1ANNw53kSFBNxZ2XHAxcNcjLpH5xjG8gWvkUVzVRtMGaSPxVvu\ns3X3JpPb8PFBk+dzoopYZX83vWjnsAJfxWNvsx1reuuhlzUagXyfohaQOtE9LMrS\nnTVzgA3fUBdSHfXDcOm2aS08ApXSJOIxYxD/9AF6HNBsqTe+qvHiHVy570wkc2gf\nK8m90NITTefIv67YzyVNubqCa2k9AiDojRKv0MeBpMqzHA3Lyw8El6Z0RTH694aV\nAM1+y760DKw3SE320p9wz/onh6mei5jg4eoGDZHqGCY4rb3U9qLkMFHPmsOssWQq\n/O5056ECgYEA+y0DHYCq3bcJFxhHqogVYbSnnJTJriC4XObjMK5srz1Y9GL6mfhd\n3qJIbyjgRofqLEdOUXq2LR8BVcSnWxVwwzkThtYpRlbHPMv3MPr/PKgyNj3Gsvv5\n0Y2EzcLiD1cm1f5Z//EWu+mOAfzW8JOLL8w+ZedsdvCUmFrZp/eClR0CgYEA3bGA\nNwWOpERSylkA3cK5XGMFYwj6cE2+EMaFqzdEy4bLKhkdLMEA1NA7CbtO46e7AvCu\nsthj5Qty605uGEI6+S5M/IPlX/Gh66f3qnXXNsVKXJbOcUC9lEbRwZa0V1u1Eqrx\nmJ3g1as31EgmKRv4vIJ2wQTVgorBNDuUdZUzYjkCgYA3h78Nkbm05Nd8pKCLgiSA\nAmmgA4EHHzLDT0RhKd7ba0u0VAGlcrSGGQi8kqPq0/egrG8TMnb+SMGJzb1WNMpG\nTuMTR1u+skbAGTPgP02YgnL/bO71+SFFA+2dc/14eMMcQmxxWkK1brA3nkeCzovS\nGGyfKOfg79VaTZObP+w9vQKBgQC4dpBLt/kHX75Plh0taHAZml8KF5diyJ1Ekhr4\n6wT4IJF91uW6rmFFsnndUBiFPrRR7vg94eXE2HDnsBvVXY56dfcjCZBa89CaJ+ng\n0Sqg7SpBvk3KWGcmMIMqBH7MTYduIATky0EgKNZMcTgnbpnaKOgtFRufAlteXdDa\nwam+qQKBgHxGg9HJI3Ax8M5rgmsGReBM8e1GHojV5pmgWm0AsX04RS/7/gNkXHdv\nMoU4FfcO/Tf7b+qwp40OjN0dr7xDwIWXih2LrAxGK2Lw43hlC5huYmqpEIYoiag+\nPxIk/VB7tQxkp4Rtv005mWHPUYlh8x4lMqiVAhPJzEBfN9UEfkrk\n-----END RSA PRIVATE KEY-----\n',
-now(),now()
-);
+shlog ./bin/vdc-manage tag map tag-shhost -o hp-demohost
+shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demonet
+shlog ./bin/vdc-manage tag map tag-shstor -o sp-demostor
+
+shlog ./bin/vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -u wmi-${vmimage_uuid} -r ${images_arch} -d "${vmimage_desc}" -s init
+shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r $(uname -m) -p ${hypervisor} -c 1 -m 256 -w 1
+
+shlog ./bin/vdc-manage group add -u demofgr -a ${account_id} -n default -d demo
+shlog ./bin/vdc-manage group addrule ng-demofgr -r  tcp:22,22,ip4:0.0.0.0
+shlog ./bin/vdc-manage group addrule ng-demofgr -r  tcp:80,80,ip4:0.0.0.0
+shlog ./bin/vdc-manage group addrule ng-demofgr -r  udp:53,53,ip4:0.0.0.0
+shlog ./bin/vdc-manage group addrule ng-demofgr -r icmp:-1,-1,ip4:0.0.0.0
+
+cat <<'EOS' > /tmp/pub.pem
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZhAOcHSe4aY8GwwLCJ4Et3qUBcyVPokFoCyCrtTZJVUU++B9554ahiVcrQCbfuDlaXV2ZCfIND+5N1UEk5umMoQG1aPBw9Nz9wspMpWiTKGOAm99yR9aZeNbUi8zAfyYnjrpuRUKCH1UPmh6EDaryFNDsxInmaZZ6701PgT++cZ3Vy
+/r1bmb93YvpV+hfaL/FmY3Cu8n+WJSoJQZ4eCMJ+4Pw/pkxjfuLUw3mFl40RVAlwlTuf1I4bB/m1mjlmirBEU6+CWLGYUNWDKaFBpJcGB6sXoQDS4FvlV92tUAEKIBWG5ma0EXBdJQBi1XxSCU2p7XMX8DhS7Gj/TSu7011 wakame-vdc.pem
 EOS
-}
 
-generate_sql | cat -n
-generate_sql | mysql -uroot wakame_dcmgr
+cat <<'EOS' > /tmp/pri.pem
+-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEA2YQDnB0nuGmPBsMCwieBLd6lAXMlT6JBaAsgq7U2SVVFPvgf
+eeeGoYlXK0Am37g5Wl1dmQnyDQ/uTdVBJObpjKEBtWjwcPTc/cLKTKVokyhjgJvf
+ckfWmXjW1IvMwH8mJ466bkVCgh9VD5oehA2q8hTQ7MSJ5mmWeu9NT4E/vnGd1cv6
+9W5m/d2L6VfoX2i/xZmNwrvJ/liUqCUGeHgjCfuD8P6ZMY37i1MN5hZeNEVQJcJU
+7n9SOGwf5tZo5ZoqwRFOvglixmFDVgymhQaSXBgerF6EA0uBb5VfdrVABCiAVhuZ
+mtBFwXSUAYtV8UglNqe1zF/A4Uuxo/00ru9NdQIDAQABAoIBAC/WHakerFadOGxH
+RPsIDxvUZDuOZD1ANNw53kSFBNxZ2XHAxcNcjLpH5xjG8gWvkUVzVRtMGaSPxVvu
+s3X3JpPb8PFBk+dzoopYZX83vWjnsAJfxWNvsx1reuuhlzUagXyfohaQOtE9LMrS
+nTVzgA3fUBdSHfXDcOm2aS08ApXSJOIxYxD/9AF6HNBsqTe+qvHiHVy570wkc2gf
+K8m90NITTefIv67YzyVNubqCa2k9AiDojRKv0MeBpMqzHA3Lyw8El6Z0RTH694aV
+AM1+y760DKw3SE320p9wz/onh6mei5jg4eoGDZHqGCY4rb3U9qLkMFHPmsOssWQq
+/O5056ECgYEA+y0DHYCq3bcJFxhHqogVYbSnnJTJriC4XObjMK5srz1Y9GL6mfhd
+3qJIbyjgRofqLEdOUXq2LR8BVcSnWxVwwzkThtYpRlbHPMv3MPr/PKgyNj3Gsvv5
+0Y2EzcLiD1cm1f5Z//EWu+mOAfzW8JOLL8w+ZedsdvCUmFrZp/eClR0CgYEA3bGA
+NwWOpERSylkA3cK5XGMFYwj6cE2+EMaFqzdEy4bLKhkdLMEA1NA7CbtO46e7AvCu
+sthj5Qty605uGEI6+S5M/IPlX/Gh66f3qnXXNsVKXJbOcUC9lEbRwZa0V1u1Eqrx
+mJ3g1as31EgmKRv4vIJ2wQTVgorBNDuUdZUzYjkCgYA3h78Nkbm05Nd8pKCLgiSA
+AmmgA4EHHzLDT0RhKd7ba0u0VAGlcrSGGQi8kqPq0/egrG8TMnb+SMGJzb1WNMpG
+TuMTR1u+skbAGTPgP02YgnL/bO71+SFFA+2dc/14eMMcQmxxWkK1brA3nkeCzovS
+GGyfKOfg79VaTZObP+w9vQKBgQC4dpBLt/kHX75Plh0taHAZml8KF5diyJ1Ekhr4
+6wT4IJF91uW6rmFFsnndUBiFPrRR7vg94eXE2HDnsBvVXY56dfcjCZBa89CaJ+ng
+0Sqg7SpBvk3KWGcmMIMqBH7MTYduIATky0EgKNZMcTgnbpnaKOgtFRufAlteXdDa
+wam+qQKBgHxGg9HJI3Ax8M5rgmsGReBM8e1GHojV5pmgWm0AsX04RS/7/gNkXHdv
+MoU4FfcO/Tf7b+qwp40OjN0dr7xDwIWXih2LrAxGK2Lw43hlC5huYmqpEIYoiag+
+PxIk/VB7tQxkp4Rtv005mWHPUYlh8x4lMqiVAhPJzEBfN9UEfkrk
+-----END RSA PRIVATE KEY-----
+EOS
+
+shlog ./bin/vdc-manage keypair add -a ${account_id} -u demo -n demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
+
 
 [ -d ${local_store_path} ] || {
   mkdir -p ${local_store_path}
