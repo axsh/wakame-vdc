@@ -18,5 +18,5 @@ manifest.instance_eval do
 end
 
 start(manifest) do
-  endpoint "zfs-handle.#{@node.node_id}", Dcmgr::Rpc::StaHandler
+  endpoint "sta-handle.#{@node.node_id}", Dcmgr::Rpc::StaHandler
 end

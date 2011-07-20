@@ -188,7 +188,7 @@ module Dcmgr
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
 
         # create volume from snapshot
-        jobreq.run("zfs-handle.#{@vol[:storage_pool][:node_id]}", "create_volume", @vol_id)
+        jobreq.run("sta-handle.#{@vol[:storage_pool][:node_id]}", "create_volume", @vol_id)
 
         logger.debug("volume created on #{@vol[:storage_pool][:node_id]}: #{@vol_id}")
         # reload volume info
