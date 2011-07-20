@@ -15,7 +15,7 @@ module Dcmgr::Cli
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       private_key_path = File.expand_path(options[:private_key])
       public_key_path = File.expand_path(options[:public_key])
-      Error.raise "Private key file doesn't exist",100 unless File.exists?(private_key_path) || not options[:private_key]
+      Error.raise "Private key file doesn't exist",100 unless File.exists?(private_key_path) || options[:private_key]
       Error.raise "Public key file doesn't exist",100 unless File.exists?(public_key_path)
       
       fields = options.dup
