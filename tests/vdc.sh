@@ -139,6 +139,7 @@ EOS
 
 
   # generate demo data
+  work_dir=$prefix_path
   run_builder "91_generate-demo-resource.sh"
   sleep 1
 
