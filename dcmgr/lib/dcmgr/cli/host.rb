@@ -15,7 +15,7 @@ class Host < Base
   method_option :memory_size, :type => :numeric, :aliases => "-m", :default=>1024, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :aliases => "-p", :default=>'kvm', :desc => "The hypervisor name. [#{HostPool::SUPPORTED_HYPERVISOR.join(', ')}]"
   method_option :arch, :type => :string, :aliases => "-r", :default=>'x86_64', :desc => "The CPU architecture type. [#{HostPool::SUPPORTED_ARCH.join(', ')}]"
-  method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this"
+  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :aliases => "-a", :desc => "The account ID to own this"
   def add(node_id)
     UnknownUUIDError.raise(options[:account_id]) if Account[options[:account_id]].nil?
     UnsupportedArchError.raise(options[:arch]) unless HostPool::SUPPORTED_ARCH.member?(options[:arch])

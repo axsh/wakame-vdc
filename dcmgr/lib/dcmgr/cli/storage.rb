@@ -17,7 +17,7 @@ class Storage < Base
   method_option :transport_type, :type => :string, :aliases => "-t", :default=>'iscsi', :desc => "Transport type [iscsi]"
   method_option :ipaddr, :type => :string, :aliases => "-i", :required=>true, :desc => "IP address of transport target"
   method_option :storage_type, :type => :string, :aliases => "-o", :default=>'zfs', :desc => "Storage type [zfs]"
-  method_option :account_id, :type => :string, :default=>'a-shpool', :aliases => "-a", :desc => "The account ID to own this"
+  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :aliases => "-a", :desc => "The account ID to own this"
   def add(node_id)
     unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
       abort("Node ID is not registered yet: #{node_id}")
