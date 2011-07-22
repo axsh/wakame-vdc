@@ -124,7 +124,7 @@ function run_builder {
 }
 
 function shlog {
-  echo $*
+  echo $* "(cwd: `pwd`)"
   eval $*
 }
 
