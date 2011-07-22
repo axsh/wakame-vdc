@@ -82,6 +82,16 @@ done
 unset opts
 mode=$1
 
+# work around if this runs under the bundler container.
+[[ -n "$BUNDLE_BIN_PATH" ]] && {
+  export RUBYOPT="$RUBYOPT -rubygems"
+  alias bundle="$BUNDLE_BIN_PATH"
+}
+# add bin path to $GEM_HOME/bin.
+echo $PATH | grep "`gem environment gemdir`/bin" > /dev/null || {
+  export PATH="$(gem environment gemdir)/bin:$PATH"
+}
+
 alias rake="bundle exec rake"
 shopt -s expand_aliases
 
@@ -91,11 +101,6 @@ function run_standalone() {
   [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
   /etc/init.d/rabbitmq-server start
 
-  echo $PATH | grep "`gem environment gemdir`/bin" > /dev/null || { 
-    export PATH="$(gem environment gemdir)/bin:$PATH"
-  }
-
-  rake_cmd="bundle exec rake"
   dbnames="wakame_dcmgr wakame_dcmgr_gui"
   for dbname in ${dbnames}; do
     yes | mysqladmin -uroot drop   ${dbname}
