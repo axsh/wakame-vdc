@@ -198,7 +198,7 @@ function ci_post_process {
   # make log archive and save to archiving folder.
   [[ -d $ci_archive_dir ]] && {
     cd $prefix_path
-    tar cf "${sig}.tar" ./tmp/screenlog.* ./tmp/spec.log
+    tar cf "${sig}.tar" ./tmp/screenlog.*
     mv ${sig}.tar $ci_archive_dir
   }
 
@@ -226,7 +226,7 @@ case ${mode} in
     excode=$?
     set -e
     screen -S vdc -X quit
-    ci_post_process `date +%Y%h%d%H%M` $excode
+    ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
   *)
     run_developer
