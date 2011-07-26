@@ -78,7 +78,7 @@ __END
     end
     
     desc "addrule UUID [options]", "Add a rule to a security group"
-    method_option :rule, :type => :string, :aliases => "-r", :desc => "The new rule to be added"
+    method_option :rule, :type => :string, :aliases => "-r", :required => true, :desc => "The new rule to be added"
     def addrule(g_uuid)
       UnknownUUIDError.raise(g_uuid) if M::NetfilterGroup[g_uuid].nil?
       
@@ -89,7 +89,7 @@ __END
     end
     
     desc "delrule UUID [options]", "Delete a rule from a security group"
-    method_option :rule, :type => :string, :aliases => "-r", :desc => "The rule to be deleted."
+    method_option :rule, :type => :string, :aliases => "-r", :required => true, :desc => "The rule to be deleted."
     def delrule(g_uuid)
       UnknownUUIDError.raise(g_uuid) if M::NetfilterGroup[g_uuid].nil?
       rule = M::NetfilterRule.find(:netfilter_group_id => M::NetfilterGroup[g_uuid].id,:permission => options[:rule])
