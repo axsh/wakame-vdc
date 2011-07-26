@@ -14,6 +14,7 @@ pkgs="
  SUNWgcc
  SUNWiscsitgt
  SUNWgit
+ SUNWscreen
 "
 
 for pkg in ${pkgs}; do
