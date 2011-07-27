@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 work_dir=${work_dir:?"work_dir needs to be set"}
 
 export LANG=C
@@ -65,6 +67,7 @@ esac
 
 cd ${work_dir}/dcmgr/
 shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r $(uname -m)
+echo $?
 shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool -s $((1024 * 1024)) -i ${sta_server} -n /export/home/wakame/vdc/sta/snap
 
 # vlan
