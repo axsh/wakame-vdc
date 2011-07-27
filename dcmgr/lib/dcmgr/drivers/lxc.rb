@@ -17,30 +17,38 @@ module Dcmgr
         end
 
         config = File.open(config_name, 'w')
+        config.puts "lxc.network.type = veth"
+        config.puts "lxc.network.link = #{@bridge_if}"
+        config.puts "lxc.network.flags = up"
         config.puts "lxc.utsname = #{inst_id}"
+        config.puts ""
+        config.puts "lxc.network.veth.pair = #{vnic[:uuid]}"
+        config.puts "lxc.network.hwaddr = #{mac_addr}"
+        config.puts ""
         config.puts "lxc.tty = 4"
         config.puts "lxc.pts = 1024"
-        config.puts "lxc.network.type = veth"
-        config.puts "lxc.network.veth.pair = #{vnic[:uuid]}"
-        config.puts "lxc.network.flags = up"
-        config.puts "lxc.network.link = #{@bridge_if}"
-        config.puts "lxc.network.hwaddr = #{mac_addr}"
         config.puts "lxc.rootfs = #{@inst_data_dir}/rootfs"
         config.puts "lxc.mount = #{@inst_data_dir}/fstab"
+        config.puts ""
+        config.puts "# /dev/null and zero"
         config.puts "lxc.cgroup.devices.deny = a"
         config.puts "lxc.cgroup.devices.allow = c 1:3 rwm"
         config.puts "lxc.cgroup.devices.allow = c 1:5 rwm"
+        config.puts "# consoles"
         config.puts "lxc.cgroup.devices.allow = c 5:1 rwm"
         config.puts "lxc.cgroup.devices.allow = c 5:0 rwm"
         config.puts "lxc.cgroup.devices.allow = c 4:0 rwm"
         config.puts "lxc.cgroup.devices.allow = c 4:1 rwm"
+        config.puts "# /dev/{,u}random"
         config.puts "lxc.cgroup.devices.allow = c 1:9 rwm"
         config.puts "lxc.cgroup.devices.allow = c 1:8 rwm"
         config.puts "lxc.cgroup.devices.allow = c 136:* rwm"
         config.puts "lxc.cgroup.devices.allow = c 5:2 rwm"
+        config.puts "#rtc"
         config.puts "lxc.cgroup.devices.allow = c 254:0 rwm"
-        config.puts "lxc.cgroup.devices.allow = c 10:232 rwm"
-        config.puts "lxc.cgroup.devices.allow = c 10:200 rwm"
+        config.puts "#kvm"
+        config.puts "#lxc.cgroup.devices.allow = c 10:232 rwm"
+        config.puts "#lxc.cgroup.devices.allow = c 10:200 rwm"
         unless @inst[:volume].nil?
           @inst[:volume].each { |volid, v|
             vol_id = volid
@@ -118,7 +126,7 @@ module Dcmgr
         mount_cgroup
 
         sh("lxc-create -f %s -n %s", [config_name, @inst[:uuid]])
-        sh("sudo lxc-start -n %s -d -l DEBUG -o %s/%s.log", [@inst[:uuid], @inst_data_dir, @inst[:uuid]])
+        sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log", [@inst[:uuid], @inst_data_dir, @inst[:uuid]])
       end
 
       def terminate_instance(hc)
