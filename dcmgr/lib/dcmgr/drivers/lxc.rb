@@ -126,7 +126,23 @@ module Dcmgr
         mount_cgroup
 
         sh("lxc-create -f %s -n %s", [config_name, @inst[:uuid]])
-        sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log", [@inst[:uuid], @inst_data_dir, @inst[:uuid]])
+
+        cmd = "lxc-start -n %s -d -l DEBUG -o %s/%s.log"
+        unless `uname -m`.chomp == "x86_64"
+          # Ubuntu 10.04.3 LTS
+          # Linux ubuntu 2.6.38-10-generic #46~lucid1-Ubuntu SMP Wed Jul 6 18:40:11 UTC 2011 i686 GNU/Linux
+          # lxc 0.7.4-0ubuntu7
+          # Ubuntu-10.04.3 on Virtualbox-4.0.12 r72916 on Windows-7
+          #
+          # > lxc-start 1311803515.629 ERROR    lxc_start - inherited fd 3 on pipe:[58281]
+          # > lxc-start 1311803515.629 ERROR    lxc_start - inherited fd 4 on pipe:[58281]
+          # > lxc-start 1311803515.629 ERROR    lxc_start - inherited fd 6 on socket:[58286]
+          #
+          # http://comments.gmane.org/gmane.linux.kernel.containers.lxc.general/912
+          # http://comments.gmane.org/gmane.linux.kernel.containers.lxc.general/1400
+          cmd += " 3<&- 4<&- 6<&-"
+        end
+        sh(cmd, [@inst[:uuid], @inst_data_dir, @inst[:uuid]])
       end
 
       def terminate_instance(hc)
