@@ -88,9 +88,11 @@ mode=$1
   alias bundle="$BUNDLE_BIN_PATH"
 }
 # add bin path to $GEM_HOME/bin.
-echo $PATH | grep "`gem environment gemdir`/bin" > /dev/null || {
-  export PATH="$(gem environment gemdir)/bin:$PATH"
-}
+which gem >/dev/null 2>&1 && {
+  echo $PATH | grep "`gem environment gemdir`/bin" > /dev/null || {
+    export PATH="$(gem environment gemdir)/bin:$PATH"
+  }
+} || :
 
 alias rake="bundle exec rake"
 shopt -s expand_aliases
