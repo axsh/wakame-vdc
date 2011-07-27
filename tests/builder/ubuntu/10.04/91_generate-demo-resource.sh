@@ -44,7 +44,7 @@ lxc)
   vmimage_uuid=lucid0
   vmimage_dist_name=ubuntu
   vmimage_dist_ver=10.04
-  vmimage_arch=amd64
+  vmimage_arch=i386
   vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
   vmimage_file=${vmimage_dist_name}-${vmimage_dist_ver}_without-metadata_${hypervisor}_${vmimage_arch}.raw
   vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
@@ -64,10 +64,27 @@ amd64)
   ;;
 esac
 
+hva_arch=$(uname -m)
+case ${hva_arch} in
+x86_64)
+  ;;
+*)
+  hva_arch=x86
+  ;;
+esac
+
+[ -d ${local_store_path} ] || {
+  mkdir -p ${local_store_path}
+}
+
+[ -f ${local_store_path}/${vmimage_file} ] || {
+  cd ${local_store_path}
+  wget ${vmimage_s3}
+  gunzip ${vmimage_file}.gz
+}
 
 cd ${work_dir}/dcmgr/
-shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r $(uname -m)
-echo $?
+shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r ${hva_arch}
 shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool -s $((1024 * 1024)) -i ${sta_server} -n /export/home/wakame/vdc/sta/snap
 
 # vlan
@@ -82,7 +99,7 @@ shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demonet
 shlog ./bin/vdc-manage tag map tag-shstor -o sp-demostor
 
 shlog ./bin/vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -u wmi-${vmimage_uuid} -r ${images_arch} -d "${vmimage_desc}" -s init
-shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r $(uname -m) -p ${hypervisor} -c 1 -m 256 -w 1
+shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r ${hva_arch} -p ${hypervisor} -c 1 -m 256 -w 1
 
 shlog ./bin/vdc-manage group add -u  ng-demofgr -a ${account_id} -n default -d demo
 shlog ./bin/vdc-manage group addrule ng-demofgr -r  tcp:22,22,ip4:0.0.0.0
@@ -128,15 +145,5 @@ shlog ./bin/vdc-manage keypair add -a ${account_id} -u ssh-demo -n demo --privat
 
 [ -f /tmp/pub.pem ] && rm -f /tmp/pub.pem
 [ -f /tmp/pri.pem ] && rm -f /tmp/pri.pem
-
-[ -d ${local_store_path} ] || {
-  mkdir -p ${local_store_path}
-}
-
-[ -f ${local_store_path}/${vmimage_file} ] || {
-  cd ${local_store_path}
-  wget ${vmimage_s3}
-  gunzip ${vmimage_file}.gz
-}
 
 exit 0
