@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 work_dir=${work_dir:?"work_dir needs to be set"}
 
 
@@ -77,6 +79,7 @@ bundle_update ${work_dir}/frontend/dcmgr_gui/
 # dcmgr
 cd ${work_dir}/dcmgr/config/
 cp -f dcmgr.conf.example dcmgr.conf
+cp -f snapshot_repository.yml.example snapshot_repository.yml
 
 [ -d ${vmdir_path} ] || mkdir $vmdir_path
 cat <<EOS > hva.conf
