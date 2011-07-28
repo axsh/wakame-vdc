@@ -10,5 +10,5 @@ ps -ef | egrep '[b]in/sta' | while read line; do
   set ${line}
   echo $*
   echo
-  #pstree -pal $2
+  which pstree >/dev/null 2>&1 && pstree -pal $2
 done
