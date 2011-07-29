@@ -165,8 +165,13 @@ s3_curl() {
  headers[${#headers[@]}]="Authorization: ${SERVICE_NAME} ${ACCESS_KEY_ID}:${sig}"
  headers[${#headers[@]}]="Date: ${date}"
  [[ ${md5} ]] && headers[${#headers[@]}]="Content-MD5: ${md5}"
-   curl ${arg} "${inout}" ${stdopts} -K <(curl_headers "${headers[@]}") \
-      "http://${bucket_host}.${SERVICE_HOST}/${remote}" 
+ if [ $bucket_host != '' ]; then
+   url="http://${bucket_host}.${SERVICE_HOST}/${remote}"
+ else
+   url="http://${SERVICE_HOST}/${remote}"
+ fi
+ curl ${arg} "${inout}" ${stdopts} -K <(curl_headers "${headers[@]}") $url 
+ 
  return $?
 }
 
