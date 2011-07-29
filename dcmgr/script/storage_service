@@ -137,9 +137,14 @@ s3_curl() {
   GET) arg="-o" inout="${4:--}" # stdout if no $4
        ;;
   PUT) [[ ${2} ]] || die "PUT can has bucket?"
+       content_length=0
        if [[ ! ${3} ]]; then
          arg="-X PUT"
-         content_length=`ls -l ${4} | awk '{print $5}'` 
+         if [[ ${3} = '' ]]; then
+           content_length=0
+         else
+           content_length=`ls -l ${4} | awk '{print $5}'` 
+         fi
          headers[${#headers[@]}]="Content-Length: ${content_length}"
        elif [[ -f ${4} ]]; then
          md5="$(openssl dgst -md5 -binary "${4}"|openssl base64 -e -a)"
