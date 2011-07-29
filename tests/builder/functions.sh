@@ -102,6 +102,8 @@ function cleanup {
     [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] || : && \
       echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | /bin/sh
   } || :
+  
+  rm -f ${tmp_path}/screenlog.* ${tmp_path}/*.log
 }
 
 # kick the builder script. 
