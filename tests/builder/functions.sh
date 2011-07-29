@@ -6,14 +6,34 @@ function abort() {
   exit 1
 }
 
+# Run multiple sequence of comand lines
+#run 'ls /'
+#run 'echo && echo && ls /'
+#
+#run <<_END
+#ls / && echo 1
+#ls / || echo 2
+#ls / && echo 3
+#_END
+function run {
+  if [[ -t 0 ]]; then
+    eval "$*"
+  else
+    while read -u 0 input; do
+      eval "$input"
+    done
+  fi
+}
+
 # retry 3 /bin/ls
+# echo "ls / " | retry 3
 function retry {
   local retry_max=$1
   shift
 
   local count=$retry_max
   while [[ $count -gt 0 ]]; do
-    $* && break
+    run "$*" && break
     count=$(($count - 1))
     sleep 1
   done
