@@ -110,12 +110,12 @@ function run_standalone() {
   done
 
 
-  shlog cd ${prefix_path}/dcmgr
-  shlog rake db:init
+  cd ${prefix_path}/dcmgr
+  rake db:init
 
 
-  shlog cd ${prefix_path}/frontend/dcmgr_gui
-  shlog rake db:init db:sample_data admin:generate_i18n oauth:create_table
+  cd ${prefix_path}/frontend/dcmgr_gui
+  rake db:init db:sample_data admin:generate_i18n oauth:create_table
 
   echo ... rake oauth:create_consumer[${account_id}]
   local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
@@ -211,6 +211,8 @@ function ci_post_process {
 #
 
 [[ $UID = 0 ]] || abort "Need to run with root privilege"
+trap 'echo $BASH_COMMAND "(line ${LINENO}: $BASH_SOURCE, pwd: $PWD)"' DEBUG
+
 cleanup
 
 excode=0
