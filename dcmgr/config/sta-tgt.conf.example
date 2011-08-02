@@ -1,0 +1,10 @@
+#------------------------
+# Configuration file for sta-linux.
+#------------------------
+
+# iSCSI Qualified Name (IQN) prefix : {literal iqn}.{yyyy-mm}.{reversed domain name of the authority}
+config.iqn_prefix = "iqn.2010-09.jp.wakame"
+
+# Initiator address is IP or ALL
+config.initiator_address = 'ALL'
+

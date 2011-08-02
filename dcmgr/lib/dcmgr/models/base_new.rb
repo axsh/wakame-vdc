@@ -131,7 +131,7 @@ module Dcmgr::Models
       end
 
       def to_hash()
-        self.values.dup.merge({:id=>canonical_uuid, :uuid=>canonical_uuid})
+        self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid})
       end
     end
 
