@@ -90,9 +90,7 @@ mode=$1
 }
 # add bin path to $GEM_HOME/bin.
 which gem >/dev/null 2>&1 && {
-  echo $PATH | grep "`gem environment gemdir`/bin" > /dev/null || {
-    export PATH="$(gem environment gemdir)/bin:$PATH"
-  }
+  export PATH="$(ruby -rubygems -e 'puts Gem.bindir'):$PATH"
 } || :
 
 alias rake="bundle exec rake"
