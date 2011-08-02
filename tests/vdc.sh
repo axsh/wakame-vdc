@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 
-set -e
+# enable only when debug the script
+#set -e
 
 abs_path=$(cd $(dirname $0) && pwd)
 prefix_path=$(cd ${abs_path}/../ && pwd)
@@ -174,11 +175,12 @@ EOS
   screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
   screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
 
-  retry 10 <<EOF
-echo > "/dev/tcp/${api_bind}/${api_port}" 2>&1
+
+  retry 10 <<EOF || abort "Can't see dcmgr"
+echo > "/dev/tcp/${api_bind}/${api_port}"
 EOF
-  retry 10 <<EOF
-echo > "/dev/tcp/localhost/8080" 2>&1b
+  retry 10 <<EOF || abort "Can't see nginx"
+echo > "/dev/tcp/localhost/8080"
 EOF
 }
 
