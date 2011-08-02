@@ -16,30 +16,39 @@ function abort() {
 #ls / && echo 3
 #_END
 function run {
+  local ret=0
   if [[ -t 0 ]]; then
     eval "$*"
+    ret=$?
   else
-    while read -u 0 input; do
-      eval "$input"
-    done
+    read -u 0 -d '' i
+    eval "$i"
+    ret="$?"
   fi
+
+  return $ret
 }
 
 # retry 3 /bin/ls
 # echo "ls / " | retry 3
 function retry {
-  local retry_max=$1
+  local retry_max="$1"
   shift
 
-  local count=$retry_max
+  local count="$retry_max"
+  local lastret=0
   while [[ $count -gt 0 ]]; do
-    run "$*" && break
+    run "$*"
+    lastret="$?"
+    [[ $lastret -eq 0 ]] && break
     count=$(($count - 1))
-    sleep 1
+    echo "retry hold [$(($retry_max - $count))/${retry_max}]...."
+    /bin/sleep 1
   done
 
-  [[ $count -eq 0 ]] && {
-    abort "Retry failed [$retry_max]: ${*}"
+  [[ ( $count -eq 0 ) && ( $lastret -ne 0 ) ]] && {
+    echo "Retry failed [$retry_max]: ${*}" >&2
+    return 1
   }
   return 0
 }
