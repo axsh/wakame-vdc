@@ -185,6 +185,11 @@ module Dcmgr
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
     autoload :Kvm , 'dcmgr/drivers/kvm'
     autoload :Lxc , 'dcmgr/drivers/lxc'
+    autoload :BackingStore, 'dcmgr/drivers/backing_store'
+    autoload :Zfs,          'dcmgr/drivers/zfs'
+    autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
+    autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
+    autoload :Comstar,      'dcmgr/drivers/comstar'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'

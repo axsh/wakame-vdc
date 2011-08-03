@@ -495,7 +495,7 @@ module Dcmgr
             end
 
             commit_transaction
-            res = Dcmgr.messaging.submit("#{sp[:storage_type]}-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid, repository_address)
+            res = Dcmgr.messaging.submit("sta-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid, repository_address)
             response_to(v.to_api_document)
           end
         end
@@ -521,7 +521,7 @@ module Dcmgr
             sp = v.storage_pool
 
             commit_transaction
-            res = Dcmgr.messaging.submit("#{sp[:storage_type]}-handle.#{sp.values[:node_id]}", 'delete_volume', v.canonical_uuid)
+            res = Dcmgr.messaging.submit("sta-handle.#{sp.values[:node_id]}", 'delete_volume', v.canonical_uuid)
             response_to([v.canonical_uuid])
           end
         end
@@ -630,7 +630,7 @@ module Dcmgr
             commit_transaction
             
             repository_address = Dcmgr::StorageService.repository_address(destination_key)
-            res = Dcmgr.messaging.submit("#{sp[:storage_type]}-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, repository_address)
+            res = Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, repository_address)
             response_to(vs.to_api_document)
           end
         end
@@ -661,7 +661,7 @@ module Dcmgr
             commit_transaction
              
             repository_address = Dcmgr::StorageService.repository_address(destination_key)
-            res = Dcmgr.messaging.submit("#{sp[:storage_type]}-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
+            res = Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
             response_to([vs.canonical_uuid])
           end
         end
