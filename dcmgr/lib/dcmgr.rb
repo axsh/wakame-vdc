@@ -126,6 +126,7 @@ module Dcmgr
 
   module NodeModules
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
+    autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
@@ -141,6 +142,7 @@ module Dcmgr
   module Helpers
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
+    autoload :StaTgtHelper, 'dcmgr/helpers/sta_tgt_helper'
   end
 
   autoload :Tags, 'dcmgr/tags'

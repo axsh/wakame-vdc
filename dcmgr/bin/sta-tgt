@@ -15,7 +15,8 @@ manifest.instance_eval do
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
 
   load_module Isono::NodeModules::NodeHeartbeat
-  
+  load_module Dcmgr::NodeModules::StaTgtInitializer
+
   config do |c| 
     c.iqn_prefix = 'iqn.2010-09.jp.wakame'
     c.initiator_address = 'ALL'

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 require 'isono'
-require 'net/telnet'
-require 'fileutils'
 
 module Dcmgr
   module Rpc
@@ -9,6 +7,7 @@ module Dcmgr
     class StaTgtHandler < EndpointBuilder
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
+      include Dcmgr::Helpers::StaTgtHelper
       
       job :create_volume do
         volume_id = request.args[0]
@@ -68,23 +67,12 @@ module Dcmgr
         iscsi[:lun] = 1
         iscsi[:backing_store] = vol_path
         iscsi[:initiator_address] = @node.manifest.config.initiator_address 
-    
-        sh("/usr/sbin/tgtadm --lld iscsi --op new --mode=target --tid=#{iscsi[:tid]} --targetname  #{iscsi[:iqn]}")
-        if $?.exitstatus != 0
-          raise "failed create iscsi target: #{iscsi[:tid]}"
-        end
         
-        sh("/usr/sbin/tgtadm --lld iscsi --op new --mode=logicalunit --tid=#{iscsi[:tid]} --lun=#{iscsi[:lun]} -b #{iscsi[:backing_store]}")
-        if $?.exitstatus != 0
-          raise "failed add new backing store : #{iscsi[:backing_store]}"
-        end
+        register_target(iscsi[:tid], iscsi[:iqn])
+        register_logicalunit(iscsi[:tid], iscsi[:lun], iscsi[:backing_store])
+        bind_target(iscsi[:tid], iscsi[:initiator_address])
         
-        sh("/usr/sbin/tgtadm --lld iscsi --op bind --mode=target --tid=#{iscsi[:tid]} --initiator-address=#{iscsi[:initiator_address]}")
-        if $?.exitstatus != 0
-          raise "failed bind iscsi target: #{iscsi[:tid]}"
-        end
-        
-        opt = { :iqn => iscsi[:iqn], :lun => iscsi[:lun], :tid => iscsi[:tid] }
+        opt = { :iqn => iscsi[:iqn], :lun => iscsi[:lun], :tid => iscsi[:tid], :backing_store => iscsi[:backing_store] }
         rpc.request('sta-collector', 'update_volume', volume_id, {:state=>:available, :transport_information=>opt})
         logger.info("registered iscsi target: #{volume_id}")  
       end
@@ -202,7 +190,7 @@ module Dcmgr
         rpc.request('sta-collector', 'update_snapshot', snapshot_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
         logger.info("deleted snapshot: #{snapshot_id}")
       end
-    
+
       def rpc
         @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
       end
