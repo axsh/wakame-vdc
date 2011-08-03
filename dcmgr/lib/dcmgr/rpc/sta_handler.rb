@@ -72,12 +72,6 @@ module Dcmgr
             raise "volume has not be created: #{volume_id}"
           end
 
-          sh("rm -rf %s", ["#{data[:storage_pool][:snapshot_base_path]}/#{sdata[:account_id]}/#{sdata[:uuid]}.zsnap"])
-          logger.info("delete file: " + File.join(zsnap_dir, zsnap_file))
-
-          if $?.exitstatus != 0
-            raise "snapshot file cna't deleted"
-          end
         else
           # create volume
           sh("/usr/sbin/zfs create -p -V %s %s", ["#{data[:size]}m", vol_path])
