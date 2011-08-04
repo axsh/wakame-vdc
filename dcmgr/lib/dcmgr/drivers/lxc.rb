@@ -128,11 +128,17 @@ module Dcmgr
         sh("lxc-create -f %s -n %s", [config_name, @inst[:uuid]])
 
         cmd = "lxc-start -n %s -d -l DEBUG -o %s/%s.log"
-        unless `uname -m`.chomp == "x86_64"
+        lxc_version = `lxc-version`.chomp.split(': ').last
+        logger.debug("lxc-version: #{lxc_version}")
+
+        if lxc_version == "0.7.4"
           # Ubuntu 10.04.3 LTS
           # Linux ubuntu 2.6.38-10-generic #46~lucid1-Ubuntu SMP Wed Jul 6 18:40:11 UTC 2011 i686 GNU/Linux
+          # Linux ubuntu 2.6.38-8-server #42-Ubuntu SMP Mon Apr 11 03:49:04 UTC 2011 x86_64 GNU/Linux
           # lxc 0.7.4-0ubuntu7
+          #
           # Ubuntu-10.04.3 on Virtualbox-4.0.12 r72916 on Windows-7
+          # Ubuntu-10.10
           #
           # > lxc-start 1311803515.629 ERROR    lxc_start - inherited fd 3 on pipe:[58281]
           # > lxc-start 1311803515.629 ERROR    lxc_start - inherited fd 4 on pipe:[58281]
