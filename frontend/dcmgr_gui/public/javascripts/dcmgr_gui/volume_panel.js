@@ -222,6 +222,7 @@ DcmgrGUI.prototype.volumePanel = function(){
         "url": '/snapshots/upload_destination',
         success: function(json,status){
           var select_html = '<select name="destination" id="destination"></select>';
+          var select_destination = '';
           $(self).find('#select_destination').empty().html(select_html);
           $.each(json.results, function(key, item) {
             if (item.destination_id == 'local') {
