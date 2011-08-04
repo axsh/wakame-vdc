@@ -143,6 +143,7 @@ module Dcmgr
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
     autoload :StaTgtHelper, 'dcmgr/helpers/sta_tgt_helper'
+    autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
   end
 
   autoload :Tags, 'dcmgr/tags'

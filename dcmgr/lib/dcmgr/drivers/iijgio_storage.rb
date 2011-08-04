@@ -3,7 +3,8 @@
 module Dcmgr::Drivers
   
   class IIJGIOStorage < SnapshotStorage
-   
+    include Dcmgr::Helpers::SnapshotStorageHelper
+
     def download(keyname, filename, path) 
       cmd = "get %s %s %s" 
       args = [@bucket, keyname, File.join(path, filename)]
