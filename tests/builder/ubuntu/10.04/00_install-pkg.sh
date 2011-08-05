@@ -34,6 +34,7 @@ deb_pkgs="
  lxc/natty
  rubygems/natty
  rubygems1.8/natty
+ tgt/natty
 "
 
 # host configuration
