@@ -1,0 +1,3 @@
+deb http://us.archive.ubuntu.com/ubuntu/ natty main restricted
+deb http://us.archive.ubuntu.com/ubuntu/ natty multiverse
+deb http://us.archive.ubuntu.com/ubuntu/ natty universe
