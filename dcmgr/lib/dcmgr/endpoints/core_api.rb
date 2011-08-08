@@ -332,6 +332,7 @@ module Dcmgr
             else
               raise "Unknown boot type"
             end
+            Dcmgr.messaging.event_publish('instance.scheduled', :args=>[inst.canonical_uuid])
             
             response_to(inst.to_api_document)
           end

@@ -63,8 +63,8 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
 
     event = Isono::NodeModules::EventChannel.new(node)
 
-    event.subscribe('hva/instance_started', '#') do |args|
-      logger.info("refresh on instance_started: #{args.inspect}")
+    event.subscribe('instance.scheduled', '#') do |args|
+      logger.info("refresh on instance.scheduled: #{args.inspect}")
       myinstance.refresh_dnsmasq_conf
     end
     
