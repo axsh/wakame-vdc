@@ -58,7 +58,7 @@ module Dcmgr::Models
     # an argument who is looking into then filters the data in source
     # column accordingly.
     def to_api_document(lookup_account_id)
-      h = to_hash
+      h = super()
       if self.account_id == lookup_account_id
       else
         if h[:source][:type] == :http

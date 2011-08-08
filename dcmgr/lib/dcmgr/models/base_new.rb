@@ -133,6 +133,12 @@ module Dcmgr::Models
       def to_hash()
         self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid})
       end
+
+      # generate API response document. similar to to_hash() but not
+      # to expose integer primary key.
+      def to_api_document
+        self.values.dup.merge({:id=>self.canonical_uuid, :uuid=>canonical_uuid})
+      end
     end
 
     module ClassMethods

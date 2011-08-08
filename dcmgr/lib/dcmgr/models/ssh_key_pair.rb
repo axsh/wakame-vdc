@@ -56,7 +56,7 @@ module Dcmgr::Models
     end
 
     def to_api_document
-      to_hash
+      super
     end
 
     private

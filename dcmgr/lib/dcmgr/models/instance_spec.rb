@@ -40,7 +40,7 @@ module Dcmgr::Models
     end
 
     def to_api_document
-      doc = to_hash
+      doc = super()
       doc.delete(:config)
       doc
     end

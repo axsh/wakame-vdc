@@ -114,7 +114,7 @@ module Dcmgr::Models
     end
     
     def to_api_document
-      h = to_hash
+      h = super()
       h.delete(:node_id)
       h
     end
