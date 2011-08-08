@@ -1,30 +1,9 @@
 # -*- coding: utf-8 -*-
 require 'isono'
-require 'net/telnet'
 require 'fileutils'
 
 module Dcmgr
   module Rpc
-    module KvmHelper
-      # Establish telnet connection to KVM monitor console
-      def connect_monitor(port, &blk)
-        begin
-          telnet = ::Net::Telnet.new("Host" => "localhost",
-                                     "Port"=>port.to_s,
-                                     "Prompt" => /\n\(qemu\) \z/,
-                                     "Timeout" => 60,
-                                     "Waittime" => 0.2)
-
-          blk.call(telnet)
-        rescue => e
-          logger.error(e) if self.respond_to?(:logger)
-          raise e
-        ensure
-          telnet.close
-        end
-      end
-    end
-
     class HvaHandler < EndpointBuilder
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
