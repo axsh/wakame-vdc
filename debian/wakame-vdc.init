@@ -1,0 +1,101 @@
+#!/bin/bash
+#NL=`echo -ne '\015'`
+
+#function screen_it {
+#  local session=$1
+#  local title=$2
+#  local cmd=$3
+
+#  # read cmd lines from stdin
+#  [[ -z "$cmd"  ]] && {
+#    cmd="$cmd `read`"
+#  }
+#  screen -L -S $session -X screen -t $title
+#  screen -L -S $session -p $title -X stuff "${cmd}$NL"
+#}
+
+prefix_path=/usr/share/axsh/wakame-vdc
+#export GEM_HOME=${prefix_path}/gem/ruby/1.8
+#export GEM_PATH=${GEM_HOME}
+#export PATH=${PATH}:${GEM_HOME}/bin
+tmp_path=${prefix_path}/tmp
+builder_path=${prefix_path}/tests/builder
+#tmp_path=/var/tmp
+ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
+metadata_bind=${ipaddr}
+metadata_port=9002
+api_bind=${ipaddr}
+api_port=9001
+api_bind=127.0.0.1
+auth_port=3000
+auth_bind=127.0.0.1
+webui_port=9000
+webui_bind=0.0.0.0
+#screen_session=wakame-vdc
+screenrc_path=${tmp_path}/screenrc
+
+. $builder_path/functions.sh
+
+[[ $UID = 0 ]] || abort "Operation not permitted. Try using sudo."
+
+function start_it() {
+  export PATH=$PATH:"$(gem environment gemdir)/bin"
+    
+    #Check if wakame-vdc's screen session exists
+    screen -S vdc -X windows
+    if [ ! $? -ne 0 ]; then
+      abort "Wakame-vdc is already running."
+    fi
+
+    # Start mysql if it's not already running
+    if [[ ! `service mysql status` == *mysql\ start/running*  ]]; then
+        service mysql start
+    fi;
+    
+    # If the databases don't exist, this must be the first time wakame-vdc is started. Do the demo setup.
+    if [ -z "`mysql -uroot -e "SHOW DATABASES LIKE 'wakame_dcmgr'"`" ]; then
+      #echo "running setup.sh"
+      ${prefix_path}/setup.sh
+      #echo "finished setup.sh"
+    fi
+
+    #echo "dnsmasq check"
+    # Stop dnsmasq if it's running
+    if [ -z "`service dnsmasq status | grep '(not running)'`" ]; then
+      service dnsmasq stop
+    fi
+    #echo "dnsmasq checked"
+    
+    #echo "rabbit check"
+    # Start rabbitmq-server if it's not running
+    if [ ! -z "`service rabbitmq-server status 2>&1 | grep 'Error: no_nodes_running'`" ]; then
+      service rabbitmq-server start
+    fi
+    #echo "rabbit checked"
+
+    screen -d -m -S vdc
+    screen_it collector "cd ${prefix_path}/dcmgr/; ./bin/collector | tee ${tmp_path}/vdc-collector.log;"
+    screen_it nsa       "cd ${prefix_path}/dcmgr; sudo ./bin/nsa -i demo1 | tee ${tmp_path}/vdc-nsa.log;"
+    screen_it hva       "cd ${prefix_path}/dcmgr; sudo ./bin/hva -i demo1 | tee ${tmp_path}/vdc-hva.log;"
+    screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata; bundle exec rackup -p ${metadata_port} -o ${metadata_bind} ./config.ru | tee ${tmp_path}/vdc-metadata.log;"
+    screen_it api       "cd ${prefix_path}/dcmgr/web/api;      bundle exec rackup -p ${api_port}      -o ${api_bind}      ./config.ru | tee ${tmp_path}/vdc-api.log;"
+    screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui; bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru | tee ${tmp_path}/vdc-auth.log;"
+    screen_it proxy     "sudo ${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
+    screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config; bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru | tee ${tmp_path}/vdc-webui.log;"
+    screen_it test      "echo Enjoy wakame-vdc.; echo \* http://${ipaddr}:${webui_port}/; cd ${prefix_path}/frontend/dcmgr_gui; ./oauth_client.rb; "
+}
+
+case "$1" in
+  start)
+      start_it
+    ;;
+  stop)
+    cleanup
+    sleep 3
+    ;;
+  restart)
+    cleanup
+    sleep 3
+    start_it
+    ;;
+esac

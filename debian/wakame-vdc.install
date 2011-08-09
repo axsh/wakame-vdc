@@ -1,0 +1,15 @@
+dcmgr usr/share/axsh/wakame-vdc
+frontend usr/share/axsh/wakame-vdc
+debian/gems/dcmgr/* usr/share/axsh/wakame-vdc/dcmgr/vendor/cache
+debian/gems/frontend/* usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/vendor/cache
+debian/gems/dcmgr/bundler-1.0.15.gem usr/share/axsh/wakame-vdc
+debian/setup.sh usr/share/axsh/wakame-vdc
+debian/bridge_up.sh usr/share/axsh/wakame-vdc
+debian/cidr2mask.sh usr/share/axsh/wakame-vdc
+debian/demo_data_setup.sh usr/share/axsh/wakame-vdc
+debian/network_setup.sh usr/share/axsh/wakame-vdc
+tests usr/share/axsh/wakame-vdc
+tests/builder/conf/dcmgr.conf usr/share/axsh/wakame-vdc/dcmgr/config
+tests/builder/conf/nsa.conf usr/share/axsh/wakame-vdc/dcmgr/config
+tests/builder/conf/dcmgr_gui.yml usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/config
+tests/builder/conf/database.yml usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/config
