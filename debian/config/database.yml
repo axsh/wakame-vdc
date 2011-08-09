@@ -1,0 +1,17 @@
+development:
+  adapter: mysql
+  database: wakame_dcmgr_gui
+  host: localhost
+  user: root
+
+test:
+  adapter: mysql
+  database: wakame_dcmgr_gui
+  host: localhost
+  user: root
+
+production:
+  adapter: mysql
+  database: wakame_dcmgr_gui
+  host: localhost
+  user: root
