@@ -10,7 +10,7 @@ function randdir {
 }
 
 function abort() {
-  echo "Error: "$* >&2
+  echo -e "Error: "$* >&2
   exit 1
 }
 
@@ -22,11 +22,12 @@ cd_mod_dir="${root_dir}/guts/wakame"
 tmp_mount_dir="${root_dir}/"$(randdir)
 wakame_version="11.06"
 arch="amd64"
-src_image="${root_dir}/../../../ubuntu-10.04.2-server-amd64.iso"
+src_image=`readlink -f $1`
 dst_image="${root_dir}/wakame-vdc-${wakame_version}-${arch}.iso"
 guts_local="${root_dir}/cd_creation_bulk.tar.gz"
 guts_remote="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.06/cd/cd_creation_bulk.tar.gz"
 base_distro="lucid"
+base_distro_number="10.04"
 
 #TODO: download ubuntu iso if it's not present
 #if [ ! -f ${src_image} ]; then
@@ -34,6 +35,11 @@ base_distro="lucid"
 #fi
 
 [[ $UID = 0 ]] || abort "Operation not permitted. Try using sudo."
+
+#Check if argument was given at all
+if [ -z "$1" ]; then
+  abort "No source image given.\nUsage: $0 /path/to/ubuntu-${base_distro}-image"
+fi
 
 #Check if the source image exists
 if [ ! -f ${src_image} ]; then
@@ -45,11 +51,11 @@ which perl >> /dev/null
 [[ $? = 0 ]] || abort "This script needs perl to be installed and added to the PATH variable."
 
 #Download guts
-#if [ ! -f ${guts_local} ]; then
-  #wget -P ${root_dir} ${guts_remote}
-  #[[ $? = 0 ]] || abort "Failed to download the files needed to make the cd."
-#fi
-#tar xzf ${guts_local}
+if [ ! -f ${guts_local} ]; then
+  wget -P ${root_dir} ${guts_remote}
+  [[ $? = 0 ]] || abort "Failed to download the files needed to make the cd."
+fi
+tar xzf ${guts_local}
 
 #Get the indices
 mkdir -p ${root_dir}/guts/indices
@@ -163,6 +169,15 @@ Default {
 Contents {
   Compress \"gzip\";
 };" > apt-ftparchive-deb.conf
+
+echo "APT::FTPArchive::Release::Origin \"Ubuntu\";
+APT::FTPArchive::Release::Label \"Ubuntu\";
+APT::FTPArchive::Release::Suite \"${base_distro}\";
+APT::FTPArchive::Release::Version \"${base_distro_number}\";
+APT::FTPArchive::Release::Codename \"${base_distro}\";
+APT::FTPArchive::Release::Architectures \"${arch}\";
+APT::FTPArchive::Release::Components \"main restricted extras\";
+APT::FTPArchive::Release::Description \"Ubuntu ${base_distro_number} LTS\";" > release.conf
 
 
 #Create extra repository and sign with gpg key
