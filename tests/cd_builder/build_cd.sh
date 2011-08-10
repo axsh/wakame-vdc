@@ -44,8 +44,6 @@ base_distro_number="10.04"
 
 [[ $UID = 0 ]] || abort "Operation not permitted. Try using sudo."
 
-gpg -k
-abort "ik kan ni goe shotten"
 #Check if argument was given at all
 if [ -z "$1" ]; then
   abort "No source image given.\nUsage: $0 /path/to/ubuntu-${base_distro}-image"
