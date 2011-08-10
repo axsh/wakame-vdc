@@ -44,6 +44,8 @@ base_distro_number="10.04"
 
 [[ $UID = 0 ]] || abort "Operation not permitted. Try using sudo."
 
+gpg -k
+abort "ik kan ni goe shotten"
 #Check if argument was given at all
 if [ -z "$1" ]; then
   abort "No source image given.\nUsage: $0 /path/to/ubuntu-${base_distro}-image"
@@ -79,7 +81,8 @@ if [ -f ${apt_dir}/apt-ftparchive-deb.conf ]; then rm -f ${apt_dir}/apt-ftparchi
 if [ -f ${apt_dir}/apt-ftparchive-extras.conf ]; then rm -f ${apt_dir}/apt-ftparchive-extras.conf; fi
 if [ -f ${apt_dir}/apt-ftparchive-udeb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-udeb.conf; fi
 if [ -f ${apt_dir}/release.conf ]; then rm -f ${apt_dir}/release.conf; fi
-rm -f ${root_dir}/guts/indices/*
+rm -rf ${root_dir}/guts/indices/
+rm -rf ${root_dir}/guts/wakame
 
 #Make the debian package
 cd ${wakame_dir}
@@ -227,8 +230,8 @@ umount ${tmp_mount_dir}
 rmdir ${tmp_mount_dir}
 rm -rf ${cd_dir}
 
-#Quick and dirty indices clean
 rm -rf ${root_dir}/guts/indices/
+rm -rf ${root_dir}/guts/wakame
 
 #Delete ftparchive config files
 if [ -f ${apt_dir}/apt-ftparchive-deb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-deb.conf; fi
