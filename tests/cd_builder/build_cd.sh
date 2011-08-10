@@ -9,6 +9,13 @@ function randdir {
   echo ${dir}
 }
 
+function checkreq {
+  exec=$1
+  pkg=$2
+  which $exec >> /dev/null
+  [[ $? = 0 ]] || abort "This script needs $pkg to be installed\nTry running 'apt-get install $pkg'."
+}
+
 function abort() {
   echo -e "Error: "$* >&2
   exit 1
@@ -47,9 +54,11 @@ if [ ! -f ${src_image} ]; then
   abort "Couldn't find source image: ${src_image}"
 fi
 
-#Check if perl is installed
-which perl >> /dev/null
-[[ $? = 0 ]] || abort "This script needs perl to be installed and added to the PATH variable."
+#Check if dependencies are installed
+checkreq "perl" "perl"
+checkreq "debuild" "devscripts"
+checkreq "dh_clean" "debhelper"
+checkreq "mkisofs" "genisoimage"
 
 #Make tmp dir if it doesn't exist
 if [ -f ${tmp_dir} ]; then
@@ -203,7 +212,6 @@ echo "Signing extra repository"
 rm -f ${cd_dir}/dists/${base_distro}/Release.gpg
 cd ${apt_dir}
 perl extraoverride.pl < ${cd_dir}/dists/${base_distro}/main/binary-amd64/Packages >> ${root_dir}/guts/indices/override.${base_distro}.extra.main
-echo "${PWD}/build_repository.sh ${cd_dir}"
 ${PWD}/build_repository.sh ${cd_dir}
 
 #Compile iso
