@@ -15,6 +15,7 @@ function abort() {
 }
 
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
+tmp_dir="/var/tmp"
 wakame_dir="${root_dir}/../.."
 cd_dir="${root_dir}/guts/$(randdir)"
 apt_dir="${root_dir}/guts/apt-ftparchive"
@@ -24,7 +25,7 @@ wakame_version="11.06"
 arch="amd64"
 src_image=`readlink -f $1`
 dst_image="${root_dir}/wakame-vdc-${wakame_version}-${arch}.iso"
-guts_local="${root_dir}/cd_creation_bulk.tar.gz"
+guts_local="${tmp_dir}/cd_creation_bulk.tar.gz"
 guts_remote="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.06/cd/cd_creation_bulk.tar.gz"
 base_distro="lucid"
 base_distro_number="10.04"
@@ -50,12 +51,34 @@ fi
 which perl >> /dev/null
 [[ $? = 0 ]] || abort "This script needs perl to be installed and added to the PATH variable."
 
-#Download guts
-if [ ! -f ${guts_local} ]; then
-  wget -P ${root_dir} ${guts_remote}
-  [[ $? = 0 ]] || abort "Failed to download the files needed to make the cd."
+#Make tmp dir if it doesn't exist
+if [ -f ${tmp_dir} ]; then
+  abort "Failed to create ${tmp_dir}. File exists."
+elif [ ! -d ${tmp_dir} ]; then
+  mkdir -p ${tmp_dir}
 fi
-tar xzf ${guts_local}
+
+#Check if guts exist
+if [ ! -f ${guts_local} ]; then
+  wget -P ${tmp_dir} ${guts_remote}
+  [[ $? = 0 ]] || abort "Failed to download the files needed to make the cd.\n${guts_remote} was not found."
+fi
+
+#Clean the working directory
+if [ -f ${dst_image} ]; then rm -f ${dst_image}; fi
+if [ -f ${apt_dir}/apt-ftparchive-deb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-deb.conf; fi
+if [ -f ${apt_dir}/apt-ftparchive-extras.conf ]; then rm -f ${apt_dir}/apt-ftparchive-extras.conf; fi
+if [ -f ${apt_dir}/apt-ftparchive-udeb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-udeb.conf; fi
+if [ -f ${apt_dir}/release.conf ]; then rm -f ${apt_dir}/release.conf; fi
+rm -f ${root_dir}/guts/indices/*
+
+#Make the debian package
+cd ${wakame_dir}
+debuild --no-lintian
+mv ../wakame-vdc_${wakame_version}_all.deb ${cd_mod_dir}/pool/extras
+
+#Extract guts
+tar xzf ${guts_local} -C ${root_dir}
 
 #Get the indices
 mkdir -p ${root_dir}/guts/indices
@@ -63,11 +86,6 @@ cd ${root_dir}/guts/indices
 for SUFFIX in extra.main main main.debian-installer restricted restricted.debian-installer; do
   wget http://archive.ubuntu.com/ubuntu/indices/override.$base_distro.$SUFFIX
 done
-
-#Make the debian package
-cd ${wakame_dir}
-debuild --no-lintian
-mv ../wakame-vdc_${wakame_version}_all.deb ${cd_mod_dir}/pool/extras
 
 #Mount the source image
 echo "Mounting the source image"
@@ -202,7 +220,13 @@ rmdir ${tmp_mount_dir}
 rm -rf ${cd_dir}
 
 #Quick and dirty indices clean
-rm -f ${root_dir}/guts/indices/*
+rm -rf ${root_dir}/guts/indices/
+
+#Delete ftparchive config files
+if [ -f ${apt_dir}/apt-ftparchive-deb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-deb.conf; fi
+if [ -f ${apt_dir}/apt-ftparchive-extras.conf ]; then rm -f ${apt_dir}/apt-ftparchive-extras.conf; fi
+if [ -f ${apt_dir}/apt-ftparchive-udeb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-udeb.conf; fi
+if [ -f ${apt_dir}/release.conf ]; then rm -f ${apt_dir}/release.conf; fi
 
 #Delete debuild output
 cd ${wakame_dir}

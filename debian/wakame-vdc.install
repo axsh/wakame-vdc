@@ -1,5 +1,6 @@
 dcmgr usr/share/axsh/wakame-vdc
 frontend usr/share/axsh/wakame-vdc
+tests usr/share/axsh/wakame-vdc
 debian/gems/dcmgr/* usr/share/axsh/wakame-vdc/dcmgr/vendor/cache
 debian/gems/frontend/* usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/vendor/cache
 debian/gems/dcmgr/bundler-1.0.15.gem usr/share/axsh/wakame-vdc

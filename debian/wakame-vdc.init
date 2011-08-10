@@ -1,18 +1,4 @@
 #!/bin/bash
-#NL=`echo -ne '\015'`
-
-#function screen_it {
-#  local session=$1
-#  local title=$2
-#  local cmd=$3
-
-#  # read cmd lines from stdin
-#  [[ -z "$cmd"  ]] && {
-#    cmd="$cmd `read`"
-#  }
-#  screen -L -S $session -X screen -t $title
-#  screen -L -S $session -p $title -X stuff "${cmd}$NL"
-#}
 
 prefix_path=/usr/share/axsh/wakame-vdc
 #export GEM_HOME=${prefix_path}/gem/ruby/1.8
