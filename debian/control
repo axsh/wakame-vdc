@@ -10,7 +10,7 @@ Package: wakame-vdc
 Architecture: all
 Depends: ${misc:Depends}
 Recommends: iplist
-Pre-Depends: dialog,ethtool,wget,screen,openssh-server,openssh-client,ruby,rubygems1.8 (>= 1.3.7),ruby-dev,libopenssl-ruby1.8,rdoc1.8,irb1.8,g++,curl,libcurl4-openssl-dev,mysql-server,mysql-client, libmysqlclient16-dev,rabbitmq-server,qemu-kvm,kvm-pxe,iptables,ebtables,ubuntu-vm-builder,dnsmasq,open-iscsi,open-iscsi-utils,nginx,libxml2-dev,libxslt1-dev
+Pre-Depends: ethtool,wget,screen,openssh-server,openssh-client,ruby,rubygems1.8 (>= 1.3.7),ruby-dev,libopenssl-ruby1.8,rdoc1.8,irb1.8,g++,curl,libcurl4-openssl-dev,mysql-server,mysql-client, libmysqlclient16-dev,rabbitmq-server,qemu-kvm,kvm-pxe,iptables,ebtables,ubuntu-vm-builder,dnsmasq,open-iscsi,open-iscsi-utils,nginx,libxml2-dev,libxslt1-dev
 Description: The wakame virtual data centre.
  <insert long description, indented with spaces>
 
