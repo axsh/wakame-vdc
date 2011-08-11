@@ -21,6 +21,11 @@ function abort() {
   exit 1
 }
 
+#Check if argument was given at all
+if [ -z "$1" ]; then
+  abort "No source image given.\nUsage: $0 /path/to/ubuntu-${base_distro}-image"
+fi
+
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 tmp_dir="/var/tmp"
 wakame_dir="${root_dir}/../.."
@@ -29,6 +34,7 @@ apt_dir="${root_dir}/guts/apt-ftparchive"
 cd_mod_dir="${root_dir}/guts/wakame"
 tmp_mount_dir="${root_dir}/"$(randdir)
 wakame_version="11.06"
+wakame_deb="${wakame_dir}/../wakame-vdc_${wakame_version}_all.deb"
 arch="amd64"
 src_image=`readlink -f $1`
 dst_image="${root_dir}/wakame-vdc-${wakame_version}-${arch}.iso"
@@ -43,11 +49,6 @@ base_distro_number="10.04"
 #fi
 
 [[ $UID = 0 ]] || abort "Operation not permitted. Try using sudo."
-
-#Check if argument was given at all
-if [ -z "$1" ]; then
-  abort "No source image given.\nUsage: $0 /path/to/ubuntu-${base_distro}-image"
-fi
 
 #Check if the source image exists
 if [ ! -f ${src_image} ]; then
@@ -85,10 +86,12 @@ rm -rf ${root_dir}/guts/wakame
 #Make the debian package
 cd ${wakame_dir}
 debuild --no-lintian
-mv ../wakame-vdc_${wakame_version}_all.deb ${cd_mod_dir}/pool/extras
+
+if [ ! -f ${wakame_deb} ]; then abort "Couldn't find wakame-vdc package: ${wakame_deb}"; fi
 
 #Extract guts
 tar xzf ${guts_local} -C ${root_dir}
+mv ${wakame_deb} ${cd_mod_dir}/pool/extras
 
 #Get the indices
 mkdir -p ${root_dir}/guts/indices
