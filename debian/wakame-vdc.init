@@ -41,7 +41,9 @@ function start_it() {
     # If the databases don't exist, this must be the first time wakame-vdc is started. Do the demo setup.
     if [ -z "`mysql -uroot -e "SHOW DATABASES LIKE 'wakame_dcmgr'"`" ]; then
       #echo "running setup.sh"
-      ${prefix_path}/setup.sh
+      mkdir -p /var/tmp
+      touch /var/tmp/wakame_setup.log
+      ${prefix_path}/setup.sh | tee /var/tmp/wakame_setup.log
       #echo "finished setup.sh"
     fi
 
