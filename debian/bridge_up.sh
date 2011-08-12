@@ -13,7 +13,23 @@ bridge_interface="br0"
 
 #Check if we're using dhcp
 dhcp=`grep "# The primary network interface" -A 2 ${original_filename} | tail -n 1 | grep dhcp`
-if [ ! -z "$dhcp" ]; then
+nw_up=`grep "# The primary network interface" -A 2 ${original_filename}`
+if [ -z "$nw_up" ]; then
+  echo "his file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The bridge
+auto ${bridge_interface}
+iface ${bridge_interface} inet dhcp
+	bridge_ports 
+	bridge_stp off
+	bridge_fd 0
+	bridge_maxwait 1" > ${directory}/${filename}
+elif [ ! -z "$dhcp" ]; then
   #Set up the bridge with dhcp
   echo "# This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -72,6 +88,3 @@ ${nameservers}
 	bridge_maxwait 1
 " > ${directory}/${filename}
 fi
-
-#Restart networking
-#service networking restart

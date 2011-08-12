@@ -14,7 +14,6 @@ hypervisor="kvm"
 local_store_path=${prefix_path}/images
 remote_store_path=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
 vmimage_file=ubuntu10.04_amd64.raw
-#vmimage_file=lucid0.qcow2
 image_arch=x86_64
 
 #Start data entry
@@ -30,25 +29,21 @@ done
 
 echo "vdc-manage host add hva.demo1 -u hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r $(uname -m)"
 ./vdc-manage host add hva.demo1 -u hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r $(uname -m) > /dev/null
-#./vdc-manage storage add sta.demo1 -u sp-demostor -f -a ${account_id} -b xpool -s $((1024 * 1024)) -i ${sta_server} -n /export/home/wakame/vdc/sta/snap
 
 #TODO: get proper uuid in here
 echo "vdc-manage tag map tag-shhost -o hp-demohost"
 ./vdc-manage tag map tag-shhost -o hp-demohost
 echo "vdc-manage tag map tag-shnet  -o nw-demonet"
 ./vdc-manage tag map tag-shnet  -o nw-demonet
-#./vdc-manage tag map tag-shstor -o sp-demostor
 
 echo "vdc-manage spec  add -u is-demospec -a ${account_id} -r $(uname -m) -p ${hypervisor} -c 1 -m 256 -w 1"
 ./vdc-manage spec  add -u is-demospec -a ${account_id} -r $(uname -m) -p ${hypervisor} -c 1 -m 256 -w 1 #> /dev/null
 
 #attempt to download image
-#echo "mkdir -p ${local_store_path}"
 mkdir -p ${local_store_path}
 #TODO: Add option to skip image download
 if [ ! -f ${local_store_path}/${vmimage_file} ]; then
   cd ${local_store_path}
-  #echo "wget ${remote_store_path}/${vmimage_file}.gz"
   wget ${remote_store_path}/${vmimage_file}.gz
   if [ ! "$?" -ne "0" ]; then
     echo "Unpacking image..."
