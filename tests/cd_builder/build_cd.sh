@@ -10,10 +10,10 @@ function randdir {
 }
 
 function checkreq {
-  exec=$1
-  pkg=$2
-  which $exec >> /dev/null
-  [[ $? = 0 ]] || abort "This script needs $pkg to be installed\nTry running 'apt-get install $pkg'."
+  for exec in "${!requirements[@]}"; do
+    which $exec >> /dev/null
+    [[ $? = 0 ]] || abort "Missing dependency ${requirements[$exec]}.\nTry running 'apt-get install ${requirements[@]}' to install all dependencies."
+  done
 }
 
 function abort() {
@@ -25,6 +25,9 @@ function abort() {
 if [ -z "$1" ]; then
   abort "No source image given.\nUsage: $0 /path/to/ubuntu-${base_distro}-image"
 fi
+
+#Define dependencies
+declare -A requirements=( ["perl"]="perl" ["debuild"]="devscripts" ["dh_clean"]="debhelper" ["mkisofs"]="genisoimage" ["rsync"]="rsync" )
 
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 tmp_dir="/var/tmp"
@@ -56,10 +59,7 @@ if [ ! -f ${src_image} ]; then
 fi
 
 #Check if dependencies are installed
-checkreq "perl" "perl"
-checkreq "debuild" "devscripts"
-checkreq "dh_clean" "debhelper"
-checkreq "mkisofs" "genisoimage"
+checkreq
 
 #Make tmp dir if it doesn't exist
 if [ -f ${tmp_dir} ]; then
@@ -108,6 +108,9 @@ mount -o loop ${src_image} ${tmp_mount_dir}
 #Copy it to a temporary directory
 echo "Copying CD contents"
 rsync -a ${tmp_mount_dir}/ ${cd_dir}
+
+#Remove samba to clear some space
+rm -rf ${cd_dir}/pool/main/s/samba
 
 #Unzip Packages
 cd ${cd_dir}/dists/${base_distro}/main/binary-amd64
