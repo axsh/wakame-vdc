@@ -10,7 +10,6 @@ builder_path=${prefix_path}/tests/builder
 ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
 metadata_bind=${ipaddr}
 metadata_port=9002
-api_bind=${ipaddr}
 api_port=9001
 api_bind=127.0.0.1
 auth_port=3000
@@ -46,6 +45,17 @@ function start_it() {
       ${prefix_path}/setup.sh | tee /var/tmp/wakame_setup.log
       #echo "finished setup.sh"
     fi
+    
+    start networking
+
+    for i in {1..5}; do
+      ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
+      #echo ... ${i} DEFAULT_GW=${DEFAULT_GW} | logger
+      metadata_bind=${ipaddr}
+      [ -z "${ipaddr}" ] || break
+      sleep 3
+    done
+
 
     #echo "dnsmasq check"
     # Stop dnsmasq if it's running
