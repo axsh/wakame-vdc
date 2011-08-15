@@ -15,7 +15,7 @@ bridge_interface="br0"
 dhcp=`grep "# The primary network interface" -A 2 ${original_filename} | tail -n 1 | grep dhcp`
 nw_up=`grep "# The primary network interface" -A 2 ${original_filename}`
 if [ -z "$nw_up" ]; then
-  echo "his file describes the network interfaces available on your system
+  echo "# This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
 
 # The loopback network interface
