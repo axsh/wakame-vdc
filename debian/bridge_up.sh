@@ -25,7 +25,6 @@ iface lo inet loopback
 # The bridge
 auto ${bridge_interface}
 iface ${bridge_interface} inet static
-	bridge_ports 
 	bridge_stp off
 	bridge_fd 0
 	bridge_maxwait 1" > ${directory}/${filename}

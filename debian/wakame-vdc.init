@@ -56,7 +56,6 @@ function start_it() {
       sleep 3
     done
 
-
     #echo "dnsmasq check"
     # Stop dnsmasq if it's running
     if [ -z "`service dnsmasq status | grep '(not running)'`" ]; then
