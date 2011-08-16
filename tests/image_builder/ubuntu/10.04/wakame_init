@@ -6,7 +6,7 @@ LC_ALL=C
 
 LOGFILE=/var/log/$(basename $0).log
 USER=ubuntu
-SSHDIR=/home/${USER}/.ssh/
+SSHDIR=/home/${USER}/.ssh
 KEYSPATH=${SSHDIR}/authorized_keys
 
 get_metadata() {
