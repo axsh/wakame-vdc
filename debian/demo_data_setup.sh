@@ -13,7 +13,7 @@ hypervisor="kvm"
 
 local_store_path=${prefix_path}/images
 remote_store_path=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
-vmimage_file=ubuntu10.04_amd64.raw
+vmimage_files=( ubuntu10.04_amd64.raw debian6.0_amd64.raw )
 image_arch=x86_64
 
 #Start data entry
@@ -42,20 +42,22 @@ echo "vdc-manage spec  add -u is-demospec -a ${account_id} -r $(uname -m) -p ${h
 #attempt to download image
 mkdir -p ${local_store_path}
 #TODO: Add option to skip image download
-if [ ! -f ${local_store_path}/${vmimage_file} ]; then
-  cd ${local_store_path}
-  wget ${remote_store_path}/${vmimage_file}.gz
-  if [ ! "$?" -ne "0" ]; then
-    echo "Unpacking image..."
-    gunzip ${vmimage_file}.gz
+for vmimage_file in ${vmimage_files[@]}; do
+  if [ ! -f ${local_store_path}/${vmimage_file} ]; then
+    cd ${local_store_path}
+    wget ${remote_store_path}/${vmimage_file}.gz
+    if [ ! "$?" -ne "0" ]; then
+      echo "Unpacking image..."
+      gunzip ${vmimage_file}.gz
+      cd ${prefix_path}/dcmgr/bin
+      echo "vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init"
+      ./vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init
+    fi
+  else
     cd ${prefix_path}/dcmgr/bin
     echo "vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init"
     ./vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init
   fi
-else
-  cd ${prefix_path}/dcmgr/bin
-  echo "vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init"
-  ./vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init
-fi
+done
 
 exit 0
