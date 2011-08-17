@@ -13,7 +13,7 @@ hypervisor="kvm"
 
 local_store_path=${prefix_path}/images
 remote_store_path=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
-vmimage_files=( ubuntu10.04_amd64.raw debian6.0_amd64.raw )
+vmimage_files=( ubuntu10.04_amd64.qcow2 debian6.0_amd64.qcow2 centos5.6_amd64.qcow2 )
 image_arch=x86_64
 
 #Start data entry
@@ -51,12 +51,12 @@ for vmimage_file in ${vmimage_files[@]}; do
       gunzip ${vmimage_file}.gz
       cd ${prefix_path}/dcmgr/bin
       echo "vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init"
-      ./vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init
+      ./vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init -d ${vmimage_file}
     fi
   else
     cd ${prefix_path}/dcmgr/bin
     echo "vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init"
-    ./vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init
+    ./vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -r ${image_arch} -s init -d ${vmimage_file}
   fi
 done
 
