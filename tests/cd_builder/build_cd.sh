@@ -21,6 +21,9 @@ function abort() {
   exit 1
 }
 
+base_distro="lucid"
+base_distro_number="10.04"
+
 #Check if argument was given at all
 if [ -z "$1" ]; then
   abort "No source image given.\nUsage: $0 /path/to/ubuntu-${base_distro}-image"
@@ -43,8 +46,10 @@ src_image=`readlink -f $1`
 dst_image="${root_dir}/wakame-vdc-${wakame_version}-${arch}.iso"
 guts_local="${tmp_dir}/cd_creation_bulk.tar.gz"
 guts_remote="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.06/cd/cd_creation_bulk.tar.gz"
-base_distro="lucid"
-base_distro_number="10.04"
+images_dir="${cd_dir}/setup/images"
+remote_images_path=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
+vmimage_files=( ubuntu10.04_amd64.qcow2 debian6.0_amd64.qcow2 centos5.6_amd64.qcow2 )
+gpg_key_id="DCFFB6BE"
 
 #TODO: download ubuntu iso if it's not present
 #if [ ! -f ${src_image} ]; then
@@ -56,6 +61,12 @@ base_distro_number="10.04"
 #Check if the source image exists
 if [ ! -f ${src_image} ]; then
   abort "Couldn't find source image: ${src_image}"
+fi
+
+#Check if the Axsh key is on the keyring
+gpg --list-secret-keys | grep -q $gpg_key_id
+if [ "$?" -ne "0" ]; then
+  abort "Couldn't find Axsh Co. LTD's private gpg key on the keyring. This script needs it to sign the CD."
 fi
 
 #Check if dependencies are installed
@@ -119,6 +130,22 @@ gunzip Packages.gz
 #Wakamize it
 echo "Adding wakame-vdc to it"
 cp -r ${cd_mod_dir}/* ${cd_dir}
+
+#Add some images to the CD
+for vmimage_file in ${vmimage_files[@]}; do
+  if [ ! -f ${tmp_dir}/${vmimage_file} ]; then
+    cd ${tmp_dir}
+    if [ ! -f ${tmp_dir}/${vmimage_file}.gz ]; then
+      wget ${remote_images_path}/${vmimage_file}.gz
+      if [ "$?" -ne "0" ]; then
+        abort "Unable to download image ${remote_images_path}/${vmimage_file}.gz"
+      fi
+    fi
+    gunzip ${tmp_dir}/${vmimage_file}.gz
+  fi
+  echo "Adding image ${vmimage_file} to CD..."
+  cp ${tmp_dir}/${vmimage_file} ${images_dir}/
+done
 
 #Generate .conf files for signing the repositories
 cd ${apt_dir}
