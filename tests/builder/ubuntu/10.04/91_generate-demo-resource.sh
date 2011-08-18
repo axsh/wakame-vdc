@@ -98,7 +98,7 @@ shlog ./bin/vdc-manage tag map tag-shhost -o hp-demohost
 shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demonet
 shlog ./bin/vdc-manage tag map tag-shstor -o sp-demostor
 
-shlog ./bin/vdc-manage image add local ${local_store_path}/${vmimage_file} -a ${account_id} -u wmi-${vmimage_uuid} -r ${images_arch} -d "${vmimage_desc}" -s init
+shlog ./bin/vdc-manage image add local ${local_store_path}/${vmimage_file} -m `md5sum ${local_store_path}/${vmimage_file} | cut -d ' ' -f1` -a ${account_id} -u wmi-${vmimage_uuid} -r ${images_arch} -d "${vmimage_desc}" -s init
 shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r ${hva_arch} -p ${hypervisor} -c 1 -m 256 -w 1
 
 shlog ./bin/vdc-manage group add -u  ng-demofgr -a ${account_id} -n default -d demo

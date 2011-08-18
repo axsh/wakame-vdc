@@ -88,6 +88,8 @@ Boot Type:
 Arch:
   <%= img.arch %>
 <%- if img.description -%>
+MD5 Sum:
+  <%= img.md5sum %>
 Description:
   <%= img.description %>
 <%- end -%>
