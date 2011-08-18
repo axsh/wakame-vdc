@@ -14,6 +14,7 @@ module Dcmgr::Models
       Text :source, :null=>false
       String :arch, :size=>10, :null=>false
       Text :description
+      String :md5sum, :null=>false
       Boolean :is_public, :null=>false, :default=>false
       #Fixnum :parent_image_id
 
