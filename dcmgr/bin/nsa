@@ -46,10 +46,10 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
                    config_section.dhcp_hosts_conf + ".dhcp",
                    config_section.dhcp_hosts_conf
                    )
-    cmd = "#{manifest.config.dnsmasq_bin_path} #{opts}"
+    @cmd = "#{manifest.config.dnsmasq_bin_path} #{opts}"
 
     @dnsmasq_pid = fork {
-      Process.exec(cmd)
+      Process.exec(@cmd)
     }
     begin
       if !Process.waitpid(@dnsmasq_pid, Process::WNOHANG).nil?
@@ -83,7 +83,13 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     EM.defer {
       begin
         generate_dhcp_conf()
-        system("/bin/kill -HUP #{@dnsmasq_pid}")
+        if Process.waitpid(@dnsmasq_pid, Process::WNOHANG).nil?
+          system("/bin/kill -HUP #{@dnsmasq_pid}")
+        else
+          @dnsmasq_pid = fork {
+            Process.exec(@cmd)
+          }
+        end
         logger.info("refreshed dnsmasq conf")
       rescue Exception => e
         logger.error(e)
