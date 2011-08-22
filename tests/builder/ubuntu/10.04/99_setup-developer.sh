@@ -80,6 +80,7 @@ bundle_update ${work_dir}/frontend/dcmgr_gui/
 cd ${work_dir}/dcmgr/config/
 cp -f dcmgr.conf.example dcmgr.conf
 cp -f snapshot_repository.yml.example snapshot_repository.yml
+cp -f sta.conf.example sta.conf
 
 [ -d ${vmdir_path} ] || mkdir $vmdir_path
 cat <<EOS > hva.conf
