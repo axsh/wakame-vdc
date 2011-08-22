@@ -115,6 +115,7 @@ module Dcmgr::Models
     
     def to_api_document
       h = super()
+      h.merge!(:status=>self.status)
       h.delete(:node_id)
       h
     end
