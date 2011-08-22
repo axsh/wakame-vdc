@@ -20,11 +20,15 @@ manifest.instance_eval do
   config do |c| 
     c.iqn_prefix = 'iqn.2010-09.jp.wakame'
     c.initiator_address = 'ALL'
+    c.backing_store = 'tgt'
+    c.iscsi_target = 'linux_iscsi'
+    c.start_command = "initctl start tgt"
+    c.stop_command = "initctl stop tgt"
   end 
 
-  load_config File.expand_path('config/sta-tgt.conf', app_root)
+  load_config File.expand_path('config/sta.conf', app_root)
 end
 
 start(manifest) do
-  endpoint "sta-handle.#{@node.node_id}", Dcmgr::Rpc::StaTgtHandler
+  endpoint "sta-handle.#{@node.node_id}", Dcmgr::Rpc::StaHandler
 end

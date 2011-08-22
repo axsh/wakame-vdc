@@ -1,0 +1,12 @@
+#------------------------
+# Configuration file for sta-linux.
+#------------------------
+
+# iSCSI target
+config.iscsi_target = 'comstar'
+
+# Initiator address is IP or ALL
+config.initiator_address = 'ALL'
+
+# Backing Store
+config.backing_store = 'zfs'

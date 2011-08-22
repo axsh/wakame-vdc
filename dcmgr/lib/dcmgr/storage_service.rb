@@ -5,11 +5,12 @@ module Dcmgr
 
     @snapshot_repository_config = nil
     
-    def initialize(provider, access_key, secret_key)
+    def initialize(driver, options = {})
+      @driver = driver
       @account = {}
-      @account[:provider] = provider.upcase
-      @account[:access_key] = access_key
-      @account[:secret_key] = secret_key
+      @account[:id] = options[:account_id]
+      @account[:access_key] = options[:access_key]
+      @account[:secret_key] = options[:secret_key]
     end
     
     def self.snapshot_repository_config
@@ -21,24 +22,22 @@ module Dcmgr
       end
     end
 
-    def self.has_driver?(driver)
-      %w(S3 IIJGIO).include? driver.upcase
-    end
-    
-    def bucket(name)
-      case @account[:provider]
-        when 'S3'
-          @driver = Dcmgr::Drivers::S3Storage.new(name)
-        when 'IIJGIO'
-          @driver = Dcmgr::Drivers::IIJGIOStorage.new(name)
+    def snapshot_storage(bucket, path)
+      case @driver
+        when 'local'
+          @storage = Dcmgr::Drivers::LocalStorage.new(@account[:id], bucket, path)
+        when 's3'
+          @storage = Dcmgr::Drivers::S3Storage.new(@account[:id], bucket, path)
+        when 'iijgio'
+          @storage = Dcmgr::Drivers::IIJGIOStorage.new(@account[:id], bucket, path)
       else
-        raise "#{@account[:provider]} is not a recognized storage provider"
+        raise "#{@driver} is not a recognized storage driver"
       end
 
-      @driver.setenv('SERVICE', @account[:provider].downcase)
-      @driver.setenv('ACCESS_KEY_ID', @account[:access_key])
-      @driver.setenv('SECRET_ACCESS_KEY', @account[:secret_key])
-      @driver
+      @storage.setenv('SERVICE', @driver)
+      @storage.setenv('ACCESS_KEY_ID', @account[:access_key])
+      @storage.setenv('SECRET_ACCESS_KEY', @account[:secret_key])
+      @storage
     end
 
     def self.repository(repository_address)
@@ -47,7 +46,7 @@ module Dcmgr
       end
       tmp = repository_address.split(',')
       destination_key = tmp[0]
-      dest = destination_key.match(/^([a-z0-9_]+)@([a-z0-9_-]+):([a-z0-9_-]+):([a-z0-9_\-\/]+)(snap-[a-z0-9]+\.zsnap)+$/)
+      dest = destination_key.match(/^([a-z0-9_]+)@([a-z0-9_-]+):([a-z0-9_-]+):([a-z0-9_\-\/]+)(snap-[a-z0-9]+\.snap)+$/)
       if dest.nil?
         raise "Invalid format: #{repository_address}"
       end 
@@ -90,9 +89,8 @@ module Dcmgr
         if config.nil?
           raise "Destination isn't exists"
         end
-        store_path = "snapshots/#{account_id}/"
       end
-      sprintf(format, *[destination, config["driver"], config["bucket"], File.join(store_path, filename)])
+      sprintf(format, *[destination, config["driver"], config["bucket"], File.join("#{store_path}/#{account_id}/", filename)])
     end
   end
 end

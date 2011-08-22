@@ -169,7 +169,6 @@ module Dcmgr
   module Rpc
     autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
     autoload :StaHandler, 'dcmgr/rpc/sta_handler'
-    autoload :StaTgtHandler, 'dcmgr/rpc/sta-tgt_handler'
     autoload :KvmHelper, 'dcmgr/rpc/hva_handler'
   end
 
@@ -181,6 +180,7 @@ module Dcmgr
   
   module Drivers
     autoload :SnapshotStorage, 'dcmgr/drivers/snapshot_storage'
+    autoload :LocalStorage, 'dcmgr/drivers/local_storage'
     autoload :S3Storage, 'dcmgr/drivers/s3_storage'
     autoload :IIJGIOStorage, 'dcmgr/drivers/iijgio_storage'
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
@@ -188,8 +188,10 @@ module Dcmgr
     autoload :Lxc , 'dcmgr/drivers/lxc'
     autoload :BackingStore, 'dcmgr/drivers/backing_store'
     autoload :Zfs,          'dcmgr/drivers/zfs'
+    autoload :Tgt,          'dcmgr/drivers/tgt'
     autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
     autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
+    autoload :LinuxIscsi,   'dcmgr/drivers/linux_iscsi'
     autoload :Comstar,      'dcmgr/drivers/comstar'
   end
   

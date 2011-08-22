@@ -3,35 +3,24 @@
 module Dcmgr::Drivers
   
   class IIJGIOStorage < SnapshotStorage
+    include Dcmgr::Logger
     include Dcmgr::Helpers::SnapshotStorageHelper
 
-    def download(keyname, filename, path) 
+    def download(filename) 
       cmd = "get %s %s %s" 
-      args = [@bucket, keyname, File.join(path, filename)]
+      args = [@bucket, key(filename), self.snapshot(filename)]
       execute(cmd, args)
     end
 
-    def upload(keyname, file)
+    def upload(filename)
       cmd = "put %s %s %s"
-      args = [@bucket, keyname, file]
+      args = [@bucket, key(filename), self.snapshot(filename)]
       execute(cmd, args)
     end
 
-    def delete(keyname)
+    def delete(filename)
       cmd = "rm %s %s"
-      args = [@bucket, keyname]
-      execute(cmd, args)
-    end
-
-    def check(keyname)
-      cmd = "test %s %s"
-      args = [@bucket, keyname]
-      execute(cmd, args)
-    end
-    
-    def list
-      cmd = "ls %s"
-      args = [@bucket]
+      args = [@bucket, key(filename)]
       execute(cmd, args)
     end
   end

@@ -12,6 +12,8 @@ module Dcmgr
 
       def self.select_iscsi_target(iscsi_target)
         case iscsi_target
+        when "linux_iscsi"
+          bs = Dcmgr::Drivers::LinuxIscsi.new
         when "sun_iscsi"
           bs = Dcmgr::Drivers::SunIscsi.new
         when "comstar"

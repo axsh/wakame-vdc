@@ -15,6 +15,13 @@ manifest.instance_eval do
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
 
   load_module Isono::NodeModules::NodeHeartbeat
+
+  config do |c| 
+    c.backing_store = 'zfs'
+    c.iscsi_target = 'comstar'
+  end 
+
+  load_config File.expand_path('config/sta.conf', app_root)
 end
 
 start(manifest) do

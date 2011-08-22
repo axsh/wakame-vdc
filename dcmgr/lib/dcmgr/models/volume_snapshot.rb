@@ -68,7 +68,7 @@ module Dcmgr::Models
     end
     
     def snapshot_filename
-      "#{self.canonical_uuid}.zsnap"
+      "#{self.canonical_uuid}.snap"
     end
     
     def destination

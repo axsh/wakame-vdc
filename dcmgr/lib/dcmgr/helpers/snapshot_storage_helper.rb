@@ -4,6 +4,11 @@ require 'rexml/document'
 module Dcmgr
   module Helpers
     module SnapshotStorageHelper
+      
+      def key(filename)
+        File.join(@account_id, filename)
+      end
+
       def execute(cmd, args)
         script_root_path = File.join(File.expand_path('../../../../',__FILE__), 'script')
         script = File.join(script_root_path, 'storage_service')
