@@ -13,15 +13,15 @@ manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'sta'
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
-
-  load_module Isono::NodeModules::NodeHeartbeat
-
-  config do |c| 
-    c.backing_store = 'zfs'
-    c.iscsi_target = 'comstar'
-  end 
-
+  
+  config do |c|
+    c.tmp_dir = '/var/tmp'
+  end
+  
   load_config File.expand_path('config/sta.conf', app_root)
+  
+  load_module Isono::NodeModules::NodeHeartbeat
+  load_module Dcmgr::NodeModules::StaTgtInitializer if config.backing_store == 'tgt'
 end
 
 start(manifest) do
