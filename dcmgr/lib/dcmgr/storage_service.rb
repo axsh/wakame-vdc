@@ -15,7 +15,7 @@ module Dcmgr
     
     def self.snapshot_repository_config
       if @snapshot_repository_config.nil?
-        config_file = YAML.load_file(File.join(File.expand_path(DCMGR_ROOT), 'config', 'snapshot_repository.yml'))
+        config_file = YAML.load_file(File.join(File.expand_path('../../../', __FILE__), 'config', 'snapshot_repository.yml'))
         @snapshot_repository_config = config_file
       else
         @snapshot_repository_config
