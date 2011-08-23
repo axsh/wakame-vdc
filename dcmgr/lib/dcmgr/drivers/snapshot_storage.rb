@@ -5,11 +5,12 @@ module Dcmgr::Drivers
     include Dcmgr::Helpers::CliHelper
     attr_reader :volume_snaphost_path
 
-    def initialize(account_id, bucket, volume_snaphost_path)
+    def initialize(account_id, bucket, volume_snaphost_path, options = {})
       @account_id = account_id
       @env = []
       @volume_snaphost_path = volume_snaphost_path
       @bucket = bucket
+      @tmp_dir = options[:tmp_dir] || '/var/tmp'
     end
 
     def setenv(key, value)
@@ -22,7 +23,7 @@ module Dcmgr::Drivers
 
     def snapshot(filename)
       raise 'filename is empty' if filename == ''
-      @temporary_file = File.join('/tmp', filename)
+      @temporary_file = File.join(@tmp_dir, filename)
     end
 
     def download(filename)
