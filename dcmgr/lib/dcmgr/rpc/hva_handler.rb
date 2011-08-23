@@ -187,7 +187,9 @@ module Dcmgr
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
 
         # create volume from snapshot
-        jobreq.run("sta-handle.#{@vol[:storage_pool][:node_id]}", "create_volume", @vol_id)
+        vs = rpc.request('sta-collector', 'get_snapshot', @vol[:snapshot_id])
+        repository_address = Dcmgr::StorageService.repository_address(vs[:destination_key])
+        jobreq.run("sta-handle.#{@vol[:storage_pool][:node_id]}", "create_volume", @vol_id, repository_address)
 
         logger.debug("volume created on #{@vol[:storage_pool][:node_id]}: #{@vol_id}")
         # reload volume info
