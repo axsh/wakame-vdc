@@ -18,7 +18,7 @@ module Dcmgr
 
       def self.select_backing_store(backing_store)
         case backing_store
-        when "tgt"
+        when "raw"
           bs = Dcmgr::Drivers::Tgt.new
         when "zfs"
           bs = Dcmgr::Drivers::Zfs.new
