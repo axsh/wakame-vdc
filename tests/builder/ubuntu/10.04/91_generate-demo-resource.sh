@@ -7,12 +7,6 @@ work_dir=${work_dir:?"work_dir needs to be set"}
 export LANG=C
 export LC_ALL=C
 export DEBIAN_FRONTEND=noninteractive
-export PATH=/bin:/usr/bin:/sbin:/usr/sbin
-
-unset GEM_HOME
-unset GEM_PATH
-unset RUBYOPT
-
 
 ipaddr="${ipaddr:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')}"
 ipv4_gw="${ipv4_gw:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $3}')}"

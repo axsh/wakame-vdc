@@ -6,7 +6,6 @@
 export LANG=C
 export LC_ALL=C
 export DEBIAN_FRONTEND=noninteractive
-export PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
 builder_path=${builder_path:?"builder_path needs to be set"}
 
@@ -28,9 +27,8 @@ deb_pkgs="
  libxml2-dev  libxslt1-dev
 "
 # apache2 apache2-threaded-dev libapache2-mod-passenger
-# from natty
-deb_pkgs="
- ${deb_pkgs}
+# Pick them from natty as obsolete version is in LTS.
+natty_deb_pkgs="
  lxc/natty
  rubygems/natty
  rubygems1.8/natty
@@ -45,8 +43,10 @@ egrep -v '^#' /etc/hosts | egrep -q $(hostname) || echo 127.0.0.1 $(hostname) >>
 cd ubuntu-natty && make
 
 # debian packages
-DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get update
-DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y upgrade
-DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y install ${deb_pkgs}
+apt-get update
+apt-get -y upgrade
+apt-get -y install ${deb_pkgs}
+apt-get -y install ${natty_deb_pkgs} || :
+
 
 exit 0
