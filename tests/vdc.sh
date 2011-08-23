@@ -45,11 +45,12 @@ ports="${auth_port} ${webui_port} ${api_port} ${metadata_port}"
 
 # networks table 
 ipv4_gw="${ipv4_gw:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $3}')}"
-prefix=$(/sbin/ip route show | awk '$9 == ip { sub(/.*\//, "", $1); print $1; }' ip=$ipaddr)
+prefix_len="${prefix_len:-$(/sbin/ip route show | awk '$9 == ip { sub(/.*\//, "", $1); print $1; }' ip=$ipaddr)}"
 
-dns_server=${ipaddr}
-dhcp_server=${ipaddr}
-metadata_server=${ipaddr}
+dns_server=${dns_server:-${ipaddr}}
+dhcp_server=${dhcp_server:-${ipaddr}}
+metadata_server=${metadata_server:-${ipaddr}}
+sta_server=${sta_server:-${ipaddr}}
 
 # local store demo machine image 
 local_store_path="$tmp_path/images"

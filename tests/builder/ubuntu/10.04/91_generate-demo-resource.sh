@@ -8,16 +8,6 @@ export LANG=C
 export LC_ALL=C
 export DEBIAN_FRONTEND=noninteractive
 
-ipaddr="${ipaddr:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')}"
-ipv4_gw="${ipv4_gw:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $3}')}"
-
-prefix="${prefix:-$(/sbin/ip route show | awk '$9 == ip { sub(/.*\//, "", $1); print $1; }' ip=$ipaddr)}"
-
-dns_server=${dns_server:-${ipaddr}}
-dhcp_server=${dhcp_server:-${ipaddr}}
-metadata_server=${metadata_server:-${ipaddr}}
-sta_server=${sta_server:-${ipaddr}}
-
 local_store_path=${local_store_path?"local_store_path needs to be set"}
 account_id=${account_id:-"a-shpoolxx"}
 
@@ -83,9 +73,9 @@ shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id
 
 # vlan
 #shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demovlan    -a ${account_id}
-#shlog ./bin/vdc-manage network add           -u   nw-demonet                      --ipv4_gw ${ipv4_gw} --prefix ${prefix} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --vlan_id 1 --description demo
+#shlog ./bin/vdc-manage network add           -u   nw-demonet                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --vlan_id 1 --description demo
 # non vlan
-shlog ./bin/vdc-manage network add           -u   nw-demonet                      --ipv4_gw ${ipv4_gw} --prefix ${prefix} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
+shlog ./bin/vdc-manage network add           -u   nw-demonet                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
 
 
 shlog ./bin/vdc-manage tag map tag-shhost -o hp-demohost
