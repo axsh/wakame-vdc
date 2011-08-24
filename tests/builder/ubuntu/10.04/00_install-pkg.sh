@@ -40,6 +40,9 @@ hostname | diff /etc/hostname - >/dev/null || hostname > /etc/hostname
 egrep -v '^#' /etc/hosts | egrep -q $(hostname) || echo 127.0.0.1 $(hostname) >> /etc/hosts
 
 #  some packages use ubuntu-natty. ex. lxc
+echo $(dirname $0)
+#echo builder_path:${builder_path}
+[ -d $builder_path/$DISTRIB_ID/$DISTRIB_RELEASE ] && cd $builder_path/$DISTRIB_ID/$DISTRIB_RELEASE
 cd ubuntu-natty && make
 
 # debian packages
