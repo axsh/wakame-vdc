@@ -14,7 +14,7 @@ module Dcmgr::Drivers
     end
 
     def delete(filename)
-      sh("rm -rf %s", [File.join(@volume_snaphost_path, filename)])
+      sh("rm -f %s", [File.join(@volume_snaphost_path, filename)])
     end
   end
 end
