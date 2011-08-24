@@ -16,7 +16,7 @@ class Storage < Base
   method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force new entry creation"
   method_option :transport_type, :type => :string, :aliases => "-t", :default=>'iscsi', :desc => "Transport type [iscsi]"
   method_option :ipaddr, :type => :string, :aliases => "-i", :required=>true, :desc => "IP address of transport target"
-  method_option :storage_type, :type => :string, :aliases => "-o", :default=>'zfs', :desc => "Storage type [zfs]"
+  method_option :storage_type, :type => :string, :aliases => "-o", :default=>'zfs', :desc => "Storage type [#{StoragePool::SUPPORTED_BACKINGSTORE.join(', ')}]"
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :aliases => "-a", :desc => "The account ID to own this"
   def add(node_id)
     unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
