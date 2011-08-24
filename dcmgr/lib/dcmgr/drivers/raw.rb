@@ -17,8 +17,12 @@ module Dcmgr
           end
         else
           unless File.exist?(vol_path)
-            sh("/bin/dd if=/dev/zero of=#{vol_path} bs=#{@volume[:size]} count=1000000")
-            logger.info("create parent filesystem: #{vol_path}")
+            logger.info("creating parent filesystem(size:#{@volume[:size]}): #{vol_path}")
+            #sh("/bin/dd if=/dev/zero of=#{vol_path} bs=#{@volume[:size]} count=1000000")
+            sh("/bin/dd if=/dev/zero of=#{vol_path} bs=1 count=0 seek=#{@volume[:size] * 1024 * 1024}")
+            sh("du -hs #{vol_path}")
+            sh("du -hs --apparent-size #{vol_path}")
+            logger.info("create parent filesystem(size:#{@volume[:size]}): #{vol_path}")
           else
             raise "volume already exists: #{@volume_id}"
           end
