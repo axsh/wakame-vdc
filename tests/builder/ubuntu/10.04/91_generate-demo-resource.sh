@@ -69,7 +69,15 @@ esac
 
 cd ${work_dir}/dcmgr/
 shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r ${hva_arch}
-shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool -s $((1024 * 1024)) -i ${sta_server} -n /export/home/wakame/vdc/sta/snap
+
+case ${sta_server} in
+${ipaddr})
+  shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
+ ;;
+*)
+  shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool             -s $((1024 * 1024)) -i ${sta_server} -o zfs -n /export/home/wakame/vdc/sta/snap
+ ;;
+esac
 
 # vlan
 #shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demovlan    -a ${account_id}

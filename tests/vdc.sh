@@ -173,6 +173,8 @@ EOS
   screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui && bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
   screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
   screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
+  [ "${sta_server}" = "${ipaddr}" ] && \
+  screen_it sta       "cd ${prefix_path}/dcmgr/ && ./bin/sta -i demo1 2>&1 | tee ${tmp_path}/vdc-sta.log"
 
 
   retry 10 <<EOF || abort "Can't see dcmgr"
