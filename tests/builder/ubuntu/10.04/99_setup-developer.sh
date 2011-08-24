@@ -80,7 +80,6 @@ bundle_update ${work_dir}/frontend/dcmgr_gui/
 cd ${work_dir}/dcmgr/config/
 cp -f dcmgr.conf.example dcmgr.conf
 cp -f snapshot_repository.yml.example snapshot_repository.yml
-cp -f sta.conf.example sta.conf
 
 [ -d ${vmdir_path} ] || mkdir $vmdir_path
 cat <<EOS > hva.conf
@@ -135,6 +134,22 @@ config.network_name='tag-shnet'
 config.logging = true
 EOS
 
+
+#cp -f sta.conf.example sta.conf
+cat <<EOS > sta.conf
+#------------------------
+# Configuration file for sta-linux.
+#------------------------
+
+# iSCSI target
+config.iscsi_target = 'linux_iscsi'
+
+# Initiator address is IP or ALL
+config.initiator_address = 'ALL'
+
+# Backing Store
+config.backing_store = 'raw'
+EOS
 
 
 # frontend
