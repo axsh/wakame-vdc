@@ -72,6 +72,8 @@ shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id
 
 case ${sta_server} in
 ${ipaddr})
+  [ -d ${tmp_path}/xpool ] || mkdir ${tmp_path}/xpool
+  [ -d ${tmp_path}/snap  ] || mkdir ${tmp_path}/snap
   shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
  ;;
 *)
