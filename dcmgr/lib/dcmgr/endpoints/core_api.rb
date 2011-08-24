@@ -325,7 +325,10 @@ module Dcmgr
               vol.instance = inst
               vol.save
               commit_transaction
-              res = Dcmgr.messaging.submit("hva-handle.#{hostnode.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid)
+              
+              vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
+              repository_address = Dcmgr::StorageService.repository_address(vs.destination_key)
+              res = Dcmgr.messaging.submit("hva-handle.#{hostnode.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid, repository_address)
             when Models::Image::BOOT_DEV_LOCAL
               commit_transaction
               res = Dcmgr.messaging.submit("hva-handle.#{hostnode.node_id}", 'run_local_store', inst.canonical_uuid)
