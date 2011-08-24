@@ -46,21 +46,22 @@ module Dcmgr
       end
       tmp = repository_address.split(',')
       destination_key = tmp[0]
-      dest = destination_key.match(/^([a-z0-9_]+)@([a-z0-9_-]+):([a-z0-9_-]+):([a-z0-9_\-\/]+)(snap-[a-z0-9]+\.snap)+$/)
-      if dest.nil?
-        raise "Invalid format: #{repository_address}"
-      end 
-          
-      h = { 
-        :destination => dest[1],
-        :driver => dest[2],
-        :bucket => dest[3],
-        :path => dest[4],
-        :filename => dest[5],
+
+      # ex. 'local@local:none:/home/ubuntu/work/repos/git/github.com/wakame-vdc/tmp/snap/a-shpoolxx/snap-gkosnc56.snap'
+      # dest = destination_key.match(/^([a-z0-9_]+)@([a-z0-9_-]+):([a-z0-9_-]+):([a-z0-9._\-\/]+)(snap-[a-z0-9]+\.snap)+$/)
+      results  = destination_key.split(':', 3)
+      accounts = results[0].split('@', 2)
+
+      h = {
+        :destination => accounts[0],
+        :driver => accounts[1],
+        :bucket => results[1],
+        :path => File.dirname(results[2]),
+        :filename => File.basename(results[2]),
         :access_key => tmp[1],
         :secret_key => tmp[2],
-      }   
-    end 
+      }
+    end
 
     def self.repository_address(destination_key)
       format = '%s,%s,%s'
