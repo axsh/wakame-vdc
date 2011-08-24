@@ -4,6 +4,11 @@ module Dcmgr::Models
   class StoragePool < AccountResource
     taggable 'sp'
 
+    BACKINGSTORE_ZFS = 'zfs'
+    BACKINGSTORE_RAW = 'raw'
+
+    SUPPORTED_BACKINGSTORE = [BACKINGSTORE_ZFS, BACKINGSTORE_RAW]
+
     inheritable_schema do
       String :node_id, :null=>false
       String :export_path, :null=>false
