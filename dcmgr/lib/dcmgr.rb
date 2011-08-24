@@ -188,7 +188,7 @@ module Dcmgr
     autoload :Lxc , 'dcmgr/drivers/lxc'
     autoload :BackingStore, 'dcmgr/drivers/backing_store'
     autoload :Zfs,          'dcmgr/drivers/zfs'
-    autoload :Tgt,          'dcmgr/drivers/tgt'
+    autoload :Raw,          'dcmgr/drivers/raw'
     autoload :IscsiTarget,  'dcmgr/drivers/iscsi_target'
     autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
     autoload :LinuxIscsi,   'dcmgr/drivers/linux_iscsi'

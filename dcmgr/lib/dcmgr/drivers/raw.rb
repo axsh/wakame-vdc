@@ -2,7 +2,7 @@
 
 module Dcmgr
   module Drivers
-    class Tgt < BackingStore
+    class Raw < BackingStore
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       
