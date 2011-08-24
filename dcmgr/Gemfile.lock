@@ -18,7 +18,7 @@ GEM
     extlib (0.9.15)
     i18n (0.4.2)
     ipaddress (0.7.0)
-    isono (0.2.7)
+    isono (0.2.8)
       amqp (= 0.7.4)
       eventmachine (= 1.0.0.beta.3)
       log4r
@@ -54,7 +54,7 @@ DEPENDENCIES
   configuration
   extlib (= 0.9.15)
   ipaddress (= 0.7.0)
-  isono (= 0.2.7)
+  isono (= 0.2.8)
   json (>= 1.2.0)
   mysql (>= 2.8.1)
   open4 (= 1.0.1)
