@@ -78,6 +78,7 @@ rm -f $tmp_mount_dir/etc/ssh/ssh_host*
 #Set up the startup script
 echo "Setting up the startup script"
 cp $init_script_location $tmp_mount_dir/etc/wakame_init
+chmod +x $tmp_mount_dir/etc/wakame_init
 sed -i '/exit 0/d' $tmp_mount_dir/etc/rc.local
 echo /etc/wakame_init >> $tmp_mount_dir/etc/rc.local
 echo "exit 0" >> $tmp_mount_dir/etc/rc.local
