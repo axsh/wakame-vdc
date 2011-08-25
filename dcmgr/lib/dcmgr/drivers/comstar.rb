@@ -26,23 +26,23 @@ module Dcmgr
         # target
         sh("itadm create-target -n %s", [target_node])
 
-        # target group
-        target_group = "tg:#{@volume[:account_id]}.#{@volume[:uuid]}"
-        # target must be offline.
-        # $ stmfadm create-tg a-shpoolxx.vol-chgqqw21
-        # => stmfadm: STMF target must be offline
-        #
+#        # target group
+#        target_group = "tg:#{@volume[:account_id]}.#{@volume[:uuid]}"
+#        # target must be offline.
+#        # $ stmfadm create-tg a-shpoolxx.vol-chgqqw21
+#        # => stmfadm: STMF target must be offline
+#        #
         sh("stmfadm offline-target %s", [target_node])
-        sh("stmfadm create-tg %s", [target_group])
-        sh("stmfadm add-tg-member -g %s %s", [target_group, target_node])
+#        sh("stmfadm create-tg %s", [target_group])
+#        sh("stmfadm add-tg-member -g %s %s", [target_group, target_node])
         sh("stmfadm online-target %s", [target_node])
 
         sh("itadm list-target -v %s", [target_node])
 
-        # host group
-        host_group = "hg:#{@volume[:account_id]}.#{@volume[:uuid]}"
-        sh("stmfadm create-hg %s", [host_group])
-        sh("stmfadm add-hg-member -g %s %s", [host_group, target_node])
+#        # host group
+#        host_group = "hg:#{@volume[:account_id]}.#{@volume[:uuid]}"
+#        sh("stmfadm create-hg %s", [host_group])
+#        sh("stmfadm add-hg-member -g %s %s", [host_group, target_node])
 
         # zvol has already created by backing storep
         zvol_path = "/dev/zvol/rdsk/#{@volume[:storage_pool][:export_path]}/#{@volume[:uuid]}"
@@ -52,11 +52,13 @@ module Dcmgr
         guid = logical_unit[:stdout].split(' ')[0]
 
         # view
-        sh("stmfadm add-view -t %s -h %s %s", [target_group, host_group, guid])
+#        sh("stmfadm add-view -t %s -h %s %s", [target_group, host_group, guid])
+        sh("stmfadm add-view %s", [guid])
         logical_unit = sh("stmfadm list-view -l %s", [guid])
         logical_unit = logical_unit[:stdout].downcase.split("\n").select {|row| row.strip!}
 
-        opt = {:iqn => target_node, :lun=>logical_unit[2].split(": ").last, :guid => guid, :hg => host_group, :tg => target_group}
+#        opt = {:iqn => target_node, :lun=>logical_unit[2].split(": ").last, :guid => guid, :hg => host_group, :tg => target_group}
+        opt = {:iqn => target_node, :lun=>logical_unit[2].split(": ").last, :guid => guid}
       end
 
       def delete(ctx)
@@ -71,8 +73,8 @@ module Dcmgr
         sh("itadm delete-target %s", [iqn])
 
         sh("stmfadm delete-lu %s", [guid])
-        sh("stmfadm delete-tg %s", [target_group])
-        sh("stmfadm delete-hg %s", [host_group])
+#        sh("stmfadm delete-tg %s", [target_group])
+#        sh("stmfadm delete-hg %s", [host_group])
       end
     end
   end
