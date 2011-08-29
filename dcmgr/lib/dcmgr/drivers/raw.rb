@@ -9,6 +9,7 @@ module Dcmgr
       def create_volume(ctx, snap_file = nil)
         @volume_id   = ctx.volume_id
         @volume      = ctx.volume
+        @snapshot    = ctx.snapshot
 
         logger.info("creating new volume: #{@volume_id}")
 
