@@ -22,6 +22,7 @@ kvm)
   vmimage_arch=i386
   vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
   vmimage_file=${vmimage_uuid}.qcow2
+  vmimage_path=${local_store_path}/${vmimage_file}
   vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
   ;;
 lxc)
@@ -31,7 +32,12 @@ lxc)
   vmimage_arch=i386
   vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
   vmimage_file=${vmimage_dist_name}-${vmimage_dist_ver}_without-metadata_${hypervisor}_${vmimage_arch}.raw
+  vmimage_path=${local_store_path}/${vmimage_file}
   vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
+  # volume_snapshot
+  vmimage_snap_uuid=lucid1
+  vmimage_snap_file=snap-${vmimage_snap_uuid}.snap
+  vmimage_snap_path=${tmp_path}/snap/${account_id}/${vmimage_snap_file}
   ;;
 *)
   echo "unknown hypervisor type" >&2
@@ -75,6 +81,8 @@ ${ipaddr})
   [ -d ${tmp_path}/xpool ] || mkdir ${tmp_path}/xpool
   [ -d ${tmp_path}/snap  ] || mkdir ${tmp_path}/snap
   shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
+
+  [ -L ${vmimage_snap_path} ] || ln -s ${vmimage_path} ${vmimage_snap_path}
  ;;
 *)
   shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool             -s $((1024 * 1024)) -i ${sta_server} -o zfs -n /export/home/wakame/vdc/sta/snap
@@ -92,7 +100,15 @@ shlog ./bin/vdc-manage tag map tag-shhost -o hp-demohost
 shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demonet
 shlog ./bin/vdc-manage tag map tag-shstor -o sp-demostor
 
-shlog ./bin/vdc-manage image add local ${local_store_path}/${vmimage_file} -m `md5sum ${local_store_path}/${vmimage_file} | cut -d ' ' -f1` -a ${account_id} -u wmi-${vmimage_uuid} -r ${images_arch} -d "${vmimage_desc}" -s init
+cat <<EOS | mysql -uroot ${dcmgr_dbname}
+INSERT INTO volume_snapshots values
+ (1, '${account_id}', '${vmimage_snap_uuid}', 1, 'vol-${vmimage_snap_uuid}', 1024, 0, 'available', 'local@local:none:${vmimage_snap_path}', NULL, now(), now());
+EOS
+
+vmimage_md5=$(md5sum ${local_store_path}/${vmimage_file} | cut -d ' ' -f1)
+shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_file} -m ${vmimage_md5} -a ${account_id} -u wmi-${vmimage_uuid}      -r ${images_arch} -d "${vmimage_desc}" -s init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid}           -m ${vmimage_md5} -a ${account_id} -u wmi-${vmimage_snap_uuid} -r ${images_arch} -d "${vmimage_desc}" -s init
+
 shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r ${hva_arch} -p ${hypervisor} -c 1 -m 256 -w 1
 
 shlog ./bin/vdc-manage group add -u  ng-demofgr -a ${account_id} -n default -d demo
