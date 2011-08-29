@@ -62,6 +62,12 @@ vmimage_uuid=lucid0
 vmimage_file=${vmimage_uuid}.qcow2
 vmimage_s3="http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/${vmimage_file}.gz"
 
+# mysql
+dcmgr_dbname=wakame_dcmgr
+dcmgr_dbuser=root
+webui_dbname=wakame_dcmgr_gui
+webui_dbpass=passwd
+
 hypervisor=kvm
 ci_archive_dir=$prefix_path/../results
 

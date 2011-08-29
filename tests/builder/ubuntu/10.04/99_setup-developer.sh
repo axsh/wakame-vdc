@@ -8,10 +8,10 @@ work_dir=${work_dir:?"work_dir needs to be set"}
 #
 # MySQL
 #
-dcmgr_dbname=wakame_dcmgr
-dcmgr_dbuser=root
-webui_dbname=wakame_dcmgr_gui
-webui_dbpass=passwd
+#dcmgr_dbname=wakame_dcmgr
+#dcmgr_dbuser=root
+#webui_dbname=wakame_dcmgr_gui
+#webui_dbpass=passwd
 
 echo "# Configure Database for MySQL ..."
 yes | mysqladmin -uroot drop ${dcmgr_dbname} >/dev/null 2>&1
