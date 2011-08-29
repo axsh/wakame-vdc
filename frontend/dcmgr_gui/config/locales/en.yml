@@ -229,6 +229,7 @@ en:
       capacity: "Capacity"
       origin_volume_id: "OriginVolumeID"
       destination: "Destiantion"
+      backing_store: "BackingStore"
       status: "Status"
       created_at: "Created At"
       updated_at: "Updated At"

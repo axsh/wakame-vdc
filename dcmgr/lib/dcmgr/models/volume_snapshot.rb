@@ -46,6 +46,7 @@ module Dcmgr::Models
         :origin_volume_id => self.origin_volume_id,
         :destination_id => self.destination,
         :destination_name => self.display_name, 
+        :backing_store => self.storage_pool.storage_type,
         :created_at => self.created_at,
         :deleted_at => self.deleted_at,
       }
