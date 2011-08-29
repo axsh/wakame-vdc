@@ -23,6 +23,12 @@ builder_path=${builder_path:?"builder_path needs to be set"}
   /usr/sbin/update-rc.d -f dnsmasq remove
 }
 
+# disable tgt
+[ -x /etc/init.d/tgt ] && {
+  /etc/init.d/tgt stop
+  /usr/sbin/update-rc.d -f tgt remove
+}
+
 # kernel parameters
 echo "# Configure kernel parameters ..."
 [ -f /etc/sysctl.conf ] && {
