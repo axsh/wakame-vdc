@@ -50,13 +50,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       'element': this
     });
     
-    $(this).find('#security_group_name').keyup(function(){
-      if( $(this).val() ) {
-        bt_create_security_group.disabledButton(1, false);
-      } else {
-        bt_create_security_group.disabledButton(1 ,true);
-      }
-    });
+    var params = { 'button': bt_create_security_group, 'element_id': 1 };
+    $(this).find('#security_group_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+    $(this).find('#security_group_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
 
     $(this).find('#rule_help').hide();
     security_group_help.create(config_tooltip);

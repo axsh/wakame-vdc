@@ -124,13 +124,10 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     callback: function(){
       var html = '<iframe src="javascript:false" name="hiddenIframe" style="display:none"></iframe>';
       $(this).find('#create_ssh_keypair_dialog').append(html);
-      $(this).find('#ssh_keypair_name').keyup(function(){
-        if( $(this).val() ) {
-          bt_create_ssh_keypair.disabledButton(1, false);
-        } else {
-          bt_create_ssh_keypair.disabledButton(1, true);
-        }
-      });
+
+      var params = { 'button': bt_create_ssh_keypair, 'element_id': 1 };
+      $(this).find('#ssh_keypair_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+      $(this).find('#ssh_keypair_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
     },
     button: create_ssh_keypair_buttons
   });

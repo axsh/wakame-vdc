@@ -133,16 +133,10 @@ DcmgrGUI.prototype.volumePanel = function(){
             var html = '<option value="'+ uuid +'">'+uuid+'</option>';
             select_storage_pool.append(html);
           }
-          
-          $(self).find('#volume_size').keyup(function(){
-            if( $(this).val() ) {
-              
-              bt_create_volume.disabledButton(1, false);
-            } else {
-              bt_create_volume.disabledButton(1 ,true);
-            }
-          });
-          
+
+          var params = { 'button': bt_create_volume, 'element_id': 1 };
+          $(self).find('#volume_size').bind('paste', params, DcmgrGUI.Util.availableTextField);
+          $(self).find('#volume_size').bind('keyup', params, DcmgrGUI.Util.availableTextField);
         }
       });
     },
@@ -265,13 +259,9 @@ DcmgrGUI.prototype.volumePanel = function(){
     title:$.i18n.prop('attach_volume_header'),
     path:'/attach_volume',
     callback: function() {
-      $(this).find('#instance_id').keyup(function(){
-        if( $(this).val() ) {
-          bt_attach_volume.disabledButton(1, false);
-        } else {
-          bt_attach_volume.disabledButton(1, true);
-        }
-      });
+      var params = { 'button': bt_attach_volume, 'element_id': 1 };
+      $(this).find('#instance_id').bind('paste', params, DcmgrGUI.Util.availableTextField);
+      $(this).find('#instance_id').bind('keyup', params, DcmgrGUI.Util.availableTextField);
     },
     button: attach_volume_buttons
   });

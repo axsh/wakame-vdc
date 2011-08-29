@@ -455,6 +455,33 @@ DcmgrGUI.Util.createUIButton = function(element,options){
           });
 }
 
+DcmgrGUI.Util.availableTextField = function(e){
+
+  var d = e.data;
+  var button = d.button;
+  var element_id = d.element_id;
+
+  if(e.type == 'paste') {
+    var el = $(this);
+    setTimeout(function() {
+      var text = $(el).val();
+      if(text) {
+        button.disabledButton(element_id, false);
+      } else {
+        button.disabledButton(element_id, true);
+      }
+    }, 100);       
+  } else {
+    var text = $(this).val();
+    if(text) {
+      button.disabledButton(element_id, false);
+    } else {
+      button.disabledButton(element_id, true);
+    }
+  }
+  return true;
+}
+
 DcmgrGUI.Event = DcmgrGUI.Class.create({
 
   initialize: function(){
