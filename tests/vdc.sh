@@ -202,14 +202,15 @@ function run_developer() {
 function run_standalone_integration_test {
   cd $prefix_path/tests/spec
   bundle install
-  # run integrate test specs. 
-  bundle exec rspec . 
 
   for i in {0..5}; do
     echo sleep 5 ... ${i}
     sleep 5
     uptime
   done
+
+  # run integrate test specs. 
+  bundle exec rspec . 
 
   return $?
 }
