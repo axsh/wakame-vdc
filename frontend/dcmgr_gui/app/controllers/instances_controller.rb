@@ -35,20 +35,20 @@ class InstancesController < ApplicationController
   
   def terminate
     instance_ids = params[:ids]
-    response = []
+    res = []
     instance_ids.each do |instance_id|
-      response << DcmgrResource::Instance.destroy(instance_id)
+      res << DcmgrResource::Instance.destroy(instance_id)
     end
-    render :json => response
+    render :json => res
   end
   
   def reboot
     instance_ids = params[:ids]
-    response = []
+    res = []
     instance_ids.each do |instance_id|
-      response << DcmgrResource::Instance.reboot(instance_id)
+      res << DcmgrResource::Instance.reboot(instance_id)
     end
-    render :json => response
+    render :json => res
   end
   
   def total

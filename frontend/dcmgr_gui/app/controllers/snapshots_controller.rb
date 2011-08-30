@@ -21,11 +21,11 @@ class SnapshotsController < ApplicationController
 
   def destroy
     snapshot_ids = params[:ids]
-    response = []
+    res = []
     snapshot_ids.each do |snapshot_id|
-      response << DcmgrResource::VolumeSnapshot.delete(snapshot_id)
+      res << DcmgrResource::VolumeSnapshot.delete(snapshot_id)
     end
-    render :json => response
+    render :json => res
   end
 
   def list

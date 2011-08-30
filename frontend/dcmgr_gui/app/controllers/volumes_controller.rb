@@ -8,14 +8,14 @@ class VolumesController < ApplicationController
   def create
     snapshot_ids = params[:ids]
     if snapshot_ids
-      response = []
+      res = []
       snapshot_ids.each do |snapshot_id|
         data = {
           :snapshot_id => snapshot_id
         }
-        response << DcmgrResource::Volume.create(data)
+        res << DcmgrResource::Volume.create(data)
       end
-      render :json => response
+      render :json => res
     else
       # Convert to MB
       size = case params[:unit]
@@ -40,11 +40,11 @@ class VolumesController < ApplicationController
   
   def destroy
     volume_ids = params[:ids]
-    response = []
+    res = []
     volume_ids.each do |volume_id|
-      response << DcmgrResource::Volume.destroy(volume_id)
+      res << DcmgrResource::Volume.destroy(volume_id)
     end
-    render :json => response
+    render :json => res
   end
   
   def list
@@ -66,23 +66,23 @@ class VolumesController < ApplicationController
   def attach
     instance_id = params[:instance_id]
     volume_ids = params[:volume_ids]
-    response = []
+    res = []
     volume_ids.each do |volume_id|
       data = {
         :volume_id => volume_id
       }
-      response << DcmgrResource::Volume.attach(volume_id, instance_id)
+      res << DcmgrResource::Volume.attach(volume_id, instance_id)
     end
-    render :json => response
+    render :json => res
   end
 
   def detach
     volume_ids = params[:ids]
-    response = []
+    res = []
     volume_ids.each do |volume_id|
-      response << DcmgrResource::Volume.detach(volume_id)
+      res << DcmgrResource::Volume.detach(volume_id)
     end
-    render :json => response
+    render :json => res
   end
   
   def total
