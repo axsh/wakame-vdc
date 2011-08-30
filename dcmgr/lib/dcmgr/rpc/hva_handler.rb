@@ -210,6 +210,8 @@ module Dcmgr
       }, proc {
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
                               'hva/instance_terminated')
+        update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
+                              'hva/volume_deleted')
       }
 
       job :terminate do
