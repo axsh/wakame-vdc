@@ -235,12 +235,16 @@ DcmgrGUI.prototype.volumePanel = function(){
   attach_volume_buttons = {};
   attach_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
   attach_volume_buttons[attach_button_name] = function() {
-    var volume_id = $(this).find('#volume_id').val();
-    var instance_id = $(this).find('#instance_id').val();
-    var data = "volume_id=" + volume_id
-    + "&instance_id=" + instance_id;
+    var attach_volumes = $(this).find('#attach_volumes').find('li');
+    var volume_ids = []
+    $.each(attach_volumes,function(){
+     volume_ids.push($(this).text())
+    })  
 
+    var instance_id = $(this).find('#instance_id').val();
+    var data = $.param({'instance_id': instance_id, volume_ids: volume_ids})
     var request = new DcmgrGUI.Request;
+
     request.put({
       "url": '/volumes/attach',
       "data": data,

@@ -64,9 +64,15 @@ class VolumesController < ApplicationController
   end
 
   def attach
-    volume_id = params[:volume_id]
     instance_id = params[:instance_id]
-    response = DcmgrResource::Volume.attach(volume_id, instance_id)
+    volume_ids = params[:volume_ids]
+    response = []
+    volume_ids.each do |volume_id|
+      data = {
+        :volume_id => volume_id
+      }
+      response << DcmgrResource::Volume.attach(volume_id, instance_id)
+    end
     render :json => response
   end
 
