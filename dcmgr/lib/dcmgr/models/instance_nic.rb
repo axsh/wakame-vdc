@@ -9,14 +9,12 @@ module Dcmgr::Models
       Fixnum :instance_id, :null=>false
       Fixnum :network_id, :null=>false
       Fixnum :nat_network_id
-      Fixnum :bandwidth_group_id
       String :mac_addr, :null=>false, :size=>12
       
       index :mac_addr
     end
     with_timestamps
 
-    many_to_one :bandwidth_group
     many_to_one :instance
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
     many_to_one :network
