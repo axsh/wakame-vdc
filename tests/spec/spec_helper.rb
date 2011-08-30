@@ -10,8 +10,8 @@ class APITest
   include HTTParty
   base_uri 'http://localhost:9001/api'
   #format :json
-  headers 'X-VDC-ACCOUNT-UUID' => 'a-00000000'
-  
+#  headers 'X-VDC-ACCOUNT-UUID' => 'a-00000000'
+  headers 'X-VDC-ACCOUNT-UUID' => 'a-shpoolxx'
 
   def self.create(path, params)
     self.post(path, :query=>params, :body=>'')
