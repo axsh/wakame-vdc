@@ -204,6 +204,13 @@ function run_standalone_integration_test {
   bundle install
   # run integrate test specs. 
   bundle exec rspec . 
+
+  for i in {0..5}; do
+    echo sleep 5 ... ${i}
+    sleep 5
+    uptime
+  done
+
   return $?
 }
 
