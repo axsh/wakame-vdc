@@ -22,7 +22,7 @@ module Dcmgr
           unless File.exist?(vol_path)
             logger.info("creating parent filesystem(size:#{@volume[:size]}): #{vol_path}")
 
-            #sh("/bin/dd if=/dev/zero of=#{vol_path} bs=#{@volume[:size]} count=1000000")
+            sh("/bin/mkdir -p #{File.dirname(vol_path)}") unless File.directory?(File.dirname(vol_path))
             sh("/bin/dd if=/dev/zero of=#{vol_path} bs=1 count=0 seek=#{@volume[:size] * 1024 * 1024}")
             du_hs(vol_path)
 
