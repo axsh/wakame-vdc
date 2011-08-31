@@ -71,6 +71,12 @@ webui_dbpass=passwd
 hypervisor=kvm
 ci_archive_dir=$prefix_path/../results
 
+
+#
+without_bundle_install=
+without_quit_screen=
+without_after_cleanup=
+
 #
 # build option params
 #
@@ -201,7 +207,7 @@ function run_developer() {
 
 function run_standalone_integration_test {
   cd $prefix_path/tests/spec
-  bundle install
+  [ -z "${without_bundle_install}" ] && bundle install
 
   for i in {0..5}; do
     echo sleep 5 ... ${i}
@@ -252,7 +258,7 @@ case ${mode} in
     )
     excode=$?
     set -e
-    screen -S vdc -X quit
+    [ -z "${without_quit_screen}" ] && screen -S vdc -X quit
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
   *)
@@ -261,7 +267,7 @@ case ${mode} in
 esac
 
 #
-cleanup
+[ -z "${without_after_cleanup}" ] && cleanup
 
 
 exit $excode
