@@ -63,8 +63,8 @@ function screen_it {
   [[ -z "$cmd"  ]] && {
     cmd="$cmd `read`"
   }
-  retry 3 screen -L -S vdc -X screen -t $title
-  screen -L -S vdc -p $title -X stuff "${cmd}$NL"
+  retry 3 screen -L -r vdc -x -X screen -t $title
+  screen -L -r vdc -x -p $title -X stuff "${cmd}$NL"
 }
 
 function setup_base {
