@@ -76,6 +76,7 @@ ci_archive_dir=$prefix_path/../results
 without_bundle_install=
 without_quit_screen=
 without_after_cleanup=
+without_screen=
 
 #
 # build option params
@@ -164,10 +165,12 @@ EOS
 
   # screen
   cd ${prefix_path}
-  echo "Creating screen windows..."
 
-  # screen configuration file
-  /bin/cat <<EOS > $screenrc_path
+  [ -z "${without_screen}" ] && {
+    echo "Creating screen windows..."
+
+    # screen configuration file
+    /bin/cat <<EOS > $screenrc_path
 escape ^z^z
 hardstatus on
 hardstatus alwayslastline "[%m/%d %02c] %-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<" 
@@ -176,17 +179,33 @@ logfile ${tmp_path}/screenlog.%t
 logfile flush 1
 EOS
 
-  screen -L -d -m -S vdc -t vdc -c $screenrc_path || abort "Failed to start new screen session"
-  screen_it collector "cd ${prefix_path}/dcmgr/ && ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
-  screen_it nsa       "cd ${prefix_path}/dcmgr/ && ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
-  screen_it hva       "cd ${prefix_path}/dcmgr/ && ./bin/hva -i demo1 2>&1 | tee ${tmp_path}/vdc-hva.log"
-  screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata && bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
-  screen_it api       "cd ${prefix_path}/dcmgr/web/api      && bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
-  screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui && bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
-  screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
-  screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
-  [ "${sta_server}" = "${ipaddr}" ] && \
-  screen_it sta       "cd ${prefix_path}/dcmgr/ && ./bin/sta -i demo1 2>&1 | tee ${tmp_path}/vdc-sta.log"
+    screen -L -d -m -S vdc -t vdc -c $screenrc_path || abort "Failed to start new screen session"
+    screen_it collector "cd ${prefix_path}/dcmgr/ && ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
+    screen_it nsa       "cd ${prefix_path}/dcmgr/ && ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
+    screen_it hva       "cd ${prefix_path}/dcmgr/ && ./bin/hva -i demo1 2>&1 | tee ${tmp_path}/vdc-hva.log"
+    screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata && bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
+    screen_it api       "cd ${prefix_path}/dcmgr/web/api      && bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
+    screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui && bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
+    screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
+    screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
+    [ "${sta_server}" = "${ipaddr}" ] && \
+    screen_it sta       "cd ${prefix_path}/dcmgr/ && ./bin/sta -i demo1 2>&1 | tee ${tmp_path}/vdc-sta.log"
+  }  || {
+    cd ${prefix_path}/dcmgr/ && run2bg "./bin/collector > ${tmp_path}/vdc-collector.log 2>&1"
+    cd ${prefix_path}/dcmgr/ && run2bg "./bin/nsa -i demo1 > ${tmp_path}/vdc-nsa.log 2>&1"
+    cd ${prefix_path}/dcmgr/ && run2bg "./bin/hva -i demo1 > ${tmp_path}/vdc-hva.log 2>&1"
+    cd ${prefix_path}/dcmgr/web/metadata && run2bg "bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru > ${tmp_path}/vdc-metadata.log 2>&1"
+    cd ${prefix_path}/dcmgr/web/api      && run2bg "bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru > ${tmp_path}/vdc-api.log 2>&1"
+    cd ${prefix_path}/frontend/dcmgr_gui && run2bg "bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru > ${tmp_path}/vdc-auth.log 2>&1"
+    run2bg "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
+    cd ${prefix_path}/frontend/dcmgr_gui/config && run2bg "bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru > ${tmp_path}/vdc-webui.log 2>&1"
+    [ "${sta_server}" = "${ipaddr}" ] && {
+      cd ${prefix_path}/dcmgr/ && run2bg "./bin/sta -i demo1 > ${tmp_path}/vdc-sta.log 2>&1"
+    }
+    #wait_jobs
+    echo "${pids}" > ${tmp_path}/vdc-pid.log
+    shlog ps -p ${pids}
+  }
 
 
   retry 10 <<EOF || abort "Can't see dcmgr"
@@ -199,9 +218,11 @@ EOF
 
 function run_developer() {
   run_standalone
-  screen_it test "echo Enjoy wakame-vdc.; echo \* http://${ipaddr}:${webui_port}/; cd ${prefix_path}/frontend/dcmgr_gui; ./oauth_client.rb; "
-  # attach the shell.
-  screen -S vdc -x
+  [ -z "${without_screen}" ] && {
+    screen_it test "echo Enjoy wakame-vdc.; echo \* http://${ipaddr}:${webui_port}/; cd ${prefix_path}/frontend/dcmgr_gui; ./oauth_client.rb; "
+    # attach the shell.
+    screen -S vdc -x
+  }
 }
 
 
@@ -225,6 +246,8 @@ function run_standalone_integration_test {
 function ci_post_process {
   local sig=$1
   local ci_result=$2
+
+  [ -z "${without_screen}" ] || return 0
 
   # make log archive and save to archiving folder.
   [[ -d $ci_archive_dir ]] && {
@@ -258,7 +281,9 @@ case ${mode} in
     )
     excode=$?
     set -e
-    [ -z "${without_quit_screen}" ] && screen -S vdc -X quit
+    [ -z "${without_screen}" ] && {
+      [ -z "${without_quit_screen}" ] && screen -S vdc -X quit
+    }
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
   *)
@@ -267,7 +292,16 @@ case ${mode} in
 esac
 
 #
-[ -z "${without_after_cleanup}" ] && cleanup
-
+[ -z "${without_after_cleanup}" ] && {
+  [ -f "${tmp_path}/vdc-pid.log" ] && {
+    pids=$(cat ${tmp_path}/vdc-pid.log)
+    [ -z "${pids}" ] || {
+      for pid in ${pids}; do
+        ps -p ${pid} >/dev/null 2>&1 && kill -HUP  ${pid}
+      done
+    }
+  }
+  cleanup
+}
 
 exit $excode

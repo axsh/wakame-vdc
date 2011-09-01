@@ -88,6 +88,10 @@ function cleanup {
     killall dnsmasq
   }
 
+  ps -ef | egrep '[t]gtd' -q && {
+    initctl stop tgt
+  }
+
   case ${hypervisor} in
   kvm)
     ps -ef | egrep 'bin/[k]vm' -q && {
@@ -109,9 +113,9 @@ function cleanup {
    ;;
   esac
 
-  for component in collector nsa hva; do
+  for component in collector nsa hva sta; do
     pid=$(ps awwx | egrep "[b]in/${component}" | awk '{print $1}')
-    [ -z "${pid}" ] || kill ${pid}
+    [ -z "${pid}" ] || kill -9 ${pid}
   done
 
   for port in ${ports}; do
@@ -132,7 +136,7 @@ function cleanup {
       echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | /bin/sh
   } || :
   
-  rm -f ${tmp_path}/screenlog.* ${tmp_path}/*.log
+  for i in ${tmp_path}/screenlog.* ${tmp_path}/*.log; do rm -f ${i}; done
 }
 
 # kick the builder script. 
@@ -159,3 +163,15 @@ function shlog {
   eval $*
 }
 
+# for without_screen
+pids=
+trap 'kill -9 ${pids};' 2
+
+function run2bg() {
+  #eval "$* &"
+  shlog "$* &"
+
+  pid=$!
+  echo "[pid:${pid}]# '$*'"
+  pids="${pids} ${pid}"
+}
