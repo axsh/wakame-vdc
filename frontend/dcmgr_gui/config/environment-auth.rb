@@ -1,5 +1,5 @@
 # Load the rails application
-require File.expand_path('../../../../config/application', __FILE__)
+require File.join(File.dirname(__FILE__), 'application')
 
 # Initialize the rails application
 DcmgrGui::Application.initialize!
