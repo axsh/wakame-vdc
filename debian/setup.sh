@@ -37,7 +37,7 @@ prefix_path=/usr/share/axsh/wakame-vdc
 
 #Take care of the gem dependencies
 cd ${prefix_path}
-gem install bundler-1.0.15.gem
+gem install bundler.gem
 
 cd ${prefix_path}/dcmgr
 bundle install --local

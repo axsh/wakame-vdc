@@ -14,6 +14,9 @@ function checkreq {
     which $exec >> /dev/null
     [[ $? = 0 ]] || abort "Missing dependency ${requirements[$exec]}.\nTry running 'apt-get install ${requirements[@]}' to install all dependencies."
   done
+  
+  which bundle >> /dev/null
+  [[ $? = 0 ]] || abort "Bundler not found.\nTry running 'gem install bundler' to install it.\nAlso make sure it is in the root user's PATH variable."
 }
 
 function abort() {
@@ -93,6 +96,20 @@ if [ -f ${apt_dir}/apt-ftparchive-udeb.conf ]; then rm -f ${apt_dir}/apt-ftparch
 if [ -f ${apt_dir}/release.conf ]; then rm -f ${apt_dir}/release.conf; fi
 rm -rf ${root_dir}/guts/indices/
 rm -rf ${root_dir}/guts/wakame
+
+#Add the required gems to the debian package
+echo "Adding required gems to the debian package to be built"
+cd $wakame_dir/dcmgr
+bundle package
+cd $wakame_dir/frontend/dcmgr_gui
+bundle package
+
+cp $wakame_dir/dcmgr/vendor/cache/*.gem $wakame_dir/debian/gems/dcmgr/
+cp $wakame_dir/frontend/dcmgr_gui/vendor/cache/*.gem $wakame_dir/debian/gems/frontend/
+
+#Put a bundler gem in the wakame package so we can run bundle install after the installation
+BUNDLER=`gem fetch bundler | cut -d ' ' -f2`
+mv $BUNDLER.gem $wakame_dir/debian/bundler.gem
 
 #Make the debian package
 cd ${wakame_dir}
