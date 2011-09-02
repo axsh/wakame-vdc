@@ -279,35 +279,40 @@ module Dcmgr
             end
             raise "Can not find the network" if network.nil?
             raise "Out of IP addresses in the network" unless network.available_ip_nums > 0
+            
+            begin
+              inst = hostnode.create_instance(@account, wmi, spec, network) do |i|
+                # TODO: do not use rand() to decide vnc port.
+                i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
+                i.user_data = params[:user_data] || ''
+                # set only when not nil as the table column has not null
+                # condition.
+                if params[:hostname]
+                  if Models::Instance::ValidationMethods.hostname_uniqueness(@account.canonical_uuid,
+                                                                             params[:hostname])
+                    i.hostname = params[:hostname]
+                  else
+                    raise DuplicateHostname
+                  end
+                end
 
-            inst = hostnode.create_instance(@account, wmi, spec, network) do |i|
-              # TODO: do not use rand() to decide vnc port.
-              i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
-              i.user_data = params[:user_data] || ''
-              # set only when not nil as the table column has not null
-              # condition.
-              if params[:hostname]
-                if Models::Instance::ValidationMethods.hostname_uniqueness(@account.canonical_uuid,
-                                                                           params[:hostname])
-                  i.hostname = params[:hostname]
-                else
-                  raise DuplicateHostname
+                if params[:ssh_key]
+                  ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,
+                                                         :name=>params[:ssh_key])
+                  if ssh_key_pair.nil?
+                    raise UnknownSshKeyPair, "#{params[:ssh_key]}"
+                  else
+                    i.set_ssh_key_pair(ssh_key_pair)
+                  end
+                end
+
+                if params[:ha_enabled] == 'true'
+                  i.ha_enabled = 1
                 end
               end
-
-              if params[:ssh_key]
-                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,
-                                                       :name=>params[:ssh_key])
-                if ssh_key_pair.nil?
-                  raise UnknownSshKeyPair, "#{params[:ssh_key]}"
-                else
-                  i.set_ssh_key_pair(ssh_key_pair)
-                end
-              end
-
-              if params[:ha_enabled] == 'true'
-                i.ha_enabled = 1
-              end
+            rescue Models::Instance::HostError => e
+              logger.error(e)
+              raise OutOfHostCapacity
             end
 
             unless params[:nf_group].is_a?(Array)
