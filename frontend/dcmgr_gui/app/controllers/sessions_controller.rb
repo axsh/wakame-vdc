@@ -6,6 +6,10 @@ class SessionsController < ApplicationController
     @user =  User.new
   end
   
+  def information
+    render :layout => false
+  end
+
   def create
     user = User.authenticate(params[:login], params[:password])
     @error_message = ''

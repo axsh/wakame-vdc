@@ -1,32 +1,25 @@
-<% content_for :stylesheet do %>
-<style type="text/css">
-	h3 {
-	color:#5E5E5E;
-	font-family:"LucidaGrande","Myriad Pro";
-	font-size:22px;
-	height:34px;
-	line-height:30px;
-	padding:0 0 0 5px;
-	text-shadow:1px 1px 0 rgba(255, 255, 255, 0.7);
-	}
-</style>
-<% end %>
-<div style="text-align:left;height:496px">
-	<div style="padding:5px;">
-			<%= form_tag session_path do -%>
-			<fieldset>
-				<legend><h3><%= t("login.sign_in") %></h3></legend>
-        <% if @error_message %>
-        <div style="background-color: yellow; width: 200px; height: 12px;">
-          <div style="padding-left:10px; color:red;"><%= @error_message %></div>
-        </div>
-        <% end %>
-			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag t("login.user") %><br />
-			<%= text_field_tag 'login', @login %></p>
-			<p style="margin:5px;padding:5px;font-size:15px"><%= label_tag t("login.password") %><br />
-			<%= password_field_tag 'password', nil %></p>
-      <fieldset>
-      <p><%= submit_tag 'login' %></p>
-			<% end -%>
-	</div>
+<div id="signin">
+  <div id="signin_sidemenu">
+  	<div id="signin_form">
+      <%= form_tag session_path do -%>
+        <fieldset>
+        	<legend><h3><%= t("login.sign_in") %></h3></legend>
+          <% if @error_message %>
+          <div id="error_box">
+            <div id="error_message"><%= @error_message %></div>
+          </div>
+          <% end %>
+          <p><%= label_tag t("login.user") %><br />
+          <%= text_field_tag 'login', @login %></p>
+          <p><%= label_tag t("login.password") %><br />
+          <%= password_field_tag 'password', nil %></p>
+        </fieldset>
+        <p><%= submit_tag 'Login' %></p>
+      <% end -%>
+  	</div>
+  </div>
+  <div id="signin_main">
+    <iframe src="/sessions/information.html" name="information" width="718" height="496">
+    </iframe>
+  </div>
 </div>

@@ -93,6 +93,7 @@ DcmgrGui::Application.routes.draw do
   #sessions
   get    'login' => 'sessions#new', :as => :login
   get    'logout' => 'sessions#destroy', :as => :logout
+  get    'sessions/information', :to  => 'sessions#information'
   resource :session, :only => [:new, :create, :destroy]
   
   #storage_pools

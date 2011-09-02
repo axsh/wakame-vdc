@@ -230,6 +230,51 @@ body{
 	background: url(../images/sidemenu_bottom.gif) no-repeat;
 }
 
+/**********  signin  **********/
+
+#content #signin h3 {
+  color: #5E5E5E;
+  font-family: "LucidaGrande","Myriad Pro";
+  font-size: 22px;
+  height: 34px;
+  line-height: 30px;
+  padding: 0 0 0 5px;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+#content #signin_sidemenu {
+  float: left;
+  text-align: left;
+  height: 496px;
+  width: 230px
+}
+
+#content #signin_form {
+  padding: 5px;
+  height: 496px;
+  width: 220px  
+}
+
+#content #signin_form fieldset div#error_box {
+  background-color: yellow; 
+  width: 200px; 
+  height: 12px;
+}
+
+#content #signin_form fieldset div#error_message {
+  padding-left: 10px;
+  color: red;
+}
+
+#content #signin_form p {
+  margin: 5px;
+  padding: 5px;
+  font-size: 15px;
+}
+
+#content #signin_main {
+  height: 496px;
+}
 
 /**********  mainarea  **********/
 
