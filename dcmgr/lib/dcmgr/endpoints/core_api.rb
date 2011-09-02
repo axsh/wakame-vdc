@@ -319,13 +319,18 @@ module Dcmgr
             when Models::Image::BOOT_DEV_SAN
               # create new volume from snapshot.
               snapshot_id = wmi.source[:snapshot_id]
-              vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
-
-              vol.boot_dev = 1
-              vol.instance = inst
-              vol.save
-              commit_transaction
               
+              begin
+                vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
+                vol.boot_dev = 1
+                vol.instance = inst
+                vol.save
+              rescue Models::Volume::DiskError => e
+                logger.error(e)
+                raise OutOfDiskSpace 
+              end
+
+              commit_transaction
               vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
               repository_address = Dcmgr::StorageService.repository_address(vs.destination_key)
               res = Dcmgr.messaging.submit("hva-handle.#{hostnode.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid, repository_address)
