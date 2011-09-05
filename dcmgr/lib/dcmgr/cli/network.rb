@@ -10,7 +10,7 @@ class Network < Base
   desc "add [options]", "Register a new network entry"
   method_option :uuid, :type => :string, :aliases => "-u", :desc => "UUID of the network"
   method_option :ipv4_gw, :type => :string, :aliases => "-g", :required => true, :desc => "Gateway address for IPv4 network"
-  method_option :prefix, :type => :numeric, :default=>24, :aliases => "-p", :desc => "IP network mask size (1 < prefix < 32)"
+  method_option :prefix, :type => :numeric, :required => true, :aliases => "-p", :desc => "IP network mask size (1 < prefix < 32)"
   method_option :domain, :type => :string, :aliases => "-m", :desc => "DNS domain name of the network"
   method_option :dns, :type => :string, :aliases => "-n", :desc => "IP address for DNS server of the network"
   method_option :dhcp, :type => :string, :aliases => "-c", :desc => "IP address for DHCP server of the network"
@@ -19,7 +19,7 @@ class Network < Base
   method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
   method_option :vlan_id, :type => :numeric, :default=>0, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
   method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
-  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :aliases => "-a", :desc => "The account ID to own this"
+  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :aliases => "-a", :desc => "The account ID to own this"
   def add
     #vlan_pk = if options[:vlan_id].to_i >= 0
     vlan_pk = if options[:vlan_id].to_i > 0
