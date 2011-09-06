@@ -115,6 +115,8 @@ function run_standalone() {
   [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
   /etc/init.d/rabbitmq-server start
 
+  [[ -x /etc/init.d/tgt ]] && { /etc/init.d/tgt restart; }
+
   dbnames="wakame_dcmgr wakame_dcmgr_gui"
   for dbname in ${dbnames}; do
     yes | mysqladmin -uroot drop   ${dbname}
