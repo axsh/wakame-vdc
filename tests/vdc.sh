@@ -275,15 +275,14 @@ case ${mode} in
     ;;
   standalone:ci)
     # disable shell exit on error which caused by test cases.
-    set +e
     (
+     set +e
      run_standalone
      run_standalone_integration_test
     )
     excode=$?
-    set -e
-    [ -z "${without_screen}" ] && {
-      [ -z "${without_quit_screen}" ] && screen -S vdc -X quit
+    [[ -z "${without_screen}" -a -z "${without_quit_screen}" ]] && {
+      screen -S vdc -X quit
     }
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
