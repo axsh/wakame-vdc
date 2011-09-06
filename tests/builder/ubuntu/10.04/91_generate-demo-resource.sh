@@ -22,8 +22,8 @@ kvm)
   vmimage_dist_ver=10.04
   vmimage_arch=i386
   vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
-  #vmimage_file=${vmimage_uuid}.raw
-  vmimage_file=${vmimage_uuid}.qcow2
+  vmimage_file=${vmimage_uuid}.raw
+  #vmimage_file=${vmimage_uuid}.qcow2
   vmimage_path=${local_store_path}/${vmimage_file}
   vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
   # volume_snapshot
