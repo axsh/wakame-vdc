@@ -24,6 +24,10 @@ kvm)
   vmimage_file=${vmimage_uuid}.qcow2
   vmimage_path=${local_store_path}/${vmimage_file}
   vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
+  # volume_snapshot
+  vmimage_snap_uuid=lucid1
+  vmimage_snap_file=snap-${vmimage_snap_uuid}.snap
+  vmimage_snap_path=${tmp_path}/snap/${account_id}/${vmimage_snap_file}
   ;;
 lxc)
   vmimage_uuid=lucid0
@@ -82,7 +86,7 @@ ${ipaddr})
   [ -d ${tmp_path}/snap  ] || mkdir ${tmp_path}/snap
   shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
 
-  [ -L ${vmimage_snap_path} ] || ln -s ${vmimage_path} ${vmimage_snap_path}
+  ln -fs ${vmimage_path} ${vmimage_snap_path}
  ;;
 *)
   shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool             -s $((1024 * 1024)) -i ${sta_server} -o zfs -n /export/home/wakame/vdc/sta/snap
