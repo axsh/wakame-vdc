@@ -75,7 +75,6 @@ ci_archive_dir=$prefix_path/../results
 #
 without_bundle_install=
 without_quit_screen=
-without_after_cleanup=
 without_screen=
 
 #
@@ -292,16 +291,14 @@ case ${mode} in
 esac
 
 #
-[ -z "${without_after_cleanup}" ] && {
-  [ -f "${tmp_path}/vdc-pid.log" ] && {
-    pids=$(cat ${tmp_path}/vdc-pid.log)
-    [ -z "${pids}" ] || {
-      for pid in ${pids}; do
-        ps -p ${pid} >/dev/null 2>&1 && kill -HUP  ${pid}
-      done
-    }
+[ -f "${tmp_path}/vdc-pid.log" ] && {
+  pids=$(cat ${tmp_path}/vdc-pid.log)
+  [ -z "${pids}" ] || {
+    for pid in ${pids}; do
+      ps -p ${pid} >/dev/null 2>&1 && kill -HUP  ${pid}
+    done
   }
-  cleanup
 }
+#cleanup
 
 exit $excode
