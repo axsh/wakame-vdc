@@ -13,6 +13,7 @@ account_id=${account_id:-"a-shpoolxx"}
 
 hypervisor=${hypervisor:?"hypervisor needs to be set"}
 vmimage_s3_prefix=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
+#vmimage_s3_prefix=file:///tmp
 
 case ${hypervisor} in
 kvm)
@@ -21,6 +22,7 @@ kvm)
   vmimage_dist_ver=10.04
   vmimage_arch=i386
   vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
+  #vmimage_file=${vmimage_uuid}.raw
   vmimage_file=${vmimage_uuid}.qcow2
   vmimage_path=${local_store_path}/${vmimage_file}
   vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
@@ -73,7 +75,8 @@ esac
 
 [ -f ${local_store_path}/${vmimage_file} ] || {
   cd ${local_store_path}
-  wget ${vmimage_s3}
+  [ -f ${vmimage_file}.gz ] || curl ${vmimage_s3} -o ${vmimage_file}.gz
+  echo gunzip ${vmimage_file}.gz ...
   gunzip ${vmimage_file}.gz
 }
 
@@ -82,8 +85,8 @@ shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id
 
 case ${sta_server} in
 ${ipaddr})
-  [ -d ${tmp_path}/xpool ] || mkdir ${tmp_path}/xpool
-  [ -d ${tmp_path}/snap  ] || mkdir ${tmp_path}/snap
+  [ -d ${tmp_path}/xpool/${account_id} ] || mkdir -p ${tmp_path}/xpool/${account_id}
+  [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
   shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
 
   ln -fs ${vmimage_path} ${vmimage_snap_path}
