@@ -20,7 +20,7 @@ module Dcmgr
         @iscsi_target = Dcmgr::Drivers::IscsiTarget.select_iscsi_target(iscsi_target)
       end
 
-      job :create_volume do
+      job :create_volume, proc {
         @volume_id = request.args[0]
         @destination = Dcmgr::StorageService.repository(request.args[1])
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
@@ -63,7 +63,10 @@ module Dcmgr
         opt = @iscsi_target.create(StaContext.new(self))
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :transport_information=>opt})
         logger.info("registered iscsi target: #{@volume_id}")
-      end
+      }, proc {
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+        logger.error("Failed to run create_volume iscsi target: #{@volume_id}")
+      }
 
       job :delete_volume do
         @volume_id = request.args[0]
@@ -74,7 +77,7 @@ module Dcmgr
           raise "#{@volume_id}: Invalid volume state: deleted"
         end
         if @volume[:state].to_s != 'deregistering'
-          logger.warn("#{@volume_id}: Unexpected volume state but try again: #{@volume[:state]}")
+          logger.warn("#{@volume_id}: Unexpected volume state but try destroy resource: #{@volume[:state]}")
         end
 
         # deregisterd iscsi target
@@ -112,7 +115,7 @@ module Dcmgr
         @volume = rpc.request('sta-collector', 'get_volume', @snapshot[:origin_volume_id])
 
         logger.info("create new snapshot: #{@snapshot_id}")
-        raise "Invalid volume state: #{@volume[:state]}" unless @volume[:state].to_s == 'available' || @volume[:state].to_s == 'attached'
+        raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
         
         begin 
           storage_service = Dcmgr::StorageService.new(@destination[:driver], {
