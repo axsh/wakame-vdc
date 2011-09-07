@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
+require 'rack/request'
+
 module Dcmgr::Rack
   # Rack middleware for logging each API request.
   class RequestLogger
     HTTP_X_VDC_REQUEST_ID='HTTP_X_VDC_REQUEST_ID'.freeze
     HEADER_X_VDC_REQUEST_ID='X-VDC-Request-ID'.freeze
-    
+    RACK_REQUEST_LOG_KEY='vdc.request_log'.freeze
+      
     def initialize(app, with_header=true)
       raise TypeError unless app.is_a?(Dcmgr::Endpoints::CoreAPI)
       @app = app
@@ -17,8 +20,9 @@ module Dcmgr::Rack
     end
     
     def _call(env)
-      @log = Dcmgr::Models::RequestLog.new
-      log_env(env)
+      request = ::Rack::Request.new(env)
+      env[RACK_REQUEST_LOG_KEY] = @log = Dcmgr::Models::RequestLog.new
+      log_env(request)
       begin
         ret = @app.call(env)
         @log.response_status = ret[0]
@@ -42,8 +46,9 @@ module Dcmgr::Rack
 
     private
     # set common values in Rack env.
-    # @params [Hash] env
-    def log_env(env)
+    # @params [Rack::Request] request
+    def log_env(request)
+      env = request.env
       #@log.frontend_system_id = env[Dcmgr::Endpoints::RACK_FRONTEND_SYSTEM_ID].to_s
       if env[Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID].nil? || env[Dcmgr::Endpoints::HTTP_X_VDC_ACCOUNT_UUID] == ''
         @log.account_id = 'nil'
@@ -53,7 +58,7 @@ module Dcmgr::Rack
       @log.requester_token = env[Dcmgr::Endpoints::HTTP_X_VDC_REQUESTER_TOKEN]
       @log.request_method = env['REQUEST_METHOD']
       @log.api_path = env['PATH_INFO']
-      @log.params = ''
+      @log.params = request.params
     end
 
   end

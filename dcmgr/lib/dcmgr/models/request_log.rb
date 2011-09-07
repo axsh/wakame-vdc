@@ -21,6 +21,9 @@ module Dcmgr::Models
       Fixnum :responded_at_usec, :null=>false, :unsigned=>true
     end
 
+    plugin :serialization
+    serialize_attributes :yaml, :params
+
     def after_initialize
       super
       self[:request_id] ||= Isono::Util.gen_id
