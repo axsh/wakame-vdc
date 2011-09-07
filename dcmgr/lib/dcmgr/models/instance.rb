@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Models
-  # Model class which represents Virtual Machine or Isolated Instace
-  # running on HostPool.
-  #
-  # @exmaple Create new instance
-  #  hp = HostPool['hp-xxxxx']
-  #  inst = hp.create_instance()
+  # Model class for running virtual instance.
   class Instance < AccountResource
     taggable 'i'
 
     inheritable_schema do
-      Fixnum :host_pool_id, :null=>false
+      Fixnum :host_pool_id, :null=>true
       Fixnum :image_id, :null=>false
       Fixnum :instance_spec_id, :null=>false
-      String :state, :size=>20, :null=>false, :default=>:init.to_s
-      String :status, :size=>20, :null=>false, :default=>:init.to_s
+      String :state, :null=>false, :default=>:init.to_s
+      String :status, :null=>false, :default=>:init.to_s
       String :hostname, :null=>false, :size=>32
       # TODO: remove ssh_key_pair_id column
       String :ssh_key_pair_id
@@ -27,10 +22,12 @@ module Dcmgr::Models
       Text :user_data, :null=>false, :default=>''
       Text :runtime_config, :null=>false, :default=>''
       Text :ssh_key_data, :null=>true
+      Text :request_params, :null=>false
 
       Time :terminated_at
       index :state
       index :terminated_at
+      index :host_pool_id
     end
     with_timestamps
     
@@ -67,6 +64,7 @@ module Dcmgr::Models
     serialize_attributes :yaml, :runtime_config
     # equal to SshKeyPair#to_hash
     serialize_attributes :yaml, :ssh_key_data
+    serialize_attributes :yaml, :request_params
 
     module ValidationMethods
       def self.hostname_uniqueness(account_id, hostname)
@@ -104,17 +102,19 @@ module Dcmgr::Models
       end
       
       # check runtime_config column
-      case self.hypervisor
-      when HostPool::HYPERVISOR_KVM
-        r1 = self.runtime_config
-        self.host_pool.instances.each { |i|
-          next true if i.id == self.id
-          r2 = i.runtime_config
-          unless r1[:vnc_port] != r2[:vnc_port] && r1[:telnet_port] != r2[:telnet_port]
-            errors.add(:runtime_config, "#{self.canonical_uuid}.runtime_config conflicted with #{i.canonical_uuid}")
-            break
-          end
-        }
+      if self.host_pool
+        case self.hypervisor
+        when HostPool::HYPERVISOR_KVM
+          r1 = self.runtime_config
+          self.host_pool.instances.each { |i|
+            next true if i.id == self.id
+            r2 = i.runtime_config
+            unless r1[:vnc_port] != r2[:vnc_port] && r1[:telnet_port] != r2[:telnet_port]
+              errors.add(:runtime_config, "#{self.canonical_uuid}.runtime_config conflicted with #{i.canonical_uuid}")
+              break
+            end
+          }
+        end
       end
     end
 
@@ -179,12 +179,12 @@ module Dcmgr::Models
     def to_hash
       h = super
       h.merge!({:user_data => user_data.to_s, # Sequel::BLOB -> String
-                    :runtime_config => self.runtime_config, # yaml -> hash
-                    :image=>image.to_hash,
-                    :host_pool=>host_pool.to_hash,
-                    :instance_nics=>instance_nic.map {|n| n.to_hash },
-                    :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
-                    :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
+                 :runtime_config => self.runtime_config, # yaml -> hash
+                 :image=>image.to_hash,
+                 :host_pool=> (host_pool.nil? ? nil : host_pool.to_hash),
+                 :instance_nics=>instance_nic.map {|n| n.to_hash },
+                 :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
+                 :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
               })
       h.merge!({:instance_spec=>instance_spec.to_hash}) unless instance_spec.nil?
       h[:volume]={}
@@ -387,6 +387,28 @@ module Dcmgr::Models
       self.ssh_key_data = ssh_key_pair.to_hash
       # TODO: remove ssh_key_pair_id column
       self.ssh_key_pair_id = ssh_key_pair.canonical_uuid
+    end
+
+
+    # Factory method for Models::Instance object.
+    # This method helps to set association values have to be
+    # set mandatry until initial save to the database.
+    def self.entry_new(account, image, spec, params, &blk)
+      raise ArgumentError unless account.is_a?(Account)
+      raise ArgumentError unless image.is_a?(Image)
+      raise ArgumentError unless spec.is_a?(InstanceSpec)
+      raise ArgumentError unless params.is_a?(::Hash)
+
+      i = self.new &blk
+      i.account_id = account.canonical_uuid
+      i.image = image
+      i.instance_spec = spec
+      i.cpu_cores = spec.cpu_cores
+      i.memory_size = spec.memory_size
+      i.quota_weight = spec.quota_weight
+      i.request_params = params
+
+      i
     end
     
   end

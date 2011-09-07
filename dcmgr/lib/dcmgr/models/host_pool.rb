@@ -70,35 +70,6 @@ module Dcmgr::Models
       !self.instances_dataset.runnings.empty?
     end
     
-    # Factory method for Instance model to run on this HostPool.
-    # @param [Models::Account] account
-    # @param [Models::Image] image
-    # @param [Models::InstanceSpec] spec
-    # @param [Models::Network] network
-    # @return [Models::Instance] created new Instance object.
-    def create_instance(account, image, spec, network, &blk)
-      raise ArgumentError unless image.is_a?(Image)
-      raise ArgumentError unless spec.is_a?(InstanceSpec)
-      raise ArgumentError unless network.is_a?(Network)
-      i = Instance.new &blk
-      i.account_id = account.canonical_uuid
-      i.image = image
-      i.instance_spec = spec
-      i.cpu_cores = spec.cpu_cores
-      i.memory_size = spec.memory_size
-      i.quota_weight = spec.quota_weight
-      i.host_pool = self
-      i.save
-
-      vnic = i.add_nic(network)
-      IpLease.lease(vnic, network)
-      
-      #Lease the nat ip in case there is an outside network mapped
-      nat_network = Network.find(:id => vnic[:nat_network_id])
-      IpLease.lease(vnic,nat_network) unless nat_network.nil? 
-      i
-    end
-
     def status
       node.nil? ? :offline : node.state
     end

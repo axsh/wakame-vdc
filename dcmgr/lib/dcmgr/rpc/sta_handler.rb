@@ -24,7 +24,7 @@ module Dcmgr
         @volume_id = request.args[0]
         @destination = Dcmgr::StorageService.repository(request.args[1])
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
-        raise "Invalid volume state: #{@volume[:state]}" unless @volume[:state].to_s == 'registering'
+        raise "Invalid volume state: #{@volume[:state]}" unless @volume[:state].to_s == 'pending'
 
         snapshot_file = nil 
         unless @volume[:snapshot_id].nil?

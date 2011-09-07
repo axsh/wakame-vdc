@@ -53,17 +53,6 @@ module Dcmgr::Models
       }
     end
 
-    # def find_private_pool(account_id, uuid)
-    #   sp = self.dataset.where(:account_id=>account_id).where(:uuid=>uuid)
-    # end
-
-    def create_volume(account_id, size, snapshot_id=nil)
-      v = Volume.create(:account_id => account_id,
-                        :storage_pool_id => self.id,
-                        :snapshot_id => snapshot_id,
-                        :size =>size)
-    end
-
     # Show status of the agent.
     def status
       node.nil? ? :offline : node.state

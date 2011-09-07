@@ -196,4 +196,17 @@ module Dcmgr
   end
   
   autoload :StorageService, 'dcmgr/storage_service'
+
+  require 'dcmgr/scheduler'
+  module Scheduler
+    module StorageNode
+      autoload :FindFirst, 'dcmgr/scheduler/storage_node/find_first'
+    end
+    module HostNode
+      autoload :FindFirst, 'dcmgr/scheduler/host_node/find_first'
+    end
+    module Network
+      autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'
+    end
+  end
 end

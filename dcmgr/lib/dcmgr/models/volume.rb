@@ -22,9 +22,9 @@ module Dcmgr::Models
     STATE_TYPE_DELETED = "deleted"
 
     inheritable_schema do
-      Fixnum :storage_pool_id, :null=>false
-      String :status, :null=>false, :default=>STATUS_TYPE_REGISTERING
-      String :state, :null=>false, :default=>STATE_TYPE_REGISTERING
+      Fixnum :storage_pool_id, :null=>true
+      String :status, :null=>false, :default=>'initializing'
+      String :state, :null=>false, :default=>'initialzing'
       Fixnum :size, :null=>false
       Fixnum :instance_id
       Fixnum :boot_dev, :null=>false, :default=>0
@@ -34,6 +34,7 @@ module Dcmgr::Models
       String :export_path, :null=>false
 #      String :intermediate_path, :null=>false
       Text :transport_information
+      Text :request_params, :null=>false, :default=>''
       Time :deleted_at
       Time :attached_at
       Time :detached_at
@@ -45,7 +46,7 @@ module Dcmgr::Models
     end
     with_timestamps
 
-    many_to_one :storage_pool
+    many_to_one :storage_pool, :after_set=>:validate_storage_pool_assigned
     many_to_one :instance
 
     plugin ArchiveChangedColumn, :histories
@@ -65,25 +66,33 @@ module Dcmgr::Models
     # iscsi:
     # {:iqn=>'iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc', :lun=>0}
     plugin :serialization, :yaml, :transport_information
+    plugin :serialization, :yaml, :request_params
     
-    class DiskError < RuntimeError; end
+    class CapacityError < RuntimeError; end
     class RequestError < RuntimeError; end
 
-    def before_create
-      sp = self.storage_pool
+    def validate_storage_pool_assigned(sp)
+      unless sp.is_a?(StoragePool)
+        raise "unknown class: #{sp.class}"
+      end
       volume_size = sp.volumes_dataset.lives.sum(:size).to_i
       # check if the sum of available volume and new volume is under
       # the limit of offering capacity.
       total_size = sp.offering_disk_space - volume_size.to_i
       if self.size > total_size
-        raise DiskError, "out of disk space"
+        raise CapacityError, "Allocation exceeds storage pool blank size: #{}"
       end
-
-      # TODO: Here may not be the right place for capacity validation.
-      per_account_totoal = self.class.filter(:account_id=>self.account_id).lives.sum(:size).to_i
-      if self.account.quota.volume_total_size < per_account_totoal + self.size.to_i
-        raise DiskError, "Out of account quota: #{self.account.quota.volume_total_size}, #{self.size.to_i}, #{per_account_totoal}"
+    end
+    
+    def validate
+      if new?
+        # TODO: Here may not be the right place for capacity validation.
+        per_account_total = self.class.filter(:account_id=>self.account_id).lives.sum(:size).to_i
+        if self.account.quota.volume_total_size < per_account_total + self.size.to_i
+          raise CapacityError, "Allocation exceeds account's quota: #{self.account.quota.volume_total_size}, #{self.size.to_i}, #{per_account_total}"
+        end
       end
+      
       super
     end
 
@@ -161,5 +170,26 @@ module Dcmgr::Models
                                  :origin_volume_id=>self.canonical_uuid,
                                  :size=>self.size)
     end
+
+    # override Sequel::Model#_delete not to delete rows but to set
+    # delete flags.
+    def _delete
+      self.terminated_at ||= Time.now
+      self.state = :deleted if self.state != :deleted
+      self.status = :offline if self.status != :offline
+      self.save
+    end
+
+    def snapshot
+      VolumeSnapshot[self.snapshot_id]
+    end
+
+    def self.entry_new(account, params, &blk)
+      v = self.new &blk
+      v.account_id = account.canonical_uuid
+      v.request_params = params
+      v
+    end
+      
   end
 end

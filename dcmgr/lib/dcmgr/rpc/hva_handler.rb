@@ -139,7 +139,7 @@ module Dcmgr
         logger.info("Booting #{@inst_id}")
 
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless %w(init failingover).member?(@inst[:state].to_s)
+        raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
         # select hypervisor :kvm, :lxc
         select_hypervisor
@@ -172,7 +172,7 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         logger.info("Booting #{@inst_id}")
-        raise "Invalid instance state: #{@inst[:state]}" unless %w(init failingover).member?(@inst[:state].to_s)
+        raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
         # select hypervisor :kvm, :lxc
         select_hypervisor

@@ -128,12 +128,11 @@ module Dcmgr
         end
       end
 
-      def create_volume_from_snapshot(account_id, snapshot_id)
-        vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
+      def find_volume_snapshot(snapshot_id)
+        vs = Models::VolumeSnapshot[snapshot_id]
         raise UnknownVolumeSnapshot if vs.nil?
         raise InvalidVolumeState unless vs.state.to_s == 'available'
-
-        vs.create_volume(account_id)
+        vs
       end
         
       def examine_owner(account_resource)
@@ -219,135 +218,102 @@ module Dcmgr
             wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
             spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
-            # look up params[:host_id] in following order:
-            # 1. assume the host pool name.
-            # 2. assume hp-xxxxx or tag-xxxxx style uuid
-            # 3. assign default shared host pool.
-            params[:host_id] ||= params[:host_pool_id]
-            hostnode = pool = nil
-            if params[:host_id]
-              # TODO: smart way to preload model libs.
-              Models::HostPool; Tags::HostPool;
-              if pool = Tags::HostPool.find(:account_id=>@account.canonical_uuid,
-                                            :name=>params[:host_id])
-                # Pattern 1st
-              elsif hostnode = Models::Taggable.find(params[:host_id])
-                # Pattern 2nd
-                case hostnode
-                when Models::HostPool
-                when Tags::HostPool
-                  hostnode = hostnode.pick(spec)
+            instance = Models::Instance.entry_new(@account, wmi, spec, params.dup) do |i|
+              # Set common parameters from user's request.
+              # TODO: do not use rand() to decide vnc port.
+              i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
+              i.user_data = params[:user_data] || ''
+              # set only when not nil as the table column has not null
+              # condition.
+              if params[:hostname]
+                if Models::Instance::ValidationMethods.hostname_uniqueness(@account.canonical_uuid,
+                                                                           params[:hostname])
+                  i.hostname = params[:hostname]
                 else
-                  raise UnknownHostPool, "Could not find the host: #{params[:host_id]}"
+                  raise DuplicateHostname
                 end
               end
-            else
-              # Pattern 3rd
-              pool = Tags::HostPool[Dcmgr.conf.default_shared_host_pool]
-              hostnode = pool.pick(spec)
-            end
-            raise UnknownHostPool, "Could not find host pool: #{params[:host_id]}" if hostnode.nil?
-            raise OutOfHostCapacity unless hostnode.check_capacity(spec)
 
-            # look up params[:network_id] in following order:
-            # 1. assume the network pool name.
-            # 2. assume nw-xxxxx or tag-xxxxx style uuid
-            # 3. assign default shared network pool.
-            # then randomly choose one network from the pool object.
-            network = pool = nil
-            if params[:network_id]
-              # TODO: smart way to preload model libs.
-              Models::Network; Tags::NetworkPool;
-              if pool = Tags::NetworkPool.find(:account_id=>@account.canonical_uuid,
-                                               :name=>params[:network_id])
-                # Pattern 1st
-                network = pool.pick
-              elsif network = Models::Taggable.find(params[:network_id])
-                # Pattern 2nd
-                case network
-                when Models::Network
-                when Tags::NetworkPool
-                  network = network.pick
+              if params[:ssh_key]
+                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,
+                                                       :name=>params[:ssh_key])
+                if ssh_key_pair.nil?
+                  raise UnknownSshKeyPair, "#{params[:ssh_key]}"
                 else
-                  raise "Unknown network uuid: #{params[:network_id]}"
+                  i.set_ssh_key_pair(ssh_key_pair)
                 end
               end
-            else
-              # Pattern 3rd
-              pool = Tags::NetworkPool[Dcmgr.conf.default_shared_network_pool]
-              network = pool.pick
-            end
-            raise "Can not find the network" if network.nil?
-            raise "Out of IP addresses in the network" unless network.available_ip_nums > 0
-            
-            begin
-              inst = hostnode.create_instance(@account, wmi, spec, network) do |i|
-                # TODO: do not use rand() to decide vnc port.
-                i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
-                i.user_data = params[:user_data] || ''
-                # set only when not nil as the table column has not null
-                # condition.
-                if params[:hostname]
-                  if Models::Instance::ValidationMethods.hostname_uniqueness(@account.canonical_uuid,
-                                                                             params[:hostname])
-                    i.hostname = params[:hostname]
-                  else
-                    raise DuplicateHostname
-                  end
-                end
 
-                if params[:ssh_key]
-                  ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,
-                                                         :name=>params[:ssh_key])
-                  if ssh_key_pair.nil?
-                    raise UnknownSshKeyPair, "#{params[:ssh_key]}"
-                  else
-                    i.set_ssh_key_pair(ssh_key_pair)
-                  end
-                end
-
-                if params[:ha_enabled] == 'true'
-                  i.ha_enabled = 1
-                end
+              if params[:ha_enabled] == 'true'
+                i.ha_enabled = 1
               end
-            rescue Models::Instance::HostError => e
-              logger.error(e)
-              raise OutOfHostCapacity
             end
+            instance.save
 
             unless params[:nf_group].is_a?(Array)
               params[:nf_group] = ['default']
             end
-            inst.join_nfgroup_by_name(@account.canonical_uuid, params[:nf_group])
+            instance.join_nfgroup_by_name(@account.canonical_uuid, params[:nf_group])
+
+            instance.state = :scheduling
+            instance.save
+            
+            begin
+              Scheduler.host_node.schedule(instance)
+              Scheduler.network.schedule(instance)
+              instance.save
+            rescue Scheduler::SchedulerError
+              instance.delete
+              raise APIError, "Failed to schedule HostNode or Network"
+            end
+            
+            instance.state = :pending
+            instance.save
 
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
               # create new volume from snapshot.
               snapshot_id = wmi.source[:snapshot_id]
+              vs = find_volume_snapshot(snapshot_id)
               
-              begin
-                vol = create_volume_from_snapshot(@account.canonical_uuid, snapshot_id)
-                vol.boot_dev = 1
-                vol.instance = inst
+              vol = Models::Volume.entry_new(@account.canonical_uuid, params.dup) do |v|
+                if vs
+                  v.snapshot_id = vs.canonical_uuid
+                end
+                v.boot_dev = 1
+              end
+              # assign instance -> volume
+              vol.instance = instance
+              vol.state = :scheduling
+              vol.save
+
+              begin 
+                Scheduler.storage_node.schedule(vol)
                 vol.save
-              rescue Models::Volume::DiskError => e
-                logger.error(e)
-                raise OutOfDiskSpace 
+              rescue Scheduler::SchedulerError
+                instance.delete
+                vol.delete
+                raise APIError, "Failed to schedule storage node."
               end
 
+              vol.state = :pending
+              vol.save
+              
               commit_transaction
-              vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
+              
               repository_address = Dcmgr::StorageService.repository_address(vs.destination_key)
-              res = Dcmgr.messaging.submit("hva-handle.#{hostnode.node_id}", 'run_vol_store', inst.canonical_uuid, vol.canonical_uuid, repository_address)
+              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_pool.node_id}",
+                                           'run_vol_store', instance.canonical_uuid, vol.canonical_uuid, repository_address)
             when Models::Image::BOOT_DEV_LOCAL
               commit_transaction
-              res = Dcmgr.messaging.submit("hva-handle.#{hostnode.node_id}", 'run_local_store', inst.canonical_uuid)
+              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_pool.node_id}",
+                                           'run_local_store', instance.canonical_uuid)
             else
               raise "Unknown boot type"
             end
-            Dcmgr.messaging.event_publish('instance.scheduled', :args=>[inst.canonical_uuid])
+            Dcmgr.messaging.event_publish('instance.scheduled', :args=>[instance.canonical_uuid])
             
-            response_to(inst.to_api_document)
+            response_to(instance.to_api_document)
           end
         end
 
@@ -480,11 +446,10 @@ module Dcmgr
           # params storage_pool_id, string, optional
           control do
             Models::Volume.lock!
+            sp = vs = vol = nil
+            # input parameter validation
             if params[:snapshot_id]
-              v = create_volume_from_snapshot(@account.canonical_uuid, params[:snapshot_id])
-              sp = v.storage_pool
-              vs = find_by_uuid(:VolumeSnapshot, params[:snapshot_id])
-              repository_address = Dcmgr::StorageService.repository_address(vs.destination_key)
+              vs = find_volume_snapshot(params[:snapshot_id])
             elsif params[:volume_size]
               if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
                   !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
@@ -492,25 +457,79 @@ module Dcmgr
               end
               if params[:storage_pool_id]
                 sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
+                raise UnknownStoragePool if sp.nil?
                 raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
-              end
-              raise UnknownStoragePool if sp.nil?
-              begin
-                v = sp.create_volume(@account.canonical_uuid, params[:volume_size])
-              rescue Models::Volume::DiskError => e
-                logger.error(e)
-                raise OutOfDiskSpace
-              rescue Sequel::DatabaseError => e
-                logger.error(e)
-                raise DatabaseError
               end
             else
               raise UndefinedRequiredParameter
             end
 
-            commit_transaction
-            res = Dcmgr.messaging.submit("sta-handle.#{sp.values[:node_id]}", 'create_volume', v.canonical_uuid, repository_address)
-            response_to(v.to_api_document)
+            vol = Models::Volume.entry_new(@account, params.dup) do |v|
+              if vs
+                v.snapshot_id = vs.canonical_uuid
+              end
+              if params[:volume_size]
+                v.size = params[:volume_size].to_i
+              end
+            end
+            vol.save
+
+            if sp.nil?
+              # going to storage node scheduling mode.
+              vol.state = :scheduling
+              vol.save
+
+              begin
+                e = nil
+                begin
+                  Scheduler.storage_node.schedule(vol)
+                  vol.save
+                rescue Scheduler::SchedulerError => e
+                  raise APIError, "Could not be found storage server for new volume."
+                rescue Models::Volume::CapacityError => e
+                  raise OutOfDiskSpace
+                end
+              ensure
+                if e
+                  logger.error(e)
+                  vol.delete
+                end
+              end
+
+              vol.state = :pending
+              vol.save
+              
+              commit_transaction
+              
+              repository_address = nil
+              if vol.snapshot
+                repository_address = Dcmgr::StorageService.repository_address(vol.snapshot.destination_key)
+              end
+              
+              res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_pool.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
+            else
+              begin
+                vol.storage_pool = sp
+                vol.save
+              rescue Models::Volume::CapacityError => e
+                logger.error(e)
+                raise OutOfDiskSpace
+              end
+
+              vol.state = :pending
+              vol.save
+              
+              commit_transaction
+              
+              repository_address = nil
+              if vol.snapshot
+                repository_address = Dcmgr::StorageService.repository_address(vol.snapshot.destination_key)
+              end
+              
+              res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_pool.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
+            end
+
+            response_to(vol.to_api_document)
           end
         end
 
