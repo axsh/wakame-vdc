@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-require 'statemachine'
 
 module Dcmgr::Models
   class Volume < AccountResource

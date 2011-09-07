@@ -133,12 +133,6 @@ module Dcmgr
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
   end
 
-  module Stm
-    autoload :VolumeContext, 'dcmgr/stm/volume_context'
-    autoload :SnapshotContext, 'dcmgr/stm/snapshot_context'
-    autoload :Instance, 'dcmgr/stm/instance'
-  end
-
   module Helpers
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
