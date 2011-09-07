@@ -559,10 +559,9 @@ module Dcmgr
               raise InvalidDeleteRequest
             end
             raise UnknownVolume if v.nil?
-            sp = v.storage_pool
 
             commit_transaction
-            res = Dcmgr.messaging.submit("sta-handle.#{sp.values[:node_id]}", 'delete_volume', v.canonical_uuid)
+            res = Dcmgr.messaging.submit("sta-handle.#{v.storage_pool.node_id}", 'delete_volume', v.canonical_uuid)
             response_to([v.canonical_uuid])
           end
         end
