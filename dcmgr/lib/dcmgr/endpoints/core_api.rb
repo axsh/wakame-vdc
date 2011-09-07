@@ -118,6 +118,14 @@ module Dcmgr
       # when matches the Exception class exactly. I expect to match
       # whole subclasses of APIError so that override handle_exception!().
       def handle_exception!(boom)
+        # Translate common non-APIError to APIError
+        boom = case boom
+               when Sequel::DatabaseError
+                   DatabaseError.new
+               else
+                   boom
+               end
+        
         if boom.kind_of?(APIError)
           @env['sinatra.error'] = boom
           Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
