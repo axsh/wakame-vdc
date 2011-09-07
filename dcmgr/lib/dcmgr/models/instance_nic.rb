@@ -10,8 +10,10 @@ module Dcmgr::Models
       Fixnum :network_id, :null=>false
       Fixnum :nat_network_id
       String :mac_addr, :null=>false, :size=>12
-      
+      Time   :deleted_at
+
       index :mac_addr
+      index :deleted_at
     end
     with_timestamps
 
@@ -30,6 +32,12 @@ module Dcmgr::Models
       h = values.dup.merge(super)
       h.delete(:instance_id)
       h
+    end
+
+    #Override the delete method to keep the row and just mark it as deleted
+    def _delete
+      self.deleted_at ||= Time.now
+      self.save
     end
 
     def before_validation
