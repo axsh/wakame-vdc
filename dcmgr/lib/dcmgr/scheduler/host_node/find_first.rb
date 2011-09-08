@@ -4,9 +4,9 @@ module Dcmgr; module Scheduler; module HostNode
   class FindFirst < HostNodeScheduler
 
     def schedule(instance)
-      host_node = Models::HostPool.first
+      host_node = Models::HostNode.first
       raise HostNodeScheduleError if host_node.nil?
-      instance.host_pool = host_node
+      instance.host_node = host_node
     end
   end
 end; end; end

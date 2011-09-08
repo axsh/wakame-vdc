@@ -45,7 +45,7 @@ module Dcmgr
 #        sh("stmfadm add-hg-member -g %s %s", [host_group, target_node])
 
         # zvol has already created by backing storep
-        zvol_path = "/dev/zvol/rdsk/#{@volume[:storage_pool][:export_path]}/#{@volume[:uuid]}"
+        zvol_path = "/dev/zvol/rdsk/#{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}"
 
         # logical_unit
         logical_unit = sh("sbdadm create-lu %s | /usr/gnu/bin/grep -w %s", [zvol_path, zvol_path])

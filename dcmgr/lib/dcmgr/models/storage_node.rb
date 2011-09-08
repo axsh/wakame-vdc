@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+require 'isono/models/node_state'
+
 module Dcmgr::Models
-  class StoragePool < AccountResource
+  class StorageNode < AccountResource
     taggable 'sp'
 
     BACKINGSTORE_ZFS = 'zfs'

@@ -9,12 +9,12 @@ module Dcmgr
       def create(ctx)
         @volume    = ctx.volume
         @volume_id = ctx.volume_id
-        sh("/usr/sbin/zfs shareiscsi=on %s/%s", [@volume[:storage_pool][:export_path], @volume[:uuid]])
+        sh("/usr/sbin/zfs shareiscsi=on %s/%s", [@volume[:storage_node][:export_path], @volume[:uuid]])
 
         if $?.exitstatus != 0
           raise "failed iscsi target request: #{@volume_id}"
         end
-        il = sh("iscsitadm list target -v %s", ["#{@volume[:storage_pool][:export_path]}/#{@volume[:uuid]}"])
+        il = sh("iscsitadm list target -v %s", ["#{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}"])
         if $?.exitstatus != 0
           raise "iscsi target has not be created #{@volume_id}"
         end
@@ -25,7 +25,7 @@ module Dcmgr
 
       def delete(ctx)
         @volume = ctx.volume
-        sh("/usr/sbin/zfs shareiscsi=off %s/%s", [@volume[:storage_pool][:export_path], @volume[:uuid]])
+        sh("/usr/sbin/zfs shareiscsi=off %s/%s", [@volume[:storage_node][:export_path], @volume[:uuid]])
       end
     end
   end

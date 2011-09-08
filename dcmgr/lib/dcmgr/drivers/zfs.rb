@@ -14,7 +14,7 @@ module Dcmgr
         @destination = ctx.destination
 
         ### sta_handler :create_volume
-        vol_path = "#{@volume[:storage_pool][:export_path]}/#{@volume[:uuid]}"
+        vol_path = "#{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}"
         sh("/usr/sbin/zfs list %s", [File.dirname(vol_path)])
         if $?.exitstatus != 0
           # create parent filesystem
@@ -58,7 +58,7 @@ module Dcmgr
 
       def delete_volume(ctx)
         @volume = ctx.volume
-        sh("/usr/sbin/zfs destroy %s", ["#{@volume[:storage_pool][:export_path]}/#{@volume[:uuid]}"])
+        sh("/usr/sbin/zfs destroy %s", ["#{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}"])
       end
 
       def create_snapshot(ctx, zsnap_file)
@@ -67,7 +67,7 @@ module Dcmgr
         @snapshot    = ctx.snapshot
         @volume      = ctx.volume
 
-        vol_path = "#{@volume[:storage_pool][:export_path]}/#{@volume[:uuid]}"
+        vol_path = "#{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}"
         sh("/usr/sbin/zfs snapshot %s@%s", [vol_path, @snapshot[:uuid]])
         sh("/usr/sbin/zfs send %s@%s > %s", [vol_path, @snapshot[:uuid], zsnap_file])
         sh("/usr/sbin/zfs destroy %s@%s", [vol_path, @snapshot[:uuid]])

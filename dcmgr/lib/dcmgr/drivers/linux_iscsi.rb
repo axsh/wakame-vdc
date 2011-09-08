@@ -13,7 +13,7 @@ module Dcmgr
         @node      = ctx.node
 
         iqn_prefix = "iqn.2010-09.jp.wakame"
-        vol_path = File.join(@volume[:storage_pool][:export_path], @volume[:account_id], @volume[:uuid]) 
+        vol_path = File.join(@volume[:storage_node][:export_path], @volume[:account_id], @volume[:uuid]) 
         
         iscsi = {}
         iscsi[:iqn] = "#{iqn_prefix}:#{@volume[:account_id]}.#{@volume[:uuid]}"

@@ -9,14 +9,14 @@ class Storage < Base
   include Dcmgr::Models
   
   desc "add NODE_ID [options]", "Register a new storage node"
-  method_option :uuid, :type => :string, :aliases => "-u", :desc => "The uuid for the new storage pool"
+  method_option :uuid, :type => :string, :aliases => "-u", :desc => "The uuid for the new storage node"
   method_option :base_path, :type => :string, :aliases => "-b", :required => true, :desc => "Base path to store volume files"
   method_option :snapshot_base_path, :type => :string, :aliases => "-n", :required => true, :desc => "Base path to store snapshot files"
   method_option :disk_space, :type => :numeric, :aliases => "-s", :required => true, :desc => "Amount of disk size to be exported (in MB)"
   method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force new entry creation"
   method_option :transport_type, :type => :string, :aliases => "-t", :default=>'iscsi', :desc => "Transport type [iscsi]"
   method_option :ipaddr, :type => :string, :aliases => "-i", :required=>true, :desc => "IP address of transport target"
-  method_option :storage_type, :type => :string, :aliases => "-o", :default=>'zfs', :desc => "Storage type [#{StoragePool::SUPPORTED_BACKINGSTORE.join(', ')}]"
+  method_option :storage_type, :type => :string, :aliases => "-o", :default=>'zfs', :desc => "Storage type [#{StorageNode::SUPPORTED_BACKINGSTORE.join(', ')}]"
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :aliases => "-a", :desc => "The account ID to own this"
   def add(node_id)
     unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
@@ -34,18 +34,18 @@ class Storage < Base
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     
-    puts super(StoragePool,fields)
+    puts super(StorageNode,fields)
   end
 
   desc "del UUID", "Deregister a storage node"
   def del(uuid)
-    super(StoragePool,uuid)
+    super(StorageNode,uuid)
   end
 
   desc "show [UUID]", "Show list of storage nodes and details"
   def show(uuid=nil)
     if uuid
-      st = StoragePool[uuid] || UnknownUUIDError.raise(uuid)
+      st = StorageNode[uuid] || UnknownUUIDError.raise(uuid)
       puts ERB.new(<<__END, nil, '-').result(binding)
 UUID:
   <%= st.canonical_uuid %>
@@ -66,7 +66,7 @@ Snapshot base path:
 __END
     else
       cond = {}
-      all = StoragePool.filter(cond).all
+      all = StorageNode.filter(cond).all
       puts ERB.new(<<__END, nil, '-').result(binding)
 <%- all.each { |row| -%>
 <%= "%-15s %-20s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>

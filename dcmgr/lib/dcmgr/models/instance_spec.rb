@@ -26,7 +26,7 @@ module Dcmgr::Models
     def before_validate
       default_config =
         case self.hypervisor
-        when HostPool::HYPERVISOR_KVM
+        when HostNode::HYPERVISOR_KVM
           {:block_driver=>'virtio', :nic_driver=>'virtio'}
         end
 

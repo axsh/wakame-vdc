@@ -32,12 +32,12 @@ module Dcmgr::Tags
   
   class HostPool < Models::Tag
     def accept_mapping?(to)
-      to.is_a?(Dcmgr::Models::HostPool)
+      to.is_a?(Dcmgr::Models::HostNode)
     end
 
     def pick(spec)
       mapped_uuids.map { |t|
-        Dcmgr::Models::HostPool[t.uuid]
+        Dcmgr::Models::HostNode[t.uuid]
       }.find_all { |h|
         h.check_capacity(spec)
       }.sort_by { |h|
@@ -48,7 +48,7 @@ module Dcmgr::Tags
   
   class StoragePool < Models::Tag
     def accept_mapping?(to)
-      to.is_a?(Dcmgr::Models::StoragePool)
+      to.is_a?(Dcmgr::Models::StorageNode)
     end
   end
 end

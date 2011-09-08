@@ -21,7 +21,7 @@ module Dcmgr::Models
     STATE_TYPE_DELETED = "deleted"
 
     inheritable_schema do
-      Fixnum :storage_pool_id, :null=>true
+      Fixnum :storage_node_id, :null=>true
       String :status, :null=>false, :default=>'initializing'
       String :state, :null=>false, :default=>'initialzing'
       Fixnum :size, :null=>false
@@ -38,14 +38,14 @@ module Dcmgr::Models
       Time :attached_at
       Time :detached_at
 
-      index :storage_pool_id
+      index :storage_node_id
       index :instance_id
       index :snapshot_id
       index :deleted_at
     end
     with_timestamps
 
-    many_to_one :storage_pool, :after_set=>:validate_storage_pool_assigned
+    many_to_one :storage_node, :after_set=>:validate_storage_node_assigned
     many_to_one :instance
 
     plugin ArchiveChangedColumn, :histories
@@ -70,8 +70,8 @@ module Dcmgr::Models
     class CapacityError < RuntimeError; end
     class RequestError < RuntimeError; end
 
-    def validate_storage_pool_assigned(sp)
-      unless sp.is_a?(StoragePool)
+    def validate_storage_node_assigned(sp)
+      unless sp.is_a?(StorageNode)
         raise "unknown class: #{sp.class}"
       end
       volume_size = sp.volumes_dataset.lives.sum(:size).to_i
@@ -79,7 +79,7 @@ module Dcmgr::Models
       # the limit of offering capacity.
       total_size = sp.offering_disk_space - volume_size.to_i
       if self.size > total_size
-        raise CapacityError, "Allocation exceeds storage pool blank size: #{}"
+        raise CapacityError, "Allocation exceeds storage node blank size: #{}"
       end
     end
     
@@ -133,7 +133,7 @@ module Dcmgr::Models
 
     def merge_pool_data
       v = self.to_hash
-      v.merge(:storage_pool=>storage_pool.to_hash)
+      v.merge(:storage_node=>storage_node.to_hash)
     end
 
     def to_hash
@@ -165,7 +165,7 @@ module Dcmgr::Models
 
     def create_snapshot(account_id)
       vs = VolumeSnapshot.create(:account_id=>account_id,
-                                 :storage_pool_id=>self.storage_pool_id,
+                                 :storage_node_id=>self.storage_node_id,
                                  :origin_volume_id=>self.canonical_uuid,
                                  :size=>self.size)
     end

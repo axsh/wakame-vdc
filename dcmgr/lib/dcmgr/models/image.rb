@@ -35,7 +35,7 @@ module Dcmgr::Models
         errors.add(:boot_dev_type, "Invalid boot dev type: #{self.boot_dev_type}")
       end
       
-      unless HostPool::SUPPORTED_ARCH.member?(self.arch)
+      unless HostNode::SUPPORTED_ARCH.member?(self.arch)
         errors.add(:arch, "Unsupported arch type: #{self.arch}")
       end
       

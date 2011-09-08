@@ -6,7 +6,7 @@ module Dcmgr::Models
     taggable 'i'
 
     inheritable_schema do
-      Fixnum :host_pool_id, :null=>true
+      Fixnum :host_node_id, :null=>true
       Fixnum :image_id, :null=>false
       Fixnum :instance_spec_id, :null=>false
       String :state, :null=>false, :default=>:init.to_s
@@ -27,14 +27,14 @@ module Dcmgr::Models
       Time :terminated_at
       index :state
       index :terminated_at
-      index :host_pool_id
+      index :host_node_id
     end
     with_timestamps
     
     many_to_one :image
     many_to_one :instance_spec
     alias :spec :instance_spec
-    many_to_one :host_pool
+    many_to_one :host_node
     one_to_many :volume
     one_to_many :instance_nic
     alias :nic :instance_nic
@@ -102,11 +102,11 @@ module Dcmgr::Models
       end
       
       # check runtime_config column
-      if self.host_pool
+      if self.host_node
         case self.hypervisor
-        when HostPool::HYPERVISOR_KVM
+        when HostNode::HYPERVISOR_KVM
           r1 = self.runtime_config
-          self.host_pool.instances.each { |i|
+          self.host_node.instances.each { |i|
             next true if i.id == self.id
             r2 = i.runtime_config
             unless r1[:vnc_port] != r2[:vnc_port] && r1[:telnet_port] != r2[:telnet_port]
@@ -181,7 +181,7 @@ module Dcmgr::Models
       h.merge!({:user_data => user_data.to_s, # Sequel::BLOB -> String
                  :runtime_config => self.runtime_config, # yaml -> hash
                  :image=>image.to_hash,
-                 :host_pool=> (host_pool.nil? ? nil : host_pool.to_hash),
+                 :host_node=> (host_node.nil? ? nil : host_node.to_hash),
                  :instance_nics=>instance_nic.map {|n| n.to_hash },
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
@@ -284,7 +284,7 @@ module Dcmgr::Models
 
     # Returns the hypervisor type for the instance.
     def hypervisor
-      self.host_pool.hypervisor
+      self.host_node.hypervisor
     end
 
     # Returns the architecture type of the image

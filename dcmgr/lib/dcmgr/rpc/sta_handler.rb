@@ -96,7 +96,7 @@ module Dcmgr
         begin
           @backing_store.delete_volume(StaContext.new(self))
         rescue => e
-          logger.error("#{@volume_id}: Failed to delete zfs volume: #{@volume[:storage_pool][:export_path]}/#{@volume[:uuid]}")
+          logger.error("#{@volume_id}: Failed to delete zfs volume: #{@volume[:storage_node][:export_path]}/#{@volume[:uuid]}")
           errcount += 1
         end
 

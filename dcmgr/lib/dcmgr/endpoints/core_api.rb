@@ -310,11 +310,11 @@ module Dcmgr
               commit_transaction
               
               repository_address = Dcmgr::StorageService.repository_address(vs.destination_key)
-              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_pool.node_id}",
+              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}",
                                            'run_vol_store', instance.canonical_uuid, vol.canonical_uuid, repository_address)
             when Models::Image::BOOT_DEV_LOCAL
               commit_transaction
-              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_pool.node_id}",
+              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}",
                                            'run_local_store', instance.canonical_uuid)
             else
               raise "Unknown boot type"
@@ -343,7 +343,7 @@ module Dcmgr
             else
               raise OperationNotPermitted
             end
-            res = Dcmgr.messaging.submit("hva-handle.#{i.host_pool.node_id}", 'terminate', i.canonical_uuid)
+            res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
             response_to([i.canonical_uuid])
           end
         end
@@ -352,7 +352,7 @@ module Dcmgr
           description 'Reboots the instance'
           control do
             i = find_by_uuid(:Instance, params[:id])
-            Dcmgr.messaging.submit("hva-handle.#{i.host_pool.node_id}", 'reboot', i.canonical_uuid)
+            Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'reboot', i.canonical_uuid)
             response_to({})
           end
         end
@@ -406,7 +406,7 @@ module Dcmgr
         operation :index do
           description 'Show list of host pools'
           control do
-            res = select_index(:HostPool, {:start => params[:start],
+            res = select_index(:HostNode, {:start => params[:start],
                                  :limit => params[:limit]})
             response_to(res)
           end
@@ -416,7 +416,7 @@ module Dcmgr
           description 'Show status of the host'
           #param :account_id, :string, :optional
           control do
-            hp = find_by_uuid(:HostPool, params[:id])
+            hp = find_by_uuid(:HostNode, params[:id])
             raise OperationNotPermitted unless examine_owner(hp)
             
             response_to(hp.to_api_document)
@@ -464,9 +464,9 @@ module Dcmgr
                 raise InvalidVolumeSize
               end
               if params[:storage_pool_id]
-                sp = find_by_uuid(:StoragePool, params[:storage_pool_id])
-                raise UnknownStoragePool if sp.nil?
-                raise StoragePoolNotPermitted if sp.account_id != @account.canonical_uuid
+                sp = find_by_uuid(:StorageNode, params[:storage_pool_id])
+                raise UnknownStorageNode if sp.nil?
+                raise StorageNodeNotPermitted if sp.account_id != @account.canonical_uuid
               end
             else
               raise UndefinedRequiredParameter
@@ -514,10 +514,10 @@ module Dcmgr
                 repository_address = Dcmgr::StorageService.repository_address(vol.snapshot.destination_key)
               end
               
-              res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_pool.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
+              res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
             else
               begin
-                vol.storage_pool = sp
+                vol.storage_node = sp
                 vol.save
               rescue Models::Volume::CapacityError => e
                 logger.error(e)
@@ -534,7 +534,7 @@ module Dcmgr
                 repository_address = Dcmgr::StorageService.repository_address(vol.snapshot.destination_key)
               end
               
-              res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_pool.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
+              res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
             end
 
             response_to(vol.to_api_document)
@@ -561,7 +561,7 @@ module Dcmgr
             raise UnknownVolume if v.nil?
 
             commit_transaction
-            res = Dcmgr.messaging.submit("sta-handle.#{v.storage_pool.node_id}", 'delete_volume', v.canonical_uuid)
+            res = Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'delete_volume', v.canonical_uuid)
             response_to([v.canonical_uuid])
           end
         end
@@ -585,7 +585,7 @@ module Dcmgr
             v.instance = i
             v.save
             commit_transaction
-            res = Dcmgr.messaging.submit("hva-handle.#{i.host_pool.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+            res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
             response_to(v.to_api_document)
           end
@@ -605,7 +605,7 @@ module Dcmgr
             i = v.instance
             raise InvalidInstanceState unless i.live? && i.state == 'running'
             commit_transaction
-            res = Dcmgr.messaging.submit("hva-handle.#{i.host_pool.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+            res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
             response_to(v.to_api_document)
           end
         end
@@ -664,7 +664,7 @@ module Dcmgr
             raise UnknownVolume if v.nil?
             raise InvalidVolumeState unless v.ready_to_take_snapshot?
             vs = v.create_snapshot(@account.canonical_uuid)
-            sp = vs.storage_pool
+            sp = vs.storage_node
             destination_key = Dcmgr::StorageService.destination_key(@account.canonical_uuid, params[:destination], sp.snapshot_base_path, vs.snapshot_filename)
             vs.update_destination_key(@account.canonical_uuid, destination_key)
             commit_transaction
@@ -696,7 +696,7 @@ module Dcmgr
               raise InvalidDeleteRequest
             end
             raise UnknownVolumeSnapshot if vs.nil?
-            sp = vs.storage_pool
+            sp = vs.storage_node
 
             commit_transaction
              
@@ -832,7 +832,7 @@ module Dcmgr
           # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
-            res = select_index(:StoragePool, {:start => params[:start],
+            res = select_index(:StorageNode, {:start => params[:start],
                                  :limit => params[:limit]})
             response_to(res)
           end
@@ -843,9 +843,9 @@ module Dcmgr
           # params id, string, required
           control do
             pool_id = params[:id]
-            raise UndefinedStoragePoolID if pool_id.nil?
-            vs = find_by_uuid(:StoragePool, pool_id)
-            raise UnknownStoragePool if vs.nil?
+            raise UndefinedStorageNodeID if pool_id.nil?
+            vs = find_by_uuid(:StorageNode, pool_id)
+            raise UnknownStorageNode if vs.nil?
             response_to(vs.to_api_document)
           end
         end

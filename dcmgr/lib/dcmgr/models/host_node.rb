@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-require 'isono'
+require 'isono/models/node_state'
 
 module Dcmgr::Models
-  class HostPool < AccountResource
+  class HostNode < AccountResource
     taggable 'hp'
     with_timestamps
 
@@ -64,7 +64,7 @@ module Dcmgr::Models
       super.merge(:status=>self.status)
     end
 
-    # Check if the resources exist depending on the HostPool.
+    # Check if the resources exist depending on the HostNode.
     # @return [boolean] 
     def depend_resources?
       !self.instances_dataset.runnings.empty?

@@ -12,19 +12,19 @@ module Dcmgr::Models
     STATE_TYPE_DELETED = "deleted"
 
     inheritable_schema do
-      Fixnum :storage_pool_id, :null=>false
+      Fixnum :storage_node_id, :null=>false
       String :origin_volume_id, :null=>false
       Fixnum :size, :null=>false
       Fixnum :status, :null=>false, :default=>0
       String :state, :null=>false, :default=>STATE_TYPE_REGISTERING
       String :destination_key, :null=>false 
       Time   :deleted_at
-      index :storage_pool_id
+      index :storage_node_id
       index  :deleted_at
     end
     with_timestamps
 
-    many_to_one :storage_pool
+    many_to_one :storage_node
     plugin ArchiveChangedColumn, :histories
 
     RECENT_TERMED_PERIOD=(60 * 15)
@@ -46,16 +46,16 @@ module Dcmgr::Models
         :origin_volume_id => self.origin_volume_id,
         :destination_id => self.destination,
         :destination_name => self.display_name, 
-        :backing_store => self.storage_pool.storage_type,
+        :backing_store => self.storage_node.storage_type,
         :created_at => self.created_at,
         :deleted_at => self.deleted_at,
       }
     end
 
     # create volume inherite from this snapshot for the account.
-    # limitation: inherit volume is created on same storage_pool.
+    # limitation: inherit volume is created on same storage_node.
     def create_volume(account_id)
-      storage_pool.create_volume(account_id, self.size, self.canonical_uuid)
+      storage_node.create_volume(account_id, self.size, self.canonical_uuid)
     end
 
     def display_name

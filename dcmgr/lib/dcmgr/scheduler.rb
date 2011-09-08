@@ -56,11 +56,11 @@ module Dcmgr
         if volume.snapshot_id
           # use same same storage node if it is local snapshot.
           if volume.snapshot.destination =~ /^local:/
-            volume.storage_pool = Models::StoragePool[volume.snapshot.storage_pool_id]
+            volume.storage_node = Models::StorageNode[volume.snapshot.storage_node_id]
           end
         else
           schedule_node(volume)
-          raise StorageNodeSchedulingError if volume.storage_pool.nil?
+          raise StorageNodeSchedulingError if volume.storage_node.nil?
         end
       end
 

@@ -42,9 +42,9 @@ module Dcmgr
         tryagain do
           next true if File.exist?(@os_devpath)
 
-          sh("iscsiadm -m discovery -t sendtargets -p %s", [@vol[:storage_pool][:ipaddr]])
+          sh("iscsiadm -m discovery -t sendtargets -p %s", [@vol[:storage_node][:ipaddr]])
           sh("iscsiadm -m node -l -T '%s' --portal '%s'",
-             [@vol[:transport_information][:iqn], @vol[:storage_pool][:ipaddr]])
+             [@vol[:transport_information][:iqn], @vol[:storage_node][:ipaddr]])
           sleep 1
         end
 
@@ -129,7 +129,7 @@ module Dcmgr
       def get_linux_dev_path
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-        @os_devpath = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_pool][:ipaddr]}:3260",
+        @os_devpath = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_node][:ipaddr]}:3260",
                                                                       @vol[:transport_information][:iqn],
                                                                       @vol[:transport_information][:lun]]
       end
@@ -187,9 +187,9 @@ module Dcmgr
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
 
         # create volume from snapshot
-        jobreq.run("sta-handle.#{@vol[:storage_pool][:node_id]}", "create_volume", @vol_id, @repository_address)
+        jobreq.run("sta-handle.#{@vol[:storage_node][:node_id]}", "create_volume", @vol_id, @repository_address)
 
-        logger.debug("volume created on #{@vol[:storage_pool][:node_id]}: #{@vol_id}")
+        logger.debug("volume created on #{@vol[:storage_node][:node_id]}: #{@vol_id}")
         # reload volume info
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         

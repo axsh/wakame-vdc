@@ -12,14 +12,14 @@ module Dcmgr::Cli
       desc "local IMAGE_LOCATION [options]", "Register local store machine image"
       method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new machine image"
       method_option :account_id, :type => :string, :aliases => "-a", :required => true, :desc => "The UUID of the account that this machine image belongs to"
-      method_option :arch, :type => :string, :default => 'x86_64', :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
+      method_option :arch, :type => :string, :default => 'x86_64', :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
       method_option :is_public, :type => :boolean, :aliases => "-p", :default => false, :desc => "A flag that determines whether the new machine image is public or not"
       method_option :md5sum, :type => :string, :aliases => "-m", :required => true, :desc => "The md5sum of the image you are registering."
       method_option :description, :type => :string, :aliases => "-d", :desc => "An arbitrary description of the new machine image"
       #method_option :state, :type => :string, :aliases => "-s", :default => "init", :desc => "The state for the new machine image"
       def local(location)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
-        UnsupportedArchError.raise(options[:arch]) unless M::HostPool::SUPPORTED_ARCH.member?(options[:arch])
+        UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         
         full_path = File.expand_path(location)
         File.exists?(full_path) || Error.raise("File not found: #{full_path}",100)
@@ -36,14 +36,14 @@ module Dcmgr::Cli
       desc "volume snapshot_id [options]", "Register volume store machine image."
       method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new machine image."
       method_option :account_id, :type => :string, :aliases => "-a", :required => true, :desc => "The UUID of the account that this machine image belongs to."
-      method_option :arch, :type => :string, :default => 'x86_64', :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostPool::SUPPORTED_ARCH.join(', ')}]"
+      method_option :arch, :type => :string, :default => 'x86_64', :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
       method_option :is_public, :type => :boolean, :aliases => "-p", :default => false, :desc => "A flag that determines whether the new machine image is public or not."
       method_option :md5sum, :type => :string, :aliases => "-m", :required => true, :desc => "The md5sum of the image you are registering."
       method_option :description, :type => :string, :aliases => "-d", :desc => "An arbitrary description of the new machine image"
       #method_option :state, :type => :string, :aliases => "-s", :default => "init", :desc => "The state for the new machine image"
       def volume(snapshot_id)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
-        UnsupportedArchError.raise(options[:arch]) unless M::HostPool::SUPPORTED_ARCH.member?(options[:arch])
+        UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(snapshot_id) if M::VolumeSnapshot[snapshot_id].nil?
         #TODO: Check if :state is a valid state
         fields = options.dup

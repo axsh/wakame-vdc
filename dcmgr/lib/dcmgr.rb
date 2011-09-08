@@ -83,9 +83,9 @@ module Dcmgr
     autoload :Base, 'dcmgr/models/base'
 
     CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,
-                          :Image,:HostPool,:RequestLog,:Instance,
+                          :Image,:HostNode,:RequestLog,:Instance,
                           :NetfilterGroup, :NetfilterRule,
-                          :StoragePool,:Volume,:VolumeSnapshot,
+                          :StorageNode,:Volume,:VolumeSnapshot,
                           :InstanceNetfilterGroup,
                           :InstanceSpec, :InstanceNic, :Network, :IpLease,
                           :SshKeyPair, :History, :HostnameLease, :MacLease,
@@ -98,10 +98,10 @@ module Dcmgr
     autoload :AccountResource, 'dcmgr/models/account_resource'
     autoload :Instance, 'dcmgr/models/instance'
     autoload :Image, 'dcmgr/models/image'
-    autoload :HostPool, 'dcmgr/models/host_pool'
+    autoload :HostNode, 'dcmgr/models/host_node'
     autoload :RequestLog, 'dcmgr/models/request_log'
     autoload :FrontendSystem, 'dcmgr/models/frontend_system'
-    autoload :StoragePool, 'dcmgr/models/storage_pool'
+    autoload :StorageNode, 'dcmgr/models/storage_node'
     autoload :Volume, 'dcmgr/models/volume'
     autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
     autoload :NetfilterGroup, 'dcmgr/models/netfilter_group'
