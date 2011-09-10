@@ -266,25 +266,13 @@ module Dcmgr
             instance.state = :scheduling
             instance.save
             
-            begin
-              Scheduler.host_node.schedule(instance)
-              Scheduler.network.schedule(instance)
-              instance.save
-            rescue Scheduler::SchedulerError
-              instance.delete
-              raise APIError, "Failed to schedule HostNode or Network"
-            end
-            
-            instance.state = :pending
-            instance.save
-
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
               # create new volume from snapshot.
               snapshot_id = wmi.source[:snapshot_id]
               vs = find_volume_snapshot(snapshot_id)
               
-              vol = Models::Volume.entry_new(@account.canonical_uuid, params.dup) do |v|
+              vol = Models::Volume.entry_new(@account, params.dup) do |v|
                 if vs
                   v.snapshot_id = vs.canonical_uuid
                 end
@@ -294,31 +282,15 @@ module Dcmgr
               vol.instance = instance
               vol.state = :scheduling
               vol.save
-
-              begin 
-                Scheduler.storage_node.schedule(vol)
-                vol.save
-              rescue Scheduler::SchedulerError
-                instance.delete
-                vol.delete
-                raise APIError, "Failed to schedule storage node."
-              end
-
-              vol.state = :pending
-              vol.save
               
-              commit_transaction
-              
-              repository_address = Dcmgr::StorageService.repository_address(vs.destination_key)
-              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}",
-                                           'run_vol_store', instance.canonical_uuid, vol.canonical_uuid, repository_address)
             when Models::Image::BOOT_DEV_LOCAL
-              commit_transaction
-              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}",
-                                           'run_local_store', instance.canonical_uuid)
             else
               raise "Unknown boot type"
             end
+
+            commit_transaction
+            Dcmgr.messaging.submit("scheduler",
+                                   'schedule_instance', instance.canonical_uuid)
             Dcmgr.messaging.event_publish('instance.scheduled', :args=>[instance.canonical_uuid])
             
             response_to(instance.to_api_document)
@@ -487,34 +459,9 @@ module Dcmgr
               vol.state = :scheduling
               vol.save
 
-              begin
-                e = nil
-                begin
-                  Scheduler.storage_node.schedule(vol)
-                  vol.save
-                rescue Scheduler::SchedulerError => e
-                  raise APIError, "Could not be found storage server for new volume."
-                rescue Models::Volume::CapacityError => e
-                  raise OutOfDiskSpace
-                end
-              ensure
-                if e
-                  logger.error(e)
-                  vol.delete
-                end
-              end
-
-              vol.state = :pending
-              vol.save
-              
               commit_transaction
               
-              repository_address = nil
-              if vol.snapshot
-                repository_address = Dcmgr::StorageService.repository_address(vol.snapshot.destination_key)
-              end
-              
-              res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
+              Dcmgr.messaging.submit("scheduler", 'schedule_volume', vol.canonical_uuid)
             else
               begin
                 vol.storage_node = sp

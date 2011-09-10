@@ -131,6 +131,7 @@ module Dcmgr
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
+    autoload :Scheduler, 'dcmgr/node_modules/scheduler'
   end
 
   module Helpers
