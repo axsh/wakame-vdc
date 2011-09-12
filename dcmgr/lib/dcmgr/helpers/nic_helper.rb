@@ -20,6 +20,13 @@ module Dcmgr
           File.readlines(operstate_path).first.strip
         end
       end
+      
+      # This method cleans up ugly mac addressed stored in the dcmgr database.
+      # Mac addresses in the database are stored as alphanumeric strings without
+      # the : inbetween them. This method properly puts those in there.
+      def clean_mac(mac)
+        mac.unpack('A2'*6).join(':')
+      end
 
       def valid_nic?(nic)
         ifindex_path = "/sys/class/net/#{nic}/ifindex"
