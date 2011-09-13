@@ -231,12 +231,6 @@ function run_standalone_integration_test {
   cd $prefix_path/tests/spec
   [ -z "${without_bundle_install}" ] && bundle install
 
-  for i in {0..5}; do
-    echo sleep 5 ... ${i}
-    sleep 5
-    uptime
-  done
-
   # run integrate test specs. 
   bundle exec rspec . 
 
