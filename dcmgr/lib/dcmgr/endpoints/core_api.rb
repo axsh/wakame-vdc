@@ -497,7 +497,8 @@ module Dcmgr
             
             vol = find_by_uuid(:Volume, volume_id)
             raise UnknownVolume if vol.nil?
-            raise InvalidVolumeState unless vol.state == "available"
+            raise InvalidVolumeState, "#{vol.state}" unless vol.state == "available"
+
 
             begin
               v  = Models::Volume.delete_volume(@account.canonical_uuid, volume_id)
