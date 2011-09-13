@@ -291,8 +291,6 @@ module Dcmgr
             commit_transaction
             Dcmgr.messaging.submit("scheduler",
                                    'schedule_instance', instance.canonical_uuid)
-            Dcmgr.messaging.event_publish('instance.scheduled', :args=>[instance.canonical_uuid])
-            
             response_to(instance.to_api_document)
           end
         end
