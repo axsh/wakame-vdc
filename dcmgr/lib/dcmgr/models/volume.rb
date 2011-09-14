@@ -91,6 +91,8 @@ module Dcmgr::Models
           raise CapacityError, "Allocation exceeds account's quota: #{self.account.quota.volume_total_size}, #{self.size.to_i}, #{per_account_total}"
         end
       end
+
+      errors.add(:size, "Invalid volume size.") if self.size == 0
       
       super
     end
@@ -183,9 +185,10 @@ module Dcmgr::Models
       VolumeSnapshot[self.snapshot_id]
     end
 
-    def self.entry_new(account, params, &blk)
+    def self.entry_new(account, size, params, &blk)
       v = self.new &blk
       v.account_id = account.canonical_uuid
+      v.size = size
       v.request_params = params
       v
     end
