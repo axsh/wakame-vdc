@@ -37,7 +37,7 @@ module RetryHelper
   end
 
   def retry_while(count=10, &blk)
-    retry_while do
+    retry_until do
       !blk.call
     end
   end
