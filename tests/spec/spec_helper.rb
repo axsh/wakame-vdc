@@ -16,6 +16,10 @@ class APITest
   def self.create(path, params)
     self.post(path, :query=>params, :body=>'')
   end
+
+  def self.update(path, params)
+    self.put(path, :query=>params, :body=>'')
+  end
 end
 
 module RetryHelper
