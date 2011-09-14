@@ -20,7 +20,27 @@ ip link set br0 down
 echo brctl delbr br0
 brctl delbr br0
 
+echo
 export BRCOMPAT=yes
 
 /etc/init.d/ovs-switch restart
 /etc/init.d/networking restart
+
+PATH=/usr/share/axsh/ovs-switch/bin/:$PATH
+
+# Sleep to allow time for Open vSwitch to get initiated.
+sleep 1
+
+echo
+echo "lsmod | grep bridge"
+lsmod | grep bridge
+echo "ovs-vsctl list-ports br0"
+ovs-vsctl list-ports br0
+
+echo
+echo "Setting OpenFlow controller address for 'br0'."
+ovs-vsctl set-controller br0 tcp:127.0.0.1
+ovs-vsctl get-controller br0
+
+echo "ovs-ofctl dump-flows br0"
+ovs-ofctl dump-flows br0
