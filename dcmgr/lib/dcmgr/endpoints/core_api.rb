@@ -272,7 +272,7 @@ module Dcmgr
               snapshot_id = wmi.source[:snapshot_id]
               vs = find_volume_snapshot(snapshot_id)
               
-              vol = Models::Volume.entry_new(@account, params.dup) do |v|
+              vol = Models::Volume.entry_new(@account, vs.size, params.dup) do |v|
                 if vs
                   v.snapshot_id = vs.canonical_uuid
                 end
@@ -291,8 +291,6 @@ module Dcmgr
             commit_transaction
             Dcmgr.messaging.submit("scheduler",
                                    'schedule_instance', instance.canonical_uuid)
-            Dcmgr.messaging.event_publish('instance.scheduled', :args=>[instance.canonical_uuid])
-            
             response_to(instance.to_api_document)
           end
         end
@@ -444,12 +442,9 @@ module Dcmgr
               raise UndefinedRequiredParameter
             end
 
-            vol = Models::Volume.entry_new(@account, params.dup) do |v|
+            vol = Models::Volume.entry_new(@account, (vs ? vs.size : params[:volume_size].to_i), params.dup) do |v|
               if vs
                 v.snapshot_id = vs.canonical_uuid
-              end
-              if params[:volume_size]
-                v.size = params[:volume_size].to_i
               end
             end
             vol.save

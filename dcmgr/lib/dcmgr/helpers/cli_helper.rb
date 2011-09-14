@@ -35,7 +35,6 @@ module Dcmgr
           end
           retry if (count -= 1) >= 0
         ensure
-          curthread = nil
           EventMachine.cancel_timer(timersig) rescue nil
         end
       end

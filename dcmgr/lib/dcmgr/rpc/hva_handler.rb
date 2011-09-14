@@ -154,7 +154,37 @@ module Dcmgr
         # copy image file
         img_src = @inst[:image][:source]
         @os_devpath = File.expand_path("#{@inst[:uuid]}", inst_data_dir)
-        sh("curl --silent -o '#{@os_devpath}' #{img_src[:uri]}")
+
+        # vmimage cache
+        vmimg_cache_dir = File.expand_path("_base", @node.manifest.config.vm_data_dir)
+        FileUtils.mkdir_p(vmimg_cache_dir) unless File.exists?(vmimg_cache_dir)
+        vmimg_basename = File.basename(img_src[:uri])
+        vmimg_cache_path = File.expand_path(vmimg_basename, vmimg_cache_dir)
+
+        logger.debug("preparing #{@os_devpath}")
+
+        # vmimg cached?
+        unless File.exists?(vmimg_cache_path)
+          logger.debug("copying #{vmimg_cache_path} from #{img_src[:uri]}")
+          sh("curl --silent -o '#{vmimg_cache_path}' #{img_src[:uri]}")
+        else
+          md5sum = sh("md5sum #{vmimg_cache_path}")
+          if md5sum[:stdout].split(' ')[0] == @inst[:image][:md5sum]
+            logger.debug("verified vm cache image: #{vmimg_cache_path}")
+          else
+            logger.debug("not verified vm cache image: #{vmimg_cache_path}")
+            sh("rm -f %s", [vmimg_cache_path])
+            tmp_id = Isono::Util::gen_id
+            logger.debug("copying #{vmimg_cache_path} from #{img_src[:uri]}")
+            sh("curl --silent -o '#{vmimg_cache_path}.#{tmp_id}' #{img_src[:uri]}")
+            sh("mv #{vmimg_cache_path}.#{tmp_id} #{vmimg_cache_path}")
+            logger.debug("vmimage cache deployed on #{vmimg_cache_path}")
+          end
+        end
+
+        ####
+        logger.debug("copying #{@os_devpath} from #{vmimg_cache_path}")
+        sh("cp -p --sparse=always %s %s",[vmimg_cache_path, @os_devpath])
         sleep 1
 
         @bridge_if = check_interface

@@ -1,7 +1,11 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-require 'rubygems'
+begin
+  require 'rubygems'
+  require 'bundler/setup'
+rescue Exception => e
+end
 require 'thor'
 require 'thor/group'
 require 'erb'
