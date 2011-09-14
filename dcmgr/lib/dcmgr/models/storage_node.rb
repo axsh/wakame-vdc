@@ -28,6 +28,12 @@ module Dcmgr::Models
     one_to_many :volume_snapshots
     
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
+
+    def_dataset_method(:online_nodes) do
+      # SELECT * FROM `storage_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
+      r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
+      filter(:node_id => r)
+    end
     
     def before_validation
       export_path = self.export_path
@@ -70,5 +76,16 @@ module Dcmgr::Models
       h.delete(:node_id)
       h
     end
+
+    # Returns total disk usage of associated volumes.
+    def disk_usage
+      volumes_dataset.lives.sum(:size).to_i
+    end
+
+    # Returns available space of the storage node.
+    def free_disk_space
+      self.offering_disk_space - self.disk_usage
+    end
+    
   end
 end
