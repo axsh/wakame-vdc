@@ -21,7 +21,8 @@ describe "/api/volumes" do
     res = APITest.create("/volumes", {:snapshot_id=>'snap-lucid1'})
     res.success?.should be_true
     volume_id = res["id"]
-    retry_until do
+    # total 180sec. (10*2*9)
+    retry_until(10*9) do
       APITest.get("/volumes/#{volume_id}")["state"] == "available"
     end
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == snap["size"].to_i
