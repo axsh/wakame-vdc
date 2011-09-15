@@ -17,16 +17,16 @@ while true; do
     last_if_name="$if_name"
 done
 
-set -e
+set +e
 
-ip link set br0 down
-brctl delbr br0
+ip link set br0 down || true
+brctl delbr br0 || true
 
 /etc/init.d/ovs-switch restart
 /etc/init.d/networking restart
 
-echo "Sleeping for 5 seconds...
-sleep 5
+echo "Sleeping for 3 seconds..."
+sleep 3
 
 $work_dir/ovs/bin/ovs-vsctl list-ports br0
 

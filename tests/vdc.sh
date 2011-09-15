@@ -71,6 +71,7 @@ webui_dbpass=passwd
 hypervisor=kvm
 ci_archive_dir=$prefix_path/../results
 
+with_openflow=no
 
 #
 without_bundle_install=
@@ -191,6 +192,8 @@ EOS
     screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
     [ "${sta_server}" = "${ipaddr}" ] && \
     screen_it sta       "cd ${prefix_path}/dcmgr/ && ./bin/sta -i demo1 2>&1 | tee ${tmp_path}/vdc-sta.log"
+    [ "${with_openflow}" != "yes" ] || \
+    screen_it ofc       "cd ${prefix_path}/trema/ && ./trema run -v ../dcmgr/bin/ofc"
   }  || {
     cd ${prefix_path}/dcmgr/ && run2bg "./bin/collector > ${tmp_path}/vdc-collector.log 2>&1"
     cd ${prefix_path}/dcmgr/ && run2bg "./bin/nsa -i demo1 > ${tmp_path}/vdc-nsa.log 2>&1"
@@ -202,6 +205,9 @@ EOS
     cd ${prefix_path}/frontend/dcmgr_gui/config && run2bg "bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru > ${tmp_path}/vdc-webui.log 2>&1"
     [ "${sta_server}" = "${ipaddr}" ] && {
       cd ${prefix_path}/dcmgr/ && run2bg "./bin/sta -i demo1 > ${tmp_path}/vdc-sta.log 2>&1"
+    }
+    [ "${with_openflow}" != "yes" ] || {
+      cd ${prefix_path}/trema/ && run2bg "./trema run -v ../dcmgr/bin/ofc > tee ${tmp_path}/vdc-ofc.log 2>&1"
     }
     #wait_jobs
     echo "${pids}" > ${tmp_path}/vdc-pid.log
@@ -279,6 +285,10 @@ case ${mode} in
       screen -S vdc -X quit
     }
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
+    ;;
+  openflow)
+    with_openflow=yes
+    run_developer
     ;;
   *)
     run_developer
