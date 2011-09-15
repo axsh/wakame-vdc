@@ -3,13 +3,11 @@
 
 # Currently called using './trema ../wakame-vdc/dcmgr/bin/ofc'.
 
-$LOAD_PATH.unshift File.expand_path('../../wakame-vdc/dcmgr/lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../../dcmgr/lib', __FILE__)
 
 require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
-
-$LOAD_PATH.unshift File.expand_path('../../../../trema/ruby', __FILE__)
 
 require 'trema'
 
