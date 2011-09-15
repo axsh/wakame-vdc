@@ -3,6 +3,8 @@
 # If remotely connected, use a script to ensure the
 # network gets restarted.
 
+work_dir=${work_dir:?"work_dir needs to be set"}
+
 last_if_name=""
 
 while true; do
@@ -15,32 +17,21 @@ while true; do
     last_if_name="$if_name"
 done
 
-echo ip link set br0 down
-ip link set br0 down
-echo brctl delbr br0
-brctl delbr br0
+set -e
 
-echo
-export BRCOMPAT=yes
+ip link set br0 down
+brctl delbr br0
 
 /etc/init.d/ovs-switch restart
 /etc/init.d/networking restart
 
-PATH=/usr/share/axsh/ovs-switch/bin/:$PATH
+echo "Sleeping for 5 seconds...
+sleep 5
 
-# Sleep to allow time for Open vSwitch to get initiated.
-sleep 1
+$work_dir/ovs/bin/ovs-vsctl list-ports br0
 
-echo
-echo "lsmod | grep bridge"
-lsmod | grep bridge
-echo "ovs-vsctl list-ports br0"
-ovs-vsctl list-ports br0
+echo "Setting OpenFlow controller for 'br0', may cause connection loss for 15 seconds."
+$work_dir/ovs/bin/ovs-vsctl set-controller br0 tcp:127.0.0.1
+$work_dir/ovs/bin/ovs-vsctl get-controller br0
 
-echo
-echo "Setting OpenFlow controller address for 'br0'."
-ovs-vsctl set-controller br0 tcp:127.0.0.1
-ovs-vsctl get-controller br0
-
-echo "ovs-ofctl dump-flows br0"
-ovs-ofctl dump-flows br0
+$work_dir/ovs/bin/ovs-ofctl dump-flows br0
