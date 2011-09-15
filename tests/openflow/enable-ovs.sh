@@ -30,6 +30,10 @@ sleep 3
 
 $work_dir/ovs/bin/ovs-vsctl list-ports br0
 
+# Clear the flows and add default one in order to ensure we can
+# connect even if there's some bad flows cached.
+$work_dir/ovs/bin/ovs-ofctl del-flows br0 && $work_dir/ovs/bin/ovs-ofctl add-flow br0 priority=0,action=normal
+
 echo "Setting OpenFlow controller for 'br0', may cause connection loss for 15 seconds."
 $work_dir/ovs/bin/ovs-vsctl set-controller br0 tcp:127.0.0.1
 $work_dir/ovs/bin/ovs-vsctl get-controller br0
