@@ -232,7 +232,7 @@ function run_standalone_integration_test {
   [ -z "${without_bundle_install}" ] && bundle install
 
   # run integrate test specs. 
-  bundle exec rspec . 
+  bundle exec rspec -fs . 
 
   return $?
 }
