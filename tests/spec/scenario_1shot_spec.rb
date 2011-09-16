@@ -41,7 +41,7 @@ describe "1shot" do
     sleep 3
     cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} ubuntu@#{ipv4} 'hostname; whoami;'"
     `#{cmd}`
-    $?.exitstatus.should be_true
+    $?.exitstatus.should == 0
     sleep 3
 
     APITest.delete("/instances/#{instance_id}").success?.should be_true
