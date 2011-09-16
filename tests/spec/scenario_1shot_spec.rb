@@ -6,13 +6,15 @@ describe "1shot" do
   include RetryHelper
 
   it "tests CURD operations for 1shot" do
+    timestamp = Time.now.strftime("%s")
+
     # ssh_key::create
-    ssh_key_pair = APITest.create('/ssh_key_pairs.json', {:name=>'1shot'})
+    ssh_key_pair = APITest.create('/ssh_key_pairs.json', {:name=>"1shot.#{timestamp}"})
     ssh_key_pair.success?.should be_true
     sleep 3
     APITest.get("/ssh_key_pairs/#{ssh_key_pair["id"]}").success?.should be_true
 
-    private_key_path = "/tmp/hoge_id_rsa.pem"
+    private_key_path = "/tmp/vdc_id_rsa.pem.#{timestamp}"
     open(private_key_path, "w") { |f| f.write(ssh_key_pair["private_key"]) }
     File.chmod(0600, private_key_path)
 
