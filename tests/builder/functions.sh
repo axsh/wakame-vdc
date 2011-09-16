@@ -137,6 +137,10 @@ function cleanup {
   } || :
   
   for i in ${tmp_path}/screenlog.* ${tmp_path}/*.log; do rm -f ${i}; done
+
+  [ -d ${tmp_path}/xpool/${account_id} ] && {
+    for i in ${tmp_path}/xpool/${account_id}/*; do rm -f ${i}; done
+  }
 }
 
 # kick the builder script. 
