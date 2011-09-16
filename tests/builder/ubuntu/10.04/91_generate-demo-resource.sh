@@ -69,9 +69,7 @@ function deploy_vmfile() {
     cd ${local_store_path}
     [ -f ${vmfile_basename}.gz ] || curl ${vmfile_uri} -o ${vmfile_basename}.gz
     echo generating ${vmfile_basename} ...
-    zcat ${vmfile_basename}.gz > ${vmfile_basename}.fat
-    cp --sparse=always ${vmfile_basename}.fat ${vmfile_basename}
-    rm -f ${vmfile_basename}.fat
+    zcat ${vmfile_basename}.gz | cp --sparse=always /dev/stdin ${vmfile_basename}
     sync
     du -hs                 ${vmfile_basename}
     du -hs --apparent-size ${vmfile_basename}
