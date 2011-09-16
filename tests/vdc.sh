@@ -282,6 +282,9 @@ case ${mode} in
     ;;
   *)
     run_developer
+    [ -f "${tmp_path}/vdc-pid.log" ] && {
+      wait $(cat ${tmp_path}/vdc-pid.log)
+    }
     ;;
 esac
 
