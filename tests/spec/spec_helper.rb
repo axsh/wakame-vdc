@@ -45,3 +45,32 @@ module RetryHelper
     end
   end
 end
+
+module InstanceHelper
+  include RetryHelper
+
+  def retry_until_running(instance_id)
+    retry_until do
+      case APITest.get("/instances/#{instance_id}")["state"]
+      when 'running'
+        true
+      when 'terminated'
+        raise "Instance terminated by the system due to booting failure."
+      else
+        false
+      end
+    end
+  end
+
+  def retry_until_terminated(instance_id)
+    retry_until do
+      case APITest.get("/instances/#{instance_id}")["state"]
+      when 'terminated'
+        true
+      else
+        false
+      end
+    end
+  end
+
+end

@@ -4,6 +4,7 @@ require 'fileutils'
 
 describe "1shot" do
   include RetryHelper
+  include InstanceHelper
 
   it "tests CURD operations for 1shot" do
     timestamp = Time.now.strftime("%s")
@@ -23,11 +24,10 @@ describe "1shot" do
     instance = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :"ssh_key"=>ssh_key_pair["name"]})
     instance.success?.should be_true
     instance_id = instance["id"]
-    retry_until do
-      instance = APITest.get("/instances/#{instance_id}")
-      # p instance["state"]
-      instance["state"] == "running"
-    end
+
+    retry_until_running(instance_id)
+
+    instance = APITest.get("/instances/#{instance_id}")
     ipv4 = instance["vif"].first["ipv4"]["address"]
 
     retry_until do
@@ -52,6 +52,7 @@ describe "1shot" do
     sleep 3
 
     APITest.delete("/instances/#{instance_id}").success?.should be_true
+    retry_until_terminated(instance_id)
 
     # ssh_key::delete
     FileUtils.rm(private_key_path)
