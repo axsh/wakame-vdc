@@ -23,21 +23,24 @@ class APITest
 end
 
 module RetryHelper
-  def retry_until(count=10, &blk)
-    lcount = 0
-    count.times { |n|
+  DEFAULT_WAIT_PERIOD=60*30 # 30mins
+  
+  def retry_until(wait_sec=DEFAULT_WAIT_PERIOD, &blk)
+    start_at = Time.now
+    lcount=0
+    loop {
       if blk.call
         break
       else
         sleep 2
       end
-      lcount = n
+      lcount += 1
+      raise("Retry Failure: Exceed #{wait_sec} sec: Retried #{count} times") if (Time.now - start_at) > wait_sec
     }
-    count <= lcount && abort("All retry failed within #{count*2} sec")
   end
 
-  def retry_while(count=10, &blk)
-    retry_until do
+  def retry_while(wait_sec=DEFAULT_WAIT_PERIOD, &blk)
+    retry_until(wait_sec) do
       !blk.call
     end
   end
