@@ -63,8 +63,95 @@ function screen_it {
   [[ -z "$cmd"  ]] && {
     cmd="$cmd `read`"
   }
-  retry 3 screen -L -r vdc -x -X screen -t $title
-  screen -L -r vdc -x -p $title -X stuff "${cmd}$NL"
+
+  case $screen_mode in
+      'tmux')
+          tmux -S "${tmp_path}/vdc-tmux.s" find-window "$title" || {
+              tmux -S "${tmp_path}/vdc-tmux.s" new-window -n "$title"
+          }
+          tmux -S "${tmp_path}/vdc-tmux.s" send-keys -t "vdc:${title}" "${cmd}" \; send-keys "Enter"
+          ;;
+      'screen')
+          retry 3 screen -L -r vdc -x -X screen -t $title
+          screen -L -r vdc -x -p $title -X stuff "${cmd}$NL"
+          ;;
+      'bg')
+          run2bg "($cmd) > ${tmp_path}/vdc-${title}.log"
+          ;;
+      *)
+          :
+          ;;
+  esac
+}
+
+function screen_open {
+    typeset ret=0
+
+    case $screen_mode in
+        'tmux')
+            echo "Creating tmux windows..."
+            tmux -S "${tmp_path}/vdc-tmux.s" new-session -d -s vdc
+            ret=$?
+            ;;
+        'screen')
+            echo "Creating screen windows..."
+            # screen configuration file
+            /bin/cat <<EOS > "${tmp_path}/screenrc"
+escape ^z^z
+hardstatus on
+hardstatus alwayslastline "[%m/%d %02c] %-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<" 
+defscrollback 10000
+logfile ${tmp_path}/screenlog.%t
+logfile flush 1
+EOS
+            screen -L -d -m -S vdc -t vdc -c "${tmp_path}/screenrc"
+            ret=$?
+            ;;
+        *)
+            :
+            ;;
+    esac
+    return $ret
+}
+
+function screen_close {
+    typeset ret=0
+
+    case $screen_mode in
+        'tmux')
+            tmux -S "${tmp_path}/vdc-tmux.s" has-session -t vdc && \
+                tmux -S "${tmp_path}/vdc-tmux.s" kill-session -t vdc
+            ret=$?
+            ;;
+        'screen')
+            screen -ls | grep vdc >/dev/null && \
+                screen -S vdc -X quit
+            ret=$?
+            ;;
+        *)
+            :
+            ;;
+    esac
+    return $ret
+}
+
+function screen_attach {
+    typeset ret=0
+
+    case $screen_mode in
+        'tmux')
+            tmux -S "${tmp_path}/vdc-tmux.s" attach-session -t vdc
+            ret=$?
+            ;;
+        'screen')
+            screen -x -S vdc
+            ret=$?
+            ;;
+        *)
+            :
+            ;;
+    esac
+    return $ret
 }
 
 function setup_base {
