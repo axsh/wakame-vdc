@@ -74,3 +74,17 @@ module InstanceHelper
   end
 
 end
+
+module CliHelper
+  def init_env
+    ENV["BUNDLE_GEMFILE"]  = nil
+    ENV["BUNDLE_BIN_PATH"] = nil
+    ENV["RUBYOPT"]         = nil
+  end
+
+  def cd_gui_dir
+    prefix_dir = File.dirname(File.expand_path('../../', __FILE__))
+    Dir.chdir "#{prefix_dir}/frontend/dcmgr_gui"
+  end
+
+end
