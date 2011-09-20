@@ -106,7 +106,7 @@ module Dcmgr::Models
         case self.hypervisor
         when HostNode::HYPERVISOR_KVM
           r1 = self.runtime_config
-          self.host_node.instances.each { |i|
+          self.host_node.instances_dataset.lives.each { |i|
             next true if i.id == self.id
             r2 = i.runtime_config
             unless r1[:vnc_port] != r2[:vnc_port] && r1[:telnet_port] != r2[:telnet_port]
