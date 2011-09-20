@@ -599,6 +599,7 @@ module Dcmgr
         operation :create do
           description 'Create a new volume snapshot'
           # params volume_id, string, required
+          # params detination, string, required
           # params storage_pool_id, string, optional
           control do
             Models::Volume.lock!
