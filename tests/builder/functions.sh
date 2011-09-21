@@ -66,8 +66,11 @@ function screen_it {
 
   case $screen_mode in
       'tmux')
-          tmux -S "${tmp_path}/vdc-tmux.s" find-window "$title" || {
+          (tmux -S "${tmp_path}/vdc-tmux.s" list-windows -t vdc | grep ${title} >/dev/null) || {
               tmux -S "${tmp_path}/vdc-tmux.s" new-window -n "$title"
+              # pipe-pane can not be called from command line in tmux version earlier than the revision below.
+              # http://sourceforge.net/mailarchive/message.php?msg_id=27900401
+              #tmux -v -S "${tmp_path}/vdc-tmux.s" pipe-pane -t "vdc:${title}.0" "'/bin/cat > \"${tmp_path}/screenlog.${title}\"'"
           }
           tmux -S "${tmp_path}/vdc-tmux.s" send-keys -t "vdc:${title}" "${cmd}" \; send-keys "Enter"
           ;;
