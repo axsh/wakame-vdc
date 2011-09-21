@@ -16,7 +16,7 @@ module Dcmgr
     HTTP_X_VDC_ACCOUNT_UUID='HTTP_X_VDC_ACCOUNT_UUID'.freeze
 
     RACK_FRONTEND_SYSTEM_ID='dcmgr.frotend_system.id'
-    
+
     class CoreAPI < Sinatra::Base
       include Dcmgr::Logger
       register Sinatra::Rabbit
@@ -42,7 +42,7 @@ module Dcmgr
           end
           raise InvalidRequestCredentials if @account.nil?
         end
-         
+
         @requester_token = request.env[HTTP_X_VDC_REQUESTER_TOKEN]
         #@frontend = Models::FrontendSystem[request.env[RACK_FRONTEND_SYSTEM_ID]]
 
@@ -125,7 +125,7 @@ module Dcmgr
                else
                    boom
                end
-        
+
         if boom.kind_of?(APIError)
           @env['sinatra.error'] = boom
           Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
@@ -142,7 +142,7 @@ module Dcmgr
         raise InvalidVolumeState unless vs.state.to_s == 'available'
         vs
       end
-        
+
       def examine_owner(account_resource)
         if @account.canonical_uuid == account_resource.account_id ||
             @account.canonical_uuid == 'a-00000000'
@@ -169,7 +169,7 @@ module Dcmgr
         else
           total_ds = model_class.where(:account_id=>@account.canonical_uuid)
         end
-        
+
         if %w(Dcmgr::Models::Instance Dcmgr::Models::Volume Dcmgr::Models::VolumeSnapshot).member?(model_class.to_s)
           total_ds = total_ds.alives_and_recent_termed
         end
@@ -222,7 +222,7 @@ module Dcmgr
           # param :ha_enabled, string, :optional
           control do
             Models::Instance.lock!
-            
+
             wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
             spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
@@ -265,13 +265,13 @@ module Dcmgr
 
             instance.state = :scheduling
             instance.save
-            
+
             case wmi.boot_dev_type
             when Models::Image::BOOT_DEV_SAN
               # create new volume from snapshot.
               snapshot_id = wmi.source[:snapshot_id]
               vs = find_volume_snapshot(snapshot_id)
-              
+
               vol = Models::Volume.entry_new(@account, vs.size, params.dup) do |v|
                 if vs
                   v.snapshot_id = vs.canonical_uuid
@@ -282,7 +282,7 @@ module Dcmgr
               vol.instance = instance
               vol.state = :scheduling
               vol.save
-              
+
             when Models::Image::BOOT_DEV_LOCAL
             else
               raise "Unknown boot type"
@@ -300,7 +300,7 @@ module Dcmgr
           control do
             i = find_by_uuid(:Instance, params[:id])
             raise UnknownInstance if i.nil?
-            
+
             response_to(i.to_api_document)
           end
         end
@@ -372,7 +372,7 @@ module Dcmgr
           end
         end
       end
-        
+
       collection :host_pools do
         operation :index do
           description 'Show list of host pools'
@@ -389,7 +389,7 @@ module Dcmgr
           control do
             hp = find_by_uuid(:HostNode, params[:id])
             raise OperationNotPermitted unless examine_owner(hp)
-            
+
             response_to(hp.to_api_document)
           end
         end
@@ -398,7 +398,7 @@ module Dcmgr
       collection :volumes do
         operation :index do
           description 'Show lists of the volume'
-          # params start, fixnum, optional 
+          # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
             res = select_index(:Volume, {:start => params[:start],
@@ -456,7 +456,7 @@ module Dcmgr
               vol.save
 
               commit_transaction
-              
+
               Dcmgr.messaging.submit("scheduler", 'schedule_volume', vol.canonical_uuid)
             else
               begin
@@ -469,14 +469,14 @@ module Dcmgr
 
               vol.state = :pending
               vol.save
-              
+
               commit_transaction
-              
+
               repository_address = nil
               if vol.snapshot
                 repository_address = Dcmgr::StorageService.repository_address(vol.snapshot.destination_key)
               end
-              
+
               res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
             end
 
@@ -490,7 +490,7 @@ module Dcmgr
           control do
             volume_id = params[:id]
             raise UndefinedVolumeID if volume_id.nil?
-            
+
             vol = find_by_uuid(:Volume, volume_id)
             raise UnknownVolume if vol.nil?
             raise InvalidVolumeState, "#{vol.state}" unless vol.state == "available"
@@ -517,7 +517,7 @@ module Dcmgr
           control do
             raise UndefinedInstanceID if params[:instance_id].nil?
             raise UndefinedVolumeID if params[:id].nil?
-            
+
             i = find_by_uuid(:Instance, params[:instance_id])
             raise UnknownInstance if i.nil?
             raise InvalidInstanceState unless i.live? && i.state == 'running'
@@ -555,7 +555,7 @@ module Dcmgr
         end
 
       end
-      
+
       get '/api/volume_snapshots/upload_destination' do
         c = StorageService::snapshot_repository_config.dup
         tmp = c['local']
@@ -567,16 +567,16 @@ module Dcmgr
           }
         }
         results.unshift({
-          :destination_id => 'local', 
+          :destination_id => 'local',
           :destination_name => tmp['display_name']
         })
         response_to([{:results => results}])
       end
-      
+
       collection :volume_snapshots do
         operation :index do
           description 'Show lists of the volume_snapshots'
-          # params start, fixnum, optional 
+          # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
             res = select_index(:VolumeSnapshot, {:start => params[:start],
@@ -613,7 +613,7 @@ module Dcmgr
             destination_key = Dcmgr::StorageService.destination_key(@account.canonical_uuid, params[:destination], sp.snapshot_base_path, vs.snapshot_filename)
             vs.update_destination_key(@account.canonical_uuid, destination_key)
             commit_transaction
-            
+
             repository_address = Dcmgr::StorageService.repository_address(destination_key)
             res = Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, repository_address)
             response_to(vs.to_api_document)
@@ -627,13 +627,13 @@ module Dcmgr
             Models::VolumeSnapshot.lock!
             snapshot_id = params[:id]
             raise UndefindVolumeSnapshotID if snapshot_id.nil?
-            
+
             v = find_by_uuid(:VolumeSnapshot, snapshot_id)
             raise UnknownVolumeSnapshot if v.nil?
             raise InvalidVolumeState unless v.state == "available"
-            
+
             destination_key = v.destination_key
-            
+
             begin
               vs  = Models::VolumeSnapshot.delete_snapshot(@account.canonical_uuid, snapshot_id)
             rescue Models::VolumeSnapshot::RequestError => e
@@ -644,7 +644,7 @@ module Dcmgr
             sp = vs.storage_node
 
             commit_transaction
-             
+
             repository_address = Dcmgr::StorageService.repository_address(destination_key)
             res = Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
             response_to([vs.canonical_uuid])
@@ -799,7 +799,7 @@ module Dcmgr
       collection :ssh_key_pairs do
         description "List ssh key pairs in account"
         operation :index do
-          # params start, fixnum, optional 
+          # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
             res = select_index(:SshKeyPair, {:start => params[:start],
@@ -807,18 +807,18 @@ module Dcmgr
             response_to(res)
           end
         end
-        
+
         operation :show do
           description "Retrieve details about ssh key pair"
           # params :id required
           # params :format optional [openssh,putty]
           control do
             ssh = find_by_uuid(:SshKeyPair, params[:id])
-            
+
             response_to(ssh.to_api_document)
           end
         end
-        
+
         operation :create do
           description "Create ssh key pair information"
           # params :name required key name (<100 chars)
@@ -836,24 +836,24 @@ module Dcmgr
             if params[:download_once] != 'true'
               savedata[:private_key]=keydata[:private_key]
             end
-            
+
             if !Models::SshKeyPair.filter(:account_id=>@account.canonical_uuid,
                                           :name => params[:name]).empty?
               raise DuplicateSshKeyName, params[:name]
             end
-              
+
             begin
               ssh = Models::SshKeyPair.create(savedata)
             rescue => e
               raise DatabaseError, e.message
             end
-                                            
+
             # include private_key data in response even if
             # it's not going to be stored on DB.
             response_to(ssh.to_api_document.merge(:private_key=>keydata[:private_key]))
           end
         end
-        
+
         operation :destroy do
           description "Remove ssh key pair information"
           # params :id required
@@ -865,7 +865,7 @@ module Dcmgr
             else
               raise OperationNotPermitted
             end
-            
+
             response_to([ssh.canonical_uuid])
           end
         end
@@ -876,7 +876,7 @@ module Dcmgr
         description "Networks for account"
         operation :index do
           description "List networks in account"
-          # params start, fixnum, optional 
+          # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
             res = select_index(:Network, {:start => params[:start],
@@ -884,18 +884,18 @@ module Dcmgr
             response_to(res)
           end
         end
-        
+
         operation :show do
           description "Retrieve details about a network"
           # params :id required
           control do
             nw = find_by_uuid(:Network, params[:id])
             examine_owner(nw) || raise(OperationNotPermitted)
-            
+
             response_to(nw.to_api_document)
           end
         end
-        
+
         operation :create do
           description "Create new network"
           # params :gw required default gateway address of the network
@@ -911,11 +911,11 @@ module Dcmgr
               :description => params[:description],
             }
             nw = Models::Network.create(savedata)
-                                            
+
             response_to(nw.to_api_document)
           end
         end
-        
+
         operation :destroy do
           description "Remove network information"
           # params :id required
@@ -924,7 +924,7 @@ module Dcmgr
             nw = find_by_uuid(:Network, params[:id])
             examine_owner(nw) || raise(OperationNotPermitted)
             nw.destroy
-            
+
             response_to([nw.canonical_uuid])
           end
         end
@@ -972,7 +972,7 @@ module Dcmgr
             response_to({})
           end
         end
-        
+
         operation :del_pool, :method=>:put, :member=>true do
           description 'Unlabel network pool name'
           # param :name required
@@ -980,12 +980,12 @@ module Dcmgr
             Models::Tag.lock!
             nw = find_by_uuid(:Network, params[:id])
             examine_owner(nw) || raise(OperationNotPermitted)
-            
+
             nw.unlabel_tag(:NetworkPool, params[:name], @account.canonical_uuid)
             response_to({})
           end
         end
-        
+
         operation :get_pool, :method=>:get, :member=>true do
           description 'List network pool name'
           # param :name required
@@ -1003,7 +1003,7 @@ module Dcmgr
       collection :instance_specs do
         operation :index do
           description 'Show list of instance template'
-          # params start, fixnum, optional 
+          # params start, fixnum, optional
           # params limit, fixnum, optional
           control do
             res = select_index(:InstanceSpec, {:start => params[:start],
@@ -1024,4 +1024,3 @@ module Dcmgr
     end
   end
 end
- 
