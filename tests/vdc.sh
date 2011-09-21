@@ -208,28 +208,6 @@ echo > "/dev/tcp/localhost/8080"
 EOF
 }
 
-function run_developer() {
-  run_standalone
-  [ -z "${without_screen}" ] && {
-    #screen_it test "echo Enjoy wakame-vdc.; echo \* http://${ipaddr}:${webui_port}/; cd ${prefix_path}/frontend/dcmgr_gui; ./oauth_client.rb; "
-    # attach the shell.
-    screen_attach
-    screen_close
-  }
-}
-
-
-function run_standalone_integration_test {
-  cd $prefix_path/tests/spec
-  [ -z "${without_bundle_install}" ] && bundle install
-
-  # run integrate test specs. 
-  bundle exec rspec -fs . 
-
-  return $?
-}
-
-
 function ci_post_process {
   local sig=$1
   local ci_result=$2
@@ -264,7 +242,11 @@ case ${mode} in
     (
      set +e
      run_standalone
-     run_standalone_integration_test
+     cd $prefix_path/tests/spec
+     [ -z "${without_bundle_install}" ] && bundle install
+
+     # run integrate test specs. 
+     bundle exec rspec -fs . 
     )
     excode=$?
     screen_close
@@ -272,7 +254,9 @@ case ${mode} in
     ;;
   *)
     # interactive mode
-    run_developer
+    run_standalone
+    screen_attach
+    screen_close
     [ -f "${tmp_path}/vdc-pid.log" ] && {
       wait $(cat ${tmp_path}/vdc-pid.log)
     }
@@ -288,6 +272,5 @@ esac
     done
   }
 }
-#cleanup
 
 exit $excode
