@@ -87,4 +87,8 @@ module CliHelper
     Dir.chdir "#{prefix_dir}/frontend/dcmgr_gui"
   end
 
+  def cd_dcmgr_dir
+    prefix_dir = File.dirname(File.expand_path('../../', __FILE__))
+    Dir.chdir "#{prefix_dir}/dcmgr"
+  end
 end
