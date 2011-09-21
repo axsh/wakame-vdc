@@ -1011,8 +1011,17 @@ module Dcmgr
             response_to(res)
           end
         end
+
+        operation :show do
+          description "Show the instance template"
+          # params :id required
+          control do
+            inst_spec = find_by_uuid(:InstanceSpec, params[:id])
+            response_to(inst_spec.to_api_document)
+          end
+        end
       end
-      
     end
   end
 end
+ 
