@@ -193,7 +193,7 @@ EOS
     [ "${sta_server}" = "${ipaddr}" ] && \
     screen_it sta       "cd ${prefix_path}/dcmgr/ && ./bin/sta -i demo1 2>&1 | tee ${tmp_path}/vdc-sta.log"
     [ "${with_openflow}" != "yes" ] || \
-    screen_it ofc       "cd ${prefix_path}/trema/ && ./trema run -v ../dcmgr/bin/ofc"
+    screen_it ofc       "cd ${prefix_path}/dcmgr/ && ./bin/ofc -i demo1"
   }  || {
     cd ${prefix_path}/dcmgr/ && run2bg "./bin/collector > ${tmp_path}/vdc-collector.log 2>&1"
     cd ${prefix_path}/dcmgr/ && run2bg "./bin/nsa -i demo1 > ${tmp_path}/vdc-nsa.log 2>&1"
@@ -207,7 +207,7 @@ EOS
       cd ${prefix_path}/dcmgr/ && run2bg "./bin/sta -i demo1 > ${tmp_path}/vdc-sta.log 2>&1"
     }
     [ "${with_openflow}" != "yes" ] || {
-      cd ${prefix_path}/trema/ && run2bg "./trema run -v ../dcmgr/bin/ofc > tee ${tmp_path}/vdc-ofc.log 2>&1"
+      cd ${prefix_path}/dcmgr/ && run2bg "./bin/ofc -i demo1"
     }
     #wait_jobs
     echo "${pids}" > ${tmp_path}/vdc-pid.log
