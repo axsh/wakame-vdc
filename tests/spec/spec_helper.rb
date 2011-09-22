@@ -3,6 +3,7 @@ require 'rubygems'
 require 'bundler/setup' rescue nil
 require 'httparty'
 require 'json'
+require 'fileutils'
 
 require 'rspec'
 
@@ -71,6 +72,43 @@ module InstanceHelper
         false
       end
     end
+  end
+
+  def retry_until_network_started(instance_id)
+    ipaddr = APITest.get("/instances/#{instance_id}")["vif"].first["ipv4"]["address"]
+    retry_until do
+      `ping -c 1 -W 1 #{ipaddr}`
+      $?.exitstatus == 0
+    end
+  end
+
+  def retry_until_ssh_started(instance_id)
+    ipaddr = APITest.get("/instances/#{instance_id}")["vif"].first["ipv4"]["address"]
+    retry_until do
+      `echo | nc #{ipaddr} 22`
+      $?.exitstatus == 0
+    end
+  end
+
+  def retry_until_loggedin(instance_id, user)
+    res = APITest.get("/instances/#{instance_id}")
+
+    key_pair = APITest.get("/ssh_key_pairs").first["results"].map { |key_pair|
+      key_pair if key_pair["name"] == res["ssh_key_pair"]
+    }.first
+
+    suffix = Time.now.strftime("%s")
+    private_key_path = "/tmp/vdc_id_rsa.pem.#{suffix}"
+    open(private_key_path, "w") { |f| f.write(key_pair["private_key"]) }
+    File.chmod(0600, private_key_path)
+
+    cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} #{user}@#{res["vif"].first["ipv4"]["address"]} 'hostname; whoami;'"
+    retry_until do
+      `#{cmd}`
+      $?.exitstatus == 0
+    end
+
+    FileUtils.rm(private_key_path)
   end
 
 end
