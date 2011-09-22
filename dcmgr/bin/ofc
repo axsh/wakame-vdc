@@ -35,6 +35,7 @@ class OpenflowManager < Isono::NodeModules::Base
   initialize_hook do
     logger.info "initialize_hook for ofc..."
 
+    # Trema hack...
     $verbose = true
 
     Dcmgr.run_initializers('sequel')
@@ -42,16 +43,21 @@ class OpenflowManager < Isono::NodeModules::Base
 
     @context = Trema::DSL::Context.new
 
-    rule = { :port_status => "Dcmgr::NodeModules::OpenFlowController", :packet_in => "Dcmgr::NodeModules::OpenFlowController", :state_notify => "Dcmgr::NodeModules::OpenFlowController" }
+    rule = {
+      :port_status => "Dcmgr::NodeModules::OpenFlowController",
+      :packet_in => "Dcmgr::NodeModules::OpenFlowController",
+      :state_notify => "Dcmgr::NodeModules::OpenFlowController"
+    }
 
     switch_manager = Trema::SwitchManager.new( rule, @context.port )
     switch_manager.run!
 
-    # This ends up using it's own event loop, which we don't like very much.
+    openflow_controller = Dcmgr::NodeModules::OpenFlowController.new(node)
 
-    openflow_controller = Dcmgr::NodeModules::OpenFlowController.new
-
+    # A process fork is not what we want, however it is the only thing
+    # that works atm.
     @ofc_pid = fork {
+      # This ends up using it's own event loop, which we don't like very much.
       openflow_controller.run!
     }
     begin
@@ -62,13 +68,21 @@ class OpenflowManager < Isono::NodeModules::Base
       abort("Failed to exec ofc process.")
     end
 
+    # @ofc_pid = Thread.fork {
+    #   # This doesn't work, need to replace Trema's event loop...
+    #   openflow_controller.run!
+    # }
+
     logger.info "initialize_hook for ofc finished..."
   end
 
   terminate_hook do
+    logger.info "terminate_hook for ofc..."
+
     Trema::Util::cleanup_current_session
   end
 end
+
 
 Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
 
@@ -79,6 +93,7 @@ manifest.instance_eval do
   node_name 'ofc'
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
   load_module Isono::NodeModules::NodeHeartbeat
+#  load_module Dcmgr::NodeModules::OpenFlowHelper
   load_module OpenflowManager
   
   config do |c|
