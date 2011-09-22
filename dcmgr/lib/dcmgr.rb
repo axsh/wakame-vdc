@@ -132,6 +132,7 @@ module Dcmgr
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
+    autoload :OpenFlowController, 'dcmgr/node_modules/openflow_controller'
   end
 
   module Helpers

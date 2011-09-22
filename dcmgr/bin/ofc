@@ -1,189 +1,14 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-# Currently called using './trema ../wakame-vdc/dcmgr/bin/ofc'.
-
-$LOAD_PATH.unshift File.expand_path('../../dcmgr/lib', __FILE__)
-
-# New...
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 $LOAD_PATH.unshift File.expand_path('../../../trema/ruby', __FILE__)
 
 require 'dcmgr/rubygems'
 require 'dcmgr'
+require 'eventmachine'
 require 'isono'
 require 'trema'
-
-class OpenFlowController < Trema::Controller
-#  M=Dcmgr::Models
-
-  def start
-    info "OpenFlowController Thread Object Id: #{Thread.current}."
-
-    
-  end
-
-  def switch_ready datapath_id
-    info "switch_ready from %#x." % datapath_id
-
-    # There's a short period of time between the switch being
-    # activated and features_reply installing flow.
-    send_message datapath_id, Trema::FeaturesRequest.new
-  end
-
-  def features_reply message
-    info "datapath_id: %#x" % message.datapath_id
-    info "transaction_id: %#x" % message.transaction_id
-    info "n_buffers: %u" % message.n_buffers
-    info "n_tables: %u" % message.n_tables
-    info "capabilities: %u" % message.capabilities
-    info "actions: %u" % message.actions
-    info "ports: %s" % message.ports.collect { | each | each.number }.sort.join( ", " )
-
-    send_flow_mod_add(message.datapath_id,
-                      :match => Trema::Match.new( ),
-                      :priority => 0x0,
-                      :actions => Trema::ActionOutput.new( OFPP_NORMAL ) )
-
-    # Send to controller all unmatched packets destined for the
-    # meta-data server, and let the controller install the needed
-    # flows.
-    send_flow_mod_add(message.datapath_id,
-                      :match => Trema::Match.new( :dl_type => 0x0800, :nw_proto => 6, :nw_dst => "169.254.169.254", :tp_dst => 80 ),
-                      :priority => 0x010,
-                      :actions => [Trema::ActionOutput.new( OFPP_CONTROLLER ) ] )
-
-    message.ports.each do | each |
-      # Need to look at the datalink address, not guess at numbers.
-      if each.number == 1
-        # Don't allow packets from the network to reach the controller.
-        send_flow_mod_add(message.datapath_id,
-                          :match => Trema::Match.new( :in_port => each.number, :dl_type => 0x0800, :nw_proto => 6, :nw_dst => "169.254.169.254", :tp_dst => 80 ),
-                          :priority => 0x200 )
-
-      elsif each.number > 1 and each.number < OFPP_MAX
-        add_instance message.datapath_id, each
-      elsif each.number == OFPP_LOCAL
-        info "OFPP_LOCAL setting hw_addr = %s" % each.hw_addr.to_s
-        @local_hw = each.hw_addr
-      elsif each.number >= OFPP_MAX
-      else
-
-      end
-    end
-    
-  end
-
-  def port_status message
-    info "port_status from %#x" % message.datapath_id
-    info "datapath_id: %#x" % message.datapath_id
-    info "reason: #{message.reason}"
-    info "in_port: #{message.phy_port.number}"
-    info "hw_addr: #{message.phy_port.hw_addr}"
-    info "state: %#x" % message.phy_port.state
-
-    case message.reason
-    when OFPPR_ADD
-      info "Adding new port..."
-      add_instance message.datapath_id, message.phy_port
-    when OFPPR_DELETE
-      info "Deleting port..."
-    when OFPPR_MODIFY
-      info "Ignoring port modify..."
-    end
-      
-  end
-
-  def packet_in datapath_id, message
-    info "Got a packet: datapath_id:%#x in_port:#{message.in_port}, macsa:#{message.macsa}, macda:#{message.macda}, port_no:." % datapath_id
-
-    # Install DNAT route if we get a new connection destined for the
-    # meta-data server.
-
-    # Need to use ExactMatch due to lack of proper facilities for
-    # inspecting packets.
-    tmp_msg = Trema::ExactMatch.from( message )
-
-    info "Matching: %#x #{tmp_msg.nw_proto} #{Trema::IP.new( tmp_msg.nw_dst ).to_s} #{Trema::IP.new( tmp_msg.nw_src ).to_s} #{tmp_msg.tp_dst} #{tmp_msg.tp_src}." % tmp_msg.dl_type
-
-    if tmp_msg.dl_type == 0x0800 and tmp_msg.nw_proto == 6 and Trema::IP.new( tmp_msg.nw_dst ).to_s == "169.254.169.254" and tmp_msg.tp_dst == 80
-      install_dnat_entry datapath_id, tmp_msg, OFPP_LOCAL, @local_hw, "192.168.2.23", 9002
-
-      # Need to fix this, so that the first packet doesn't go missing.
-      #packet_out datapath_id, message, dest_port
-    end
-
-  end
-
-  #
-  # Private methods:
-  #
-  private
-
-  def add_instance datapath_id, port_info
-    # Should really do this in a separate table, with the classifier passing us on.
-    # send_flow_mod_add(datapath_id,
-    #                   :match => Match.new( :in_port => port_info.number, :dl_type => 0x0800, :nw_proto => 6, :nw_dst => "169.254.169.254", :nw_src => "169.254.169.252", :tp_dst => 80 ),
-    #                   :priority => 0x100,
-    #                   :actions => [ #Trema::ActionSetDlDst.new( Mac.new( "00:1e:0b:ea:fb:7e" ) ),
-    #                                Trema::ActionSetNwDst.new( IP.new( "192.168.2.23" ) ),
-    #                                Trema::ActionSetTpDst.new( 9002 ),
-    #                                Trema::ActionOutput.new( OFPP_LOCAL ) ] )
-
-    # send_flow_mod_add(datapath_id,
-    #                   :match => Match.new( :in_port => OFPP_LOCAL, :dl_type => 0x0800, :nw_proto => 6, :nw_dst => "169.254.169.252", :nw_src => "192.168.2.23", :tp_src => 9002 ),
-    #                   :priority => 0x100,
-    #                   :actions => [ #Trema::ActionSetDlSrc.new( Mac.new( "88:43:e1:42:4f:60" ) ),
-    #                                Trema::ActionSetNwSrc.new( IP.new( "169.254.169.254" ) ),
-    #                                Trema::ActionSetTpSrc.new( 80 ),
-    #                                Trema::ActionOutput.new( port_info.number ) ] )
-    
-    # send_flow_mod_add(datapath_id,
-    #                   :match => Match.new( :in_port => port_info.number, :dl_type => 0x0806, :nw_dst => "169.254.169.254", :nw_src => "169.254.169.252" ),
-    #                   :priority => 0x100,
-    #                   :actions => [ #Trema::ActionSetDlDst.new( Mac.new( "00:1e:0b:ea:fb:7e" ) ),
-    #                                Trema::ActionSetNwDst.new( IP.new( "192.168.2.23" ) ),
-    #                                Trema::ActionOutput.new( OFPP_LOCAL ) ] )
-    
-    # send_flow_mod_add(datapath_id,
-    #                   :match => Match.new( :in_port => OFPP_LOCAL, :dl_type => 0x0806, :nw_dst => "169.254.169.252", :nw_src => "192.168.2.23" ),
-    #                   :priority => 0x100,
-    #                   :actions => [ #Trema::ActionSetDlSrc.new( Mac.new( "88:43:e1:42:4f:60" ) ),
-    #                                Trema::ActionSetNwSrc.new( IP.new( "169.254.169.254" ) ),
-    #                                Trema::ActionOutput.new( port_info.number ) ] )
-
-    info "Adding instance: #{port_info.number}"
-#    nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-  end
-
-  def install_dnat_entry datapath_id, message, dest_port, dest_hw, dest_ip, dest_tp
-    info "Installing DNAT entry: #{dest_port} #{dest_hw} #{dest_ip}:#{dest_tp}"
-
-    send_flow_mod_add(datapath_id,
-                      :match => Trema::Match.new( :in_port => message.in_port, :dl_type => message.dl_type, :nw_proto => message.nw_proto,
-                                                  :dl_src => message.dl_src.to_s, :dl_dst => message.dl_dst.to_s,
-                                                  :nw_src => message.nw_src, :nw_dst => message.nw_dst,
-                                                  :tp_src => message.tp_src, :tp_dst => message.tp_dst ),
-                      :priority => 0x100,
-                      :idle_timeout => 300,
-                      :actions => [ Trema::ActionSetDlDst.new( dest_hw ),
-                                    Trema::ActionSetNwDst.new( Trema::IP.new( dest_ip ) ),
-                                    Trema::ActionSetTpDst.new( dest_tp ),
-                                    Trema::ActionOutput.new( dest_port ) ] )
-
-    send_flow_mod_add(datapath_id,
-                      :match => Trema::Match.new( :in_port => dest_port, :dl_type => message.dl_type, :nw_proto => message.nw_proto,
-                                                  :dl_src => dest_hw.to_s, :dl_dst => message.dl_src.to_s,
-                                                  :nw_src => dest_ip, :nw_dst => message.nw_src,
-                                                  :tp_src => dest_tp, :tp_dst => message.tp_src ),
-                      :priority => 0x100,
-                      :idle_timeout => 300,
-                      :actions => [ Trema::ActionSetDlSrc.new( message.dl_dst ),
-                                    Trema::ActionSetNwSrc.new( Trema::IP.new( message.nw_dst ) ),
-                                    Trema::ActionSetTpSrc.new( message.tp_dst ),
-                                    Trema::ActionOutput.new( message.in_port ) ] )
-  end
-end
 
 #Dcmgr.configure
 #Dcmgr.run_initializers('sequel')
@@ -200,8 +25,6 @@ end
 #  }
 # end
 
-require 'eventmachine'
-
 class OpenflowManager < Isono::NodeModules::Base
   include Dcmgr::Logger
 
@@ -214,19 +37,19 @@ class OpenflowManager < Isono::NodeModules::Base
 
     $verbose = true
 
+    Dcmgr.run_initializers('sequel')
     Trema::Util::cleanup_current_session
 
-#    Trema.home = "/usr/share/axsh/wakame-vdc/trema/"
     @context = Trema::DSL::Context.new
 
-    rule = { :port_status => "OpenFlowController", :packet_in => "OpenFlowController", :state_notify => "OpenFlowController" }
+    rule = { :port_status => "Dcmgr::NodeModules::OpenFlowController", :packet_in => "Dcmgr::NodeModules::OpenFlowController", :state_notify => "Dcmgr::NodeModules::OpenFlowController" }
 
     switch_manager = Trema::SwitchManager.new( rule, @context.port )
     switch_manager.run!
 
     # This ends up using it's own event loop, which we don't like very much.
 
-    openflow_controller = OpenFlowController.new
+    openflow_controller = Dcmgr::NodeModules::OpenFlowController.new
 
     @ofc_pid = fork {
       openflow_controller.run!
@@ -247,8 +70,9 @@ class OpenflowManager < Isono::NodeModules::Base
   end
 end
 
+Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
 
-#include Isono::Runner::RpcServer
+include Isono::Runner::RpcServer
 
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
