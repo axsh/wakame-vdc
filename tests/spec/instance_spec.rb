@@ -28,7 +28,6 @@ describe "/api/instances" do
 
     retry_until_running(instance_id)
     retry_until_network_started(instance_id)
-    sleep 3
     retry_until_ssh_started(instance_id)
 
     case params[:image_id]
