@@ -30,7 +30,15 @@ describe "/api/volume_snapshots" do
     end
 
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
+
     APITest.delete("/volume_snapshots/#{snap_id}").success?.should be_true
+    retry_until do
+      # "available" -> "deleting" -> "deleted"
+      APITest.get("/volume_snapshots/#{snap_id}")["state"] == "deleted"
+    end
   end
 
 end

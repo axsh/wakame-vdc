@@ -13,6 +13,9 @@ describe "/api/volumes" do
     end
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == 99
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
   end
 
   it "create volume from snapshot snap-lucid1 and delete" do
@@ -26,6 +29,9 @@ describe "/api/volumes" do
     end
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == snap["size"].to_i
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
   end
 
   # volume_min_size
@@ -43,6 +49,9 @@ describe "/api/volumes" do
     end
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == 10
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
   end
 
   # volume_max_size
@@ -60,6 +69,9 @@ describe "/api/volumes" do
     end
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == 3000
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
   end
 
 end
