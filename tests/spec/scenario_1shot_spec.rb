@@ -6,56 +6,105 @@ describe "1shot" do
   include RetryHelper
   include InstanceHelper
 
-  it "tests CURD operations for 1shot" do
-    timestamp = Time.now.strftime("%s")
-
+  it "should test CURD operations for 1shot" do
     # ssh_key::create
-    ssh_key_pair = APITest.create('/ssh_key_pairs.json', {:name=>"1shot.#{timestamp}"})
-    ssh_key_pair.success?.should be_true
-    sleep 3
-    APITest.get("/ssh_key_pairs/#{ssh_key_pair["id"]}").success?.should be_true
+    ssh_key_name = sprintf("scenario.%s", Time.now.strftime("%s"))
+    res = APITest.create('/ssh_key_pairs.json', {:name=>ssh_key_name})
+    res.success?.should be_true
+    ssh_key_pair_id = res["id"]
 
-    private_key_path = "/tmp/vdc_id_rsa.pem.#{timestamp}"
-    open(private_key_path, "w") { |f| f.write(ssh_key_pair["private_key"]) }
-    File.chmod(0600, private_key_path)
-
-    # instance
-    #instance = APITest.create("/instances", {:image_id=>'wmi-lucid5', :instance_spec_id=>'is-demospec', :"ssh_key"=>ssh_key_pair["name"]})
-    instance = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :"ssh_key"=>ssh_key_pair["name"]})
-    instance.success?.should be_true
-    instance_id = instance["id"]
+    # instance::create
+    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>ssh_key_name})
+    res.success?.should be_true
+    instance_id = res["id"]
 
     retry_until_running(instance_id)
+    retry_until_network_started(instance_id)
+    retry_until_ssh_started(instance_id)
+    retry_until_loggedin(instance_id, 'ubuntu')
 
-    instance = APITest.get("/instances/#{instance_id}")
-    ipv4 = instance["vif"].first["ipv4"]["address"]
-
+    # volume::create
+    res = APITest.create("/volumes", {:volume_size=>10})
+    res.success?.should be_true
+    volume_id = res["id"]
     retry_until do
-      `ping -c 1 -W 1 #{ipv4}`
-      $?.exitstatus == 0
+      APITest.get("/volumes/#{volume_id}")["state"] == "available"
     end
 
+    # volume:attach
+    res = APITest.update("/volumes/#{volume_id}/attach", {:instance_id=>instance_id, :volume_id=>volume_id})
+    res.success?.should be_true
     retry_until do
-      `echo | nc #{ipv4} 22`
-      $?.exitstatus == 0
+      # "available" -> "attaching" -> "attached"
+      APITest.get("/volumes/#{volume_id}")["state"] == "attached"
     end
 
-    sleep 3
-    cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} ubuntu@#{ipv4} 'hostname; whoami;'"
+    # volume::detach
+    res = APITest.update("/volumes/#{volume_id}/detach", {:instance_id=>instance_id, :volume_id=>volume_id})
+    res.success?.should be_true
     retry_until do
-      `#{cmd}`
-      $?.exitstatus == 0
+      # "attached" -> "detaching" -> "available"
+      APITest.get("/volumes/#{volume_id}")["state"] == "available"
     end
 
-    `#{cmd}`
-    $?.exitstatus.should == 0
-    sleep 3
+    # snap::create
+    res = APITest.create("/volume_snapshots", {:volume_id=>volume_id, :destination=>"local"})
+    snap_id = res["id"]
+    res.success?.should be_true
+    retry_until do
+      APITest.get("/volume_snapshots/#{snap_id}")["state"] == "available"
+    end
 
+    # volume::delete
+    APITest.delete("/volumes/#{volume_id}").success?.should be_true
+    # "available" -> "deregistering" -> "deleted"
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
+
+    # volume::create from snapshot
+    res = APITest.create("/volumes", {:snapshot_id=>snap_id})
+    res.success?.should be_true
+    volume_id = res["id"]
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "available"
+    end
+
+    # volume:attach
+    res = APITest.update("/volumes/#{volume_id}/attach", {:instance_id=>instance_id, :volume_id=>volume_id})
+    res.success?.should be_true
+    retry_until do
+      # "available" -> "attaching" -> "attached"
+      APITest.get("/volumes/#{volume_id}")["state"] == "attached"
+    end
+
+    # volume::detach
+    res = APITest.update("/volumes/#{volume_id}/detach", {:instance_id=>instance_id, :volume_id=>volume_id})
+    res.success?.should be_true
+    retry_until do
+      # "attached" -> "detaching" -> "available"
+      APITest.get("/volumes/#{volume_id}")["state"] == "available"
+    end
+
+    # volume::delete
+    APITest.delete("/volumes/#{volume_id}").success?.should be_true
+    # "available" -> "deregistering" -> "deleted"
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
+
+    # snap::delete
+    APITest.delete("/volume_snapshots/#{snap_id}").success?.should be_true
+    retry_until do
+      # "available" -> "deleting" -> "deleted"
+      APITest.get("/volume_snapshots/#{snap_id}")["state"] == "deleted"
+    end
+
+    # instance::delete
     APITest.delete("/instances/#{instance_id}").success?.should be_true
     retry_until_terminated(instance_id)
 
     # ssh_key::delete
-    FileUtils.rm(private_key_path)
-    APITest.delete("/ssh_key_pairs/#{ssh_key_pair["id"]}").success?.should be_true
+    APITest.delete("/ssh_key_pairs/#{ssh_key_pair_id}").success?.should be_true
   end
 end
