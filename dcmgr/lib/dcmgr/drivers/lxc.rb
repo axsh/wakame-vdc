@@ -192,7 +192,7 @@ module Dcmgr
         devnum = vol[:guest_device_name]
 
         sh("echo \"b #{devnum} rwm\" > /cgroup/#{inst_id}/devices.deny")
-        sh("rm -rf #{hc.inst_data_dir}/rootfs#{sddev}")
+        sh("rm -f #{hc.inst_data_dir}/rootfs#{sddev}")
 
         config_name = "#{hc.inst_data_dir}/config.#{inst_id}"
         config = File.open(config_name, 'r')
