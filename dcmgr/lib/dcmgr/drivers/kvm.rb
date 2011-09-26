@@ -102,6 +102,9 @@ module Dcmgr
 
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           t.cmd("pci_del #{pci_devaddr}")
+          # [timming issue] It's too fast to run "info pci".
+          sleep 1
+
           #
           #  Bus  0, device   4, function 0:
           #    SCSI controller: PCI device 1af4:1001
