@@ -110,7 +110,7 @@ module Dcmgr
           raise NotImplementedError
         else
           content_type 'json'
-          body res.to_json
+          body res.to_json(JSON::PRETTY_STATE_PROTOTYPE)
         end
       end
 
