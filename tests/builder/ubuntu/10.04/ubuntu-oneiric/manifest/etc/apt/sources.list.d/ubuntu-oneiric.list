@@ -1,0 +1,6 @@
+deb http://us.archive.ubuntu.com/ubuntu/ oneiric main restricted
+deb http://us.archive.ubuntu.com/ubuntu/ oneiric multiverse
+deb http://us.archive.ubuntu.com/ubuntu/ oneiric universe
+deb http://us.archive.ubuntu.com/ubuntu/ oneiric-updates main restricted
+deb http://us.archive.ubuntu.com/ubuntu/ oneiric-updates multiverse
+deb http://us.archive.ubuntu.com/ubuntu/ oneiric-updates universe
