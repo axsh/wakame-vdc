@@ -134,6 +134,28 @@ module Dcmgr
                                                                       @vol[:transport_information][:lun]]
       end
 
+      def setup_metadata_drive
+        logger.info("Setting up metadata drive image for :#{@hva_ctx.inst_id}")
+        # truncate creates sparsed file.
+        sh("truncate -s 10m '#{@hva_ctx.metadata_img_path}'; sync;")
+        # TODO: need to lock loop device not to use same device from
+        # another thread/process.
+        lodev=`losetup -f`.chomp
+        sh("losetup #{lodev} '#{@hva_ctx.metadata_img_path}'")
+        sh("mkfs.vfat '#{@hva_ctx.metadata_img_path}'")
+        Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp")
+        sh("mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
+
+        # generate metadata as file
+        File.open(File.expand_path('metadata.conf', "#{@hva_ctx.inst_data_dir}/tmp"), "w") { |f|
+          f.puts("state=#{@inst[:state]}")
+        }
+      ensure
+        # ignore any errors from cleanup work.
+        sh("umount -f '#{@hva_ctx.inst_data_dir}/tmp'") rescue logger.warn($!.message)
+        sh("losetup -d #{lodev}") rescue logger.warn($!.message)
+      end
+
       job :run_local_store, proc {
         @inst_id = request.args[0]
         logger.info("Booting #{@inst_id}")
@@ -187,6 +209,8 @@ module Dcmgr
         sh("cp -p --sparse=always %s %s",[vmimg_cache_path, @os_devpath])
         sleep 1
 
+        setup_metadata_drive
+        
         @bridge_if = check_interface
         @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
@@ -231,6 +255,8 @@ module Dcmgr
 
         # attach disk
         attach_volume_to_host
+        
+        setup_metadata_drive
         
         # run vm
         @bridge_if = check_interface
@@ -400,6 +426,10 @@ module Dcmgr
 
       def os_devpath
         @hva.instance_variable_get(:@os_devpath)
+      end
+
+      def metadata_img_path
+        File.expand_path('metadata.img', inst_data_dir)
       end
 
       def bridge_if
