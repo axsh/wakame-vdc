@@ -225,22 +225,29 @@ function cleanup {
     [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] || : && \
       echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | /bin/sh
   } || :
-  
+
+  # logfile
   for i in ${tmp_path}/screenlog.* ${tmp_path}/*.log; do rm -f ${i}; done
 
+  # volume
   [ -d ${tmp_path}/xpool/${account_id} ] && {
     for i in ${tmp_path}/xpool/${account_id}/*; do rm -f ${i}; done
   }
+
+  # snapshot
+  [ -d ${tmp_path}/snap/${account_id} ] && {
+    for i in ${tmp_path}/snap/${account_id}/*; do rm -f ${i}; done
+  }
 }
 
-# kick the builder script. 
+# kick the builder script.
 #
 # use following form to set configurable variables for xxx.sh:
 # ( val1=1; run_builder "xxx.sh"; )
 function run_builder {
   local builder_script=$1
 
-  i="$DISTRIB_ID/$DISTRIB_RELEASE/$builder_script" 
+  i="$DISTRIB_ID/$DISTRIB_RELEASE/$builder_script"
   [ -f "$builder_path/$i" ] || abort "ERROR: Unknown builder script: $builder_script"
   # run script in subshell to inherit variables.
   (
