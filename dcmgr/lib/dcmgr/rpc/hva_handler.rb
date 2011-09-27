@@ -145,11 +145,11 @@ module Dcmgr
         select_hypervisor
 
         # create hva context
-        hc = HvaContext.new(self)
+        @hva_ctx = HvaContext.new(self)
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
         # setup vm data folder
-        inst_data_dir = hc.inst_data_dir
+        inst_data_dir = @hva_ctx.inst_data_dir
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
         # copy image file
         img_src = @inst[:image][:source]
@@ -188,7 +188,7 @@ module Dcmgr
         sleep 1
 
         @bridge_if = check_interface
-        @hv.run_instance(hc)
+        @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
       }, proc {
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
@@ -208,12 +208,12 @@ module Dcmgr
         select_hypervisor
 
         # create hva context
-        hc = HvaContext.new(self)
+        @hva_ctx = HvaContext.new(self)
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
 
         # setup vm data folder
-        inst_data_dir = hc.inst_data_dir
+        inst_data_dir = @hva_ctx.inst_data_dir
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
 
         # create volume from snapshot
@@ -234,7 +234,7 @@ module Dcmgr
         
         # run vm
         @bridge_if = check_interface
-        @hv.run_instance(HvaContext.new(self))
+        @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
       }, proc {
