@@ -189,10 +189,12 @@ function cleanup {
     }
    ;;
   lxc)
-    for container_name in $(lxc-ls); do
-      echo ... ${container_name}
-      lxc-destroy -n ${container_name} || lxc-kill -n ${container_name}
-    done
+    which lxc-ls >/dev/null && {
+      for container_name in $(lxc-ls); do
+        echo ... ${container_name}
+        lxc-destroy -n ${container_name} || lxc-kill -n ${container_name}
+      done
+    }
     unset container_name
 
     mount | egrep ${vmdir_path} | awk '{print $3}' | while read line ;do
