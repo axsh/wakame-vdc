@@ -10,29 +10,29 @@ describe "bin/gui-manage user" do
     @uuid = Time.now.strftime('%H%M%S')
   end
 
-  it "add accounts" do
+  it "should add accounts" do
     `./bin/gui-manage account add --name #{@uuid}1 -u a-#{@uuid}1`
     $?.exitstatus.should == 0
     `./bin/gui-manage account add --name #{@uuid}2 -u a-#{@uuid}2`
     $?.exitstatus.should == 0
   end
 
-  it "add user" do
+  it "should add user" do
     `./bin/gui-manage user add --name #{@uuid}0 -p #{@uuid}0 -u u-#{@uuid}0 #{@uuid}0`
     $?.exitstatus.should == 0
   end
 
-  it "associate user" do
+  it "should associate user" do
     `./bin/gui-manage user associate u-#{@uuid}0 -a a-#{@uuid}1 a-#{@uuid}2`
     $?.exitstatus.should == 0
   end
 
-  it "delete user" do
+  it "should delete user" do
     `./bin/gui-manage user del u-#{@uuid}0`
     $?.exitstatus.should == 0
   end
 
-  it "delete accounts" do
+  it "should delete accounts" do
     `./bin/gui-manage account del a-#{@uuid}1`
     $?.exitstatus.should == 0
     `./bin/gui-manage account del a-#{@uuid}2`

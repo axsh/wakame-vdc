@@ -4,7 +4,7 @@ require File.expand_path('../spec_helper', __FILE__)
 describe "/api/volumes" do
   include RetryHelper
 
-  it "create 99MB blank volume and delete" do
+  it "should create 99MB blank volume and delete" do
     res = APITest.create("/volumes", {:volume_size=>99})
     res.success?.should be_true
     volume_id = res["id"]
@@ -18,7 +18,7 @@ describe "/api/volumes" do
     end
   end
 
-  it "create volume from snapshot snap-lucid1 and delete" do
+  it "should create volume from snapshot snap-lucid1 and delete" do
     snap = APITest.get("/volume_snapshots/snap-lucid1")
     snap.success?.should be_true
     res = APITest.create("/volumes", {:snapshot_id=>'snap-lucid1'})
@@ -35,12 +35,12 @@ describe "/api/volumes" do
   end
 
   # volume_min_size
-  it "create blank volume less than minimum size. (volume_min_size 10)" do
+  it "should create blank volume less than minimum size. (volume_min_size 10)" do
     res = APITest.create("/volumes", {:volume_size=>9})
     res.success?.should_not be_true
   end
 
-  it "create minimum size blank volume (volume_min_size 10)" do
+  it "should create minimum size blank volume (volume_min_size 10)" do
     res = APITest.create("/volumes", {:volume_size=>10})
     res.success?.should be_true
     volume_id = res["id"]
@@ -55,12 +55,12 @@ describe "/api/volumes" do
   end
 
   # volume_max_size
-  it "create blank volume more than maximum size. (volume_max_size 3000)" do
+  it "should create blank volume more than maximum size. (volume_max_size 3000)" do
     res = APITest.create("/volumes", {:volume_size=>3001})
     res.success?.should_not be_true
   end
 
-  it "create maximum size blank volume (volume_max_size 3000)" do
+  it "should create maximum size blank volume (volume_max_size 3000)" do
     res = APITest.create("/volumes", {:volume_size=>3000})
     res.success?.should be_true
     volume_id = res["id"]

@@ -3,7 +3,7 @@ require File.expand_path('../spec_helper', __FILE__)
 
 
 describe "/api/netfilter_group" do
-  it "tests CURD operations for netfilter" do
+  it "should test CURD operations for netfilter" do
     # create not duplicated group name
     res1 = APITest.create('/netfilter_groups.json', {:name=>'g1', :description=>'g1', :rule => "tcp:22,22,ip4:0.0.0.0/24"})
     res1.success?.should be_true

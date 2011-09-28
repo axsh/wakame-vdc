@@ -10,19 +10,19 @@ describe "/api/images" do
   end
 
   # volume_min_size
-  it "show image list" do
+  it "should show image list" do
     res = APITest.get("/images")
     res.success?.should be_true
   end
 
-  it "describe machine image (wmi-lucid0)" do
+  it "should describe machine image (wmi-lucid0)" do
     image_id = "wmi-lucid0"
     res = APITest.get("/images/#{image_id}")
     res["id"].should == image_id
     res.success?.should be_true
   end
 
-  it "delete machine image (wmi-lucid0) and then register with CLI." do
+  it "should delete machine image (wmi-lucid0) and then register with CLI." do
     image_id = "wmi-lucid0"
     res = APITest.get("/images/#{image_id}")
 
@@ -39,7 +39,7 @@ describe "/api/images" do
     $?.exitstatus.should == 0
   end
 
-  it "delete machine image (wmi-lucid1) and then register with CLI." do
+  it "should delete machine image (wmi-lucid1) and then register with CLI." do
     image_id = "wmi-lucid1"
     res = APITest.get("/images/#{image_id}")
 
