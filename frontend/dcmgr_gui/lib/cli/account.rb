@@ -180,5 +180,36 @@ __END
       }
     end
     
+
+    desc "oauth UUID [options]", "Generate or show OAuth key and secret"
+    def oauth(uuid)
+      require 'oauth'
+      acc = Account[uuid] || raise(Thor::Error, "Unknown Account UUID: #{uuid}")
+
+      oauth_token = OauthToken.new
+      oauth_token.generate_keys
+      oauth_consumer = OauthConsumer.find(:account_id => acc.id)
+      if oauth_consumer.nil?
+        oauth_consumer = OauthConsumer.create(
+                                              :key => oauth_token.token,
+                                              :secret => oauth_token.secret,
+                                              :account_id => acc.id
+                                              )
+      end
+
+      puts ERB.new(<<__END, nil, '-').result(binding)
+Account UUID:
+<%- if acc.class == Account -%>
+  <%= acc.canonical_uuid %>
+<%- else -%>
+  <%= Account.uuid_prefix%>-<%= acc.uuid %>
+<%- end -%>
+
+Consumer Key:
+  <%= oauth_consumer.key %>
+Consumer Secret:
+  <%= oauth_consumer.secret %>
+__END
+    end
   end
 end
