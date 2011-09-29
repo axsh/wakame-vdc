@@ -227,6 +227,7 @@ module Dcmgr::Models
         :volume => [],
         :netfilter_group => [],
         :vif => [],
+        :hostname => hostname,
       }
       if self.ssh_key_data
         h[:ssh_key_pair] = self.ssh_key_data[:name]
