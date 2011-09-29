@@ -291,6 +291,11 @@ module Dcmgr
             commit_transaction
             Dcmgr.messaging.submit("scheduler",
                                    'schedule_instance', instance.canonical_uuid)
+
+            # retrieve latest instance data.
+            # if not, nf_group value is empty.
+            instance = find_by_uuid(:Instance, instance.canonical_uuid)
+
             response_to(instance.to_api_document)
           end
         end
