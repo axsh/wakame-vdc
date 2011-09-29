@@ -5,16 +5,25 @@ require 'fileutils'
 describe "1shot" do
   include RetryHelper
   include InstanceHelper
+  include NetfilterHelper
 
   it "should test CURD operations for 1shot" do
+    scenario_id = sprintf("scenario.%s", Time.now.strftime("%s"))
+
+    # netfilter::create
+    netfilter_group_name = scenario_id
+    res = APITest.create('/netfilter_groups', {:name => netfilter_group_name, :description => netfilter_group_name, :rule => "tcp:22,22,ip4:0.0.0.0/24"})
+    res.success?.should be_true
+    netfilter_group_id = res["uuid"]
+
     # ssh_key::create
-    ssh_key_name = sprintf("scenario.%s", Time.now.strftime("%s"))
-    res = APITest.create('/ssh_key_pairs.json', {:name=>ssh_key_name})
+    ssh_key_name = scenario_id
+    res = APITest.create('/ssh_key_pairs', {:name=>ssh_key_name})
     res.success?.should be_true
     ssh_key_pair_id = res["id"]
 
     # instance::create
-    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>ssh_key_name})
+    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>ssh_key_name, :nf_group=>[netfilter_group_name]})
     res.success?.should be_true
     instance_id = res["id"]
 
@@ -86,6 +95,24 @@ describe "1shot" do
       APITest.get("/volumes/#{volume_id}")["state"] == "available"
     end
 
+    # netfilter::update
+    # add rules
+    res = add_rules(netfilter_group_id, ["tcp:80,80,ip4:0.0.0.0/24"])
+    res.success?.should be_true
+
+    res = add_rules(netfilter_group_id, ["icmp:-1,-1,ip4:0.0.0.0/24"])
+    res.success?.should be_true
+
+    # delete rules
+    res = del_rules(netfilter_group_id, ["tcp:22,22,ip4:0.0.0.0/24"])
+    res.success?.should be_true
+
+    res = add_rules(netfilter_group_id, ["tcp:80,80,ip4:0.0.0.0/24"])
+    res.success?.should be_true
+
+    res = add_rules(netfilter_group_id, ["icmp:-1,-1,ip4:0.0.0.0/24"])
+    res.success?.should be_true
+
     # volume::delete
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
     # "available" -> "deregistering" -> "deleted"
@@ -104,7 +131,11 @@ describe "1shot" do
     APITest.delete("/instances/#{instance_id}").success?.should be_true
     retry_until_terminated(instance_id)
 
+    # netfilter::delete
+    APITest.delete("/netfilter_groups/#{netfilter_group_id}").success?.should be_true
+
     # ssh_key::delete
     APITest.delete("/ssh_key_pairs/#{ssh_key_pair_id}").success?.should be_true
   end
+
 end
