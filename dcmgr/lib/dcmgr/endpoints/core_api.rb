@@ -214,7 +214,7 @@ module Dcmgr
           # param :image_id, string, :required
           # param :instance_spec_id, string, :required
           # param :host_id, string, :optional
-          # param :host_name, string, :optional
+          # param :hostname, string, :optional
           # param :user_data, string, :optional
           # param :nf_group, array, :optional
           # param :ssh_key, string, :optional
