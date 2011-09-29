@@ -82,15 +82,25 @@ module InstanceHelper
     end
   end
 
-  def retry_until_ssh_started(instance_id)
+  def ping(instance_id)
     ipaddr = APITest.get("/instances/#{instance_id}")["vif"].first["ipv4"]["address"]
-    retry_until do
-      `echo | nc #{ipaddr} 22`
-      $?.exitstatus == 0
-    end
+    `ping -c 1 -W 1 #{ipaddr}`
   end
 
-  def retry_until_loggedin(instance_id, user)
+  def open_port(instance_id, protocol, port)
+    ipaddr = APITest.get("/instances/#{instance_id}")["vif"].first["ipv4"]["address"]
+    case protocol
+    when :tcp
+      `echo | nc    #{ipaddr} #{port}`
+    when :udp
+      `echo | nc -u #{ipaddr} #{port}`
+    else
+      raise "Unknown protocol"
+    end
+    $?
+  end
+
+  def ssh_command(instance_id, user, command, do_retry)
     res = APITest.get("/instances/#{instance_id}")
 
     key_pair = APITest.get("/ssh_key_pairs").first["results"].map { |key_pair|
@@ -102,18 +112,42 @@ module InstanceHelper
     open(private_key_path, "w") { |f| f.write(key_pair["private_key"]) }
     File.chmod(0600, private_key_path)
 
-    cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} #{user}@#{res["vif"].first["ipv4"]["address"]} 'hostname; whoami;'"
-    retry_until do
+    cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} #{user}@#{res["vif"].first["ipv4"]["address"]} '#{command}'"
+
+    if do_retry
+      retry_until do
+        `#{cmd}`
+        $?.exitstatus == 0
+      end
+    else
       `#{cmd}`
-      $?.exitstatus == 0
     end
 
     FileUtils.rm(private_key_path)
+    $?
+  end
+
+  def retry_until_ssh_started(instance_id)
+    ipaddr = APITest.get("/instances/#{instance_id}")["vif"].first["ipv4"]["address"]
+    retry_until do
+      `echo | nc #{ipaddr} 22`
+      $?.exitstatus == 0
+    end
+  end
+
+  def retry_until_loggedin(instance_id, user)
+    ssh_command(instance_id, user, "hostname; whoami;", :retry)
   end
 
 end
 
 module NetfilterHelper
+
+  def retrieve_netfilter_by_name(netfilter_group_name)
+    APITest.get("/netfilter_groups").first["results"].map { |netfilter|
+      netfilter if netfilter["name"] == netfilter_group_name
+    }.first
+  end
 
   def add_rules(netfilter_group_id, rules)
     new_rules = pickup_rules(get_rules(netfilter_group_id)) + rules
