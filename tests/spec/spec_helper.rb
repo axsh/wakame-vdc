@@ -85,6 +85,7 @@ module InstanceHelper
   def ping(instance_id)
     ipaddr = APITest.get("/instances/#{instance_id}")["vif"].first["ipv4"]["address"]
     `ping -c 1 -W 1 #{ipaddr}`
+    $?
   end
 
   def open_port(instance_id, protocol, port)
