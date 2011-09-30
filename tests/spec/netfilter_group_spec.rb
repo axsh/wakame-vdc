@@ -9,11 +9,11 @@ describe "/api/netfilter_group" do
     res1.success?.should be_true
     APITest.get("/netfilter_groups/#{res1["uuid"]}").success?.should be_true
 
-    res2 = APITest.create('/netfilter_groups.json', {:name=>'g2', :description=>'g2', :rule => "icmp:-1,-1,a-00000000:#{res1["name"]},tcp:22,22,a-00000000:#{res1["name"]}"})
+    res2 = APITest.create('/netfilter_groups.json', {:name=>'g2', :description=>'g2', :rule => "icmp:-1,-1,a-00000000:#{res1["name"]}\ntcp:22,22,a-00000000:#{res1["name"]}"})
     res2.success?.should be_true
     APITest.get("/netfilter_groups/#{res2["uuid"]}").success?.should be_true
 
-    res3 = APITest.create('/netfilter_groups.json', {:name=>'g3', :description=>'g3', :rule => "icmp:-1,-1,a-00000000:#{res2["name"]},tcp:22,22,a-00000000:#{res2["name"]}"})
+    res3 = APITest.create('/netfilter_groups.json', {:name=>'g3', :description=>'g3', :rule => "icmp:-1,-1,a-00000000:#{res2["name"]}\ntcp:22,22,a-00000000:#{res2["name"]}"})
     res3.success?.should be_true
     APITest.get("/netfilter_groups/#{res3["uuid"]}").success?.should be_true
 
