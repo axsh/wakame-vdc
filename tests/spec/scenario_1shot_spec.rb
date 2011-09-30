@@ -97,20 +97,20 @@ describe "1shot" do
 
     # netfilter::update
     # add rules
-    res = add_rules(netfilter_group_id, ["tcp:80,80,ip4:0.0.0.0/24"])
+    res = add_rules(netfilter_group_id, ["tcp:80,80,ip4:0.0.0.0"])
     res.success?.should be_true
 
-    res = add_rules(netfilter_group_id, ["icmp:-1,-1,ip4:0.0.0.0/24"])
+    res = add_rules(netfilter_group_id, ["icmp:-1,-1,ip4:0.0.0.0"])
     res.success?.should be_true
 
     # delete rules
-    res = del_rules(netfilter_group_id, ["tcp:22,22,ip4:0.0.0.0/24"])
+    res = del_rules(netfilter_group_id, ["tcp:22,22,ip4:0.0.0.0"])
     res.success?.should be_true
 
-    res = add_rules(netfilter_group_id, ["tcp:80,80,ip4:0.0.0.0/24"])
+    res = add_rules(netfilter_group_id, ["tcp:80,80,ip4:0.0.0.0"])
     res.success?.should be_true
 
-    res = add_rules(netfilter_group_id, ["icmp:-1,-1,ip4:0.0.0.0/24"])
+    res = add_rules(netfilter_group_id, ["icmp:-1,-1,ip4:0.0.0.0"])
     res.success?.should be_true
 
     # volume::delete
