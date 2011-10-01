@@ -18,8 +18,11 @@ module Dcmgr
           timedout = true
           if curthread && curthread.alive?
             curthread.raise(TimeoutError.new("timeout"))
-            # call .pass only when the target thread is not died yet.
-            curthread.pass  unless curthread.stop?
+            begin
+              curthread.pass
+            rescue ::Exception => e
+              # any thread errors can be ignored.
+            end
           end
         }
 
