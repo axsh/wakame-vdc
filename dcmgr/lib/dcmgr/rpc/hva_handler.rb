@@ -353,7 +353,10 @@ module Dcmgr
         logger.info("Attaching #{@vol_id} on #{@inst_id}")
 
         # attach disk on guest os
-        pci_devaddr = @hv.attach_volume_to_guest(HvaContext.new(self))
+        pci_devaddr=nil
+        tryagain do
+          pci_devaddr = @hv.attach_volume_to_guest(HvaContext.new(self))
+        end
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attached,
@@ -383,7 +386,9 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:detaching, :detached_at=>nil})
         # detach disk on guest os
-        @hv.detach_volume_from_guest(HvaContext.new(self))
+        tryagain do
+          @hv.detach_volume_from_guest(HvaContext.new(self))
+        end
 
         # detach disk on host os
         detach_volume_from_host
