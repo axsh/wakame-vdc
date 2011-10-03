@@ -45,7 +45,8 @@ module Dcmgr
           sh("iscsiadm -m discovery -t sendtargets -p %s", [@vol[:storage_node][:ipaddr]])
           sh("iscsiadm -m node -l -T '%s' --portal '%s'",
              [@vol[:transport_information][:iqn], @vol[:storage_node][:ipaddr]])
-          sleep 1
+          # wait udev queue
+          sh("/sbin/udevadm settle")
         end
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {
@@ -57,6 +58,8 @@ module Dcmgr
       def detach_volume_from_host
         # iscsi logout
         sh("iscsiadm -m node -T '%s' --logout", [@vol[:transport_information][:iqn]])
+        # wait udev queue
+        sh("/sbin/udevadm settle")
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:available,
                       :host_device_name=>nil,
