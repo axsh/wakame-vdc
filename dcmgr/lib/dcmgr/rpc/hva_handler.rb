@@ -359,6 +359,11 @@ module Dcmgr
                       :guest_device_name=>pci_devaddr})
         event.publish('hva/volume_attached', :args=>[@inst_id, @vol_id])
         logger.info("Attached #{@vol_id} on #{@inst_id}")
+      }, proc {
+        # push back volume state to available.
+        update_volume_state({:state=>:available},
+                            'hva/volume_available')
+        logger.error("Attach failed: #{@vol_id} on #{@inst_id}")
       }
 
       job :detach do
