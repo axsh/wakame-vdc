@@ -17,7 +17,7 @@ module Dcmgr
 
       def select_iscsi_target
         iscsi_target = @node.manifest.config.iscsi_target
-        @iscsi_target = Dcmgr::Drivers::IscsiTarget.select_iscsi_target(iscsi_target)
+        @iscsi_target = Dcmgr::Drivers::IscsiTarget.select_iscsi_target(iscsi_target, @node)
       end
 
       job :create_volume, proc {
