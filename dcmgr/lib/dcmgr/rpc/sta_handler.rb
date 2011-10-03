@@ -64,8 +64,9 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :transport_information=>opt})
         logger.info("registered iscsi target: #{@volume_id}")
       }, proc {
+        # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
-        logger.error("Failed to run create_volume iscsi target: #{@volume_id}")
+        logger.error("Failed to run create_volume: #{@volume_id}")
       }
 
       job :delete_volume do
@@ -140,6 +141,7 @@ module Dcmgr
         rpc.request('sta-collector', 'update_snapshot', @snapshot_id, {:state=>:available})
         logger.info("created new snapshot: #{@snapshot_id}")
       }, proc {
+        # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_snapshot', @snapshot_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
         logger.error("Failed to run create_snapshot: #{@snapshot_id}")
       }

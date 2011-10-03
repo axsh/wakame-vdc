@@ -86,6 +86,7 @@ module Dcmgr
         event.publish(ev, :args=>[@vol_id])
       end
 
+      # TODO: split into guessing bridge name and bridge generation parts.
       def check_interface
         vnic = @inst[:instance_nics].first
         unless vnic.nil?
@@ -267,6 +268,7 @@ module Dcmgr
         update_instance_state({:state=>:running}, 'hva/instance_started')
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
       }, proc {
+        # TODO: Run detach & destroy volume
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
                               'hva/instance_terminated')
         update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
@@ -360,6 +362,7 @@ module Dcmgr
         event.publish('hva/volume_attached', :args=>[@inst_id, @vol_id])
         logger.info("Attached #{@vol_id} on #{@inst_id}")
       }, proc {
+        # TODO: Run detach volume
         # push back volume state to available.
         update_volume_state({:state=>:available},
                             'hva/volume_available')
