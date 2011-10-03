@@ -108,7 +108,7 @@ module Dcmgr
         end
       end
 
-      job :create_snapshot do
+      job :create_snapshot, proc {
         @snapshot_id = request.args[0]
         @destination = Dcmgr::StorageService.repository(request.args[1])
         @snapshot = rpc.request('sta-collector', 'get_snapshot', @snapshot_id) unless @snapshot_id.nil?
@@ -139,7 +139,10 @@ module Dcmgr
         
         rpc.request('sta-collector', 'update_snapshot', @snapshot_id, {:state=>:available})
         logger.info("created new snapshot: #{@snapshot_id}")
-      end
+      }, proc {
+        rpc.request('sta-collector', 'update_snapshot', @snapshot_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+        logger.error("Failed to run create_snapshot: #{@snapshot_id}")
+      }
 
       job :delete_snapshot do
         @snapshot_id = request.args[0]
