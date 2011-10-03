@@ -27,6 +27,8 @@ module Dcmgr::Models
     many_to_one :storage_node
     plugin ArchiveChangedColumn, :histories
 
+    subset(:alives, {:deleted_at => nil})
+    
     RECENT_TERMED_PERIOD=(60 * 15)
     # lists the volumes are available and deleted within
     # RECENT_TERMED_PERIOD sec.
