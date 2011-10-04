@@ -12,12 +12,13 @@ module Dcmgr
       def run_instance(hc)
         # run vm
         inst = hc.inst
-        cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
-        args=[inst[:instance_spec][:memory_size],
-              inst[:instance_spec][:cpu_cores],
+        cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s,media=disk,boot=on,index=0 -drive file=%s,media=disk,index=1 -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+        args=[inst[:memory_size],
+              inst[:cpu_cores],
               inst[:uuid],
               inst[:runtime_config][:vnc_port],
               hc.os_devpath,
+              hc.metadata_img_path,
               File.expand_path('kvm.pid', hc.inst_data_dir),
               inst[:runtime_config][:telnet_port]
              ]
