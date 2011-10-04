@@ -80,6 +80,7 @@ module Dcmgr
             bridge_if = @node.manifest.config.bridge_novlan
             unless valid_nic?(bridge_if)
               sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+              sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
               sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
             end
           else
@@ -93,6 +94,7 @@ module Dcmgr
             bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
             unless valid_nic?(bridge_if)
               sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+              sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
               sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
             end
           end
@@ -100,7 +102,8 @@ module Dcmgr
           # interface up? down?
           [ vlan_if, bridge_if ].each do |ifname|
             if nic_state(ifname) == "down"
-              sh("/sbin/ifconfig #{ifname} 0.0.0.0 up")
+              sh("/sbin/ip link set %s up", [ifname])
+              sh("/sbin/ip link set %s promisc on", [ifname])
             end
           end
           sleep 1
