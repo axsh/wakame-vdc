@@ -7,7 +7,6 @@ module Dcmgr
     class Kvm < Hypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
-      include Dcmgr::Rpc::KvmHelper
       include Dcmgr::Helpers::NicHelper
 
       def run_instance(hc)
