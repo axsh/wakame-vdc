@@ -29,7 +29,7 @@ module Dcmgr
         sh(cmd, args)
 
         unless vnic.nil?
-          sh("/sbin/ifconfig %s 0.0.0.0 up", [vnic[:uuid]])
+          sh("/sbin/ip link set %s up", [vnic[:uuid]])
           sh("/usr/sbin/brctl addif %s %s", [hc.bridge_if, vnic[:uuid]])
         end
 
