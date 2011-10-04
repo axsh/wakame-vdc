@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
+#
+# OpenFlow Controller:
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 $LOAD_PATH.unshift File.expand_path('../../../trema/ruby', __FILE__)
@@ -12,12 +14,8 @@ require 'eventmachine'
 require 'isono'
 require 'trema'
 
+# TODO: Include the EventMachine handler directly in dcmgr.
 require 'em-handler'
-require 'learning-switch'
-
-#
-#
-#
 
 class OpenflowManager < Isono::NodeModules::Base
   include Dcmgr::Logger
@@ -39,22 +37,15 @@ class OpenflowManager < Isono::NodeModules::Base
     Trema::Util::cleanup_current_session
 
     rule = {
-      # :port_status => "Dcmgr::NodeModules::OpenFlowController",
-      # :packet_in => "Dcmgr::NodeModules::OpenFlowController",
-      # :state_notify => "Dcmgr::NodeModules::OpenFlowController"
-      :port_status => "LearningSwitch",
-      :packet_in => "LearningSwitch",
-      :state_notify => "LearningSwitch"
+      :port_status => "OpenFlowController",
+      :packet_in => "OpenFlowController",
+      :state_notify => "OpenFlowController"
     }
 
     switch_manager = Trema::SwitchManager.new( rule, 6633 )
     switch_manager.run!
 
-    # @openflow_controller = Dcmgr::NodeModules::OpenFlowController.new(node)
-    # @openflow_controller.init_trema
-    # @openflow_controller.run_immediate!
-
-    @openflow_controller = LearningSwitch.new()
+    @openflow_controller = Dcmgr::NodeModules::OpenFlowController.new
     @openflow_controller.init_trema
     @openflow_controller.run_immediate!
 
@@ -65,6 +56,7 @@ class OpenflowManager < Isono::NodeModules::Base
     logger.info "terminate_hook for ofc..."
 
     @openflow_controller.stop_immediate!
+    @openflow_controller.shutdown!
 
     Trema::Util::cleanup_current_session
   end
@@ -80,6 +72,7 @@ manifest.instance_eval do
   node_name 'ofc'
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
   load_module Isono::NodeModules::NodeHeartbeat
+  load_module Dcmgr::NodeModules::ServiceOpenFlow
   load_module OpenflowManager
   
   config do |c|

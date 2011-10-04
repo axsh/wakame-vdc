@@ -130,9 +130,10 @@ module Dcmgr
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
+    autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
-    autoload :OpenFlowController, 'dcmgr/node_modules/openflow_controller'
+    autoload :OpenFlowController, 'dcmgr/node_modules/service_openflow'
   end
 
   module Helpers
