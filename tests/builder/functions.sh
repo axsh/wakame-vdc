@@ -179,7 +179,7 @@ function cleanup {
   }
 
   ps -ef | egrep '[t]gtd' -q && {
-    initctl stop tgt
+    initctl restart tgt
   }
 
   case ${hypervisor} in
