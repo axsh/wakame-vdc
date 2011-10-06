@@ -133,9 +133,71 @@ module Dcmgr
         sh("mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
 
         # generate metadata as file
-        File.open(File.expand_path('metadata.conf', "#{@hva_ctx.inst_data_dir}/tmp"), "w") { |f|
-          f.puts("state=#{@inst[:state]}")
+        #File.open(File.expand_path('metadata.conf', "#{@hva_ctx.inst_data_dir}/tmp"), "w") { |f|
+        #  f.puts("state=#{@inst[:state]}")
+        #}
+
+        # TODO: support for multiple interfaces.
+        vnic = @inst[:instance_nics].first || {}
+        # Appendix B: Metadata Categories
+        # http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/index.html?AESDG-chapter-instancedata.html
+        metadata_items = {
+          'ami-id' => @inst[:image][:uuid],
+          'ami-launch-index' => 0,
+          'ami-manifest-path' => nil,
+          'ancestor-ami-ids' => nil,
+          'block-device-mapping/root' => '/dev/sda',
+          'hostname' => @inst[:hostname],
+          'instance-action' => @inst[:state],
+          'instance-id' => @inst[:uuid],
+          'instance-type' => @inst[:instance_spec][:uuid],
+          'kernel-id' => nil,
+          'local-hostname' => @inst[:hostname],
+          'local-ipv4' => @inst[:ips].first,
+          'mac' => vnic[:mac_addr],
+          # TODO: network category support
+          #'network/' => {},
+          'placement/availability-zone' => nil,
+          'product-codes' => nil,
+          'public-hostname' => @inst[:hostname],
+          'public-ipv4'    => @inst[:nat_ips].first,
+          'ramdisk-id' => nil,
+          'reservation-id' => nil,
+          'security-groups' => @inst[:netfilter_groups].join(' '),
         }
+        if @inst[:ssh_key_data]
+          metadata_items.merge!({
+            "public-keys/0=#{@inst[:ssh_key_data][:name]}" => @inst[:ssh_key_data][:public_key],
+            'public-keys/0/openssh-key'=> @inst[:ssh_key_data][:public_key],
+          })
+        else
+          metadata_items.merge!({'public-keys/'=>nil})
+        end
+
+        # build metadata directory tree
+        metadata_base_dir = File.expand_path("meta-data", "#{@hva_ctx.inst_data_dir}/tmp")
+        FileUtils.mkdir_p(metadata_base_dir)
+        
+        metadata_items.each { |k, v|
+          if k[-1,1] == '/' && v.nil?
+            # just create empty folder
+            FileUtils.mkdir_p(File.expand_path(k, metadata_base_dir))
+            next
+          end
+          
+          dir = File.dirname(k)
+          if dir != '.'
+            FileUtils.mkdir_p(File.expand_path(dir, metadata_base_dir))
+          end
+          File.open(File.expand_path(k, metadata_base_dir), 'w') { |f|
+            f.write(v.to_s)
+          }
+        }
+        # user-data
+        File.open(File.expand_path('user-data', "#{@hva_ctx.inst_data_dir}/tmp"), 'w') { |f|
+          f.write(@inst[:user_data])
+        }
+        
       ensure
         # ignore any errors from cleanup work.
         sh("umount -f '#{@hva_ctx.inst_data_dir}/tmp'") rescue logger.warn($!.message)
