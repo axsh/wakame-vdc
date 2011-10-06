@@ -75,10 +75,14 @@ module InstanceHelper
   end
 
   def retry_until_network_started(instance_id)
-    ipaddr = APITest.get("/instances/#{instance_id}")["vif"].first["ipv4"]["address"]
     retry_until do
-      `ping -c 1 -W 1 #{ipaddr}`
-      $?.exitstatus == 0
+      ping(instance_id).exitstatus == 0
+    end
+  end
+
+  def retry_until_network_stopped(instance_id)
+    retry_until do
+      ping(instance_id).exitstatus != 0
     end
   end
 
