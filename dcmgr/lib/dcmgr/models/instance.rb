@@ -386,6 +386,8 @@ module Dcmgr::Models
     def set_ssh_key_pair(ssh_key_pair)
       raise ArgumentError unless ssh_key_pair.is_a?(SshKeyPair)
       self.ssh_key_data = ssh_key_pair.to_hash
+      # Do not copy private key.
+      self.ssh_key_data.delete(:private_key)
       # TODO: remove ssh_key_pair_id column
       self.ssh_key_pair_id = ssh_key_pair.canonical_uuid
     end
