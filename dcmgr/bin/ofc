@@ -4,59 +4,10 @@
 # OpenFlow Controller:
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-$LOAD_PATH.unshift File.expand_path('../../../trema/ruby', __FILE__)
 
 require 'dcmgr/rubygems'
 require 'dcmgr'
-require 'eventmachine'
 require 'isono'
-require 'trema'
-
-class OpenflowManager < Isono::NodeModules::Base
-  include Dcmgr::Logger
-
-  config_section do
-    desc "configuration file for ofc..."
-  end
-  
-  initialize_hook do
-    logger.info "initialize_hook for ofc..."
-
-    # Trema hack...
-    $verbose = true
-
-    EH = Dcmgr::NodeModules::CustomEventHandler.new
-    EH.set_as_handler
-
-    Dcmgr.run_initializers('sequel')
-    Trema::Util::cleanup_current_session
-
-    rule = {
-      :port_status => "OpenFlowController",
-      :packet_in => "OpenFlowController",
-      :state_notify => "OpenFlowController"
-    }
-
-    switch_manager = Trema::SwitchManager.new( rule, 6633 )
-    switch_manager.run!
-
-    @openflow_controller = Dcmgr::NodeModules::OpenFlowController.new
-    @openflow_controller.init_trema
-    @openflow_controller.run_immediate!
-
-    logger.info "initialize_hook for ofc finished..."
-  end
-
-  terminate_hook do
-    logger.info "terminate_hook for ofc..."
-
-    @openflow_controller.stop_immediate!
-    @openflow_controller.shutdown!
-
-    Trema::Util::cleanup_current_session
-  end
-end
-
 
 Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
 
@@ -68,7 +19,6 @@ manifest.instance_eval do
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::ServiceOpenFlow
-  load_module OpenflowManager
   
   config do |c|
   end
