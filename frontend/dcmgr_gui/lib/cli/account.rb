@@ -30,7 +30,7 @@ module Cli
     method_option :deleted, :type => :boolean, :default => false, :aliases => "-d", :desc => "Show deleted accounts."
     def show(uuid = nil)
       if uuid
-        acc = Account[uuid] || raise(Thor::Error, "Unknown Account UUID: #{uuid}")
+        acc = Account[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
 Account UUID:
 <%- if acc.class == Account -%>
@@ -91,6 +91,9 @@ __END
     desc "del UUID [options]", "Deletes an existing account."    
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def del(uuid)
+      to_do = Account[uuid]
+      Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_do == nil or to_do.is_deleted
+
       super(Account,uuid)
       
       puts "Account #{uuid} has been deleted." if options[:verbose]
@@ -180,5 +183,37 @@ __END
       }
     end
     
+
+    desc "oauth UUID [options]", "Generate or show OAuth key and secret"
+    def oauth(uuid)
+      require 'oauth'
+      acc = Account[uuid]
+      Error.raise("Unknown frontend account UUID: #{uuid}", 100) if acc == nil or acc.is_deleted
+
+      oauth_token = OauthToken.new
+      oauth_token.generate_keys
+      oauth_consumer = OauthConsumer.find(:account_id => acc.id)
+      if oauth_consumer.nil?
+        oauth_consumer = OauthConsumer.create(
+                                              :key => oauth_token.token,
+                                              :secret => oauth_token.secret,
+                                              :account_id => acc.id
+                                              )
+      end
+
+      puts ERB.new(<<__END, nil, '-').result(binding)
+Account UUID:
+<%- if acc.class == Account -%>
+  <%= acc.canonical_uuid %>
+<%- else -%>
+  <%= Account.uuid_prefix%>-<%= acc.uuid %>
+<%- end -%>
+
+Consumer Key:
+  <%= oauth_consumer.key %>
+Consumer Secret:
+  <%= oauth_consumer.secret %>
+__END
+    end
   end
 end

@@ -17,7 +17,7 @@ module Dcmgr
 
       def select_iscsi_target
         iscsi_target = @node.manifest.config.iscsi_target
-        @iscsi_target = Dcmgr::Drivers::IscsiTarget.select_iscsi_target(iscsi_target)
+        @iscsi_target = Dcmgr::Drivers::IscsiTarget.select_iscsi_target(iscsi_target, @node)
       end
 
       job :create_volume, proc {
@@ -64,8 +64,9 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :transport_information=>opt})
         logger.info("registered iscsi target: #{@volume_id}")
       }, proc {
+        # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
-        logger.error("Failed to run create_volume iscsi target: #{@volume_id}")
+        logger.error("Failed to run create_volume: #{@volume_id}")
       }
 
       job :delete_volume do
@@ -108,7 +109,7 @@ module Dcmgr
         end
       end
 
-      job :create_snapshot do
+      job :create_snapshot, proc {
         @snapshot_id = request.args[0]
         @destination = Dcmgr::StorageService.repository(request.args[1])
         @snapshot = rpc.request('sta-collector', 'get_snapshot', @snapshot_id) unless @snapshot_id.nil?
@@ -139,7 +140,11 @@ module Dcmgr
         
         rpc.request('sta-collector', 'update_snapshot', @snapshot_id, {:state=>:available})
         logger.info("created new snapshot: #{@snapshot_id}")
-      end
+      }, proc {
+        # TODO: need to clear generated temp files or remote files in remote snapshot repository.
+        rpc.request('sta-collector', 'update_snapshot', @snapshot_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+        logger.error("Failed to run create_snapshot: #{@snapshot_id}")
+      }
 
       job :delete_snapshot do
         @snapshot_id = request.args[0]

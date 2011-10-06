@@ -106,7 +106,7 @@ module Dcmgr::Models
         case self.hypervisor
         when HostNode::HYPERVISOR_KVM
           r1 = self.runtime_config
-          self.host_node.instances.each { |i|
+          self.host_node.instances_dataset.lives.each { |i|
             next true if i.id == self.id
             r2 = i.runtime_config
             unless r1[:vnc_port] != r2[:vnc_port] && r1[:telnet_port] != r2[:telnet_port]
@@ -180,11 +180,13 @@ module Dcmgr::Models
       h = super
       h.merge!({:user_data => user_data.to_s, # Sequel::BLOB -> String
                  :runtime_config => self.runtime_config, # yaml -> hash
+                 :ssh_key_data => self.ssh_key_data, # yaml -> hash
                  :image=>image.to_hash,
                  :host_node=> (host_node.nil? ? nil : host_node.to_hash),
                  :instance_nics=>instance_nic.map {|n| n.to_hash },
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
+                 :netfilter_groups => self.netfilter_groups.map {|n| n.name },
               })
       h.merge!({:instance_spec=>instance_spec.to_hash}) unless instance_spec.nil?
       h[:volume]={}
@@ -227,6 +229,7 @@ module Dcmgr::Models
         :volume => [],
         :netfilter_group => [],
         :vif => [],
+        :hostname => hostname,
       }
       if self.ssh_key_data
         h[:ssh_key_pair] = self.ssh_key_data[:name]
@@ -385,6 +388,8 @@ module Dcmgr::Models
     def set_ssh_key_pair(ssh_key_pair)
       raise ArgumentError unless ssh_key_pair.is_a?(SshKeyPair)
       self.ssh_key_data = ssh_key_pair.to_hash
+      # Do not copy private key.
+      self.ssh_key_data.delete(:private_key)
       # TODO: remove ssh_key_pair_id column
       self.ssh_key_pair_id = ssh_key_pair.canonical_uuid
     end

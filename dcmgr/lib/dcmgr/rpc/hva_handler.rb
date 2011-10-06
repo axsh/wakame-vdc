@@ -4,30 +4,9 @@ require 'fileutils'
 
 module Dcmgr
   module Rpc
-    module KvmHelper
-      # Establish telnet connection to KVM monitor console
-      def connect_monitor(port, &blk)
-        begin
-          telnet = ::Net::Telnet.new("Host" => "localhost",
-                                     "Port"=>port.to_s,
-                                     "Prompt" => /\n\(qemu\) \z/,
-                                     "Timeout" => 60,
-                                     "Waittime" => 0.2)
-
-          blk.call(telnet)
-        rescue => e
-          logger.error(e) if self.respond_to?(:logger)
-          raise e
-        ensure
-          telnet.close
-        end
-      end
-    end
-    
     class HvaHandler < EndpointBuilder
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
-      include KvmHelper
       include Dcmgr::Helpers::NicHelper
 
       def select_hypervisor
@@ -45,7 +24,8 @@ module Dcmgr
           sh("iscsiadm -m discovery -t sendtargets -p %s", [@vol[:storage_node][:ipaddr]])
           sh("iscsiadm -m node -l -T '%s' --portal '%s'",
              [@vol[:transport_information][:iqn], @vol[:storage_node][:ipaddr]])
-          sleep 1
+          # wait udev queue
+          sh("/sbin/udevadm settle")
         end
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {
@@ -57,6 +37,8 @@ module Dcmgr
       def detach_volume_from_host
         # iscsi logout
         sh("iscsiadm -m node -T '%s' --logout", [@vol[:transport_information][:iqn]])
+        # wait udev queue
+        sh("/sbin/udevadm settle")
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:available,
                       :host_device_name=>nil,
@@ -83,6 +65,7 @@ module Dcmgr
         event.publish(ev, :args=>[@vol_id])
       end
 
+      # TODO: split into guessing bridge name and bridge generation parts.
       def check_interface
         vnic = @inst[:instance_nics].first
         unless vnic.nil?
@@ -97,6 +80,7 @@ module Dcmgr
             bridge_if = @node.manifest.config.bridge_novlan
             unless valid_nic?(bridge_if)
               sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+              sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
               sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
             end
           else
@@ -110,6 +94,7 @@ module Dcmgr
             bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
             unless valid_nic?(bridge_if)
               sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+              sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
               sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
             end
           end
@@ -117,7 +102,8 @@ module Dcmgr
           # interface up? down?
           [ vlan_if, bridge_if ].each do |ifname|
             if nic_state(ifname) == "down"
-              sh("/sbin/ifconfig #{ifname} 0.0.0.0 up")
+              sh("/sbin/ip link set %s up", [ifname])
+              sh("/sbin/ip link set %s promisc on", [ifname])
             end
           end
           sleep 1
@@ -134,6 +120,90 @@ module Dcmgr
                                                                       @vol[:transport_information][:lun]]
       end
 
+      def setup_metadata_drive
+        logger.info("Setting up metadata drive image for :#{@hva_ctx.inst_id}")
+        # truncate creates sparsed file.
+        sh("/usr/bin/truncate -s 10m '#{@hva_ctx.metadata_img_path}'; sync;")
+        # TODO: need to lock loop device not to use same device from
+        # another thread/process.
+        lodev=`/sbin/losetup -f`.chomp
+        sh("/sbin/losetup #{lodev} '#{@hva_ctx.metadata_img_path}'")
+        sh("mkfs.vfat '#{@hva_ctx.metadata_img_path}'")
+        Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp")
+        sh("/bin/mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
+
+        # generate metadata as file
+        #File.open(File.expand_path('metadata.conf', "#{@hva_ctx.inst_data_dir}/tmp"), "w") { |f|
+        #  f.puts("state=#{@inst[:state]}")
+        #}
+
+        # TODO: support for multiple interfaces.
+        vnic = @inst[:instance_nics].first || {}
+        # Appendix B: Metadata Categories
+        # http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/index.html?AESDG-chapter-instancedata.html
+        metadata_items = {
+          'ami-id' => @inst[:image][:uuid],
+          'ami-launch-index' => 0,
+          'ami-manifest-path' => nil,
+          'ancestor-ami-ids' => nil,
+          'block-device-mapping/root' => '/dev/sda',
+          'hostname' => @inst[:hostname],
+          'instance-action' => @inst[:state],
+          'instance-id' => @inst[:uuid],
+          'instance-type' => @inst[:instance_spec][:uuid],
+          'kernel-id' => nil,
+          'local-hostname' => @inst[:hostname],
+          'local-ipv4' => @inst[:ips].first,
+          'mac' => vnic[:mac_addr],
+          # TODO: network category support
+          #'network/' => {},
+          'placement/availability-zone' => nil,
+          'product-codes' => nil,
+          'public-hostname' => @inst[:hostname],
+          'public-ipv4'    => @inst[:nat_ips].first,
+          'ramdisk-id' => nil,
+          'reservation-id' => nil,
+          'security-groups' => @inst[:netfilter_groups].join(' '),
+        }
+        if @inst[:ssh_key_data]
+          metadata_items.merge!({
+            "public-keys/0=#{@inst[:ssh_key_data][:name]}" => @inst[:ssh_key_data][:public_key],
+            'public-keys/0/openssh-key'=> @inst[:ssh_key_data][:public_key],
+          })
+        else
+          metadata_items.merge!({'public-keys/'=>nil})
+        end
+
+        # build metadata directory tree
+        metadata_base_dir = File.expand_path("meta-data", "#{@hva_ctx.inst_data_dir}/tmp")
+        FileUtils.mkdir_p(metadata_base_dir)
+        
+        metadata_items.each { |k, v|
+          if k[-1,1] == '/' && v.nil?
+            # just create empty folder
+            FileUtils.mkdir_p(File.expand_path(k, metadata_base_dir))
+            next
+          end
+          
+          dir = File.dirname(k)
+          if dir != '.'
+            FileUtils.mkdir_p(File.expand_path(dir, metadata_base_dir))
+          end
+          File.open(File.expand_path(k, metadata_base_dir), 'w') { |f|
+            f.write(v.to_s)
+          }
+        }
+        # user-data
+        File.open(File.expand_path('user-data', "#{@hva_ctx.inst_data_dir}/tmp"), 'w') { |f|
+          f.write(@inst[:user_data])
+        }
+        
+      ensure
+        # ignore any errors from cleanup work.
+        sh("/bin/umount -f '#{@hva_ctx.inst_data_dir}/tmp'") rescue logger.warn($!.message)
+        sh("/sbin/losetup -d #{lodev}") rescue logger.warn($!.message)
+      end
+
       job :run_local_store, proc {
         @inst_id = request.args[0]
         logger.info("Booting #{@inst_id}")
@@ -145,11 +215,11 @@ module Dcmgr
         select_hypervisor
 
         # create hva context
-        hc = HvaContext.new(self)
+        @hva_ctx = HvaContext.new(self)
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
         # setup vm data folder
-        inst_data_dir = hc.inst_data_dir
+        inst_data_dir = @hva_ctx.inst_data_dir
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
         # copy image file
         img_src = @inst[:image][:source]
@@ -165,7 +235,7 @@ module Dcmgr
 
         # vmimg cached?
         unless File.exists?(vmimg_cache_path)
-          logger.debug("copying #{vmimg_cache_path} from #{img_src[:uri]}")
+          logger.debug("copying #{img_src[:uri]} to #{vmimg_cache_path}")
           sh("curl --silent -o '#{vmimg_cache_path}' #{img_src[:uri]}")
         else
           md5sum = sh("md5sum #{vmimg_cache_path}")
@@ -175,7 +245,7 @@ module Dcmgr
             logger.debug("not verified vm cache image: #{vmimg_cache_path}")
             sh("rm -f %s", [vmimg_cache_path])
             tmp_id = Isono::Util::gen_id
-            logger.debug("copying #{vmimg_cache_path} from #{img_src[:uri]}")
+            logger.debug("copying #{img_src[:uri]} to #{vmimg_cache_path}")
             sh("curl --silent -o '#{vmimg_cache_path}.#{tmp_id}' #{img_src[:uri]}")
             sh("mv #{vmimg_cache_path}.#{tmp_id} #{vmimg_cache_path}")
             logger.debug("vmimage cache deployed on #{vmimg_cache_path}")
@@ -183,12 +253,14 @@ module Dcmgr
         end
 
         ####
-        logger.debug("copying #{@os_devpath} from #{vmimg_cache_path}")
+        logger.debug("copying #{vmimg_cache_path} to #{@os_devpath}")
         sh("cp -p --sparse=always %s %s",[vmimg_cache_path, @os_devpath])
         sleep 1
 
+        setup_metadata_drive
+        
         @bridge_if = check_interface
-        @hv.run_instance(hc)
+        @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
       }, proc {
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
@@ -208,12 +280,12 @@ module Dcmgr
         select_hypervisor
 
         # create hva context
-        hc = HvaContext.new(self)
+        @hva_ctx = HvaContext.new(self)
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
 
         # setup vm data folder
-        inst_data_dir = hc.inst_data_dir
+        inst_data_dir = @hva_ctx.inst_data_dir
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
 
         # create volume from snapshot
@@ -232,12 +304,15 @@ module Dcmgr
         # attach disk
         attach_volume_to_host
         
+        setup_metadata_drive
+        
         # run vm
         @bridge_if = check_interface
-        @hv.run_instance(HvaContext.new(self))
+        @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
       }, proc {
+        # TODO: Run detach & destroy volume
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
                               'hva/instance_terminated')
         update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
@@ -322,7 +397,10 @@ module Dcmgr
         logger.info("Attaching #{@vol_id} on #{@inst_id}")
 
         # attach disk on guest os
-        pci_devaddr = @hv.attach_volume_to_guest(HvaContext.new(self))
+        pci_devaddr=nil
+        tryagain do
+          pci_devaddr = @hv.attach_volume_to_guest(HvaContext.new(self))
+        end
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attached,
@@ -330,6 +408,12 @@ module Dcmgr
                       :guest_device_name=>pci_devaddr})
         event.publish('hva/volume_attached', :args=>[@inst_id, @vol_id])
         logger.info("Attached #{@vol_id} on #{@inst_id}")
+      }, proc {
+        # TODO: Run detach volume
+        # push back volume state to available.
+        update_volume_state({:state=>:available},
+                            'hva/volume_available')
+        logger.error("Attach failed: #{@vol_id} on #{@inst_id}")
       }
 
       job :detach do
@@ -346,7 +430,9 @@ module Dcmgr
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:detaching, :detached_at=>nil})
         # detach disk on guest os
-        @hv.detach_volume_from_guest(HvaContext.new(self))
+        tryagain do
+          @hv.detach_volume_from_guest(HvaContext.new(self))
+        end
 
         # detach disk on host os
         detach_volume_from_host
@@ -400,6 +486,10 @@ module Dcmgr
 
       def os_devpath
         @hva.instance_variable_get(:@os_devpath)
+      end
+
+      def metadata_img_path
+        File.expand_path('metadata.img', inst_data_dir)
       end
 
       def bridge_if

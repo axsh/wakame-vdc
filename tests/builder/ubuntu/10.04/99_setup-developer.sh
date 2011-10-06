@@ -32,6 +32,7 @@ EOS
 deb_pkgs="
  git-core
  screen
+ tmux
 "
 
 # ruby gems packages

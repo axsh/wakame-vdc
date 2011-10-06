@@ -140,7 +140,6 @@ module Dcmgr
   module Helpers
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
-    autoload :StaTgtHelper, 'dcmgr/helpers/sta_tgt_helper'
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
   end
 
@@ -199,9 +198,11 @@ module Dcmgr
   module Scheduler
     module StorageNode
       autoload :FindFirst, 'dcmgr/scheduler/storage_node/find_first'
+      autoload :LeastUsage, 'dcmgr/scheduler/storage_node/least_usage'
     end
     module HostNode
       autoload :FindFirst, 'dcmgr/scheduler/host_node/find_first'
+      autoload :LeastUsage, 'dcmgr/scheduler/host_node/least_usage'
     end
     module Network
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'

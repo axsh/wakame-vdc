@@ -43,7 +43,7 @@ proxy_bind=127.0.0.1
 
 ports="${auth_port} ${webui_port} ${api_port} ${metadata_port}"
 
-# networks table 
+# networks table
 ipv4_gw="${ipv4_gw:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $3}')}"
 prefix_len="${prefix_len:-$(/sbin/ip route show | awk '$9 == ip { sub(/.*\//, "", $1); print $1; }' ip=$ipaddr)}"
 
@@ -52,7 +52,7 @@ dhcp_server=${dhcp_server:-${ipaddr}}
 metadata_server=${metadata_server:-${ipaddr}}
 sta_server=${sta_server:-${ipaddr}}
 
-# local store demo machine image 
+# local store demo machine image
 local_store_path="$tmp_path/images"
 
 # virtual machine
@@ -77,6 +77,9 @@ with_openflow=no
 without_bundle_install=
 without_quit_screen=
 without_screen=
+
+# screen mode: screen, tmux, bg
+screen_mode=${screen_mode:-'screen'}
 
 #
 # build option params
@@ -116,7 +119,7 @@ function run_standalone() {
   [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
   /etc/init.d/rabbitmq-server start
 
-  [[ -x /etc/init.d/tgt ]] && { /etc/init.d/tgt restart; }
+  [[ -x /etc/init.d/tgt ]] && { initctl restart tgt; }
 
   dbnames="wakame_dcmgr wakame_dcmgr_gui"
   for dbname in ${dbnames}; do
@@ -169,19 +172,7 @@ EOS
   cd ${prefix_path}
 
   [ -z "${without_screen}" ] && {
-    echo "Creating screen windows..."
-
-    # screen configuration file
-    /bin/cat <<EOS > $screenrc_path
-escape ^z^z
-hardstatus on
-hardstatus alwayslastline "[%m/%d %02c] %-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<" 
-defscrollback 10000
-logfile ${tmp_path}/screenlog.%t
-logfile flush 1
-EOS
-
-    screen -L -d -m -S vdc -t vdc -c $screenrc_path || abort "Failed to start new screen session"
+    screen_open || abort "Failed to start new screen session"
     screen_it collector "cd ${prefix_path}/dcmgr/ && ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
     screen_it nsa       "cd ${prefix_path}/dcmgr/ && ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
     screen_it hva       "cd ${prefix_path}/dcmgr/ && ./bin/hva -i demo1 2>&1 | tee ${tmp_path}/vdc-hva.log"
@@ -223,27 +214,6 @@ echo > "/dev/tcp/localhost/8080"
 EOF
 }
 
-function run_developer() {
-  run_standalone
-  [ -z "${without_screen}" ] && {
-    screen_it test "echo Enjoy wakame-vdc.; echo \* http://${ipaddr}:${webui_port}/; cd ${prefix_path}/frontend/dcmgr_gui; ./oauth_client.rb; "
-    # attach the shell.
-    screen -S vdc -x
-  }
-}
-
-
-function run_standalone_integration_test {
-  cd $prefix_path/tests/spec
-  [ -z "${without_bundle_install}" ] && bundle install
-
-  # run integrate test specs. 
-  bundle exec rspec . 
-
-  return $?
-}
-
-
 function ci_post_process {
   local sig=$1
   local ci_result=$2
@@ -278,20 +248,26 @@ case ${mode} in
     (
      set +e
      run_standalone
-     run_standalone_integration_test
+     cd $prefix_path/tests/spec
+     [ -z "${without_bundle_install}" ] && bundle install
+
+     # run integrate test specs.
+     bundle exec rspec -fs .
     )
     excode=$?
-    [[ -z "${without_screen}" && -z "${without_quit_screen}" ]] && {
-      screen -S vdc -X quit
-    }
+    screen_close
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
-  openflow)
-    with_openflow=yes
-    run_developer
+  cleanup)
     ;;
   *)
-    run_developer
+    # interactive mode
+    run_standalone
+    screen_attach
+    screen_close
+    [ -f "${tmp_path}/vdc-pid.log" ] && {
+      wait $(cat ${tmp_path}/vdc-pid.log)
+    }
     ;;
 esac
 
@@ -304,6 +280,5 @@ esac
     done
   }
 }
-#cleanup
 
 exit $excode

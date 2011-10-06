@@ -29,10 +29,13 @@ deb_pkgs="
 # apache2 apache2-threaded-dev libapache2-mod-passenger
 # Pick them from natty as obsolete version is in LTS.
 natty_deb_pkgs="
- lxc/natty
+ lxc/natty-updates
  rubygems/natty
  rubygems1.8/natty
- tgt/natty
+"
+
+oneiric_deb_pkgs="
+ tgt/oneiric
 "
 
 # host configuration
@@ -43,13 +46,17 @@ egrep -v '^#' /etc/hosts | egrep -q $(hostname) || echo 127.0.0.1 $(hostname) >>
 echo $(dirname $0)
 #echo builder_path:${builder_path}
 [ -d $builder_path/$DISTRIB_ID/$DISTRIB_RELEASE ] && cd $builder_path/$DISTRIB_ID/$DISTRIB_RELEASE
-cd ubuntu-natty && make
+
+for ubuntu in ubuntu-*; do
+ [ -d ${ubuntu} ] || continue
+ cd ${ubuntu} && make && cd -
+done
 
 # debian packages
 apt-get update
 apt-get -y upgrade
 apt-get -y install ${deb_pkgs}
-apt-get -y install ${natty_deb_pkgs} || :
-
+apt-get -y --force-yes install ${natty_deb_pkgs}
+apt-get -y --force-yes install ${oneiric_deb_pkgs}
 
 exit 0

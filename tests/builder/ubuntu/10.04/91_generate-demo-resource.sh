@@ -15,41 +15,29 @@ hypervisor=${hypervisor:?"hypervisor needs to be set"}
 vmimage_s3_prefix=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
 #vmimage_s3_prefix=file:///tmp
 
-case ${hypervisor} in
-kvm)
-  vmimage_uuid=lucid0
-  vmimage_dist_name=ubuntu
-  vmimage_dist_ver=10.04
-  vmimage_arch=i386
-  vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
-  vmimage_file=${vmimage_uuid}.raw
-  #vmimage_file=${vmimage_uuid}.qcow2
-  vmimage_path=${local_store_path}/${vmimage_file}
-  vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
-  # volume_snapshot
-  vmimage_snap_uuid=lucid1
-  vmimage_snap_file=snap-${vmimage_snap_uuid}.snap
-  vmimage_snap_path=${tmp_path}/snap/${account_id}/${vmimage_snap_file}
-  ;;
-lxc)
-  vmimage_uuid=lucid0
-  vmimage_dist_name=ubuntu
-  vmimage_dist_ver=10.04
-  vmimage_arch=i386
-  vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
-  vmimage_file=${vmimage_dist_name}-${vmimage_dist_ver}_without-metadata_${hypervisor}_${vmimage_arch}.raw
-  vmimage_path=${local_store_path}/${vmimage_file}
-  vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
-  # volume_snapshot
-  vmimage_snap_uuid=lucid1
-  vmimage_snap_file=snap-${vmimage_snap_uuid}.snap
-  vmimage_snap_path=${tmp_path}/snap/${account_id}/${vmimage_snap_file}
-  ;;
-*)
-  echo "unknown hypervisor type" >&2
-  exit 1
-  ;;
-esac
+# common
+vmimage_dist_name=ubuntu
+vmimage_dist_ver=10.04
+vmimage_arch=i386
+vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
+# local / without-metadata
+vmimage_uuid=lucid0
+vmimage_file=${vmimage_dist_name}-${vmimage_dist_ver}_without-metadata_${hypervisor}_${vmimage_arch}.raw
+vmimage_path=${local_store_path}/${vmimage_file}
+vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
+# volume / without-metadata
+vmimage_snap_uuid=lucid1
+vmimage_snap_file=snap-${vmimage_snap_uuid}.snap
+vmimage_snap_path=${tmp_path}/snap/${account_id}/${vmimage_snap_file}
+# local / with-metadata
+vmimage_meta_uuid=lucid5
+vmimage_meta_file=${vmimage_dist_name}-${vmimage_dist_ver}_with-metadata_${hypervisor}_${vmimage_arch}.raw
+vmimage_meta_path=${local_store_path}/${vmimage_meta_file}
+vmimage_meta_s3=${vmimage_s3_prefix}/${vmimage_meta_file}.gz
+# volume / with-metadata
+vmimage_meta_snap_uuid=lucid6
+vmimage_meta_snap_file=snap-${vmimage_meta_snap_uuid}.snap
+vmimage_meta_snap_path=${tmp_path}/snap/${account_id}/${vmimage_meta_snap_file}
 
 case ${vmimage_arch} in
 i386)
@@ -73,12 +61,22 @@ esac
   mkdir -p ${local_store_path}
 }
 
-[ -f ${local_store_path}/${vmimage_file} ] || {
-  cd ${local_store_path}
-  [ -f ${vmimage_file}.gz ] || curl ${vmimage_s3} -o ${vmimage_file}.gz
-  echo gunzip ${vmimage_file}.gz ...
-  gunzip ${vmimage_file}.gz
+function deploy_vmfile() {
+  vmfile_basename=$1
+  vmfile_uri=$2
+
+  [ -f ${local_store_path}/${vmfile_basename} ] || {
+    cd ${local_store_path}
+    [ -f ${vmfile_basename}.gz ] || curl ${vmfile_uri} -o ${vmfile_basename}.gz
+    echo generating ${vmfile_basename} ...
+    zcat ${vmfile_basename}.gz | cp --sparse=always /dev/stdin ${vmfile_basename}
+    sync
+    du -hs                 ${vmfile_basename}
+    du -hs --apparent-size ${vmfile_basename}
+  }
 }
+deploy_vmfile ${vmimage_file}      ${vmimage_s3}
+deploy_vmfile ${vmimage_meta_file} ${vmimage_meta_s3}
 
 cd ${work_dir}/dcmgr/
 shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r ${hva_arch}
@@ -89,7 +87,8 @@ ${ipaddr})
   [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
   shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
 
-  ln -fs ${vmimage_path} ${vmimage_snap_path}
+  ln -fs ${vmimage_path}      ${vmimage_snap_path}
+  ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
  ;;
 *)
   shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool             -s $((1024 * 1024)) -i ${sta_server} -o zfs -n /export/home/wakame/vdc/sta/snap
@@ -109,12 +108,16 @@ shlog ./bin/vdc-manage tag map tag-shstor -o sp-demostor
 
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
 INSERT INTO volume_snapshots values
- (1, '${account_id}', '${vmimage_snap_uuid}', 1, 'vol-${vmimage_snap_uuid}', 1024, 0, 'available', 'local@local:none:${vmimage_snap_path}', NULL, now(), now());
+ (1, '${account_id}', '${vmimage_snap_uuid}',      1, 'vol-${vmimage_snap_uuid}',      1024, 0, 'available', 'local@local:none:${vmimage_snap_path}',      NULL, now(), now()),
+ (2, '${account_id}', '${vmimage_meta_snap_uuid}', 1, 'vol-${vmimage_meta_snap_uuid}', 1024, 0, 'available', 'local@local:none:${vmimage_meta_snap_path}', NULL, now(), now());
 EOS
 
 vmimage_md5=$(md5sum ${local_store_path}/${vmimage_file} | cut -d ' ' -f1)
-shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_file} -m ${vmimage_md5} -a ${account_id} -u wmi-${vmimage_uuid}      -r ${images_arch} -d "${vmimage_desc}" -s init
-shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid}           -m ${vmimage_md5} -a ${account_id} -u wmi-${vmimage_snap_uuid} -r ${images_arch} -d "${vmimage_desc}" -s init
+vmimage_meta_md5=$(md5sum ${local_store_path}/${vmimage_meta_file} | cut -d ' ' -f1)
+shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_file}      -m ${vmimage_md5}      -a ${account_id} -u wmi-${vmimage_uuid}           -r ${images_arch} -d \"${vmimage_file} local\" -s init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid}                -m ${vmimage_md5}      -a ${account_id} -u wmi-${vmimage_snap_uuid}      -r ${images_arch} -d \"${vmimage_file} volume\" -s init
+shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_meta_file} -m ${vmimage_meta_md5} -a ${account_id} -u wmi-${vmimage_meta_uuid}      -r ${images_arch} -d \"${vmimage_meta_file} local\" -s init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid}           -m ${vmimage_meta_md5} -a ${account_id} -u wmi-${vmimage_meta_snap_uuid} -r ${images_arch} -d \"${vmimage_meta_file} volume\" -s init
 
 shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r ${hva_arch} -p ${hypervisor} -c 1 -m 256 -w 1
 

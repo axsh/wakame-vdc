@@ -68,11 +68,11 @@ module Dcmgr
       config_data = self.snapshot_repository_config
       destination = destination_key.split('@')[0]
       
-      if destination == 'local'
-        config = {:access_key => '', :secret_key => ''}
-      else
-        config = config_data[destination]
-      end
+      config = if destination == 'local'
+                 {'access_key' => '', 'secret_key' => ''}
+               else
+                 config_data[destination]
+               end
       
       sprintf(format, *[destination_key, config["access_key"], config["secret_key"]])
     end

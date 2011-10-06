@@ -16,9 +16,13 @@ module Dcmgr
 
         timersig = EventMachine.add_timer(opts[:timeout]) {
           timedout = true
-          if curthread
+          if curthread && curthread.alive?
             curthread.raise(TimeoutError.new("timeout"))
-            curthread.pass
+            begin
+              curthread.pass
+            rescue ::Exception => e
+              # any thread errors can be ignored.
+            end
           end
         }
 

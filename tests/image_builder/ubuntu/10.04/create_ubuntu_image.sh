@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-rootsize=10240
+#rootsize=10240
+rootsize=256
+swapsize=128
 init_script_location=$PWD/wakame_init
 dns_server=8.8.8.8
 
@@ -39,7 +41,7 @@ fi
 
 #Create the ubuntu image
 echo "Creating VM image"
-ubuntu-vm-builder kvm lucid --mirror=http://jp.archive.ubuntu.com/ubuntu --rootsize $rootsize --addpkg ssh --addpkg curl --dns $dns_server $@
+ubuntu-vm-builder kvm lucid --mirror=http://jp.archive.ubuntu.com/ubuntu --rootsize $rootsize --swapsize $swapsize --addpkg ssh --addpkg curl --dns $dns_server $@
 
 #Determine the filename from the run script
 qcow_filename=`grep exec ubuntu-kvm/run.sh | cut -d ' ' -f8 | cut -d = -f2`

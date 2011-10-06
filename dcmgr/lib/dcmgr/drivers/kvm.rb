@@ -7,18 +7,18 @@ module Dcmgr
     class Kvm < Hypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
-      include Dcmgr::Rpc::KvmHelper
       include Dcmgr::Helpers::NicHelper
 
       def run_instance(hc)
         # run vm
         inst = hc.inst
-        cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
-        args=[inst[:instance_spec][:memory_size],
-              inst[:instance_spec][:cpu_cores],
+        cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s,media=disk,boot=on,index=0 -drive file=%s,media=disk,index=1 -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+        args=[inst[:memory_size],
+              inst[:cpu_cores],
               inst[:uuid],
               inst[:runtime_config][:vnc_port],
               hc.os_devpath,
+              hc.metadata_img_path,
               File.expand_path('kvm.pid', hc.inst_data_dir),
               inst[:runtime_config][:telnet_port]
              ]
@@ -30,7 +30,7 @@ module Dcmgr
         sh(cmd, args)
 
         unless vnic.nil?
-          sh("/sbin/ifconfig %s 0.0.0.0 up", [vnic[:uuid]])
+          sh("/sbin/ip link set %s up", [vnic[:uuid]])
           sh("/usr/sbin/brctl addif %s %s", [hc.bridge_if, vnic[:uuid]])
         end
 
@@ -102,6 +102,9 @@ module Dcmgr
 
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           t.cmd("pci_del #{pci_devaddr}")
+          # [timming issue] It's too fast to run "info pci".
+          sleep 1
+
           #
           #  Bus  0, device   4, function 0:
           #    SCSI controller: PCI device 1af4:1001

@@ -33,6 +33,12 @@ module Dcmgr::Models
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
 
+    def_dataset_method(:online_nodes) do
+      # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
+      r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
+      filter(:node_id => r)
+    end
+
     def after_initialize
       super
     end
@@ -90,6 +96,30 @@ module Dcmgr::Models
       h.delete(:node_id)
       h
     end
-    
+
+    # Returns reserved CPU cores used by running/scheduled instances.
+    def cpu_core_usage
+      instances_usage(:cpu_cores)
+    end
+
+    # Returns reserved memory size used by running/scheduled instances.
+    def memory_size_usage
+      instances_usage(:memory_size)
+    end
+
+    # Returns available CPU cores.
+    def available_cpu_cores
+      self.offering_cpu_cores - self.cpu_core_usage
+    end
+
+    # Returns available memory size.
+    def available_memory_size
+      self.offering_memory_size - self.memory_size_usage
+    end
+
+    protected
+    def instances_usage(colname)
+      instances_dataset.lives.sum(colname).to_i
+    end
   end
 end

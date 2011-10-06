@@ -172,6 +172,7 @@ module Dcmgr
         devnum = [stat.rdev_major,stat.rdev_minor].join(':')
         
         sh("echo \"b #{devnum} rwm\" > /cgroup/#{inst_id}/devices.allow")
+        logger.debug("Makinging new block device: #{hc.inst_data_dir}/rootfs#{sddev}")
         sh("mknod #{hc.inst_data_dir}/rootfs#{sddev} -m 660 b #{stat.rdev_major} #{stat.rdev_minor}")
 
         config_name = "#{hc.inst_data_dir}/config.#{inst_id}"
@@ -192,7 +193,8 @@ module Dcmgr
         devnum = vol[:guest_device_name]
 
         sh("echo \"b #{devnum} rwm\" > /cgroup/#{inst_id}/devices.deny")
-        sh("rm -rf #{hc.inst_data_dir}/rootfs#{sddev}")
+        logger.debug("Deleting block device: #{hc.inst_data_dir}/rootfs#{sddev}")
+        sh("rm -f #{hc.inst_data_dir}/rootfs#{sddev}")
 
         config_name = "#{hc.inst_data_dir}/config.#{inst_id}"
         config = File.open(config_name, 'r')

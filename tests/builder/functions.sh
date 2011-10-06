@@ -63,8 +63,98 @@ function screen_it {
   [[ -z "$cmd"  ]] && {
     cmd="$cmd `read`"
   }
-  retry 3 screen -L -r vdc -x -X screen -t $title
-  screen -L -r vdc -x -p $title -X stuff "${cmd}$NL"
+
+  case $screen_mode in
+      'tmux')
+          (tmux -S "${tmp_path}/vdc-tmux.s" list-windows -t vdc | grep ${title} >/dev/null) || {
+              tmux -S "${tmp_path}/vdc-tmux.s" new-window -n "$title"
+              # pipe-pane can not be called from command line in tmux version earlier than the revision below.
+              # http://sourceforge.net/mailarchive/message.php?msg_id=27900401
+              #tmux -v -S "${tmp_path}/vdc-tmux.s" pipe-pane -t "vdc:${title}.0" "'/bin/cat > \"${tmp_path}/screenlog.${title}\"'"
+          }
+          tmux -S "${tmp_path}/vdc-tmux.s" send-keys -t "vdc:${title}" "${cmd}" \; send-keys "Enter"
+          ;;
+      'screen')
+          retry 3 screen -L -r vdc -x -X screen -t $title
+          screen -L -r vdc -x -p $title -X stuff "${cmd}$NL"
+          ;;
+      'bg')
+          run2bg "($cmd) > ${tmp_path}/vdc-${title}.log"
+          ;;
+      *)
+          :
+          ;;
+  esac
+}
+
+function screen_open {
+    typeset ret=0
+
+    case $screen_mode in
+        'tmux')
+            echo "Creating tmux windows..."
+            tmux -S "${tmp_path}/vdc-tmux.s" new-session -d -s vdc
+            ret=$?
+            ;;
+        'screen')
+            echo "Creating screen windows..."
+            # screen configuration file
+            /bin/cat <<EOS > "${tmp_path}/screenrc"
+escape ^z^z
+hardstatus on
+hardstatus alwayslastline "[%m/%d %02c] %-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<" 
+defscrollback 10000
+logfile ${tmp_path}/screenlog.%t
+logfile flush 1
+EOS
+            screen -L -d -m -S vdc -t vdc -c "${tmp_path}/screenrc"
+            ret=$?
+            ;;
+        *)
+            :
+            ;;
+    esac
+    return $ret
+}
+
+function screen_close {
+    typeset ret=0
+
+    case $screen_mode in
+        'tmux')
+            tmux -S "${tmp_path}/vdc-tmux.s" has-session -t vdc && \
+                tmux -S "${tmp_path}/vdc-tmux.s" kill-session -t vdc
+            ret=$?
+            ;;
+        'screen')
+            screen -ls | grep vdc >/dev/null && \
+                screen -S vdc -X quit
+            ret=$?
+            ;;
+        *)
+            :
+            ;;
+    esac
+    return $ret
+}
+
+function screen_attach {
+    typeset ret=0
+
+    case $screen_mode in
+        'tmux')
+            tmux -S "${tmp_path}/vdc-tmux.s" attach-session -t vdc
+            ret=$?
+            ;;
+        'screen')
+            screen -x -S vdc
+            ret=$?
+            ;;
+        *)
+            :
+            ;;
+    esac
+    return $ret
 }
 
 function setup_base {
@@ -89,7 +179,7 @@ function cleanup {
   }
 
   ps -ef | egrep '[t]gtd' -q && {
-    initctl stop tgt
+    initctl restart tgt
   }
 
   case ${hypervisor} in
@@ -99,10 +189,12 @@ function cleanup {
     }
    ;;
   lxc)
-    for container_name in $(lxc-ls); do
-      echo ... ${container_name}
-      lxc-destroy -n ${container_name} || lxc-kill -n ${container_name}
-    done
+    which lxc-ls >/dev/null && {
+      for container_name in $(lxc-ls); do
+        echo ... ${container_name}
+        lxc-destroy -n ${container_name} || lxc-kill -n ${container_name}
+      done
+    }
     unset container_name
 
     mount | egrep ${vmdir_path} | awk '{print $3}' | while read line ;do
@@ -135,18 +227,29 @@ function cleanup {
     [ -f ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log ] || : && \
       echo ": > ${prefix_path}/frontend/dcmgr_gui/log/proxy_access.log" | /bin/sh
   } || :
-  
+
+  # logfile
   for i in ${tmp_path}/screenlog.* ${tmp_path}/*.log; do rm -f ${i}; done
+
+  # volume
+  [ -d ${tmp_path}/xpool/${account_id} ] && {
+    for i in ${tmp_path}/xpool/${account_id}/*; do rm -f ${i}; done
+  }
+
+  # snapshot
+  [ -d ${tmp_path}/snap/${account_id} ] && {
+    for i in ${tmp_path}/snap/${account_id}/*; do rm -f ${i}; done
+  }
 }
 
-# kick the builder script. 
+# kick the builder script.
 #
 # use following form to set configurable variables for xxx.sh:
 # ( val1=1; run_builder "xxx.sh"; )
 function run_builder {
   local builder_script=$1
 
-  i="$DISTRIB_ID/$DISTRIB_RELEASE/$builder_script" 
+  i="$DISTRIB_ID/$DISTRIB_RELEASE/$builder_script"
   [ -f "$builder_path/$i" ] || abort "ERROR: Unknown builder script: $builder_script"
   # run script in subshell to inherit variables.
   (

@@ -6,11 +6,15 @@ module Dcmgr::Drivers
     include Dcmgr::Helpers::CliHelper
 
     def download(filename)
-     sh("/bin/cp -p %s %s", [File.join(@volume_snaphost_path, filename), self.snapshot(filename)]) 
+      from = File.join(@volume_snaphost_path, filename)
+      to   = self.snapshot(filename)
+
+      logger.debug("copying #{from} to #{to}")
+      sh("/bin/cp -p %s %s", [from, to])
     end
-    
+
     def upload(filename)
-     sh("/bin/mv %s %s", [self.snapshot(filename), File.join(@volume_snaphost_path, filename)]) 
+      sh("/bin/mv %s %s", [self.snapshot(filename), File.join(@volume_snaphost_path, filename)])
     end
 
     def delete(filename)
