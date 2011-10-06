@@ -123,14 +123,14 @@ module Dcmgr
       def setup_metadata_drive
         logger.info("Setting up metadata drive image for :#{@hva_ctx.inst_id}")
         # truncate creates sparsed file.
-        sh("truncate -s 10m '#{@hva_ctx.metadata_img_path}'; sync;")
+        sh("/usr/bin/truncate -s 10m '#{@hva_ctx.metadata_img_path}'; sync;")
         # TODO: need to lock loop device not to use same device from
         # another thread/process.
-        lodev=`losetup -f`.chomp
-        sh("losetup #{lodev} '#{@hva_ctx.metadata_img_path}'")
+        lodev=`/sbin/losetup -f`.chomp
+        sh("/sbin/losetup #{lodev} '#{@hva_ctx.metadata_img_path}'")
         sh("mkfs.vfat '#{@hva_ctx.metadata_img_path}'")
         Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp")
-        sh("mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
+        sh("/bin/mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
 
         # generate metadata as file
         #File.open(File.expand_path('metadata.conf', "#{@hva_ctx.inst_data_dir}/tmp"), "w") { |f|
@@ -200,8 +200,8 @@ module Dcmgr
         
       ensure
         # ignore any errors from cleanup work.
-        sh("umount -f '#{@hva_ctx.inst_data_dir}/tmp'") rescue logger.warn($!.message)
-        sh("losetup -d #{lodev}") rescue logger.warn($!.message)
+        sh("/bin/umount -f '#{@hva_ctx.inst_data_dir}/tmp'") rescue logger.warn($!.message)
+        sh("/sbin/losetup -d #{lodev}") rescue logger.warn($!.message)
       end
 
       job :run_local_store, proc {
