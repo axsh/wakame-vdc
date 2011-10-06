@@ -106,6 +106,8 @@ shlog ./bin/vdc-manage tag map tag-shhost -o hp-demohost
 shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demonet
 shlog ./bin/vdc-manage tag map tag-shstor -o sp-demostor
 
+shlog ./bin/vdc-manage network reserve nw-demonet --ipv4=${ipaddr}
+
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
 INSERT INTO volume_snapshots values
  (1, '${account_id}', '${vmimage_snap_uuid}',      1, 'vol-${vmimage_snap_uuid}',      1024, 0, 'available', 'local@local:none:${vmimage_snap_path}',      NULL, now(), now()),
