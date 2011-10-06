@@ -5,20 +5,20 @@ describe "/api/instances" do
   include InstanceHelper
 
   # basic machine images
-  it "should run local store instance (wmi-lucid0,is-demospec) -> terminate" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
+  it "should run local store instance (wmi-lucid0,is-demospec) -> reboot -> terminate" do
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
   end
 
-  it "should run volume store instance (wmi-lucid1,is-demospec) -> terminate" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
+  it "should run volume store instance (wmi-lucid1,is-demospec) -> reboot -> terminate" do
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
   end
 
-  it "should run local store instance (wmi-lucid5,is-demospec) -> terminate" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid5', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
+  it "should run local store instance (wmi-lucid5,is-demospec) -> reboot -> terminate" do
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid5', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
   end
 
-  it "should run volume store instance (wmi-lucid6,is-demospec) -> terminate" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
+  it "should run volume store instance (wmi-lucid6,is-demospec) -> reboot -> terminate" do
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
   end
 
   # parameters
@@ -35,25 +35,25 @@ describe "/api/instances" do
 
   # ssh_key
   it "should run instance with ssh_key" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                 :ssh_key=>'demo'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
+                                              :ssh_key=>'demo'})
   end
 
   # nf_group
   it "should run instance with nf_group" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                 :nf_group=>['default']})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
+                                              :nf_group=>['default']})
   end
 
   # hostname
   it "should run instance with hostname (min length:1)" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                 :hostname=>'0'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
+                                              :hostname=>'0'})
   end
 
   it "should run instance with hostname (max length:32)" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                 :hostname=>'01234567890123456789012345678901'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
+                                              :hostname=>'01234567890123456789012345678901'})
   end
 
   it "should not run instance with hostname (less than min length:1)" do
@@ -79,20 +79,20 @@ describe "/api/instances" do
 
   # user_data
   it "should run instance with user_data" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                 :user_data => "user_data value"})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
+                                              :user_data => "user_data value"})
   end
 
   # ha_enabled
   it "should run instance with ha_enabled" do
-    run_instance_and_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                 :ha_enabled => 'true'})
-    run_instance_and_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                 :ha_enabled => 'false'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
+                                              :ha_enabled => 'true'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
+                                              :ha_enabled => 'false'})
   end
 
   private
-  def run_instance_and_terminate(params)
+  def run_instance_then_reboot_then_terminate(params)
     res = APITest.create("/instances", params)
     res.success?.should be_true
     instance_id = res["id"]
@@ -107,6 +107,9 @@ describe "/api/instances" do
     when 'wmi-lucid5', 'wmi-lucid6' # with-metadata
       retry_until_loggedin(instance_id, 'ubuntu')
     end
+
+    APITest.update("/instances/#{instance_id}/reboot", []).success?.should be_true
+    retry_until_network_stopped(instance_id)
 
     APITest.delete("/instances/#{instance_id}").success?.should be_true
     retry_until_terminated(instance_id)
