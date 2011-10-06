@@ -327,7 +327,7 @@ module Dcmgr
           description 'Reboots the instance'
           control do
             i = find_by_uuid(:Instance, params[:id])
-            raise InvalidInstanceState, i.state if i.state == 'running'
+            raise InvalidInstanceState, i.state if i.state != 'running'
             Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'reboot', i.canonical_uuid)
             response_to({})
           end
