@@ -119,11 +119,7 @@ describe "1shot" do
 
     p '... instance::reboot'
     APITest.update("/instances/#{instance_id}/reboot", []).success?.should be_true
-
-    p '... ping'
-    retry_until do
-      ping(instance_id).exitstatus != 0
-    end
+    retry_until_network_stopped(instance_id)
 
     p '... retry_until_network_started'
     retry_until_network_started(instance_id)
