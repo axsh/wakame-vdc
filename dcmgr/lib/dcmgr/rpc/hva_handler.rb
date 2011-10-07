@@ -129,7 +129,7 @@ module Dcmgr
         lodev=`/sbin/losetup -f`.chomp
         sh("/sbin/losetup #{lodev} '#{@hva_ctx.metadata_img_path}'")
         sh("mkfs.vfat '#{@hva_ctx.metadata_img_path}'")
-        Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp")
+        Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp") unless File.exists?("#{@hva_ctx.inst_data_dir}/tmp")
         sh("/bin/mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
 
         # generate metadata as file
