@@ -133,8 +133,6 @@ module Dcmgr
     autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
-    autoload :CustomEventHandler, 'dcmgr/node_modules/service_openflow'
-    autoload :OpenFlowController, 'dcmgr/node_modules/service_openflow'
   end
 
   module Helpers
