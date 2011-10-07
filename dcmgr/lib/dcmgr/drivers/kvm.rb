@@ -12,7 +12,13 @@ module Dcmgr
       def run_instance(hc)
         # run vm
         inst = hc.inst
-        cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s,media=disk,boot=on,index=0 -drive file=%s,media=disk,index=1 -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+        cmd = ["kvm -m %d -smp %d -name vdc-%s -vnc :%d",
+               "-drive file=%s,media=disk,boot=on,index=0",
+               "-drive file=%s,media=disk,index=1",
+               "-pidfile %s",
+               "-daemonize",
+               "-monitor telnet::%d,server,nowait",
+               ].join(' ')
         args=[inst[:memory_size],
               inst[:cpu_cores],
               inst[:uuid],
