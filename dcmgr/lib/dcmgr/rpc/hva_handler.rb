@@ -359,6 +359,9 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
 
+        # select hypervisor :kvm, :lxc
+        select_hypervisor
+
         begin
           terminate_instance
 
