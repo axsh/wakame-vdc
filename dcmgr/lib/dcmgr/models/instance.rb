@@ -218,8 +218,10 @@ module Dcmgr::Models
     def to_api_document
       h = {
         :id => canonical_uuid,
+        :host_node   => self.host_node,
         :cpu_cores   => cpu_cores,
         :memory_size => memory_size,
+        :arch        => spec.arch,
         :image_id    => image.canonical_uuid,
         :created_at  => self.created_at,
         :state => self.state,
@@ -227,6 +229,7 @@ module Dcmgr::Models
         :ssh_key_pair => nil,
         :network => [],
         :volume => [],
+        :netfilter_group_id => [],
         :netfilter_group => [],
         :vif => [],
         :hostname => hostname,
@@ -242,11 +245,14 @@ module Dcmgr::Models
           direct_lease_ds = n.direct_ip_lease_dataset
           next if direct_lease_ds.first.nil?
           outside_lease_ds = n.nat_ip_lease_dataset
-          
+
           h[:network] << {
             :network_name => n.network.canonical_uuid,
             :ipaddr => direct_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact
+            :dns_name => n.network.domain_name && "#{self.hostname}.#{self.account.uuid}.#{n.network.domain_name}",
+            :nat_network_name => n.nat_network && n.nat_network.canonical_uuid,
+            :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact,
+            :nat_dns_name => n.nat_network && n.nat_network.domain_name && "#{self.hostname}.#{self.account.uuid}.#{n.nat_network.domain_name}"
           }
         }
       end
@@ -281,6 +287,7 @@ module Dcmgr::Models
 
       if self.netfilter_groups
         self.netfilter_groups.each { |n|
+          h[:netfilter_group_id] << n.canonical_uuid
           h[:netfilter_group] << n.name
         }
       end
