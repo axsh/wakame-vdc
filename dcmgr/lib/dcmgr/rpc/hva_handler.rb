@@ -31,6 +31,7 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attaching,
                       :attached_at => nil,
+                      :instance_id => @inst[:id], # needed after cleanup
                       :host_device_name => @os_devpath})
       end
 
@@ -289,9 +290,12 @@ module Dcmgr
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
 
         # create volume from snapshot
-        jobreq.run("sta-handle.#{@vol[:storage_node][:node_id]}", "create_volume", @vol_id, @repository_address)
+        # no need to create volume if instance is restarted with enabled_ha.
+        unless @vol[:state].to_s == 'available'
+          jobreq.run("sta-handle.#{@vol[:storage_node][:node_id]}", "create_volume", @vol_id, @repository_address)
+          logger.debug("volume created on #{@vol[:storage_node][:node_id]}: #{@vol_id}")
+        end
 
-        logger.debug("volume created on #{@vol[:storage_node][:node_id]}: #{@vol_id}")
         # reload volume info
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         
@@ -364,6 +368,9 @@ module Dcmgr
 
         begin
           terminate_instance
+
+          # just publish "hva/instance_terminated" to update netfilter rules once
+          update_instance_state({}, 'hva/instance_terminated')
 
           unless @inst[:volume].nil?
             @inst[:volume].each { |volid, v|
