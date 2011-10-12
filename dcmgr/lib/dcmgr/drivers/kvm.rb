@@ -18,6 +18,7 @@ module Dcmgr
                "-pidfile %s",
                "-daemonize",
                "-monitor telnet::%d,server,nowait",
+               "-no-shutdown",
                ].join(' ')
         args=[inst[:memory_size],
               inst[:cpu_cores],
@@ -56,6 +57,12 @@ module Dcmgr
         inst = hc.inst
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           t.cmd("system_reset")
+          # When the guest initiate halt/poweroff the KVM might become
+          # "paused" status. At that time, "system_reset" command does
+          # not work as it is an ACPI signal. The "cont" command allows
+          # to bring the status back to running in this case.
+          # It has no effect if the status is kept running already.
+          t.cmd('cont')
         }
       end
 
