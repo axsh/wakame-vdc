@@ -199,12 +199,20 @@ EOS
     shlog ps -p ${pids}
   }
 
+}
 
-  retry 10 <<EOF || abort "Can't see dcmgr"
+function check_ready_standalone {
+  retry 10 <<'EOF' || abort "Can't see dcmgr"
 echo > "/dev/tcp/${api_bind}/${api_port}"
 EOF
-  retry 10 <<EOF || abort "Can't see nginx"
+  retry 10 <<'EOF' || abort "Can't see nginx"
 echo > "/dev/tcp/localhost/8080"
+EOF
+
+  # Wait for until all agent nodes become online.
+  retry 10 <<'EOF' || abort "Offline nodes still exist."
+sleep 5
+[ 4 -eq "`echo "select state from node_states where state='online'" | mysql -uroot wakame_dcmgr | wc -l`" ]
 EOF
 }
 
@@ -242,6 +250,7 @@ case ${mode} in
     (
      set +e
      run_standalone
+     check_ready_standalone
      cd $prefix_path/tests/spec
      [ -z "${without_bundle_install}" ] && bundle install
 
