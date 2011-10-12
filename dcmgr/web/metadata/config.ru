@@ -15,3 +15,4 @@ use Dcmgr::Rack::RunInitializer, lambda {
 }
 
 run Dcmgr::Endpoints::Metadata.new
+#run Dcmgr::Endpoints::Ec2Metadata.new
