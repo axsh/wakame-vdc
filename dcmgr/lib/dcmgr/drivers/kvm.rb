@@ -135,6 +135,25 @@ module Dcmgr
                                      "Prompt" => /\n\(qemu\) \z/,
                                      "Timeout" => 60,
                                      "Waittime" => 0.2)
+
+          # Add helper method for parsing response from qemu monitor shell.
+          telnet.instance_eval {
+            def shell_result(cmdstr)
+              ret = ""
+              hit = false
+              self.cmd(cmdstr).split("\n(qemu) ").each { |i|
+                i.split("\n").each { |i2|
+                  
+                  if i2 =~ /#{cmdstr}/
+                    hit = true
+                    next
+                  end
+                  ret += ("\n" + i2) if hit
+                }
+              }
+              ret.sub(/^\n/, '')
+            end
+          }
           
           blk.call(telnet)
         rescue => e
