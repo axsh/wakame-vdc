@@ -218,7 +218,7 @@ module Dcmgr::Models
     def to_api_document
       h = {
         :id => canonical_uuid,
-        :host_node   => self.host_node.canonical_uuid,
+        :host_node   => self.host_node && self.host_node.canonical_uuid,
         :cpu_cores   => cpu_cores,
         :memory_size => memory_size,
         :arch        => spec.arch,
