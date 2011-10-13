@@ -157,9 +157,8 @@ module Dcmgr
       end
 
       def reboot_instance(hc)
-        inst = hc.inst
-        terminate_instance(hc)
-        run_instance(hc)
+        sh("lxc-stop -n #{hc.inst[:uuid]}")
+        sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log 3<&- 4<&- 6<&-", [hc.inst[:uuid], hc.inst_data_dir, hc.inst[:uuid]])
       end
 
       def attach_volume_to_guest(hc)
