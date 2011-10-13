@@ -45,11 +45,20 @@ module Dcmgr
       end
 
       def terminate_instance(hc)
-        kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
-        if $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
-          sh("/bin/kill #{kvm_pid}")
-        else
-          logger.error("Can not find the KVM process. Skipping: kvm -name vdc-#{hc.inst_id}")
+        begin
+          connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+            t.cmd("quit")
+          }
+        rescue => e
+          kvm_pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir))
+          if kvm_pid.nil? || kvm_pid == ''
+            kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
+          end
+          if kvm_pid.to_s =~ /^\d+$/
+            sh("/bin/kill -9 #{kvm_pid}")
+          else
+            logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
+          end
         end
       end
 
