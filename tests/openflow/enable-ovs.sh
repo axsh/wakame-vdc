@@ -39,3 +39,9 @@ $work_dir/ovs/bin/ovs-vsctl set-controller br0 tcp:127.0.0.1
 $work_dir/ovs/bin/ovs-vsctl get-controller br0
 
 $work_dir/ovs/bin/ovs-ofctl dump-flows br0
+
+echo
+echo "Disabling use of in-band communication with controller. This results in packets from localhost being properly processed by the flow table."
+echo
+echo "Note that use of unix socket for controller communication is preferrable for stability."
+$work_dir/ovs/bin/ovs-vsctl set bridge br0 other_config:disable-in-band=true
