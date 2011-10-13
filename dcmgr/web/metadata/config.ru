@@ -14,5 +14,4 @@ use Dcmgr::Rack::RunInitializer, lambda {
   Dcmgr.run_initializers('sequel')
 }
 
-run Dcmgr::Endpoints::Metadata.new
-#run Dcmgr::Endpoints::Ec2Metadata.new
+run Dcmgr::Endpoints::Ec2Metadata.new

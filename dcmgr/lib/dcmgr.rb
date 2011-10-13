@@ -121,7 +121,6 @@ module Dcmgr
 
   module Endpoints
     autoload :CoreAPI, 'dcmgr/endpoints/core_api'
-    autoload :Metadata, 'dcmgr/endpoints/metadata'
     autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
   end
 
