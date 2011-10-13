@@ -124,8 +124,6 @@ module Dcmgr
 
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           t.cmd("pci_del #{pci_devaddr}")
-          # [timming issue] It's too fast to run "info pci".
-          sleep 1
 
           #
           #  Bus  0, device   4, function 0:
@@ -134,11 +132,13 @@ module Dcmgr
           #      BAR0: I/O at 0x1000 [0x103f].
           #      BAR1: 32 bit memory at 0x08000000 [0x08000fff].
           #      id ""
-          c = t.cmd("info pci")
           pci_devaddr = pci_devaddr.split(':')
-          unless c.split(/\n/).grep(/\s+Bus\s+#{pci_devaddr[1].to_i(16)}, device\s+#{pci_devaddr[2].to_i(16)}, function/).empty?
-            raise "Detached disk device still be attached in qemu-kvm: #{pci_devaddr.join(':')}"
+          pass=false
+          tryagain do
+            sleep 1
+            pass = t.shell_result("info pci").split(/\n/).grep(/\s+Bus\s+#{pci_devaddr[1].to_i(16)}, device\s+#{pci_devaddr[2].to_i(16)}, function/).empty?
           end
+          raise "Detached disk device still be attached in qemu-kvm: #{pci_devaddr.join(':')}" if pass == false
         }
       end
 
