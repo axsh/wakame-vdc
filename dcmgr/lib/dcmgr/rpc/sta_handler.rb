@@ -20,12 +20,9 @@ module Dcmgr
         @iscsi_target = Dcmgr::Drivers::IscsiTarget.select_iscsi_target(iscsi_target, @node)
       end
 
-      job :create_volume, proc {
-        @volume_id = request.args[0]
-        @destination = Dcmgr::StorageService.repository(request.args[1])
-        @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
-        raise "Invalid volume state: #{@volume[:state]}" unless @volume[:state].to_s == 'pending'
-
+      # Setup volume file from snapshot storage and register to
+      # sotrage target.
+      def setup_and_export_volume
         snapshot_file = nil 
         unless @volume[:snapshot_id].nil?
           @snapshot = rpc.request('sta-collector', 'get_snapshot', @volume[:snapshot_id])
@@ -63,12 +60,41 @@ module Dcmgr
         opt = @iscsi_target.create(StaContext.new(self))
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :transport_information=>opt})
         logger.info("registered iscsi target: #{@volume_id}")
+      end
+
+      job :create_volume, proc {
+        @volume_id = request.args[0]
+        @destination = Dcmgr::StorageService.repository(request.args[1])
+        @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
+        raise "Invalid volume state: #{@volume[:state]}" unless @volume[:state].to_s == 'pending'
+
+        setup_and_export_volume
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
         logger.error("Failed to run create_volume: #{@volume_id}")
       }
 
+      # create volume and chain to run instance.
+      job :create_volume_and_run_instance, proc {
+        @volume_id = request.args[0]
+        @instance_id = request.args[1]
+        @destination = Dcmgr::StorageService.repository(request.args[2])
+
+        @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
+        raise "Invalid volume state: #{@volume[:state]}" unless @volume[:state].to_s == 'pending'
+
+        setup_and_export_volume
+
+        @instance = rpc.request('hva-collector', 'get_instance', @instance_id)
+        jobreq.submit("hva-handle.#{@instance[:host_node][:node_id]}", 'run_vol_store', @instance_id, @volume_id)
+      }, proc {
+        # TODO: need to clear generated temp files or remote files in remote snapshot repository.
+        rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+        rpc.request('hva-collector', 'update_instance', @instance_id, {:state=>:terminated, :terminated_at=>Time.now.utc})
+        logger.error("Failed to run create_volume_and_run_instance: #{@instance_id}, #{@volume_id}")
+      }
+      
       job :delete_volume do
         @volume_id = request.args[0]
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)

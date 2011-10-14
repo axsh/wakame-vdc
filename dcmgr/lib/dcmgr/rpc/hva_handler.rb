@@ -271,7 +271,6 @@ module Dcmgr
       job :run_vol_store, proc {
         @inst_id = request.args[0]
         @vol_id = request.args[1]
-        @repository_address = request.args[2]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         logger.info("Booting #{@inst_id}")
@@ -288,13 +287,6 @@ module Dcmgr
         # setup vm data folder
         inst_data_dir = @hva_ctx.inst_data_dir
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
-
-        # create volume from snapshot
-        # no need to create volume if instance is restarted with enabled_ha.
-        unless @vol[:state].to_s == 'available'
-          jobreq.run("sta-handle.#{@vol[:storage_node][:node_id]}", "create_volume", @vol_id, @repository_address)
-          logger.debug("volume created on #{@vol[:storage_node][:node_id]}: #{@vol_id}")
-        end
 
         # reload volume info
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
