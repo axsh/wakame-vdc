@@ -35,7 +35,7 @@ module Dcmgr::Models
     end
 
     #Override the delete method to keep the row and just mark it as deleted
-    def _delete
+    def delete
       self.deleted_at ||= Time.now
       self.save
     end

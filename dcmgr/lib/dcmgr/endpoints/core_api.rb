@@ -369,7 +369,7 @@ module Dcmgr
             Models::Image.lock!
             i = find_by_uuid(:Image, params[:id])
             if examine_owner(i)
-              i.delete
+              i.destroy
             else
               raise OperationNotPermitted
             end

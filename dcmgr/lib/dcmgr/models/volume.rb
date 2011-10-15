@@ -172,9 +172,9 @@ module Dcmgr::Models
                                  :size=>self.size)
     end
 
-    # override Sequel::Model#_delete not to delete rows but to set
+    # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
-    def _delete
+    def delete
       self.deleted_at ||= Time.now
       self.state = :deleted if self.state != :deleted
       self.status = :offline if self.status != :offline

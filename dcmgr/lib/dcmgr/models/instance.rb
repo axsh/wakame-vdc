@@ -165,9 +165,9 @@ module Dcmgr::Models
       super
     end
 
-    # override Sequel::Model#_delete not to delete rows but to set
+    # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
-    def _delete
+    def delete
       self.terminated_at ||= Time.now
       self.state = :terminated if self.state != :terminated
       self.status = :offline if self.status != :offline
