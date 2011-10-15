@@ -91,6 +91,58 @@ describe "/api/instances" do
                                               :ha_enabled => 'false'})
   end
 
+  describe "stop/start using wmi-lucid1 (volume store image)" do
+    before do
+      # Always bring new instance to running.
+      res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demospec'})
+      res.success?.should be_true
+      @instance_id = res["id"]
+      
+      retry_until_running(@instance_id)
+    end
+
+    after do
+      # Always try terminate
+      
+      APITest.delete("/instances/#{@instance_id}").success?.should be_true
+      retry_until_terminated(@instance_id)
+    end
+
+    def retry_until_stopped(instance_id)
+      retry_until do
+        case APITest.get("/instances/#{instance_id}")["state"]
+        when 'stopped'
+          true
+        when 'terminated'
+          raise "Instance terminated by the system due to failure."
+        else
+          false
+        end
+      end
+    end
+    
+    it 'running -> stop -> terminate' do
+      APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
+      retry_until_stopped(@instance_id)
+    end
+    
+    it 'running -> stop -> running -> terminate' do
+      APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
+      retry_until_stopped(@instance_id)
+      APITest.update("/instances/#{@instance_id}/start", []).success?.should be_true
+      retry_until_running(@instance_id)
+    end
+    
+    it 'running -> stop -> running -> stop -> terminate' do
+      APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
+      retry_until_stopped(@instance_id)
+      APITest.update("/instances/#{@instance_id}/start", []).success?.should be_true
+      retry_until_running(@instance_id)
+      APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
+      retry_until_stopped(@instance_id)
+    end
+  end
+
   private
   def run_instance_then_reboot_then_terminate(params)
     res = APITest.create("/instances", params)

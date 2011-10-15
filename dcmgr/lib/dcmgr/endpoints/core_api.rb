@@ -318,7 +318,16 @@ module Dcmgr
             else
               raise OperationNotPermitted
             end
-            res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+
+            case i.state
+            when 'stopped'
+              # just destroy the record.
+              i.destroy
+            when 'terminated'
+              raise InvalidInstanceState, i.state
+            else
+              res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+            end
             response_to([i.canonical_uuid])
           end
         end
@@ -332,6 +341,31 @@ module Dcmgr
             response_to({})
           end
         end
+
+        operation :stop, :method=>:put, :member=>true do
+          description 'Stop the instance'
+          control do
+            i = find_by_uuid(:Instance, params[:id])
+            raise InvalidInstanceState, i.state if i.state != 'running'
+            Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'stop', i.canonical_uuid)
+            response_to([i.canonical_uuid])
+          end
+        end
+
+        operation :start, :method=>:put, :member=>true do
+          description 'Restart the instance'
+          control do
+            instance = find_by_uuid(:Instance, params[:id])
+            raise InvalidInstanceState, instance.state if instance.state != 'stopped'
+            instance.state = :scheduling
+            instance.save
+
+            commit_transaction
+            Dcmgr.messaging.submit("scheduler", 'schedule_start_instance', instance.canonical_uuid)
+            response_to([instance.canonical_uuid])
+          end
+        end
+
       end
 
       collection :images do

@@ -40,6 +40,9 @@ module Dcmgr
         sh("iscsiadm -m node -T '%s' --logout", [@vol[:transport_information][:iqn]])
         # wait udev queue
         sh("/sbin/udevadm settle")
+      end
+
+      def update_volume_state_to_available
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:available,
                       :host_device_name=>nil,
@@ -49,10 +52,24 @@ module Dcmgr
         event.publish('hva/volume_detached', :args=>[@inst_id, @vol_id])
       end
 
-      def terminate_instance
+      def terminate_instance(state_update=false)
         @hv.terminate_instance(HvaContext.new(self))
+
+        unless @inst[:volume].nil?
+          @inst[:volume].each { |volid, v|
+            @vol_id = volid
+            @vol = v
+            # force to continue detaching volumes during termination.
+            detach_volume_from_host rescue logger.error($!)
+            if state_update
+              update_volume_state_to_available rescue logger.error($!)
+            end
+          }
+        end
+        
+        # cleanup vm data folder
+        FileUtils.rm_r(File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir))
       end
-      
 
       def update_instance_state(opts, ev)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
@@ -326,28 +343,15 @@ module Dcmgr
 
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
-
-          terminate_instance
-
-          unless @inst[:volume].nil?
-            @inst[:volume].each { |volid, v|
-              @vol_id = volid
-              @vol = v
-              # force to continue detaching volumes during termination.
-              detach_volume_from_host rescue logger.error($!)
-            }
-          end
-
-          # cleanup vm data folder
-          FileUtils.rm_r(File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir))
+          terminate_instance(true)
         ensure
           update_instance_state({:state=>:terminated,:terminated_at=>Time.now.utc},
                                 'hva/instance_terminated')
         end
       end
 
-      # just do terminate instance and unmount volumes not to affect
-      # state management.
+      # just do terminate instance and unmount volumes. it should not change
+      # state on any resources.
       # called from HA at which the faluty instance get cleaned properly.
       job :cleanup do
         @inst_id = request.args[0]
@@ -359,21 +363,32 @@ module Dcmgr
         select_hypervisor
 
         begin
-          terminate_instance
-
+          terminate_instance(false)
+        ensure
           # just publish "hva/instance_terminated" to update netfilter rules once
           update_instance_state({}, 'hva/instance_terminated')
-
-          unless @inst[:volume].nil?
-            @inst[:volume].each { |volid, v|
-              @vol_id = volid
-              @vol = v
-              # force to continue detaching volumes during termination.
-              detach_volume_from_host rescue logger.error($!)
-            }
-          end
         end
+      end
 
+      # stop instance is mostly similar to terminate_instance. the
+      # difference is the state transition of instance and associated
+      # resources to the instance , attached volumes and vnic, are kept
+      # same sate.
+      job :stop do
+        @inst_id = request.args[0]
+
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+        raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
+
+        select_hypervisor
+
+        begin
+          rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:stopping})
+          terminate_instance(false)
+        ensure
+          # 
+          update_instance_state({:state=>:stopped, :host_node_id=>nil}, 'hva/instance_terminated')
+        end
       end
 
       job :attach, proc {
@@ -438,6 +453,7 @@ module Dcmgr
 
         # detach disk on host os
         detach_volume_from_host
+        update_volume_state_to_available
       end
 
       job :reboot, proc {
