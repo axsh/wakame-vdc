@@ -21,6 +21,13 @@ mkdir $ovs_build_dir && cd $ovs_build_dir
 git clone git://openvswitch.org/openvswitch
 
 cd ./openvswitch
+
+# Allow inclusion of patches to ovs.
+for patch_file in $work_dir/tests/openflow/ovs_*.patch; do
+    echo "Adding patch file '$patch_file' to ovs-switchd."
+    patch -p1 < "$patch_file"
+done
+
 ./boot.sh && ./configure --prefix=$work_dir/ovs/ --with-linux=/lib/modules/`uname -r`/build/ > /dev/null
 (make && make install) > /dev/null
 
