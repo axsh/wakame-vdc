@@ -115,9 +115,6 @@ config.debug_iptables = false
 
 # Use ipset for netfilter
 config.use_ipset       = false
-
-# The metadata server port
-config.metadata_server_port = 80
 EOS
 
 
