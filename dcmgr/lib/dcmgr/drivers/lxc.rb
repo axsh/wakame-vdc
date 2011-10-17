@@ -31,7 +31,7 @@ module Dcmgr
         end
         sh(cmd, args)
 
-        config_name = create_config(ctx)
+        config_path = create_config(ctx)
         create_fstab(ctx)
         setup_container(ctx)
         mount_cgroup
@@ -53,7 +53,7 @@ module Dcmgr
         lxc_version = `lxc-version`.chomp.split(': ').last
         logger.debug("lxc-version: #{lxc_version}")
 
-        sh("lxc-create -f %s -n %s", [config_name, ctx.inst[:uuid]])
+        sh("lxc-create -f %s -n %s", [config_path, ctx.inst[:uuid]])
         sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log 3<&- 4<&- 6<&-", [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst[:uuid]])
       end
 
@@ -79,14 +79,11 @@ module Dcmgr
         logger.debug("Makinging new block device: #{ctx.inst_data_dir}/rootfs#{sddev}")
         sh("mknod #{ctx.inst_data_dir}/rootfs#{sddev} -m 660 b #{stat.rdev_major} #{stat.rdev_minor}")
 
-        config_name = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
-        config = File.open(config_name, 'r')
-        data = config.readlines
-        config.close
-        config = File.open(config_name, 'w')
-        config.write data
-        config.puts "lxc.cgroup.devices.allow = b #{devnum} rwm"
-        config.close
+        config_path = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
+        File.open(config_path, 'a+') { |f|
+          f.puts "lxc.cgroup.devices.allow = b #{devnum} rwm"
+        }
+
         devnum
       end
 
@@ -99,13 +96,13 @@ module Dcmgr
         logger.debug("Deleting block device: #{ctx.inst_data_dir}/rootfs#{sddev}")
         sh("rm #{ctx.inst_data_dir}/rootfs#{sddev}")
 
-        config_name = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
-        config = File.open(config_name, 'r')
-        data = config.readlines.select {|f| f != "lxc.cgroup.devices.allow = b #{devnum} rwm\n" }
-        config.close
-        config = File.open(config_name, 'w+')
-        config.write data
-        config.close
+        config_path = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
+        config_body = File.open(config_path, 'r') { |f|
+          f.readlines.select {|line| line != "lxc.cgroup.devices.allow = b #{devnum} rwm\n" }
+        }
+        File.open(config_path, 'w') { |f|
+          f.write config_body
+        }
       end
 
       private
@@ -114,70 +111,71 @@ module Dcmgr
         vnic = ctx.inst[:instance_nics].first
         mac_addr = vnic[:mac_addr].unpack('A2'*6).join(':')
 
-        config_name = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
+        config_path = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
         # check config file
-        if File.exist?(config_name)
-          sh("rm #{config_name}")
+        if File.exist?(config_path)
+          sh("rm #{config_path}")
         end
 
-        config = File.open(config_name, 'w')
-        config.puts "lxc.network.type = veth"
-        config.puts "lxc.network.link = #{ctx.bridge_if}"
-        config.puts "lxc.network.flags = up"
-        config.puts "lxc.utsname = #{ctx.inst_id}"
-        config.puts ""
-        config.puts "lxc.network.veth.pair = #{vnic[:uuid]}"
-        config.puts "lxc.network.hwaddr = #{mac_addr}"
-        config.puts ""
-        config.puts "lxc.tty = 4"
-        config.puts "lxc.pts = 1024"
-        config.puts "lxc.rootfs = #{ctx.inst_data_dir}/rootfs"
-        config.puts "lxc.mount = #{ctx.inst_data_dir}/fstab"
-        config.puts ""
-        config.puts "# /dev/null and zero"
-        config.puts "lxc.cgroup.devices.deny = a"
-        config.puts "lxc.cgroup.devices.allow = c 1:3 rwm"
-        config.puts "lxc.cgroup.devices.allow = c 1:5 rwm"
-        config.puts "# consoles"
-        config.puts "lxc.cgroup.devices.allow = c 5:1 rwm"
-        config.puts "lxc.cgroup.devices.allow = c 5:0 rwm"
-        config.puts "lxc.cgroup.devices.allow = c 4:0 rwm"
-        config.puts "lxc.cgroup.devices.allow = c 4:1 rwm"
-        config.puts "# /dev/{,u}random"
-        config.puts "lxc.cgroup.devices.allow = c 1:9 rwm"
-        config.puts "lxc.cgroup.devices.allow = c 1:8 rwm"
-        config.puts "lxc.cgroup.devices.allow = c 136:* rwm"
-        config.puts "lxc.cgroup.devices.allow = c 5:2 rwm"
-        config.puts "#rtc"
-        config.puts "lxc.cgroup.devices.allow = c 254:0 rwm"
-        config.puts "#kvm"
-        config.puts "#lxc.cgroup.devices.allow = c 10:232 rwm"
-        config.puts "#lxc.cgroup.devices.allow = c 10:200 rwm"
+        File.open(config_path, 'w') { |f|
+          f.puts "lxc.network.type = veth"
+          f.puts "lxc.network.link = #{ctx.bridge_if}"
+          f.puts "lxc.network.flags = up"
+          f.puts "lxc.utsname = #{ctx.inst_id}"
+          f.puts ""
+          f.puts "lxc.network.veth.pair = #{vnic[:uuid]}"
+          f.puts "lxc.network.hwaddr = #{mac_addr}"
+          f.puts ""
+          f.puts "lxc.tty = 4"
+          f.puts "lxc.pts = 1024"
+          f.puts "lxc.rootfs = #{ctx.inst_data_dir}/rootfs"
+          f.puts "lxc.mount = #{ctx.inst_data_dir}/fstab"
+          f.puts ""
+          f.puts "lxc.cgroup.devices.deny = a"
+          f.puts "# /dev/null and zero"
+          f.puts "lxc.cgroup.devices.allow = c 1:3 rwm"
+          f.puts "lxc.cgroup.devices.allow = c 1:5 rwm"
+          f.puts "# consoles"
+          f.puts "lxc.cgroup.devices.allow = c 5:1 rwm"
+          f.puts "lxc.cgroup.devices.allow = c 5:0 rwm"
+          f.puts "lxc.cgroup.devices.allow = c 4:0 rwm"
+          f.puts "lxc.cgroup.devices.allow = c 4:1 rwm"
+          f.puts "# /dev/{,u}random"
+          f.puts "lxc.cgroup.devices.allow = c 1:9 rwm"
+          f.puts "lxc.cgroup.devices.allow = c 1:8 rwm"
+          f.puts "lxc.cgroup.devices.allow = c 136:* rwm"
+          f.puts "lxc.cgroup.devices.allow = c 5:2 rwm"
+          f.puts "#rtc"
+          f.puts "lxc.cgroup.devices.allow = c 254:0 rwm"
+          f.puts "#kvm"
+          f.puts "#lxc.cgroup.devices.allow = c 10:232 rwm"
+          f.puts "#lxc.cgroup.devices.allow = c 10:200 rwm"
 
-        unless ctx.inst[:volume].nil?
-          ctx.inst[:volume].each { |vol_id, vol|
-            unless vol[:guest_device_name].nil?
-              config.puts "lxc.cgroup.devices.allow = b #{vol[:guest_device_name]} rwm"
-            else
-              @os_devpath = vol[:host_device_name] unless vol[:host_device_name].nil?
-              sddev = File.expand_path(File.readlink(@os_devpath), '/dev/disk/by-path')
-              # find major number and minor number to device file
-              stat = File.stat(sddev)
-              config.puts "lxc.cgroup.devices.allow = b #{stat.rdev_major}:#{stat.rdev_minor} rwm"
-            end
-          }
-        end
-        config.close
-        config_name
+          unless ctx.inst[:volume].nil?
+            ctx.inst[:volume].each { |vol_id, vol|
+              unless vol[:guest_device_name].nil?
+                f.puts "lxc.cgroup.devices.allow = b #{vol[:guest_device_name]} rwm"
+              else
+                @os_devpath = vol[:host_device_name] unless vol[:host_device_name].nil?
+                sddev = File.expand_path(File.readlink(@os_devpath), '/dev/disk/by-path')
+                # find major number and minor number to device file
+                stat = File.stat(sddev)
+                f.puts "lxc.cgroup.devices.allow = b #{stat.rdev_major}:#{stat.rdev_minor} rwm"
+              end
+            }
+          end
+        }
+
+        config_path
       end
 
       def create_fstab(ctx)
-        config_name = "#{ctx.inst_data_dir}/fstab"
-        config = File.open(config_name, "w")
-        config.puts "proc #{ctx.inst_data_dir}/rootfs/proc proc nodev,noexec,nosuid 0 0"
-        config.puts "devpts #{ctx.inst_data_dir}/rootfs/dev/pts devpts defaults 0 0"
-        config.puts "sysfs #{ctx.inst_data_dir}/rootfs/sys sysfs defaults 0 0"
-        config.close
+        config_path = "#{ctx.inst_data_dir}/fstab"
+        File.open(config_path, "w") { |f|
+          f.puts "proc #{ctx.inst_data_dir}/rootfs/proc proc nodev,noexec,nosuid 0 0"
+          f.puts "devpts #{ctx.inst_data_dir}/rootfs/dev/pts devpts defaults 0 0"
+          f.puts "sysfs #{ctx.inst_data_dir}/rootfs/sys sysfs defaults 0 0"
+        }
       end
 
       def setup_container(ctx)
