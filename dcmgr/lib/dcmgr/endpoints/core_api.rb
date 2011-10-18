@@ -347,6 +347,12 @@ module Dcmgr
           control do
             i = find_by_uuid(:Instance, params[:id])
             raise InvalidInstanceState, i.state if i.state != 'running'
+
+            # relase IpLease from nic.
+            i.nic.each { |nic|
+              nic.release_ip_lease
+            }
+            
             Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'stop', i.canonical_uuid)
             response_to([i.canonical_uuid])
           end

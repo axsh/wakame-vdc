@@ -34,6 +34,10 @@ module Dcmgr::Models
       h
     end
 
+    def release_ip_lease
+      ip_dataset.destroy
+    end
+
     #Override the delete method to keep the row and just mark it as deleted
     def delete
       self.deleted_at ||= Time.now
@@ -47,7 +51,7 @@ module Dcmgr::Models
 
     def before_destroy
       MacLease.find(:mac_addr=>self.mac_addr).destroy
-      ip_dataset.destroy
+      release_ip_lease
       super
     end
 

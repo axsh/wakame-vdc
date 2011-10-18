@@ -134,13 +134,19 @@ describe "/api/instances" do
       instance['volume'].each { |v|
         v['state'].should == 'attached'
       }
+      instance['ips'].nil?.should be_true
     end
     
     it 'running -> stop -> running -> terminate' do
+      instance = APITest.get("/instances/#{@instance_id}")
       APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
       retry_until_stopped(@instance_id)
       APITest.update("/instances/#{@instance_id}/start", []).success?.should be_true
       retry_until_running(@instance_id)
+      # compare differences of parameters to the old one.
+      new_instance = APITest.get("/instances/#{@instance_id}")
+      instance['vif'].first['vif_id'].should == new_instance['vif'].first['vif_id']
+      instance['vif'].first['ipv4']['address'].should_not == new_instance['vif'].first['ipv4']['address']
     end
     
     it 'running -> stop -> running -> stop -> terminate' do
