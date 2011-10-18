@@ -10,6 +10,7 @@ class Host < Base
   
   desc "add NODE_ID [options]", "Register a new host node"
   method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new host node"
+  method_option :name, :type => :string, :size => 255, :aliases => "-n", :desc => "The name for the new host node"
   method_option :force, :type => :boolean, :aliases => "-f", :default=>false, :desc => "Force new entry creation"
   method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default=>1, :desc => "Number of cpu cores to be offered"
   method_option :memory_size, :type => :numeric, :aliases => "-m", :default=>1024, :desc => "Amount of memory to be offered (in MB)"
@@ -26,6 +27,7 @@ class Host < Base
     end
     
     fields = {
+              :name=>options[:name],
               :node_id=>node_id,
               :offering_cpu_cores=>options[:cpu_cores],
               :offering_memory_size=>options[:memory_size],
@@ -38,6 +40,7 @@ class Host < Base
   end
   
   desc "modify UUID [options]", "Modify a registered host node"
+  method_option :name, :type => :string, :size => 255, :aliases => "-n", :desc => "The name for the new host node"
   method_option :cpu_cores, :type => :numeric, :aliases => "-c", :desc => "Number of cpu cores to be offered"
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this"
   method_option :memory_size, :type => :numeric, :aliases => "-m", :desc => "Amount of memory to be offered (in MB)"
@@ -46,6 +49,7 @@ class Host < Base
     UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && Account[options[:account_id]].nil?
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
     fields = {
+              :name=>options[:name],
               :offering_memory_size=>options[:memory_size],
               :offering_cpu_cores=>options[:cpu_cores],
               :account_id=>options[:account_id],
