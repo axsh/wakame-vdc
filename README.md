@@ -27,14 +27,26 @@ Features:
 Required Components
 --------------------
 
-* RabbitMQ
-* MySQL
-* nginx
+* RabbitMQ (>= 1.7.2)
+* MySQL (>= 5.1.41)
+* nginx (>= 0.7.65)
 * Ruby (>= 1.8.7)
+* RubyGems (>= 1.3.7)
+
+
+Building a Development Environment
+----------------------------------
+
+    $ sudo gem install bundler
+    $ git clone git://github.com/axsh/wakame-vdc.git
+    $ cd ./wakame-vdc/
+    $ sudo -s
+    # ./tests/vdc.sh install
+    # ./tests/vdc.sh run
 
 
 License
 ---------
 
 Copyright (c) Axsh Co.
-Components are included distribution under LGPL 3.0 and Apache 2.0 
+Components are included distribution under LGPL 3.0 and Apache 2.0
