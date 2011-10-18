@@ -9,36 +9,23 @@ require 'dcmgr'
 
 task :environment do
   Dcmgr.configure 'config/dcmgr.conf'
-  Dcmgr.run_initializers
 end
 
 namespace :db do
   desc 'Create all database tables'
   task :init => [ :environment ] do
-    ::Kernel.load(File.expand_path('../config/initializers/sequel.rb', __FILE__))
-    require 'isono'
-    
-    Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
-      Dcmgr::Models.const_get(c).create_table!
-    }
-    Isono::Models::NodeState.create_table!
-    Isono::Models::JobState.create_table!
+    Dcmgr.run_initializers(:sequel)
 
-    Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
-      Dcmgr::Models.const_get(c).install_data
-    }
+    Sequel.extension :migration
+    Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 9999)
   end
 
   desc 'Drop all database tables'
   task :drop => [ :environment ] do
-    require 'sequel'
-    require 'isono'
+    Dcmgr.run_initializers(:sequel)
     
-    Dcmgr::Models::CREATE_TABLE_CLASSES.each { |c|
-      Dcmgr::Models.const_get(c).drop_table
-    }
-    Isono::Models::NodeState.drop_table
-    Isono::Models::JobState.drop_table
+    Sequel.extension :migration
+    Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 0, 9999)
   end
 end
 
