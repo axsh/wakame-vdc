@@ -76,6 +76,8 @@ module Dcmgr::Models
 
     def validate
       super
+      # do not run validation if the row is maked as deleted.
+      return true if self.terminated_at
 
       unless self.hostname =~ /\A[0-9a-z][0-9a-z\-]{0,31}\Z/
         errors.add(:hostname, "Invalid hostname syntax")
