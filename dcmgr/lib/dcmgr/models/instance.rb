@@ -308,10 +308,10 @@ module Dcmgr::Models
       self.instance_spec.config
     end
 
-    def add_nic(network, vendor_id=nil)
+    def add_nic(network)
       # TODO: get default vendor ID based on the hypervisor.
-      vendor_id ||= '00:ff:f1'
-      nic = InstanceNic.new(:mac_addr=>vendor_id)
+      m = MacLease.lease('00fff1')
+      nic = InstanceNic.new(:mac_addr=>m.mac_addr)
       nic.network = network
       nic.nat_network = network.nat_network
       nic.instance = self
