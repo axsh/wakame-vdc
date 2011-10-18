@@ -106,6 +106,11 @@ describe "/api/instances" do
       
       APITest.delete("/instances/#{@instance_id}").success?.should be_true
       retry_until_terminated(@instance_id)
+      # check volume state
+      instance = APITest.get("/instances/#{@instance_id}")
+      instance['volume'].each { |v|
+        v['state'].should == 'available'
+      }
     end
 
     def retry_until_stopped(instance_id)
@@ -124,6 +129,11 @@ describe "/api/instances" do
     it 'running -> stop -> terminate' do
       APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
       retry_until_stopped(@instance_id)
+      # check volume state
+      instance = APITest.get("/instances/#{@instance_id}")
+      instance['volume'].each { |v|
+        v['state'].should == 'attached'
+      }
     end
     
     it 'running -> stop -> running -> terminate' do
