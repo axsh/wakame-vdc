@@ -31,6 +31,11 @@ module Dcmgr
         end
         sh(cmd, args)
 
+        # metadata drive
+        metadata_path = "#{ctx.inst_data_dir}/rootfs/metadata"
+        Dir.mkdir(metadata_path) unless File.exists?(metadata_path)
+        sh("mount -t vfat -o loop -o ro #{ctx.metadata_img_path} #{metadata_path}")
+
         config_path = create_config(ctx)
         create_fstab(ctx)
         setup_container(ctx)
@@ -60,6 +65,7 @@ module Dcmgr
       def terminate_instance(ctx)
         sh("lxc-stop -n #{ctx.inst_id}")
         sh("lxc-destroy -n #{ctx.inst_id}")
+        sh("umount #{ctx.inst_data_dir}/rootfs/metadata")
         sh("umount #{ctx.inst_data_dir}/rootfs")
       end
 
@@ -172,9 +178,9 @@ module Dcmgr
       def create_fstab(ctx)
         config_path = "#{ctx.inst_data_dir}/fstab"
         File.open(config_path, "w") { |f|
-          f.puts "proc #{ctx.inst_data_dir}/rootfs/proc proc nodev,noexec,nosuid 0 0"
+          f.puts "proc   #{ctx.inst_data_dir}/rootfs/proc proc nodev,noexec,nosuid 0 0"
           f.puts "devpts #{ctx.inst_data_dir}/rootfs/dev/pts devpts defaults 0 0"
-          f.puts "sysfs #{ctx.inst_data_dir}/rootfs/sys sysfs defaults 0 0"
+          f.puts "sysfs  #{ctx.inst_data_dir}/rootfs/sys sysfs defaults 0 0"
         }
       end
 
