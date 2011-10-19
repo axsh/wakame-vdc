@@ -79,34 +79,34 @@ deploy_vmfile ${vmimage_file}      ${vmimage_s3}
 deploy_vmfile ${vmimage_meta_file} ${vmimage_meta_s3}
 
 cd ${work_dir}/dcmgr/
-shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demohost -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r ${hva_arch}
+shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demo1 -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r ${hva_arch}
 
 case ${sta_server} in
 ${ipaddr})
   [ -d ${tmp_path}/xpool/${account_id} ] || mkdir -p ${tmp_path}/xpool/${account_id}
   [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
-  shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
+  shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demo1 -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
 
   ln -fs ${vmimage_path}      ${vmimage_snap_path}
   ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
  ;;
 *)
-  shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demostor -f -a ${account_id} -b xpool             -s $((1024 * 1024)) -i ${sta_server} -o zfs -n /export/home/wakame/vdc/sta/snap
+  shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demo1 -f -a ${account_id} -b xpool             -s $((1024 * 1024)) -i ${sta_server} -o zfs -n /export/home/wakame/vdc/sta/snap
  ;;
 esac
 
 # vlan
-#shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demovlan    -a ${account_id}
-#shlog ./bin/vdc-manage network add           -u   nw-demonet                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --vlan_id 1 --description demo
+#shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demo1    -a ${account_id}
+#shlog ./bin/vdc-manage network add           -u   nw-demo1                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --vlan_id 1 --description demo
 # non vlan
-shlog ./bin/vdc-manage network add           -u   nw-demonet                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
+shlog ./bin/vdc-manage network add           -u   nw-demo1                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
 
 
-shlog ./bin/vdc-manage tag map tag-shhost -o hp-demohost
-shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demonet
-shlog ./bin/vdc-manage tag map tag-shstor -o sp-demostor
+shlog ./bin/vdc-manage tag map tag-shhost -o hp-demo1
+shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demo1
+shlog ./bin/vdc-manage tag map tag-shstor -o sp-demo1
 
-shlog ./bin/vdc-manage network reserve nw-demonet --ipv4=${ipaddr}
+shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}
 
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
 INSERT INTO volume_snapshots values

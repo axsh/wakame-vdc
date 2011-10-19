@@ -8,8 +8,8 @@ describe "/api/host_pools" do
     res.success?.should be_true
   end
 
-  it "should describe host node (hp-demohost)" do
-    host_id = "hp-demohost"
+  it "should describe host node (hp-demo1)" do
+    host_id = "hp-demo1"
     res = APITest.get("/host_pools/#{host_id}")
     res["id"].should == host_id
     res.success?.should be_true
