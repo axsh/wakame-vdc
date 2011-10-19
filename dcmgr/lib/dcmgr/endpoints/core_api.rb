@@ -871,7 +871,7 @@ module Dcmgr
           #        to save private key info on database.
           control do
             Models::SshKeyPair.lock!
-            keydata = Models::SshKeyPair.generate_key_pair
+            keydata = Models::SshKeyPair.generate_key_pair(params[:name])
             savedata = {
               :name=>params[:name],
               :account_id=>@account.canonical_uuid,
