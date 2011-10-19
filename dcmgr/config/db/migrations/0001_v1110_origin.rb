@@ -41,6 +41,7 @@ Sequel.migration do
       column :node_id, "varchar(255)"
       column :arch, "varchar(255)", :null=>false
       column :hypervisor, "varchar(255)", :null=>false
+      column :name, "varchar(255)", :null => true
       column :offering_cpu_cores, "int(11)", :null=>false
       column :offering_memory_size, "int(11)", :null=>false
       
