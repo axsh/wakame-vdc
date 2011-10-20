@@ -349,7 +349,7 @@ module Dcmgr
 
       get '/:version/meta-data/hostname' do
         # TODO
-        ''
+        find_instance().hostname
       end
 
       get '/:version/meta-data/instance-action' do
@@ -401,7 +401,7 @@ module Dcmgr
 
       get '/:version/meta-data/network/interfaces/macs/:mac/' do
         if vnic_mac?(params[:mac])
-          ['local-hostname', 'local-ipv4s', 'mac', 'public-hostname', 'public-ipv4s'].join("\n")
+          ['local-hostname', 'local-ipv4s', 'mac', 'public-hostname', 'public-ipv4s', 'security-groups'].join("\n")
         else
           # TODO
           ''
@@ -428,6 +428,7 @@ module Dcmgr
 
       get '/:version/meta-data/network/interfaces/macs/:mac/mac' do
         if vnic_mac?(params[:mac])
+          params[:mac]
         else
           # TODO
           ''
@@ -436,7 +437,7 @@ module Dcmgr
 
       get '/:version/meta-data/network/interfaces/macs/:mac/public-hostname' do
         if vnic_mac?(params[:mac])
-          params[:mac]
+          find_instance().hostname
         else
           # TODO
           ''
@@ -446,6 +447,15 @@ module Dcmgr
       get '/:version/meta-data/network/interfaces/macs/:mac/public-ipv4s' do
         if vnic_mac?(params[:mac])
           public_ipv4.join("\n")
+        else
+          # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/security-groups' do
+        if vnic_mac?(params[:mac])
+          security_groups
         else
           # TODO
           ''
@@ -463,7 +473,7 @@ module Dcmgr
 
       get '/:version/meta-data/public-hostname' do
         # TODO
-        ''
+        find_instance().hostname
       end
 
       get '/:version/meta-data/public-ipv4' do
@@ -492,9 +502,7 @@ module Dcmgr
       end
 
       get '/:version/meta-data/security-groups' do
-        find_instance().netfilter_groups.map { |grp|
-          grp.name
-        }.join("\n")
+        security_groups.join("\n")
       end
 
       private
@@ -531,6 +539,12 @@ module Dcmgr
           nic.ip.map { |ip|
             ip.ipv4 if ip.is_natted?
           }
+        }
+      end
+
+      def security_groups
+        find_instance().netfilter_groups.map { |grp|
+          grp.name
         }
       end
 
