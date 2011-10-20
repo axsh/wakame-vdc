@@ -172,7 +172,7 @@ module Dcmgr
           'kernel-id' => nil,
           'local-hostname' => @inst[:hostname],
           'local-ipv4' => @inst[:ips].first,
-          'mac' => vnic[:mac_addr],
+          'mac' => vnic[:mac_addr].unpack('A2'*6).join(':'),
           # TODO: network category support
           #'network/' => {},
           'placement/availability-zone' => nil,
@@ -183,6 +183,22 @@ module Dcmgr
           'reservation-id' => nil,
           'security-groups' => @inst[:netfilter_groups].join(' '),
         }
+
+        # TODO: support for multiple interfaces.
+        @inst[:instance_nics].each { |nic|
+          # TODO: use mac address with ':'. 'vfat' doesn't allow folder name include ':'.
+          # mac = nic[:mac_addr].unpack('A2'*6).join(':')
+          mac = nic[:mac_addr]
+          metadata_items.merge!({
+            "network/interfaces/macs/#{mac}/local-hostname" => @inst[:hostname],
+            "network/interfaces/macs/#{mac}/local-ipv4s" => @inst[:ips].first,
+            "network/interfaces/macs/#{mac}/mac" => mac,
+            "network/interfaces/macs/#{mac}/public-hostname" => @inst[:hostname],
+            "network/interfaces/macs/#{mac}/public-ipv4s" => @inst[:nat_ips].first,
+            "network/interfaces/macs/#{mac}/security-groups" => @inst[:netfilter_groups].join(' '),
+          })
+        }
+
         if @inst[:ssh_key_data]
           metadata_items.merge!({
             "public-keys/0=#{@inst[:ssh_key_data][:name]}" => @inst[:ssh_key_data][:public_key],
