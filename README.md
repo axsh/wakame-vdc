@@ -37,7 +37,11 @@ Required Components
 Building a Development Environment
 ----------------------------------
 
+Ubuntu 10.04
+
+    $ sudo apt-get install git-core
     $ sudo gem install bundler
+    $ sudo ln -s  /var/lib/gems/1.8/bin/bundle /usr/local/bin/
     $ git clone git://github.com/axsh/wakame-vdc.git
     $ cd ./wakame-vdc/
     $ sudo -s
