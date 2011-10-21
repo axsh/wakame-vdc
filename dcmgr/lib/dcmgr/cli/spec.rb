@@ -18,10 +18,10 @@ module Dcmgr::Cli
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
       UnsupportedHypervisorError.raise(options[:hypervisor]) unless M::HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
-      fields = options.dup
-      fields[:config] = {
-      }
-      puts super(M::InstanceSpec, fields)
+      uuid = super(M::InstanceSpec,options)
+      # add one interface as default
+      invoke("addvif", [uuid, 'eth0'])
+      puts uuid
     end
     
     desc "modify UUID [options]", "Modify an existing machine spec"
@@ -50,22 +50,25 @@ module Dcmgr::Cli
       if uuid
         spec = M::InstanceSpec[uuid] || UnknownUUIDError.raise(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
-UUID:
-  <%= spec.canonical_uuid %>
-Account ID:
-  <%= spec.account_id %>
-Hypervisor:
-  <%= spec.hypervisor %>
-Arch:
-  <%= spec.arch %>
-CPU Cores:
-  <%= spec.cpu_cores %>
-Memory Size:
-  <%= spec.memory_size %>
-Quota Weight:
-  <%= spec.quota_weight %>
+UUID: <%= spec.canonical_uuid %>
+Account ID: <%= spec.account_id %>
+Hypervisor: <%= spec.hypervisor %>
+Arch: <%= spec.arch %>
+CPU Cores: <%= spec.cpu_cores %>
+Memory Size: <%= spec.memory_size %>
+Quota Weight: <%= spec.quota_weight %>
+<%- unless spec.vifs.empty? -%>
+Interfaces:
+  <%- spec.vifs.each { |name, i| -%>
+  <%= name %>:
+    Index: <%= i[:index] %>
+    Bandwidth: <%= i[:bandwidth] %> kbps
+  <%- } -%>
+<%- end -%>
+<%- unless spec.config.empty? -%>
 Hypervisor Configuration:
   <%= spec.config.inspect %>
+<%- end -%>
 __END
       else
         cond = {}
@@ -76,6 +79,45 @@ __END
 <%- } -%>
 __END
       end
+    end
+    
+    desc "addvif UUID name", "Add interfance"
+    method_option :index, :type => :numeric, :desc => "The index value for the interface. (>=0)"
+    method_option :bandwidth, :type => :numeric, :default=>100000, :desc => "The bandwidth (kbps) of the interface"
+    def addvif(uuid, name)
+      spec = M::InstanceSpec[uuid]
+
+      index = if options[:index].nil?
+                # find max index value.
+                index = spec.vifs.values.map { |i| i[:index] }.max
+                index.nil? ? 0 : (index + 1)
+              else
+                options[:index].to_i
+              end
+      
+      spec.add_vif(name, index.to_i, options[:bandwidth].to_i)
+      spec.save
+    end
+    
+    desc "delvif UUID name", "Delete interfance"
+    def delvif(uuid, name)
+      spec = M::InstanceSpec[uuid]
+      spec.remove_vif(name)
+      spec.save
+    end
+    
+    desc "modifyvif UUID name [options]", "Modify interfance parameters"
+    method_option :index, :type => :numeric, :desc => "The index value for the interface"
+    method_option :bandwidth, :type => :numeric, :desc => "The bandwidth (kbps) of the interface"
+    def modifyvif(uuid, name)
+      spec = M::InstanceSpec[uuid]
+      if options[:index]
+        spec.update_vif_index(name, options[:index].to_i)
+      end
+      if options[:bandwidth]
+        spec.update_vif_bandwidth(name, options[:bandwidth].to_i)
+      end
+      spec.save
     end
   end
 end
