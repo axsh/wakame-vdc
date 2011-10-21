@@ -110,7 +110,9 @@ Sequel.migration do
       column :cpu_cores, "int(11)", :null=>false
       column :memory_size, "int(11)", :null=>false
       column :quota_weight, "double", :default=>1.0, :null=>false
-      column :config, "text", :null=>false
+      column :vifs, "text", :default=>''
+      column :drives, "text", :default=>''
+      column :config, "text", :null=>false, :default=>''
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       
