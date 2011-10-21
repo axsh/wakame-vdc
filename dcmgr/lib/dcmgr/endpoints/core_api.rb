@@ -418,24 +418,27 @@ module Dcmgr
         end
       end
 
-      collection :host_pools do
-        operation :index do
-          description 'Show list of host pools'
-          control do
-            res = select_index(:HostNode, {:start => params[:start],
-                                 :limit => params[:limit]})
-            response_to(res)
+      # obsolute path: "/host_pools"
+      [ :host_pools, :host_nodes ].each do |path|
+        collection path do
+          operation :index do
+            description 'Show list of host pools'
+            control do
+              res = select_index(:HostNode, {:start => params[:start],
+                                   :limit => params[:limit]})
+              response_to(res)
+            end
           end
-        end
 
-        operation :show do
-          description 'Show status of the host'
-          #param :account_id, :string, :optional
-          control do
-            hp = find_by_uuid(:HostNode, params[:id])
-            raise OperationNotPermitted unless examine_owner(hp)
+          operation :show do
+            description 'Show status of the host'
+            #param :account_id, :string, :optional
+            control do
+              hp = find_by_uuid(:HostNode, params[:id])
+              raise OperationNotPermitted unless examine_owner(hp)
 
-            response_to(hp.to_api_document)
+              response_to(hp.to_api_document)
+            end
           end
         end
       end
@@ -816,27 +819,30 @@ module Dcmgr
         end
       end
 
-      collection :storage_pools do
-        operation :index do
-          description 'Show lists of the storage_pools'
-          # params start, fixnum, optional
-          # params limit, fixnum, optional
-          control do
-            res = select_index(:StorageNode, {:start => params[:start],
-                                 :limit => params[:limit]})
-            response_to(res)
+      # obsolute path: "/storage_pools"
+      [ :storage_pools, :storage_nodes ].each do |path|
+        collection path do
+          operation :index do
+            description 'Show lists of the storage_pools'
+            # params start, fixnum, optional
+            # params limit, fixnum, optional
+            control do
+              res = select_index(:StorageNode, {:start => params[:start],
+                                   :limit => params[:limit]})
+              response_to(res)
+            end
           end
-        end
 
-        operation :show do
-          description 'Show the storage_pool status'
-          # params id, string, required
-          control do
-            pool_id = params[:id]
-            raise UndefinedStorageNodeID if pool_id.nil?
-            vs = find_by_uuid(:StorageNode, pool_id)
-            raise UnknownStorageNode if vs.nil?
-            response_to(vs.to_api_document)
+          operation :show do
+            description 'Show the storage_pool status'
+            # params id, string, required
+            control do
+              pool_id = params[:id]
+              raise UndefinedStorageNodeID if pool_id.nil?
+              vs = find_by_uuid(:StorageNode, pool_id)
+              raise UnknownStorageNode if vs.nil?
+              response_to(vs.to_api_document)
+            end
           end
         end
       end
