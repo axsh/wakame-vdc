@@ -44,7 +44,7 @@ module Dcmgr::Models
       self.save
     end
 
-    def before_validate
+    def before_validation
       self[:mac_addr] = normalize_mac_addr(self[:mac_addr])
       super
     end
