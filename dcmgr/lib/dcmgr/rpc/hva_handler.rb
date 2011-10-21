@@ -185,14 +185,16 @@ module Dcmgr
         }
 
         # TODO: support for multiple interfaces.
-        @inst[:instance_nics].each { |nic|
-          # TODO: use mac address with ':'. 'vfat' doesn't allow folder name include ':'.
-          # mac = nic[:mac_addr].unpack('A2'*6).join(':')
-          mac = nic[:mac_addr]
+        @inst[:instance_nics].each { |vnic|
+          vnic_network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
+
+          # vfat doesn't allow folder name including ":".
+          # folder name including mac address replaces "-" to ":".
+          mac = vnic[:mac_addr].unpack('A2'*6).join('-')
           metadata_items.merge!({
             "network/interfaces/macs/#{mac}/local-hostname" => @inst[:hostname],
             "network/interfaces/macs/#{mac}/local-ipv4s" => @inst[:ips].first,
-            "network/interfaces/macs/#{mac}/mac" => mac,
+            "network/interfaces/macs/#{mac}/mac" => vnic[:mac_addr].unpack('A2'*6).join(':'),
             "network/interfaces/macs/#{mac}/public-hostname" => @inst[:hostname],
             "network/interfaces/macs/#{mac}/public-ipv4s" => @inst[:nat_ips].first,
             "network/interfaces/macs/#{mac}/security-groups" => @inst[:netfilter_groups].join(' '),
@@ -224,12 +226,12 @@ module Dcmgr
             FileUtils.mkdir_p(File.expand_path(dir, metadata_base_dir))
           end
           File.open(File.expand_path(k, metadata_base_dir), 'w') { |f|
-            f.write(v.to_s)
+            f.puts(v.to_s)
           }
         }
         # user-data
         File.open(File.expand_path('user-data', "#{@hva_ctx.inst_data_dir}/tmp"), 'w') { |f|
-          f.write(@inst[:user_data])
+          f.puts(@inst[:user_data])
         }
         
       ensure
