@@ -198,6 +198,10 @@ module Dcmgr
             "network/interfaces/macs/#{mac}/public-hostname" => @inst[:hostname],
             "network/interfaces/macs/#{mac}/public-ipv4s" => @inst[:nat_ips].first,
             "network/interfaces/macs/#{mac}/security-groups" => @inst[:netfilter_groups].join(' '),
+            # wakame-vdc extention items.
+            # TODO: need an iface index number?
+            "network/interfaces/macs/#{mac}/x-gateway" => vnic_network[:ipv4_gw],
+            "network/interfaces/macs/#{mac}/x-netmask" => vnic_network[:netmask],
           })
         }
 
