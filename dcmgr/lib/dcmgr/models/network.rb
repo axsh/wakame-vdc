@@ -59,7 +59,6 @@ module Dcmgr::Models
                 :bandwidth_mark=>self[:id],
                 :description=>description.to_s,
                 :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
-                :netmask => ipaddress.network.prefix.to_ip,
               })
     end
 

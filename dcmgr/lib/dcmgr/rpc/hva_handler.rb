@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'isono'
 require 'fileutils'
+require 'ipaddress'
 
 module Dcmgr
   module Rpc
@@ -187,6 +188,7 @@ module Dcmgr
         # TODO: support for multiple interfaces.
         @inst[:instance_nics].each { |vnic|
           vnic_network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
+          vnic_ipaddr  = IPAddress::IPv4.new("#{vnic_network[:ipv4_gw]}/#{vnic_network[:prefix]}")
 
           # vfat doesn't allow folder name including ":".
           # folder name including mac address replaces "-" to ":".
@@ -201,7 +203,9 @@ module Dcmgr
             # wakame-vdc extention items.
             # TODO: need an iface index number?
             "network/interfaces/macs/#{mac}/x-gateway" => vnic_network[:ipv4_gw],
-            "network/interfaces/macs/#{mac}/x-netmask" => vnic_network[:netmask],
+            "network/interfaces/macs/#{mac}/x-netmask" => vnic_ipaddr.network.prefix.to_ip,
+            "network/interfaces/macs/#{mac}/x-network" => vnic_ipaddr.network,
+            "network/interfaces/macs/#{mac}/x-broadcast" => vnic_ipaddr.broadcast,
           })
         }
 
