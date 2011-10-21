@@ -112,6 +112,7 @@ module Dcmgr::Models
     end
     
     def add_local_drive(name, index, size)
+      raise "Duplicate drive name: #{name}" if self.drives.has_key?(name)
       self.drives[name] = {
         :index => index,
         :type => :local,
@@ -120,6 +121,7 @@ module Dcmgr::Models
     end
 
     def add_volume_drive(name, index, size)
+      raise "Duplicate drive name: #{name}" if self.drives.has_key?(name)
       self.drives[name] = {
         :index => index,
         :type => :volume,
@@ -128,6 +130,7 @@ module Dcmgr::Models
     end
 
     def add_volume_drive_from_snapshot(name, index, snapshot_id)
+      raise "Duplicate drive name: #{name}" if self.drives.has_key?(name)
       self.drives[name] = {
         :index => index,
         :type => :volume,
@@ -136,18 +139,24 @@ module Dcmgr::Models
     end
     
     def update_drive_index(name, new_index)
+      raise "Unknown drive name: #{name}" if !self.drives.has_key?(name)
       drive = self.drives[name]
       drive[:index] = new_index
     end
 
     def update_drive_snapshot_id(name, snapshot_id)
-      raise "Can not set snapshot ID" if !(drive[:type] == :volume && drive[:snapshot_id])
-      self.drives[name][:snapshot_id] = snapshot_id
+      raise "Unknown drive name: #{name}" if !self.drives.has_key?(name)
+      drive = self.drives[name]
+      raise "Snapshot ID can only be set to volume drive" if !(drive[:type] == :volume)
+      drive.delete(:size)
+      # TODO: syntax check for snapshot_id
+      drive[:snapshot_id] = snapshot_id
     end
 
     def update_drive_size(name, size)
+      raise "Unknown drive name: #{name}" if !self.drives.has_key?(name)
       drive = self.drives[name]
-      raise "" if (drive[:type] == :volume && drive[:snapshot_id])
+      drive.delete(:snapshot_id) if drive[:type] == :volume
       drive[:size] = size
     end
 

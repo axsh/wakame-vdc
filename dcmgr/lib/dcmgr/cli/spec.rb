@@ -21,6 +21,7 @@ module Dcmgr::Cli
       uuid = super(M::InstanceSpec,options)
       # add one interface as default
       invoke("addvif", [uuid, 'eth0'])
+      invoke("adddrive", [uuid, 'local', 'ephemeral1'])
       puts uuid
     end
     
@@ -60,9 +61,20 @@ Quota Weight: <%= spec.quota_weight %>
 <%- unless spec.vifs.empty? -%>
 Interfaces:
   <%- spec.vifs.each { |name, i| -%>
-  <%= name %>:
-    Index: <%= i[:index] %>
+  [<%= i[:index] %>] <%= name %>:
     Bandwidth: <%= i[:bandwidth] %> kbps
+  <%- } -%>
+<%- end -%>
+<%- unless spec.drives.empty? -%>
+Drives:
+  <%- spec.drives.each { |name, i| -%>
+  [<%= i[:index] %>] <%= name %>:
+    Type: <%= i[:type] %>
+    <%- if i[:size] -%>
+    Size: <%= i[:size] %> MB
+    <%- else -%>
+    Snapshot ID: <%= i[:snapshot_id] %>
+    <%- end -%>
   <%- } -%>
 <%- end -%>
 <%- unless spec.config.empty? -%>
@@ -119,5 +131,57 @@ __END
       end
       spec.save
     end
+
+    desc "adddrive UUID TYPE NAME", "Add drive (TYPE=local,volume)"
+    method_option :index, :type => :numeric, :desc => "The index value for the interface. (>=0)"
+    method_option :size, :type => :numeric, :default=>100, :desc => "Size of the drive. (MB)"
+    def adddrive(uuid, type, name)
+      spec = M::InstanceSpec[uuid]
+
+      index = if options[:index].nil?
+                # find max index value.
+                index = spec.drives.values.map { |i| i[:index] }.max
+                index.nil? ? 0 : (index + 1)
+              else
+                options[:index].to_i
+              end
+
+      case type
+      when 'local'
+        spec.add_local_drive(name, index, options[:size].to_i)
+      when 'volume'
+        spec.add_volume_drive(name, index, options[:size].to_i)
+      else
+        raise "Unknown drive type: #{type}"
+      end
+      
+      spec.save
+    end
+
+    desc "deldrive UUID name", "Delete drive"
+    def deldrive(uuid, name)
+      spec = M::InstanceSpec[uuid]
+      spec.remove_drive(name)
+      spec.save
+    end
+    
+    desc "modifydrive UUID name [options]", "Modify drive parameters"
+    method_option :index, :type => :numeric, :desc => "The index value for the interface"
+    method_option :size, :type => :numeric, :desc => "Size of the drive. (MB)"
+    method_option :snapshot_id, :type => :string, :desc => "Snapshot ID to copy the content for new drive. Only for "
+    def modifydrive(uuid, name)
+      spec = M::InstanceSpec[uuid]
+      if options[:index]
+        spec.update_drive_index(name, options[:index].to_i)
+      end
+      if options[:size]
+        spec.update_drive_size(name, options[:size].to_i)
+      end
+      if options[:snapshot_id]
+        spec.update_drive_snapshot_id(name, options[:snapshot_id])
+      end
+      spec.save
+    end
+
   end
 end
