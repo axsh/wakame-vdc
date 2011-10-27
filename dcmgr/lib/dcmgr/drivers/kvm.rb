@@ -12,7 +12,14 @@ module Dcmgr
       def run_instance(hc)
         # run vm
         inst = hc.inst
-        cmd = "kvm -m %d -smp %d -name vdc-%s -vnc :%d -drive file=%s,media=disk,boot=on,index=0 -drive file=%s,media=disk,index=1 -pidfile %s -daemonize -monitor telnet::%d,server,nowait"
+        cmd = ["kvm -m %d -smp %d -name vdc-%s -vnc :%d",
+               "-drive file=%s,media=disk,boot=on,index=0",
+               "-drive file=%s,media=disk,index=1",
+               "-pidfile %s",
+               "-daemonize",
+               "-monitor telnet::%d,server,nowait",
+               "-no-shutdown",
+               ].join(' ')
         args=[inst[:memory_size],
               inst[:cpu_cores],
               inst[:uuid],
@@ -38,11 +45,20 @@ module Dcmgr
       end
 
       def terminate_instance(hc)
-        kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
-        if $?.exitstatus == 0 && kvm_pid.to_s =~ /^\d+$/
-          sh("/bin/kill #{kvm_pid}")
-        else
-          logger.error("Can not find the KVM process. Skipping: kvm -name vdc-#{hc.inst_id}")
+        begin
+          connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+            t.cmd("quit")
+          }
+        rescue => e
+          kvm_pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir))
+          if kvm_pid.nil? || kvm_pid == ''
+            kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
+          end
+          if kvm_pid.to_s =~ /^\d+$/
+            sh("/bin/kill -9 #{kvm_pid}")
+          else
+            logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
+          end
         end
       end
 
@@ -50,6 +66,12 @@ module Dcmgr
         inst = hc.inst
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           t.cmd("system_reset")
+          # When the guest initiate halt/poweroff the KVM might become
+          # "paused" status. At that time, "system_reset" command does
+          # not work as it is an ACPI signal. The "cont" command allows
+          # to bring the status back to running in this case.
+          # It has no effect if the status is kept running already.
+          t.cmd('cont')
         }
       end
 
@@ -102,8 +124,6 @@ module Dcmgr
 
         connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
           t.cmd("pci_del #{pci_devaddr}")
-          # [timming issue] It's too fast to run "info pci".
-          sleep 1
 
           #
           #  Bus  0, device   4, function 0:
@@ -112,11 +132,13 @@ module Dcmgr
           #      BAR0: I/O at 0x1000 [0x103f].
           #      BAR1: 32 bit memory at 0x08000000 [0x08000fff].
           #      id ""
-          c = t.cmd("info pci")
           pci_devaddr = pci_devaddr.split(':')
-          unless c.split(/\n/).grep(/\s+Bus\s+#{pci_devaddr[1].to_i(16)}, device\s+#{pci_devaddr[2].to_i(16)}, function/).empty?
-            raise "Detached disk device still be attached in qemu-kvm: #{pci_devaddr.join(':')}"
+          pass=false
+          tryagain do
+            sleep 1
+            pass = t.shell_result("info pci").split(/\n/).grep(/\s+Bus\s+#{pci_devaddr[1].to_i(16)}, device\s+#{pci_devaddr[2].to_i(16)}, function/).empty?
           end
+          raise "Detached disk device still be attached in qemu-kvm: #{pci_devaddr.join(':')}" if pass == false
         }
       end
 
@@ -129,6 +151,25 @@ module Dcmgr
                                      "Prompt" => /\n\(qemu\) \z/,
                                      "Timeout" => 60,
                                      "Waittime" => 0.2)
+
+          # Add helper method for parsing response from qemu monitor shell.
+          telnet.instance_eval {
+            def shell_result(cmdstr)
+              ret = ""
+              hit = false
+              self.cmd(cmdstr).split("\n(qemu) ").each { |i|
+                i.split("\n").each { |i2|
+                  
+                  if i2 =~ /#{cmdstr}/
+                    hit = true
+                    next
+                  end
+                  ret += ("\n" + i2) if hit
+                }
+              }
+              ret.sub(/^\n/, '')
+            end
+          }
           
           blk.call(telnet)
         rescue => e

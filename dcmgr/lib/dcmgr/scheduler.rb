@@ -15,6 +15,12 @@ module Dcmgr
       c.new
     end
 
+    # Factory method for HostNode scheduler for HA
+    def self.host_node_ha()
+      c = scheduler_class(Dcmgr.conf.host_node_ha_scheduler, ::Dcmgr::Scheduler::HostNode)
+      c.new
+    end
+
     # Factory method for StorageNode scheduler
     def self.storage_node()
       c = scheduler_class(Dcmgr.conf.storage_node_scheduler, ::Dcmgr::Scheduler::StorageNode)

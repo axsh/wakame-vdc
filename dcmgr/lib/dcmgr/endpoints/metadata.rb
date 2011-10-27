@@ -10,14 +10,18 @@ require 'dcmgr'
 
 # Metadata service endpoint for running VMs.
 # The running VM can not identify itself that who or where i am. The service supplies these information from somewhere
-# out of the VM. It publishes some very crucial information to each VM so that the access control to this service is 
+# out of the VM. It publishes some very crucial information to each VM so that the access control to this service is
 # mandated at both levels, the network and the application itself.
-# 
-# The concept of the service is similar with Amazon EC2's Metadata service given via http://169.254.169.254/. The 
+#
+# The concept of the service is similar with Amazon EC2's Metadata service given via http://169.254.169.254/. The
 # difference is the URI structure. This gives the single point URI as per below:
 #   http://metadata.server/[version]/meatadata.[format]
-# It will return a document which results in a syntax specified in the last extension field. The document contains 
+# It will return a document which results in a syntax specified in the last extension field. The document contains
 # over all information that the VM needs for self recoginition.
+#
+# see also
+# http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/index.html?instancedata-data-categories.html
+
 module Dcmgr
   module Endpoints
     class Metadata < Sinatra::Base
@@ -28,7 +32,7 @@ module Dcmgr
       disable :show_exceptions
 
       LATEST_PROVIDER_VER_ID='2011-05-19'
-      
+
       get '/' do
         ''
       end
@@ -41,7 +45,7 @@ module Dcmgr
       #get %r!\A/(\d{4}-\d{2}-\d{2})/metadata.(\w+)\Z! do
         v = parse_version params[:version]
         ext = params[:splat][0]
-        
+
         hash_doc = begin
                      self.class.find_const("Provider_#{v}").new.document(request.ip)
                    rescue NameError => e
@@ -68,9 +72,9 @@ module Dcmgr
       private
       def get_data(params)
         v = parse_version params[:version]
-        
+
         get_method = params[:data].gsub(/-/,'_')
-        
+
         provider = begin
                      self.class.find_const("Provider_#{v}").new
                    rescue NameError => e
@@ -93,7 +97,7 @@ module Dcmgr
 
         result
       end
-      
+
       def parse_version(v)
         ret = case v
             when 'latest'
@@ -101,11 +105,11 @@ module Dcmgr
             when /\A\d{4}-\d{2}-\d{2}\Z/
               v
             else
-              raise "Invalid syntax in the version"  
+              raise "Invalid syntax in the version"
             end
         ret.gsub(/-/, '')
       end
-       
+
       def shell_dump(hash)
         # TODO: values to be shell escaped
         hash.map {|k,v|
@@ -155,7 +159,7 @@ module Dcmgr
           }
           ret
         end
-        
+
         def get_instance_from_ip(src_ip)
           ip = Models::IpLease.find(:ipv4=>src_ip)
           if ip.nil? || ip.instance_nic.nil?
@@ -208,13 +212,13 @@ module Dcmgr
           get_instance_from_ip(src_ip).image.cuuid
         end
         alias ami_id wmi_id
-        
+
         def mac(src_ip)
           get_instance_from_ip(src_ip).nic.map { |nic|
             nic.pretty_mac_addr
           }.join("\n")
         end
-        
+
         def network(src_ip)
           get_instance_from_ip(src_ip).nic.map { |nic|
             nic.ip.map { |ip|
@@ -222,15 +226,15 @@ module Dcmgr
             }
           }.join("\n")
         end
-        
+
         def instance_id(src_ip)
           get_instance_from_ip(src_ip).cuuid
         end
-        
+
         def local_hostname(src_ip)
           get_instance_from_ip(src_ip).hostname
         end
-        
+
         def local_ipv4(src_ip)
           get_instance_from_ip(src_ip).nic.map { |nic|
             nic.ip.map { |ip|
@@ -242,7 +246,7 @@ module Dcmgr
             }.compact
           }.join("\n")
         end
-        
+
         def public_ipv4(src_ip)
           get_instance_from_ip(src_ip).nic.map { |nic|
             nic.ip.map { |ip|
@@ -254,23 +258,299 @@ module Dcmgr
             }.compact
           }.join("\n")
         end
-        
+
         def public_keys(src_ip)
           i = get_instance_from_ip(src_ip)
           # ssh_key_data is possible to be nil.
           i.ssh_key_data.nil? ? '' : i.ssh_key_data[:public_key]
         end
-        
+
         def security_groups(src_ip)
           get_instance_from_ip(src_ip).netfilter_groups.map { |grp|
             grp.name
           }.join("\n")
         end
-        
+
         def user_data(src_ip)
           get_instance_from_ip(src_ip).user_data
         end
       end
     end
+
+    class Ec2Metadata < Sinatra::Base
+      include Dcmgr::Logger
+      register Sinatra::SequelTransaction
+
+      disable :sessions
+      disable :show_exceptions
+
+      API_VERSIONS = ['latest', '2011-01-01']
+      TOP_LEVEL_ITEMS = ['meta-data', 'user-data' ]
+      TOP_LEVEL_METADATA_ITEMS = [
+                                  'ami-id',
+                                  'ami-launch-index',
+                                  'ami-manifest-path',
+                                  'block-device-mapping/',
+                                  'hostname',
+                                  'instance-action',
+                                  'instance-id',
+                                  'instance-type',
+                                  'kernel-id',
+                                  'local-hostname',
+                                  'local-ipv4',
+                                  'mac',
+                                  'network/',
+                                  'placement/',
+                                  'public-hostname',
+                                  'public-ipv4',
+                                  'public-keys/',
+                                  'reservation-id',
+                                  'security-groups',
+                                 ]
+
+      get '/' do
+        API_VERSIONS.join("\n")
+      end
+
+      get '/:version' do
+        ''
+      end
+
+      get '/:version/' do
+        TOP_LEVEL_ITEMS.join("\n")
+      end
+
+      get '/:version/user-data' do
+        find_instance().user_data
+      end
+
+      get '/:version/meta-data/' do
+        TOP_LEVEL_METADATA_ITEMS.join("\n")
+      end
+
+      get '/:version/meta-data/ami-id' do
+        find_instance().image.cuuid
+      end
+
+      get '/:version/meta-data/ami-launch-index' do
+        # TODO
+        '0'
+      end
+
+      get '/:version/meta-data/ami-manifest-path' do
+        # TODO
+        ''
+      end
+
+      get '/:version/meta-data/block-device-mapping/' do
+        # TODO
+        ''
+      end
+
+      get '/:version/meta-data/hostname' do
+        # TODO
+        find_instance().hostname
+      end
+
+      get '/:version/meta-data/instance-action' do
+        # TODO
+        'none'
+      end
+
+      get '/:version/meta-data/instance-id' do
+        find_instance().cuuid
+      end
+
+      get '/:version/meta-data/instance-type' do
+        # TODO
+        ''
+      end
+
+      get '/:version/meta-data/kernel-id' do
+        # TODO
+        ''
+      end
+
+      get '/:version/meta-data/local-hostname' do
+        find_instance().hostname
+      end
+
+      get '/:version/meta-data/local-ipv4' do
+        local_ipv4.join("\n")
+      end
+
+      get '/:version/meta-data/mac' do
+        find_instance().nic.map { |nic|
+          nic.pretty_mac_addr
+        }.join("\n")
+      end
+
+      get '/:version/meta-data/network/' do
+        'interfaces/'
+      end
+
+      get '/:version/meta-data/network/interfaces/' do
+        'macs/'
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/' do
+        find_instance().nic.map { |nic|
+          "#{nic.pretty_mac_addr}/"
+        }.join("\n")
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/' do
+        if vnic_mac?(params[:mac])
+          ['local-hostname', 'local-ipv4s', 'mac', 'public-hostname', 'public-ipv4s', 'security-groups'].join("\n")
+        else
+          # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/local-hostname' do
+        if vnic_mac?(params[:mac])
+          find_instance().hostname
+        else
+          # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/local-ipv4s' do
+        if vnic_mac?(params[:mac])
+          local_ipv4.join("\n")
+        else
+          # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/mac' do
+        if vnic_mac?(params[:mac])
+          params[:mac]
+        else
+          # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/public-hostname' do
+        if vnic_mac?(params[:mac])
+          find_instance().hostname
+        else
+          # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/public-ipv4s' do
+        if vnic_mac?(params[:mac])
+          public_ipv4.join("\n")
+        else
+          # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/security-groups' do
+        if vnic_mac?(params[:mac])
+          security_groups
+        else
+          # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/placement/' do
+        'availability-zone'
+      end
+
+      get '/:version/meta-data/placement/availability-zone' do
+        # TODO
+        ''
+      end
+
+      get '/:version/meta-data/public-hostname' do
+        # TODO
+        find_instance().hostname
+      end
+
+      get '/:version/meta-data/public-ipv4' do
+        public_ipv4.join("\n")
+      end
+
+      get '/:version/meta-data/public-keys/' do
+        i = find_instance()
+        i.ssh_key_data.nil? ? '' : [0, i.ssh_key_data[:name]].join("=")
+      end
+
+      get '/:version/meta-data/public-keys/0/' do
+        i = find_instance()
+        i.ssh_key_data.nil? ? '' : 'openssh-key'
+      end
+
+      get '/:version/meta-data/public-keys/0/openssh-key' do
+        i = find_instance()
+        # ssh_key_data is possible to be nil.
+        i.ssh_key_data.nil? ? '' : i.ssh_key_data[:public_key]
+      end
+
+      get '/:version/meta-data/reservation-id' do
+        # TODO
+        ''
+      end
+
+      get '/:version/meta-data/security-groups' do
+        security_groups.join("\n")
+      end
+
+      private
+      def find_instance
+        ip = Models::IpLease.find(:ipv4 => request.ip)
+        if ip.nil? || ip.instance_nic.nil?
+          raise UnknownSourceIpError, request.ip
+        end
+        ip.instance_nic.instance
+      end
+
+      def vnic_mac?(mac)
+        macs = find_instance().nic.map { |nic|
+          nic.pretty_mac_addr if nic.pretty_mac_addr == mac
+        }.compact
+
+        if macs.size > 0
+          true
+        else
+          false
+        end
+      end
+
+      def local_ipv4
+        find_instance().nic.map { |nic|
+          nic.ip.map { |ip|
+            ip.ipv4 unless ip.is_natted?
+          }
+        }
+      end
+
+      def public_ipv4
+        find_instance().nic.map { |nic|
+          nic.ip.map { |ip|
+            ip.ipv4 if ip.is_natted?
+          }
+        }
+      end
+
+      def security_groups
+        find_instance().netfilter_groups.map { |grp|
+          grp.name
+        }
+      end
+
+      class UnknownSourceIpError < StandardError; end
+
+    end
+
   end
 end

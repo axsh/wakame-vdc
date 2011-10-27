@@ -12,11 +12,6 @@ module Dcmgr
           network = Models::Network.first
           
           vnic = instance.add_nic(network)
-          Models::IpLease.lease(vnic, network)
-          
-          #Lease the nat ip in case there is an outside network mapped
-          #nat_network = Network.find(:id => vnic[:nat_network_id])
-          #Models::IpLease.lease(vnic,nat_network) unless nat_network.nil? 
         end
       end
     end

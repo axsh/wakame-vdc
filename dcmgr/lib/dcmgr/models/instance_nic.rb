@@ -34,40 +34,38 @@ module Dcmgr::Models
       h
     end
 
+    def release_ip_lease
+      ip_dataset.destroy
+    end
+
     #Override the delete method to keep the row and just mark it as deleted
-    def _delete
+    def delete
       self.deleted_at ||= Time.now
       self.save
     end
 
     def before_validation
-      newlease=nil
-      m = self[:mac_addr] = normalize_mac_addr(self[:mac_addr])
-      if m
-        if m.size == 6
-          newlease = MacLease.lease(m)
-        else
-          MacLease.create(:mac_addr=>m)
-        end
-      else
-        newlease = MacLease.lease()
-      end
-      self[:mac_addr] = newlease.mac_addr if newlease
-      
+      self[:mac_addr] = normalize_mac_addr(self[:mac_addr])
       super
     end
 
     def before_destroy
       MacLease.find(:mac_addr=>self.mac_addr).destroy
-      ip_dataset.destroy
+      release_ip_lease
       super
     end
 
     def validate
       super
 
+      # do not run validation if the row is maked as deleted.
+      return true if self.deleted_at
+
       unless self.mac_addr.size == 12 && self.mac_addr =~ /^[0-9a-f]{12}$/
         errors.add(:mac_addr, "Invalid mac address syntax: #{self.mac_addr}")
+      end
+      if MacLease.find(:mac_addr=>self.mac_addr).nil?
+        errors.add(:mac_addr, "MAC address is not on the MAC lease database.")
       end
     end
 

@@ -3,8 +3,6 @@
 module Dcmgr::Models
   # Per account quota limit for the VDC resources.
   class Quota < BaseNew
-    taggable 'q'
-    
     inheritable_schema do
       Fixnum :account_id, :null=>false
       Float  :instance_total_weight

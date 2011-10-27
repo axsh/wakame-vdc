@@ -35,10 +35,18 @@ function retry {
   local retry_max="$1"
   shift
 
+  typeset cmdlst="" i
+  if [[ -t 0 ]]; then
+    cmdlst="$*"
+  else
+    read -u 0 -d '' i
+    cmdlst="$i"
+  fi
+
   local count="$retry_max"
   local lastret=0
   while [[ $count -gt 0 ]]; do
-    run "$*"
+    eval "$cmdlst"
     lastret="$?"
     [[ $lastret -eq 0 ]] && break
     count=$(($count - 1))

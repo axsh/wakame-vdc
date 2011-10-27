@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'isono'
 require 'fileutils'
+require 'ipaddress'
 
 module Dcmgr
   module Rpc
@@ -31,6 +32,7 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attaching,
                       :attached_at => nil,
+                      :instance_id => @inst[:id], # needed after cleanup
                       :host_device_name => @os_devpath})
       end
 
@@ -39,6 +41,9 @@ module Dcmgr
         sh("iscsiadm -m node -T '%s' --logout", [@vol[:transport_information][:iqn]])
         # wait udev queue
         sh("/sbin/udevadm settle")
+      end
+
+      def update_volume_state_to_available
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:available,
                       :host_device_name=>nil,
@@ -48,10 +53,24 @@ module Dcmgr
         event.publish('hva/volume_detached', :args=>[@inst_id, @vol_id])
       end
 
-      def terminate_instance
+      def terminate_instance(state_update=false)
         @hv.terminate_instance(HvaContext.new(self))
+
+        unless @inst[:volume].nil?
+          @inst[:volume].each { |volid, v|
+            @vol_id = volid
+            @vol = v
+            # force to continue detaching volumes during termination.
+            detach_volume_from_host rescue logger.error($!)
+            if state_update
+              update_volume_state_to_available rescue logger.error($!)
+            end
+          }
+        end
+        
+        # cleanup vm data folder
+        FileUtils.rm_r(File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir))
       end
-      
 
       def update_instance_state(opts, ev)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
@@ -129,7 +148,7 @@ module Dcmgr
         lodev=`/sbin/losetup -f`.chomp
         sh("/sbin/losetup #{lodev} '#{@hva_ctx.metadata_img_path}'")
         sh("mkfs.vfat '#{@hva_ctx.metadata_img_path}'")
-        Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp")
+        Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp") unless File.exists?("#{@hva_ctx.inst_data_dir}/tmp")
         sh("/bin/mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
 
         # generate metadata as file
@@ -154,7 +173,7 @@ module Dcmgr
           'kernel-id' => nil,
           'local-hostname' => @inst[:hostname],
           'local-ipv4' => @inst[:ips].first,
-          'mac' => vnic[:mac_addr],
+          'mac' => vnic[:mac_addr].unpack('A2'*6).join(':'),
           # TODO: network category support
           #'network/' => {},
           'placement/availability-zone' => nil,
@@ -165,6 +184,31 @@ module Dcmgr
           'reservation-id' => nil,
           'security-groups' => @inst[:netfilter_groups].join(' '),
         }
+
+        # TODO: support for multiple interfaces.
+        @inst[:instance_nics].each { |vnic|
+          vnic_network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
+          vnic_ipaddr  = IPAddress::IPv4.new("#{vnic_network[:ipv4_gw]}/#{vnic_network[:prefix]}")
+
+          # vfat doesn't allow folder name including ":".
+          # folder name including mac address replaces "-" to ":".
+          mac = vnic[:mac_addr].unpack('A2'*6).join('-')
+          metadata_items.merge!({
+            "network/interfaces/macs/#{mac}/local-hostname" => @inst[:hostname],
+            "network/interfaces/macs/#{mac}/local-ipv4s" => @inst[:ips].first,
+            "network/interfaces/macs/#{mac}/mac" => vnic[:mac_addr].unpack('A2'*6).join(':'),
+            "network/interfaces/macs/#{mac}/public-hostname" => @inst[:hostname],
+            "network/interfaces/macs/#{mac}/public-ipv4s" => @inst[:nat_ips].first,
+            "network/interfaces/macs/#{mac}/security-groups" => @inst[:netfilter_groups].join(' '),
+            # wakame-vdc extention items.
+            # TODO: need an iface index number?
+            "network/interfaces/macs/#{mac}/x-gateway" => vnic_network[:ipv4_gw],
+            "network/interfaces/macs/#{mac}/x-netmask" => vnic_ipaddr.network.prefix.to_ip,
+            "network/interfaces/macs/#{mac}/x-network" => vnic_ipaddr.network,
+            "network/interfaces/macs/#{mac}/x-broadcast" => vnic_ipaddr.broadcast,
+          })
+        }
+
         if @inst[:ssh_key_data]
           metadata_items.merge!({
             "public-keys/0=#{@inst[:ssh_key_data][:name]}" => @inst[:ssh_key_data][:public_key],
@@ -190,12 +234,12 @@ module Dcmgr
             FileUtils.mkdir_p(File.expand_path(dir, metadata_base_dir))
           end
           File.open(File.expand_path(k, metadata_base_dir), 'w') { |f|
-            f.write(v.to_s)
+            f.puts(v.to_s)
           }
         }
         # user-data
         File.open(File.expand_path('user-data', "#{@hva_ctx.inst_data_dir}/tmp"), 'w') { |f|
-          f.write(@inst[:user_data])
+          f.puts(@inst[:user_data])
         }
         
       ensure
@@ -270,7 +314,6 @@ module Dcmgr
       job :run_vol_store, proc {
         @inst_id = request.args[0]
         @vol_id = request.args[1]
-        @repository_address = request.args[2]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         logger.info("Booting #{@inst_id}")
@@ -288,10 +331,6 @@ module Dcmgr
         inst_data_dir = @hva_ctx.inst_data_dir
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
 
-        # create volume from snapshot
-        jobreq.run("sta-handle.#{@vol[:storage_node][:node_id]}", "create_volume", @vol_id, @repository_address)
-
-        logger.debug("volume created on #{@vol[:storage_node][:node_id]}: #{@vol_id}")
         # reload volume info
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         
@@ -330,28 +369,15 @@ module Dcmgr
 
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
-
-          terminate_instance
-
-          unless @inst[:volume].nil?
-            @inst[:volume].each { |volid, v|
-              @vol_id = volid
-              @vol = v
-              # force to continue detaching volumes during termination.
-              detach_volume_from_host rescue logger.error($!)
-            }
-          end
-
-          # cleanup vm data folder
-          FileUtils.rm_r(File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir))
+          terminate_instance(true)
         ensure
           update_instance_state({:state=>:terminated,:terminated_at=>Time.now.utc},
                                 'hva/instance_terminated')
         end
       end
 
-      # just do terminate instance and unmount volumes not to affect
-      # state management.
+      # just do terminate instance and unmount volumes. it should not change
+      # state on any resources.
       # called from HA at which the faluty instance get cleaned properly.
       job :cleanup do
         @inst_id = request.args[0]
@@ -359,19 +385,36 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
 
+        # select hypervisor :kvm, :lxc
+        select_hypervisor
+
         begin
-          terminate_instance
-
-          unless @inst[:volume].nil?
-            @inst[:volume].each { |volid, v|
-              @vol_id = volid
-              @vol = v
-              # force to continue detaching volumes during termination.
-              detach_volume_from_host rescue logger.error($!)
-            }
-          end
+          terminate_instance(false)
+        ensure
+          # just publish "hva/instance_terminated" to update netfilter rules once
+          update_instance_state({}, 'hva/instance_terminated')
         end
+      end
 
+      # stop instance is mostly similar to terminate_instance. the
+      # difference is the state transition of instance and associated
+      # resources to the instance , attached volumes and vnic, are kept
+      # same sate.
+      job :stop do
+        @inst_id = request.args[0]
+
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+        raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
+
+        select_hypervisor
+
+        begin
+          rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:stopping})
+          terminate_instance(false)
+        ensure
+          # 
+          update_instance_state({:state=>:stopped, :host_node_id=>nil}, 'hva/instance_terminated')
+        end
       end
 
       job :attach, proc {
@@ -436,6 +479,7 @@ module Dcmgr
 
         # detach disk on host os
         detach_volume_from_host
+        update_volume_state_to_available
       end
 
       job :reboot, proc {

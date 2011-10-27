@@ -32,7 +32,6 @@ done
 route add 169.254.169.254 gateway $DEFAULT_GW
 
 # Set up the host name
-#HN=`curl -s http://169.254.169.254/latest/meta-data/local-hostname`
 HN=`get_metadata local-hostname`
 if [ -n "$HN" ]; then
   echo "Setting the hostname"
@@ -50,8 +49,7 @@ if [ -n "$HN" ]; then
 fi
 
 # Set up the authorized keys for the users to login
-#KEYS=`curl -s http://169.254.169.254/latest/meta-data/public-keys`
-KEYS=`get_metadata public-keys`
+KEYS=`get_metadata public-keys/0/openssh-key`
 if [ -n "$KEYS" ]; then
   echo "Setting authorized keys" | logger
   [ -d ${SSHDIR} ] || {

@@ -121,7 +121,7 @@ module Dcmgr
 
   module Endpoints
     autoload :CoreAPI, 'dcmgr/endpoints/core_api'
-    autoload :Metadata, 'dcmgr/endpoints/metadata'
+    autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
   end
 
   module NodeModules
@@ -201,6 +201,7 @@ module Dcmgr
     module HostNode
       autoload :FindFirst, 'dcmgr/scheduler/host_node/find_first'
       autoload :LeastUsage, 'dcmgr/scheduler/host_node/least_usage'
+      autoload :ExcludeSame, 'dcmgr/scheduler/host_node/exclude_same'
     end
     module Network
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'

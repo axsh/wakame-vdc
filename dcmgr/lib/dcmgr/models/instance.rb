@@ -76,6 +76,8 @@ module Dcmgr::Models
 
     def validate
       super
+      # do not run validation if the row is maked as deleted.
+      return true if self.terminated_at
 
       unless self.hostname =~ /\A[0-9a-z][0-9a-z\-]{0,31}\Z/
         errors.add(:hostname, "Invalid hostname syntax")
@@ -165,9 +167,9 @@ module Dcmgr::Models
       super
     end
 
-    # override Sequel::Model#_delete not to delete rows but to set
+    # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
-    def _delete
+    def delete
       self.terminated_at ||= Time.now
       self.state = :terminated if self.state != :terminated
       self.status = :offline if self.status != :offline
@@ -218,8 +220,10 @@ module Dcmgr::Models
     def to_api_document
       h = {
         :id => canonical_uuid,
+        :host_node   => self.host_node && self.host_node.canonical_uuid,
         :cpu_cores   => cpu_cores,
         :memory_size => memory_size,
+        :arch        => spec.arch,
         :image_id    => image.canonical_uuid,
         :created_at  => self.created_at,
         :state => self.state,
@@ -227,9 +231,12 @@ module Dcmgr::Models
         :ssh_key_pair => nil,
         :network => [],
         :volume => [],
+        :netfilter_group_id => [],
         :netfilter_group => [],
         :vif => [],
         :hostname => hostname,
+        :ha_enabled => ha_enabled,
+        :instance_spec_id => instance_spec.canonical_uuid,
       }
       if self.ssh_key_data
         h[:ssh_key_pair] = self.ssh_key_data[:name]
@@ -240,11 +247,14 @@ module Dcmgr::Models
           direct_lease_ds = n.direct_ip_lease_dataset
           next if direct_lease_ds.first.nil?
           outside_lease_ds = n.nat_ip_lease_dataset
-          
+
           h[:network] << {
             :network_name => n.network.canonical_uuid,
             :ipaddr => direct_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact
+            :dns_name => n.network.domain_name && "#{self.hostname}.#{self.account.uuid}.#{n.network.domain_name}",
+            :nat_network_name => n.nat_network && n.nat_network.canonical_uuid,
+            :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact,
+            :nat_dns_name => n.nat_network && n.nat_network.domain_name && "#{self.hostname}.#{self.account.uuid}.#{n.nat_network.domain_name}"
           }
         }
       end
@@ -279,6 +289,7 @@ module Dcmgr::Models
 
       if self.netfilter_groups
         self.netfilter_groups.each { |n|
+          h[:netfilter_group_id] << n.canonical_uuid
           h[:netfilter_group] << n.name
         }
       end
@@ -299,10 +310,10 @@ module Dcmgr::Models
       self.instance_spec.config
     end
 
-    def add_nic(network, vendor_id=nil)
+    def add_nic(network)
       # TODO: get default vendor ID based on the hypervisor.
-      vendor_id ||= '00:ff:f1'
-      nic = InstanceNic.new(:mac_addr=>vendor_id)
+      m = MacLease.lease('00fff1')
+      nic = InstanceNic.new(:mac_addr=>m.mac_addr)
       nic.network = network
       nic.nat_network = network.nat_network
       nic.instance = self

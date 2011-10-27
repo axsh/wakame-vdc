@@ -318,7 +318,16 @@ module Dcmgr
             else
               raise OperationNotPermitted
             end
-            res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+
+            case i.state
+            when 'stopped'
+              # just destroy the record.
+              i.destroy
+            when 'terminated'
+              raise InvalidInstanceState, i.state
+            else
+              res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+            end
             response_to([i.canonical_uuid])
           end
         end
@@ -332,6 +341,37 @@ module Dcmgr
             response_to({})
           end
         end
+
+        operation :stop, :method=>:put, :member=>true do
+          description 'Stop the instance'
+          control do
+            i = find_by_uuid(:Instance, params[:id])
+            raise InvalidInstanceState, i.state if i.state != 'running'
+
+            # relase IpLease from nic.
+            i.nic.each { |nic|
+              nic.release_ip_lease
+            }
+            
+            Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'stop', i.canonical_uuid)
+            response_to([i.canonical_uuid])
+          end
+        end
+
+        operation :start, :method=>:put, :member=>true do
+          description 'Restart the instance'
+          control do
+            instance = find_by_uuid(:Instance, params[:id])
+            raise InvalidInstanceState, instance.state if instance.state != 'stopped'
+            instance.state = :scheduling
+            instance.save
+
+            commit_transaction
+            Dcmgr.messaging.submit("scheduler", 'schedule_start_instance', instance.canonical_uuid)
+            response_to([instance.canonical_uuid])
+          end
+        end
+
       end
 
       collection :images do
@@ -369,7 +409,7 @@ module Dcmgr
             Models::Image.lock!
             i = find_by_uuid(:Image, params[:id])
             if examine_owner(i)
-              i.delete
+              i.destroy
             else
               raise OperationNotPermitted
             end
@@ -378,24 +418,27 @@ module Dcmgr
         end
       end
 
-      collection :host_pools do
-        operation :index do
-          description 'Show list of host pools'
-          control do
-            res = select_index(:HostNode, {:start => params[:start],
-                                 :limit => params[:limit]})
-            response_to(res)
+      # obsolute path: "/host_pools"
+      [ :host_pools, :host_nodes ].each do |path|
+        collection path do
+          operation :index do
+            description 'Show list of host pools'
+            control do
+              res = select_index(:HostNode, {:start => params[:start],
+                                   :limit => params[:limit]})
+              response_to(res)
+            end
           end
-        end
 
-        operation :show do
-          description 'Show status of the host'
-          #param :account_id, :string, :optional
-          control do
-            hp = find_by_uuid(:HostNode, params[:id])
-            raise OperationNotPermitted unless examine_owner(hp)
+          operation :show do
+            description 'Show status of the host'
+            #param :account_id, :string, :optional
+            control do
+              hp = find_by_uuid(:HostNode, params[:id])
+              raise OperationNotPermitted unless examine_owner(hp)
 
-            response_to(hp.to_api_document)
+              response_to(hp.to_api_document)
+            end
           end
         end
       end
@@ -776,27 +819,30 @@ module Dcmgr
         end
       end
 
-      collection :storage_pools do
-        operation :index do
-          description 'Show lists of the storage_pools'
-          # params start, fixnum, optional
-          # params limit, fixnum, optional
-          control do
-            res = select_index(:StorageNode, {:start => params[:start],
-                                 :limit => params[:limit]})
-            response_to(res)
+      # obsolute path: "/storage_pools"
+      [ :storage_pools, :storage_nodes ].each do |path|
+        collection path do
+          operation :index do
+            description 'Show lists of the storage_pools'
+            # params start, fixnum, optional
+            # params limit, fixnum, optional
+            control do
+              res = select_index(:StorageNode, {:start => params[:start],
+                                   :limit => params[:limit]})
+              response_to(res)
+            end
           end
-        end
 
-        operation :show do
-          description 'Show the storage_pool status'
-          # params id, string, required
-          control do
-            pool_id = params[:id]
-            raise UndefinedStorageNodeID if pool_id.nil?
-            vs = find_by_uuid(:StorageNode, pool_id)
-            raise UnknownStorageNode if vs.nil?
-            response_to(vs.to_api_document)
+          operation :show do
+            description 'Show the storage_pool status'
+            # params id, string, required
+            control do
+              pool_id = params[:id]
+              raise UndefinedStorageNodeID if pool_id.nil?
+              vs = find_by_uuid(:StorageNode, pool_id)
+              raise UnknownStorageNode if vs.nil?
+              response_to(vs.to_api_document)
+            end
           end
         end
       end
@@ -831,7 +877,7 @@ module Dcmgr
           #        to save private key info on database.
           control do
             Models::SshKeyPair.lock!
-            keydata = Models::SshKeyPair.generate_key_pair
+            keydata = Models::SshKeyPair.generate_key_pair(params[:name])
             savedata = {
               :name=>params[:name],
               :account_id=>@account.canonical_uuid,

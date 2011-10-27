@@ -8,9 +8,7 @@ describe "/api/volumes" do
     res = APITest.create("/volumes", {:volume_size=>99})
     res.success?.should be_true
     volume_id = res["id"]
-    retry_until do
-      APITest.get("/volumes/#{volume_id}")["state"] == "available"
-    end
+    retry_until_available(volume_id)
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == 99
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
     retry_until do
@@ -24,9 +22,7 @@ describe "/api/volumes" do
     res = APITest.create("/volumes", {:snapshot_id=>'snap-lucid1'})
     res.success?.should be_true
     volume_id = res["id"]
-    retry_until do
-      APITest.get("/volumes/#{volume_id}")["state"] == "available"
-    end
+    retry_until_available(volume_id)
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == snap["size"].to_i
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
     retry_until do
@@ -44,9 +40,7 @@ describe "/api/volumes" do
     res = APITest.create("/volumes", {:volume_size=>10})
     res.success?.should be_true
     volume_id = res["id"]
-    retry_until do
-      APITest.get("/volumes/#{volume_id}")["state"] == "available"
-    end
+    retry_until_available(volume_id)
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == 10
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
     retry_until do
@@ -64,13 +58,25 @@ describe "/api/volumes" do
     res = APITest.create("/volumes", {:volume_size=>3000})
     res.success?.should be_true
     volume_id = res["id"]
-    retry_until do
-      APITest.get("/volumes/#{volume_id}")["state"] == "available"
-    end
+    retry_until_available(volume_id)
     APITest.get("/volumes/#{volume_id}")["size"].to_i.should == 3000
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
     retry_until do
       APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
+  end
+
+  private
+  def retry_until_available(volume_id)
+    retry_until do
+      case APITest.get("/volumes/#{volume_id}")["state"]
+      when 'available'
+        true
+      when 'deleted'
+        raise "Volumes was deleted by the system due to failure."
+      else
+        false
+      end
     end
   end
 

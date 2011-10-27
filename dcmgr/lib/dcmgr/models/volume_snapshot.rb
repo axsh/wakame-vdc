@@ -86,6 +86,14 @@ module Dcmgr::Models
       vs.state = :deleting
       vs.save_changes
     end
+
+    # override Sequel::Model#delete not to delete rows but to set
+    # delete flags.
+    def delete
+      vs.state = :deleted if vs.state != :deleted
+      vs.deleted_at ||= Time.now
+      vs.save
+    end
     
     def update_destination_key(account_id, destination_key)
       self.destination_key = destination_key
