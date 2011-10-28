@@ -251,10 +251,10 @@ module Dcmgr::Models
           h[:network] << {
             :network_name => n.network.canonical_uuid,
             :ipaddr => direct_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :dns_name => n.network.domain_name && "#{self.hostname}.#{self.account.uuid}.#{n.network.domain_name}",
+            :dns_name => n.network.domain_name && self.fqdn_hostname,
             :nat_network_name => n.nat_network && n.nat_network.canonical_uuid,
             :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :nat_dns_name => n.nat_network && n.nat_network.domain_name && "#{self.hostname}.#{self.account.uuid}.#{n.nat_network.domain_name}"
+            :nat_dns_name => n.nat_network && n.nat_network.domain_name && self.nat_fqdn_hostname,
           }
         }
       end
@@ -351,6 +351,10 @@ module Dcmgr::Models
 
     def fqdn_hostname
       sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.network.domain_name)
+    end
+
+    def nat_fqdn_hostname
+      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.nat_network.domain_name)
     end
 
     # Retrieve all networks belong to this instance
