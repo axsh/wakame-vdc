@@ -50,7 +50,8 @@ module Dcmgr::Models
     end
 
     def before_destroy
-      MacLease.find(:mac_addr=>self.mac_addr).destroy
+      maclease = MacLease.find(:mac_addr=>self.mac_addr)
+      maclease.destroy if maclease
       release_ip_lease
       super
     end
