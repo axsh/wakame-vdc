@@ -19,11 +19,12 @@ module Dcmgr
         # run vm
         inst = hc.inst
         cmd = ["kvm -m %d -smp %d -name vdc-%s -vnc :%d",
-               "-drive file=%s,media=disk,boot=on,index=0",
-               "-drive file=%s,media=disk,index=1",
+               "-cpu host",
+               "-drive file=%s,media=disk,boot=on,index=0,cache=none",
+               "-drive file=%s,media=disk,index=1,cache=none",
                "-pidfile %s",
                "-daemonize",
-               "-monitor telnet::%d,server,nowait",
+               "-monitor telnet:127.0.0.1:%d,server,nowait",
                "-no-shutdown",
                ]
         args=[inst[:memory_size],
