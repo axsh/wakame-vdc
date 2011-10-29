@@ -9,6 +9,12 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      # 0x0-2 are reserved by KVM.
+      # 0=Host bridge
+      # 1=ISA bridge
+      # 2=VGA
+      KVM_NIC_PCI_ADDR_OFFSET=0x10
+      
       def run_instance(hc)
         # run vm
         inst = hc.inst
@@ -19,7 +25,7 @@ module Dcmgr
                "-daemonize",
                "-monitor telnet::%d,server,nowait",
                "-no-shutdown",
-               ].join(' ')
+               ]
         args=[inst[:memory_size],
               inst[:cpu_cores],
               inst[:uuid],
@@ -29,17 +35,24 @@ module Dcmgr
               File.expand_path('kvm.pid', hc.inst_data_dir),
               inst[:runtime_config][:telnet_port]
              ]
-        if vnic = inst[:instance_nics].first
-          cmd += " -net nic,macaddr=%s -net tap,ifname=%s,script=,downscript="
-          args << vnic[:mac_addr].unpack('A2'*6).join(':')
-          args << vnic[:uuid]
-        end
-        sh(cmd, args)
 
-        unless vnic.nil?
-          sh("/sbin/ip link set %s up", [vnic[:uuid]])
-          sh("/usr/sbin/brctl addif %s %s", [hc.bridge_if, vnic[:uuid]])
+        vifs = inst[:vif]
+        if !vifs.empty?
+          vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
+            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=e1000,addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
+            args << vif[:mac_addr].unpack('A2'*6).join(':')
+            args << (KVM_NIC_PCI_ADDR_OFFSET + vif[:device_index].to_i)
+            args << vif[:uuid]
+          }
         end
+        sh(cmd.join(' '), args)
+
+        vifs.each { |vif|
+          if vif[:ipv4]
+            sh("/sbin/ip link set %s up", [vif[:uuid]])
+            sh("/usr/sbin/brctl addif %s %s", [vif[:ipv4][:network][:peer_interface], vif[:uuid]])
+          end
+        }
 
         sleep 1
       end

@@ -99,7 +99,11 @@ esac
 #shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demo1    -a ${account_id}
 #shlog ./bin/vdc-manage network add           -u   nw-demo1                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --vlan_id 1 --description demo
 # non vlan
-shlog ./bin/vdc-manage network add           -u   nw-demo1                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
+shlog ./bin/vdc-manage network add           -u   nw-demo1 --ipv4_network ${ipv4_gw} --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
+shlog ./bin/vdc-manage network add           -u   nw-demo2 --ipv4_network 10.100.0.0 --prefix 24 --domain vdc.local --peer_interface br0 --metric 10
+shlog ./bin/vdc-manage network add           -u   nw-demo3 --ipv4_network 10.101.0.0 --prefix 24 --domain vdc.local --peer_interface br0 --metirc 10
+shlog ./bin/vdc-manage network add           -u   nw-demo4 --ipv4_network 10.100.0.0 --prefix 24 --domain vdc.local --peer_interface br1 --metirc 10
+shlog ./bin/vdc-manage network add           -u   nw-demo5 --ipv4_network 10.101.0.0 --prefix 24 --domain vdc.local --peer_interface br2 --metirc 10
 
 
 shlog ./bin/vdc-manage tag map tag-shhost -o hp-demo1
@@ -122,6 +126,9 @@ shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_meta_file}
 shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid}           -m ${vmimage_meta_md5} -a ${account_id} -u wmi-${vmimage_meta_snap_uuid} -r ${images_arch} -d \"${vmimage_meta_file} volume\" -s init
 
 shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r ${hva_arch} -p ${hypervisor} -c 1 -m 256 -w 1
+shlog ./bin/vdc-manage spec  add -u is-demo2 -a ${account_id} -r ${hva_arch} -p ${hypervisor} -c 2 -m 256 -w 1
+shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
+shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
 shlog ./bin/vdc-manage group add -u  ng-demofgr -a ${account_id} -n default -d demo
 shlog ./bin/vdc-manage group addrule ng-demofgr -r  tcp:22,22,ip4:0.0.0.0

@@ -204,6 +204,8 @@ module Dcmgr
     end
     module Network
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'
+      autoload :VifTemplate, 'dcmgr/scheduler/network/vif_template'
+      autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
     end
   end
 end

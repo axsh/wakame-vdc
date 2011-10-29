@@ -35,7 +35,7 @@ module Dcmgr::Models
       begin
         addr = IPAddress::IPv4.new("#{self.ipv4}")
         # validate if ipv4 is in the range of network_id.
-        unless network.ipaddress.network.include?(addr)
+        unless network.include?(addr)
           errors.add(:ipv4, "IP address #{addr} is out of range: #{network.canonical_uuid})")
         end
       rescue => e
@@ -75,14 +75,16 @@ module Dcmgr::Models
     def self.lease(instance_nic, network)
       raise TypeError unless instance_nic.is_a?(InstanceNic)
       raise TypeError unless network.is_a?(Network)
-      
-      gwaddr = network.ipaddress
-      reserved = [gwaddr]
+
+      reserved = []
+      nwaddr = network.ipv4_ipaddress
+      reserved << network.ipv4_gw_ipaddress if network.ipv4_gw
+      reserved << IPAddress::IPv4.new(network.dhcp_server) if network.dhcp_server
       reserved = reserved.map {|i| i.to_u32 }
       # use SELECT FOR UPDATE to lock rows within same network.
-      addrs = (gwaddr.network.first.to_u32 .. gwaddr.network.last.to_u32).to_a -
+      addrs = (nwaddr.first.to_u32 .. nwaddr.last.to_u32).to_a -
         reserved - network.ip_lease_dataset.for_update.all.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
-      raise "Out of free IP address in this network segment: #{gwaddr.network.to_s}/#{gwaddr.prefix}" if addrs.empty?
+      raise "Out of free IP address in this network segment: #{nwaddr.network.to_s}/#{nwaddr.prefix}" if addrs.empty?
       
       leaseaddr = IPAddress::IPv4.parse_u32(addrs[rand(addrs.size).to_i])
       create(:ipv4=>leaseaddr.to_s, :network_id=>network.id, :instance_nic_id=>instance_nic.id)

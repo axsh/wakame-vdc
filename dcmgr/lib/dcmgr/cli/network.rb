@@ -6,10 +6,26 @@ module Dcmgr::Cli
 class Network < Base
   namespace :network
   M=Dcmgr::Models
+
+  no_tasks {
+    def validate_ipv4_range
+      @network_addr = IPAddress::IPv4.new("#{options[:ipv4_network]}/#{options[:prefix]}").network
+      p @network_addr.to_s
+      if options[:ipv4_gw] && !@network_addr.include?(IPAddress::IPv4.new(options[:ipv4_gw]))
+        Error.raise("ipv4_gw #{options[:ipv4_gw]} is out of range from network address: #{@network_addr}")
+      end
+      # DHCP IP address has to be in same IP network.
+      if options[:dhcp] && !@network_addr.include?(IPAddress::IPv4.new(options[:dhcp]))
+        Error.raise("dhcp server address #{options[:dhcp]} is out of range from network address: #{@network_addr}")
+      end
+    end
+    private :validate_ipv4_range
+  }
   
   desc "add [options]", "Register a new network entry"
   method_option :uuid, :type => :string, :aliases => "-u", :desc => "UUID of the network"
-  method_option :ipv4_gw, :type => :string, :aliases => "-g", :required => true, :desc => "Gateway address for IPv4 network"
+  method_option :ipv4_network, :type => :string, :required=>true, :desc => "IPv4 network address"
+  method_option :ipv4_gw, :type => :string, :aliases => "-g", :desc => "Gateway address for IPv4 network"
   method_option :prefix, :type => :numeric, :required => true, :aliases => "-p", :desc => "IP network mask size (1 < prefix < 32)"
   method_option :domain, :type => :string, :aliases => "-m", :desc => "DNS domain name of the network"
   method_option :dns, :type => :string, :aliases => "-n", :desc => "IP address for DNS server of the network"
@@ -17,19 +33,23 @@ class Network < Base
   method_option :metadata, :type => :string, :aliases => "-t", :desc => "IP address for metadata server of the network"
   method_option :metadata_port, :type => :string, :aliases => "--tp", :desc => "Port for the metadata server of the network"
   method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
+  method_option :peer_interface, :type => :string, :default=>'br0', :desc => "Peer interface name for the virtual interfaces"
   method_option :vlan_id, :type => :numeric, :default=>0, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
   method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :aliases => "-a", :desc => "The account ID to own this"
+  method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
   def add
-    #vlan_pk = if options[:vlan_id].to_i >= 0
     vlan_pk = if options[:vlan_id].to_i > 0
                 vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
                 vlan.id
               else
                 0
               end
+
+    validate_ipv4_range
     
     fields = {
+       :ipv4_network => @network_addr.to_s,
        :ipv4_gw => options[:ipv4_gw],
        :prefix => options[:prefix],
        :dns_server => options[:dns],
@@ -41,6 +61,8 @@ class Network < Base
        :account_id => options[:account_id],
        :bandwidth => options[:bandwidth],
        :vlan_lease_id => vlan_pk,
+      :peer_interface => options[:peer_interface],
+      :metric => options[:metric],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
 
@@ -53,6 +75,7 @@ class Network < Base
   end
 
   desc "modify UUID [options]", "Update network information"
+  method_option :ipv4_network, :type => :string, :required=>true, :desc => "IPv4 network address"
   method_option :ipv4_gw, :type => :string, :aliases => "-g", :desc => "Gateway address for IPv4 network"
   method_option :prefix, :type => :numeric, :aliases => "-p", :desc => "IP network mask size (1 < prefix < 32)"
   method_option :domain, :type => :string, :aliases => "-m", :desc => "DNS domain name of the network"
@@ -62,6 +85,7 @@ class Network < Base
   method_option :metadata_port, :type => :string, :aliases => "--tp", :desc => "Port for the metadata server of the network" 
   method_option :vlan_id, :type => :numeric, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
   method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
+  method_option :peer_interface, :type => :string, :desc => "Peer interface name for the virtual interfaces"
   method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this"
   def modify(uuid)
@@ -72,7 +96,10 @@ class Network < Base
                 0
               end
     
+    validate_ipv4_range
+
     fields = {
+       :ipv4_network => @network_addr.to_s,
        :ipv4_gw => options[:ipv4_gw],
        :prefix => options[:prefix],
        :dns_server => options[:dns],
@@ -84,6 +111,8 @@ class Network < Base
        :account_id => options[:account_id],
        :bandwidth => options[:bandwidth],
        :vlan_lease_id => vlan_pk,
+       :peer_interface => options[:peer_interface],
+      :metric => options[:metric],
     }
     super(M::Network,uuid,fields)
   end
@@ -116,10 +145,10 @@ Network UUID:
 Tag VLAN:
   <%= nw.vlan_lease_id == 0 ? 'none' : nw.vlan_lease.tag_id %>
 IPv4:
-  Network address: <%= nw.ipaddress.network %>/<%= nw.prefix %>
+  Network address: <%= nw.ipv4_ipaddress %>/<%= nw.prefix %>
   Gateway address: <%= nw.ipv4_gw %>
 <%- if nw.nat_network_id -%>
-  Outside NAT network address: <%= nw.nat_network.ipaddress.network %>/<%= nw.nat_network.prefix %> (<%= nw.nat_network.canonical_uuid %>)
+  Outside NAT network address: <%= nw.nat_network.ipv4_ipaddress %>/<%= nw.nat_network.prefix %> (<%= nw.nat_network.canonical_uuid %>)
 <%- end -%>
 DHCP Information:
   DHCP Server: <%= nw.dhcp_server %>
@@ -149,7 +178,7 @@ __END
       nw = M::Network.filter(cond).all
       puts ERB.new(<<__END, nil, '-').result(binding)
 <%- nw.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.ipaddress.network %>/<%= row.prefix %>\t<%= (row.vlan_lease && row.vlan_lease.tag_id) %>
+<%= row.canonical_uuid %>\t<%= row.ipv4_ipaddress %>/<%= row.prefix %>\t<%= (row.vlan_lease && row.vlan_lease.tag_id) %>
 <%- } -%>
 __END
     end
@@ -170,11 +199,11 @@ __END
   method_option :ipv4, :type => :string, :aliases => "-i", :required => true, :desc => "The ip address to reserve"
   def reserve(uuid)
     nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-
-    if nw.ipaddress.include?(IPAddress(options[:ipv4]))
+    
+    if nw.include?(IPAddress(options[:ipv4]))
       nw.ip_lease_dataset.add_reserved(options[:ipv4])
     else
-      Error.raise("IP address is out of range: #{options[:ipv4]} => #{nw.ipaddress.network}/#{nw.ipaddress.prefix}",100)
+      Error.raise("IP address is out of range: #{options[:ipv4]} => #{nw.ipv4_ipaddress}/#{nw.prefix}",100)
     end
   end
 

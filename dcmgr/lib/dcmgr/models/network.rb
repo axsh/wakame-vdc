@@ -40,16 +40,36 @@ module Dcmgr::Models
     def validate
       super
       
-      # validate ipv4 syntax
-      begin
-        IPAddress::IPv4.new("#{self.ipv4_gw}")
-      rescue => e
-        errors.add(:ipv4_gw, "Invalid IP address syntax: #{self.ipv4_gw}")
-      end
-
       unless (1..31).include?(self.prefix.to_i)
         errors.add(:prefix, "prefix must be 1-31: #{self.prefix}")
       end
+
+      network_addr = begin
+                       IPAddress::IPv4.new("#{self.ipv4_network}/#{self.prefix}").network
+                     rescue => e
+                       errors.add(:ipv4_network, "Invalid IP address syntax: #{self.ipv4_network}")
+                     end
+      # validate ipv4 syntax
+      if self.ipv4_gw
+        begin
+          if !network_addr.include?(IPAddress::IPv4.new("#{self.ipv4_gw}"))
+            errors.add(:ipv4_gw, "Out of network address range: #{network_addr.to_s}")
+          end
+        rescue => e
+          errors.add(:ipv4_gw, "Invalid IP address syntax: #{self.ipv4_gw}")
+        end
+      end
+      
+      if self.dhcp_server
+        begin
+          if !network_addr.include?(IPAddress::IPv4.new("#{self.dhcp_server}"))
+            errors.add(:dhcp_server, "Out of network address range: #{network_addr.to_s}")
+          end
+        rescue => e
+          errors.add(:dhcp_server, "Invalid IP address syntax: #{self.dhcp_server}")
+        end
+      end
+      
     end
 
     def to_hash
@@ -85,7 +105,12 @@ module Dcmgr::Models
       Network.find(:id => self.nat_network_id)
     end
 
-    def ipaddress
+    def ipv4_ipaddress
+      IPAddress::IPv4.new("#{self.ipv4_network}/#{self.prefix}").network
+    end
+
+    def ipv4_gw_ipaddress
+      return nil if self.ipv4_gw.nil?
       IPAddress::IPv4.new("#{self.ipv4_gw}/#{self.prefix}")
     end
 
@@ -93,7 +118,7 @@ module Dcmgr::Models
     # @param [String] ipaddr IP address
     def include?(ipaddr)
       ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
-      self.ipaddress.network.include?(ipaddr)
+      self.ipv4_ipaddress.network.include?(ipaddr)
     end
 
     # register reserved IP address in this network
@@ -102,7 +127,7 @@ module Dcmgr::Models
     end
 
     def available_ip_nums
-      self.ipaddress.hosts.size - self.ip_lease_dataset.count
+      self.ipv4_ipaddress.hosts.size - self.ip_lease_dataset.count
     end
   end
 end

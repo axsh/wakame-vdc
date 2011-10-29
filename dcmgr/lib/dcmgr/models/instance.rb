@@ -189,12 +189,32 @@ module Dcmgr::Models
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :netfilter_groups => self.netfilter_groups.map {|n| n.name },
+                 :vif=>[],
               })
       h.merge!({:instance_spec=>instance_spec.to_hash}) unless instance_spec.nil?
       h[:volume]={}
       if self.volume
         self.volume.each { |v|
           h[:volume][v.canonical_uuid] = v.to_hash
+        }
+      end
+      if self.instance_nic
+        self.instance_nic.each { |vif|
+          ent = vif.to_hash.merge({
+            :vif_id=>vif.canonical_uuid,
+          })
+          direct_lease = vif.direct_ip_lease.first
+          if direct_lease.nil?
+          else
+            outside_lease = direct_lease.nat_outside_lease
+            ent[:ipv4] = {
+              :network => vif.network.nil? ? nil : vif.network.to_hash,
+              :address=> direct_lease.ipv4,
+              :nat_network => vif.nat_network.nil? ? nil : vif.nat_network.to_hash,
+              :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
+            }
+          end
+          h[:vif] << ent
         }
       end
       h
@@ -310,13 +330,12 @@ module Dcmgr::Models
       self.instance_spec.config
     end
 
-    def add_nic(network)
+    def add_nic(vif_template)
       # TODO: get default vendor ID based on the hypervisor.
       m = MacLease.lease('00fff1')
       nic = InstanceNic.new(:mac_addr=>m.mac_addr)
-      nic.network = network
-      nic.nat_network = network.nat_network
       nic.instance = self
+      nic.device_index = vif_template[:index]
       nic.save
     end
 

@@ -92,11 +92,13 @@ Sequel.migration do
       column :network_id, "int(11)", :null=>false
       column :nat_network_id, "int(11)"
       column :mac_addr, "varchar(12)", :null=>false
+      column :device_index, "int(11)", :null=>false
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       
       index [:deleted_at]
+      index [:instance_id]
       index [:mac_addr]
       index [:uuid], :unique=>true, :name=>:uuid
     end
@@ -215,17 +217,21 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
       column :uuid, "char(8)", :null=>false
-      column :ipv4_gw, "varchar(255)", :null=>false
+      column :ipv4_network, "varchar(255)", :null=>false
+      column :ipv4_gw, "varchar(255)"
       column :prefix, "int(11)", :default=>24, :null=>false
+      column :metric, "int(11)", :default=>100, :null=>false
       column :domain_name, "varchar(255)"
       column :dns_server, "varchar(255)"
       column :dhcp_server, "varchar(255)"
       column :metadata_server, "varchar(255)"
       column :metadata_server_port, "int(11)"
       column :bandwidth, "int(11)"
+      column :ipv4_dynamic_range, "text"
       column :vlan_lease_id, "int(11)", :default=>0, :null=>false
       column :nat_network_id, "int(11)"
       column :description, "text"
+      column :peer_interface, "varchar(255)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       
