@@ -151,12 +151,6 @@ module Dcmgr
         Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp") unless File.exists?("#{@hva_ctx.inst_data_dir}/tmp")
         sh("/bin/mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
 
-        # generate metadata as file
-        #File.open(File.expand_path('metadata.conf', "#{@hva_ctx.inst_data_dir}/tmp"), "w") { |f|
-        #  f.puts("state=#{@inst[:state]}")
-        #}
-
-        # TODO: support for multiple interfaces.
         vnic = @inst[:instance_nics].first || {}
         # Appendix B: Metadata Categories
         # http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/index.html?AESDG-chapter-instancedata.html
@@ -174,8 +168,6 @@ module Dcmgr
           'local-hostname' => @inst[:hostname],
           'local-ipv4' => @inst[:ips].first,
           'mac' => vnic[:mac_addr].unpack('A2'*6).join(':'),
-          # TODO: network category support
-          #'network/' => {},
           'placement/availability-zone' => nil,
           'product-codes' => nil,
           'public-hostname' => @inst[:hostname],
