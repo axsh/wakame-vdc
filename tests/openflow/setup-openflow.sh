@@ -11,16 +11,20 @@ work_dir=${work_dir:?"work_dir needs to be set"}
 if [ ! -d $work_dir/trema/.git ]; then
     cd $work_dir
     git clone git://github.com/rakshasa/trema
-    (cd ./trema/ && ./build.rb) > /dev/null
+    (cd ./trema/ && git checkout ruby && ./build.rb && mkdir ./tmp/log) > /dev/null
 fi
 
 # Open vSwitch install.
 ovs_build_dir=/tmp/ovs.$$/
 
 mkdir $ovs_build_dir && cd $ovs_build_dir
-git clone git://openvswitch.org/openvswitch
 
-cd ./openvswitch
+#git clone git://openvswitch.org/openvswitch
+# cd ./openvswitch
+
+curl http://openvswitch.org/releases/openvswitch-1.2.2.tar.gz -o openvswitch-1.2.2.tar.gz
+tar xzf openvswitch-1.2.2.tar.gz
+cd openvswitch-1.2.2
 
 # Allow inclusion of patches to ovs.
 for patch_file in $work_dir/tests/openflow/ovs_*.patch; do
