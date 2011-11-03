@@ -15,10 +15,10 @@ module Dcmgr::Models
     end
 
     def before_create
-      super
       t = Time.now
       self[:responded_at] = t
       self[:responded_at_usec] = t.usec
+      super
     end
 
   end

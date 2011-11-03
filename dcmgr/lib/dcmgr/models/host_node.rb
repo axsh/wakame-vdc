@@ -26,10 +26,6 @@ module Dcmgr::Models
       filter(:node_id => r)
     end
 
-    def after_initialize
-      super
-    end
-
     def validate
       super
       # for compatibility: hva.xxx or hva-xxxx

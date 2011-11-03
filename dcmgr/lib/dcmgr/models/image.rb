@@ -17,6 +17,8 @@ module Dcmgr::Models
     serialize_attributes :yaml, :source
     
     def validate
+      super
+      
       unless [BOOT_DEV_SAN, BOOT_DEV_LOCAL].member?(self.boot_dev_type)
         errors.add(:boot_dev_type, "Invalid boot dev type: #{self.boot_dev_type}")
       end

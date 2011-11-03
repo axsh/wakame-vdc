@@ -29,6 +29,7 @@ module Dcmgr::Models
         export_path.shift
         self.export_path = export_path.join('/')
       end
+      super
     end
 
     def self.create_pool(params)

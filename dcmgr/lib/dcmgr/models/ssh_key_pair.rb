@@ -10,6 +10,7 @@ module Dcmgr::Models
     def before_destroy
       # TODO: check running instances which are associated to ssh key
       # pairs. reject deletion if exist.
+      super
     end
 
     #
