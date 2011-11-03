@@ -404,6 +404,10 @@ module Dcmgr::Models
 
   class BaseNew < Sequel::Model
 
+    def to_hash()
+      self.values.dup
+    end
+    
     LOCK_TABLES_KEY='__locked_tables'
 
     def self.default_row_lock_mode=(mode)
@@ -485,8 +489,10 @@ module Dcmgr::Models
     private
     def self.inherited(klass)
       super
+      klass.set_dataset(db[klass.implicit_table_name])
 
       klass.plugin InheritableSchema
+      klass.plugin :timestamps, :update_on_create=>true
       klass.class_eval {
 
         # Add timestamp columns and set callbacks using Timestamps

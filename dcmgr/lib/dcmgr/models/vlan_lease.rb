@@ -5,13 +5,6 @@ module Dcmgr::Models
   class VlanLease < AccountResource
     taggable 'vlan'
 
-    inheritable_schema do
-      Fixnum :tag_id, :null=>false
-
-      index :tag_id, {:unique=>true}
-    end
-    with_timestamps
-
     one_to_many :networks
 
     def validate

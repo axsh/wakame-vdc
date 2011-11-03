@@ -5,7 +5,6 @@ require 'isono/models/node_state'
 module Dcmgr::Models
   class HostNode < AccountResource
     taggable 'hp'
-    with_timestamps
 
     HYPERVISOR_XEN_34='xen-3.4'
     HYPERVISOR_XEN_40='xen-4.0'
@@ -18,19 +17,6 @@ module Dcmgr::Models
     SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
     SUPPORTED_HYPERVISOR=[HYPERVISOR_KVM, HYPERVISOR_LXC]
 
-    inheritable_schema do
-      String :node_id, :size=>80, :null=>true
-      
-      String :arch, :size=>10, :null=>false # :x86, :x86_64
-      String :hypervisor, :size=>30, :null=>false
-      String :name, :size => 255, :null => true
-
-      Fixnum :offering_cpu_cores,   :null=>false, :unsigned=>true
-      Fixnum :offering_memory_size, :null=>false, :unsigned=>true
-
-      index :node_id
-    end
-    
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
 

@@ -11,19 +11,6 @@ module Dcmgr::Models
 
     SUPPORTED_BACKINGSTORE = [BACKINGSTORE_ZFS, BACKINGSTORE_RAW]
 
-    inheritable_schema do
-      String :node_id, :null=>false
-      String :export_path, :null=>false
-      Fixnum :offering_disk_space, :null=>false, :unsigned=>true
-      String :transport_type, :null=>false
-      String :storage_type, :null=>false
-      String :ipaddr, :null=>false
-      String :snapshot_base_path, :null=>false
-
-      index :node_id
-    end
-    with_timestamps
-
     one_to_many :volumes
     one_to_many :volume_snapshots
     

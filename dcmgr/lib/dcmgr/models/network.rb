@@ -7,22 +7,6 @@ module Dcmgr::Models
   class Network < AccountResource
     taggable 'nw'
 
-    inheritable_schema do
-      String :ipv4_gw, :null=>false
-      Fixnum :prefix, :null=>false, :default=>24, :unsigned=>true
-      String :domain_name
-      String :dns_server
-      String :dhcp_server
-      String :metadata_server
-      Fixnum :metadata_server_port
-      Fixnum :bandwidth #in Mbit/s
-      Fixnum :vlan_lease_id, :null=>false, :default=>0
-      Fixnum :nat_network_id
-      Text :description
-      index :nat_network_id
-    end
-    with_timestamps
-
     module IpLeaseMethods
       def add_reserved(ipaddr, description=nil)
         model.create(:network_id=>model_object.id,

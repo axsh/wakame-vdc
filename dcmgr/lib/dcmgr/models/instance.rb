@@ -5,32 +5,6 @@ module Dcmgr::Models
   class Instance < AccountResource
     taggable 'i'
 
-    inheritable_schema do
-      Fixnum :host_node_id, :null=>true
-      Fixnum :image_id, :null=>false
-      Fixnum :instance_spec_id, :null=>false
-      String :state, :null=>false, :default=>:init.to_s
-      String :status, :null=>false, :default=>:init.to_s
-      String :hostname, :null=>false, :size=>32
-      # TODO: remove ssh_key_pair_id column
-      String :ssh_key_pair_id
-      Fixnum :ha_enabled, :null=>false, :default=>0
-      Float  :quota_weight, :null=>false, :default=>0.0
-      Fixnum :cpu_cores, :null=>false, :unsigned=>true
-      Fixnum :memory_size, :null=>false, :unsigned=>true
-      
-      Text :user_data, :null=>false, :default=>''
-      Text :runtime_config, :null=>false, :default=>''
-      Text :ssh_key_data, :null=>true
-      Text :request_params, :null=>false
-
-      Time :terminated_at
-      index :state
-      index :terminated_at
-      index :host_node_id
-    end
-    with_timestamps
-    
     many_to_one :image
     many_to_one :instance_spec
     alias :spec :instance_spec

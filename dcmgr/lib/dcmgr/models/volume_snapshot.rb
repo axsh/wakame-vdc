@@ -11,19 +11,6 @@ module Dcmgr::Models
     STATE_TYPE_DELETING = "deleting"
     STATE_TYPE_DELETED = "deleted"
 
-    inheritable_schema do
-      Fixnum :storage_node_id, :null=>false
-      String :origin_volume_id, :null=>false
-      Fixnum :size, :null=>false
-      Fixnum :status, :null=>false, :default=>0
-      String :state, :null=>false, :default=>STATE_TYPE_REGISTERING
-      String :destination_key, :null=>false 
-      Time   :deleted_at
-      index :storage_node_id
-      index  :deleted_at
-    end
-    with_timestamps
-
     many_to_one :storage_node
     plugin ArchiveChangedColumn, :histories
 

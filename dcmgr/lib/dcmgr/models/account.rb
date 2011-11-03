@@ -9,12 +9,6 @@ module Dcmgr::Models
     DISABLED=0
     ENABLED=1
     
-    inheritable_schema do
-      String :description, :size=>100
-      Fixnum :enabled, :default=>ENABLED, :null=>false
-    end
-    with_timestamps
-
     one_to_many  :tags, :dataset=>lambda { Tag.filter(:account_id=>self.canonical_uuid); }
     one_to_one :quota, :class=>Quota, :key=>:account_id
 

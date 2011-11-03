@@ -5,18 +5,6 @@ module Dcmgr::Models
   class InstanceNic < BaseNew
     taggable 'vif'
 
-    inheritable_schema do
-      Fixnum :instance_id, :null=>false
-      Fixnum :network_id, :null=>false
-      Fixnum :nat_network_id
-      String :mac_addr, :null=>false, :size=>12
-      Time   :deleted_at
-
-      index :mac_addr
-      index :deleted_at
-    end
-    with_timestamps
-
     many_to_one :instance
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
     many_to_one :network

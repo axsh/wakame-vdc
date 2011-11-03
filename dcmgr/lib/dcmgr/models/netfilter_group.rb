@@ -3,14 +3,6 @@
 module Dcmgr::Models
   class NetfilterGroup < AccountResource
     taggable 'ng'
-    with_timestamps
-
-    inheritable_schema do
-      String :name, :null=>false
-      String :description
-      Text   :rule
-      index [:account_id, :name], {:unique=>true}
-    end
 
     one_to_many :netfilter_rules
     many_to_many :instances,:join_table => :instance_netfilter_groups

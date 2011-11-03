@@ -15,18 +15,6 @@ module Dcmgr::Models
       TYPE_MANUAL=>'manual'
     }
     
-    inheritable_schema do
-      Fixnum :instance_nic_id
-      Fixnum :network_id, :null=>false
-      String :ipv4, :size=>50
-      Fixnum :alloc_type, :null=>false, :default=>TYPE_AUTO
-      Text :description
-      
-      index [:network_id, :ipv4], {:unique=>true}
-      index [:instance_nic_id, :network_id]
-    end
-    with_timestamps
-
     many_to_one :instance_nic
     many_to_one :network
 

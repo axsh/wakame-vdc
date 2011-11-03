@@ -4,13 +4,6 @@ module Dcmgr::Models
   # MAC address lease information
   class MacLease < BaseNew
 
-    inheritable_schema do
-      String :mac_addr, :size=>12, :fixed=>true, :null=>false
-      
-      index :mac_addr, {:unique=>true}
-    end
-    with_timestamps
-
     # register MAC address.
     # @params [String] 6 or 12 length of HEX value in string.
     def self.lease(mac_addr)

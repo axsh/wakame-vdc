@@ -3,14 +3,6 @@
 module Dcmgr::Models
   # Per account quota limit for the VDC resources.
   class Quota < BaseNew
-    inheritable_schema do
-      Fixnum :account_id, :null=>false
-      Float  :instance_total_weight
-      Fixnum :volume_total_size
-
-      index :account_id
-    end
-    with_timestamps
 
     def before_validation
       # sets default quota values from dcmgr.conf.
