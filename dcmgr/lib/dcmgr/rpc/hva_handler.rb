@@ -282,6 +282,7 @@ module Dcmgr
         @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
       }, proc {
+        terminate_instance(false) rescue logger.error($!)
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
                               'hva/instance_terminated')
       }
@@ -329,6 +330,7 @@ module Dcmgr
         # TODO: Run detach & destroy volume
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
                               'hva/instance_terminated')
+        terminate_instance(false) rescue logger.error($!)
         update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
                               'hva/volume_deleted')
       }
