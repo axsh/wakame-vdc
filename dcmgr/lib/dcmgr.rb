@@ -203,6 +203,7 @@ module Dcmgr
       autoload :FindFirst, 'dcmgr/scheduler/host_node/find_first'
       autoload :LeastUsage, 'dcmgr/scheduler/host_node/least_usage'
       autoload :ExcludeSame, 'dcmgr/scheduler/host_node/exclude_same'
+      autoload :SpecifyNode, 'dcmgr/scheduler/host_node/specify_node'
     end
     module Network
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'

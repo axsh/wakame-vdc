@@ -96,5 +96,6 @@ module Dcmgr
     define_error(:InvalidInstanceSpec, 400, '138')
     define_error(:UndefinedInstanceID, 404, '139')
     define_error(:InvalidVolumeState, 400, '140')
+    define_error(:InvalidHostNodeID, 400, '141')
   end
 end

@@ -255,6 +255,14 @@ module Dcmgr
               if params[:ha_enabled] == 'true'
                 i.ha_enabled = 1
               end
+              
+              if params[:host_id] || params[:host_pool_id]
+                host_id = params[:host_id] || params[:host_pool_id]
+                host_node = Models::HostNode[host_id]
+                raise UnknownHostNode, "#{host_id}" if host_node.nil?
+                raise InvalidHostNodeID, "#{host_id}" if host_node.status != 'online'
+                i.request_params = {:host_node_id => host_node.node_id}
+              end
             end
             instance.save
 
