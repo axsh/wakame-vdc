@@ -117,6 +117,8 @@ module Dcmgr
     autoload :MacLease, 'dcmgr/models/mac_lease'
     autoload :VlanLease, 'dcmgr/models/vlan_lease'
     autoload :Quota, 'dcmgr/models/quota'
+    autoload :DhcpRange, 'dcmgr/models/dhcp_range'
+    autoload :PhysicalNetwork, 'dcmgr/models/physical_network'
   end
 
   module Endpoints

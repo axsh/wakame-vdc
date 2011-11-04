@@ -160,9 +160,21 @@ describe "/api/instances" do
   end
 
   describe "Multiple network interface support" do
-    it 'run instance with vif3type1 rule' do
+    it 'run instance with vif3type1 network strategy' do
       # Always bring new instance to running.
       res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demo2', :network_scheduler=>'vif3type1'})
+      res.success?.should be_true
+      @instance_id = res["id"]
+      
+      retry_until_running(@instance_id)
+
+      APITest.delete("/instances/#{@instance_id}").success?.should be_true
+      retry_until_terminated(@instance_id)
+    end
+
+    it 'run instance with vif3type2 network strategy' do
+      # Always bring new instance to running.
+      res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demo2', :network_scheduler=>'vif3type2'})
       res.success?.should be_true
       @instance_id = res["id"]
       

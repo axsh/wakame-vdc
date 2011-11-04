@@ -27,6 +27,40 @@ module Dcmgr::Cli
       def after_task
       end
     }
+
+    no_tasks {
+      class MapperDSL
+        attr_reader :defs
+        
+        def initialize()
+          @defs = {}
+        end
+      
+        def option(key, map_key=nil, &blk)
+          map_key ||= key
+          @defs[key]=proc { |h,v| h[map_key]=blk.call(v) }
+        end
+        
+        def map(key, map_key)
+          @defs[key]=proc { |h, v| h[map_key] = v}
+        end
+      end
+
+      public
+      def optmap(h, &blk)
+        ret = {}
+        d = MapperDSL.new
+        blk.call(d)
+        h.each { |k, v|
+          if d.defs.has_key?(k.to_sym)
+            d.defs[k.to_sym].call(ret, v)
+          else
+            ret[k.to_sym] = v
+          end
+        }
+        ret
+      end
+    }
     
     def add(model,options)
       raise ArgumentError unless options.is_a? Hash

@@ -65,12 +65,11 @@ module Dcmgr::Models
       raise TypeError unless network.is_a?(Network)
 
       reserved = []
-      nwaddr = network.ipv4_ipaddress
       reserved << network.ipv4_gw_ipaddress if network.ipv4_gw
       reserved << IPAddress::IPv4.new(network.dhcp_server) if network.dhcp_server
       reserved = reserved.map {|i| i.to_u32 }
       # use SELECT FOR UPDATE to lock rows within same network.
-      addrs = (nwaddr.first.to_u32 .. nwaddr.last.to_u32).to_a -
+      addrs = network.ipv4_u32_dynamic_range_array - 
         reserved - network.ip_lease_dataset.for_update.all.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
       raise "Out of free IP address in this network segment: #{nwaddr.network.to_s}/#{nwaddr.prefix}" if addrs.empty?
       

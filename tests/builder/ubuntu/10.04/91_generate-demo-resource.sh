@@ -99,12 +99,34 @@ esac
 #shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demo1    -a ${account_id}
 #shlog ./bin/vdc-manage network add           -u   nw-demo1                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --vlan_id 1 --description demo
 # non vlan
-shlog ./bin/vdc-manage network add           -u   nw-demo1 --ipv4_network ${ipv4_gw} --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
-shlog ./bin/vdc-manage network add           -u   nw-demo2 --ipv4_network 10.100.0.0 --prefix 24 --domain vdc.local --peer_interface br0 --metric 10
-shlog ./bin/vdc-manage network add           -u   nw-demo3 --ipv4_network 10.101.0.0 --prefix 24 --domain vdc.local --peer_interface br0 --metirc 10
-shlog ./bin/vdc-manage network add           -u   nw-demo4 --ipv4_network 10.100.0.0 --prefix 24 --domain vdc.local --peer_interface br1 --metirc 10
-shlog ./bin/vdc-manage network add           -u   nw-demo5 --ipv4_network 10.101.0.0 --prefix 24 --domain vdc.local --peer_interface br2 --metirc 10
+shlog ./bin/vdc-manage network add --uuid nw-demo1 --ipv4_network ${ipv4_gw} --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo --link_interface br0
+shlog ./bin/vdc-manage network add --uuid nw-demo2 --ipv4_network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --link_interface br0
+shlog ./bin/vdc-manage network add --uuid nw-demo3 --ipv4_network 10.101.0.0 --prefix 24 --domain vdc.local --metirc 10 --link_interface br0
+shlog ./bin/vdc-manage network add --uuid nw-demo4 --ipv4_network 10.100.0.0 --prefix 24 --domain vdc.local --metirc 10
+shlog ./bin/vdc-manage network add --uuid nw-demo5 --ipv4_network 10.101.0.0 --prefix 24 --domain vdc.local --metirc 10
+# physical network
+shlog ./bin/vdc-manage network phy add eth0 --interface eth0
+# bridge only closed network
+shlog ./bin/vdc-manage network phy add null1 --null
+shlog ./bin/vdc-manage network phy add null2 --null
+# set forward interface(= physical network) from network
+shlog ./bin/vdc-manage network forward nw-demo1 eth0
+shlog ./bin/vdc-manage network forward nw-demo2 eth0
+shlog ./bin/vdc-manage network forward nw-demo3 eth0
+shlog ./bin/vdc-manage network forward nw-demo4 null1
+shlog ./bin/vdc-manage network forward nw-demo5 null2
 
+range_begin=`ipcalc ${ipv4_gw} | awk '$1 == "HostMin:" { print $2 }'`
+range_end=`ipcalc ${ipv4_gw} | awk '$1 == "HostMax:" { print $2 }'`
+shlog ./bin/vdc-manage network dhcp addrange nw-demo1 $range_begin $range_end
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.61 10.100.0.65
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.70 10.100.0.75
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.68 10.100.0.75 # range prepend
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.72 10.100.0.80 # range append
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.60 10.100.0.80 # range merge
+shlog ./bin/vdc-manage network dhcp addrange nw-demo3 10.101.0.60 10.101.0.80
+shlog ./bin/vdc-manage network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
+shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 
 shlog ./bin/vdc-manage tag map tag-shhost -o hp-demo1
 shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demo1

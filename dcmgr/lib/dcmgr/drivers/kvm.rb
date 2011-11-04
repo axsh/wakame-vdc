@@ -51,7 +51,7 @@ module Dcmgr
         vifs.each { |vif|
           if vif[:ipv4]
             sh("/sbin/ip link set %s up", [vif[:uuid]])
-            sh("/usr/sbin/brctl addif %s %s", [vif[:ipv4][:network][:peer_interface], vif[:uuid]])
+            sh("/usr/sbin/brctl addif %s %s", [vif[:ipv4][:network][:link_interface], vif[:uuid]])
           end
         }
 

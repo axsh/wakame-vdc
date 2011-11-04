@@ -20,6 +20,23 @@ class Network < Base
       end
     end
     private :validate_ipv4_range
+
+    def map_network_params
+      optmap(options) { |c|
+        c.option(:ipv4_network) {
+          @network_addr.to_s
+        }
+        c.map(:domain, :domain_name)
+        c.map(:dhcp, :dhcp_server)
+        c.map(:dns, :dns_server)
+        c.map(:metadata, :metadata_server)
+        c.map(:metadata_port, :metadata_server_port)
+        c.option(:vlan_id, :vlan_lease_id) {
+          @vlan_pk
+        }
+      }
+    end
+    private :map_network_params
   }
   
   desc "add [options]", "Register a new network entry"
@@ -33,38 +50,22 @@ class Network < Base
   method_option :metadata, :type => :string, :aliases => "-t", :desc => "IP address for metadata server of the network"
   method_option :metadata_port, :type => :string, :aliases => "--tp", :desc => "Port for the metadata server of the network"
   method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
-  method_option :peer_interface, :type => :string, :default=>'br0', :desc => "Peer interface name for the virtual interfaces"
   method_option :vlan_id, :type => :numeric, :default=>0, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
+  method_option :link_interface, :type => :string, :desc => "Link interface name from virtual interfaces"
   method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :aliases => "-a", :desc => "The account ID to own this"
   method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
   def add
-    vlan_pk = if options[:vlan_id].to_i > 0
-                vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
-                vlan.id
-              else
-                0
-              end
+    @vlan_pk = if options[:vlan_id].to_i > 0
+                 vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
+                 vlan.id
+               else
+                 0
+               end
 
     validate_ipv4_range
-    
-    fields = {
-       :ipv4_network => @network_addr.to_s,
-       :ipv4_gw => options[:ipv4_gw],
-       :prefix => options[:prefix],
-       :dns_server => options[:dns],
-       :domain_name => options[:domain],
-       :dhcp_server => options[:dhcp],
-       :metadata_server => options[:metadata],
-       :metadata_server_port => options[:metadata_port],
-       :description => options[:description],
-       :account_id => options[:account_id],
-       :bandwidth => options[:bandwidth],
-       :vlan_lease_id => vlan_pk,
-      :peer_interface => options[:peer_interface],
-      :metric => options[:metric],
-    }
-    fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
+
+    fields = map_network_params
 
     puts super(M::Network,fields)
   end
@@ -84,36 +85,22 @@ class Network < Base
   method_option :metadata, :type => :string, :aliases => "-t", :desc => "IP address for metadata server of the network"
   method_option :metadata_port, :type => :string, :aliases => "--tp", :desc => "Port for the metadata server of the network" 
   method_option :vlan_id, :type => :numeric, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
+  method_option :link_interface, :type => :string, :desc => "Link interface name from virtual interfaces"
   method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
-  method_option :peer_interface, :type => :string, :desc => "Peer interface name for the virtual interfaces"
   method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
   method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this"
   def modify(uuid)
-    vlan_pk = if options[:vlan_id].to_i > 0
-                vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
-                vlan.id
-              else
-                0
-              end
+    @vlan_pk = if options[:vlan_id].to_i > 0
+                 vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
+                 vlan.id
+               else
+                 0
+               end
     
     validate_ipv4_range
 
-    fields = {
-       :ipv4_network => @network_addr.to_s,
-       :ipv4_gw => options[:ipv4_gw],
-       :prefix => options[:prefix],
-       :dns_server => options[:dns],
-       :domain_name => options[:domain],
-       :dhcp_server => options[:dhcp],
-       :metadata_server => options[:metadata],
-       :metadata_server_port => options[:metadata_port],
-       :description => options[:description],
-       :account_id => options[:account_id],
-       :bandwidth => options[:bandwidth],
-       :vlan_lease_id => vlan_pk,
-       :peer_interface => options[:peer_interface],
-      :metric => options[:metric],
-    }
+    fields = map_network_params
+    
     super(M::Network,uuid,fields)
   end
 
@@ -216,5 +203,105 @@ __END
       Error.raise("The IP is not reserved in network #{uuid}: #{options[:ipv4]}", 100)
     end
   end
+
+  desc "forward UUID PHYSICAL", "Set forward interface for network"
+  def forward(uuid, phynet)
+    nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+    phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
+    nw.physical_network = phy
+    nw.save
+  end
+
+  class PhyOps < Base
+    namespace :phy
+    M=Dcmgr::Models
+    
+    desc "add NAME [options]", "Add new physical network"
+    method_option :null, :type => :boolean, :desc => "Do not attach to any physical interfaces"
+    method_option :interface, :type => :string, :desc => "Physical interface name on host nodes"
+    method_option :description, :type => :string, :desc => "Description for the physical network"
+    def add(name)
+      M::PhysicalNetwork.find(:name=>name) && Error.raise("Duplicate physical network name: #{name}", 100)
+      phy = options[:null] ? nil : (options[:interface] || name)
+
+      fields={
+        :name=>name,
+        :interface=>phy,
+        :description=>options[:description],
+      }
+      M::PhysicalNetwork.create(fields)
+    end
+
+    desc "modify NAME [options]", "Modify physical network parameters"
+    method_option :null, :type => :boolean, :desc => "Do not attach to any physical interfaces"
+    method_option :interface, :type => :string, :desc => "Physical interface name on host nodes"
+    method_option :description, :type => :string, :desc => "Description for the physical network"
+    def modify(name)
+      phy = M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
+      phy = options[:null] ? nil : options[:interface]
+
+      phy.update({
+                   :interface=>phy,
+                   :description=>options[:description],
+                 })
+    end
+
+    desc "del NAME [options]", "Delete physical network"
+    def del(name)
+      phy = M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
+      phy.destroy
+    end
+    
+    desc "show [NAME]", "Show/List physical network"
+    def show(name=nil)
+      if name
+        phy = M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
+        print ERB.new(<<__END, nil, '-').result(binding)
+Physical Network:       <%= phy.name %>
+Forwarding Interface:   <%= phy.interface.nil? ? 'none': phy.interface %>
+<%- if phy.description -%>
+Description:
+<%= phy.description %>
+<%- end -%>
+__END
+      else
+    print ERB.new(<<__END, nil, '-').result(binding)
+<%- M::PhysicalNetwork.order(:id).all.each { |l| -%>
+<%= "%-20s  %-15s" % [l.name, l.interface] %>
+<%- } -%>
+__END
+      end
+    end
+    
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
+  end
+  register PhyOps, 'phy', "phy [options]", "Maintain physical network"
+
+  class DhcpOps < Base
+    namespace :dhcp
+    M=Dcmgr::Models
+    
+    desc "addrange UUID ADDRESS_BEGIN ADDRESS_END", "Add dynamic IP address range to the network"
+    def addrange(uuid, range_begin, range_end)
+      nw = M::Network[uuid] || UnknownUUIDEntry.raise
+      nw.add_ipv4_dynamic_range(range_begin, range_end)
+    end
+
+    desc "delrange UUID ADDRESS_BEGIN ADDRESS_END", "Delete dynamic IP address range from the network"
+    def delrange(uuid, range_begin, range_end)
+      nw = M::Network[uuid] || UnknownUUIDEntry.raise
+      nw.del_ipv4_dynamic_range(range_begin, range_end)
+    end
+    
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
+  end
+  register DhcpOps, 'dhcp', "dhcp [options]", "Maintain dhcp parameters"
+  
 end
 end

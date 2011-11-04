@@ -25,6 +25,7 @@ deb_pkgs="
  open-iscsi open-iscsi-utils
  nginx
  libxml2-dev  libxslt1-dev
+ ipcalc
 "
 # apache2 apache2-threaded-dev libapache2-mod-passenger
 # Pick them from natty as obsolete version is in LTS.

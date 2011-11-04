@@ -26,7 +26,44 @@ account_instance_total_weight 100.0
 account_volume_total_size 100000 # 100GB
 
 # Scheduling Algorithms
-host_node_scheduler :FindFirst
-host_node_ha_scheduler :FindFirst
-storage_node_scheduler :FindFirst
-network_scheduler :FlatSingle
+#host_node_scheduler :FindFirst
+host_node_scheduler {
+  scheduler :LeastUsage
+}
+  
+#storage_node_scheduler :FindFirst
+storage_node_scheduler {
+  scheduler :LeastUsage
+}
+#network_scheduler :FlatSingle
+network_scheduler {
+  scheduler :PerInstance
+  options {
+    default {
+      scheduler :FlatSingle
+    }
+    nat {
+      scheduler :NatOneToOne
+      options {
+        network_id 'nw-demo1'
+        nat_network_id 'nw-demo2'
+      }
+    }
+    vif3type1 {
+      scheduler :VifTemplate
+      options( {
+        'eth0' => 'nw-demo1',
+        'eth1' => 'nw-demo2',
+        'eth2' => 'nw-demo3',
+      })
+    }
+    vif3type2 {
+      scheduler :VifTemplate
+      options( {
+        'eth0' => 'nw-demo1',
+        'eth1' => 'nw-demo4',
+        'eth2' => 'nw-demo5',
+      })
+    }
+  }
+}

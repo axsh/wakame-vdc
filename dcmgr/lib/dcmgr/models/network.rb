@@ -21,6 +21,14 @@ module Dcmgr::Models
     many_to_one :nat_network, :key => :nat_network_id, :class => self
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
+    one_to_many :dhcp_range
+    many_to_one :physical_network
+
+    def before_validation
+      self.link_interface ||= "br-#{self[:uuid]}"
+      super
+    end
+
     def validate
       super
       
@@ -53,6 +61,10 @@ module Dcmgr::Models
           errors.add(:dhcp_server, "Invalid IP address syntax: #{self.dhcp_server}")
         end
       end
+
+      if self.link_interface.size > 16
+        errors.add(:link_interface, "Can not be the character lenth more than 16(=IF_NAMESIZ) ASCII characters.")
+      end
       
     end
 
@@ -64,6 +76,11 @@ module Dcmgr::Models
                 :description=>description.to_s,
                 :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
               })
+      if self.physical_network
+        h[:physical_network] = self.physical_network.to_hash
+      end
+     
+      h
     end
 
     def before_destroy
@@ -107,11 +124,113 @@ module Dcmgr::Models
 
     # register reserved IP address in this network
     def add_reserved(ipaddr)
-      add_ip_lease(:ipv4=>ipaddr, :type=>IpLease::TYPE_RESERVED)
+      raise "Out of subnet range: #{ipaddr} to #{self.ipv4_ipaddress}/#{self.prefix}" if !self.include?(ipaddr)
+      add_ip_lease(:ipv4=>ipaddr.to_s, :type=>IpLease::TYPE_RESERVED)
     end
 
     def available_ip_nums
       self.ipv4_ipaddress.hosts.size - self.ip_lease_dataset.count
+    end
+
+    def ipv4_u32_dynamic_range_array
+      ary=[]
+      dhcp_range_dataset.each { |r|
+        ary += (r.range_begin.to_u32 .. r.range_end.to_u32).to_a
+      }
+      ary
+    end
+
+    def add_ipv4_dynamic_range(range_begin, range_end)
+      range_begin, range_end = validate_range_args(range_begin, range_end)
+      
+      mark={}
+      dhcp_range_dataset.each { |r|
+        mark[r.id] = :skip
+        if r.range_begin < range_begin && r.range_end < range_begin
+          next
+        elsif r.range_begin < range_begin && r.range_end > range_begin
+          # range_begin is in the range.
+          if r.range_end < range_end
+            mark[r.id] = :append
+          else
+            # new range is included in this range.
+            return
+          end
+        elsif r.range_begin > range_begin && r.range_end > range_begin
+          # range_end is in the range.
+          if r.range_end > range_end
+            mark[r.id] = :prepend
+          else
+            # current range is included in new range.
+            mark[r.id] = :del
+            next
+          end
+        elsif r.range_begin > range_begin && r.range_end < range_begin
+        end
+      }
+
+      mark.each { |pkid, op|
+        range = DhcpRange[pkid]
+        case op
+        when :prepend
+          range.range_begin = range_begin.to_s
+          range.save
+        when :append
+          range.range_end = range_end.to_s
+          range.save
+        when :del
+          range.destroy
+        end
+      }
+
+      if !mark.values.uniq.include?(:prepend) && !mark.values.uniq.include?(:append)
+        self.add_dhcp_range(:range_begin=>range_begin.to_s, :range_end=>range_end.to_s)
+      end
+    end
+
+    def del_ipv4_dynamic_range(range_begin, range_end)
+      range_begin, range_end = validate_range_args(range_begin, range_end)
+
+      mark={}
+      dhcp_range_dataset.each { |r|
+        mark[r.id] = :skip
+        if r.range_begin < range_begin && r.range_end < range_begin
+          next
+        elsif r.range_begin < range_begin && r.range_end > range_begin
+          # range_begin is in the range.
+          if r.range_end < range_end
+            mark[r.id] = :append
+          else
+            # new range is included in this range.
+            return
+          end
+        elsif r.range_begin > range_begin && r.range_end > range_begin
+          # range_end is in the range.
+          if r.range_end > range_end
+            mark[r.id] = :prepend
+          else
+            # current range is included in new range.
+            mark[r.id] = :del
+            next
+          end
+        elsif r.range_begin > range_begin && r.range_end < range_begin
+        end
+      }
+    end
+
+    private
+    def validate_range_args(range_begin, range_end)
+      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self.prefix}")
+      range_end = IPAddress::IPv4.new("#{range_end}/#{self.prefix}")
+      if !(self.ipv4_ipaddress.include?(range_begin) && self.ipv4_ipaddress.include?(range_end))
+        raise "Given address range is out of the subnet: #{self.ipv4_ipaddress} #{range_begin}-#{range_end}"
+      end
+      if range_begin > range_end
+        t = range_begin
+        range_begin = range_end
+        range_end = t
+      end
+      [range_begin, range_end]
     end
   end
 end
