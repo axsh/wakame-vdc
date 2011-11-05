@@ -10,7 +10,6 @@ class Network < Base
   no_tasks {
     def validate_ipv4_range
       @network_addr = IPAddress::IPv4.new("#{options[:ipv4_network]}/#{options[:prefix]}").network
-      p @network_addr.to_s
       if options[:ipv4_gw] && !@network_addr.include?(IPAddress::IPv4.new(options[:ipv4_gw]))
         Error.raise("ipv4_gw #{options[:ipv4_gw]} is out of range from network address: #{@network_addr}")
       end
