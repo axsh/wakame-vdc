@@ -48,6 +48,14 @@ Ubuntu 10.04
     # ./tests/vdc.sh install
     # ./tests/vdc.sh run
 
+RHEL6/CentOS6
+
+    # yum install -y git
+    # git clone git://github.com/axsh/wakame-vdc.git
+    # cd ./wakame-vdc/
+    # ./tests/vdc.sh install
+    # ./tests/vdc.sh run
+
 
 License
 ---------
