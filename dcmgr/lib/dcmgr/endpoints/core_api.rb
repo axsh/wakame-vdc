@@ -228,8 +228,6 @@ module Dcmgr
 
             instance = Models::Instance.entry_new(@account, wmi, spec, params.dup) do |i|
               # Set common parameters from user's request.
-              # TODO: do not use rand() to decide vnc port.
-              i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
               i.user_data = params[:user_data] || ''
               # set only when not nil as the table column has not null
               # condition.

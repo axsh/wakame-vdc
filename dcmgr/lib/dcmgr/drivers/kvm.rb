@@ -14,8 +14,19 @@ module Dcmgr
       # 1=ISA bridge
       # 2=VGA
       KVM_NIC_PCI_ADDR_OFFSET=0x10
-      
+
       def run_instance(hc)
+
+        # tcp listen ports for KVM monitor and VNC console
+        monitor_port = pick_tcp_listen_port
+        vnc_port = pick_tcp_listen_port
+        File.open(File.expand_path('monitor.port', hc.inst_data_dir), "w") { |f|
+          f.write(monitor_port)
+        }
+        File.open(File.expand_path('vnc.port', hc.inst_data_dir), "w") { |f|
+          f.write(vnc_port)
+        }
+        
         # run vm
         inst = hc.inst
         cmd = ["kvm -m %d -smp %d -name vdc-%s -vnc :%d",
@@ -30,11 +41,11 @@ module Dcmgr
         args=[inst[:memory_size],
               inst[:cpu_cores],
               inst[:uuid],
-              inst[:runtime_config][:vnc_port],
+              vnc_port - 5900, # KVM -vnc offsets 5900
               hc.os_devpath,
               hc.metadata_img_path,
               File.expand_path('kvm.pid', hc.inst_data_dir),
-              inst[:runtime_config][:telnet_port]
+              monitor_port
              ]
 
         vifs = inst[:vif]
@@ -60,16 +71,18 @@ module Dcmgr
 
       def terminate_instance(hc)
         begin
-          connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+          connect_monitor(hc) { |t|
             t.cmd("quit")
           }
+        rescue Errno::ECONNRESET => e
+          # succssfully terminated the process
         rescue => e
           kvm_pid = File.read(File.expand_path('kvm.pid', hc.inst_data_dir))
           if kvm_pid.nil? || kvm_pid == ''
             kvm_pid=`pgrep -u root -f vdc-#{hc.inst_id}`
           end
           if kvm_pid.to_s =~ /^\d+$/
-            sh("/bin/kill -9 #{kvm_pid}")
+            sh("/bin/kill -9 #{kvm_pid}") rescue logger.error($!)
           else
             logger.error("Can not find the KVM process. Skipping: #{hc.inst_id}")
           end
@@ -78,7 +91,7 @@ module Dcmgr
 
       def reboot_instance(hc)
         inst = hc.inst
-        connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+        connect_monitor(hc) { |t|
           t.cmd("system_reset")
           # When the guest initiate halt/poweroff the KVM might become
           # "paused" status. At that time, "system_reset" command does
@@ -101,7 +114,7 @@ module Dcmgr
         inst = hc.inst
 
         sddev = File.expand_path(File.readlink(hc.os_devpath), '/dev/disk/by-path')
-        connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+        connect_monitor(hc) { |t|
           # success message:
           #   OK domain 0, bus 0, slot 4, function 0
           # error message:
@@ -136,7 +149,7 @@ module Dcmgr
         vol = hc.vol
         pci_devaddr = vol[:guest_device_name]
 
-        connect_monitor(inst[:runtime_config][:telnet_port]) { |t|
+        connect_monitor(hc) { |t|
           t.cmd("pci_del #{pci_devaddr}")
 
           #
@@ -158,7 +171,9 @@ module Dcmgr
 
       private
       # Establish telnet connection to KVM monitor console
-      def connect_monitor(port, &blk)
+      def connect_monitor(hc, &blk)
+        port = File.read(File.expand_path('monitor.port', hc.inst_data_dir)).to_i
+        logger.debug("monitor port number: #{port}")
         begin
           telnet = ::Net::Telnet.new("Host" => "localhost",
                                      "Port"=>port.to_s,
@@ -186,12 +201,40 @@ module Dcmgr
           }
           
           blk.call(telnet)
-        rescue => e
-          logger.error(e) if self.respond_to?(:logger)
-          raise e
         ensure
           telnet.close
         end
+      end
+
+      TCP_PORT_MAX=65535
+      PORT_OFFSET=9000
+      # Randomly choose unused local tcp port number.
+      def pick_tcp_listen_port
+        # Support only for Linux netstat output.
+        l=`/bin/netstat -nlt`.split("\n")
+        # take out two header lines.
+        l.shift
+        l.shift
+
+        listen_ports = {}
+        
+        l.each { |n|
+          m = n.split(/\s+/)
+          if m[0] == 'tcp'
+            ip, port = m[3].split(':')
+            listen_ports[port.to_i]=ip
+          elsif m[0] == 'tcp6'
+            ary = m[3].split(':')
+            port = ary.pop
+            listen_ports[port.to_i]=ary.join(':')
+          end
+        }
+
+
+        begin
+          new_port = (PORT_OFFSET + rand(TCP_PORT_MAX))
+        end until(!listen_ports.has_key?(new_port))
+        new_port
       end
 
     end

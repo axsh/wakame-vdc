@@ -33,7 +33,7 @@ module Dcmgr::Models
     # method calls.
     # Possible column data:
     #   kvm:
-    # {:vnc_port=>11, :telnet_port=>1111}
+    # {:vnc_port=>11}
     plugin :serialization
     serialize_attributes :yaml, :runtime_config
     # equal to SshKeyPair#to_hash
@@ -75,22 +75,6 @@ module Dcmgr::Models
           end
         end
         @update_hostname = true
-      end
-      
-      # check runtime_config column
-      if self.host_node
-        case self.hypervisor
-        when HostNode::HYPERVISOR_KVM
-          r1 = self.runtime_config
-          self.host_node.instances_dataset.lives.each { |i|
-            next true if i.id == self.id
-            r2 = i.runtime_config
-            unless r1[:vnc_port] != r2[:vnc_port] && r1[:telnet_port] != r2[:telnet_port]
-              errors.add(:runtime_config, "#{self.canonical_uuid}.runtime_config conflicted with #{i.canonical_uuid}")
-              break
-            end
-          }
-        end
       end
     end
 
