@@ -226,6 +226,13 @@ module Dcmgr
             wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
             spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
+            if params[:host_id] || params[:host_pool_id]
+              host_id = params[:host_id] || params[:host_pool_id]
+              host_node = Models::HostNode[host_id]
+              raise UnknownHostNode, "#{host_id}" if host_node.nil?
+              raise InvalidHostNodeID, "#{host_id}" if host_node.status != 'online'
+            end
+            
             instance = Models::Instance.entry_new(@account, wmi, spec, params.dup) do |i|
               # Set common parameters from user's request.
               i.user_data = params[:user_data] || ''
@@ -252,14 +259,6 @@ module Dcmgr
 
               if params[:ha_enabled] == 'true'
                 i.ha_enabled = 1
-              end
-              
-              if params[:host_id] || params[:host_pool_id]
-                host_id = params[:host_id] || params[:host_pool_id]
-                host_node = Models::HostNode[host_id]
-                raise UnknownHostNode, "#{host_id}" if host_node.nil?
-                raise InvalidHostNodeID, "#{host_id}" if host_node.status != 'online'
-                i.request_params = {:host_node_id => host_node.node_id}
               end
             end
             instance.save

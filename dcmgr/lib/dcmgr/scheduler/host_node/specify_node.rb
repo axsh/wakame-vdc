@@ -9,12 +9,10 @@ module Dcmgr
         include Dcmgr::Logger
 
         def schedule(instance)
-          ds = Models::HostNode.online_nodes.filter(:arch=>instance.spec.arch,
-                                                    :hypervisor=>instance.spec.hypervisor)
+          host_uuid = instance.request_params['host_id'] || instance.request_params['host_pool_id']
+          ds = Models::HostNode.online_nodes.filter(:uuid=>Models::HostNode.trim_uuid(host_uuid))
 
-          host_node = ds.all.find_all { |hn|
-            hn.node_id == instance.request_params[:host_node_id]
-          }.first
+          host_node = ds.first
 
           raise HostNodeSchedulingError if host_node.nil?
           instance.host_node = host_node
