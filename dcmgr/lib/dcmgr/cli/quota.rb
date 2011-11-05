@@ -6,8 +6,8 @@ module Dcmgr::Cli
     M = Dcmgr::Models
   
     desc "modify ACCOUNT_UUID [options]", "Modify the quota settings for an account"
-    method_option :weight, :type => :numeric, :aliases => "-w", :desc => "The instance total weight for this account's quota"
-    method_option :size, :type => :numeric, :aliases => "-s", :desc => "The volume total size for this account's quota"
+    method_option :weight, :type => :numeric, :desc => "The instance total weight for this account's quota"
+    method_option :size, :type => :numeric, :desc => "The volume total size for this account's quota"
     def modify(account_uuid)
       acc = M::Account[account_uuid] || UnknownUUIDError.raise(account_uuid)
       super(M::Quota,acc.quota.canonical_uuid,{:instance_total_weight => options[:weight], :volume_total_size => options[:size]})

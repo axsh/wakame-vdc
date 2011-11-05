@@ -40,20 +40,20 @@ class Network < Base
   }
   
   desc "add [options]", "Register a new network entry"
-  method_option :uuid, :type => :string, :aliases => "-u", :desc => "UUID of the network"
+  method_option :uuid, :type => :string, :desc => "UUID of the network"
   method_option :ipv4_network, :type => :string, :required=>true, :desc => "IPv4 network address"
-  method_option :ipv4_gw, :type => :string, :aliases => "-g", :desc => "Gateway address for IPv4 network"
-  method_option :prefix, :type => :numeric, :required => true, :aliases => "-p", :desc => "IP network mask size (1 < prefix < 32)"
-  method_option :domain, :type => :string, :aliases => "-m", :desc => "DNS domain name of the network"
-  method_option :dns, :type => :string, :aliases => "-n", :desc => "IP address for DNS server of the network"
-  method_option :dhcp, :type => :string, :aliases => "-c", :desc => "IP address for DHCP server of the network"
-  method_option :metadata, :type => :string, :aliases => "-t", :desc => "IP address for metadata server of the network"
-  method_option :metadata_port, :type => :string, :aliases => "--tp", :desc => "Port for the metadata server of the network"
-  method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
-  method_option :vlan_id, :type => :numeric, :default=>0, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
+  method_option :ipv4_gw, :type => :string, :desc => "Gateway address for IPv4 network"
+  method_option :prefix, :type => :numeric, :required => true, :desc => "IP network mask size (1 < prefix < 32)"
+  method_option :domain, :type => :string, :desc => "DNS domain name of the network"
+  method_option :dns, :type => :string, :desc => "IP address for DNS server of the network"
+  method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
+  method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
+  method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
+  method_option :bandwidth, :type => :numeric,  :desc => "The maximum bandwidth for the network in Mbit/s"
+  method_option :vlan_id, :type => :numeric, :default=>0, :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
   method_option :link_interface, :type => :string, :desc => "Link interface name from virtual interfaces"
-  method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
-  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :aliases => "-a", :desc => "The account ID to own this"
+  method_option :description, :type => :string,  :desc => "Description for the network"
+  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
   method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
   def add
     @vlan_pk = if options[:vlan_id].to_i > 0
@@ -77,18 +77,18 @@ class Network < Base
 
   desc "modify UUID [options]", "Update network information"
   method_option :ipv4_network, :type => :string, :required=>true, :desc => "IPv4 network address"
-  method_option :ipv4_gw, :type => :string, :aliases => "-g", :desc => "Gateway address for IPv4 network"
-  method_option :prefix, :type => :numeric, :aliases => "-p", :desc => "IP network mask size (1 < prefix < 32)"
-  method_option :domain, :type => :string, :aliases => "-m", :desc => "DNS domain name of the network"
-  method_option :dns, :type => :string, :aliases => "-n", :desc => "IP address for DNS server of the network"
-  method_option :dhcp, :type => :string, :aliases => "-c", :desc => "IP address for DHCP server of the network"
-  method_option :metadata, :type => :string, :aliases => "-t", :desc => "IP address for metadata server of the network"
-  method_option :metadata_port, :type => :string, :aliases => "--tp", :desc => "Port for the metadata server of the network" 
-  method_option :vlan_id, :type => :numeric, :aliases => "-l", :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
+  method_option :ipv4_gw, :type => :string, :desc => "Gateway address for IPv4 network"
+  method_option :prefix, :type => :numeric, :desc => "IP network mask size (1 < prefix < 32)"
+  method_option :domain, :type => :string, :desc => "DNS domain name of the network"
+  method_option :dns, :type => :string, :desc => "IP address for DNS server of the network"
+  method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
+  method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
+  method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network" 
+  method_option :vlan_id, :type => :numeric, :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
   method_option :link_interface, :type => :string, :desc => "Link interface name from virtual interfaces"
-  method_option :bandwidth, :type => :numeric, :aliases => "-b", :desc => "The maximum bandwidth for the network in Mbit/s"
-  method_option :description, :type => :string, :aliases => "-d", :desc => "Description for the network"
-  method_option :account_id, :type => :string, :aliases => "-a", :desc => "The account ID to own this"
+  method_option :bandwidth, :type => :numeric, :desc => "The maximum bandwidth for the network in Mbit/s"
+  method_option :description, :type => :string, :desc => "Description for the network"
+  method_option :account_id, :type => :string, :desc => "The account ID to own this"
   def modify(uuid)
     @vlan_pk = if options[:vlan_id].to_i > 0
                  vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
@@ -105,8 +105,8 @@ class Network < Base
   end
 
   desc "nat UUID [options]", "Set or clear nat mapping for a network"
-  method_option :outside_network_id, :type => :string, :aliases => "-o", :desc => "The network that this network will be natted to"
-  method_option :clear, :type => :boolean, :aliases => "-c", :desc => "Clears a previously natted network"
+  method_option :outside_network_id, :type => :string, :desc => "The network that this network will be natted to"
+  method_option :clear, :type => :boolean, :desc => "Clears a previously natted network"
   def nat(uuid)
     in_nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
     ex_nw = M::Network[options[:outside_network_id]] || Error.raise("Unknown network UUID: #{uuid}", 100) unless options[:outside_network_id].nil?
@@ -121,8 +121,8 @@ class Network < Base
   end
 
   desc "show [UUID] [options]", "Show network(s)"
-  method_option :vlan_id, :type => :numeric, :aliases => "-l", :desc => "Show networks in the VLAN ID"
-  method_option :account_id, :type => :string, :aliases => "-a", :desc => "Show networks with the account"
+  method_option :vlan_id, :type => :numeric, :desc => "Show networks in the VLAN ID"
+  method_option :account_id, :type => :string, :desc => "Show networks with the account"
   def show(uuid=nil)
     if uuid
       nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
@@ -183,7 +183,7 @@ __END
   end
 
   desc "reserve UUID", "Add reserved IP to the network"
-  method_option :ipv4, :type => :string, :aliases => "-i", :required => true, :desc => "The ip address to reserve"
+  method_option :ipv4, :type => :string, :required => true, :desc => "The ip address to reserve"
   def reserve(uuid)
     nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
     
@@ -195,7 +195,7 @@ __END
   end
 
   desc "release UUID", "Release a reserved IP from the network"
-  method_option :ipv4, :type => :string, :aliases => "-i", :required => true, :desc => "The ip address to release"
+  method_option :ipv4, :type => :string, :required => true, :desc => "The ip address to release"
   def release(uuid)
     nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
 
