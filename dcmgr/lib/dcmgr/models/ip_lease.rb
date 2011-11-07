@@ -71,7 +71,7 @@ module Dcmgr::Models
       # use SELECT FOR UPDATE to lock rows within same network.
       addrs = network.ipv4_u32_dynamic_range_array - 
         reserved - network.ip_lease_dataset.for_update.all.map {|i| IPAddress::IPv4.new(i.ipv4).to_u32 }
-      raise "Out of free IP address in this network segment: #{nwaddr.network.to_s}/#{nwaddr.prefix}" if addrs.empty?
+      raise "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if addrs.empty?
       
       leaseaddr = IPAddress::IPv4.parse_u32(addrs[rand(addrs.size).to_i])
       create(:ipv4=>leaseaddr.to_s, :network_id=>network.id, :instance_nic_id=>instance_nic.id)
