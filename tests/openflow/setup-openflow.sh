@@ -19,17 +19,28 @@ ovs_build_dir=/tmp/ovs.$$/
 
 mkdir $ovs_build_dir && cd $ovs_build_dir
 
-#git clone git://openvswitch.org/openvswitch
-# cd ./openvswitch
+if [ "$1" = "ovs-wakame" ]; then
+    echo "Compiling Open vSwitch from 'wakame-vdc/openvswitch'."
+    ovs_build_dir=$work_dir
+    cd $work_dir/openvswitch
 
-curl http://openvswitch.org/releases/openvswitch-1.2.2.tar.gz -o openvswitch-1.2.2.tar.gz
-tar xzf openvswitch-1.2.2.tar.gz
-cd openvswitch-1.2.2
+elif [ "$1" = "ovs-1.2.2" ]; then
+    echo "Compiling Open vSwitch 1.2.2."
+    curl http://openvswitch.org/releases/openvswitch-1.2.2.tar.gz -o openvswitch-1.2.2.tar.gz
+    tar xzf openvswitch-1.2.2.tar.gz
+    cd openvswitch-1.2.2
+else
+    echo "Compiling Open vSwitch git."
+    git clone git://openvswitch.org/openvswitch
+    cd ./openvswitch
+fi
 
 # Allow inclusion of patches to ovs.
 for patch_file in $work_dir/tests/openflow/ovs_*.patch; do
-    echo "Adding patch file '$patch_file' to ovs-switchd."
-    patch -p1 < "$patch_file"
+    if [ -f "$patch_file" ]; then
+        echo "Adding patch file '$patch_file' to ovs-switchd."
+        patch -p1 < "$patch_file"
+    fi
 done
 
 ./boot.sh && ./configure --prefix=$work_dir/ovs/ --with-linux=/lib/modules/`uname -r`/build/ > /dev/null
