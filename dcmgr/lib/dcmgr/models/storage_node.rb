@@ -74,6 +74,13 @@ module Dcmgr::Models
     def free_disk_space
       self.offering_disk_space - self.disk_usage
     end
+
+    def self.check_availability?(size, num=1)
+      alives_size = Volume.dataset.lives.filter.sum(:size).to_i
+      avail_size = self.online_nodes.sum(:offering_disk_space).to_i - alives_size
+      
+      (avail_size >= size * num.to_i)
+    end
     
   end
 end

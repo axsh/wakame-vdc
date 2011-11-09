@@ -226,6 +226,10 @@ module Dcmgr
             wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
             spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
+            if !Models::HostNode.check_availability?(spec.cpu_cores, spec.memory_size)
+              raise OutOfHostCapacity
+            end
+            
             if params[:host_id] || params[:host_pool_id]
               host_id = params[:host_id] || params[:host_pool_id]
               host_node = Models::HostNode[host_id]
@@ -277,6 +281,10 @@ module Dcmgr
               snapshot_id = wmi.source[:snapshot_id]
               vs = find_volume_snapshot(snapshot_id)
 
+              if !Models::StorageNode.check_availability?(vs.size)
+                raise OutOfDiskSpace
+              end
+              
               vol = Models::Volume.entry_new(@account, vs.size, params.dup) do |v|
                 if vs
                   v.snapshot_id = vs.canonical_uuid
@@ -496,7 +504,13 @@ module Dcmgr
               raise UndefinedRequiredParameter
             end
 
-            vol = Models::Volume.entry_new(@account, (vs ? vs.size : params[:volume_size].to_i), params.dup) do |v|
+            volume_size = (vs ? vs.size : params[:volume_size].to_i)
+
+            if !Models::StorageNode.check_availability?(volume_size)
+              raise OutOfDiskSpace
+            end
+
+            vol = Models::Volume.entry_new(@account, volume_size, params.dup) do |v|
               if vs
                 v.snapshot_id = vs.canonical_uuid
               end

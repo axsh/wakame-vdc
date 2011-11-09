@@ -100,6 +100,18 @@ module Dcmgr::Models
       self.offering_memory_size - self.memory_size_usage
     end
 
+    def self.check_availability?(cpu_cores, memory_size, num=1)
+      alives_mem_size = Instance.dataset.lives.filter.sum(:memory_size).to_i
+      stopped_mem_size = Instance.dataset.lives.filter(:state=>'stopped').sum(:memory_size).to_i
+      alives_cpu_cores = Instance.dataset.lives.filter.sum(:cpu_cores).to_i
+      stopped_cpu_cores = Instance.dataset.lives.filter(:state=>'stopped').sum(:cpu_cores).to_i
+      usage_factor = (Dcmgr.conf.stopped_instance_usage_factor || 1.0).to_f
+      avail_mem_size = self.online_nodes.sum(:offering_memory_size).to_i - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)
+      avail_cpu_cores = self.online_nodes.sum(:offering_cpu_cores).to_i - ((alives_cpu_cores - stopped_cpu_cores) + (stopped_cpu_cores * usage_factor).floor)
+      
+      (avail_mem_size >= memory_size * num.to_i) && (avail_cpu_cores >= cpu_cores * num.to_i)
+    end
+
     protected
     def instances_usage(colname)
       instances_dataset.lives.sum(colname).to_i

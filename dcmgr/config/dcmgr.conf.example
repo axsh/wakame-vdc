@@ -25,6 +25,8 @@ create_volume_min_size 10
 account_instance_total_weight 100.0
 account_volume_total_size 100000 # 100GB
 
+stopped_instance_usage_factor 1.0
+
 # Scheduling Algorithms
 #host_node_scheduler :FindFirst
 host_node_scheduler {
