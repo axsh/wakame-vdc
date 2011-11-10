@@ -115,6 +115,12 @@ config.debug_iptables = false
 
 # Use ipset for netfilter
 config.use_ipset       = false
+
+# Directory used by Open vSwitch daemon for run files
+config.ovs_run_dir='${work_dir}/ovs/var/run/openvswitch'
+
+# Path for ovs-ofctl
+config.ovs_ofctl_path='${work_dir}/ovs/bin/ovs-ofctl'
 EOS
 
 

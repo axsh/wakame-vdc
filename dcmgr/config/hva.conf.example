@@ -29,3 +29,9 @@ config.debug_iptables = false
 
 # Use ipset for netfilter
 config.use_ipset       = false
+
+# Directory used by Open vSwitch daemon for run files
+config.ovs_run_dir='/usr/var/run/openvswitch'
+
+# Path for ovs-ofctl
+config.ovs_ofctl_path='/usr/bin/ovs-ofctl'

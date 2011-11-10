@@ -23,7 +23,7 @@ manifest.instance_eval do
   config do |c|
   end
 
-#  load_config File.expand_path('config/ofc.conf', app_root)
+  load_config File.expand_path('config/hva.conf', app_root)
 end
 
 
