@@ -152,11 +152,11 @@ shlog ./bin/vdc-manage spec  add --uuid is-demo2 --account-id ${account_id} --ar
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
-shlog ./bin/vdc-manage group add --uuid  ng-demofgr --account-id ${account_id} --description demo
-shlog ./bin/vdc-manage group addrule ng-demofgr "tcp:22,22,ip4:0.0.0.0"
-shlog ./bin/vdc-manage group addrule ng-demofgr "tcp:80,80,ip4:0.0.0.0"
-shlog ./bin/vdc-manage group addrule ng-demofgr "udp:53,53,ip4:0.0.0.0"
-shlog ./bin/vdc-manage group addrule ng-demofgr "icmp:-1,-1,ip4:0.0.0.0"
+shlog ./bin/vdc-manage securitygroup add --uuid  ng-demofgr --account-id ${account_id} --description demo
+shlog ./bin/vdc-manage securitygroup addrule ng-demofgr "tcp:22,22,ip4:0.0.0.0"
+shlog ./bin/vdc-manage securitygroup addrule ng-demofgr "tcp:80,80,ip4:0.0.0.0"
+shlog ./bin/vdc-manage securitygroup addrule ng-demofgr "udp:53,53,ip4:0.0.0.0"
+shlog ./bin/vdc-manage securitygroup addrule ng-demofgr "icmp:-1,-1,ip4:0.0.0.0"
 
 cat <<'EOS' > /tmp/pub.pem
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZhAOcHSe4aY8GwwLCJ4Et3qUBcyVPokFoCyCrtTZJVUU++B9554ahiVcrQCbfuDlaXV2ZCfIND+5N1UEk5umMoQG1aPBw9Nz9wspMpWiTKGOAm99yR9aZeNbUi8zAfyYnjrpuRUKCH1UPmh6EDaryFNDsxInmaZZ6701PgT++cZ3Vy/r1bmb93YvpV+hfaL/FmY3Cu8n+WJSoJQZ4eCMJ+4Pw/pkxjfuLUw3mFl40RVAlwlTuf1I4bB/m1mjlmirBEU6+CWLGYUNWDKaFBpJcGB6sXoQDS4FvlV92tUAEKIBWG5ma0EXBdJQBi1XxSCU2p7XMX8DhS7Gj/TSu7011 wakame-vdc.pem
