@@ -8,7 +8,6 @@ module Dcmgr::Cli
     desc "add [options]", "Add a new security group"
     method_option :uuid, :type => :string, :desc => "The UUID for the new security group."
     method_option :account_id, :type => :string, :desc => "The UUID of the account this security group belongs to.", :required => true
-    method_option :name, :type => :string, :desc => "The name for this security group.", :required => true
     method_option :description, :type => :string, :desc => "The description for this new security group."
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
@@ -44,7 +43,7 @@ __END
       else
         puts ERB.new(<<__END, nil, '-').result(binding)
 <%- M::NetfilterGroup.all { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= row.name %>
+<%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= row.description %>
 <%- } -%>
 __END
       end
@@ -52,7 +51,6 @@ __END
     
     desc "modify UUID [options]", "Modify an existing security group"
     method_option :account_id, :type => :string, :desc => "The UUID of the account this security group belongs to."
-    method_option :name, :type => :string, :desc => "The name for this security group."
     method_option :description, :type => :string, :desc => "The description for this new security group."
     def modify(uuid)
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?

@@ -8,37 +8,22 @@ module Dcmgr::Models
     many_to_many :instances,:join_table => :instance_netfilter_groups
 
     def to_hash
-      h = super
-      h = h.merge({
+      super.merge({
                     :rule => rule.to_s,
                     :rules => netfilter_rules.map { |rule| rule.to_hash },
                   })
-      #{
-      #:id => self.canonical_uuid,
-      #:name => name,
-      #:description => description,
-      #:rules => netfilter_rules.map { |rule| rule.to_hash },
-      #}
+    end
+
+    def to_api_document
+      super.merge({
+                    :rule => rule.to_s,
+                    :rules => netfilter_rules.map { |rule| rule.to_hash },
+                  })
     end
     
-    def to_api_document
-      to_hash
-    end
-
-    def to_tiny_hash
-      {
-        :name => self.name,
-        :uuid => self.canonical_uuid,
-      }
-    end
-
-    def self.create_group(account_id, params)
-      grp = self.create(:account_id  => account_id,
-                        :name        => params[:name],
-                        :rule        => params[:rule],
-                        :description => params[:description])
-      grp.build_rule
-      grp
+    def after_save
+      super
+      self.rebuild_rule
     end
 
     def flush_rule

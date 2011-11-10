@@ -267,11 +267,10 @@ module Dcmgr
             end
             instance.save
 
-            unless params[:nf_group].is_a?(Array)
-              params[:nf_group] = ['default']
+            if params[:nf_group].is_a?(Array) || params[:nf_group].is_a?(String)
+              instance.join_netfilter_group(params[:nf_group])
             end
-            instance.join_nfgroup_by_name(@account.canonical_uuid, params[:nf_group])
-
+            
             instance.state = :scheduling
             instance.save
 
@@ -742,21 +741,14 @@ module Dcmgr
 
         operation :create do
           description 'Register a new netfilter_group'
-          # params name, string
           # params description, string
           # params rule, string
           control do
             Models::NetfilterGroup.lock!
-            raise UndefinedNetfilterGroup if params[:name].nil?
 
-            @name = params[:name]
-            # TODO: validate @name. @name can use [a-z] [A-Z] '_' '-'
-            # - invalidate? -> raise InvalidCharacterOfNetfilterGroupName
-
-            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
-            raise DuplicatedNetfilterGroup unless g.nil?
-
-            g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
+            g = Models::NetfilterGroup.create(:account_id=>@account.canonical_uuid,
+                                              :description=>params[:description],
+                                              :rule=>params[:rule])
             response_to(g.to_api_document)
           end
         end
@@ -769,6 +761,7 @@ module Dcmgr
             g = find_by_uuid(:NetfilterGroup, params[:id])
 
             raise UnknownNetfilterGroup if g.nil?
+            raise OperationNotPermitted unless examine_owner(g)
 
             if params[:description]
               g.description = params[:description]
@@ -778,7 +771,6 @@ module Dcmgr
             end
 
             g.save
-            g.rebuild_rule
 
             commit_transaction
             # refresh netfilter_rules
@@ -789,9 +781,7 @@ module Dcmgr
         end
 
         operation :destroy do
-          # params name, string
           description "Delete the netfilter group"
-
           control do
             Models::NetfilterGroup.lock!
             g = find_by_uuid(:NetfilterGroup, params[:id])

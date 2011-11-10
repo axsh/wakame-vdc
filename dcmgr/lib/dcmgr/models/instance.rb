@@ -148,7 +148,7 @@ module Dcmgr::Models
                  :instance_nics=>instance_nic.map {|n| n.to_hash },
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
-                 :netfilter_groups => self.netfilter_groups.map {|n| n.name },
+                 :netfilter_groups => self.netfilter_groups.map {|n| n.canonical_uuid },
                  :vif=>[],
               })
       h.merge!({:instance_spec=>instance_spec.to_hash}) unless instance_spec.nil?
@@ -211,8 +211,7 @@ module Dcmgr::Models
         :ssh_key_pair => nil,
         :network => [],
         :volume => [],
-        :netfilter_group_id => [],
-        :netfilter_group => [],
+        :netfilter_groups => self.netfilter_groups.map {|n| n.canonical_uuid },
         :vif => [],
         :hostname => hostname,
         :ha_enabled => ha_enabled,
@@ -267,12 +266,6 @@ module Dcmgr::Models
         }
       end
 
-      if self.netfilter_groups
-        self.netfilter_groups.each { |n|
-          h[:netfilter_group_id] << n.canonical_uuid
-          h[:netfilter_group] << n.name
-        }
-      end
       h
     end
 
@@ -321,13 +314,6 @@ module Dcmgr::Models
       self.instance_nic.map { |nic| nic.ip }
     end
 
-#    def netfilter_group_instances
-#      instances = self.netfilter_groups.map { |g| g.instances }
-#
-#      instances.flatten!.uniq! if instances.size > 0
-#      instances
-#    end
-
     def fqdn_hostname
       sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.network.domain_name)
     end
@@ -348,21 +334,6 @@ module Dcmgr::Models
       }.values.map { |i|
         i.first
       }
-    end
-
-    # Join this instance to the list of netfilter group using group name. 
-    # @param [String] account_id uuid of current account.
-    # @param [String,Array] nfgroup_names 
-    def join_nfgroup_by_name(account_id, nfgroup_names)
-      nfgroup_names = [nfgroup_names] if nfgroup_names.is_a?(String)
-
-      uuids = nfgroup_names.map { |n|
-        ng = NetfilterGroup.for_update.filter(:account_id=>account_id,
-                                              :name=>n).first
-        ng.nil? ? nil : ng.canonical_uuid
-      }
-      # clean up nils
-      join_netfilter_group(uuids.compact.uniq)
     end
 
     def self.lock!

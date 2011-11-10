@@ -148,12 +148,6 @@ end
 
 module NetfilterHelper
 
-  def retrieve_netfilter_by_name(netfilter_group_name)
-    APITest.get("/netfilter_groups").first["results"].map { |netfilter|
-      netfilter if netfilter["name"] == netfilter_group_name
-    }.first
-  end
-
   def add_rules(netfilter_group_id, rules)
     new_rules = pickup_rules(get_rules(netfilter_group_id)) + rules
     update_rules(netfilter_group_id, new_rules)

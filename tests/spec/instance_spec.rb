@@ -42,7 +42,7 @@ describe "/api/instances" do
   # nf_group
   it "should run instance with nf_group" do
     run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                              :nf_group=>['default']})
+                                              :nf_group=>['ng-demofgr']})
   end
 
   # hostname

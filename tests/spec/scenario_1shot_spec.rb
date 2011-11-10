@@ -12,7 +12,7 @@ describe "1shot" do
 
     p '... netfilter::create'
     netfilter_group_name = scenario_id
-    res = APITest.create('/netfilter_groups', {:name => netfilter_group_name, :description => netfilter_group_name, :rule => "tcp:22,22,ip4:0.0.0.0/24"})
+    res = APITest.create('/netfilter_groups', {:description => netfilter_group_name, :rule => "tcp:22,22,ip4:0.0.0.0/24"})
     res.success?.should be_true
     netfilter_group_id = res["uuid"]
 
@@ -23,7 +23,7 @@ describe "1shot" do
     ssh_key_pair_id = res["id"]
 
     p '... instance::create'
-    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>ssh_key_name, :nf_group=>[netfilter_group_name]})
+    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>ssh_key_name, :nf_group=>[netfilter_group_id]})
     res.success?.should be_true
     instance_id = res["id"]
 

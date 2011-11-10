@@ -11,6 +11,15 @@ module Dcmgr
       self.const_set(class_name.to_sym, c)
     end
 
+    def self.deprecated_error(class_name, status_code, error_code, &blk)
+      c = Class.new(DeprecatedAPIError)
+      c.status_code(status_code)
+      c.error_code(error_code)
+      c.instance_eval(&blk) if blk
+      self.set_error_code_type(error_code, c)
+      self.const_set(class_name.to_sym, c)
+    end
+
     @error_code_map = {}
     def self.set_error_code_type(error_code, klass)
       raise TypeError unless klass < APIError
@@ -51,6 +60,9 @@ module Dcmgr
       end
     end
 
+    class DeprecatedAPIError < APIError
+    end
+
     define_error(:UnknownUUIDResource, 404, '100')
     define_error(:UnknownMember, 400, '101')
     define_error(:InvalidCredentialHeaders, 400, '102')
@@ -89,7 +101,7 @@ module Dcmgr
     define_error(:UndefinedNetfilterGroup, 400, '132')
     define_error(:UnknownNetfilterGroup, 400, '133')
     define_error(:NetfilterGroupNotPermitted, 400, '134')
-    define_error(:DuplicatedNetfilterGroup, 400, '135')
+    deprecated_error(:DuplicatedNetfilterGroup, 400, '135')
 
     define_error(:DuplicateSshKeyName, 400, '136')
     define_error(:InvalidImageID, 400, '137')
