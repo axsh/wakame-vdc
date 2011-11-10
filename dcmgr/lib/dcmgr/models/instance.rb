@@ -19,6 +19,8 @@ module Dcmgr::Models
     plugin ArchiveChangedColumn, :histories
     
     subset(:lives, {:terminated_at => nil})
+    subset(:runnings, {:state => 'running'})
+    subset(:stops, {:state => 'stopped'})
 
     RECENT_TERMED_PERIOD=(60 * 15)
     # lists the instances which alives and died within
