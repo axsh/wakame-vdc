@@ -121,6 +121,9 @@ config.ovs_run_dir='${work_dir}/ovs/var/run/openvswitch'
 
 # Path for ovs-ofctl
 config.ovs_ofctl_path='${work_dir}/ovs/bin/ovs-ofctl'
+
+# Trema base directory
+config.trema_dir='${work_dir}/trema'
 EOS
 
 
