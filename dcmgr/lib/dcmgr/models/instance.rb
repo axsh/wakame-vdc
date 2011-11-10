@@ -221,50 +221,43 @@ module Dcmgr::Models
         h[:ssh_key_pair] = self.ssh_key_data[:name]
       end
 
-      if instance_nic
-        instance_nic.each { |n|
-          direct_lease_ds = n.direct_ip_lease_dataset
-          next if direct_lease_ds.first.nil?
-          outside_lease_ds = n.nat_ip_lease_dataset
+      instance_nic.each { |vif|
+        direct_lease_ds = vif.direct_ip_lease_dataset
+        if direct_lease_ds.first
+          outside_lease_ds = vif.nat_ip_lease_dataset
 
           h[:network] << {
-            :network_name => n.network.canonical_uuid,
+            :network_name => vif.network.canonical_uuid,
             :ipaddr => direct_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :dns_name => n.network.domain_name && self.fqdn_hostname,
-            :nat_network_name => n.nat_network && n.nat_network.canonical_uuid,
+            :dns_name => vif.network.domain_name && self.fqdn_hostname,
+            :nat_network_name => vif.nat_network && vif.nat_network.canonical_uuid,
             :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :nat_dns_name => n.nat_network && n.nat_network.domain_name && self.nat_fqdn_hostname,
+            :nat_dns_name => vif.nat_network && vif.nat_network.domain_name && self.nat_fqdn_hostname,
           }
-        }
-      end
+        end
 
-      if instance_nic
-        instance_nic.each { |vif|
-          ent = {
-            :vif_id=>vif.canonical_uuid,
-          }
-          direct_lease = vif.direct_ip_lease.first
-          if direct_lease.nil?
-          else
-            outside_lease = direct_lease.nat_outside_lease
-            ent[:ipv4] = {
-              :address=> direct_lease.ipv4,
-              :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
-            }
-          end
-          h[:vif] << ent
+        ent = {
+          :vif_id=>vif.canonical_uuid,
         }
-      end
-      
-      if self.volume
-        self.volume.each { |v|
-          h[:volume] << {
-            :vol_id => v.canonical_uuid,
-            :guest_device_name=>v.guest_device_name,
-            :state=>v.state,
+        direct_lease = direct_lease_ds.first
+        if direct_lease.nil?
+        else
+          outside_lease = direct_lease.nat_outside_lease
+          ent[:ipv4] = {
+            :address=> direct_lease.ipv4,
+            :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
           }
+        end
+        h[:vif] << ent
+      }
+
+      self.volume.each { |v|
+        h[:volume] << {
+          :vol_id => v.canonical_uuid,
+          :guest_device_name=>v.guest_device_name,
+          :state=>v.state,
         }
-      end
+      }
 
       h
     end
