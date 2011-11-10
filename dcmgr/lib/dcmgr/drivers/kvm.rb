@@ -232,7 +232,7 @@ module Dcmgr
 
 
         begin
-          new_port = (PORT_OFFSET + rand(TCP_PORT_MAX))
+          new_port = (PORT_OFFSET + rand(TCP_PORT_MAX - PORT_OFFSET))
         end until(!listen_ports.has_key?(new_port))
         new_port
       end
