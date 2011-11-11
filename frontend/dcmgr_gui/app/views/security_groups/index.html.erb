@@ -51,9 +51,9 @@ jQuery(function($){
 					{{else}}
 						<td class="listradiobutton"></td>
 					{{/if}}
-					<td class="vtip" title="name" style="width:130px">${item.name}</td>
+					<td class="vtip" title="uuid" style="width:130px">${item.uuid}</td>
 					<td class="vtip" title="description" style="width:500px">${item.description}</td>
-					{{if item.name }}
+					{{if item.uuid }}
 					<td class="vtip center" title="action">
 						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.uuid}"><%= t("security_groups.button.edit_security_group") %></a>
 					</td>
@@ -78,7 +78,7 @@ jQuery(function($){
 					<tr>
 						<td class="padcell"></td>
 						<td class="title"><%= t("security_groups.details.name") %>:</td>
-						<td>${item.name}</td>
+						<td>${item.uuid}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>

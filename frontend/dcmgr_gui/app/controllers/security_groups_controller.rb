@@ -23,7 +23,6 @@ class SecurityGroupsController < ApplicationController
 
   def create
     data = {
-      :name => params[:name],
       :description => params[:description],
       :rule => params[:rule]
     }
