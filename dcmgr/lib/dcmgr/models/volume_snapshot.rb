@@ -77,9 +77,9 @@ module Dcmgr::Models
     # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
     def delete
-      vs.state = :deleted if vs.state != :deleted
-      vs.deleted_at ||= Time.now
-      vs.save
+      self.state = :deleted if self.state != :deleted
+      self.deleted_at ||= Time.now
+      self.save
     end
     
     def update_destination_key(account_id, destination_key)
