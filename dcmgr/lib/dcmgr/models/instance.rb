@@ -218,7 +218,7 @@ module Dcmgr::Models
         :instance_spec_id => instance_spec.canonical_uuid,
       }
       if self.ssh_key_data
-        h[:ssh_key_pair] = self.ssh_key_data[:name]
+        h[:ssh_key_pair] = self.ssh_key_data[:uuid]
       end
 
       if instance_nic

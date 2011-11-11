@@ -217,7 +217,7 @@ module Dcmgr
           # param :hostname, string, :optional
           # param :user_data, string, :optional
           # param :nf_group, array, :optional
-          # param :ssh_key, string, :optional
+          # param :ssh_key_id, string, :optional
           # param :network_id, string, :optional
           # param :ha_enabled, string, :optional
           control do
@@ -251,11 +251,11 @@ module Dcmgr
                 end
               end
 
-              if params[:ssh_key]
-                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,
-                                                       :name=>params[:ssh_key])
+              if params[:ssh_key_id]
+                ssh_key_pair = Models::SshKeyPair[params[:ssh_key_id]]
+
                 if ssh_key_pair.nil?
-                  raise UnknownSshKeyPair, "#{params[:ssh_key]}"
+                  raise UnknownSshKeyPair, "#{params[:ssh_key_id]}"
                 else
                   i.set_ssh_key_pair(ssh_key_pair)
                 end
@@ -881,29 +881,24 @@ module Dcmgr
 
         operation :create do
           description "Create ssh key pair information"
-          # params :name required key name (<100 chars)
           # params :download_once optional set true if you do not want
           #        to save private key info on database.
           control do
             Models::SshKeyPair.lock!
-            keydata = Models::SshKeyPair.generate_key_pair(params[:name])
-            savedata = {
-              :name=>params[:name],
-              :account_id=>@account.canonical_uuid,
-              :public_key=>keydata[:public_key],
-              :finger_print => keydata[:finger_print],
-            }
-            if params[:download_once] != 'true'
-              savedata[:private_key]=keydata[:private_key]
-            end
+            keydata = nil
 
-            if !Models::SshKeyPair.filter(:account_id=>@account.canonical_uuid,
-                                          :name => params[:name]).empty?
-              raise DuplicateSshKeyName, params[:name]
+            ssh = Models::SshKeyPair.entry_new(@account) do |s|
+              keydata = Models::SshKeyPair.generate_key_pair(s.uuid)
+              s.public_key = keydata[:public_key]
+              s.finger_print = keydata[:finger_print]
+
+              if params[:download_once] != 'true'
+                s.private_key = keydata[:private_key]
+              end
             end
 
             begin
-              ssh = Models::SshKeyPair.create(savedata)
+              ssh.save
             rescue => e
               raise DatabaseError, e.message
             end

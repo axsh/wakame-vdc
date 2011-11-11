@@ -47,6 +47,15 @@ module Dcmgr::Models
       super
     end
 
+    def self.entry_new(account, &blk)
+      raise ArgurmentError unless account.is_a?(Account)
+
+      ssh = self.new &blk
+      ssh.account_id = account.canonical_uuid
+
+      ssh
+    end
+
     private
     def self.randstr
       Array.new(10) {  (('a'..'z').to_a + (0..9).to_a)[rand(36)] }.join

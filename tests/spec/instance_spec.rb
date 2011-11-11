@@ -6,19 +6,19 @@ describe "/api/instances" do
 
   # basic machine images
   it "should run local store instance (wmi-lucid0,is-demospec) -> reboot -> terminate" do
-    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec', :ssh_key_id=>'ssh-demo'})
   end
 
   it "should run volume store instance (wmi-lucid1,is-demospec) -> reboot -> terminate" do
-    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demospec', :ssh_key_id=>'ssh-demo'})
   end
 
   it "should run local store instance (wmi-lucid5,is-demospec) -> reboot -> terminate" do
-    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid5', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid5', :instance_spec_id=>'is-demospec', :ssh_key_id=>'ssh-demo'})
   end
 
   it "should run volume store instance (wmi-lucid6,is-demospec) -> reboot -> terminate" do
-    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>'demo'})
+    run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key_id=>'ssh-demo'})
   end
 
   # parameters
@@ -29,14 +29,14 @@ describe "/api/instances" do
   # o param :hostname, string, :optional
   # o param :user_data, string, :optional
   # o param :nf_group, array, :optional
-  # o param :ssh_key, string, :optional
+  # o param :ssh_key_id, string, :optional
   # - param :network_id, string, :optional # not implemented yet
   # o param :ha_enabled, string, :optional
 
-  # ssh_key
-  it "should run instance with ssh_key" do
+  # ssh_key_id
+  it "should run instance with ssh_key_id" do
     run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                              :ssh_key=>'demo'})
+                                              :ssh_key_id=>'ssh-demo'})
   end
 
   # nf_group

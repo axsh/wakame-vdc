@@ -108,14 +108,14 @@ module InstanceHelper
   def ssh_command(instance_id, user, command, do_retry)
     res = APITest.get("/instances/#{instance_id}")
 
-    key_pair = APITest.get("/ssh_key_pairs").first["results"].map { |key_pair|
-      key_pair if key_pair["name"] == res["ssh_key_pair"]
-    }.first
+    ssh_key_id = res["ssh_key_pair"]
+    key_pair = APITest.get("/ssh_key_pairs/#{ssh_key_id}")
 
     suffix = Time.now.strftime("%s")
     private_key_path = "/tmp/vdc_id_rsa.pem.#{suffix}"
     open(private_key_path, "w") { |f| f.write(key_pair["private_key"]) }
     File.chmod(0600, private_key_path)
+    sleep 5
 
     cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} #{user}@#{res["vif"].first["ipv4"]["address"]} '#{command}'"
 

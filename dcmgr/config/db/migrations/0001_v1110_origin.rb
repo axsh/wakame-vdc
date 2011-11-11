@@ -306,7 +306,6 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
       column :uuid, "char(8)", :null=>false
-      column :name, "varchar(255)", :null=>false
       column :finger_print, "varchar(100)", :null=>false
       column :public_key, "text", :null=>false
       column :private_key, "text"
@@ -314,7 +313,6 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
       
       index [:account_id]
-      index [:account_id, :name], :unique=>true
       index [:uuid], :unique=>true, :name=>:uuid
     end
     

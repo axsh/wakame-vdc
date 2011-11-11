@@ -9,7 +9,6 @@ module Dcmgr::Cli
     desc "add [options]", "Register a new key pair."
     method_option :uuid, :type => :string, :desc => "The UUID for the new key pair"
     method_option :account_id, :type => :string, :desc => "The UUID of the account this key pair belongs to", :required => true
-    method_option :name, :type => :string, :desc => "The name for this key pair", :required => true
     method_option :public_key, :type => :string, :desc => "The path to the public key", :required => true
     method_option :private_key, :type => :string, :desc => "The path to the private key"
     def add
@@ -34,7 +33,6 @@ module Dcmgr::Cli
     
     desc "modify UUID [options]", "Modify an existing key pair"
     method_option :account_id, :type => :string, :desc => "The UUID of the account this key pair belongs to"
-    method_option :name, :type => :string, :desc => "The name for this key pair"
     def modify(uuid)
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
       super(M::SshKeyPair,uuid,options)
@@ -54,8 +52,6 @@ Keypair UUID:
   <%= keypair.canonical_uuid %>
 Account id:
   <%= keypair.account_id %>
-Name:
-  <%= keypair.name%>
 Finger print:
   <%= keypair.finger_print %>
 Public Key:
@@ -64,7 +60,7 @@ __END
       else
         puts ERB.new(<<__END, nil, '-').result(binding)
 <%- M::SshKeyPair.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= row.name %>\t<%= row.finger_print %>
+<%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= row.finger_print %>
 <%- } -%>
 __END
       end

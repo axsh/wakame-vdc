@@ -17,13 +17,12 @@ describe "1shot" do
     netfilter_group_id = res["uuid"]
 
     p '... ssh_key::create'
-    ssh_key_name = scenario_id
-    res = APITest.create('/ssh_key_pairs', {:name=>ssh_key_name})
+    res = APITest.create('/ssh_key_pairs', {})
     res.success?.should be_true
     ssh_key_pair_id = res["id"]
 
     p '... instance::create'
-    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key=>ssh_key_name, :nf_group=>[netfilter_group_id]})
+    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key_id=>ssh_key_pair_id, :nf_group=>[netfilter_group_id]})
     res.success?.should be_true
     instance_id = res["id"]
 

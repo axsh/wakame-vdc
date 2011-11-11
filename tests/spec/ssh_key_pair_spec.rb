@@ -9,7 +9,7 @@ describe "/api/ssh_key_pair" do
   end
 
   it "should test CURD operations for key pair" do
-    res = APITest.create('/ssh_key_pairs', {:name=>'yyy'})
+    res = APITest.create('/ssh_key_pairs', {})
     res.success?.should be_true
     APITest.get("/ssh_key_pairs/#{res["id"]}").success?.should be_true
     APITest.delete("/ssh_key_pairs/#{res["id"]}").success?.should be_true

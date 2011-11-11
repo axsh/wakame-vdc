@@ -192,7 +192,7 @@ PxIk/VB7tQxkp4Rtv005mWHPUYlh8x4lMqiVAhPJzEBfN9UEfkrk
 -----END RSA PRIVATE KEY-----
 EOS
 
-shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --name demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
+shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
 
 [ -f /tmp/pub.pem ] && rm -f /tmp/pub.pem
 [ -f /tmp/pri.pem ] && rm -f /tmp/pri.pem
