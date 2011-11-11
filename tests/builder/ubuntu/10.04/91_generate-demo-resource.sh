@@ -79,32 +79,58 @@ deploy_vmfile ${vmimage_file}      ${vmimage_s3}
 deploy_vmfile ${vmimage_meta_file} ${vmimage_meta_s3}
 
 cd ${work_dir}/dcmgr/
-shlog ./bin/vdc-manage host    add hva.demo1 -u   hp-demo1 -f -a ${account_id} -c 100 -m 400000 -p ${hypervisor} -r ${hva_arch}
+shlog ./bin/vdc-manage host add hva.demo1 --force --uuid hp-demo1 --account-id ${account_id} --cpu-cores 100 --memory-size 400000 --hypervisor ${hypervisor} --arch ${hva_arch}
 
 case ${sta_server} in
 ${ipaddr})
   [ -d ${tmp_path}/xpool/${account_id} ] || mkdir -p ${tmp_path}/xpool/${account_id}
   [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
-  shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demo1 -f -a ${account_id} -b ${tmp_path}/xpool -s $((1024 * 1024)) -i ${sta_server} -o raw -n ${tmp_path}/snap
+  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sp-demo1 --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
 
   ln -fs ${vmimage_path}      ${vmimage_snap_path}
   ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
  ;;
 *)
-  shlog ./bin/vdc-manage storage add sta.demo1 -u   sp-demo1 -f -a ${account_id} -b xpool             -s $((1024 * 1024)) -i ${sta_server} -o zfs -n /export/home/wakame/vdc/sta/snap
+  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sp-demo1 --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
  ;;
 esac
 
 # vlan
-#shlog ./bin/vdc-manage vlan    add -t 1      -u vlan-demo1    -a ${account_id}
-#shlog ./bin/vdc-manage network add           -u   nw-demo1                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --vlan_id 1 --description demo
+#shlog ./bin/vdc-manage vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
+#shlog ./bin/vdc-manage network add           --uuid   nw-demo1    --ipv4-gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata-port ${metadata_port} --vlan-id 1 --description demo
 # non vlan
-shlog ./bin/vdc-manage network add           -u   nw-demo1                      --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata_port ${metadata_port} --description demo
+shlog ./bin/vdc-manage network add --uuid nw-demo1 --ipv4-network ${ipv4_gw} --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata-port ${metadata_port} --description demo --link-interface br0
+shlog ./bin/vdc-manage network add --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --link-interface br0
+shlog ./bin/vdc-manage network add --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metirc 10 --link-interface br0
+shlog ./bin/vdc-manage network add --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metirc 10
+shlog ./bin/vdc-manage network add --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metirc 10
+# physical network
+shlog ./bin/vdc-manage network phy add eth0 --interface eth0
+# bridge only closed network
+shlog ./bin/vdc-manage network phy add null1 --null
+shlog ./bin/vdc-manage network phy add null2 --null
+# set forward interface(= physical network) from network
+shlog ./bin/vdc-manage network forward nw-demo1 eth0
+shlog ./bin/vdc-manage network forward nw-demo2 eth0
+shlog ./bin/vdc-manage network forward nw-demo3 eth0
+shlog ./bin/vdc-manage network forward nw-demo4 null1
+shlog ./bin/vdc-manage network forward nw-demo5 null2
 
+range_begin=`ipcalc ${ipv4_gw} | awk '$1 == "HostMin:" { print $2 }'`
+range_end=`ipcalc ${ipv4_gw} | awk '$1 == "HostMax:" { print $2 }'`
+shlog ./bin/vdc-manage network dhcp addrange nw-demo1 $range_begin $range_end
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.61 10.100.0.65
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.70 10.100.0.75
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.68 10.100.0.75 # range prepend
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.72 10.100.0.80 # range append
+shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.60 10.100.0.80 # range merge
+shlog ./bin/vdc-manage network dhcp addrange nw-demo3 10.101.0.60 10.101.0.80
+shlog ./bin/vdc-manage network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
+shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 
-shlog ./bin/vdc-manage tag map tag-shhost -o hp-demo1
-shlog ./bin/vdc-manage tag map tag-shnet  -o nw-demo1
-shlog ./bin/vdc-manage tag map tag-shstor -o sp-demo1
+shlog ./bin/vdc-manage tag map tag-shhost hp-demo1
+shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
+shlog ./bin/vdc-manage tag map tag-shstor sp-demo1
 
 shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}
 
@@ -116,18 +142,21 @@ EOS
 
 vmimage_md5=$(md5sum ${local_store_path}/${vmimage_file} | cut -d ' ' -f1)
 vmimage_meta_md5=$(md5sum ${local_store_path}/${vmimage_meta_file} | cut -d ' ' -f1)
-shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_file}      -m ${vmimage_md5}      -a ${account_id} -u wmi-${vmimage_uuid}           -r ${images_arch} -d \"${vmimage_file} local\" -s init
-shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid}                -m ${vmimage_md5}      -a ${account_id} -u wmi-${vmimage_snap_uuid}      -r ${images_arch} -d \"${vmimage_file} volume\" -s init
-shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_meta_file} -m ${vmimage_meta_md5} -a ${account_id} -u wmi-${vmimage_meta_uuid}      -r ${images_arch} -d \"${vmimage_meta_file} local\" -s init
-shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid}           -m ${vmimage_meta_md5} -a ${account_id} -u wmi-${vmimage_meta_snap_uuid} -r ${images_arch} -d \"${vmimage_meta_file} volume\" -s init
+shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_file}      --md5sum ${vmimage_md5}      --account-id ${account_id} --uuid wmi-${vmimage_uuid}           --arch ${images_arch} --description \"${vmimage_file} local\" --state init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid}                --md5sum ${vmimage_md5}      --account-id ${account_id} --uuid wmi-${vmimage_snap_uuid}      --arch ${images_arch} --description \"${vmimage_file} volume\" --state init
+shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_meta_file} --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_uuid}      --arch ${images_arch} --description \"${vmimage_meta_file} local\" --state init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid}           --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_snap_uuid} --arch ${images_arch} --description \"${vmimage_meta_file} volume\" --state init
 
-shlog ./bin/vdc-manage spec  add -u is-demospec -a ${account_id} -r ${hva_arch} -p ${hypervisor} -c 1 -m 256 -w 1
+shlog ./bin/vdc-manage spec  add --uuid is-demospec --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --weight 1
+shlog ./bin/vdc-manage spec  add --uuid is-demo2 --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --weight 1
+shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
+shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
-shlog ./bin/vdc-manage group add -u  ng-demofgr -a ${account_id} -n default -d demo
-shlog ./bin/vdc-manage group addrule ng-demofgr -r  tcp:22,22,ip4:0.0.0.0
-shlog ./bin/vdc-manage group addrule ng-demofgr -r  tcp:80,80,ip4:0.0.0.0
-shlog ./bin/vdc-manage group addrule ng-demofgr -r  udp:53,53,ip4:0.0.0.0
-shlog ./bin/vdc-manage group addrule ng-demofgr -r icmp:-1,-1,ip4:0.0.0.0
+shlog ./bin/vdc-manage group add --uuid  ng-demofgr --account-id ${account_id} --description demo
+shlog ./bin/vdc-manage group addrule ng-demofgr "tcp:22,22,ip4:0.0.0.0"
+shlog ./bin/vdc-manage group addrule ng-demofgr "tcp:80,80,ip4:0.0.0.0"
+shlog ./bin/vdc-manage group addrule ng-demofgr "udp:53,53,ip4:0.0.0.0"
+shlog ./bin/vdc-manage group addrule ng-demofgr "icmp:-1,-1,ip4:0.0.0.0"
 
 cat <<'EOS' > /tmp/pub.pem
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZhAOcHSe4aY8GwwLCJ4Et3qUBcyVPokFoCyCrtTZJVUU++B9554ahiVcrQCbfuDlaXV2ZCfIND+5N1UEk5umMoQG1aPBw9Nz9wspMpWiTKGOAm99yR9aZeNbUi8zAfyYnjrpuRUKCH1UPmh6EDaryFNDsxInmaZZ6701PgT++cZ3Vy/r1bmb93YvpV+hfaL/FmY3Cu8n+WJSoJQZ4eCMJ+4Pw/pkxjfuLUw3mFl40RVAlwlTuf1I4bB/m1mjlmirBEU6+CWLGYUNWDKaFBpJcGB6sXoQDS4FvlV92tUAEKIBWG5ma0EXBdJQBi1XxSCU2p7XMX8DhS7Gj/TSu7011 wakame-vdc.pem
@@ -163,7 +192,7 @@ PxIk/VB7tQxkp4Rtv005mWHPUYlh8x4lMqiVAhPJzEBfN9UEfkrk
 -----END RSA PRIVATE KEY-----
 EOS
 
-shlog ./bin/vdc-manage keypair add -a ${account_id} -u ssh-demo -n demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
+shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --name demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
 
 [ -f /tmp/pub.pem ] && rm -f /tmp/pub.pem
 [ -f /tmp/pri.pem ] && rm -f /tmp/pri.pem

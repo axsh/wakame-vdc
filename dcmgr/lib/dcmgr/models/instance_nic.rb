@@ -5,18 +5,6 @@ module Dcmgr::Models
   class InstanceNic < BaseNew
     taggable 'vif'
 
-    inheritable_schema do
-      Fixnum :instance_id, :null=>false
-      Fixnum :network_id, :null=>false
-      Fixnum :nat_network_id
-      String :mac_addr, :null=>false, :size=>12
-      Time   :deleted_at
-
-      index :mac_addr
-      index :deleted_at
-    end
-    with_timestamps
-
     many_to_one :instance
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
     many_to_one :network
@@ -27,11 +15,13 @@ module Dcmgr::Models
     one_to_many(:nat_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
       ds.where(:network_id=>self.nat_network_id)
     end
+    
+    subset(:alives, {:deleted_at => nil})
 
-    def to_hash
-      h = values.dup.merge(super)
-      h.delete(:instance_id)
-      h
+    def to_api_document
+      hash = super
+      hash.delete(instance_id)
+      hash
     end
 
     def release_ip_lease
@@ -46,11 +36,20 @@ module Dcmgr::Models
 
     def before_validation
       self[:mac_addr] = normalize_mac_addr(self[:mac_addr])
+
+      # set maximum index number if the nic has no index value and
+      # is attached to instance.
+      if self.instance_id && self.device_index.nil?
+        max_idx = self.class.alives.filter(:instance_id=>self.instance_id).max(:device_index)
+        self.device_index = max_idx.nil? ? 0 : (max_idx + 1)
+      end
+      
       super
     end
 
     def before_destroy
-      MacLease.find(:mac_addr=>self.mac_addr).destroy
+      maclease = MacLease.find(:mac_addr=>self.mac_addr)
+      maclease.destroy if maclease
       release_ip_lease
       super
     end
@@ -66,6 +65,14 @@ module Dcmgr::Models
       end
       if MacLease.find(:mac_addr=>self.mac_addr).nil?
         errors.add(:mac_addr, "MAC address is not on the MAC lease database.")
+      end
+
+      # find duplicate device index.
+      if self.instance_id
+        idx = self.class.alives.filter(:instance_id=>self.instance_id).select(:device_index).all
+        if idx.uniq.size != idx.size
+          errors.add(:device_index, "Duplicate device index.")
+        end
       end
     end
 

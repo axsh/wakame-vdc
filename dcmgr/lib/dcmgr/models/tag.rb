@@ -43,15 +43,6 @@ module Dcmgr::Models
   class Tag < AccountResource
     taggable('tag')
 
-    inheritable_schema do
-      Fixnum :type_id, :null=>false
-      String :name, :null=>false
-      String :attributes
-
-      index [:account_id, :type_id, :name], {:unique=>true}
-    end
-    with_timestamps
-
     many_to_one :account
     
     one_to_many :mapped_uuids, :class=>TagMapping do |ds|

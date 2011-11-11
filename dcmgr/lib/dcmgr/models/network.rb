@@ -7,22 +7,6 @@ module Dcmgr::Models
   class Network < AccountResource
     taggable 'nw'
 
-    inheritable_schema do
-      String :ipv4_gw, :null=>false
-      Fixnum :prefix, :null=>false, :default=>24, :unsigned=>true
-      String :domain_name
-      String :dns_server
-      String :dhcp_server
-      String :metadata_server
-      Fixnum :metadata_server_port
-      Fixnum :bandwidth #in Mbit/s
-      Fixnum :vlan_lease_id, :null=>false, :default=>0
-      Fixnum :nat_network_id
-      Text :description
-      index :nat_network_id
-    end
-    with_timestamps
-
     module IpLeaseMethods
       def add_reserved(ipaddr, description=nil)
         model.create(:network_id=>model_object.id,
@@ -37,19 +21,51 @@ module Dcmgr::Models
     many_to_one :nat_network, :key => :nat_network_id, :class => self
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
+    one_to_many :dhcp_range
+    many_to_one :physical_network
+
+    def before_validation
+      self.link_interface ||= "br-#{self[:uuid]}"
+      super
+    end
+
     def validate
       super
       
-      # validate ipv4 syntax
-      begin
-        IPAddress::IPv4.new("#{self.ipv4_gw}")
-      rescue => e
-        errors.add(:ipv4_gw, "Invalid IP address syntax: #{self.ipv4_gw}")
-      end
-
       unless (1..31).include?(self.prefix.to_i)
         errors.add(:prefix, "prefix must be 1-31: #{self.prefix}")
       end
+
+      network_addr = begin
+                       IPAddress::IPv4.new("#{self.ipv4_network}/#{self.prefix}").network
+                     rescue => e
+                       errors.add(:ipv4_network, "Invalid IP address syntax: #{self.ipv4_network}")
+                     end
+      # validate ipv4 syntax
+      if self.ipv4_gw
+        begin
+          if !network_addr.include?(IPAddress::IPv4.new("#{self.ipv4_gw}"))
+            errors.add(:ipv4_gw, "Out of network address range: #{network_addr.to_s}")
+          end
+        rescue => e
+          errors.add(:ipv4_gw, "Invalid IP address syntax: #{self.ipv4_gw}")
+        end
+      end
+      
+      if self.dhcp_server
+        begin
+          if !network_addr.include?(IPAddress::IPv4.new("#{self.dhcp_server}"))
+            errors.add(:dhcp_server, "Out of network address range: #{network_addr.to_s}")
+          end
+        rescue => e
+          errors.add(:dhcp_server, "Invalid IP address syntax: #{self.dhcp_server}")
+        end
+      end
+
+      if self.link_interface.size > 16
+        errors.add(:link_interface, "Can not be the character lenth more than 16(=IF_NAMESIZ) ASCII characters.")
+      end
+      
     end
 
     def to_hash
@@ -60,6 +76,11 @@ module Dcmgr::Models
                 :description=>description.to_s,
                 :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
               })
+      if self.physical_network
+        h[:physical_network] = self.physical_network.to_hash
+      end
+     
+      h
     end
 
     def before_destroy
@@ -85,7 +106,12 @@ module Dcmgr::Models
       Network.find(:id => self.nat_network_id)
     end
 
-    def ipaddress
+    def ipv4_ipaddress
+      IPAddress::IPv4.new("#{self.ipv4_network}/#{self.prefix}").network
+    end
+
+    def ipv4_gw_ipaddress
+      return nil if self.ipv4_gw.nil?
       IPAddress::IPv4.new("#{self.ipv4_gw}/#{self.prefix}")
     end
 
@@ -93,16 +119,118 @@ module Dcmgr::Models
     # @param [String] ipaddr IP address
     def include?(ipaddr)
       ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
-      self.ipaddress.network.include?(ipaddr)
+      self.ipv4_ipaddress.network.include?(ipaddr)
     end
 
     # register reserved IP address in this network
     def add_reserved(ipaddr)
-      add_ip_lease(:ipv4=>ipaddr, :type=>IpLease::TYPE_RESERVED)
+      raise "Out of subnet range: #{ipaddr} to #{self.ipv4_ipaddress}/#{self.prefix}" if !self.include?(ipaddr)
+      add_ip_lease(:ipv4=>ipaddr.to_s, :type=>IpLease::TYPE_RESERVED)
     end
 
     def available_ip_nums
-      self.ipaddress.hosts.size - self.ip_lease_dataset.count
+      self.ipv4_ipaddress.hosts.size - self.ip_lease_dataset.count
+    end
+
+    def ipv4_u32_dynamic_range_array
+      ary=[]
+      dhcp_range_dataset.each { |r|
+        ary += (r.range_begin.to_u32 .. r.range_end.to_u32).to_a
+      }
+      ary
+    end
+
+    def add_ipv4_dynamic_range(range_begin, range_end)
+      range_begin, range_end = validate_range_args(range_begin, range_end)
+      
+      mark={}
+      dhcp_range_dataset.each { |r|
+        mark[r.id] = :skip
+        if r.range_begin < range_begin && r.range_end < range_begin
+          next
+        elsif r.range_begin < range_begin && r.range_end > range_begin
+          # range_begin is in the range.
+          if r.range_end < range_end
+            mark[r.id] = :append
+          else
+            # new range is included in this range.
+            return
+          end
+        elsif r.range_begin > range_begin && r.range_end > range_begin
+          # range_end is in the range.
+          if r.range_end > range_end
+            mark[r.id] = :prepend
+          else
+            # current range is included in new range.
+            mark[r.id] = :del
+            next
+          end
+        elsif r.range_begin > range_begin && r.range_end < range_begin
+        end
+      }
+
+      mark.each { |pkid, op|
+        range = DhcpRange[pkid]
+        case op
+        when :prepend
+          range.range_begin = range_begin.to_s
+          range.save
+        when :append
+          range.range_end = range_end.to_s
+          range.save
+        when :del
+          range.destroy
+        end
+      }
+
+      if !mark.values.uniq.include?(:prepend) && !mark.values.uniq.include?(:append)
+        self.add_dhcp_range(:range_begin=>range_begin.to_s, :range_end=>range_end.to_s)
+      end
+    end
+
+    def del_ipv4_dynamic_range(range_begin, range_end)
+      range_begin, range_end = validate_range_args(range_begin, range_end)
+
+      mark={}
+      dhcp_range_dataset.each { |r|
+        mark[r.id] = :skip
+        if r.range_begin < range_begin && r.range_end < range_begin
+          next
+        elsif r.range_begin < range_begin && r.range_end > range_begin
+          # range_begin is in the range.
+          if r.range_end < range_end
+            mark[r.id] = :append
+          else
+            # new range is included in this range.
+            return
+          end
+        elsif r.range_begin > range_begin && r.range_end > range_begin
+          # range_end is in the range.
+          if r.range_end > range_end
+            mark[r.id] = :prepend
+          else
+            # current range is included in new range.
+            mark[r.id] = :del
+            next
+          end
+        elsif r.range_begin > range_begin && r.range_end < range_begin
+        end
+      }
+    end
+
+    private
+    def validate_range_args(range_begin, range_end)
+      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self.prefix}")
+      range_end = IPAddress::IPv4.new("#{range_end}/#{self.prefix}")
+      if !(self.ipv4_ipaddress.include?(range_begin) && self.ipv4_ipaddress.include?(range_end))
+        raise "Given address range is out of the subnet: #{self.ipv4_ipaddress} #{range_begin}-#{range_end}"
+      end
+      if range_begin > range_end
+        t = range_begin
+        range_begin = range_end
+        range_end = t
+      end
+      [range_begin, range_end]
     end
   end
 end

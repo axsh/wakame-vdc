@@ -84,50 +84,32 @@ module Dcmgr
         event.publish(ev, :args=>[@vol_id])
       end
 
-      # TODO: split into guessing bridge name and bridge generation parts.
       def check_interface
-        vnic = @inst[:instance_nics].first
-        unless vnic.nil?
-          network_map = rpc.request('hva-collector', 'get_network', @inst[:instance_nics].first[:network_id])
-
-          # physical interface
-          physical_if = find_nic(@node.manifest.config.hv_ifindex)
-          raise "UnknownPhysicalNIC" if physical_if.nil?
-
-          if network_map[:vlan_id] == 0
-            # bridge interface
-            bridge_if = @node.manifest.config.bridge_novlan
-            unless valid_nic?(bridge_if)
-              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-              sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
-              sh("/usr/sbin/brctl addif %s %s", [bridge_if, physical_if])
-            end
-          else
-            # vlan interface
-            vlan_if = "#{physical_if}.#{network_map[:vlan_id]}"
+        @inst[:instance_nics].each { |vnic|
+          network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
+          
+          fwd_if = phy_if = network[:physical_network][:interface]
+          bridge_if = network[:link_interface]
+          
+          if network[:vlan_id].to_i > 0 && phy_if
+            fwd_if = "#{phy_if}.#{network[:vlan_id]}"
             unless valid_nic?(vlan_if)
-              sh("/sbin/vconfig add #{physical_if} #{network_map[:vlan_id]}")
-            end
-
-            # bridge interface
-            bridge_if = "#{@node.manifest.config.bridge_prefix}-#{physical_if}.#{network_map[:vlan_id]}"
-            unless valid_nic?(bridge_if)
-              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-              sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
-              sh("/usr/sbin/brctl addif %s %s", [bridge_if, vlan_if])
+              sh("/sbin/vconfig add #{phy_if} #{network[:vlan_id]}")
+              sh("/sbin/ip link set %s up", [fwd_if])
+              sh("/sbin/ip link set %s promisc on", [fwd_if])
             end
           end
 
-          # interface up? down?
-          [ vlan_if, bridge_if ].each do |ifname|
-            if nic_state(ifname) == "down"
-              sh("/sbin/ip link set %s up", [ifname])
-              sh("/sbin/ip link set %s promisc on", [ifname])
+          unless valid_nic?(bridge_if)
+            sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+            sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
+            # There is null case for the forward interface to create closed bridge network.
+            if fwd_if
+              sh("/usr/sbin/brctl addif %s %s", [bridge_if, fwd_if])
             end
           end
-          sleep 1
-          bridge_if
-        end
+        }
+        sleep 1
       end
 
 
@@ -151,12 +133,6 @@ module Dcmgr
         Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp") unless File.exists?("#{@hva_ctx.inst_data_dir}/tmp")
         sh("/bin/mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
 
-        # generate metadata as file
-        #File.open(File.expand_path('metadata.conf', "#{@hva_ctx.inst_data_dir}/tmp"), "w") { |f|
-        #  f.puts("state=#{@inst[:state]}")
-        #}
-
-        # TODO: support for multiple interfaces.
         vnic = @inst[:instance_nics].first || {}
         # Appendix B: Metadata Categories
         # http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/index.html?AESDG-chapter-instancedata.html
@@ -174,8 +150,6 @@ module Dcmgr
           'local-hostname' => @inst[:hostname],
           'local-ipv4' => @inst[:ips].first,
           'mac' => vnic[:mac_addr].unpack('A2'*6).join(':'),
-          # TODO: network category support
-          #'network/' => {},
           'placement/availability-zone' => nil,
           'product-codes' => nil,
           'public-hostname' => @inst[:hostname],
@@ -188,7 +162,7 @@ module Dcmgr
         # TODO: support for multiple interfaces.
         @inst[:instance_nics].each { |vnic|
           vnic_network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
-          vnic_ipaddr  = IPAddress::IPv4.new("#{vnic_network[:ipv4_gw]}/#{vnic_network[:prefix]}")
+          netaddr  = IPAddress::IPv4.new("#{vnic_network[:ipv4_network]}/#{vnic_network[:prefix]}")
 
           # vfat doesn't allow folder name including ":".
           # folder name including mac address replaces "-" to ":".
@@ -203,9 +177,10 @@ module Dcmgr
             # wakame-vdc extention items.
             # TODO: need an iface index number?
             "network/interfaces/macs/#{mac}/x-gateway" => vnic_network[:ipv4_gw],
-            "network/interfaces/macs/#{mac}/x-netmask" => vnic_ipaddr.network.prefix.to_ip,
-            "network/interfaces/macs/#{mac}/x-network" => vnic_ipaddr.network,
-            "network/interfaces/macs/#{mac}/x-broadcast" => vnic_ipaddr.broadcast,
+            "network/interfaces/macs/#{mac}/x-netmask" => netaddr.prefix.to_ip,
+            "network/interfaces/macs/#{mac}/x-network" => netaddr.to_s,
+            "network/interfaces/macs/#{mac}/x-broadcast" => netaddr.broadcast,
+            "network/interfaces/macs/#{mac}/x-metric" => vnic_network[:metric],
           })
         }
 
@@ -303,10 +278,11 @@ module Dcmgr
 
         setup_metadata_drive
         
-        @bridge_if = check_interface
+        check_interface
         @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
       }, proc {
+        terminate_instance(false) rescue logger.error($!)
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
                               'hva/instance_terminated')
       }
@@ -346,7 +322,7 @@ module Dcmgr
         setup_metadata_drive
         
         # run vm
-        @bridge_if = check_interface
+        check_interface
         @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
@@ -354,6 +330,7 @@ module Dcmgr
         # TODO: Run detach & destroy volume
         update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
                               'hva/instance_terminated')
+        terminate_instance(false) rescue logger.error($!)
         update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
                               'hva/volume_deleted')
       }
@@ -489,9 +466,6 @@ module Dcmgr
         # select_hypervisor :kvm, :lxc
         select_hypervisor
 
-        # check interface
-        @bridge_if = check_interface
-
         # reboot instance
         @hv.reboot_instance(HvaContext.new(self))
       }
@@ -534,10 +508,6 @@ module Dcmgr
 
       def metadata_img_path
         File.expand_path('metadata.img', inst_data_dir)
-      end
-
-      def bridge_if
-        @hva.instance_variable_get(:@bridge_if)
       end
 
       def vol

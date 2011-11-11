@@ -7,22 +7,10 @@ module Dcmgr::Models
   class SshKeyPair < AccountResource
     taggable 'ssh'
 
-    inheritable_schema do
-      String :name, :size=>100, :null=>false
-      String :finger_print, :size=>100, :null=>false
-      Text :public_key, :null=>false
-      Text :private_key, :null=>true
-
-      index [:account_id, :name], {:unique=>true}
-    end
-    with_timestamps
-
-    def validate
-    end
-
     def before_destroy
       # TODO: check running instances which are associated to ssh key
       # pairs. reject deletion if exist.
+      super
     end
 
     #

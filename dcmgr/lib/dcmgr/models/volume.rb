@@ -20,31 +20,6 @@ module Dcmgr::Models
     STATE_TYPE_DELETING = "deleting"
     STATE_TYPE_DELETED = "deleted"
 
-    inheritable_schema do
-      Fixnum :storage_node_id, :null=>true
-      String :status, :null=>false, :default=>'initializing'
-      String :state, :null=>false, :default=>'initialzing'
-      Fixnum :size, :null=>false
-      Fixnum :instance_id
-      Fixnum :boot_dev, :null=>false, :default=>0
-      String :snapshot_id
-      String :host_device_name
-      String :guest_device_name
-      String :export_path, :null=>false
-#      String :intermediate_path, :null=>false
-      Text :transport_information
-      Text :request_params, :null=>false, :default=>''
-      Time :deleted_at
-      Time :attached_at
-      Time :detached_at
-
-      index :storage_node_id
-      index :instance_id
-      index :snapshot_id
-      index :deleted_at
-    end
-    with_timestamps
-
     many_to_one :storage_node, :after_set=>:validate_storage_node_assigned
     many_to_one :instance
 

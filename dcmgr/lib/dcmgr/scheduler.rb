@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'extlib/module'
+require 'configuration'
 
 module Dcmgr
   module Scheduler
@@ -12,25 +13,41 @@ module Dcmgr
     # Factory method for HostNode scheduler
     def self.host_node()
       c = scheduler_class(Dcmgr.conf.host_node_scheduler, ::Dcmgr::Scheduler::HostNode)
-      c.new
+      if Dcmgr.conf.host_node_scheduler.respond_to?(:options)
+        c.new(Dcmgr.conf.host_node_scheduler.options)
+      else
+        c.new
+      end
     end
 
     # Factory method for HostNode scheduler for HA
     def self.host_node_ha()
       c = scheduler_class(Dcmgr.conf.host_node_ha_scheduler, ::Dcmgr::Scheduler::HostNode)
-      c.new
+      if Dcmgr.conf.host_node_ha_scheduler.respond_to?(:options)
+        c.new(Dcmgr.conf.host_node_ha_scheduler.options)
+      else
+        c.new
+      end
     end
 
     # Factory method for StorageNode scheduler
     def self.storage_node()
       c = scheduler_class(Dcmgr.conf.storage_node_scheduler, ::Dcmgr::Scheduler::StorageNode)
-      c.new
+      if Dcmgr.conf.storage_node_scheduler.respond_to?(:options)
+        c.new(Dcmgr.conf.storage_node_scheduler.options)
+      else
+        c.new
+      end
     end
 
     # Factory method for Network scheduler
     def self.network()
       c = scheduler_class(Dcmgr.conf.network_scheduler, ::Dcmgr::Scheduler::Network)
-      c.new
+      if Dcmgr.conf.network_scheduler.respond_to?(:options)
+        c.new(Dcmgr.conf.network_scheduler.options)
+      else
+        c.new
+      end
     end
 
     # common scheduler class finder
@@ -38,6 +55,12 @@ module Dcmgr
       c = case input
           when Symbol
             namespace.const_get(input)
+          when ::Configuration
+            if input.respond_to?(:scheduler)
+              namespace.const_get(input.scheduler)
+            else
+              raise "Missing configuration key: scheduler"
+            end
           else
             raise "Unknown #{namespace.to_s} scheduler: #{input}"
           end
@@ -47,6 +70,10 @@ module Dcmgr
 
     # Allocate HostNode to Instance object.
     class HostNodeScheduler
+      def initialize(options=nil)
+        @options = options
+      end
+
       # @param Models::Instance instance
       # @return Models::HostNode
       def schedule(instance)
@@ -56,6 +83,10 @@ module Dcmgr
 
     # Allocate StorageNode to Volume object.
     class StorageNodeScheduler
+      def initialize(options=nil)
+        @options = options
+      end
+      
       # @param Models::Volume volume
       # @return nil
       def schedule(volume)
@@ -80,6 +111,10 @@ module Dcmgr
 
     # Manage vnic for instances and assign network object.
     class NetworkScheduler
+      def initialize(options=nil)
+        @options = options
+      end
+
       # @param Models::HostNode host_node
       # @return Models::Network
       def schedule(instance)

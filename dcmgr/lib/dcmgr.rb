@@ -117,6 +117,8 @@ module Dcmgr
     autoload :MacLease, 'dcmgr/models/mac_lease'
     autoload :VlanLease, 'dcmgr/models/vlan_lease'
     autoload :Quota, 'dcmgr/models/quota'
+    autoload :DhcpRange, 'dcmgr/models/dhcp_range'
+    autoload :PhysicalNetwork, 'dcmgr/models/physical_network'
   end
 
   module Endpoints
@@ -203,9 +205,13 @@ module Dcmgr
       autoload :FindFirst, 'dcmgr/scheduler/host_node/find_first'
       autoload :LeastUsage, 'dcmgr/scheduler/host_node/least_usage'
       autoload :ExcludeSame, 'dcmgr/scheduler/host_node/exclude_same'
+      autoload :SpecifyNode, 'dcmgr/scheduler/host_node/specify_node'
     end
     module Network
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'
+      autoload :NatOneToOne, 'dcmgr/scheduler/network/nat_one_to_one'
+      autoload :VifTemplate, 'dcmgr/scheduler/network/vif_template'
+      autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
     end
   end
 end

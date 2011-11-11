@@ -5,12 +5,6 @@ module Dcmgr::Models
     
     plugin :single_table_inheritance, :kind
     
-    inheritable_schema do
-      String :kind, :null=>false
-      String :key, :null=>false, :size=>40, :unique=>true
-      String :credential
-    end
-
     def authenticate
       raise NotImplementedError
     end

@@ -4,17 +4,6 @@ module Dcmgr::Models
   class InstanceSpec < AccountResource
     taggable 'is'
 
-    inheritable_schema do
-      String :hypervisor, :null=>false
-      String :arch, :null=>false
-      
-      Fixnum :cpu_cores, :null=>false, :unsigned=>true
-      Fixnum :memory_size, :null=>false, :unsigned=>true
-      Float  :quota_weight, :null=>false, :default=>1.0
-      Text :config, :null=>false, :default=>''
-    end
-    with_timestamps
-
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     plugin :serialization
@@ -75,6 +64,14 @@ module Dcmgr::Models
       unless self.drives.values.map {|i| i[:index] }.uniq.size == self.drives.size
         errors.add(:drives, "duplicate index value.")
       end
+    end
+
+    def before_destroy
+      if !Instance.alives.filter(:instance_spec_id=>self.id).empty?
+        raise "There are one or more running instances refers this record."
+      end
+      
+      super
     end
 
     def to_hash

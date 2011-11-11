@@ -21,6 +21,13 @@ DISTRIB_ID=$(echo "${DISTRIB_ID:-ubuntu}" | tr 'A-Z' 'a-z')
   DISTRIB_RELEASE=$(basename ${DISTRIB_RELEASE})
 }
 
+[[ -f /etc/redhat-release ]] && {
+  DISTRIB_ID=rhel
+  DISTRIB_RELEASE=$(ls -d ${builder_path}/${DISTRIB_ID}/* | tail -1)
+  [ -z ${DISTRIB_RELEASE} ] && abort "Cannot detect your using distribution."
+  DISTRIB_RELEASE=$(basename ${DISTRIB_RELEASE})
+}
+
 ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
 
 account_id=a-shpoolxx

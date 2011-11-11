@@ -226,10 +226,19 @@ module Dcmgr
             wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
             spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
+            if !Models::HostNode.check_availability?(spec.cpu_cores, spec.memory_size)
+              raise OutOfHostCapacity
+            end
+            
+            if params[:host_id] || params[:host_pool_id]
+              host_id = params[:host_id] || params[:host_pool_id]
+              host_node = Models::HostNode[host_id]
+              raise UnknownHostNode, "#{host_id}" if host_node.nil?
+              raise InvalidHostNodeID, "#{host_id}" if host_node.status != 'online'
+            end
+            
             instance = Models::Instance.entry_new(@account, wmi, spec, params.dup) do |i|
               # Set common parameters from user's request.
-              # TODO: do not use rand() to decide vnc port.
-              i.runtime_config = {:vnc_port=>rand(2000), :telnet_port=> (rand(2000) + 2000)}
               i.user_data = params[:user_data] || ''
               # set only when not nil as the table column has not null
               # condition.
@@ -258,11 +267,10 @@ module Dcmgr
             end
             instance.save
 
-            unless params[:nf_group].is_a?(Array)
-              params[:nf_group] = ['default']
+            if params[:nf_group].is_a?(Array) || params[:nf_group].is_a?(String)
+              instance.join_netfilter_group(params[:nf_group])
             end
-            instance.join_nfgroup_by_name(@account.canonical_uuid, params[:nf_group])
-
+            
             instance.state = :scheduling
             instance.save
 
@@ -272,6 +280,10 @@ module Dcmgr
               snapshot_id = wmi.source[:snapshot_id]
               vs = find_volume_snapshot(snapshot_id)
 
+              if !Models::StorageNode.check_availability?(vs.size)
+                raise OutOfDiskSpace
+              end
+              
               vol = Models::Volume.entry_new(@account, vs.size, params.dup) do |v|
                 if vs
                   v.snapshot_id = vs.canonical_uuid
@@ -491,7 +503,13 @@ module Dcmgr
               raise UndefinedRequiredParameter
             end
 
-            vol = Models::Volume.entry_new(@account, (vs ? vs.size : params[:volume_size].to_i), params.dup) do |v|
+            volume_size = (vs ? vs.size : params[:volume_size].to_i)
+
+            if !Models::StorageNode.check_availability?(volume_size)
+              raise OutOfDiskSpace
+            end
+
+            vol = Models::Volume.entry_new(@account, volume_size, params.dup) do |v|
               if vs
                 v.snapshot_id = vs.canonical_uuid
               end
@@ -723,21 +741,14 @@ module Dcmgr
 
         operation :create do
           description 'Register a new netfilter_group'
-          # params name, string
           # params description, string
           # params rule, string
           control do
             Models::NetfilterGroup.lock!
-            raise UndefinedNetfilterGroup if params[:name].nil?
 
-            @name = params[:name]
-            # TODO: validate @name. @name can use [a-z] [A-Z] '_' '-'
-            # - invalidate? -> raise InvalidCharacterOfNetfilterGroupName
-
-            g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
-            raise DuplicatedNetfilterGroup unless g.nil?
-
-            g = Models::NetfilterGroup.create_group(@account.canonical_uuid, params)
+            g = Models::NetfilterGroup.create(:account_id=>@account.canonical_uuid,
+                                              :description=>params[:description],
+                                              :rule=>params[:rule])
             response_to(g.to_api_document)
           end
         end
@@ -750,6 +761,7 @@ module Dcmgr
             g = find_by_uuid(:NetfilterGroup, params[:id])
 
             raise UnknownNetfilterGroup if g.nil?
+            raise OperationNotPermitted unless examine_owner(g)
 
             if params[:description]
               g.description = params[:description]
@@ -759,7 +771,6 @@ module Dcmgr
             end
 
             g.save
-            g.rebuild_rule
 
             commit_transaction
             # refresh netfilter_rules
@@ -770,9 +781,7 @@ module Dcmgr
         end
 
         operation :destroy do
-          # params name, string
           description "Delete the netfilter group"
-
           control do
             Models::NetfilterGroup.lock!
             g = find_by_uuid(:NetfilterGroup, params[:id])

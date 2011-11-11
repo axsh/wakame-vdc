@@ -6,14 +6,14 @@ module Dcmgr::Cli
     M = Dcmgr::Models
 
     desc "add [options]", "Register a new machine spec"
-    method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new machine spec"
-    method_option :account_id, :type => :string, :aliases => "-a", :required => true, :desc => "The UUID of the account that this machine spec belongs to"
-    method_option :arch, :type => :string, :default => 'x86_64', :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
-    method_option(:hypervisor, :type => :string, :aliases => "-p", :default => M::HostNode::HYPERVISOR_KVM.to_s,
+    method_option :uuid, :type => :string, :desc => "The UUID for the new machine spec"
+    method_option :account_id, :type => :string, :required => true, :desc => "The UUID of the account that this machine spec belongs to"
+    method_option :arch, :type => :string, :default => 'x86_64', :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
+    method_option(:hypervisor, :type => :string, :default => M::HostNode::HYPERVISOR_KVM.to_s,
                   :desc => "The hypervisor type for the new instance. [#{M::HostNode::SUPPORTED_HYPERVISOR.join(', ')}]")
-    method_option :cpu_cores, :type => :numeric, :aliases => "-c", :default => 1, :desc => "The initial cpu cores for the new instance"
-    method_option :memory_size, :type => :numeric, :aliases => "-m", :default => 1024, :desc => "The memory size for the new instance"
-    method_option :quota_weight, :type => :numeric, :aliases => "-w", :default => 1.0, :desc => "The cost weight factor for the new instance"
+    method_option :cpu_cores, :type => :numeric, :default => 1, :desc => "The initial cpu cores for the new instance"
+    method_option :memory_size, :type => :numeric, :default => 1024, :desc => "The memory size for the new instance"
+    method_option :quota_weight, :type => :numeric, :default => 1.0, :desc => "The cost weight factor for the new instance"
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
@@ -26,13 +26,13 @@ module Dcmgr::Cli
     end
     
     desc "modify UUID [options]", "Modify an existing machine spec"
-    method_option :account_id, :type => :string, :aliases => "-a", :desc => "The UUID of the account that this machine spec belongs to"
-    method_option :arch, :type => :string, :aliases => "-r", :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
-    method_option(:hypervisor, :type => :string, :aliases => "-p",
+    method_option :account_id, :type => :string, :desc => "The UUID of the account that this machine spec belongs to"
+    method_option :arch, :type => :string, :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
+    method_option(:hypervisor, :type => :string,
                   :desc => "The hypervisor type for the new instance. [#{M::HostNode::SUPPORTED_HYPERVISOR.join(', ')}]")
-    method_option :cpu_cores, :type => :numeric, :aliases => "-c", :desc => "The initial cpu cores for the new instance"
-    method_option :memory_size, :type => :numeric, :aliases => "-m", :desc => "The memory size for the new instance"
-    method_option :quota_weight, :type => :numeric, :aliases => "-w", :desc => "The cost weight factor for the new instance"
+    method_option :cpu_cores, :type => :numeric, :desc => "The initial cpu cores for the new instance"
+    method_option :memory_size, :type => :numeric, :desc => "The memory size for the new instance"
+    method_option :quota_weight, :type => :numeric, :desc => "The cost weight factor for the new instance"
     def modify(uuid)
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
       UnsupportedArchError.raise(options[:arch]) unless options[:arch].nil? || M::HostNode::SUPPORTED_ARCH.member?(options[:arch])

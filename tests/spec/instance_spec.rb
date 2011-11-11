@@ -42,7 +42,7 @@ describe "/api/instances" do
   # nf_group
   it "should run instance with nf_group" do
     run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                              :nf_group=>['default']})
+                                              :nf_group=>['ng-demofgr']})
   end
 
   # hostname
@@ -156,6 +156,32 @@ describe "/api/instances" do
       retry_until_running(@instance_id)
       APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
       retry_until_stopped(@instance_id)
+    end
+  end
+
+  describe "Multiple network interface support" do
+    it 'run instance with vif3type1 network strategy' do
+      # Always bring new instance to running.
+      res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demo2', :network_scheduler=>'vif3type1'})
+      res.success?.should be_true
+      @instance_id = res["id"]
+      
+      retry_until_running(@instance_id)
+
+      APITest.delete("/instances/#{@instance_id}").success?.should be_true
+      retry_until_terminated(@instance_id)
+    end
+
+    it 'run instance with vif3type2 network strategy' do
+      # Always bring new instance to running.
+      res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demo2', :network_scheduler=>'vif3type2'})
+      res.success?.should be_true
+      @instance_id = res["id"]
+      
+      retry_until_running(@instance_id)
+
+      APITest.delete("/instances/#{@instance_id}").success?.should be_true
+      retry_until_terminated(@instance_id)
     end
   end
 

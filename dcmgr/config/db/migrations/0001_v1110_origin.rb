@@ -92,11 +92,13 @@ Sequel.migration do
       column :network_id, "int(11)", :null=>false
       column :nat_network_id, "int(11)"
       column :mac_addr, "varchar(12)", :null=>false
+      column :device_index, "int(11)", :null=>false
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       
       index [:deleted_at]
+      index [:instance_id]
       index [:mac_addr]
       index [:uuid], :unique=>true, :name=>:uuid
     end
@@ -194,12 +196,10 @@ Sequel.migration do
       column :uuid, "char(8)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      column :name, "varchar(255)", :null=>false
       column :description, "varchar(255)"
       column :rule, "text"
       
       index [:account_id]
-      index [:account_id, :name], :unique=>true
       index [:uuid], :unique=>true, :name=>:uuid
     end
     
@@ -209,14 +209,18 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
       column :netfilter_group_id, "int(11)", :null=>false
       column :permission, "varchar(255)", :null=>false
+
+      index [:netfilter_group_id]
     end
     
     create_table(:networks) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
       column :uuid, "char(8)", :null=>false
-      column :ipv4_gw, "varchar(255)", :null=>false
+      column :ipv4_network, "varchar(255)", :null=>false
+      column :ipv4_gw, "varchar(255)"
       column :prefix, "int(11)", :default=>24, :null=>false
+      column :metric, "int(11)", :default=>100, :null=>false
       column :domain_name, "varchar(255)"
       column :dns_server, "varchar(255)"
       column :dhcp_server, "varchar(255)"
@@ -225,6 +229,8 @@ Sequel.migration do
       column :bandwidth, "int(11)"
       column :vlan_lease_id, "int(11)", :default=>0, :null=>false
       column :nat_network_id, "int(11)"
+      column :physical_network_id, "int(11)"
+      column :link_interface, "varchar(255)", :null=>false
       column :description, "text"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
@@ -232,6 +238,26 @@ Sequel.migration do
       index [:account_id]
       index [:nat_network_id]
       index [:uuid], :unique=>true, :name=>:uuid
+    end
+
+    create_table(:dhcp_ranges) do
+      primary_key :id, :type=>"int(11)"
+      column :network_id, "int(11)", :null=>false
+      column :range_begin, "varchar(255)", :null=>false
+      column :range_end, "varchar(255)", :null=>false
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      index [:network_id]
+    end
+
+    create_table(:physical_networks) do
+      primary_key :id, :type=>"int(11)"
+      column :name, "varchar(255)", :null=>false
+      column :interface, "varchar(255)"
+      column :description, "text"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      index [:name], :unique=>true
     end
     
     create_table(:node_states) do
@@ -412,6 +438,6 @@ Sequel.migration do
   end
   
   down do
-    drop_table(:accounts, :frontend_systems, :histories, :host_nodes, :hostname_leases, :images, :instance_netfilter_groups, :instance_nics, :instance_specs, :instances, :ip_leases, :job_states, :mac_leases, :netfilter_groups, :netfilter_rules, :networks, :node_states, :quotas, :request_logs, :ssh_key_pairs, :storage_nodes, :tag_mappings, :tags, :vlan_leases, :volume_snapshots, :volumes)
+    drop_table(:accounts, :frontend_systems, :histories, :host_nodes, :hostname_leases, :images, :instance_netfilter_groups, :instance_nics, :instance_specs, :instances, :ip_leases, :job_states, :mac_leases, :netfilter_groups, :netfilter_rules, :networks, :node_states, :quotas, :request_logs, :ssh_key_pairs, :storage_nodes, :tag_mappings, :tags, :vlan_leases, :volume_snapshots, :volumes, :dhcp_range, :physical_networks)
   end
 end

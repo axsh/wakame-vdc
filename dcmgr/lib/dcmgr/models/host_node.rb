@@ -5,7 +5,6 @@ require 'isono/models/node_state'
 module Dcmgr::Models
   class HostNode < AccountResource
     taggable 'hp'
-    with_timestamps
 
     HYPERVISOR_XEN_34='xen-3.4'
     HYPERVISOR_XEN_40='xen-4.0'
@@ -18,19 +17,6 @@ module Dcmgr::Models
     SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
     SUPPORTED_HYPERVISOR=[HYPERVISOR_KVM, HYPERVISOR_LXC]
 
-    inheritable_schema do
-      String :node_id, :size=>80, :null=>true
-      
-      String :arch, :size=>10, :null=>false # :x86, :x86_64
-      String :hypervisor, :size=>30, :null=>false
-      String :name, :size => 255, :null => true
-
-      Fixnum :offering_cpu_cores,   :null=>false, :unsigned=>true
-      Fixnum :offering_memory_size, :null=>false, :unsigned=>true
-
-      index :node_id
-    end
-    
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
 
@@ -38,10 +24,6 @@ module Dcmgr::Models
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
       filter(:node_id => r)
-    end
-
-    def after_initialize
-      super
     end
 
     def validate
@@ -116,6 +98,18 @@ module Dcmgr::Models
     # Returns available memory size.
     def available_memory_size
       self.offering_memory_size - self.memory_size_usage
+    end
+
+    def self.check_availability?(cpu_cores, memory_size, num=1)
+      alives_mem_size = Instance.dataset.lives.filter.sum(:memory_size).to_i
+      stopped_mem_size = Instance.dataset.lives.filter(:state=>'stopped').sum(:memory_size).to_i
+      alives_cpu_cores = Instance.dataset.lives.filter.sum(:cpu_cores).to_i
+      stopped_cpu_cores = Instance.dataset.lives.filter(:state=>'stopped').sum(:cpu_cores).to_i
+      usage_factor = (Dcmgr.conf.stopped_instance_usage_factor || 1.0).to_f
+      avail_mem_size = self.online_nodes.sum(:offering_memory_size).to_i - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)
+      avail_cpu_cores = self.online_nodes.sum(:offering_cpu_cores).to_i - ((alives_cpu_cores - stopped_cpu_cores) + (stopped_cpu_cores * usage_factor).floor)
+      
+      (avail_mem_size >= memory_size * num.to_i) && (avail_cpu_cores >= cpu_cores * num.to_i)
     end
 
     protected

@@ -11,19 +11,6 @@ module Dcmgr::Models
 
     SUPPORTED_BACKINGSTORE = [BACKINGSTORE_ZFS, BACKINGSTORE_RAW]
 
-    inheritable_schema do
-      String :node_id, :null=>false
-      String :export_path, :null=>false
-      Fixnum :offering_disk_space, :null=>false, :unsigned=>true
-      String :transport_type, :null=>false
-      String :storage_type, :null=>false
-      String :ipaddr, :null=>false
-      String :snapshot_base_path, :null=>false
-
-      index :node_id
-    end
-    with_timestamps
-
     one_to_many :volumes
     one_to_many :volume_snapshots
     
@@ -42,6 +29,7 @@ module Dcmgr::Models
         export_path.shift
         self.export_path = export_path.join('/')
       end
+      super
     end
 
     def self.create_pool(params)
@@ -85,6 +73,13 @@ module Dcmgr::Models
     # Returns available space of the storage node.
     def free_disk_space
       self.offering_disk_space - self.disk_usage
+    end
+
+    def self.check_availability?(size, num=1)
+      alives_size = Volume.dataset.lives.filter.sum(:size).to_i
+      avail_size = self.online_nodes.sum(:offering_disk_space).to_i - alives_size
+      
+      (avail_size >= size * num.to_i)
     end
     
   end

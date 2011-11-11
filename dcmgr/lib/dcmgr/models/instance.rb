@@ -5,32 +5,6 @@ module Dcmgr::Models
   class Instance < AccountResource
     taggable 'i'
 
-    inheritable_schema do
-      Fixnum :host_node_id, :null=>true
-      Fixnum :image_id, :null=>false
-      Fixnum :instance_spec_id, :null=>false
-      String :state, :null=>false, :default=>:init.to_s
-      String :status, :null=>false, :default=>:init.to_s
-      String :hostname, :null=>false, :size=>32
-      # TODO: remove ssh_key_pair_id column
-      String :ssh_key_pair_id
-      Fixnum :ha_enabled, :null=>false, :default=>0
-      Float  :quota_weight, :null=>false, :default=>0.0
-      Fixnum :cpu_cores, :null=>false, :unsigned=>true
-      Fixnum :memory_size, :null=>false, :unsigned=>true
-      
-      Text :user_data, :null=>false, :default=>''
-      Text :runtime_config, :null=>false, :default=>''
-      Text :ssh_key_data, :null=>true
-      Text :request_params, :null=>false
-
-      Time :terminated_at
-      index :state
-      index :terminated_at
-      index :host_node_id
-    end
-    with_timestamps
-    
     many_to_one :image
     many_to_one :instance_spec
     alias :spec :instance_spec
@@ -45,6 +19,8 @@ module Dcmgr::Models
     plugin ArchiveChangedColumn, :histories
     
     subset(:lives, {:terminated_at => nil})
+    subset(:runnings, {:state => 'running'})
+    subset(:stops, {:state => 'stopped'})
 
     RECENT_TERMED_PERIOD=(60 * 15)
     # lists the instances which alives and died within
@@ -59,7 +35,7 @@ module Dcmgr::Models
     # method calls.
     # Possible column data:
     #   kvm:
-    # {:vnc_port=>11, :telnet_port=>1111}
+    # {:vnc_port=>11}
     plugin :serialization
     serialize_attributes :yaml, :runtime_config
     # equal to SshKeyPair#to_hash
@@ -101,22 +77,6 @@ module Dcmgr::Models
           end
         end
         @update_hostname = true
-      end
-      
-      # check runtime_config column
-      if self.host_node
-        case self.hypervisor
-        when HostNode::HYPERVISOR_KVM
-          r1 = self.runtime_config
-          self.host_node.instances_dataset.lives.each { |i|
-            next true if i.id == self.id
-            r2 = i.runtime_config
-            unless r1[:vnc_port] != r2[:vnc_port] && r1[:telnet_port] != r2[:telnet_port]
-              errors.add(:runtime_config, "#{self.canonical_uuid}.runtime_config conflicted with #{i.canonical_uuid}")
-              break
-            end
-          }
-        end
       end
     end
 
@@ -188,13 +148,33 @@ module Dcmgr::Models
                  :instance_nics=>instance_nic.map {|n| n.to_hash },
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
-                 :netfilter_groups => self.netfilter_groups.map {|n| n.name },
+                 :netfilter_groups => self.netfilter_groups.map {|n| n.canonical_uuid },
+                 :vif=>[],
               })
       h.merge!({:instance_spec=>instance_spec.to_hash}) unless instance_spec.nil?
       h[:volume]={}
       if self.volume
         self.volume.each { |v|
           h[:volume][v.canonical_uuid] = v.to_hash
+        }
+      end
+      if self.instance_nic
+        self.instance_nic.each { |vif|
+          ent = vif.to_hash.merge({
+            :vif_id=>vif.canonical_uuid,
+          })
+          direct_lease = vif.direct_ip_lease.first
+          if direct_lease.nil?
+          else
+            outside_lease = direct_lease.nat_outside_lease
+            ent[:ipv4] = {
+              :network => vif.network.nil? ? nil : vif.network.to_hash,
+              :address=> direct_lease.ipv4,
+              :nat_network => vif.nat_network.nil? ? nil : vif.nat_network.to_hash,
+              :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
+            }
+          end
+          h[:vif] << ent
         }
       end
       h
@@ -231,8 +211,7 @@ module Dcmgr::Models
         :ssh_key_pair => nil,
         :network => [],
         :volume => [],
-        :netfilter_group_id => [],
-        :netfilter_group => [],
+        :netfilter_groups => self.netfilter_groups.map {|n| n.canonical_uuid },
         :vif => [],
         :hostname => hostname,
         :ha_enabled => ha_enabled,
@@ -251,10 +230,10 @@ module Dcmgr::Models
           h[:network] << {
             :network_name => n.network.canonical_uuid,
             :ipaddr => direct_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :dns_name => n.network.domain_name && "#{self.hostname}.#{self.account.uuid}.#{n.network.domain_name}",
+            :dns_name => n.network.domain_name && self.fqdn_hostname,
             :nat_network_name => n.nat_network && n.nat_network.canonical_uuid,
             :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :nat_dns_name => n.nat_network && n.nat_network.domain_name && "#{self.hostname}.#{self.account.uuid}.#{n.nat_network.domain_name}"
+            :nat_dns_name => n.nat_network && n.nat_network.domain_name && self.nat_fqdn_hostname,
           }
         }
       end
@@ -287,12 +266,6 @@ module Dcmgr::Models
         }
       end
 
-      if self.netfilter_groups
-        self.netfilter_groups.each { |n|
-          h[:netfilter_group_id] << n.canonical_uuid
-          h[:netfilter_group] << n.name
-        }
-      end
       h
     end
 
@@ -310,13 +283,12 @@ module Dcmgr::Models
       self.instance_spec.config
     end
 
-    def add_nic(network)
+    def add_nic(vif_template)
       # TODO: get default vendor ID based on the hypervisor.
       m = MacLease.lease('00fff1')
       nic = InstanceNic.new(:mac_addr=>m.mac_addr)
-      nic.network = network
-      nic.nat_network = network.nat_network
       nic.instance = self
+      nic.device_index = vif_template[:index]
       nic.save
     end
 
@@ -342,15 +314,12 @@ module Dcmgr::Models
       self.instance_nic.map { |nic| nic.ip }
     end
 
-#    def netfilter_group_instances
-#      instances = self.netfilter_groups.map { |g| g.instances }
-#
-#      instances.flatten!.uniq! if instances.size > 0
-#      instances
-#    end
-
     def fqdn_hostname
       sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.network.domain_name)
+    end
+
+    def nat_fqdn_hostname
+      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.nat_network.domain_name)
     end
 
     # Retrieve all networks belong to this instance
@@ -365,21 +334,6 @@ module Dcmgr::Models
       }.values.map { |i|
         i.first
       }
-    end
-
-    # Join this instance to the list of netfilter group using group name. 
-    # @param [String] account_id uuid of current account.
-    # @param [String,Array] nfgroup_names 
-    def join_nfgroup_by_name(account_id, nfgroup_names)
-      nfgroup_names = [nfgroup_names] if nfgroup_names.is_a?(String)
-
-      uuids = nfgroup_names.map { |n|
-        ng = NetfilterGroup.for_update.filter(:account_id=>account_id,
-                                              :name=>n).first
-        ng.nil? ? nil : ng.canonical_uuid
-      }
-      # clean up nils
-      join_netfilter_group(uuids.compact.uniq)
     end
 
     def self.lock!
@@ -422,9 +376,18 @@ module Dcmgr::Models
       i.cpu_cores = spec.cpu_cores
       i.memory_size = spec.memory_size
       i.quota_weight = spec.quota_weight
-      i.request_params = params
+      i.request_params = symbolize_keys(params)
 
       i
+    end
+
+    private
+    def self.symbolize_keys(params)
+      raise ArgumentError unless params.is_a?(::Hash)
+      params.inject({}) do |options, (key, value)|
+        options[(key.to_sym rescue key) || key] = value
+        options
+      end
     end
     
   end

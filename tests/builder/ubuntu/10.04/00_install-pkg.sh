@@ -12,7 +12,7 @@ builder_path=${builder_path:?"builder_path needs to be set"}
 
 # core packages
 deb_pkgs="
- ebtables iptables ipset ethtool
+ ebtables iptables ipset ethtool vlan
  openssh-server openssh-client
  ruby ruby-dev libopenssl-ruby1.8
  rdoc1.8 irb1.8
@@ -25,6 +25,7 @@ deb_pkgs="
  open-iscsi open-iscsi-utils
  nginx
  libxml2-dev  libxslt1-dev
+ ipcalc
 "
 # apache2 apache2-threaded-dev libapache2-mod-passenger
 # Pick them from natty as obsolete version is in LTS.
