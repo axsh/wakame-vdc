@@ -114,8 +114,6 @@ module Dcmgr
       private
       def create_config(ctx)
         # create config file i-xxxxxxxx.log
-        vnic = ctx.inst[:instance_nics].first
-        mac_addr = vnic[:mac_addr].unpack('A2'*6).join(':')
 
         config_path = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
         # check config file
@@ -123,14 +121,22 @@ module Dcmgr
           sh("rm #{config_path}")
         end
 
+        vifs = ctx.inst[:vif]
+
         File.open(config_path, 'w') { |f|
-          f.puts "lxc.network.type = veth"
-          f.puts "lxc.network.link = #{ctx.bridge_if}"
-          f.puts "lxc.network.flags = up"
           f.puts "lxc.utsname = #{ctx.inst_id}"
           f.puts ""
-          f.puts "lxc.network.veth.pair = #{vnic[:uuid]}"
-          f.puts "lxc.network.hwaddr = #{mac_addr}"
+          if !vifs.empty?
+            vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
+              f.puts "lxc.network.type = veth"
+              if vif[:ipv4]
+                f.puts "lxc.network.link = #{vif[:ipv4][:network][:link_interface]}"
+              end
+              f.puts "lxc.network.veth.pair = #{vif[:uuid]}"
+              f.puts "lxc.network.hwaddr = #{vif[:mac_addr].unpack('A2'*6).join(':')}"
+              f.puts "lxc.network.flags = up"
+            }
+          end
           f.puts ""
           f.puts "lxc.tty = 4"
           f.puts "lxc.pts = 1024"
