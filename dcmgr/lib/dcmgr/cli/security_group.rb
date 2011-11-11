@@ -5,14 +5,34 @@ module Dcmgr::Cli
     namespace :securitygroup
     M = Dcmgr::Models
 
+    no_tasks {
+      def read_rule_text
+        if options[:rule].nil?
+          # Set blank string as rule.
+          return ''
+        elsif options[:rule] == '-'
+          # Read from STDIN
+          STDIN.read
+        else
+          # Read from file.
+          raise "Unknown rule file: #{options[:rule]}" if !File.exists?(options[:rule])
+          File.read(options[:rule])
+        end
+      end
+    }
+
     desc "add [options]", "Add a new security group"
     method_option :uuid, :type => :string, :desc => "The UUID for the new security group."
     method_option :account_id, :type => :string, :desc => "The UUID of the account this security group belongs to.", :required => true
     method_option :description, :type => :string, :desc => "The description for this new security group."
+    method_option :rule, :type => :string, :desc => "Path to the rule text file. (\"-\" is from STDIN)"
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
+
+      fields = options.dup
+      fields[:rule] = read_rule_text
       
-      puts super(M::NetfilterGroup,options)
+      puts super(M::NetfilterGroup,fields)
     end
     
     desc "del UUID", "Delete a security group"
@@ -52,9 +72,16 @@ __END
     desc "modify UUID [options]", "Modify an existing security group"
     method_option :account_id, :type => :string, :desc => "The UUID of the account this security group belongs to."
     method_option :description, :type => :string, :desc => "The description for this new security group."
+    method_option :rule, :type => :string, :desc => "Path to the rule text file. (\"-\" is from STDIN)"
     def modify(uuid)
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
-      super(M::NetfilterGroup,uuid,options)
+
+      fields = options.dup
+      if options[:rule]
+        fields[:rule] = read_rule_text
+      end
+      
+      super(M::NetfilterGroup,uuid, fields)
     end
     
     desc "apply UUID [options]", "Apply a security group to an instance"
@@ -75,23 +102,5 @@ __END
       group.remove_instance(instance)
     end
     
-    desc "addrule UUID RULE", "Add a rule to a security group"
-    def addrule(g_uuid, rulestr)
-      UnknownUUIDError.raise(g_uuid) if M::NetfilterGroup[g_uuid].nil?
-      
-      #TODO: check rule syntax
-      new_rule = M::NetfilterRule.new(:permission => rulestr)
-      new_rule.netfilter_group = M::NetfilterGroup[g_uuid]
-      new_rule.save
-    end
-    
-    desc "delrule UUID RULE", "Delete a rule from a security group"
-    def delrule(g_uuid, rulestr)
-      UnknownUUIDError.raise(g_uuid) if M::NetfilterGroup[g_uuid].nil?
-      rule = M::NetfilterRule.find(:netfilter_group_id => M::NetfilterGroup[g_uuid].id, :permission => rulestr)
-      Error.raise("Group '#{g_uuid}' does not contain rule '#{rulestr}'.",100) if rule.nil?
-      
-      rule.destroy
-    end
   end
 end
