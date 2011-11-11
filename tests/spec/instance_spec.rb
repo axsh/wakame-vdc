@@ -203,7 +203,8 @@ describe "/api/instances" do
     end
 
     APITest.update("/instances/#{instance_id}/reboot", []).success?.should be_true
-    retry_until_network_stopped(instance_id)
+    # TODO: proper check for rebooted instance. i.e. checking wtmp.
+    sleep 5
 
     APITest.delete("/instances/#{instance_id}").success?.should be_true
     retry_until_terminated(instance_id)

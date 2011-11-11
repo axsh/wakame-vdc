@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Cli
-  class Group < Base
-    namespace :group
+  class SecurityGroup < Base
+    namespace :securitygroup
     M = Dcmgr::Models
 
     desc "add [options]", "Add a new security group"

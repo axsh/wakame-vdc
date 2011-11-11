@@ -2,7 +2,7 @@ Sequel.migration do
   up do
     create_table(:accounts) do
       primary_key :id, :type=>"int(11)"
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :description, "varchar(255)"
       column :enabled, "int(11)", :default=>1, :null=>false
       column :created_at, "datetime", :null=>false
@@ -35,7 +35,7 @@ Sequel.migration do
     create_table(:host_nodes) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :node_id, "varchar(255)"
@@ -63,7 +63,7 @@ Sequel.migration do
     create_table(:images) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :boot_dev_type, "int(11)", :default=>1, :null=>false
@@ -87,7 +87,7 @@ Sequel.migration do
     
     create_table(:instance_nics) do
       primary_key :id, :type=>"int(11)"
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :instance_id, "int(11)", :null=>false
       column :network_id, "int(11)", :null=>false
       column :nat_network_id, "int(11)"
@@ -106,7 +106,7 @@ Sequel.migration do
     create_table(:instance_specs) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :hypervisor, "varchar(255)", :null=>false
       column :arch, "varchar(255)", :null=>false
       column :cpu_cores, "int(11)", :null=>false
@@ -125,7 +125,7 @@ Sequel.migration do
     create_table(:instances) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :host_node_id, "int(11)"
       column :image_id, "int(11)", :null=>false
       column :instance_spec_id, "int(11)", :null=>false
@@ -193,7 +193,7 @@ Sequel.migration do
     create_table(:netfilter_groups) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :description, "varchar(255)"
@@ -216,7 +216,7 @@ Sequel.migration do
     create_table(:networks) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :ipv4_network, "varchar(255)", :null=>false
       column :ipv4_gw, "varchar(255)"
       column :prefix, "int(11)", :default=>24, :null=>false
@@ -319,7 +319,7 @@ Sequel.migration do
     create_table(:storage_nodes) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :node_id, "varchar(255)", :null=>false
       column :export_path, "varchar(255)", :null=>false
       column :offering_disk_space, "int(11)", :null=>false
@@ -347,7 +347,7 @@ Sequel.migration do
     create_table(:tags) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :type_id, "int(11)", :null=>false
       column :name, "varchar(255)", :null=>false
       column :attributes, "varchar(255)"
@@ -362,7 +362,7 @@ Sequel.migration do
     create_table(:vlan_leases) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :tag_id, "int(11)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
@@ -375,7 +375,7 @@ Sequel.migration do
     create_table(:volume_snapshots) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :storage_node_id, "int(11)", :null=>false
       column :origin_volume_id, "varchar(255)", :null=>false
       column :size, "int(11)", :null=>false
@@ -395,7 +395,7 @@ Sequel.migration do
     create_table(:volumes) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
-      column :uuid, "char(8)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
       column :storage_node_id, "int(11)"
       column :status, "varchar(255)", :default=>"initialized", :null=>false
       column :state, "varchar(255)", :default=>"initialized", :null=>false

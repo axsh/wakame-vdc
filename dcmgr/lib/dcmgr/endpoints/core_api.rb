@@ -226,7 +226,7 @@ module Dcmgr
             wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
             spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
-            if !Models::HostNode.check_availability?(spec.cpu_cores, spec.memory_size)
+            if !Models::HostNode.check_domain_capacity?(spec.cpu_cores, spec.memory_size)
               raise OutOfHostCapacity
             end
             
@@ -280,7 +280,7 @@ module Dcmgr
               snapshot_id = wmi.source[:snapshot_id]
               vs = find_volume_snapshot(snapshot_id)
 
-              if !Models::StorageNode.check_availability?(vs.size)
+              if !Models::StorageNode.check_domain_capacity?(vs.size)
                 raise OutOfDiskSpace
               end
               
@@ -505,7 +505,7 @@ module Dcmgr
 
             volume_size = (vs ? vs.size : params[:volume_size].to_i)
 
-            if !Models::StorageNode.check_availability?(volume_size)
+            if !Models::StorageNode.check_domain_capacity?(volume_size)
               raise OutOfDiskSpace
             end
 
