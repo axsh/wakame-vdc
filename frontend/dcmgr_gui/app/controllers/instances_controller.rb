@@ -11,7 +11,7 @@ class InstancesController < ApplicationController
       :host_pool_id => params[:host_pool_id],
       :host_name => params[:host_name],
       :user_data => params[:user_data],
-      :nf_group => params[:nf_group],
+      :security_groups => params[:security_groups],
       :ssh_key => params[:ssh_key]
     }
     instance = DcmgrResource::Instance.create(params)

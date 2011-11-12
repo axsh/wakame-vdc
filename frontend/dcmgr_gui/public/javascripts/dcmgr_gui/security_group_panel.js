@@ -78,9 +78,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   });
     
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
-    var netfilter_group = params.data.netfilter_group;
-    c_pagenate.changeTotal(netfilter_group.owner_total);
-    c_list.setData(netfilter_group.results);
+    var security_group = params.data.security_group;
+    c_pagenate.changeTotal(security_group.owner_total);
+    c_list.setData(security_group.results);
     c_list.singleCheckList(c_list.detail_template);
 
     var edit_security_group_buttons = {};

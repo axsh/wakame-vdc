@@ -102,18 +102,17 @@ DcmgrGUI.prototype.imagePanel = function(){
     var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').text();
     var launch_in = $(this).find('#right_select_list').find('option');
     var user_data = $(this).find('#user_data').val();
-    var nf_group = [];
+    var security_groups = [];
     $.each(launch_in,function(i){
-     nf_group.push("nf_group[]="+ $(this).text());
+     security_groups.push("security_groups[]="+ $(this).text());
     });
-    var nf_strings = nf_group.join('&');
 
     var data = "image_id="+image_id
               +"&host_pool_id="+host_pool_id
               +"&instance_spec_id="+instance_spec_id
               +"&host_name="+host_name
               +"&user_data="+user_data
-              +"&"+nf_strings
+              +"&" + security_groups.join('&')
               +"&ssh_key="+ssh_key_pair;
     
     request = new DcmgrGUI.Request;
@@ -235,12 +234,12 @@ DcmgrGUI.prototype.imagePanel = function(){
             "data": "",
             success: function(json,status){
               var data = [];
-              var results = json.netfilter_group.results;
+              var results = json.security_group.results;
               var size = results.length;
               for (var i=0; i < size ; i++) {
                 data.push({
                   "value" : results[i].result.uuid,
-                  "name" : results[i].result.name
+                  "name" : results[i].result.uuid,
                 });
               }
 

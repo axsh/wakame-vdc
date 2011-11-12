@@ -52,15 +52,15 @@ class DialogController < ApplicationController
   
   def delete_security_group
     @uuid = params[:ids][0]
-    @netfilter_group = DcmgrResource::NetfilterGroup.show(@uuid)
+    @security_group = DcmgrResource::SecurityGroup.show(@uuid)
   end
   
   def edit_security_group
     @uuid = params[:ids][0]
-    @netfilter_group = DcmgrResource::NetfilterGroup.show(@uuid)
+    @security_group = DcmgrResource::SecurityGroup.show(@uuid)
     
-    @description =  @netfilter_group["description"]
-    @rule = @netfilter_group["rule"]
+    @description =  @security_group["description"]
+    @rule = @security_group["rule"]
     render :create_and_edit_security_group
   end
   
