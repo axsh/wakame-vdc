@@ -83,6 +83,9 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :instance_id, "int(11)", :null=>false
       column :security_group_id, "int(11)", :null=>false
+
+      index [:instance_id]
+      index [:security_group_id]
     end
     
     create_table(:instance_nics) do
