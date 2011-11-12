@@ -82,15 +82,6 @@ module Dcmgr
     class UUIDPrefixDuplication < StandardError; end
     autoload :Base, 'dcmgr/models/base'
 
-    CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,
-                          :Image,:HostNode,:RequestLog,:Instance,
-                          :NetfilterGroup, :NetfilterRule,
-                          :StorageNode,:Volume,:VolumeSnapshot,
-                          :InstanceNetfilterGroup,
-                          :InstanceSpec, :InstanceNic, :Network, :IpLease,
-                          :SshKeyPair, :History, :HostnameLease, :MacLease,
-                          :VlanLease, :Quota
-                         ].freeze
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
     autoload :Tag, 'dcmgr/models/tag'
