@@ -369,19 +369,10 @@ module Dcmgr::Models
       i.cpu_cores = spec.cpu_cores
       i.memory_size = spec.memory_size
       i.quota_weight = spec.quota_weight
-      i.request_params = symbolize_keys(params)
+      i.request_params = params.dup
 
       i
     end
 
-    private
-    def self.symbolize_keys(params)
-      raise ArgumentError unless params.is_a?(::Hash)
-      params.inject({}) do |options, (key, value)|
-        options[(key.to_sym rescue key) || key] = value
-        options
-      end
-    end
-    
   end
 end
