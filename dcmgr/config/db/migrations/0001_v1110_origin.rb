@@ -79,10 +79,10 @@ Sequel.migration do
       index [:uuid], :unique=>true, :name=>:uuid
     end
     
-    create_table(:instance_netfilter_groups) do
+    create_table(:instance_security_groups) do
       primary_key :id, :type=>"int(11)"
       column :instance_id, "int(11)", :null=>false
-      column :netfilter_group_id, "int(11)", :null=>false
+      column :security_group_id, "int(11)", :null=>false
     end
     
     create_table(:instance_nics) do
@@ -190,7 +190,7 @@ Sequel.migration do
       index [:mac_addr], :unique=>true
     end
     
-    create_table(:netfilter_groups) do
+    create_table(:security_groups) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
       column :uuid, "varchar(255)", :null=>false
@@ -203,14 +203,14 @@ Sequel.migration do
       index [:uuid], :unique=>true, :name=>:uuid
     end
     
-    create_table(:netfilter_rules) do
+    create_table(:security_group_rules) do
       primary_key :id, :type=>"int(11)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      column :netfilter_group_id, "int(11)", :null=>false
+      column :security_group_id, "int(11)", :null=>false
       column :permission, "varchar(255)", :null=>false
 
-      index [:netfilter_group_id]
+      index [:security_group_id]
     end
     
     create_table(:networks) do
@@ -436,6 +436,6 @@ Sequel.migration do
   end
   
   down do
-    drop_table(:accounts, :frontend_systems, :histories, :host_nodes, :hostname_leases, :images, :instance_netfilter_groups, :instance_nics, :instance_specs, :instances, :ip_leases, :job_states, :mac_leases, :netfilter_groups, :netfilter_rules, :networks, :node_states, :quotas, :request_logs, :ssh_key_pairs, :storage_nodes, :tag_mappings, :tags, :vlan_leases, :volume_snapshots, :volumes, :dhcp_range, :physical_networks)
+    drop_table(:accounts, :frontend_systems, :histories, :host_nodes, :hostname_leases, :images, :instance_security_groups, :instance_nics, :instance_specs, :instances, :ip_leases, :job_states, :mac_leases, :security_groups, :security_group_rules, :networks, :node_states, :quotas, :request_logs, :ssh_key_pairs, :storage_nodes, :tag_mappings, :tags, :vlan_leases, :volume_snapshots, :volumes, :dhcp_range, :physical_networks)
   end
 end

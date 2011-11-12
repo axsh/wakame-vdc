@@ -268,9 +268,9 @@ module Dcmgr
             instance.save
 
             if params[:nf_group].is_a?(Array) || params[:nf_group].is_a?(String)
-              instance.join_netfilter_group(params[:nf_group])
+              instance.join_security_group(params[:nf_group])
             elsif params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
-              instance.join_netfilter_group(params[:security_groups])
+              instance.join_security_group(params[:security_groups])
             end
             
             instance.state = :scheduling
@@ -725,7 +725,7 @@ module Dcmgr
         description 'Show lists of the security groups'
         operation :index do
           control do
-            res = select_index(:NetfilterGroup, {:start => params[:start],
+            res = select_index(:SecurityGroup, {:start => params[:start],
                                  :limit => params[:limit]})
             response_to(res)
           end
@@ -734,7 +734,7 @@ module Dcmgr
         operation :show do
           description 'Show the security group'
           control do
-            g = find_by_uuid(:NetfilterGroup, params[:id])
+            g = find_by_uuid(:SecurityGroup, params[:id])
             raise OperationNotPermitted unless examine_owner(g)
 
             response_to(g.to_api_document)
@@ -746,11 +746,11 @@ module Dcmgr
           # params description, string
           # params rule, string
           control do
-            Models::NetfilterGroup.lock!
+            Models::SecurityGroup.lock!
 
-            g = Models::NetfilterGroup.create(:account_id=>@account.canonical_uuid,
-                                              :description=>params[:description],
-                                              :rule=>params[:rule])
+            g = Models::SecurityGroup.create(:account_id=>@account.canonical_uuid,
+                                             :description=>params[:description],
+                                             :rule=>params[:rule])
             response_to(g.to_api_document)
           end
         end
@@ -760,9 +760,9 @@ module Dcmgr
           # params description, string
           # params rule, string
           control do
-            g = find_by_uuid(:NetfilterGroup, params[:id])
+            g = find_by_uuid(:SecurityGroup, params[:id])
 
-            raise UnknownNetfilterGroup if g.nil?
+            raise UnknownSecurityGroup if g.nil?
             raise OperationNotPermitted unless examine_owner(g)
 
             if params[:description]
@@ -775,8 +775,8 @@ module Dcmgr
             g.save
 
             commit_transaction
-            # refresh netfilter_rules
-            Dcmgr.messaging.event_publish('hva/netfilter_updated', :args=>[g.canonical_uuid])
+            # refresh security group rules on host nodes.
+            Dcmgr.messaging.event_publish('hva/security_group_updated', :args=>[g.canonical_uuid])
 
             response_to(g.to_api_document)
           end
@@ -785,10 +785,10 @@ module Dcmgr
         operation :destroy do
           description "Delete the security group"
           control do
-            Models::NetfilterGroup.lock!
-            g = find_by_uuid(:NetfilterGroup, params[:id])
+            Models::SecurityGroup.lock!
+            g = find_by_uuid(:SecurityGroup, params[:id])
 
-            raise UnknownNetfilterGroup if g.nil?
+            raise UnknownSecurityGroup if g.nil?
             raise OperationNotPermitted unless examine_owner(g)
 
             # raise OperationNotPermitted if g.instances.size > 0

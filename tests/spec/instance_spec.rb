@@ -42,7 +42,7 @@ describe "/api/instances" do
   # security_groups
   it "should run instance with security_groups" do
     run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                              :security_groups=>['ng-demofgr']})
+                                              :security_groups=>['sg-demofgr']})
   end
 
   # hostname

@@ -32,18 +32,18 @@ module Dcmgr::Cli
       fields = options.dup
       fields[:rule] = read_rule_text
       
-      puts super(M::NetfilterGroup,fields)
+      puts super(M::SecurityGroup,fields)
     end
     
     desc "del UUID", "Delete a security group"
     def del(uuid)
-      super(M::NetfilterGroup,uuid)
+      super(M::SecurityGroup,uuid)
     end
     
     desc "show [UUID]", "Show security group(s)"
     def show(uuid=nil)
       if uuid
-        group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
+        group = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
 Group UUID:
   <%= group.canonical_uuid %>
@@ -53,16 +53,16 @@ Account id:
 Description:
   <%= group.description %>
 <%- end -%>
-<%- unless group.netfilter_rules.empty? -%>
+<%- unless group.security_group_rules.empty? -%>
 Rules:
-<%- group.netfilter_rules.each { |rule| -%>
+<%- group.security_group_rules.each { |rule| -%>
   <%= rule.permission %>
 <%- } -%>
 <%- end -%>
 __END
       else
         puts ERB.new(<<__END, nil, '-').result(binding)
-<%- M::NetfilterGroup.all { |row| -%>
+<%- M::SecurityGroup.all { |row| -%>
 <%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= row.description %>
 <%- } -%>
 __END
@@ -81,13 +81,13 @@ __END
         fields[:rule] = read_rule_text
       end
       
-      super(M::NetfilterGroup,uuid, fields)
+      super(M::SecurityGroup,uuid, fields)
     end
     
     desc "apply UUID [options]", "Apply a security group to an instance"
     method_option :instance, :type => :string, :required => :true, :desc => "The instance to apply the group to"
     def apply(uuid)
-      group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
+      group = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
       instance = M::Instance[options[:instance]] || UnknownUUIDError.raise(options[:instance])
       Error.raise("Group #{uuid} is already applied to instance #{options[:instance]}.",100) if group.instances.member?(instance)
       group.add_instance(instance)
@@ -96,7 +96,7 @@ __END
     desc "remove UUID [options]", "Remove a security group from an instance"
     method_option :instance, :type => :string, :required => :true, :desc => "The instance to remove the group from"
     def remove(uuid)
-      group = M::NetfilterGroup[uuid] || UnknownUUIDError.raise(uuid)
+      group = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
       instance = M::Instance[options[:instance]] || UnknownUUIDError.raise(options[:instance])
       Error.raise("Group #{uuid} is not applied to instance #{options[:instance]}.",100) unless group.instances.member?(instance)
       group.remove_instance(instance)

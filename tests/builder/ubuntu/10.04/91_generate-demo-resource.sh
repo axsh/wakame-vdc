@@ -152,15 +152,15 @@ shlog ./bin/vdc-manage spec  add --uuid is-demo2 --account-id ${account_id} --ar
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
-shlog ./bin/vdc-manage securitygroup add --uuid  ng-demofgr --account-id ${account_id} --description demo
-shlog ./bin/vdc-manage securitygroup modify ng-demofgr --rule=- <<EOF
+shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo
+shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
 tcp:22,22,ip4:0.0.0.0
 EOF
-shlog ./bin/vdc-manage securitygroup modify ng-demofgr --rule=- <<EOF
+shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
 tcp:22,22,ip4:0.0.0.0
 tcp:80,80,ip4:0.0.0.0
 EOF
-shlog ./bin/vdc-manage securitygroup modify ng-demofgr --rule=- <<EOF
+shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
 # demo rule for demo instances
 tcp:22,22,ip4:0.0.0.0
 tcp:80,80,ip4:0.0.0.0

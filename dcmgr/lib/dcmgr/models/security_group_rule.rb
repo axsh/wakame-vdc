@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Models
-  class NetfilterRule < BaseNew
+  class SecurityGroupRule < BaseNew
 
-    many_to_one :netfilter_group
+    many_to_one :security_group
 
     def to_hash
       {
