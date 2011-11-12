@@ -28,7 +28,7 @@ describe "/api/instances" do
   # - param :host_id, string, :optional # not implemented yet
   # o param :hostname, string, :optional
   # o param :user_data, string, :optional
-  # o param :nf_group, array, :optional
+  # o param :security_groups, array, :optional
   # o param :ssh_key_id, string, :optional
   # - param :network_id, string, :optional # not implemented yet
   # o param :ha_enabled, string, :optional
@@ -39,10 +39,10 @@ describe "/api/instances" do
                                               :ssh_key_id=>'ssh-demo'})
   end
 
-  # nf_group
-  it "should run instance with nf_group" do
+  # security_groups
+  it "should run instance with security_groups" do
     run_instance_then_reboot_then_terminate({:image_id=>'wmi-lucid0', :instance_spec_id=>'is-demospec',
-                                              :nf_group=>['ng-demofgr']})
+                                              :security_groups=>['ng-demofgr']})
   end
 
   # hostname

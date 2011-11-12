@@ -211,7 +211,7 @@ module Dcmgr::Models
         :ssh_key_pair => nil,
         :network => [],
         :volume => [],
-        :netfilter_groups => self.netfilter_groups.map {|n| n.canonical_uuid },
+        :security_groups => self.netfilter_groups.map {|n| n.canonical_uuid },
         :vif => [],
         :hostname => hostname,
         :ha_enabled => ha_enabled,

@@ -269,6 +269,8 @@ module Dcmgr
 
             if params[:nf_group].is_a?(Array) || params[:nf_group].is_a?(String)
               instance.join_netfilter_group(params[:nf_group])
+            elsif params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
+              instance.join_netfilter_group(params[:security_groups])
             end
             
             instance.state = :scheduling
@@ -719,8 +721,8 @@ module Dcmgr
 
       end
 
-      collection :netfilter_groups do
-        description 'Show lists of the netfilter_groups'
+      collection :security_groups do
+        description 'Show lists of the security groups'
         operation :index do
           control do
             res = select_index(:NetfilterGroup, {:start => params[:start],
@@ -730,7 +732,7 @@ module Dcmgr
         end
 
         operation :show do
-          description 'Show the netfilter_groups'
+          description 'Show the security group'
           control do
             g = find_by_uuid(:NetfilterGroup, params[:id])
             raise OperationNotPermitted unless examine_owner(g)
@@ -740,7 +742,7 @@ module Dcmgr
         end
 
         operation :create do
-          description 'Register a new netfilter_group'
+          description 'Register a new security group'
           # params description, string
           # params rule, string
           control do
@@ -754,7 +756,7 @@ module Dcmgr
         end
 
         operation :update do
-          description "Update parameters for the netfilter group"
+          description "Update parameters for the security group"
           # params description, string
           # params rule, string
           control do
@@ -781,7 +783,7 @@ module Dcmgr
         end
 
         operation :destroy do
-          description "Delete the netfilter group"
+          description "Delete the security group"
           control do
             Models::NetfilterGroup.lock!
             g = find_by_uuid(:NetfilterGroup, params[:id])

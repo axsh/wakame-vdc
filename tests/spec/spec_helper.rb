@@ -146,24 +146,24 @@ module InstanceHelper
 
 end
 
-module NetfilterHelper
+module SecurityGroupHelper
 
-  def add_rules(netfilter_group_id, rules)
-    new_rules = pickup_rules(get_rules(netfilter_group_id)) + rules
-    update_rules(netfilter_group_id, new_rules)
+  def add_rules(security_group_id, rules)
+    new_rules = pickup_rules(get_rules(security_group_id)) + rules
+    update_rules(security_group_id, new_rules)
   end
 
-  def del_rules(netfilter_group_id, rules)
-    new_rules = pickup_rules(get_rules(netfilter_group_id)) - rules
-    update_rules(netfilter_group_id, new_rules)
+  def del_rules(security_group_id, rules)
+    new_rules = pickup_rules(get_rules(security_group_id)) - rules
+    update_rules(security_group_id, new_rules)
   end
 
-  def update_rules(netfilter_group_id, rules)
-    APITest.update("/netfilter_groups/#{netfilter_group_id}", {:rule => rules.uniq.join("\n")})
+  def update_rules(security_group_id, rules)
+    APITest.update("/security_groups/#{security_group_id}", {:rule => rules.uniq.join("\n")})
   end
 
-  def get_rules(netfilter_group_id)
-    APITest.get("/netfilter_groups/#{netfilter_group_id}")
+  def get_rules(security_group_id)
+    APITest.get("/security_groups/#{security_group_id}")
   end
 
   def pickup_rules(response)
