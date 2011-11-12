@@ -805,31 +805,6 @@ module Dcmgr
 
       end
 
-      collection :netfilter_rules do
-        operation :index do
-          control do
-          end
-        end
-
-        operation :show do
-          description 'Show lists of the netfilter_rules'
-          control do
-            rules = []
-            begin
-              @name = params[:id]
-              g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
-              raise UnknownNetfilterGroup if g.nil?
-
-              g.netfilter_rules.each { |rule|
-                rules << rule.values
-              }
-            end
-
-            response_to(rules)
-          end
-        end
-      end
-
       # obsolute path: "/storage_pools"
       [ :storage_pools, :storage_nodes ].each do |path|
         collection path do
