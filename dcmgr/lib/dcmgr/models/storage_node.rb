@@ -4,7 +4,7 @@ require 'isono/models/node_state'
 
 module Dcmgr::Models
   class StorageNode < AccountResource
-    taggable 'sp'
+    taggable 'sn'
 
     BACKINGSTORE_ZFS = 'zfs'
     BACKINGSTORE_RAW = 'raw'
