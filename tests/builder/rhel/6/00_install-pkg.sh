@@ -35,7 +35,7 @@ echo $(dirname $0)
 rpm -qa | grep epel || rpm -ivh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-5.noarch.rpm
 yum install -y ${rpm_pkgs}
 
-rpm -qa | grep rabbitmq-server || rpm -ivh http://www.rabbitmq.com/releases/rabbitmq-server/v1.8.1/rabbitmq-server-1.8.1-1.noarch.rpm
+rpm -qa | grep rabbitmq-server || rpm -ivh http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/rabbitmq-server-2.6.1-1.noarch.rpm
 which bundle >/dev/null || gem install bundler --no-ri --no-rdoc
 
 # enable mysql
