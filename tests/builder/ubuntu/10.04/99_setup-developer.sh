@@ -15,7 +15,7 @@ work_dir=${work_dir:?"work_dir needs to be set"}
  
 echo "# Configure Database for MySQL ..."
 
-for dbnames in ${dcmgr_dbname} ${webui_dbname}; do
+for dbname in ${dcmgr_dbname} ${webui_dbname}; do
   echo | mysql -uroot ${dbname} >/dev/null 2>&1 && {
     yes | mysqladmin -uroot drop ${dbname} >/dev/null 2>&1
   }
