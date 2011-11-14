@@ -30,7 +30,7 @@ describe "/api/images" do
     require 'yaml'
     vmimage_uri = YAML.load(res["source"])[:uri]
     vmimage_path = URI.parse(vmimage_uri).path
-    cmd = "./bin/vdc-manage image add local #{vmimage_path} --md5sum #{res["md5sum"]} --account-id #{res["account_id"]} --uuid #{res["id"]} --arch #{res["arch"]} --description \"#{res["description"]}\" --state init"
+    cmd = "./bin/vdc-manage image add local #{vmimage_path} --md5sum #{res["md5sum"]} --account-id #{res["account_id"]} --uuid #{res["id"]} --arch #{res["arch"]} --description '#{res["description"]}' --state init"
 
     res = APITest.delete("/images/#{image_id}")
     res.success?.should be_true
@@ -46,7 +46,7 @@ describe "/api/images" do
     # TODO: Image should be registerd via API.
     require 'yaml'
     snap_id = YAML.load(res["source"])[:snapshot_id]
-    cmd = "./bin/vdc-manage image add volume #{snap_id} --md5sum #{res["md5sum"]} --account-id #{res["account_id"]} --uuid #{res["id"]} --arch #{res["arch"]} --description \"#{res["description"]}\" --state init"
+    cmd = "./bin/vdc-manage image add volume #{snap_id} --md5sum #{res["md5sum"]} --account-id #{res["account_id"]} --uuid #{res["id"]} --arch #{res["arch"]} --description '#{res["description"]}' --state init"
 
     res = APITest.delete("/images/#{image_id}")
     res.success?.should be_true
