@@ -27,12 +27,11 @@ class KeypairsController < ApplicationController
   
   def create_ssh_keypair
     data = {
-      :name => params[:name],
       :download_once => params[:download_once]
     }
     
-    @filename = params[:name] + ".pem"
     @ssh_key_pair = DcmgrResource::SshKeyPair.create(data)
+    @filename = @ssh_key_pair.uuid + ".pem"
     
     send_data(@ssh_key_pair.private_key,{
               :filename => @filename,
@@ -54,7 +53,7 @@ class KeypairsController < ApplicationController
   def prk_download
     uuid = params[:id]
     @ssh_key_pair = DcmgrResource::SshKeyPair.show(uuid)
-    @filename = @ssh_key_pair['name'] + ".pem"
+    @filename = @ssh_key_pair['uuid'] + ".pem"
     send_data(@ssh_key_pair['private_key'],{
               :filename => @filename,
               :type => 'application/pgp-encrypted',
