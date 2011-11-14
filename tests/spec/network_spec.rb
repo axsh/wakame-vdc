@@ -8,8 +8,8 @@ describe "/api/networks" do
     res.success?.should be_true
   end
 
-  it "should describe network (nw-demonet)" do
-    network_id = "nw-demonet"
+  it "should describe network (nw-demo1)" do
+    network_id = "nw-demo1"
     res = APITest.get("/networks/#{network_id}")
     res["id"].should == network_id
     res.success?.should be_true
