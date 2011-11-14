@@ -220,9 +220,8 @@ DcmgrGUI.prototype.imagePanel = function(){
               }
 
               for (var i=0; i < size ; i++) {
-                var name = results[i].result.name;
                 var ssh_keypair_id = results[i].result.id;
-                var html = '<option id="'+ ssh_keypair_id +'" value="'+ name +'">'+name+'</option>'
+                var html = '<option id="'+ ssh_keypair_id +'" value="'+ ssh_keypair_id +'">'+ssh_keypair_id+'</option>'
                 select_keypair.append(html);
               }
             }

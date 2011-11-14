@@ -16,7 +16,7 @@ module DcmgrResource
       instance.host_name = params[:host_name]
       instance.user_data = params[:user_data]
       instance.security_groups = params[:security_groups]
-      instance.ssh_key = params[:ssh_key]
+      instance.ssh_key_id = params[:ssh_key]
       instance.save
       instance
     end
