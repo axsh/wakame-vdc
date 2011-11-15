@@ -17,17 +17,17 @@ if is_enabled? :oneshot then
       @ssh_res     = APITest.create('/ssh_key_pairs', {})
       @inst_res    = APITest.create("/instances", {:image_id=>cfg[:image_id], :instance_spec_id=>cfg[:spec_id], :ssh_key_id=>@ssh_res["id"], :nf_group=>[@sg_res["id"]]})
       @vol_res     = APITest.create("/volumes", {:volume_size=>cfg[:volume_size]})
-      #retry_until do
-        #APITest.get("/volumes/#{@vol_res["id"]}")["state"] == "available"
-      #end if @vol_res.success?
+      retry_until do
+        APITest.get("/volumes/#{@vol_res["id"]}")["state"] == "available"
+      end if @vol_res.success?
       @snap_res    = APITest.create("/volume_snapshots", {:volume_id=>@vol_res["id"], :destination=>"local"})
-      #retry_until do
-        #APITest.get("/volume_snapshots/#{@snap_res["id"]}")["state"] == "available"
-      #end if @snap_res.success?
+      retry_until do
+        APITest.get("/volume_snapshots/#{@snap_res["id"]}")["state"] == "available"
+      end if @snap_res.success?
       @new_vol_res = APITest.create("/volumes", {:snapshot_id=>@snap_res["id"]})
-      #retry_until do
-        #APITest.get("/volumes/#{@new_vol_res["id"]}")["state"] == "available"
-      #end if @new_vol_res.success?
+      retry_until do
+        APITest.get("/volumes/#{@new_vol_res["id"]}")["state"] == "available"
+      end if @new_vol_res.success?
     end
 
     it "should create a security group" do
@@ -42,13 +42,13 @@ if is_enabled? :oneshot then
       @inst_res.success?.should be_true
       instance_id = @inst_res["id"]
 
-      p '... retry_until_running'
+      #p '... retry_until_running'
       retry_until_running(instance_id)
-      p '... retry_until_network_started'
+      #p '... retry_until_network_started'
       retry_until_network_started(instance_id)
-      p '... retry_until_ssh_started'
+      #p '... retry_until_ssh_started'
       retry_until_ssh_started(instance_id)
-      p '... retry_until_loggedin'
+      #p '... retry_until_loggedin'
       retry_until_loggedin(instance_id, cfg[:user_name])
     end
     
