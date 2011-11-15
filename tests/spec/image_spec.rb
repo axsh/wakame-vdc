@@ -1,7 +1,9 @@
 
 require File.expand_path('../spec_helper', __FILE__)
 
-describe "/api/images" do
+cfg = Config::get_config[:images_api_spec]
+
+describe "Test the web api for machine images (/api/images)" do
   include CliHelper
 
   before :all do
@@ -14,45 +16,46 @@ describe "/api/images" do
     res = APITest.get("/images")
     res.success?.should be_true
   end
+  unless cfg[:local_image_id].nil?
+    it "should describe machine image (#{cfg[:local_image_id]})" do
+      res = APITest.get("/images/#{cfg[:local_image_id]}")
+      res["id"].should == cfg[:local_image_id]
+      res.success?.should be_true
+    end
 
-  it "should describe machine image (wmi-lucid0)" do
-    image_id = "wmi-lucid0"
-    res = APITest.get("/images/#{image_id}")
-    res["id"].should == image_id
-    res.success?.should be_true
+    it "should delete machine image (wmi-lucid0) and then register with CLI." do
+      image_id = cfg[:local_image_id]
+      res = APITest.get("/images/#{image_id}")
+
+      # TODO: Image should be registerd via API.
+      require 'yaml'
+      vmimage_uri = YAML.load(res["source"])[:uri]
+      vmimage_path = URI.parse(vmimage_uri).path
+      cmd = "./bin/vdc-manage image add local #{vmimage_path} -m #{res["md5sum"]} -a #{res["account_id"]} -u #{res["id"]} -r #{res["arch"]} -d \"#{res["description"]}\" -s init"
+
+      res = APITest.delete("/images/#{image_id}")
+      res.success?.should be_true
+
+      `#{cmd}`
+      $?.exitstatus.should == 0
+    end
   end
+  
+  unless cfg[:snapshot_image_id].nil?
+    it "should delete machine image (wmi-lucid1) and then register with CLI." do
+      image_id = cfg[:snapshot_image_id]
+      res = APITest.get("/images/#{image_id}")
 
-  it "should delete machine image (wmi-lucid0) and then register with CLI." do
-    image_id = "wmi-lucid0"
-    res = APITest.get("/images/#{image_id}")
+      # TODO: Image should be registerd via API.
+      require 'yaml'
+      snap_id = YAML.load(res["source"])[:snapshot_id]
+      cmd = "./bin/vdc-manage image add volume #{snap_id} -m #{res["md5sum"]} -a #{res["account_id"]} -u #{res["id"]} -r #{res["arch"]} -d \"#{res["description"]}\" -s init"
 
-    # TODO: Image should be registerd via API.
-    require 'yaml'
-    vmimage_uri = YAML.load(res["source"])[:uri]
-    vmimage_path = URI.parse(vmimage_uri).path
-    cmd = "./bin/vdc-manage image add local #{vmimage_path} --md5sum #{res["md5sum"]} --account-id #{res["account_id"]} --uuid #{res["id"]} --arch #{res["arch"]} --description '#{res["description"]}' --state init"
+      res = APITest.delete("/images/#{image_id}")
+      res.success?.should be_true
 
-    res = APITest.delete("/images/#{image_id}")
-    res.success?.should be_true
-
-    `#{cmd}`
-    $?.exitstatus.should == 0
+      `#{cmd}`
+      $?.exitstatus.should == 0
+    end
   end
-
-  it "should delete machine image (wmi-lucid1) and then register with CLI." do
-    image_id = "wmi-lucid1"
-    res = APITest.get("/images/#{image_id}")
-
-    # TODO: Image should be registerd via API.
-    require 'yaml'
-    snap_id = YAML.load(res["source"])[:snapshot_id]
-    cmd = "./bin/vdc-manage image add volume #{snap_id} --md5sum #{res["md5sum"]} --account-id #{res["account_id"]} --uuid #{res["id"]} --arch #{res["arch"]} --description '#{res["description"]}' --state init"
-
-    res = APITest.delete("/images/#{image_id}")
-    res.success?.should be_true
-
-    `#{cmd}`
-    $?.exitstatus.should == 0
-  end
-
 end

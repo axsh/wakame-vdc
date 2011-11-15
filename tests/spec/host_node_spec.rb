@@ -1,18 +1,11 @@
 
 require File.expand_path('../spec_helper', __FILE__)
+include Config
 
-describe "/api/host_nodes" do
+if is_enabled? :host_nodes_api_spec
+  cfg = get_config[:host_nodes_api_spec]
 
-  it "should show host node list" do
-    res = APITest.get("/host_nodes")
-    res.success?.should be_true
+  describe "/api/host_nodes" do
+    it_should_behave_like "show_api", "/host_nodes", cfg[:host_node_ids]
   end
-
-  it "should describe host node (hn-demo1)" do
-    host_id = "hn-demo1"
-    res = APITest.get("/host_nodes/#{host_id}")
-    res["id"].should == host_id
-    res.success?.should be_true
-  end
-
 end

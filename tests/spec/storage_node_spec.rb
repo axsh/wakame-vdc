@@ -1,18 +1,11 @@
 
 require File.expand_path('../spec_helper', __FILE__)
+include Config
 
-describe "/api/storage_nodes" do
-
-  it "should show storage node list" do
-    res = APITest.get("/storage_nodes")
-    res.success?.should be_true
+if is_enabled?(:storage_nodes_api_spec)
+  cfg = get_config[:storage_nodes_api_spec]
+  
+  describe "/api/storage_nodes" do
+    it_should_behave_like "show_api", "/storage_nodes", cfg[:storage_ids]
   end
-
-  it "should describe storage node (sp-demostor)" do
-    storage_id = "sn-demo1"
-    res = APITest.get("/storage_nodes/#{storage_id}")
-    res["id"].should == storage_id
-    res.success?.should be_true
-  end
-
 end

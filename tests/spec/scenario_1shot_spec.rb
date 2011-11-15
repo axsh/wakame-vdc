@@ -5,16 +5,16 @@ require 'fileutils'
 describe "1shot" do
   include RetryHelper
   include InstanceHelper
-  include SecurityGroupHelper
+  include NetfilterHelper
 
   it "should test CURD operations for 1shot" do
     scenario_id = sprintf("scenario.%s", Time.now.strftime("%s"))
 
-    p '... security_group::create'
-    security_group_name = scenario_id
-    res = APITest.create('/security_groups', {:description => security_group_name, :rule => "tcp:22,22,ip4:0.0.0.0/24"})
+    p '... netfilter::create'
+    netfilter_group_name = scenario_id
+    res = APITest.create('/netfilter_groups', {:description => netfilter_group_name, :rule => "tcp:22,22,ip4:0.0.0.0/24"})
     res.success?.should be_true
-    security_group_id = res["uuid"]
+    netfilter_group_id = res["uuid"]
 
     p '... ssh_key::create'
     res = APITest.create('/ssh_key_pairs', {})
@@ -22,7 +22,7 @@ describe "1shot" do
     ssh_key_pair_id = res["id"]
 
     p '... instance::create'
-    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key_id=>ssh_key_pair_id, :security_groups=>[security_group_id]})
+    res = APITest.create("/instances", {:image_id=>'wmi-lucid6', :instance_spec_id=>'is-demospec', :ssh_key_id=>ssh_key_pair_id, :nf_group=>[netfilter_group_id]})
     res.success?.should be_true
     instance_id = res["id"]
 
@@ -98,22 +98,22 @@ describe "1shot" do
       APITest.get("/volumes/#{volume_id}")["state"] == "available"
     end
 
-    p '... security_group::update'
+    p '... netfilter::update'
     # add rules
-    res = add_rules(security_group_id, ["tcp:80,80,ip4:0.0.0.0"])
+    res = add_rules(netfilter_group_id, ["tcp:80,80,ip4:0.0.0.0"])
     res.success?.should be_true
 
-    res = add_rules(security_group_id, ["icmp:-1,-1,ip4:0.0.0.0"])
+    res = add_rules(netfilter_group_id, ["icmp:-1,-1,ip4:0.0.0.0"])
     res.success?.should be_true
 
     # delete rules
-    res = del_rules(security_group_id, ["tcp:22,22,ip4:0.0.0.0"])
+    res = del_rules(netfilter_group_id, ["tcp:22,22,ip4:0.0.0.0"])
     res.success?.should be_true
 
-    res = add_rules(security_group_id, ["tcp:80,80,ip4:0.0.0.0"])
+    res = add_rules(netfilter_group_id, ["tcp:80,80,ip4:0.0.0.0"])
     res.success?.should be_true
 
-    res = add_rules(security_group_id, ["icmp:-1,-1,ip4:0.0.0.0"])
+    res = add_rules(netfilter_group_id, ["icmp:-1,-1,ip4:0.0.0.0"])
     res.success?.should be_true
 
     p '... instance::reboot'
@@ -146,8 +146,8 @@ describe "1shot" do
     APITest.delete("/instances/#{instance_id}").success?.should be_true
     retry_until_terminated(instance_id)
 
-    p '... security_group::delete'
-    APITest.delete("/security_groups/#{security_group_id}").success?.should be_true
+    p '... netfilter::delete'
+    APITest.delete("/netfilter_groups/#{netfilter_group_id}").success?.should be_true
 
     p '... ssh_key::delete'
     APITest.delete("/ssh_key_pairs/#{ssh_key_pair_id}").success?.should be_true
