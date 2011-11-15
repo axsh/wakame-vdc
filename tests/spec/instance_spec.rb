@@ -29,7 +29,7 @@ if is_enabled? :instance_spec
     # nf_group
     it "should run instance with nf_group" do
       run_instance_then_reboot_then_terminate({:image_id=>cfg[:image_id], :instance_spec_id=>cfg[:instance_spec_id],
-                                                :nf_group=>cfg[:nf_group]})
+                                                :nf_group=>cfg[:security_groups]})
     end
 
     # hostname
@@ -45,7 +45,7 @@ if is_enabled? :instance_spec
 
     it "should not run instance with hostname (less than min length:1)" do
       APITest.create("/instances", {:image_id=>cfg[:image_id], :instance_spec_id=>cfg[:instance_spec_id],
-                       :hostname=>''}).should_not be_true
+                       :hostname=>''}).success?.should_not be_true
     end
 
     it "should not run instance with hostname (more than max length:32)" do
@@ -82,106 +82,84 @@ if is_enabled? :instance_spec
       res = APITest.create("/instances", cfg)
       res.success?.should be_true
       
-      res["ssh_key_pair"].should == cfg[:ssh_key]
-      res["netfilter_group"].eql?(cfg[:nf_group]).should be_true
+      retry_until_running(res["id"])
+      
+      res["ssh_key_pair"].should == nil
+      res["security_groups"].eql?(cfg[:security_groups]).should be_true
       res["hostname"].should == cfg[:hostname]
-      # We can't test user data because it's not returned by the web api
+
+      APITest.delete("/instances/#{res["id"]}").success?.should be_true
+      retry_until_terminated(res["id"])
     end
 
     #TODO: Decide where to place this test
-    describe "stop/start using wmi-lucid1 (volume store image)" do
-      before do
-        # Always bring new instance to running.
-        res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demospec'})
-        res.success?.should be_true
-        @instance_id = res["id"]
+    #describe "stop/start using wmi-lucid1 (volume store image)" do
+      #before do
+        ## Always bring new instance to running.
+        #res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demospec'})
+        #res.success?.should be_true
+        #@instance_id = res["id"]
         
-        retry_until_running(@instance_id)
-      end
+        #retry_until_running(@instance_id)
+      #end
 
-      after do
-        # Always try terminate
+      #after do
+        ## Always try terminate
         
-        APITest.delete("/instances/#{@instance_id}").success?.should be_true
-        retry_until_terminated(@instance_id)
-        # check volume state
-        instance = APITest.get("/instances/#{@instance_id}")
-        instance['volume'].each { |v|
-          v['state'].should == 'available'
-        }
-      end
+        #APITest.delete("/instances/#{@instance_id}").success?.should be_true
+        #retry_until_terminated(@instance_id)
+        ## check volume state
+        #instance = APITest.get("/instances/#{@instance_id}")
+        #instance['volume'].each { |v|
+          #v['state'].should == 'available'
+        #}
+      #end
 
-      #def retry_until_stopped(instance_id)
-        #retry_until do
-          #case APITest.get("/instances/#{instance_id}")["state"]
-          #when 'stopped'
-            #true
-          #when 'terminated'
-            #raise "Instance terminated by the system due to failure."
-          #else
-            #false
-          #end
-        #end
+      ##def retry_until_stopped(instance_id)
+        ##retry_until do
+          ##case APITest.get("/instances/#{instance_id}")["state"]
+          ##when 'stopped'
+            ##true
+          ##when 'terminated'
+            ##raise "Instance terminated by the system due to failure."
+          ##else
+            ##false
+          ##end
+        ##end
+      ##end
+      
+      #it 'running -> stop -> terminate' do
+        #APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
+        #retry_until_stopped(@instance_id)
+        ## check volume state
+        #instance = APITest.get("/instances/#{@instance_id}")
+        #instance['volume'].each { |v|
+          #v['state'].should == 'attached'
+        #}
+        #instance['ips'].nil?.should be_true
       #end
       
-      it 'running -> stop -> terminate' do
-        APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
-        retry_until_stopped(@instance_id)
-        # check volume state
-        instance = APITest.get("/instances/#{@instance_id}")
-        instance['volume'].each { |v|
-          v['state'].should == 'attached'
-        }
-        instance['ips'].nil?.should be_true
-      end
+      #it 'running -> stop -> running -> terminate' do
+        #instance = APITest.get("/instances/#{@instance_id}")
+        #APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
+        #retry_until_stopped(@instance_id)
+        #APITest.update("/instances/#{@instance_id}/start", []).success?.should be_true
+        #retry_until_running(@instance_id)
+        ## compare differences of parameters to the old one.
+        #new_instance = APITest.get("/instances/#{@instance_id}")
+        #instance['vif'].first['vif_id'].should == new_instance['vif'].first['vif_id']
+        #instance['vif'].first['ipv4']['address'].should_not == new_instance['vif'].first['ipv4']['address']
+      #end
       
-      it 'running -> stop -> running -> terminate' do
-        instance = APITest.get("/instances/#{@instance_id}")
-        APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
-        retry_until_stopped(@instance_id)
-        APITest.update("/instances/#{@instance_id}/start", []).success?.should be_true
-        retry_until_running(@instance_id)
-        # compare differences of parameters to the old one.
-        new_instance = APITest.get("/instances/#{@instance_id}")
-        instance['vif'].first['vif_id'].should == new_instance['vif'].first['vif_id']
-        instance['vif'].first['ipv4']['address'].should_not == new_instance['vif'].first['ipv4']['address']
-      end
-      
-      it 'running -> stop -> running -> stop -> terminate' do
-        APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
-        retry_until_stopped(@instance_id)
-        APITest.update("/instances/#{@instance_id}/start", []).success?.should be_true
-        retry_until_running(@instance_id)
-        APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
-        retry_until_stopped(@instance_id)
-      end
-    end
-
-    describe "Multiple network interface support" do
-      it 'run instance with vif3type1 network strategy' do
-        # Always bring new instance to running.
-        res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demo2', :network_scheduler=>'vif3type1'})
-        res.success?.should be_true
-        @instance_id = res["id"]
-        
-        retry_until_running(@instance_id)
-
-        APITest.delete("/instances/#{@instance_id}").success?.should be_true
-        retry_until_terminated(@instance_id)
-      end
-
-      it 'run instance with vif3type2 network strategy' do
-        # Always bring new instance to running.
-        res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demo2', :network_scheduler=>'vif3type2'})
-        res.success?.should be_true
-        @instance_id = res["id"]
-        
-        retry_until_running(@instance_id)
-
-        APITest.delete("/instances/#{@instance_id}").success?.should be_true
-        retry_until_terminated(@instance_id)
-      end
-    end
+      #it 'running -> stop -> running -> stop -> terminate' do
+        #APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
+        #retry_until_stopped(@instance_id)
+        #APITest.update("/instances/#{@instance_id}/start", []).success?.should be_true
+        #retry_until_running(@instance_id)
+        #APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
+        #retry_until_stopped(@instance_id)
+      #end
+    #end
 
     private
     def run_instance_then_reboot_then_terminate(params)

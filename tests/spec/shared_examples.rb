@@ -13,6 +13,28 @@ shared_examples_for "show_api" do |api_suffix,ids|
   } unless ids.nil?
 end
 
+shared_examples_for "instances with custom network scheduler" do |images,specs,schedulers|
+  include InstanceHelper
+  
+  images.each { |image|
+    specs.each { |spec|
+      schedulers.each { |scheduler|
+        it "run instance of (#{image}, #{spec}) with #{scheduler} network scheduler" do
+          # Always bring new instance to running.
+          res = APITest.create("/instances", {:image_id => image, :instance_spec_id => spec, :network_scheduler => scheduler})
+          res.success?.should be_true
+          @instance_id = res["id"]
+          
+          retry_until_running(@instance_id)
+
+          APITest.delete("/instances/#{@instance_id}").success?.should be_true
+          retry_until_terminated(@instance_id)
+        end
+      }
+    }
+  }
+end
+
 shared_examples_for "image_delete_and_register" do |image_ids, image_type|
   before(:all) do
     @source = {:local => :uri, :snapshot => :snapshot_id}
@@ -43,22 +65,4 @@ shared_examples_for "image_delete_and_register" do |image_ids, image_type|
       $?.exitstatus.should == 0
     end
   }
-  
-  #unless cfg[:snapshot_image_id].nil?
-    #it "should delete machine image (wmi-lucid1) and then register with CLI." do
-      #image_id = cfg[:snapshot_image_id]
-      #res = APITest.get("/images/#{image_id}")
-
-      ## TODO: Image should be registerd via API.
-      #require 'yaml'
-      #snap_id = YAML.load(res["source"])[:snapshot_id]
-      #cmd = "./bin/vdc-manage image add volume #{snap_id} -m #{res["md5sum"]} -a #{res["account_id"]} -u #{res["id"]} -r #{res["arch"]} -d \"#{res["description"]}\" -s init"
-
-      #res = APITest.delete("/images/#{image_id}")
-      #res.success?.should be_true
-
-      #`#{cmd}`
-      #$?.exitstatus.should == 0
-    #end
-  #end
 end

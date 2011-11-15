@@ -10,6 +10,7 @@ require 'rspec'
 require 'shared_examples'
 
 module Config
+  DEFAULT_CONFIG_FILE=File.expand_path('../config/config.yml', __FILE__)
   def get_config
     ConfigFactory.create_config
   end
@@ -21,8 +22,17 @@ module Config
   end
   
   class ConfigFactory
-    def self.create_config
-      default_config
+    def self.create_config(*args)
+      # Check if a config file was specified
+      # If not, we try the default location
+      cfg_file = (not args[0].nil?) && File.exists?(args[0]) ? args[0] : DEFAULT_CONFIG_FILE
+      begin
+        YAML.load_file cfg_file
+      rescue Errno::ENOENT => e
+        # If there was no config file, we use
+        # the default configuration
+        default_config
+      end
     end
     
     private
@@ -30,14 +40,14 @@ module Config
     def self.default_config
       {
         :global => {
-          # Retry time in minutes
-          :retry_time => 5,
+          :retry_time => 5, # Retry time in minutes
           :account => "a-shpoolxx",
           :api => "http://localhost:9001/api"
         },
         
         # Spec that tests machine images
         # Tests if instances start from them and if we can SSH into them
+        # Also tests start and stop operations
         :images_spec => {
           :images => [
             {:id=>"wmi-lucid0",:user=>"ubuntu",:uses_metadata => false},
@@ -58,7 +68,7 @@ module Config
           :instance_spec_id => "is-demospec",
           :ssh_key => "ssh-demo",
           :hostname => "jefke",
-          :nf_group => ["ng-demofgr"],
+          :security_groups => ["sg-demofgr"],
           :username => "ubuntu"
         },
         
@@ -73,7 +83,7 @@ module Config
         # Spec that tests the host pools api
         :host_nodes_api_spec => {
           # The host pool to test with
-          :host_node_ids => ["hp-demo1"]
+          :host_node_ids => ["hn-demo1"]
         },
         
         # Spec that tests the instance specs api
@@ -93,7 +103,7 @@ module Config
         
         # Spec that tests the host pools web api
         :storage_nodes_api_spec => {
-          :storage_ids => ["sp-demo1"]
+          :storage_ids => ["sn-demo1"]
         },
         
         # Spec that tests the volume snapshots web api
@@ -113,6 +123,22 @@ module Config
             {:name => 'group3', :description => 'g3', :rule => "icmp:-1,-1,a-00000000:g2\ntcp:22,22,a-00000000:g2"}
           ],
           :update_rule => "icmp:-1,-1,ip4:0.0.0.0"
+        },
+        
+        # Spec that tests instances with multiple vnics
+        :multiple_vnic_spec => {
+          :images     => ['wmi-lucid0'],
+          :specs      => ['is-demo2'],
+          :schedulers => ['vif3type1','vif3type2']
+        },
+        # Spec that quickly tests several functions without going in detail
+        :oneshot => {
+          :sg_rule     =>  "tcp:22,22,ip4:0.0.0.0/24",
+          :new_sg_rules => ["tcp:80,80,ip4:0.0.0.0","icmp:-1,-1,ip4:0.0.0.0"],
+          :image_id    => 'wmi-lucid0',
+          :spec_id     => 'is-demospec',
+          :volume_size => 10,
+          :user_name   => 'ubuntu'
         }
       }
     end
@@ -295,11 +321,11 @@ module NetfilterHelper
   end
 
   def update_rules(netfilter_group_id, rules)
-    APITest.update("/netfilter_groups/#{netfilter_group_id}", {:rule => rules.uniq.join("\n")})
+    APITest.update("/security_groups/#{netfilter_group_id}", {:rule => rules.uniq.join("\n")})
   end
 
   def get_rules(netfilter_group_id)
-    APITest.get("/netfilter_groups/#{netfilter_group_id}")
+    APITest.get("/security_groups/#{netfilter_group_id}")
   end
 
   def pickup_rules(response)
@@ -326,4 +352,30 @@ module CliHelper
   end
 end
 
-
+module VolumeHelper
+  def attach_volume_to_instance(instance_id,volume_id)
+    res = APITest.update("/volumes/#{volume_id}/attach", {:instance_id=>instance_id, :volume_id=>volume_id})
+    res.success?.should be_true
+    retry_until do
+      # "available" -> "attaching" -> "attached"
+      APITest.get("/volumes/#{volume_id}")["state"] == "attached"
+    end
+  end
+  
+  def detach_volume_from_instance(instance_id,volume_id)
+    res = APITest.update("/volumes/#{volume_id}/detach", {:instance_id=>instance_id, :volume_id=>volume_id})
+    res.success?.should be_true
+    retry_until do
+      # "attached" -> "detaching" -> "available"
+      APITest.get("/volumes/#{volume_id}")["state"] == "available"
+    end
+  end
+  
+  def delete_volume(volume_id)
+    APITest.delete("/volumes/#{volume_id}").success?.should be_true
+    # "available" -> "deregistering" -> "deleted"
+    retry_until do
+      APITest.get("/volumes/#{volume_id}")["state"] == "deleted"
+    end
+  end
+end
