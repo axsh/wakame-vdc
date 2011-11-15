@@ -31,6 +31,8 @@ module Config
       rescue Errno::ENOENT => e
         # If there was no config file, we use
         # the default configuration
+
+        puts "Warning: #{cfg_file} not found. Falling back to default configuration."
         default_config
       end
     end
