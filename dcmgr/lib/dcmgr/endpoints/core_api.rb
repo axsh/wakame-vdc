@@ -337,7 +337,7 @@ module Dcmgr
             when 'stopped'
               # just destroy the record.
               i.destroy
-            when 'terminated'
+            when 'terminated', 'scheduling'
               raise InvalidInstanceState, i.state
             else
               res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
