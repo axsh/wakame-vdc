@@ -36,10 +36,10 @@ en:
   dialog:
     terminate_instances:
       header: "Terminate Instances"
-      message: "Are you sure you want to terminate this instance?"
+      message: "Are you sure you want to terminate those instances?"
     reboot_instances:
       header: "Reboot Instances"
-      message: "Are you sure you want to reboot this instance?"
+      message: "Are you sure you want to reboot those instances?"
     launch_instance:
       header: "Launch Instance"
       wmi_id: "WMI ID"
@@ -79,7 +79,6 @@ en:
     edit_security_group:
       header: "Edit Security Group"
     create_and_edit_security_group:
-      name: "Name"
       description: "Description"
       rule: "Rule"
     delete_security_group:
@@ -87,7 +86,6 @@ en:
       message: "Are you sure you want to delete the following security_group?"
     create_ssh_keypair:
       header: "Create SSH Key Pair"
-      keypair_name: "Key Pair Name"
       download_once: "Download Once"
     delete_ssh_keypair:
       header: "Delete SSH Key Pair"
@@ -288,7 +286,6 @@ en:
       secret_access_key: "Secret Access Key"
     details:
       header: "Details"
-      name: "Name"
       fingerprint: "Fingerprint"
       created_at: "Created"
       updated_at: "Updated"

@@ -78,7 +78,6 @@ ja:
     edit_security_group:
       header: "セキュリティグループを編集"
     create_and_edit_security_group:
-      name: "セキュリティグループ名"
       description: "詳細"
       rule: "ルール"
     delete_security_group:
@@ -86,7 +85,6 @@ ja:
       message: "セキュリティーグループを削除します。よろしいですか？"
     create_ssh_keypair:
       header: "キーペアを作成"
-      keypair_name: "キーペア名"
       download_once: "1回限り"
     delete_ssh_keypair:
       header: "キーペアを削除"
@@ -265,7 +263,6 @@ ja:
       action: "アクション"
     details:
       header: "詳細"
-      name: "名前"
       description: "詳細"
       created_at: "作成日"
       updated_at: "更新日"
@@ -280,7 +277,6 @@ ja:
       secret_access_key: "シークレットキー"
     details:
       header: "詳細"
-      name: "名前"
       fingerprint: "フィンガープリント"
       created_at: "作成日"
       updated_at: "更新日"
