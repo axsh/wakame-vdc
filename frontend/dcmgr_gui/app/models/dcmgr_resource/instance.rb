@@ -32,6 +32,22 @@ module DcmgrResource
       self.collection_name = @collection
       result.body
     end
+
+    def self.start(instance_id)
+      @collection ||= self.collection_name
+      self.collection_name = File.join(@collection,instance_id)
+      result = self.put(:start)
+      self.collection_name = @collection
+      result.body
+    end
+
+    def self.stop(instance_id)
+      @collection ||= self.collection_name
+      self.collection_name = File.join(@collection,instance_id)
+      result = self.put(:stop)
+      self.collection_name = @collection
+      result.body
+    end
     
   end
 end

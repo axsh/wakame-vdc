@@ -19,6 +19,8 @@ ja:
     attach: "アタッチ"
     detach: "デタッチ"
     launch: "起動"
+    start: "再開"
+    stop: "一時停止"
   selectmenu:
     select_action: "アクション"
     select_region: "データセンタ: "
@@ -126,6 +128,8 @@ ja:
       header: "アクション"
       terminate: "停止"
       reboot: "再起動"
+      start: "再開"
+      stop: "一時停止"
     list:
       instance_id: "インスタンスID"
       wmi_id: "WMI ID"

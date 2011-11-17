@@ -20,6 +20,8 @@ en:
     attach: "Yes, Attach"
     detach: "Yes, Detach"
     launch: "Launch"
+    start: "Start"
+    stop: "Stop"
   selectmenu:
     select_action: "Select an Action"
     select_region: "Region: "
@@ -90,6 +92,12 @@ en:
     delete_ssh_keypair:
       header: "Delete SSH Key Pair"
       message: "Are you sure you want to delete the following key pair?"
+    start_instances:
+      header: "Start Instances"
+      message: "Are you sure you want to start those instances?"
+    stop_instances:
+      header: "Stop Instances"
+      message: "Are you sure you want to stop those instances?"
   login:
     sign_in: "Sign In"
     user: "User"
@@ -127,6 +135,8 @@ en:
       header: "Instance Actions"
       terminate: "Terminate"
       reboot: "Reboot"
+      start: "Start"
+      stop: "Stop"
     list:
       instance_id: "Instance ID"
       wmi_id: "WMI ID"

@@ -50,6 +50,24 @@ class InstancesController < ApplicationController
     end
     render :json => res
   end
+
+  def start
+    instance_ids = params[:ids]
+    res = []
+    instance_ids.each do |instance_id|
+      res << DcmgrResource::Instance.start(instance_id)
+    end
+    render :json => res
+  end
+
+  def stop
+    instance_ids = params[:ids]
+    res = []
+    instance_ids.each do |instance_id|
+      res << DcmgrResource::Instance.stop(instance_id)
+    end
+    render :json => res
+  end
   
   def total
    all_resource_count = DcmgrResource::Instance.total_resource
