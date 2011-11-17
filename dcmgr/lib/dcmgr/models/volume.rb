@@ -164,6 +164,8 @@ module Dcmgr::Models
     end
 
     def self.entry_new(account, size, params, &blk)
+      # Mash is passed in some cases.
+      raise ArgumentError unless params.class == ::Hash
       v = self.new &blk
       v.account_id = account.canonical_uuid
       v.size = size

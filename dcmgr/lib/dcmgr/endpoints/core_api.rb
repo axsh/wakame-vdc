@@ -236,8 +236,9 @@ module Dcmgr
               raise UnknownHostNode, "#{host_id}" if host_node.nil?
               raise InvalidHostNodeID, "#{host_id}" if host_node.status != 'online'
             end
-            
-            instance = Models::Instance.entry_new(@account, wmi, spec, params.dup) do |i|
+
+            # params is a Mash object. so coverts to raw Hash object.
+            instance = Models::Instance.entry_new(@account, wmi, spec, params.to_hash) do |i|
               # Set common parameters from user's request.
               i.user_data = params[:user_data] || ''
               # set only when not nil as the table column has not null
@@ -511,7 +512,8 @@ module Dcmgr
               raise OutOfDiskSpace
             end
 
-            vol = Models::Volume.entry_new(@account, volume_size, params.dup) do |v|
+            # params is a Mash object. so coverts to raw Hash object.
+            vol = Models::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
               if vs
                 v.snapshot_id = vs.canonical_uuid
               end

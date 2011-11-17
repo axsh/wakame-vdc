@@ -360,7 +360,8 @@ module Dcmgr::Models
       raise ArgumentError unless account.is_a?(Account)
       raise ArgumentError unless image.is_a?(Image)
       raise ArgumentError unless spec.is_a?(InstanceSpec)
-      raise ArgumentError unless params.is_a?(::Hash)
+      # Mash is passed in some cases.
+      raise ArgumentError unless params.class == ::Hash
 
       i = self.new &blk
       i.account_id = account.canonical_uuid
