@@ -12,7 +12,7 @@ config.enable_iptables = true
 # bridge device name prefix
 config.bridge_prefix   = 'br'
 
-# display netfitler commands
+# display netfilter commands
 config.verbose_netfilter = false
 
 # netfilter log output flag
@@ -23,6 +23,9 @@ config.debug_iptables = false
 
 # Use ipset for netfilter
 config.use_ipset       = false
+
+# display openflow commands
+config.verbose_openflow = false
 
 # Directory used by Open vSwitch daemon for run files
 config.ovs_run_dir='/usr/var/run/openvswitch'
