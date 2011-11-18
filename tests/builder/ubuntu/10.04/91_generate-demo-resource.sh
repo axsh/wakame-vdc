@@ -79,19 +79,19 @@ deploy_vmfile ${vmimage_file}      ${vmimage_s3}
 deploy_vmfile ${vmimage_meta_file} ${vmimage_meta_s3}
 
 cd ${work_dir}/dcmgr/
-shlog ./bin/vdc-manage host add hva.demo1 --force --uuid hp-demo1 --account-id ${account_id} --cpu-cores 100 --memory-size 400000 --hypervisor ${hypervisor} --arch ${hva_arch}
+shlog ./bin/vdc-manage host add hva.demo1 --force --uuid hn-demo1 --account-id ${account_id} --cpu-cores 100 --memory-size 400000 --hypervisor ${hypervisor} --arch ${hva_arch}
 
 case ${sta_server} in
 ${ipaddr})
   [ -d ${tmp_path}/xpool/${account_id} ] || mkdir -p ${tmp_path}/xpool/${account_id}
   [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
-  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sp-demo1 --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
+  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sn-demo1 --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
 
   ln -fs ${vmimage_path}      ${vmimage_snap_path}
   ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
  ;;
 *)
-  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sp-demo1 --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
+  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sn-demo1 --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
  ;;
 esac
 
@@ -116,8 +116,18 @@ shlog ./bin/vdc-manage network forward nw-demo3 eth0
 shlog ./bin/vdc-manage network forward nw-demo4 null1
 shlog ./bin/vdc-manage network forward nw-demo5 null2
 
-range_begin=`ipcalc ${ipv4_gw} | awk '$1 == "HostMin:" { print $2 }'`
-range_end=`ipcalc ${ipv4_gw} | awk '$1 == "HostMax:" { print $2 }'`
+[ -f /etc/redhat-release ] && {
+  # rhel
+  gw_dev=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $5}')
+  ipaddr=$(/sbin/ip addr show ${gw_dev} | grep -w inet | awk '{print $2}')
+  range_begin=`ipcalc -n ${ipaddr} | sed 's,.*=,,'`
+  range_end=`ipcalc -b ${ipaddr} | sed 's,.*=,,'`
+} || {
+  # ubuntu
+  range_begin=`ipcalc ${ipv4_gw} | awk '$1 == "HostMin:" { print $2 }'`
+  range_end=`ipcalc ${ipv4_gw} | awk '$1 == "HostMax:" { print $2 }'`
+}
+
 shlog ./bin/vdc-manage network dhcp addrange nw-demo1 $range_begin $range_end
 shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.61 10.100.0.65
 shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.70 10.100.0.75
@@ -128,9 +138,9 @@ shlog ./bin/vdc-manage network dhcp addrange nw-demo3 10.101.0.60 10.101.0.80
 shlog ./bin/vdc-manage network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
 shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 
-shlog ./bin/vdc-manage tag map tag-shhost hp-demo1
+shlog ./bin/vdc-manage tag map tag-shhost hn-demo1
 shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
-shlog ./bin/vdc-manage tag map tag-shstor sp-demo1
+shlog ./bin/vdc-manage tag map tag-shstor sn-demo1
 
 shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}
 
@@ -152,11 +162,21 @@ shlog ./bin/vdc-manage spec  add --uuid is-demo2 --account-id ${account_id} --ar
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
-shlog ./bin/vdc-manage group add --uuid  ng-demofgr --account-id ${account_id} --description demo
-shlog ./bin/vdc-manage group addrule ng-demofgr "tcp:22,22,ip4:0.0.0.0"
-shlog ./bin/vdc-manage group addrule ng-demofgr "tcp:80,80,ip4:0.0.0.0"
-shlog ./bin/vdc-manage group addrule ng-demofgr "udp:53,53,ip4:0.0.0.0"
-shlog ./bin/vdc-manage group addrule ng-demofgr "icmp:-1,-1,ip4:0.0.0.0"
+shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo
+shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
+tcp:22,22,ip4:0.0.0.0
+EOF
+shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
+tcp:22,22,ip4:0.0.0.0
+tcp:80,80,ip4:0.0.0.0
+EOF
+shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
+# demo rule for demo instances
+tcp:22,22,ip4:0.0.0.0
+tcp:80,80,ip4:0.0.0.0
+udp:53,53,ip4:0.0.0.0
+icmp:-1,-1,ip4:0.0.0.0
+EOF
 
 cat <<'EOS' > /tmp/pub.pem
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZhAOcHSe4aY8GwwLCJ4Et3qUBcyVPokFoCyCrtTZJVUU++B9554ahiVcrQCbfuDlaXV2ZCfIND+5N1UEk5umMoQG1aPBw9Nz9wspMpWiTKGOAm99yR9aZeNbUi8zAfyYnjrpuRUKCH1UPmh6EDaryFNDsxInmaZZ6701PgT++cZ3Vy/r1bmb93YvpV+hfaL/FmY3Cu8n+WJSoJQZ4eCMJ+4Pw/pkxjfuLUw3mFl40RVAlwlTuf1I4bB/m1mjlmirBEU6+CWLGYUNWDKaFBpJcGB6sXoQDS4FvlV92tUAEKIBWG5ma0EXBdJQBi1XxSCU2p7XMX8DhS7Gj/TSu7011 wakame-vdc.pem
@@ -192,7 +212,7 @@ PxIk/VB7tQxkp4Rtv005mWHPUYlh8x4lMqiVAhPJzEBfN9UEfkrk
 -----END RSA PRIVATE KEY-----
 EOS
 
-shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --name demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
+shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=/tmp/pri.pem --public-key=/tmp/pub.pem
 
 [ -f /tmp/pub.pem ] && rm -f /tmp/pub.pem
 [ -f /tmp/pri.pem ] && rm -f /tmp/pri.pem

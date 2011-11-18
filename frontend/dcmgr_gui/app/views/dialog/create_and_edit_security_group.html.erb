@@ -5,27 +5,25 @@
 	}
 </style>
 <div id="create_security_group_dialog">
-		<div id="security_group_name_field">
-    <p><%= t("dialog.create_and_edit_security_group.name") %></p>
-    <% if @name %>
-        <input type="text" id="security_group_name" size="20" value="<%= @name %>" disabled>
-			<% else %>
-				<input type="text" id="security_group_name" size="20">
-			<% end %>
-			<input type="hidden" id="security_group_id" value="<%= @uuid %>">
-    </div>
+  <div id="security_group_name_field">
+    <%- if @uuid -%>
+    <p>
+    UUID: <%= @uuid %>
+    </p>
+    <%- end -%>
+    <input type="hidden" id="security_group_id" value="<%= @uuid %>">
     <div id="security_group_description_field">
     <p>
       <%= t("dialog.create_and_edit_security_group.description") %>
     </p> 
-		  <input type="text" id="security_group_description" size="43" value="<%= @description %>">
+    <input type="text" id="security_group_description" size="43" value="<%= @description %>">
     </div>
     <div id="security_group_rule_field">
     <p>
       <%= t("dialog.create_and_edit_security_group.rule") %> [<span rel="#rule_help" id="security_group_help" title="Rule Help" style="color:red">?</span>]
     </p>
     </div>
-			<textarea id="security_group_rule" rows="10" cols="10" style="width:442px;height:320px" ><%= @rule %></textarea>
+    <textarea id="security_group_rule" rows="10" cols="10" style="width:442px;height:320px" ><%= @rule %></textarea>
   <div id="rule_help">
   <pre>
 SYNOPSIS

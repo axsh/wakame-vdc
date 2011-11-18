@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Models
-  class NetfilterGroup < AccountResource
-    taggable 'ng'
+  class SecurityGroup < AccountResource
+    taggable 'sg'
 
-    one_to_many :netfilter_rules
-    many_to_many :instances,:join_table => :instance_netfilter_groups
+    one_to_many :security_group_rules
+    many_to_many :instances,:join_table => :instance_security_groups
 
     def to_hash
       super.merge({
                     :rule => rule.to_s,
-                    :rules => netfilter_rules.map { |rule| rule.to_hash },
+                    :rules => security_group_rules.map { |rule| rule.to_hash },
                   })
     end
 
     def to_api_document
       super.merge({
                     :rule => rule.to_s,
-                    :rules => netfilter_rules.map { |rule| rule.to_hash },
+                    :rules => security_group_rules.map { |rule| rule.to_hash },
                   })
     end
     
@@ -27,7 +27,7 @@ module Dcmgr::Models
     end
 
     def flush_rule
-      NetfilterRule.filter(:netfilter_group_id => self.id).destroy
+      SecurityGroupRule.filter(:security_group_id => self.id).destroy
     end
 
     def before_destroy
@@ -56,8 +56,8 @@ module Dcmgr::Models
         # - protocol: tcp|udp|icmp
         # - source: IPAddr|CIDR|Owner:Group
         # - destination: port|icmp-type
-        NetfilterRule.create(:netfilter_group_id => self.id,
-                             :permission         => permission)
+        SecurityGroupRule.create(:security_group_id => self.id,
+                                 :permission         => permission)
 
       }
     end

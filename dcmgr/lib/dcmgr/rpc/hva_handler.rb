@@ -156,7 +156,7 @@ module Dcmgr
           'public-ipv4'    => @inst[:nat_ips].first,
           'ramdisk-id' => nil,
           'reservation-id' => nil,
-          'security-groups' => @inst[:netfilter_groups].join(' '),
+          'security-groups' => @inst[:security_groups].join(' '),
         }
 
         # TODO: support for multiple interfaces.
@@ -173,7 +173,7 @@ module Dcmgr
             "network/interfaces/macs/#{mac}/mac" => vnic[:mac_addr].unpack('A2'*6).join(':'),
             "network/interfaces/macs/#{mac}/public-hostname" => @inst[:hostname],
             "network/interfaces/macs/#{mac}/public-ipv4s" => @inst[:nat_ips].first,
-            "network/interfaces/macs/#{mac}/security-groups" => @inst[:netfilter_groups].join(' '),
+            "network/interfaces/macs/#{mac}/security-groups" => @inst[:security_groups].join(' '),
             # wakame-vdc extention items.
             # TODO: need an iface index number?
             "network/interfaces/macs/#{mac}/x-gateway" => vnic_network[:ipv4_gw],
@@ -368,7 +368,7 @@ module Dcmgr
         begin
           terminate_instance(false)
         ensure
-          # just publish "hva/instance_terminated" to update netfilter rules once
+          # just publish "hva/instance_terminated" to update security group rules once
           update_instance_state({}, 'hva/instance_terminated')
         end
       end

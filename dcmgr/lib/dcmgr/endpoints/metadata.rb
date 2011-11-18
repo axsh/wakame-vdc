@@ -266,8 +266,8 @@ module Dcmgr
         end
 
         def security_groups(src_ip)
-          get_instance_from_ip(src_ip).netfilter_groups.map { |grp|
-            grp.name
+          get_instance_from_ip(src_ip).security_groups.map { |grp|
+            grp.canonical_uuid
           }.join("\n")
         end
 
@@ -482,7 +482,7 @@ module Dcmgr
 
       get '/:version/meta-data/public-keys/' do
         i = find_instance()
-        i.ssh_key_data.nil? ? '' : [0, i.ssh_key_data[:name]].join("=")
+        i.ssh_key_data.nil? ? '' : [0, i.ssh_key_data[:uuid]].join("=")
       end
 
       get '/:version/meta-data/public-keys/0/' do
@@ -543,8 +543,8 @@ module Dcmgr
       end
 
       def security_groups
-        find_instance().netfilter_groups.map { |grp|
-          grp.name
+        find_instance().security_groups.map { |grp|
+          grp.canonical_uuid
         }
       end
 

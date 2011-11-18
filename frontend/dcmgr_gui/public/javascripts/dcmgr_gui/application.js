@@ -9,7 +9,7 @@ jQuery(function($){
   dcmgrGUI.initialize();
   dcmgrGUI.notification = new DcmgrGUI.Notification;
 
-	//サイドメニュー開閉関数
+	//Toggle side menus.
 	var regionpos = 0;
 	$('#regionselect').click(function () {
 		if(regionpos==0){regionpos+=33;}else{regionpos=0;}
@@ -24,10 +24,10 @@ jQuery(function($){
 		$('#regionmenu').toggle();
 	});
 	
-	//maincontent開閉関数
+	//Toggle maincontent
   $('.showhide').click(function(){
-   $(this).parent().next().toggle();//開閉
-   //backgroundの切り替え
+   $(this).parent().next().toggle();
+   //Swap background image.
    var imgurl = $(this).css("background-image");
    var img = imgurl.match(/.+\/images\/(btn_[a-z]+\.gif)/);
    if(img[1] == "btn_hide.gif"){
@@ -39,7 +39,7 @@ jQuery(function($){
    }
   });
   
-	//InstanceActionsメニュー開閉関数
+	//Toggle InstanceActions menu.
 	var instancepos = 0;
 	$('#instanceaction').click(function () {
 		if(instancepos==0){instancepos+=26;}else{instancepos=0;}
@@ -54,7 +54,7 @@ jQuery(function($){
 		$('#actionlist').toggle();
 	});
 	
-	//VolumeActionsメニュー開閉関数
+	//Toggle VolumeActions menu.
 	var volumepos = 0;
 	$('#volumeaction').click(function () {
 		if(volumepos==0){volumepos+=26;}else{volumepos=0;}
@@ -69,7 +69,7 @@ jQuery(function($){
 		$('#volumelist').toggle();
 	});
 	
-	//ReservedInstancesメニュー開閉関数
+	//Toggle ReservedInstances menu.
 	var rsvinstancepos = 0;
 	$('#reservedinstance').click(function () {
 		if(rsvinstancepos==0){rsvinstancepos+=26;}else{rsvinstancepos=0;}

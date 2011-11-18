@@ -4,7 +4,7 @@ require 'isono/models/node_state'
 
 module Dcmgr::Models
   class StorageNode < AccountResource
-    taggable 'sp'
+    taggable 'sn'
 
     BACKINGSTORE_ZFS = 'zfs'
     BACKINGSTORE_RAW = 'raw'
@@ -75,7 +75,8 @@ module Dcmgr::Models
       self.offering_disk_space - self.disk_usage
     end
 
-    def self.check_availability?(size, num=1)
+    # Check the free resource capacity across entire local VDC domain.
+    def self.check_domain_capacity?(size, num=1)
       alives_size = Volume.dataset.lives.filter.sum(:size).to_i
       avail_size = self.online_nodes.sum(:offering_disk_space).to_i - alives_size
       

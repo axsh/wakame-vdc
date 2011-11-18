@@ -217,7 +217,7 @@ module Dcmgr
           # param :hostname, string, :optional
           # param :user_data, string, :optional
           # param :nf_group, array, :optional
-          # param :ssh_key, string, :optional
+          # param :ssh_key_id, string, :optional
           # param :network_id, string, :optional
           # param :ha_enabled, string, :optional
           control do
@@ -226,7 +226,7 @@ module Dcmgr
             wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
             spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
 
-            if !Models::HostNode.check_availability?(spec.cpu_cores, spec.memory_size)
+            if !Models::HostNode.check_domain_capacity?(spec.cpu_cores, spec.memory_size)
               raise OutOfHostCapacity
             end
             
@@ -236,8 +236,9 @@ module Dcmgr
               raise UnknownHostNode, "#{host_id}" if host_node.nil?
               raise InvalidHostNodeID, "#{host_id}" if host_node.status != 'online'
             end
-            
-            instance = Models::Instance.entry_new(@account, wmi, spec, params.dup) do |i|
+
+            # params is a Mash object. so coverts to raw Hash object.
+            instance = Models::Instance.entry_new(@account, wmi, spec, params.to_hash) do |i|
               # Set common parameters from user's request.
               i.user_data = params[:user_data] || ''
               # set only when not nil as the table column has not null
@@ -251,11 +252,11 @@ module Dcmgr
                 end
               end
 
-              if params[:ssh_key]
-                ssh_key_pair = Models::SshKeyPair.find(:account_id=>@account.canonical_uuid,
-                                                       :name=>params[:ssh_key])
+              if params[:ssh_key_id]
+                ssh_key_pair = Models::SshKeyPair[params[:ssh_key_id]]
+
                 if ssh_key_pair.nil?
-                  raise UnknownSshKeyPair, "#{params[:ssh_key]}"
+                  raise UnknownSshKeyPair, "#{params[:ssh_key_id]}"
                 else
                   i.set_ssh_key_pair(ssh_key_pair)
                 end
@@ -268,7 +269,9 @@ module Dcmgr
             instance.save
 
             if params[:nf_group].is_a?(Array) || params[:nf_group].is_a?(String)
-              instance.join_netfilter_group(params[:nf_group])
+              instance.join_security_group(params[:nf_group])
+            elsif params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
+              instance.join_security_group(params[:security_groups])
             end
             
             instance.state = :scheduling
@@ -280,7 +283,7 @@ module Dcmgr
               snapshot_id = wmi.source[:snapshot_id]
               vs = find_volume_snapshot(snapshot_id)
 
-              if !Models::StorageNode.check_availability?(vs.size)
+              if !Models::StorageNode.check_domain_capacity?(vs.size)
                 raise OutOfDiskSpace
               end
               
@@ -335,7 +338,7 @@ module Dcmgr
             when 'stopped'
               # just destroy the record.
               i.destroy
-            when 'terminated'
+            when 'terminated', 'scheduling'
               raise InvalidInstanceState, i.state
             else
               res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
@@ -505,11 +508,12 @@ module Dcmgr
 
             volume_size = (vs ? vs.size : params[:volume_size].to_i)
 
-            if !Models::StorageNode.check_availability?(volume_size)
+            if !Models::StorageNode.check_domain_capacity?(volume_size)
               raise OutOfDiskSpace
             end
 
-            vol = Models::Volume.entry_new(@account, volume_size, params.dup) do |v|
+            # params is a Mash object. so coverts to raw Hash object.
+            vol = Models::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
               if vs
                 v.snapshot_id = vs.canonical_uuid
               end
@@ -719,20 +723,20 @@ module Dcmgr
 
       end
 
-      collection :netfilter_groups do
-        description 'Show lists of the netfilter_groups'
+      collection :security_groups do
+        description 'Show lists of the security groups'
         operation :index do
           control do
-            res = select_index(:NetfilterGroup, {:start => params[:start],
+            res = select_index(:SecurityGroup, {:start => params[:start],
                                  :limit => params[:limit]})
             response_to(res)
           end
         end
 
         operation :show do
-          description 'Show the netfilter_groups'
+          description 'Show the security group'
           control do
-            g = find_by_uuid(:NetfilterGroup, params[:id])
+            g = find_by_uuid(:SecurityGroup, params[:id])
             raise OperationNotPermitted unless examine_owner(g)
 
             response_to(g.to_api_document)
@@ -740,27 +744,27 @@ module Dcmgr
         end
 
         operation :create do
-          description 'Register a new netfilter_group'
+          description 'Register a new security group'
           # params description, string
           # params rule, string
           control do
-            Models::NetfilterGroup.lock!
+            Models::SecurityGroup.lock!
 
-            g = Models::NetfilterGroup.create(:account_id=>@account.canonical_uuid,
-                                              :description=>params[:description],
-                                              :rule=>params[:rule])
+            g = Models::SecurityGroup.create(:account_id=>@account.canonical_uuid,
+                                             :description=>params[:description],
+                                             :rule=>params[:rule])
             response_to(g.to_api_document)
           end
         end
 
         operation :update do
-          description "Update parameters for the netfilter group"
+          description "Update parameters for the security group"
           # params description, string
           # params rule, string
           control do
-            g = find_by_uuid(:NetfilterGroup, params[:id])
+            g = find_by_uuid(:SecurityGroup, params[:id])
 
-            raise UnknownNetfilterGroup if g.nil?
+            raise UnknownSecurityGroup if g.nil?
             raise OperationNotPermitted unless examine_owner(g)
 
             if params[:description]
@@ -773,20 +777,20 @@ module Dcmgr
             g.save
 
             commit_transaction
-            # refresh netfilter_rules
-            Dcmgr.messaging.event_publish('hva/netfilter_updated', :args=>[g.canonical_uuid])
+            # refresh security group rules on host nodes.
+            Dcmgr.messaging.event_publish('hva/security_group_updated', :args=>[g.canonical_uuid])
 
             response_to(g.to_api_document)
           end
         end
 
         operation :destroy do
-          description "Delete the netfilter group"
+          description "Delete the security group"
           control do
-            Models::NetfilterGroup.lock!
-            g = find_by_uuid(:NetfilterGroup, params[:id])
+            Models::SecurityGroup.lock!
+            g = find_by_uuid(:SecurityGroup, params[:id])
 
-            raise UnknownNetfilterGroup if g.nil?
+            raise UnknownSecurityGroup if g.nil?
             raise OperationNotPermitted unless examine_owner(g)
 
             # raise OperationNotPermitted if g.instances.size > 0
@@ -801,31 +805,6 @@ module Dcmgr
           end
         end
 
-      end
-
-      collection :netfilter_rules do
-        operation :index do
-          control do
-          end
-        end
-
-        operation :show do
-          description 'Show lists of the netfilter_rules'
-          control do
-            rules = []
-            begin
-              @name = params[:id]
-              g = Models::NetfilterGroup.filter(:name => @name, :account_id => @account.canonical_uuid).first
-              raise UnknownNetfilterGroup if g.nil?
-
-              g.netfilter_rules.each { |rule|
-                rules << rule.values
-              }
-            end
-
-            response_to(rules)
-          end
-        end
       end
 
       # obsolute path: "/storage_pools"
@@ -881,29 +860,24 @@ module Dcmgr
 
         operation :create do
           description "Create ssh key pair information"
-          # params :name required key name (<100 chars)
           # params :download_once optional set true if you do not want
           #        to save private key info on database.
           control do
             Models::SshKeyPair.lock!
-            keydata = Models::SshKeyPair.generate_key_pair(params[:name])
-            savedata = {
-              :name=>params[:name],
-              :account_id=>@account.canonical_uuid,
-              :public_key=>keydata[:public_key],
-              :finger_print => keydata[:finger_print],
-            }
-            if params[:download_once] != 'true'
-              savedata[:private_key]=keydata[:private_key]
-            end
+            keydata = nil
 
-            if !Models::SshKeyPair.filter(:account_id=>@account.canonical_uuid,
-                                          :name => params[:name]).empty?
-              raise DuplicateSshKeyName, params[:name]
+            ssh = Models::SshKeyPair.entry_new(@account) do |s|
+              keydata = Models::SshKeyPair.generate_key_pair(s.uuid)
+              s.public_key = keydata[:public_key]
+              s.finger_print = keydata[:finger_print]
+
+              if params[:download_once] != 'true'
+                s.private_key = keydata[:private_key]
+              end
             end
 
             begin
-              ssh = Models::SshKeyPair.create(savedata)
+              ssh.save
             rescue => e
               raise DatabaseError, e.message
             end

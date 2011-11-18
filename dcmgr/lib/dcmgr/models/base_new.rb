@@ -192,7 +192,7 @@ module Dcmgr::Models
 
       # Checks the general uuid syntax
       def check_trimmed_uuid_format(uuid)
-        uuid.match(/^[a-z0-9 ]*$/) && uuid.length <= 8
+        uuid.match(/^[a-z0-9]*$/) && uuid.length <= 255
       end
 
       # Checks the uuid syntax if it is for the Taggable class.

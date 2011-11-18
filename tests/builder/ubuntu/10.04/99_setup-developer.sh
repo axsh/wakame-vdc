@@ -12,10 +12,14 @@ work_dir=${work_dir:?"work_dir needs to be set"}
 #dcmgr_dbuser=root
 #webui_dbname=wakame_dcmgr_gui
 #webui_dbpass=passwd
-
+ 
 echo "# Configure Database for MySQL ..."
-yes | mysqladmin -uroot drop ${dcmgr_dbname} >/dev/null 2>&1
-yes | mysqladmin -uroot drop ${webui_dbname} >/dev/null 2>&1
+
+for dbname in ${dcmgr_dbname} ${webui_dbname}; do
+  echo | mysql -uroot ${dbname} >/dev/null 2>&1 && {
+    yes | mysqladmin -uroot drop ${dbname} >/dev/null 2>&1
+  }
+done
 
 cat <<EOS | mysql -uroot
 create database ${dcmgr_dbname} default character set utf8;

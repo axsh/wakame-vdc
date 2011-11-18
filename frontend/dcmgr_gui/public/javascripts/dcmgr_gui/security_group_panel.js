@@ -9,7 +9,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   DcmgrGUI.List.prototype.getEmptyData = function(){
     return [{
-      "name":'',
       "description":''
     }]
   }
@@ -17,7 +16,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   DcmgrGUI.Detail.prototype.getEmptyData = function(){
     return {
-      "name" : "-",
       "description" : "-",
       "rule":''
     }
@@ -51,8 +49,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     });
     
     var params = { 'button': bt_create_security_group, 'element_id': 1 };
-    $(this).find('#security_group_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
-    $(this).find('#security_group_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
 
     $(this).find('#rule_help').hide();
     security_group_help.create(config_tooltip);
@@ -82,9 +78,9 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   });
     
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
-    var netfilter_group = params.data.netfilter_group;
-    c_pagenate.changeTotal(netfilter_group.owner_total);
-    c_list.setData(netfilter_group.results);
+    var security_group = params.data.security_group;
+    c_pagenate.changeTotal(security_group.owner_total);
+    c_list.setData(security_group.results);
     c_list.singleCheckList(c_list.detail_template);
 
     var edit_security_group_buttons = {};
@@ -111,7 +107,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     var bt_edit_security_group = new DcmgrGUI.Dialog({
       target:'.edit_security_group',
       width:500,
-      height:590,
+      height:580,
       title:$.i18n.prop('edit_security_group_header'),
       path:'/edit_security_group',
       button: edit_security_group_buttons,
@@ -160,23 +156,11 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   var create_security_group_buttons = {};
   create_security_group_buttons[close_button_name] = function() { $(this).dialog("close"); };
   create_security_group_buttons[create_button_name] = function() { 
-    var name = $(this).find('#security_group_name').val();
     var description = $(this).find('#security_group_description').val();
     var rule = $(this).find('#security_group_rule').val();
-    var data = 'name=' + name
-             +'&description=' + description
+    var data = 'description=' + description
              +'&rule=' + rule;
 
-    if(!name){
-     $('#security_group_name').focus();
-     return false;
-    }
-
-    if(!name.match(/[a-z_]+/)){
-     $('#security_group_name').focus();
-     return false;
-    }
-    
     var request = new DcmgrGUI.Request;
     request.post({
       "url": '/security_groups.json',
@@ -192,7 +176,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   var bt_create_security_group = new DcmgrGUI.Dialog({
     target:'.create_security_group',
     width:500,
-    height:590,
+    height:550,
     title:$.i18n.prop('create_security_group_header'),
     path:'/create_security_group',
     button: create_security_group_buttons,
@@ -201,7 +185,6 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   
   bt_create_security_group.target.bind('click',function(){
     bt_create_security_group.open();
-    bt_create_security_group.disabledButton(1, true);
   });
   
   var delete_security_group_buttons = {};

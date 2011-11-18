@@ -102,29 +102,27 @@ DcmgrGUI.prototype.instancePanel = function(){
     target:'.start_instances',
     width:400,
     height:200,
-    title:'Start Instances',
+    title:$.i18n.prop('start_instances_header'),
     path:'/start_instances',
-    button:{
-     "Close": function() { $(this).dialog("close"); },
-     "Yes, Start": function() { 
-       $(this).dialog("close");
-     }
-    }
+    button:{},
   });
-  
+  bt_instance_start.button[$.i18n.prop('close_button')]=function() { $(this).dialog("close"); };
+  bt_instance_start.button[$.i18n.prop('start_button')]=function() {
+      instance_action_helper.call(this,'start');
+  };
+
   var bt_instance_stop = new DcmgrGUI.Dialog({
      target:'.stop_instances',
      width:400,
-		 height:200,
-		 title:'Stop Instances',
-		 path:'/stop_instances',
-		 button:{
-			"Close": function() { $(this).dialog("close"); },
-			"Yes, Stop": function() {
-			  $(this).dialog("close");
-			}
-		}
+     height:200,
+     title: $.i18n.prop('stop_instances_header'),
+     path:'/stop_instances',
+     button:{},
   });
+  bt_instance_stop.button[$.i18n.prop('close_button')]=function() { $(this).dialog("close"); };
+  bt_instance_stop.button[$.i18n.prop('stop_button')]=function() {
+      instance_action_helper.call(this,'stop');
+  };
   
   var instance_reboot_buttons = {};
   instance_reboot_buttons[close_button_name] = function() { $(this).dialog("close"); }
@@ -154,14 +152,6 @@ DcmgrGUI.prototype.instancePanel = function(){
     button: instance_terminate_buttons
   });
   
-  bt_instance_start.target.bind('click',function(){
-    bt_instance_start.open(c_list.getCheckedInstanceIds());
-  });
-
-  bt_instance_stop.target.bind('click',function(){
-    bt_instance_stop.open(c_list.getCheckedInstanceIds());
-  });
-
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
@@ -190,10 +180,20 @@ DcmgrGUI.prototype.instancePanel = function(){
     style:'dropdown',
     select: function(event){
       var select_action = $(this).val()
-      if (select_action == "terminate") {
-        bt_instance_terminate.open(c_list.getCheckedInstanceIds());
-      }else if(select_action == "reboot") {
-        bt_instance_reboot.open(c_list.getCheckedInstanceIds());
+      var selected_ids = c_list.getCheckedInstanceIds();
+      switch(select_action) {
+      case 'terminate':
+        bt_instance_terminate.open(selected_ids);
+        break;
+      case 'reboot':
+        bt_instance_reboot.open(selected_ids);
+        break;
+      case 'start':
+        bt_instance_start.open(selected_ids);
+        break;
+      case 'stop':
+        bt_instance_stop.open(selected_ids);
+        break;
       }
     }
   });

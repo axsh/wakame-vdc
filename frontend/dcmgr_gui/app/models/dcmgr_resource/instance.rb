@@ -15,8 +15,8 @@ module DcmgrResource
       instance.host_pool_id = params[:host_pool_id]
       instance.host_name = params[:host_name]
       instance.user_data = params[:user_data]
-      instance.nf_group = params[:nf_group]
-      instance.ssh_key = params[:ssh_key]
+      instance.security_groups = params[:security_groups]
+      instance.ssh_key_id = params[:ssh_key]
       instance.save
       instance
     end
@@ -29,6 +29,22 @@ module DcmgrResource
       @collection ||= self.collection_name
       self.collection_name = File.join(@collection,instance_id)
       result = self.put(:reboot)
+      self.collection_name = @collection
+      result.body
+    end
+
+    def self.start(instance_id)
+      @collection ||= self.collection_name
+      self.collection_name = File.join(@collection,instance_id)
+      result = self.put(:start)
+      self.collection_name = @collection
+      result.body
+    end
+
+    def self.stop(instance_id)
+      @collection ||= self.collection_name
+      self.collection_name = File.join(@collection,instance_id)
+      result = self.put(:stop)
       self.collection_name = @collection
       result.body
     end

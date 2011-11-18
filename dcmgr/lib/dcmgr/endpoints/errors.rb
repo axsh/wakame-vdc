@@ -96,12 +96,10 @@ module Dcmgr
     define_error(:OutOfNetworkCapacity, 400, '130')
     define_error(:InvalidVolumeSnapshotState, 400, '131')
 
-
-    # netfilter_group
-    define_error(:UndefinedNetfilterGroup, 400, '132')
-    define_error(:UnknownNetfilterGroup, 400, '133')
-    define_error(:NetfilterGroupNotPermitted, 400, '134')
-    deprecated_error(:DuplicatedNetfilterGroup, 400, '135')
+    define_error(:UndefinedSecurityGroup, 400, '132')
+    define_error(:UnknownSecurityGroup, 400, '133')
+    define_error(:SecurityGroupNotPermitted, 400, '134')
+    deprecated_error(:DuplicatedSecurityGroup, 400, '135')
 
     define_error(:DuplicateSshKeyName, 400, '136')
     define_error(:InvalidImageID, 400, '137')

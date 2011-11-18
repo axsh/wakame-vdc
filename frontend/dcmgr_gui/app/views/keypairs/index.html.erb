@@ -51,7 +51,7 @@ jQuery(function($){
 				{{else}}
 					<td class="listradiobutton"></td>
 				{{/if}}
-					<td>${item.name}</td>
+					<td>${item.uuid}</td>
 					<td>
 					{{if item.uuid }}
 						{{if item.private_key}}
@@ -78,12 +78,12 @@ jQuery(function($){
 					<tr>
 						<td class="padcell"></td>
 						<td class="title"><%= t('keypairs.details.name') %>:</td>
-						<td colspan="7">${item.name}</td>
+						<td colspan="7">${item.uuid}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
 						<td class="title"><%= t('keypairs.details.fingerprint') %>:</td>
-            <td colspan="7">${item.finger_print}</td>
+						<td colspan="7">${item.finger_print}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>

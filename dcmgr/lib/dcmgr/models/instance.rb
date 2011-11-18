@@ -12,7 +12,7 @@ module Dcmgr::Models
     one_to_many :volume
     one_to_many :instance_nic
     alias :nic :instance_nic
-    many_to_many :netfilter_groups, :join_table=>:instance_netfilter_groups
+    many_to_many :security_groups, :join_table=>:instance_security_groups
     # TODO: remove ssh_key_pair_id column
     many_to_one :ssh_key_pair
 
@@ -118,7 +118,7 @@ module Dcmgr::Models
     def before_destroy
       HostnameLease.filter(:account_id=>self.account_id, :hostname=>self.hostname).destroy
       self.instance_nic.each { |o| o.destroy }
-      self.remove_all_netfilter_groups
+      self.remove_all_security_groups
       self.volume.each { |v|
         v.instance_id = nil
         v.state = :available
@@ -148,7 +148,7 @@ module Dcmgr::Models
                  :instance_nics=>instance_nic.map {|n| n.to_hash },
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
-                 :netfilter_groups => self.netfilter_groups.map {|n| n.canonical_uuid },
+                 :security_groups => self.security_groups.map {|n| n.canonical_uuid },
                  :vif=>[],
               })
       h.merge!({:instance_spec=>instance_spec.to_hash}) unless instance_spec.nil?
@@ -191,7 +191,7 @@ module Dcmgr::Models
     #   :network => [{:network_name=>'nw-xxxxxxx', :ipaddr=>'111.111.111.111'}]
     #   :volume => [{'uuid'=>{:guest_device_name=>,}]
     #   :ssh_key_pair => 'xxxxx',
-    #   :netfilter_group => ['rule1', 'rule2']
+    #   :security_groups => ['rule1', 'rule2']
     #   :created_at
     #   :state
     #   :status
@@ -211,60 +211,53 @@ module Dcmgr::Models
         :ssh_key_pair => nil,
         :network => [],
         :volume => [],
-        :netfilter_groups => self.netfilter_groups.map {|n| n.canonical_uuid },
+        :security_groups => self.security_groups.map {|n| n.canonical_uuid },
         :vif => [],
         :hostname => hostname,
         :ha_enabled => ha_enabled,
         :instance_spec_id => instance_spec.canonical_uuid,
       }
       if self.ssh_key_data
-        h[:ssh_key_pair] = self.ssh_key_data[:name]
+        h[:ssh_key_pair] = self.ssh_key_data[:uuid]
       end
 
-      if instance_nic
-        instance_nic.each { |n|
-          direct_lease_ds = n.direct_ip_lease_dataset
-          next if direct_lease_ds.first.nil?
-          outside_lease_ds = n.nat_ip_lease_dataset
+      instance_nic.each { |vif|
+        direct_lease_ds = vif.direct_ip_lease_dataset
+        if direct_lease_ds.first
+          outside_lease_ds = vif.nat_ip_lease_dataset
 
           h[:network] << {
-            :network_name => n.network.canonical_uuid,
+            :network_name => vif.network.canonical_uuid,
             :ipaddr => direct_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :dns_name => n.network.domain_name && self.fqdn_hostname,
-            :nat_network_name => n.nat_network && n.nat_network.canonical_uuid,
+            :dns_name => vif.network.domain_name && self.fqdn_hostname,
+            :nat_network_name => vif.nat_network && vif.nat_network.canonical_uuid,
             :nat_ipaddr => outside_lease_ds.all.map {|lease| lease.ipv4 }.compact,
-            :nat_dns_name => n.nat_network && n.nat_network.domain_name && self.nat_fqdn_hostname,
+            :nat_dns_name => vif.nat_network && vif.nat_network.domain_name && self.nat_fqdn_hostname,
           }
-        }
-      end
+        end
 
-      if instance_nic
-        instance_nic.each { |vif|
-          ent = {
-            :vif_id=>vif.canonical_uuid,
-          }
-          direct_lease = vif.direct_ip_lease.first
-          if direct_lease.nil?
-          else
-            outside_lease = direct_lease.nat_outside_lease
-            ent[:ipv4] = {
-              :address=> direct_lease.ipv4,
-              :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
-            }
-          end
-          h[:vif] << ent
+        ent = {
+          :vif_id=>vif.canonical_uuid,
         }
-      end
-      
-      if self.volume
-        self.volume.each { |v|
-          h[:volume] << {
-            :vol_id => v.canonical_uuid,
-            :guest_device_name=>v.guest_device_name,
-            :state=>v.state,
+        direct_lease = direct_lease_ds.first
+        if direct_lease.nil?
+        else
+          outside_lease = direct_lease.nat_outside_lease
+          ent[:ipv4] = {
+            :address=> direct_lease.ipv4,
+            :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
           }
+        end
+        h[:vif] << ent
+      }
+
+      self.volume.each { |v|
+        h[:volume] << {
+          :vol_id => v.canonical_uuid,
+          :guest_device_name=>v.guest_device_name,
+          :state=>v.state,
         }
-      end
+      }
 
       h
     end
@@ -292,20 +285,20 @@ module Dcmgr::Models
       nic.save
     end
 
-    # Join this instance to the list of netfilter group using group's uuid.
-    # @param [String,Array] netfilter_group_uuids 
-    def join_netfilter_group(netfilter_group_uuids)
-      netfilter_group_uuids = [netfilter_group_uuids] if netfilter_group_uuids.is_a?(String)
-      joined_group_uuids = self.netfilter_groups.map { |netfilter_group|
-        netfilter_group.canonical_uuid
+    # Join this instance to the list of security group using group's uuid.
+    # @param [String,Array] security_group_uuids 
+    def join_security_group(security_group_uuids)
+      security_group_uuids = [security_group_uuids] if security_group_uuids.is_a?(String)
+      joined_group_uuids = self.security_groups.map { |security_group|
+        security_group.canonical_uuid
       }
-      target_group_uuids = netfilter_group_uuids.uniq - joined_group_uuids.uniq
+      target_group_uuids = security_group_uuids.uniq - joined_group_uuids.uniq
       target_group_uuids.uniq!
 
       target_group_uuids.map { |target_group_uuid|
-        if ng = NetfilterGroup[target_group_uuid]
-          InstanceNetfilterGroup.create(:instance_id => self.id,
-                                        :netfilter_group_id => ng.id)
+        if sg = SecurityGroup[target_group_uuid]
+          InstanceSecurityGroup.create(:instance_id => self.id,
+                                       :security_group_id => sg.id)
         end
       }
     end
@@ -367,7 +360,8 @@ module Dcmgr::Models
       raise ArgumentError unless account.is_a?(Account)
       raise ArgumentError unless image.is_a?(Image)
       raise ArgumentError unless spec.is_a?(InstanceSpec)
-      raise ArgumentError unless params.is_a?(::Hash)
+      # Mash is passed in some cases.
+      raise ArgumentError unless params.class == ::Hash
 
       i = self.new &blk
       i.account_id = account.canonical_uuid
@@ -376,19 +370,10 @@ module Dcmgr::Models
       i.cpu_cores = spec.cpu_cores
       i.memory_size = spec.memory_size
       i.quota_weight = spec.quota_weight
-      i.request_params = symbolize_keys(params)
+      i.request_params = params.dup
 
       i
     end
 
-    private
-    def self.symbolize_keys(params)
-      raise ArgumentError unless params.is_a?(::Hash)
-      params.inject({}) do |options, (key, value)|
-        options[(key.to_sym rescue key) || key] = value
-        options
-      end
-    end
-    
   end
 end

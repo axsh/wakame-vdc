@@ -4,7 +4,7 @@ require 'isono/models/node_state'
 
 module Dcmgr::Models
   class HostNode < AccountResource
-    taggable 'hp'
+    taggable 'hn'
 
     HYPERVISOR_XEN_34='xen-3.4'
     HYPERVISOR_XEN_40='xen-4.0'
@@ -100,11 +100,22 @@ module Dcmgr::Models
       self.offering_memory_size - self.memory_size_usage
     end
 
-    def self.check_availability?(cpu_cores, memory_size, num=1)
+    # Check the free resource capacity across entire local VDC domain.
+    def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
       alives_mem_size = Instance.dataset.lives.filter.sum(:memory_size).to_i
       stopped_mem_size = Instance.dataset.lives.filter(:state=>'stopped').sum(:memory_size).to_i
       alives_cpu_cores = Instance.dataset.lives.filter.sum(:cpu_cores).to_i
       stopped_cpu_cores = Instance.dataset.lives.filter(:state=>'stopped').sum(:cpu_cores).to_i
+      # instance releases the resources during stopped state normally. however admins may
+      # want to manage the reserved resource ratio for stopped
+      # instances. "stopped_instance_usage_factor" conf parameter allows its control.
+      # 
+      # * stopped_instance_usage_factor == 1.0 means that 100% of
+      # resources are reserved for stopped instances. all of them will
+      # success to start up but utilization of host notes will be dropped.
+      # * stopped_instance_usage_factor == 0.5 means that 50% of
+      # resources for stopped instances are reserved and rest of 50%
+      # may fail to start again.
       usage_factor = (Dcmgr.conf.stopped_instance_usage_factor || 1.0).to_f
       avail_mem_size = self.online_nodes.sum(:offering_memory_size).to_i - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)
       avail_cpu_cores = self.online_nodes.sum(:offering_cpu_cores).to_i - ((alives_cpu_cores - stopped_cpu_cores) + (stopped_cpu_cores * usage_factor).floor)

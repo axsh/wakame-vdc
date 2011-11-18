@@ -57,6 +57,8 @@ DcmgrGui::Application.routes.draw do
   post   'instances/reboot' ,:to => 'instances#reboot'
   post   'instances' ,:to => 'instances#create'
   get    'instances/show/:id' ,:to => 'instances#show'
+  post   'instances/start' ,:to => 'instances#start'
+  post   'instances/stop' ,:to => 'instances#stop'
   
   #instance_specs
   get    'instance_specs/all' ,:to => 'instance_specs#show_instance_specs'

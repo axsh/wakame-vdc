@@ -1,13 +1,12 @@
 module DcmgrResource
-  class NetfilterGroup < Base
+  class SecurityGroup < Base
 
     def self.create(params)
-      netfilter_group = self.new
-      netfilter_group.name = params[:name]
-      netfilter_group.description = params[:description]
-      netfilter_group.rule = params[:rule]
-      netfilter_group.save
-      netfilter_group
+      security_group = self.new
+      security_group.description = params[:description]
+      security_group.rule = params[:rule]
+      security_group.save
+      security_group
     end
 
     def self.list(params = {})

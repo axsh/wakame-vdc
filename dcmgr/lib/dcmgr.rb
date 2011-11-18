@@ -82,15 +82,6 @@ module Dcmgr
     class UUIDPrefixDuplication < StandardError; end
     autoload :Base, 'dcmgr/models/base'
 
-    CREATE_TABLE_CLASSES=[:Account,:Tag,:TagMapping,:FrontendSystem,
-                          :Image,:HostNode,:RequestLog,:Instance,
-                          :NetfilterGroup, :NetfilterRule,
-                          :StorageNode,:Volume,:VolumeSnapshot,
-                          :InstanceNetfilterGroup,
-                          :InstanceSpec, :InstanceNic, :Network, :IpLease,
-                          :SshKeyPair, :History, :HostnameLease, :MacLease,
-                          :VlanLease, :Quota
-                         ].freeze
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
     autoload :Tag, 'dcmgr/models/tag'
@@ -104,13 +95,13 @@ module Dcmgr
     autoload :StorageNode, 'dcmgr/models/storage_node'
     autoload :Volume, 'dcmgr/models/volume'
     autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
-    autoload :NetfilterGroup, 'dcmgr/models/netfilter_group'
-    autoload :NetfilterRule, 'dcmgr/models/netfilter_rule'
+    autoload :SecurityGroup, 'dcmgr/models/security_group'
+    autoload :SecurityGroupRule, 'dcmgr/models/security_group_rule'
     autoload :InstanceSpec, 'dcmgr/models/instance_spec'
     autoload :InstanceNic, 'dcmgr/models/instance_nic'
     autoload :Network, 'dcmgr/models/network'
     autoload :IpLease, 'dcmgr/models/ip_lease'
-    autoload :InstanceNetfilterGroup, 'dcmgr/models/instance_netfilter_group'
+    autoload :InstanceSecurityGroup, 'dcmgr/models/instance_security_group'
     autoload :SshKeyPair, 'dcmgr/models/ssh_key_pair'
     autoload :History, 'dcmgr/models/history'
     autoload :HostnameLease, 'dcmgr/models/hostname_lease'
@@ -158,7 +149,7 @@ module Dcmgr
     autoload :Vlan, 'dcmgr/cli/vlan'
     autoload :Image, 'dcmgr/cli/image'
     autoload :KeyPair, 'dcmgr/cli/keypair'
-    autoload :Group, 'dcmgr/cli/group'
+    autoload :SecurityGroup, 'dcmgr/cli/security_group'
     autoload :Spec, 'dcmgr/cli/spec'
     autoload :Tag, 'dcmgr/cli/tag'
     autoload :Quota, 'dcmgr/cli/quota'

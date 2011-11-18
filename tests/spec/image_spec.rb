@@ -1,58 +1,15 @@
 
 require File.expand_path('../spec_helper', __FILE__)
+include Config
 
-describe "/api/images" do
-  include CliHelper
+if is_enabled? :images_api_spec
+  cfg = get_config[:images_api_spec]
 
-  before :all do
-    init_env
-    cd_dcmgr_dir
+  describe "/api/images" do
+    include CliHelper
+    
+    it_should_behave_like "show_api", "/images", cfg[:local_image_ids] + cfg[:snapshot_image_ids]
+    it_should_behave_like "image_delete_and_register", cfg[:local_image_ids], :local
+    it_should_behave_like "image_delete_and_register", cfg[:snapshot_image_ids], :snapshot
   end
-
-  # volume_min_size
-  it "should show image list" do
-    res = APITest.get("/images")
-    res.success?.should be_true
-  end
-
-  it "should describe machine image (wmi-lucid0)" do
-    image_id = "wmi-lucid0"
-    res = APITest.get("/images/#{image_id}")
-    res["id"].should == image_id
-    res.success?.should be_true
-  end
-
-  it "should delete machine image (wmi-lucid0) and then register with CLI." do
-    image_id = "wmi-lucid0"
-    res = APITest.get("/images/#{image_id}")
-
-    # TODO: Image should be registerd via API.
-    require 'yaml'
-    vmimage_uri = YAML.load(res["source"])[:uri]
-    vmimage_path = URI.parse(vmimage_uri).path
-    cmd = "./bin/vdc-manage image add local #{vmimage_path} --md5sum #{res["md5sum"]} --account-id #{res["account_id"]} --uuid #{res["id"]} --arch #{res["arch"]} --description \"#{res["description"]}\" --state init"
-
-    res = APITest.delete("/images/#{image_id}")
-    res.success?.should be_true
-
-    `#{cmd}`
-    $?.exitstatus.should == 0
-  end
-
-  it "should delete machine image (wmi-lucid1) and then register with CLI." do
-    image_id = "wmi-lucid1"
-    res = APITest.get("/images/#{image_id}")
-
-    # TODO: Image should be registerd via API.
-    require 'yaml'
-    snap_id = YAML.load(res["source"])[:snapshot_id]
-    cmd = "./bin/vdc-manage image add volume #{snap_id} --md5sum #{res["md5sum"]} --account-id #{res["account_id"]} --uuid #{res["id"]} --arch #{res["arch"]} --description \"#{res["description"]}\" --state init"
-
-    res = APITest.delete("/images/#{image_id}")
-    res.success?.should be_true
-
-    `#{cmd}`
-    $?.exitstatus.should == 0
-  end
-
 end

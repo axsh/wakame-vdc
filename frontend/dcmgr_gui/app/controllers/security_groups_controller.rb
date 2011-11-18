@@ -10,31 +10,30 @@ class SecurityGroupsController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    @netfilter_group = DcmgrResource::NetfilterGroup.list(data)
-    respond_with(@netfilter_group[0],:to => [:json])
+    @security_group = DcmgrResource::SecurityGroup.list(data)
+    respond_with(@security_group[0],:to => [:json])
   end
   
   # security_groups/detail/s-000001.json
   def show
     uuid = params[:id]
-    @netfilter_group = DcmgrResource::NetfilterGroup.show(uuid)
-    respond_with(@netfilter_group,:to => [:json])
+    @security_group = DcmgrResource::SecurityGroup.show(uuid)
+    respond_with(@security_group,:to => [:json])
   end
 
   def create
     data = {
-      :name => params[:name],
       :description => params[:description],
       :rule => params[:rule]
     }
-    @netfilter_group = DcmgrResource::NetfilterGroup.create(data)
-    render :json => @netfilter_group
+    @security_group = DcmgrResource::SecurityGroup.create(data)
+    render :json => @security_group
   end
   
   def destroy
     uuid = params[:id]
-    @netfilter_group = DcmgrResource::NetfilterGroup.destroy(uuid)
-    render :json => @netfilter_group    
+    @security_group = DcmgrResource::SecurityGroup.destroy(uuid)
+    render :json => @security_group    
   end
   
   def update
@@ -43,17 +42,17 @@ class SecurityGroupsController < ApplicationController
       :description => params[:description],
       :rule => params[:rule]
     }
-    @netfilter_group = DcmgrResource::NetfilterGroup.update(uuid,data)
-    render :json => @netfilter_group    
+    @security_group = DcmgrResource::SecurityGroup.update(uuid,data)
+    render :json => @security_group    
   end
   
   def show_groups
-    @netfilter_group = DcmgrResource::NetfilterGroup.list
-    respond_with(@netfilter_group[0],:to => [:json])
+    @security_group = DcmgrResource::SecurityGroup.list
+    respond_with(@security_group[0],:to => [:json])
   end
   
   def total
-   total_resource = DcmgrResource::NetfilterGroup.total_resource
+   total_resource = DcmgrResource::SecurityGroup.total_resource
    render :json => total_resource
   end
 end

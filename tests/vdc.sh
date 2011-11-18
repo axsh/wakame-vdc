@@ -163,7 +163,7 @@ consumer_key = "${consumer_key}"
 secret_key = "${secret_key}"
 site = "http://${proxy_bind:-127.0.0.1}:${proxy_port}"
 consumer = OAuth::Consumer.new(consumer_key,secret_key, {:site=>site, :version=>'1.0'})
-req = "/api/netfilter_groups"
+req = "/api/security_groups"
 res = consumer.request(:get, req, nil, {}, {'X-VDC-ACCOUNT-UUID' => '${account_id}'})
 p res.body
 EOS

@@ -1,18 +1,11 @@
 
 require File.expand_path('../spec_helper', __FILE__)
+include Config
 
-describe "/api/networks" do
+cfg = get_config[:network_api_spec]
 
-  it "should show network list" do
-    res = APITest.get("/networks")
-    res.success?.should be_true
+if is_enabled? :network_api_spec
+  describe "/api/networks" do
+    it_should_behave_like "show_api", "/networks", cfg[:network_ids]
   end
-
-  it "should describe network (nw-demonet)" do
-    network_id = "nw-demonet"
-    res = APITest.get("/networks/#{network_id}")
-    res["id"].should == network_id
-    res.success?.should be_true
-  end
-
 end
