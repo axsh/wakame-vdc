@@ -23,6 +23,7 @@ rpm_pkgs="
  libxml2-devel libxslt-devel
  initscripts erlang
  qemu-kvm
+ dosfstools
 "
 # rpm-build libcap-devel docbook-utils
 
