@@ -439,6 +439,6 @@ Sequel.migration do
   end
   
   down do
-    drop_table(:accounts, :frontend_systems, :histories, :host_nodes, :hostname_leases, :images, :instance_security_groups, :instance_nics, :instance_specs, :instances, :ip_leases, :job_states, :mac_leases, :security_groups, :security_group_rules, :networks, :node_states, :quotas, :request_logs, :ssh_key_pairs, :storage_nodes, :tag_mappings, :tags, :vlan_leases, :volume_snapshots, :volumes, :dhcp_range, :physical_networks)
+    drop_table(:accounts, :frontend_systems, :histories, :host_nodes, :hostname_leases, :images, :instance_security_groups, :instance_nics, :instance_specs, :instances, :ip_leases, :job_states, :mac_leases, :security_groups, :security_group_rules, :networks, :node_states, :quotas, :request_logs, :ssh_key_pairs, :storage_nodes, :tag_mappings, :tags, :vlan_leases, :volume_snapshots, :volumes, :dhcp_ranges, :physical_networks)
   end
 end
