@@ -877,6 +877,10 @@ module Dcmgr
               if params[:download_once] != 'true'
                 s.private_key = keydata[:private_key]
               end
+
+              if params[:description]
+                s.description = params[:description]
+              end
             end
 
             begin
@@ -907,6 +911,21 @@ module Dcmgr
           end
         end
 
+        operation :update do
+          description "Update ssh key pair information"
+          control do
+            Models::SshKeyPair.lock!
+            ssh = find_by_uuid(:SshKeyPair, params[:id])
+            if examine_owner(ssh)
+              ssh.description = params[:description]
+              ssh.save_changes
+            else
+              raise OperationNotPermitted
+            end
+
+            response_to([ssh.canonical_uuid])
+          end
+        end
       end
 
       collection :networks do
