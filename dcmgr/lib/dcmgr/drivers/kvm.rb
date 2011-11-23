@@ -31,8 +31,6 @@ module Dcmgr
         inst = hc.inst
         cmd = ["kvm -m %d -smp %d -name vdc-%s -vnc :%d",
                "-cpu host",
-               "-drive file=%s,media=disk,boot=on,index=0,cache=none",
-               "-drive file=%s,media=disk,index=1,cache=none",
                "-pidfile %s",
                "-daemonize",
                "-monitor telnet:127.0.0.1:%d,server,nowait",
@@ -42,16 +40,22 @@ module Dcmgr
               inst[:cpu_cores],
               inst[:uuid],
               vnc_port - 5900, # KVM -vnc offsets 5900
-              hc.os_devpath,
-              hc.metadata_img_path,
               File.expand_path('kvm.pid', hc.inst_data_dir),
               monitor_port
              ]
 
+        vdrv_model = inst[:image][:features][:virtio] ? 'virtio' : 'scsi'
+
+        cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{vdrv_model}"
+        args << hc.os_devpath
+        cmd << "-drive file=%s,media=disk,index=1,cache=none,if=#{vdrv_model}"
+        args << hc.metadata_img_path
+
         vifs = inst[:vif]
         if !vifs.empty?
+          vnic_model = inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
           vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
-            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=e1000,addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
+            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=#{vnic_model},addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
             args << vif[:mac_addr].unpack('A2'*6).join(':')
             args << (KVM_NIC_PCI_ADDR_OFFSET + vif[:device_index].to_i)
             args << vif[:uuid]
