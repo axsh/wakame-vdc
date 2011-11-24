@@ -1,0 +1,14 @@
+/var/log/vdc-*.log {
+    daily
+    rotate 10
+    missingok
+    sharedscripts
+    create 0644 root root
+    postrotate
+      for pid_file in /var/run/flog-vdc-*; do
+        pid=`cat ${pid_file}`
+        ps -p ${pid} >/dev/null || continue
+        kill -HUP ${pid}
+      done
+    endscript
+}
