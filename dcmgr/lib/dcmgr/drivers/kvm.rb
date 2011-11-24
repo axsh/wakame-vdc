@@ -44,18 +44,15 @@ module Dcmgr
               monitor_port
              ]
 
-        vdrv_model = inst[:image][:features][:virtio] ? 'virtio' : 'scsi'
-
-        cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{vdrv_model}"
+        cmd << "-drive file=%s,media=disk,boot=on,index=0,cache=none,if=#{drive_model(hc)}"
         args << hc.os_devpath
-        cmd << "-drive file=%s,media=disk,index=1,cache=none,if=#{vdrv_model}"
+        cmd << "-drive file=%s,media=disk,index=1,cache=none,if=#{drive_model(hc)}"
         args << hc.metadata_img_path
 
         vifs = inst[:vif]
         if !vifs.empty?
-          vnic_model = inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
           vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
-            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=#{vnic_model},addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
+            cmd << "-net nic,vlan=#{vif[:device_index].to_i},macaddr=%s,model=#{nic_model(hc)},addr=%x -net tap,vlan=#{vif[:device_index].to_i},ifname=%s,script=no,downscript=no"
             args << vif[:mac_addr].unpack('A2'*6).join(':')
             args << (KVM_NIC_PCI_ADDR_OFFSET + vif[:device_index].to_i)
             args << vif[:uuid]
@@ -123,7 +120,7 @@ module Dcmgr
           #   OK domain 0, bus 0, slot 4, function 0
           # error message:
           #   failed to add file=/dev/xxxx,if=virtio
-          c = t.cmd("pci_add auto storage file=#{sddev},if=scsi")
+          c = t.cmd("pci_add auto storage file=#{sddev},if=#{drive_model(hc)},cache=off")
           # Note: pci_parse_devaddr() called in "pci_add" uses strtoul()
           # with base 16 so that the input is expected in hex. however
           # at the result display, void pci_device_hot_add_print() uses
@@ -241,6 +238,14 @@ module Dcmgr
         new_port
       end
 
+      def drive_model(hc)
+        hc.inst[:image][:features][:virtio] ? 'virtio' : 'scsi'
+      end
+
+      def nic_model(hc)
+        hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
+      end
+      
     end
   end
 end
