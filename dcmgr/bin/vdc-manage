@@ -35,8 +35,9 @@ end
 begin
   RootCli.start
 rescue => e
+  orig_e = e
   e = Dcmgr::Cli::Error.new(e,101) unless e.is_a?(Dcmgr::Cli::Error)
-  STDERR.puts "ERROR: " + e.message
+  STDERR.puts "ERROR: #{e.message} (#{orig_e.backtrace.first})"
   if e.respond_to?(:exit_code)
     exit(e.exit_code)
   else

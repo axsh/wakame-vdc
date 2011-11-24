@@ -97,6 +97,8 @@ Is Public:
   <%= img.is_public %>
 State:
   <%= img.state %>
+Features:
+<%= img.features %>
 __END
       else
         cond = {}
@@ -108,5 +110,18 @@ __END
 __END
       end
     end
+
+    desc "features IMAGE_ID", "Set features attribute to the image"
+    method_option :virtio, :type => :boolean, :desc => "Virtio ready image."
+    def features(uuid)
+      img = M::Image[uuid]
+      UnknownUUIDError.raise(uuid) if img.nil?
+
+      if options[:virtio]
+        img.set_feature(:virtio, options[:virtio])
+      end
+      img.save_changes
+    end
+    
   end
 end

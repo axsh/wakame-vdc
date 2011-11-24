@@ -14,8 +14,15 @@ module Dcmgr::Models
     # {:snapshot_id=>'snap-xxxxxx'}
     # {:uri=>'http://localhost/xxx/xxx'}
     plugin :serialization
-    serialize_attributes :yaml, :source
+    serialize_attributes :yaml, :source, :features
     
+    def after_initialize
+      super
+      unless self.features.is_a?(Hash) 
+        self.features = {}
+      end
+    end
+
     def validate
       super
       
@@ -38,7 +45,7 @@ module Dcmgr::Models
     end
 
     def to_hash
-      super.merge({:source=>self.source.dup, :description=>description.to_s})
+      super.merge({:source=>self.source, :description=>self.description.to_s, :features=>self.features})
     end
 
     # note on "lookup_account_id":
@@ -56,6 +63,24 @@ module Dcmgr::Models
         end
       end
       h
+    end
+
+    # TODO: more proper key&value validation.
+    # Handles the feature blob column.
+    def set_feature(key, value)
+      case key.to_sym
+      when :virtio
+        self.features[:virtio] = value
+      else
+        raise "Unsupported feature: #{key}"
+      end
+
+      self.changed_columns << :features
+      self
+    end
+
+    def get_feature(key)
+      self.features[key]
     end
     
   end

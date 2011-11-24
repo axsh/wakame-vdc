@@ -73,6 +73,7 @@ Sequel.migration do
       column :md5sum, "varchar(255)", :null=>false
       column :is_public, "tinyint(1)", :null=>false, :default=>false
       column :state, "varchar(255)", :default=>"init", :null=>false
+      column :features, "text"
       
       index [:account_id]
       index [:is_public]

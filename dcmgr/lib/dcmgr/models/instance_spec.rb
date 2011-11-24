@@ -94,20 +94,28 @@ module Dcmgr::Models
         :index => index,
         :bandwidth => bandwidth,
       }
+      self.changed_columns << :vifs
+      self
     end
 
     def update_vif_index(name, new_index)
       raise "Unknown interface name: #{name}" if !self.vifs.has_key?(name)
       self.vifs[name][:index]=new_index
+      self.changed_columns << :vifs
+      self
     end
 
     def update_vif_bandwidth(name, bandwidth)
       raise "Unknown interface name: #{name}" if !self.vifs.has_key?(name)
       self.vifs[name][:bandwidth]=bandwidth
+      self.changed_columns << :vifs
+      self
     end
 
     def remove_vif(name)
       self.vifs.delete(name)
+      self.changed_columns << :vifs
+      self
     end
     
     def add_local_drive(name, index, size)
@@ -117,6 +125,8 @@ module Dcmgr::Models
         :type => :local,
         :size => size,
       }
+      self.changed_columns << :drives
+      self
     end
 
     def add_volume_drive(name, index, size)
@@ -126,6 +136,8 @@ module Dcmgr::Models
         :type => :volume,
         :size => size,
       }
+      self.changed_columns << :drives
+      self
     end
 
     def add_volume_drive_from_snapshot(name, index, snapshot_id)
@@ -135,12 +147,16 @@ module Dcmgr::Models
         :type => :volume,
         :snapshot_id => snapshot_id,
       }
+      self.changed_columns << :drives
+      self
     end
     
     def update_drive_index(name, new_index)
       raise "Unknown drive name: #{name}" if !self.drives.has_key?(name)
       drive = self.drives[name]
       drive[:index] = new_index
+      self.changed_columns << :drives
+      self
     end
 
     def update_drive_snapshot_id(name, snapshot_id)
@@ -150,6 +166,8 @@ module Dcmgr::Models
       drive.delete(:size)
       # TODO: syntax check for snapshot_id
       drive[:snapshot_id] = snapshot_id
+      self.changed_columns << :drives
+      self
     end
 
     def update_drive_size(name, size)
@@ -157,10 +175,14 @@ module Dcmgr::Models
       drive = self.drives[name]
       drive.delete(:snapshot_id) if drive[:type] == :volume
       drive[:size] = size
+      self.changed_columns << :drives
+      self
     end
 
     def remove_drive(name)
       self.drives.delete(name)
+      self.changed_columns << :drives
+      self
     end
     
   end
