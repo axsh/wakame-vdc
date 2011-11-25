@@ -98,6 +98,7 @@ config.vm_data_dir = "${vmdir_path}"
 # netfilter
 config.enable_ebtables = true
 config.enable_iptables = true
+config.enable_openflow = false
 
 # physical nic index
 config.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
@@ -110,6 +111,7 @@ config.bridge_novlan   = 'br0'
 
 # display netfitler commands
 config.verbose_netfilter = false
+config.verbose_openflow  = false
 
 # netfilter log output flag
 config.packet_drop_log = false
@@ -121,13 +123,13 @@ config.debug_iptables = false
 config.use_ipset       = false
 
 # Directory used by Open vSwitch daemon for run files
-config.ovs_run_dir='${work_dir}/ovs/var/run/openvswitch'
+config.ovs_run_dir = '${work_dir}/ovs/var/run/openvswitch'
 
 # Path for ovs-ofctl
-config.ovs_ofctl_path='${work_dir}/ovs/bin/ovs-ofctl'
+config.ovs_ofctl_path = '${work_dir}/ovs/bin/ovs-ofctl'
 
 # Trema base directory
-config.trema_dir='${work_dir}/trema'
+config.trema_dir = '${work_dir}/trema'
 EOS
 
 

@@ -5,15 +5,17 @@
 # directory to store VM local data.
 config.vm_data_dir = "/home/demo/vm"
 
-# netfilter
+# netfilter and openflow
 config.enable_ebtables = true
 config.enable_iptables = true
+config.enable_openflow = false
 
 # bridge device name prefix
 config.bridge_prefix   = 'br'
 
-# display netfilter commands
+# display netfilter and openflow commands
 config.verbose_netfilter = false
+config.verbose_openflow  = false
 
 # netfilter log output flag
 config.packet_drop_log = false
@@ -24,14 +26,11 @@ config.debug_iptables = false
 # Use ipset for netfilter
 config.use_ipset       = false
 
-# display openflow commands
-config.verbose_openflow = false
-
 # Directory used by Open vSwitch daemon for run files
-config.ovs_run_dir='/usr/var/run/openvswitch'
+config.ovs_run_dir = '/usr/var/run/openvswitch'
 
 # Path for ovs-ofctl
-config.ovs_ofctl_path='/usr/bin/ovs-ofctl'
+config.ovs_ofctl_path = '/usr/bin/ovs-ofctl'
 
 # Trema base directory
-config.trema_dir='/home/demo/trema'
+config.trema_dir = '/home/demo/trema'
