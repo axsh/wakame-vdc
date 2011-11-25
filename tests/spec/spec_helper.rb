@@ -341,6 +341,7 @@ module CliHelper
     ENV["BUNDLE_GEMFILE"]  = nil
     ENV["BUNDLE_BIN_PATH"] = nil
     ENV["RUBYOPT"]         = nil
+    ENV["GEM_HOME"]        = nil
   end
 
   def cd_gui_dir
