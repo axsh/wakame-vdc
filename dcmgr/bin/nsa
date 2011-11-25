@@ -118,8 +118,12 @@ dhcp-option=tag:<%= nwid %>,option:domain-name,<%= v[:domain_name] %>
 <%- else # if @conf_ver_253 -%>
 dhcp-range=net:<%= nwid %>,<%= v[:ipv4_first] %>,static,<%= v[:netmask] %>
 dhcp-option=<%= nwid %>,option:netmask,<%= v[:netmask] %>
+<%- if not v[:ipv4_gw].nil? -%>
 dhcp-option=<%= nwid %>,option:router,<%= v[:ipv4_gw] %>
+<%- end -%>
+<%- if not v[:dns_server].nil? -%>
 dhcp-option=<%= nwid %>,option:dns-server,<%= v[:dns_server] %>
+<%- end -%>
 dhcp-option=<%= nwid %>,option:domain-name,<%= v[:domain_name] %>
 #dhcp-option=<%= nwid %>,option:domain-search,<%= v[:domain_name] %>
 <%- end # if @conf_ver_253 -%>
