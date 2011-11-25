@@ -273,7 +273,13 @@ module Dcmgr
 
         ####
         logger.debug("copying #{vmimg_cache_path} to #{@os_devpath}")
-        sh("cp -p --sparse=always %s %s",[vmimg_cache_path, @os_devpath])
+        case vmimg_cache_path
+        when /\.gz$/
+          sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path, @os_devpath])
+        else
+          sh("cp -p --sparse=always %s %s",[vmimg_cache_path, @os_devpath])
+        end
+
         sleep 1
 
         setup_metadata_drive
