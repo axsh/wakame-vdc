@@ -9,8 +9,11 @@ module Dcmgr
         include Dcmgr::Logger
 
         def schedule(instance)
-          host_uuid = instance.request_params['host_id'] || instance.request_params['host_pool_id']
-          ds = Models::HostNode.online_nodes.filter(:uuid=>Models::HostNode.trim_uuid(host_uuid))
+          # TODO:
+          #  "host_id" and "host_pool_id" will be obsolete.
+          #  They are used in lib/dcmgr/endpoints/core_api.rb.
+          host_node_uuid = instance.request_params['host_id'] || instance.request_params['host_pool_id'] || instance.request_params['host_node_id']
+          ds = Models::HostNode.online_nodes.filter(:uuid=>Models::HostNode.trim_uuid(host_node_uuid))
 
           host_node = ds.first
 

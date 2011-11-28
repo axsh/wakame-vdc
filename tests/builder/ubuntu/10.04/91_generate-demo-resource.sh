@@ -29,6 +29,10 @@ vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
 vmimage_snap_uuid=lucid1
 vmimage_snap_file=snap-${vmimage_snap_uuid}.snap
 vmimage_snap_path=${tmp_path}/snap/${account_id}/${vmimage_snap_file}
+# local / without-metadata / gzip
+vmimage_gzip_uuid=lucid2
+vmimage_gzip_file=${vmimage_file}.gz
+vmimage_gzip_path=${vmimage_path}.gz
 # local / with-metadata
 vmimage_meta_uuid=lucid5
 vmimage_meta_file=${vmimage_dist_name}-${vmimage_dist_ver}_with-metadata_${hypervisor}_${vmimage_arch}.raw
@@ -38,6 +42,14 @@ vmimage_meta_s3=${vmimage_s3_prefix}/${vmimage_meta_file}.gz
 vmimage_meta_snap_uuid=lucid6
 vmimage_meta_snap_file=snap-${vmimage_meta_snap_uuid}.snap
 vmimage_meta_snap_path=${tmp_path}/snap/${account_id}/${vmimage_meta_snap_file}
+# local / with-metadata / gzip
+vmimage_meta_gzip_uuid=lucid7
+vmimage_meta_gzip_file=${vmimage_meta_file}.gz
+vmimage_meta_gzip_path=${vmimage_meta_path}.gz
+
+# how many agents?
+hva_num=${hva_num:-1}
+sta_num=${sta_num:-1}
 
 case ${vmimage_arch} in
 i386)
@@ -79,13 +91,18 @@ deploy_vmfile ${vmimage_file}      ${vmimage_s3}
 deploy_vmfile ${vmimage_meta_file} ${vmimage_meta_s3}
 
 cd ${work_dir}/dcmgr/
-shlog ./bin/vdc-manage host add hva.demo1 --force --uuid hn-demo1 --account-id ${account_id} --cpu-cores 100 --memory-size 400000 --hypervisor ${hypervisor} --arch ${hva_arch}
+for i in $(seq 1 ${hva_num}); do
+  shlog ./bin/vdc-manage host add hva.demo${i} --force --uuid hn-demo${i} --account-id ${account_id} --cpu-cores 100 --memory-size 400000 --hypervisor ${hypervisor} --arch ${hva_arch}
+done
 
 case ${sta_server} in
 ${ipaddr})
   [ -d ${tmp_path}/xpool/${account_id} ] || mkdir -p ${tmp_path}/xpool/${account_id}
   [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
-  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sn-demo1 --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
+
+  for i in $(seq 1 ${sta_num}); do
+    shlog ./bin/vdc-manage storage add sta.demo${i} --uuid sn-demo${i} --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
+  done
 
   ln -fs ${vmimage_path}      ${vmimage_snap_path}
   ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
@@ -139,6 +156,7 @@ shlog ./bin/vdc-manage network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
 shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 
 shlog ./bin/vdc-manage tag map tag-shhost hn-demo1
+shlog ./bin/vdc-manage tag map tag-shhost hn-demo2
 shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
 shlog ./bin/vdc-manage tag map tag-shstor sn-demo1
 
@@ -150,16 +168,24 @@ INSERT INTO volume_snapshots values
  (2, '${account_id}', '${vmimage_meta_snap_uuid}', 1, 'vol-${vmimage_meta_snap_uuid}', 1024, 0, 'available', 'local@local:none:${vmimage_meta_snap_path}', NULL, now(), now());
 EOS
 
-vmimage_md5=$(md5sum ${local_store_path}/${vmimage_file} | cut -d ' ' -f1)
-vmimage_meta_md5=$(md5sum ${local_store_path}/${vmimage_meta_file} | cut -d ' ' -f1)
-shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_file}      --md5sum ${vmimage_md5}      --account-id ${account_id} --uuid wmi-${vmimage_uuid}           --arch ${images_arch} --description \"${vmimage_file} local\" --state init
-shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid}                --md5sum ${vmimage_md5}      --account-id ${account_id} --uuid wmi-${vmimage_snap_uuid}      --arch ${images_arch} --description \"${vmimage_file} volume\" --state init
-shlog ./bin/vdc-manage image add local  ${local_store_path}/${vmimage_meta_file} --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_uuid}      --arch ${images_arch} --description \"${vmimage_meta_file} local\" --state init
-shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid}           --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_snap_uuid} --arch ${images_arch} --description \"${vmimage_meta_file} volume\" --state init
+vmimage_md5=$(md5sum ${vmimage_path} | cut -d ' ' -f1)
+vmimage_meta_md5=$(md5sum ${vmimage_meta_path} | cut -d ' ' -f1)
+vmimage_gzip_md5=$(md5sum ${vmimage_gzip_path} | cut -d ' ' -f1)
+vmimage_meta_gzip_md5=$(md5sum ${vmimage_meta_gzip_path} | cut -d ' ' -f1)
+
+shlog ./bin/vdc-manage image add local  ${vmimage_path}                --md5sum ${vmimage_md5}      --account-id ${account_id} --uuid wmi-${vmimage_uuid}           --arch ${images_arch} --description \"${vmimage_file} local\" --state init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid}      --md5sum ${vmimage_md5}      --account-id ${account_id} --uuid wmi-${vmimage_snap_uuid}      --arch ${images_arch} --description \"${vmimage_file} volume\" --state init
+shlog ./bin/vdc-manage image add local ${vmimage_gzip_path}            --md5sum ${vmimage_gzip_md5} --account-id ${account_id} --uuid wmi-${vmimage_gzip_uuid}      --arch ${images_arch} --description \"${vmimage_gzip_file} local\" --state init
+shlog ./bin/vdc-manage image add local  ${vmimage_meta_path}           --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_uuid}      --arch ${images_arch} --description \"${vmimage_meta_file} local\" --state init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid} --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_snap_uuid} --arch ${images_arch} --description \"${vmimage_meta_file} volume\" --state init
+shlog ./bin/vdc-manage image add local ${vmimage_meta_gzip_path}  --md5sum ${vmimage_meta_gzip_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_gzip_uuid} --arch ${images_arch} --description \"${vmimage_meta_gzip_file} local\" --state init
+
 shlog ./bin/vdc-manage image features wmi-${vmimage_uuid} --virtio
 shlog ./bin/vdc-manage image features wmi-${vmimage_snap_uuid} --virtio
 shlog ./bin/vdc-manage image features wmi-${vmimage_meta_uuid} --virtio
 shlog ./bin/vdc-manage image features wmi-${vmimage_meta_snap_uuid} --virtio
+shlog ./bin/vdc-manage image features wmi-${vmimage_gzip_uuid} --virtio
+shlog ./bin/vdc-manage image features wmi-${vmimage_meta_gzip_uuid} --virtio
 
 shlog ./bin/vdc-manage spec  add --uuid is-demospec --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --weight 1
 shlog ./bin/vdc-manage spec  add --uuid is-demo2 --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --weight 1
