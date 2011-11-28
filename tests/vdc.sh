@@ -87,6 +87,10 @@ without_screen=
 # screen mode: screen, tmux, bg
 screen_mode=${screen_mode:-'screen'}
 
+# how many agents?
+hva_num=1
+sta_num=1
+
 #
 # build option params
 #
@@ -181,25 +185,38 @@ EOS
     screen_open || abort "Failed to start new screen session"
     screen_it collector "cd ${prefix_path}/dcmgr/ && ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
     screen_it nsa       "cd ${prefix_path}/dcmgr/ && ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
-    screen_it hva       "cd ${prefix_path}/dcmgr/ && ./bin/hva -i demo1 2>&1 | tee ${tmp_path}/vdc-hva.log"
+
+    for i in $(seq 1 ${hva_num}); do
+      screen_it hva${i} "cd ${prefix_path}/dcmgr/ && ./bin/hva -i demo${i} 2>&1 | tee ${tmp_path}/vdc-hva${i}.log"
+    done
+
     screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata && bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
     screen_it api       "cd ${prefix_path}/dcmgr/web/api      && bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
     screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui && bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
     screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
     screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
-    [ "${sta_server}" = "${ipaddr}" ] && \
-    screen_it sta       "cd ${prefix_path}/dcmgr/ && ./bin/sta -i demo1 2>&1 | tee ${tmp_path}/vdc-sta.log"
+    [ "${sta_server}" = "${ipaddr}" ] && {
+      for i in $(seq 1 ${sta_num}); do
+        screen_it sta${i} "cd ${prefix_path}/dcmgr/ && ./bin/sta -i demo${i} 2>&1 | tee ${tmp_path}/vdc-sta${i}.log"
+      done
+    }
   }  || {
     cd ${prefix_path}/dcmgr/ && run2bg "./bin/collector > ${tmp_path}/vdc-collector.log 2>&1"
     cd ${prefix_path}/dcmgr/ && run2bg "./bin/nsa -i demo1 > ${tmp_path}/vdc-nsa.log 2>&1"
-    cd ${prefix_path}/dcmgr/ && run2bg "./bin/hva -i demo1 > ${tmp_path}/vdc-hva.log 2>&1"
+
+    for i in $(seq 1 ${hva_num}); do
+      cd ${prefix_path}/dcmgr/ && run2bg "./bin/hva -i demo${i} > ${tmp_path}/vdc-hva${i}.log 2>&1"
+    done
+
     cd ${prefix_path}/dcmgr/web/metadata && run2bg "bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru > ${tmp_path}/vdc-metadata.log 2>&1"
     cd ${prefix_path}/dcmgr/web/api      && run2bg "bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru > ${tmp_path}/vdc-api.log 2>&1"
     cd ${prefix_path}/frontend/dcmgr_gui && run2bg "bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru > ${tmp_path}/vdc-auth.log 2>&1"
     run2bg "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
     cd ${prefix_path}/frontend/dcmgr_gui/config && run2bg "bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru > ${tmp_path}/vdc-webui.log 2>&1"
     [ "${sta_server}" = "${ipaddr}" ] && {
-      cd ${prefix_path}/dcmgr/ && run2bg "./bin/sta -i demo1 > ${tmp_path}/vdc-sta.log 2>&1"
+      for i in $(seq 1 ${sta_num}); do
+        cd ${prefix_path}/dcmgr/ && run2bg "./bin/sta -i demo${i} > ${tmp_path}/vdc-sta${i}.log 2>&1"
+      done
     }
     #wait_jobs
     echo "${pids}" > ${tmp_path}/vdc-pid.log
