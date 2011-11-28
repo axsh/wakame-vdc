@@ -213,7 +213,7 @@ module Dcmgr
           description 'Runs a new VM instance'
           # param :image_id, string, :required
           # param :instance_spec_id, string, :required
-          # param :host_id, string, :optional
+          # param :host_node_id, string, :optional
           # param :hostname, string, :optional
           # param :user_data, string, :optional
           # param :nf_group, array, :optional
@@ -230,11 +230,14 @@ module Dcmgr
               raise OutOfHostCapacity
             end
             
-            if params[:host_id] || params[:host_pool_id]
-              host_id = params[:host_id] || params[:host_pool_id]
-              host_node = Models::HostNode[host_id]
-              raise UnknownHostNode, "#{host_id}" if host_node.nil?
-              raise InvalidHostNodeID, "#{host_id}" if host_node.status != 'online'
+            # TODO:
+            #  "host_id" and "host_pool_id" will be obsolete.
+            #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
+            if params[:host_id] || params[:host_pool_id] || params[:host_node_id]
+              host_node_id = params[:host_id] || params[:host_pool_id] || params[:host_node_id]
+              host_node = Models::HostNode[host_node_id]
+              raise UnknownHostNode, "#{host_node_id}" if host_node.nil?
+              raise InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
             end
 
             # params is a Mash object. so coverts to raw Hash object.
