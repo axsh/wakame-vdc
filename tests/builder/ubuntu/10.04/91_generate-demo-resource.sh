@@ -155,10 +155,9 @@ shlog ./bin/vdc-manage network dhcp addrange nw-demo3 10.101.0.60 10.101.0.80
 shlog ./bin/vdc-manage network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
 shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 
-shlog ./bin/vdc-manage tag map tag-shhost hn-demo1
-shlog ./bin/vdc-manage tag map tag-shhost hn-demo2
+for i in $(seq 1 ${hva_num}); do shlog ./bin/vdc-manage tag map tag-shhost hn-demo${i}; done
+for i in $(seq 1 ${sta_num}); do shlog ./bin/vdc-manage tag map tag-shstor sn-demo${i}; done
 shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
-shlog ./bin/vdc-manage tag map tag-shstor sn-demo1
 
 shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}
 
