@@ -123,24 +123,15 @@ which gem >/dev/null 2>&1 && {
 alias rake="bundle exec rake"
 shopt -s expand_aliases
 
-function run_standalone() {
-  # forece reset and restart rabbitmq
-  /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
-  [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
-  /etc/init.d/rabbitmq-server start
-
-  [[ -x /etc/init.d/tgt ]] && { initctl restart tgt; }
-
+function init_db() {
   dbnames="wakame_dcmgr wakame_dcmgr_gui"
   for dbname in ${dbnames}; do
     yes | mysqladmin -uroot drop   ${dbname}
     mysqladmin -uroot create ${dbname}
   done
 
-
   cd ${prefix_path}/dcmgr
   rake db:init
-
 
   cd ${prefix_path}/frontend/dcmgr_gui
   rake db:init db:sample_data admin:generate_i18n oauth:create_table
@@ -172,10 +163,20 @@ p res.body
 EOS
   chmod +x ./oauth_client.rb
 
-
   # generate demo data
   work_dir=$prefix_path
   run_builder "91_generate-demo-resource.sh"
+}
+
+function run_standalone() {
+  # forece reset and restart rabbitmq
+  /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
+  [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
+  /etc/init.d/rabbitmq-server start
+
+  [[ -x /etc/init.d/tgt ]] && { initctl restart tgt; }
+
+  init_db
   sleep 1
 
   # screen
@@ -284,6 +285,9 @@ case ${mode} in
     excode=$?
     screen_close
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
+    ;;
+  init)
+    init_db
     ;;
   cleanup)
     ;;
