@@ -250,6 +250,81 @@ function cleanup {
   }
 }
 
+function cleanup_multiple {
+    for h in ${host_nodes};do
+        [ "${h}" = "${ipaddr}" ] || {
+            cat <<EOF | ssh ${h}
+# delete instance
+case ${hypervisor} in
+kvm)
+ps -ef | egrep '[k]vm' -q && {
+killall kvm
+}
+;;
+lxc)
+which lxc-ls >/dev/null && {
+for container_name in \$(lxc-ls); do
+echo ... \${container_name}
+lxc-destroy -n \${container_name} || lxc-kill -n \${container_name}
+done
+}
+unset container_name
+
+mount | egrep ${vmdir_path} | awk '{print \$3}' | while read line; do
+echo ... \${line}
+umount \${line}
+done
+unset line
+;;
+esac
+
+# stop hva
+pid=\$(ps awwx | egrep "[b]in/hva" | awk '{print \$1}')
+[ -z "\${pid}" ] || kill -9 \${pid}
+
+# stop netfilter
+which ebtables >/dev/null && ebtables --init-table || :
+for table in nat filter; do
+for xcmd in F Z X; do
+which iptables >/dev/null && iptables -t \${table} -\${xcmd} || :
+done
+done
+
+# delete logfile
+for i in ${tmp_path}/screenlog.* ${tmp_path}/*.log; do rm -f \${i}; done
+EOF
+        }
+    done
+
+    for s in ${storage_nodes}; do
+        [ "${s}" = "${ipaddr}" ] || {
+            cat <<EOF | ssh ${s}
+# restart tgt
+ps -ef | egrep '[t]gtd' -q && {
+initctl restart tgt
+}
+
+# stop sta
+pid=\$(ps awwx | egrep "[b]in/sta" | awk '{print \$1}')
+[ -z "\${pid}" ] || kill -9 \${pid}
+
+# delete logfile
+for i in ${tmp_path}/screenlog.* ${tmp_path}/*.log; do rm -f \${i}; done
+
+# delete volume
+[ -d ${tmp_path}/xpool/${account_id} ] && {
+for i in ${tmp_path}/xpool/${account_id}/*; do rm -f \${i}; done
+}
+
+# delete snapshot
+[ -d ${tmp_path}/snap/${account_id} ] && {
+for i in ${tmp_path}/snap/${account_id}/*; do rm -f \${i}; done
+}
+EOF
+        }
+    done
+}
+
 # kick the builder script.
 #
 # use following form to set configurable variables for xxx.sh:
