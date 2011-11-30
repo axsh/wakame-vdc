@@ -92,6 +92,9 @@ screen_mode=${screen_mode:-'screen'}
 hva_num=1
 sta_num=1
 
+# used resource file
+demo_resource=${demo_resource:-'91_generate-demo-resource.sh'}
+
 #
 # build option params
 #
@@ -124,24 +127,15 @@ which gem >/dev/null 2>&1 && {
 alias rake="bundle exec rake"
 shopt -s expand_aliases
 
-function run_standalone() {
-  # forece reset and restart rabbitmq
-  /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
-  [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
-  /etc/init.d/rabbitmq-server start
-
-  [[ -x /etc/init.d/tgt ]] && { initctl restart tgt; }
-
+function init_db() {
   dbnames="wakame_dcmgr wakame_dcmgr_gui"
   for dbname in ${dbnames}; do
     yes | mysqladmin -uroot drop   ${dbname}
     mysqladmin -uroot create ${dbname}
   done
 
-
   cd ${prefix_path}/dcmgr
   rake db:init
-
 
   cd ${prefix_path}/frontend/dcmgr_gui
   rake db:init db:sample_data admin:generate_i18n oauth:create_table
@@ -173,10 +167,20 @@ p res.body
 EOS
   chmod +x ./oauth_client.rb
 
-
   # generate demo data
   work_dir=$prefix_path
-  run_builder "91_generate-demo-resource.sh"
+  run_builder ${demo_resource}
+}
+
+function run_standalone() {
+  # forece reset and restart rabbitmq
+  /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
+  [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
+  /etc/init.d/rabbitmq-server start
+
+  [[ -x /etc/init.d/tgt ]] && { initctl restart tgt; }
+
+  init_db
   sleep 1
 
   # screen
@@ -229,6 +233,70 @@ EOS
     shlog ps -p ${pids}
   }
 
+}
+
+function run_multiple() {
+  # forece reset and restart rabbitmq
+  /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
+  [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
+  /etc/init.d/rabbitmq-server start
+
+  [[ -x /etc/init.d/tgt ]] && { initctl restart tgt; }
+
+  demo_resource="92_generate-demo-resource.sh"
+  init_db
+  sleep 1
+
+  for h in ${host_nodes}; do
+      [ "${h}" = "${ipaddr}" ] || {
+	  cat <<EOF | ssh ${h}
+[ -d ${prefix_path} ] || mkdir -p ${prefix_path}
+rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}
+EOF
+      }
+  done
+
+  for s in ${storage_nodes}; do
+      [ "${s}" = "${ipaddr}" ] || {
+      cat <<EOF | ssh ${s}
+[ -d ${prefix_path} ] || mkdir -p ${prefix_path}
+rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}
+EOF
+      }
+  done
+
+  # screen
+  cd ${prefix_path}
+
+  [ -z "${without_screen}" ] && {
+    screen_open || abort "Failed to start new screen session"
+    screen_it collector "cd ${prefix_path}/dcmgr/ && ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
+    screen_it nsa       "cd ${prefix_path}/dcmgr/ && ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
+
+    for h in ${host_nodes}; do
+        hvaname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
+        [ "${h}" = "${ipaddr}" ] && {
+            screen_it hva.${hvaname} "cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} 2>&1 | tee ${tmp_path}/vdc-hva.log"
+        } || {
+            screen_it hva.${hvaname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh ${h}"
+        }
+    done
+
+    screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata && bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
+    screen_it api       "cd ${prefix_path}/dcmgr/web/api      && bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
+    screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui && bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
+    screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
+    screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
+
+    for s in ${storage_nodes}; do
+        staname=demo$(echo ${s} | sed -e 's/\./ /g' | awk '{print $4}')
+        [ "${s}" = "${ipaddr}" ] && {
+            screen_it sta.${staname} "cd ${prefix_path}/dcmgr/ && ./bin/sta -i ${staname} 2>&1 | tee ${tmp_path}/vdc-sta.log"
+        } || {
+            screen_it sta.${staname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/sta -i ${staname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-sta.log\" | ssh ${s}"
+        }
+    done
+  }
 }
 
 function check_ready_standalone {
@@ -290,6 +358,19 @@ case ${mode} in
     excode=$?
     screen_close
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
+    ;;
+  multiple:ci)
+    . builder/conf/nodes.conf
+    cleanup_multiple
+    run_multiple
+    screen_attach
+    screen_close
+    [ -f "${tmp_path}/vdc-pid.log" ] && {
+      wait $(cat ${tmp_path}/vdc-pid.log)
+    }
+    ;;
+  init)
+    init_db
     ;;
   cleanup)
     ;;

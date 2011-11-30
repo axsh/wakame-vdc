@@ -47,10 +47,6 @@ vmimage_meta_gzip_uuid=lucid7
 vmimage_meta_gzip_file=${vmimage_meta_file}.gz
 vmimage_meta_gzip_path=${vmimage_meta_path}.gz
 
-# how many agents?
-hva_num=${hva_num:-1}
-sta_num=${sta_num:-1}
-
 case ${vmimage_arch} in
 i386)
   images_arch=x86
@@ -91,26 +87,33 @@ deploy_vmfile ${vmimage_file}      ${vmimage_s3}
 deploy_vmfile ${vmimage_meta_file} ${vmimage_meta_s3}
 
 cd ${work_dir}/dcmgr/
-for i in $(seq 1 ${hva_num}); do
-  shlog ./bin/vdc-manage host add hva.demo${i} --force --uuid hn-demo${i} --account-id ${account_id} --cpu-cores 100 --memory-size 400000 --hypervisor ${hypervisor} --arch ${hva_arch}
+
+for h in ${host_nodes}; do
+  hvaname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
+  shlog ./bin/vdc-manage host add hva.${hvaname} --force --uuid hn-${hvaname} --account-id ${account_id} --cpu-cores 100 --memory-size 400000 --hypervisor ${hypervisor} --arch ${hva_arch}
 done
 
-case ${sta_server} in
-${ipaddr})
-  [ -d ${tmp_path}/xpool/${account_id} ] || mkdir -p ${tmp_path}/xpool/${account_id}
-  [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
+for s in ${storage_nodes}; do
+    [ "${s}" = "${ipaddr}" ] && {
+        dest=$(uname -a | awk '{print $1}')
+    } || {
+        dest=$(echo "uname -a" | ssh ${s} | awk '{print $1}')
+    }
+    staname=demo$(echo ${s} | sed -e 's/\./ /g' | awk '{print $4}')
+    case ${dest} in
+        "Linux")
+            [ -d ${tmp_path}/xpool/${account_id} ] || mkdir -p ${tmp_path}/xpool/${account_id}
+            [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
+            shlog ./bin/vdc-manage storage add sta.${staname} --uuid sn-${staname} --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
 
-  for i in $(seq 1 ${sta_num}); do
-    shlog ./bin/vdc-manage storage add sta.demo${i} --uuid sn-demo${i} --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
-  done
-
-  ln -fs ${vmimage_path}      ${vmimage_snap_path}
-  ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
- ;;
-*)
-  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sn-demo1 --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
- ;;
-esac
+            ln -fs ${vmimage_path}      ${vmimage_snap_path}
+            ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
+            ;;
+        *)  
+            shlog ./bin/vdc-manage storage add sta.${staname} --uuid sn-${staname} --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
+            ;;
+    esac
+done
 
 # vlan
 #shlog ./bin/vdc-manage vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
@@ -155,8 +158,14 @@ shlog ./bin/vdc-manage network dhcp addrange nw-demo3 10.101.0.60 10.101.0.80
 shlog ./bin/vdc-manage network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
 shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 
-for i in $(seq 1 ${hva_num}); do shlog ./bin/vdc-manage tag map tag-shhost hn-demo${i}; done
-for i in $(seq 1 ${sta_num}); do shlog ./bin/vdc-manage tag map tag-shstor sn-demo${i}; done
+for h in ${host_nodes};do
+    hvaname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
+    shlog ./bin/vdc-manage tag map tag-shhost hn-${hvaname}
+done
+for s in ${storage_nodes};do
+    staname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
+    shlog ./bin/vdc-manage tag map tag-shstor sn-${staname}
+done
 shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
 
 shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}
