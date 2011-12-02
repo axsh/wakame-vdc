@@ -307,10 +307,16 @@ EOF
 echo > "/dev/tcp/localhost/8080"
 EOF
 
+  if [ "${with_openflow}" == "yes" ]; then
+      nodes=5
+  else
+      nodes=4
+  fi
+
   # Wait for until all agent nodes become online.
   retry 10 <<'EOF' || abort "Offline nodes still exist."
 sleep 5
-[ 4 -eq "`echo "select state from node_states where state='online'" | mysql -uroot wakame_dcmgr | wc -l`" ]
+[ ${nodes} -eq "`echo "select state from node_states where state='online'" | mysql -uroot wakame_dcmgr | wc -l`" ]
 EOF
 }
 
@@ -383,6 +389,23 @@ case ${mode} in
     [ -f "${tmp_path}/vdc-pid.log" ] && {
       wait $(cat ${tmp_path}/vdc-pid.log)
     }
+    ;;
+  openflow:ci)
+    # disable shell exit on error which caused by test cases.
+    (
+     set +e
+     with_openflow=yes
+     run_standalone
+     check_ready_standalone
+     cd $prefix_path/tests/spec
+     [ -z "${without_bundle_install}" ] && bundle install
+
+     # run integrate test specs.
+     bundle exec rspec -fs .
+    )
+    excode=$?
+    screen_close
+    ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
   *)
     # interactive mode
