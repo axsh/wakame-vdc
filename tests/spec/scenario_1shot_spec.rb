@@ -86,7 +86,7 @@ if is_enabled? :oneshot then
     
     it "should add rules to the security group" do
       cfg[:new_sg_rules].each { |rule|
-        res = add_rules(@sg_res["id"], rule)
+        res = add_rules(@sg_res["id"], [rule])
         res.success?.should be_true
       }
     end
@@ -94,7 +94,7 @@ if is_enabled? :oneshot then
     it "should delete rules from the security group" do
       # delete rules
       (cfg[:new_sg_rules] + [cfg[:sg_rule]]).each { |rule|
-        res = del_rules(@sg_res["id"], rule)
+        res = del_rules(@sg_res["id"], [rule])
         res.success?.should be_true
       }
     end
