@@ -60,7 +60,7 @@
 :oneshot: 
   :spec_id: is-demospec
   :volume_size: 10
-  :image_id: wmi-lucid0
+  :image_id: wmi-lucid6
   :user_name: ubuntu
   :sg_rule: tcp:22,22,ip4:0.0.0.0/24
   :new_sg_rules: 
