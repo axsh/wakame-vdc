@@ -28,6 +28,10 @@ module Dcmgr
         mac.unpack('A2'*6).join(':')
       end
 
+      def is_natted?(vnic_map)
+        not vnic_map[:ipv4][:nat_address].nil?
+      end
+
       def valid_nic?(nic)
         ifindex_path = "/sys/class/net/#{nic}/ifindex"
         if FileTest.exist?(ifindex_path)
