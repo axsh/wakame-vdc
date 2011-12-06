@@ -179,12 +179,12 @@ shlog ./bin/vdc-manage image add local  ${vmimage_meta_path}           --md5sum 
 shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid} --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_snap_uuid} --arch ${images_arch} --description \"${vmimage_meta_file} volume\" --state init
 shlog ./bin/vdc-manage image add local ${vmimage_meta_gzip_path}  --md5sum ${vmimage_meta_gzip_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_gzip_uuid} --arch ${images_arch} --description \"${vmimage_meta_gzip_file} local\" --state init
 
-shlog ./bin/vdc-manage image features wmi-${vmimage_uuid} --virtio
-shlog ./bin/vdc-manage image features wmi-${vmimage_snap_uuid} --virtio
-shlog ./bin/vdc-manage image features wmi-${vmimage_meta_uuid} --virtio
-shlog ./bin/vdc-manage image features wmi-${vmimage_meta_snap_uuid} --virtio
-shlog ./bin/vdc-manage image features wmi-${vmimage_gzip_uuid} --virtio
-shlog ./bin/vdc-manage image features wmi-${vmimage_meta_gzip_uuid} --virtio
+shlog ./bin/vdc-manage image features wmi-${vmimage_uuid}
+shlog ./bin/vdc-manage image features wmi-${vmimage_snap_uuid}
+shlog ./bin/vdc-manage image features wmi-${vmimage_meta_uuid}
+shlog ./bin/vdc-manage image features wmi-${vmimage_meta_snap_uuid}
+shlog ./bin/vdc-manage image features wmi-${vmimage_gzip_uuid}
+shlog ./bin/vdc-manage image features wmi-${vmimage_meta_gzip_uuid}
 
 shlog ./bin/vdc-manage spec  add --uuid is-demospec --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --weight 1
 shlog ./bin/vdc-manage spec  add --uuid is-demo2 --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --weight 1
