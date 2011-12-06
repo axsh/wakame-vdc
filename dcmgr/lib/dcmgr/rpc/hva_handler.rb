@@ -129,7 +129,7 @@ module Dcmgr
         # another thread/process.
         lodev=`/sbin/losetup -f`.chomp
         sh("/sbin/losetup #{lodev} '#{@hva_ctx.metadata_img_path}'")
-        sh("mkfs.vfat '#{@hva_ctx.metadata_img_path}'")
+        sh("mkfs.vfat -n METADATA '#{@hva_ctx.metadata_img_path}'")
         Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp") unless File.exists?("#{@hva_ctx.inst_data_dir}/tmp")
         sh("/bin/mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
 
@@ -159,28 +159,26 @@ module Dcmgr
           'security-groups' => @inst[:security_groups].join(' '),
         }
 
-        # TODO: support for multiple interfaces.
-        @inst[:instance_nics].each { |vnic|
-          vnic_network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
-          netaddr  = IPAddress::IPv4.new("#{vnic_network[:ipv4_network]}/#{vnic_network[:prefix]}")
+        @inst[:vif].each { |vnic|
+          netaddr  = IPAddress::IPv4.new("#{vnic[:ipv4][:network][:ipv4_network]}/#{vnic[:ipv4][:network][:prefix]}")
 
           # vfat doesn't allow folder name including ":".
           # folder name including mac address replaces "-" to ":".
           mac = vnic[:mac_addr].unpack('A2'*6).join('-')
           metadata_items.merge!({
             "network/interfaces/macs/#{mac}/local-hostname" => @inst[:hostname],
-            "network/interfaces/macs/#{mac}/local-ipv4s" => @inst[:ips].first,
+            "network/interfaces/macs/#{mac}/local-ipv4s" => vnic[:ipv4][:address],
             "network/interfaces/macs/#{mac}/mac" => vnic[:mac_addr].unpack('A2'*6).join(':'),
             "network/interfaces/macs/#{mac}/public-hostname" => @inst[:hostname],
-            "network/interfaces/macs/#{mac}/public-ipv4s" => @inst[:nat_ips].first,
+            "network/interfaces/macs/#{mac}/public-ipv4s" => vnic[:ipv4][:nat_address],
             "network/interfaces/macs/#{mac}/security-groups" => @inst[:security_groups].join(' '),
             # wakame-vdc extention items.
             # TODO: need an iface index number?
-            "network/interfaces/macs/#{mac}/x-gateway" => vnic_network[:ipv4_gw],
+            "network/interfaces/macs/#{mac}/x-gateway" => vnic[:ipv4][:network][:ipv4_gw],
             "network/interfaces/macs/#{mac}/x-netmask" => netaddr.prefix.to_ip,
-            "network/interfaces/macs/#{mac}/x-network" => netaddr.to_s,
+            "network/interfaces/macs/#{mac}/x-network" => vnic[:ipv4][:network][:ipv4_network],
             "network/interfaces/macs/#{mac}/x-broadcast" => netaddr.broadcast,
-            "network/interfaces/macs/#{mac}/x-metric" => vnic_network[:metric],
+            "network/interfaces/macs/#{mac}/x-metric" => vnic[:ipv4][:network][:metric],
           })
         }
 

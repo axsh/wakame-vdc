@@ -11,6 +11,7 @@ module Dcmgr::Cli
     method_option :account_id, :type => :string, :desc => "The UUID of the account this key pair belongs to", :required => true
     method_option :public_key, :type => :string, :desc => "The path to the public key", :required => true
     method_option :private_key, :type => :string, :desc => "The path to the private key"
+    method_option :description, :type => :string, :desc => "Description for this key pair"
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       private_key_path = File.expand_path(options[:private_key])
@@ -33,6 +34,7 @@ module Dcmgr::Cli
     
     desc "modify UUID [options]", "Modify an existing key pair"
     method_option :account_id, :type => :string, :desc => "The UUID of the account this key pair belongs to"
+    method_option :description, :type => :string, :desc => "Description for this key pair"
     def modify(uuid)
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
       super(M::SshKeyPair,uuid,options)
@@ -56,6 +58,10 @@ Finger print:
   <%= keypair.finger_print %>
 Public Key:
   <%= keypair.public_key%>
+<%- if keypair.description -%>
+Description:
+  <%= keypair.description %>
+<%- end -%>
 __END
       else
         puts ERB.new(<<__END, nil, '-').result(binding)

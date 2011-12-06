@@ -137,7 +137,7 @@ module Config
         :oneshot => {
           :sg_rule     =>  "tcp:22,22,ip4:0.0.0.0/24",
           :new_sg_rules => ["tcp:80,80,ip4:0.0.0.0","icmp:-1,-1,ip4:0.0.0.0"],
-          :image_id    => 'wmi-lucid0',
+          :image_id    => 'wmi-lucid6',
           :spec_id     => 'is-demospec',
           :volume_size => 10,
           :user_name   => 'ubuntu'

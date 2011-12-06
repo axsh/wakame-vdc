@@ -313,6 +313,7 @@ Sequel.migration do
       column :finger_print, "varchar(100)", :null=>false
       column :public_key, "text", :null=>false
       column :private_key, "text"
+      column :description, "text"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       
