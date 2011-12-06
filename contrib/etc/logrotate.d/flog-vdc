@@ -12,6 +12,6 @@
           ps -p ${pid} >/dev/null || continue
           kill -HUP ${pid}
         done
-      }
+      } || :
     endscript
 }
