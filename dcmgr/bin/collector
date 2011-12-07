@@ -25,8 +25,12 @@ manifest.instance_eval do
   config do |c|
     c.data_store.connection_block = proc {
       require 'sequel'
-      next if Isono::NodeModules::DataStore.disconnected? == false 
+      next if Isono::NodeModules::DataStore.disconnected? == false
       Dcmgr.run_initializers('sequel')
+
+      # TODO; configuration in dcmgr.conf.
+      # c.node_collector.timeout_sec = (60*20).to_f
+      # c.node_collector.kill_sec    = (60*20*2).to_f
     }
   end
 end
