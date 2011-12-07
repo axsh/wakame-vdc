@@ -22,7 +22,8 @@ module Dcmgr::Models
     subset(:runnings, {:state => 'running'})
     subset(:stops, {:state => 'stopped'})
 
-    RECENT_TERMED_PERIOD=(60 * 15)
+    #RECENT_TERMED_PERIOD=(60 * 15)
+    RECENT_TERMED_PERIOD = Dcmgr.conf.recent_terminated_instance_period
     # lists the instances which alives and died within
     # RECENT_TERMED_PERIOD sec.
     # it was difficult for me to write exprs in virtual row syntax as
