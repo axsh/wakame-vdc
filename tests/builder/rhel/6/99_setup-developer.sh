@@ -54,9 +54,9 @@ function bundle_update() {
   (
   cd $dir
 
-  [ -d vendor/bundle ] && rm -rf vendor/bundle
+  [ -d .vendor/bundle ] && rm -rf .vendor/bundle
   # this oneliner will generate .bundle/config.
-  shlog bundle install --path=vendor/bundle
+  shlog bundle install --path=.vendor/bundle
   )
 }
 
@@ -72,74 +72,13 @@ bundle_update ${work_dir}/frontend/dcmgr_gui/
 cd ${work_dir}/dcmgr/config/
 cp -f dcmgr.conf.example dcmgr.conf
 cp -f snapshot_repository.yml.example snapshot_repository.yml
+cp -f hva.conf.example hva.conf
+cp -f nsa.conf.example nsa.conf
+cp -f sta.conf.example sta.conf
 
+# dcmgr:hva
 [ -d ${vmdir_path} ] || mkdir $vmdir_path
-cat <<EOS > hva.conf
-#------------------------
-# Configuration file for hva.
-#------------------------
-
-# directory to store VM local data.
-config.vm_data_dir = "${vmdir_path}"
-
-# netfilter
-config.enable_ebtables = true
-config.enable_iptables = true
-
-# physical nic index
-config.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
-
-# bridge device name prefix
-config.bridge_prefix   = 'br'
-
-# bridge device name novlan
-config.bridge_novlan   = 'br0'
-
-# display netfitler commands
-config.verbose_netfilter = false
-
-# netfilter log output flag
-config.packet_drop_log = false
-
-# debug netfilter
-config.debug_iptables = false
-
-# Use ipset for netfilter
-config.use_ipset       = false
-EOS
-
-
-cat <<EOS  > nsa.conf
-#------------------------
-# Configuration file for nsa.
-#------------------------
-
-# path for dnsmaq binary
-config.dnsmasq_bin_path='/usr/sbin/dnsmasq'
-
-# network name to distribute dhcp/dns managed by this nsa
-config.network_name='tag-shnet'
-
-config.logging = true
-EOS
-
-
-#cp -f sta.conf.example sta.conf
-cat <<EOS > sta.conf
-#------------------------
-# Configuration file for sta-linux.
-#------------------------
-
-# iSCSI target
-config.iscsi_target = 'linux_iscsi'
-
-# Initiator address is IP or ALL
-config.initiator_address = 'ALL'
-
-# Backing Store
-config.backing_store = 'raw'
-EOS
-
+perl -pi -e "s,^config.vm_data_dir = .*,config.vm_data_dir = \"${vmdir_path}\"," hva.conf
 
 # frontend
 cd ${work_dir}/frontend/dcmgr_gui/config/
