@@ -14,7 +14,7 @@ module Dcmgr
         
         def initialize(table = nil, chain = nil,  protocol = nil, bound = nil, rule = nil)
           super()
-          raise ArgumentError, "table does not exist: #{table}" unless vnet::EbtablesPreMadeChains.keys.member?(table)
+          raise ArgumentError, "table does not exist: #{table}" unless EbtablesChain.pre_made.keys.member?(table)
           self.table = table
           self.chain = chain
           self.protocol = protocol
@@ -25,7 +25,7 @@ module Dcmgr
         # Override the chain getter to allow us to handle premade chains
         # with symbols instead of all caps strings. ie, :forward instead of "FORWARD"
         def chain
-          if vnet::EbtablesPreMadeChains[self.table].member?(@chain)
+          if EbtablesChain.pre_made[self.table].member?(@chain)
             @chain.to_s.upcase 
           else
             @chain

@@ -5,6 +5,7 @@ module Dcmgr
     module Tasks
     
       class AcceptArpBroadcast < Task
+        include Dcmgr::VNet::Netfilter
         attr_accessor :hva_ip
         
         def initialize(hva_ip,enable_logging = false,log_prefix = nil)

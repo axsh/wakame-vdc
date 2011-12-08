@@ -7,6 +7,7 @@ module Dcmgr
       # Contains specific rules for ip addresses to which connections should
       # not be natted.
       class ExcludeFromNat < Task
+        include Dcmgr::VNet::Netfilter
         #An array of the ip addresses excluded from nat
         attr_accessor :excluded_ips
         
@@ -32,6 +33,7 @@ module Dcmgr
       # Contains specific rules for ip addresses to which connections should
       # not be natted. Depends on the netfilter IpSet module
       class ExcludeFromNatIpSet < Task
+        include Dcmgr::VNet::Netfilter
         attr_accessor :excluded_ips
         
         #TODO: Write this class!

@@ -6,6 +6,7 @@ module Dcmgr
     
       # Explicitely allows ARP traffic to take place between the host and instance
       class AcceptARPToHost < Task
+        include Dcmgr::VNet::Netfilter
         attr_reader :enable_logging
         attr_reader :log_prefix
         attr_reader :host_ip

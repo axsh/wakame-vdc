@@ -4,7 +4,7 @@ module Dcmgr
   module VNet
     module Netfilter
     
-      class NetfilterController < vnet::Controller
+      class NetfilterController < Controller
         attr_accessor :task_manager
         attr_reader :node
         

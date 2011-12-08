@@ -5,6 +5,7 @@ module Dcmgr
     module Tasks
     
       class StaticNatLog < Task
+        include Dcmgr::VNet::Netfilter
         attr_accessor :inside_ip
         attr_accessor :outside_ip
         attr_accessor :snat_log_prefix
@@ -26,6 +27,7 @@ module Dcmgr
       end
       
       class StaticNat < Task
+        include Dcmgr::VNet::Netfilter
         attr_accessor :inside_ip
         attr_accessor :outside_ip
         attr_accessor :mac_address

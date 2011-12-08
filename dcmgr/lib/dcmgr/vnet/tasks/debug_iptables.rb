@@ -8,6 +8,7 @@ module Dcmgr
       # To debug ipv4 packets.
       # $ sudo tail -F /var/log/kern.log | grep TRACE:
       class DebugIptables < Task
+        include Dcmgr::VNet::Netfilter
         def initialize
           super()
           self.rules << IptablesRule.new(:raw,:output,:icmp,:outgoing,"-p icmp -j TRACE")

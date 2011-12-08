@@ -6,7 +6,7 @@ module Dcmgr
     
       # Isolates instances based on security groups
       # Access to instances in another security group is blocked
-      class SecurityGroupIsolator < Isolator
+      class BySecurityGroup < Isolator
         def determine_friends(me,others)
           #TODO: make sure that me and others are vnic maps
           others.dub.delete_if { |other|

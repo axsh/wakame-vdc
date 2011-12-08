@@ -6,6 +6,7 @@ module Dcmgr
     
       # Drops all ARP packet forwarding
       class DropArpForwarding < Task
+        include Dcmgr::VNet::Netfilter
         attr_reader :enable_logging
         attr_reader :log_prefix
         

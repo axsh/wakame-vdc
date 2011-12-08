@@ -14,7 +14,7 @@ module Dcmgr
         
         def initialize(table = nil, chain = nil, protocol = nil, bound = nil, rule = nil)
           super()
-          raise ArgumentError, "table does not exist: #{table}" unless vnet::IptablesPreMadeChains.keys.member?(table)
+          raise ArgumentError, "table does not exist: #{table}" unless IptablesChain.pre_made.keys.member?(table)
           self.table = table
           self.chain = chain
           self.protocol = protocol
@@ -23,7 +23,7 @@ module Dcmgr
         end
         
         def chain
-          if vnet::IptablesPreMadeChains[self.table].member?(@chain)
+          if IptablesChain.pre_made[self.table].member?(@chain)
             @chain.to_s.upcase 
           else
             @chain

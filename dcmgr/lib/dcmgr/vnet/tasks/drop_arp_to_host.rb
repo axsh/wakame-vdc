@@ -6,6 +6,7 @@ module Dcmgr
     
       # Drops all ARP packets coming into the host
       class DropArpToHost < Task
+        include Dcmgr::VNet::Netfilter
         attr_reader :enable_logging
         attr_reader :log_prefix
         

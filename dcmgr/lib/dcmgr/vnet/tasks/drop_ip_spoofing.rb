@@ -5,7 +5,8 @@ module Dcmgr
     module Tasks
     
       # Disable instances from spoofing another ip address
-      class AntiIpSpoofing < Task
+      class DropIpSpoofing < Task
+        include Dcmgr::VNet::Netfilter
         attr_accessor :ip
         attr_accessor :enable_logging
         attr_accessor :log_prefix

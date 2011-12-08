@@ -6,6 +6,7 @@ module Dcmgr
     
       # Disables instances from spoofing another mac address
       class DropMacSpoofing < Task
+        include Dcmgr::VNet::Netfilter
         attr_accessor :mac
         attr_accessor :enable_logging
         attr_accessor :log_prefix

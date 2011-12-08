@@ -7,6 +7,7 @@ module Dcmgr
       # Explicitely allows IP traffic between "friend" instances
       # Friends are determined by an Isolator class
       class AcceptIpFromFriends < Task
+        include Dcmgr::VNet::Netfilter
         attr_reader :friend_ips
         
         def initialize(friend_ips)

@@ -7,6 +7,7 @@ module Dcmgr
       # Explicitely allows ARP traffic between "friend" instances
       # Friends are decided by an Isolator class
       class AcceptARPFromFriends < Task
+        include Dcmgr::VNet::Netfilter
         attr_reader :inst_ip
         attr_reader :friend_ips
         attr_reader :enable_logging

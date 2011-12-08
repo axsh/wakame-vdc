@@ -6,6 +6,7 @@ module Dcmgr
     
       # Allows for DNS traffic to be exchanged with and only with Wakame's DNS server
       class AcceptWakameDNSOnly < Task
+        include Dcmgr::VNet::Netfilter
         #TODO: allow ARP traffic to DNS server
         attr_reader :dns_server_ip
         attr_reader :dns_server_port

@@ -6,6 +6,7 @@ module Dcmgr
     
       # Explicitely allows IP traffic between the gateway and the instances
       class AcceptIpFromGateway < Task
+        include Dcmgr::VNet::Netfilter
         attr_reader :gateway_ip
         
         def initialize(gateway_ip)

@@ -5,6 +5,7 @@ module Dcmgr
     module Tasks
     
       class TranslateMetadataAddress < Task
+        include Dcmgr::VNet::Netfilter
         #TODO: allow ARP traffic to metadata server
         attr_reader :metadata_ip
         attr_reader :metadata_port

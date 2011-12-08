@@ -5,6 +5,7 @@ module Dcmgr
     module Tasks
     
       class AcceptAllDNS < Task
+        include Dcmgr::VNet::Netfilter
         def initialize()
           super()
           # Allow DNS traffic to take place
