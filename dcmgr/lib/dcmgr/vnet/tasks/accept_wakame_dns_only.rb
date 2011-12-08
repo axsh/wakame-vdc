@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module Vnet
+  module VNet
     module Tasks
     
       # Allows for DNS traffic to be exchanged with and only with Wakame's DNS server

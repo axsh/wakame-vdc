@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module Vnet
+  module VNet
     module Tasks
     
       # Allows any outgoing IP layer traffic from the instance to pass through

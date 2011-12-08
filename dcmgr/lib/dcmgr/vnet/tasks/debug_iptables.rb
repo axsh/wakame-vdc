@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module Vnet
+  module VNet
     module Tasks
     
       # via http://backreference.org/2010/06/11/iptables-debugging/

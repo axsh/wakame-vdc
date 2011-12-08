@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module Vnet
+  module VNet
     module Isolators
     
       # Isolates instances based on security groups

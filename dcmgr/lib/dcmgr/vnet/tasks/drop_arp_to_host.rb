@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module Vnet
+  module VNet
     module Tasks
     
       # Drops all ARP packets coming into the host

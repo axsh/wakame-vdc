@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module Vnet
+  module VNet
     module Tasks
     
       # Explicitely allows ARP traffic to take place between the host and instance

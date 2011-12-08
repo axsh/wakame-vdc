@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module Vnet
+  module VNet
     # This module stores the factories. It is their job to read config files etc. to decide which implementation to use.
     module Factories
       

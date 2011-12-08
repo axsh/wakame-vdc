@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr
-  module Vnet
+  module VNet
     module Netfilter
     
       # Task manager that creates chains based on vif uuid and protocol
