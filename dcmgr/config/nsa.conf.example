@@ -6,4 +6,4 @@
 config.dnsmasq_bin_path='/usr/sbin/dnsmasq'
 
 # UUID of Network or NetworkPool to be delivered DHCP.
-config.network_name='tag-xxxxxx'
+config.network_name='tag-shnet'
