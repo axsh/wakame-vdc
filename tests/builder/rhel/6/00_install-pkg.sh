@@ -24,6 +24,7 @@ rpm_pkgs="
  initscripts erlang
  qemu-kvm
  dosfstools
+ nc
 "
 # rpm-build libcap-devel docbook-utils
 
