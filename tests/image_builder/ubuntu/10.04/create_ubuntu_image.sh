@@ -2,7 +2,7 @@
 #rootsize=10240
 rootsize=256
 swapsize=128
-init_script_location=$PWD/wakame_init
+init_script_location=$PWD/wakame-init
 dns_server=8.8.8.8
 
 #Function to generate the mount directory later on
