@@ -314,6 +314,24 @@ sleep 5
 EOF
 }
 
+function check_ready_multiple {
+  retry 10 <<'EOF' || abort "Can't see dcmgr"
+echo > "/dev/tcp/${api_bind}/${api_port}"
+EOF
+  retry 10 <<'EOF' || abort "Can't see nginx"
+echo > "/dev/tcp/localhost/8080"
+EOF
+
+  # Wait for until all agent nodes become online.
+  node_num=2
+  for i in ${host_nodes}; do node_num=`expr ${node_num} + 1`; done
+  for i in ${storage_nodes}; do node_num=`expr ${node_num} + 1`; done
+  retry 10 <<'EOF' || abort "Offline nodes still exist."
+sleep 5
+[ ${node_num} -eq "`echo "select state from node_states where state='online'" | mysql -uroot wakame_dcmgr | wc -l`" ]
+EOF
+}
+
 function ci_post_process {
   local sig=$1
   local ci_result=$2
@@ -361,14 +379,19 @@ case ${mode} in
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
   multiple:ci)
-    . builder/conf/nodes.conf
-    cleanup_multiple
-    run_multiple
-    screen_attach
+    (
+     set +e
+     . builder/conf/nodes.conf
+     cleanup_multiple
+     run_multiple
+     check_ready_multiple
+     cd ${prefix_path}/tests/spec2
+     [ -z "${without_bundle_install}" ] && bundle install --path=.vendor/bundle
+     bundle exec rspec -fs .
+    )
+    excode=$?
     screen_close
-    [ -f "${tmp_path}/vdc-pid.log" ] && {
-      wait $(cat ${tmp_path}/vdc-pid.log)
-    }
+    ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
   init)
     init_db
