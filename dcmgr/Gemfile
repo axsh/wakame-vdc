@@ -22,7 +22,9 @@ group :dcmgr do
   gem "json", ">= 1.2.0"
   gem "sequel", "3.27.0"
   gem "mysql", ">= 2.8.1"
-  gem "net-dhcp", ">= 1.0.2"
+  gem "net-dhcp", ">= 1.1.0"
+  gem "bit-struct", ">= 0.13.6"
+  gem "racket", ">= 1.0.9"
 end
 
 group :collector do
