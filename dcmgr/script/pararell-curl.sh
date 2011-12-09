@@ -8,15 +8,44 @@ LC_ALL=C
 
 set -e
 
-url=${1:-http://mirror.3tier.com/centos/6/isos/i386/CentOS-6.0-i386-bin-DVD.iso}
+url=${url:-http://mirror.3tier.com/centos/6/isos/i386/CentOS-6.0-i386-bin-DVD.iso}
 thread=${thread:-8}
-
 tmp_path=${tmp_path:-/var/tmp/__$(basename $0)}
 part_name=$(basename ${url})
 output_dir=${output_dir:-${tmp_path}}
 output_path=${output_path:-${output_dir}/${part_name}}
 
-content_length=$(curl -s -L --head ${url} | egrep ^Content-Length | awk '{print $2}' | strings)
+opts=""
+# extract opts
+for arg in $*; do
+  case $arg in
+    --*=*)
+      key=${arg%%=*}; key=${key##--}
+      value=${arg##--*=}
+      eval ${key}=${value}
+      opts="${opts} ${key}"
+      ;;
+  esac
+done
+
+case ${url} in
+http://*|https://*)
+  content_length=$(curl -s -L --head ${url} | egrep ^Content-Length | awk '{print $2}' | strings)
+  ;;
+file:///*)
+  content_length=$(ls -l ${url##file://} | awk '{print $5}')
+  ;;
+*)
+  [ -f ${url} ] && {
+    content_length=$(ls -l ${url} | awk '{print $5}')
+    url="file://${url}"
+  } || {
+    echo not supported scheme. >&2
+    exit 1
+  }
+  ;;
+esac
+
 range=$((${content_length} / ${thread}))
 parts=
 
