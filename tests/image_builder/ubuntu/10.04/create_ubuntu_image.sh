@@ -70,8 +70,8 @@ echo "nameserver 8.8.8.8" > $tmp_mount_dir/etc/resolv.conf
 #Handle mac address
 echo "Unsetting mac address"
 rm -f $tmp_mount_dir/etc/udev/rules.d/70-persistent-net.rules
-ln -s $tmp_mount_dir/dev/null $tmp_mount_dir/etc/udev/rules.d/70-persistent-net.rules
-sed -i 's/HWADDR=.*/#HWADDR=xx:xx:xx:xx:xx:xx/' $tmp_mount_dir/etc/sysconfig/network-scripts/ifcfg-eth0
+ln -s /dev/null $tmp_mount_dir/etc/udev/rules.d/70-persistent-net.rules
+#sed -i 's/HWADDR=.*/#HWADDR=xx:xx:xx:xx:xx:xx/' $tmp_mount_dir/etc/sysconfig/network-scripts/ifcfg-eth0
 
 #Remove SSH host keys
 echo "Removing ssh host keys"
