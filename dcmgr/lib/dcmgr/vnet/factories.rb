@@ -34,7 +34,7 @@ module Dcmgr
 
       #Returns the netfilter tasks required for this vnic
       # The _friends_ parameter is an array of vnic_maps that should not be isolated from _vnic_
-      def self.create_tasks_for_vnic(vnic,friends,node)
+      def self.create_tasks_for_vnic(vnic,friends,security_groups,node)
         tasks = []
 
         host_addr = Isono::Util.default_gw_ipaddr
@@ -66,7 +66,6 @@ module Dcmgr
         tasks << AcceptIcmpRelatedEstablished.new
         tasks << AcceptTcpRelatedEstablished.new
         tasks << AcceptUdpEstablished.new
-        #tasks << AcceptWakameDNSOnly.new(vnic[:ipv4][:network][:dns_server])
         tasks << AcceptAllDNS.new
         tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server])
         # Metadata address translation poses a bit of a problem on non natted machines
@@ -76,7 +75,9 @@ module Dcmgr
         tasks << AcceptIpToAnywhere.new
         
         # Security group tasks
-        #tasks << SecurityGroup(....)
+        security_groups.each { |secgroup|
+          tasks << SecurityGroup.new(secgroup)
+        }
         
         # VM isolation based on same security group
         #tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic.uuid}") # <--- constructor values not filled in yet
@@ -87,7 +88,7 @@ module Dcmgr
                   
         # Drop any other incoming traffic
         # MAKE SURE THIS TASK IS ALWAYS EXECUTED LAST OR I WILL KILL YOU
-        tasks << DropIpFromAnywhere.new #<-- has no arguments
+        tasks << DropIpFromAnywhere.new #TODO: Add logging to ip drops
         tasks << DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: ")
         
         tasks

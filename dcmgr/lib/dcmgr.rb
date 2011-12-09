@@ -246,6 +246,7 @@ module Dcmgr
       autoload :DropMacSpoofing, 'dcmgr/vnet/tasks/drop_mac_spoofing'
       autoload :ExcludeFromNat, 'dcmgr/vnet/tasks/exclude_from_nat'
       autoload :ExcludeFromNatIpSet, 'dcmgr/vnet/tasks/exclude_from_nat'
+      autoload :SecurityGroup, 'dcmgr/vnet/tasks/security_group'
       autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'

@@ -32,8 +32,6 @@ module Dcmgr
           
           self.task_manager.apply_tasks([DebugIptables.new]) if node.manifest.config.debug_iptables
           
-          #p @cache.get
-          
           # Apply the current instances if there are any
           @cache.get[:instances].each { |inst_map|
             self.apply_instance(inst_map)
@@ -64,7 +62,12 @@ module Dcmgr
               }
             }.flatten
           
-            self.task_manager.apply_vnic_tasks(vnic,TaskFactory.create_tasks_for_vnic(vnic,friends,node))
+            # Determine the security group rules for this vnic
+            security_groups = @cache.get[:security_groups].dup.delete_if { |group|
+              not vnic[:security_groups].member? group[:uuid]
+            }
+          
+            self.task_manager.apply_vnic_tasks(vnic,TaskFactory.create_tasks_for_vnic(vnic,friends,security_groups,node))
           }
         end
         

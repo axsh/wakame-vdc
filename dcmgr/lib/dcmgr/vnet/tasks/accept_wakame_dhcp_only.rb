@@ -16,13 +16,9 @@ module Dcmgr
           @dhcp_server_ip = dhcp_server_ip
           
           # Block DHCP replies that aren't coming from our DHCP server
-          #self.rules << IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp ! -s #{self.dhcp_server_ip} --sport 67 -j DROP")
-          #self.rules << IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp ! -s #{self.dhcp_server_ip} --sport 68 -j DROP")
           self.rules << IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp ! -s #{self.dhcp_server_ip} --sport #{fport}:#{tport} -j DROP")
           
           # Accept DHCP replies coming from our DHCP server
-          #self.rules << IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp -s #{self.dhcp_server_ip} --sport 67 -j ACCEPT")
-          #self.rules << IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp -s #{self.dhcp_server_ip} --sport 68 -j ACCEPT")
           self.rules << IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp -s #{self.dhcp_server_ip} --sport #{fport}:#{tport} -j ACCEPT")
           
           # Drop all non DHCP traffic to our DHCP server
