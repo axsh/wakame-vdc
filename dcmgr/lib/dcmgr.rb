@@ -205,4 +205,57 @@ module Dcmgr
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
     end
   end
+  
+  require 'dcmgr/vnet'
+  module VNet
+    autoload :ControllerFactory, 'dcmgr/vnet/factories'
+    autoload :IsolatorFactory, 'dcmgr/vnet/factories'
+    autoload :TaskFactory, 'dcmgr/vnet/factories'
+    autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
+    
+    module Netfilter
+      autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
+      autoload :NetfilterController, 'dcmgr/vnet/netfilter/controller'
+      autoload :Chain, 'dcmgr/vnet/netfilter/chain'
+      autoload :IptablesChain, 'dcmgr/vnet/netfilter/chain'
+      autoload :EbtablesChain, 'dcmgr/vnet/netfilter/chain'
+      autoload :EbtablesRule, 'dcmgr/vnet/netfilter/ebtables_rule'
+      autoload :IptablesRule, 'dcmgr/vnet/netfilter/iptables_rule'
+      autoload :VNicProtocolTaskManager, 'dcmgr/vnet/netfilter/task_manager'
+    end
+
+    module Tasks
+      autoload :AcceptAllDNS, 'dcmgr/vnet/tasks/accept_all_dns'
+      autoload :AcceptArpBroadcast, 'dcmgr/vnet/tasks/accept_arp_broadcast'
+      autoload :AcceptARPFromFriends, 'dcmgr/vnet/tasks/accept_arp_from_friends'
+      autoload :AcceptARPToHost, 'dcmgr/vnet/tasks/accept_arp_to_host'
+      autoload :AcceptIpFromFriends, 'dcmgr/vnet/tasks/accept_ip_from_friends'
+      autoload :AcceptIpFromGateway, 'dcmgr/vnet/tasks/accept_ip_from_gateway'
+      autoload :AcceptIpToAnywhere, 'dcmgr/vnet/tasks/accept_ip_to_anywhere'
+      autoload :AcceptRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
+      autoload :AcceptTcpRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
+      autoload :AcceptUdpEstablished, 'dcmgr/vnet/tasks/accept_related_established'
+      autoload :AcceptIcmpRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
+      autoload :AcceptWakameDHCPOnly, 'dcmgr/vnet/tasks/accept_wakame_dhcp_only'
+      autoload :AcceptWakameDNSOnly, 'dcmgr/vnet/tasks/accept_wakame_dns_only'
+      autoload :DebugIptables, 'dcmgr/vnet/tasks/debug_iptables'
+      autoload :DropArpForwarding, 'dcmgr/vnet/tasks/drop_arp_forwarding'
+      autoload :DropArpToHost, 'dcmgr/vnet/tasks/drop_arp_to_host'
+      autoload :DropIpFromAnywhere, 'dcmgr/vnet/tasks/drop_ip_from_anywhere'
+      autoload :DropIpSpoofing, 'dcmgr/vnet/tasks/drop_ip_spoofing'
+      autoload :DropMacSpoofing, 'dcmgr/vnet/tasks/drop_mac_spoofing'
+      autoload :ExcludeFromNat, 'dcmgr/vnet/tasks/exclude_from_nat'
+      autoload :ExcludeFromNatIpSet, 'dcmgr/vnet/tasks/exclude_from_nat'
+      autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
+      autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
+      autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
+    end
+    
+    module Isolators
+      autoload :BySecurityGroup, 'dcmgr/vnet/isolators/by_securitygroup'
+      autoload :DummyIsolator, 'dcmgr/vnet/isolators/dummy'
+    end
+    
+  end
+  
 end

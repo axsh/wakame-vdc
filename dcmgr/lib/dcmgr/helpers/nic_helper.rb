@@ -24,8 +24,12 @@ module Dcmgr
       # This method cleans up ugly mac addressed stored in the dcmgr database.
       # Mac addresses in the database are stored as alphanumeric strings without
       # the : inbetween them. This method properly puts those in there.
-      def clean_mac(mac)
-        mac.unpack('A2'*6).join(':')
+      def clean_mac(mac,delim = ':')
+        mac.unpack('A2'*6).join(delim)
+      end
+
+      def is_natted?(vnic_map)
+        not vnic_map[:ipv4][:nat_address].nil?
       end
 
       def valid_nic?(nic)
