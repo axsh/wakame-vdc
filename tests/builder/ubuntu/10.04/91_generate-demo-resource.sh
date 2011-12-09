@@ -79,7 +79,8 @@ function deploy_vmfile() {
 
   [ -f ${local_store_path}/${vmfile_basename} ] || {
     cd ${local_store_path}
-    [ -f ${vmfile_basename}.gz ] || curl ${vmfile_uri} -o ${vmfile_basename}.gz
+    #[ -f ${vmfile_basename}.gz ] || curl ${vmfile_uri} -o ${vmfile_basename}.gz
+    [ -f ${vmfile_basename}.gz ] || output_path=${local_store_path}/${vmfile_basename}.gz ${work_dir}/dcmgr/script/pararell-curl.sh ${vmfile_uri}
     echo generating ${vmfile_basename} ...
     zcat ${vmfile_basename}.gz | cp --sparse=always /dev/stdin ${vmfile_basename}
     sync
