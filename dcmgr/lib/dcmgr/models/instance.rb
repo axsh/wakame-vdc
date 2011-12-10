@@ -278,8 +278,15 @@ module Dcmgr::Models
     end
 
     def add_nic(vif_template)
-      # TODO: get default vendor ID based on the hypervisor.
-      m = MacLease.lease('00fff1')
+      # Choose vendor ID of mac address.
+      vendor_id = if vif_template[:vendor_id]
+                    vif_template[:vendor_id]
+                  elsif Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr.conf.mac_address_vendor_id
+                  else
+                    MacLease.default_vendor_id(self.instance_spec.hypervisor)
+                  end
+      m = MacLease.lease(vendor_id)
       nic = InstanceNic.new(:mac_addr=>m.mac_addr)
       nic.instance = self
       nic.device_index = vif_template[:index]
