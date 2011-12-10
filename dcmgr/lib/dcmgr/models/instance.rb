@@ -265,7 +265,7 @@ module Dcmgr::Models
 
     # Returns the hypervisor type for the instance.
     def hypervisor
-      self.host_node.hypervisor
+      self.instance_spec.hypervisor
     end
 
     # Returns the architecture type of the image
