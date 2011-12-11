@@ -16,7 +16,14 @@ module Dcmgr::Models
       end
       
       if !self.network.ipv4_ipaddress.include?(self.range_end)
-        errors.add(:range_begin, "Out of subnet range: #{self.range_end}")
+        errors.add(:range_end, "Out of subnet range: #{self.range_end}")
+      end
+
+      if !(self.range_begin <= self.range_end)
+        # swap values.
+        t = self[:range_end]
+        self[:range_end] = self[:range_begin]
+        self[:range_begin] = t
       end
     end
 
