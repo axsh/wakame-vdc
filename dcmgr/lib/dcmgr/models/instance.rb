@@ -316,11 +316,11 @@ module Dcmgr::Models
     end
 
     def fqdn_hostname
-      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.network.domain_name)
+      self.nic.first.fqdn_hostname
     end
 
     def nat_fqdn_hostname
-      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.nat_network.domain_name)
+      self.nic.first.nat_fqdn_hostname
     end
 
     # Retrieve all networks belong to this instance
