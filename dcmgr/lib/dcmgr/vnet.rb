@@ -94,23 +94,6 @@ module Dcmgr
       end
     end
 
-    # Abstract class for task managers that apply tasks by vnic to expend
-    # This is for task managers that want to apply tasks differently depending on which
-    # vnic they're associated with.
-    class VnicTaskManager < TaskManager        
-      
-      def apply_vnic_tasks(vnic_map,tasks)
-        #apply_tasks(tasks)
-        raise NotImplementedError
-      end
-      
-      # Should remove _tasks_ for this specific vnic if they are applied
-      # If no _tasks_ argument is provided, it should remove all tasks for this vnic
-      def remove_vnic_tasks(vnic_map,tasks = nil)
-        raise NotImplementedError
-      end
-    end
-  
     # Abstract class that determines how to isolate instances (vnics) from each other
     class Isolator
       def determine_friends(me,others)

@@ -4,9 +4,32 @@ module Dcmgr
   module VNet
     module Netfilter
     
+      # Abstract class for task managers that apply netfilter to extend.
+      # These have extra methods to create custom chains depending on vnic.
+      # Tasks can then be applied to these custom chains.
+      class NetfilterTaskManager < TaskManager        
+        
+        def apply_vnic_chains(vnic_map)
+          raise NotImplementedError
+        end
+        
+        def apply_vnic_tasks(vnic_map,tasks)
+          raise NotImplementedError
+        end
+        
+        # Should remove _tasks_ for this specific vnic if they are applied
+        def remove_vnic_tasks(vnic_map,tasks = nil)
+          raise NotImplementedError
+        end
+        
+        def remove_vnic_chains(vnic_map)
+          raise NotImplementedError
+        end
+      end
+    
       # Task manager that creates chains based on vif uuid and protocol
       # Supports ebtables rules and iptables rules
-      class VNicProtocolTaskManager < VnicTaskManager
+      class VNicProtocolTaskManager < NetfilterTaskManager
         include Dcmgr::Helpers::NicHelper
         # These store the protocols used by iptables and ebtables
         attr_reader :iptables_protocols
@@ -244,11 +267,13 @@ module Dcmgr
         # then jumps to more custom chains based on the protocol used.
         # In those the real netfiltering happens
         def apply_vnic_tasks(vnic_map, tasks)
-          apply_iptables_chains(vnic_map) if self.enable_iptables
-          apply_ebtables_chains(vnic_map) if self.enable_ebtables
-          
           # Apply the tasks to our chains
           apply_tasks(tailor_vnic_tasks(vnic_map,tasks))
+        end
+        
+        def apply_vnic_chains(vnic_map)
+          apply_iptables_chains(vnic_map) if self.enable_iptables
+          apply_ebtables_chains(vnic_map) if self.enable_ebtables
         end
         
         # Translates _rule_ into a command that can be directly passed on to the OS
@@ -289,7 +314,7 @@ module Dcmgr
           
           commands = tasks.map { |task|
             next unless task.is_a? Task
-            rules.map { |rule|
+            task.rules.map { |rule|
               get_rule_command(rule,:remove)
             }
           }
@@ -362,12 +387,12 @@ module Dcmgr
         # Removes _tasks_ for this specific vnic if they are applied
         # If no _tasks_ argument is provided, all tasks for this vnic will be removed
         def remove_vnic_tasks(vnic,tasks = nil)
-          if tasks.nil?
-            remove_iptables_chains(vnic) if self.enable_iptables
-            remove_ebtables_chains(vnic) if self.enable_ebtables
-          else
             remove_tasks(tailor_vnic_tasks(vnic,tasks))
-          end
+        end
+        
+        def remove_vnic_chains(vnic)
+          remove_iptables_chains(vnic) if self.enable_iptables
+          remove_ebtables_chains(vnic) if self.enable_ebtables
         end
         
         def apply_task(task)

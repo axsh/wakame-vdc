@@ -32,6 +32,19 @@ module Dcmgr
       extend Dcmgr::Helpers::NicHelper
       include V::Tasks
 
+      # Returns the tasks required for applying this security group
+      def self.create_tasks_for_secgroup(secgroup)
+        [SecurityGroup.new(secgroup)]
+      end
+
+      # Returns the tasks that drop all traffic
+      def self.create_drop_tasks_for_vnic(vnic,node)
+        enable_logging = node.manifest.config.packet_drop_log
+
+        #TODO: Add logging to ip drops
+        [DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: ")]
+      end
+
       #Returns the netfilter tasks required for this vnic
       # The _friends_ parameter is an array of vnic_maps that should not be isolated from _vnic_
       def self.create_tasks_for_vnic(vnic,friends,security_groups,node)
@@ -74,22 +87,21 @@ module Dcmgr
         #tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port])
         tasks << AcceptIpToAnywhere.new
         
-        # Security group tasks
-        security_groups.each { |secgroup|
-          tasks << SecurityGroup.new(secgroup)
-        }
-        
         # VM isolation based on same security group
         #tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic.uuid}") # <--- constructor values not filled in yet
         #tasks << AcceptIpFromFriends(friend_ips)
         
         # Accept ip traffic from the gateway that isn't blocked by other tasks
         tasks << AcceptIpFromGateway.new(vnic[:ipv4][:network][:ipv4_gw])
+        
+        # Security group tasks
+        security_groups.each { |secgroup|
+          tasks += self.create_tasks_for_secgroup(secgroup)
+        }
                   
         # Drop any other incoming traffic
         # MAKE SURE THIS TASK IS ALWAYS EXECUTED LAST OR I WILL KILL YOU
-        tasks << DropIpFromAnywhere.new #TODO: Add logging to ip drops
-        tasks << DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: ")
+        tasks += self.create_drop_tasks_for_vnic(vnic,node)
         
         tasks
       end

@@ -221,6 +221,7 @@ module Dcmgr
       autoload :EbtablesChain, 'dcmgr/vnet/netfilter/chain'
       autoload :EbtablesRule, 'dcmgr/vnet/netfilter/ebtables_rule'
       autoload :IptablesRule, 'dcmgr/vnet/netfilter/iptables_rule'
+      autoload :NetfilterTaskManager, 'dcmgr/vnet/netfilter/task_manager'
       autoload :VNicProtocolTaskManager, 'dcmgr/vnet/netfilter/task_manager'
     end
 

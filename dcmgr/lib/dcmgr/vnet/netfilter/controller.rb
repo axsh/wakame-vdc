@@ -19,7 +19,7 @@ module Dcmgr
           @isolator = IsolatorFactory.create_isolator
           
           self.task_manager = TaskManagerFactory.create_task_manager(node)
-          raise "#{self.task_manager} must be a VnicTaskManager" unless self.task_manager.is_a?(VnicTaskManager)
+          raise "#{self.task_manager} must be a NetfilterTaskManager" unless self.task_manager.is_a?(NetfilterTaskManager)
           
           # Initialize Netfilter configuration
           cmds = []
@@ -63,10 +63,11 @@ module Dcmgr
             }.flatten
           
             # Determine the security group rules for this vnic
-            security_groups = @cache.get[:security_groups].dup.delete_if { |group|
+            security_groups = @cache.get[:security_groups].delete_if { |group|
               not vnic[:security_groups].member? group[:uuid]
             }
           
+            self.task_manager.apply_vnic_chains(vnic)
             self.task_manager.apply_vnic_tasks(vnic,TaskFactory.create_tasks_for_vnic(vnic,friends,security_groups,node))
           }
         end
@@ -78,7 +79,7 @@ module Dcmgr
           inst_map[:vif].each { |vnic|
             #TODO: Check if it's really necessary to call the task factory here
             #self.task_manager.remove_vnic_tasks(vnic,TaskFactory.create_tasks_for_vnic(vnic,node))
-            self.task_manager.remove_vnic_tasks(vnic)
+            self.task_manager.remove_vnic_chains(vnic)
           }
         end
         
@@ -91,7 +92,31 @@ module Dcmgr
         end
         
         def update_security_group(group)
-          super
+          # Get the old security group info from the cache
+          old_cache = @cache.get
+          
+          # Get a list of vnics that are in this security group
+          vnics = old_cache[:instances].map {|inst_map| inst_map[:vif].delete_if { |vnic| not vnic[:security_groups].member?(group) } }.flatten
+          unless vnics.empty?
+            # Get the rules for this security group
+            old_group = old_cache[:security_groups].find {|sg| sg[:uuid] == group}
+          
+            # Get the new info from the cache
+            new_cache = @cache.get(true)
+            new_group = new_cache[:security_groups].find {|sg| sg[:uuid] == group}
+            
+            vnics.each { |vnic_map|
+              # Remove the old security group tasks
+              self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(old_group))
+              
+              # Remove the drop tasks so the new group's tasks don't get applied behind it
+              self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_drop_tasks_for_vnic(vnic_map,self.node))
+              # Add the new security group tasks
+              self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(new_group))
+              # Put the drop tasks back in place
+              self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_drop_tasks_for_vnic(vnic_map,self.node))
+            }
+          end
         end
         
         private
