@@ -8,7 +8,7 @@
   :hostname: jefke
   :security_groups: 
   - sg-demofgr
-  :ssh_key: ssh-demo
+  :ssh_key_id: ssh-demo
   :username: ubuntu
 :multiple_vnic_spec: 
   :images: 
@@ -90,5 +90,4 @@
     :id: wmi-lucid6
   :specs: 
   - is-demospec
-  :ssh_key: 
-  - ssh-demo
+  :ssh_key_id: ssh-demo
