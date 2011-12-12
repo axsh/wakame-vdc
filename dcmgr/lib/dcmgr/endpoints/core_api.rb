@@ -216,7 +216,7 @@ module Dcmgr
           # param :host_node_id, string, :optional
           # param :hostname, string, :optional
           # param :user_data, string, :optional
-          # param :nf_group, array, :optional
+          # param :security_groups, array, :optional
           # param :ssh_key_id, string, :optional
           # param :network_id, string, :optional
           # param :ha_enabled, string, :optional
@@ -311,7 +311,7 @@ module Dcmgr
                                    'schedule_instance', instance.canonical_uuid)
 
             # retrieve latest instance data.
-            # if not, nf_group value is empty.
+            # if not, security_groups value is empty.
             instance = find_by_uuid(:Instance, instance.canonical_uuid)
 
             response_to(instance.to_api_document)
