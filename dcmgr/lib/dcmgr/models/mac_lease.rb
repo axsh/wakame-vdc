@@ -26,8 +26,8 @@ module Dcmgr::Models
     # the well known vendor IDs for hypervisor have some benefits. For
     # example, 70-persistent-net.rules issue can be avoided with newer
     # udev release.
-    def default_vendor_id(hypervisor)
-      case hypervisor
+    def self.default_vendor_id(hypervisor)
+      case hypervisor.to_sym
       when :kvm
         '525400'
       when :lxc
