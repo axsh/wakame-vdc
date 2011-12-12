@@ -71,3 +71,5 @@ network_scheduler {
     }
   }
 }
+
+mac_address_vendor_id '525400'
