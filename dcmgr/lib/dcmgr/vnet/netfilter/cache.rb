@@ -21,7 +21,9 @@ module Dcmgr
         def get(force_update = false)
           self.update if @cache.nil? || force_update
           
-          @cache
+          # Always return a duplicate of the cache. We don't want any external program messing with the original contents.
+          #TODO: Do this in a faster way than marshall
+          Marshal.load( Marshal.dump(@cache) )
         end
         
         # Adds a newly started instance to the existing cache
