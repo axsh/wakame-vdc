@@ -37,7 +37,7 @@ module Dcmgr
         
         # Removes a terminated instance from the existing cache
         def remove_instance(inst_id)
-          
+          @cache[:instances].delete_if {|inst_map| inst_map[:uuid] == inst_id }
         end
       end
     

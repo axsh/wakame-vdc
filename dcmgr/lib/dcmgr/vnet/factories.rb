@@ -12,8 +12,8 @@ module Dcmgr
     
     class IsolatorFactory
       def self.create_isolator
-        #V::Isolators::BySecurityGroup.new
-        V::Isolators::DummyIsolator.new
+        V::Isolators::BySecurityGroup.new
+        #V::Isolators::DummyIsolator.new
       end
     end
     
@@ -31,6 +31,17 @@ module Dcmgr
     class TaskFactory
       extend Dcmgr::Helpers::NicHelper
       include V::Tasks
+
+      def self.create_tasks_for_isolation(vnic,friends,node)
+        tasks = []
+        enable_logging = node.manifest.config.packet_drop_log
+        friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
+        
+        tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")
+        #tasks << AcceptIpFromFriends(friend_ips)
+        
+        tasks
+      end
 
       # Returns the tasks required for applying this security group
       def self.create_tasks_for_secgroup(secgroup)
@@ -53,8 +64,6 @@ module Dcmgr
         host_addr = Isono::Util.default_gw_ipaddr
         enable_logging = node.manifest.config.packet_drop_log
         ipset_enabled = node.manifest.config.use_ipset
-        
-        friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
         
         # Nat tasks
         if is_natted? vnic
@@ -84,11 +93,10 @@ module Dcmgr
         tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server])
         tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port])
         # Accept OUTGOING traffic from instances to anywhere in the network
-        tasks << AcceptIpToAnywhere.new
+        #tasks << AcceptIpToAnywhere.new
         
-        # VM isolation based on same security group
-        #tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic.uuid}") # <--- constructor values not filled in yet
-        #tasks << AcceptIpFromFriends(friend_ips)
+        # VM isolation based
+        tasks += self.create_tasks_for_isolation(vnic,friends,node)
         
         # Accept ip traffic from the gateway that isn't blocked by other tasks
         tasks << AcceptIpFromGateway.new(vnic[:ipv4][:network][:ipv4_gw])

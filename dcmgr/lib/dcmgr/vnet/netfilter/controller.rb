@@ -34,7 +34,7 @@ module Dcmgr
           
           # Apply the current instances if there are any
           @cache.get[:instances].each { |inst_map|
-            self.apply_instance(inst_map)
+            self.init_instance(inst_map)
           }
         end
         
@@ -48,20 +48,55 @@ module Dcmgr
               @cache.update
               inst_map = @cache.get[:instances].find { |inst| inst[:uuid] == instance}
             end
-          elsif
-            #TODO: When we get something other than a String, make sure it's a Hash
+          elsif instance.is_a? Hash
             inst_map = instance
+          else
+            raise ArgumentError, "instance must be either a uuid or an instance's hash map" unless instance.is_a? Hash
           end
           
-          # Call the factory to create all tasks for each vnic. Then apply them
+          # Create all the rules for this instance
+          init_instance(inst_map)
+          
+          # Apply isolation tasks for this new instance to its friends
           inst_map[:vif].each { |vnic|
+            other_vnics = get_other_vnics(vnic,@cache)
             # Determine which vnics need to be isolated from this one
-            friends = @isolator.determine_friends vnic, @cache.get[:instances].map { |inst_map|
+            friends = @isolator.determine_friends(vnic, other_vnics)
+            
+            friends.each { |friend|
+              # Remove the drop rules so the isolation rules don't ger applied after them
+              self.task_manager.remove_vnic_tasks(friend,TaskFactory.create_drop_tasks_for_vnic(friend,self.node))
+              
+              # Put in the new isolation rules
+              self.task_manager.apply_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
+              # Put the drop rules back
+              self.task_manager.apply_vnic_tasks(friend,TaskFactory.create_drop_tasks_for_vnic(friend,self.node))
+            }
+          }
+        end
+        
+        def get_other_vnics(vnic,cache)
+          cache.get[:instances].map { |inst_map|
               inst_map[:vif].delete_if { |other_vnic|
                 other_vnic == vnic
-              }
-            }.flatten
-          
+            }
+          }.flatten
+        end
+        
+        def init_instance(inst_map)
+          # Call the factory to create all tasks for each vnic. Then apply them
+          inst_map[:vif].each { |vnic|
+            # Get a list of all other vnics in this host
+            other_vnics = get_other_vnics(vnic,@cache)
+            #other_vnics = @cache.get[:instances].map { |inst_map|
+              #inst_map[:vif].delete_if { |other_vnic|
+                #other_vnic == vnic
+              #}
+            #}.flatten
+            
+            # Determine which vnics need to be isolated from this one
+            friends = @isolator.determine_friends(vnic, other_vnics)
+            
             # Determine the security group rules for this vnic
             security_groups = @cache.get[:security_groups].delete_if { |group|
               not vnic[:security_groups].member? group[:uuid]
@@ -77,18 +112,21 @@ module Dcmgr
           inst_map = @cache.get[:instances].find { |inst| inst[:uuid] == inst_id}
           
           inst_map[:vif].each { |vnic|
-            #TODO: Check if it's really necessary to call the task factory here
-            #self.task_manager.remove_vnic_tasks(vnic,TaskFactory.create_tasks_for_vnic(vnic,node))
             self.task_manager.remove_vnic_chains(vnic)
           }
-        end
-        
-        def join_security_group(instance,group)
-          super
-        end
-        
-        def leave_security_group(instance,group)
-          super
+          
+          #Clean up the isolation rules in friends' chains
+          inst_map[:vif].each { |vnic|
+            other_vnics = get_other_vnics(vnic,@cache)
+            friends = @isolator.determine_friends(vnic, other_vnics)
+            
+            friends.each { |friend|
+              self.task_manager.remove_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
+            }
+          }
+          
+          # Remove the terminated instance from the cache
+          @cache.remove_instance(inst_id)
         end
         
         def update_security_group(group)
