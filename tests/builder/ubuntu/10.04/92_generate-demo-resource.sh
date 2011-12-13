@@ -104,13 +104,13 @@ for s in ${storage_nodes}; do
         "Linux")
             [ -d ${tmp_path}/xpool/${account_id} ] || mkdir -p ${tmp_path}/xpool/${account_id}
             [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
-            shlog ./bin/vdc-manage storage add sta.${staname} --uuid sn-${staname} --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
+            shlog ./bin/vdc-manage storage add sta.${staname} --uuid sn-${staname} --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${s} --storage-type raw --snapshot-base-path ${tmp_path}/snap
 
             ln -fs ${vmimage_path}      ${vmimage_snap_path}
             ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
             ;;
         *)  
-            shlog ./bin/vdc-manage storage add sta.${staname} --uuid sn-${staname} --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
+            shlog ./bin/vdc-manage storage add sta.${staname} --uuid sn-${staname} --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${s} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
             ;;
     esac
 done
@@ -163,7 +163,7 @@ for h in ${host_nodes};do
     shlog ./bin/vdc-manage tag map tag-shhost hn-${hvaname}
 done
 for s in ${storage_nodes};do
-    staname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
+    staname=demo$(echo ${s} | sed -e 's/\./ /g' | awk '{print $4}')
     shlog ./bin/vdc-manage tag map tag-shstor sn-${staname}
 done
 shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
