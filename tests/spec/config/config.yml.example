@@ -29,17 +29,15 @@
   :groups_to_create: 
   - :description: g1
     :rule: tcp:22,22,ip4:0.0.0.0
-    :name: group1
   - :description: g2
     :rule: |-
-      icmp:-1,-1,a-00000000:g1
-      tcp:22,22,a-00000000:g1
-    :name: group2
+      icmp:-1,-1,sg-demofgr
+      tcp:22,22,sg-demofgr
+    :rule: icmp:-1,-1,sg-demofgr
   - :description: g3
     :rule: |-
-      icmp:-1,-1,a-00000000:g2
-      tcp:22,22,a-00000000:g2
-    :name: group3
+      icmp:-1,-1,sg-demofgr
+      tcp:22,22,sg-demofgr
   :update_rule: icmp:-1,-1,ip4:0.0.0.0
 :global: 
   :retry_time: 5
