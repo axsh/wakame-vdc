@@ -8,13 +8,6 @@ LC_ALL=C
 
 set -e
 
-url=${url:-http://ftp.riken.jp/Linux/centos/6.0/isos/i386/CentOS-6.0-i386-bin-DVD.iso}
-thread=${thread:-8}
-tmp_path=${tmp_path:-/var/tmp/__$(basename $0)}
-part_name=$(basename ${url})
-output_dir=${output_dir:-${tmp_path}}
-output_path=${output_path:-${output_dir}/${part_name}}
-
 opts=""
 # extract opts
 for arg in $*; do
@@ -27,6 +20,13 @@ for arg in $*; do
       ;;
   esac
 done
+
+url=${url:-http://mirror.3tier.com/centos/6/isos/i386/CentOS-6.0-i386-bin-DVD.iso}
+thread=${thread:-8}
+tmp_path=${tmp_path:-/var/tmp/__$(basename $0)}
+part_name=$(basename ${url})
+output_dir=${output_dir:-${tmp_path}}
+output_path=${output_path:-${output_dir}/${part_name}}
 
 case ${url} in
 http://*|https://*)
