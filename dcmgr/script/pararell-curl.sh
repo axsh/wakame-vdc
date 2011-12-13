@@ -8,7 +8,7 @@ LC_ALL=C
 
 set -e
 
-url=${url:-http://mirror.3tier.com/centos/6/isos/i386/CentOS-6.0-i386-bin-DVD.iso}
+url=${url:-http://ftp.riken.jp/Linux/centos/6.0/isos/i386/CentOS-6.0-i386-bin-DVD.iso}
 thread=${thread:-8}
 tmp_path=${tmp_path:-/var/tmp/__$(basename $0)}
 part_name=$(basename ${url})
