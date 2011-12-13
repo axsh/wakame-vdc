@@ -58,8 +58,7 @@ module Dcmgr
                 chains << IptablesChain.new(:filter, "#{bound}_#{vnic_map[:uuid]}_#{k}_drop")
             }
             
-            # Only create the NAT chains if the vnic is in fact natted
-            chains << IptablesChain.new(:nat, "#{bound}_#{[:uuid]}") if is_natted? vnic_map
+            chains << IptablesChain.new(:nat, "#{bound}_#{vnic_map[:uuid]}")
           }
           
           chains
@@ -113,8 +112,8 @@ module Dcmgr
         def iptables_nat_chain_jumps(vnic)
           jumps = []
           
-          jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-d #{vnic[:ipv4][:nat_address]} -j d_#{vnic[:uuid]}")
-          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{vnic[:ipv4][:address]} -j s_#{vnic[:uuid]}")
+          jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-in  #{vnic[:uuid]} -j s_#{vnic[:uuid]}")
+          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-m physdev --physdev-out #{vnic[:uuid]} -j d_#{vnic[:uuid]}")
           
           jumps
         end
@@ -185,7 +184,7 @@ module Dcmgr
           }
           
           commands << iptables_forward_chain_jumps(vnic_map).map(&create_jump_block)
-          commands << iptables_nat_chain_jumps(vnic_map).map(&create_jump_block) if is_natted? vnic_map
+          commands << iptables_nat_chain_jumps(vnic_map).map(&create_jump_block)
           commands << iptables_protocol_chain_jumps(vnic_map).map(&create_jump_block)
           
           commands.flatten.uniq

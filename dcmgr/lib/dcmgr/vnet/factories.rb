@@ -81,10 +81,8 @@ module Dcmgr
         tasks << AcceptUdpEstablished.new
         tasks << AcceptAllDNS.new
         tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server])
-        # Metadata address translation poses a bit of a problem on non natted machines
-        # Nat chains don't get created and the taskmanager tries to place it in a non existent chain
-        #TODO: FIX!
-        #tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port])
+        tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port])
+        # Accept OUTGOING traffic from instances to anywhere in the network
         tasks << AcceptIpToAnywhere.new
         
         # VM isolation based on same security group
