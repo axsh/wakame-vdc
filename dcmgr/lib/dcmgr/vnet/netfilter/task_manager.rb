@@ -210,7 +210,7 @@ module Dcmgr
           delete_jump_block = Proc.new {|jump| "iptables -t #{jump.table} -D #{jump.chain} #{jump.rule}"}
           
           commands << iptables_forward_chain_jumps(vnic_map).map(&delete_jump_block)
-          commands << iptables_nat_chain_jumps(vnic_map).map(&delete_jump_block) if is_natted?(vnic_map)
+          commands << iptables_nat_chain_jumps(vnic_map).map(&delete_jump_block)
           
           commands << iptables_chains(vnic_map).map {|chain| 
             ["iptables -t #{chain.table} -F #{chain.name}","iptables -t #{chain.table} -X #{chain.name}"]
