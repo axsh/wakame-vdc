@@ -253,7 +253,6 @@ module Dcmgr
         # vmimg cached?
         unless File.exists?(vmimg_cache_path)
           logger.debug("copying #{img_src[:uri]} to #{vmimg_cache_path}")
-          # sh("curl --silent -o '#{vmimg_cache_path}' #{img_src[:uri]}")
           pararell_curl("#{img_src[:uri]}", "#{vmimg_cache_path}")
         else
           md5sum = sh("md5sum #{vmimg_cache_path}")
@@ -264,7 +263,6 @@ module Dcmgr
             sh("rm -f %s", [vmimg_cache_path])
             tmp_id = Isono::Util::gen_id
             logger.debug("copying #{img_src[:uri]} to #{vmimg_cache_path}")
-            #sh("curl --silent -o '#{vmimg_cache_path}.#{tmp_id}' #{img_src[:uri]}")
             pararell_curl("#{img_src[:uri]}", "#{vmimg_cache_path}.#{tmp_id}")
 
             sh("mv #{vmimg_cache_path}.#{tmp_id} #{vmimg_cache_path}")
@@ -492,7 +490,6 @@ module Dcmgr
 
       def pararell_curl(url, output_path)
         script_root_path = File.join(File.expand_path('../../../../',__FILE__), 'script')
-        # sh("curl --silent -o '#{vmimg_cache_path}' #{img_src[:uri]}")
         sh("#{script_root_path}/pararell-curl.sh --url=#{url} --output_path=#{output_path}")
       end
     end
