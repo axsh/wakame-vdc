@@ -7,7 +7,7 @@ if is_enabled? :images_spec
 
   images ||= cfg[:images]
   specs ||= cfg[:specs]
-  ssh_key ||= cfg[:ssh_key]
+  ssh_key_id ||= cfg[:ssh_key_id]
 
   describe "Machine images and instance specs" do
     include InstanceHelper
@@ -16,11 +16,11 @@ if is_enabled? :images_spec
     images.each { |img|
       specs.each { |spec|
         it "should run an instance of (#{img[:id]}, #{spec}) -> reboot -> terminate" do
-          run_instance_then_reboot_then_terminate({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key=>ssh_key},img[:user],img[:uses_metadata])
+          run_instance_then_reboot_then_terminate({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key_id=>ssh_key_id},img[:user],img[:uses_metadata])
         end
         
         it "should run an instance of (#{img[:id]}, #{spec}) -> stop -> terminate" do
-          instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key=>ssh_key})
+          instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key_id=>ssh_key_id})
           
           #p "retry until running"
           retry_until_running(instance_id)
@@ -40,7 +40,7 @@ if is_enabled? :images_spec
         end
         
         it "should run an instance of (#{img[:id]}, #{spec}) -> stop -> running -> terminate" do
-          instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key=>ssh_key})
+          instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key_id=>ssh_key_id})
           retry_until_running(instance_id)
           instance = APITest.get("/instances/#{instance_id}")
           
@@ -66,7 +66,7 @@ if is_enabled? :images_spec
         end
         
         it "should run an instance of (#{img[:id]}, #{spec}) -> stop -> running -> stop -> terminate" do
-          instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key=>ssh_key})
+          instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key_id=>ssh_key_id})
           retry_until_running(instance_id)
           
           APITest.update("/instances/#{instance_id}/stop", []).success?.should be_true

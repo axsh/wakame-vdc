@@ -15,21 +15,20 @@ if is_enabled? :instance_spec
     # - param :host_id, string, :optional # not implemented yet
     # o param :hostname, string, :optional
     # o param :user_data, string, :optional
-    # o param :nf_group, array, :optional
+    # o param :security_groups, array, :optional
     # o param :ssh_key_id, string, :optional
     # - param :network_id, string, :optional # not implemented yet
     # o param :ha_enabled, string, :optional
-
-    # ssh_key
-    it "should run instance with ssh_key" do
+    # ssh_key_id
+    it "should run instance with ssh_key_id" do
       run_instance_then_reboot_then_terminate({:image_id=>cfg[:image_id], :instance_spec_id=>cfg[:instance_spec_id],
-                                                :ssh_key=>cfg[:ssh_key]})
+                                                :ssh_key_id=>cfg[:ssh_key_id]})
     end
 
-    # nf_group
-    it "should run instance with nf_group" do
+    # security_groups
+    it "should run instance with security_groups" do
       run_instance_then_reboot_then_terminate({:image_id=>cfg[:image_id], :instance_spec_id=>cfg[:instance_spec_id],
-                                                :nf_group=>cfg[:security_groups]})
+                                                :security_groups=>cfg[:security_groups]})
     end
 
     # hostname
@@ -78,13 +77,13 @@ if is_enabled? :instance_spec
                                                 :ha_enabled => 'false'})
     end
 
-    it "Should have properly set the assigned parameters. (ssh_key, nf_group, hostname)" do
+    it "Should have properly set the assigned parameters. (ssh_key_id, security_groups, hostname)" do
       res = APITest.create("/instances", cfg)
       res.success?.should be_true
       
       retry_until_running(res["id"])
       
-      res["ssh_key_pair"].should == nil
+      res["ssh_key_pair"].should == cfg[:ssh_key_id]
       res["security_groups"].eql?(cfg[:security_groups]).should be_true
       res["hostname"].should == cfg[:hostname]
 

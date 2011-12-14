@@ -17,7 +17,7 @@ module Dcmgr
         
         @volume[:transport_information] = iscsi = {}
         iscsi[:iqn] = "#{IQN_PREFIX}:#{@volume[:account_id]}.#{@volume[:uuid]}"
-        iscsi[:tid] = @volume[:id]
+        iscsi[:tid] = pick_next_tid
         iscsi[:lun] = 1
         iscsi[:backing_store] = vol_path
 
@@ -44,6 +44,17 @@ module Dcmgr
            [tinfo[:tid], node.manifest.config.initiator_address])
       end
       
+      private
+      def pick_next_tid
+        # $ sudo /usr/sbin/tgtadm --lld iscsi --op show --mode target | grep '^Target '
+        # Target 1: iqn.2010-09.jp.wakame:a-shpoolxx.vol-dw55bba8
+        last_target = `/usr/sbin/tgtadm --lld iscsi --op show --mode target | grep ^Target`.split("\n").last
+        tid = if last_target.nil?
+                1
+              else
+                last_target.split(':').first.split(' ')[1].to_i + 1
+              end
+      end
     end
   end
 end

@@ -221,6 +221,7 @@ module Dcmgr
       autoload :EbtablesChain, 'dcmgr/vnet/netfilter/chain'
       autoload :EbtablesRule, 'dcmgr/vnet/netfilter/ebtables_rule'
       autoload :IptablesRule, 'dcmgr/vnet/netfilter/iptables_rule'
+      autoload :NetfilterTaskManager, 'dcmgr/vnet/netfilter/task_manager'
       autoload :VNicProtocolTaskManager, 'dcmgr/vnet/netfilter/task_manager'
     end
 
@@ -228,6 +229,7 @@ module Dcmgr
       autoload :AcceptAllDNS, 'dcmgr/vnet/tasks/accept_all_dns'
       autoload :AcceptArpBroadcast, 'dcmgr/vnet/tasks/accept_arp_broadcast'
       autoload :AcceptARPFromFriends, 'dcmgr/vnet/tasks/accept_arp_from_friends'
+      autoload :AcceptARPFromGateway, 'dcmgr/vnet/tasks/accept_arp_from_gateway'
       autoload :AcceptARPToHost, 'dcmgr/vnet/tasks/accept_arp_to_host'
       autoload :AcceptIpFromFriends, 'dcmgr/vnet/tasks/accept_ip_from_friends'
       autoload :AcceptIpFromGateway, 'dcmgr/vnet/tasks/accept_ip_from_gateway'
@@ -246,6 +248,7 @@ module Dcmgr
       autoload :DropMacSpoofing, 'dcmgr/vnet/tasks/drop_mac_spoofing'
       autoload :ExcludeFromNat, 'dcmgr/vnet/tasks/exclude_from_nat'
       autoload :ExcludeFromNatIpSet, 'dcmgr/vnet/tasks/exclude_from_nat'
+      autoload :SecurityGroup, 'dcmgr/vnet/tasks/security_group'
       autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'

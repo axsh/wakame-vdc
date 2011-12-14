@@ -141,87 +141,55 @@ module Dcmgr::Models
     end
 
     def add_ipv4_dynamic_range(range_begin, range_end)
-      range_begin, range_end = validate_range_args(range_begin, range_end)
+      test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
+         case op
+         when :coverbegin
+           range.range_end = range_begin
+         when :coverend
+           range.range_begin = range_end
+         when :inccur
+           range.destroy
+         end
+         range.save_changes
+      }
       
-      mark={}
-      dhcp_range_dataset.each { |r|
-        mark[r.id] = :skip
-        if r.range_begin < range_begin && r.range_end < range_begin
-          next
-        elsif r.range_begin < range_begin && r.range_end > range_begin
-          # range_begin is in the range.
-          if r.range_end < range_end
-            mark[r.id] = :append
-          else
-            # new range is included in this range.
-            return
-          end
-        elsif r.range_begin > range_begin && r.range_end > range_begin
-          # range_end is in the range.
-          if r.range_end > range_end
-            mark[r.id] = :prepend
-          else
-            # current range is included in new range.
-            mark[r.id] = :del
-            next
-          end
-        elsif r.range_begin > range_begin && r.range_end < range_begin
-        end
-      }
-
-      mark.each { |pkid, op|
-        range = DhcpRange[pkid]
-        case op
-        when :prepend
-          range.range_begin = range_begin.to_s
-          range.save
-        when :append
-          range.range_end = range_end.to_s
-          range.save
-        when :del
-          range.destroy
-        end
-      }
-
-      if !mark.values.uniq.include?(:prepend) && !mark.values.uniq.include?(:append)
-        self.add_dhcp_range(:range_begin=>range_begin.to_s, :range_end=>range_end.to_s)
-      end
+      self.add_dhcp_range(:range_begin=>range_begin.to_s, :range_end=>range_end.to_s)
+      
+      self
     end
 
     def del_ipv4_dynamic_range(range_begin, range_end)
-      range_begin, range_end = validate_range_args(range_begin, range_end)
-
-      mark={}
-      dhcp_range_dataset.each { |r|
-        mark[r.id] = :skip
-        if r.range_begin < range_begin && r.range_end < range_begin
-          next
-        elsif r.range_begin < range_begin && r.range_end > range_begin
-          # range_begin is in the range.
-          if r.range_end < range_end
-            mark[r.id] = :append
-          else
-            # new range is included in this range.
-            return
-          end
-        elsif r.range_begin > range_begin && r.range_end > range_begin
-          # range_end is in the range.
-          if r.range_end > range_end
-            mark[r.id] = :prepend
-          else
-            # current range is included in new range.
-            mark[r.id] = :del
-            next
-          end
-        elsif r.range_begin > range_begin && r.range_end < range_begin
+      test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
+        case op
+        when :coverbegin
+          range.range_end = range_begin
+        when :coverend
+          range.range_begin = range_end
+        when :inccur
+          range.destroy
+        when :incnew
+          t = range.range_end
+          range.range_end = range_begin
+          self.add_dhcp_range(:range_begin=>range_end, :range_end=>t)
         end
+        range.save_changes
       }
+
+      self
     end
 
     private
     def validate_range_args(range_begin, range_end)
-      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self.prefix}")
-      range_end = IPAddress::IPv4.new("#{range_end}/#{self.prefix}")
+      if range_begin.is_a?(IPAddress::IPv4)
+        raise "Different prefix length: range_begin" if range_begin.prefix != self.prefix
+      else
+        range_begin = IPAddress::IPv4.new("#{range_begin}/#{self.prefix}")
+      end
+      if range_end.is_a?(IPAddress::IPv4)
+        raise "Different prefix length: range_end" if range_end.prefix != self.prefix
+      else
+        range_end = IPAddress::IPv4.new("#{range_end}/#{self.prefix}")
+      end
       if !(self.ipv4_ipaddress.include?(range_begin) && self.ipv4_ipaddress.include?(range_end))
         raise "Given address range is out of the subnet: #{self.ipv4_ipaddress} #{range_begin}-#{range_end}"
       end
@@ -231,6 +199,31 @@ module Dcmgr::Models
         range_end = t
       end
       [range_begin, range_end]
+    end
+
+
+    def test_inclusion(range_begin, range_end, &blk)
+      dhcp_range_dataset.each { |r|
+        op = :outrange
+        if r.range_begin < range_begin && r.range_end > range_begin
+          # range_begin is in the range.
+          if r.range_end < range_end
+            op = :coverbegin
+          else
+            # new range is included in current range.
+            op = :incnew
+          end
+        elsif r.range_begin < range_end && r.range_end > range_end
+          # range_end is in the range.
+          if r.range_begin > range_begin
+            op = :coverend
+          end
+        elsif r.range_begin >= range_begin && r.range_end <= range_end
+          # current range is included in new range.
+          op = :inccur
+        end
+        blk.call(r, op)
+      }
     end
   end
 end

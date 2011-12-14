@@ -12,8 +12,8 @@ module Dcmgr
     
     class IsolatorFactory
       def self.create_isolator
-        #V::Isolators::BySecurityGroup.new
-        V::Isolators::DummyIsolator.new
+        V::Isolators::BySecurityGroup.new
+        #V::Isolators::DummyIsolator.new
       end
     end
     
@@ -32,16 +32,38 @@ module Dcmgr
       extend Dcmgr::Helpers::NicHelper
       include V::Tasks
 
+      def self.create_tasks_for_isolation(vnic,friends,node)
+        tasks = []
+        enable_logging = node.manifest.config.packet_drop_log
+        friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
+        
+        tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")
+        #tasks << AcceptIpFromFriends(friend_ips)
+        
+        tasks
+      end
+
+      # Returns the tasks required for applying this security group
+      def self.create_tasks_for_secgroup(secgroup)
+        [SecurityGroup.new(secgroup)]
+      end
+
+      # Returns the tasks that drop all traffic
+      def self.create_drop_tasks_for_vnic(vnic,node)
+        enable_logging = node.manifest.config.packet_drop_log
+
+        #TODO: Add logging to ip drops
+        [DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: ")]
+      end
+
       #Returns the netfilter tasks required for this vnic
       # The _friends_ parameter is an array of vnic_maps that should not be isolated from _vnic_
-      def self.create_tasks_for_vnic(vnic,friends,node)
+      def self.create_tasks_for_vnic(vnic,friends,security_groups,node)
         tasks = []
 
         host_addr = Isono::Util.default_gw_ipaddr
         enable_logging = node.manifest.config.packet_drop_log
         ipset_enabled = node.manifest.config.use_ipset
-        
-        friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
         
         # Nat tasks
         if is_natted? vnic
@@ -61,34 +83,32 @@ module Dcmgr
         tasks << DropIpSpoofing.new(vnic[:ipv4][:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
         tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
         tasks << AcceptARPToHost.new(host_addr,vnic[:ipv4][:address],enable_logging,"A arp to_host #{vnic[:uuid]}: ")
+        tasks << AcceptARPFromGateway.new(vnic[:ipv4][:network][:ipv4_gw],enable_logging,"A arp from_gw #{vnic[:uuid]}: ")
         
         # General ip layer tasks
         tasks << AcceptIcmpRelatedEstablished.new
         tasks << AcceptTcpRelatedEstablished.new
         tasks << AcceptUdpEstablished.new
-        #tasks << AcceptWakameDNSOnly.new(vnic[:ipv4][:network][:dns_server])
         tasks << AcceptAllDNS.new
         tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server])
-        # Metadata address translation poses a bit of a problem on non natted machines
-        # Nat chains don't get created and the taskmanager tries to place it in a non existent chain
-        #TODO: FIX!
-        #tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port])
-        tasks << AcceptIpToAnywhere.new
+        tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port])
+        # Accept OUTGOING traffic from instances to anywhere in the network
+        #tasks << AcceptIpToAnywhere.new
         
-        # Security group tasks
-        #tasks << SecurityGroup(....)
-        
-        # VM isolation based on same security group
-        #tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic.uuid}") # <--- constructor values not filled in yet
-        #tasks << AcceptIpFromFriends(friend_ips)
+        # VM isolation based
+        tasks += self.create_tasks_for_isolation(vnic,friends,node)
         
         # Accept ip traffic from the gateway that isn't blocked by other tasks
         tasks << AcceptIpFromGateway.new(vnic[:ipv4][:network][:ipv4_gw])
+        
+        # Security group tasks
+        security_groups.each { |secgroup|
+          tasks += self.create_tasks_for_secgroup(secgroup)
+        }
                   
         # Drop any other incoming traffic
         # MAKE SURE THIS TASK IS ALWAYS EXECUTED LAST OR I WILL KILL YOU
-        tasks << DropIpFromAnywhere.new #<-- has no arguments
-        tasks << DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: ")
+        tasks += self.create_drop_tasks_for_vnic(vnic,node)
         
         tasks
       end

@@ -4,7 +4,7 @@ module Dcmgr
   module VNet
     module Tasks
     
-      # Explicitely allows ARP traffic to take place between the host and instance
+      # Explicitely allows ARP traffic to take place from the instance to the host
       class AcceptARPToHost < Task
         include Dcmgr::VNet::Netfilter
         attr_reader :enable_logging

@@ -29,6 +29,8 @@ stopped_instance_usage_factor 1.0
 
 recent_terminated_instance_period 900
 
+mac_address_vendor_id nil
+
 # Scheduling Algorithms
 #host_node_scheduler :FindFirst
 host_node_scheduler {
@@ -71,3 +73,5 @@ network_scheduler {
     }
   }
 }
+
+mac_address_vendor_id '525400'

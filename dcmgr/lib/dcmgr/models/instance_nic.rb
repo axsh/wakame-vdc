@@ -80,6 +80,18 @@ module Dcmgr::Models
       self.mac_addr.unpack('A2'*6).join(delim)
     end
 
+    def fqdn_hostname
+      raise "Instance is not associated: #{self.canonical_uuid}" if self.instance.nil?
+      raise "Network is not associated: #{self.canonical_uuid}" if self.network.nil?
+      sprintf("%s.%s.%s", self.instance.hostname, self.instance.account.uuid, self.network.domain_name)
+    end
+
+    def nat_fqdn_hostname
+      raise "Instance is not associated: #{self.canonical_uuid}" if self.instance.nil?
+      raise "Network is not associated: #{self.canonical_uuid}" if self.network.nil?
+      sprintf("%s.%s.%s", self.instance.hostname, self.instance.account.uuid, self.nat_network.domain_name)
+    end
+
     private
     def normalize_mac_addr(str)
       str = str.downcase.gsub(/[^0-9a-f]/, '')

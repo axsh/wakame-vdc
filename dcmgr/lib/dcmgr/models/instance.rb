@@ -265,7 +265,7 @@ module Dcmgr::Models
 
     # Returns the hypervisor type for the instance.
     def hypervisor
-      self.host_node.hypervisor
+      self.instance_spec.hypervisor
     end
 
     # Returns the architecture type of the image
@@ -278,8 +278,15 @@ module Dcmgr::Models
     end
 
     def add_nic(vif_template)
-      # TODO: get default vendor ID based on the hypervisor.
-      m = MacLease.lease('00fff1')
+      # Choose vendor ID of mac address.
+      vendor_id = if vif_template[:vendor_id]
+                    vif_template[:vendor_id]
+                  elsif Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr.conf.mac_address_vendor_id
+                  else
+                    MacLease.default_vendor_id(self.instance_spec.hypervisor)
+                  end
+      m = MacLease.lease(vendor_id)
       nic = InstanceNic.new(:mac_addr=>m.mac_addr)
       nic.instance = self
       nic.device_index = vif_template[:index]
@@ -309,11 +316,11 @@ module Dcmgr::Models
     end
 
     def fqdn_hostname
-      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.network.domain_name)
+      self.nic.first.fqdn_hostname
     end
 
     def nat_fqdn_hostname
-      sprintf("%s.%s.%s", self.hostname, self.account.uuid, self.nic.first.nat_network.domain_name)
+      self.nic.first.nat_fqdn_hostname
     end
 
     # Retrieve all networks belong to this instance

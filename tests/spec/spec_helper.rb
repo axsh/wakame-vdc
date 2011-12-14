@@ -60,7 +60,7 @@ module Config
           # The instance specs to test these images with
           :specs => ["is-demospec"],
           # The name of the ssh key to use with these images
-          :ssh_key => ["ssh-demo"],
+          :ssh_key_id => ["ssh-demo"],
          },
         
         # Spec that tests if instances run properly with arguments 
@@ -68,7 +68,7 @@ module Config
           # arguments to test spec with
           :image_id => "wmi-lucid0",
           :instance_spec_id => "is-demospec",
-          :ssh_key => "ssh-demo",
+          :ssh_key_id => "ssh-demo",
           :hostname => "jefke",
           :security_groups => ["sg-demofgr"],
           :username => "ubuntu"

@@ -20,5 +20,22 @@ module Dcmgr::Models
       end
       create(:mac_addr=>mac_addr)
     end
+
+    # show default vendor ID for the hypervisor.
+    # The virtual interface can be applied any valid MAC address. But using
+    # the well known vendor IDs for hypervisor have some benefits. For
+    # example, 70-persistent-net.rules issue can be avoided with newer
+    # udev release.
+    def self.default_vendor_id(hypervisor)
+      case hypervisor.to_sym
+      when :kvm
+        '525400'
+      when :lxc
+        # LXC is not known with the specific vendor ID. This may be wrong.
+        '525400'
+      else
+        raise "Unknown hypervisor name: #{hypervisor}"
+      end
+    end
   end
 end

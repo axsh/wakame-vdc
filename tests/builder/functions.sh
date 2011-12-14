@@ -187,7 +187,9 @@ function cleanup {
   }
 
   ps -ef | egrep '[t]gtd' -q && {
-    initctl restart tgt
+    /sbin/iscsiadm -m node -u
+    /usr/sbin/tgt-admin --dump | grep ^\<target | awk '{print $2}' | sed 's,>$,,' | while read iqn; do echo ... ${iqn}; /usr/sbin/tgt-admin --delete ${iqn}; done
+    initctl restart tgt || /etc/init.d/tgtd restart
   }
 
   case ${hypervisor} in

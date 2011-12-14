@@ -4,9 +4,32 @@ module Dcmgr
   module VNet
     module Netfilter
     
+      # Abstract class for task managers that apply netfilter to extend.
+      # These have extra methods to create custom chains depending on vnic.
+      # Tasks can then be applied to these custom chains.
+      class NetfilterTaskManager < TaskManager        
+        
+        def apply_vnic_chains(vnic_map)
+          raise NotImplementedError
+        end
+        
+        def apply_vnic_tasks(vnic_map,tasks)
+          raise NotImplementedError
+        end
+        
+        # Should remove _tasks_ for this specific vnic if they are applied
+        def remove_vnic_tasks(vnic_map,tasks = nil)
+          raise NotImplementedError
+        end
+        
+        def remove_vnic_chains(vnic_map)
+          raise NotImplementedError
+        end
+      end
+    
       # Task manager that creates chains based on vif uuid and protocol
       # Supports ebtables rules and iptables rules
-      class VNicProtocolTaskManager < VnicTaskManager
+      class VNicProtocolTaskManager < NetfilterTaskManager
         include Dcmgr::Helpers::NicHelper
         # These store the protocols used by iptables and ebtables
         attr_reader :iptables_protocols
@@ -35,8 +58,7 @@ module Dcmgr
                 chains << IptablesChain.new(:filter, "#{bound}_#{vnic_map[:uuid]}_#{k}_drop")
             }
             
-            # Only create the NAT chains if the vnic is in fact natted
-            chains << IptablesChain.new(:nat, "#{bound}_#{[:uuid]}") if is_natted? vnic_map
+            chains << IptablesChain.new(:nat, "#{bound}_#{vnic_map[:uuid]}")
           }
           
           chains
@@ -90,8 +112,8 @@ module Dcmgr
         def iptables_nat_chain_jumps(vnic)
           jumps = []
           
-          jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-d #{vnic[:ipv4][:nat_address]} -j d_#{vnic[:uuid]}")
-          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{vnic[:ipv4][:address]} -j s_#{vnic[:uuid]}")
+          jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-in  #{vnic[:uuid]} -j s_#{vnic[:uuid]}")
+          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-m physdev --physdev-out #{vnic[:uuid]} -j d_#{vnic[:uuid]}")
           
           jumps
         end
@@ -162,7 +184,7 @@ module Dcmgr
           }
           
           commands << iptables_forward_chain_jumps(vnic_map).map(&create_jump_block)
-          commands << iptables_nat_chain_jumps(vnic_map).map(&create_jump_block) if is_natted? vnic_map
+          commands << iptables_nat_chain_jumps(vnic_map).map(&create_jump_block)
           commands << iptables_protocol_chain_jumps(vnic_map).map(&create_jump_block)
           
           commands.flatten.uniq
@@ -188,7 +210,7 @@ module Dcmgr
           delete_jump_block = Proc.new {|jump| "iptables -t #{jump.table} -D #{jump.chain} #{jump.rule}"}
           
           commands << iptables_forward_chain_jumps(vnic_map).map(&delete_jump_block)
-          commands << iptables_nat_chain_jumps(vnic_map).map(&delete_jump_block) if is_natted?(vnic_map)
+          commands << iptables_nat_chain_jumps(vnic_map).map(&delete_jump_block)
           
           commands << iptables_chains(vnic_map).map {|chain| 
             ["iptables -t #{chain.table} -F #{chain.name}","iptables -t #{chain.table} -X #{chain.name}"]
@@ -244,11 +266,13 @@ module Dcmgr
         # then jumps to more custom chains based on the protocol used.
         # In those the real netfiltering happens
         def apply_vnic_tasks(vnic_map, tasks)
-          apply_iptables_chains(vnic_map) if self.enable_iptables
-          apply_ebtables_chains(vnic_map) if self.enable_ebtables
-          
           # Apply the tasks to our chains
           apply_tasks(tailor_vnic_tasks(vnic_map,tasks))
+        end
+        
+        def apply_vnic_chains(vnic_map)
+          apply_iptables_chains(vnic_map) if self.enable_iptables
+          apply_ebtables_chains(vnic_map) if self.enable_ebtables
         end
         
         # Translates _rule_ into a command that can be directly passed on to the OS
@@ -289,7 +313,7 @@ module Dcmgr
           
           commands = tasks.map { |task|
             next unless task.is_a? Task
-            rules.map { |rule|
+            task.rules.map { |rule|
               get_rule_command(rule,:remove)
             }
           }
@@ -362,12 +386,12 @@ module Dcmgr
         # Removes _tasks_ for this specific vnic if they are applied
         # If no _tasks_ argument is provided, all tasks for this vnic will be removed
         def remove_vnic_tasks(vnic,tasks = nil)
-          if tasks.nil?
-            remove_iptables_chains(vnic) if self.enable_iptables
-            remove_ebtables_chains(vnic) if self.enable_ebtables
-          else
             remove_tasks(tailor_vnic_tasks(vnic,tasks))
-          end
+        end
+        
+        def remove_vnic_chains(vnic)
+          remove_iptables_chains(vnic) if self.enable_iptables
+          remove_ebtables_chains(vnic) if self.enable_ebtables
         end
         
         def apply_task(task)
