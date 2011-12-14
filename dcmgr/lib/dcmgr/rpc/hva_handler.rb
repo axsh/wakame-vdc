@@ -428,6 +428,7 @@ module Dcmgr
         tryagain do
           pci_devaddr = @hv.attach_volume_to_guest(HvaContext.new(self))
         end
+        raise "Can't attach #{@vol_id} on #{@inst_id}" if pci_devaddr.nil?
 
         rpc.request('sta-collector', 'update_volume', @vol_id, {
                       :state=>:attached,
