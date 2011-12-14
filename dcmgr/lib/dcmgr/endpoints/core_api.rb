@@ -290,7 +290,7 @@ module Dcmgr
                 raise OutOfDiskSpace
               end
               
-              vol = Models::Volume.entry_new(@account, vs.size, params.dup) do |v|
+              vol = Models::Volume.entry_new(@account, vs.size, params.to_hash) do |v|
                 if vs
                   v.snapshot_id = vs.canonical_uuid
                 end
