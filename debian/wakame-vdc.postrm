@@ -1,0 +1,19 @@
+#!/bin/sh
+# postrm script for wakame-vdc
+#
+# see: dh_installdeb(1)
+
+set -e
+
+dcmgr_dbname=wakame_dcmgr
+webui_dbname=wakame_dcmgr_gui
+
+case "$1" in
+  purge)
+    update-rc.d wakame-vdc remove >/dev/null
+    yes | mysqladmin -uroot drop ${dcmgr_dbname} >/dev/null 2>&1
+    yes | mysqladmin -uroot drop ${webui_dbname} >/dev/null 2>&1
+  ;;
+esac
+
+exit 0

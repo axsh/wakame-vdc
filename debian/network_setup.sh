@@ -35,7 +35,7 @@ formheight=5
 ipaddr="${ipaddr:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')}"
 network_speed=${speed:0:$((${#speed}-4))}
 network_gateway="${network_gateway:-$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $3}')}"
-network_mask=`ifconfig | grep ${ipaddr} | tr -s ' ' | cut -d ' ' -f5 | cut -d ':' -f2`
+network_mask=`ifconfig | grep ${ipaddr} | cut -f4 -d:`
 network_prefix=$(mask2cidr ${network_mask})
 nat_address=
 nat_prefix=
@@ -83,7 +83,7 @@ done
 cd ${prefix_path}/dcmgr/bin
 
 if [ -n "${ipaddr}" ]; then
-  network_uuid=`./vdc-manage network add -u nw-demonet --ipv4_gw ${network[1]} --prefix ${network[2]} --domain ${network[0]} --dns ${ipaddr} --dhcp ${ipaddr} --metadata ${ipaddr} --metadata_port ${metadata_port} -b ${network[3]}`
+  network_uuid=`./vdc-manage network add -u nw-demonet --ipv4-network ${network[1]} --ipv4_gw ${network[1]} --prefix ${network[2]} --domain ${network[0]} --dns ${ipaddr} --dhcp ${ipaddr} --metadata ${ipaddr} --metadata_port ${metadata_port} -b ${network[3]}`
   #Workaround for an nsa bug that breaks DHCP on first run
   #The bug occurs when /var/tmp/dnsmasq-dhcp.conf doesn't exist yet
   netmask=`${prefix_path}/cidr2mask.sh ${network_prefix}`
