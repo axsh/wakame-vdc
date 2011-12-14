@@ -35,7 +35,7 @@ module RetryHelper
         sleep 2
       end
       lcount += 1
-      raise("Retry Failure: Exceed #{wait_sec} sec: Retried #{count} times") if (Time.now - start_at) > wait_sec
+      raise("Retry Failure: Exceed #{wait_sec} sec: Retried #{lcount} times") if (Time.now - start_at) > wait_sec
     }
   end
 
@@ -191,7 +191,7 @@ module VolumeHelper
       when 'available'
         true
       when 'deleted'
-        raise "#{symbol.to_s} deleted"
+        raise "Volumes was deleted by the system due to failure."
       else
         false
       end
