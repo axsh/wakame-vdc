@@ -15,7 +15,7 @@ module Dcmgr
           
           @friend_ips = friend_ips
           
-          friend_ips.each { friend_ip
+          friend_ips.each { |friend_ip|
             self.rules << IptablesRule.new(:filter,:forward,nil,:incoming,"-s #{friend_ip} -j ACCEPT")
           }
         end
