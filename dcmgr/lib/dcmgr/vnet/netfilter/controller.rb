@@ -88,11 +88,6 @@ module Dcmgr
           inst_map[:vif].each { |vnic|
             # Get a list of all other vnics in this host
             other_vnics = get_other_vnics(vnic,@cache)
-            #other_vnics = @cache.get[:instances].map { |inst_map|
-              #inst_map[:vif].delete_if { |other_vnic|
-                #other_vnic == vnic
-              #}
-            #}.flatten
             
             # Determine which vnics need to be isolated from this one
             friends = @isolator.determine_friends(vnic, other_vnics)
