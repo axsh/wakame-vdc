@@ -109,14 +109,10 @@ module Dcmgr
         
         def remove_instance(inst_id)
           logger.info "removing instance '#{inst_id}'"
-          # Call the factory to create all tasks for each vnic. Then remove them
+          # Find the instance in the cache
           inst_map = @cache.get[:instances].find { |inst| inst[:uuid] == inst_id}
           
-          inst_map[:vif].each { |vnic|
-            self.task_manager.remove_vnic_chains(vnic)
-          }
-          
-          #Clean up the isolation rules in friends' chains
+          #Clean up the isolation tasks in friends' chains
           inst_map[:vif].each { |vnic|
             other_vnics = get_other_vnics(vnic,@cache)
             friends = @isolator.determine_friends(vnic, other_vnics)
@@ -124,6 +120,10 @@ module Dcmgr
             friends.each { |friend|
               self.task_manager.remove_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
             }
+          }
+          
+          inst_map[:vif].each { |vnic|
+            self.task_manager.remove_vnic_chains(vnic)
           }
           
           # Remove the terminated instance from the cache
