@@ -5,6 +5,8 @@ module Dcmgr
     module Netfilter
     
       class NetfilterCache < Cache
+        include Dcmgr::Logger
+        
         def initialize(node)
           # Initialize the values needed to do rpc requests
           @node = node
@@ -13,6 +15,7 @@ module Dcmgr
 
         # Makes a call to the database and updates the Cache
         def update
+          logger.info "updating cache from database"
           @cache = @rpc.request('hva-collector', 'get_netfilter_data', @node.node_id)
         end
         
@@ -28,7 +31,8 @@ module Dcmgr
         
         # Adds a newly started instance to the existing cache
         def add_instance(inst_map)
-          if @cache.is_a? Array
+          if @cache.is_a? Hash
+            logger.info "adding instance '#{inst_map[:uuid]} to cache'"
             @cache << inst_map
           else
           
@@ -37,6 +41,7 @@ module Dcmgr
         
         # Removes a terminated instance from the existing cache
         def remove_instance(inst_id)
+          logger.info "removing Instance '#{inst_id}' from cache"
           @cache[:instances].delete_if {|inst_map| inst_map[:uuid] == inst_id }
         end
       end

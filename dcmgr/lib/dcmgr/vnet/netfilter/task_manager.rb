@@ -228,7 +228,7 @@ module Dcmgr
         def get_ebtables_chains_apply_commands(vnic_map)
           commands = []
           
-          commands << ebtables_chains(vnic_map).map {|chain| ["ebtables -t #{chain.table} -N #{chain.name}"]}#,"ebtables -t #{chain.table} -P #{chain.name} DROP"]}
+          commands << ebtables_chains(vnic_map).map {|chain| ["ebtables -t #{chain.table} -N #{chain.name}","ebtables -t #{chain.table} -P #{chain.name} RETURN"]}#,"ebtables -t #{chain.table} -P #{chain.name} DROP"]}
           
           create_jump_block = Proc.new {|jump| "ebtables -t #{jump.table} -A #{jump.chain} #{jump.rule}"}
           
@@ -395,24 +395,36 @@ module Dcmgr
         end
         
         def apply_task(task)
-          #super(task)
-          task.get_rules.each { |rule|
-            if rule.is_a? EbtablesRule  && self.enable_ebtables
-              apply_ebtables_rule(rule)
-            elsif rule.is_a? IptablesRule && self.enable_iptables
-              apply_iptables_rule(rule)
+          task.rules.each { |rule|
+            cmds = []
+            if rule.is_a?(EbtablesRule)  && self.enable_ebtables
+              cmds << get_rule_command(rule,:apply)
+            elsif rule.is_a?(IptablesRule) && self.enable_iptables
+              cmds << get_rule_command(rule,:apply)
             end
+            cmds.flatten!
+            cmds.compact!
+            
+            puts cmds.join("\n") if self.verbose_commands
+          
+            system(cmds.join("\n"))
           }
         end
         
         def remove_task(task)
-          #super(task)
-          task.get_rules.each { |rule|
-            if rule.is_a? EbtablesRule && self.enable_ebtables
-              apply_ebtables_rule(rule)
-            elsif rule.is_a? IptablesRule && self.enable_iptables
-              apply_iptables_rule(rule)
+          task.rules.each { |rule|
+            cmds = []
+            if rule.is_a?(EbtablesRule) && self.enable_ebtables
+              cmds << get_rule_command(rule,:remove)
+            elsif rule.is_a?(IptablesRule) && self.enable_iptables
+              cmds << get_rule_command(rule,:remove)
             end
+            cmds.flatten!
+            cmds.compact!
+            
+            puts cmds.join("\n") if self.verbose_commands
+          
+            system(cmds.join("\n"))
           }
         end
       end

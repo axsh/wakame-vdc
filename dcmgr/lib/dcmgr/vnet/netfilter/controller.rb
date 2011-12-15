@@ -5,12 +5,14 @@ module Dcmgr
     module Netfilter
     
       class NetfilterController < Controller
+        include Dcmgr::Logger
         attr_accessor :task_manager
         attr_reader :node
         
         # This controller should use a cache
         
         def initialize(node)
+          logger.info "initializing controller"
           super()
           @node = node
           
@@ -34,6 +36,7 @@ module Dcmgr
           
           # Apply the current instances if there are any
           @cache.get[:instances].each { |inst_map|
+            logger.info "initializing instance '#{inst_map[:uuid]}'"
             self.init_instance(inst_map)
           }
         end
@@ -53,6 +56,8 @@ module Dcmgr
           else
             raise ArgumentError, "instance must be either a uuid or an instance's hash map" unless instance.is_a? Hash
           end
+          
+          logger.info "applying instance '#{inst_map[:uuid]}'"
           
           # Create all the rules for this instance
           init_instance(inst_map)
@@ -88,11 +93,6 @@ module Dcmgr
           inst_map[:vif].each { |vnic|
             # Get a list of all other vnics in this host
             other_vnics = get_other_vnics(vnic,@cache)
-            #other_vnics = @cache.get[:instances].map { |inst_map|
-              #inst_map[:vif].delete_if { |other_vnic|
-                #other_vnic == vnic
-              #}
-            #}.flatten
             
             # Determine which vnics need to be isolated from this one
             friends = @isolator.determine_friends(vnic, other_vnics)
@@ -108,14 +108,11 @@ module Dcmgr
         end
         
         def remove_instance(inst_id)
-          # Call the factory to create all tasks for each vnic. Then remove them
+          logger.info "removing instance '#{inst_id}'"
+          # Find the instance in the cache
           inst_map = @cache.get[:instances].find { |inst| inst[:uuid] == inst_id}
           
-          inst_map[:vif].each { |vnic|
-            self.task_manager.remove_vnic_chains(vnic)
-          }
-          
-          #Clean up the isolation rules in friends' chains
+          #Clean up the isolation tasks in friends' chains
           inst_map[:vif].each { |vnic|
             other_vnics = get_other_vnics(vnic,@cache)
             friends = @isolator.determine_friends(vnic, other_vnics)
@@ -125,11 +122,16 @@ module Dcmgr
             }
           }
           
+          inst_map[:vif].each { |vnic|
+            self.task_manager.remove_vnic_chains(vnic)
+          }
+          
           # Remove the terminated instance from the cache
           @cache.remove_instance(inst_id)
         end
         
         def update_security_group(group)
+          logger.info "updating security group '#{group}'"
           # Get the old security group info from the cache
           old_cache = @cache.get
           
