@@ -83,15 +83,15 @@ module Dcmgr
         tasks << DropIpSpoofing.new(vnic[:ipv4][:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
         tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
         tasks << AcceptARPToHost.new(host_addr,vnic[:ipv4][:address],enable_logging,"A arp to_host #{vnic[:uuid]}: ")
-        tasks << AcceptARPFromGateway.new(vnic[:ipv4][:network][:ipv4_gw],enable_logging,"A arp from_gw #{vnic[:uuid]}: ")
+        tasks << AcceptARPFromGateway.new(vnic[:ipv4][:network][:ipv4_gw],enable_logging,"A arp from_gw #{vnic[:uuid]}: ") unless vnic[:ipv4][:network][:ipv4_gw].nil?
         
         # General ip layer tasks
         tasks << AcceptIcmpRelatedEstablished.new
         tasks << AcceptTcpRelatedEstablished.new
         tasks << AcceptUdpEstablished.new
         tasks << AcceptAllDNS.new
-        tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server])
-        tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port])
+        tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server]) unless vnic[:ipv4][:network][:dhcp_server].nil?
+        tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port]) unless vnic[:ipv4][:network][:metadata_server].nil? || vnic[:ipv4][:network][:metadata_server_port].nil?
         # Accept OUTGOING traffic from instances to anywhere in the network
         #tasks << AcceptIpToAnywhere.new
         
@@ -99,7 +99,7 @@ module Dcmgr
         tasks += self.create_tasks_for_isolation(vnic,friends,node)
         
         # Accept ip traffic from the gateway that isn't blocked by other tasks
-        tasks << AcceptIpFromGateway.new(vnic[:ipv4][:network][:ipv4_gw])
+        tasks << AcceptIpFromGateway.new(vnic[:ipv4][:network][:ipv4_gw]) unless vnic[:ipv4][:network][:ipv4_gw].nil?
         
         # Security group tasks
         security_groups.each { |secgroup|
