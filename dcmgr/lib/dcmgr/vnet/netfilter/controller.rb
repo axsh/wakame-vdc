@@ -5,12 +5,14 @@ module Dcmgr
     module Netfilter
     
       class NetfilterController < Controller
+        include Dcmgr::Logger
         attr_accessor :task_manager
         attr_reader :node
         
         # This controller should use a cache
         
         def initialize(node)
+          logger.info "initializing controller"
           super()
           @node = node
           
@@ -34,6 +36,7 @@ module Dcmgr
           
           # Apply the current instances if there are any
           @cache.get[:instances].each { |inst_map|
+            logger.info "initializing instance '#{inst_map[:uuid]}'"
             self.init_instance(inst_map)
           }
         end
@@ -53,6 +56,8 @@ module Dcmgr
           else
             raise ArgumentError, "instance must be either a uuid or an instance's hash map" unless instance.is_a? Hash
           end
+          
+          logger.info "applying instance '#{inst_map[:uuid]}'"
           
           # Create all the rules for this instance
           init_instance(inst_map)
@@ -103,6 +108,7 @@ module Dcmgr
         end
         
         def remove_instance(inst_id)
+          logger.info "removing instance '#{inst_id}'"
           # Call the factory to create all tasks for each vnic. Then remove them
           inst_map = @cache.get[:instances].find { |inst| inst[:uuid] == inst_id}
           
@@ -125,6 +131,7 @@ module Dcmgr
         end
         
         def update_security_group(group)
+          logger.info "updating security group '#{group}'"
           # Get the old security group info from the cache
           old_cache = @cache.get
           
