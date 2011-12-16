@@ -55,6 +55,31 @@ module Dcmgr
         #TODO: Add logging to ip drops
         [DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: ")]
       end
+      
+      # Creates tasks related to network address translation
+      def self.create_nat_tasks_for_vnic(vnic,friends,node)
+        friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
+        ipset_enabled = node.manifest.config.use_ipset
+        tasks = []
+        
+        tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port]) unless vnic[:ipv4][:network][:metadata_server].nil? || vnic[:ipv4][:network][:metadata_server_port].nil?
+        
+        # Nat tasks
+        if is_natted? vnic          
+          # Exclude instances in the same security group form using nat
+          if ipset_enabled
+            # Not implemented yet
+            #tasks << ExcludeFromNatIpSet.new(friend_ips,vnic[:ipv4][:address])
+          else
+            tasks << ExcludeFromNat.new(friend_ips,vnic[:ipv4][:address])
+          end
+          
+          tasks << StaticNatLog.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if node.manifest.config.packet_drop_log
+          tasks << StaticNat.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], clean_mac(vnic[:mac_addr]))
+        end
+        
+        tasks
+      end
 
       #Returns the netfilter tasks required for this vnic
       # The _friends_ parameter is an array of vnic_maps that should not be isolated from _vnic_
@@ -65,18 +90,7 @@ module Dcmgr
         enable_logging = node.manifest.config.packet_drop_log
         ipset_enabled = node.manifest.config.use_ipset
         
-        # Nat tasks
-        if is_natted? vnic
-          tasks << StaticNatLog.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if node.manifest.config.packet_drop_log
-          tasks << StaticNat.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], clean_mac(vnic[:mac_addr]))
-          
-          # Exclude instances in the same security group form using nat
-          if ipset_enabled
-            tasks << ExcludeFromNatIpSet(friend_ips,vnic[:ipv4][:address])
-          else
-            tasks << ExcludeFromNat(friend_ips,vnic[:ipv4][:address])
-          end
-        end
+        tasks += self.create_nat_tasks_for_vnic(vnic,friends,node)
         
         # General data link layer tasks
         tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
@@ -91,7 +105,6 @@ module Dcmgr
         tasks << AcceptUdpEstablished.new
         tasks << AcceptAllDNS.new
         tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server]) unless vnic[:ipv4][:network][:dhcp_server].nil?
-        tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port]) unless vnic[:ipv4][:network][:metadata_server].nil? || vnic[:ipv4][:network][:metadata_server_port].nil?
         # Accept OUTGOING traffic from instances to anywhere in the network
         #tasks << AcceptIpToAnywhere.new
         

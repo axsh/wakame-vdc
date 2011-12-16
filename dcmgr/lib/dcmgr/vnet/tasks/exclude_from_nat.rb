@@ -24,8 +24,8 @@ module Dcmgr
               next
             end
             
-            self.rules << IptablesRule.new(:nat,:prerouting,nil,nil,"-d #{self_ip.address} -s #{ip.address} -j ACCEPT")
-            self.rules << IptablesRule.new(:nat,:postrouting,nil,nil,"-d #{ip.address} -s #{self_ip.address} -j ACCEPT")
+            self.rules << IptablesRule.new(:nat,:prerouting,nil,:incoming,"-d #{self_ip} -s #{ip} -j ACCEPT")
+            self.rules << IptablesRule.new(:nat,:postrouting,nil,:outgoing,"-d #{ip} -s #{self_ip} -j ACCEPT")
           }
         end
       end
@@ -36,6 +36,9 @@ module Dcmgr
         include Dcmgr::VNet::Netfilter
         attr_accessor :excluded_ips
         
+        def initialize(ips,self_ip)
+          raise NotImplementedError
+        end
         #TODO: Write this class!
       end
     

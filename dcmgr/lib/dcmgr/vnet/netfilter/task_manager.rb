@@ -58,7 +58,9 @@ module Dcmgr
                 chains << IptablesChain.new(:filter, "#{bound}_#{vnic_map[:uuid]}_#{k}_drop")
             }
             
-            chains << IptablesChain.new(:nat, "#{bound}_#{vnic_map[:uuid]}")
+            #[ 'pre', 'post'].each { |nat_chain|
+              #chains << IptablesChain.new(:nat, "#{bound}_#{vnic_map[:uuid]}_#{nat_chain}")
+            #}
           }
           
           chains
@@ -112,8 +114,10 @@ module Dcmgr
         def iptables_nat_chain_jumps(vnic)
           jumps = []
           
-          jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-in  #{vnic[:uuid]} -j s_#{vnic[:uuid]}")
-          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-m physdev --physdev-out #{vnic[:uuid]} -j d_#{vnic[:uuid]}")
+          #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-in  #{vnic[:uuid]} -j s_#{vnic[:uuid]}_pre")
+          #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-out  #{vnic[:uuid]} -j d_#{vnic[:uuid]}_pre")
+          #jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-m physdev --physdev-in #{vnic[:uuid]} -j s_#{vnic[:uuid]}_post")
+          #jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-m physdev --physdev-out #{vnic[:uuid]} -j d_#{vnic[:uuid]}_post")
           
           jumps
         end
@@ -327,6 +331,7 @@ module Dcmgr
         # Changes the chains of each rule in _tasks_ to match this TaskManager's model 
         def tailor_vnic_tasks(vnic,tasks)
           bound = {:incoming => "d", :outgoing => "s"}
+          nat_chains = {"PREROUTING" => "pre", "POSTROUTING" => "post"}
 
           # Use the marshal trick to make a deep copy of tasks
           new_tasks = Marshal.load( Marshal.dump(tasks) )
@@ -353,9 +358,11 @@ module Dcmgr
                   when :nat
                     case rule.chain
                       when :prerouting.to_s.upcase then
-                        rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}"
+                        #p rule.chain
+                        #rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{nat_chains[rule.chain]}"
+                        #p rule.chain
                       when :postrouting.to_s.upcase then
-                        rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}"
+                        #rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{nat_chains[rule.chain]}"
                     end
                   when :filter
                     case rule.chain
