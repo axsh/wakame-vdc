@@ -104,6 +104,10 @@ bundle package
 cd $wakame_dir/frontend/dcmgr_gui
 bundle package
 
+[ -d $wakame_dir/debian/gems/ ] || mkdir -p $wakame_dir/debian/gems/
+[ -d $wakame_dir/debian/gems/dcmgr/ ] || mkdir -p $wakame_dir/debian/gems/dcmgr/
+[ -d $wakame_dir/debian/gems/frontend/ ] || mkdir -p $wakame_dir/debian/gems/frontend/
+
 cp $wakame_dir/dcmgr/vendor/cache/*.gem $wakame_dir/debian/gems/dcmgr/
 cp $wakame_dir/frontend/dcmgr_gui/vendor/cache/*.gem $wakame_dir/debian/gems/frontend/
 
