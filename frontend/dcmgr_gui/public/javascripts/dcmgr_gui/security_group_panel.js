@@ -115,7 +115,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     });
 
     bt_edit_security_group.target.bind('click',function(event){
-      var uuid = $(this).attr('id').replace(/edit_(ng-[a-z0-9]+)/,'$1');
+      var uuid = $(this).attr('id').replace(/edit_(sg-[a-z0-9]+)/,'$1');
       if( uuid ){
         bt_edit_security_group.open({"ids":[uuid]});
       }
