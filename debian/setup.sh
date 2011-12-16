@@ -157,4 +157,5 @@ sleep 1
 echo "Network setup"
 ${prefix_path}/network_setup.sh
 
+echo "Setup completed"
 exit 0    

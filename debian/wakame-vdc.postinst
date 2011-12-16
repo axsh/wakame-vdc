@@ -3,17 +3,24 @@
 #
 # see: dh_installdeb(1)
 
-set -e
-
-prefix_path=/usr/share/axsh/wakame-vdc
-
+#prefix_path=/usr/share/axsh/wakame-vdc
+#
+#if [ -x "/etc/init.d/wakame-vdc" ]; then
+#  update-rc.d wakame-vdc defaults >/dev/null
+#  if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
+#    invoke-rc.d wakame-vdc start || exit $?
+#  else
+#    /etc/init.d/wakame-vdc start || exit $?
+#  fi
+#fi
+#
 if [ -x "/etc/init.d/wakame-vdc" ]; then
-  update-rc.d wakame-vdc defaults >/dev/null
-  if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
-    invoke-rc.d wakame-vdc start || exit $?
-  else
-    /etc/init.d/wakame-vdc start || exit $?
-  fi
+  rm /etc/init.d/wakame-vdc
+  ln -s /lib/init/upstart-job /etc/init.d/wakame-vdc  
 fi
+
+[ -f /etc/init.d/rabbitmq-server ] && {
+  update-rc.d -f rabbitmq-server remove
+}
 
 exit 0
