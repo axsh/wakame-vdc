@@ -22,7 +22,18 @@ function run_vmbuilder() {
   truncate -s $(( $rootsize + $swapsize - 1))m $imgpath
   vmbuilder kvm ubuntu --suite=lucid --mirror=http://archive.ubuntu.com/ubuntu \
       --raw=$imgpath --rootsize $rootsize --swapsize $swapsize --variant minbase \
-      --addpkg ssh --addpkg curl --dns 8.8.8.8 --arch=$arch
+      --addpkg ssh --addpkg curl \
+      --addpkg sudo \
+      --addpkg iproute \
+      --addpkg dhcp-client \
+      --addpkg iputils-ping \
+      --addpkg telnet \
+      --addpkg libterm-readline-perl-perl \
+      --addpkg ifmetric \
+      --addpkg vim \
+      --addpkg less \
+      --addpkg lv \
+      --dns 8.8.8.8 --arch=$arch
 }
 
 # loop mounts the image file and calls a shell function during mounting.
@@ -59,6 +70,7 @@ function install_wakame_init() {
   typeset tmp_root="$1"
   typeset lodev="$2"
   typeset wakame_init_path="$3"
+  typeset metadata_type="$4"
 
   #Install the startup script
   echo "Installing the startup script: `basename ${wakame_init_path}`"
@@ -69,8 +81,21 @@ function install_wakame_init() {
   chmod 755 $tmp_root/etc/$wakame_init_name
   chown 0:0 $tmp_root/etc/$wakame_init_name
 
+  case ${metadata_type} in
+  ms|server)
+    metadata_type=ms
+    ;;
+  md|drive)
+    metadata_type=md
+    ;;
+  *)
+    # default value is "drive|md" in wakame-init
+    metadata_type=
+    ;;
+  esac
+
   cat <<EOF > $tmp_root/etc/rc.local
-/etc/wakame-init
+/etc/wakame-init ${metadata_type}
 exit 0
 EOF
 }
@@ -106,18 +131,30 @@ function kvm_base_setup() {
   # * udev creates persistent network rule for KVM virtual interface: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638159
   # * udev: Additional VMware MAC ranges for 75-persistent-net-generator.rules: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=637571
   sed -e '/^ENV{MATCHADDR}=="00:00:00:00:00:00", ENV{MATCHADDR}=""/a \
-# and KVM, Hyper-V and VMWare virtual interfaces
-ENV{MATCHADDR}=="?[2367abef]:*",       ENV{MATCHADDR}=""
-ENV{MATCHADDR}=="00:00:00:00:00:00",   ENV{MATCHADDR}=""
-ENV{MATCHADDR}=="00:05::69:*|00:0c:29:*|00:50:56:*|00:1C:14:*", ENV{MATCHADDR}=""
-ENV{MATCHADDR}=="00:15:5d:*",          ENV{MATCHADDR}=""
-ENV{MATCHADDR}=="52:54:00:*|54:52:00:*", ENV{MATCHADDR}=""
+# and KVM, Hyper-V and VMWare virtual interfaces\
+ENV{MATCHADDR}=="?[2367abef]:*",       ENV{MATCHADDR}=""\
+ENV{MATCHADDR}=="00:00:00:00:00:00",   ENV{MATCHADDR}=""\
+ENV{MATCHADDR}=="00:05::69:*|00:0c:29:*|00:50:56:*|00:1C:14:*", ENV{MATCHADDR}=""\
+ENV{MATCHADDR}=="00:15:5d:*",          ENV{MATCHADDR}=""\
+ENV{MATCHADDR}=="52:54:00:*|54:52:00:*", ENV{MATCHADDR}=""\
 ' < $tmp_root/lib/udev/rules.d/75-persistent-net-generator.rules > 75-persistent-net-generator.rules
   mv 75-persistent-net-generator.rules $tmp_root/lib/udev/rules.d/75-persistent-net-generator.rules
   
   #Load acpiphp.ko at boot
   echo "Adding acpiphp to kernel modules to load at boot"
   echo "acpiphp" >> $tmp_root/etc/modules
+
+  echo "Disabling sshd PasswordAuthentication"
+  sed -e '/^PasswordAuthentication.*yes/ c\
+PasswordAuthentication no
+' < $tmp_root/etc/ssh/sshd_config > ./sshd_config.tmp
+
+  egrep '^PasswordAuthentication' ./sshd_config.tmp -q || {
+    sed -e '$ a\
+PasswordAuthentication no' ./sshd_config.tmp > ./sshd_config
+  }
+  mv ./sshd_config $tmp_root/etc/ssh/sshd_config
+  rm -f ./sshd_config.tmp
 }
 
 # Callback function for loop_mount_image().
@@ -143,19 +180,22 @@ cp --sparse=auto "ubuntu-lucid-64.img" "ubuntu-lucid-kvm-64.img"
 loop_mount_image "ubuntu-lucid-kvm-32.img" "kvm_base_setup"
 loop_mount_image "ubuntu-lucid-kvm-64.img" "kvm_base_setup"
 
+
 # metadata server image (KVM)
 cp --sparse=auto "ubuntu-lucid-kvm-32.img" "ubuntu-lucid-kvm-ms-32.img"
 cp --sparse=auto "ubuntu-lucid-kvm-64.img" "ubuntu-lucid-kvm-ms-64.img"
 
-loop_mount_image "ubuntu-lucid-kvm-ms-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init"
-loop_mount_image "ubuntu-lucid-kvm-ms-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init"
+loop_mount_image "ubuntu-lucid-kvm-ms-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
+loop_mount_image "ubuntu-lucid-kvm-ms-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
 
 # metadata drive image (KVM)
 cp --sparse=auto "ubuntu-lucid-kvm-32.img" "ubuntu-lucid-kvm-md-32.img"
 cp --sparse=auto "ubuntu-lucid-kvm-64.img" "ubuntu-lucid-kvm-md-64.img"
 
-loop_mount_image "ubuntu-lucid-kvm-md-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init"
-loop_mount_image "ubuntu-lucid-kvm-md-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init"
+loop_mount_image "ubuntu-lucid-kvm-md-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
+loop_mount_image "ubuntu-lucid-kvm-md-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
+
+exit 0
 
 # no metadata image (LXC)
 cp --sparse=auto "ubuntu-lucid-32.img" "ubuntu-lucid-lxc-32.img"
@@ -168,12 +208,12 @@ loop_mount_image "ubuntu-lucid-lxc-64.img" "lxc_base_setup"
 cp --sparse=auto "ubuntu-lucid-lxc-32.img" "ubuntu-lucid-lxc-ms-32.img"
 cp --sparse=auto "ubuntu-lucid-lxc-64.img" "ubuntu-lucid-lxc-ms-64.img"
 
-loop_mount_image "ubuntu-lucid-lxc-ms-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init"
-loop_mount_image "ubuntu-lucid-lxc-ms-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init"
+loop_mount_image "ubuntu-lucid-lxc-ms-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
+loop_mount_image "ubuntu-lucid-lxc-ms-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
 
 # metadata drive image (LXC)
 cp --sparse=auto "ubuntu-lucid-lxc-32.img" "ubuntu-lucid-lxc-md-32.img"
 cp --sparse=auto "ubuntu-lucid-lxc-64.img" "ubuntu-lucid-lxc-md-64.img"
 
-loop_mount_image "ubuntu-lucid-lxc-md-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init"
-loop_mount_image "ubuntu-lucid-lxc-md-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init"
+loop_mount_image "ubuntu-lucid-lxc-md-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
+loop_mount_image "ubuntu-lucid-lxc-md-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
