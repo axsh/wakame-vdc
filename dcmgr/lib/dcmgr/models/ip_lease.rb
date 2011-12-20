@@ -42,8 +42,8 @@ module Dcmgr::Models
     #    if the IpLease has a pair NAT address it will return
     #    outside IpLease.
     def nat_outside_lease
-      if self.network.nat_network_id
-        self.class.find(:instance_nic_id=>self.instance_nic.id, :network_id=>self.network.nat_network_id)
+      if self.instance_nic.nat_network_id
+        self.class.find(:instance_nic_id=>self.instance_nic.id, :network_id=>self.instance_nic.nat_network_id)
       else
         nil
       end
@@ -53,7 +53,7 @@ module Dcmgr::Models
     # @return [IpLease,nil] IpLease (outside) will return inside
     #     IpLease.
     def nat_inside_lease
-      if self.network.nat_network_id.nil?
+      if self.instance_nic.nat_network_id.nil?
         self.class.find(:instance_nic_id=>self.instance_nic.id, :network_id=>nil)
       else
         nil
