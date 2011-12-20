@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -17,31 +17,39 @@ vmimage_s3_prefix=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
 
 # common
 vmimage_dist_name=ubuntu
-vmimage_dist_ver=10.04
-vmimage_arch=i386
-vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
+vmimage_dist_ver=lucid
+vmimage_arch=32
+#vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
+
+#vmimages=$(echo ubuntu-lucid-kvm{,-{md,ms}}-{32,64}.raw.gz)
+
 # local / without-metadata
 vmimage_uuid=lucid0
-vmimage_file=${vmimage_dist_name}-${vmimage_dist_ver}_without-metadata_${hypervisor}_${vmimage_arch}.raw
+vmimage_file=${vmimage_dist_name}-${vmimage_dist_ver}-${hypervisor}-${vmimage_arch}.raw
 vmimage_path=${local_store_path}/${vmimage_file}
 vmimage_s3=${vmimage_s3_prefix}/${vmimage_file}.gz
+
 # volume / without-metadata
 vmimage_snap_uuid=lucid1
 vmimage_snap_file=snap-${vmimage_snap_uuid}.snap
 vmimage_snap_path=${tmp_path}/snap/${account_id}/${vmimage_snap_file}
+
 # local / without-metadata / gzip
 vmimage_gzip_uuid=lucid2
 vmimage_gzip_file=${vmimage_file}.gz
 vmimage_gzip_path=${vmimage_path}.gz
+
 # local / with-metadata
 vmimage_meta_uuid=lucid5
-vmimage_meta_file=${vmimage_dist_name}-${vmimage_dist_ver}_with-metadata_${hypervisor}_${vmimage_arch}.raw
+vmimage_meta_file=${vmimage_dist_name}-${vmimage_dist_ver}-${hypervisor}-ms-${vmimage_arch}.raw
 vmimage_meta_path=${local_store_path}/${vmimage_meta_file}
 vmimage_meta_s3=${vmimage_s3_prefix}/${vmimage_meta_file}.gz
+
 # volume / with-metadata
 vmimage_meta_snap_uuid=lucid6
 vmimage_meta_snap_file=snap-${vmimage_meta_snap_uuid}.snap
 vmimage_meta_snap_path=${tmp_path}/snap/${account_id}/${vmimage_meta_snap_file}
+
 # local / with-metadata / gzip
 vmimage_meta_gzip_uuid=lucid7
 vmimage_meta_gzip_file=${vmimage_meta_file}.gz
@@ -52,10 +60,10 @@ hva_num=${hva_num:-1}
 sta_num=${sta_num:-1}
 
 case ${vmimage_arch} in
-i386)
+i386|32)
   images_arch=x86
   ;;
-amd64)
+amd64|64)
   images_arch=x86_64
   ;;
 esac
@@ -92,7 +100,14 @@ deploy_vmfile ${vmimage_meta_file} ${vmimage_meta_s3}
 
 cd ${work_dir}/dcmgr/
 for i in $(seq 1 ${hva_num}); do
-  shlog ./bin/vdc-manage host add hva.demo${i} --force --uuid hn-demo${i} --account-id ${account_id} --cpu-cores 100 --memory-size 400000 --hypervisor ${hypervisor} --arch ${hva_arch}
+  shlog ./bin/vdc-manage host add hva.demo${i} \
+    --force \
+    --uuid hn-demo${i} \
+    --account-id ${account_id} \
+    --cpu-cores 100 \
+    --memory-size 400000 \
+    --hypervisor ${hypervisor} \
+    --arch ${hva_arch}
 done
 
 case ${sta_server} in
@@ -101,14 +116,30 @@ ${ipaddr})
   [ -d ${tmp_path}/snap/${account_id}  ] || mkdir -p ${tmp_path}/snap/${account_id}
 
   for i in $(seq 1 ${sta_num}); do
-    shlog ./bin/vdc-manage storage add sta.demo${i} --uuid sn-demo${i} --force --account-id ${account_id} --base-path ${tmp_path}/xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type raw --snapshot-base-path ${tmp_path}/snap
+    shlog ./bin/vdc-manage storage add sta.demo${i} \
+     --force \
+     --uuid sn-demo${i} \
+     --account-id ${account_id} \
+     --base-path ${tmp_path}/xpool \
+     --disk-space $((1024 * 1024)) \
+     --ipaddr ${sta_server} \
+     --storage-type raw \
+     --snapshot-base-path ${tmp_path}/snap
   done
 
   ln -fs ${vmimage_path}      ${vmimage_snap_path}
   ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
  ;;
 *)
-  shlog ./bin/vdc-manage storage add sta.demo1 --uuid sn-demo1 --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${sta_server} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
+  shlog ./bin/vdc-manage storage add sta.demo1 \
+   --force \
+   --uuid sn-demo1 \
+   --account-id ${account_id} \
+   --base-path xpool \
+   --disk-space $((1024 * 1024)) \
+   --ipaddr ${sta_server} \
+   --storage-type zfs \
+   --snapshot-base-path /export/home/wakame/vdc/sta/snap
  ;;
 esac
 
@@ -116,11 +147,26 @@ esac
 #shlog ./bin/vdc-manage vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
 #shlog ./bin/vdc-manage network add           --uuid   nw-demo1    --ipv4-gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata-port ${metadata_port} --vlan-id 1 --description demo
 # non vlan
-shlog ./bin/vdc-manage network add --uuid nw-demo1 --ipv4-network ${ipv4_gw} --ipv4_gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata-port ${metadata_port} --description demo --link-interface br0
-shlog ./bin/vdc-manage network add --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --link-interface br0
-shlog ./bin/vdc-manage network add --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metirc 10 --link-interface br0
-shlog ./bin/vdc-manage network add --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metirc 10
-shlog ./bin/vdc-manage network add --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metirc 10
+shlog ./bin/vdc-manage network add \
+ --uuid nw-demo1 \
+ --ipv4-network ${ipv4_gw} \
+ --ipv4_gw ${ipv4_gw} \
+ --prefix ${prefix_len} \
+ --domain vdc.local \
+ --dns ${dns_server} \
+ --dhcp ${dhcp_server} \
+ --metadata ${metadata_server} \
+ --metadata-port ${metadata_port} \
+ --description demo \
+ --link-interface br0
+shlog ./bin/vdc-manage network add \
+ --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --link-interface br0
+shlog ./bin/vdc-manage network add \
+ --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --link-interface br0
+shlog ./bin/vdc-manage network add \
+ --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10
+shlog ./bin/vdc-manage network add \
+ --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10
 # physical network
 shlog ./bin/vdc-manage network phy add eth0 --interface eth0
 # bridge only closed network
@@ -172,12 +218,48 @@ vmimage_meta_md5=$(md5sum ${vmimage_meta_path} | cut -d ' ' -f1)
 vmimage_gzip_md5=$(md5sum ${vmimage_gzip_path} | cut -d ' ' -f1)
 vmimage_meta_gzip_md5=$(md5sum ${vmimage_meta_gzip_path} | cut -d ' ' -f1)
 
-shlog ./bin/vdc-manage image add local  ${vmimage_path}                --md5sum ${vmimage_md5}      --account-id ${account_id} --uuid wmi-${vmimage_uuid}           --arch ${images_arch} --description \"${vmimage_file} local\" --state init
-shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid}      --md5sum ${vmimage_md5}      --account-id ${account_id} --uuid wmi-${vmimage_snap_uuid}      --arch ${images_arch} --description \"${vmimage_file} volume\" --state init
-shlog ./bin/vdc-manage image add local ${vmimage_gzip_path}            --md5sum ${vmimage_gzip_md5} --account-id ${account_id} --uuid wmi-${vmimage_gzip_uuid}      --arch ${images_arch} --description \"${vmimage_gzip_file} local\" --state init
-shlog ./bin/vdc-manage image add local  ${vmimage_meta_path}           --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_uuid}      --arch ${images_arch} --description \"${vmimage_meta_file} local\" --state init
-shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid} --md5sum ${vmimage_meta_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_snap_uuid} --arch ${images_arch} --description \"${vmimage_meta_file} volume\" --state init
-shlog ./bin/vdc-manage image add local ${vmimage_meta_gzip_path}  --md5sum ${vmimage_meta_gzip_md5} --account-id ${account_id} --uuid wmi-${vmimage_meta_gzip_uuid} --arch ${images_arch} --description \"${vmimage_meta_gzip_file} local\" --state init
+shlog ./bin/vdc-manage image add local  ${vmimage_path} \
+ --md5sum ${vmimage_md5} \
+ --account-id ${account_id} \
+ --uuid wmi-${vmimage_uuid} \
+ --arch ${images_arch} \
+ --description \"${vmimage_file} local\" \
+ --state init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_snap_uuid} \
+ --md5sum ${vmimage_md5} \
+ --account-id ${account_id} \
+ --uuid wmi-${vmimage_snap_uuid} \
+ --arch ${images_arch} \
+ --description \"${vmimage_file} volume\" \
+ --state init
+shlog ./bin/vdc-manage image add local ${vmimage_gzip_path} \
+ --md5sum ${vmimage_gzip_md5} \
+ --account-id ${account_id} \
+ --uuid wmi-${vmimage_gzip_uuid} \
+ --arch ${images_arch} \
+ --description \"${vmimage_gzip_file} local\" \
+ --state init
+shlog ./bin/vdc-manage image add local  ${vmimage_meta_path} \
+ --md5sum ${vmimage_meta_md5} \
+ --account-id ${account_id} \
+ --uuid wmi-${vmimage_meta_uuid} \
+ --arch ${images_arch} \
+ --description \"${vmimage_meta_file} local\" \
+ --state init
+shlog ./bin/vdc-manage image add volume snap-${vmimage_meta_snap_uuid} \
+ --md5sum ${vmimage_meta_md5} \
+ --account-id ${account_id} \
+ --uuid wmi-${vmimage_meta_snap_uuid} \
+ --arch ${images_arch} \
+ --description \"${vmimage_meta_file} volume\" \
+ --state init
+shlog ./bin/vdc-manage image add local ${vmimage_meta_gzip_path}  \
+ --md5sum ${vmimage_meta_gzip_md5} \
+ --account-id ${account_id} \
+ --uuid wmi-${vmimage_meta_gzip_uuid} \
+ --arch ${images_arch} \
+ --description \"${vmimage_meta_gzip_file} local\" \
+ --state init
 
 image_features_opts=
 kvm -device ? 2>&1 | egrep 'name "lsi' -q || {
@@ -191,7 +273,7 @@ shlog ./bin/vdc-manage image features wmi-${vmimage_gzip_uuid}      ${image_feat
 shlog ./bin/vdc-manage image features wmi-${vmimage_meta_gzip_uuid} ${image_features_opts}
 
 shlog ./bin/vdc-manage spec  add --uuid is-demospec --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --weight 1
-shlog ./bin/vdc-manage spec  add --uuid is-demo2 --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --weight 1
+shlog ./bin/vdc-manage spec  add --uuid is-demo2    --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --weight 1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
