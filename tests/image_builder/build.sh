@@ -38,7 +38,7 @@ function run_vmbuilder() {
 
 # loop mounts the image file and calls a shell function during mounting.
 #
-# % loop_mount_image "new.img" "shell_func_name" ["opt1" "opt2"...]
+# % loop_mount_image "new.raw" "shell_func_name" ["opt1" "opt2"...]
 function loop_mount_image() {
   typeset image_path="$1"
   typeset eval_cb="$2"
@@ -170,50 +170,50 @@ function lxc_base_setup() {
 }
 
 # generate seed image
-run_vmbuilder "ubuntu-lucid-32.img" "i386"
-run_vmbuilder "ubuntu-lucid-64.img" "amd64"
+run_vmbuilder "ubuntu-lucid-32.raw" "i386"
+run_vmbuilder "ubuntu-lucid-64.raw" "amd64"
 
 # no metadata image (KVM)
-cp --sparse=auto "ubuntu-lucid-32.img" "ubuntu-lucid-kvm-32.img"
-cp --sparse=auto "ubuntu-lucid-64.img" "ubuntu-lucid-kvm-64.img"
+cp --sparse=auto "ubuntu-lucid-32.raw" "ubuntu-lucid-kvm-32.raw"
+cp --sparse=auto "ubuntu-lucid-64.raw" "ubuntu-lucid-kvm-64.raw"
 
-loop_mount_image "ubuntu-lucid-kvm-32.img" "kvm_base_setup"
-loop_mount_image "ubuntu-lucid-kvm-64.img" "kvm_base_setup"
+loop_mount_image "ubuntu-lucid-kvm-32.raw" "kvm_base_setup"
+loop_mount_image "ubuntu-lucid-kvm-64.raw" "kvm_base_setup"
 
 
 # metadata server image (KVM)
-cp --sparse=auto "ubuntu-lucid-kvm-32.img" "ubuntu-lucid-kvm-ms-32.img"
-cp --sparse=auto "ubuntu-lucid-kvm-64.img" "ubuntu-lucid-kvm-ms-64.img"
+cp --sparse=auto "ubuntu-lucid-kvm-32.raw" "ubuntu-lucid-kvm-ms-32.raw"
+cp --sparse=auto "ubuntu-lucid-kvm-64.raw" "ubuntu-lucid-kvm-ms-64.raw"
 
-loop_mount_image "ubuntu-lucid-kvm-ms-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
-loop_mount_image "ubuntu-lucid-kvm-ms-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
+loop_mount_image "ubuntu-lucid-kvm-ms-32.raw" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
+loop_mount_image "ubuntu-lucid-kvm-ms-64.raw" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
 
 # metadata drive image (KVM)
-cp --sparse=auto "ubuntu-lucid-kvm-32.img" "ubuntu-lucid-kvm-md-32.img"
-cp --sparse=auto "ubuntu-lucid-kvm-64.img" "ubuntu-lucid-kvm-md-64.img"
+cp --sparse=auto "ubuntu-lucid-kvm-32.raw" "ubuntu-lucid-kvm-md-32.raw"
+cp --sparse=auto "ubuntu-lucid-kvm-64.raw" "ubuntu-lucid-kvm-md-64.raw"
 
-loop_mount_image "ubuntu-lucid-kvm-md-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
-loop_mount_image "ubuntu-lucid-kvm-md-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
+loop_mount_image "ubuntu-lucid-kvm-md-32.raw" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
+loop_mount_image "ubuntu-lucid-kvm-md-64.raw" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
 
 exit 0
 
 # no metadata image (LXC)
-cp --sparse=auto "ubuntu-lucid-32.img" "ubuntu-lucid-lxc-32.img"
-cp --sparse=auto "ubuntu-lucid-64.img" "ubuntu-lucid-lxc-64.img"
+cp --sparse=auto "ubuntu-lucid-32.raw" "ubuntu-lucid-lxc-32.raw"
+cp --sparse=auto "ubuntu-lucid-64.raw" "ubuntu-lucid-lxc-64.raw"
 
-loop_mount_image "ubuntu-lucid-lxc-32.img" "lxc_base_setup"
-loop_mount_image "ubuntu-lucid-lxc-64.img" "lxc_base_setup"
+loop_mount_image "ubuntu-lucid-lxc-32.raw" "lxc_base_setup"
+loop_mount_image "ubuntu-lucid-lxc-64.raw" "lxc_base_setup"
 
 # metadata server image (LXC)
-cp --sparse=auto "ubuntu-lucid-lxc-32.img" "ubuntu-lucid-lxc-ms-32.img"
-cp --sparse=auto "ubuntu-lucid-lxc-64.img" "ubuntu-lucid-lxc-ms-64.img"
+cp --sparse=auto "ubuntu-lucid-lxc-32.raw" "ubuntu-lucid-lxc-ms-32.raw"
+cp --sparse=auto "ubuntu-lucid-lxc-64.raw" "ubuntu-lucid-lxc-ms-64.raw"
 
-loop_mount_image "ubuntu-lucid-lxc-ms-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
-loop_mount_image "ubuntu-lucid-lxc-ms-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
+loop_mount_image "ubuntu-lucid-lxc-ms-32.raw" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
+loop_mount_image "ubuntu-lucid-lxc-ms-64.raw" "install_wakame_init" "./ubuntu/10.04/wakame-init" "server"
 
 # metadata drive image (LXC)
-cp --sparse=auto "ubuntu-lucid-lxc-32.img" "ubuntu-lucid-lxc-md-32.img"
-cp --sparse=auto "ubuntu-lucid-lxc-64.img" "ubuntu-lucid-lxc-md-64.img"
+cp --sparse=auto "ubuntu-lucid-lxc-32.raw" "ubuntu-lucid-lxc-md-32.raw"
+cp --sparse=auto "ubuntu-lucid-lxc-64.raw" "ubuntu-lucid-lxc-md-64.raw"
 
-loop_mount_image "ubuntu-lucid-lxc-md-32.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
-loop_mount_image "ubuntu-lucid-lxc-md-64.img" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
+loop_mount_image "ubuntu-lucid-lxc-md-32.raw" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
+loop_mount_image "ubuntu-lucid-lxc-md-64.raw" "install_wakame_init" "./ubuntu/10.04/wakame-init" "drive"
