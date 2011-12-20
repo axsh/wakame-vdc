@@ -20,9 +20,8 @@ module Dcmgr
           self.dnat_log_prefix = dnat_log_prefix
           
           self.rules = []
-          self.rules << IptablesRule.new(:nat,:prerouting,nil,nil,"-d #{self.outside_ip} -j LOG --log-prefix '#{self.dnat_log_prefix}'")
-          self.rules << IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{self.inside_ip} -j LOG --log-prefix '#{self.snat_log_prefix}'")
-          @must_before << StaticNat
+          self.rules << IptablesRule.new(:nat,:prerouting,nil,:incoming,"-d #{self.outside_ip} -j LOG --log-prefix '#{self.dnat_log_prefix}'")
+          self.rules << IptablesRule.new(:nat,:postrouting,nil,:outgoing,"-s #{self.inside_ip} -j LOG --log-prefix '#{self.snat_log_prefix}'")
         end
       end
       

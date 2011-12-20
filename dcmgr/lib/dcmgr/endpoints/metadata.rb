@@ -5,6 +5,7 @@ require 'sinatra/base'
 require 'sinatra/sequel_transaction'
 require 'yaml'
 require 'json'
+require 'ipaddress'
 
 require 'dcmgr'
 
@@ -290,6 +291,7 @@ module Dcmgr
                                   'ami-id',
                                   'ami-launch-index',
                                   'ami-manifest-path',
+                                  'ancestor-ami-ids',
                                   'block-device-mapping/',
                                   'hostname',
                                   'instance-action',
@@ -301,9 +303,11 @@ module Dcmgr
                                   'mac',
                                   'network/',
                                   'placement/',
+                                  'product-codes',
                                   'public-hostname',
                                   'public-ipv4',
                                   'public-keys/',
+                                  'ramdisk-id',
                                   'reservation-id',
                                   'security-groups',
                                  ]
@@ -321,7 +325,7 @@ module Dcmgr
       end
 
       get '/:version/user-data' do
-        find_instance().user_data
+        instance[:user_data]
       end
 
       get '/:version/meta-data/' do
@@ -329,7 +333,7 @@ module Dcmgr
       end
 
       get '/:version/meta-data/ami-id' do
-        find_instance().image.cuuid
+        instance[:image][:uuid]
       end
 
       get '/:version/meta-data/ami-launch-index' do
@@ -342,28 +346,35 @@ module Dcmgr
         ''
       end
 
-      get '/:version/meta-data/block-device-mapping/' do
+      get '/:version/meta-data/ancestor-ami-ids' do
         # TODO
         ''
+      end
+
+      get '/:version/meta-data/block-device-mapping/' do
+        # TODO
+        'root'
+      end
+
+      get '/:version/meta-data/block-device-mapping/root' do
+        # TODO
+        '/dev/sda'
       end
 
       get '/:version/meta-data/hostname' do
-        # TODO
-        find_instance().hostname
+        instance[:hostname]
       end
 
       get '/:version/meta-data/instance-action' do
-        # TODO
-        'none'
+        instance[:state]
       end
 
       get '/:version/meta-data/instance-id' do
-        find_instance().cuuid
+        instance[:uuid]
       end
 
       get '/:version/meta-data/instance-type' do
-        # TODO
-        ''
+        instance[:instance_spec][:uuid]
       end
 
       get '/:version/meta-data/kernel-id' do
@@ -372,17 +383,16 @@ module Dcmgr
       end
 
       get '/:version/meta-data/local-hostname' do
-        find_instance().hostname
+        instance[:hostname]
       end
 
       get '/:version/meta-data/local-ipv4' do
-        local_ipv4.join("\n")
+        instance[:ips].first
       end
 
       get '/:version/meta-data/mac' do
-        find_instance().nic.map { |nic|
-          nic.pretty_mac_addr
-        }.join("\n")
+        vnic = instance[:instance_nics].first || {}
+        vnic[:mac_addr].unpack('A2'*6).join(':')
       end
 
       get '/:version/meta-data/network/' do
@@ -394,14 +404,27 @@ module Dcmgr
       end
 
       get '/:version/meta-data/network/interfaces/macs/' do
-        find_instance().nic.map { |nic|
-          "#{nic.pretty_mac_addr}/"
+        instance[:vif].map { |vnic|
+          "#{vnic[:mac_addr].unpack('A2'*6).join(':')}/"
         }.join("\n")
       end
 
       get '/:version/meta-data/network/interfaces/macs/:mac/' do
         if vnic_mac?(params[:mac])
-          ['local-hostname', 'local-ipv4s', 'mac', 'public-hostname', 'public-ipv4s', 'security-groups'].join("\n")
+          [
+           'local-hostname',
+           'local-ipv4s',
+           'mac',
+           'public-hostname',
+           'public-ipv4s',
+           'security-groups',
+           # wakame-vdc extention items.
+           'x-gateway',
+           'x-netmask',
+           'x-network',
+           'x-broadcast',
+           'x-metric',
+          ].join("\n")
         else
           # TODO
           ''
@@ -410,18 +433,17 @@ module Dcmgr
 
       get '/:version/meta-data/network/interfaces/macs/:mac/local-hostname' do
         if vnic_mac?(params[:mac])
-          find_instance().hostname
+          instance[:hostname]
         else
-          # TODO
           ''
         end
       end
 
       get '/:version/meta-data/network/interfaces/macs/:mac/local-ipv4s' do
         if vnic_mac?(params[:mac])
-          local_ipv4.join("\n")
+          vnic = vnic(params[:mac])
+          vnic[:ipv4][:address]
         else
-          # TODO
           ''
         end
       end
@@ -430,14 +452,13 @@ module Dcmgr
         if vnic_mac?(params[:mac])
           params[:mac]
         else
-          # TODO
           ''
         end
       end
 
       get '/:version/meta-data/network/interfaces/macs/:mac/public-hostname' do
         if vnic_mac?(params[:mac])
-          find_instance().hostname
+          instance[:hostname]
         else
           # TODO
           ''
@@ -446,18 +467,64 @@ module Dcmgr
 
       get '/:version/meta-data/network/interfaces/macs/:mac/public-ipv4s' do
         if vnic_mac?(params[:mac])
-          public_ipv4.join("\n")
+          vnic = vnic(params[:mac])
+          vnic[:ipv4][:nat_address]
         else
-          # TODO
           ''
         end
       end
 
       get '/:version/meta-data/network/interfaces/macs/:mac/security-groups' do
         if vnic_mac?(params[:mac])
-          security_groups
+          instance[:security_groups].join("\n")
         else
           # TODO
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/x-gateway' do
+        if vnic_mac?(params[:mac])
+          vnic(params[:mac])[:ipv4][:network][:ipv4_gw]
+        else
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/x-netmask' do
+        if vnic_mac?(params[:mac])
+          vnic = vnic(params[:mac])
+          netaddr = IPAddress::IPv4.new("#{vnic[:ipv4][:network][:ipv4_network]}/#{vnic[:ipv4][:network][:prefix]}")
+          netaddr.prefix.to_ip
+        else
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/x-network' do
+        if vnic_mac?(params[:mac])
+          vnic = vnic(params[:mac])
+          vnic[:ipv4][:network][:ipv4_network]
+        else
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/x-broadcast' do
+        if vnic_mac?(params[:mac])
+          vnic = vnic(params[:mac])
+          netaddr = IPAddress::IPv4.new("#{vnic[:ipv4][:network][:ipv4_network]}/#{vnic[:ipv4][:network][:prefix]}")
+          netaddr.broadcast.to_s
+        else
+          ''
+        end
+      end
+
+      get '/:version/meta-data/network/interfaces/macs/:mac/x-metric' do
+        if vnic_mac?(params[:mac])
+          vnic = vnic(params[:mac])
+          vnic[:ipv4][:network][:metric].to_s
+        else
           ''
         end
       end
@@ -471,29 +538,39 @@ module Dcmgr
         ''
       end
 
+      get '/:version/meta-data/product-codes' do
+        # TODO
+        ''
+      end
+
       get '/:version/meta-data/public-hostname' do
         # TODO
-        find_instance().hostname
+        instance[:hostname]
       end
 
       get '/:version/meta-data/public-ipv4' do
-        public_ipv4.join("\n")
+        instance[:nat_ips]
       end
 
       get '/:version/meta-data/public-keys/' do
-        i = find_instance()
-        i.ssh_key_data.nil? ? '' : [0, i.ssh_key_data[:uuid]].join("=")
+        ssh_key_data = instance[:ssh_key_data]
+        ssh_key_data.nil? ? '' : [0, ssh_key_data[:uuid]].join("=")
       end
 
       get '/:version/meta-data/public-keys/0/' do
-        i = find_instance()
-        i.ssh_key_data.nil? ? '' : 'openssh-key'
+        ssh_key_data = instance[:ssh_key_data]
+        ssh_key_data.nil? ? '' : 'openssh-key'
       end
 
       get '/:version/meta-data/public-keys/0/openssh-key' do
-        i = find_instance()
+        ssh_key_data = instance[:ssh_key_data]
         # ssh_key_data is possible to be nil.
-        i.ssh_key_data.nil? ? '' : i.ssh_key_data[:public_key]
+        ssh_key_data.nil? ? '' : ssh_key_data[:public_key]
+      end
+
+      get '/:version/meta-data/ramdisk-id' do
+        # TODO
+        ''
       end
 
       get '/:version/meta-data/reservation-id' do
@@ -502,50 +579,30 @@ module Dcmgr
       end
 
       get '/:version/meta-data/security-groups' do
-        security_groups.join("\n")
+        instance[:security_groups].join("\n")
       end
 
       private
-      def find_instance
+      def instance
         ip = Models::IpLease.find(:ipv4 => request.ip)
         if ip.nil? || ip.instance_nic.nil?
           raise UnknownSourceIpError, request.ip
         end
-        ip.instance_nic.instance
+        ip.instance_nic.instance.to_hash
       end
 
       def vnic_mac?(mac)
-        macs = find_instance().nic.map { |nic|
-          nic.pretty_mac_addr if nic.pretty_mac_addr == mac
-        }.compact
-
-        if macs.size > 0
+        if vnic(mac).size > 0
           true
         else
           false
         end
       end
 
-      def local_ipv4
-        find_instance().nic.map { |nic|
-          nic.ip.map { |ip|
-            ip.ipv4 unless ip.is_natted?
-          }
-        }
-      end
-
-      def public_ipv4
-        find_instance().nic.map { |nic|
-          nic.ip.map { |ip|
-            ip.ipv4 if ip.is_natted?
-          }
-        }
-      end
-
-      def security_groups
-        find_instance().security_groups.map { |grp|
-          grp.canonical_uuid
-        }
+      def vnic(mac)
+        instance[:vif].map { |vnic|
+          vnic if mac == vnic[:mac_addr].unpack('A2'*6).join(':')
+        }.compact.first
       end
 
       class UnknownSourceIpError < StandardError; end

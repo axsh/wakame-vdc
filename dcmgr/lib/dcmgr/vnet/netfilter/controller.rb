@@ -123,6 +123,13 @@ module Dcmgr
           }
           
           inst_map[:vif].each { |vnic|
+            # Removing the nat tasks separately because they include an arp reply
+            # that isn't put in a separate chain
+            other_vnics = get_other_vnics(vnic,@cache)
+            # Determine which vnics need to be isolated from this one
+            friends = @isolator.determine_friends(vnic, other_vnics)
+            
+            self.task_manager.remove_vnic_tasks(vnic, TaskFactory.create_nat_tasks_for_vnic(vnic,friends,self.node) )
             self.task_manager.remove_vnic_chains(vnic)
           }
           
