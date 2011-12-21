@@ -375,7 +375,7 @@ case ${mode} in
      check_ready_standalone
      cd $prefix_path/tests/spec
      [ -z "${without_bundle_install}" ] && bundle install --path=.vendor/bundle
-     [ -f config/config.yml ] || cp -f config/config.yml.example config/config.yml
+     cp -f config/config.yml.example config/config.yml
 
      # run integrate test specs.
      bundle exec rspec -fs .
