@@ -35,10 +35,22 @@ module Dcmgr
       def self.create_tasks_for_isolation(vnic,friends,node)
         tasks = []
         enable_logging = node.manifest.config.packet_drop_log
+        ipset_enabled = node.manifest.config.use_ipset
         friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
         
         tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")
         #tasks << AcceptIpFromFriends(friend_ips)
+        
+        if is_natted? vnic          
+          # Friends don't use NAT, friends talk to each other with their REAL ip addresses.
+          # It's a heart warming scene, really
+          if ipset_enabled
+            # Not implemented yet
+            #tasks << ExcludeFromNatIpSet.new(friend_ips,vnic[:ipv4][:address])
+          else
+            tasks << ExcludeFromNat.new(friend_ips,vnic[:ipv4][:address])
+          end
+        end
         
         tasks
       end
@@ -59,7 +71,7 @@ module Dcmgr
       # Creates tasks related to network address translation
       def self.create_nat_tasks_for_vnic(vnic,friends,node)
         friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
-        ipset_enabled = node.manifest.config.use_ipset
+        #ipset_enabled = node.manifest.config.use_ipset
         tasks = []
         
         tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port]) unless vnic[:ipv4][:network][:metadata_server].nil? || vnic[:ipv4][:network][:metadata_server_port].nil?
@@ -67,12 +79,12 @@ module Dcmgr
         # Nat tasks
         if is_natted? vnic          
           # Exclude instances in the same security group form using nat
-          if ipset_enabled
+          #if ipset_enabled
             # Not implemented yet
             #tasks << ExcludeFromNatIpSet.new(friend_ips,vnic[:ipv4][:address])
-          else
-            tasks << ExcludeFromNat.new(friend_ips,vnic[:ipv4][:address])
-          end
+          #else
+            #tasks << ExcludeFromNat.new(friend_ips,vnic[:ipv4][:address])
+          #end
           
           tasks << StaticNatLog.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if node.manifest.config.packet_drop_log
           tasks << StaticNat.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], clean_mac(vnic[:mac_addr]))

@@ -3,6 +3,7 @@
 set -e
 
 work_dir=${work_dir:?"work_dir needs to be set"}
+builder_path=${builder_path:?"builder_path needs to be set"}
 
 
 #
@@ -12,14 +13,10 @@ work_dir=${work_dir:?"work_dir needs to be set"}
 #dcmgr_dbuser=root
 #webui_dbname=wakame_dcmgr_gui
 #webui_dbpass=passwd
- 
-echo "# Configure Database for MySQL ..."
 
-for dbname in ${dcmgr_dbname} ${webui_dbname}; do
-  echo | mysql -uroot ${dbname} >/dev/null 2>&1 && {
-    yes | mysqladmin -uroot drop ${dbname} >/dev/null 2>&1
-  }
-done
+echo "# Configure Database for MySQL ..."
+echo | mysql -uroot ${dcmgr_dbname} && yes | mysqladmin -uroot drop ${dcmgr_dbname} >/dev/null 2>&1
+echo | mysql -uroot ${webui_dbname} && yes | mysqladmin -uroot drop ${webui_dbname} >/dev/null 2>&1
 
 cat <<EOS | mysql -uroot
 create database ${dcmgr_dbname} default character set utf8;
@@ -39,22 +36,12 @@ deb_pkgs="
  tmux
 "
 
-# ruby gems packages
-gem_pkgs="
- bundler
-"
 # rake was deleted
 
 #
 # install
 #
 DEBIAN_FRONTEND=${DEBIAN_FRONTEND} apt-get -y install ${deb_pkgs}
-
-for gem_pkg in ${gem_pkgs}; do
-  gem query -l -i -n "${gem_pkg}" > /dev/null || {
-    gem install ${gem_pkg} --no-ri --no-rdoc
-  }
-done
 
 [ -d ${work_dir} ] || mkdir ${work_dir}
 cd ${work_dir}
@@ -67,9 +54,9 @@ function bundle_update() {
   (
   cd $dir
 
-  [ -d vendor/bundle ] && rm -rf vendor/bundle
+  [ -d .vendor/bundle ] && rm -rf .vendor/bundle
   # this oneliner will generate .bundle/config.
-  shlog bundle install --path=vendor/bundle
+  shlog bundle install --path=.vendor/bundle
   )
 }
 
@@ -85,8 +72,14 @@ bundle_update ${work_dir}/frontend/dcmgr_gui/
 cd ${work_dir}/dcmgr/config/
 cp -f dcmgr.conf.example dcmgr.conf
 cp -f snapshot_repository.yml.example snapshot_repository.yml
+#cp -f hva.conf.example hva.conf
+cp -f nsa.conf.example nsa.conf
+cp -f sta.conf.example sta.conf
 
+# dcmgr:hva
 [ -d ${vmdir_path} ] || mkdir $vmdir_path
+# perl -pi -e "s,^config.vm_data_dir = .*,config.vm_data_dir = \"${vmdir_path}\"," hva.conf
+# TODO: delete generating hva.conf in this script. should copy hva.conf.example to hva.conf
 cat <<EOS > hva.conf
 #------------------------
 # Configuration file for hva.
@@ -131,39 +124,6 @@ config.ovs_ofctl_path = '${work_dir}/ovs/bin/ovs-ofctl'
 # Trema base directory
 config.trema_dir = '${work_dir}/trema'
 EOS
-
-
-cat <<EOS  > nsa.conf
-#------------------------
-# Configuration file for nsa.
-#------------------------
-
-# path for dnsmaq binary
-config.dnsmasq_bin_path='/usr/sbin/dnsmasq'
-
-# network name to distribute dhcp/dns managed by this nsa
-config.network_name='tag-shnet'
-
-config.logging = true
-EOS
-
-
-#cp -f sta.conf.example sta.conf
-cat <<EOS > sta.conf
-#------------------------
-# Configuration file for sta-linux.
-#------------------------
-
-# iSCSI target
-config.iscsi_target = 'linux_iscsi'
-
-# Initiator address is IP or ALL
-config.initiator_address = 'ALL'
-
-# Backing Store
-config.backing_store = 'raw'
-EOS
-
 
 # frontend
 cd ${work_dir}/frontend/dcmgr_gui/config/

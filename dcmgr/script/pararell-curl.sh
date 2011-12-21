@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# $ pararell-curl.sh [url]
-# $ thread=8 ./pararell-curl.sh [url]
+# $ pararell-curl.sh --url=[url]
+# $ pararell-curl.sh --url=[url] --thread=6
 #
 LANG=C
 LC_ALL=C
@@ -21,16 +21,17 @@ for arg in $*; do
   esac
 done
 
-url=${url:-http://mirror.3tier.com/centos/6/isos/i386/CentOS-6.0-i386-bin-DVD.iso}
-thread=${thread:-8}
+url=${url:-http://ftp.riken.jp/Linux/centos/6.0/isos/i386/CentOS-6.0-i386-bin-DVD.iso}
+thread=${thread:-6}
 tmp_path=${tmp_path:-/var/tmp/__$(basename $0)}
 part_name=$(basename ${url})
 output_dir=${output_dir:-${tmp_path}}
 output_path=${output_path:-${output_dir}/${part_name}}
+retry=${retry:-3}
 
 case ${url} in
 http://*|https://*)
-  content_length=$(curl -s -L --head ${url} | egrep ^Content-Length | awk '{print $2}' | strings)
+  content_length=$(curl --retry ${retry} -s -L --head ${url} | egrep ^Content-Length | awk '{print $2}' | strings)
   ;;
 file:///*)
   content_length=$(ls -l ${url##file://} | awk '{print $5}')
@@ -45,6 +46,9 @@ file:///*)
   }
   ;;
 esac
+
+[ -z "${content_length}" ] && { exit 0; }
+[ ${thread} -ge ${content_length} ] && thread=1
 
 range=$((${content_length} / ${thread}))
 parts=
@@ -72,7 +76,7 @@ while [ ${cur} -lt ${thread} ]; do
   fi
 
   part_path=${tmp_path}/${part_name}.${cur}
-  shlog "curl -s -L --range ${from}-${to} -o ${part_path} ${url} &"
+  shlog "curl --retry ${retry} -s -L --range ${from}-${to} -o ${part_path} ${url} &"
   pids="${pids} $!"
 
   parts="${parts} ${part_path}"
@@ -91,6 +95,14 @@ for part in ${parts}; do
 done
 
 sync
+
+generated_length=$(ls -l ${output_path} | awk '{print $5}')
+[ ${content_length} = ${generated_length} ] || {
+  echo "no mutch file size" >&2
+  echo "content_length: ${content_length} != ${generated_length}" >&2
+  [ -f ${output_path} ] && rm -f ${output_path}
+  exit 1
+}
 
 echo "=> ${output_path}"
 ls -l ${output_path}

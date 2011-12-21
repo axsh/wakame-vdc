@@ -24,7 +24,7 @@ module Dcmgr
               next
             end
             
-            self.rules << IptablesRule.new(:nat,:prerouting,nil,:incoming,"-d #{self_ip} -s #{ip} -j ACCEPT")
+            #self.rules << IptablesRule.new(:nat,:prerouting,nil,:incoming,"-d #{self_ip} -s #{ip} -j ACCEPT")
             self.rules << IptablesRule.new(:nat,:postrouting,nil,:outgoing,"-d #{ip} -s #{self_ip} -j ACCEPT")
           }
         end

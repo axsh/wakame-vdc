@@ -62,6 +62,8 @@ module Dcmgr
               #chains << IptablesChain.new(:nat, "#{bound}_#{vnic_map[:uuid]}_#{nat_chain}")
             #}
           }
+          #chains << IptablesChain.new(:nat, "#{vnic_map[:uuid]}_dnat_exceptions")
+          chains << IptablesChain.new(:nat, "#{vnic_map[:uuid]}_snat_exceptions")
           
           chains
         end
@@ -111,8 +113,13 @@ module Dcmgr
         end
         
         # Returns the rules that direct packets for a vnic to that specific vnic's custom nat chains
-        def iptables_nat_chain_jumps(vnic)
+        def iptables_nat_chain_jumps(vnic_map)
           jumps = []
+          
+          #[ :prerouting, :postrouting].each { |chain|
+          #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-d #{vnic_map[:ipv4][:nat_address]} -j #{vnic_map[:uuid]}_dnat_exceptions")
+          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{vnic_map[:ipv4][:address]} -j #{vnic_map[:uuid]}_snat_exceptions")
+          #}
           
           #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-in  #{vnic[:uuid]} -j s_#{vnic[:uuid]}_pre")
           #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-out  #{vnic[:uuid]} -j d_#{vnic[:uuid]}_pre")
@@ -358,10 +365,17 @@ module Dcmgr
                   when :nat
                     case rule.chain
                       when :prerouting.to_s.upcase then
+                        #unless rule.rule.include? "-j DNAT"
+                          #rule.chain = "#{vnic[:uuid]}_dnat_exceptions"
+                        #end
                         #p rule.chain
                         #rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{nat_chains[rule.chain]}"
                         #p rule.chain
                       when :postrouting.to_s.upcase then
+                        # Very hackish but should work for now
+                        unless rule.rule.include? "-j SNAT"
+                          rule.chain = "#{vnic[:uuid]}_snat_exceptions"
+                        end
                         #rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{nat_chains[rule.chain]}"
                     end
                   when :filter
