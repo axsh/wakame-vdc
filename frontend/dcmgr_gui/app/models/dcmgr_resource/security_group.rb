@@ -9,6 +9,16 @@ module DcmgrResource
       security_group
     end
 
+    # workaround for the bug:
+    #  the value of the key "rule" is encoded to JSON wrongly by
+    #  ActiveSupport::JSON encoder.
+    #  "{\"security_group\":{\"description\":\"\",\"rule\":[[null,[],null]]}}"
+    #  So it has to use the encoder from JSON library.
+    def to_json(options={})
+      require 'json'
+      {'security_group'=>@attributes}.to_json
+    end
+
     def self.list(params = {})
      self.find(:all,:params => params)
     end
