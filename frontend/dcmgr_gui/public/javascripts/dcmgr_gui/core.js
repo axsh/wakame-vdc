@@ -110,7 +110,7 @@ DcmgrGUI.date.parseISO8601 = function (str) {
   _date = new Date;
 
   _date.setUTCFullYear(Number(dateParts[0]));
-  _date.setUTCMonth(Number(dateParts[1]));
+  _date.setUTCMonth(Number(dateParts[1] - 1 ));
   _date.setUTCDate(Number(dateParts[2]));
   _date.setUTCHours(Number(timeHours));
   _date.setUTCMinutes(Number(timeSubParts[1]));
@@ -133,11 +133,11 @@ DcmgrGUI.date.getI18n = function(date_str){
   }
 
   return $.i18n.prop('display_date', [date_str.getUTCFullYear(), 
-                                   convert(date_str.getUTCMonth()), 
-                                   convert(date_str.getUTCDate()), 
-                                   convert(date_str.getUTCHours()), 
-                                   convert(date_str.getUTCMinutes()), 
-                                   convert(date_str.getUTCSeconds())
+                                   convert(date_str.getMonth() + 1), 
+                                   convert(date_str.getDate()), 
+                                   convert(date_str.getHours()), 
+                                   convert(date_str.getMinutes()), 
+                                   convert(date_str.getSeconds())
                                    ]);
 };
 
@@ -565,13 +565,11 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
       
       if(data.item.created_at) {
         data.item.created_at = DcmgrGUI.date.parseISO8601(data.item.created_at);
-        data.item.created_at = DcmgrGUI.date.setTimezoneOffset(data.item.created_at, dcmgrGUI.getConfig('time_zone_utc_offset'));
         data.item.created_at = DcmgrGUI.date.getI18n(data.item.created_at);
       }
 
       if(data.item.updated_at) {
         data.item.updated_at = DcmgrGUI.date.parseISO8601(data.item.updated_at);
-        data.item.updated_at = DcmgrGUI.date.setTimezoneOffset(data.item.updated_at, dcmgrGUI.getConfig('time_zone_utc_offset'));
         data.item.updated_at = DcmgrGUI.date.getI18n(data.item.updated_at);
       }
 
