@@ -289,7 +289,7 @@ module Dcmgr
         # Translates _rule_ into a command that can be directly passed on to the OS
         # _action_ determines if the command must _:apply_ or _:remove_ a rule. 
         def get_rule_command(rule,action)
-          actions = {:apply => "A", :remove => "D"}
+          actions = {:apply => "I", :remove => "D"}
           raise ArgumentError, "#{rule} is not a Rule" unless rule.is_a? Rule
           raise ArgumentError, "action must be one of the following: '#{actions.keys.join(",")}'" unless actions.member? action
           

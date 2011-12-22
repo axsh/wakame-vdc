@@ -69,12 +69,10 @@ module Dcmgr
       end
       
       # Creates tasks related to network address translation
-      def self.create_nat_tasks_for_vnic(vnic,friends,node)
-        friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
+      def self.create_nat_tasks_for_vnic(vnic,node)
+        #friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
         #ipset_enabled = node.manifest.config.use_ipset
         tasks = []
-        
-        tasks << TranslateMetadataAddress.new(vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port]) unless vnic[:ipv4][:network][:metadata_server].nil? || vnic[:ipv4][:network][:metadata_server_port].nil?
         
         # Nat tasks
         if is_natted? vnic          
@@ -90,6 +88,8 @@ module Dcmgr
           tasks << StaticNat.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], clean_mac(vnic[:mac_addr]))
         end
         
+        tasks << TranslateMetadataAddress.new(vnic[:uuid],vnic[:ipv4][:network][:metadata_server],vnic[:ipv4][:network][:metadata_server_port] || 80) unless vnic[:ipv4][:network][:metadata_server].nil?
+        
         tasks
       end
 
@@ -102,14 +102,15 @@ module Dcmgr
         enable_logging = node.manifest.config.packet_drop_log
         ipset_enabled = node.manifest.config.use_ipset
         
-        tasks += self.create_nat_tasks_for_vnic(vnic,friends,node)
+        # Drop all traffic that isn't explicitely accepted
+        tasks += self.create_drop_tasks_for_vnic(vnic,node)
         
         # General data link layer tasks
-        tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
-        tasks << DropIpSpoofing.new(vnic[:ipv4][:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
-        tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
         tasks << AcceptARPToHost.new(host_addr,vnic[:ipv4][:address],enable_logging,"A arp to_host #{vnic[:uuid]}: ")
         tasks << AcceptARPFromGateway.new(vnic[:ipv4][:network][:ipv4_gw],enable_logging,"A arp from_gw #{vnic[:uuid]}: ") unless vnic[:ipv4][:network][:ipv4_gw].nil?
+        tasks << DropIpSpoofing.new(vnic[:ipv4][:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
+        tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
+        tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
         
         # General ip layer tasks
         tasks << AcceptIcmpRelatedEstablished.new
@@ -122,6 +123,7 @@ module Dcmgr
         
         # VM isolation based
         tasks += self.create_tasks_for_isolation(vnic,friends,node)
+        tasks += self.create_nat_tasks_for_vnic(vnic,node)
         
         # Accept ip traffic from the gateway that isn't blocked by other tasks
         tasks << AcceptIpFromGateway.new(vnic[:ipv4][:network][:ipv4_gw]) unless vnic[:ipv4][:network][:ipv4_gw].nil?
@@ -130,10 +132,6 @@ module Dcmgr
         security_groups.each { |secgroup|
           tasks += self.create_tasks_for_secgroup(secgroup)
         }
-                  
-        # Drop any other incoming traffic
-        # MAKE SURE THIS TASK IS ALWAYS EXECUTED LAST OR I WILL KILL YOU
-        tasks += self.create_drop_tasks_for_vnic(vnic,node)
         
         tasks
       end
