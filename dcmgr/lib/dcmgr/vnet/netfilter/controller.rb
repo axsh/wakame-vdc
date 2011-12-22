@@ -108,33 +108,36 @@ module Dcmgr
         end
         
         def remove_instance(inst_id)
-          logger.info "removing instance '#{inst_id}'"
           # Find the instance in the cache
           inst_map = @cache.get[:instances].find { |inst| inst[:uuid] == inst_id}
           
-          #Clean up the isolation tasks in friends' chains
-          inst_map[:vif].each { |vnic|
-            other_vnics = get_other_vnics(vnic,@cache)
-            friends = @isolator.determine_friends(vnic, other_vnics)
+          unless inst_map.nil?
+            logger.info "removing instance '#{inst_id}'"
             
-            friends.each { |friend|
-              self.task_manager.remove_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
+            #Clean up the isolation tasks in friends' chains
+            inst_map[:vif].each { |vnic|
+              other_vnics = get_other_vnics(vnic,@cache)
+              friends = @isolator.determine_friends(vnic, other_vnics)
+              
+              friends.each { |friend|
+                self.task_manager.remove_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
+              }
             }
-          }
-          
-          inst_map[:vif].each { |vnic|
-            # Removing the nat tasks separately because they include an arp reply
-            # that isn't put in a separate chain
-            other_vnics = get_other_vnics(vnic,@cache)
-            # Determine which vnics need to be isolated from this one
-            friends = @isolator.determine_friends(vnic, other_vnics)
             
-            self.task_manager.remove_vnic_tasks(vnic, TaskFactory.create_nat_tasks_for_vnic(vnic,self.node) )
-            self.task_manager.remove_vnic_chains(vnic)
-          }
-          
-          # Remove the terminated instance from the cache
-          @cache.remove_instance(inst_id)
+            inst_map[:vif].each { |vnic|
+              # Removing the nat tasks separately because they include an arp reply
+              # that isn't put in a separate chain
+              other_vnics = get_other_vnics(vnic,@cache)
+              # Determine which vnics need to be isolated from this one
+              friends = @isolator.determine_friends(vnic, other_vnics)
+              
+              self.task_manager.remove_vnic_tasks(vnic, TaskFactory.create_nat_tasks_for_vnic(vnic,self.node) )
+              self.task_manager.remove_vnic_chains(vnic)
+            }
+            
+            # Remove the terminated instance from the cache
+            @cache.remove_instance(inst_id)
+          end
         end
         
         def update_security_group(group)
@@ -152,17 +155,19 @@ module Dcmgr
             new_cache = @cache.get(true)
             new_group = new_cache[:security_groups].find {|sg| sg[:uuid] == group}
             
-            vnics.each { |vnic_map|
-              # Remove the old security group tasks
-              self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(old_group))
-              
-              # Remove the drop tasks so the new group's tasks don't get applied behind it
-              #self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_drop_tasks_for_vnic(vnic_map,self.node))
-              # Add the new security group tasks
-              self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(new_group))
-              # Put the drop tasks back in place
-              #self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_drop_tasks_for_vnic(vnic_map,self.node))
-            }
+            unless old_group.nil? || new_group.nil?
+              vnics.each { |vnic_map|
+                # Remove the old security group tasks
+                self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(old_group))
+                
+                # Remove the drop tasks so the new group's tasks don't get applied behind it
+                #self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_drop_tasks_for_vnic(vnic_map,self.node))
+                # Add the new security group tasks
+                self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(new_group))
+                # Put the drop tasks back in place
+                #self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_drop_tasks_for_vnic(vnic_map,self.node))
+              }
+            end
           end
         end
         
