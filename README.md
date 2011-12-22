@@ -8,20 +8,24 @@ See details for http://wakame.jp/ (English: http://en.wakame.jp/)
 Features:
 
 * Operation
-** Web GUI
-** RESTful API
+ * Web GUI
+ * RESTful API
+
 * Hypervisor
-** KVM
-** LXC
+ * KVM
+ * LXC
+
 * Network
-** Security Group (L3)
-** Distributed Firewall
-** Distributed NAT
+ * Security Group (L3)
+ * Distributed Firewall
+ * Distributed NAT
+
 * Storage
-** Solaris ZFS + iSCSI
-** Tired snapshot management
+ * Solaris ZFS + iSCSI
+ * Tired snapshot management
+
 * Management
-** Per Account Quota
+ * Per Account Quota
 
 
 Required Components
