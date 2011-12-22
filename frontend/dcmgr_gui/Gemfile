@@ -1,15 +1,14 @@
-source 'http://rubygems.org'
+source :rubygems
 
-gem 'rails', '3.0.0'
+gem 'rails', '3.0.11'
 gem 'mysql','2.8.1'
-gem 'sequel','3.15.0'
-gem 'json','1.4.6'
+gem 'sequel','3.27.0'
+gem 'json','1.6.3'
 gem 'oauth','0.4.1'
-gem 'i18n', '0.4.2'
 gem 'nokogiri', '1.4.4'
 gem 'rake', '0.8.7'
 gem 'thor', '0.14.6'
 
 group :production do
-  gem 'unicorn', '3.5.0'
+  gem 'unicorn', '4.1.1'
 end

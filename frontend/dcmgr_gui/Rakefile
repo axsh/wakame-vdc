@@ -32,13 +32,13 @@ task :gem do
                   'script/*', 'test/**/*.rb', 'doc/**/*.*'] +
       %w(Rakefile config.ru LICENSE NOTICE INSTALL.txt INSTALL-API.txt tmp)
 
-    s.add_dependency "rails", '3.0.0'
+    s.add_dependency "rails", '3.0.11'
     s.add_dependency 'mysql','2.8.1'
-    s.add_dependency 'sequel','3.15.0'
-    s.add_dependency 'json','1.4.6'
+    s.add_dependency 'sequel','3.27.0'
+    s.add_dependency 'json','1.6.3'
     s.add_dependency 'oauth','0.4.1'
-    s.add_dependency 'i18n', '0.4.2'
     s.add_dependency 'nokogiri', '1.4.4'
+    s.add_dependency 'thor', '0.14.6'
   end
   
   File.open("#{spec.name}.gemspec", 'w'){|f| f.write(spec.to_ruby) }
