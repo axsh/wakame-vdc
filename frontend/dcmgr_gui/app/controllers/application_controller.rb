@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 class ApplicationController < ActionController::Base
-  protect_from_forgery
+  # disable reqeust forgery check since some pages are missing to set
+  # the token on using POST.
+  #protect_from_forgery
   include Authentication
   before_filter :login_required
   before_filter :set_locale
