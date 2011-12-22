@@ -277,6 +277,7 @@ ja:
       secret_access_key: "シークレットキー"
     details:
       header: "詳細"
+      uuid: "UUID"
       fingerprint: "フィンガープリント"
       created_at: "作成日"
       updated_at: "更新日"
