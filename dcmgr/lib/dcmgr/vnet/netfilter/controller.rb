@@ -129,7 +129,7 @@ module Dcmgr
             # Determine which vnics need to be isolated from this one
             friends = @isolator.determine_friends(vnic, other_vnics)
             
-            self.task_manager.remove_vnic_tasks(vnic, TaskFactory.create_nat_tasks_for_vnic(vnic,friends,self.node) )
+            self.task_manager.remove_vnic_tasks(vnic, TaskFactory.create_nat_tasks_for_vnic(vnic,self.node) )
             self.task_manager.remove_vnic_chains(vnic)
           }
           
