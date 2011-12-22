@@ -10,6 +10,7 @@ class ApplicationController < ActionController::Base
 
   def set_application
     @site = DCMGR_GUI_SITE
+    true
   end
   
   def dispatch(name, request)
@@ -55,6 +56,7 @@ class ApplicationController < ActionController::Base
     
     @locales = get_locales 
     @locale = I18n.locale
+    true
   end
 
   def get_locales
