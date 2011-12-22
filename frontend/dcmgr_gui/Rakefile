@@ -12,7 +12,7 @@ desc "build gem packages"
 task :gem do
   require 'rubygems'
   require 'rake/gempackagetask'
-  require 'dcmgr'
+  require 'dcmgr/version'
   
   spec = Gem::Specification.new do |s|
     s.platform = Gem::Platform::RUBY
@@ -20,8 +20,8 @@ task :gem do
     s.authors = ['axsh Ltd.']
     s.email = ['dev@axsh.net']
     s.name = 'wakame-vdc-webui'
-    s.summary = "Datacenter management toolkit for IaaS Cloud: UI frontend"
-    s.description = ''
+    s.summary = "Wakame-VDC: UI frontend"
+    s.description = 'Datacenter Hypervisor'
     s.required_ruby_version = '>= 1.8.7'
 
     s.files = Dir['app/**/*.{rb,erb}','lib/**/*.rb',
