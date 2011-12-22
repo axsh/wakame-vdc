@@ -64,6 +64,7 @@ module Dcmgr
           }
           #chains << IptablesChain.new(:nat, "#{vnic_map[:uuid]}_dnat_exceptions")
           chains << IptablesChain.new(:nat, "#{vnic_map[:uuid]}_snat_exceptions")
+          chains << IptablesChain.new(:nat, "#{vnic_map[:uuid]}_snat")
           
           chains
         end
@@ -119,6 +120,7 @@ module Dcmgr
           #[ :prerouting, :postrouting].each { |chain|
           #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-d #{vnic_map[:ipv4][:nat_address]} -j #{vnic_map[:uuid]}_dnat_exceptions")
           jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{vnic_map[:ipv4][:address]} -j #{vnic_map[:uuid]}_snat_exceptions")
+          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{vnic_map[:ipv4][:address]} -j #{vnic_map[:uuid]}_snat")
           #}
           
           #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-in  #{vnic[:uuid]} -j s_#{vnic[:uuid]}_pre")
@@ -373,7 +375,9 @@ module Dcmgr
                         #p rule.chain
                       when :postrouting.to_s.upcase then
                         # Very hackish but should work for now
-                        unless rule.rule.include? "-j SNAT"
+                        if rule.rule.include? "-j SNAT"
+                          rule.chain = "#{vnic[:uuid]}_snat"
+                        else
                           rule.chain = "#{vnic[:uuid]}_snat_exceptions"
                         end
                         #rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{nat_chains[rule.chain]}"
