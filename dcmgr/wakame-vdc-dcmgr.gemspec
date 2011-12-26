@@ -2,70 +2,74 @@
 
 Gem::Specification.new do |s|
   s.name = %q{wakame-vdc-dcmgr}
-  s.version = "11.06.0"
+  s.version = "11.12.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["axsh Ltd."]
-  s.date = %q{2011-06-30}
-  s.default_executable = %q{collector}
-  s.description = %q{}
-  s.email = ["dev@axsh.net"]
-  s.executables = ["collector"]
-  s.files = ["config/path_resolver.rb", "config/initializers/passenger.rb", "config/initializers/isono.rb", "config/initializers/sequel.rb", "lib/dcmgr.rb", "lib/sinatra/accept_media_types.rb", "lib/sinatra/url_for.rb", "lib/sinatra/sequel_transaction.rb", "lib/sinatra/static_assets.rb", "lib/sinatra/rabbit.rb", "lib/sinatra/respond_to.rb", "lib/sinatra/lazy_auth.rb", "lib/dcmgr/rack/request_logger.rb", "lib/dcmgr/rack/run_initializer.rb", "lib/dcmgr/stm/snapshot_context.rb", "lib/dcmgr/stm/volume_context.rb", "lib/dcmgr/stm/instance.rb", "lib/dcmgr/version.rb", "lib/dcmgr/scheduler/find_random.rb", "lib/dcmgr/scheduler/find_last.rb", "lib/dcmgr/scheduler.rb", "lib/dcmgr/endpoints/metadata.rb", "lib/dcmgr/endpoints/errors.rb", "lib/dcmgr/endpoints/core_api_mock.rb", "lib/dcmgr/endpoints/core_api.rb", "lib/dcmgr/tags.rb", "lib/dcmgr/models/ip_lease.rb", "lib/dcmgr/models/instance_netfilter_group.rb", "lib/dcmgr/models/volume_snapshot.rb", "lib/dcmgr/models/storage_pool.rb", "lib/dcmgr/models/netfilter_rule.rb", "lib/dcmgr/models/tag_mapping.rb", "lib/dcmgr/models/instance_spec.rb", "lib/dcmgr/models/host_pool.rb", "lib/dcmgr/models/instance_nic.rb", "lib/dcmgr/models/mac_lease.rb", "lib/dcmgr/models/vlan_lease.rb", "lib/dcmgr/models/base_new.rb", "lib/dcmgr/models/account.rb", "lib/dcmgr/models/frontend_system.rb", "lib/dcmgr/models/image.rb", "lib/dcmgr/models/instance.rb", "lib/dcmgr/models/volume.rb", "lib/dcmgr/models/netfilter_group.rb", "lib/dcmgr/models/tag.rb", "lib/dcmgr/models/account_resource.rb", "lib/dcmgr/models/hostname_lease.rb", "lib/dcmgr/models/network.rb", "lib/dcmgr/models/request_log.rb", "lib/dcmgr/models/base.rb", "lib/dcmgr/models/quota.rb", "lib/dcmgr/models/history.rb", "lib/dcmgr/models/ssh_key_pair.rb", "lib/dcmgr/logger.rb", "lib/dcmgr/drivers/lxc.rb", "lib/dcmgr/drivers/iijgio_storage.rb", "lib/dcmgr/drivers/s3_storage.rb", "lib/dcmgr/drivers/snapshot_storage.rb", "lib/dcmgr/drivers/hypervisor.rb", "lib/dcmgr/drivers/kvm.rb", "lib/dcmgr/rubygems.rb", "lib/dcmgr/storage_service.rb", "lib/dcmgr/rpc/hva_handler.rb", "lib/dcmgr/messaging_client.rb", "lib/dcmgr/helpers/nic_helper.rb", "lib/dcmgr/helpers/cli_helper.rb", "lib/dcmgr/node_modules/hva_collector.rb", "lib/dcmgr/node_modules/instance_ha.rb", "lib/dcmgr/node_modules/sta_collector.rb", "lib/dcmgr/node_modules/instance_monitor.rb", "lib/dcmgr/node_modules/openflow_controller.rb", "lib/dcmgr/node_modules/service_netfilter.rb", "lib/dcmgr/node_modules/service_openflow.rb", "lib/dcmgr/cli/vlan.rb", "lib/dcmgr/cli/storage.rb", "lib/dcmgr/cli/spec.rb", "lib/dcmgr/cli/errors.rb", "lib/dcmgr/cli/host.rb", "lib/dcmgr/cli/image.rb", "lib/dcmgr/cli/tag.rb", "lib/dcmgr/cli/keypair.rb", "lib/dcmgr/cli/network.rb", "lib/dcmgr/cli/base.rb", "lib/dcmgr/cli/quota.rb", "lib/dcmgr/cli/group.rb", "lib/ext/time.rb", "web/api/public/index.html", "web/metadata/public/index.html", "Rakefile", "LICENSE", "NOTICE", "web/api/config.ru", "web/metadata/config.ru", "config/dcmgr.conf.example", "bin/collector"]
+  s.authors = [%q{axsh Ltd.}]
+  s.date = %q{2011-12-22}
+  s.description = %q{Datacenter Hypervisor}
+  s.email = [%q{dev@axsh.net}]
+  s.executables = [%q{collector}]
+  s.files = [%q{config/path_resolver.rb}, %q{config/db/migrations/0001_v1110_origin.rb}, %q{config/initializers/passenger.rb}, %q{config/initializers/isono.rb}, %q{config/initializers/sequel.rb}, %q{lib/dcmgr.rb}, %q{lib/sinatra/accept_media_types.rb}, %q{lib/sinatra/url_for.rb}, %q{lib/sinatra/sequel_transaction.rb}, %q{lib/sinatra/static_assets.rb}, %q{lib/sinatra/rabbit.rb}, %q{lib/sinatra/respond_to.rb}, %q{lib/sinatra/lazy_auth.rb}, %q{lib/dcmgr/rack/request_logger.rb}, %q{lib/dcmgr/rack/run_initializer.rb}, %q{lib/dcmgr/version.rb}, %q{lib/dcmgr/scheduler/host_node/least_usage.rb}, %q{lib/dcmgr/scheduler/host_node/per_instance.rb}, %q{lib/dcmgr/scheduler/host_node/specify_node.rb}, %q{lib/dcmgr/scheduler/host_node/exclude_same.rb}, %q{lib/dcmgr/scheduler/host_node/find_first.rb}, %q{lib/dcmgr/scheduler/network/per_instance.rb}, %q{lib/dcmgr/scheduler/network/vif_template.rb}, %q{lib/dcmgr/scheduler/network/flat_single.rb}, %q{lib/dcmgr/scheduler/network/nat_one_to_one.rb}, %q{lib/dcmgr/scheduler/storage_node/least_usage.rb}, %q{lib/dcmgr/scheduler/storage_node/find_first.rb}, %q{lib/dcmgr/scheduler.rb}, %q{lib/dcmgr/endpoints/metadata.rb}, %q{lib/dcmgr/endpoints/errors.rb}, %q{lib/dcmgr/endpoints/core_api.rb}, %q{lib/dcmgr/tags.rb}, %q{lib/dcmgr/vnet.rb}, %q{lib/dcmgr/models/ip_lease.rb}, %q{lib/dcmgr/models/volume_snapshot.rb}, %q{lib/dcmgr/models/tag_mapping.rb}, %q{lib/dcmgr/models/instance_spec.rb}, %q{lib/dcmgr/models/instance_nic.rb}, %q{lib/dcmgr/models/mac_lease.rb}, %q{lib/dcmgr/models/vlan_lease.rb}, %q{lib/dcmgr/models/host_node.rb}, %q{lib/dcmgr/models/security_group_rule.rb}, %q{lib/dcmgr/models/base_new.rb}, %q{lib/dcmgr/models/instance_security_group.rb}, %q{lib/dcmgr/models/account.rb}, %q{lib/dcmgr/models/dhcp_range.rb}, %q{lib/dcmgr/models/security_group.rb}, %q{lib/dcmgr/models/frontend_system.rb}, %q{lib/dcmgr/models/image.rb}, %q{lib/dcmgr/models/instance.rb}, %q{lib/dcmgr/models/volume.rb}, %q{lib/dcmgr/models/tag.rb}, %q{lib/dcmgr/models/account_resource.rb}, %q{lib/dcmgr/models/physical_network.rb}, %q{lib/dcmgr/models/storage_node.rb}, %q{lib/dcmgr/models/hostname_lease.rb}, %q{lib/dcmgr/models/network.rb}, %q{lib/dcmgr/models/request_log.rb}, %q{lib/dcmgr/models/base.rb}, %q{lib/dcmgr/models/quota.rb}, %q{lib/dcmgr/models/history.rb}, %q{lib/dcmgr/models/ssh_key_pair.rb}, %q{lib/dcmgr/logger.rb}, %q{lib/dcmgr/drivers/iscsi_target.rb}, %q{lib/dcmgr/drivers/lxc.rb}, %q{lib/dcmgr/drivers/comstar.rb}, %q{lib/dcmgr/drivers/linux_iscsi.rb}, %q{lib/dcmgr/drivers/iijgio_storage.rb}, %q{lib/dcmgr/drivers/raw.rb}, %q{lib/dcmgr/drivers/backing_store.rb}, %q{lib/dcmgr/drivers/s3_storage.rb}, %q{lib/dcmgr/drivers/storage_initiator.rb}, %q{lib/dcmgr/drivers/zfs.rb}, %q{lib/dcmgr/drivers/snapshot_storage.rb}, %q{lib/dcmgr/drivers/hypervisor.rb}, %q{lib/dcmgr/drivers/kvm.rb}, %q{lib/dcmgr/drivers/local_storage.rb}, %q{lib/dcmgr/drivers/sun_iscsi.rb}, %q{lib/dcmgr/rubygems.rb}, %q{lib/dcmgr/storage_service.rb}, %q{lib/dcmgr/rpc/sta_handler.rb}, %q{lib/dcmgr/rpc/hva_handler.rb}, %q{lib/dcmgr/messaging_client.rb}, %q{lib/dcmgr/helpers/ec2_metadata_helper.rb}, %q{lib/dcmgr/helpers/nic_helper.rb}, %q{lib/dcmgr/helpers/cli_helper.rb}, %q{lib/dcmgr/helpers/snapshot_storage_helper.rb}, %q{lib/dcmgr/node_modules/openflow_controller.rb}, %q{lib/dcmgr/node_modules/hva_collector.rb}, %q{lib/dcmgr/node_modules/instance_ha.rb}, %q{lib/dcmgr/node_modules/scheduler.rb}, %q{lib/dcmgr/node_modules/sta_tgt_initializer.rb}, %q{lib/dcmgr/node_modules/sta_collector.rb}, %q{lib/dcmgr/node_modules/service_openflow.rb}, %q{lib/dcmgr/node_modules/instance_monitor.rb}, %q{lib/dcmgr/node_modules/service_netfilter.rb}, %q{lib/dcmgr/vnet/netfilter/chain.rb}, %q{lib/dcmgr/vnet/netfilter/controller.rb}, %q{lib/dcmgr/vnet/netfilter/task_manager.rb}, %q{lib/dcmgr/vnet/netfilter/ebtables_rule.rb}, %q{lib/dcmgr/vnet/netfilter/iptables_rule.rb}, %q{lib/dcmgr/vnet/netfilter/cache.rb}, %q{lib/dcmgr/vnet/factories.rb}, %q{lib/dcmgr/vnet/tasks/drop_ip_from_anywhere.rb}, %q{lib/dcmgr/vnet/tasks/accept_related_established.rb}, %q{lib/dcmgr/vnet/tasks/accept_wakame_dns_only.rb}, %q{lib/dcmgr/vnet/tasks/drop_arp_to_host.rb}, %q{lib/dcmgr/vnet/tasks/static_nat.rb}, %q{lib/dcmgr/vnet/tasks/drop_arp_forwarding.rb}, %q{lib/dcmgr/vnet/tasks/accept_arp_to_host.rb}, %q{lib/dcmgr/vnet/tasks/accept_ip_from_gateway.rb}, %q{lib/dcmgr/vnet/tasks/accept_arp_from_friends.rb}, %q{lib/dcmgr/vnet/tasks/security_group.rb}, %q{lib/dcmgr/vnet/tasks/accept_wakame_dhcp_only.rb}, %q{lib/dcmgr/vnet/tasks/accept_arp_broadcast.rb}, %q{lib/dcmgr/vnet/tasks/accept_ip_from_friends.rb}, %q{lib/dcmgr/vnet/tasks/translate_metadata_address.rb}, %q{lib/dcmgr/vnet/tasks/accept_all_dns.rb}, %q{lib/dcmgr/vnet/tasks/drop_ip_spoofing.rb}, %q{lib/dcmgr/vnet/tasks/drop_mac_spoofing.rb}, %q{lib/dcmgr/vnet/tasks/accept_arp_from_gateway.rb}, %q{lib/dcmgr/vnet/tasks/debug_iptables.rb}, %q{lib/dcmgr/vnet/tasks/exclude_from_nat.rb}, %q{lib/dcmgr/vnet/tasks/accept_ip_to_anywhere.rb}, %q{lib/dcmgr/vnet/isolators/by_securitygroup.rb}, %q{lib/dcmgr/vnet/isolators/dummy.rb}, %q{lib/dcmgr/cli/vlan.rb}, %q{lib/dcmgr/cli/storage.rb}, %q{lib/dcmgr/cli/spec.rb}, %q{lib/dcmgr/cli/errors.rb}, %q{lib/dcmgr/cli/security_group.rb}, %q{lib/dcmgr/cli/host.rb}, %q{lib/dcmgr/cli/image.rb}, %q{lib/dcmgr/cli/tag.rb}, %q{lib/dcmgr/cli/keypair.rb}, %q{lib/dcmgr/cli/network.rb}, %q{lib/dcmgr/cli/base.rb}, %q{lib/dcmgr/cli/quota.rb}, %q{lib/ext/time.rb}, %q{web/api/public/index.html}, %q{web/metadata/public/index.html}, %q{Rakefile}, %q{LICENSE}, %q{NOTICE}, %q{web/api/config.ru}, %q{web/metadata/config.ru}, %q{config/dcmgr.conf.example}, %q{bin/collector}]
   s.homepage = %q{http://wakame.jp/}
-  s.require_paths = ["lib"]
+  s.require_paths = [%q{lib}]
   s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
-  s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Datacenter management toolkit for IaaS Cloud: datacenter manager and support modules}
+  s.rubygems_version = %q{1.8.6}
+  s.summary = %q{Wakame-VDC: Server modules}
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<isono>, ["= 0.2.3"])
+      s.add_runtime_dependency(%q<isono>, ["= 0.2.9"])
       s.add_runtime_dependency(%q<log4r>, [">= 0"])
       s.add_runtime_dependency(%q<extlib>, ["= 0.9.15"])
       s.add_runtime_dependency(%q<configuration>, [">= 0"])
-      s.add_runtime_dependency(%q<statemachine>, ["= 1.1.1"])
       s.add_runtime_dependency(%q<ruby-hmac>, [">= 0"])
       s.add_runtime_dependency(%q<ipaddress>, ["= 0.7.0"])
-      s.add_runtime_dependency(%q<rack>, [">= 1.2.1"])
-      s.add_runtime_dependency(%q<sinatra>, ["= 1.2.1"])
+      s.add_runtime_dependency(%q<rack>, [">= 1.3.2"])
+      s.add_runtime_dependency(%q<sinatra>, ["= 1.2.6"])
       s.add_runtime_dependency(%q<json>, [">= 1.2.0"])
-      s.add_runtime_dependency(%q<sequel>, ["= 3.21.0"])
+      s.add_runtime_dependency(%q<sequel>, ["= 3.27.0"])
       s.add_runtime_dependency(%q<mysql>, [">= 2.8.1"])
+      s.add_runtime_dependency(%q<net-dhcp>, [">= 1.1.0"])
+      s.add_runtime_dependency(%q<bit-struct>, [">= 0.13.6"])
+      s.add_runtime_dependency(%q<racket>, [">= 1.0.11"])
       s.add_development_dependency(%q<bacon>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
     else
-      s.add_dependency(%q<isono>, ["= 0.2.3"])
+      s.add_dependency(%q<isono>, ["= 0.2.9"])
       s.add_dependency(%q<log4r>, [">= 0"])
       s.add_dependency(%q<extlib>, ["= 0.9.15"])
       s.add_dependency(%q<configuration>, [">= 0"])
-      s.add_dependency(%q<statemachine>, ["= 1.1.1"])
       s.add_dependency(%q<ruby-hmac>, [">= 0"])
       s.add_dependency(%q<ipaddress>, ["= 0.7.0"])
-      s.add_dependency(%q<rack>, [">= 1.2.1"])
-      s.add_dependency(%q<sinatra>, ["= 1.2.1"])
+      s.add_dependency(%q<rack>, [">= 1.3.2"])
+      s.add_dependency(%q<sinatra>, ["= 1.2.6"])
       s.add_dependency(%q<json>, [">= 1.2.0"])
-      s.add_dependency(%q<sequel>, ["= 3.21.0"])
+      s.add_dependency(%q<sequel>, ["= 3.27.0"])
       s.add_dependency(%q<mysql>, [">= 2.8.1"])
+      s.add_dependency(%q<net-dhcp>, [">= 1.1.0"])
+      s.add_dependency(%q<bit-struct>, [">= 0.13.6"])
+      s.add_dependency(%q<racket>, [">= 1.0.11"])
       s.add_dependency(%q<bacon>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
     end
   else
-    s.add_dependency(%q<isono>, ["= 0.2.3"])
+    s.add_dependency(%q<isono>, ["= 0.2.9"])
     s.add_dependency(%q<log4r>, [">= 0"])
     s.add_dependency(%q<extlib>, ["= 0.9.15"])
     s.add_dependency(%q<configuration>, [">= 0"])
-    s.add_dependency(%q<statemachine>, ["= 1.1.1"])
     s.add_dependency(%q<ruby-hmac>, [">= 0"])
     s.add_dependency(%q<ipaddress>, ["= 0.7.0"])
-    s.add_dependency(%q<rack>, [">= 1.2.1"])
-    s.add_dependency(%q<sinatra>, ["= 1.2.1"])
+    s.add_dependency(%q<rack>, [">= 1.3.2"])
+    s.add_dependency(%q<sinatra>, ["= 1.2.6"])
     s.add_dependency(%q<json>, [">= 1.2.0"])
-    s.add_dependency(%q<sequel>, ["= 3.21.0"])
+    s.add_dependency(%q<sequel>, ["= 3.27.0"])
     s.add_dependency(%q<mysql>, [">= 2.8.1"])
+    s.add_dependency(%q<net-dhcp>, [">= 1.1.0"])
+    s.add_dependency(%q<bit-struct>, [">= 0.13.6"])
+    s.add_dependency(%q<racket>, [">= 1.0.11"])
     s.add_dependency(%q<bacon>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
   end

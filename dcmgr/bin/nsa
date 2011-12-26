@@ -39,7 +39,28 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
       logger.warn("Failed to detect dnsmasq binary version")
     end
     
+    myinstance.start_dnsmasq    
+    myinstance.refresh_dnsmasq_conf
+
+    event = Isono::NodeModules::EventChannel.new(node)
+
+    event.subscribe('instance.scheduled', '#') do |args|
+      logger.info("refresh on instance.scheduled: #{args.inspect}")
+      myinstance.refresh_dnsmasq_conf
+    end
     
+    event.subscribe('hva/instance_terminated', '#') do |args|
+      logger.info("refresh on instance_terminated: #{args.inspect}")
+      myinstance.restart_dnsmasq
+    end
+  end
+
+  terminate_hook do
+    system("/bin/kill #{@dnsmasq_pid}")
+  end
+
+  def start_dnsmasq
+    logger.debug "start_dnsmasq begin"
     opts = sprintf("-k --no-hosts --no-resolv --leasefile-ro --dhcp-leasefile=/dev/null " +
                    "--addn-hosts=%s --dhcp-hostsfile=%s --conf-file=%s",
                    config_section.dhcp_hosts_conf + ".hosts",
@@ -58,26 +79,22 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     rescue Errno::ECHILD
       abort("Failed to exec dnsmasq process.")
     end
-    
-    myinstance.refresh_dnsmasq_conf
+  end    
 
-    event = Isono::NodeModules::EventChannel.new(node)
-
-    event.subscribe('instance.scheduled', '#') do |args|
-      logger.info("refresh on instance.scheduled: #{args.inspect}")
-      myinstance.refresh_dnsmasq_conf
-    end
-    
-    event.subscribe('hva/instance_terminated', '#') do |args|
-      logger.info("refresh on instance_terminated: #{args.inspect}")
-      myinstance.refresh_dnsmasq_conf
-    end
+  def restart_dnsmasq
+    EM.defer {
+      begin
+        generate_dhcp_conf()
+        if Process.waitpid(@dnsmasq_pid, Process::WNOHANG).nil?
+          system("/bin/kill #{@dnsmasq_pid}")
+        end
+        start_dnsmasq
+        logger.info("restart dnsmasq conf")
+      rescue Exception => e
+        logger.error(e)
+      end
+    }
   end
-
-  terminate_hook do
-    system("/bin/kill #{@dnsmasq_pid}")
-  end
-
 
   def refresh_dnsmasq_conf
     EM.defer {

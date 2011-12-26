@@ -33,8 +33,8 @@ namespace :db do
     DB['users_accounts'].with_sql(sql,2,2).first
 
     publish_date = '2010-11-19 9:00:00'
-    title = "新機能の提供を開始しました。"
-    description = "・GUIの提供・KVM対応\n・EBSとしてZFS対応\n・セキュリティグループ対応'\n"
+    title = "News1"
+    description = "New description."
     
     Information.create(:title => title,
                        :description => description,

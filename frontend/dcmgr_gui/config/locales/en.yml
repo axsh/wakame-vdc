@@ -286,6 +286,7 @@ en:
       secret_access_key: "Secret Access Key"
     details:
       header: "Details"
+      uuid: "UUID"
       fingerprint: "Fingerprint"
       created_at: "Created"
       updated_at: "Updated"
