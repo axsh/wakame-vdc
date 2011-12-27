@@ -59,6 +59,10 @@ dhcp_server=${dhcp_server:-${ipaddr}}
 metadata_server=${metadata_server:-${ipaddr}}
 sta_server=${sta_server:-${ipaddr}}
 
+# dhcp range for demo1
+range_begin=${range_begin}
+range_end=${range_end}
+
 # local store demo machine image
 local_store_path="$tmp_path/images"
 
