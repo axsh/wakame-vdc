@@ -198,7 +198,7 @@ __END
   def release(uuid)
     nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
 
-    if nw.ip_lease_dataset.filter(:ipv4=>options[:ipv4]).delete == 0
+    if nw.ip_lease_dataset.delete_reserved(options[:ipv4]) == 0
       Error.raise("The IP is not reserved in network #{uuid}: #{options[:ipv4]}", 100)
     end
   end
