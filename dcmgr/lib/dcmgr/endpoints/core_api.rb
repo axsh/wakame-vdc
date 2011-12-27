@@ -955,6 +955,7 @@ module Dcmgr
         operation :create do
           description "Create new network"
           # params :gw required default gateway address of the network
+          # params :network required network address of the network
           # params :prefix optional  netmask bit length. it will be
           #               set 24 if none.
           # params :description optional description for the network
@@ -963,6 +964,7 @@ module Dcmgr
             savedata = {
               :account_id=>@account.canonical_uuid,
               :ipv4_gw => params[:gw],
+              :ipv4_network => params[:network],
               :prefix => params[:prefix].to_i,
               :description => params[:description],
             }
@@ -994,8 +996,8 @@ module Dcmgr
             nw = find_by_uuid(:Network, params[:id])
             examine_owner(nw) || raise(OperationNotPermitted)
 
-            (ipaddr.is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
-              nw.add_reserved(ip)
+            (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
+              nw.ip_lease_dataset.add_reserved(ip)
             }
             response_to({})
           end
@@ -1010,8 +1012,8 @@ module Dcmgr
             nw = find_by_uuid(:Network, params[:id])
             examine_owner(nw) || raise(OperationNotPermitted)
 
-            (ipaddr.is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
-              nw.delete_reserved(ip)
+            (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
+              nw.ip_lease_dataset.delete_reserved(ip)
             }
             response_to({})
           end
@@ -1019,11 +1021,12 @@ module Dcmgr
 
         operation :add_pool, :method=>:put, :member=>true do
           description 'Label network pool name'
-           # param :name required
+          # param :name required
           control do
             Models::Tag.lock!
             nw = find_by_uuid(:Network, params[:id])
             examine_owner(nw) || raise(OperationNotPermitted)
+
             nw.label_tag(:NetworkPool, params[:name], @account.canonical_uuid)
             response_to({})
           end
@@ -1047,11 +1050,11 @@ module Dcmgr
           # param :name required
           control do
             Models::Tag.lock!
-             nw = find_by_uuid(:Network, params[:id])
-             examine_owner(nw) || raise(OperationNotPermitted)
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
 
-             res = nw.tags_dataset.filter(:type_id=>Tags.type_id(:NetworkPool)).all.map{|i| i.to_api_document }
-             response_to(res)
+            res = nw.tags_dataset.filter(:type_id=>Tags.type_id(:NetworkPool)).all.map{|i| i.to_api_document }
+            response_to(res)
            end
          end
       end
