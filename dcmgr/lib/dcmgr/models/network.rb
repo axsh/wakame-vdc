@@ -14,6 +14,12 @@ module Dcmgr::Models
                      :alloc_type=>IpLease::TYPE_RESERVED,
                      :description=>description)
       end
+
+      def delete_reserved(ipaddr)
+        model.filter(:network_id=>model_object.id,
+                     :alloc_type=>IpLease::TYPE_RESERVED,
+                     :ipv4=>ipaddr).delete
+      end
     end
     one_to_many :ip_lease, :extend=>IpLeaseMethods
     many_to_one :vlan_lease
