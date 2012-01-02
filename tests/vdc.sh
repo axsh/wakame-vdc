@@ -72,6 +72,7 @@ vmdir_path=${tmp_path}/instances
 vmimage_uuid=lucid0
 vmimage_file=${vmimage_uuid}.qcow2
 vmimage_s3="http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/${vmimage_file}.gz"
+vmimage_arch=32
 
 # mysql
 dcmgr_dbname=wakame_dcmgr

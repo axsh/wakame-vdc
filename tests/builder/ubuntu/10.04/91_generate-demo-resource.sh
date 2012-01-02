@@ -18,7 +18,7 @@ vmimage_s3_prefix=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
 # common
 vmimage_dist_name=ubuntu
 vmimage_dist_ver=lucid
-vmimage_arch=32
+vmimage_arch=${vmimage_arch:-32}
 #vmimage_desc="${vmimage_dist_name} ${vmimage_dist_ver} ${vmimage_arch}"
 
 #vmimages=$(echo ubuntu-lucid-kvm{,-{md,ms}}-{32,64}.raw.gz)
