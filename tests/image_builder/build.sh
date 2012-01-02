@@ -33,6 +33,7 @@ function run_vmbuilder() {
       --addpkg vim \
       --addpkg less \
       --addpkg lv \
+      --addpkg gpgv \
       --dns 8.8.8.8 --arch=$arch
 }
 
