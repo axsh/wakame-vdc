@@ -9,6 +9,7 @@ module Dcmgr::Models
     many_to_one :security_group
 
     def to_hash
+      p self.class.parse_rule(self.permission)
       {
         :permission => permission,
         
@@ -138,6 +139,8 @@ module Dcmgr::Models
           :protocol    => protocol,
           :ip_source   => ip_source,
         }
+      else
+        raise "Unsupported protocol: #{ip_protocol}"
       end
     end
     
