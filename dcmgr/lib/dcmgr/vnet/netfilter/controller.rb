@@ -32,7 +32,7 @@ module Dcmgr
           puts cmds.join("\n") if node.manifest.config.verbose_netfilter
           system(cmds.join("\n"))
           
-          self.task_manager.apply_tasks([DebugIptables.new]) if node.manifest.config.debug_iptables
+          self.task_manager.apply_tasks([Dcmgr::VNet::Tasks::DebugIptables.new]) if node.manifest.config.debug_iptables
           
           # Apply the current instances if there are any
           @cache.get[:instances].each { |inst_map|
@@ -171,6 +171,9 @@ module Dcmgr
             "iptables -t filter -F",
             "iptables -t filter -X",
             "iptables -t filter -Z",
+            "iptables -t raw -F",
+            "iptables -t raw -X",
+            "iptables -t raw -Z",
           ]
         end
         
