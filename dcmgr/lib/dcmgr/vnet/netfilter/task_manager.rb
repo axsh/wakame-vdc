@@ -316,7 +316,7 @@ module Dcmgr
           end
           
           def tailor!(rule)
-            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT"
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT" && rule.protocol == :arp
               rule.chain = @name
             end
             
@@ -335,7 +335,7 @@ module Dcmgr
           end
           
           def tailor!(rule)
-            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "OUTPUT"
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "OUTPUT" && rule.protocol == :arp
               rule.chain = @name
             end
             
@@ -354,7 +354,7 @@ module Dcmgr
           end
           
           def tailor!(rule)
-            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT"
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT" && rule.protocol == :ip4
               rule.chain = @name
             end
             
@@ -373,7 +373,7 @@ module Dcmgr
           end
           
           def tailor!(rule)
-            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT"
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT" && rule.protocol == :ip4
               rule.chain = @name
             end
             
