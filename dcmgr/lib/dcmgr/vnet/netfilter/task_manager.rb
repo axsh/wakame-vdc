@@ -172,6 +172,8 @@ module Dcmgr
             if rule.table == :nat && rule.chain == "POSTROUTING" && (not (rule.rule.include? "-j SNAT"))
               rule.chain = @name
             end
+            
+            rule
           end
         end
         
@@ -190,6 +192,8 @@ module Dcmgr
             if rule.table == :nat && rule.chain == "POSTROUTING" && rule.rule.include?("-j SNAT")
               rule.chain = @name
             end
+            
+            rule
           end
         end
         
@@ -244,6 +248,7 @@ module Dcmgr
             if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.bound == @bound && rule.protocol == :arp
             rule.chain = @name
             end
+            rule
           end
         end
         
@@ -405,6 +410,7 @@ module Dcmgr
           if self.enable_ebtables
             ebtables_chains(vnic_map).each { |chain|
               commands << "ebtables -t #{chain.table} -N #{chain.name}"
+              commands << "ebtables -t #{chain.table} -P #{chain.name} RETURN"
               chain.jumps.each { |jump|
                 commands << get_rule_command(jump,:apply)
               }
@@ -459,7 +465,7 @@ module Dcmgr
             task.rules.each { |rule|
               if self.enable_iptables && rule.is_a?(IptablesRule)
                 # If a rule is protocol independent, copy it for each protocol
-                if rule.protocol.nil?
+                if rule.protocol.nil? && rule.table == :filter
                   IptablesRule.protocols.each { |k,v|
                     new_rule = rule.dup
                     new_rule.protocol = v.to_sym
@@ -562,6 +568,39 @@ module Dcmgr
           chains << VnicEbChainToHostIPV4.new(vnic_map)
 
           chains
+        end
+        
+        def apply_tasks(tasks)
+          commands = []
+
+          commands = tasks.map { |task|
+            next unless task.is_a? Task
+            task.rules.map { |rule|
+              next unless rule.is_a? Rule
+              get_rule_command(rule,:apply)
+            }
+          }
+          
+          final_commands = commands.flatten.uniq.compact
+          puts final_commands.join("\n") if self.verbose_commands
+          
+          system(final_commands.join("\n"))
+        end
+        
+        def remove_tasks(tasks)
+          commands = []
+          
+          commands = tasks.map { |task|
+            next unless task.is_a? Task
+            task.rules.map { |rule|
+              get_rule_command(rule,:remove)
+            }
+          }
+          
+          final_commands = commands.flatten.uniq.compact
+          puts final_commands.join("\n") if self.verbose_commands
+          
+          system(final_commands.join("\n"))
         end
       end
 
