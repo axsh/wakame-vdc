@@ -69,13 +69,8 @@ module Dcmgr
             friends = @isolator.determine_friends(vnic, other_vnics)
             
             friends.each { |friend|
-              # Remove the drop rules so the isolation rules don't ger applied after them
-              #self.task_manager.remove_vnic_tasks(friend,TaskFactory.create_drop_tasks_for_vnic(friend,self.node))
-              
               # Put in the new isolation rules
               self.task_manager.apply_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
-              # Put the drop rules back
-              #self.task_manager.apply_vnic_tasks(friend,TaskFactory.create_drop_tasks_for_vnic(friend,self.node))
             }
           }
         end
@@ -160,12 +155,8 @@ module Dcmgr
                 # Remove the old security group tasks
                 self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(old_group))
                 
-                # Remove the drop tasks so the new group's tasks don't get applied behind it
-                #self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_drop_tasks_for_vnic(vnic_map,self.node))
                 # Add the new security group tasks
                 self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(new_group))
-                # Put the drop tasks back in place
-                #self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_drop_tasks_for_vnic(vnic_map,self.node))
               }
             end
           end
@@ -180,7 +171,6 @@ module Dcmgr
             "iptables -t filter -F",
             "iptables -t filter -X",
             "iptables -t filter -Z",
-            #"iptables -t filter -P FORWARD  DROP"
           ]
         end
         
@@ -188,7 +178,6 @@ module Dcmgr
           [
               "ebtables -t nat --init-table",
               "ebtables -t filter --init-table",
-              #"ebtables -t filter -P FORWARD DROP"
           ]
         end
       end
