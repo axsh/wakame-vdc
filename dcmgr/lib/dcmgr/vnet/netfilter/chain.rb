@@ -12,14 +12,24 @@ module Dcmgr
           @table = table
           @name = name
         end
+        
+        # Determines which packets should be led into this chain
+        def jumps
+          raise NotImplementedError
+        end
+        
+        # Determines which rules should be applied to this chain
+        # Returns a tailored rule without affecting the original rule
+        def tailor(rule)
+          tailor!(rule.dup)
+        end
+        
+        # Determines which rules should be applied to this chain
+        # Tailors and returns the original rule
+        def tailor!(rule)
+          raise NotImplementedError
+        end
       end
-      
-      #IptablesPreMadeChains = {
-          #:filter => [:input,:output,:forward],
-          #:nat => [:prerouting,:postrouting,:output],
-          #:mangle => [:prerouting,:output,:input,:postrouting],
-          #:raw => [:prerouting, :output]
-      #}
       
       class IptablesChain < Chain
         def initialize(table,name)
@@ -38,12 +48,6 @@ module Dcmgr
           }
         end
       end
-      
-      #EbtablesPreMadeChains = {
-          #:filter => [:input,:output,:forward],
-          #:nat => [:prerouting,:postrouting,:output],
-          #:broute => [:brouting]
-      #}
       
       class EbtablesChain < Chain
         def initialize(table,name)

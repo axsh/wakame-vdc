@@ -26,275 +26,497 @@ module Dcmgr
           raise NotImplementedError
         end
       end
-    
-      # Task manager that creates chains based on vif uuid and protocol
-      # Supports ebtables rules and iptables rules
+      
+      module CustomChains
+        #************************
+        #Iptables part
+        #************************
+        class DVnicIpChain < IptablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter, "d_#{@vnic[:uuid]}")
+          end
+        
+          def jumps
+            [IptablesRule.new(:filter,:forward,nil,nil,"-m physdev --physdev-is-bridged --physdev-out #{@vnic[:uuid]} -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            return rule
+          end
+        end
+        
+        class SVnicIpChain < IptablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter, "s_#{@vnic[:uuid]}")
+          end
+        
+          def jumps
+            [IptablesRule.new(:filter,:forward,nil,nil,"-m physdev --physdev-is-bridged --physdev-in #{@vnic[:uuid]} -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            return rule
+          end
+        end
+        
+        class VnicIpChainTCP < IptablesChain
+          BOUNDS = {:incoming => "d", :outgoing => "s"}
+          
+          def initialize(bound,vnic)
+            raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound) unless BOUNDS.keys.member?(bound)
+            @bound = bound
+            @vnic = vnic
+            super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_tcp")
+          end
+          
+          def jumps
+            jumps = []
+            
+            if @bound == :incoming
+              jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:tcp,:outgoing,"-m state --state NEW,ESTABLISHED -p tcp -j #{@name}")
+            elsif @bound == :outgoing
+              jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:tcp,:incoming,"-p tcp -j #{@name}")
+            end
+            
+            jumps
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(IptablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.protocol == :tcp && rule.bound == @bound
+              rule.chain = @name
+            end
+            
+            rule
+          end
+          
+        end
+        
+        class VnicIpChainUDP < IptablesChain
+          BOUNDS = {:incoming => "d", :outgoing => "s"}
+          
+          def initialize(bound,vnic)
+            raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound)
+            @bound = bound
+            @vnic = vnic
+            super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_udp")
+          end
+          
+          def jumps
+            jumps = []
+            
+            if @bound == :incoming
+              jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:udp,:outgoing,"-m state --state NEW,ESTABLISHED -p udp -j #{@name}")
+            elsif @bound == :outgoing
+              jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:udp,:incoming,"-p udp -j #{@name}")
+            end
+            
+            jumps
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(IptablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.protocol == :udp && rule.bound == @bound
+              rule.chain = @name
+            end
+            
+            rule
+          end
+          
+        end
+        
+        class VnicIpChainICMP < IptablesChain
+          BOUNDS = {:incoming => "d", :outgoing => "s"}
+          
+          def initialize(bound,vnic)
+            raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound)
+            @bound = bound
+            @vnic = vnic
+            super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_icmp")
+          end
+          
+          def jumps
+            jumps = []
+            
+            if @bound == :incoming
+              jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:udp,:outgoing,"-m state --state NEW,ESTABLISHED,RELATED -p icmp -j #{@name}")
+            elsif @bound == :outgoing
+              jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:udp,:incoming,"-p icmp -j #{@name}")
+            end
+            
+            jumps
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(IptablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.protocol == :icmp && rule.bound == @bound
+              rule.chain = @name
+            end
+            
+            rule
+          end
+          
+        end
+        
+        class VnicIpSnatExceptions < IptablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:nat,"#{@vnic[:uuid]}_snat_exceptions")
+          end
+          
+          def jumps
+            [IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{@vnic[:ipv4][:address]} -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            # Very hackish but should work for now
+            if rule.table == :nat && rule.chain == "POSTROUTING" && (not (rule.rule.include? "-j SNAT"))
+              rule.chain = @name
+            end
+          end
+        end
+        
+        class VnicIpSnat < IptablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:nat,"#{@vnic[:uuid]}_snat")
+          end
+          
+          def jumps
+            [IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{@vnic[:ipv4][:address]} -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            # Very hackish but should work for now
+            if rule.table == :nat && rule.chain == "POSTROUTING" && rule.rule.include?("-j SNAT")
+              rule.chain = @name
+            end
+          end
+        end
+        
+        #************************
+        #Ebtables part
+        #************************
+        class SVnicEbChain < EbtablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter, "s_#{@vnic[:uuid]}")
+          end
+        
+          def jumps
+            [EbtablesRule.new(:filter,:forward,nil,nil,"-i #{@vnic[:uuid]} -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            return rule
+          end
+        end
+        
+        class DVnicEbChain < EbtablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter, "d_#{@vnic[:uuid]}")
+          end
+        
+          def jumps
+            [EbtablesRule.new(:filter,:forward,nil,nil,"-o #{@vnic[:uuid]} -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            return rule
+          end
+        end
+        
+        class VnicEbChainARP < EbtablesChain
+          BOUNDS = {:incoming => "d", :outgoing => "s"}
+          
+          def initialize(bound,vnic)
+            raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound)
+            @bound = bound
+            @vnic = vnic
+            super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_arp")
+          end
+          
+          def jumps
+            [EbtablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",nil,:outgoing,"-p arp -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.bound == @bound && rule.protocol == :arp
+            rule.chain = @name
+            end
+          end
+        end
+        
+        class VnicEbChainIPV4 < EbtablesChain
+          BOUNDS = {:incoming => "d", :outgoing => "s"}
+          
+          def initialize(bound,vnic)
+            raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound)
+            @bound = bound
+            @vnic = vnic
+            super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_ipv4")
+          end
+          
+          def jumps
+            [EbtablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",nil,:outgoing,"-p IPv4 -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.bound == @bound && rule.protocol == :ip4
+              rule.chain = @name
+            end
+            
+            rule
+          end
+        end
+        
+        class VnicEbChainToHost < EbtablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter,"s_#{@vnic[:uuid]}_d_host")
+          end
+          
+          def jumps
+            [EbtablesRule.new(:filter,:input,nil,:outgoing,"-i #{@vnic[:uuid]} -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            rule
+          end
+        end
+        
+        class VnicEbChainFromHost < EbtablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter,"d_#{@vnic[:uuid]}_s_host")
+          end
+          
+          def jumps
+            [EbtablesRule.new(:filter,:output,nil,:outgoing,"-o #{@vnic[:uuid]} -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            rule
+          end
+        end
+        
+        class VnicEbChainToHostARP < EbtablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter,"s_#{@vnic[:uuid]}_d_host_arp")
+          end
+          
+          def jumps
+              [EbtablesRule.new(:filter,"s_#{@vnic[:uuid]}_d_host",nil,:outgoing,"-p arp -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT"
+              rule.chain = @name
+            end
+            
+            rule
+          end
+        end
+        
+        class VnicEbChainFromHostARP < EbtablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter,"d_#{@vnic[:uuid]}_s_host_arp")
+          end
+          
+          def jumps
+              [EbtablesRule.new(:filter,"d_#{@vnic[:uuid]}_s_host",nil,:incoming,"-p arp -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "OUTPUT"
+              rule.chain = @name
+            end
+            
+            rule
+          end
+        end
+        
+        class VnicEbChainToHostIPV4 < EbtablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter,"s_#{@vnic[:uuid]}_d_host_ipv4")
+          end
+          
+          def jumps
+              [EbtablesRule.new(:filter,"s_#{@vnic[:uuid]}_d_host",nil,:outgoing,"-p IPv4 -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT"
+              rule.chain = @name
+            end
+            
+            rule
+          end
+        end
+        
+        class VnicEbChainFromHostIPV4 < EbtablesChain
+          def initialize(vnic)
+            @vnic = vnic
+            super(:filter,"d_#{@vnic[:uuid]}_s_host_ipv4")
+          end
+          
+          def jumps
+              [EbtablesRule.new(:filter,"d_#{@vnic[:uuid]}_s_host",nil,:incoming,"-p IPv4 -j #{@name}")]
+          end
+          
+          def tailor!(rule)
+            if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT"
+              rule.chain = @name
+            end
+            
+            rule
+          end
+        end
+      end
+      
       class VNicProtocolTaskManager < NetfilterTaskManager
-        include Dcmgr::Helpers::NicHelper
-        # These store the protocols used by iptables and ebtables
-        attr_reader :iptables_protocols
-        attr_reader :ebtables_protocols
+        include CustomChains
+
         # These are flags that decide whether or not iptables and ebtables are enabled
         attr_accessor :enable_iptables
         attr_accessor :enable_ebtables
         # Flag that decides whether or not we output commands that are applied
         attr_accessor :verbose_commands
-        
+
         def initialize
           super
-          @iptables_protocols = IptablesRule.protocols
-          @ebtables_protocols = EbtablesRule.protocols
         end
-        
-        def iptables_chains(vnic_map)
-          chains = []
-          
-          [ 's', 'd' ].each { |bound|
-            self.iptables_protocols.each { |k,v|
-                chains << IptablesChain.new(:filter, "#{bound}_#{vnic_map[:uuid]}")
-                chains << IptablesChain.new(:filter, "#{bound}_#{vnic_map[:uuid]}_#{k}")
 
-                chains << IptablesChain.new(:filter, "#{bound}_#{vnic_map[:uuid]}_drop")
-                chains << IptablesChain.new(:filter, "#{bound}_#{vnic_map[:uuid]}_#{k}_drop")
-            }
-            
-            #[ 'pre', 'post'].each { |nat_chain|
-              #chains << IptablesChain.new(:nat, "#{bound}_#{vnic_map[:uuid]}_#{nat_chain}")
-            #}
-          }
-          #chains << IptablesChain.new(:nat, "#{vnic_map[:uuid]}_dnat_exceptions")
-          chains << IptablesChain.new(:nat, "#{vnic_map[:uuid]}_snat_exceptions")
-          chains << IptablesChain.new(:nat, "#{vnic_map[:uuid]}_snat")
-          
-          chains
-        end
-        
-        def iptables_forward_chain_jumps(vnic)
-          jumps = []
-          
-          #Main jumps from the forward chains
-          jumps << IptablesRule.new(:filter,:forward,nil,nil,"-m physdev --physdev-is-bridged --physdev-in  #{vnic[:uuid]} -j s_#{vnic[:uuid]}")
-          jumps << IptablesRule.new(:filter,:forward,nil,nil,"-m physdev --physdev-is-bridged --physdev-out #{vnic[:uuid]} -j d_#{vnic[:uuid]}")
-          
-          jumps
-        end
-        
-        def iptables_protocol_chain_jumps(vnic)
-          jumps = []
-          
-          [ 's', 'd' ].each do |bound|
-            self.iptables_protocols.each { |k,v|
-              case k
-              when 'tcp'
-                case bound
-                when 's'
-                  jumps << IptablesRule.new(:filter,"#{bound}_#{vnic[:uuid]}",nil,:outgoing,"-m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vnic[:uuid]}_#{k}")
-                when 'd'
-                  jumps << IptablesRule.new(:filter,"#{bound}_#{vnic[:uuid]}",nil,:incoming,"-p #{k} -j #{bound}_#{vnic[:uuid]}_#{k}")
-                end
-              when 'udp'
-                case bound
-                when 's'
-                  jumps << IptablesRule.new(:filter,"#{bound}_#{vnic[:uuid]}",nil,:outgoing,"-m state --state NEW,ESTABLISHED -p #{k} -j #{bound}_#{vnic[:uuid]}_#{k}")
-                when 'd'
-                  jumps << IptablesRule.new(:filter,"#{bound}_#{vnic[:uuid]}",nil,:incoming,"-p #{k} -j #{bound}_#{vnic[:uuid]}_#{k}")
-                end
-              when 'icmp'
-                case bound
-                when 's'
-                  jumps << IptablesRule.new(:filter,"#{bound}_#{vnic[:uuid]}",nil,:outgoing,"-m state --state NEW,ESTABLISHED,RELATED -p #{k} -j #{bound}_#{vnic[:uuid]}_#{k}")
-                when 'd'
-                  jumps << IptablesRule.new(:filter,"#{bound}_#{vnic[:uuid]}",nil,:incoming,"-p #{k} -j #{bound}_#{vnic[:uuid]}_#{k}")
-                end
-              end
+        def apply_vnic_chains(vnic_map)
+          commands = []
+          if self.enable_iptables
+            # Create all iptables chains
+            iptables_chains(vnic_map).each { |chain|
+              commands << "iptables -t #{chain.table} -N #{chain.name}"
+              chain.jumps.each { |jump|
+                commands << get_rule_command(jump,:apply)
+              }
             }
           end
-          
-          jumps
+
+          if self.enable_ebtables
+            ebtables_chains(vnic_map).each { |chain|
+              commands << "ebtables -t #{chain.table} -N #{chain.name}"
+              chain.jumps.each { |jump|
+                commands << get_rule_command(jump,:apply)
+              }
+            }
+          end
+
+          execute_commands(commands.flatten.uniq)
         end
-        
-        # Returns the rules that direct packets for a vnic to that specific vnic's custom nat chains
-        def iptables_nat_chain_jumps(vnic_map)
-          jumps = []
+
+        def remove_vnic_chains(vnic_map)
+          commands = []
+          if self.enable_iptables
+            # Remove all jumps to this vnic's chains
+            ip_chains = iptables_chains(vnic_map)
+            ip_chains.each { |chain|
+              chain.jumps.each { |jump|
+                commands << get_rule_command(jump,:remove)
+              }
+            }
+            
+            # Remove this vnic's chains
+            ip_chains.each { |chain|
+              commands << "iptables -t #{chain.table} -F #{chain.name}"
+              commands << "iptables -t #{chain.table} -X #{chain.name}"
+            }
+          end
+
+          if self.enable_ebtables
+            # Remove all jumps to this vnic's chains
+            eb_chains = ebtables_chains(vnic_map)
+            eb_chains.each { |chain|
+              chain.jumps.each { |jump|
+                commands << get_rule_command(jump,:remove)
+              }
+            }
+            
+            # Remove this vnic's chains
+            eb_chains.each { |chain|
+              commands << "ebtables -t #{chain.table} -F #{chain.name}"
+              commands << "ebtables -t #{chain.table} -X #{chain.name}"
+            }
+          end
+
+          execute_commands(commands.flatten.uniq)
+        end
+
+        def handle_vnic_tasks(vnic,tasks,action)
+          commands = []
+
+          tasks.each { |task|
+            next unless task.is_a? Task
+            task.rules.each { |rule|
+              if self.enable_iptables && rule.is_a?(IptablesRule)
+                # If a rule is protocol independent, copy it for each protocol
+                if rule.protocol.nil?
+                  IptablesRule.protocols.each { |k,v|
+                    new_rule = rule.dup
+                    new_rule.protocol = v.to_sym
+                    # Determine which custom chain a rule is intended for
+                    iptables_chains(vnic).each { |chain|
+                      chain.tailor!(new_rule)
+                    }
+                    commands << get_rule_command(new_rule,action)
+                  }
+                else
+                  # Determine which custom chain a rule is intended for
+                  iptables_chains(vnic).each { |chain|
+                    chain.tailor!(rule)
+                  }
+                  commands << get_rule_command(rule,action)
+                end
+              elsif self.enable_ebtables && rule.is_a?(EbtablesRule)
+                # Determine which custom chain a rule is intended for
+                ebtables_chains(vnic).each { |chain|
+                  chain.tailor!(rule)
+                }
+                commands << get_rule_command(rule,action)
+              end
+            }
+          }
           
-          #[ :prerouting, :postrouting].each { |chain|
-          #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-d #{vnic_map[:ipv4][:nat_address]} -j #{vnic_map[:uuid]}_dnat_exceptions")
-          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{vnic_map[:ipv4][:address]} -j #{vnic_map[:uuid]}_snat_exceptions")
-          jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{vnic_map[:ipv4][:address]} -j #{vnic_map[:uuid]}_snat")
+          execute_commands(commands.flatten.uniq)
+        end
+
+        def apply_vnic_tasks(vnic,tasks)
+          handle_vnic_tasks(vnic,tasks,:apply)
+        end
+
+        def remove_vnic_tasks(vnic,tasks)
+          handle_vnic_tasks(vnic,tasks,:remove)
+        end
+
+        def execute_commands(cmds)
+          puts cmds.join("\n") if self.verbose_commands
+          system(cmds.join("\n"))
+        end
+
+        #def execute_commands_debug(cmds)
+          #cmds.each { |cmd|
+            #puts cmd
+            #system(cmd)
           #}
-          
-          #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-in  #{vnic[:uuid]} -j s_#{vnic[:uuid]}_pre")
-          #jumps << IptablesRule.new(:nat,:prerouting,nil,nil,"-m physdev --physdev-out  #{vnic[:uuid]} -j d_#{vnic[:uuid]}_pre")
-          #jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-m physdev --physdev-in #{vnic[:uuid]} -j s_#{vnic[:uuid]}_post")
-          #jumps << IptablesRule.new(:nat,:postrouting,nil,nil,"-m physdev --physdev-out #{vnic[:uuid]} -j d_#{vnic[:uuid]}_post")
-          
-          jumps
-        end
-        
-        def ebtables_chains(vnic)
-          chains = []
-          
-          chains << EbtablesChain.new(:filter, "s_#{vnic[:uuid]}")
-          chains << EbtablesChain.new(:filter, "d_#{vnic[:uuid]}")
-          chains << EbtablesChain.new(:filter, "s_#{vnic[:uuid]}_d_hst")
-          chains << EbtablesChain.new(:filter, "d_#{vnic[:uuid]}_s_hst")
-          self.ebtables_protocols.each { |k,v|
-            chains << EbtablesChain.new(:filter, "s_#{vnic[:uuid]}_#{k}")
-            chains << EbtablesChain.new(:filter, "d_#{vnic[:uuid]}_#{k}")
-            chains << EbtablesChain.new(:filter, "s_#{vnic[:uuid]}_d_hst_#{k}")
-            chains << EbtablesChain.new(:filter, "d_#{vnic[:uuid]}_s_hst_#{k}")
-          }
-          
-          chains
-        end
-        
-        def ebtables_forward_chain_jumps(vnic)
-          jumps = []
-          
-          jumps << EbtablesRule.new(:filter,:forward,nil,nil,"-i #{vnic[:uuid]} -j s_#{vnic[:uuid]}")
-          jumps << EbtablesRule.new(:filter,:forward,nil,nil,"-o #{vnic[:uuid]} -j d_#{vnic[:uuid]}")
-          
-          jumps
-        end
-        
-        def ebtables_protocol_chain_jumps(vnic)
-          jumps = []
-          
-          self.ebtables_protocols.each { |k,v|
-            jumps << EbtablesRule.new(:filter,"s_#{vnic[:uuid]}",nil,:outgoing,"-p #{v} -j s_#{vnic[:uuid]}_#{k}")
-            jumps << EbtablesRule.new(:filter,"d_#{vnic[:uuid]}",nil,:incoming,"-p #{v} -j d_#{vnic[:uuid]}_#{k}")
-            jumps << EbtablesRule.new(:filter,"s_#{vnic[:uuid]}_d_hst",nil,:outgoing,"-p #{v} -j s_#{vnic[:uuid]}_d_hst_#{k}")
-            jumps << EbtablesRule.new(:filter,"d_#{vnic[:uuid]}_s_hst",nil,:incoming,"-p #{v} -j d_#{vnic[:uuid]}_s_hst_#{k}")
-          }
-          
-          jumps
-        end
-        
-        def ebtables_input_chain_jumps(vnic)
-          jumps = []
-          
-          jumps << EbtablesRule.new(:filter,:input,nil,:outgoing,"-i #{vnic[:uuid]} -j s_#{vnic[:uuid]}_d_hst")
-          
-          jumps
-        end
-        
-        def ebtables_output_chain_jumps(vnic)
-          jumps = []
-          
-          jumps << EbtablesRule.new(:filter,:output,nil,:incoming,"-o #{vnic[:uuid]} -j d_#{vnic[:uuid]}_s_hst")
-          
-          jumps
-        end
-        
-        #Returns commands for creating iptables chains and their jump rules
-        def get_iptables_chains_apply_commands(vnic_map)
-          commands = []
-          
-          commands << iptables_chains(vnic_map).map { |chain| "iptables -t #{chain.table} -N #{chain.name}"}
-          
-          create_jump_block = Proc.new { |jump| 
-            "iptables -t #{jump.table} -A #{jump.chain} #{jump.rule}"
-          }
-          
-          commands << iptables_forward_chain_jumps(vnic_map).map(&create_jump_block)
-          commands << iptables_nat_chain_jumps(vnic_map).map(&create_jump_block)
-          commands << iptables_protocol_chain_jumps(vnic_map).map(&create_jump_block)
-          
-          commands.flatten.uniq
-        end
-        
-        # Apply the custom iptables chains for this vnic
-        # This method only applies the chains and doesn't make any rules
-        def apply_iptables_chains(vnic_map)
-          cmds = get_iptables_chains_apply_commands(vnic_map)
-          puts cmds.join("\n") if self.verbose_commands
-          system(cmds.join("\n"))
-        end
-        
-        def remove_iptables_chains(vnic)
-          cmds = get_iptables_chains_remove_commands(vnic)
-          puts cmds.join("\n") if self.verbose_commands
-          system(cmds.join("\n"))
-        end
-        
-        def get_iptables_chains_remove_commands(vnic_map)
-          commands = []
-          
-          delete_jump_block = Proc.new {|jump| "iptables -t #{jump.table} -D #{jump.chain} #{jump.rule}"}
-          
-          commands << iptables_forward_chain_jumps(vnic_map).map(&delete_jump_block)
-          commands << iptables_nat_chain_jumps(vnic_map).map(&delete_jump_block)
-          
-          commands << iptables_chains(vnic_map).map {|chain| 
-            ["iptables -t #{chain.table} -F #{chain.name}","iptables -t #{chain.table} -X #{chain.name}"]
-          }
-          
-          commands.flatten.uniq
-        end
-        
-        def apply_ebtables_chains(vnic_map)
-          cmds = get_ebtables_chains_apply_commands(vnic_map)
-          puts cmds.join("\n") if self.verbose_commands
-          system(cmds.join("\n"))
-        end
-        
-        def get_ebtables_chains_apply_commands(vnic_map)
-          commands = []
-          
-          commands << ebtables_chains(vnic_map).map {|chain| ["ebtables -t #{chain.table} -N #{chain.name}","ebtables -t #{chain.table} -P #{chain.name} RETURN"]}#,"ebtables -t #{chain.table} -P #{chain.name} DROP"]}
-          
-          create_jump_block = Proc.new {|jump| "ebtables -t #{jump.table} -A #{jump.chain} #{jump.rule}"}
-          
-          commands << ebtables_forward_chain_jumps(vnic_map).map(&create_jump_block)
-          commands << ebtables_input_chain_jumps(vnic_map).map(&create_jump_block)
-          commands << ebtables_output_chain_jumps(vnic_map).map(&create_jump_block)
-          commands << ebtables_protocol_chain_jumps(vnic_map).map(&create_jump_block)
-          
-          commands.flatten.uniq
-        end
-        
-        def remove_ebtables_chains(vnic)
-          cmds = get_ebtables_chains_remove_commands(vnic)
-          puts cmds.join("\n") if self.verbose_commands
-          system(cmds.join("\n"))
-        end
-        
-        def get_ebtables_chains_remove_commands(vnic_map)
-          commands = []
-          
-          delete_jump_block = Proc.new {|jump| "ebtables -t #{jump.table} -D #{jump.chain} #{jump.rule}"}
-          
-          commands << ebtables_forward_chain_jumps(vnic_map).map(&delete_jump_block)
-          commands << ebtables_input_chain_jumps(vnic_map).map(&delete_jump_block)
-          commands << ebtables_output_chain_jumps(vnic_map).map(&delete_jump_block)
-          
-          commands << ebtables_chains(vnic_map).map {|chain|
-            ["ebtables -t #{chain.table} -F #{chain.name}","ebtables -t #{chain.table} -X #{chain.name}"]
-          }
-          
-          commands.flatten.uniq
-        end
-        
-        # Jumps to custom chains named after the vnic's uuid,
-        # then jumps to more custom chains based on the protocol used.
-        # In those the real netfiltering happens
-        def apply_vnic_tasks(vnic_map, tasks)
-          # Apply the tasks to our chains
-          apply_tasks(tailor_vnic_tasks(vnic_map,tasks))
-        end
-        
-        def apply_vnic_chains(vnic_map)
-          apply_iptables_chains(vnic_map) if self.enable_iptables
-          apply_ebtables_chains(vnic_map) if self.enable_ebtables
-        end
-        
+        #end
+        #alias :execute_commands :execute_commands_debug
+
         # Translates _rule_ into a command that can be directly passed on to the OS
         # _action_ determines if the command must _:apply_ or _:remove_ a rule. 
         def get_rule_command(rule,action)
           actions = {:apply => "I", :remove => "D"}
-          raise ArgumentError, "#{rule} is not a Rule" unless rule.is_a? Rule
+          raise ArgumentError, "#{rule} is not a valic rule" unless rule.is_a?(IptablesRule) || rule.is_a?(EbtablesRule)
           raise ArgumentError, "action must be one of the following: '#{actions.keys.join(",")}'" unless actions.member? action
-          
+
           if rule.is_a?(IptablesRule) && self.enable_iptables
             "iptables -t #{rule.table} -#{actions[action]} #{rule.chain} #{rule.rule}"
           elsif rule.is_a?(EbtablesRule) && self.enable_ebtables
@@ -303,157 +525,46 @@ module Dcmgr
             nil
           end
         end
-        
-        def apply_tasks(tasks)
-          commands = []
 
-          commands = tasks.map { |task|
-            next unless task.is_a? Task
-            task.rules.map { |rule|
-              next unless rule.is_a? Rule
-              get_rule_command(rule,:apply)
-            }
-          }
-          
-          final_commands = commands.flatten.uniq.compact
-          puts final_commands.join("\n") if self.verbose_commands
-          
-          system(final_commands.join("\n"))
-        end
-        
-        def remove_tasks(tasks)
-          commands = []
-          
-          commands = tasks.map { |task|
-            next unless task.is_a? Task
-            task.rules.map { |rule|
-              get_rule_command(rule,:remove)
-            }
-          }
-          
-          final_commands = commands.flatten.uniq.compact
-          puts final_commands.join("\n") if self.verbose_commands
-          
-          system(final_commands.join("\n"))
-        end
-        
-        # Changes the chains of each rule in _tasks_ to match this TaskManager's model 
-        def tailor_vnic_tasks(vnic,tasks)
-          bound = {:incoming => "d", :outgoing => "s"}
-          nat_chains = {"PREROUTING" => "pre", "POSTROUTING" => "post"}
+        # Creates all returns the custom chains used for iptables
+        def iptables_chains(vnic_map)
+          chains = []
 
-          # Use the marshal trick to make a deep copy of tasks
-          new_tasks = Marshal.load( Marshal.dump(tasks) )
+          chains << DVnicIpChain.new(vnic_map)
+          chains << SVnicIpChain.new(vnic_map)
+          [:incoming,:outgoing].each { |bound|
+            chains << VnicIpChainTCP.new(bound,vnic_map)
+            chains << VnicIpChainUDP.new(bound,vnic_map)
+            chains << VnicIpChainICMP.new(bound,vnic_map)
+          }
+          chains << VnicIpSnat.new(vnic_map)
+          chains << VnicIpSnatExceptions.new(vnic_map)
 
-          new_tasks.each { |task|
-            # For protocol independent tasks, generate a copy of their rules for each protocol
-            # This is needed because this task manager uses custom chains for each protocol
-            task.rules = task.rules.map { |rule|
-              if rule.protocol.nil?
-                rule.class.protocols.values.map { |prot|
-                  new_rule = rule.dup
-                  new_rule.protocol = prot
-                  new_rule
-                }
-              else
-                rule
-              end
-            }.flatten
-          
-            task.rules.each { |rule|
-              # Direct iptables rules to their vnic's custom chains
-              if rule.is_a?(IptablesRule) && self.enable_iptables
-                case rule.table
-                  when :nat
-                    case rule.chain
-                      when :prerouting.to_s.upcase then
-                        #unless rule.rule.include? "-j DNAT"
-                          #rule.chain = "#{vnic[:uuid]}_dnat_exceptions"
-                        #end
-                        #p rule.chain
-                        #rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{nat_chains[rule.chain]}"
-                        #p rule.chain
-                      when :postrouting.to_s.upcase then
-                        # Very hackish but should work for now
-                        if rule.rule.include? "-j SNAT"
-                          rule.chain = "#{vnic[:uuid]}_snat"
-                        else
-                          rule.chain = "#{vnic[:uuid]}_snat_exceptions"
-                        end
-                        #rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{nat_chains[rule.chain]}"
-                    end
-                  when :filter
-                    case rule.chain
-                      when :forward.to_s.upcase then
-                        rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{rule.protocol}"
-                    end
-                end
-              # Direct ebtables rules to their vnic's custom chains
-              elsif rule.is_a?(EbtablesRule) && self.enable_ebtables
-                case rule.table
-                  when :filter then
-                    case rule.chain
-                      when :input.to_s.upcase then
-                        rule.chain = "s_#{vnic[:uuid]}_d_hst_#{rule.protocol}"
-                      when :output.to_s.upcase then
-                        rule.chain = "d_#{vnic[:uuid]}_s_hst_#{rule.protocol}"
-                      when :forward.to_s.upcase then
-                        rule.chain = "#{bound[rule.bound]}_#{vnic[:uuid]}_#{rule.protocol}"
-                    end
-                end
-              end
-            }
+          chains
+        end
+
+        # Creates and returns all the custom chains used for ebtables
+        def ebtables_chains(vnic_map)
+          chains = []
+
+          chains << SVnicEbChain.new(vnic_map)
+          chains << DVnicEbChain.new(vnic_map)
+          [:incoming,:outgoing].each { |bound|
+            chains << VnicEbChainARP.new(bound,vnic_map)
+            chains << VnicEbChainIPV4.new(bound,vnic_map)
           }
-          
-          new_tasks
-        end
-        
-        # Removes _tasks_ for this specific vnic if they are applied
-        # If no _tasks_ argument is provided, all tasks for this vnic will be removed
-        def remove_vnic_tasks(vnic,tasks = nil)
-            remove_tasks(tailor_vnic_tasks(vnic,tasks))
-        end
-        
-        def remove_vnic_chains(vnic)
-          remove_iptables_chains(vnic) if self.enable_iptables
-          remove_ebtables_chains(vnic) if self.enable_ebtables
-        end
-        
-        def apply_task(task)
-          task.rules.each { |rule|
-            cmds = []
-            if rule.is_a?(EbtablesRule)  && self.enable_ebtables
-              cmds << get_rule_command(rule,:apply)
-            elsif rule.is_a?(IptablesRule) && self.enable_iptables
-              cmds << get_rule_command(rule,:apply)
-            end
-            cmds.flatten!
-            cmds.compact!
-            
-            puts cmds.join("\n") if self.verbose_commands
-          
-            system(cmds.join("\n"))
-          }
-        end
-        
-        def remove_task(task)
-          task.rules.each { |rule|
-            cmds = []
-            if rule.is_a?(EbtablesRule) && self.enable_ebtables
-              cmds << get_rule_command(rule,:remove)
-            elsif rule.is_a?(IptablesRule) && self.enable_iptables
-              cmds << get_rule_command(rule,:remove)
-            end
-            cmds.flatten!
-            cmds.compact!
-            
-            puts cmds.join("\n") if self.verbose_commands
-          
-            system(cmds.join("\n"))
-          }
+          chains << VnicEbChainFromHost.new(vnic_map)
+          chains << VnicEbChainFromHostARP.new(vnic_map)          
+          chains << VnicEbChainFromHostIPV4.new(vnic_map)
+
+          chains << VnicEbChainToHost.new(vnic_map)
+          chains << VnicEbChainToHostARP.new(vnic_map)
+          chains << VnicEbChainToHostIPV4.new(vnic_map)
+
+          chains
         end
       end
-    
+
     end
   end
 end
