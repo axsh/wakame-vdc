@@ -65,7 +65,7 @@ module Dcmgr
         enable_logging = node.manifest.config.packet_drop_log
 
         #TODO: Add logging to ip drops
-        [DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: ")]
+        [DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: "),DropArpToHost.new]
       end
       
       # Creates tasks related to network address translation
