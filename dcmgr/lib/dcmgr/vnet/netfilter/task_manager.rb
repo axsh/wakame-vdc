@@ -576,7 +576,6 @@ module Dcmgr
           commands = tasks.map { |task|
             next unless task.is_a? Task
             task.rules.map { |rule|
-              next unless rule.is_a? Rule
               get_rule_command(rule,:apply)
             }
           }

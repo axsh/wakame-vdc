@@ -50,10 +50,6 @@ module Dcmgr
       end
     end
     
-    class Rule
-      
-    end
-    
     class Task
       #Must be an array of rules
       attr_accessor :rules

@@ -13,7 +13,6 @@ module Dcmgr
     class IsolatorFactory
       def self.create_isolator
         V::Isolators::BySecurityGroup.new
-        #V::Isolators::DummyIsolator.new
       end
     end
     
@@ -70,20 +69,10 @@ module Dcmgr
       
       # Creates tasks related to network address translation
       def self.create_nat_tasks_for_vnic(vnic,node)
-        #friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
-        #ipset_enabled = node.manifest.config.use_ipset
         tasks = []
         
         # Nat tasks
         if is_natted? vnic          
-          # Exclude instances in the same security group form using nat
-          #if ipset_enabled
-            # Not implemented yet
-            #tasks << ExcludeFromNatIpSet.new(friend_ips,vnic[:ipv4][:address])
-          #else
-            #tasks << ExcludeFromNat.new(friend_ips,vnic[:ipv4][:address])
-          #end
-          
           tasks << StaticNatLog.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if node.manifest.config.packet_drop_log
           tasks << StaticNat.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], clean_mac(vnic[:mac_addr]))
         end
@@ -118,8 +107,6 @@ module Dcmgr
         tasks << AcceptUdpEstablished.new
         tasks << AcceptAllDNS.new
         tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server]) unless vnic[:ipv4][:network][:dhcp_server].nil?
-        # Accept OUTGOING traffic from instances to anywhere in the network
-        #tasks << AcceptIpToAnywhere.new
         
         # VM isolation based
         tasks += self.create_tasks_for_isolation(vnic,friends,node)

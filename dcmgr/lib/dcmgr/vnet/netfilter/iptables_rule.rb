@@ -4,7 +4,7 @@ module Dcmgr
   module VNet
     module Netfilter
     
-      class IptablesRule < Rule
+      class IptablesRule
         attr_accessor :table
         attr_accessor :chain
         attr_accessor :rule
