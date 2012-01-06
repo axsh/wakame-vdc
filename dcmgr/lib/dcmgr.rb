@@ -225,7 +225,12 @@ module Dcmgr
     end
 
     module OpenFlow
+      autoload :OpenFlowConstants, 'dcmgr/vnet/openflow/constants'
       autoload :OpenFlowController, 'dcmgr/vnet/openflow/controller'
+      autoload :OpenFlowDatapath, 'dcmgr/vnet/openflow/datapath'
+      autoload :OpenFlowNetwork, 'dcmgr/vnet/openflow/network'
+      autoload :OpenFlowPort, 'dcmgr/vnet/openflow/port'
+      autoload :OpenFlowSwitch, 'dcmgr/vnet/openflow/switch'
     end
 
     module Tasks
