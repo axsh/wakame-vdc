@@ -6,6 +6,8 @@ debian/setup.sh usr/share/axsh/wakame-vdc
 debian/bridge_up.sh usr/share/axsh/wakame-vdc
 debian/cidr2mask.sh usr/share/axsh/wakame-vdc
 debian/network_setup.sh usr/share/axsh/wakame-vdc
+debian/demo_data_setup.sh usr/share/axsh/wakame-vdc
+debian/common.sh usr/share/axsh/wakame-vdc
 debian/config/dcmgr.conf usr/share/axsh/wakame-vdc/dcmgr/config
 debian/config/hva.conf usr/share/axsh/wakame-vdc/dcmgr/config
 debian/config/nsa.conf usr/share/axsh/wakame-vdc/dcmgr/config

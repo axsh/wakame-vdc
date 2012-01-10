@@ -7,25 +7,9 @@
 prefix_path=/usr/share/axsh/wakame-vdc
 builder_path=${prefix_path}/tests/builder
 tmp_path=${prefix_path}/tmp
-screenrc_path=${tmp_path}/screenrc
-
 . $builder_path/functions.sh
 
 [[ -f "/etc/lsb-release" ]] && . /etc/lsb-release
-
-DISTRIB_ID=$(echo "${DISTRIB_ID:-ubuntu}" | tr 'A-Z' 'a-z')
-[ -d ${builder_path}/${DISTRIB_ID}/${DISTRIB_RELEASE} ] || {
-  DISTRIB_RELEASE=$(ls -d ${builder_path}/${DISTRIB_ID}/* | tail -1)
-  [ -z ${DISTRIB_RELEASE} ] && abort "Cannot detect your using distribution."
-  DISTRIB_RELEASE=$(basename ${DISTRIB_RELEASE})
-}
-
-[[ -f /etc/redhat-release ]] && {
-  DISTRIB_ID=rhel
-  DISTRIB_RELEASE=$(ls -d ${builder_path}/${DISTRIB_ID}/* | tail -1)
-  [ -z ${DISTRIB_RELEASE} ] && abort "Cannot detect your using distribution."
-  DISTRIB_RELEASE=$(basename ${DISTRIB_RELEASE})
-}
 
 ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
 
@@ -81,7 +65,7 @@ hva_num=1
 sta_num=1
 
 # used resource file
-demo_resource=${demo_resource:-'91_generate-demo-resource.sh'}
+demo_resource=${demo_resource:-'demo_data_setup.sh'}
 
 #Take care of the gem dependencies
 cd ${prefix_path}
@@ -147,7 +131,16 @@ EOS
 
   # generate demo data
   work_dir=$prefix_path
-  run_builder ${demo_resource}
+  builder_script=$demo_resource
+  
+  # run script in subshell to inherit variables.
+  ( 
+    [[ -f $work_dir/common.sh ]] && {
+      . $work_dir/common.sh
+    }
+    . $work_dir/$builder_script
+  ) || abort "Failed to run $builder_script"
+  
 }
 
 init_db

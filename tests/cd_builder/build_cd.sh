@@ -48,10 +48,10 @@ arch="amd64"
 src_image=`readlink -f $1`
 dst_image="${root_dir}/wakame-vdc-${wakame_version}-${arch}.iso"
 guts_local="${tmp_dir}/cd_creation_bulk.tar.gz"
-guts_remote="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.12/cd/cd_creation_bulk.tar.gz"
+guts_remote="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.12.1/cd/cd_creation_bulk.tar.gz"
 images_dir="${cd_dir}/setup/images"
 remote_images_path=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
-vmimage_files=( ubuntu10.04_amd64.qcow2 debian6.0_amd64.qcow2 centos5.6_amd64.qcow2 )
+vmimage_file="ubuntu-10.04_with-metadata_kvm_i386.raw.gz"
 gpg_key_id="DCFFB6BE"
 
 #TODO: download ubuntu iso if it's not present
@@ -152,21 +152,15 @@ gunzip Packages.gz
 echo "Adding wakame-vdc to it"
 cp -r ${cd_mod_dir}/* ${cd_dir}
 
-#Add some images to the CD
-for vmimage_file in ${vmimage_files[@]}; do
-  if [ ! -f ${tmp_dir}/${vmimage_file} ]; then
-    cd ${tmp_dir}
-    if [ ! -f ${tmp_dir}/${vmimage_file}.gz ]; then
-      wget ${remote_images_path}/${vmimage_file}.gz
-      if [ "$?" -ne "0" ]; then
-        abort "Unable to download image ${remote_images_path}/${vmimage_file}.gz"
-      fi
-    fi
-    gunzip ${tmp_dir}/${vmimage_file}.gz
-  fi
-  echo "Adding image ${vmimage_file} to CD..."
-  cp ${tmp_dir}/${vmimage_file} ${images_dir}/
-done
+#Add  image to the CD
+echo "Adding image to the CD"
+if [ ! -f ${tmp_dir}/${vmimage_file} ]; then
+  cd ${tmp_dir}
+  wget ${remote_images_path}/${vmimage_file}
+fi
+
+echo "Add ${vmimage_file}"
+cp ${tmp_dir}/${vmimage_file} ${images_dir}/
 
 #Generate .conf files for signing the repositories
 cd ${apt_dir}
