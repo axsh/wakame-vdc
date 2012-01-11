@@ -23,4 +23,6 @@ fi
   update-rc.d -f rabbitmq-server remove
 }
 
+[ -d /var/log/wakame-vdc ] || mkdir -p /var/log/wakame-vdc
+
 exit 0
