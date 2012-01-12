@@ -21,6 +21,10 @@ module Dcmgr
           controller.switches[datapath_id]
         end
 
+        def add_flow flow
+          ovs_ofctl.add_flow_2 flow
+        end
+
         def send_message message
           controller.send_message datapath_id, message
         end

@@ -30,6 +30,11 @@ module Dcmgr
           logger.debug "'#{command}' => #{system(command)}."
         end
 
+        def add_flow_2 flow
+          command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow.match_to_s},actions=#{flow.actions_to_s}"
+          logger.debug "'#{command}' => #{system(command)}."
+        end
+
         def del_flow flow_match
           command = "#{@ovs_ofctl} del-flows #{switch_name} #{flow_match}"
           logger.debug "'#{command}' => #{system(command)}."
