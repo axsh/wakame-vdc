@@ -20,11 +20,6 @@ module Dcmgr
           
           # Accept DHCP replies coming from our DHCP server
           self.rules << IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp -s #{self.dhcp_server_ip} --sport #{fport}:#{tport} -j ACCEPT")
-          
-          # Drop all non DHCP traffic to our DHCP server
-          [:udp,:tcp,:icmp].each { |protocol|
-            self.rules << IptablesRule.new(:filter,:forward,protocol,:outgoing,"-d #{self.dhcp_server_ip} -p #{protocol} -j DROP")
-          }
         end
       end
     
