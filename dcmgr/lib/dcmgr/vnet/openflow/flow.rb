@@ -39,36 +39,53 @@ module Dcmgr
         def actions_to_s
           str = ""
 
-          actions.each { |key,value|
-            tag = action_tags[key]
-            raise "No action tag: key:#{key.inspect}" if tag.nil?
+          if actions.class == Array
+            actions.each { |block|
+              block.each { |key,value|
+                tag = action_tags[key]
+                raise "No action tag: key:#{key.inspect}" if tag.nil?
 
-            str << "," << tag % value
-          }
+                str << "," << tag % value
+              }
+            }
+          else
+            actions.each { |key,value|
+              tag = action_tags[key]
+              raise "No action tag: key:#{key.inspect}" if tag.nil?
+
+              str << "," << tag % value
+            }
+          end
           str
         end
 
         def match_tags
           {
             :arp => 'arp',
+            :tcp => 'tcp',
+            :udp => 'udp',
             :dl_dst => 'dl_dst=%s',
             :dl_src => 'dl_src=%s',
             :nw_dst => 'nw_dst=%s',
             :nw_src => 'nw_src=%s',
             :tp_dst => 'tp_dst=%s',
             :tp_src => 'tp_src=%s',
+            :in_port => 'in_port=%i',
             :reg1 => 'reg1=%i',
             :reg2 => 'reg2=%i',
-            :tcp => 'tcp',
-            :udp => 'udp',
           }
         end
 
         def action_tags
           {
             :controller => 'controller',
+            :drop => 'drop',
             :learn => 'learn(%s)',
+            :local => 'local',
+            :load_reg0 => 'load:%i->NXM_NX_REG0[]',
             :nw_dst => 'mod_nw_dst',
+            :output => 'output:%i',
+            :output_reg0 => 'output:NXM_NX_REG0[]',
             :resubmit => 'resubmit(,%i)',
           }
         end

@@ -83,7 +83,7 @@ module Dcmgr
           # Pass packets to the dst table if it originates from an instance on this host. (reg2 == 0)
           flows << Flow.new(TABLE_VIRTUAL_SRC, 2, {:reg1 => id, :reg2 => 0}, {:resubmit => TABLE_VIRTUAL_DST})
           # If from an external host, learn the ARP for future use.
-          flows << Flow.new(TABLE_VIRTUAL_SRC, 1, {:reg1 => id, :arp => nil}, {:learn => "#{learn_arp_match},#{learn_arp_actions}", :resubmit => TABLE_VIRTUAL_DST})
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 1, {:reg1 => id, :arp => nil}, [{:learn => "#{learn_arp_match},#{learn_arp_actions}"}, {:resubmit => TABLE_VIRTUAL_DST}])
           # Default action is to pass the packet to the dst table.
           flows << Flow.new(TABLE_VIRTUAL_SRC, 0, {:reg1 => id}, {:resubmit => TABLE_VIRTUAL_DST})
 

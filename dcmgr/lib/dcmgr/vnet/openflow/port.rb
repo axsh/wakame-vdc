@@ -30,15 +30,15 @@ module Dcmgr
 
         def init_eth
           @port_type = PORT_TYPE_ETH
-          queue_flow "priority=#{6}", "udp,in_port=local,dl_dst=ff:ff:ff:ff:ff:ff,nw_src=0.0.0.0,nw_dst=255.255.255.255,tp_src=68,tp_dst=67", "output:#{port_info.number}"
-          queue_flow "priority=#{2}", "in_port=#{port_info.number}",  "resubmit(,#{TABLE_ROUTE_DIRECTLY})"
-          queue_flow "priority=#{0}", "table=#{TABLE_MAC_ROUTE}", "output:#{port_info.number}"
-          queue_flow "priority=#{0}", "table=#{TABLE_ROUTE_DIRECTLY}", "output:#{port_info.number}"
-          queue_flow "priority=#{0}", "table=#{TABLE_LOAD_DST}", "load:#{port_info.number}->NXM_NX_REG0[],resubmit(,#{TABLE_LOAD_SRC})"
-          queue_flow "priority=#{4}", "table=#{TABLE_LOAD_SRC},in_port=#{port_info.number}", "output:NXM_NX_REG0[]"
-          queue_flow "priority=#{1}", "table=#{TABLE_ARP_ANTISPOOF},arp,in_port=#{port_info.number}", "resubmit(,#{TABLE_ARP_ROUTE})"
-          queue_flow "priority=#{0}", "table=#{TABLE_ARP_ROUTE},arp", "output:#{port_info.number}"
-          queue_flow "priority=#{4}", "table=#{TABLE_METADATA_OUTGOING},in_port=#{port_info.number}", "drop"
+          queue_flow_2 Flow.new(0, 6, {:udp => nil, :in_port => OpenFlowController::OFPP_LOCAL, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_src => '0.0.0.0', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:output => port_info.number})
+          queue_flow_2 Flow.new(0, 2, {:in_port => port_info.number},  {:resubmit => TABLE_ROUTE_DIRECTLY})
+          queue_flow_2 Flow.new(TABLE_MAC_ROUTE, 0, {}, {:output => port_info.number})
+          queue_flow_2 Flow.new(TABLE_ROUTE_DIRECTLY, 0, {}, {:output => port_info.number})
+          queue_flow_2 Flow.new(TABLE_LOAD_DST, 0, {}, [{:load_reg0 => port_info.number}, {:resubmit => TABLE_LOAD_SRC}])
+          queue_flow_2 Flow.new(TABLE_LOAD_SRC, 4, {:in_port => port_info.number}, {:output_reg0 => nil})
+          queue_flow_2 Flow.new(TABLE_ARP_ANTISPOOF, 1, {:arp => nil, :in_port => port_info.number}, {:resubmit => TABLE_ARP_ROUTE})
+          queue_flow_2 Flow.new(TABLE_ARP_ROUTE, 0, {:arp => nil}, {:output => port_info.number})
+          queue_flow_2 Flow.new(TABLE_METADATA_OUTGOING, 4, {:in_port => port_info.number}, {:drop => nil})
         end
 
         def init_gre_tunnel
@@ -174,6 +174,11 @@ module Dcmgr
         def queue_flow prefix, match, actions
           active_flows << match
           queued_flows << ["#{prefix},#{match}", actions]
+        end
+
+        def queue_flow_2 flow
+          active_flows << flow.match_to_s
+          queued_flows << [flow.match_to_s, flow.actions_to_s]
         end
 
       end
