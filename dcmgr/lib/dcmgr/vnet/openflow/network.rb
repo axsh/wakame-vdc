@@ -30,6 +30,10 @@ module Dcmgr
           @prefix = 0
         end
 
+        def update
+          datapath.ovs_ofctl.add_flows_from_list generate_flood_flows
+        end
+
         def add_port port, is_local
           ports << port
           local_ports << port if is_local

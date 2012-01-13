@@ -118,38 +118,6 @@ module Dcmgr
         # Public functions
         #
 
-        def install_virtual_network network
-          network.flood_flows       << ["priority=#{1},table=#{TABLE_VIRTUAL_DST},reg1=#{network.id},reg2=#{0},dl_dst=ff:ff:ff:ff:ff:ff", "", "output:<>", ""]
-          network.flood_local_flows << ["priority=#{0},table=#{TABLE_VIRTUAL_DST},reg1=#{network.id},dl_dst=ff:ff:ff:ff:ff:ff", "", "output:<>", ""]
-
-          learn_arp_match = "priority=#{1},idle_timeout=#{3600*10},table=#{TABLE_VIRTUAL_DST},reg1=#{network.id},reg2=#{0},NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]"
-          learn_arp_actions = "output:NXM_NX_REG2[]"
-
-          network.datapath.ovs_ofctl.add_flow "priority=#{2},table=#{TABLE_VIRTUAL_SRC},reg1=#{network.id},reg2=#{0}", "resubmit\\(,#{TABLE_VIRTUAL_DST}\\)"
-          network.datapath.ovs_ofctl.add_flow "priority=#{1},table=#{TABLE_VIRTUAL_SRC},reg1=#{network.id},arp", "learn\\(#{learn_arp_match},#{learn_arp_actions}\\),resubmit\\(,#{TABLE_VIRTUAL_DST}\\)"
-          network.datapath.ovs_ofctl.add_flow "priority=#{0},table=#{TABLE_VIRTUAL_SRC},reg1=#{network.id}", "resubmit\\(,#{TABLE_VIRTUAL_DST}\\)"
-
-          # Catch ARP for the DHCP server.
-          network.datapath.ovs_ofctl.add_flow "priority=#{3},table=#{TABLE_VIRTUAL_DST},reg1=#{network.id},arp,nw_dst=#{network.dhcp_ip.to_s}", "controller"
-
-          # Catch DHCP requests.
-          network.datapath.ovs_ofctl.add_flow "priority=#{3},table=#{TABLE_VIRTUAL_DST},reg1=#{network.id},udp,dl_dst=#{network.dhcp_hw},nw_dst=#{network.dhcp_ip.to_s},tp_src=68,tp_dst=67", "controller"
-          network.datapath.ovs_ofctl.add_flow "priority=#{3},table=#{TABLE_VIRTUAL_DST},reg1=#{network.id},udp,dl_dst=ff:ff:ff:ff:ff:ff,nw_dst=255.255.255.255,tp_src=68,tp_dst=67", "controller"
-
-          logger.info "installed virtual network: id:#{network.id} dhcp_hw:#{network.dhcp_hw} dhcp_ip:#{network.dhcp_ip.to_s}."
-        end
-
-        def install_physical_network network
-          network.flood_flows << ["priority=#{1},table=#{TABLE_MAC_ROUTE},dl_dst=FF:FF:FF:FF:FF:FF", "", "output:<>", ""]
-          network.flood_flows << ["priority=#{1},table=#{TABLE_ROUTE_DIRECTLY},dl_dst=FF:FF:FF:FF:FF:FF", "", "output:<>", ""]
-          network.flood_flows << ["priority=#{1},table=#{TABLE_LOAD_DST},dl_dst=FF:FF:FF:FF:FF:FF", "", "load:<>->NXM_NX_REG0[],resubmit(,#{TABLE_LOAD_SRC})", ""]
-          network.flood_flows << ["priority=#{1},table=#{TABLE_ARP_ROUTE},arp,dl_dst=FF:FF:FF:FF:FF:FF,arp_tha=00:00:00:00:00:00", "", "output:<>", ""]
-        end
-
-        def update_network network
-          network.datapath.ovs_ofctl.add_flows_from_list network.generate_flood_flows
-        end
-
         def send_udp datapath_id, out_port, src_hw, src_ip, src_port, dst_hw, dst_ip, dst_port, payload
           raw_out = Racket::Racket.new
           raw_out.l2 = Racket::L2::Ethernet.new
