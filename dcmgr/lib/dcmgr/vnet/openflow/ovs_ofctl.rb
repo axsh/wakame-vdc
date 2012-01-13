@@ -40,6 +40,22 @@ module Dcmgr
           logger.debug "'#{command}' => #{system(command)}."
         end
 
+        def add_flows_from_list_2 flows
+          recmds = []
+
+          eos = "__EOS_#{Isono::Util.gen_id}___"
+          recmds << "#{@ovs_ofctl} add-flow #{switch_name} - <<'#{eos}'"
+          flows.each { |flow|
+            full_flow = "#{flow.match_to_s},actions=#{flow.actions_to_s}"
+            puts "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose == true
+            recmds << full_flow
+          }
+          recmds << "#{eos}"
+
+          logger.debug("applying flow(s): #{recmds.size - 2}")
+          system(recmds.join("\n"))
+        end
+
         def add_flows_from_list(flows)
           recmds = []
 

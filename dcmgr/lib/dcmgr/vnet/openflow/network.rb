@@ -78,21 +78,23 @@ module Dcmgr
           learn_arp_match = "priority=#{1},idle_timeout=#{3600*10},table=#{TABLE_VIRTUAL_DST},reg1=#{id},reg2=#{0},NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]"
           learn_arp_actions = "output:NXM_NX_REG2[]"
 
+          flows = []
+
           # Pass packets to the dst table if it originates from an instance on this host. (reg2 == 0)
-          datapath.add_flow Flow.new(TABLE_VIRTUAL_SRC, 2, {:reg1 => id, :reg2 => 0}, {:resubmit => TABLE_VIRTUAL_DST})
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 2, {:reg1 => id, :reg2 => 0}, {:resubmit => TABLE_VIRTUAL_DST})
           # If from an external host, learn the ARP for future use.
-          datapath.add_flow Flow.new(TABLE_VIRTUAL_SRC, 1, {:reg1 => id, :arp => nil}, {:learn => "#{learn_arp_match},#{learn_arp_actions}", :resubmit => TABLE_VIRTUAL_DST})
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 1, {:reg1 => id, :arp => nil}, {:learn => "#{learn_arp_match},#{learn_arp_actions}", :resubmit => TABLE_VIRTUAL_DST})
           # Default action is to pass the packet to the dst table.
-          datapath.add_flow Flow.new(TABLE_VIRTUAL_SRC, 0, {:reg1 => id}, {:resubmit => TABLE_VIRTUAL_DST})
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 0, {:reg1 => id}, {:resubmit => TABLE_VIRTUAL_DST})
 
           # Catch ARP for the DHCP server.
-          datapath.add_flow Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :arp => nil, :nw_dst => dhcp_ip.to_s}, {:controller => nil})
+          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :arp => nil, :nw_dst => dhcp_ip.to_s}, {:controller => nil})
 
           # Catch DHCP requests.
-          datapath.add_flow Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => dhcp_hw, :nw_dst => dhcp_ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
-          datapath.add_flow Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
+          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => dhcp_hw, :nw_dst => dhcp_ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
+          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
 
-          # logger.info "installed virtual network: id:#{id} dhcp_hw:#{dhcp_hw} dhcp_ip:#{dhcp_ip.to_s}."
+          datapath.add_flows flows
         end
 
         def install_physical_network

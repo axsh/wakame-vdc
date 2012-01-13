@@ -34,7 +34,7 @@ module Dcmgr
         # of insertion when iterating, so the actions will be reordered.
         #
         # As the action list is order-sensetive the action list won't
-        # be strictly correct in earlier versions of ruby, yet we
+        # be strictly correct in earlier versions of ruby, however we
         # don't currently use any such flows.
         def actions_to_s
           str = ""
@@ -67,9 +67,9 @@ module Dcmgr
         def action_tags
           {
             :controller => 'controller',
-            :learn => 'learn\\(%s\\)',
+            :learn => 'learn(%s)',
             :nw_dst => 'mod_nw_dst',
-            :resubmit => 'resubmit\\(,%i\\)',
+            :resubmit => 'resubmit(,%i)',
           }
         end
 
