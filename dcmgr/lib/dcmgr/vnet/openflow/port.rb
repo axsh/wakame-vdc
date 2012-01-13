@@ -43,32 +43,31 @@ module Dcmgr
 
         def init_gre_tunnel
           @port_type = PORT_TYPE_TUNNEL
-          queue_flow "priority=#{7}", "table=#{0},in_port=#{port_info.number}", "load:#{network.id}->NXM_NX_REG1[],load:#{port_info.number}->NXM_NX_REG2[],resubmit(,#{TABLE_VIRTUAL_SRC})"
+          queue_flow_2 Flow.new(TABLE_CLASSIFIER, 7, {:in_port => port_info.number}, [{:load_reg1 => network.id, :load_reg2 => port_info.number}, {:resubmit => TABLE_VIRTUAL_SRC}])
         end
 
         def init_instance_net hw, ip
           @port_type = PORT_TYPE_INSTANCE_NET
-          queue_flow "priority=#{1}", "table=#{TABLE_MAC_ROUTE},dl_dst=#{hw}", "output:#{port_info.number}"
-          queue_flow "priority=#{2}", "table=#{0},in_port=#{port_info.number},dl_src=#{hw}", "resubmit(,#{TABLE_ROUTE_DIRECTLY})"
-          queue_flow "priority=#{1}", "table=#{TABLE_ROUTE_DIRECTLY},dl_dst=#{hw}", "output:#{port_info.number}"
-          queue_flow "priority=#{1}", "table=#{TABLE_LOAD_DST},dl_dst=#{hw}", "drop"
+          queue_flow_2 Flow.new(TABLE_MAC_ROUTE, 1, {:dl_dst => hw}, {:output => port_info.number})
+          queue_flow_2 Flow.new(TABLE_CLASSIFIER, 2, {:in_port => port_info.number, :dl_src => hw}, {:resubmit => TABLE_ROUTE_DIRECTLY})
+          queue_flow_2 Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => hw}, {:output => port_info.number})
+          queue_flow_2 Flow.new(TABLE_LOAD_DST, 1, {:dl_dst => hw}, {:drop => nil})
         end
 
         def init_instance_vnet hw, ip
           @port_type = PORT_TYPE_INSTANCE_VNET
-
-          queue_flow "priority=#{7}", "table=#{0},in_port=#{port_info.number}", "load:#{network.id}->NXM_NX_REG1[],resubmit(,#{TABLE_VIRTUAL_SRC})"
-          queue_flow "priority=#{2}", "table=#{TABLE_VIRTUAL_DST},reg1=#{network.id},dl_dst=#{hw}", "output:#{port_info.number}"
+          queue_flow_2 Flow.new(TABLE_CLASSIFIER, 7, {:in_port => port_info.number}, [{:load_reg1 => network.id}, {:resubmit => TABLE_VIRTUAL_SRC}])
+          queue_flow_2 Flow.new(TABLE_VIRTUAL_DST, 2, {:reg1 => network.id, :dl_dst => hw}, {:output => port_info.number})
         end
 
         def install_arp_antispoof hw, ip
           # Require correct ARP source IP/MAC from instance, and protect the instance IP from ARP spoofing.
-          queue_flow "priority=#{3}", "table=#{TABLE_ARP_ANTISPOOF},arp,in_port=#{port_info.number},arp_sha=#{hw},nw_src=#{ip}", "resubmit(,#{TABLE_ARP_ROUTE})"
-          queue_flow "priority=#{2}", "table=#{TABLE_ARP_ANTISPOOF},arp,arp_sha=#{hw}", "drop"
-          queue_flow "priority=#{2}", "table=#{TABLE_ARP_ANTISPOOF},arp,nw_src=#{ip}", "drop"
+          queue_flow_2 Flow.new(TABLE_ARP_ANTISPOOF, 3, {:arp => nil, :in_port => port_info.number, :arp_sha => hw, :nw_src => ip}, {:resubmit => TABLE_ARP_ROUTE})
+          queue_flow_2 Flow.new(TABLE_ARP_ANTISPOOF, 2, {:arp => nil, :arp_sha => hw}, {:drop => nil})
+          queue_flow_2 Flow.new(TABLE_ARP_ANTISPOOF, 2, {:arp => nil, :nw_src => ip}, {:drop => nil})
 
           # Routing of ARP packets to instance.
-          queue_flow "priority=#{2}", "table=#{TABLE_ARP_ROUTE},arp,dl_dst=#{hw},nw_dst=#{ip}", "output:#{port_info.number}"
+          queue_flow_2 Flow.new(TABLE_ARP_ROUTE, 2, {:arp => nil, :dl_dst => hw, :nw_dst => ip}, {:output => port_info.number})
         end
 
         def install_static_transport nw_proto, local_hw, local_ip, local_port, remote_ip
@@ -84,6 +83,7 @@ module Dcmgr
           incoming_match = "table=#{TABLE_LOAD_DST},#{match_type},dl_dst=#{local_hw},nw_dst=#{local_ip}#{src_match}"
           incoming_actions = "load:#{port_info.number}->NXM_NX_REG0[],resubmit(,#{TABLE_LOAD_SRC})"
           queue_flow "priority=#{3}", incoming_match, incoming_actions
+          # queue_flow_2 Flow.new(TABLE_CLASSIFIER, 3, incoming_match, incoming_actions)
 
           outgoing_match = "table=#{TABLE_LOAD_SRC},#{match_type},in_port=#{port_info.number},dl_src=#{local_hw},nw_src=#{local_ip}#{dst_match}"
           outgoing_actions = "output:NXM_NX_REG0[]"

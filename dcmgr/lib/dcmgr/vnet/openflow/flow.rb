@@ -70,6 +70,8 @@ module Dcmgr
             :nw_src => 'nw_src=%s',
             :tp_dst => 'tp_dst=%s',
             :tp_src => 'tp_src=%s',
+            :arp_sha => 'arp_sha=%s',
+            :arp_tha => 'arp_tha=%s',
             :in_port => 'in_port=%i',
             :reg1 => 'reg1=%i',
             :reg2 => 'reg2=%i',
@@ -83,9 +85,13 @@ module Dcmgr
             :learn => 'learn(%s)',
             :local => 'local',
             :load_reg0 => 'load:%i->NXM_NX_REG0[]',
+            :load_reg1 => 'load:%i->NXM_NX_REG1[]',
+            :load_reg2 => 'load:%i->NXM_NX_REG2[]',
             :nw_dst => 'mod_nw_dst',
             :output => 'output:%i',
             :output_reg0 => 'output:NXM_NX_REG0[]',
+            :output_reg1 => 'output:NXM_NX_REG1[]',
+            :output_reg2 => 'output:NXM_NX_REG2[]',
             :resubmit => 'resubmit(,%i)',
           }
         end
