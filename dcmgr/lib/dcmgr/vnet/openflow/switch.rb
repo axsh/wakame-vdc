@@ -69,53 +69,53 @@ module Dcmgr
           # DHCP queries from instances and network should always go to
           # local host, while queries from local host should go to the
           # network.
-          flows << ["priority=#{5},udp,dl_dst=ff:ff:ff:ff:ff:ff,nw_src=0.0.0.0,nw_dst=255.255.255.255,tp_src=68,tp_dst=67", "local"]
+          flows << Flow.new(TABLE_CLASSIFIER, 5, {:udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_src => '0.0.0.0', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst =>67}, {:local => nil})
 
-          flows << ["priority=#{3},arp", "resubmit(,#{TABLE_ARP_ANTISPOOF})"]
-          flows << ["priority=#{3},icmp", "resubmit(,#{TABLE_LOAD_DST})"]
-          flows << ["priority=#{3},tcp", "resubmit(,#{TABLE_LOAD_DST})"]
-          flows << ["priority=#{3},udp", "resubmit(,#{TABLE_LOAD_DST})"]
+          flows << Flow.new(TABLE_CLASSIFIER, 3, {:arp => nil}, {:resubmit => TABLE_ARP_ANTISPOOF})
+          flows << Flow.new(TABLE_CLASSIFIER, 3, {:icmp => nil}, {:resubmit => TABLE_LOAD_DST})
+          flows << Flow.new(TABLE_CLASSIFIER, 3, {:tcp => nil}, {:resubmit => TABLE_LOAD_DST})
+          flows << Flow.new(TABLE_CLASSIFIER, 3, {:udp => nil}, {:resubmit => TABLE_LOAD_DST})
 
-          flows << ["priority=#{2},in_port=local", "resubmit(,#{TABLE_ROUTE_DIRECTLY})"]
+          flows << Flow.new(TABLE_CLASSIFIER, 2, {:in_port => OpenFlowController::OFPP_LOCAL}, {:resubmit => TABLE_ROUTE_DIRECTLY})
 
           #
           # MAC address routing
           #
 
-          flows << ["priority=#{1},table=#{TABLE_MAC_ROUTE},dl_dst=#{local_hw.to_s}", "local"]
-          flows << ["priority=#{1},table=#{TABLE_ROUTE_DIRECTLY},dl_dst=#{local_hw.to_s}", "local"]
-          flows << ["priority=#{1},table=#{TABLE_LOAD_DST},dl_dst=#{local_hw.to_s}", "load:#{OpenFlowController::OFPP_LOCAL}->NXM_NX_REG0[],resubmit(,#{TABLE_LOAD_SRC})"]
+          flows << Flow.new(TABLE_MAC_ROUTE, 1, {:dl_dst => local_hw.to_s}, {:local => nil})
+          flows << Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => local_hw.to_s}, {:local => nil})
+          flows << Flow.new(TABLE_LOAD_DST, 1, {:dl_dst => local_hw.to_s}, [{:load_reg0 => OpenFlowController::OFPP_LOCAL}, {:resubmit => TABLE_LOAD_SRC}])
 
           # Some flows depend on only local being able to send packets
           # with the local mac and ip address, so drop those.
-          flows << ["priority=#{6},table=#{TABLE_LOAD_SRC},in_port=local", "output:NXM_NX_REG0[]"]
-          flows << ["priority=#{5},table=#{TABLE_LOAD_SRC},dl_src=#{local_hw.to_s}", "drop"]
-          flows << ["priority=#{5},table=#{TABLE_LOAD_SRC},ip,nw_src=#{Isono::Util.default_gw_ipaddr}", "drop"]
+          flows << Flow.new(TABLE_LOAD_SRC, 6, {:in_port => OpenFlowController::OFPP_LOCAL}, {:output_reg0 => nil})
+          flows << Flow.new(TABLE_LOAD_SRC, 5, {:dl_src => local_hw.to_s}, {:drop => nil})
+          flows << Flow.new(TABLE_LOAD_SRC, 5, {:ip => nil, :nw_src => Isono::Util.default_gw_ipaddr}, {:drop =>nil})
 
           #
           # ARP routing table
           #
 
           # ARP anti-spoofing flows.
-          flows << ["priority=#{1},table=#{TABLE_ARP_ANTISPOOF},arp,in_port=local", "resubmit(,#{TABLE_ARP_ROUTE})"]
+          flows << Flow.new(TABLE_ARP_ANTISPOOF, 1, {:arp => nil, :in_port => OpenFlowController::OFPP_LOCAL}, {:resubmit => TABLE_ARP_ROUTE})
 
           # Replace drop actions with table default action.
-          flows << ["priority=#{0},table=#{TABLE_ARP_ANTISPOOF},arp", "drop"]
+          flows << Flow.new(TABLE_ARP_ANTISPOOF, 0, {:arp => nil}, {:drop => nil})
 
           # TODO: How will this handle packets from host or eth0 that
           # spoof the mac of an instance?
-          flows << ["priority=#{1},table=#{TABLE_ARP_ROUTE},arp,dl_dst=#{local_hw.to_s}", "local"]
+          flows << Flow.new(TABLE_ARP_ROUTE, 1, {:arp => nil, :dl_dst => local_hw.to_s}, {:local => nil})
 
           #
           # Meta-data connections
           #
-          flows << ["priority=#{5},tcp,nw_dst=169.254.169.254,tp_dst=80", "resubmit(,#{TABLE_METADATA_OUTGOING})"]
-          flows << ["priority=#{5},tcp,nw_src=#{Isono::Util.default_gw_ipaddr},tp_src=#{9002}", "resubmit(,#{TABLE_METADATA_INCOMING})"]
+          flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_dst => '169.254.169.254', :tp_dst => 80}, {:resubmit => TABLE_METADATA_OUTGOING})
+          flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_src => Isono::Util.default_gw_ipaddr, :tp_src => 9002}, {:resubmit => TABLE_METADATA_INCOMING})
 
-          flows << ["priority=#{4},table=#{TABLE_METADATA_OUTGOING},in_port=local", "drop"]
-          flows << ["priority=#{0},table=#{TABLE_METADATA_OUTGOING}", "controller"]
+          flows << Flow.new(TABLE_METADATA_OUTGOING, 4, {:in_port => OpenFlowController::OFPP_LOCAL}, {:drop => nil})
+          flows << Flow.new(TABLE_METADATA_OUTGOING, 0, {}, {:controller => nil})
 
-          datapath.ovs_ofctl.add_flows_from_list flows        
+          datapath.add_flows flows        
         end
 
         def port_status message
@@ -246,20 +246,18 @@ module Dcmgr
           # We don't need to match against the IP or port used by the
           # classifier to pass the flow to these tables.
 
-          prefix = "priority=3,idle_timeout=#{300},tcp"
+          prefix = {:idle_timeout => 300, :tcp => nil}
 
-          prefix_outgoing = "#{prefix},table=#{outgoing_table},#{datapath.ovs_ofctl.arg_in_port message.in_port}"
-          # classifier_outgoing = "nw_dst=#{msg_nw_dst},tp_dst=#{message.tcp_dst_port}"
-          match_outgoing = "dl_src=#{message.macsa.to_s},dl_dst=#{message.macda.to_s},nw_src=#{msg_nw_src},tp_src=#{message.tcp_src_port}"
-          action_outgoing = "mod_dl_dst:#{dest_hw},mod_nw_dst:#{dest_ip},mod_tp_dst:#{dest_tp},#{datapath.ovs_ofctl.arg_output dest_port}"
+          prefix_outgoing = {:in_port => message.in_port}.merge(prefix)
+          match_outgoing = {:dl_src => message.macsa.to_s, :dl_dst => message.macda.to_s, :nw_src => msg_nw_src, :tp_src => message.tcp_src_port}
+          action_outgoing = [{:mod_dl_dst => dest_hw, :mod_nw_dst => dest_ip, :mod_tp_dst => dest_tp}, {:output => dest_port}]
 
-          prefix_incoming = "#{prefix},table=#{incoming_table},#{datapath.ovs_ofctl.arg_in_port dest_port}"
-          # classifier_incoming = "nw_src=#{dest_ip},tp_src=#{dest_tp}"
-          match_incoming = "dl_src=#{dest_hw.to_s},dl_dst=#{message.macsa.to_s},nw_dst=#{msg_nw_src},tp_dst=#{message.tcp_src_port}"
-          action_incoming = "mod_dl_src:#{message.macda.to_s},mod_nw_src:#{msg_nw_dst},mod_tp_src:#{message.tcp_dst_port},#{datapath.ovs_ofctl.arg_output message.in_port}"
+          prefix_incoming = {:in_port => dest_port}
+          match_incoming = {:dl_src => dest_hw.to_s, :dl_dst => message.macsa.to_s, :nw_dst => msg_nw_src, :tp_dst => message.tcp_src_port}
+          action_incoming = [{:mod_dl_src => message.macda.to_s, :mod_nw_src => msg_nw_dst, :mod_tp_src => message.tcp_dst_port}, {:output => message.in_port}]
 
-          datapath.ovs_ofctl.add_flow "#{prefix_outgoing},#{match_outgoing}", action_outgoing
-          datapath.ovs_ofctl.add_flow "#{prefix_incoming},#{match_incoming}", action_incoming
+          datapath.add_flows [Flow.new(outgoing_table, 3, match_outgoing, action_outgoing),
+                              Flow.new(incoming_table, 3, match_incoming, action_incoming)]
         end
 
       end

@@ -61,7 +61,9 @@ module Dcmgr
 
         def match_tags
           {
+            :ip => 'ip',
             :arp => 'arp',
+            :icmp => 'icmp',
             :tcp => 'tcp',
             :udp => 'udp',
             :dl_dst => 'dl_dst=%s',
@@ -77,6 +79,9 @@ module Dcmgr
             :in_port => 'in_port=%i',
             :reg1 => 'reg1=%i',
             :reg2 => 'reg2=%i',
+
+            # Not really match tags, separate.
+            :idle_timeout => 'idle_timeout=%i',
           }
         end
 
@@ -89,7 +94,12 @@ module Dcmgr
             :load_reg0 => 'load:%i->NXM_NX_REG0[]',
             :load_reg1 => 'load:%i->NXM_NX_REG1[]',
             :load_reg2 => 'load:%i->NXM_NX_REG2[]',
-            :nw_dst => 'mod_nw_dst',
+            :mod_dl_dst => 'mod_dl_dst',
+            :mod_dl_src => 'mod_dl_src',
+            :mod_nw_dst => 'mod_nw_dst',
+            :mod_nw_src => 'mod_nw_src',
+            :mod_tp_dst => 'mod_tp_dst',
+            :mod_tp_src => 'mod_tp_src',
             :output => 'output:%i',
             :output_reg0 => 'output:NXM_NX_REG0[]',
             :output_reg1 => 'output:NXM_NX_REG1[]',
