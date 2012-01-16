@@ -25,22 +25,12 @@ module Dcmgr
           /^"(.*)"/.match(`#{command}`)[1]
         end
 
-        def add_flow flow_match, actions
-          command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_match},actions=#{actions}"
-          logger.debug "'#{command}' => #{system(command)}."
-        end
-
-        def add_flow_2 flow
+        def add_flow flow
           command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow.match_to_s},actions=#{flow.actions_to_s}"
           logger.debug "'#{command}' => #{system(command)}."
         end
 
-        def del_flow flow_match
-          command = "#{@ovs_ofctl} del-flows #{switch_name} #{flow_match}"
-          logger.debug "'#{command}' => #{system(command)}."
-        end
-
-        def add_flows_from_list_2 flows
+        def add_flows_from_list flows
           recmds = []
 
           eos = "__EOS_#{Isono::Util.gen_id}___"
@@ -56,13 +46,13 @@ module Dcmgr
           system(recmds.join("\n"))
         end
 
-        def add_flows_from_list(flows)
+        def add_flood_flows_from_list flows, args
           recmds = []
 
           eos = "__EOS_#{Isono::Util.gen_id}___"
           recmds << "#{@ovs_ofctl} add-flow #{switch_name} - <<'#{eos}'"
           flows.each { |flow|
-            full_flow = "#{flow[0]},actions=#{flow[1]}"
+            full_flow = "#{flow.match_to_s},actions=#{flow.flood_actions_to_s(args)}"
             puts "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose == true
             recmds << full_flow
           }
@@ -72,22 +62,7 @@ module Dcmgr
           system(recmds.join("\n"))
         end
 
-        def del_flows_from_list(flows)
-          recmds = []
-
-          eos = "__EOS_#{Isono::Util.gen_id}___"
-          recmds << "#{@ovs_ofctl} del-flows #{switch_name} - <<'#{eos}'"
-          flows.each { |flow|
-            puts "ovs-ofctl del-flows #{switch_name} #{flow}" if verbose == true
-            recmds << flow
-          }
-          recmds << "#{eos}"
-
-          logger.debug("removing flow(s): #{recmds.size - 2}")
-          system(recmds.join("\n"))
-        end
-
-        def del_flows_from_list_2 flows
+        def del_flows_from_list flows
           recmds = []
 
           eos = "__EOS_#{Isono::Util.gen_id}___"
@@ -101,24 +76,6 @@ module Dcmgr
 
           logger.debug("removing flow(s): #{recmds.size - 2}")
           system(recmds.join("\n"))
-        end
-
-        def arg_in_port port_number
-          case port_number
-          when OpenFlowController::OFPP_LOCAL
-            return "in_port=local"
-          else
-            return "in_port=#{port_number}" if port_number < OpenFlowController::OFPP_MAX
-          end
-        end
-
-        def arg_output port_number
-          case port_number
-          when OpenFlowController::OFPP_LOCAL
-            return "local"
-          else
-            return "output:#{port_number}" if port_number < OpenFlowController::OFPP_MAX
-          end
         end
 
         def add_gre_tunnel tunnel_name, remote_ip, key

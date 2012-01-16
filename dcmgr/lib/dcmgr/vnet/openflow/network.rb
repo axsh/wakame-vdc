@@ -31,7 +31,8 @@ module Dcmgr
         end
 
         def update
-          datapath.ovs_ofctl.add_flows_from_list generate_flood_flows
+          datapath.add_flood_flows(flood_flows, ports)
+          datapath.add_flood_flows(flood_local_flows, local_ports)
         end
 
         def add_port port, is_local
@@ -42,17 +43,6 @@ module Dcmgr
         def remove_port port
           ports.delete port
           local_ports.delete port
-        end
-
-        def generate_flood_flows
-          flows = []
-          flood_flows.each { |flow|
-            flows << [flow.match_to_s, flow.flood_actions_to_s(ports)]
-          }
-          flood_local_flows.each { |flow|
-            flows << [flow.match_to_s, flow.flood_actions_to_s(local_ports)]
-          }
-          flows
         end
 
         def flood_flows

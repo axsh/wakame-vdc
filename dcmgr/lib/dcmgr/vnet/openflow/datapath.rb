@@ -22,15 +22,19 @@ module Dcmgr
         end
 
         def add_flow flow
-          ovs_ofctl.add_flow_2 flow
+          ovs_ofctl.add_flow flow
         end
 
         def add_flows flows
-          ovs_ofctl.add_flows_from_list_2 flows
+          ovs_ofctl.add_flows_from_list flows
+        end
+
+        def add_flood_flows flows, args
+          ovs_ofctl.add_flood_flows_from_list flows, args
         end
 
         def del_flows flows
-          ovs_ofctl.del_flows_from_list_2 flows
+          ovs_ofctl.del_flows_from_list flows
         end
 
         def send_message message
