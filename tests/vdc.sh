@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 #
 
-# enable only when debug the script
-#set -e
+set -e
 
 abs_path=$(cd $(dirname $0) && pwd)
 prefix_path=$(cd ${abs_path}/../ && pwd)
