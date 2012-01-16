@@ -88,7 +88,7 @@ module Dcmgr
 
             if not port.network.nil?
               port.network.remove_port port.port_info.number
-              update_network port.network
+              port.network.update
             end
 
             @default_ofctl.del_flows_from_list port.active_flows
