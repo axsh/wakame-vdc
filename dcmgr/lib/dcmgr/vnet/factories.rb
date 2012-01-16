@@ -97,6 +97,7 @@ module Dcmgr
         # General data link layer tasks
         tasks << AcceptARPToHost.new(host_addr,vnic[:ipv4][:address],enable_logging,"A arp to_host #{vnic[:uuid]}: ")
         tasks << AcceptARPFromGateway.new(vnic[:ipv4][:network][:ipv4_gw],enable_logging,"A arp from_gw #{vnic[:uuid]}: ") unless vnic[:ipv4][:network][:ipv4_gw].nil?
+        tasks << AcceptARPFromDNS.new(vnic[:ipv4][:network][:dns_server],enable_logging,"A arp from_dns #{vnic[:uuid]}: ") unless vnic[:ipv4][:network][:dns_server].nil?
         tasks << DropIpSpoofing.new(vnic[:ipv4][:address],enable_logging,"D arp sp #{vnic[:uuid]}: ")
         tasks << DropMacSpoofing.new(clean_mac(vnic[:mac_addr]),enable_logging,"D ip sp #{vnic[:uuid]}: ")
         tasks << AcceptArpBroadcast.new(host_addr,enable_logging,"A arp bc #{vnic[:uuid]}: ")
