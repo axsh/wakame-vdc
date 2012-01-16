@@ -105,7 +105,8 @@ module Dcmgr
         tasks << AcceptIcmpRelatedEstablished.new
         tasks << AcceptTcpRelatedEstablished.new
         tasks << AcceptUdpEstablished.new
-        tasks << AcceptAllDNS.new
+        #tasks << AcceptAllDNS.new
+        tasks << AcceptWakameDNSOnly.new(vnic[:ipv4][:network][:dns_server]) unless vnic[:ipv4][:network][:dns_server].nil?
         tasks << AcceptWakameDHCPOnly.new(vnic[:ipv4][:network][:dhcp_server]) unless vnic[:ipv4][:network][:dhcp_server].nil?
         
         # VM isolation based
