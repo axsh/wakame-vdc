@@ -14,6 +14,8 @@ module Dcmgr::Drivers
     end
 
     def upload(filename)
+      logger.debug("checking snapshot directory #{@volume_snaphost_path}")
+      Dir.mkdir(@volume_snaphost_path) unless File.exists?(@volume_snaphost_path)
       sh("/bin/mv %s %s", [self.snapshot(filename), File.join(@volume_snaphost_path, filename)])
     end
 
