@@ -87,6 +87,22 @@ module Dcmgr
           system(recmds.join("\n"))
         end
 
+        def del_flows_from_list_2 flows
+          recmds = []
+
+          eos = "__EOS_#{Isono::Util.gen_id}___"
+          recmds << "#{@ovs_ofctl} del-flows #{switch_name} - <<'#{eos}'"
+          flows.each { |flow|
+            full_flow = "#{flow.match_sparse_to_s}"
+            puts "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose == true
+            recmds << full_flow
+          }
+          recmds << "#{eos}"
+
+          logger.debug("removing flow(s): #{recmds.size - 2}")
+          system(recmds.join("\n"))
+        end
+
         def arg_in_port port_number
           case port_number
           when OpenFlowController::OFPP_LOCAL

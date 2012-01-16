@@ -91,7 +91,7 @@ module Dcmgr
               port.network.update
             end
 
-            port.datapath.ovs_ofctl.del_flows_from_list port.active_flows
+            port.datapath.del_flows port.active_flows
             port.active_flows.clear
             port.queued_flows.clear
             ports.delete port.port_info.number

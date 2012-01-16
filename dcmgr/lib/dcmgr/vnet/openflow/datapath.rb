@@ -29,6 +29,10 @@ module Dcmgr
           ovs_ofctl.add_flows_from_list_2 flows
         end
 
+        def del_flows flows
+          ovs_ofctl.del_flows_from_list_2 flows
+        end
+
         def send_message message
           controller.send_message datapath_id, message
         end
