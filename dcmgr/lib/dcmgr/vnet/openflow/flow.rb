@@ -4,6 +4,15 @@ module Dcmgr
   module VNet
     module OpenFlow
       
+      # A class to indicate the match/etc is a placeholder?
+      class FlowPlaceholder
+        attr_accessor :index
+
+        def initialize index
+          @index = index
+        end
+      end
+
       class Flow
         attr_accessor :table
         attr_accessor :priority
@@ -37,25 +46,45 @@ module Dcmgr
         # be strictly correct in earlier versions of ruby, however we
         # don't currently use any such flows.
         def actions_to_s
+          if actions.class == Array
+            str = ""
+            actions.each { |block|
+              str << actions_block_to_s(block)
+            }
+            str
+          else
+            actions_block_to_s actions
+          end
+        end
+
+        def actions_block_to_s block, arg = nil
           str = ""
 
-          if actions.class == Array
-            actions.each { |block|
-              block.each { |key,value|
-                tag = action_tags[key]
-                raise "No action tag: key:#{key.inspect}" if tag.nil?
+          block.each { |key,value|
+            tag = action_tags[key]
+            raise "No action tag: key:#{key.inspect}" if tag.nil?
 
-                str << "," << tag % value
-              }
-            }
-          else
-            actions.each { |key,value|
-              tag = action_tags[key]
-              raise "No action tag: key:#{key.inspect}" if tag.nil?
-
+            if value.class == FlowPlaceholder
+              str << "," << tag % arg
+            else
               str << "," << tag % value
-            }
-          end
+            end
+          }
+          str
+        end
+
+        def flood_actions_to_s args
+          str = ""
+
+          args.each { |arg|
+            if actions.class == Array
+              actions.each { |block|
+                str << actions_block_to_s(block, arg)
+              }
+            else
+              str << actions_block_to_s(actions, arg)
+            end
+          }
           str
         end
 
@@ -107,9 +136,9 @@ module Dcmgr
             :resubmit => 'resubmit(,%i)',
           }
         end
-
       end
 
     end
   end
 end
+
