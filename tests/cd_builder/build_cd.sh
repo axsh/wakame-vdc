@@ -47,17 +47,15 @@ wakame_deb="${wakame_dir}/../wakame-vdc_${wakame_version}_all.deb"
 arch="amd64"
 src_image=`readlink -f $1`
 dst_image="${root_dir}/wakame-vdc-${wakame_version}-${arch}.iso"
-guts_local="${tmp_dir}/cd_creation_bulk.tar.gz"
-guts_remote="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.12.1/cd/cd_creation_bulk.tar.gz"
 images_dir="${cd_dir}/setup/images"
 remote_images_path=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
 vmimage_file="ubuntu-10.04_with-metadata_kvm_i386.raw.gz"
 gpg_key_id="DCFFB6BE"
-
-#TODO: download ubuntu iso if it's not present
-#if [ ! -f ${src_image} ]; then
-  #wget http://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/${base_distro}/ubuntu-10.04.2-server-amd64.iso
-#fi
+guts_archive_dir="${root_dir}/guts/archive"
+package_location_ubuntu="http://"${package_location_ubuntu:- "jp.archive.ubuntu.com/ubuntu/"}
+package_location_axsh="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.12.1/package/ubuntu/"
+#package_location="axsh"
+package_location=${package_location:-'ubuntu'}
 
 [[ $UID = 0 ]] || abort "Operation not permitted. Try using sudo."
 
@@ -82,12 +80,6 @@ elif [ ! -d ${tmp_dir} ]; then
   mkdir -p ${tmp_dir}
 fi
 
-#Check if guts exist
-if [ ! -f ${guts_local} ]; then
-  wget -P ${tmp_dir} ${guts_remote}
-  [[ $? = 0 ]] || abort "Failed to download the files needed to make the cd.\n${guts_remote} was not found."
-fi
-
 #Clean the working directory
 if [ -f ${dst_image} ]; then rm -f ${dst_image}; fi
 if [ -f ${apt_dir}/apt-ftparchive-deb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-deb.conf; fi
@@ -95,7 +87,6 @@ if [ -f ${apt_dir}/apt-ftparchive-extras.conf ]; then rm -f ${apt_dir}/apt-ftpar
 if [ -f ${apt_dir}/apt-ftparchive-udeb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-udeb.conf; fi
 if [ -f ${apt_dir}/release.conf ]; then rm -f ${apt_dir}/release.conf; fi
 rm -rf ${root_dir}/guts/indices/
-rm -rf ${root_dir}/guts/wakame
 
 #Add the required gems to the debian package
 echo "Adding required gems to the debian package to be built"
@@ -121,9 +112,41 @@ debuild --no-lintian
 
 if [ ! -f ${wakame_deb} ]; then abort "Couldn't find wakame-vdc package: ${wakame_deb}"; fi
 
-#Extract guts
-tar xzf ${guts_local} -C ${root_dir}
 mv ${wakame_deb} ${cd_mod_dir}/pool/extras
+
+#Extract guts
+function download_package() { 
+  download_path=$1 
+  download_file=$2 
+  seed=`cat "${download_file}"` 
+ 
+  cd ${download_path} 
+  for package in ${seed[@]}; do 
+
+    package_name=`basename "${package}"`
+    case ${package_location} in
+      ubuntu)
+        path=${package}
+        url=${package_location_ubuntu}
+      ;;
+      axsh)
+        path=${package_name}
+        url=${package_location_axsh}
+      ;;
+    esac
+
+    if [ ! -f ${download_path}${package_name} ]; then 
+
+      # urlescape
+      url=`echo ${url}${path} | sed -e s/+/%2B/g`
+      echo $url
+      wget ${url} 
+    fi
+  done  
+} 
+
+download_package "${cd_mod_dir}/pool/extras/" "${guts_archive_dir}/pool_extras"
+download_package "${cd_mod_dir}/pool/main/u/ubuntu-keyring/" "${guts_archive_dir}/pool_main"
 
 #Get the indices
 mkdir -p ${root_dir}/guts/indices
@@ -277,7 +300,6 @@ rmdir ${tmp_mount_dir}
 rm -rf ${cd_dir}
 
 rm -rf ${root_dir}/guts/indices/
-rm -rf ${root_dir}/guts/wakame
 
 #Delete ftparchive config files
 if [ -f ${apt_dir}/apt-ftparchive-deb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-deb.conf; fi
