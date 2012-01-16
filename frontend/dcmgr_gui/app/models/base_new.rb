@@ -190,7 +190,8 @@ end
 #   String :col2
 module InheritableSchema
   def self.apply(model)
-    model.plugin :schema
+    require 'sequel/plugins/schema'
+    model.plugin Sequel::Plugins::Schema
   end
 
   module ClassMethods

@@ -23,7 +23,7 @@ module Dcmgr::Cli
       
       #Get the keys from their respective files.
       fields[:public_key] = File.open(public_key_path) {|f| f.readline}
-      fields[:private_key] = File.open(private_key_path) {|f| f.readlines.map.join}
+      fields[:private_key] = File.open(private_key_path) {|f| f.readlines.join('') }
       
       #Generate the fingerprint from the public key file
       res = sh("ssh-keygen -lf #{options[:public_key]}")

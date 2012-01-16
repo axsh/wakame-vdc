@@ -187,97 +187,104 @@ cp ${tmp_dir}/${vmimage_file} ${images_dir}/
 
 #Generate .conf files for signing the repositories
 cd ${apt_dir}
-echo "Dir {
-  ArchiveDir \"${cd_dir}\";
+cat <<EOF > apt-ftparchive-udeb.conf
+Dir {
+  ArchiveDir "${cd_dir}";
 };
 
 TreeDefault {
-  Directory \"pool/\";
+  Directory "pool/";
 };
 
-BinDirectory \"pool/main\" {
-  Packages \"dists/${base_distro}/main/debian-installer/binary-amd64/Packages\";
-  BinOverride \"${root_dir}/guts/indices/override.${base_distro}.main.debian-installer\";
+BinDirectory "pool/main" {
+  Packages "dists/${base_distro}/main/debian-installer/binary-amd64/Packages";
+  BinOverride "${root_dir}/guts/indices/override.${base_distro}.main.debian-installer";
 };
 
-BinDirectory \"pool/restricted\" {
-  Packages \"dists/${base_distro}/restricted/debian-installer/binary-amd64/Packages\";
-  BinOverride \"${root_dir}/guts/indices/override.${base_distro}.restricted.debian-installer\";
+BinDirectory "pool/restricted" {
+  Packages "dists/${base_distro}/restricted/debian-installer/binary-amd64/Packages";
+  BinOverride "${root_dir}/guts/indices/override.${base_distro}.restricted.debian-installer";
 };
 
 Default {
   Packages {
-    Extensions \".udeb\";
-    Compress \". gzip\";
+    Extensions ".udeb";
+    Compress ". gzip";
   };
 };
 
 Contents {
-  Compress \"gzip\";
-};" > apt-ftparchive-udeb.conf
+  Compress "gzip";
+};
+EOF
 
-echo "Dir {
-  ArchiveDir \"${cd_dir}\";
+cat <<EOF > apt-ftparchive-extras.conf
+Dir {
+  ArchiveDir "${cd_dir}";
 };
 
 TreeDefault {
-  Directory \"pool/\";
+  Directory "pool/";
 };
 
-BinDirectory \"pool/extras\" {
-  Packages \"dists/${base_distro}/extras/binary-amd64/Packages\";
+BinDirectory "pool/extras" {
+  Packages "dists/${base_distro}/extras/binary-amd64/Packages";
 };
 
 Default {
   Packages {
-    Extensions \".deb\";
-    Compress \". gzip\";
+    Extensions ".deb";
+    Compress ". gzip";
   };
 };
 
 Contents {
-  Compress \"gzip\";
-};" > apt-ftparchive-extras.conf
+  Compress "gzip";
+};
+EOF
 
-echo "Dir {
-  ArchiveDir \"${cd_dir}\";
+cat <<EOF > apt-ftparchive-deb.conf
+Dir {
+  ArchiveDir "${cd_dir}";
 };
 
 TreeDefault {
-  Directory \"pool/\";
+  Directory "pool/";
 };
 
-BinDirectory \"pool/main\" {
-  Packages \"dists/${base_distro}/main/binary-amd64/Packages\";
-  BinOverride \"${root_dir}/guts/indices/override.${base_distro}.main\";
-  ExtraOverride \"${root_dir}/guts/indices/override.${base_distro}.extra.main\";
+BinDirectory "pool/main" {
+  Packages "dists/${base_distro}/main/binary-amd64/Packages";
+  BinOverride "${root_dir}/guts/indices/override.${base_distro}.main";
+  ExtraOverride "${root_dir}/guts/indices/override.${base_distro}.extra.main";
 };
 
-BinDirectory \"pool/restricted\" {
- Packages \"dists/${base_distro}/restricted/binary-amd64/Packages\";
- BinOverride \"${root_dir}/guts/indices/override.${base_distro}.restricted\";
+BinDirectory "pool/restricted" {
+ Packages "dists/${base_distro}/restricted/binary-amd64/Packages";
+ BinOverride "${root_dir}/guts/indices/override.${base_distro}.restricted";
 };
 
 Default {
   Packages {
-    Extensions \".deb\";
-    Compress \". gzip\";
+    Extensions ".deb";
+    Compress ". gzip";
   };
 };
 
 Contents {
-  Compress \"gzip\";
-};" > apt-ftparchive-deb.conf
+  Compress "gzip";
+};
+EOF
 
-echo "APT::FTPArchive::Release::Origin \"Ubuntu\";
-APT::FTPArchive::Release::Label \"Ubuntu\";
-APT::FTPArchive::Release::Suite \"${base_distro}\";
-APT::FTPArchive::Release::Version \"${base_distro_number}\";
-APT::FTPArchive::Release::Codename \"${base_distro}\";
-APT::FTPArchive::Release::Architectures \"${arch}\";
-APT::FTPArchive::Release::Components \"main restricted extras\";
-APT::FTPArchive::Release::Description \"Ubuntu ${base_distro_number} LTS\";" > release.conf
-
+cat <<EOF > release.conf
+APT::FTPArchive::Release::Origin "Ubuntu";
+APT::FTPArchive::Release::Label "Ubuntu";
+APT::FTPArchive::Release::Suite "${base_distro}";
+APT::FTPArchive::Release::Version "${base_distro_number}";
+APT::FTPArchive::Release::Codename "${base_distro}";
+APT::FTPArchive::Release::Architectures "${arch}";
+APT::FTPArchive::Release::Components "main restricted extras";
+APT::FTPArchive::Release::Description "Ubuntu ${base_distro_number} LTS";
+EOF
 
 #Create extra repository and sign with gpg key
 echo "Signing extra repository"

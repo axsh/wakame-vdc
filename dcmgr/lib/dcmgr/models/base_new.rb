@@ -227,6 +227,10 @@ module Dcmgr::Models
   #   String :col1
   #   String :col2
   module InheritableSchema
+    def self.apply(model)
+      require 'sequel/plugins/schema'
+      model.plugin Sequel::Plugins::Schema
+    end
 
     module ClassMethods
       # Creates table, using the column information from set_schema.
