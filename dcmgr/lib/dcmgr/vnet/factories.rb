@@ -38,7 +38,7 @@ module Dcmgr
         friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
         
         tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")
-        #tasks << AcceptIpFromFriends(friend_ips)
+        tasks << AcceptIpFromFriends.new(friend_ips)
         
         if is_natted? vnic          
           # Friends don't use NAT, friends talk to each other with their REAL ip addresses.
