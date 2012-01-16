@@ -9,7 +9,6 @@ module Dcmgr::Models
     many_to_one :security_group
 
     def to_hash
-      p self.class.parse_rule(self.permission)
       {
         :permission => permission,
         
@@ -37,9 +36,7 @@ module Dcmgr::Models
       # id_port has been separeted in first phase.
       from_pair, ip_tport, source_pair = rule.split(',')
       
-      next if from_pair.nil?
-      next if ip_tport.nil?
-      next if source_pair.nil?
+      return nil if from_pair.nil? || ip_tport.nil? || source_pair.nil?
       
       # 2nd phase
       # ip_protocol : [ tcp | udp | icmp ]
@@ -55,7 +52,7 @@ module Dcmgr::Models
         case
         when s.scan(/ip6/)
           # TODO#FUTURE: support IPv6 address format
-          next
+          return
         when s.scan(/ip4/)
           # IPAddress doesn't support prefix '0'.
           ip_addr, prefix = ip_source.split('/', 2)
@@ -127,7 +124,7 @@ module Dcmgr::Models
         when -1
         when 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
           # when icmp_type equals -1 icmp_code must equal -1.
-          next if icmp_type == -1
+          return if icmp_type == -1
         else
           raise "Unsupported ICMP code number: #{icmp_code}"
         end
