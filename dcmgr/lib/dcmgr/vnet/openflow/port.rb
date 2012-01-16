@@ -164,7 +164,7 @@ module Dcmgr
         end
 
         def queue_flow flow
-          active_flows << flow.match_to_s
+          active_flows << flow.match_sparse_to_s
           queued_flows << [flow.match_to_s, flow.actions_to_s]
         end
 

@@ -39,6 +39,18 @@ module Dcmgr
           str
         end
 
+        def match_sparse_to_s
+          str = "table=#{table}"
+
+          match.each { |key,value|
+            tag = match_tags[key]
+            raise "No match tag: key:#{key.inspect}" if tag.nil?
+
+            str << "," << tag % value
+          }
+          str
+        end
+
         # Note; the Hash objects before ruby 1.9 do not maintain order
         # of insertion when iterating, so the actions will be reordered.
         #
