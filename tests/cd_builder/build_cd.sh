@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Get options
+FLAG_WITHOUT_GPG_SIGN=false
+while true; do
+  case "$1" in
+    --without-gpg-sign )
+      FLAG_WITHOUT_GPG_SIGN=true; shift;;
+    -- ) shift; break ;;
+    * ) break;;
+  esac
+done
+
 #Function to generate the mount directory later on
 function randdir {
   dir=`</dev/urandom tr -dc A-Za-z0-9 | head -c8`
@@ -64,11 +75,6 @@ if [ ! -f ${src_image} ]; then
   abort "Couldn't find source image: ${src_image}"
 fi
 
-#Check if the Axsh key is on the keyring
-gpg --list-secret-keys | grep -q $gpg_key_id
-if [ "$?" -ne "0" ]; then
-  abort "Couldn't find Axsh Co. LTD's private gpg key on the keyring. This script needs it to sign the CD."
-fi
 
 #Check if dependencies are installed
 checkreq
@@ -108,10 +114,20 @@ mv $BUNDLER.gem $wakame_dir/debian/bundler.gem
 
 #Make the debian package
 cd ${wakame_dir}
-debuild --no-lintian
+
+if $FLAG_WITHOUT_GPG_SIGN; then
+  debuild --no-lintian -us -uc
+else
+  #Check if the Axsh key is on the keyring
+  gpg --list-secret-keys | grep -q $gpg_key_id
+  if [ "$?" -ne "0" ]; then
+    abort "Couldn't find Axsh Co. LTD's private gpg key on the keyring. This script needs it to sign the CD."
+  fi
+  
+  debuild --no-lintian
+fi
 
 if [ ! -f ${wakame_deb} ]; then abort "Couldn't find wakame-vdc package: ${wakame_deb}"; fi
-
 mv ${wakame_deb} ${cd_mod_dir}/pool/extras
 
 #Extract guts
