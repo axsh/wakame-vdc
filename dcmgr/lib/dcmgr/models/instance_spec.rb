@@ -67,7 +67,7 @@ module Dcmgr::Models
     end
 
     def before_destroy
-      if !Instance.alives.filter(:instance_spec_id=>self.id).empty?
+      if !Instance.lives.filter(:instance_spec_id=>self.id).empty?
         raise "There are one or more running instances refers this record."
       end
       
