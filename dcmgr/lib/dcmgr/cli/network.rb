@@ -295,6 +295,27 @@ __END
       nw.del_ipv4_dynamic_range(range_begin, range_end)
     end
     
+    desc "show [UUID]", "Show dynamic IP address range"
+    def show(uuid=nil)
+      if uuid
+        nw = M::Network[uuid] || UnknownUUIDEntry.raise
+        print ERB.new(<<__END, nil, '-').result(binding)
+Network UUID:
+  <%= nw.canonical_uuid %>
+Dynamic IP Address Range:
+  <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.shift) %> - <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.last) %>
+__END
+      else
+        cond = {}
+        nw = M::Network.filter(cond).all
+        print ERB.new(<<__END, nil, '-').result(binding)
+<%- nw.each { |row| -%>
+<%= row.canonical_uuid %>\t<%= IPAddress::IPv4::parse_u32(row.ipv4_u32_dynamic_range_array.shift) %>\t<%= IPAddress::IPv4::parse_u32(row.ipv4_u32_dynamic_range_array.last) %>
+<%- } -%>
+__END
+      end
+    end
+
     protected
     def self.basename
       "vdc-manage #{Network.namespace} #{self.namespace}"
