@@ -10,7 +10,7 @@ work_dir=${work_dir:?"work_dir needs to be set"}
 
 if [ ! -d $work_dir/trema/.git ]; then
     cd $work_dir
-    git clone git://github.com/rakshasa/trema
+    git clone git://github.com/axsh/trema
     (cd ./trema/ && git checkout ruby && ./build.rb && mkdir ./tmp/log) > /dev/null
 fi
 
