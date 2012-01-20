@@ -172,7 +172,7 @@ module Dcmgr
             logger.debug "send udp: layer:#{l.pretty}."
           }
 
-          send_packet_out(datapath_id, :data => raw_out.pack, :actions => Trema::ActionOutput.new( :port => out_port ) )
+          send_packet_out(datapath_id, :data => raw_out.pack.ljust(64, "\0"), :actions => Trema::ActionOutput.new( :port => out_port ) )
         end
 
         def send_arp datapath_id, out_port, op_code, src_hw, src_ip, dst_hw, dst_ip
@@ -193,7 +193,7 @@ module Dcmgr
             logger.debug "ARP packet: layer:#{l.pretty}."
           }
 
-          send_packet_out(datapath_id, :data => raw_out.pack, :actions => Trema::ActionOutput.new( :port => out_port ) )
+          send_packet_out(datapath_id, :data => raw_out.pack.ljust(64, "\0"), :actions => Trema::ActionOutput.new( :port => out_port ) )
         end
 
       end
