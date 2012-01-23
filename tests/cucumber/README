@@ -1,0 +1,11 @@
+To run the test cases, execute the following commands in this directory:
+  bundle install
+  cucumber
+
+To run a single test case, use the following command:
+  cucumber -r features /path/to/testcase.feature
+  
+To run a single scenario, add the line number at the end. For example:
+  cucumber -r features features/gui-manage/account.feature:11
+
+The features/demo folder contains some demo scenarios to show how cucumber works. Use these as reference. They will be deleted in the future.
