@@ -1,9 +1,7 @@
 # encoding: utf-8
 begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
 require 'cucumber/formatter/unicode'
-$:.unshift(File.dirname(__FILE__) + '/../../../../spec')
-#require 'spec_helper'
-#require 'instance.rb'
+
 require 'rubygems'
 require 'httparty'
 
@@ -11,6 +9,26 @@ Before do
 end
 
 After do
+end
+
+When /we make a api create calls to (.*) with the following options/ do |suffix,options|
+  @create_results = []
+  options.hashes.each { |option_hash|
+    @create_results << APITest.create("/#{suffix}",option_hash)
+  }
+end
+
+Then /the create calls (?:should|should not) be successful/ do |outcome|
+  @create_results.each { |result|
+    case outcome
+      when "should"
+        result.success?.should == true
+      when "should not"
+        result.success?.should == false
+      else
+        raise "Illegal outcome in .feature file: '#{outcome}'. Legal outcomes are 'should' and 'should_not'"
+    end
+  }
 end
 
 When /we make an api show call to (.*)/ do |suffix|
@@ -48,14 +66,9 @@ end
 ######################################
 class APITest
   include HTTParty
-  #include Config
-  #cfg = Config::ConfigFactory.create_config
   
-  base_uri "http://localhost:9001/api"#cfg[:global][:api]
-  #format :json
-#  headers 'X-VDC-ACCOUNT-UUID' => 'a-00000000'
+  base_uri "http://localhost:9001/api"
   headers 'X-VDC-ACCOUNT-UUID' => 'a-shpoolxx'
-  #headers 'X-VDC-ACCOUNT-UUID' => cfg[:global][:account]
 
   def self.create(path, params)
     self.post(path, :query=>params, :body=>'')

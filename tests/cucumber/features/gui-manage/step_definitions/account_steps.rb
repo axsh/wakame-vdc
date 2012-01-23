@@ -16,21 +16,21 @@ Given /(\d+) accounts are created/ do |amount|
   }
 end
 
-Then /we (.*) be able to create accounts with the same uuids/ do |outcome|
+Then /we (should|should\snot) be able to create accounts with the same uuids/ do |outcome|
   @acc_uuids.each { |uuid|
     %x{./gui-manage account add --name cucumber --description cucumber --uuid #{uuid}}
     check_outcome(outcome)
   }
 end
 
-Then /we (.*) be able to create\/show the accounts oauth keys/ do |outcome|
+Then /we (should|should\snot) be able to create\/show the accounts oauth keys/ do |outcome|
   @acc_uuids.each { |uuid|
     %x{./gui-manage account oauth #{uuid}}
     check_outcome(outcome)
   }
 end
 
-Then /we (.*) be able to associate the accounts with the users/ do |outcome|
+Then /we (should|should\snot) be able to associate the accounts with the users/ do |outcome|
   @acc_uuids.each { |a_uuid|
         %x{./gui-manage account associate #{a_uuid} --users #{@user_uuids.join(" ")}}
         check_outcome(outcome)
