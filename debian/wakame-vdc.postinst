@@ -19,8 +19,14 @@ if [ -x "/etc/init.d/wakame-vdc" ]; then
   ln -s /lib/init/upstart-job /etc/init.d/wakame-vdc  
 fi
 
+# stop rabbimq-server
 [ -f /etc/init.d/rabbitmq-server ] && {
   update-rc.d -f rabbitmq-server remove
+}
+
+# stop nginx
+[ -f /etc/init.d/nginx ] && {
+  update-rc.d -f nginx remove
 }
 
 [ -d /var/log/wakame-vdc ] || mkdir -p /var/log/wakame-vdc
