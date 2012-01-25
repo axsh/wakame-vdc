@@ -59,3 +59,11 @@ Feature: blablabla
     
     * When we delete the created security_groups
     * Then the delete call to the security_groups api should be successful
+
+    * When we delete the created volumes
+    * Then the delete call to the volumes api should be successful
+    * And the created volumes should reach state deleted in 60 seconds or less
+    
+    * When we delete the created volume_snapshots
+    * Then the delete call to the volume_snapshots api should be successful
+    * And the created volume_snapshots should reach state deleted in 60 seconds or less
