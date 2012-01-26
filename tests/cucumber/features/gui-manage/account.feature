@@ -1,7 +1,7 @@
 Feature: gui-manage account
   CLI operations for accounts
 
-  Scenario: Create an account, delete it and be unable to read it
+  Scenario: Create an account, delete it and be unable to add it again
     Given the working directory is frontend/dcmgr_gui/bin
     And 1 accounts are created
     Then we should not be able to create accounts with the same uuids

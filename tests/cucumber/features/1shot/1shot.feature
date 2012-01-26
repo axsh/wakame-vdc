@@ -2,6 +2,7 @@ Feature: blablabla
 
   Scenario: One shot
     Given snap-lucid6 exists in volume_snapshots
+    And is-demospec exists in instance_specs
   
     When we make an api create call to security_groups with the following options
     | description          | rule                     |
@@ -13,7 +14,7 @@ Feature: blablabla
     | 0             |
     Then the create call to the ssh_key_pairs api should be successful
 
-    When we start an instance of wmi-lucid6 with the created security group and key pair
+    When we start an instance of wmi-lucid6 and spec is-demospec with the created security group and key pair
     Then the create call to the instances api should be successful
     And the created instances should reach state running in 60 seconds or less
     And we should be able to ping the started instance in 60 seconds or less
