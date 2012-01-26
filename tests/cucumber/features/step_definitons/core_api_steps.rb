@@ -16,12 +16,16 @@ end
 After do
 end
 
-When /we make an api create call to (.*) with the following options/ do |suffix,options|
+Given /^(.+) exists in (.+)$/ do |uuid, suffix|
+  APITest.get("/#{suffix}/#{uuid}").success?.should be_true
+end
+
+When /^we make an api create call to (.*) with the following options$/ do |suffix,options|
   @create_results = {} if @create_results.nil?
   @create_results[suffix] = APITest.create("/#{suffix}",options.hashes.first)
 end
 
-Then /the create call to the (.*) api (should|should\snot) be successful/ do |suffix,outcome|
+Then /^the create call to the (.*) api (should|should\snot) be successful$/ do |suffix,outcome|
   #@create_results.each { |result|
     case outcome
       when "should"
@@ -34,7 +38,7 @@ Then /the create call to the (.*) api (should|should\snot) be successful/ do |su
   #}
 end
 
-When /we start an instance of (.*) with the created security group and key pair/ do |image|
+When /^we start an instance of (.*) with the created security group and key pair$/ do |image|
   @create_results = {} if @create_results.nil?
   @create_results["instances"] = APITest.create("/instances",{:image_id=>image,
                                                     #TODO: get rid of this hard coded thing
@@ -43,51 +47,51 @@ When /we start an instance of (.*) with the created security group and key pair/
                                                     :security_groups=>[@create_results["security_groups"]["id"]]})
 end
 
-When /we make an api show call to (.*)/ do |suffix|
+When /^we make an api show call to (.*)$/ do |suffix|
   @api_result = APITest.get("/#{suffix}")
 end
 
 WORK_FAIL = {"work" => true, "fail" => false}
-Then /the api call should (.*)/ do |outcome| 
+Then /^the api call should (.*)$/ do |outcome| 
   raise "outcome should be one of #{WORK_FAIL.keys.join(",")}" unless WORK_FAIL.keys.member?(outcome)
   @api_result.success?.should == WORK_FAIL[outcome]
 end
 
-Then /the result (.*) should be (.*)/ do |key,value|
+Then /^the result (.*) should be (.*)$/ do |key,value|
   @api_result[key].to_s.should == value
 end
 
-Then /the result (.*) should not be (.*)/ do |key,value|
+Then /^the result (.*) should not be (.*)$/ do |key,value|
   @api_result[key].to_s.should_not == value
 end
 
-Then /the results (.*) should not contain (.*)/ do |key,value|
+Then /^the results (.*) should not contain (.*)$/ do |key,value|
   @api_result.first["results"].find { |result|
     result[key] == value
   }.nil?.should == true
 end
 
-Then /the results (.*) should contain (.*)/ do |key,value|
+Then /^the results (.*) should contain (.*)$/ do |key,value|
   @api_result.first["results"].find { |result|
     result[key] == value
   }.nil?.should == false
 end
 
 
-Then /the created (.+) should reach state (.+) in (\d+) seconds or less/ do |suffix,state,seconds|
+Then /^the created (.+) should reach state (.+) in (\d+) seconds or less$/ do |suffix,state,seconds|
   retry_until(seconds.to_f) do
     APITest.get("/#{suffix}/#{@create_results[suffix]["id"]}")["state"] == state
   end
 end
 
-Then /we should be able to ping the started instance in (\d+) seconds or less/ do |seconds|
+Then /^we should be able to ping the started instance in (\d+) seconds or less$/ do |seconds|
   #retry_until_network_started(@create_results["instances"]["id"])
   retry_until(seconds.to_f) do
     ping(@create_results["instances"]["id"]).exitstatus == 0
   end
 end
 
-Then /the started instance should start ssh in (\d+) seconds or less/ do |seconds|
+Then /^the started instance should start ssh in (\d+) seconds or less$/ do |seconds|
   #retry_until_ssh_started(@create_results["instances"]["id"])
   ipaddr = APITest.get("/instances/#{@create_results["instances"]["id"]}")["vif"].first["ipv4"]["address"]
   retry_until(seconds.to_f) do
@@ -96,11 +100,11 @@ Then /the started instance should start ssh in (\d+) seconds or less/ do |second
   end
 end
 
-Then /we should be able to log into the started instance with user (.+) in (\d+) seconds or less/ do |user, seconds|
+Then /^we should be able to log into the started instance with user (.+) in (\d+) seconds or less$/ do |user, seconds|
   retry_until_loggedin(@create_results["instances"]["id"], user, seconds.to_i)
 end
 
-Then /we should be able to log into the started instance in (\d+) seconds or less/ do |seconds|
+Then /^we should be able to log into the started instance in (\d+) seconds or less$/ do |seconds|
   #retry_until_ssh_started(@create_results["instances"]["id"])
   ipaddr = APITest.get("/instances/#{@create_results["instances"]["id"]}")["vif"].first["ipv4"]["address"]
   retry_until(seconds.to_f) do
@@ -109,11 +113,11 @@ Then /we should be able to log into the started instance in (\d+) seconds or les
   end
 end
 
-When /we (attach|detach) the created volume/ do |operation|
+When /^we (attach|detach) the created volume$/ do |operation|
   @attach_result = APITest.update("/volumes/#{@create_results["volumes"]["id"]}/#{operation}", {:instance_id=>@create_results["instances"]["id"], :volume_id=>@create_results["volumes"]["id"]})
 end
 
-Then /the (attach|detach) api call (should|should\snot) be successful/ do |operation,outcome|
+Then /^the (attach|detach) api call (should|should\snot) be successful/ do |operation,outcome|
   case outcome
     when "should"
       @attach_result.success?.should == true
@@ -124,16 +128,16 @@ Then /the (attach|detach) api call (should|should\snot) be successful/ do |opera
   end
 end
 
-When /we create a snapshot from the created volume/ do
+When /^we create a snapshot from the created volume$/ do
   @create_results["volume_snapshots"] = APITest.create("/volume_snapshots", {:volume_id=>@create_results["volumes"]["id"], :destination=>"local"})
 end
 
-When /we delete the created (.+)/ do |suffix|
+When /^we delete the created (.+)$/ do |suffix|
   @delete_results = {} if @delete_results.nil?
   @delete_results[suffix] = APITest.delete("/#{suffix}/#{@create_results[suffix]["id"]}")
 end
 
-Then /Then the delete call to the (.+) api (should|should\snot) be successful/ do |suffix,outcome|
+Then /^the delete call to the (.+) api (should|should\snot) be successful$/ do |suffix,outcome|
   case outcome
     when "should"
       @delete_results[suffix].success?.should == true
@@ -144,7 +148,7 @@ Then /Then the delete call to the (.+) api (should|should\snot) be successful/ d
   end
 end
 
-Then /Then the update call to the (.+) api (should|should\snot) be successful/ do |suffix,outcome|
+Then /^the update call to the (.+) api (should|should\snot) be successful$/ do |suffix,outcome|
   case outcome
     when "should"
       @update_results[suffix].success?.should == true
@@ -155,11 +159,11 @@ Then /Then the update call to the (.+) api (should|should\snot) be successful/ d
   end
 end
 
-When /we create a volume from the created snapshot/ do
+When /^we create a volume from the created snapshot$/ do
   @create_results["volumes"] = APITest.create("/volumes", {:snapshot_id=>@create_results["volume_snapshots"]["id"]})
 end
 
-When /we (reboot|stop|start) the created instance/ do |operation|
+When /^we (reboot|stop|start) the created instance$/ do |operation|
   @update_results = {} if @update_results.nil?
   @update_results["instances"] = APITest.update("/instances/#{@create_results["instances"]["id"]}/#{operation}", [])
 end

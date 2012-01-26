@@ -19,7 +19,7 @@ When /the following command is run: (.*)/ do |cmds|
   @cmd_exit_code = $?
 end
 
-Then /the command (.*) be successful/ do |outcome|
+Then /the command (should|should\snot) be successful/ do |outcome|
   check_outcome(outcome)
 end
 

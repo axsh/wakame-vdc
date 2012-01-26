@@ -8,38 +8,39 @@ end
 After do
 end
 
-Given /(\d+) users are created/ do |amount|
+Given /^(\d+) users are created$/ do |amount|
   @user_uuids = []
   (1..amount.to_i).each { |i|
-    @user_uuids << %x{./gui-manage user add --name #{random_string} --password #{random_string}}.chomp
+    output = %x{./gui-manage user add --name #{random_string} --password #{random_string}}.chomp
+    @user_uuids << output[5..15]
     $?.exitstatus.should == 0
   }
 end
 
-Then /we (should|should\snot) be able to show the new users/ do |outcome|
+Then /^we (should|should\snot) be able to show the new users$/ do |outcome|
   @user_uuids.each { |uuid|
     %x{./gui-manage user show #{uuid}}
     check_outcome(outcome)
   }
 end
 
-Then /we (should|should\snot) be able to create users with the same uuids/ do |outcome|
+Then /^we (should|should\snot) be able to create users with the same uuids$/ do |outcome|
   @user_uuids.each { |uuid|
     %x{./gui-manage user add --name #{random_string} --password #{random_string} --uuid #{uuid}}
     check_outcome(outcome)
   }
 end
 
-Then /we (should|should\snot) be able to associate the users with the accounts/ do |outcome|
+Then /^we (should|should\snot) be able to associate the users with the accounts$/ do |outcome|
   @user_uuids.each { |u_uuid|
       @acc_uuids.each { |a_uuid|
-        %x{./gui-manage user associate #{u_uuid} --account-ids #{a_uuid}}
+        %x{./gui-manage user associate #{u_uuid}  --account-ids #{a_uuid}}
         check_outcome(outcome)
     }
   }
 end
 
-When /we delete the users/ do
+When /^we delete the users$/ do
   @user_uuids.each { |uuid|
     %x{./gui-manage user del #{uuid}}
   }
