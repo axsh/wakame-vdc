@@ -1,6 +1,19 @@
-Feature: Networks
-  Networks are the virtual networks that wakame uses
-  to start its instances in.
+Feature: Network API
+
+  Scenario: Create a network through the core API
+    Given the following records do not exist in Network
+      | account_id | uuid      |
+      | a-shpoolxx | nw-test1  |
+
+    When we make an api show call to networks
+    Then the api call should work
+    And the results uuid should not contain nw-test1
+
+    When we make an api create call to networks with the following options
+      | network  | gw       | prefix | description   |
+      | nw-test1 | 10.0.0.1 | 24     | "test create" |
+    Then the api call should work
+    # And the result uuid should be /^nw-*/
 
   Scenario: Show 2 networks through the core api
     Given the following records exist in Network
