@@ -1,6 +1,6 @@
 dcmgr usr/share/axsh/wakame-vdc
 frontend usr/share/axsh/wakame-vdc
-tests usr/share/axsh/wakame-vdc
+tests/builder/* usr/share/axsh/wakame-vdc/tests/builder
 debian/bundler.gem usr/share/axsh/wakame-vdc
 debian/setup.sh usr/share/axsh/wakame-vdc
 debian/bridge_up.sh usr/share/axsh/wakame-vdc
@@ -12,6 +12,7 @@ debian/config/dcmgr.conf usr/share/axsh/wakame-vdc/dcmgr/config
 debian/config/hva.conf usr/share/axsh/wakame-vdc/dcmgr/config
 debian/config/nsa.conf usr/share/axsh/wakame-vdc/dcmgr/config
 debian/config/sta.conf usr/share/axsh/wakame-vdc/dcmgr/config
+debian/config/proxy.conf usr/share/axsh/wakame-vdc/dcmgr/config
 debian/config/snapshot_repository.yml usr/share/axsh/wakame-vdc/dcmgr/config
 debian/config/dcmgr_gui.yml usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/config
 debian/config/database.yml usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/config
@@ -25,5 +26,6 @@ debian/config/upstart/vdc-proxy.conf /etc/init
 debian/config/upstart/vdc-sta.conf /etc/init
 debian/config/upstart/vdc-webui.conf /etc/init
 debian/config/upstart/wakame-vdc.conf /etc/init
+debian/config/upstart/wakame-setup.conf /etc/init
 debian/config/upstart/rabbitmq-server.conf /etc/init
 
