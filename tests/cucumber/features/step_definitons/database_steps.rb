@@ -2,7 +2,7 @@
 begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
 require 'cucumber/formatter/unicode'
 
-require File.dirname(__FILE__) + "/../../../environment"
+require File.dirname(__FILE__) + "/../../environment"
 
 $:.unshift("#{VDC_ROOT}/dcmgr/lib")
 require 'dcmgr'
