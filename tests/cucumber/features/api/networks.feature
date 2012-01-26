@@ -32,6 +32,7 @@ Feature: Network API
     
     When we make an api get call to networks/nw-test1 with no options
     Then the get call to the networks/nw-test1 api should be successful
-    And for get on networks/nw-test1 there should not be the key ipv4_network with 10.0.0.0
+    And for get on networks/nw-test1 there should not be the key ipv4_network with 172.16.0.0
+    And for get on networks/nw-test1 there should be the key ipv4_network with 10.0.0.0
     And for get on networks/nw-test1 there should be the key prefix with 24
     And for get on networks/nw-test1 there should be the key description with "test network 1"

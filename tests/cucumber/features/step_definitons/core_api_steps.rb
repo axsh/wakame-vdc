@@ -56,8 +56,8 @@ Then /^for (create|update|delete|get) on (.+) there (should|should\snot) be the 
   case outcome
     when "should"
       @api_call_results[call][suffix][key].to_s.should == value
-    when "should not"
-      @api_call_results[call][suffix][key].to_s.should != value
+    when "should\snot"
+      @api_call_results[call][suffix][key].to_s.should_not == value
     else
       raise "Illegal outcome in .feature file: '#{outcome}'. Legal outcomes are 'should' and 'should not'"
   end
