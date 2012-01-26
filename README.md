@@ -3,7 +3,7 @@ Wakame-VDC
 
 Wakame-VDC is a toolkit for IaaS cloud.
 
-See details for http://wakame.jp/ (English: http://en.wakame.jp/)
+See details for http://wakame.jp/wiki/ (in English)
 
 Features:
 
