@@ -52,7 +52,7 @@ end
 
 # This test currently does not verify the correct type, e.g. strings
 # and integers can both match an integer.
-Then /^for (create|update|delete|get) on (.+) the key (.+) (should|should\snot) be (.+)$/ do |call,suffix,key,outcome,value|
+Then /^for (create|update|delete|get) on (.+) there (should|should\snot) be the key (.+) with (.+)$/ do |call,suffix,outcome,key,value|
   case outcome
     when "should"
       @api_call_results[call][suffix][key].to_s.should == value
@@ -63,7 +63,7 @@ Then /^for (create|update|delete|get) on (.+) the key (.+) (should|should\snot) 
   end
 end
 
-Then /^for (create|update|delete|get) on (.+) the results (.+) (should|should\snot) contain (.+)$/ do |call,suffix,key,outcome,value|
+Then /^for (create|update|delete|get) on (.+) the results (should|should\snot) contain the key (.+) with (.+)$/ do |call,suffix,outcome,key,value|
   case outcome
     when "should"
       @api_call_results[call][suffix].first["results"].find { |itr|
