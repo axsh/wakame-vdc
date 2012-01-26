@@ -11,7 +11,24 @@ tmp_path=${prefix_path}/tmp
 
 [[ -f "/etc/lsb-release" ]] && . /etc/lsb-release
 
-ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
+RETRYCOUNT=0
+
+# Waiting ip release.
+while true 
+do
+  echo "Retry ${RETRYCOUNT}"
+  if [ "`/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}'`" = "" ]; then
+    echo 'Waiting ip release.'
+    RETRYCOUNT=`expr ${RETRYCOUNT} + 1`
+    sleep 1
+  elif [ ${RETRYCOUNT} -ge 5 ]; then
+    echo "Faild ip release."
+    exit 1
+  else
+    ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
+    break
+  fi
+done
 
 account_id=a-shpoolxx
 #account_id=a-00000000
@@ -151,4 +168,5 @@ echo "Network setup"
 ${prefix_path}/network_setup.sh
 
 echo "Setup completed"
+
 exit 0    

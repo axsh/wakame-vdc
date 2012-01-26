@@ -63,10 +63,8 @@ remote_images_path=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
 vmimage_file="ubuntu-10.04_with-metadata_kvm_i386.raw.gz"
 gpg_key_id="DCFFB6BE"
 guts_archive_dir="${root_dir}/guts/archive"
-package_location_ubuntu="http://"${package_location_ubuntu:- "jp.archive.ubuntu.com/ubuntu/"}
 package_location_axsh="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.12.1/package/ubuntu/"
-#package_location="axsh"
-package_location=${package_location:-'ubuntu'}
+package_location='axsh'
 
 [[ $UID = 0 ]] || abort "Operation not permitted. Try using sudo."
 
@@ -87,12 +85,22 @@ elif [ ! -d ${tmp_dir} ]; then
 fi
 
 #Clean the working directory
+if [ -d ${wakame_dir}/tmp ]; then rm ${wakame_dir}/tmp/*; fi
 if [ -f ${dst_image} ]; then rm -f ${dst_image}; fi
 if [ -f ${apt_dir}/apt-ftparchive-deb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-deb.conf; fi
 if [ -f ${apt_dir}/apt-ftparchive-extras.conf ]; then rm -f ${apt_dir}/apt-ftparchive-extras.conf; fi
 if [ -f ${apt_dir}/apt-ftparchive-udeb.conf ]; then rm -f ${apt_dir}/apt-ftparchive-udeb.conf; fi
 if [ -f ${apt_dir}/release.conf ]; then rm -f ${apt_dir}/release.conf; fi
 rm -rf ${root_dir}/guts/indices/
+
+#Create directory
+[ -d "${cd_mod_dir}/tmp" ] || mkdir "${cd_mod_dir}/tmp"
+[ -d "${cd_mod_dir}/setup/images" ] || mkdir "${cd_mod_dir}/setup/images"
+[ -d "${cd_mod_dir}/pool" ] || mkdir "${cd_mod_dir}/pool"
+[ -d "${cd_mod_dir}/pool/extras" ] || mkdir "${cd_mod_dir}/pool/extras"
+[ -d "${cd_mod_dir}/pool/main" ] || mkdir "${cd_mod_dir}/pool/main"
+[ -d "${cd_mod_dir}/pool/main/u" ] || mkdir "${cd_mod_dir}/pool/main/u"
+[ -d "${cd_mod_dir}/pool/main/u/ubuntu-keyring" ] || mkdir "${cd_mod_dir}/pool/main/u/ubuntu-keyring"
 
 #Add the required gems to the debian package
 echo "Adding required gems to the debian package to be built"
@@ -127,35 +135,29 @@ else
   debuild --no-lintian
 fi
 
-if [ ! -f ${wakame_deb} ]; then abort "Couldn't find wakame-vdc package: ${wakame_deb}"; fi
+if [ ! -e ${wakame_deb} ]; then abort "Couldn't find wakame-vdc package: ${wakame_deb}"; fi
 mv ${wakame_deb} ${cd_mod_dir}/pool/extras
 
 #Extract guts
 function download_package() { 
-  download_path=$1 
-  download_file=$2 
-  seed=`cat "${download_file}"` 
+  local download_path=$1 
+  local download_file=$2 
+  local seed=`cat "${download_file}"` 
  
   cd ${download_path} 
   for package in ${seed[@]}; do 
 
-    package_name=`basename "${package}"`
+    local package_name=`basename "${package}"`
     case ${package_location} in
-      ubuntu)
-        path=${package}
-        url=${package_location_ubuntu}
-      ;;
       axsh)
-        path=${package_name}
-        url=${package_location_axsh}
+        local path=${package_name}
+        local url=${package_location_axsh}
       ;;
     esac
 
-    if [ ! -f ${download_path}${package_name} ]; then 
-
-      # urlescape
+    if [ ! -e ${download_path}${package_name} ]; then 
+      # url escape
       url=`echo ${url}${path} | sed -e s/+/%2B/g`
-      echo $url
       wget ${url} 
     fi
   done  
@@ -198,8 +200,12 @@ if [ ! -f ${tmp_dir}/${vmimage_file} ]; then
   wget ${remote_images_path}/${vmimage_file}
 fi
 
-echo "Add ${vmimage_file}"
-cp ${tmp_dir}/${vmimage_file} ${images_dir}/
+if [ -f ${tmp_dir}/${vmimage_file} ]; then
+  echo "Add ${vmimage_file}"
+  cp ${tmp_dir}/${vmimage_file} ${images_dir}/
+else
+  abort "Couldn't find ${vmimage_file}"
+fi
 
 #Generate .conf files for signing the repositories
 cd ${apt_dir}
@@ -307,7 +313,11 @@ echo "Signing extra repository"
 rm -f ${cd_dir}/dists/${base_distro}/Release.gpg
 cd ${apt_dir}
 perl extraoverride.pl < ${cd_dir}/dists/${base_distro}/main/binary-amd64/Packages >> ${root_dir}/guts/indices/override.${base_distro}.extra.main
-${PWD}/build_repository.sh ${cd_dir}
+
+# Skip gpg sign
+if ! $FLAG_WITHOUT_GPG_SIGN ; then
+  ${PWD}/build_repository.sh ${cd_dir}
+fi
 
 #Compile iso
 mkisofs -r -V "Wakame-vdc ${WAKAME_VERSION}" \
@@ -337,3 +347,6 @@ rm ${wakame_dir}/../wakame-vdc_${wakame_version}_amd64.build
 rm ${wakame_dir}/../wakame-vdc_${wakame_version}.dsc
 rm ${wakame_dir}/../wakame-vdc_${wakame_version}_amd64.changes
 rm ${wakame_dir}/../wakame-vdc_${wakame_version}.tar.gz
+
+echo "Created iso image ${dst_image}"
+exit 0
