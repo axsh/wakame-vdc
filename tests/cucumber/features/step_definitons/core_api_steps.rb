@@ -52,12 +52,27 @@ end
 
 # This test currently does not verify the correct type, e.g. strings
 # and integers can both match an integer.
-Then /^the result (.+) of (create|update|delete|get) to (.+) (should|should\snot) be (.+)$/ do |result,call,suffix,outcome,value|
+Then /^for (create|update|delete|get) on (.+) the key (.+) (should|should\snot) be (.+)$/ do |call,suffix,key,outcome,value|
   case outcome
     when "should"
-      @api_call_results[call][suffix][result].to_s.should == value
+      @api_call_results[call][suffix][key].to_s.should == value
     when "should not"
-      @api_call_results[call][suffix][result].to_s.should != value
+      @api_call_results[call][suffix][key].to_s.should != value
+    else
+      raise "Illegal outcome in .feature file: '#{outcome}'. Legal outcomes are 'should' and 'should not'"
+  end
+end
+
+Then /^for (create|update|delete|get) on (.+) the results (.+) (should|should\snot) contain (.+)$/ do |call,suffix,key,outcome,value|
+  case outcome
+    when "should"
+      @api_call_results[call][suffix].first["results"].find { |itr|
+         itr[key].to_s == value
+      }.nil?.should == false
+    when "should not"
+      @api_call_results[call][suffix].first["results"].find { |itr|
+         itr[key].to_s == value
+      }.nil?.should == true
     else
       raise "Illegal outcome in .feature file: '#{outcome}'. Legal outcomes are 'should' and 'should not'"
   end
