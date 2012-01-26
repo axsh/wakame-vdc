@@ -388,6 +388,37 @@ case ${mode} in
     screen_close
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
+  standalone:ci:build_cd)
+    # build image
+    cd_builder_dir="${prefix_path}/tests/cd_builder"
+    build_image_file="ubuntu-10.04.3-server-amd64.iso"
+    build_image="/var/tmp/${build_image_file}"
+    build_image_source="http://releases.ubuntu.com/lucid/${build_image_file}"
+    builded_image="${cd_builder_dir}/wakame-vdc-*-amd64.iso"
+
+    ( 
+      set +e
+      check_ready_standalone
+
+      cd "${cd_builder_dir}"
+
+      # run build iso image.
+      [[ ! -e "${build_image}" ]] && { 
+        ${prefix_path}/dcmgr/script/pararell-curl.sh --url=${build_image_source} --output_path=$build_image
+      }
+
+      if [ -e "${build_image}" ]; then
+        ./build_cd.sh --without-gpg-sign ${build_image}
+        rm ${builded_image}
+        
+      else
+        abort "Couldn't find ${build_image}"
+      fi
+      
+    )
+    excode=$?
+    ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
+    ;;
   multiple:ci)
     (
      set +e
