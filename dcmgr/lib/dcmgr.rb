@@ -77,9 +77,9 @@ module Dcmgr
   
   autoload :Logger, 'dcmgr/logger'
   
+
+  require 'dcmgr/models/errors'
   module Models
-    class InvalidUUIDError < StandardError; end
-    class UUIDPrefixDuplication < StandardError; end
     autoload :Base, 'dcmgr/models/base'
 
     autoload :BaseNew, 'dcmgr/models/base_new'
