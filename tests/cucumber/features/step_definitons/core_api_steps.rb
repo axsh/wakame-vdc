@@ -158,6 +158,19 @@ Then /^the previous api call results (should|should\snot) contain the key (.+) w
   end
 end
 
+# This step validates the response from individual resource.
+# GET /instances/i-xxxxx
+# PUT /instances/i-xxxxx
+Then /^the single result from the previous api call (should|should\snot) contain the key (.+) with (.+)$/ do |outcome,key,arg_value|
+  value = evaluate_argument(arg_value)
+  
+  (@api_last_result.parsed_response[key] == value).should == (outcome == 'should not' ? false : true)
+end
+
+Then /^the single result from the previous api call (should|should\snot) have the key (.+)$/ do |outcome,key|
+  @api_last_result.parsed_response.has_key?(key).should == (outcome == 'should not' ? false : true)
+end
+
 Then /^for (create|update|delete|get|put) on (.+) the results (should|should\snot) contain the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
   suffix = evaluate_argument(arg_suffix)
   value = evaluate_argument(arg_value)

@@ -7,8 +7,18 @@ require 'httparty'
 ######################################
 class APITest
   include HTTParty
+
+  # HTTPParty uses Crack as JSON/XML parser but it did not work well
+  # with response from ssh_key_pairs API. This uses the JSON parser instead.
+  class UseJSONParser < HTTParty::Parser
+    def json
+      require 'json'
+      JSON.parse(self.body)
+    end
+  end
   
   base_uri "http://localhost:9001/api"
+  parser UseJSONParser
   headers 'X-VDC-ACCOUNT-UUID' => 'a-shpoolxx'
 
   def self.create(path, params)
