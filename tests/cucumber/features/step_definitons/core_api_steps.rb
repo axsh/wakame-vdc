@@ -58,6 +58,7 @@ When /^we make an api (create|update|delete|get|put) call to (.+) with no option
   suffix = evaluate_argument(arg_suffix)
 
   initiate_api_call_results if @api_call_results.nil?
+  @api_last_request = {:collection=>suffix, :action=>call, :options=>nil }
   @api_last_result = APITest.send(call,"/#{suffix}",{})
   @api_call_results[call][suffix] = @api_last_result
 end
