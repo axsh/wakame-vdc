@@ -50,6 +50,7 @@ def evaluate_hash_argument arg
 end
 
 Given /^(.+) exists in (.+)$/ do |uuid, suffix|
+  uuid = evaluate_argument(uuid)
   APITest.get("/#{suffix}/#{uuid}").success?.should be_true
 end
 
