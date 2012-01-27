@@ -50,6 +50,7 @@ When /^we make an api (create|update|delete|get) call to (.+) with the following
   suffix = evaluate_argument(arg_suffix)
 
   initiate_api_call_results if @api_call_results.nil?
+  @api_last_request = {:collection=>suffix, :action=>call, :options=>options }
   @api_last_result = APITest.send(call,"/#{suffix}",options.hashes.first)
   @api_call_results[call][suffix] = @api_last_result
 end
@@ -68,6 +69,16 @@ Then /^the previous api call (should|should\snot) be successful$/ do |outcome|
     else
       raise "Illegal outcome in .feature file: '#{outcome}'. Legal outcomes are 'should' and 'should not'"
   end
+end
+
+Then /^the previous api call should fail with the HTTP code (\d+)$/ do |rescode|
+  @api_last_result.success?.should == false
+  @api_last_result.code.to_i.should == rescode.to_i
+end
+
+Then /^the previous api call should not make the entry for the uuid (.+)$/ do |uuid|
+  res = APITest.get("/#{@api_last_request[:collection]}/#{uuid}")
+  res.code.should == 404
 end
 
 Then /^the (create|update|delete|get) call to the (.*) api (should|should\snot) be successful$/ do |call,arg_suffix,outcome|
