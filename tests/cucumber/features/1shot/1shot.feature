@@ -1,8 +1,7 @@
 Feature: blablabla
 
   Scenario: One shot
-    Given snap-lucid6 exists in volume_snapshots
-    And is-demospec exists in instance_specs
+    Given wmi-lucid6 and is-demospec exist
 
     When we make a successful api create call to security_groups with the following options
     | description          | rule                     |
@@ -47,10 +46,8 @@ Feature: blablabla
     Then the created instances should reach state terminated in 60 seconds or less
     
     When we successfully delete the created ssh_key_pairs
-    
-    When we successfully delete the created security_groups
-
-    When we successfully delete the created volumes
+    And we successfully delete the created security_groups
+    And we successfully delete the created volumes
     Then the created volumes should reach state deleted in 60 seconds or less
     
     When we successfully delete the created volume_snapshots

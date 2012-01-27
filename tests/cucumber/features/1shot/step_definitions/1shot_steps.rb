@@ -11,6 +11,34 @@ end
 After do
 end
 
+Given /^(wmi-[a-z0-9]{1,8}) and (is-[a-z0-9]{1,8}) exist$/ do |image_id,spec_id|
+#Given /^(.+) and (.+) exist$/ do |image_id,spec_id|
+  unless APITest.get("/images/#{image_id}").success?
+    #Set variabled for the setup script
+    ENV["vdc_root"]=VDC_ROOT
+    ENV["vmimage_snap_uuid"]=image_id.split("-").last
+    ENV["vmimage_file"]="#{VDC_ROOT}/tmp/snap/a-shpoolxx/snap-#{image_id.split("-").last}.snap"
+    ENV["dcmgr_dbname"]="wakame_dcmgr"
+    ENV["dcmgr_dbuser"]="root"
+    ENV["account_id"]="a-shpoolxx"
+    ENV["image_arch"]="x86_64"
+    
+    steps %Q{
+      Given the working directory is tests/cucumber/features/1shot/setup_script
+      When the following command is run: ./1shot_setup.sh
+      Then the command should be successful
+    }
+  end
+  
+  unless APITest.get("/instance_specs/#{spec_id}").success?
+    steps %Q{
+      Given the working directory is dcmgr/bin
+      When the following command is run: ./vdc-manage spec add --uuid #{spec_id} --account-id a-shpoolxx --hypervisor kvm --arch x86_64 --cpu-cores 1 --memory-size 256 --quota-weight 1.0
+      Then the command should be successful
+    }
+  end
+end
+
 When /^we make a successful api (create|update|delete) call to (.*) with the following options$/ do |call,suffix,options |
   step "we make an api #{call} call to #{suffix} with the following options", options
     
