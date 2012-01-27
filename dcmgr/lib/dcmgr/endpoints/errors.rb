@@ -107,5 +107,6 @@ module Dcmgr
     define_error(:UndefinedInstanceID, 404, '139')
     define_error(:InvalidVolumeState, 400, '140')
     define_error(:InvalidHostNodeID, 400, '141')
+    define_error(:InvalidSecurityGroupRule, 400, '142')
   end
 end

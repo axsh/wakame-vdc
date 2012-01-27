@@ -62,7 +62,7 @@ module Dcmgr::Models
         when s.scan(/sg-\w+/)
           from_group = true
         else
-          raise "Unexpected protocol '#{s.peep(20)}'"
+          raise InvalidSecurityGroupRuleSyntax, "Unexpected protocol '#{s.peep(20)}'"
         end
       end
       
@@ -87,11 +87,11 @@ module Dcmgr::Models
         
         # validate port range
         [ ip_fport, ip_tport ].each do |port|
-          raise "Out of range port number: #{port}" unless port >= 1 && port <= 65535
+          raise InvalidSecurityGroupRuleSyntax, "Out of range port number: #{port}" unless port >= 1 && port <= 65535
         end
         
         if !(ip_fport <= ip_tport)
-          raise "Invalid IP port range: #{ip_fport} <= #{ip_tport}"
+          raise InvalidSecurityGroupRuleSyntax, "Invalid IP port range: #{ip_fport} <= #{ip_tport}"
         end
         
         {
@@ -116,7 +116,7 @@ module Dcmgr::Models
         when -1
         when 0, 3, 5, 8, 11, 12, 13, 14, 15, 16, 17, 18
         else
-          raise "Unsupported ICMP type number: #{icmp_type}"
+          raise InvalidSecurityGroupRuleSyntax, "Unsupported ICMP type number: #{icmp_type}"
         end
         
         # icmp_code
@@ -126,7 +126,7 @@ module Dcmgr::Models
           # when icmp_type equals -1 icmp_code must equal -1.
           return if icmp_type == -1
         else
-          raise "Unsupported ICMP code number: #{icmp_code}"
+          raise InvalidSecurityGroupRuleSyntax, "Unsupported ICMP code number: #{icmp_code}"
         end
         
         {
@@ -137,7 +137,7 @@ module Dcmgr::Models
           :ip_source   => ip_source,
         }
       else
-        raise "Unsupported protocol: #{ip_protocol}"
+        raise InvalidSecurityGroupRuleSyntax, "Unsupported protocol: #{ip_protocol}"
       end
     end
     

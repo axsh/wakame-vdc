@@ -752,10 +752,14 @@ module Dcmgr
           # params rule, string
           control do
             Models::SecurityGroup.lock!
-
-            g = Models::SecurityGroup.create(:account_id=>@account.canonical_uuid,
-                                             :description=>params[:description],
-                                             :rule=>params[:rule])
+            begin
+              g = Models::SecurityGroup.create(:account_id=>@account.canonical_uuid,
+                                               :description=>params[:description],
+                                               :rule=>params[:rule])
+            rescue Models::InvalidSecurityGroupRuleSyntax => e
+              raise InvalidSecurityGroupRule, e.message
+            end
+            
             response_to(g.to_api_document)
           end
         end
@@ -777,7 +781,11 @@ module Dcmgr
               g.rule = params[:rule]
             end
 
-            g.save
+            begin
+              g.save
+            rescue Models::InvalidSecurityGroupRuleSyntax => e
+              raise InvalidSecurityGroupRule, e.message
+            end
 
             commit_transaction
             # refresh security group rules on host nodes.
