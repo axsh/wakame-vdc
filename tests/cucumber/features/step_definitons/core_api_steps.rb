@@ -21,11 +21,14 @@ def initiate_api_call_results
     "create" => {},
     "update" => {},
     "delete" => {},
-    "get"    => {}
+    "get"    => {},
+    "put"    => {}
   }
 end
 
 def evaluate_argument arg
+  return arg unless arg =~ /<registry:[^>]+>/
+
   result = arg.dup
   while not (registry_id = result[/<registry:([^>]+)>/, 1]).nil?
     @registry.has_key?(registry_id).should be_true
@@ -34,11 +37,23 @@ def evaluate_argument arg
   result
 end
 
+def evaluate_hash_argument arg
+  arg.hashes.each { |container|
+    container.each { |key,value|
+      while not (registry_id = value[/<registry:([^>]+)>/, 1]).nil?
+        @registry.has_key?(registry_id).should be_true
+        value[/<registry:[^>]+>/] = @registry[registry_id]
+      end
+    }
+  }
+  arg
+end
+
 Given /^(.+) exists in (.+)$/ do |uuid, suffix|
   APITest.get("/#{suffix}/#{uuid}").success?.should be_true
 end
 
-When /^we make an api (create|update|delete|get) call to (.+) with no options$/ do |call,arg_suffix|
+When /^we make an api (create|update|delete|get|put) call to (.+) with no options$/ do |call,arg_suffix|
   suffix = evaluate_argument(arg_suffix)
 
   initiate_api_call_results if @api_call_results.nil?
@@ -46,8 +61,9 @@ When /^we make an api (create|update|delete|get) call to (.+) with no options$/ 
   @api_call_results[call][suffix] = @api_last_result
 end
 
-When /^we make an api (create|update|delete|get) call to (.+) with the following options$/ do |call,arg_suffix,options |
+When /^we make an api (create|update|delete|get|put) call to (.+) with the following options$/ do |call,arg_suffix,arg_options|
   suffix = evaluate_argument(arg_suffix)
+  options = evaluate_hash_argument(arg_options)
 
   initiate_api_call_results if @api_call_results.nil?
   @api_last_request = {:collection=>suffix, :action=>call, :options=>options }
@@ -81,7 +97,7 @@ Then /^the previous api call should not make the entry for the uuid (.+)$/ do |u
   res.code.should == 404
 end
 
-Then /^the (create|update|delete|get) call to the (.*) api (should|should\snot) be successful$/ do |call,arg_suffix,outcome|
+Then /^the (create|update|delete|get|put) call to the (.*) api (should|should\snot) be successful$/ do |call,arg_suffix,outcome|
   suffix = evaluate_argument(arg_suffix)
 
   case outcome
@@ -109,7 +125,7 @@ Then /^the previous api call (should|should\snot) have the key (.+) with (.+)$/ 
   end
 end
 
-Then /^for (create|update|delete|get) on (.+) there (should|should\snot) be the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
+Then /^for (create|update|delete|get|put) on (.+) there (should|should\snot) be the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
   suffix = evaluate_argument(arg_suffix)
   value = evaluate_argument(arg_value)
 
@@ -140,7 +156,7 @@ Then /^the previous api call results (should|should\snot) contain the key (.+) w
   end
 end
 
-Then /^for (create|update|delete|get) on (.+) the results (should|should\snot) contain the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
+Then /^for (create|update|delete|get|put) on (.+) the results (should|should\snot) contain the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
   suffix = evaluate_argument(arg_suffix)
   value = evaluate_argument(arg_value)
 
