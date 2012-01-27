@@ -25,20 +25,38 @@ def initiate_api_call_results
   }
 end
 
+def evaluate_argument arg
+  result = arg.dup
+  while not (registry_id = result[/<registry:([^>]+)>/, 1]).nil?
+    @registry.has_key?(registry_id).should be_true
+    result[/<registry:[^>]+>/] = @registry[registry_id]
+  end
+  result
+end
+
 Given /^(.+) exists in (.+)$/ do |uuid, suffix|
   APITest.get("/#{suffix}/#{uuid}").success?.should be_true
 end
 
-When /^we make an api (create|update|delete|get) call to (.+) with no options$/ do |call,suffix |
+When /^we make an api (create|update|delete|get) call to (.+) with no options$/ do |call,arg_suffix|
+  suffix = evaluate_argument(arg_suffix)
+
   initiate_api_call_results if @api_call_results.nil?
   @api_last_result = APITest.send(call,"/#{suffix}",{})
   @api_call_results[call][suffix] = @api_last_result
 end
 
-When /^we make an api (create|update|delete|get) call to (.+) with the following options$/ do |call,suffix,options |
+When /^we make an api (create|update|delete|get) call to (.+) with the following options$/ do |call,arg_suffix,options |
+  suffix = evaluate_argument(arg_suffix)
+
   initiate_api_call_results if @api_call_results.nil?
   @api_last_result = APITest.send(call,"/#{suffix}",options.hashes.first)
   @api_call_results[call][suffix] = @api_last_result
+end
+
+Then /^from the previous api call save to registry (.+) the value for key (.+)$/ do |registry,key|
+  @registry = {} if @registry.nil?
+  @registry[registry] = @api_last_result[key]
 end
 
 Then /^the previous api call (should|should\snot) be successful$/ do |outcome|
@@ -52,7 +70,9 @@ Then /^the previous api call (should|should\snot) be successful$/ do |outcome|
   end
 end
 
-Then /^the (create|update|delete|get) call to the (.*) api (should|should\snot) be successful$/ do |call,suffix,outcome|
+Then /^the (create|update|delete|get) call to the (.*) api (should|should\snot) be successful$/ do |call,arg_suffix,outcome|
+  suffix = evaluate_argument(arg_suffix)
+
   case outcome
     when "should"
       @api_call_results[call][suffix].success?.should == true
@@ -65,7 +85,9 @@ end
 
 # This test currently does not verify the correct type, e.g. strings
 # and integers can both match an integer.
-Then /^the previous api call (should|should\snot) have the key (.+) with (.+)$/ do |outcome,key,value|
+Then /^the previous api call (should|should\snot) have the key (.+) with (.+)$/ do |outcome,key,arg_value|
+  value = evaluate_argument(arg_value)
+
   case outcome
     when "should"
       @api_last_result[key].to_s.should == value
@@ -76,7 +98,10 @@ Then /^the previous api call (should|should\snot) have the key (.+) with (.+)$/ 
   end
 end
 
-Then /^for (create|update|delete|get) on (.+) there (should|should\snot) be the key (.+) with (.+)$/ do |call,suffix,outcome,key,value|
+Then /^for (create|update|delete|get) on (.+) there (should|should\snot) be the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
+  suffix = evaluate_argument(arg_suffix)
+  value = evaluate_argument(arg_value)
+
   case outcome
     when "should"
       @api_call_results[call][suffix][key].to_s.should == value
@@ -87,7 +112,9 @@ Then /^for (create|update|delete|get) on (.+) there (should|should\snot) be the 
   end
 end
 
-Then /^the previous api call results (should|should\snot) contain the key (.+) with (.+)$/ do |outcome,key,value|
+Then /^the previous api call results (should|should\snot) contain the key (.+) with (.+)$/ do |outcome,key,arg_value|
+  value = evaluate_argument(arg_value)
+
   case outcome
     when "should"
       @api_last_result.first["results"].find { |itr|
@@ -102,7 +129,10 @@ Then /^the previous api call results (should|should\snot) contain the key (.+) w
   end
 end
 
-Then /^for (create|update|delete|get) on (.+) the results (should|should\snot) contain the key (.+) with (.+)$/ do |call,suffix,outcome,key,value|
+Then /^for (create|update|delete|get) on (.+) the results (should|should\snot) contain the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
+  suffix = evaluate_argument(arg_suffix)
+  value = evaluate_argument(arg_value)
+
   case outcome
     when "should"
       @api_call_results[call][suffix].first["results"].find { |itr|
