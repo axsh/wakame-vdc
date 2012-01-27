@@ -19,29 +19,69 @@ Feature: Network API
     And the previous api call should have the key prefix with 24
     And the previous api call should have the key description with "test network 1"
 
-  Scenario: Create a network through the core API
-    # Test both random network name and nw-test1.
+
+  Scenario: Create and delete a random network
     When we make an api create call to networks with the following options
       |  network |       gw | prefix | description   |
       | 10.1.2.0 | 10.1.2.1 |     20 | "test create" |
     Then the previous api call should be successful
     # And the previous api call should have the key uuid with /^nw-*/
+    And from the previous api call save to registry uuid the value for key uuid
+    When we make an api get call to networks/<registry:uuid> with no options
+    Then the previous api call should be successful
+    When we make an api delete call to networks/<registry:uuid> with no options
+    Then the previous api call should be successful
+    When we make an api get call to networks/<registry:uuid> with no options
+    Then the previous api call should not be successful
+
+
+  Scenario: Create and delete a named network
+    # Make sure the network name doesn't exist in the database...
+
+    # When we make an api create call to networks with the following options
+    #   |  network |       gw | prefix | description   |
+    #   | 10.1.2.0 | 10.1.2.1 |     20 | "test create" |
+    # Then the previous api call should be successful
+    # # And the previous api call should have the key uuid with /^nw-*/
+    # And from the previous api call save to registry uuid the value for key uuid
+
+
+  Scenario: Verify network values after creation
+    # Test both random network name and nw-test1.
+    When we make an api create call to networks with the following options
+      |  network |       gw | prefix | description          |
+      | 10.1.2.0 | 10.1.2.1 |     20 | "test create values" |
+    Then the previous api call should be successful
     And the previous api call should have the key ipv4_network with 10.1.2.0
     And the previous api call should have the key ipv4_gw with 10.1.2.1
     And the previous api call should have the key prefix with 20
-    And the previous api call should have the key description with "test create"
+    And the previous api call should have the key description with "test create values"
     # Save to registry
     And from the previous api call save to registry uuid the value for key uuid
-
-    # And the previous api call should have the key uuid with registry:uuid
 
     # Verify with get call.
     When we make an api get call to networks/<registry:uuid> with no options
     Then the previous api call should be successful
+    And the previous api call should have the key uuid with <registry:uuid>
+    And the previous api call should have the key ipv4_network with 10.1.2.0
+    And the previous api call should have the key ipv4_gw with 10.1.2.1
+    And the previous api call should have the key prefix with 20
+    And the previous api call should have the key description with "test create values"
+
 
   Scenario: Fail to create a network through the core API
     When we make an api create call to networks with the following options
       |   network |       gw | prefix | description |
       | 256.1.2.0 | 10.1.2.1 |     20 | "test fail" |
+    Then the previous api call should not be successful
+
+    When we make an api create call to networks with the following options
+      |  network |       gw | prefix | description |
+      | 10.1.2.0 | 10.1.2.a |     20 | "test fail" |
+    Then the previous api call should not be successful
+
+    When we make an api create call to networks with the following options
+      |  network |       gw | prefix | description |
+      | 10.1.2.0 | 10.1.2.1 |     33 | "test fail" |
     Then the previous api call should not be successful
 
