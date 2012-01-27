@@ -141,6 +141,9 @@ Then /^for (create|update|delete|get|put) on (.+) there (should|should\snot) be 
   end
 end
 
+# This step is for validating the response from collection (list).
+# GET /instances
+# GET /ssh_key_pairs
 Then /^the previous api call results (should|should\snot) contain the key (.+) with (.+)$/ do |outcome,key,arg_value|
   value = evaluate_argument(arg_value)
 
