@@ -1065,8 +1065,57 @@ module Dcmgr
             response_to(res)
            end
          end
+
+        # Temporary names as the current code is incapable of having
+        # multiple names with different operations.
+        operation :ports_index, :method=>:get, :member=>true do
+          description 'List ports on this network'
+          control do
+            res = [{
+                     :owner_total => 1,
+                     :start => 0,
+                     :limit => 10,
+                     :results=> []
+                   }]
+
+            response_to(res)
+          end
+         end
+
+        operation :ports_create, :method=>:post, :member=>true do
+          description 'Create a port on this network'
+          control do
+            res = { :id => 'port-aaaa' }
+
+            response_to(res)
+          end
+        end
+
       end
 
+      # Should be under '/networks/{network-id}/ports', however due to
+      # lack of namespaces we put the create and index calls in the
+      # root namespace.
+      collection :ports do
+        description "Ports on a network"
+
+        operation :show do
+          description "Retrieve details about a port"
+          # params :id required
+          control do
+            response_to({})
+          end
+        end
+        
+        operation :destroy do
+          description "Remove a port"
+          # params :id required
+          control do
+            response_to({})
+          end
+        end
+      end
+      
       collection :instance_specs do
         operation :index do
           description 'Show list of instance template'

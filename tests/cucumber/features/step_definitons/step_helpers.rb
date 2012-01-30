@@ -28,6 +28,17 @@ class APITest
   def self.update(path, params)
     self.put(path, :query=>params, :body=>'')
   end
+
+  def self.send_action(call, path, params)
+    case call
+    when "put"
+      self.put(path, :query => params, :body => '')
+    when "post"
+      self.post(path, :query => params, :body => '')
+    else
+      send(call, path, params)
+    end
+  end
 end
 
 module RetryHelper
