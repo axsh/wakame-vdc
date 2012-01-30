@@ -1,4 +1,4 @@
-Feature: blablabla
+Feature: Instance, volume and snapshot operations.
 
   Scenario: One shot
     Given wmi-lucid6 and is-demospec exist
