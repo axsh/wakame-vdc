@@ -17,15 +17,15 @@ RETRYCOUNT=0
 while true 
 do
   echo "Retry ${RETRYCOUNT}"
-  if [ "`/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}'`" = "" ]; then
+  ipaddr=`/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}'`
+  if [ ${RETRYCOUNT} -ge 5 ]; then
+    echo "Faild ip release."
+    exit 1
+  elif [ "${ipaddr}" = "" ]; then
     echo 'Waiting ip release.'
     RETRYCOUNT=`expr ${RETRYCOUNT} + 1`
     sleep 1
-  elif [ ${RETRYCOUNT} -ge 5 ]; then
-    echo "Faild ip release."
-    exit 1
   else
-    ipaddr=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}')
     break
   fi
 done
