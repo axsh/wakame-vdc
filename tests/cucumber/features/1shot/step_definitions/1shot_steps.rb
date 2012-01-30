@@ -12,16 +12,17 @@ After do
 end
 
 Given /^(wmi-[a-z0-9]{1,8}) and (is-[a-z0-9]{1,8}) exist$/ do |image_id,spec_id|
-#Given /^(.+) and (.+) exist$/ do |image_id,spec_id|
   unless APITest.get("/images/#{image_id}").success?
     #Set variabled for the setup script
     ENV["vdc_root"]=VDC_ROOT
     ENV["vmimage_snap_uuid"]=image_id.split("-").last
-    ENV["vmimage_file"]="#{VDC_ROOT}/tmp/snap/a-shpoolxx/snap-#{image_id.split("-").last}.snap"
+    ENV["account_id"]="a-shpoolxx"
+    ENV["local_store_path"]="#{VDC_ROOT}/tmp/snap/#{ENV["account_id"]}"
+    ENV["vmimage_file"]="snap-#{image_id.split("-").last}.snap"
+    ENV["vmimage_s3"]="http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-ms-32.raw.gz"
     ENV["dcmgr_dbname"]="wakame_dcmgr"
     ENV["dcmgr_dbuser"]="root"
-    ENV["account_id"]="a-shpoolxx"
-    ENV["image_arch"]="x86_64"
+    ENV["image_arch"]="x86"
     
     steps %Q{
       Given the working directory is tests/cucumber/features/1shot/setup_script
