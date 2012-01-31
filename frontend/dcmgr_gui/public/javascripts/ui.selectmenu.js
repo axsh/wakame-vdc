@@ -13,7 +13,7 @@
 $.widget("ui.selectmenu", {
 	_init: function() {
 		var self = this, o = this.options;
-		
+		var menu_toggle_flag = 0;
 		//quick array of button and menu id's
 		this.ids = [this.element.attr('id') + '-' + 'button', this.element.attr('id') + '-' + 'menu'];
 		
@@ -54,6 +54,13 @@ $.widget("ui.selectmenu", {
 					self._safemouseup = false;
 					setTimeout(function(){self._safemouseup = true;}, 300);
 				}	
+
+        if(menu_toggle_flag == 1) {
+          self.closeMenu();
+          menu_toggle_flag = 0;
+        } else {
+          menu_toggle_flag = 1;
+        }
 				return false;
 			})
 			.bind('click',function(){
@@ -101,6 +108,13 @@ $.widget("ui.selectmenu", {
 			.mousedown(function(event){
 				self.close(event);
 			});
+
+    $(document).click(function(event){
+      if(menu_toggle_flag == 1) {
+        self.closeMenu();
+        menu_toggle_flag = 0;
+      }
+    });
 
 		//change event on original selectmenu
 		this.element
@@ -519,6 +533,12 @@ $.widget("ui.selectmenu", {
     this.newelement.button({disabled: true})
     this.newelement.removeClass('ui-button');
     this.newelement.removeClass('ui-button-text-only')
+  },
+  closeMenu: function(){
+    var select_menu = $(this.list[0]);
+    select_menu.removeClass('ui-selectmenu-open');
+    var button = $(this.newelement);
+    button.addClass('ui-corner-all');
   }
 });
 
