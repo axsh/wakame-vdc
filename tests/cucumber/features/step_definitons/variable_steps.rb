@@ -55,6 +55,10 @@ def variable_apply_template registry, template, operator, value
     key = template[/^\{"(.+)":\}$/, 1]
     registry.has_key?(key).should be_true
     variable_compare(operator, registry[key], value)
+  when /^\{".+":.+\}$/
+    match = /^\{"(.+)":(.+)\}$/.match(template)
+    registry.has_key?(match[1]).should be_true
+    variable_apply_template(registry[match[1]], match[2], operator, value)
   when /^\{\}$/
     registry.kind_of?(Hash).should be_true
     variable_compare(operator, registry, value)
