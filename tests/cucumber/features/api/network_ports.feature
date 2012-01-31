@@ -35,12 +35,14 @@ Feature: Network Ports API
       Then the previous api call should be successful
       # Check returned values
       And the previous api call should have the key network_id with <registry:network_uuid>
+      And the previous api call should have a hash on the key attachment with 0 entries
       And from the previous api call save to registry port_uuid the value for key uuid
       
     When we make an api get call to ports/<registry:port_uuid> with no options
       Then the previous api call should be successful
       And the previous api call should have the key uuid with <registry:port_uuid>
       And the previous api call should have the key network_id with <registry:network_uuid>
+      And the previous api call should have a hash on the key attachment with 0 entries
 
 
   # Verify that deleting a network remmoves the network ports.

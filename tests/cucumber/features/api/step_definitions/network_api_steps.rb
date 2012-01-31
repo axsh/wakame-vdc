@@ -26,3 +26,13 @@ Given /^a new network with its uuid in registry (.+)$/ do |reg|
 
   @networks_created << @registry[reg]
 end
+
+Given /^a new port in (.+) with its uuid in registry (.+)$/ do |network, reg|
+  steps %Q{
+    When we make an api put call to networks/#{network}/add_port with no options
+      Then the previous api call should be successful
+      And from the previous api call save to registry #{reg} the value for key uuid
+  }
+
+  # @networks_created << @registry[reg]
+end

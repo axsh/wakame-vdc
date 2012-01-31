@@ -1147,6 +1147,37 @@ module Dcmgr
         #     response_to({})
         #   end
         # end
+
+        operation :attach, :method=>:put, :member=>true do
+          description 'Create a port on this network'
+          # param :name required
+          control do
+            Models::NetworkPort.lock!
+            port = find_by_uuid(:NetworkPort, params[:id])
+            raise(NetworkPortAlreadyAttached) if not port[:attachment].empty?
+
+            nw = find_by_uuid(:Network, port[:network_id])
+            examine_owner(nw) || raise(OperationNotPermitted)
+
+            response_to({})
+          end
+        end
+
+        operation :detach, :method=>:put, :member=>true do
+          description 'Create a port on this network'
+          # param :port_id required
+          control do
+            # Models::NetworkPort.lock!
+            # nw = find_by_uuid(:Network, params[:id])
+            # examine_owner(nw) || raise(OperationNotPermitted)
+
+            # port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
+            # raise(UnknownNetworkPort) if port.nil?
+
+            # port.destroy
+            response_to({})
+          end
+        end
       end
       
       collection :instance_specs do

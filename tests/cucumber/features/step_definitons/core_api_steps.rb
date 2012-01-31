@@ -107,6 +107,11 @@ Then /^the previous api call (should|should\snot) have the key (.+) with (.+)$/ 
   (@api_last_result[key].to_s == value).should == (outcome == 'should not' ? false : true)
 end
 
+Then /^the previous api call (should|should\snot) have a hash on the key (.+) with (.+) entries$/ do |outcome,key,arg_count|
+  count = evaluate_argument(arg_count)
+  (@api_last_result[key].size.to_s == count).should == (outcome == 'should not' ? false : true)
+end
+
 Then /^for (create|update|delete|get|post|put) on (.+) there (should|should\snot) be the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
   suffix = evaluate_argument(arg_suffix)
   value = evaluate_argument(arg_value)

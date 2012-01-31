@@ -17,7 +17,7 @@ module Dcmgr::Models
     end
 
     def to_api_document
-      to_hash.merge(:id=>self.canonical_uuid)
+      to_hash.merge({:id=>self.canonical_uuid, :attachment => {}})
     end
 
   end
