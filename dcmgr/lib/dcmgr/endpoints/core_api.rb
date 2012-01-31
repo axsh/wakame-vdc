@@ -1127,19 +1127,18 @@ module Dcmgr
       collection :ports do
         description "Ports on a network"
 
-        # operation :show do
-        #   description "Retrieve details about a port"
-        #   # params :id required
-        #   control do
-        #     Models::NetworkPort.lock!
-        #     nw = find_by_uuid(:Network, params[:id])
-        #     examine_owner(nw) || raise(OperationNotPermitted)
+        operation :show do
+          description "Retrieve details about a port"
+          # params :id required
+          control do
+            port = find_by_uuid(:NetworkPort, params[:id])
 
-        #     port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
+            # Find a better way to convert to canonical network uuid.
+            nw = find_by_uuid(:Network, port[:network_id])
 
-        #     response_to({})
-        #   end
-        # end
+            response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
+          end
+        end
         
         # operation :destroy do
         #   description "Remove a port"
