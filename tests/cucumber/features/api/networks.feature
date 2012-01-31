@@ -116,9 +116,11 @@ Feature: Network API
       # And the previous api call root array should contain the key uuid with <registry:pool_uuid>
       And the previous api call root array should contain the key name with "poll lifecycle 1"
 
-    # When we make an api put call to networks/<registry:uuid>/del_pool with no options
-    #   Then the previous api call should be successful
+    When we make an api put call to networks/<registry:uuid>/del_pool with the following options
+      | name               |
+      | "poll lifecycle 1" |
+      Then the previous api call should be successful
     
-    # When we make an api get call to networks/<registry:uuid>/get_pool with no options
-    #   Then the previous api call should be successful
-    #   And the previous api call root array should have 0 entries
+    When we make an api get call to networks/<registry:uuid>/get_pool with no options
+      Then the previous api call should be successful
+      And the previous api call root array should have 0 entries

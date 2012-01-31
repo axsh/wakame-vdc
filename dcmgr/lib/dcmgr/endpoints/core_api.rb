@@ -1105,11 +1105,17 @@ module Dcmgr
 
         operation :del_port, :method=>:put, :member=>true do
           description 'Create a port on this network'
-          # param :name required
+          # param :port_id required
           control do
-            res = { :id => 'port-aaaa' }
+            Models::NetworkPort.lock!
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
 
-            response_to(res)
+            port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
+            raise(UnknownNetworkPort) if port.nil?
+
+            port.destroy
+            response_to({})
           end
         end
 
@@ -1121,21 +1127,27 @@ module Dcmgr
       collection :ports do
         description "Ports on a network"
 
-        operation :show do
-          description "Retrieve details about a port"
-          # params :id required
-          control do
-            response_to({})
-          end
-        end
+        # operation :show do
+        #   description "Retrieve details about a port"
+        #   # params :id required
+        #   control do
+        #     Models::NetworkPort.lock!
+        #     nw = find_by_uuid(:Network, params[:id])
+        #     examine_owner(nw) || raise(OperationNotPermitted)
+
+        #     port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
+
+        #     response_to({})
+        #   end
+        # end
         
-        operation :destroy do
-          description "Remove a port"
-          # params :id required
-          control do
-            response_to({})
-          end
-        end
+        # operation :destroy do
+        #   description "Remove a port"
+        #   # params :id required
+        #   control do
+        #     response_to({})
+        #   end
+        # end
       end
       
       collection :instance_specs do
