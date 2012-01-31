@@ -64,6 +64,7 @@ When /^we make an api (create|update|delete|get|post|put) call to (.+) with no o
   @api_last_request = {:collection=>suffix, :action=>call, :options=>nil }
   @api_last_result = APITest.send_action(call,"/#{suffix}",{})
   @api_call_results[call][suffix] = @api_last_result
+  @new_registry['api:latest'] = @api_last_result.parsed_response
 end
 
 When /^we make an api (create|update|delete|get|post|put) call to (.+) with the following options$/ do |call,arg_suffix,arg_options|
@@ -74,6 +75,7 @@ When /^we make an api (create|update|delete|get|post|put) call to (.+) with the 
   @api_last_request = {:collection=>suffix, :action=>call, :options=>options }
   @api_last_result = APITest.send_action(call,"/#{suffix}",options.hashes.first)
   @api_call_results[call][suffix] = @api_last_result
+  @new_registry['api:latest'] = @api_last_result.parsed_response
 end
 
 Then /^from the previous api call save to registry (.+) the value for key (.+)$/ do |registry,key|
