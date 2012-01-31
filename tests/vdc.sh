@@ -388,6 +388,19 @@ case ${mode} in
     screen_close
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
+  standalone:ci:cucumber)
+    (
+     set +e
+     run_standalone
+     check_ready_standalone
+     cd $prefix_path/tests/cucumber
+     [ -z "${without_bundle_install}" ] && bundle install --path=.vendor/bundle
+     bundle exec cucumber -r features/ features/1shot/1shot.feature
+    )
+    excode=$?
+    screen_close
+    ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
+    ;;
   standalone:ci:build_cd)
     # build image
     cd_builder_dir="${prefix_path}/tests/cd_builder"
