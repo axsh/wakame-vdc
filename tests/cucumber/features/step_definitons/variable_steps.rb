@@ -58,6 +58,14 @@ def variable_apply_template registry, template, operator
     registry.has_key?(match[1]).should be_true
     variable_apply_template(registry[match[1]], match[2], operator)
 
+  when /^\[\.\.\.,.+,\.\.\.\]$/
+    match = /^\[\.\.\.,(.+),\.\.\.\]$/.match(template)
+    (registry.kind_of?(Array)).should be_true
+
+    registry.find { |itr|
+      variable_apply_template(itr, match[1], operator)
+    }.nil? == false
+
   when /^\[.+\]$/
     match = /^\[(.+)\]$/.match(template)
     (registry.kind_of?(Array) and registry.size == 1).should be_true
@@ -65,7 +73,7 @@ def variable_apply_template registry, template, operator
   end
 end
 
-Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) (equal to|with a size of) (.+)$/ do |registry,outcome,template,arg_operator,arg_value|
+Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) (equal to|with a size of|with the key) (.+)$/ do |registry,outcome,template,arg_operator,arg_value|
   value = variable_get_value(arg_value)
   value.nil?.should be_false
   registry.nil?.should be_false
@@ -76,6 +84,8 @@ Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) (equal to|with a size of) (.
       Proc.new { |left| left == value }
     when 'with a size of'
       Proc.new { |left| left.size == value }
+    when 'with the key'
+      Proc.new { |left| left.has_key? value }
     end
 
   variable_apply_template(@new_registry[registry], template, operator).should == (outcome == 'should not' ? false : true)
@@ -83,7 +93,7 @@ end
 
 # Helper functions, move to appropriate file or make a hash relation
 # between descriptons and registry keys.
-Then /^the previous api call [ ]*(should|should\snot) have (.+) (equal to|with a size of) (.+)$/ do |outcome,template,operator,arg_value|
+Then /^the previous api call [ ]*(should|should\snot) have (.+) (equal to|with a size of|with the key) (.+)$/ do |outcome,template,operator,arg_value|
   steps %Q{
     Then <api:latest> #{outcome} have #{template} #{operator} #{arg_value}
   }  

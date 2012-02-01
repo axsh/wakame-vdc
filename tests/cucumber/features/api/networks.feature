@@ -113,8 +113,8 @@ Feature: Network API
     When we make an api get call to networks/<registry:uuid>/get_pool with no options
       Then the previous api call should be successful
       And the previous api call should have [] with a size of 1
-      # And the previous api call root array should contain {"uuid":} equal to <registry:pool_uuid>
-      And the previous api call root array should contain the key name with poll lifecycle 1
+      And the previous api call should have [...,{"name":},...] equal to "poll lifecycle 1"
+      # And the previous api call should have [...,{"uuid":},...] equal to <registry:pool_uuid>
 
     When we make an api put call to networks/<registry:uuid>/del_pool with the following options
       | name             |
