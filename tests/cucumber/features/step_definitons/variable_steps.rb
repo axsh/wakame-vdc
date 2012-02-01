@@ -45,13 +45,13 @@ def variable_apply_template registry, template, operator
     registry.kind_of?(Array).should be_true
     operator.call(registry)
 
-  when /^\{".+":\}$/
-    key = template[/^\{"(.+)":\}$/, 1]
+  when /^\{"[^"]+":\}$/
+    key = template[/^\{"([^"]+)":\}$/, 1]
     registry.has_key?(key).should be_true
     operator.call(registry[key])
 
-  when /^\{".+":.+\}$/
-    match = /^\{"(.+)":(.+)\}$/.match(template)
+  when /^\{"[^"]+":.+\}$/
+    match = /^\{"([^"]+)":(.+)\}$/.match(template)
     registry.has_key?(match[1]).should be_true
     variable_apply_template(registry[match[1]], match[2], operator)
 
