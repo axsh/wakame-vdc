@@ -128,7 +128,7 @@ module Dcmgr
 
         if boom.kind_of?(APIError)
           @env['sinatra.error'] = boom
-          Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+          Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.nil? ? 'nil' : boom.backtrace.first})")
           error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
         else
           logger.error(boom)
@@ -1068,26 +1068,54 @@ module Dcmgr
 
         # Temporary names as the current code is incapable of having
         # multiple names with different operations.
-        operation :ports_index, :method=>:get, :member=>true do
+        operation :get_port, :method=>:get, :member=>true do
           description 'List ports on this network'
+          # params start, fixnum, optional
+          # params limit, fixnum, optional
           control do
-            res = [{
-                     :owner_total => 1,
-                     :start => 0,
-                     :limit => 10,
-                     :results=> []
-                   }]
+            Models::NetworkPort.lock!
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
 
-            response_to(res)
+            result = []
+            nw.network_port.each { |port|
+              result << port.to_api_document.merge(:network_id => nw.canonical_uuid)
+            }
+
+            response_to(result)
           end
          end
 
-        operation :ports_create, :method=>:post, :member=>true do
+        operation :add_port, :method=>:put, :member=>true do
           description 'Create a port on this network'
+          # param :name required
           control do
-            res = { :id => 'port-aaaa' }
+            Models::NetworkPort.lock!
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
 
-            response_to(res)
+            savedata = {
+              :network_id => nw.id
+            }
+            port = Models::NetworkPort.create(savedata)
+
+            response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
+          end
+        end
+
+        operation :del_port, :method=>:put, :member=>true do
+          description 'Create a port on this network'
+          # param :port_id required
+          control do
+            Models::NetworkPort.lock!
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
+
+            port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
+            raise(UnknownNetworkPort) if port.nil?
+
+            port.destroy
+            response_to({})
           end
         end
 
@@ -1103,14 +1131,50 @@ module Dcmgr
           description "Retrieve details about a port"
           # params :id required
           control do
-            response_to({})
+            port = find_by_uuid(:NetworkPort, params[:id])
+
+            # Find a better way to convert to canonical network uuid.
+            nw = find_by_uuid(:Network, port[:network_id])
+
+            response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
           end
         end
         
-        operation :destroy do
-          description "Remove a port"
-          # params :id required
+        # operation :destroy do
+        #   description "Remove a port"
+        #   # params :id required
+        #   control do
+        #     response_to({})
+        #   end
+        # end
+
+        operation :attach, :method=>:put, :member=>true do
+          description 'Create a port on this network'
+          # param :name required
           control do
+            Models::NetworkPort.lock!
+            port = find_by_uuid(:NetworkPort, params[:id])
+            raise(NetworkPortAlreadyAttached) if not port[:attachment].empty?
+
+            nw = find_by_uuid(:Network, port[:network_id])
+            examine_owner(nw) || raise(OperationNotPermitted)
+
+            response_to({})
+          end
+        end
+
+        operation :detach, :method=>:put, :member=>true do
+          description 'Create a port on this network'
+          # param :port_id required
+          control do
+            # Models::NetworkPort.lock!
+            # nw = find_by_uuid(:Network, params[:id])
+            # examine_owner(nw) || raise(OperationNotPermitted)
+
+            # port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
+            # raise(UnknownNetworkPort) if port.nil?
+
+            # port.destroy
             response_to({})
           end
         end

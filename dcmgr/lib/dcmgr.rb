@@ -100,6 +100,7 @@ module Dcmgr
     autoload :InstanceSpec, 'dcmgr/models/instance_spec'
     autoload :InstanceNic, 'dcmgr/models/instance_nic'
     autoload :Network, 'dcmgr/models/network'
+    autoload :NetworkPort, 'dcmgr/models/network_port'
     autoload :IpLease, 'dcmgr/models/ip_lease'
     autoload :InstanceSecurityGroup, 'dcmgr/models/instance_security_group'
     autoload :SshKeyPair, 'dcmgr/models/ssh_key_pair'

@@ -30,6 +30,8 @@ module Dcmgr::Models
     one_to_many :dhcp_range
     many_to_one :physical_network
 
+    one_to_many :network_port
+
     def before_validation
       self.link_interface ||= "br-#{self[:uuid]}"
       super
