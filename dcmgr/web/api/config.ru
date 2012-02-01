@@ -7,10 +7,10 @@ require 'dcmgr'
 
 Dcmgr.configure(File.expand_path('../../../config/dcmgr.conf', __FILE__))
 
-use Dcmgr::Rack::RunInitializer, lambda {
-  Dcmgr.run_initializers
-}, lambda {
-  next if Isono::NodeModules::DataStore.disconnected? == false
-  Dcmgr.run_initializers('sequel')
-}
+Dcmgr.run_initializers
+
+map '/api/12.03' do
+  run Dcmgr::Endpoints::CoreAPI_1203.new
+end
+
 run Dcmgr::Endpoints::CoreAPI.new

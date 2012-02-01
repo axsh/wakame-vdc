@@ -3,14 +3,13 @@
 require 'rack/request'
 
 module Dcmgr::Rack
-  # Rack middleware for logging each API request.
+  # Rack middleware for logging Dcmgr API request.
   class RequestLogger
     HTTP_X_VDC_REQUEST_ID='HTTP_X_VDC_REQUEST_ID'.freeze
     HEADER_X_VDC_REQUEST_ID='X-VDC-Request-ID'.freeze
     RACK_REQUEST_LOG_KEY='vdc.request_log'.freeze
       
     def initialize(app, with_header=true)
-      raise TypeError unless app.is_a?(Dcmgr::Endpoints::CoreAPI)
       @app = app
       @with_header = with_header
     end

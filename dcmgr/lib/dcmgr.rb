@@ -113,8 +113,15 @@ module Dcmgr
   end
 
   module Endpoints
+    # HTTP Header constants for request credentials.
+    HTTP_X_VDC_REQUESTER_TOKEN='HTTP_X_VDC_REQUESTER_TOKEN'.freeze
+    HTTP_X_VDC_ACCOUNT_UUID='HTTP_X_VDC_ACCOUNT_UUID'.freeze
+
+    RACK_FRONTEND_SYSTEM_ID='dcmgr.frotend_system.id'.freeze
+    
     autoload :CoreAPI, 'dcmgr/endpoints/core_api'
     autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
+    autoload :CoreAPI_1203, 'dcmgr/endpoints/12.03/core_api'
   end
 
   module NodeModules
