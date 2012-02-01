@@ -6,7 +6,7 @@ Feature: Network API
       | 10.1.2.0 | 10.1.2.1 |     20 | test create |
     Then the previous api call should be successful
       # And the previous api call should have {"uuid":} equal to /^nw-*/
-      And from the previous api call save to registry uuid the value for key uuid
+      And from the previous api call take {"uuid":} and save it to <registry:uuid>
     When we make an api get call to networks/<registry:uuid> with no options
       Then the previous api call should be successful
     When we make an api delete call to networks/<registry:uuid> with no options
@@ -52,7 +52,7 @@ Feature: Network API
       And the previous api call should have {"prefix":} equal to 20
       And the previous api call should have {"description":} equal to "test create values"
       # Save to registry
-      And from the previous api call save to registry uuid the value for key uuid
+      And from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     # Verify with get call.
     When we make an api get call to networks/<registry:uuid> with no options
@@ -84,7 +84,7 @@ Feature: Network API
 
 
   Scenario: Reserve IP addresses
-    Given a new network with its uuid in registry uuid
+    Given a new network with its uuid in <registry:uuid>
     
     # When we make an api put call to networks/<registry:uuid>/reserve with the following options
     #   |    ipaddr |
@@ -97,7 +97,7 @@ Feature: Network API
 
 
   Scenario: Pool lifecycle for a network
-    Given a new network with its uuid in registry uuid
+    Given a new network with its uuid in <registry:uuid>
     
     When we make an api get call to networks/<registry:uuid>/get_pool with no options
       Then the previous api call should be successful
@@ -108,7 +108,7 @@ Feature: Network API
       | poll lifecycle 1 |
       Then the previous api call should be successful
       # Currently the uuid isn't returned...
-      # And from the previous api call save to registry pool_uuid the value for key uuid
+      # And from the previous api call take {"uuid":} and save it to <registry:pool_uuid>
 
     When we make an api get call to networks/<registry:uuid>/get_pool with no options
       Then the previous api call should be successful

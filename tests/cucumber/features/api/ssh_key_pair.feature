@@ -7,7 +7,7 @@ Feature: SshKeyPair API
       | description |
       | test key1   |
     Then the previous api call should be successful
-    And from the previous api call save to registry uuid the value for key uuid
+    And from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to ssh_key_pairs/<registry:uuid> with the following options
       | description   |
@@ -25,7 +25,7 @@ Feature: SshKeyPair API
   Scenario: Create new ssh key pair and fail to duplicate delete
     When we make an api create call to ssh_key_pairs with no options
     Then the previous api call should be successful
-    And from the previous api call save to registry uuid the value for key uuid
+    And from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     # First deletion
     When we make an api delete call to ssh_key_pairs/<registry:uuid> with no options

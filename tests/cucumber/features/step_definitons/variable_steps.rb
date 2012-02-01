@@ -3,7 +3,7 @@ begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations
 require 'cucumber/formatter/unicode'
 
 Before do
-  @new_registry = {}
+  @registry = {}
 end
 
 After do
@@ -30,9 +30,8 @@ def variable_get_value arg_value
     arg_value[/^"(.*)"$/, 1]
   when /^[0-9]+$/
     arg_value.to_i
-  when /^<registry:.+>$/
-    # Old registry, replace.
-    @registry[arg_value[/^<registry:(.+)>$/, 1]]
+  when /^<.+>$/
+    @registry[arg_value[/^<(.+)>$/, 1]]
   else
     nil
   end
@@ -88,13 +87,24 @@ Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) (equal to|with a size of|wit
       Proc.new { |left| left.has_key? value }
     end
 
-  variable_apply_template(@new_registry[registry], template, operator).should == (outcome == 'should not' ? false : true)
+  variable_apply_template(@registry[registry], template, operator).should == (outcome == 'should not' ? false : true)
+end
+
+Then /^from <([^>]+)> [ ]*take (.+) and save it to <([^>]+)>$/ do |registry,template,dest|
+  operator = Proc.new { |right| @registry[dest] = right }
+  variable_apply_template(@registry[registry], template, operator)
 end
 
 # Helper functions, move to appropriate file or make a hash relation
 # between descriptons and registry keys.
-Then /^the previous api call [ ]*(should|should\snot) have (.+) (equal to|with a size of|with the key) (.+)$/ do |outcome,template,operator,arg_value|
+Then /^the previous api call [ ]*(should|should\snot) have (.+) (equal to|with a size of|with the key) (.+)$/ do |outcome,template,operator,value|
   steps %Q{
-    Then <api:latest> #{outcome} have #{template} #{operator} #{arg_value}
+    Then <api:latest> #{outcome} have #{template} #{operator} #{value}
+  }  
+end
+
+Then /^from the previous api call [ ]*take (.+) and save it to <([^>]+)>$/ do |template,dest|
+  steps %Q{
+    Then from <api:latest> take #{template} and save it to <#{dest}>
   }  
 end

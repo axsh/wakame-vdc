@@ -28,13 +28,13 @@ def initiate_api_call_results
 end
 
 def evaluate_argument arg
-  return arg unless arg =~ /<registry:[^>]+>/
+  return arg unless arg =~ /<[^>]+>/
 
   result = arg.dup
-  while not (registry_id = result[/<registry:([^>]+)>/, 1]).nil?
+  while not (registry_id = result[/<([^>]+)>/, 1]).nil?
     @registry.has_key?(registry_id).should be_true
     @registry[registry_id].nil?.should be_false
-    result[/<registry:[^>]+>/] = @registry[registry_id]
+    result[/<[^>]+>/] = @registry[registry_id]
   end
   result
 end
@@ -42,10 +42,10 @@ end
 def evaluate_hash_argument arg
   arg.hashes.each { |container|
     container.each { |key,value|
-      while not (registry_id = value[/<registry:([^>]+)>/, 1]).nil?
+      while not (registry_id = value[/<([^>]+)>/, 1]).nil?
         @registry.has_key?(registry_id).should be_true
         @registry[registry_id].nil?.should be_false
-        value[/<registry:[^>]+>/] = @registry[registry_id]
+        value[/<[^>]+>/] = @registry[registry_id]
       end
     }
   }
@@ -64,7 +64,7 @@ When /^we make an api (create|update|delete|get|post|put) call to (.+) with no o
   @api_last_request = {:collection=>suffix, :action=>call, :options=>nil }
   @api_last_result = APITest.send_action(call,"/#{suffix}",{})
   @api_call_results[call][suffix] = @api_last_result
-  @new_registry['api:latest'] = @api_last_result.parsed_response
+  @registry['api:latest'] = @api_last_result.parsed_response
 end
 
 When /^we make an api (create|update|delete|get|post|put) call to (.+) with the following options$/ do |call,arg_suffix,arg_options|
@@ -75,12 +75,7 @@ When /^we make an api (create|update|delete|get|post|put) call to (.+) with the 
   @api_last_request = {:collection=>suffix, :action=>call, :options=>options }
   @api_last_result = APITest.send_action(call,"/#{suffix}",options.hashes.first)
   @api_call_results[call][suffix] = @api_last_result
-  @new_registry['api:latest'] = @api_last_result.parsed_response
-end
-
-Then /^from the previous api call save to registry (.+) the value for key (.+)$/ do |registry,key|
-  @registry = {} if @registry.nil?
-  @registry[registry] = @api_last_result[key]
+  @registry['api:latest'] = @api_last_result.parsed_response
 end
 
 Then /^the previous api call (should|should\snot) be successful$/ do |outcome|
