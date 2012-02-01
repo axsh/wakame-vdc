@@ -1088,7 +1088,6 @@ module Dcmgr
 
         operation :add_port, :method=>:put, :member=>true do
           description 'Create a port on this network'
-          # param :name required
           control do
             Models::NetworkPort.lock!
             nw = find_by_uuid(:Network, params[:id])
@@ -1149,22 +1148,32 @@ module Dcmgr
         # end
 
         operation :attach, :method=>:put, :member=>true do
-          description 'Create a port on this network'
-          # param :name required
+          description 'Attach a vif to this port'
+          # params :id required
+          # params :attachment_id required
           control do
+            result = []
+
             Models::NetworkPort.lock!
             port = find_by_uuid(:NetworkPort, params[:id])
-            raise(NetworkPortAlreadyAttached) if not port[:attachment].empty?
+            raise(NetworkPortAlreadyAttached) unless port.instance_nic.nil?
+
+            nic = find_by_uuid(:InstanceNic, params[:attachment_id])
+            raise(NetworkPortNicNotFound) if nic.nil?
 
             nw = find_by_uuid(:Network, port[:network_id])
             examine_owner(nw) || raise(OperationNotPermitted)
 
+            # Verify that the vif belongs to network?
+
+            port.instance_nic = nic
+            port.save_changes
             response_to({})
           end
         end
 
         operation :detach, :method=>:put, :member=>true do
-          description 'Create a port on this network'
+          description 'Detach a vif from this port'
           # param :port_id required
           control do
             # Models::NetworkPort.lock!

@@ -248,6 +248,7 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :uuid, "varchar(255)", :null=>false
       column :network_id, "int(11)", :null=>false
+      column :instance_nic_id, "int(11)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
     end

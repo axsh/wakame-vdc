@@ -32,8 +32,6 @@ def variable_get_value arg_value
     arg_value.to_i
   when /^<.+>$/
     @registry[arg_value[/^<(.+)>$/, 1]]
-  else
-    nil
   end
 end
 

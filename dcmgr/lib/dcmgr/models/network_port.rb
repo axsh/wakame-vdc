@@ -6,7 +6,7 @@ module Dcmgr::Models
     taggable 'port'
 
     many_to_one :network
-    one_to_one :instance_nic
+    many_to_one :instance_nic
 
     def validate
       super
@@ -17,7 +17,10 @@ module Dcmgr::Models
     end
 
     def to_api_document
-      to_hash.merge({:id=>self.canonical_uuid, :attachment => {}})
+      api_hash = to_hash
+      api_hash.delete(:instance_nic_id)
+      api_hash.merge({:id=>self.canonical_uuid,
+                      :attachment => self.instance_nic.nil? ? {} : {"id" => self.instance_nic.canonical_uuid}})
     end
 
   end
