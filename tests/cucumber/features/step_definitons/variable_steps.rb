@@ -51,20 +51,29 @@ end
 
 def variable_apply_template registry, template, operator, value
   case template
+  when /^\{\}$/
+    registry.kind_of?(Hash).should be_true
+    variable_compare(operator, registry, value)
+
+  when /^\[\]$/
+    registry.kind_of?(Array).should be_true
+    variable_compare(operator, registry, value)
+
   when /^\{".+":\}$/
     key = template[/^\{"(.+)":\}$/, 1]
     registry.has_key?(key).should be_true
     variable_compare(operator, registry[key], value)
+
   when /^\{".+":.+\}$/
     match = /^\{"(.+)":(.+)\}$/.match(template)
     registry.has_key?(match[1]).should be_true
     variable_apply_template(registry[match[1]], match[2], operator, value)
-  when /^\{\}$/
-    registry.kind_of?(Hash).should be_true
-    variable_compare(operator, registry, value)
-  when /^\[\]$/
-    registry.kind_of?(Array).should be_true
-    variable_compare(operator, registry, value)
+
+  when /^\[.+\]$/
+    match = /^\[(.+)\]$/.match(template)
+    (registry.kind_of?(Array) and registry.size == 1).should be_true
+    variable_compare(operator, registry.first, value)
+
   else
     nil
   end
@@ -80,14 +89,8 @@ end
 
 # Helper functions, move to appropriate file or make a hash relation
 # between descriptons and registry keys.
-Then /^the previous api call [ ]*(should|should\snot) have (.+) equal to (.+)$/ do |outcome,template,arg_value|
+Then /^the previous api call [ ]*(should|should\snot) have (.+) (equal to|with a size of) (.+)$/ do |outcome,template,operator,arg_value|
   steps %Q{
-    Then <api:latest> #{outcome} have #{template} equal to #{arg_value}
-  }  
-end
-
-Then /^the previous api call [ ]*(should|should\snot) have (.+) with a size of (.+)$/ do |outcome,template,arg_value|
-  steps %Q{
-    Then <api:latest> #{outcome} have #{template} with a size of #{arg_value}
+    Then <api:latest> #{outcome} have #{template} #{operator} #{arg_value}
   }  
 end
