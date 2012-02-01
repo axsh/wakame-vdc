@@ -38,53 +38,47 @@ def variable_get_value arg_value
   end
 end
 
-def variable_compare operator, left, right
-  case operator
-  when 'equal to'
-    left == right
-  when 'with a size of'
-    left.size == right
-  else
-    nil
-  end
-end
-
-def variable_apply_template registry, template, operator, value
+def variable_apply_template registry, template, operator
   case template
   when /^\{\}$/
     registry.kind_of?(Hash).should be_true
-    variable_compare(operator, registry, value)
+    operator.call(registry)
 
   when /^\[\]$/
     registry.kind_of?(Array).should be_true
-    variable_compare(operator, registry, value)
+    operator.call(registry)
 
   when /^\{".+":\}$/
     key = template[/^\{"(.+)":\}$/, 1]
     registry.has_key?(key).should be_true
-    variable_compare(operator, registry[key], value)
+    operator.call(registry[key])
 
   when /^\{".+":.+\}$/
     match = /^\{"(.+)":(.+)\}$/.match(template)
     registry.has_key?(match[1]).should be_true
-    variable_apply_template(registry[match[1]], match[2], operator, value)
+    variable_apply_template(registry[match[1]], match[2], operator)
 
   when /^\[.+\]$/
     match = /^\[(.+)\]$/.match(template)
     (registry.kind_of?(Array) and registry.size == 1).should be_true
-    variable_compare(operator, registry.first, value)
-
-  else
-    nil
+    variable_apply_template(registry.first, match[1], operator)
   end
 end
 
-Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) (equal to|with a size of) (.+)$/ do |registry,outcome,template,operator,arg_value|
+Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) (equal to|with a size of) (.+)$/ do |registry,outcome,template,arg_operator,arg_value|
   value = variable_get_value(arg_value)
   value.nil?.should be_false
   registry.nil?.should be_false
 
-  variable_apply_template(@new_registry[registry], template, operator, value).should == (outcome == 'should not' ? false : true)
+  operator =
+    case arg_operator
+    when 'equal to'
+      Proc.new { |left| left == value }
+    when 'with a size of'
+      Proc.new { |left| left.size == value }
+    end
+
+  variable_apply_template(@new_registry[registry], template, operator).should == (outcome == 'should not' ? false : true)
 end
 
 # Helper functions, move to appropriate file or make a hash relation

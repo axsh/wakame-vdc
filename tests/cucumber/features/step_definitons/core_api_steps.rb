@@ -102,24 +102,6 @@ Then /^the (create|update|delete|get|post|put) call to the (.*) api (should|shou
   @api_call_results[call][suffix].success?.should == (outcome == 'should not' ? false : true)
 end
 
-# This test currently does not verify the correct type, e.g. strings
-# and integers can both match an integer.
-Then /^the previous api call (should|should\snot) have the key (.+) with (.+)$/ do |outcome,key,arg_value|
-  value = evaluate_argument(arg_value)
-  (@api_last_result[key].to_s == value).should == (outcome == 'should not' ? false : true)
-end
-
-Then /^the previous api call (should|should\snot) have a hash on the key (.+) with (.+) entries$/ do |outcome,key,arg_count|
-  count = evaluate_argument(arg_count)
-  (@api_last_result[key].size.to_s == count).should == (outcome == 'should not' ? false : true)
-end
-
-Then /^for (create|update|delete|get|post|put) on (.+) there (should|should\snot) be the key (.+) with (.+)$/ do |call,arg_suffix,outcome,key,arg_value|
-  suffix = evaluate_argument(arg_suffix)
-  value = evaluate_argument(arg_value)
-  (@api_call_results[call][suffix][key].to_s == value).should == (outcome == 'should not' ? false : true)
-end
-
 # This step is for validating the response from collection (list).
 # GET /instances
 # GET /ssh_key_pairs
@@ -157,18 +139,6 @@ Then /^for (create|update|delete|get|post|put) on (.+) the results (should|shoul
   @api_call_results[call][suffix].first["results"].find { |itr|
     itr[key].to_s == value
   }.nil?.should_not == (outcome == 'should not' ? false : true)
-end
-
-# Verify the number of elements in the returned array.
-Then /^the previous api call root array (should|should\snot) have (.+) entries$/ do |outcome,arg_count|
-  count = evaluate_argument(arg_count)
-  (@api_last_result.parsed_response.size == count.to_i).should == (outcome == 'should not' ? false : true)
-end
-
-# Verify the number of elements in the returned result.
-Then /^the previous api call results (should|should\snot) have (.+) entries$/ do |outcome,arg_count|
-  count = evaluate_argument(arg_count)
-  (@api_last_result.first["results"].size == count.to_i).should == (outcome == 'should not' ? false : true)
 end
 
 Then /^the created (.+) should reach state (.+) in (\d+) seconds or less$/ do |suffix,state,seconds|
