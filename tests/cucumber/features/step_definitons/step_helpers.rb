@@ -17,7 +17,7 @@ class APITest
     end
   end
   
-  base_uri "http://localhost:9001/api"
+  base_uri "http://localhost:9001/api/12.03"
   parser UseJSONParser
   headers 'X-VDC-ACCOUNT-UUID' => 'a-shpoolxx'
 
