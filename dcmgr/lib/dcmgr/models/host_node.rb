@@ -73,10 +73,13 @@ module Dcmgr::Models
         (self.offering_memory_size >= inst_on_hp.inject(0) {|t, i| t += i.memory_size } + spec.memory_size)
     end
     
-    def to_api_document
+    def to_api_document(api_ver=nil)
       h = super()
-      h.merge!(:status=>self.status)
-      h.delete(:node_id)
+      case api_ver
+      when :v1112
+        h.merge!(:status=>self.status)
+        h.delete(:node_id)
+      end
       h
     end
 

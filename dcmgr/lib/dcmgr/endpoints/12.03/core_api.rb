@@ -416,6 +416,17 @@ module Dcmgr
           
           response_to(hp.to_api_document)
         end
+
+        post do
+          hn = Models::HostNode.create(params)
+          response_to(hn.to_api_document)
+        end
+        
+        delete '/:id' do
+          hn = find_by_uuid(:HostNode, params[:id])
+          hn.delete
+          response_to({:uuid=>hn.canonical_uuid})
+        end
       end
 
       namespace '/volumes' do
