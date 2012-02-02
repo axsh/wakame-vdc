@@ -48,10 +48,13 @@ module Dcmgr::Models
       super.merge({:status=>self.status})
     end
 
-    def to_api_document
+    def to_api_document(api_ver=nil)
       h = super()
-      h.merge!(:status=>self.status)
-      h.delete(:node_id)
+      case api_ver
+      when :v1112
+        h.merge!(:status=>self.status)
+        h.delete(:node_id)
+      end
       h
     end
 

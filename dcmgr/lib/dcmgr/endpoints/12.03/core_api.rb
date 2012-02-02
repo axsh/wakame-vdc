@@ -769,6 +769,17 @@ module Dcmgr
           raise UnknownStorageNode if vs.nil?
           response_to(vs.to_api_document)
         end
+
+        post do
+          sn = Models::StorageNode.create(params)
+          response_to(sn.to_api_document)
+        end
+        
+        delete '/:id' do
+          sn = find_by_uuid(:StorageNode, params[:id])
+          sn.delete
+          response_to({:uuid=>sn.canonical_uuid})
+        end
       end
 
       namespace '/ssh_key_pairs' do
