@@ -33,7 +33,7 @@ def variable_get_value arg_value
   when /^<.+>$/
     @registry[arg_value[/^<(.+)>$/, 1]]
   else
-    nil
+    arg_value
   end
 end
 
