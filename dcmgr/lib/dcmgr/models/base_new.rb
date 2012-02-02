@@ -56,6 +56,19 @@ module Dcmgr::Models
       def uuid_prefix
         self.class.uuid_prefix
       end
+
+      def before_validation
+        # trim uuid prefix if it is in the self[:uuid]
+        self[:uuid].sub!(/^#{self.class.uuid_prefix}-/, '')
+        super
+      end
+
+      def before_create
+        if !self.class.find(:uuid=>self[:uuid]).nil?
+          raise "Duplicate UUID: #{self.canonical_uuid} already exists"
+        end
+        super
+      end
       
       def after_initialize
         super
