@@ -122,7 +122,9 @@ module Dcmgr
     
     autoload :CoreAPI, 'dcmgr/endpoints/core_api'
     autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
-    autoload :CoreAPI_1203, 'dcmgr/endpoints/12.03/core_api'
+    module V1203
+      autoload :CoreAPI, 'dcmgr/endpoints/12.03/core_api'
+    end
   end
 
   module NodeModules

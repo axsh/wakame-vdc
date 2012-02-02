@@ -2,6 +2,9 @@
 
 module Dcmgr
   module Endpoints
+    module Errors
+    end
+    
     def self.define_error(class_name, status_code, error_code, &blk)
       c = Class.new(APIError)
       c.status_code(status_code)
@@ -9,6 +12,7 @@ module Dcmgr
       c.instance_eval(&blk) if blk
       self.set_error_code_type(error_code, c)
       self.const_set(class_name.to_sym, c)
+      Errors.const_set(class_name.to_sym, c)
     end
 
     def self.deprecated_error(class_name, status_code, error_code, &blk)
@@ -18,6 +22,7 @@ module Dcmgr
       c.instance_eval(&blk) if blk
       self.set_error_code_type(error_code, c)
       self.const_set(class_name.to_sym, c)
+      Errors.const_set(class_name.to_sym, c)
     end
 
     @error_code_map = {}

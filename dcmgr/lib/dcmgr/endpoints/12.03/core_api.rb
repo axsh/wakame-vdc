@@ -9,14 +9,19 @@ require 'extlib/hash'
 
 require 'dcmgr/endpoints/errors'
 
-module Dcmgr
-  module Endpoints
-    class CoreAPI_1203 < Sinatra::Base
+module Dcmgr::Endpoints::V1203
+  class CoreAPI < Sinatra::Base
       include Dcmgr::Logger
       register Sinatra::Namespace
       register Sinatra::SequelTransaction
 
       use Dcmgr::Rack::RequestLogger
+
+    # To access constants in this namespace
+    include Dcmgr::Endpoints
+
+    M = Dcmgr::Models
+    E = Dcmgr::Endpoints::Errors
 
       disable :sessions
       disable :show_exceptions
@@ -24,31 +29,31 @@ module Dcmgr
       before do
         @params = parsed_request_body if request.post?
         if request.env[HTTP_X_VDC_ACCOUNT_UUID].to_s == ''
-          raise InvalidRequestCredentials
+          raise E::InvalidRequestCredentials
         else
           begin
             # find or create account entry.
-            @account = Models::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]] || \
-            Models::Account.create(:uuid=>Models::Account.trim_uuid(request.env[HTTP_X_VDC_ACCOUNT_UUID]))
+            @account = M::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]] || \
+            M::Account.create(:uuid=>M::Account.trim_uuid(request.env[HTTP_X_VDC_ACCOUNT_UUID]))
           rescue => e
             logger.error(e)
-            raise InvalidRequestCredentials, "#{e.message}"
+            raise E::InvalidRequestCredentials, "#{e.message}"
           end
-          raise InvalidRequestCredentials if @account.nil?
+          raise E::InvalidRequestCredentials if @account.nil?
         end
 
         @requester_token = request.env[HTTP_X_VDC_REQUESTER_TOKEN]
-        #@frontend = Models::FrontendSystem[request.env[RACK_FRONTEND_SYSTEM_ID]]
+        #@frontend = M::FrontendSystem[request.env[RACK_FRONTEND_SYSTEM_ID]]
 
-        #raise InvalidRequestCredentials if !(@account && @frontend)
-        raise DisabledAccount if @account.disable?
+        #raise E::InvalidRequestCredentials if !(@account && @frontend)
+        raise E::DisabledAccount if @account.disable?
       end
 
       def find_by_uuid(model_class, uuid)
         if model_class.is_a?(Symbol)
-          model_class = Models.const_get(model_class)
+          model_class = Dcmgr::Models.const_get(model_class)
         end
-        model_class[uuid] || raise(UnknownUUIDResource, uuid.to_s)
+        model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
       end
 
       def find_account(account_uuid)
@@ -116,7 +121,7 @@ module Dcmgr
                  boom
                end
 
-        if boom.kind_of?(APIError)
+        if boom.kind_of?(Dcmgr::Endpoints::APIError)
           @env['sinatra.error'] = boom
           Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
           error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
@@ -127,9 +132,9 @@ module Dcmgr
       end
 
       def find_volume_snapshot(snapshot_id)
-        vs = Models::VolumeSnapshot[snapshot_id]
-        raise UnknownVolumeSnapshot if vs.nil?
-        raise InvalidVolumeState unless vs.state.to_s == 'available'
+        vs = M::VolumeSnapshot[snapshot_id]
+        raise E::UnknownVolumeSnapshot if vs.nil?
+        raise E::InvalidVolumeState unless vs.state.to_s == 'available'
         vs
       end
 
@@ -144,7 +149,7 @@ module Dcmgr
 
       def select_index(model_class, data)
         if model_class.is_a?(Symbol)
-          model_class = Models.const_get(model_class)
+          model_class = M.const_get(model_class)
         end
 
         start = data[:start].to_i
@@ -152,18 +157,18 @@ module Dcmgr
         limit = data[:limit].to_i
         limit = limit < 1 ? nil : limit
 
-        if %w(Dcmgr::Models::InstanceSpec).member?(model_class.to_s)
+        if [M::InstanceSpec.to_s].member?(model_class.to_s)
           total_ds = model_class.where(:account_id=>[@account.canonical_uuid,
-                                                     Models::Account::SystemAccount::SharedPoolAccount.uuid,
+                                                     M::Account::SystemAccount::SharedPoolAccount.uuid,
                                                     ])
         else
           total_ds = model_class.where(:account_id=>@account.canonical_uuid)
         end
 
-        if %w(Dcmgr::Models::Instance Dcmgr::Models::Volume Dcmgr::Models::VolumeSnapshot).member?(model_class.to_s)
+        if [M::Instance.to_s, M::Volume.to_s, M::VolumeSnapshot.to_s].member?(model_class.to_s)
           total_ds = total_ds.alives_and_recent_termed
         end
-        if %w(Dcmgr::Models::Image).member?(model_class.to_s)
+        if [M::Image.to_s].member?(model_class.to_s)
           total_ds = total_ds.or(:is_public=>true)
         end
 
@@ -171,7 +176,7 @@ module Dcmgr
         partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
         results = partial_ds.all.map {|i|
-          if %w(Dcmgr::Models::Image).member?(model_class.to_s)
+          if [M::Image.to_s].member?(model_class.to_s)
             i.to_api_document(@account.canonical_uuid)
           else
             i.to_api_document
@@ -209,11 +214,11 @@ module Dcmgr
           # param :network_id, string, :optional
           # param :ha_enabled, string, :optional
           
-          wmi = Models::Image[params[:image_id]] || raise(InvalidImageID)
-          spec = Models::InstanceSpec[params[:instance_spec_id]] || raise(InvalidInstanceSpec)
+          wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
+          spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
           
-          if !Models::HostNode.check_domain_capacity?(spec.cpu_cores, spec.memory_size)
-            raise OutOfHostCapacity
+          if !M::HostNode.check_domain_capacity?(spec.cpu_cores, spec.memory_size)
+            raise E::OutOfHostCapacity
           end
           
           # TODO:
@@ -221,31 +226,31 @@ module Dcmgr
           #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
           if params[:host_id] || params[:host_pool_id] || params[:host_node_id]
             host_node_id = params[:host_id] || params[:host_pool_id] || params[:host_node_id]
-            host_node = Models::HostNode[host_node_id]
-            raise UnknownHostNode, "#{host_node_id}" if host_node.nil?
-            raise InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
+            host_node = M::HostNode[host_node_id]
+            raise E::UnknownHostNode, "#{host_node_id}" if host_node.nil?
+            raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
           end
           
           # params is a Mash object. so coverts to raw Hash object.
-          instance = Models::Instance.entry_new(@account, wmi, spec, params.to_hash) do |i|
+          instance = M::Instance.entry_new(@account, wmi, spec, params.to_hash) do |i|
             # Set common parameters from user's request.
             i.user_data = params[:user_data] || ''
             # set only when not nil as the table column has not null
             # condition.
             if params[:hostname]
-              if Models::Instance::ValidationMethods.hostname_uniqueness(@account.canonical_uuid,
+              if M::Instance::ValidationMethods.hostname_uniqueness(@account.canonical_uuid,
                                                                          params[:hostname])
                 i.hostname = params[:hostname]
               else
-                raise DuplicateHostname
+                raise E::DuplicateHostname
               end
             end
             
             if params[:ssh_key_id]
-              ssh_key_pair = Models::SshKeyPair[params[:ssh_key_id]]
+              ssh_key_pair = M::SshKeyPair[params[:ssh_key_id]]
               
               if ssh_key_pair.nil?
-                raise UnknownSshKeyPair, "#{params[:ssh_key_id]}"
+                raise E::UnknownSshKeyPair, "#{params[:ssh_key_id]}"
               else
                 i.set_ssh_key_pair(ssh_key_pair)
               end
@@ -267,16 +272,16 @@ module Dcmgr
           instance.save
 
           case wmi.boot_dev_type
-          when Models::Image::BOOT_DEV_SAN
+          when M::Image::BOOT_DEV_SAN
             # create new volume from snapshot.
             snapshot_id = wmi.source[:snapshot_id]
             vs = find_volume_snapshot(snapshot_id)
 
-            if !Models::StorageNode.check_domain_capacity?(vs.size)
-              raise OutOfDiskSpace
+            if !M::StorageNode.check_domain_capacity?(vs.size)
+              raise E::OutOfDiskSpace
             end
             
-            vol = Models::Volume.entry_new(@account, vs.size, params.to_hash) do |v|
+            vol = M::Volume.entry_new(@account, vs.size, params.to_hash) do |v|
               if vs
                 v.snapshot_id = vs.canonical_uuid
               end
@@ -287,7 +292,7 @@ module Dcmgr
             vol.state = :scheduling
             vol.save
 
-          when Models::Image::BOOT_DEV_LOCAL
+          when M::Image::BOOT_DEV_LOCAL
           else
             raise "Unknown boot type"
           end
@@ -306,7 +311,7 @@ module Dcmgr
         get '/:id' do
           #param :account_id, :string, :optional
           i = find_by_uuid(:Instance, params[:id])
-          raise UnknownInstance if i.nil?
+          raise E::UnknownInstance if i.nil?
           
           response_to(i.to_api_document)
         end
@@ -316,7 +321,7 @@ module Dcmgr
           i = find_by_uuid(:Instance, params[:id])
           if examine_owner(i)
           else
-            raise OperationNotPermitted
+            raise E::OperationNotPermitted
           end
 
           case i.state
@@ -324,7 +329,7 @@ module Dcmgr
             # just destroy the record.
             i.destroy
           when 'terminated', 'scheduling'
-            raise InvalidInstanceState, i.state
+            raise E::InvalidInstanceState, i.state
           else
             res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
           end
@@ -334,7 +339,7 @@ module Dcmgr
         put '/:id/reboot' do
           # description 'Reboots the instance'
           i = find_by_uuid(:Instance, params[:id])
-          raise InvalidInstanceState, i.state if i.state != 'running'
+          raise E::InvalidInstanceState, i.state if i.state != 'running'
           Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'reboot', i.canonical_uuid)
           response_to({})
         end
@@ -342,7 +347,7 @@ module Dcmgr
         put '/:id/stop' do
           # description 'Stop the instance'
           i = find_by_uuid(:Instance, params[:id])
-          raise InvalidInstanceState, i.state if i.state != 'running'
+          raise E::InvalidInstanceState, i.state if i.state != 'running'
 
           # relase IpLease from nic.
           i.nic.each { |nic|
@@ -356,7 +361,7 @@ module Dcmgr
         put '/:id/start' do
           # description 'Restart the instance'
           instance = find_by_uuid(:Instance, params[:id])
-          raise InvalidInstanceState, instance.state if instance.state != 'stopped'
+          raise E::InvalidInstanceState, instance.state if instance.state != 'stopped'
           instance.state = :scheduling
           instance.save
 
@@ -383,7 +388,7 @@ module Dcmgr
           # description "Show a machine image details."
           i = find_by_uuid(:Image, params[:id])
           if !(examine_owner(i) || i.is_public)
-            raise OperationNotPermitted
+            raise E::OperationNotPermitted
           end
           response_to(i.to_api_document(@account.canonical_uuid))
         end
@@ -394,7 +399,7 @@ module Dcmgr
           if examine_owner(i)
             i.destroy
           else
-            raise OperationNotPermitted
+            raise E::OperationNotPermitted
           end
           response_to([i.canonical_uuid])
         end
@@ -412,13 +417,13 @@ module Dcmgr
           # description 'Show status of the host'
           # param :account_id, :string, :optional
           hp = find_by_uuid(:HostNode, params[:id])
-          raise OperationNotPermitted unless examine_owner(hp)
+          raise E::OperationNotPermitted unless examine_owner(hp)
           
           response_to(hp.to_api_document)
         end
 
         post do
-          hn = Models::HostNode.create(params)
+          hn = M::HostNode.create(params)
           response_to(hn.to_api_document)
         end
         
@@ -443,7 +448,7 @@ module Dcmgr
           # description 'Show the volume status'
           # params id, string, required
           volume_id = params[:id]
-          raise UndefinedVolumeID if volume_id.nil?
+          raise E::UndefinedVolumeID if volume_id.nil?
           v = find_by_uuid(:Volume, volume_id)
           response_to(v.to_api_document)
         end
@@ -460,25 +465,25 @@ module Dcmgr
           elsif params[:volume_size]
             if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
                 !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
-              raise InvalidVolumeSize
+              raise E::InvalidVolumeSize
             end
             if params[:storage_pool_id]
               sp = find_by_uuid(:StorageNode, params[:storage_pool_id])
-              raise UnknownStorageNode if sp.nil?
-              raise StorageNodeNotPermitted if sp.account_id != @account.canonical_uuid
+              raise E::UnknownStorageNode if sp.nil?
+              raise E::StorageNodeNotPermitted if sp.account_id != @account.canonical_uuid
             end
           else
-            raise UndefinedRequiredParameter
+            raise E::UndefinedRequiredParameter
           end
 
           volume_size = (vs ? vs.size : params[:volume_size].to_i)
 
-          if !Models::StorageNode.check_domain_capacity?(volume_size)
-            raise OutOfDiskSpace
+          if !M::StorageNode.check_domain_capacity?(volume_size)
+            raise E::OutOfDiskSpace
           end
 
           # params is a Mash object. so coverts to raw Hash object.
-          vol = Models::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
+          vol = M::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
             if vs
               v.snapshot_id = vs.canonical_uuid
             end
@@ -497,9 +502,9 @@ module Dcmgr
             begin
               vol.storage_node = sp
               vol.save
-            rescue Models::Volume::CapacityError => e
+            rescue M::Volume::CapacityError => e
               logger.error(e)
-              raise OutOfDiskSpace
+              raise E::OutOfDiskSpace
             end
 
             vol.state = :pending
@@ -522,20 +527,20 @@ module Dcmgr
           # description 'Delete the volume'
           # params id, string, required
           volume_id = params[:id]
-          raise UndefinedVolumeID if volume_id.nil?
+          raise E::UndefinedVolumeID if volume_id.nil?
 
           vol = find_by_uuid(:Volume, volume_id)
-          raise UnknownVolume if vol.nil?
-          raise InvalidVolumeState, "#{vol.state}" unless vol.state == "available"
+          raise E::UnknownVolume if vol.nil?
+          raise E::InvalidVolumeState, "#{vol.state}" unless vol.state == "available"
 
 
           begin
-            v  = Models::Volume.delete_volume(@account.canonical_uuid, volume_id)
-          rescue Models::Volume::RequestError => e
+            v  = M::Volume.delete_volume(@account.canonical_uuid, volume_id)
+          rescue M::Volume::RequestError => e
             logger.error(e)
-            raise InvalidDeleteRequest
+            raise E::InvalidDeleteRequest
           end
-          raise UnknownVolume if v.nil?
+          raise E::UnknownVolume if v.nil?
 
           commit_transaction
           res = Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'delete_volume', v.canonical_uuid)
@@ -546,16 +551,16 @@ module Dcmgr
           # description 'Attachd the volume'
           # params id, string, required
           # params instance_id, string, required
-          raise UndefinedInstanceID if params[:instance_id].nil?
-          raise UndefinedVolumeID if params[:id].nil?
+          raise E::UndefinedInstanceID if params[:instance_id].nil?
+          raise E::UndefinedVolumeID if params[:id].nil?
 
           i = find_by_uuid(:Instance, params[:instance_id])
-          raise UnknownInstance if i.nil?
-          raise InvalidInstanceState unless i.live? && i.state == 'running'
+          raise E::UnknownInstance if i.nil?
+          raise E::InvalidInstanceState unless i.live? && i.state == 'running'
 
           v = find_by_uuid(:Volume, params[:id])
-          raise UnknownVolume if v.nil?
-          raise AttachVolumeFailure, "Volume is attached to running instance." if v.instance
+          raise E::UnknownVolume if v.nil?
+          raise E::AttachVolumeFailure, "Volume is attached to running instance." if v.instance
 
           v.instance = i
           v.save
@@ -568,15 +573,15 @@ module Dcmgr
         put '/:id/detach' do
           # description 'Detach the volume'
           # params id, string, required
-          raise UndefinedVolumeID if params[:id].nil?
+          raise E::UndefinedVolumeID if params[:id].nil?
 
           v = find_by_uuid(:Volume, params[:id])
-          raise UnknownVolume if v.nil?
-          raise DetachVolumeFailure, "Volume is not attached to any instance." if v.instance.nil?
+          raise E::UnknownVolume if v.nil?
+          raise E::DetachVolumeFailure, "Volume is not attached to any instance." if v.instance.nil?
           # the volume as the boot device can not be detached.
-          raise DetachVolumeFailure, "boot device can not be detached" if v.boot_dev == 1
+          raise E::DetachVolumeFailure, "boot device can not be detached" if v.boot_dev == 1
           i = v.instance
-          raise InvalidInstanceState unless i.live? && i.state == 'running'
+          raise E::InvalidInstanceState unless i.live? && i.state == 'running'
           commit_transaction
           res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
           response_to(v.to_api_document)
@@ -616,7 +621,7 @@ module Dcmgr
           # description 'Show the volume status'
           # params id, string, required
           snapshot_id = params[:id]
-          raise UndefinedVolumeSnapshotID if snapshot_id.nil?
+          raise E::UndefinedVolumeSnapshotID if snapshot_id.nil?
           vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
           response_to(vs.to_api_document)
         end
@@ -626,11 +631,11 @@ module Dcmgr
           # params volume_id, string, required
           # params detination, string, required
           # params storage_pool_id, string, optional
-          raise UndefinedVolumeID if params[:volume_id].nil?
+          raise E::UndefinedVolumeID if params[:volume_id].nil?
 
           v = find_by_uuid(:Volume, params[:volume_id])
-          raise UnknownVolume if v.nil?
-          raise InvalidVolumeState unless v.ready_to_take_snapshot?
+          raise E::UnknownVolume if v.nil?
+          raise E::InvalidVolumeState unless v.ready_to_take_snapshot?
           vs = v.create_snapshot(@account.canonical_uuid)
           sp = vs.storage_node
           destination_key = Dcmgr::StorageService.destination_key(@account.canonical_uuid, params[:destination], sp.snapshot_base_path, vs.snapshot_filename)
@@ -646,21 +651,21 @@ module Dcmgr
           # description 'Delete the volume snapshot'
           # params id, string, required
           snapshot_id = params[:id]
-          raise UndefindVolumeSnapshotID if snapshot_id.nil?
+          raise E::UndefindVolumeSnapshotID if snapshot_id.nil?
 
           v = find_by_uuid(:VolumeSnapshot, snapshot_id)
-          raise UnknownVolumeSnapshot if v.nil?
-          raise InvalidVolumeState unless v.state == "available"
+          raise E::UnknownVolumeSnapshot if v.nil?
+          raise E::InvalidVolumeState unless v.state == "available"
 
           destination_key = v.destination_key
 
           begin
-            vs  = Models::VolumeSnapshot.delete_snapshot(@account.canonical_uuid, snapshot_id)
-          rescue Models::VolumeSnapshot::RequestError => e
+            vs  = M::VolumeSnapshot.delete_snapshot(@account.canonical_uuid, snapshot_id)
+          rescue M::VolumeSnapshot::RequestError => e
             logger.error(e)
-            raise InvalidDeleteRequest
+            raise E::InvalidDeleteRequest
           end
-          raise UnknownVolumeSnapshot if vs.nil?
+          raise E::UnknownVolumeSnapshot if vs.nil?
           sp = vs.storage_node
 
           commit_transaction
@@ -682,7 +687,7 @@ module Dcmgr
         get '/:id' do
           # description 'Show the security group'
           g = find_by_uuid(:SecurityGroup, params[:id])
-          raise OperationNotPermitted unless examine_owner(g)
+          raise E::OperationNotPermitted unless examine_owner(g)
 
           response_to(g.to_api_document)
         end
@@ -692,11 +697,11 @@ module Dcmgr
           # params description, string
           # params rule, string
           begin
-            g = Models::SecurityGroup.create(:account_id=>@account.canonical_uuid,
+            g = M::SecurityGroup.create(:account_id=>@account.canonical_uuid,
                                              :description=>params[:description],
                                              :rule=>params[:rule])
-          rescue Models::InvalidSecurityGroupRuleSyntax => e
-            raise InvalidSecurityGroupRule, e.message
+          rescue M::InvalidSecurityGroupRuleSyntax => e
+            raise E::InvalidSecurityGroupRule, e.message
           end
           
           response_to(g.to_api_document)
@@ -708,8 +713,8 @@ module Dcmgr
           # params rule, string
           g = find_by_uuid(:SecurityGroup, params[:id])
 
-          raise UnknownSecurityGroup if g.nil?
-          raise OperationNotPermitted unless examine_owner(g)
+          raise E::UnknownSecurityGroup if g.nil?
+          raise E::OperationNotPermitted unless examine_owner(g)
 
           if params[:description]
             g.description = params[:description]
@@ -720,8 +725,8 @@ module Dcmgr
 
           begin
             g.save
-          rescue Models::InvalidSecurityGroupRuleSyntax => e
-            raise InvalidSecurityGroupRule, e.message
+          rescue M::InvalidSecurityGroupRuleSyntax => e
+            raise E::InvalidSecurityGroupRule, e.message
           end
 
           commit_transaction
@@ -735,15 +740,15 @@ module Dcmgr
           #description "Delete the security group"
           g = find_by_uuid(:SecurityGroup, params[:id])
 
-          raise UnknownSecurityGroup if g.nil?
-          raise OperationNotPermitted unless examine_owner(g)
+          raise E::UnknownSecurityGroup if g.nil?
+          raise E::OperationNotPermitted unless examine_owner(g)
 
-          # raise OperationNotPermitted if g.instances.size > 0
+          # raise E::OperationNotPermitted if g.instances.size > 0
           begin
             g.destroy
           rescue => e
             # logger.error(e)
-            raise OperationNotPermitted
+            raise E::OperationNotPermitted
           end
 
           response_to([g.canonical_uuid])
@@ -764,14 +769,14 @@ module Dcmgr
           # description 'Show the storage_pool status'
           # params id, string, required
           pool_id = params[:id]
-          raise UndefinedStorageNodeID if pool_id.nil?
+          raise E::UndefinedStorageNodeID if pool_id.nil?
           vs = find_by_uuid(:StorageNode, pool_id)
-          raise UnknownStorageNode if vs.nil?
+          raise E::UnknownStorageNode if vs.nil?
           response_to(vs.to_api_document)
         end
 
         post do
-          sn = Models::StorageNode.create(params)
+          sn = M::StorageNode.create(params)
           response_to(sn.to_api_document)
         end
         
@@ -807,8 +812,8 @@ module Dcmgr
           #        to save private key info on database.
           keydata = nil
 
-          ssh = Models::SshKeyPair.entry_new(@account) do |s|
-            keydata = Models::SshKeyPair.generate_key_pair(s.uuid)
+          ssh = M::SshKeyPair.entry_new(@account) do |s|
+            keydata = M::SshKeyPair.generate_key_pair(s.uuid)
             s.public_key = keydata[:public_key]
             s.finger_print = keydata[:finger_print]
 
@@ -824,7 +829,7 @@ module Dcmgr
           begin
             ssh.save
           rescue => e
-            raise DatabaseError, e.message
+            raise E::DatabaseError, e.message
           end
 
           # include private_key data in response even if
@@ -839,7 +844,7 @@ module Dcmgr
           if examine_owner(ssh)
             ssh.destroy
           else
-            raise OperationNotPermitted
+            raise E::OperationNotPermitted
           end
 
           response_to([ssh.canonical_uuid])
@@ -852,7 +857,7 @@ module Dcmgr
             ssh.description = params[:description]
             ssh.save_changes
           else
-            raise OperationNotPermitted
+            raise E::OperationNotPermitted
           end
 
           response_to([ssh.canonical_uuid])
@@ -874,7 +879,7 @@ module Dcmgr
           # description "Retrieve details about a network"
           # params :id required
           nw = find_by_uuid(:Network, params[:id])
-          examine_owner(nw) || raise(OperationNotPermitted)
+          examine_owner(nw) || raise(E::OperationNotPermitted)
 
           response_to(nw.to_api_document)
         end
@@ -893,7 +898,7 @@ module Dcmgr
             :prefix => params[:prefix].to_i,
             :description => params[:description],
           }
-          nw = Models::Network.create(savedata)
+          nw = M::Network.create(savedata)
 
           response_to(nw.to_api_document)
         end
@@ -902,7 +907,7 @@ module Dcmgr
           # description "Remove network information"
           # params :id required
           nw = find_by_uuid(:Network, params[:id])
-          examine_owner(nw) || raise(OperationNotPermitted)
+          examine_owner(nw) || raise(E::OperationNotPermitted)
           nw.destroy
 
           response_to([nw.canonical_uuid])
@@ -913,7 +918,7 @@ module Dcmgr
           # params id, string, required
           # params ipaddr, [String,Array], required
           nw = find_by_uuid(:Network, params[:id])
-          examine_owner(nw) || raise(OperationNotPermitted)
+          examine_owner(nw) || raise(E::OperationNotPermitted)
 
           (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
             nw.ip_lease_dataset.add_reserved(ip)
@@ -926,7 +931,7 @@ module Dcmgr
           # params id, string, required
           # params ipaddr, [String,Array], required
           nw = find_by_uuid(:Network, params[:id])
-          examine_owner(nw) || raise(OperationNotPermitted)
+          examine_owner(nw) || raise(E::OperationNotPermitted)
 
           (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
             nw.ip_lease_dataset.delete_reserved(ip)
@@ -936,5 +941,4 @@ module Dcmgr
       end
 
     end
-  end
 end

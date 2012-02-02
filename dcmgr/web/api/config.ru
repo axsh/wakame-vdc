@@ -10,7 +10,7 @@ Dcmgr.configure(File.expand_path('../../../config/dcmgr.conf', __FILE__))
 Dcmgr.run_initializers
 
 map '/api/12.03' do
-  run Dcmgr::Endpoints::CoreAPI_1203.new
+  run Dcmgr::Endpoints::V1203::CoreAPI.new
 end
 
 run Dcmgr::Endpoints::CoreAPI.new
