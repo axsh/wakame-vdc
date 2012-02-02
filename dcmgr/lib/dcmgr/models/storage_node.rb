@@ -22,16 +22,6 @@ module Dcmgr::Models
       filter(:node_id => r)
     end
     
-    def before_validation
-      export_path = self.export_path
-      if export_path =~ /^(\/[a-z0-9]+)+$/
-        export_path = export_path.split('/')
-        export_path.shift
-        self.export_path = export_path.join('/')
-      end
-      super
-    end
-
     def self.create_pool(params)
       self.create(:account_id => params[:account_id],
                   :node_id => params[:node_id],
