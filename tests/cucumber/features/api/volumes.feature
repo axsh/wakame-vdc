@@ -63,4 +63,13 @@ Feature: Volume API
     When we successfully detach the created volume
     Then the created volumes should reach state available in 60 seconds or less
 
-
+  Scenario: Create snaphost from volume
+    When we make an api create call to volumes with the following options
+      | volume_size |
+      | 10          |
+    Then the previous api call should be successful
+    And from the previous api call take {"uuid":} and save it to <registry:uuid>
+    Then the created volumes should reach state available in 60 seconds or less
+ 
+    When we successfully create a snapshot from the created volume
+    Then the created volume_snapshots should reach state available in 60 seconds or less 
