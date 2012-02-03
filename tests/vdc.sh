@@ -407,7 +407,7 @@ case ${mode} in
     build_image_file="ubuntu-10.04.3-server-amd64.iso"
     build_image="/var/tmp/${build_image_file}"
     build_image_source="http://releases.ubuntu.com/lucid/${build_image_file}"
-    builded_image="${cd_builder_dir}/wakame-vdc-*-amd64.iso"
+    built_image="${cd_builder_dir}/wakame-vdc-*-amd64.iso"
 
     ( 
       set +e
@@ -422,7 +422,7 @@ case ${mode} in
 
       if [ -e "${build_image}" ]; then
         ./build_cd.sh --without-gpg-sign ${build_image}
-        rm ${builded_image}
+        rm ${built_image}
         
       else
         abort "Couldn't find ${build_image}"
