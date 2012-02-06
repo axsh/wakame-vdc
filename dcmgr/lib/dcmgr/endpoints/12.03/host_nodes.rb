@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
-
-  #def self.included(klass)
-  #  klass.const_set(:M, Dcmgr::Models)
-  #  klass.const_set(:E, Dcmgr::Endpoints::Errors)
-  #end
-  
   get do
     # description 'Show list of host node'
     res = select_index(:HostNode, {:start => params[:start],

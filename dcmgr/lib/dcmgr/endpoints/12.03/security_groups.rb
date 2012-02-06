@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
+  
   get do
     # description 'Show lists of the security groups'
     res = select_index(:SecurityGroup, {:start => params[:start],
