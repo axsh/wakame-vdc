@@ -19,6 +19,10 @@ Sequel.migration do
       column :instance_nic_id, "int(11)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
+
+      index [:instance_nic_id], :unique=>true
+      index [:network_id]
+      index [:uuid], :unique=>true, :name=>:uuid
     end
   end
   

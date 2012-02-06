@@ -15,6 +15,9 @@ module Dcmgr::Models
     one_to_many(:nat_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
       ds.where(:network_id=>self.nat_network_id)
     end
+    one_to_many(:network_port, :class=>NetworkPort, :read_only=>true) do |ds|
+      ds.where(:instance_nic_id=>self.id)
+    end
     
     subset(:alives, {:deleted_at => nil})
 
@@ -90,6 +93,31 @@ module Dcmgr::Models
       raise "Instance is not associated: #{self.canonical_uuid}" if self.instance.nil?
       raise "Network is not associated: #{self.canonical_uuid}" if self.network.nil?
       sprintf("%s.%s.%s", self.instance.hostname, self.instance.account.uuid, self.nat_network.domain_name)
+    end
+
+    def attach_to_network(network)
+      # The network is superfluous as the port has this information.
+      self.network = network
+      self.save
+
+      # Verify no network is not set.
+
+      NetworkPort.lock!
+
+      savedata = {
+        :network_id => network.id,
+        :instance_nic_id => self.id
+      }
+      port = NetworkPort.create(savedata)
+    end
+
+    def detach_from_network
+      # The network is superfluous as the port has this information.
+      self.network = nil
+      self.save
+
+      NetworkPort.lock!
+      network_port_dataset.destroy
     end
 
     private

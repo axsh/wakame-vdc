@@ -14,8 +14,7 @@ module Dcmgr
             {:index=>0, :bandwidth=>100000}
           
           vnic = instance.add_nic(vif_template)
-          vnic.network = network
-          vnic.save
+          vnic.attach_to_network(network)
         end
       end
     end

@@ -13,9 +13,8 @@ module Dcmgr
           vif_template = instance.spec.vifs.find{ |name,v| v[:index] == 0 }.last
 
           vnic = instance.add_nic(vif_template)
-          vnic.network = network
           vnic.nat_network = nat_network
-          vnic.save
+          vnic.attach_to_network(network)
         end
       end
     end

@@ -9,8 +9,7 @@ module Dcmgr
         def schedule(instance)
           instance.spec.vifs.each { |name, vif|
             vnic = instance.add_nic(vif)
-            vnic.network = Models::Network[@options[name]]
-            vnic.save
+            vnic.attach_to_network(Models::Network[@options[name]])
           }
         end
       end
