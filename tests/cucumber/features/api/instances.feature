@@ -8,8 +8,7 @@ Feature: Instance API
       Then the previous api call should be successful
       And from the previous api call take {"id":} and save it to <registry:id>
 
-    When we wait 10 seconds
-      Then the created instances should reach state online in 60 seconds or less
+    When the created instance has reached the state "running"
     
     When we make an api delete call to instances/<registry:id> with no options
       Then the previous api call should be successful  

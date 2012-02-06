@@ -23,9 +23,15 @@ Given /^a new instance with its uuid in <(.+)>$/ do |reg|
       Then the previous api call should be successful
       And from the previous api call take {"id":} and save it to <#{reg}>
 
-    When we wait 10 seconds
-      Then the created instances should reach state online in 60 seconds or less
+    When the created instance has reached the state "running"
   }
 
   @instances_created << @registry[reg]
+end
+
+When /^the created instance has reached the state "(.+)"$/ do |state|
+  steps %Q{
+    When we wait #{TIMEOUT_BASE} seconds
+      Then the created instances should reach state #{state} in #{TIMEOUT_CREATE_INSTANCE} seconds or less
+  }
 end

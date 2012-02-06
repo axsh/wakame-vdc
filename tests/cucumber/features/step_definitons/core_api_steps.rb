@@ -99,8 +99,8 @@ end
 
 Then /^the created (.+) should reach state (.+) in (\d+) seconds or less$/ do |suffix,state,seconds|
   retry_until(seconds.to_f) do
+    sleep(1)
     APITest.get("/#{suffix}/#{@api_call_results["create"][suffix]["id"]}")["state"] == state
-    # sleep(1)
   end
 end
 
