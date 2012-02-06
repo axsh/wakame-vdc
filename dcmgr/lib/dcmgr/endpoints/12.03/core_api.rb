@@ -192,7 +192,10 @@ module Dcmgr::Endpoints::V1203
     end
 
     def self.load_namespace(ns)
-      load File.expand_path("../#{ns}.rb", __FILE__)
+      #load File.expand_path("../#{ns}.rb", __FILE__)
+      # workaround for Rubinius
+      fname = File.expand_path("../#{ns}.rb", __FILE__)
+      eval(File.read(fname), binding, fname)
     end
 
     # Endpoint to handle VM instance.
