@@ -24,6 +24,8 @@ end
 #   | id | name |
 #   |  1 | foo  |
 
+match_operator = '(equal to|with a size of|with the key|without the key)'
+
 def variable_get_value arg_value
   case arg_value
   when /^".*"$/
@@ -32,8 +34,10 @@ def variable_get_value arg_value
     arg_value.to_i
   when /^<.+>$/
     @registry[arg_value[/^<(.+)>$/, 1]]
+  when /^nil$/
+    nil
   else
-    arg_value
+    raise("Unknown variable: Could not parse '#{arg_value}'.")
   end
 end
 
@@ -56,6 +60,13 @@ def variable_apply_template registry, template, operator
     match = /^\{"([^"]+)":(.+)\}$/.match(template)
     registry.has_key?(match[1]).should be_true
     variable_apply_template(registry[match[1]], match[2], operator)
+
+  when /^\[\.\.\.,,\.\.\.\]$/
+    (registry.kind_of?(Array)).should be_true
+
+    registry.find { |itr|
+      operator.call(itr)
+    }.nil? == false
 
   when /^\[\.\.\.,.+,\.\.\.\]$/
     match = /^\[\.\.\.,(.+),\.\.\.\]$/.match(template)
@@ -84,14 +95,13 @@ def variable_apply_template registry, template, operator
     match = /^\[(.+)\](.+)$/.match(template)
     (registry.kind_of?(Array)).should be_true
     variable_apply_template(registry[match[1].to_i], match[2], operator)
+
+  else
+    raise("Invalid variable template syntax: #{template}")
   end
 end
 
-Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) (equal to|with a size of|with the key) (.+)$/ do |registry,outcome,template,arg_operator,arg_value|
-  value = variable_get_value(arg_value)
-  value.nil?.should be_false
-  registry.nil?.should be_false
-
+def variable_has_element(root, template, arg_operator, value)
   operator =
     case arg_operator
     when 'equal to'
@@ -100,9 +110,16 @@ Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) (equal to|with a size of|wit
       Proc.new { |left| left.size == value }
     when 'with the key'
       Proc.new { |left| left.has_key? value }
+    when 'without the key'
+      Proc.new { |left| not left.has_key? value }
     end
 
-  variable_apply_template(@registry[registry], template, operator).should == (outcome == 'should not' ? false : true)
+  variable_apply_template(root, template, operator)
+end
+
+Then /^<([^>]+)> [ ]*(should|should\snot) have (.+) #{match_operator} (.+)$/ do |registry,outcome,template,operator,arg_value|
+  value = variable_get_value(arg_value)
+  variable_has_element(@registry[registry], template, operator, value).should == (outcome == 'should not' ? false : true)
 end
 
 Then /^from <([^>]+)> [ ]*take (.+) and save it to <([^>]+)>$/ do |registry,template,dest|
@@ -110,9 +127,21 @@ Then /^from <([^>]+)> [ ]*take (.+) and save it to <([^>]+)>$/ do |registry,temp
   variable_apply_template(@registry[registry], template, operator)
 end
 
+Then /^from <([^>]+)> [ ]*take (.+) and save it to <([^>]+)> for (.+) #{match_operator} (.+)$/ do |registry,root_template,dest,match_template,operator,arg_value|
+  value = variable_get_value(arg_value)
+
+  root_operator = Proc.new { |right|
+    result = variable_has_element(right, match_template, operator, value)
+    @registry[dest] = right if result
+    result
+  }
+
+  variable_apply_template(@registry[registry], root_template, root_operator).should be_true
+end
+
 # Helper functions, move to appropriate file or make a hash relation
 # between descriptons and registry keys.
-Then /^the previous api call [ ]*(should|should\snot) have (.+) (equal to|with a size of|with the key) (.+)$/ do |outcome,template,operator,value|
+Then /^the previous api call [ ]*(should|should\snot) have (.+) #{match_operator} (.+)$/ do |outcome,template,operator,value|
   steps %Q{
     Then <api:latest> #{outcome} have #{template} #{operator} #{value}
   }  
@@ -122,4 +151,10 @@ Then /^from the previous api call [ ]*take (.+) and save it to <([^>]+)>$/ do |t
   steps %Q{
     Then from <api:latest> take #{template} and save it to <#{dest}>
   }  
+end
+
+Then /^from the previous api call [ ]*take (.+) and save it to <([^>]+)> for (.+) #{match_operator} (.+)$/ do |root_template,dest,match_template,operator,arg_value|
+  steps %Q{
+    Then from <api:latest> take #{root_template} and save it to <#{dest}> for #{match_template} #{operator} #{arg_value}
+  }
 end

@@ -234,9 +234,14 @@ module Dcmgr::Models
           }
         end
 
+        network = vif.network
+        ports = vif.network_port
         ent = {
-          :vif_id=>vif.canonical_uuid,
+          :vif_id => vif.canonical_uuid,
+          :network_id => network.nil? ? nil : network.canonical_uuid,
+          :port_id => ports.first.nil? ? nil : ports.first.canonical_uuid,
         }
+
         direct_lease = direct_lease_ds.first
         if direct_lease.nil?
         else
@@ -246,6 +251,7 @@ module Dcmgr::Models
             :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
           }
         end
+        
         h[:vif] << ent
       }
 
