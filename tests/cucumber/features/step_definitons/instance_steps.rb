@@ -22,6 +22,15 @@ Then /^we should be able to ping (i-[a-z0-9]{8}) in (\d+) seconds or less$/ do |
   end
 end
 
+Then /^we should be able to ping (.+) through (.+) in (\d+) seconds or less$/ do |arg_instance,arg_network,seconds|
+  instance_uuid = variable_get_value(arg_instance)
+  network_uuid = variable_get_value(arg_network)
+
+  retry_until(seconds.to_f) do
+    ping_on_network(instance_uuid, network_uuid).exitstatus == 0
+  end
+end
+
 Then /^(i-[a-z0-9]{8}) should start ssh in (\d+) seconds or less$/ do |uuid,seconds|
   ipaddr = APITest.get("/instances/#{uuid}")["vif"].first["ipv4"]["address"]
   retry_until(seconds.to_f) do

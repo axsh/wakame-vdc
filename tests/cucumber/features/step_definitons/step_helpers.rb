@@ -105,6 +105,15 @@ module InstanceHelper
     $?
   end
 
+  def ping_on_network(instance_id, network_id)
+    vif = APITest.get("/instances/#{instance_id}")["vif"].find { |itr| itr["network_id"] == network_id }
+    raise("No vif found: instance_id:#{instance_id} network_id:#{network_id}.") if vif.nil?
+    ipaddr = vif["ipv4"]["address"]
+
+    `ping -c 1 -W 1 #{ipaddr}`
+    $?
+  end
+
   def ssh_command(instance_id, user, command, seconds)
     res = APITest.get("/instances/#{instance_id}")
 

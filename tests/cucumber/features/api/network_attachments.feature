@@ -14,7 +14,7 @@ Feature: Network Port Attachments API
       And from the previous api call take {"vif":[...,,...]} and save it to <registry:vif_uuid> for {"network_id":} equal to "nw-demo1"
       And from <registry:vif_uuid> take {"ipv4":{"address":}} and save it to <registry:nw-demo1_ip>
 
-    # Verify that ping succeeds.
+    Then we should be able to ping <registry:instance_uuid> through "nw-demo1" in 60 seconds or less
 
     # Detach the vnic, restart.
     # Verify the vnic is not attached.
