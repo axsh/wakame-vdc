@@ -91,6 +91,12 @@ Sequel.migration do
       add_column :description, "text"
       add_column :read_only, "int(11)", :default=>0, :null=>false
     end
+
+    alter_table(:host_nodes) do
+      add_column :deleted_at, "datetime"
+
+      add_index :deleted_at
+    end
   end
   
   down do

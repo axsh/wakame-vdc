@@ -25,16 +25,20 @@ module Dcmgr::Models
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
       filter(:node_id => r)
     end
+    
+    subset(:alives, {:deleted_at => nil})
 
     def validate
       super
       # for compatibility: hva.xxx or hva-xxxx
-      unless self.node_id =~ /^hva[-.]/
-        errors.add(:node_id, "is invalid ID: #{self.node_id}")
-      end
-
-      if (h = self.class.filter(:node_id=>self.node_id).first) && h.id != self.id
-        errors.add(:node_id, " #{self.node_id} is already been associated to #{h.canonical_uuid} ")
+      if self.node_id
+        unless self.node_id =~ /^hva[-.]/
+          errors.add(:node_id, "is invalid ID: #{self.node_id}")
+        end
+        
+        if (h = self.class.alives.filter(:node_id=>self.node_id).first) && h.id != self.id
+          errors.add(:node_id, "#{self.node_id} is already been associated to #{h.canonical_uuid} ")
+        end
       end
       
       unless SUPPORTED_ARCH.member?(self.arch)
@@ -47,6 +51,13 @@ module Dcmgr::Models
       unless self.offering_memory_size > 0
         errors.add(:offering_memory_size, "it must have digit more than zero")
       end
+    end
+
+    # override Sequel::Model#delete not to delete rows but to set
+    # delete flags.
+    def delete
+      self.deleted_at = Time.now
+      self.save
     end
 
     def to_hash
