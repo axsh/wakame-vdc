@@ -1180,6 +1180,8 @@ module Dcmgr
             port = find_by_uuid(:NetworkPort, params[:id])
             raise(NetworkPortNotAttached) if port.instance_nic.nil?
 
+            port.instance_nic = nil
+            port.save_changes
             response_to({})
           end
         end

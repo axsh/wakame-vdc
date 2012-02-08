@@ -30,6 +30,13 @@ Then /^we should be able to ping on ip (.+) in (\d+) seconds or less$/ do |arg_i
   end
 end
 
+Then /^we should not be able to ping on ip (.+) in (\d+) seconds or less$/ do |arg_ip,seconds|
+  ipaddr = variable_get_value(arg_ip)
+
+  sleep(seconds.to_f)
+  ping_on_ip(ipaddr).exitstatus.should_not == 0
+end
+
 Then /^we should be able to ping instance (.+) through (.+) in (\d+) seconds or less$/ do |arg_instance,arg_network,seconds|
   instance_uuid = variable_get_value(arg_instance)
   network_uuid = variable_get_value(arg_network)

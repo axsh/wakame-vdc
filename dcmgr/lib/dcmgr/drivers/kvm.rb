@@ -61,7 +61,7 @@ module Dcmgr
         sh(cmd.join(' '), args)
 
         vifs.each { |vif|
-          if vif[:ipv4]
+          if not vif[:ipv4][:network_port].nil?
             sh("/sbin/ip link set %s up", [vif[:uuid]])
             sh("/usr/sbin/brctl addif %s %s", [vif[:ipv4][:network][:link_interface], vif[:uuid]])
           end

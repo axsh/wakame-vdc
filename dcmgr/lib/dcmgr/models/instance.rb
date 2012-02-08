@@ -166,7 +166,9 @@ module Dcmgr::Models
           else
             outside_lease = direct_lease.nat_outside_lease
             ent[:ipv4] = {
+              # TODO: Only access the network through network_port.
               :network => vif.network.nil? ? nil : vif.network.to_hash,
+              :network_port => vif.network_port.first.nil? ? nil : vif.network_port.first.to_hash,
               :address=> direct_lease.ipv4,
               :nat_network => vif.nat_network.nil? ? nil : vif.nat_network.to_hash,
               :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
