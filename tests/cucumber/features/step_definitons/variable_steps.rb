@@ -139,6 +139,10 @@ Then /^from <([^>]+)> [ ]*take (.+) and save it to <([^>]+)> for (.+) #{match_op
   variable_apply_template(@registry[registry], root_template, root_operator).should be_true
 end
 
+When /^we save to <([^>]+)> [ ]*the following options$/ do |registry,options|
+  @registry[registry] = options
+end
+
 # Helper functions, move to appropriate file or make a hash relation
 # between descriptons and registry keys.
 Then /^the previous api call [ ]*(should|should\snot) have (.+) #{match_operator} (.+)$/ do |outcome,template,operator,value|

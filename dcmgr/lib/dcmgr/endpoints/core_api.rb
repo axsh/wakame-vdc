@@ -1174,17 +1174,11 @@ module Dcmgr
 
         operation :detach, :method=>:put, :member=>true do
           description 'Detach a vif from this port'
-          # param :port_id required
+          # param :id required
           control do
             Models::NetworkPort.lock!
             port = find_by_uuid(:NetworkPort, params[:id])
-            raise(NetworkPortAlreadyAttached) unless port.instance_nic.nil?
-
-            # nic = find_by_uuid(:InstanceNic, params[:attachment_id])
-            # raise(NetworkPortNicNotFound) if nic.nil?
-
-            # nw = find_by_uuid(:Network, port[:network_id])
-            # examine_owner(nw) || raise(OperationNotPermitted)
+            raise(NetworkPortNotAttached) if port.instance_nic.nil?
 
             response_to({})
           end
