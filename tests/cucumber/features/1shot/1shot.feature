@@ -12,8 +12,8 @@ Feature: Instance, volume and snapshot operations.
     | 0             |
 
     When we successfully start an instance of wmi-lucid6 and is-demospec with the new security group and key pair
-    Then the created instances should reach state running in 60 seconds or less
-    And we should be able to ping the started instance in 60 seconds or less
+      And the created instance has reached the state "running"
+    Then we should be able to ping the started instance in 60 seconds or less
     And the started instance should start ssh in 60 seconds or less
     And we should be able to log into the started instance with user ubuntu in 60 seconds or less
     
@@ -38,12 +38,12 @@ Feature: Instance, volume and snapshot operations.
     Then the created volumes should reach state available in 60 seconds or less
     
     When we successfully reboot the created instance
-    Then the created instances should reach state running in 60 seconds or less
+      And the created instance has reached the state "running"
     And we should be able to ping the started instance in 60 seconds or less
     And we should be able to log into the started instance with user ubuntu in 60 seconds or less
 
     When we successfully delete the created instances
-    Then the created instances should reach state terminated in 60 seconds or less
+      And the created instance has reached the state "terminated"
     
     When we successfully delete the created ssh_key_pairs
     And we successfully delete the created security_groups

@@ -140,12 +140,12 @@ shlog ./bin/vdc-manage network forward nw-demo5 null2
   # rhel
   gw_dev=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $5}')
   ipaddr=$(/sbin/ip addr show ${gw_dev} | grep -w inet | awk '{print $2}')
-  range_begin=`ipcalc -n ${ipaddr} | sed 's,.*=,,'`
-  range_end=`ipcalc -b ${ipaddr} | sed 's,.*=,,'`
+  range_begin=`ipcalc -n ${ipaddr}/${prefix_len} | sed 's,.*=,,'`
+  range_end=`ipcalc -b ${ipaddr}/${prefix_len} | sed 's,.*=,,'`
 } || {
   # ubuntu
-  range_begin=`ipcalc ${ipv4_gw} | awk '$1 == "HostMin:" { print $2 }'`
-  range_end=`ipcalc ${ipv4_gw} | awk '$1 == "HostMax:" { print $2 }'`
+  range_begin=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMin:" { print $2 }'`
+  range_end=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMax:" { print $2 }'`
 }
 
 shlog ./bin/vdc-manage network dhcp addrange nw-demo1 $range_begin $range_end

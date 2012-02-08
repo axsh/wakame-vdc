@@ -19,7 +19,7 @@ do
   echo "Retry ${RETRYCOUNT}"
   ipaddr=`/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $7}'`
   if [ ${RETRYCOUNT} -ge 5 ]; then
-    echo "Faild ip release."
+    echo "Failed ip release."
     exit 1
   elif [ "${ipaddr}" = "" ]; then
     echo 'Waiting ip release.'

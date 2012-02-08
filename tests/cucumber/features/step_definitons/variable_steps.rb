@@ -47,13 +47,13 @@ def variable_apply_template registry, template, operator
     registry.kind_of?(Array).should be_true
     operator.call(registry)
 
-  when /^\{".+":\}$/
-    key = template[/^\{"(.+)":\}$/, 1]
+  when /^\{"[^"]+":\}$/
+    key = template[/^\{"([^"]+)":\}$/, 1]
     registry.has_key?(key).should be_true
     operator.call(registry[key])
 
-  when /^\{".+":.+\}$/
-    match = /^\{"(.+)":(.+)\}$/.match(template)
+  when /^\{"[^"]+":.+\}$/
+    match = /^\{"([^"]+)":(.+)\}$/.match(template)
     registry.has_key?(match[1]).should be_true
     variable_apply_template(registry[match[1]], match[2], operator)
 
@@ -65,10 +65,25 @@ def variable_apply_template registry, template, operator
       variable_apply_template(itr, match[1], operator)
     }.nil? == false
 
+  when /^\{\.\.\.,.+,\.\.\.\}$/
+    match = /^\{\.\.\.,(.+),\.\.\.\}$/.match(template)
+    (registry.kind_of?(Hash)).should be_true
+    
+    key = /^\{\.\.\.,\{\"(.+)\":\},\.\.\.\}$/.match(template)[1]
+    if registry.has_key?(key)
+      r = Hash.new
+      r[key] = registry[key]
+      variable_apply_template(r, match[1], operator)
+    end
   when /^\[.+\]$/
     match = /^\[(.+)\]$/.match(template)
     (registry.kind_of?(Array) and registry.size == 1).should be_true
     variable_apply_template(registry.first, match[1], operator)
+
+  when /^\[.+\].+$/
+    match = /^\[(.+)\](.+)$/.match(template)
+    (registry.kind_of?(Array)).should be_true
+    variable_apply_template(registry[match[1].to_i], match[2], operator)
   end
 end
 
