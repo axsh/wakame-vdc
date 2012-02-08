@@ -22,7 +22,15 @@ Then /^we should be able to ping (i-[a-z0-9]{8}) in (\d+) seconds or less$/ do |
   end
 end
 
-Then /^we should be able to ping (.+) through (.+) in (\d+) seconds or less$/ do |arg_instance,arg_network,seconds|
+Then /^we should be able to ping on ip (.+) in (\d+) seconds or less$/ do |arg_ip,seconds|
+  ipaddr = variable_get_value(arg_ip)
+
+  retry_until(seconds.to_f) do
+    ping_on_ip(ipaddr).exitstatus == 0
+  end
+end
+
+Then /^we should be able to ping instance (.+) through (.+) in (\d+) seconds or less$/ do |arg_instance,arg_network,seconds|
   instance_uuid = variable_get_value(arg_instance)
   network_uuid = variable_get_value(arg_network)
 

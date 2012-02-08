@@ -105,6 +105,11 @@ module InstanceHelper
     $?
   end
 
+  def ping_on_ip(ipaddr)
+    `ping -c 1 -W 1 #{ipaddr}`
+    $?
+  end
+
   def ping_on_network(instance_id, network_id)
     vif = APITest.get("/instances/#{instance_id}")["vif"].find { |itr| itr["network_id"] == network_id }
     raise("No vif found: instance_id:#{instance_id} network_id:#{network_id}.") if vif.nil?

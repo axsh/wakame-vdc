@@ -1176,14 +1176,16 @@ module Dcmgr
           description 'Detach a vif from this port'
           # param :port_id required
           control do
-            # Models::NetworkPort.lock!
-            # nw = find_by_uuid(:Network, params[:id])
+            Models::NetworkPort.lock!
+            port = find_by_uuid(:NetworkPort, params[:id])
+            raise(NetworkPortAlreadyAttached) unless port.instance_nic.nil?
+
+            # nic = find_by_uuid(:InstanceNic, params[:attachment_id])
+            # raise(NetworkPortNicNotFound) if nic.nil?
+
+            # nw = find_by_uuid(:Network, port[:network_id])
             # examine_owner(nw) || raise(OperationNotPermitted)
 
-            # port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
-            # raise(UnknownNetworkPort) if port.nil?
-
-            # port.destroy
             response_to({})
           end
         end
