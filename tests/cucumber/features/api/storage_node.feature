@@ -2,7 +2,6 @@
 Feature: Storage Node API
 
   Scenario: Create, update and delete for new storage node with specified UUID
-
     When we make an api create call to storage_nodes with the following options
       | account_id  | uuid     | node_id   | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
       | a-shpoolxx  | sn-test1 | sta.demo1 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
