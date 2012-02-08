@@ -27,7 +27,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
   
   delete '/:id' do
     sn = find_by_uuid(:StorageNode, params[:id])
-    sn.delete
+    sn.destroy
     response_to({:uuid=>sn.canonical_uuid})
+  end
+
+  put '/:id' do
+    sn = find_by_uuid(:StorageNode, params[:id])
+
+    changed = {}
+    (M::StorageNode.columns - [:id]).each { |c|
+      if params.has_key?(c.to_s)
+        changed[c] = params[c]
+      end
+    }
+
+    sn.update_fields(changed, changed.keys)
+    response_to(sn.to_api_document)
   end
 end

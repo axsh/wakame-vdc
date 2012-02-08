@@ -97,6 +97,12 @@ Sequel.migration do
 
       add_index :deleted_at
     end
+
+    alter_table(:storage_nodes) do
+      add_column :deleted_at, "datetime"
+
+      add_index :deleted_at
+    end
   end
   
   down do
