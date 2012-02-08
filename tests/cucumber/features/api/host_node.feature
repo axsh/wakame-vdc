@@ -1,3 +1,4 @@
+@api_from_v12.03
 Feature: Host Node API
 
   Scenario: Create, update and delete for new host node with specified UUID

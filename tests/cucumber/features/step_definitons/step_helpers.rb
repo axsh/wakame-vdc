@@ -16,8 +16,22 @@ class APITest
       JSON.parse(self.body)
     end
   end
-  
-  base_uri "http://localhost:9001/api/12.03"
+
+  def self.api_ver(ver=nil)
+    return default_options[:api_ver] unless ver
+    base_uri(self.api_base_uri + '/' + ver) if self.api_base_uri
+    default_options[:api_ver] = ver
+  end
+
+  # overwrite base_uri to append API version path.
+  def self.api_base_uri(uri=nil)
+    return default_options[:api_base_uri] unless uri
+    base_uri(uri + '/' + self.api_ver) if self.api_ver
+    default_options[:api_base_uri] = uri
+  end
+
+  api_ver ''
+  api_base_uri "http://localhost:9001/api"
   parser UseJSONParser
   headers 'X-VDC-ACCOUNT-UUID' => 'a-shpoolxx'
 
