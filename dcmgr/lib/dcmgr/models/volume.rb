@@ -143,6 +143,10 @@ module Dcmgr::Models
       %w(available attached).member?(self.state)
     end
 
+    def ondisk_state?
+      %w(available attaching detaching attached).member?(self.state)
+    end
+
     def create_snapshot(account_id)
       vs = VolumeSnapshot.create(:account_id=>account_id,
                                  :storage_node_id=>self.storage_node_id,
