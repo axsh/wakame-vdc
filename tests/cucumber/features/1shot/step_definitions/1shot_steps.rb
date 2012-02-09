@@ -40,9 +40,16 @@ Given /^(wmi-[a-z0-9]{1,8}) and (is-[a-z0-9]{1,8}) exist$/ do |image_id,spec_id|
   end
 end
 
-When /^we make a successful api (create|update|delete) call to (.*) with the following options$/ do |call,suffix,options |
+When /^we make a successful api (create|update|delete|get|post|put) call to (.*) with no options$/ do |call,suffix |
+  steps %{
+    When we make an api #{call} call to #{suffix} with no options
+    Then the #{call} call to the #{suffix} api should be successful
+  }
+end
+
+When /^we make a successful api (create|update|delete|get|post|put) call to (.*) with the following options$/ do |call,suffix,options |
   step "we make an api #{call} call to #{suffix} with the following options", options
-    
+
   step "the #{call} call to the #{suffix} api should be successful"
 end
 

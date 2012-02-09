@@ -32,6 +32,7 @@ class APITest
 
   api_ver ''
   api_base_uri "http://localhost:9001/api"
+
   parser UseJSONParser
   headers 'X-VDC-ACCOUNT-UUID' => 'a-shpoolxx'
 
@@ -59,6 +60,20 @@ module RetryHelper
   #include Config
   
   DEFAULT_WAIT_PERIOD=60*5
+  
+  def retry_while_not(wait_sec=DEFAULT_WAIT_PERIOD, &blk)
+    start_at = Time.now
+    lcount=0
+    loop {
+      if blk.call
+        raise("Retry Failure: block returned true. Retried #{lcount} times")
+      else
+        sleep 2
+      end
+      lcount += 1
+      break if (Time.now - start_at) > wait_sec
+    }
+  end
   
   def retry_until(wait_sec=DEFAULT_WAIT_PERIOD, &blk)
     start_at = Time.now
