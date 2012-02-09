@@ -144,7 +144,23 @@ module Dcmgr::Models
       end
 
       def to_hash()
-        self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid})
+        r = self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid})
+        serialize_columns = []
+        if self.class.plugins.member?(Sequel::Plugins::Serialization)
+          self.class.deserialization_map.keys.each { |c|
+            serialize_columns << c
+            r[c] = self.__send__(c)
+          }
+        end
+        # convert Sequel::SQL::Blob column.
+        # TODO: look for alternative method to stop to retrieve
+        #       db_schema hash.
+        self.class.db_schema.each { |c, v|
+          if v[:db_type] == 'text' && v[:type] == :string && !serialize_columns.member?(c)
+            r[c] = self.__send__(c).to_s
+          end
+        }
+        r
       end
 
       # generate API response document. similar to to_hash() but not
