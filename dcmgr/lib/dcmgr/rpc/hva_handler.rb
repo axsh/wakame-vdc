@@ -112,11 +112,15 @@ module Dcmgr
         sleep 1
       end
 
-      def attach_vnic_to_port
+      def attach_vnic_to_port(vnic)
+        logger.info("Attaching vnic to port: vnic:#{vnic.inspect}.")
+          
+        sh("/sbin/ip link set %s up", [vnic[:uuid]])
+        sh("/usr/sbin/brctl addif %s %s", [vnic[:network][:link_interface], vnic[:uuid]])
       end
 
       def detach_vnic_from_port(vnic)
-        logger.info("FOOOO: vnic:#{vnic.inspect}.")
+        logger.info("Detaching vnic from port: vnic:#{vnic.inspect}.")
           
         sh("/sbin/ip link set %s down", [vnic[:uuid]])
         sh("/usr/sbin/brctl delif %s %s", [vnic[:network][:link_interface], vnic[:uuid]])
@@ -474,13 +478,22 @@ module Dcmgr
         update_volume_state_to_available
       end
 
+      job :attach_nic do
+        @nic_id = request.args[0]
+        @port_id = request.args[1]
+
+        @nic = rpc.request('hva-collector', 'get_nic', @nic_id)
+        logger.info("Attaching #{@nic_id} top #{@port_id}")
+        
+        attach_vnic_to_port(@nic)
+      end
+
       job :detach_nic do
         @nic_id = request.args[0]
         @port_id = request.args[1]
 
         @nic = rpc.request('hva-collector', 'get_nic', @nic_id)
         logger.info("Detaching #{@nic_id} from #{@port_id}")
-        # raise "Invalid nic state: #{@vol[:state]}" unless @vol[:state].to_s == 'attached'
         
         detach_vnic_from_port(@nic)
       end

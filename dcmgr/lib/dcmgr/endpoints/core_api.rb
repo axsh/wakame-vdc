@@ -1165,6 +1165,10 @@ module Dcmgr
             examine_owner(nw) || raise(OperationNotPermitted)
 
             # Verify that the vif belongs to network?
+            instance = nic.instance
+
+            res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
+                                         nic.canonical_uuid, port.canonical_uuid)
 
             port.instance_nic = nic
             port.save_changes
@@ -1181,11 +1185,11 @@ module Dcmgr
             port = find_by_uuid(:NetworkPort, params[:id])
             raise(NetworkPortNotAttached) if port.instance_nic.nil?
 
-            instance_nic = port.instance_nic
-            instance = port.instance_nic.instance
+            nic = port.instance_nic
+            instance = nic.instance
 
             res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
-                                         instance_nic.canonical_uuid, port.canonical_uuid)
+                                         nic.canonical_uuid, port.canonical_uuid)
 
             port.instance_nic = nil
             port.save_changes
