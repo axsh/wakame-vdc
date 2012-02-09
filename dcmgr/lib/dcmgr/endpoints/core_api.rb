@@ -1168,6 +1168,7 @@ module Dcmgr
 
             port.instance_nic = nic
             port.save_changes
+
             response_to({})
           end
         end
@@ -1179,6 +1180,12 @@ module Dcmgr
             Models::NetworkPort.lock!
             port = find_by_uuid(:NetworkPort, params[:id])
             raise(NetworkPortNotAttached) if port.instance_nic.nil?
+
+            instance_nic = port.instance_nic
+            instance = port.instance_nic.instance
+
+            res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
+                                         instance_nic.canonical_uuid, port.canonical_uuid)
 
             port.instance_nic = nil
             port.save_changes
