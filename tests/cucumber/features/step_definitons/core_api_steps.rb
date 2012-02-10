@@ -16,44 +16,6 @@ end
 After do
 end
 
-def api_ver_cmp(s, d)
-  d_ary = d.split('.').map {|i| i.to_i }
-  s_ary = s.split('.').map {|i| i.to_i }
-
-  loop {
-    return 0 if d_ary.empty? || s_ary.empty?
-
-    case r=(s_ary.shift <=> d_ary.shift)
-    when 1, -1
-      return r
-    end
-  }
-end
-
-Around do |scenario, blk|
-  @target_ver = ENV['API_VER'] || '12.03'
-  skip = false
-  
-  scenario.source_tag_names.each { |t|
-    next unless t =~ /^@(api_from|api_until)_v?([\d.]+)$/
-    api_ver = $2
-
-    cmp_result = api_ver_cmp(@target_ver, api_ver)
-    if ($1 == 'api_from' && cmp_result < 0) ||
-        ($1 == 'api_until' && cmp_result > 0)
-      skip = true
-    end
-  }
-  
-  if skip
-    #puts "#{scenario.title}, skip=#{skip}"
-  else
-    APITest.api_ver(@target_ver)
-    blk.call
-  end
-end
-
-
 def initiate_api_call_results
   @api_call_results = {
     "create" => {},
