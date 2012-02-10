@@ -1,3 +1,4 @@
+@api_from_v11.12
 Feature: Network API
 
   Scenario: Create and delete a random network

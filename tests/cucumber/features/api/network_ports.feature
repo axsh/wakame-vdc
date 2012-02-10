@@ -1,3 +1,4 @@
+@api_from_v12.03
 Feature: Network Ports API
 
   Scenario: Port lifecycle

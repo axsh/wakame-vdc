@@ -1,5 +1,7 @@
+@api_from_v11.12
 Feature: Instance API
 
+  @api_until_v11.12
   Scenario: Create and delete new instance
     # Security groups is an array?...
     When we make an api create call to instances with the following options

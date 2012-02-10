@@ -1,3 +1,4 @@
+@api_from_v11.12 @api_until_v11.12
 Feature: Snapshot Volume API
   
   Scenario: Create and delete new snapshot volume

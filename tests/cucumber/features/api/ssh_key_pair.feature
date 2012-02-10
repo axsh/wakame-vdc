@@ -1,3 +1,4 @@
+@api_from_v11.12
 Feature: SshKeyPair API
 
   Scenario: Create, update and delete for new ssh key pair with UUID

@@ -1,3 +1,4 @@
+@api_from_v12.03
 Feature: Network Port Attachments API
 
   Scenario: Attachment lifecycle

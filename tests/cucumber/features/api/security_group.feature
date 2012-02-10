@@ -1,3 +1,4 @@
+@api_from_v11.12
 Feature: SecurityGroup API
 
   Scenario: Security group lifecycle
