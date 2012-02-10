@@ -112,15 +112,7 @@ module Dcmgr::Models
     end
 
     def merge_pool_data
-      v = self.to_hash
-      v.merge(:storage_node=>storage_node.to_hash)
-    end
-
-    def to_hash
-      h = super
-      # yaml -> hash translation
-      h[:transport_information]=self.transport_information
-      h
+      v = self.to_hash.merge(:storage_node=>storage_node.to_hash)
     end
 
     # Hash data for API response.

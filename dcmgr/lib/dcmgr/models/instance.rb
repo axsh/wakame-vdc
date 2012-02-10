@@ -141,10 +141,7 @@ module Dcmgr::Models
     # this is for internal use.
     def to_hash
       h = super
-      h.merge!({:user_data => user_data.to_s, # Sequel::BLOB -> String
-                 :runtime_config => self.runtime_config, # yaml -> hash
-                 :ssh_key_data => self.ssh_key_data, # yaml -> hash
-                 :image=>image.to_hash,
+      h.merge!({:image=>image.to_hash,
                  :host_node=> (host_node.nil? ? nil : host_node.to_hash),
                  :instance_nics=>instance_nic.map {|n| n.to_hash },
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,

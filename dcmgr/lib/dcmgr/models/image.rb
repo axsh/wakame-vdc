@@ -44,10 +44,6 @@ module Dcmgr::Models
       end
     end
 
-    def to_hash
-      super.merge({:source=>self.source, :description=>self.description.to_s, :features=>self.features})
-    end
-
     # note on "lookup_account_id":
     # the source column sometime contains the information which
     # should not be shown to other accounts. so that the method takes

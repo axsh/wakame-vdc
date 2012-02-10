@@ -74,13 +74,6 @@ module Dcmgr::Models
       super
     end
 
-    def to_hash
-      super.merge({:config=>self.config, # yaml -> Hash
-                    :vifs => self.vifs, # yaml -> Hash
-                    :drives => self.drives, # yaml -> Hash
-                  })
-    end
-
     def to_api_document
       doc = super()
       doc.delete(:config)
