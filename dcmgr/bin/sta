@@ -21,7 +21,6 @@ manifest.instance_eval do
   load_config File.expand_path('config/sta.conf', app_root)
   
   load_module Isono::NodeModules::NodeHeartbeat
-  load_module Dcmgr::NodeModules::StaTgtInitializer if config.backing_store == 'raw'
 end
 
 start(manifest) do
