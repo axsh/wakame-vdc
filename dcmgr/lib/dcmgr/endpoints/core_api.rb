@@ -1167,8 +1167,11 @@ module Dcmgr
             # Verify that the vif belongs to network?
             instance = nic.instance
 
-            res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
-                                         nic.canonical_uuid, port.canonical_uuid)
+            # Find better way of figuring out when an instance is not running.
+            if not instance.host_node.nil?
+              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
+                                           nic.canonical_uuid, port.canonical_uuid)
+            end
 
             port.instance_nic = nic
             port.save_changes
@@ -1188,8 +1191,11 @@ module Dcmgr
             nic = port.instance_nic
             instance = nic.instance
 
-            res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
-                                         nic.canonical_uuid, port.canonical_uuid)
+            # Find better way of figuring out when an instance is not running.
+            if not instance.host_node.nil?
+              res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
+                                           nic.canonical_uuid, port.canonical_uuid)
+            end
 
             port.instance_nic = nil
             port.save_changes
