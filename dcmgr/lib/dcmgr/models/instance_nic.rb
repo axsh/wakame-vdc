@@ -54,6 +54,8 @@ module Dcmgr::Models
       maclease = MacLease.find(:mac_addr=>self.mac_addr)
       maclease.destroy if maclease
       release_ip_lease
+
+      network_port_dataset.destroy
       super
     end
 
@@ -116,7 +118,6 @@ module Dcmgr::Models
       self.network = nil
       self.save
 
-      NetworkPort.lock!
       network_port_dataset.destroy
     end
 
