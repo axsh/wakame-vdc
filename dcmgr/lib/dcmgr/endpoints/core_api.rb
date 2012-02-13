@@ -1118,6 +1118,41 @@ module Dcmgr
           end
         end
 
+        # Make GRE tunnels, currently used for testing purposes.
+        operation :add_tunnel, :method=>:put, :member=>true do
+          description 'Create a tunnel on this network'
+          # params :id required
+          # params :dest_id required
+          # params :dest_ip required
+          # params :tunnel_id required
+          control do
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
+
+            tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
+            command = "/usr/share/axsh/wakame-vdc/ovs/bin/ovs-vsctl add-port br0 #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{params[:dest_ip]} options:key=#{params[:tunnel_id]}"
+
+            system(command)
+            response_to({})
+          end
+        end
+
+        operation :del_tunnel, :method=>:put, :member=>true do
+          description 'Destroy a tunnel on this network'
+          # params :id required
+          # params :dest required
+          # params :tunnel_id required
+          control do
+            nw = find_by_uuid(:Network, params[:id])
+            examine_owner(nw) || raise(OperationNotPermitted)
+
+            tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
+
+            system("/usr/share/axsh/wakame-vdc/ovs/bin/ovs-vsctl del-port br0 #{tunnel_name}")
+            response_to({})
+          end
+        end
+
       end
 
       # Should be under '/networks/{network-id}/ports', however due to
