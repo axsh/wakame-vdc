@@ -119,6 +119,14 @@ module InstanceHelper
     $?
   end
 
+  def ping_between_instances(from_instance, from_ip, to_ip)
+    if from_instance.nil? or from_ip.nil? or to_ip.nil?
+      raise("Invalid argument: from_instance:#{from_instance.inspect} from_ip:#{from_ip.inspect} to_ip:#{to_ip.inspect}.")
+    end
+
+    ssh_command(from_instance, "ubuntu", "ping -c 1 -W 1 -I #{from_ip} #{to_ip}", 0)
+  end
+
   def ssh_command(instance_id, user, command, seconds)
     res = APITest.get("/instances/#{instance_id}")
 
@@ -145,6 +153,26 @@ module InstanceHelper
 
     FileUtils.rm(private_key_path)
     output
+  end
+
+  def ssh_pipe(instance_id, user, command, &block)
+    res = APITest.get("/instances/#{instance_id}")
+
+    ssh_key_id = res["ssh_key_pair"]
+    key_pair = APITest.get("/ssh_key_pairs/#{ssh_key_id}")
+
+    suffix = Time.now.strftime("%s")
+    private_key_path = "/tmp/vdc_id_rsa.pem.#{suffix}"
+    open(private_key_path, "w") { |f| f.write(key_pair["private_key"]) }
+    File.chmod(0600, private_key_path)
+    sleep 5
+
+    cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} #{user}@#{res["vif"].first["ipv4"]["address"]} '#{command}'"
+
+    IO.popen(cmd, "w+", &block)
+
+    FileUtils.rm(private_key_path)
+    $?
   end
 
   def retry_until_loggedin(instance_id, user, seconds = 0)
