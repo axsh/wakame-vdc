@@ -120,8 +120,10 @@ module Dcmgr
 
     RACK_FRONTEND_SYSTEM_ID='dcmgr.frotend_system.id'.freeze
     
-    autoload :CoreAPI, 'dcmgr/endpoints/core_api'
     autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
+    module V1112
+      autoload :CoreAPI, 'dcmgr/endpoints/core_api'
+    end
     module V1203
       autoload :CoreAPI, 'dcmgr/endpoints/12.03/core_api'
     end
