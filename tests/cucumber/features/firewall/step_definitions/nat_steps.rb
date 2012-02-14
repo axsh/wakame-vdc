@@ -1,0 +1,181 @@
+# encoding: utf-8
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+require 'cucumber/formatter/unicode'
+
+Before do
+end
+
+After do |scenario|
+  #TODO: handle the cleanup
+  #if(scenario.passed?)
+    #@instances.keys.each { |instance_name|
+      #steps %Q{
+        #When we successfully terminate instance #{instance_name}
+      #}
+    #}
+    ##TODO: Do this properly
+    #steps %Q{
+      #When we successfully delete security group A
+      #And we successfully delete security group B
+    #}
+  #end
+end
+
+Given /^(inside|outside) network (.+) exists$/ do |inout, cidr|
+  new_network = cidr.split("/")[0]
+  new_prefix  = cidr.split("/")[1]
+  
+  # Check if the network exists already
+  steps %Q{
+    When we make a successful api get call to networks with no options
+  }
+  
+  @network = {} if @network.nil?
+  @network[inout] = @api_last_result.first["results"].find { |nw|
+    nw["prefix"] == new_prefix.to_i && nw["ipv4_network"] == new_network
+  }
+  
+  # Create the network if it doesn't exist yet
+  if @network[inout].nil?
+    puts "#{cidr} doesn't exist, creating it"
+    steps %Q{
+      When we make a successful api create call to networks with the following options
+      | network        | prefix        | description                |
+      | #{new_network} | #{new_prefix} | nat test #{inout} network  |
+    }
+    
+    @network[inout] = @api_last_result
+  else
+    puts "#{cidr} exists, using it"
+  end
+end
+
+Given /^security group (.+) exists with the following rules$/ do |group_name, rules|
+  @security_groups = {} if @security_groups.nil?
+  steps %Q{
+    When we make a successful api create call to security_groups with the following options
+    | description                              |
+    | static nat test group: #{group_name}     |
+    Then the previous api call should be successful
+    And from the previous api call take {"id":} and save it to <registry:group_#{group_name}>
+    When we successfully set the following rules for the security group
+      """
+      #{rules}
+      """
+    Then the previous api call should be successful
+  }
+end
+
+Given /^a natted instance (.+) is started in group (.+) that listens on tcp port (\d+) and udp port (\d+)$/ do |instance_name, group_name, tcp_port, udp_port|
+  @instances = {} if @instances.nil?
+  raise "And instance already exists with that name: '#{instance_name}'" unless @instances[instance_name].nil?
+  steps %Q{
+    When we make a successful api create call to instances with the following options
+    | image_id               | instance_spec_id | network_scheduler | security_groups                | user_data                       | ssh_key_id |
+    | wmi-secgtest           | is-demospec      | nat               | <registry:group_#{group_name}> | tcp:#{tcp_port} udp:#{udp_port} | ssh-demo   |
+    And the created instance has reached the state "running"
+  }
+  @instances[instance_name] = @api_last_result
+end
+
+Given /^the security group we use allows pinging and ssh$/ do
+  steps %Q{
+    When we make a successful api create call to security_groups with the following options
+    | description               |
+    | static nat test group     |
+    When we successfully set the following rules for the security group
+      """
+      icmp:-1,-1,ip4:0.0.0.0
+      tcp:22,22,ip4:0.0.0.0
+      """
+    Then the previous api call should be successful
+  }
+end
+
+When /^we successfully terminate instance (.+)$/ do |instance_name|
+  steps %Q{
+    When we make a successful api delete call to instances/#{@instances[instance_name]["id"]} with no options
+    Then the instances with id #{@instances[instance_name]["id"]} should reach state terminated in #{TIMEOUT_TERMINATE_INSTANCE} seconds or less
+  }
+end
+
+When /^we successfully delete security group (.+)$/ do |group_name|
+  steps %Q{
+    When we make a successful api delete call to security_groups/<registry:group_#{group_name}> with no options
+    Then the previous api call should be successful
+  }
+end
+
+#When /^we successfully start an instance of (.+) and (.+) with the (.+) scheduler$/ do |image,spec,scheduler|
+When /^we successfully start instance (.+) of (.+) and (.+) with the (.+) scheduler$/ do |instance_name, image, spec, scheduler|
+  steps %Q{
+    When we make a successful api create call to instances with the following options
+    | image_id               | instance_spec_id | network_scheduler | security_groups |
+    | #{image}               | #{spec}          | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} |
+  }
+end
+
+When /^we successfully start instance (.+) that listens on tcp port (\d+) and udp port (\d+) with scheduler (.+)$/ do |instance_name, tcp_port, udp_port, scheduler|
+  @instances = {} if @instances.nil?
+  raise "And instance already exists with that name: '#{instance_name}'" unless @instances[instance_name].nil?
+  
+  steps %Q{
+    When we make a successful api create call to instances with the following options
+    | image_id               | instance_spec_id | network_scheduler | security_groups                                         | user_data                       |
+    | wmi-secgtest           | is-demospec      | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} | tcp:#{tcp_port} udp:#{udp_port} |
+  }
+  
+  @instances[instance_name] = @api_last_result
+end
+
+When /^instance (.+) sends a (tcp|udp) packet to ([^']+)'s (inside|outside) address on port (\d+)$/ do |sender, protocol, receiver, inout, port|
+  # Get the instance's ip addresses if we don't have them yet
+  [sender,receiver].each { |instance_name|
+    if @instances[instance_name]["vif"].empty?
+      steps %Q{
+        When we make a successful api get call to #{"instances/#{@instances[instance_name]["id"]}"} with no options
+      }
+      @instances[instance_name] = @api_last_result
+    end
+  }
+  
+  which_address = inout == "inside" ? "address" : "nat_address"
+  sender_address = @instances[sender]["vif"].first["ipv4"]["address"]
+  receiver_address = @instances[receiver]["vif"].first["ipv4"][which_address]
+  
+  seconds = 30
+  @used_ip = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/tcp.rb #{receiver_address} #{port} #{seconds}", seconds+10).chomp
+  @last_sender = sender
+end
+
+Then /^instance (.+) should use its (inside|outside) ip$/ do |instance_name, inout|
+  which_address = inout == "inside" ? "address" : "nat_address"
+  @used_ip.should == @instances[instance_name]["vif"].first["ipv4"][which_address]
+end
+
+Then /^it should fail to send the packet$/ do
+  @used_ip.should == "false"
+end
+
+Then /^it should use its (inside|outside) ip$/ do |inout|
+  steps %Q{
+    Then instance #{@last_sender} should use its #{inout} ip
+  }
+end
+
+Then /^we should be able to ping its (inside|outside) ip in (\d+) seconds or less$/ do |inout,seconds|
+  # Get the instance's ip addresses if we don't have them yet
+  if @api_call_results["get"]["instances/#{@api_call_results["create"]["instances"]["id"]}"].nil?
+    steps %Q{
+      When we make a successful api get call to #{"instances/#{@api_call_results["create"]["instances"]["id"]}"} with no options
+    }
+  end
+
+  # Do some pinging
+  which_address = inout == "inside" ? "address" : "nat_address"
+  ipaddr = @api_call_results["get"]["instances/#{@api_call_results["create"]["instances"]["id"]}"]["vif"].first["ipv4"][which_address]
+  retry_until(seconds.to_f) do
+    `ping -c 1 -W 1 #{ipaddr}`
+    $? == 0
+  end
+end

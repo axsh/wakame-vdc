@@ -98,9 +98,15 @@ Then /^the (create|update|delete|get|post|put) call to the (.*) api (should|shou
 end
 
 Then /^the created (.+) should reach state (.+) in (\d+) seconds or less$/ do |suffix,state,seconds|
+  steps %Q{
+    Then the #{suffix} with id #{@api_call_results["create"][suffix]["id"]} should reach state #{state} in #{seconds} seconds or less
+  }
+end
+
+Then /^the (.+) with id (.+) should reach state (.+) in (\d+) seconds or less$/ do |suffix,uuid,state,seconds|
   retry_until(seconds.to_f) do
     sleep(1)
-    APITest.get("/#{suffix}/#{@api_call_results["create"][suffix]["id"]}")["state"] == state
+    APITest.get("/#{suffix}/#{uuid}")["state"] == state
   end
 end
 

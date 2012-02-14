@@ -43,3 +43,5 @@ Feature: Security groups
     When we successfully delete the created instances
     And the created instance has reached the state "terminated"
     And we successfully delete the created security_groups
+
+  #TODO: Scenario where we test security group between instances

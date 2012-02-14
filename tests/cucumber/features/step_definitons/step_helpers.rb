@@ -119,17 +119,18 @@ module InstanceHelper
 
     cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} #{user}@#{res["vif"].first["ipv4"]["address"]} '#{command}'"
 
+    output = ""
     if seconds > 0
       retry_until(seconds) do
-        `#{cmd}`
+        output = %x{#{cmd}}
         $?.exitstatus == 0
       end
     else
-      `#{cmd}`
+      output = %x{#{cmd}}
     end
 
     FileUtils.rm(private_key_path)
-    $?
+    output
   end
 
   def retry_until_loggedin(instance_id, user, seconds = 0)

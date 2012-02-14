@@ -72,17 +72,11 @@ end
 
 When /^we successfully set the following rules for the security group$/ do |rules|
   rules_with_line_breaks = rules.inspect.slice(1,rules.inspect.length-2)
-  #p rules
-  #puts rules_with_newlines
   steps %Q{
     When we make a successful api update call to security_groups/#{@api_call_results["create"]["security_groups"]["id"]} with the following options
     | rule |
     | #{rules_with_line_breaks} |
   }
-  #step "we make a successful api update call to security_groups/#{@api_call_results["create"]["security_groups"]["id"]} with the following options", table([
-    #%w{ rule }
-    #%w{ #{rules} }
-  #])
 end
 
 When /^we successfully delete all rules from the security group$/ do
@@ -102,7 +96,7 @@ end
 When /^we successfully start an instance of (.+) and (.+) with the new security group$/ do |image, spec|
   steps %Q{
     When we make a successful api create call to instances with the following options
-      | image_id | instance_spec_id | ssh_key_id                                            | security_groups                                         |
-      | #{image} | #{spec}          | ssh-demo | #{@api_call_results["create"]["security_groups"]["id"]} |
+      | image_id | instance_spec_id | ssh_key_id | security_groups                                         |
+      | #{image} | #{spec}          | ssh-demo   | #{@api_call_results["create"]["security_groups"]["id"]} | 
   }
 end

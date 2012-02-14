@@ -5,7 +5,7 @@ Feature: Instance, volume and snapshot operations.
 
     When we make a successful api create call to security_groups with the following options
     | description          | rule                     |
-    | Scenario 1shot group | tcp:22,22,ip4:0.0.0.0/24 |
+    | Scenario 1shot group | tcp:22,22,ip4:0.0.0.0/24\nicmp:-1,-1,ip4:0.0.0.0 |
     
     When we make a successful api create call to ssh_key_pairs with the following options
     | download_once |
