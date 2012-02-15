@@ -1,10 +1,7 @@
 Feature: Static Nat
 
   Scenario: Static nat
-    Given outside network 192.168.3.0/24 exists
-    And inside network 192.168.2.0/24 exists
-    #And the dhcp range is set correctly
-    And the security group we use allows pinging and ssh
+    Given the security group we use allows pinging and ssh
     
     When we successfully start instance inst1 of wmi-secgtest and is-demospec with the nat scheduler
       And the created instance has reached the state "running"

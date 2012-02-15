@@ -42,9 +42,7 @@ When /^instance ([^\s]+) pings instance ([^\s]+)$/ do |sender, receiver|
       @instances[instance_name] = @api_last_result
     end
   }
-  
-  #which_address = inout == "inside" ? "address" : "nat_address"
-  #sender_address = @instances[sender]["vif"].first["ipv4"]["address"]
+
   receiver_address = @instances[receiver]["vif"].first["ipv4"]["address"]
   
   seconds = 30
@@ -62,9 +60,7 @@ When /^instance ([^\s]+) pings instance ([^\s]+) on each nic$/ do |sender,receiv
       @instances[instance_name] = @api_last_result
     end
   }
-  
-  #which_address = inout == "inside" ? "address" : "nat_address"
-  #sender_address = @instances[sender]["vif"].first["ipv4"]["address"]
+
   @multi_vnic_ping_result = {} if @multi_vnic_ping_result.nil?
   @instances[receiver]["vif"].each { |vnic|
     receiver_address = vnic["ipv4"]["address"]

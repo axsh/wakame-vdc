@@ -6,19 +6,6 @@ Before do
 end
 
 After do |scenario|
-  #TODO: handle the cleanup
-  #if(scenario.passed?)
-    #@instances.keys.each { |instance_name|
-      #steps %Q{
-        #When we successfully terminate instance #{instance_name}
-      #}
-    #}
-    ##TODO: Do this properly
-    #steps %Q{
-      #When we successfully delete security group A
-      #And we successfully delete security group B
-    #}
-  #end
 end
 
 Given /^(inside|outside) network (.+) exists$/ do |inout, cidr|
