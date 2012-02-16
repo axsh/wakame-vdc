@@ -84,6 +84,7 @@ When /^we successfully terminate instance (.+)$/ do |instance_name|
     When we make a successful api delete call to instances/#{@instances[instance_name]["id"]} with no options
     Then the instances with id #{@instances[instance_name]["id"]} should reach state terminated in #{TIMEOUT_TERMINATE_INSTANCE} seconds or less
   }
+  @instances[instance_name] = nil
 end
 
 When /^we successfully delete security group (.+)$/ do |group_name|
@@ -93,7 +94,6 @@ When /^we successfully delete security group (.+)$/ do |group_name|
   }
 end
 
-#When /^we successfully start an instance of (.+) and (.+) with the (.+) scheduler$/ do |image,spec,scheduler|
 When /^we successfully start instance (.+) of (.+) and (.+) with the (.+) scheduler$/ do |instance_name, image, spec, scheduler|
   steps %Q{
     When we make a successful api create call to instances with the following options
@@ -103,16 +103,11 @@ When /^we successfully start instance (.+) of (.+) and (.+) with the (.+) schedu
 end
 
 When /^we successfully start instance (.+) that listens on tcp port (\d+) and udp port (\d+) with scheduler (.+)$/ do |instance_name, tcp_port, udp_port, scheduler|
-  @instances = {} if @instances.nil?
-  raise "And instance already exists with that name: '#{instance_name}'" unless @instances[instance_name].nil?
-  
   steps %Q{
-    When we make a successful api create call to instances with the following options
+    Given an instance #{instance_name} is started with the following options
     | image_id               | instance_spec_id | network_scheduler | security_groups                                         | user_data                       |
     | wmi-secgtest           | is-demospec      | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} | tcp:#{tcp_port} udp:#{udp_port} |
   }
-  
-  @instances[instance_name] = @api_last_result
 end
 
 When /^instance (.+) sends a (tcp|udp) packet to ([^']+)'s (inside|outside) address on port (\d+)$/ do |sender, protocol, receiver, inout, port|
@@ -130,8 +125,7 @@ When /^instance (.+) sends a (tcp|udp) packet to ([^']+)'s (inside|outside) addr
   sender_address = @instances[sender]["vif"].first["ipv4"]["address"]
   receiver_address = @instances[receiver]["vif"].first["ipv4"][which_address]
   
-  seconds = 30
-  @used_ip = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/tcp.rb #{receiver_address} #{port} #{seconds}", seconds+10).chomp
+  @used_ip = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/tcp.rb #{receiver_address} #{port} #{TIMEOUT_BASE}", TIMEOUT_BASE+10).chomp
   @last_sender = sender
 end
 

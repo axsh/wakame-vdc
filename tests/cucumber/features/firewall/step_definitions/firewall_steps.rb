@@ -6,11 +6,6 @@ Before do
 end
 
 After do
-  #steps %Q{
-     #When we successfully delete the created instances
-     #And the created instance has reached the state "terminated"
-     #And we successfully delete the created security_groups
-  #}
 end
 
 require 'socket'
@@ -44,10 +39,6 @@ def is_port_open?(ip, port, protocol = :tcp, timeout = 10)
   # No error means we've gotten through the firewall
   return true
 end
-
-#Then /^we should be able to make a (tcp|udp) connection on port (\d+) to the instance in (\d+) seconds or less$/ do |protocol, port, timeout|
-  #is_port_open?("#TODO: fill in ip here",port.to_i,protocol.to_s, timeout.to_i)
-#end
 
 Then /^we (should|should\snot) be able to make a (tcp|udp) connection on port (\d+) to the instance for (\d+) seconds$/ do |outcome, protocol, port, seconds|
   # Check if we know the instance's ip address yet

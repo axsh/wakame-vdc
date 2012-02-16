@@ -68,32 +68,32 @@ Feature: VM Isolation
     And an instance instB2 is started in group B with scheduler vif3type1
     
     When instance instA1 pings instance instA2 on each nic
-      Then each ping operation should be successful
+      Then the ping operation should be successful for each nic
     When instance instA1 pings instance instB1 on each nic
-      Then each ping operation should not be successful
+      Then the ping operation should not be successful for each nic
     When instance instA1 pings instance instB2 on each nic
-      Then each ping operation should not be successful
+      Then the ping operation should not be successful for each nic
 
     When instance instA2 pings instance instA1 on each nic
-      Then each ping operation should be successful
+      Then the ping operation should be successful for each nic
     When instance instA2 pings instance instB1 on each nic
-      Then each ping operation should not be successful
+      Then the ping operation should not be successful for each nic
     When instance instA2 pings instance instB2 on each nic
-      Then each ping operation should not be successful
+      Then the ping operation should not be successful for each nic
       
     When instance instB1 pings instance instB2 on each nic
-      Then each ping operation should be successful
+      Then the ping operation should be successful for each nic
     When instance instB1 pings instance instA1 on each nic
-      Then each ping operation should not be successful
+      Then the ping operation should not be successful for each nic
     When instance instB1 pings instance instA2 on each nic
-      Then each ping operation should not be successful
+      Then the ping operation should not be successful for each nic
 
     When instance instB2 pings instance instB1 on each nic
-      Then each ping operation should be successful
+      Then the ping operation should be successful for each nic
     When instance instB2 pings instance instA1 on each nic
-      Then each ping operation should not be successful
+      Then the ping operation should not be successful for each nic
     When instance instB2 pings instance instA2 on each nic
-      Then each ping operation should not be successful
+      Then the ping operation should not be successful for each nic
       
     When we successfully terminate instance instA1
     And we successfully terminate instance instA2
