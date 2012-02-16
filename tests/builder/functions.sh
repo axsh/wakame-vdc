@@ -689,8 +689,12 @@ EOF
         hvaname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
         [ "${h}" = "${ipaddr}" ] && {
             screen_it hva.${hvaname} "cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} 2>&1 | tee ${tmp_path}/vdc-hva.log"
+            [ "${with_openflow}" != "yes" ] || \
+              screen_it ofc.${hvaname} "cd ${prefix_path}/dcmgr/ && ./bin/ofc -i ${hvaname}"
         } || {
             screen_it hva.${hvaname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh ${h}"
+            [ "${with_openflow}" != "yes" ] || \
+              screen_it ofc.${hvaname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/ofc -i ${hvaname}\" | ssh ${h}"
         }
     done
 

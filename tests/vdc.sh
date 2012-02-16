@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 
-set -e
+set +e
 
 abs_path=$(cd $(dirname $0) && pwd)
 prefix_path=$(cd ${abs_path}/../ && pwd)
@@ -36,6 +36,34 @@ case ${mode} in
     run_standalone
     screen_attach
     screen_close
+    [ -f "${tmp_path}/vdc-pid.log" ] && {
+      wait $(cat ${tmp_path}/vdc-pid.log)
+    }
+    ;;
+  multiple:netfilter)
+    set +e
+    . builder/conf/nodes.conf
+    cleanup_multiple
+    run_multiple
+    check_ready_multiple
+    screen_attach
+    screen_close
+    ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
+    [ -f "${tmp_path}/vdc-pid.log" ] && {
+      wait $(cat ${tmp_path}/vdc-pid.log)
+    }
+    ;;
+  multiple:openflow)
+    # interactive mode with OpenFlow
+    set +e
+    with_openflow=yes
+    . builder/conf/nodes.conf
+    cleanup_multiple
+    run_multiple
+    check_ready_multiple
+    screen_attach
+    screen_close
+    ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     [ -f "${tmp_path}/vdc-pid.log" ] && {
       wait $(cat ${tmp_path}/vdc-pid.log)
     }
