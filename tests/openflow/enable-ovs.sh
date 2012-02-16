@@ -22,8 +22,11 @@ set +e
 ip link set br0 down || true
 brctl delbr br0 || true
 
-/etc/init.d/ovs-switch restart
-/etc/init.d/networking restart
+/etc/init.d/networking stop
+/etc/init.d/ovs-switch stop
+rmmod bridge
+/etc/init.d/ovs-switch start
+/etc/init.d/networking start
 
 echo "Sleeping for 3 seconds..."
 sleep 3

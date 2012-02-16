@@ -5,17 +5,15 @@ require File.expand_path('../../../step_definitons/step_helpers.rb', __FILE__)
 TARGET_API_VER = ENV['API_VER'] || '12.03'
 
 
+# The version comparison requires strings with the same number of
+# dot-separated numbers. This requirement is strictly enforced in
+# order to ensure the comparison operator is symmetric.
 def api_ver_cmp(s, d)
-  if d.nil? || d == ''
-    return 1
-  elsif s.nil? || s == ''
-    return -1
-  end
   d_ary = d.split('.').map {|i| i.to_i }
   s_ary = s.split('.').map {|i| i.to_i }
 
   loop {
-    return 0 if d_ary.empty? || s_ary.empty?
+    return 0 if d_ary.empty? && s_ary.empty?
 
     case r=(s_ary.shift <=> d_ary.shift)
     when 1, -1
@@ -79,13 +77,12 @@ Around do |scenario, blk|
   from_vers.uniq!
   until_vers.uniq!
 
-  if !(from_vers.empty? && until_vers.empty?)
-    if api_ver_cmp(TARGET_API_VER, from_vers.max { |a,b| api_ver_cmp(a, b) }) < 0 ||
-        api_ver_cmp(TARGET_API_VER, until_vers.max { |a,b| api_ver_cmp(a, b) }) > 0
-      #puts "Skipping #{scenario.title} ..."
-      next
-    end
+  if (!from_vers.empty? && api_ver_cmp(TARGET_API_VER, from_vers.max { |a,b| api_ver_cmp(a, b) }) < 0) ||
+     (!until_vers.empty? && api_ver_cmp(TARGET_API_VER, until_vers.max { |a,b| api_ver_cmp(a, b) }) > 0)
+    #puts "Skipping #{scenario.title} ..."
+    next
   end
+
   APITest.api_ver(((TARGET_API_VER == '11.12') ? '' : TARGET_API_VER))
   blk.call
 end

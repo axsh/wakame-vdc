@@ -11,9 +11,11 @@ module Dcmgr
         @volume      = ctx.volume
         @snapshot    = ctx.snapshot
 
-        logger.info("creating new volume: #{@volume_id}")
+        logger.info("creating new volume: id:#{@volume_id} path:#{vol_path}.")
+        logger.debug("volume: #{@volume.inspect}.")
 
         if @snapshot
+          # sh("/bin/mkdir -p #{vol_path}") unless File.directory?(vol_path)
           cp_sparse(snap_file, vol_path)
           if $?.exitstatus != 0
             raise "failed copy snapshot: #{snap_file}"

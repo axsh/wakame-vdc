@@ -52,6 +52,11 @@ depmod
 cat ./debian/openvswitch-switch.init | sed -e "s:/usr/:$work_dir/ovs/:g" -e "s:### END INIT INFO:### END INIT INFO\n\nBRCOMPAT=yes:" > ./ovs-switch.tmp
 install --mode=0755 ./ovs-switch.tmp /etc/init.d/ovs-switch
 
+mkdir $work_dir/ovs/etc/ || true
+mkdir $work_dir/ovs/etc/openvswitch || true
+mkdir $work_dir/ovs/var/run || true
+mkdir $work_dir/ovs/var/run/openvswitch || true
+
 # Initialize the Open vSwitch database.
 #
 # The default database path is '$PREFX/etc/openvswitch/conf.db', if a
