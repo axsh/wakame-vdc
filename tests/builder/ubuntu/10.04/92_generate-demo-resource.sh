@@ -97,7 +97,7 @@ for s in ${storage_nodes}; do
     [ "${s}" = "${ipaddr}" ] && {
         dest=$(uname -a | awk '{print $1}')
     } || {
-        dest=$(echo "uname -a" | ssh ${s} | awk '{print $1}')
+        dest=$(ssh ${s} 'uname -a' | awk '{print $1}')
     }
     staname=demo$(echo ${s} | sed -e 's/\./ /g' | awk '{print $4}')
     case ${dest} in
