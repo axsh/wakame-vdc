@@ -65,7 +65,7 @@ module Dcmgr
           raise "No switch found." unless switches.has_key? message.datapath_id
           switches[message.datapath_id].features_reply message
           
-          @service_openflow.networks.each { |network| update_network network[1] }
+          @service_openflow.networks.each { |network| network[1].update }
         end
 
         def insert_port switch, port
@@ -128,6 +128,7 @@ module Dcmgr
           raw_out.l3.src_ip = src_ip
           raw_out.l3.dst_ip = dst_ip
           raw_out.l3.protocol = 0x11
+          raw_out.l3.ttl = 128
 
           raw_out.l4 = Racket::L4::UDP.new
           raw_out.l4.src_port = src_port

@@ -18,6 +18,7 @@ module Dcmgr
         attr_accessor :dhcp_hw
         attr_accessor :dhcp_ip
         attr_accessor :ipv4_network
+        attr_accessor :ipv4_gw
         attr_accessor :prefix
 
         def initialize dp, id

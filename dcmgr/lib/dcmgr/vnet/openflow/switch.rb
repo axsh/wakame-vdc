@@ -69,8 +69,6 @@ module Dcmgr
           # DHCP queries from instances and network should always go to
           # local host, while queries from local host should go to the
           # network.
-          flows << Flow.new(TABLE_CLASSIFIER, 5, {:udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_src => '0.0.0.0', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst =>67}, {:local => nil})
-
           flows << Flow.new(TABLE_CLASSIFIER, 3, {:arp => nil}, {:resubmit => TABLE_ARP_ANTISPOOF})
           flows << Flow.new(TABLE_CLASSIFIER, 3, {:icmp => nil}, {:resubmit => TABLE_LOAD_DST})
           flows << Flow.new(TABLE_CLASSIFIER, 3, {:tcp => nil}, {:resubmit => TABLE_LOAD_DST})
@@ -194,7 +192,7 @@ module Dcmgr
               logger.debug "DHCP: message:#{dhcp_in.to_s}."
 
               if port.network.dhcp_ip.nil?
-                logger.debug "DHCP: Port has no dhcp_ip: port:#{port.inspect}"
+                logger.debug "DHCP: Port has no dhcp_ip: port:#{port.port_info.inspect}"
                 return
               end
 

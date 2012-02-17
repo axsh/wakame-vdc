@@ -91,8 +91,6 @@ function set_default_variables() {
   hypervisor=kvm
   ci_archive_dir=$prefix_path/../results
 
-  with_openflow=no
-
   #
   without_bundle_install=
   without_quit_screen=
@@ -581,8 +579,6 @@ function run_standalone() {
         screen_it sta${i} "cd ${prefix_path}/dcmgr/ && ./bin/sta -i demo${i} 2>&1 | tee ${tmp_path}/vdc-sta${i}.log"
       done
     }
-    [ "${with_openflow}" != "yes" ] || \
-    screen_it ofc       "cd ${prefix_path}/dcmgr/ && ./bin/ofc -i demo1"
   }  || {
     cd ${prefix_path}/dcmgr/ && run2bg "./bin/collector > ${tmp_path}/vdc-collector.log 2>&1"
     cd ${prefix_path}/dcmgr/ && run2bg "./bin/nsa -i demo1 > ${tmp_path}/vdc-nsa.log 2>&1"
@@ -601,9 +597,6 @@ function run_standalone() {
         cd ${prefix_path}/dcmgr/ && run2bg "./bin/sta -i demo${i} > ${tmp_path}/vdc-sta${i}.log 2>&1"
       done
     }
-    [ "${with_openflow}" != "yes" ] || {
-      cd ${prefix_path}/dcmgr/ && run2bg "./bin/ofc -i demo1"
-    }
     #wait_jobs
     echo "${pids}" > ${tmp_path}/vdc-pid.log
     shlog ps -p ${pids}
@@ -619,11 +612,7 @@ EOF
 echo > "/dev/tcp/localhost/8080"
 EOF
 
-  if [ "${with_openflow}" == "yes" ]; then
-      nodes=5
-  else
-      nodes=4
-  fi
+  nodes=4
 
   # Wait for until all agent nodes become online.
   retry 10 <<'EOF' || abort "Offline nodes still exist."
@@ -689,12 +678,8 @@ EOF
         hvaname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
         [ "${h}" = "${ipaddr}" ] && {
             screen_it hva.${hvaname} "cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} 2>&1 | tee ${tmp_path}/vdc-hva.log"
-            [ "${with_openflow}" != "yes" ] || \
-              screen_it ofc.${hvaname} "cd ${prefix_path}/dcmgr/ && ./bin/ofc -i ${hvaname}"
         } || {
             screen_it hva.${hvaname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh ${h}"
-            [ "${with_openflow}" != "yes" ] || \
-              screen_it ofc.${hvaname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/ofc -i ${hvaname}\" | ssh ${h}"
         }
     done
 
