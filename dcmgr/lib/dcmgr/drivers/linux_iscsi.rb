@@ -48,12 +48,9 @@ module Dcmgr
       def pick_next_tid
         # $ sudo /usr/sbin/tgtadm --lld iscsi --op show --mode target | grep '^Target '
         # Target 1: iqn.2010-09.jp.wakame:a-shpoolxx.vol-dw55bba8
-        last_target = `/usr/sbin/tgtadm --lld iscsi --op show --mode target | grep ^Target`.split("\n").last
-        tid = if last_target.nil?
-                1
-              else
-                last_target.split(':').first.split(' ')[1].to_i + 1
-              end
+        lst = `/usr/sbin/tgtadm --lld iscsi --op show --mode target | grep ^Target`.split("\n")
+        max_tid = lst.map { |a| a =~ /^Target\s+(\d+):.*/; $1.to_i; }.max || 0
+        max_tid + 1
       end
     end
   end
