@@ -30,16 +30,6 @@ case ${mode} in
     ;;
   cleanup)
     ;;
-  openflow)
-    # interactive mode with OpenFlow
-    with_openflow=yes
-    run_standalone
-    screen_attach
-    screen_close
-    [ -f "${tmp_path}/vdc-pid.log" ] && {
-      wait $(cat ${tmp_path}/vdc-pid.log)
-    }
-    ;;
   multiple)
     set +e
     . builder/conf/nodes.conf
