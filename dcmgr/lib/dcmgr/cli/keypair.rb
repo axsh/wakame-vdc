@@ -14,16 +14,35 @@ module Dcmgr::Cli
     method_option :description, :type => :string, :desc => "Description for this key pair"
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
-      private_key_path = File.expand_path(options[:private_key])
+      private_key_path = File.expand_path(options[:private_key]) if options[:private_key]
       public_key_path = File.expand_path(options[:public_key])
-      Error.raise "Private key file doesn't exist",100 unless File.exists?(private_key_path) || options[:private_key]
+      
+      # Check if the files exist
+      Error.raise "Private key file doesn't exist",100 if options[:private_key] && (not File.exists?(private_key_path))
       Error.raise "Public key file doesn't exist",100 unless File.exists?(public_key_path)
+      
+      # Check if the public key file really is a public key
+      system "ssh-keygen -l -f #{options[:public_key]} >> /dev/null"
+      Error.raise "#{options[:public_key]} is not a public key file.",100 unless $? == 0
       
       fields = options.dup
       
       #Get the keys from their respective files.
       fields[:public_key] = File.open(public_key_path) {|f| f.readline}
-      fields[:private_key] = File.open(private_key_path) {|f| f.readlines.join('') }
+      fields[:private_key] = File.open(private_key_path) {|f| f.readlines.join('') } if options[:private_key]
+      
+      # If a private key is supplied, verify that it matches the supplied public key
+      if options[:private_key]
+        begin
+          generated_public_key = sh("ssh-keygen -yf #{options[:private_key]}")[:stdout].chomp
+        rescue
+          Error.raise "Couldn't generate the public key from the private key. Are you sure it is a private key?", 100
+        end
+        
+        unless fields[:public_key].split(' ')[0] == generated_public_key.split(' ')[0] && fields[:public_key].split(' ')[1] == generated_public_key.split(' ')[1]
+          Error.raise "The public key doesn't match the private key", 100
+        end
+      end
       
       #Generate the fingerprint from the public key file
       res = sh("ssh-keygen -lf #{options[:public_key]}")
