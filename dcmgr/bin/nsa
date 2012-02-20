@@ -23,6 +23,11 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
   end
   
   initialize_hook do
+    if !manifest.config.enable_dnsmasq
+      logger.info "Dnsmasq is disabled."
+      next
+    end
+
     if manifest.config.network_name.nil?
       abort("network_name is not set yet in nsa.conf")
     end
@@ -56,7 +61,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
   end
 
   terminate_hook do
-    system("/bin/kill #{@dnsmasq_pid}")
+    system("/bin/kill #{@dnsmasq_pid}") if manifest.config.enable_dnsmasq
   end
 
   def start_dnsmasq
@@ -190,6 +195,7 @@ manifest.instance_eval do
   config do |c|
     c.dnsmasq_bin_path = '/usr/sbin/dnsmasq'
     c.network_name = nil
+    c.enable_dnsmasq = true
   end
 
   load_config File.expand_path('config/nsa.conf', app_root)
