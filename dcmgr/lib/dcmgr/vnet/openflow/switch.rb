@@ -224,9 +224,9 @@ module Dcmgr
               dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => port.network.dhcp_ip.to_short)
               dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
               dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (port.network.ipv4_network | ~subnet_mask).to_short)
-              # Host name 'abcdefgh'.
-              # Domain name 'foo.local'
-              # Domain name server
+              dhcp_out.options << DHCP::DomainNameOption.new(:payload => port.network.domain_name.unpack('C*'))
+              dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => port.network.dns_ip.to_short) unless port.network.dns_ip.nil?
+              dhcp_out.options << DHCP::RouterOption.new(:payload => port.network.ipv4_gw.to_short) unless port.network.ipv4_gw.nil?
               dhcp_out.options << DHCP::SubnetMaskOption.new(:payload => subnet_mask.to_short)
 
               logger.debug "DHCP send: output:#{dhcp_out.to_s}."

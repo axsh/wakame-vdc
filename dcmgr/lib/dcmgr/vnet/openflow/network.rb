@@ -14,9 +14,13 @@ module Dcmgr
         attr_reader :ports
         attr_reader :local_ports
 
+        # Use the actual network db object instead.
         attr_accessor :virtual
+        attr_accessor :domain_name
         attr_accessor :dhcp_hw
         attr_accessor :dhcp_ip
+        # Can cause issues if dns_ip is not the same as dhcp_ip.
+        attr_accessor :dns_ip
         attr_accessor :ipv4_network
         attr_accessor :ipv4_gw
         attr_accessor :prefix
