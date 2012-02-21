@@ -104,15 +104,6 @@ module Dcmgr
           # spoof the mac of an instance?
           flows << Flow.new(TABLE_ARP_ROUTE, 1, {:arp => nil, :dl_dst => local_hw.to_s}, {:local => nil})
 
-          #
-          # Meta-data connections
-          #
-          flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_dst => '169.254.169.254', :tp_dst => 80}, {:resubmit => TABLE_METADATA_OUTGOING})
-          flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_src => Isono::Util.default_gw_ipaddr, :tp_src => 9002}, {:resubmit => TABLE_METADATA_INCOMING})
-
-          flows << Flow.new(TABLE_METADATA_OUTGOING, 4, {:in_port => OpenFlowController::OFPP_LOCAL}, {:drop => nil})
-          flows << Flow.new(TABLE_METADATA_OUTGOING, 0, {}, {:controller => nil})
-
           datapath.add_flows flows        
         end
 
@@ -157,10 +148,22 @@ module Dcmgr
           end
 
           if message.arp?
-            logger.debug "Got ARP packet; port:#{message.in_port} source:#{message.arp_sha.to_s}:#{message.arp_spa.to_s} dest:#{message.arp_tha.to_s}:#{message.arp_tpa.to_s}."
-            return if port.network.nil?
+            logger.debug "Got ARP packet; port:#{message.in_port} network:#{port.network.nil? ? 'nil' : port.network.id} oper:#{message.arp_oper} source:#{message.arp_sha.to_s}/#{message.arp_spa.to_s} dest:#{message.arp_tha.to_s}/#{message.arp_tpa.to_s}."
 
-            if message.arp_oper == Racket::L3::ARP::ARPOP_REQUEST and message.arp_tpa.to_i == port.network.dhcp_ip.to_i
+            return if port.network.nil?
+            network = port.network
+
+            # Add a generic ARP handler.
+            if network.metadata_server_output.nil? and
+                !network.metadata_server_ip.nil? and
+                !network.metadata_server_port.nil? and
+                message.arp_oper == Racket::L3::ARP::ARPOP_REPLY and
+                message.arp_spa.to_s == network.metadata_server_ip.to_s and
+                message.arp_tpa.to_s == Isono::Util.default_gw_ipaddr.to_s
+              
+              network.install_metadata_server message.in_port, message.arp_sha
+
+            elsif message.arp_oper == Racket::L3::ARP::ARPOP_REQUEST and message.arp_tpa.to_i == port.network.dhcp_ip.to_i
               datapath.send_arp(message.in_port, Racket::L3::ARP::ARPOP_REPLY,
                                 port.network.dhcp_hw.to_s, port.network.dhcp_ip.to_s,
                                 message.macsa.to_s, message.arp_spa.to_s)
@@ -170,11 +173,18 @@ module Dcmgr
           end
 
           if message.ipv4? and message.tcp?
-            logger.debug "Got IPv4/TCP packet; port:#{message.in_port} source:#{message.ipv4_saddr.to_s}:#{message.tcp_src_port} dest:#{message.ipv4_daddr.to_s}:#{message.tcp_dst_port}."
+            logger.debug "Got IPv4/TCP packet; port:#{message.in_port} network:#{port.network.nil? ? 'nil' : port.network.id} source:#{message.ipv4_saddr.to_s}:#{message.tcp_src_port} dest:#{message.ipv4_daddr.to_s}:#{message.tcp_dst_port}."
+
+            return if port.network.nil?
+            network = port.network
 
             # Add dynamic NAT flows for meta-data connections.
-            if message.ipv4_daddr.to_s == "169.254.169.254" and message.tcp_dst_port == 80
-              install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING, OpenFlowController::OFPP_LOCAL, local_hw, Isono::Util.default_gw_ipaddr, 9002)
+            if !network.metadata_server_output.nil? and message.ipv4_daddr.to_s == "169.254.169.254" and message.tcp_dst_port == 80
+              install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
+                                 network.metadata_server_output,
+                                 network.local_hw,
+                                 network.metadata_server_ip.to_s,
+                                 network.metadata_server_port)
               datapath.send_packet_out(:packet_in => message, :actions => Trema::ActionOutput.new( :port => OpenFlowController::OFPP_TABLE ))
               return
             end
