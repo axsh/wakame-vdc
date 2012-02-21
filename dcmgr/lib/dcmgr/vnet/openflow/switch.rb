@@ -179,12 +179,23 @@ module Dcmgr
             network = port.network
 
             # Add dynamic NAT flows for meta-data connections.
-            if !network.metadata_server_output.nil? and message.ipv4_daddr.to_s == "169.254.169.254" and message.tcp_dst_port == 80
-              install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
-                                 network.metadata_server_output,
-                                 network.local_hw,
-                                 network.metadata_server_ip.to_s,
-                                 network.metadata_server_port)
+            if !network.metadata_server_output.nil? and
+                message.ipv4_daddr.to_s == "169.254.169.254" and message.tcp_dst_port == 80
+
+              if network.metadata_server_ip.to_s == Isono::Util.default_gw_ipaddr.to_s
+                install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
+                                   network.metadata_server_output,
+                                   network.local_hw,
+                                   network.metadata_server_ip.to_s,
+                                   network.metadata_server_port)
+              else
+                install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
+                                   network.metadata_server_output,
+                                   network.metadata_server_mac,
+                                   network.metadata_server_ip.to_s,
+                                   network.metadata_server_port)
+              end
+
               datapath.send_packet_out(:packet_in => message, :actions => Trema::ActionOutput.new( :port => OpenFlowController::OFPP_TABLE ))
               return
             end

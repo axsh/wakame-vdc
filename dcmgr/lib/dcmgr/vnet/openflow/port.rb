@@ -43,7 +43,9 @@ module Dcmgr
           queue_flow Flow.new(TABLE_LOAD_SRC, 4, {:in_port => port_info.number}, {:output_reg0 => nil})
           queue_flow Flow.new(TABLE_ARP_ANTISPOOF, 1, {:arp => nil, :in_port => port_info.number}, {:resubmit => TABLE_ARP_ROUTE})
           queue_flow Flow.new(TABLE_ARP_ROUTE, 0, {:arp => nil}, {:output => port_info.number})
-          queue_flow Flow.new(TABLE_METADATA_OUTGOING, 4, {:in_port => port_info.number}, {:drop => nil})
+
+          queue_flow Flow.new(TABLE_METADATA_INCOMING, 2, {:in_port => OpenFlowController::OFPP_LOCAL}, {:output => port_info.number})
+          queue_flow Flow.new(TABLE_METADATA_OUTGOING, 4, {:in_port => port_info.number}, {:local => nil})
         end
 
         def init_gre_tunnel
