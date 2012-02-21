@@ -148,15 +148,15 @@ module Dcmgr
           raw_out = Racket::Racket.new
           raw_out.l2 = Racket::L2::Ethernet.new
           raw_out.l2.ethertype = Racket::L2::Ethernet::ETHERTYPE_ARP
-          raw_out.l2.src_mac = src_hw
-          raw_out.l2.dst_mac = dst_hw
+          raw_out.l2.src_mac = src_hw.nil? ? '00:00:00:00:00:00' : src_hw
+          raw_out.l2.dst_mac = dst_hw.nil? ? 'FF:FF:FF:FF:FF:FF' : dst_hw
           
           raw_out.l3 = Racket::L3::ARP.new
           raw_out.l3.opcode = op_code
-          raw_out.l3.sha = src_hw
-          raw_out.l3.spa = src_ip
-          raw_out.l3.tha = dst_hw
-          raw_out.l3.tpa = dst_ip
+          raw_out.l3.sha = src_hw.nil? ? '00:00:00:00:00:00' : src_hw
+          raw_out.l3.spa = src_ip.nil? ? '0.0.0.0' : src_ip
+          raw_out.l3.tha = dst_hw.nil? ? '00:00:00:00:00:00' : dst_hw
+          raw_out.l3.tpa = dst_ip.nil? ? '0.0.0.0' : dst_ip
 
           raw_out.layers.compact.each { |l|
             logger.debug "ARP packet: layer:#{l.pretty}."
