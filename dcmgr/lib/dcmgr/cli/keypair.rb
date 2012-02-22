@@ -21,7 +21,7 @@ module Dcmgr::Cli
       Error.raise "Public key file doesn't exist",100 unless File.exists?(public_key_path)
       
       # Check if the public key file really is a public key
-      system "ssh-keygen -l -f #{options[:public_key]} >> /dev/null"
+      system "ssh-keygen -l -f #{options[:public_key]} > /dev/null"
       Error.raise "#{options[:public_key]} is not a public key file.",100 unless $? == 0
       
       fields = options.dup
@@ -33,8 +33,8 @@ module Dcmgr::Cli
       # If a private key is supplied, verify that it matches the supplied public key
       if options[:private_key]
         begin
-          generated_public_key = sh("ssh-keygen -yf #{options[:private_key]}")[:stdout].chomp
-        rescue
+          generated_public_key = `ssh-keygen -yf #{options[:private_key]}`
+        rescue => e
           Error.raise "Couldn't generate the public key from the private key. Are you sure it is a private key with proper permissions?", 100
         end
         
