@@ -4,7 +4,6 @@ module Dcmgr::Cli
   class KeyPair < Base
     namespace :keypair
     M = Dcmgr::Models
-    include Dcmgr::Helpers::CliHelper
 
     desc "add [options]", "Register a new key pair."
     method_option :uuid, :type => :string, :desc => "The UUID for the new key pair"
@@ -45,8 +44,8 @@ module Dcmgr::Cli
       end
       
       #Generate the fingerprint from the public key file
-      res = sh("ssh-keygen -lf #{options[:public_key]}")
-      fields[:finger_print] = res[:stdout].split(' ')[1]
+      res = `ssh-keygen -lf #{options[:public_key]}`
+      fields[:finger_print] = res.split(' ')[1]
       
       puts super(M::SshKeyPair,fields)
     end
