@@ -9,6 +9,11 @@ TARGET_API_VER = ENV['API_VER'] || '12.03'
 # dot-separated numbers. This requirement is strictly enforced in
 # order to ensure the comparison operator is symmetric.
 def api_ver_cmp(s, d)
+  if s && (d.nil? || d == '')
+    return -1
+  elsif d && (s.nil? || s == '')
+    return 1
+  end
   d_ary = d.split('.').map {|i| i.to_i }
   s_ary = s.split('.').map {|i| i.to_i }
 
@@ -93,12 +98,12 @@ Around do |scenario, blk|
     from_vers.uniq!
     until_vers.uniq!
 
-    if (!from_vers.empty? && api_ver_cmp(TARGET_API_VER, from_vers.max { |a,b| api_ver_cmp(a, b) }) < 0) ||
-        (!until_vers.empty? && api_ver_cmp(TARGET_API_VER, until_vers.max { |a,b| api_ver_cmp(a, b) }) > 0)
+    if api_ver_cmp(TARGET_API_VER, from_vers.max { |a,b| api_ver_cmp(a, b) }) < 0 ||
+        api_ver_cmp(TARGET_API_VER, until_vers.max { |a,b| api_ver_cmp(a, b) }) > 0
       throw :skip_scenario
     end
 
-    APITest.api_ver(((TARGET_API_VER == '11.12') ? '' : TARGET_API_VER))
+    APITest.api_ver(TARGET_API_VER)
     blk.call
   end
 end
