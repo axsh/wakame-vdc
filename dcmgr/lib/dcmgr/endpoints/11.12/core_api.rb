@@ -9,7 +9,7 @@ require 'extlib/hash'
 
 require 'dcmgr/endpoints/errors'
 
-module Dcmgr::Endpoints::V1203
+module Dcmgr::Endpoints::V1112
   class CoreAPI < Sinatra::Base
     include Dcmgr::Logger
     register Sinatra::Namespace
@@ -17,16 +17,14 @@ module Dcmgr::Endpoints::V1203
 
     use Dcmgr::Rack::RequestLogger
 
-    # To access constants in this namespace
-    include Dcmgr::Endpoints
+    disable :sessions
+    disable :show_exceptions
 
     M = Dcmgr::Models
     E = Dcmgr::Endpoints::Errors
+    include Dcmgr::Endpoints
 
     include Dcmgr::Endpoints::Helpers
-
-    disable :sessions
-    disable :show_exceptions
 
     before do
       @params = parsed_request_body if request.post?
@@ -49,6 +47,10 @@ module Dcmgr::Endpoints::V1203
 
       #raise E::InvalidRequestCredentials if !(@account && @frontend)
       raise E::DisabledAccount if @account.disable?
+    end
+
+    before do
+      Thread.current[M::BaseNew::LOCK_TABLES_KEY] = {}
     end
 
     def find_by_uuid(model_class, uuid)
@@ -125,7 +127,7 @@ module Dcmgr::Endpoints::V1203
 
       if boom.kind_of?(E::APIError)
         @env['sinatra.error'] = boom
-        Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+        Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.nil? ? 'nil' : boom.backtrace.first})")
         error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
       else
         logger.error(boom)
@@ -151,7 +153,7 @@ module Dcmgr::Endpoints::V1203
 
     def select_index(model_class, data)
       if model_class.is_a?(Symbol)
-        model_class = M.const_get(model_class)
+        model_class = Dcmgr::Models.const_get(model_class)
       end
 
       start = data[:start].to_i
@@ -159,7 +161,7 @@ module Dcmgr::Endpoints::V1203
       limit = data[:limit].to_i
       limit = limit < 1 ? nil : limit
 
-      if [M::InstanceSpec.to_s].member?(model_class.to_s)
+      if %w(M::InstanceSpec).member?(model_class.to_s)
         total_ds = model_class.where(:account_id=>[@account.canonical_uuid,
                                                    M::Account::SystemAccount::SharedPoolAccount.uuid,
                                                   ])
@@ -167,10 +169,10 @@ module Dcmgr::Endpoints::V1203
         total_ds = model_class.where(:account_id=>@account.canonical_uuid)
       end
 
-      if [M::Instance.to_s, M::Volume.to_s, M::VolumeSnapshot.to_s].member?(model_class.to_s)
+      if [M::Instance, M::Volume, M::VolumeSnapshot].member?(model_class)
         total_ds = total_ds.alives_and_recent_termed
       end
-      if [M::Image.to_s].member?(model_class.to_s)
+      if %w(M::Image).member?(model_class.to_s)
         total_ds = total_ds.or(:is_public=>true)
       end
 
@@ -178,7 +180,7 @@ module Dcmgr::Endpoints::V1203
       partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
 
       results = partial_ds.all.map {|i|
-        if [M::Image.to_s].member?(model_class.to_s)
+        if [M::Image].member?(model_class)
           i.to_api_document(@account.canonical_uuid)
         else
           i.to_api_document
@@ -196,25 +198,16 @@ module Dcmgr::Endpoints::V1203
     def self.load_namespace(ns)
       super(ns, binding)
     end
-
-    # Endpoint to handle VM instance.
-    load_namespace('12.03/instances')
-
-    load_namespace('12.03/images')
-
-    load_namespace('12.03/host_nodes')
-
-    load_namespace('12.03/volumes')
-
-    load_namespace('12.03/volume_snapshots')
-
-    load_namespace('12.03/security_groups')
-
-    load_namespace('12.03/storage_nodes')
-
-    load_namespace('12.03/ssh_key_pairs')
-
-    load_namespace('12.03/networks')
     
+    load_namespace('11.12/instances')
+    load_namespace('11.12/images')
+    load_namespace('11.12/host_nodes')
+    load_namespace('11.12/volumes')
+    load_namespace('11.12/volume_snapshots')
+    load_namespace('11.12/security_groups')
+    load_namespace('11.12/storage_nodes')
+    load_namespace('11.12/ssh_key_pairs')
+    load_namespace('11.12/networks')
+    load_namespace('11.12/instance_specs')
   end
 end
