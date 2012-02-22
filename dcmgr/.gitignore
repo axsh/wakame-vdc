@@ -4,5 +4,5 @@
 config/*.conf
 
 # Bundler ignorance rules
-vendor/
+vendor/bundle/
 .bundle/
