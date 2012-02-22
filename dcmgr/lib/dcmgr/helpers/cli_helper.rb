@@ -3,7 +3,6 @@
 require 'eventmachine'
 require 'shellwords'
 raise "Shellword is old version." unless Shellwords.respond_to?(:shellescape)
-require 'open4'
 
 module Dcmgr
   module Helpers
@@ -55,28 +54,18 @@ module Dcmgr
       def sh(cmd, args=[], opts={})
         opts = opts.merge({:expect_exitcode=>0})
         cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a.to_s) })
-
-        outbuf = errbuf = ''
-        blk = proc {|pid, stdin, stdout, stderr|
-          stdin.close
-          outbuf = stdout.read
-          errbuf = stderr.read
-        }
-        stat = Open4::popen4(cmd, &blk)
-        if self.respond_to?(:logger)
-          logger.debug("Exec command (pid=#{stat.pid}): #{cmd}")
-          msg = "Command output:"
-          msg << "\nSTDOUT:\n#{outbuf.strip}" if outbuf && outbuf.strip.size > 0
-          msg << "\nSTDERR:\n#{errbuf.strip}" if errbuf && errbuf.strip.size > 0
-          logger.debug(msg)
-        end
+        
+        outbuf = `#{cmd}`
+        stat = $?
+        logger.debug("Exec command (pid=#{stat.pid}): #{cmd}")
+        msg = "Command output:"
+        msg << "\nSTDOUT:\n#{outbuf.strip}" if outbuf && outbuf.strip.size > 0
         if stat.exitstatus != opts[:expect_exitcode]
           raise CommandError.new("Unexpected exit code=#{stat.exitstatus} (expected=#{opts[:expect_exitcode]})", \
-            outbuf, errbuf)
+                                 outbuf, '')
         end
-        {:stdout => outbuf, :stderr => errbuf}
+        {:stdout => outbuf, :stderr => ''}
       end
     end
-
   end
 end
