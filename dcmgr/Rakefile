@@ -5,9 +5,10 @@ $:.unshift 'lib'
 require 'dcmgr/rubygems'
 
 require 'rake/clean'
-require 'dcmgr'
+CLOBBER.include("vendor/bundle/**/*", "*.gem")
 
 task :environment do
+  require 'dcmgr'
   Dcmgr.configure 'config/dcmgr.conf'
 end
 
@@ -46,6 +47,7 @@ desc 'build gem packages'
 task :gem do
   require 'rubygems'
   require 'rake/gempackagetask'
+  require 'dcmgr/version'
 
   spec = Gem::Specification.new do |s|
     s.platform = Gem::Platform::RUBY
