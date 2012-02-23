@@ -135,6 +135,16 @@ module Dcmgr
           datapath.add_flows flows        
         end
 
+        def add_gre_tunnel name, remote_ip
+          ovs_ofctl = datapath.ovs_ofctl
+          tunnel_name = "t-#{name}-#{id}"
+
+          command = "#{ovs_ofctl.ovs_vsctl} add-port #{ovs_ofctl.switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:key=#{id}"
+
+          logger.info "Adding GRE tunnel: '#{command}'."
+          system(command)
+        end
+
       end
 
     end

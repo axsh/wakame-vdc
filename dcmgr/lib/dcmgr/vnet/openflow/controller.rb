@@ -75,7 +75,7 @@ module Dcmgr
             @service_openflow.add_eth switch, port
           elsif port.port_info.name =~ /^vif-/
             @service_openflow.add_instance switch, port
-          elsif port.port_info.name =~ /^gre-/
+          elsif port.port_info.name =~ /^t-/
             @service_openflow.add_tunnel switch, port
           else
           end

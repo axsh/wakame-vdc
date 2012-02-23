@@ -7,6 +7,7 @@ module Dcmgr
       class OvsOfctl
         include Dcmgr::Logger
         attr_accessor :ovs_ofctl
+        attr_accessor :ovs_vsctl
         attr_accessor :verbose
         attr_accessor :switch_name
 

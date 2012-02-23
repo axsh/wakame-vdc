@@ -207,7 +207,8 @@ module Dcmgr
 
             return if port.network.nil?
 
-            if message.udp_src_port == 68 and message.udp_dst_port == 67
+            if (port.port_type == PORT_TYPE_INSTANCE_NET or port.port_type == PORT_TYPE_INSTANCE_VNET) and
+                message.udp_src_port == 68 and message.udp_dst_port == 67
               dhcp_in = DHCP::Message.from_udp_payload(message.udp_payload)
 
               logger.debug "DHCP: message:#{dhcp_in.to_s}."
