@@ -1,7 +1,6 @@
 dcmgr usr/share/axsh/wakame-vdc
 frontend usr/share/axsh/wakame-vdc
 tests/builder/* usr/share/axsh/wakame-vdc/tests/builder
-debian/bundler.gem usr/share/axsh/wakame-vdc
 debian/setup.sh usr/share/axsh/wakame-vdc
 debian/bridge_up.sh usr/share/axsh/wakame-vdc
 debian/cidr2mask.sh usr/share/axsh/wakame-vdc
@@ -28,4 +27,4 @@ debian/config/upstart/vdc-webui.conf /etc/init
 debian/config/upstart/wakame-vdc.conf /etc/init
 debian/config/upstart/wakame-setup.conf /etc/init
 debian/config/upstart/rabbitmq-server.conf /etc/init
-
+rbenv usr/share/axsh/wakame-vdc

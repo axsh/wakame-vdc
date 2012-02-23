@@ -9,6 +9,95 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-%:
-	dh $@
+#%:
+#	dh $@
 
+ruby_ver := 1.9.2-p290
+
+CFLAGS := -fno-strict-aliasing
+CXXFLAGS := -fno-strict-aliasing
+# configure options set by ruby-build
+CONFIGURE_OPTS := --disable-install-doc --enable-frame-address --enable-pthread --enable-ipv6 --with-bundled-sha1 --with-bundled-md5 --with-bundled-rmd160 --enable-rpath
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+        CFLAGS += -g -O0
+else
+        CFLAGS += -g -O2
+endif
+export CFLAGS CXXFLAGS CONFIGURE_OPTS
+
+RBENV_ROOT := $(CURDIR)/rbenv
+PATH := $(RBENV_ROOT)/bin:$(RBENV_ROOT)/shims:${PATH}
+export RBENV_ROOT PATH
+
+# unset GEM_HOME and GEM_PATH
+unexport GEM_HOME GEM_PATH
+
+build: build-stamp
+
+build-stamp:
+	dh_testdir
+	git clone git://github.com/sstephenson/rbenv.git
+	rm -rf rbenv/.git
+	mkdir -p rbenv/plugins
+	(cd rbenv/plugins; git clone https://github.com/sstephenson/ruby-build.git; rm -rf ruby-build/.git)
+	rbenv init - > /dev/null
+	rbenv install $(ruby_ver)
+	gem install bundler rake --no-rdoc --no-ri
+	rbenv rehash
+	(cd $(CURDIR)/dcmgr && bundle install --path vendor/bundle)
+	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --path vendor/bundle)
+	touch $@
+clean:
+	dh_testdir
+	#dh_testroot
+	dh_prep
+	dh_clean
+	if which rbenv; then \
+	  (cd $(CURDIR)/dcmgr/ && rbenv exec rake clobber) ;\
+	  (cd $(CURDIR)/frontend/dcmgr_gui/ && rbenv exec rake clobber) ;\
+	fi
+	rm -rf ruby-build rbenv
+
+install: build
+	dh_testdir
+	dh_testroot
+	#dh_clean
+	dh_installdirs
+	dh_install
+	# force to rewrite path info in text files.
+	fgrep -m 1 -r $(CURDIR) $(CURDIR)/debian/wakame-vdc | \
+	  grep -v '^Binary file' | \
+	  awk -F: '{print $$1}' | \
+	  while read -r i; do \
+	    echo $$i; \
+	    sed -e 's|$(CURDIR)|/usr/share/axsh/wakame-vdc|g' < $$i > $$i.sed ;\
+	    mv $$i.sed $$i ;\
+	  done
+	# overwrite RPATH in binaries.
+	find $(CURDIR)/debian/wakame-vdc/ -executable -type f | \
+	  while read -r i; do \
+	    # chrpath exits non-zero value if fails to replace RPATH. it can be ignored.
+	    (file -b "$$i" | grep -q '^ELF ' > /dev/null) && chrpath --replace /usr/share/axsh/wakame-vdc/rbenv/versions/$(ruby_ver)/lib "$$i" || : ;\
+	  done
+
+binary-indep: build install
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	#dh_installinit --no-start -u"start 89 2 3 4 5 . stop 11 1 ."
+	dh_link
+	#dh_strip
+	dh_compress
+	dh_fixperms
+	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install
