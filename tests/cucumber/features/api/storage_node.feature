@@ -7,17 +7,17 @@ Feature: Storage Node API
       | a-shpoolxx  | sn-test1 | sta.test1 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
     Then the previous api call should be successful
       And from the previous api call take {"uuid":} and save it to <registry:uuid>
-      And the previous api call should have {"uuid":} equal to sn-test1
+      And the previous api call should have {"uuid":} equal to "sn-test1"
 
     When we make an api get call to storage_nodes/sn-test1 with no options
     Then the previous api call should be successful
-      And the previous api call should have {"uuid":} equal to sn-test1
-      And the previous api call should have {"node_id":} equal to sta.test1
-      And the previous api call should have {"export_path":} equal to /home/export
-      And the previous api call should have {"transport_type":} equal to iscsi
-      And the previous api call should have {"storage_type":} equal to raw
-      And the previous api call should have {"ipaddr":} equal to 192.168.0.1
-      And the previous api call should have {"snapshot_base_path":} equal to /home/snapshot
+      And the previous api call should have {"uuid":} equal to "sn-test1"
+      And the previous api call should have {"node_id":} equal to "sta.test1"
+      And the previous api call should have {"export_path":} equal to "/home/export"
+      And the previous api call should have {"transport_type":} equal to "iscsi"
+      And the previous api call should have {"storage_type":} equal to "raw"
+      And the previous api call should have {"ipaddr":} equal to "192.168.0.1"
+      And the previous api call should have {"snapshot_base_path":} equal to "/home/snapshot"
       And the previous api call should have {"offering_disk_space":} equal to 10000
 
     When we make an api delete call to storage_nodes/sn-test1 with no options
@@ -37,7 +37,7 @@ Feature: Storage Node API
 
     When we make an api get call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
-      And the previous api call should have {"node_id":} equal to sta.unknown
+      And the previous api call should have {"node_id":} equal to "sta.unknown"
 
     When we make an api delete call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
@@ -61,7 +61,7 @@ Feature: Storage Node API
 
     When we make an api get call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
-      And the previous api call should have {"node_id":} equal to sta.unknown1
+      And the previous api call should have {"node_id":} equal to "sta.unknown1"
 
     When we make an api delete call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
