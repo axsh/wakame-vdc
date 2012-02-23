@@ -97,6 +97,7 @@ Feature: Network API
     # Retrieve reserved IP addresses
 
 
+  @api_until_v11.12
   Scenario: Pool lifecycle for a network
     Given a new network with its uuid in <registry:uuid>
     

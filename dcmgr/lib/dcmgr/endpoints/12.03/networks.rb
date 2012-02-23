@@ -73,4 +73,145 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     }
     response_to({})
   end
+
+  get '/:id/ports' do
+    # description 'List ports on this network'
+    # params start, fixnum, optional
+    # params limit, fixnum, optional
+    nw = find_by_uuid(:Network, params[:id])
+    examine_owner(nw) || raise(OperationNotPermitted)
+
+    result = []
+    nw.network_port.each { |port|
+      result << port.to_api_document.merge(:network_id => nw.canonical_uuid)
+    }
+
+    response_to(result)
+  end
+
+  get '/:id/ports/:port_id' do
+    description "Retrieve details about a port"
+    # params id, string, required
+    # params port_id, string, required
+    port = find_by_uuid(:NetworkPort, params[:id])
+    # Find a better way to convert to canonical network uuid.
+    nw = find_by_uuid(:Network, port[:network_id])
+
+    response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
+  end
+
+  # Use post instead...
+  put '/:id/ports/new' do
+    # description "Create new network port"
+    # params id, string, required
+    nw = find_by_uuid(:Network, params[:id])
+    examine_owner(nw) || raise(OperationNotPermitted)
+
+    savedata = {
+      :network_id => nw.id
+    }
+    port = Models::NetworkPort.create(savedata)
+
+    response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
+  end
+
+  delete '/:id/ports/:port_id' do
+    # description 'Delete a port on this network'
+    # params id, string, required
+    # params port_id, string, required
+    Models::NetworkPort.lock!
+    nw = find_by_uuid(:Network, params[:id])
+    examine_owner(nw) || raise(OperationNotPermitted)
+
+    port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
+    raise(UnknownNetworkPort) if port.nil?
+
+    port.destroy
+    response_to({})
+  end
+
+  put '/:id/ports/:port_id/attach' do
+    # description 'Attach a vif to this port'
+    # params id, string, required
+    # params port_id, string, required
+    # params attachment_id, string, required
+    result = []
+
+    Models::NetworkPort.lock!
+    port = find_by_uuid(:NetworkPort, params[:id])
+    raise(NetworkPortAlreadyAttached) unless port.instance_nic.nil?
+
+    nic = find_by_uuid(:InstanceNic, params[:attachment_id])
+    raise(NetworkPortNicNotFound) if nic.nil?
+
+    nw = find_by_uuid(:Network, port[:network_id])
+    examine_owner(nw) || raise(OperationNotPermitted)
+
+    # Verify that the vif belongs to network?
+    instance = nic.instance
+
+    # Find better way of figuring out when an instance is not running.
+    if not instance.host_node.nil?
+      res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
+                                   nic.canonical_uuid, port.canonical_uuid)
+    end
+
+    port.instance_nic = nic
+    port.save_changes
+
+    response_to({})
+  end
+
+  put '/:id/ports/:port_id/detach' do
+    # description 'Detach a vif to this port'
+    # params id, string, required
+    # params port_id, string, required
+    Models::NetworkPort.lock!
+    port = find_by_uuid(:NetworkPort, params[:id])
+    raise(NetworkPortNotAttached) if port.instance_nic.nil?
+
+    nic = port.instance_nic
+    instance = nic.instance
+
+    # Find better way of figuring out when an instance is not running.
+    if not instance.host_node.nil?
+      res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
+                                   nic.canonical_uuid, port.canonical_uuid)
+    end
+
+    port.instance_nic = nil
+    port.save_changes
+    response_to({})
+  end
+
+  # # Make GRE tunnels, currently used for testing purposes.
+  # post '/:id/tunnels' do
+  #   # description 'Create a tunnel on this network'
+  #   # params id required
+  #   # params dest_id required
+  #   # params dest_ip required
+  #   # params tunnel_id required
+  #   nw = find_by_uuid(:Network, params[:id])
+  #   examine_owner(nw) || raise(OperationNotPermitted)
+
+  #   tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
+  #   command = "/usr/share/axsh/wakame-vdc/ovs/bin/ovs-vsctl add-port br0 #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{params[:dest_ip]} options:key=#{params[:tunnel_id]}"
+
+  #   system(command)
+  #   response_to({})
+  # end
+
+  # delete '/:id/tunnels/:tunnel_id' do
+  #   # description 'Destroy a tunnel on this network'
+  #   # params :id required
+  #   # params :tunnel_id required
+  #   nw = find_by_uuid(:Network, params[:id])
+  #   examine_owner(nw) || raise(OperationNotPermitted)
+
+  #   tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
+
+  #   system("/usr/share/axsh/wakame-vdc/ovs/bin/ovs-vsctl del-port br0 #{tunnel_name}")
+  #   response_to({})
+  # end
+
 end

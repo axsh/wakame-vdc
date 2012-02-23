@@ -27,17 +27,25 @@ Given /^a new network with its uuid in <(.+)>$/ do |reg|
   @networks_created << @registry[reg]
 end
 
-Given /^a new port in (.+) with its uuid in <(.+)>$/ do |network, reg|
+Given /^a new port in (.+) with its uuid in <(.+)>$/ do |arg_1,reg|
+  network = variable_get_value(arg_1)
+
+  # steps %Q{
+  #   When we make an api post call to networks/#{network}/ports with no options
+  #     Then the previous api call should be successful
+  #     And from the previous api call take {"uuid":} and save it to <#{reg}>
+  # }
+
   steps %Q{
-    When we make an api put call to networks/#{network}/add_port with no options
+    When we make an api put call to networks/#{network}/ports/new with no options
       Then the previous api call should be successful
       And from the previous api call take {"uuid":} and save it to <#{reg}>
   }
-
-  # @networks_created << @registry[reg]
 end
 
-Given /^the instance (.+) is connected to the network (.+) with the nic stored in <(.+)>$/ do |instance,network,reg|
+Given /^the instance (.+) is connected to the network (.+) with the nic stored in <(.+)>$/ do |arg_1,network,reg|
+  instance = variable_get_value(arg_1)
+
   steps %Q{
     When we make an api get call to instances/#{instance} with no options
       Then the previous api call should be successful
@@ -47,18 +55,24 @@ Given /^the instance (.+) is connected to the network (.+) with the nic stored i
   }
 end
 
-When /^we attach to network port (.+) the attachment (.+)$/ do |port,attachment|
+When /^we attach to network (.+) port (.+) the attachment (.+)$/ do |arg_1,arg_2,attachment|
+  network = variable_get_value(arg_1)
+  port = variable_get_value(arg_2)
+
   steps %Q{
-    When we make an api put call to ports/#{port}/attach with the following options
+    When we make an api put call to networks/#{network}/ports/#{port}/attach with the following options
       | attachment_id |
       | #{attachment} |
       Then the previous api call should be successful
   }
 end
 
-When /^we detach from network port (.+) its current attachment$/ do |port|
+When /^we detach from network (.+) port (.+) its current attachment$/ do |arg_1,arg_2|
+  network = variable_get_value(arg_1)
+  port = variable_get_value(arg_2)
+
   steps %Q{
-    When we make an api put call to ports/#{port}/detach with no options
+    When we make an api put call to networks/#{network}/ports/#{port}/detach with no options
       Then the previous api call should be successful
   }
 end
