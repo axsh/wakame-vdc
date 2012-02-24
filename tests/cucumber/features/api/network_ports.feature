@@ -10,7 +10,7 @@ Feature: Network Ports API
       And the previous api call should have [] with a size of 0
 
     # When we make an api post call to networks/<network_uuid>/ports with no options
-    When we make an api put call to networks/<network_uuid>/ports/new with no options
+    When we make an api post call to networks/<network_uuid>/ports with no options
       Then the previous api call should be successful
       # Check returned values
       And from the previous api call take {"uuid":} and save it to <port_uuid>
@@ -32,7 +32,7 @@ Feature: Network Ports API
     Given a new network with its uuid in <network_uuid>
     
     # When we make an api post call to networks/<network_uuid>/ports with no options
-    When we make an api put call to networks/<network_uuid>/ports/new with no options
+    When we make an api post call to networks/<network_uuid>/ports with no options
       Then the previous api call should be successful
       And from the previous api call take {"uuid":} and save it to <port_uuid>
       And the previous api call should have {"network_id":} equal to <network_uuid>

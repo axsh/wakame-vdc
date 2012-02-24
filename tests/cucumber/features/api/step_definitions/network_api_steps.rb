@@ -37,7 +37,7 @@ Given /^a new port in (.+) with its uuid in <(.+)>$/ do |arg_1,reg|
   # }
 
   steps %Q{
-    When we make an api put call to networks/#{network}/ports/new with no options
+    When we make an api post call to networks/#{network}/ports with no options
       Then the previous api call should be successful
       And from the previous api call take {"uuid":} and save it to <#{reg}>
   }

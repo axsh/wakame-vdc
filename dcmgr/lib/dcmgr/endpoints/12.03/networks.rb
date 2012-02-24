@@ -5,7 +5,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # description "List networks in account"
     # params start, fixnum, optional
     # params limit, fixnum, optional
-    res = select_index(:Network, {:start => params[:start],
+    res = select_index(M::Network, {:start => params[:start],
                          :limit => params[:limit]})
     response_to(res)
   end
@@ -13,7 +13,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   get '/:id' do
     # description "Retrieve details about a network"
     # params :id required
-    nw = find_by_uuid(:Network, params[:id])
+    nw = find_by_uuid(M::Network, params[:id])
     examine_owner(nw) || raise(E::OperationNotPermitted)
 
     response_to(nw.to_api_document)
@@ -41,7 +41,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   delete '/:id' do
     # description "Remove network information"
     # params :id required
-    nw = find_by_uuid(:Network, params[:id])
+    nw = find_by_uuid(M::Network, params[:id])
     examine_owner(nw) || raise(E::OperationNotPermitted)
     nw.destroy
 
@@ -52,7 +52,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # description 'Register reserved IP address to the network'
     # params id, string, required
     # params ipaddr, [String,Array], required
-    nw = find_by_uuid(:Network, params[:id])
+    nw = find_by_uuid(M::Network, params[:id])
     examine_owner(nw) || raise(E::OperationNotPermitted)
 
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
@@ -65,7 +65,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # description 'Unregister reserved IP address from the network'
     # params id, string, required
     # params ipaddr, [String,Array], required
-    nw = find_by_uuid(:Network, params[:id])
+    nw = find_by_uuid(M::Network, params[:id])
     examine_owner(nw) || raise(E::OperationNotPermitted)
     
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
@@ -78,7 +78,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # description 'List ports on this network'
     # params start, fixnum, optional
     # params limit, fixnum, optional
-    nw = find_by_uuid(:Network, params[:id])
+    nw = find_by_uuid(M::Network, params[:id])
     examine_owner(nw) || raise(OperationNotPermitted)
 
     result = []
@@ -90,27 +90,29 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   end
 
   get '/:id/ports/:port_id' do
-    description "Retrieve details about a port"
+    # description "Retrieve details about a port"
     # params id, string, required
     # params port_id, string, required
-    port = find_by_uuid(:NetworkPort, params[:id])
+
     # Find a better way to convert to canonical network uuid.
-    nw = find_by_uuid(:Network, port[:network_id])
+    port = find_by_uuid(M::NetworkPort, params[:port_id])
+    nw = find_by_uuid(M::Network, params[:id])
+ 
+    # Compare nw.id and port.network_id.
 
     response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
   end
 
-  # Use post instead...
-  put '/:id/ports/new' do
+  post '/:id/ports' do
     # description "Create new network port"
     # params id, string, required
-    nw = find_by_uuid(:Network, params[:id])
+    nw = find_by_uuid(M::Network, params[:id])
     examine_owner(nw) || raise(OperationNotPermitted)
 
     savedata = {
       :network_id => nw.id
     }
-    port = Models::NetworkPort.create(savedata)
+    port = M::NetworkPort.create(savedata)
 
     response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
   end
@@ -119,8 +121,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # description 'Delete a port on this network'
     # params id, string, required
     # params port_id, string, required
-    Models::NetworkPort.lock!
-    nw = find_by_uuid(:Network, params[:id])
+    M::NetworkPort.lock!
+    nw = find_by_uuid(M::Network, params[:id])
     examine_owner(nw) || raise(OperationNotPermitted)
 
     port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
@@ -137,17 +139,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params attachment_id, string, required
     result = []
 
-    Models::NetworkPort.lock!
-    port = find_by_uuid(:NetworkPort, params[:id])
+    M::NetworkPort.lock!
+    port = find_by_uuid(M::NetworkPort, params[:port_id])
     raise(NetworkPortAlreadyAttached) unless port.instance_nic.nil?
 
-    nic = find_by_uuid(:InstanceNic, params[:attachment_id])
+    nic = find_by_uuid(M::InstanceNic, params[:attachment_id])
     raise(NetworkPortNicNotFound) if nic.nil?
 
-    nw = find_by_uuid(:Network, port[:network_id])
+    nw = find_by_uuid(M::Network, params[:id])
     examine_owner(nw) || raise(OperationNotPermitted)
 
-    # Verify that the vif belongs to network?
+    # Check that the vif belongs to network?
+
     instance = nic.instance
 
     # Find better way of figuring out when an instance is not running.
@@ -166,8 +169,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # description 'Detach a vif to this port'
     # params id, string, required
     # params port_id, string, required
-    Models::NetworkPort.lock!
-    port = find_by_uuid(:NetworkPort, params[:id])
+    M::NetworkPort.lock!
+    port = find_by_uuid(M::NetworkPort, params[:port_id])
+
+    # Verify the network id.
     raise(NetworkPortNotAttached) if port.instance_nic.nil?
 
     nic = port.instance_nic
@@ -191,7 +196,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   #   # params dest_id required
   #   # params dest_ip required
   #   # params tunnel_id required
-  #   nw = find_by_uuid(:Network, params[:id])
+  #   nw = find_by_uuid(M::Network, params[:id])
   #   examine_owner(nw) || raise(OperationNotPermitted)
 
   #   tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
@@ -205,7 +210,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   #   # description 'Destroy a tunnel on this network'
   #   # params :id required
   #   # params :tunnel_id required
-  #   nw = find_by_uuid(:Network, params[:id])
+  #   nw = find_by_uuid(M::Network, params[:id])
   #   examine_owner(nw) || raise(OperationNotPermitted)
 
   #   tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
