@@ -75,12 +75,6 @@ install: build
 	    sed -e 's|$(CURDIR)|/usr/share/axsh/wakame-vdc|g' < $$i > $$i.sed ;\
 	    mv $$i.sed $$i ;\
 	  done
-	# overwrite RPATH in binaries.
-	find $(CURDIR)/debian/wakame-vdc/ -executable -type f | \
-	  while read -r i; do \
-	    # chrpath exits non-zero value if fails to replace RPATH. it can be ignored.
-	    (file -b "$$i" | grep -q '^ELF ' > /dev/null) && chrpath --replace /usr/share/axsh/wakame-vdc/rbenv/versions/$(ruby_ver)/lib "$$i" || : ;\
-	  done
 
 binary-indep: build install
 
@@ -96,7 +90,13 @@ binary-arch: build install
 	dh_fixperms
 	dh_makeshlibs
 	dh_installdeb
-	dh_shlibdeps
+	dh_shlibdeps -Xpsych.so
+	# overwrite RPATH in binaries.
+	# chrpath exits non-zero value if fails to replace RPATH. it can be ignored.
+	find $(CURDIR)/debian/wakame-vdc/ -type f -name "*.so" | \
+	  while read -r i; do \
+	    (file -b "$$i" | grep -q '^ELF ' > /dev/null) && chrpath --replace /usr/share/axsh/wakame-vdc/rbenv/versions/$(ruby_ver)/lib "$$i" || : ;\
+	  done
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
