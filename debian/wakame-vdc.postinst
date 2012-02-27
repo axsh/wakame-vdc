@@ -19,6 +19,11 @@ fi
   update-rc.d -f nginx remove
 }
 
+# stop dnsmasq
+[ -f /etc/init.d/dnsmasq ] && {
+  update-rc.d -f dnsmasq remove
+}
+
 [ -d /var/log/wakame-vdc ] || mkdir -p /var/log/wakame-vdc
 
 exit 0
