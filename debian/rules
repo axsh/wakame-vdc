@@ -78,7 +78,8 @@ binary-arch: build install
 	dh_testroot
 	dh_installchangelogs
 	dh_installdocs
-	#dh_installinit --no-start -u"start 89 2 3 4 5 . stop 11 1 ."
+	# just for intsall *.default files.
+	dh_installinit --no-start --no-restart-on-upgrade
 	dh_link
 	#dh_strip
 	dh_compress

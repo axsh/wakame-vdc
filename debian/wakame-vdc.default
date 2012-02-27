@@ -1,0 +1,3 @@
+
+PATH="/usr/share/axsh/wakame-vdc/ruby/bin:$PATH"
+export PATH
