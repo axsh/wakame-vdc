@@ -20,8 +20,10 @@ CXXFLAGS := -fno-strict-aliasing
 CONFIGURE_OPTS := --disable-install-doc --enable-frame-address --enable-pthread --enable-ipv6 --with-bundled-sha1 --with-bundled-md5 --with-bundled-rmd160 --enable-rpath
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
         CFLAGS += -g -O0
+	CXXFLAGS += -g -O0
 else
-        CFLAGS += -g -O2
+        CFLAGS += -g -O0
+	CXXFLAGS += -g -O0
 endif
 export CFLAGS CXXFLAGS CONFIGURE_OPTS
 
