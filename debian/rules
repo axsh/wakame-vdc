@@ -66,6 +66,7 @@ install: build
 	  awk -F: '{print $$1}' | \
 	  while read -r i; do \
 	    echo $$i; \
+	    cp -p $$i $$i.sed ;\
 	    sed -e 's|$(CURDIR)|/usr/share/axsh/wakame-vdc|g' < $$i > $$i.sed ;\
 	    mv $$i.sed $$i ;\
 	  done
