@@ -1,0 +1,14 @@
+debian/config/dcmgr.conf usr/share/axsh/wakame-vdc/dcmgr/config
+debian/config/proxy.conf usr/share/axsh/wakame-vdc/dcmgr/config
+debian/config/snapshot_repository.yml usr/share/axsh/wakame-vdc/dcmgr/config
+debian/config/dcmgr_gui.yml usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/config
+debian/config/database.yml usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/config
+debian/config/upstart/vdc-dcmgr.conf /etc/init
+debian/config/upstart/vdc-auth.conf /etc/init
+debian/config/upstart/vdc-collector.conf /etc/init
+debian/config/upstart/vdc-metadata.conf /etc/init
+debian/config/upstart/vdc-nsa.conf /etc/init
+debian/config/upstart/vdc-proxy.conf /etc/init
+debian/config/upstart/vdc-webui.conf /etc/init
+debian/config/upstart/wakame-vdc.conf /etc/init
+debian/config/upstart/rabbitmq-server.conf /etc/init
