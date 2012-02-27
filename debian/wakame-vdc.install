@@ -27,4 +27,4 @@ debian/config/upstart/vdc-webui.conf /etc/init
 debian/config/upstart/wakame-vdc.conf /etc/init
 debian/config/upstart/wakame-setup.conf /etc/init
 debian/config/upstart/rabbitmq-server.conf /etc/init
-rbenv usr/share/axsh/wakame-vdc
+ruby usr/share/axsh/wakame-vdc
