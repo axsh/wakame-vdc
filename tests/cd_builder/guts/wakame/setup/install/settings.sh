@@ -13,26 +13,6 @@ log_file=${prefix_path}/installer.log
 #Setup bridged networking
 ${prefix_path}/bridge_up.sh
 
-#Set proper kernel network settings
-cd /etc
-[ -f sysctl.conf ] && {
-  cp -p sysctl.conf sysctl.conf.`date +%Y%m%d-%H%M%S`
-}
-echo "# common nat
-net.ipv4.ip_forward=1
-net.ipv4.conf.default.rp_filter=0
-net.ipv4.ip_dynaddr=0
-net.ipv4.tcp_syncookies=0
-net.ipv4.icmp_echo_ignore_broadcasts=0
-net.ipv4.icmp_ignore_bogus_error_responses=0
-
-# any nics
-net.ipv4.conf.all.forwarding=1
-net.ipv4.conf.default.forwarding=1
-
-# conntrack
-net.netfilter.nf_conntrack_acct=1" > sysctl.conf
-
 # Copy images
 [ -d ${prefix_path}/tmp ] || mkdir -p ${prefix_path}/tmp
 [ -d ${prefix_path}/tmp/images ] || mkdir -p ${prefix_path}/tmp/images
