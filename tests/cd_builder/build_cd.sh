@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Get options
 FLAG_WITHOUT_GPG_SIGN=false
 while true; do
