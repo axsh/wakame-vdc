@@ -106,7 +106,7 @@ module Dcmgr
                               :in_port => port, :arp => nil,
                               :dl_dst => local_hw, :nw_dst => Isono::Util.default_gw_ipaddr,
                               :nw_src => metadata_server_ip.to_s},
-                            {:controller => nil})]
+                            {:controller => nil, :local => nil})]
 
           datapath.add_flows flows        
           datapath.send_arp(port, Racket::L3::ARP::ARPOP_REQUEST,
