@@ -34,12 +34,9 @@ d-i apt-setup/extras boolean true
 d-i	rabbitmq-server/upgrade_previous	note	
 
 #Install the wakame-stuff
-#d-i     pkgsel/include curl rubygems1.8 dnsmasq ebtables iptables kvm-pxe libcurl4-openssl-dev libmysqlclient16-dev libxml2-dev libxslt1-dev nginx ruby-dev ubuntu-vm-builder
-#d-i	pkgsel/include libssl-dev libidn11-dev libkrb5-dev hurd libldap2-dev libmysqlclient-dev 2.7.6.dfsg-1ubuntu1.2 python-vm-builder libnewt0.52 ext2-module
-#d-i     pkgsel/include dialog curl rubygems1.8 dnsmasq ebtables iptables kvm-pxe libcurl4-openssl-dev libmysqlclient16-dev libxml2-dev libxslt1-dev nginx ruby-dev ubuntu-vm-builder wakame-vdc
-#d-i     pkgsel/include wakame-vdc
+#d-i     pkgsel/include wakame-vdc wakame-vdc-dvd-config
 #d-i	pkgsel/include python-cheetah pkg-config krb5-multidev
-d-i     pkgsel/include python-cheetah pkg-config krb5-multidev curl rubygems1.8 dnsmasq ebtables iptables kvm-pxe libcurl4-openssl-dev libmysqlclient16-dev libxml2-dev libxslt1-dev nginx ruby-dev ubuntu-vm-builder wakame-vdc libssl-dev libidn11-dev libkrb5-dev libldap2-dev libmysqlclient-dev python-vm-builder debootstrap
+d-i     pkgsel/include python-cheetah pkg-config krb5-multidev curl dnsmasq ebtables iptables kvm-pxe libcurl4-openssl-dev libmysqlclient16-dev libxml2-dev libxslt1-dev nginx ubuntu-vm-builder wakame-vdc libssl-dev libidn11-dev libkrb5-dev libldap2-dev libmysqlclient-dev python-vm-builder debootstrap wakame-vdc-dvd-config
 
 #Setup wakame
 d-i preseed/late_command string chroot /target bash /cdrom/setup/install/settings.sh

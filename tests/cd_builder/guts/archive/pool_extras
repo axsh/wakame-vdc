@@ -28,9 +28,6 @@ nginx_0.7.65-1ubuntu2.1_amd64.deb
 pkg-config_0.22-1build2_amd64.deb
 python-cheetah_2.0.1-2ubuntu7_amd64.deb
 python-vm-builder_0.12.4-0ubuntu0.2_all.deb
-ruby-dev_4.2_all.deb
-ruby1.8-dev_1.8.7.249-2_amd64.deb
-rubygems1.8_1.3.7-3_all.deb
 tgt_1.0.17-1ubuntu1_amd64.deb
 ubuntu-vm-builder_0.12.4-0ubuntu0.2_all.deb
 zlib1g-dev_1.2.3.3.dfsg-15ubuntu1_amd64.deb
