@@ -48,11 +48,9 @@ clean:
 	#dh_testroot
 	dh_prep
 	dh_clean
-	if which rake; then \
-	  (cd $(CURDIR)/dcmgr/ && rake clobber) ;\
-	  (cd $(CURDIR)/frontend/dcmgr_gui/ && rake clobber) ;\
-	fi
-	rm -rf ruby-build
+	(cd $(CURDIR)/dcmgr/ && rm -rf vendor/bundle)
+	(cd $(CURDIR)/frontend/dcmgr_gui/ && rm -rf vendor/bundle)
+	rm -rf $(CURDIR)/ruby-build $(CURDIR)/ruby
 
 install: build
 	dh_testdir
