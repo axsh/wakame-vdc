@@ -169,8 +169,14 @@ function run {
 # retry 3 /bin/ls
 # echo "ls / " | retry 3
 function retry {
+  local sleep_time=1
   local retry_max="$1"
   shift
+
+  if [[ $1 =~ ^[0-9]+$  ]]; then
+    sleep_time=$1
+    shift
+  fi
 
   typeset cmdlst="" i
   if [[ -t 0 ]]; then
@@ -187,8 +193,8 @@ function retry {
     lastret="$?"
     [[ $lastret -eq 0 ]] && break
     count=$(($count - 1))
-    echo "retry hold [$(($retry_max - $count))/${retry_max}]...."
-    /bin/sleep 1
+    echo "retry hold [$(($retry_max - $count))/${retry_max}] sleep:[${sleep_time}]...."
+    /bin/sleep $sleep_time
   done
 
   [[ ( $count -eq 0 ) && ( $lastret -ne 0 ) ]] && {
@@ -636,7 +642,8 @@ function ci_post_process {
 
 }
 
-function run_multiple() {
+#TODO: get better function names
+function run_virtual() {
   # forece reset and restart rabbitmq
   /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
   [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
@@ -650,6 +657,11 @@ function run_multiple() {
 
   for h in ${host_nodes}; do
       [ "${h}" = "${ipaddr}" ] || {
+    #echo ${prefix_path}
+    #echo ${ipaddr}
+    #echo ${h}
+    echo "[ -d ${prefix_path} ] || mkdir -p ${prefix_path}"
+    echo "rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}"
 	  cat <<EOF | ssh ${h}
 [ -d ${prefix_path} ] || mkdir -p ${prefix_path}
 rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}
@@ -659,7 +671,7 @@ EOF
 
   for s in ${storage_nodes}; do
       [ "${s}" = "${ipaddr}" ] || {
-      cat <<EOF | ssh ${s}
+      cat <<EOF | ${s}
 [ -d ${prefix_path} ] || mkdir -p ${prefix_path}
 rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}
 EOF
@@ -679,7 +691,7 @@ EOF
         [ "${h}" = "${ipaddr}" ] && {
             screen_it hva.${hvaname} "cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} 2>&1 | tee ${tmp_path}/vdc-hva.log"
         } || {
-            screen_it hva.${hvaname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh ${h}"
+            screen_it hva.${hvaname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh ssh -o 'StrictHostKeyChecking no' ${h}"
         }
     done
 
@@ -700,6 +712,88 @@ EOF
   }
 }
 
+function run_multiple() {
+  # forece reset and restart rabbitmq
+  /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
+  [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
+  /etc/init.d/rabbitmq-server start
+
+  [[ -x /etc/init.d/tgt ]] && { initctl restart tgt; }
+
+  demo_resource="92_generate-demo-resource.sh"
+  init_db
+  sleep 1
+
+  for h in ${host_nodes}; do
+      [ "${h}" = "${ipaddr}" ] || {
+    #echo ${prefix_path}
+    #echo ${ipaddr}
+    #echo ${h}
+    echo "[ -d ${prefix_path} ] || mkdir -p ${prefix_path}"
+    echo "rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}"
+	  cat <<EOF | ssh ${h}
+[ -d ${prefix_path} ] || mkdir -p ${prefix_path}
+rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}
+EOF
+      }
+  done
+
+  for s in ${storage_nodes}; do
+      [ "${s}" = "${ipaddr}" ] || {
+      cat <<EOF | ${s}
+[ -d ${prefix_path} ] || mkdir -p ${prefix_path}
+rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}
+EOF
+      }
+  done
+
+  # screen
+  cd ${prefix_path}
+
+  [ -z "${without_screen}" ] && {
+    screen_open || abort "Failed to start new screen session"
+    screen_it collector "cd ${prefix_path}/dcmgr/ && ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
+    screen_it nsa       "cd ${prefix_path}/dcmgr/ && ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
+
+    for h in ${host_nodes}; do
+        hvaname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
+        [ "${h}" = "${ipaddr}" ] && {
+            screen_it hva.${hvaname} "cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} 2>&1 | tee ${tmp_path}/vdc-hva.log"
+        } || {
+            screen_it hva.${hvaname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh ssh -o 'StrictHostKeyChecking no' ${h}"
+        }
+    done
+
+    screen_it metadata  "cd ${prefix_path}/dcmgr/web/metadata && bundle exec rackup -p ${metadata_port} -o ${metadata_bind:-127.0.0.1} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
+    screen_it api       "cd ${prefix_path}/dcmgr/web/api      && bundle exec rackup -p ${api_port}      -o ${api_bind:-127.0.0.1}      ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
+    screen_it auth      "cd ${prefix_path}/frontend/dcmgr_gui && bundle exec rackup -p ${auth_port}     -o ${auth_bind:-127.0.0.1}     ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
+    screen_it proxy     "${builder_path}/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${builder_path}/conf/proxy.conf"
+    screen_it webui     "cd ${prefix_path}/frontend/dcmgr_gui/config && bundle exec rackup -p ${webui_port} -o ${webui_bind:-0.0.0.0} ../config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
+
+    for s in ${storage_nodes}; do
+        staname=demo$(echo ${s} | sed -e 's/\./ /g' | awk '{print $4}')
+        [ "${s}" = "${ipaddr}" ] && {
+            screen_it sta.${staname} "cd ${prefix_path}/dcmgr/ && ./bin/sta -i ${staname} 2>&1 | tee ${tmp_path}/vdc-sta.log"
+        } || {
+            screen_it sta.${staname} "echo \"cd ${prefix_path}/dcmgr/ && ./bin/sta -i ${staname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-sta.log\" | ssh ${s}"
+        }
+    done
+  }
+}
+
+function check_ready_virtual() {
+  retry 10 <<'EOF' || abort "Can't see dcmgr"
+echo > "/dev/tcp/${api_bind}/${api_port}"
+EOF
+  retry 10 <<'EOF' || abort "Can't see nginx"
+echo > "/dev/tcp/localhost/8080"
+EOF
+
+  retry 10 <<'EOF' || abort "Failed to start all virtual HVAs"
+
+EOF
+}
+
 function check_ready_multiple {
   retry 10 <<'EOF' || abort "Can't see dcmgr"
 echo > "/dev/tcp/${api_bind}/${api_port}"
@@ -712,6 +806,7 @@ EOF
   node_num=2
   for i in ${host_nodes}; do node_num=`expr ${node_num} + 1`; done
   for i in ${storage_nodes}; do node_num=`expr ${node_num} + 1`; done
+  
   retry 10 <<'EOF' || abort "Offline nodes still exist."
 sleep 5
 [ ${node_num} -eq "`echo "select state from node_states where state='online'" | mysql -uroot wakame_dcmgr | wc -l`" ]

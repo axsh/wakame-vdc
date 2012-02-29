@@ -1,0 +1,12 @@
+#Network configuration
+vhva_netmask="255.255.255.0"
+vhva_gateway="192.168.2.1"
+vhva_dns="192.168.2.1"
+vhva_network="192.168.2.0"
+vhva_broadcast="192.168.2.255"
+
+#Virtual hva host ips
+host_nodes="192.168.2.98 192.168.2.99"
+
+#Virtual hva memory size
+vhva_memory_size=1024
