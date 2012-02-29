@@ -49,12 +49,12 @@ fi
 declare -A requirements=( ["perl"]="perl" ["debuild"]="devscripts" ["dh_clean"]="debhelper" ["mkisofs"]="genisoimage" ["rsync"]="rsync" )
 
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
-tmp_dir="/var/tmp"
+tmp_dir="${root_dir}/workdir"
 wakame_dir="${root_dir}/../.."
-cd_dir="${root_dir}/guts/$(randdir)"
+cd_dir="${tmp_dir}/mnt"
 apt_dir="${root_dir}/guts/apt-ftparchive"
 cd_mod_dir="${root_dir}/guts/wakame"
-tmp_mount_dir="${root_dir}/"$(randdir)
+tmp_mount_dir="${tmp_dir}/$(randdir)"
 wakame_version="11.12"
 wakame_deb="${wakame_dir}/../wakame-vdc_${wakame_version}_amd64.deb"
 arch="amd64"
