@@ -20,17 +20,19 @@ end
 
 Given /^an instance ([^\s]+) is started in group ([^\s]+)$/ do |instance_name,group_name|
   steps %Q{
-    Given an instance #{instance_name} is started with the following options
-    | image_id               | instance_spec_id | security_groups                | ssh_key_id |
-    | wmi-secgtest           | is-demospec      | <registry:group_#{group_name}> | ssh-demo   |
+    Given the volume "wmi-secgtest" exists
+    And an instance #{instance_name} is started with the following options
+      | image_id     | instance_spec_id | security_groups                | ssh_key_id |
+      | wmi-secgtest | is-demospec      | <registry:group_#{group_name}> | ssh-demo   |
   }
 end
 
 Given /^an instance ([^\s]+) is started in group ([^\s]+) with scheduler ([^\s]+)$/ do |instance_name, group_name, scheduler|
   steps %Q{
-    Given an instance #{instance_name} is started with the following options
-    | image_id               | instance_spec_id | network_scheduler | security_groups                | ssh_key_id |
-    | wmi-secgtest           | is-demo2         | #{scheduler}      | <registry:group_#{group_name}> | ssh-demo   |
+    Given the volume "wmi-secgtest" exists
+    And an instance #{instance_name} is started with the following options
+      | image_id     | instance_spec_id | network_scheduler | security_groups                | ssh_key_id |
+      | wmi-secgtest | is-demo2         | #{scheduler}      | <registry:group_#{group_name}> | ssh-demo   |
   }
 end
 

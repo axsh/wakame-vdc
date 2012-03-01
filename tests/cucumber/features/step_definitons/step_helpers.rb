@@ -139,7 +139,10 @@ module InstanceHelper
     File.chmod(0600, private_key_path)
     sleep 5
 
-    cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} #{user}@#{res["vif"].first["ipv4"]["address"]} '#{command}'"
+    physical_vif = res['vif'].detect { |vif| vif['network_id'] == 'nw-demo1' }
+    raise("Could not find network 'nw-demo1' for ssh command: vif:#{res['vif'].inspect}.") if physical_vif.nil?
+
+    cmd = "ssh -o 'StrictHostKeyChecking no' -i #{private_key_path} #{user}@#{physical_vif["ipv4"]["address"]} '#{command}'"
 
     output = ""
     if seconds > 0
