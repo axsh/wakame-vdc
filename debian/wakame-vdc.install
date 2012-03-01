@@ -1,4 +1,3 @@
 dcmgr usr/share/axsh/wakame-vdc
 frontend usr/share/axsh/wakame-vdc
-tests/builder/* usr/share/axsh/wakame-vdc/tests/builder
 ruby usr/share/axsh/wakame-vdc
