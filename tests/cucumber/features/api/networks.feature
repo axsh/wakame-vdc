@@ -2,12 +2,11 @@
 Feature: Network API
 
   Scenario: Create and delete a random network
-    When we make an api create call to networks with the following options
+    Given a managed network with the following options
       |  network |       gw | prefix | description |
       | 10.1.2.0 | 10.1.2.1 |     20 | test create |
-    Then the previous api call should be successful
+      Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       # And the previous api call should have {"uuid":} equal to /^nw-*/
-      And from the previous api call take {"uuid":} and save it to <registry:uuid>
     When we make an api get call to networks/<registry:uuid> with no options
       Then the previous api call should be successful
     When we make an api delete call to networks/<registry:uuid> with no options
@@ -30,10 +29,11 @@ Feature: Network API
   Scenario: Get index of networks
     When we make an api get call to networks with no options
       Then the previous api call should be successful
-    When we make an api create call to networks with the following options
+
+    Given a managed network with the following options
       |  network |       gw | prefix | description |
       | 10.1.2.0 | 10.1.2.1 |     20 | test create |
-      Then the previous api call should be successful
+
     When we make an api get call to networks with no options
       Then the previous api call should be successful
       And the previous api call should not have [{"results":}] with a size of 0
@@ -44,10 +44,9 @@ Feature: Network API
 
   Scenario: Verify network values after creation
     # Test both random network name and nw-test1.
-    When we make an api create call to networks with the following options
+    Given a managed network with the following options
       |  network |       gw | prefix | description        |
       | 10.1.2.0 | 10.1.2.1 |     20 | test create values |
-      Then the previous api call should be successful
       And the previous api call should have {"ipv4_network":} equal to "10.1.2.0"
       And the previous api call should have {"ipv4_gw":} equal to "10.1.2.1"
       And the previous api call should have {"prefix":} equal to 20
@@ -71,17 +70,17 @@ Feature: Network API
     When we make an api create call to networks with the following options
       |   network |       gw | prefix | description |
       | 256.1.2.0 | 10.1.2.1 |     20 | test fail   |
-      Then the previous api call should not be successful
+    Then the previous api call should not be successful
 
     When we make an api create call to networks with the following options
       |  network | gw       | prefix | description |
       | 10.1.2.0 | 10.1.2.a |     20 | test fail   |
-      Then the previous api call should not be successful
+    Then the previous api call should not be successful
 
     When we make an api create call to networks with the following options
       |  network |       gw | prefix | description |
       | 10.1.2.0 | 10.1.2.1 |     33 | test fail   |
-      Then the previous api call should not be successful
+    Then the previous api call should not be successful
 
 
   Scenario: Reserve IP addresses

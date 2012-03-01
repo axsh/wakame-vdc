@@ -58,8 +58,8 @@ Given /^a natted instance (.+) is started in group (.+) that listens on tcp port
   raise "And instance already exists with that name: '#{instance_name}'" unless @instances[instance_name].nil?
   steps %Q{
     Given a new instance with its uuid in <nat_instance:uuid> and the following options
-      | image_id               | instance_spec_id | network_scheduler | security_groups                | user_data                       |
-      | wmi-secgtest           | is-demospec      | nat               | <registry:group_#{group_name}> | tcp:#{tcp_port} udp:#{udp_port} |
+      | image_id               | instance_spec_id | ssh_key_id | network_scheduler | security_groups                | user_data                       |
+      | wmi-secgtest           | is-demospec      | ssh-demo   | nat               | <registry:group_#{group_name}> | tcp:#{tcp_port} udp:#{udp_port} |
   }
   @instances[instance_name] = @api_last_result
 end
@@ -96,16 +96,16 @@ end
 When /^we successfully start instance (.+) of (.+) and (.+) with the (.+) scheduler$/ do |instance_name, image, spec, scheduler|
   steps %Q{
     Given a new instance with its uuid in <nat_instance:uuid> and the following options
-    | image_id               | instance_spec_id | network_scheduler | security_groups                                         | ssh_key_id |
-    | #{image}               | #{spec}          | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} | ssh-demo   |
+    | image_id               | instance_spec_id | ssh_key_id | network_scheduler | security_groups                                         | ssh_key_id |
+    | #{image}               | #{spec}          | ssh-demo   | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} | ssh-demo   |
   }
 end
 
 When /^we successfully start instance (.+) that listens on tcp port (\d+) and udp port (\d+) with scheduler (.+)$/ do |instance_name, tcp_port, udp_port, scheduler|
   steps %Q{
     Given an instance #{instance_name} is started with the following options
-    | image_id               | instance_spec_id | network_scheduler | security_groups                                         | user_data                       |
-    | wmi-secgtest           | is-demospec      | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} | tcp:#{tcp_port} udp:#{udp_port} |
+    | image_id               | instance_spec_id | ssh_key_id | network_scheduler | security_groups                                         | user_data                       |
+    | wmi-secgtest           | is-demospec      | ssh-demo   | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} | tcp:#{tcp_port} udp:#{udp_port} |
   }
 end
 

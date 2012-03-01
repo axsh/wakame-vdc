@@ -4,11 +4,10 @@ Feature: SshKeyPair API
   Scenario: Create, update and delete for new ssh key pair with UUID
 
   Scenario: Create, update and delete for new ssh key pair
-    When we make an api create call to ssh_key_pairs with the following options
+    Given a managed ssh_key_pair with the following options
       | description |
       | test key1   |
-    Then the previous api call should be successful
-    And from the previous api call take {"uuid":} and save it to <registry:uuid>
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to ssh_key_pairs/<registry:uuid> with the following options
       | description   |
@@ -24,8 +23,7 @@ Feature: SshKeyPair API
     Then the previous api call should be successful
 
   Scenario: Create new ssh key pair and fail to duplicate delete
-    When we make an api create call to ssh_key_pairs with no options
-    Then the previous api call should be successful
+    Given a managed ssh_key_pair with no options
     And from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     # First deletion
@@ -37,13 +35,12 @@ Feature: SshKeyPair API
     Then the previous api call should not be successful
 
   Scenario: List ssh key pairs
-    When we make an api create call to ssh_key_pairs with the following options
+    Given a managed ssh_key_pair with the following options
       | description |
       | test key1   |
-    And we make an api create call to ssh_key_pairs with the following options
+    Given a managed ssh_key_pair with the following options
       | description |
       | test key2   |
-    Then the previous api call should be successful
     When we make an api get call to ssh_key_pairs with no options
     Then the previous api call should be successful
 

@@ -79,7 +79,7 @@ end
 
 When /^we create a snapshot from the created volume$/ do
   steps %Q{
-    When we make an api create call to volume_snapshots with the following options
+    Given a managed volume_snapshot with the following options
     | volume_id                                       | destination |
     | #{@api_call_results["create"]["volumes"]["id"]} | local       |
   }
@@ -110,9 +110,9 @@ end
 
 When /^we create a volume from the created snapshot$/ do
   steps %Q{
-    When we make an api create call to volumes with the following options
-      | snapshot_id                                                       |
-      | #{@api_call_results["create"]["volume_snapshots"]["id"]}          |
+    Given a managed volume with the following options
+      | snapshot_id                                              |
+      | #{@api_call_results["create"]["volume_snapshots"]["id"]} |
   }
 end
 

@@ -2,11 +2,10 @@
 Feature: Storage Node API
 
   Scenario: Create, update and delete for new storage node with specified UUID
-    When we make an api create call to storage_nodes with the following options
+    Given a managed storage_node with the following options
       | account_id  | uuid     | node_id   | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
       | a-shpoolxx  | sn-test1 | sta.test1 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
-    Then the previous api call should be successful
-      And from the previous api call take {"uuid":} and save it to <registry:uuid>
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       And the previous api call should have {"uuid":} equal to "sn-test1"
 
     When we make an api get call to storage_nodes/sn-test1 with no options
@@ -24,11 +23,10 @@ Feature: Storage Node API
     Then the previous api call should be successful
 
   Scenario: Create without node_id and success to map to unknown node.
-    When we make an api create call to storage_nodes with the following options
+    Given a managed storage_node with the following options
       | account_id  | node_id     | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
       | a-shpoolxx  | sta.unknown | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
-    Then the previous api call should be successful
-      And from the previous api call take {"uuid":} and save it to <registry:uuid>
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to storage_nodes/<registry:uuid> with the following options
       | node_id     | 
@@ -44,20 +42,18 @@ Feature: Storage Node API
 
 
   Scenario: node_id should be reusable to new record.
-    When we make an api create call to storage_nodes with the following options
+    Given a managed storage_node with the following options
       | account_id  | node_id      | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
       | a-shpoolxx  | sta.unknown1 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
-    Then the previous api call should be successful
-      And from the previous api call take {"uuid":} and save it to <registry:uuid>
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api delete call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
 
-    When we make an api create call to storage_nodes with the following options
+    Given a managed storage_node with the following options
       | account_id  | node_id      | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
       | a-shpoolxx  | sta.unknown1 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
-    Then the previous api call should be successful
-      And from the previous api call take {"uuid":} and save it to <registry:uuid>
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api get call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful

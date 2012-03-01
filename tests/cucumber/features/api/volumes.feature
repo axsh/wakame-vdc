@@ -2,12 +2,11 @@
 Feature: Volume API
 
   Scenario: Create and delete new volume
-    When we make an api create call to volumes with the following options
+    Given a managed volume with the following options
       | volume_size |
       |          10 |
-    Then the previous api call should be successful
-    And from the previous api call take {"uuid":} and save it to <registry:uuid>
-    Then the created volumes should reach state available in 60 seconds or less
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+      And the created volumes should reach state available in 60 seconds or less
     
     When we make an api delete call to volumes/<registry:uuid> with no options
     Then the previous api call should be successful  
@@ -19,10 +18,9 @@ Feature: Volume API
     Then the previous api call should not be successful
 
   Scenario: Create minimum size blank volume
-    When we make an api create call to volumes with the following options
+    Given a managed volume with the following options
       | volume_size |
       |          10 |
-    Then the previous api call should be successful 
 
   Scenario: Create blank volume more than maximum size
     When we make an api create call to volumes with the following options
@@ -31,10 +29,9 @@ Feature: Volume API
     Then the previous api call should not be successful
   
   Scenario: Create maximum size blank volume
-    When we make an api create call to volumes with the following options
+    Given a managed volume with the following options
       | volume_size |
       |        3000 |
-    Then the previous api call should be successful
   
   Scenario: Attach and Detach volume to Instance
     Given the volume "wmi-lucid6" exists
@@ -71,12 +68,11 @@ Feature: Volume API
     Then the created volumes should reach state available in 60 seconds or less
 
   Scenario: Create snaphost from volume
-    When we make an api create call to volumes with the following options
+    Given a managed volume with the following options
       | volume_size |
       |          10 |
-    Then the previous api call should be successful
-    And from the previous api call take {"uuid":} and save it to <registry:uuid>
-    Then the created volumes should reach state available in 60 seconds or less
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+      And the created volumes should reach state available in 60 seconds or less
  
     When we successfully create a snapshot from the created volume
     Then the created volume_snapshots should reach state available in 60 seconds or less 
