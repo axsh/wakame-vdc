@@ -68,6 +68,10 @@ install: build
 	    sed -e 's|$(CURDIR)|/usr/share/axsh/wakame-vdc|g' < $$i > $$i.sed ;\
 	    mv $$i.sed $$i ;\
 	  done
+	# clean conf files from base package
+	rm -f $(CURDIR)/debian/wakame-vdc/usr/share/axsh/wakame-vdc/dcmgr/config/*.conf
+	rm -f $(CURDIR)/debian/wakame-vdc/usr/share/axsh/wakame-vdc/dcmgr/config/*.yml
+	rm -f $(CURDIR)/debian/wakame-vdc/usr/share/axsh/wakame-vdc/frontend/dcmgr_gui/config/*.yml
 
 binary-indep: build install
 
