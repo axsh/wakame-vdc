@@ -1,7 +1,9 @@
 Feature: Security groups
 
   Scenario: Group rules
-    Given wmi-secgtest and is-demospec exist
+    Given the volume "wmi-secgtest" exists
+      And the instance_spec "is-demospec" exists for api until 11.12
+
     When we make a successful api create call to security_groups with the following options
     | description          |
     | group rules test     |

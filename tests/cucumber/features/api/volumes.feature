@@ -37,7 +37,8 @@ Feature: Volume API
     Then the previous api call should be successful
   
   Scenario: Attach and Detach volume to Instance
-    Given wmi-lucid6 and is-demospec exist
+    Given the volume "wmi-lucid6" exists
+      And the instance_spec "is-demospec" exists for api until 11.12
    
     When we save to <rule:1shot> the following options
       """

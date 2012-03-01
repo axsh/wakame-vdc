@@ -1,15 +1,16 @@
 Feature: Instance, volume and snapshot operations.
 
   Scenario: One shot
-    Given wmi-lucid6 and is-demospec exist
+    Given the volume "wmi-lucid6" exists
+      And the instance_spec "is-demospec" exists for api until 11.12
 
     When we make a successful api create call to security_groups with the following options
-    | description          | rule                     |
+    | description          | rule                                             |
     | Scenario 1shot group | tcp:22,22,ip4:0.0.0.0/24\nicmp:-1,-1,ip4:0.0.0.0 |
     
     When we make a successful api create call to ssh_key_pairs with the following options
     | download_once |
-    | 0             |
+    |             0 |
 
     When we successfully start an instance of wmi-lucid6 and is-demospec with the new security group and key pair
       And the created instance has reached the state "running"
@@ -19,7 +20,7 @@ Feature: Instance, volume and snapshot operations.
     
     When we make a successful api create call to volumes with the following options
     | volume_size |
-    | 10          |
+    |          10 |
     Then the created volumes should reach state available in 60 seconds or less
     
     When we successfully attach the created volume
