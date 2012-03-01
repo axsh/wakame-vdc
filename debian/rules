@@ -50,7 +50,7 @@ clean:
 	dh_clean
 	(cd $(CURDIR)/dcmgr/ && rm -rf vendor/bundle)
 	(cd $(CURDIR)/frontend/dcmgr_gui/ && rm -rf vendor/bundle)
-	rm -rf $(CURDIR)/ruby-build $(CURDIR)/ruby
+	rm -rf $(CURDIR)/ruby-build $(CURDIR)/ruby $(CURDIR)/tmp
 
 install: build
 	dh_testdir
