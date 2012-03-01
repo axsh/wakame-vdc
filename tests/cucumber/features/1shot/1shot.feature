@@ -13,7 +13,6 @@ Feature: Instance, volume and snapshot operations.
     |             0 |
 
     When we successfully start an instance of wmi-lucid6 and is-demospec with the new security group and key pair
-      And the created instance has reached the state "running"
     Then we should be able to ping the started instance in 60 seconds or less
     And the started instance should start ssh in 60 seconds or less
     And we should be able to log into the started instance with user ubuntu in 60 seconds or less

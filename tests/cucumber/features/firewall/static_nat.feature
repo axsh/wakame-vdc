@@ -2,9 +2,10 @@ Feature: Static Nat
 
   Scenario: Static nat
     Given the security group we use allows pinging and ssh
+      And the volume "wmi-secgtest" exists
+      And the instance_spec "is-demospec" exists for api until 11.12
     
     When we successfully start instance inst1 of wmi-secgtest and is-demospec with the nat scheduler
-      And the created instance has reached the state "running"
     Then we should be able to ping its inside ip in 60 seconds or less
     And we should be able to ping its outside ip in 60 seconds or less
 

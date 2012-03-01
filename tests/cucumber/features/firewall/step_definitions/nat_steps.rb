@@ -57,10 +57,9 @@ Given /^a natted instance (.+) is started in group (.+) that listens on tcp port
   @instances = {} if @instances.nil?
   raise "And instance already exists with that name: '#{instance_name}'" unless @instances[instance_name].nil?
   steps %Q{
-    When we make a successful api create call to instances with the following options
-    | image_id               | instance_spec_id | network_scheduler | security_groups                | user_data                       | ssh_key_id |
-    | wmi-secgtest           | is-demospec      | nat               | <registry:group_#{group_name}> | tcp:#{tcp_port} udp:#{udp_port} | ssh-demo   |
-    And the created instance has reached the state "running"
+    Given a new instance with its uuid in <nat_instance:uuid> and the following options
+      | image_id               | instance_spec_id | network_scheduler | security_groups                | user_data                       |
+      | wmi-secgtest           | is-demospec      | nat               | <registry:group_#{group_name}> | tcp:#{tcp_port} udp:#{udp_port} |
   }
   @instances[instance_name] = @api_last_result
 end
@@ -96,9 +95,9 @@ end
 
 When /^we successfully start instance (.+) of (.+) and (.+) with the (.+) scheduler$/ do |instance_name, image, spec, scheduler|
   steps %Q{
-    When we make a successful api create call to instances with the following options
-    | image_id               | instance_spec_id | network_scheduler | security_groups |
-    | #{image}               | #{spec}          | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} |
+    Given a new instance with its uuid in <nat_instance:uuid> and the following options
+    | image_id               | instance_spec_id | network_scheduler | security_groups                                         | ssh_key_id |
+    | #{image}               | #{spec}          | #{scheduler}      | #{@api_call_results["create"]["security_groups"]["id"]} | ssh-demo   |
   }
 end
 

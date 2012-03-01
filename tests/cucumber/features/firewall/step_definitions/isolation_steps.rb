@@ -12,8 +12,7 @@ Given /^an instance ([^\s]+) is started with the following options$/ do |instanc
   @instances = {} if @instances.nil?
   raise "And instance already exists with that name: '#{instance_name}'" unless @instances[instance_name].nil?
   
-  step "we make a successful api create call to instances with the following options", options
-  step "the created instance has reached the state \"running\""
+  step "Given a new instance with its uuid in <#{instance_name}:uuid> and the following options", options
   
   @instances[instance_name] = @api_last_result
 end
@@ -22,8 +21,8 @@ Given /^an instance ([^\s]+) is started in group ([^\s]+)$/ do |instance_name,gr
   steps %Q{
     Given the volume "wmi-secgtest" exists
     And an instance #{instance_name} is started with the following options
-      | image_id     | instance_spec_id | security_groups                | ssh_key_id |
-      | wmi-secgtest | is-demospec      | <registry:group_#{group_name}> | ssh-demo   |
+      | image_id     | instance_spec_id | security_groups                |
+      | wmi-secgtest | is-demospec      | <registry:group_#{group_name}> |
   }
 end
 
@@ -31,8 +30,8 @@ Given /^an instance ([^\s]+) is started in group ([^\s]+) with scheduler ([^\s]+
   steps %Q{
     Given the volume "wmi-secgtest" exists
     And an instance #{instance_name} is started with the following options
-      | image_id     | instance_spec_id | network_scheduler | security_groups                | ssh_key_id |
-      | wmi-secgtest | is-demo2         | #{scheduler}      | <registry:group_#{group_name}> | ssh-demo   |
+      | image_id     | instance_spec_id | network_scheduler | security_groups                |
+      | wmi-secgtest | is-demo2         | #{scheduler}      | <registry:group_#{group_name}> |
   }
 end
 

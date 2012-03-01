@@ -55,11 +55,9 @@ end
 
 When /^we successfully start an instance of (.*) and (.+) with the new security group and key pair$/ do |image,spec|
   steps %Q{
-    When we make a successful api create call to instances with the following options
+    Given a new instance with its uuid in <1shot:uuid> and the following options
       | image_id | instance_spec_id | ssh_key_id                                            | security_groups                                         |
       | #{image} | #{spec}          | #{@api_call_results["create"]["ssh_key_pairs"]["id"]} | #{@api_call_results["create"]["security_groups"]["id"]} |
-    
-    Then the create call to the instances api should be successful
   }
 end
 
