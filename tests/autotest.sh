@@ -53,7 +53,7 @@ function run_virtual_hva {
       mkdir -p $process_id_path
     fi
     shlog "tunctl -b -u root -t $vhva_id"
-    shlog "kvm -smp 1 -cpu host -enable-nesting -drive file=${image_dir}/${image_name} -name hva.${vhva_id} -m $vhva_memory_size -net nic,macaddr=${vhva_mac} -net tap,ifname=$vhva_id -enable-kvm -vnc :${vhva_number} &"
+    shlog "kvm -smp 1 -cpu host -enable-nesting -enable-kvm -drive file=${image_dir}/${image_name} -name hva.${vhva_id} -m $vhva_memory_size -net nic,macaddr=${vhva_mac} -net tap,ifname=$vhva_id -enable-kvm -vnc :${vhva_number} &"
     shlog "echo $! > $process_id_path/$vhva_id"
     
     host_macs=$(($host_macs+1))

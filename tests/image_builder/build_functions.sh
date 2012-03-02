@@ -47,6 +47,7 @@ EOF
   truncate -s $(( $rootsize + $swapsize - 1))m $imgpath
   shlog "vmbuilder kvm ubuntu --suite=lucid --mirror=http://jp.archive.ubuntu.com/ubuntu \
       --raw=$imgpath --rootsize $rootsize --swapsize $swapsize --variant minbase \
+      --addpkg linux-image-3.0.0-15-server \
       --addpkg ssh \
       --addpkg sudo \
       --addpkg iproute \
