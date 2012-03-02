@@ -218,7 +218,7 @@ EOF
     wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/vgabios_0.6c-2ubuntu3_all.deb
   fi
   mkdir -p $tmp_root/tmp/custom_packages
-  cp $custom_pkg_dir/*.deb tmp_root/tmp/custom_packages
+  cp $custom_pkg_dir/*.deb $tmp_root/tmp/custom_packages
   
   shlog "mkdir -p ${tmp_root}/root/wakame-vdc/tmp/instances"
   shlog "cp -r ${prefix_path}/dcmgr ${tmp_root}/root/wakame-vdc"
