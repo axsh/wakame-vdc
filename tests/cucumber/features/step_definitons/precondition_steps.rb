@@ -21,11 +21,17 @@ Given /^the #{api_type_match} (.+) exists$/ do |api_type,arg_1|
       ENV["account_id"]="a-shpoolxx"
       ENV["local_store_path"]="#{VDC_ROOT}/tmp/snap/#{ENV["account_id"]}"
       ENV["vmimage_file"]="snap-#{uuid.split("-").last}.snap"
-      ENV["vmimage_s3"]="http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-ms-32.raw.gz"
       ENV["dcmgr_dbname"]="wakame_dcmgr"
       ENV["dcmgr_dbuser"]="root"
       ENV["image_arch"]="x86"
       
+      case uuid
+      when 'wmi-secgtest'
+        ENV["vmimage_s3"] = "http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-10.04_secgtest_kvm_i386.raw.gz"
+      else
+        ENV["vmimage_s3"] = "http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-ms-32.raw.gz"
+      end
+
       steps %Q{
         Given the working directory is tests/cucumber/features/1shot/setup_script
         When the following command is run: ./1shot_setup.sh

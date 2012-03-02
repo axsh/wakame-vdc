@@ -11,35 +11,6 @@ end
 After do
 end
 
-Given /^(wmi-[a-z0-9]{1,8}) and (is-[a-z0-9]{1,8}) exist$/ do |image_id,spec_id|
-  unless APITest.get("/images/#{image_id}").success?
-    #Set variabled for the setup script
-    ENV["vdc_root"]=VDC_ROOT
-    ENV["vmimage_snap_uuid"]=image_id.split("-").last
-    ENV["account_id"]="a-shpoolxx"
-    ENV["local_store_path"]="#{VDC_ROOT}/tmp/snap/#{ENV["account_id"]}"
-    ENV["vmimage_file"]="snap-#{image_id.split("-").last}.snap"
-    ENV["vmimage_s3"]="http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-kvm-ms-32.raw.gz"
-    ENV["dcmgr_dbname"]="wakame_dcmgr"
-    ENV["dcmgr_dbuser"]="root"
-    ENV["image_arch"]="x86"
-    
-    steps %Q{
-      Given the working directory is tests/cucumber/features/1shot/setup_script
-      When the following command is run: ./1shot_setup.sh
-      Then the command should be successful
-    }
-  end
-  
-  unless APITest.get("/instance_specs/#{spec_id}").success?
-    steps %Q{
-      Given the working directory is dcmgr/bin
-      When the following command is run: ./vdc-manage spec add --uuid #{spec_id} --account-id a-shpoolxx --hypervisor kvm --arch x86_64 --cpu-cores 1 --memory-size 256 --quota-weight 1.0
-      Then the command should be successful
-    }
-  end
-end
-
 When /^we make a successful api (create|update|delete|get|post|put) call to (.*) with no options$/ do |call,suffix |
   steps %{
     When we make an api #{call} call to #{suffix} with no options
