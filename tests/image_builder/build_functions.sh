@@ -103,15 +103,16 @@ EOF
 function run_vmbuilder() {
   typeset imgpath=$1
   typeset arch=$2 # i386, amd64
-  
+  shift; shift;
+
   [[ -d ./ubuntu-kvm ]] && rm -rf ./ubuntu-kvm
 
   [[ -f $imgpath ]] && rm -f $imgpath
 
   echo "Creating image file... $imgpath"
   truncate -s $(( $rootsize + $swapsize - 1))m $imgpath
-  vmbuilder kvm ubuntu --suite=lucid --mirror=http://archive.ubuntu.com/ubuntu \
-      --raw=$imgpath --rootsize $rootsize --swapsize $swapsize --variant minbase \
+  vmbuilder kvm ubuntu --suite=lucid --mirror=http://jp.archive.ubuntu.com/ubuntu \
+      --arch=$arch --raw=$imgpath --rootsize $rootsize --swapsize $swapsize --variant minbase \
       --addpkg ssh --addpkg curl \
       --addpkg sudo \
       --addpkg iproute \
@@ -124,7 +125,7 @@ function run_vmbuilder() {
       --addpkg less \
       --addpkg lv \
       --addpkg gpgv \
-      --dns 8.8.8.8 --arch=$arch
+      --dns 8.8.8.8 $@
 }
 
 # loop mounts the image file and calls a shell function during mounting.
