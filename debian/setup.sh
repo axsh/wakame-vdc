@@ -84,10 +84,6 @@ sta_num=1
 # used resource file
 demo_resource=${demo_resource:-'demo_data_setup.sh'}
 
-#Take care of the gem dependencies
-cd ${prefix_path}
-gem install bundler.gem
-
 # work around if this runs under the bundler container.
 [[ -n "$BUNDLE_BIN_PATH" ]] && {
   export RUBYOPT="$RUBYOPT -rubygems"
@@ -97,12 +93,6 @@ gem install bundler.gem
 which gem >/dev/null 2>&1 && {
   export PATH="$(ruby -rubygems -e 'puts Gem.bindir'):$PATH"
 } || :
-
-cd ${prefix_path}/dcmgr
-bundle install --local
-
-cd ${prefix_path}/frontend/dcmgr_gui
-bundle install --local
 
 alias rake="bundle exec rake"
 shopt -s expand_aliases
