@@ -4,26 +4,36 @@
 # see: dh_installdeb(1)
 
 #prefix_path=/usr/share/axsh/wakame-vdc
-if [ -x "/etc/init.d/wakame-vdc" ]; then
-  rm -f /etc/init.d/wakame-vdc
-  ln -s /lib/init/upstart-job /etc/init.d/wakame-vdc  
-fi
+case "$1" in
+    configure)
 
-# stop rabbimq-server
-[ -f /etc/init.d/rabbitmq-server ] && {
-  update-rc.d -f rabbitmq-server remove
-}
+    if [ -x "/etc/init.d/wakame-vdc" ]; then
+      rm -f /etc/init.d/wakame-vdc
+      ln -s /lib/init/upstart-job /etc/init.d/wakame-vdc  
+    fi
 
-# stop nginx
-[ -f /etc/init.d/nginx ] && {
-  update-rc.d -f nginx remove
-}
-
-# stop dnsmasq
-[ -f /etc/init.d/dnsmasq ] && {
-  update-rc.d -f dnsmasq remove
-}
-
-[ -d /var/log/wakame-vdc ] || mkdir -p /var/log/wakame-vdc
+    # stop rabbimq-server
+    [ -f /etc/init.d/rabbitmq-server ] && {
+      update-rc.d -f rabbitmq-server remove
+    }
+    
+    # stop nginx
+    [ -f /etc/init.d/nginx ] && {
+      update-rc.d -f nginx remove
+    }
+    
+    # stop dnsmasq
+    [ -f /etc/init.d/dnsmasq ] && {
+      update-rc.d -f dnsmasq remove
+    }
+    
+    [ -d /var/log/wakame-vdc ] || mkdir -p /var/log/wakame-vdc
+    ;;
+  abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    ;;
+esac
 
 exit 0
