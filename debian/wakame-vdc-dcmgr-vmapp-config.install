@@ -12,3 +12,4 @@ debian/config/upstart/vdc-proxy.conf etc/init
 debian/config/upstart/vdc-webui.conf etc/init
 debian/config/upstart/wakame-vdc.conf etc/init
 debian/config/upstart/rabbitmq-server.conf etc/init
+debian/config/corelimit.sh etc/profile.d
