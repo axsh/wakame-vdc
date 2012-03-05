@@ -46,22 +46,22 @@ fi
 declare -A requirements=( ["perl"]="perl" ["debuild"]="devscripts" ["dh_clean"]="debhelper" ["mkisofs"]="genisoimage" ["rsync"]="rsync" )
 
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
-tmp_dir="${root_dir}/workdir"
 wakame_dir="${root_dir}/../.."
+tmp_dir="${wakame_dir}/tmp/cd_builder"
 cd_dir="${tmp_dir}/mnt"
-apt_dir="${root_dir}/guts/apt-ftparchive"
-cd_mod_dir="${root_dir}/guts/wakame"
+apt_dir="${tmp_dir}/guts/apt-ftparchive"
+cd_mod_dir="${tmp_dir}/guts/wakame"
 tmp_mount_dir="${tmp_dir}/$(randdir)"
 wakame_version="11.12"
 arch="amd64"
 wakame_debs="wakame-vdc_${wakame_version}_${arch}.deb wakame-vdc-dvd-config_${wakame_version}_${arch}.deb"
 src_image=`readlink -f $1`
-dst_image="${root_dir}/wakame-vdc-${wakame_version}-${arch}.iso"
+dst_image="${tmp_dir}/wakame-vdc-${wakame_version}-${arch}.iso"
 images_dir="${cd_dir}/setup/images"
 remote_images_path=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage
 vmimage_file="ubuntu-10.04_with-metadata_kvm_i386.raw.gz"
 gpg_key_id="DCFFB6BE"
-guts_archive_dir="${root_dir}/guts/archive"
+guts_archive_dir="${tmp_dir}/guts/archive"
 package_location_axsh="http://dlc.wakame.axsh.jp.s3.amazonaws.com/vdc/11.12.1/package/ubuntu/"
 package_location='axsh'
 
@@ -80,31 +80,18 @@ checkreq
 ## Clean artifacts and temporary stuff.
 
 #Clean the working directory
-[[ -d ${wakame_dir}/tmp ]] && rm ${wakame_dir}/tmp/*
+#[[ -d ${wakam_dir}/tmp ]] && rm ${wakame_dir}/tmp/*
 [[ -f ${dst_image} ]] && rm -f ${dst_image}
 #Delete ftparchive config files
 [[ -f ${apt_dir}/apt-ftparchive-deb.conf ]] && rm -f ${apt_dir}/apt-ftparchive-deb.conf
 [[ -f ${apt_dir}/apt-ftparchive-extras.conf ]] && rm -f ${apt_dir}/apt-ftparchive-extras.conf
 [[ -f ${apt_dir}/apt-ftparchive-udeb.conf ]] && rm -f ${apt_dir}/apt-ftparchive-udeb.conf
 [[ -f ${apt_dir}/release.conf ]] && rm -f ${apt_dir}/release.conf
-rm -rf ${root_dir}/guts/indices/
+rm -rf ${tmp_dir}/guts/indices/
 rm -rf ${cd_dir}
-
-#Create directory
 
 #Make tmp dir if it doesn't exist
 mkdir -p ${tmp_dir} || :
-(
-  cd "${cd_mod_dir}"
-  cat <<EOF | while read -r i; do [[ -d "${i}" ]] || mkdir -p "${i}"; done
-tmp
-setup/images
-pool/extras
-pool/main
-pool/main/u
-pool/main/u/ubuntu-keyring
-EOF
-)
 
 #Make the debian package
 (
@@ -158,12 +145,26 @@ function download_package() {
   done  
 } 
 
+echo "Copying guts contents"
+rsync -a ${root_dir}/guts ${tmp_dir}
+(
+  cd "${cd_mod_dir}"
+  cat <<EOF | while read -r i; do [[ -d "${i}" ]] || mkdir -p "${i}"; done
+tmp
+setup/images
+pool/extras
+pool/main
+pool/main/u
+pool/main/u/ubuntu-keyring
+EOF
+)
+
 download_package "${cd_mod_dir}/pool/extras/" "${guts_archive_dir}/pool_extras"
 download_package "${cd_mod_dir}/pool/main/u/ubuntu-keyring/" "${guts_archive_dir}/pool_main"
 
 #Get the indices
-mkdir -p ${root_dir}/guts/indices
-cd ${root_dir}/guts/indices
+mkdir -p ${tmp_dir}/guts/indices
+cd ${tmp_dir}/guts/indices
 for SUFFIX in extra.main main main.debian-installer restricted restricted.debian-installer; do
   wget http://archive.ubuntu.com/ubuntu/indices/override.$base_distro.$SUFFIX
 done
@@ -211,12 +212,12 @@ TreeDefault {
 
 BinDirectory "pool/main" {
   Packages "dists/${base_distro}/main/debian-installer/binary-amd64/Packages";
-  BinOverride "${root_dir}/guts/indices/override.${base_distro}.main.debian-installer";
+  BinOverride "${tmp_dir}/guts/indices/override.${base_distro}.main.debian-installer";
 };
 
 BinDirectory "pool/restricted" {
   Packages "dists/${base_distro}/restricted/debian-installer/binary-amd64/Packages";
-  BinOverride "${root_dir}/guts/indices/override.${base_distro}.restricted.debian-installer";
+  BinOverride "${tmp_dir}/guts/indices/override.${base_distro}.restricted.debian-installer";
 };
 
 Default {
@@ -267,13 +268,13 @@ TreeDefault {
 
 BinDirectory "pool/main" {
   Packages "dists/${base_distro}/main/binary-amd64/Packages";
-  BinOverride "${root_dir}/guts/indices/override.${base_distro}.main";
-  ExtraOverride "${root_dir}/guts/indices/override.${base_distro}.extra.main";
+  BinOverride "${tmp_dir}/guts/indices/override.${base_distro}.main";
+  ExtraOverride "${tmp_dir}/guts/indices/override.${base_distro}.extra.main";
 };
 
 BinDirectory "pool/restricted" {
  Packages "dists/${base_distro}/restricted/binary-amd64/Packages";
- BinOverride "${root_dir}/guts/indices/override.${base_distro}.restricted";
+ BinOverride "${tmp_dir}/guts/indices/override.${base_distro}.restricted";
 };
 
 Default {
@@ -364,7 +365,7 @@ find ${cd_dir}/dists/ -type f \( -name "Packages" -or -name "Packages.gz" \) -ex
 echo "Signing extra repository"
 rm -f ${cd_dir}/dists/${base_distro}/Release.gpg
 cd ${apt_dir}
-perl extraoverride.pl < ${cd_dir}/dists/${base_distro}/main/binary-amd64/Packages >> ${root_dir}/guts/indices/override.${base_distro}.extra.main
+perl extraoverride.pl < ${cd_dir}/dists/${base_distro}/main/binary-amd64/Packages >> ${tmp_dir}/guts/indices/override.${base_distro}.extra.main
 
 #Compile iso
 mkisofs -r -V "Wakame-vdc ${WAKAME_VERSION}" \
