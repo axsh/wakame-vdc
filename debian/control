@@ -2,24 +2,24 @@ Source: wakame-vdc
 Section: unknown
 Priority: extra
 Maintainer: Axsh Co. LTD <dev@axsh.net>
-Build-Depends: debhelper (>= 5), autotools-dev, autoconf, m4, bison, binutils, libgdbm-dev, libncurses5-dev, libreadline-dev, zlib1g-dev, libssl-dev (>= 0.9.8), file, devscripts, g++, gcc, libxml2-dev, libmysqlclient16-dev, libxslt1-dev, git-core, chrpath
+Build-Depends: debhelper (>= 5), autotools-dev, autoconf, m4, bison, binutils, libgdbm-dev, libncurses5-dev, libreadline-dev, zlib1g-dev, libssl-dev (>= 0.9.8), file, devscripts, g++, gcc, libxml2-dev, libmysqlclient16-dev, libxslt1-dev, git-core, chrpath, ubuntu-vm-builder, curl
 Standards-Version: 3.8.3
 Homepage: http://wakame.jp/
 
 Package: wakame-vdc
 Architecture: amd64
-Depends: ${shlibs:Depends},${misc:Depends},libreadline6,ethtool,wget,openssh-server,openssh-client,curl,mysql-server,mysql-client,libmysqlclient16,rabbitmq-server,qemu-kvm,kvm-pxe,iptables,ebtables,ubuntu-vm-builder,dnsmasq,open-iscsi,open-iscsi-utils,nginx,libxml2,libxslt1.1,tgt,flog,ipcalc,iproute,vlan,ipset,zlib1g,libncurses5
+Depends: ${shlibs:Depends},${misc:Depends},libreadline6,ethtool,wget,openssh-server,openssh-client,curl,mysql-client,libmysqlclient16,iptables,ebtables,open-iscsi,open-iscsi-utils,nginx,libxml2,libxslt1.1,flog,ipcalc,iproute,vlan,ipset,zlib1g,libncurses5,ntp,gzip
 Description: The wakame virtual data center.
  <insert long description, indented with spaces>
 
 Package: wakame-vdc-dvd-config
 Architecture: any
-Depends: wakame-vdc
+Depends: wakame-vdc, rabbitmq-server, mysql-server, tgt, qemu-kvm, kvm-pxe, dnsmasq
 Description: Configuration set for DVD installation.
  <insert long description, indented with spaces>
 
 Package: wakame-vdc-dcmgr-vmapp-config
 Architecture: any
-Depends: wakame-vdc
+Depends: wakame-vdc, rabbitmq-server, mysql-server
 Description: Configuration set for dcmgr VM appliance
  <insert long description, indented with spaces>
