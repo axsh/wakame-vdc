@@ -218,8 +218,8 @@ EOF
     wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu_0.14.1+noroms-0ubuntu6backport2_amd64.deb
     wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/vgabios_0.6c-2ubuntu3_all.deb
   fi
-  mkdir -p $tmp_root/tmp/custom_packages
-  cp $custom_pkg_dir/*.deb $tmp_root/tmp/custom_packages
+  shlog "mkdir -p $tmp_root/root/custom_pkgs"
+  shlog "cp $custom_pkg_dir/*.deb $tmp_root/root/custom_pkgs"
   
   shlog "mkdir -p ${tmp_root}/root/wakame-vdc/tmp/instances"
   shlog "cp -r ${prefix_path}/dcmgr ${tmp_root}/root/wakame-vdc"
@@ -332,8 +332,8 @@ Subsystem sftp /usr/lib/openssh/sftp-server
 UsePAM yes
 EOF
 
-#shlog 'chroot $tmp_root /root/firstboot.sh'
-#shlog "rm $tmp_root/root/firstboot.sh"
+  #shlog 'chroot $tmp_root /root/firstboot.sh'
+  #shlog "rm $tmp_root/root/firstboot.sh"
 }
 
 #
