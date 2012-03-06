@@ -726,9 +726,6 @@ function run_multiple() {
 
   for h in ${host_nodes}; do
       [ "${h}" = "${ipaddr}" ] || {
-    #echo ${prefix_path}
-    #echo ${ipaddr}
-    #echo ${h}
     echo "[ -d ${prefix_path} ] || mkdir -p ${prefix_path}"
     echo "rsync -avz -e ssh ${ipaddr}:${prefix_path}/ ${prefix_path}"
 	  cat <<EOF | ssh ${h}
@@ -779,19 +776,6 @@ EOF
         }
     done
   }
-}
-
-function check_ready_virtual() {
-  retry 10 <<'EOF' || abort "Can't see dcmgr"
-echo > "/dev/tcp/${api_bind}/${api_port}"
-EOF
-  retry 10 <<'EOF' || abort "Can't see nginx"
-echo > "/dev/tcp/localhost/8080"
-EOF
-
-  retry 10 <<'EOF' || abort "Failed to start all virtual HVAs"
-
-EOF
 }
 
 function check_ready_multiple {
