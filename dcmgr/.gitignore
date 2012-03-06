@@ -4,5 +4,6 @@
 config/*.conf
 
 # Bundler ignorance rules
-vendor/bundle/
+# vendor/cache is ignored but may contain version controled gems.
+vendor/
 .bundle/
