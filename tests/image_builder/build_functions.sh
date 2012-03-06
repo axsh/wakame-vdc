@@ -166,7 +166,7 @@ function setup_hva() {
   #typeset hva_dns="$7"
   
   #TODO: get a better directory for this
-  custom_pkg_dir=/${tmp_path}/custom_pkg_dir
+  custom_pkg_dir=${tmp_path}/custom_pkg_dir
   
   #TODO:calculate broadcast and network
   #hva_network="192.168.2.0"
