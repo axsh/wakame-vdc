@@ -7,7 +7,7 @@ function run_vmbuilder_hva() {
   typeset imgpath=$1
   typeset arch=$2 # i386, amd64
   
-  local tmp_script_path=/tmp/hva_script.sh
+  local tmp_script_path=/${tmp_path}/hva_script.sh
   
   [[ -d ./ubuntu-kvm ]] && rm -rf ./ubuntu-kvm
 
@@ -166,7 +166,7 @@ function setup_hva() {
   #typeset hva_dns="$7"
   
   #TODO: get a better directory for this
-  custom_pkg_dir=/tmp/custom_pkg_dir
+  custom_pkg_dir=/${tmp_path}/custom_pkg_dir
   
   #TODO:calculate broadcast and network
   #hva_network="192.168.2.0"

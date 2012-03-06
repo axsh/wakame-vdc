@@ -16,7 +16,7 @@ scenario=$2
 trap 'echo $BASH_COMMAND "(line ${LINENO}: $BASH_SOURCE, pwd: $PWD)"' DEBUG
 
 function run_virtual_hva {
-  local tmp_path=/tmp
+  local tmp_path=/tmp/vhva
   local image_dir=${tmp_path}/images
   local process_id_path=${tmp_path}/pids
   local base_image_name=ubuntu-lucid-64-vhva.raw
