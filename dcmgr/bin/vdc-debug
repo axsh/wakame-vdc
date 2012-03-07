@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'isono'
+
+require 'thor'
+require 'thor/group'
+require 'erb'
+
+Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
+Dcmgr.run_initializers('sequel')
+
+class DebugCli < Thor
+  register(Dcmgr::Cli::Debug::Vnet,  Dcmgr::Cli::Debug::Vnet.namespace, "vnet sub-command", "Operations for virtual network information")
+end
+
+class ServiceDebug < Isono::NodeModules::Base
+  include Dcmgr::Logger
+
+  config_section do
+  end
+  
+  initialize_hook do
+    Dcmgr::Cli::Debug::Base.set_rpc Isono::NodeModules::RpcChannel.new(node)
+    Dcmgr::Cli::Debug::Base.set_event Isono::NodeModules::EventChannel.new(node)
+
+    EM.defer do
+      myinstance.process_cli
+    end
+  end
+
+  terminate_hook do
+  end
+
+  def process_cli
+    begin
+      DebugCli.start
+      exit(0)
+
+    rescue => e
+      orig_e = e
+      e = Dcmgr::Cli::Error.new(e,101) unless e.is_a?(Dcmgr::Cli::Error)
+      STDERR.puts "ERROR: #{e.message} (#{orig_e.backtrace.first})"
+
+      if e.respond_to?(:exit_code)
+        exit(e.exit_code)
+      else
+        exit(1)
+      end
+    end
+  end
+end
+
+
+include Isono::Runner::RpcServer
+
+manifest = DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  node_name 'debug'
+  node_instance_id "foo"
+  load_module ServiceDebug
+end
+
+start(manifest) do
+end

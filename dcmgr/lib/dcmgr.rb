@@ -162,6 +162,11 @@ module Dcmgr
     autoload :Spec, 'dcmgr/cli/spec'
     autoload :Tag, 'dcmgr/cli/tag'
     autoload :Quota, 'dcmgr/cli/quota'
+
+    module Debug
+      autoload :Base, 'dcmgr/cli/debug/base'
+      autoload :Vnet, 'dcmgr/cli/debug/vnet'
+    end
   end
 
   module Rpc
