@@ -205,18 +205,18 @@ EOF
     mkdir -p $custom_pkg_dir
     cd $custom_pkg_dir
     
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq-base_2.57-1ubuntu1_amd64.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq-utils_2.57-1ubuntu1_amd64.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq_2.57-1ubuntu1_all.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/kvm_84+dfsg-0ubuntu16+0.14.1+noroms+0ubuntu6backport1_amd64.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/kvm_84+dfsg-0ubuntu16+0.14.1+noroms+0ubuntu6backport2_amd64.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu-common_0.14.1+noroms-0ubuntu6backport1_all.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu-common_0.14.1+noroms-0ubuntu6backport2_all.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu-kvm_0.14.1+noroms-0ubuntu6backport1_amd64.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu-kvm_0.14.1+noroms-0ubuntu6backport2_amd64.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu_0.14.1+noroms-0ubuntu6backport1_amd64.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu_0.14.1+noroms-0ubuntu6backport2_amd64.deb
-    wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/vgabios_0.6c-2ubuntu3_all.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq-base_2.57-1ubuntu1_amd64.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq-utils_2.57-1ubuntu1_amd64.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq_2.57-1ubuntu1_all.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/kvm_84+dfsg-0ubuntu16+0.14.1+noroms+0ubuntu6backport1_amd64.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/kvm_84+dfsg-0ubuntu16+0.14.1+noroms+0ubuntu6backport2_amd64.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu-common_0.14.1+noroms-0ubuntu6backport1_all.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu-common_0.14.1+noroms-0ubuntu6backport2_all.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu-kvm_0.14.1+noroms-0ubuntu6backport1_amd64.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu-kvm_0.14.1+noroms-0ubuntu6backport2_amd64.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu_0.14.1+noroms-0ubuntu6backport1_amd64.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/qemu_0.14.1+noroms-0ubuntu6backport2_amd64.deb
+    #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/vgabios_0.6c-2ubuntu3_all.deb
   fi
   shlog "mkdir -p $tmp_root/root/custom_pkgs"
   shlog "cp $custom_pkg_dir/*.deb $tmp_root/root/custom_pkgs"
