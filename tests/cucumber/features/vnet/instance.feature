@@ -1,3 +1,4 @@
+@multiple @openflow
 Feature: Virtual Network Tests
 
   Scenario: Ping from one instance to another over a virtual network

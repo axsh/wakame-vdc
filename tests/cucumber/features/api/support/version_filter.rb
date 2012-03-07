@@ -61,29 +61,45 @@ end
 #   - Scenario: xxxxx1
 #   - Scenario: xxxxx3
 Around do |scenario, blk|
-  from_vers = []
-  until_vers = []
-  scenario.source_tag_names.each { |t|
-    next unless t =~ /^@(api_from|api_until)_v?([\d.]+)$/
-    api_ver = $2
+  catch :skip_scenario do
+    from_vers = []
+    until_vers = []
 
-    if $1 == 'api_from'
-      from_vers << $2
-    else
-      until_vers << $2
+    scenario.source_tag_names.each { |tag|
+      # We also need some way of warning if some host nodes are
+      # offline.
+      case tag
+      when /^@api_from_v?([\d.]+)$/
+        from_vers << $1
+      when /^@api_until_v?([\d.]+)$/
+        until_vers << $1
+
+      when /^@(netfilter|openflow)$/
+        throw :skip_scenario if HOST_NODES.detect { |key,node| node[:online] && node[:type] != $1 } != nil
+        throw :skip_scenario if HOST_NODES.count  { |key,node| node[:online] && node[:type] == $1 } == 0
+
+      when /^@multiple$/
+        online_nodes = HOST_NODES.count { |key,node| node[:online] }
+        
+        throw :skip_scenario if HOST_NODES.size < 2 
+        throw :skip_scenario if online_nodes < 2 
+        # raise("Not enough host nodes are online for testing '@multiple'.") if online_nodes < 2 
+
+      else
+        raise("Unknown precondition: '#{tag}'.")
+      end
+    }
+
+    from_vers.uniq!
+    until_vers.uniq!
+
+    if (!from_vers.empty? && api_ver_cmp(TARGET_API_VER, from_vers.max { |a,b| api_ver_cmp(a, b) }) < 0) ||
+        (!until_vers.empty? && api_ver_cmp(TARGET_API_VER, until_vers.max { |a,b| api_ver_cmp(a, b) }) > 0)
+      throw :skip_scenario
     end
-  }
 
-  from_vers.uniq!
-  until_vers.uniq!
-
-  if (!from_vers.empty? && api_ver_cmp(TARGET_API_VER, from_vers.max { |a,b| api_ver_cmp(a, b) }) < 0) ||
-     (!until_vers.empty? && api_ver_cmp(TARGET_API_VER, until_vers.max { |a,b| api_ver_cmp(a, b) }) > 0)
-    #puts "Skipping #{scenario.title} ..."
-    next
+    APITest.api_ver(((TARGET_API_VER == '11.12') ? '' : TARGET_API_VER))
+    blk.call
   end
-
-  APITest.api_ver(((TARGET_API_VER == '11.12') ? '' : TARGET_API_VER))
-  blk.call
 end
 
