@@ -270,7 +270,7 @@ config.ovs_ofctl_path = '/home/wakame/work/wakame-vdc/ovs/bin/ovs-ofctl'
 config.trema_dir = '/home/wakame/work/wakame-vdc/trema'
 EOF
 
-cat <<'EOS' > /tmp/vhva.pem
+cat <<'EOS' > ${tmp_path}/vhva.pem
 -----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEA2YQDnB0nuGmPBsMCwieBLd6lAXMlT6JBaAsgq7U2SVVFPvgf
 eeeGoYlXK0Am37g5Wl1dmQnyDQ/uTdVBJObpjKEBtWjwcPTc/cLKTKVokyhjgJvf
@@ -299,7 +299,7 @@ MoU4FfcO/Tf7b+qwp40OjN0dr7xDwIWXih2LrAxGK2Lw43hlC5huYmqpEIYoiag+
 PxIk/VB7tQxkp4Rtv005mWHPUYlh8x4lMqiVAhPJzEBfN9UEfkrk
 -----END RSA PRIVATE KEY-----
 EOS
-chmod 600 /tmp/vhva.pem
+chmod 600 ${tmp_path}/vhva.pem
 
 cat <<EOF > $tmp_root/etc/ssh/sshd_config
 Port 22

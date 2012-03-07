@@ -797,7 +797,7 @@ function screen_virtual_hva {
             screen_it hva.${hvaname} "cd ${prefix_path}/dcmgr/ && ./bin/hva -i ${hvaname} 2>&1 | tee ${tmp_path}/vdc-hva.log"
         } || {
             echo "starting ${hvaname}"
-            screen_it hva.${hvaname} "echo \"cd /root/wakame-vdc/dcmgr/ && ./bin/hva -i ${hvaname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh -o 'StrictHostKeyChecking no ' -i /tmp/vhva.pem ${h}"
+            screen_it hva.${hvaname} "echo \"cd /root/wakame-vdc/dcmgr/ && ./bin/hva -i ${hvaname} -s amqp://${ipaddr}/ 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh -o 'StrictHostKeyChecking no ' -i ${tmp_path}/vhva.pem ${h}"
         }
     done
 
@@ -819,7 +819,6 @@ function screen_virtual_hva {
 }
 
 function terminate_virtual_hva {
-  echo "we comin' here?"
   for vhva_ip in $host_nodes; do
     local vhva_number=`echo ${vhva_ip} | cut -d '.' -f4`
     local vhva_id=demo${vhva_number}

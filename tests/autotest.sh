@@ -58,17 +58,19 @@ case ${mode} in
       
       for ip in ${host_nodes}; do
         echo "Waiting for the virtual hva at ${ip} to finish configuring itself"
-        retry 25 10 "ssh -o 'StrictHostKeyChecking no ' -i /tmp/vhva.pem ${ip} \"[ -f /root/firstboot_done ]\"" || abort "failed to configure virtual hva ${ip}"
+        retry 25 10 "ssh -o 'StrictHostKeyChecking no ' -i ${tmp_path}/vhva.pem ${ip} \"[ -f /root/firstboot_done ]\"" || abort "failed to configure virtual hva ${ip}"
       done
       
       #cleanup_multiple
       screen_virtual_hva
       check_ready_multiple
       exec_scenario
+      excode=$?
+      terminate_virtual_hva
+      exit $excode
     )
     excode=$?
     screen_close
-    terminate_virtual_hva
     ci_post_process "`git show | awk '/^commit / { print $2}'`" $excode
     ;;
   openflow)
