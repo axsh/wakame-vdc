@@ -26,7 +26,7 @@ class ServiceDebug < Isono::NodeModules::Base
   
   initialize_hook do
     Dcmgr::Cli::Debug::Base.set_rpc Isono::NodeModules::RpcChannel.new(node)
-    Dcmgr::Cli::Debug::Base.set_event Isono::NodeModules::EventChannel.new(node)
+    Dcmgr::Cli::Debug::Base.set_broadcast Ext::BroadcastChannel.new(node)
 
     EM.defer do
       myinstance.process_cli

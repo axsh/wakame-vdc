@@ -26,7 +26,7 @@ module Dcmgr::Cli::Debug
 
       expected_ids.map! { |node| "hva.#{node[/^hn-(.+)$/, 1]}" }
 
-      debug_gather('switch_info', expected_ids) { |results|
+      broadcast.publish('debug/vnet', 'switch_info', expected_ids) { |results|
         results.each { |key,result|
           if !result.nil?
             puts "#{key}: \ttype:#{result[:type]}"

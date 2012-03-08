@@ -289,3 +289,7 @@ module Dcmgr
   end
   
 end
+
+module Ext
+  autoload :BroadcastChannel, 'ext/broadcast_channel'
+end
