@@ -32,6 +32,7 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::InstanceMonitor
   case config.edge_networking
   when 'openflow'
+    load_module Dcmgr::NodeModules::DebugOpenFlow
     load_module Dcmgr::NodeModules::ServiceOpenFlow
   when 'off'
     # Don't load openflow nor netfilter
