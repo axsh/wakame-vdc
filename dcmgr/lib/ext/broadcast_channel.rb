@@ -91,40 +91,6 @@ module Ext
         self.gather[:command]
       end
 
-      def process_event(ev, *args)
-        case [ev, @state]
-        when [:on_ready, :init]
-          @state = :ready
-          # when [:on_sent, :ready]
-          #   @state = :waiting
-          #   self.sent_at=Time.now
-          #   # freeze gather hash not to be modified after sending.
-          #   self.gather.freeze
-          # when [:on_received, :waiting]
-          #   @state = :waiting
-          # when [:on_success, :waiting]
-          #   @state = :done
-          #   self.completed_at=Time.now
-          #   self.complete_status = :success
-          # when [:on_error, :waiting]
-          #   @state = :done
-          #   self.completed_at=Time.now
-          #   self.complete_status = :fail
-        else
-          raise "Unknown state transition: #{ev}, #{@state}"
-        end
-      end
-
-      # def elapsed_time
-      #   self.completed_at.nil? ? nil : (self.completed_at - self.sent_at)
-      # end
-
-      # def hash
-      #   # state, sent_at received_at are readonly values so they are
-      #   # not pushed in @table.
-      #   @table.dup.merge({:state=>self.state})
-      # end
-
       def on_success_node(&blk)
         raise ArgumentError unless blk
         @success_node_cb = blk
