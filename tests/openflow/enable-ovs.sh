@@ -45,6 +45,16 @@ echo $work_dir/ovs/bin/ovs-vsctl set bridge br0 other_config:disable-in-band=tru
 $work_dir/ovs/bin/ovs-vsctl set bridge br0 other_config:disable-in-band=true
 
 echo
+echo "Using 'secure' fail mode for when the OpenFlow controller fails, so"
+echo " that flows for instances, virtual networks, etc, do not get deleted."
+echo
+echo "To disable secure failback mode, execute;"
+echo
+echo $work_dir/ovs/bin/ovs-vsctl del-fail-mode br0
+
+$work_dir/ovs/bin/ovs-vsctl set-fail-mode br0 secure
+
+echo
 echo "This results in packets from localhost being properly processed"
 echo "by the flow table, and should be used if controller communication goes"
 echo "through the bridge."
@@ -56,5 +66,6 @@ echo "Setting OpenFlow controller for 'br0', may cause connection loss for 15 se
 $work_dir/ovs/bin/ovs-vsctl set-controller br0 unix:$work_dir/ovs/var/run/openvswitch/br0.controller
 $work_dir/ovs/bin/ovs-vsctl get-controller br0
 
+$work_dir/ovs/bin/ovs-ofctl add-flow br0 priority=0,actions=normal
 $work_dir/ovs/bin/ovs-ofctl dump-flows br0
 
