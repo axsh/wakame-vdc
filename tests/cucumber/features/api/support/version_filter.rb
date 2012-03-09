@@ -75,11 +75,11 @@ Around do |scenario, blk|
         until_vers << $1
 
       when /^@(netfilter|openflow)$/
-        throw :skip_scenario if HOST_NODES.detect { |key,node| node[:online] && node[:type] != $1 } != nil
-        throw :skip_scenario if HOST_NODES.count  { |key,node| node[:online] && node[:type] == $1 } == 0
+        throw :skip_scenario if HOST_NODES.detect { |key,node| node && node['type'] != $1 } != nil
+        throw :skip_scenario if HOST_NODES.count  { |key,node| node && node['type'] == $1 } == 0
 
       when /^@multiple$/
-        online_nodes = HOST_NODES.count { |key,node| node[:online] }
+        online_nodes = HOST_NODES.count { |key,node| node }
         
         throw :skip_scenario if HOST_NODES.size < 2 
         throw :skip_scenario if online_nodes < 2 

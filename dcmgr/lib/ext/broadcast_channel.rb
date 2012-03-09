@@ -73,7 +73,7 @@ module Ext
                   # :args => args,
                 },
                 :ticket => Isono::Util.gen_id,
-                :timeout_sec => 1.0,
+                :timeout_sec => -1.0,
                 :sent_at => nil,
                 :completed_at => nil,
                 :complete_status => nil,
