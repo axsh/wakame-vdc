@@ -22,5 +22,10 @@ module Dcmgr::Cli::Debug
       print_result broadcast.publish('debug/vnet', 'switch_info', expected_host_nodes)
     end
 
+    desc "tunnels", "Get tunnels"
+    def tunnels
+      print_result broadcast.publish('debug/vnet', 'tunnels', expected_host_nodes)
+    end
+
   end
 end
