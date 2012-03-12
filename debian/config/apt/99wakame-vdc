@@ -1,0 +1,7 @@
+Package: tgt
+Pin: version 1:1.0.17*
+Pin-Priority: 1001
+
+Package: lxc
+Pin: version 0.7.5*
+Pin-Priority: 1001

@@ -1,0 +1,2 @@
+APT::Default-Release "lucid";
+APT::Cache-Limit "100000000";
