@@ -15,6 +15,8 @@ config.edge_networking = 'netfilter'
 # netfilter and openflow
 config.enable_ebtables = true
 config.enable_iptables = true
+config.enable_gre      = false
+config.enable_subnet   = false
 
 # display netfilter and openflow commands
 config.verbose_netfilter = false
