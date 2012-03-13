@@ -1,0 +1,53 @@
+<%   if I18n.locale.to_s.slice(0,2) == 'ja' then %>
+<%= javascript_include_tag 'i18n/grid.locale-ja.js' %>     
+<%  else %>
+<%= javascript_include_tag 'i18n/grid.locale-en.js' %>
+<%  end  %>
+<%= javascript_include_tag 'jquery.jqGrid.min.js' %>
+
+<style>
+        #additional_drives_and_IFs_dialog table tH{
+	        vertical-align: middle;
+        }
+
+        #additional_drives_and_IFs_dialog table tr td{
+	        vertical-align: middle;
+        }
+</style>
+
+<div id="additional_drives_and_IFs_dialog">
+<form id="fm">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_spec.account_id") %>: </td>
+                <td>
+     			<%= fields_for :selaccount, :remote => false, :url => request.url, 
+				:html => {:id => :selaccount, :method => :get,:style => "display: inline"} do |af| %>
+     		        <%= af.select(:account, accounts_with_prefix, :selected => 'a-shpoolxx') %>
+                        <% end %>&nbsp;
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_spec.specid") %>: </td>
+		<td>
+  		    <select name="specid" id="specid">
+                    </select>
+                </td>
+        
+	</tr>
+</table>
+<BR />
+<div id="load_mask1">
+<table id="list" class="scroll" cellpadding="0" cellspacing="0" ></table>
+<div id="pager1"></div>
+</div>
+<br/>
+
+<div id="load_mask2">
+<table id="list2" class="scroll" cellpadding="0" cellspacing="0" ></table>
+</table>
+<div id="pager2"></div>
+</div>
+</form>
+</div>
+

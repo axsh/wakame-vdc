@@ -28,7 +28,45 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/launch_instance', :to => 'dialog#launch_instance'
   get    'dialog/create_ssh_keypair', :to => 'dialog#create_ssh_keypair'
   post   'dialog/delete_ssh_keypair', :to => 'dialog#delete_ssh_keypair'
+  get    'dialog/create_user', :to => 'dialog#create_user'
+  post   'dialog/edit_user', :to => 'dialog#edit_user'
+  post   'dialog/delete_user', :to => 'dialog#delete_user'
+  post   'dialog/link_group', :to => 'dialog#link_group'
+  get    'dialog/create_group', :to => 'dialog#create_group'
+  post   'dialog/edit_group', :to => 'dialog#edit_group'
+  post   'dialog/delete_group', :to => 'dialog#delete_group'
+  post   'dialog/link_user', :to => 'dialog#link_user'
+  post   'dialog/link_group', :to => 'dialog#link_group'
+  get    'dialog/create_hn', :to => 'dialog#create_hostnode'
+  post   'dialog/create_hn_exec', :to => 'dialog#create_hostnode_exec'
+  get    'dialog/edit_and_delete_hn', :to => 'dialog#edit_and_delete_hostnode'
+  post   'dialog/get_hn_list', :to => 'dialog#get_hn_list'
+  post   'dialog/edit_hn_exec' , :to => 'dialog#edit_hostnode_exec'
+  post   'dialog/delete_hn_exec/:id' , :to => 'dialog#delete_hostnode_exec'
+  get    'dialog/create_sn', :to => 'dialog#create_storagenode'
+  post   'dialog/create_sn_exec', :to => 'dialog#create_storagenode_exec'
+  get    'dialog/delete_sn', :to => 'dialog#delete_storagenode'
+  post   'dialog/get_sn_list', :to => 'dialog#get_sn_list'
+  post   'dialog/delete_sn_exec/:id' , :to => 'dialog#delete_storagenode_exec'
+  get    'dialog/create_is', :to => 'dialog#create_spec'
+  post   'dialog/create_is_exec', :to => 'dialog#create_spec_exec'
+  get    'dialog/edit_and_delete_is', :to => 'dialog#edit_and_delete_spec'
+  post   'dialog/get_is_list', :to => 'dialog#get_is_list'
+  post   'dialog/edit_is_exec' , :to => 'dialog#edit_spec_exec'
+  post   'dialog/delete_is_exec/:id' , :to => 'dialog#delete_spec_exec'
+  get    'dialog/additional_drives_and_IFs', :to => 'dialog#additional_drives_and_IFs'
+  get    'dialog/get_is_drives_list', :to => 'dialog#get_is_drives_list'
+  get    'dialog/get_is_vifs_list', :to => 'dialog#get_is_vifs_list'
+  post   'dialog/is_drive_change', :to => 'dialog#is_drive_change'
+  post   'dialog/is_vif_change', :to => 'dialog#is_vif_change'
+  get    'dialog/create_wmi', :to => 'dialog#create_image'
+  post   'dialog/get_md5sum', :to => 'dialog#get_md5sum'
+  post   'dialog/create_wmi_exec', :to => 'dialog#create_image_exec'
+  get    'dialog/delete_wmi', :to => 'dialog#delete_image'
+  post   'dialog/get_wmi_list', :to => 'dialog#get_wmi_list'
+  post   'dialog/delete_wmi_exec/:id' , :to => 'dialog#delete_image_exec'
 
+  
   #home
   get    'home' ,:to => 'home#index'
   
@@ -72,6 +110,28 @@ DcmgrGui::Application.routes.draw do
   get    'keypairs/prk_download/:id' ,:to => 'keypairs#prk_download'
   get    'keypairs/show/:id' ,:to => 'keypairs#show'
   delete 'keypairs/:id' ,:to => 'keypairs#destroy'
+
+  #users
+  get    'users' ,:to => 'users#index'
+  get    'users/list/:id' ,:to => 'users#list'
+  post   'users/create_user' ,:to => 'users#create_user'
+  post   'users/edit_user/:id' ,:to => 'users#edit_user' 
+  get    'users/all' ,:to => 'users#show_users'
+  get    'users/total' ,:to => 'users#total'
+  get    'users/show/:id' ,:to => 'users#show'
+  post   'users/:id' ,:to => 'users#destroy'
+  post   'users/link_user_groups/:id' ,:to => 'users#link_user_groups'
+
+  #groups
+  get    'groups' ,:to => 'groups#index'
+  get    'groups/list/:id' ,:to => 'groups#list'
+  post   'groups/create_group' ,:to => 'groups#create_group'
+  post   'groups/edit_group/:id' ,:to => 'groups#edit_group' 
+  get    'groups/all' ,:to => 'groups#show_groups'
+  get    'groups/total' ,:to => 'groups#total'
+  get    'groups/show/:id' ,:to => 'groups#show'
+  post   'groups/:id' ,:to => 'groups#destroy'
+  post   'groups/link_group_users/:id' ,:to => 'groups#link_group_users'
   
   #security_groups
   get    'security_groups' ,:to => 'security_groups#index'
@@ -104,8 +164,6 @@ DcmgrGui::Application.routes.draw do
   get    'storage_pools/show/:id' ,:to => 'storage_pools#show'
   get    'storage_pools/show_storage_pools' ,:to => 'storage_pools#show_storage_pools'
   
-  #users
-  
   #volumes
   get    'volumes' ,:to => 'volumes#index'
   get    'volumes/list/:id' ,:to => 'volumes#list'
@@ -116,4 +174,6 @@ DcmgrGui::Application.routes.draw do
   post   'volumes' ,:to => 'volumes#create'
   delete 'volumes' ,:to => 'volumes#destroy'
 
+  #resorce (management)
+  get    'resource' ,:to => 'resource#index'
 end

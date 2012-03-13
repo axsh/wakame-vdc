@@ -1,0 +1,38 @@
+<p><%= t('dialog.delete_user.message')%></p>
+<br />
+<table>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_user.login_id") %>: </td>
+                <td>
+        		<%= @login_id %>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_user.name") %>: </td>
+                <td>
+        		<%= @name %>
+                </td>
+        </tr>
+        
+		<input type="hidden" id="uuid" value="<%= @uuid %>">
+		<input type="hidden" id="user_id" value="<%= @uuid %>">
+        <tr>
+    		<td><%= t("dialog.create_and_edit_user.primary_account_id") %>: </td>
+                <td>
+        		<%= @primary_account_id %>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_user.locale") %>: </td>
+                <td>
+        		<%= @locale %>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_user.time_zone") %>: </td>
+                <td>
+        		<%= @time_zone %>
+                </td>
+        </tr>
+</table>
+<input type="hidden" id="user_id" value="<%= @uuid %>">

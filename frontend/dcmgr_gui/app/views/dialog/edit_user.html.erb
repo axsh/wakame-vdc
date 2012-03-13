@@ -1,0 +1,39 @@
+<style type="text/css">
+	#edit_user_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+	}
+</style>
+<div id="edit_user_dialog">
+<table>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_user.login_id") %>: </td>
+                <td>
+        		<input type="text" id="login_id" size="20" value="<%= @login_id %>" disabled>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_user.name") %>: </td>
+                <td>
+        		<input type="text" id="user_name" size="20" value="<%= @name %>">
+                </td>
+        </tr>
+        
+		<input type="hidden" id="uuid" value="<%= @uuid %>">
+		<input type="hidden" id="user_id" value="<%= @uuid %>">
+        <tr>
+    		<td><%= t("dialog.create_and_edit_user.locale") %>: </td>
+                <td>
+     			<%= form_for :sellocale, :remote => false, :url => request.url, :html => {:id => :sellocale, :method => :get,:style => "display: inline"} do |f| %>
+     		        <%= f.select(:locale, @locales, :selected => @locale ) %>
+                        <% end %>&nbsp;
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_user.time_zone") %>: </td>
+                <td>
+            		<%= select_tag("seltimezone",time_zone_options_for_select(@time_zone)) %>
+         	</td>
+        </tr>
+</table>
+</div>

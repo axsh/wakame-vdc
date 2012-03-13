@@ -1,5 +1,3 @@
-
-  
 # Sample localization file for English. Add more files in this directory for other locales.
 # See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
@@ -26,6 +24,15 @@ en:
     select_action: "Select an Action"
     select_region: "Region: "
     select_region_first: "Japan"
+    select_arch_x86: "X86CPU 32bit"
+    select_arch_x86_64: "X86CPU 64bit"
+    select_hypervisor_kvm: "KVM"
+    select_hypervisor_lxc: "LXC"
+    hostpool_nothing: "Host pool is not exist."
+    select_transport_type_iscsi: "iscsi"
+    select_storage_type_zfs: "zfs"
+    select_storage_type_raw: "raw"
+    storagepool_nothing: "Storage pool is not exist."
   pagenate:
     page: "{0} Page"
     total: "Total {0}"
@@ -90,6 +97,77 @@ en:
     delete_ssh_keypair:
       header: "Delete SSH Key Pair"
       message: "Are you sure you want to delete the following key pair?"
+    create_and_edit_user:
+      login_id: "Login ID"
+      name: "User Name"
+      password: "Passeord"
+      primary_account_id: "Primary group uuid"
+      locale: "Locale"
+      time_zone: "Timezone"
+    create_and_edit_group:
+      name: "Group name"
+      uuid: "Group unique ID"
+      description: "Discription"
+      created_at: "Created"
+      updated_at: "Updated"
+      enable: "Enable flg"
+      is_deleted: "Delete flg"
+    delete_user:
+      message: "Are you sure you want to delete the following user?"
+    delete_group:
+      message: "Are you sure you want to delete the following group?"
+    link_group:
+      default: "Default"
+      select: "Select"
+      login_id: "Login ID"
+      name: "User name"
+      group_name: "Group name"
+      uuid: "Group unique id"
+      description: "Description"
+    link_user:
+      select: "select"
+      login_id: "Login ID"
+      name: "User Name"
+      group_name: "Group name"
+      uuid: ""
+      description: "Description"
+    create_and_edit_hostnode:
+      account_id: "Group ID"
+      hostid: "Host pool ID"
+      cpu_cores: "CPU cores"
+      memory_size: "Memory size(MB)"
+      arch: "architecture"
+      hypervisor: "hypervisor"
+      name: "Host pool name"
+      status: "status"
+    create_storagenode:
+      account_id: "Group ID"
+      storageid: "storage pool ID"
+      disk_space: "disk space(MB)"
+      ipaddr: "IP address"
+      transport_type: "transport type"
+      storage_type: "storage type"
+      base_path: "base path"
+      snapshot_base_path: "snapshot base path" 
+    create_and_edit_spec:
+      account_id: "group ID"
+      specid: "instance specification ID"
+      cpu_cores: "CPU cpres"
+      memory_size: "memory size(MB)"
+      arch: "architecture"
+      hypervisor: "hypervisor"
+      quota_weight: "quota weight"
+      quota_weight_default: "(default 1.0)"
+      status: "status"
+    create_image:
+      account_id: "group ID"
+      imageid: "machine image ID"
+      arch: "arcitecture"
+      image_location: "image file name"
+      location_annotation: "(Relative path from %s)"
+      md5sum: "MD5 value of image"
+      md5get: "MD5 get"
+      description: "description"
     start_instances:
       header: "Start Instances"
       message: "Are you sure you want to start those instances?"
@@ -103,7 +181,7 @@ en:
   information:
     header: "Information"
   accounts:
-    header: "My Accounts"
+    header: "User settings"
     top:
       information: "Information"
       last_login: "Last Login"
@@ -290,8 +368,64 @@ en:
       fingerprint: "Fingerprint"
       created_at: "Created"
       updated_at: "Updated"
+  users:
+    header: "Users"
+    button:
+      create_user: "Add User"
+      delete_user: "Delete"
+      edit_user: "Edit"
+      link_group: "Link"
+    list:
+      login_id: "Login ID"
+      edit_user: "Edit Information"
+      link_group: "Link to group"
+    details:
+      header: "Detail"
+      login_id: "Login ID"
+      name: "User name"
+      created_at: "Created"
+      updated_at: "Updated"
+      last_login_at: "Logined"
+      locale: "Language(locale)"
+      time_zone: "Area(timezone)"
+  groups:
+    header: "Groups"
+    button:
+      create_group: "Add Group"
+      delete_group: "Delete"
+      edit_group: "Edit"
+      link_user: "Link"
+    list:
+      name: "Group name"
+      edit_group: "Edit"
+      link_user: "Link to user"
+    details:
+      header: "Detail"
+      name: "Group name"
+      uuid: "Group unique ID"
+      description: "Description"
+      created_at: "Created"
+      updated_at: "Updated"
+      enable: "Enable flg"
+      is_deleted: "Delete flg"
+  resource:
+    header: "Resource manage"
+    label:
+      host_node: "Host Pools"
+      strage_node: "Strage Pools"
+      instance_spec: "Spec"
+    button:
+      host_node_create: "Add"
+      host_node_update: "Update/Delete"
+      storage_node_create: "Add"
+      storage_node_update: "Delete"
+      instance_spec_create: "Add"
+      instance_spec_update: "Update/Delete"
+      additional_drives_and_IFs: "Add Drive & VIF"
+      machine_image_create: "Add"
+      machine_image_update: "Delete"
   sidemenu:
-    change_account: "Change Account"
+    change_account: "Change Group"
     change_language: "Change Language"
     summary:
       header: "SUMMARY"
@@ -312,6 +446,11 @@ en:
       header: "NETWORK & SECURITY"
       security_groups: "Security Groups"
       key_pairs: "Key Pairs"
+    system_management:
+      header: "SYSTEM MANAGEMENT"
+      users:  "User Manage"
+      groups: "Group Manage"
+      resource: "Resource Manage"
   error_box:
     code: 'ErrorCode'
   error_message:

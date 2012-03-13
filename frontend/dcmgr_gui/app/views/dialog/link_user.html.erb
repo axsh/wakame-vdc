@@ -1,0 +1,76 @@
+<style type="text/css">
+#link_user_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+}
+/* dialog_tbl */
+#link_user_dialog #dialog_tbl {
+	margin-left: 20px;
+	width: 400px;
+	border-collapse: collapse;
+}
+#link_user_dialog #dialog_tbl tr:nth-child(odd){
+	background: #daf2f7;
+}
+#link_user_dialog #dialog_tbl tr:nth-child(even){
+	background: #FFFFFF;
+}
+#link_user_dialog #dialog_tbl tr th{
+	padding: 5px;
+	width: 374px;
+	background: #F5F5EB;
+	border: 1px solid #cccccc;
+	font-weight: bold;
+	text-align: center;
+}
+#link_user_dialog #dialog_tbl tr th.icon{
+	width: 20px;
+}
+
+#link_user_dialog #dialog_tbl tr td{
+	padding: 10px;
+	border: 1px solid #cccccc;
+	vertical-align: middle;
+}
+
+</style>
+<div id="link_user_dialog">
+<table>
+        <tr>
+    		<td><%= t("dialog.link_user.group_name") %>: </td>
+                <td>
+			<%= @name %>
+                </td>
+        </tr>
+        
+	<tr>
+		<td><%= t("dialog.link_user.description") %>: </td>
+        	<td>
+			<%= @description %>
+        	</td>
+	</tr>
+</table>
+<table id="dialog_tbl"  cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<th class="icon"><%= t('dialog.link_user.select') %></th>
+		<th><%= t('dialog.link_user.login_id') %></th>
+		<th><%= t('dialog.link_user.name') %></th>
+	</tr>
+	<% i = 0 %>
+	<% @users.each do |user| %>
+        <tr>
+		<td>
+		   <%= check_box_tag('sel_link',user.uuid,checked = @check_sel[i]	) %> 
+		</td>
+		<% i += 1 %>
+                <td>
+			<%= user.login_id %>
+                </td>
+                <td>
+			<%= user.name %>
+                </td>
+        </tr>
+        <% end %>
+</table>
+<input type="hidden" id="group_uuid" value="<%= @group_uuid %>">
+</div>

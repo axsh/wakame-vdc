@@ -1,4 +1,3 @@
-
 # Sample localization file for English. Add more files in this directory for other locales.
 # See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
@@ -25,6 +24,15 @@ ja:
     select_action: "アクション"
     select_region: "データセンタ: "
     select_region_first: "日本"
+    select_arch_x86: "X86CPU 32ビット"
+    select_arch_x86_64: "X86CPU 64ビット"
+    select_hypervisor_kvm: "KVM"
+    select_hypervisor_lxc: "LXC"
+    hostpool_nothing: "ホストプール未作成"
+    select_transport_type_iscsi: "iscsi"
+    select_storage_type_zfs: "zfs"
+    select_storage_type_raw: "raw"
+    storagepool_nothing: "ストレージプール未作成"
   pagenate:
     page: "{0} ページ"
     total: "全{0}件"
@@ -89,6 +97,78 @@ ja:
     delete_ssh_keypair:
       header: "キーペアを削除"
       message: "キーペアを削除します。よろしいですか？"
+    create_and_edit_user:
+      login_id: "ログインID"
+      name: "ユーザ名"
+      password: "パスワード"
+      primary_account_id: "既定グループ"
+      locale: "言語"
+      time_zone: "タイムゾーン"
+    create_and_edit_group:
+      header: "詳細"
+      name: "名前"
+      uuid: "アカウントID"
+      description: "説明"
+      created_at: "作成日"
+      updated_at: "更新日"
+      enable: "有効フラグ"
+      is_deleted: "削除フラグ"
+    delete_user:
+      message: "ユーザを削除します。よろしいですか？"
+    delete_group:
+      message: "グループを削除します。よろしいですか？"
+    link_group:
+      default: "既定"
+      select: "選択"
+      login_id: "ログインID"
+      name: "ユーザ名"
+      group_name: "グループ名"
+      uuid: "グループID"
+      description: "説明"
+    link_user:
+      select: "選択"
+      login_id: "ログインID"
+      name: "ユーザ名"
+      group_name: "グループ名"
+      uuid: "グループID"
+      description: "説明"
+    create_and_edit_hostnode:
+      account_id: "グループ名"
+      hostid: "ホストプールID"
+      cpu_cores: "CPUコア数"
+      memory_size: "メモリ容量(MB)"
+      arch: "アーキテクチャ"
+      hypervisor: "ハイパーバイザ"
+      name: "ホストプール名"
+      status: "状態"
+    create_storagenode:
+      account_id: "グループ名"
+      storageid: "ストレージプールID"
+      disk_space: "ディスク容量(MB)"
+      ipaddr: "IPアドレス"
+      transport_type: "トランスポートタイプ"
+      storage_type: "ストレージタイプ"
+      base_path: "ベースパス名"
+      snapshot_base_path: "スナップショットパス名" 
+    create_and_edit_spec:
+      account_id: "グループ名"
+      specid: "インスタンススペックID"
+      cpu_cores: "CPUコア数"
+      memory_size: "メモリ容量(MB)"
+      arch: "アーキテクチャ"
+      hypervisor: "ハイパーバイザ"
+      quota_weight: "割当重み因子"
+      quota_weight_default: "（省略時 1.0）"
+      status: "状態"
+    create_image:
+      account_id: "グループ名"
+      imageid: "マシンイメージID"
+      arch: "アーキテクチャ"
+      image_location: "マシンイメージファイル名"
+      location_annotation: "(%sからの相対パス）"
+      md5sum: "イメージのMD5値"
+      md5get: "MD5値取得"
+      description: "説明"
   login:
     sign_in: "ログイン"
     user: "ユーザー"
@@ -96,7 +176,7 @@ ja:
   information:
     header: "お知らせ"
   accounts:
-    header: "アカウント"
+    header: "ユーザ設定"
     top:
       information: "インフォメーション"
       last_login: "最終ログイン時刻"
@@ -281,8 +361,65 @@ ja:
       fingerprint: "フィンガープリント"
       created_at: "作成日"
       updated_at: "更新日"
+  users:
+    header: "ユーザ"
+    button:
+      create_user: "ユーザ作成"
+      delete_user: "ユーザ削除"
+      edit_user: "編集"
+      link_group: "関連付け"
+    list:
+      login_id: "ログインID"
+      edit_user: "情報更新"
+      link_group: "グループ設定"
+    details:
+      header: "詳細"
+      login_id: "ログインID"
+      name: "名前"
+      created_at: "作成日"
+      updated_at: "更新日"
+      last_login_at: "最終ログイン日時"
+      locale: "言語（ロケール）"
+      time_zone: "地域（タイムゾーン）"
+  groups:
+    header: "グループ"
+    button:
+      create_group: "グループ作成"
+      delete_group: "グループ削除"
+      edit_group: "編集"
+      link_user: "関連付け"
+    list:
+      name: "グループ名"
+      edit_group: "情報更新"
+      link_user: "ユーザ設定"
+    details:
+      header: "詳細"
+      name: "名前"
+      uuid: "グループID"
+      description: "説明"
+      created_at: "作成日"
+      updated_at: "更新日"
+      enable: "有効フラグ"
+      is_deleted: "削除フラグ"
+  resource:
+    header: "リソース管理"
+    label:
+      host_node: "ホストプール"
+      storage_node: "ストレージプール"
+      instance_spec: "スペック"
+      machine_image: "マシンイメージ"
+    button:
+      host_node_create: "作成"
+      host_node_update: "更新・削除"
+      storage_node_create: "作成"
+      storage_node_update: "削除"
+      instance_spec_create: "作成"
+      additional_drives_and_IFs: "追加ドライブ・VIF"
+      instance_spec_update: "更新・削除"
+      machine_image_create: "作成"
+      machine_image_update: "削除"
   sidemenu:
-    change_account: "アカウント変更"
+    change_account: "グループ選択"
     change_language: "言語選択"
     summary:
       header: "サマリー"
@@ -303,6 +440,11 @@ ja:
       header: "セキュリティー"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
+    system_management:
+      header: "システム管理"
+      users:  "ユーザ管理"
+      groups:  "グループ管理"
+      resource: "リソース管理"
   error_box:
     code: "エラーコード"
   error_message:

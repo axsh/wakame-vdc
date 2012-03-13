@@ -24,4 +24,15 @@ module ApplicationHelper
   def user_last_login_at
     @current_user.last_login_at.utc.iso8601
   end
+
+  def system_account?
+    account_uuid = User.primary_account_id(@current_user.uuid)
+    account_uuid == '00000000'
+  end
+
+  def accounts_with_prefix
+    Account.all_accounts_with_prefix
+  end  
+
 end
+

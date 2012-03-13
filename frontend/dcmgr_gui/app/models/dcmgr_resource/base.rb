@@ -6,7 +6,7 @@ module DcmgrResource
     self.format = :json
     self.prefix = '/api/'
     
-    @@debug = false
+    @@debug = true
     
     class << self
       

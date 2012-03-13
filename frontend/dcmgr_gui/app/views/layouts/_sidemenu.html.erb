@@ -54,6 +54,19 @@
 				<%= li_link_to_current(t("sidemenu.network_security.key_pairs"), 'keypairs', 'index')%>
 			</ul>
 		</li>
+        <% if system_account? %>
+		<li class="parent"><h3><img src="/images/system_management.gif" width="20" height="20" /><%= t("sidemenu.system_management.header") %></h3>
+			<ul>
+				<%= li_link_to_current(t("sidemenu.system_management.users"), 'users', 'index')%>
+			</ul>
+			<ul>
+				<%= li_link_to_current(t("sidemenu.system_management.groups"), 'groups', 'index')%>
+			</ul>
+			<ul>
+				<%= li_link_to_current(t("sidemenu.system_management.resource"), 'resource', 'index')%>
+			</ul>
+		</li>
+        <% end %>
 	</ul>
 	<div class="sidemenu_bottom">
 	</div>
