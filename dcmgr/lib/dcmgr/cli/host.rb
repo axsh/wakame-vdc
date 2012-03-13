@@ -64,27 +64,35 @@ class Host < Base
   end
 
   desc "show [UUID]", "Show list of host nodes and details"
+  method_option :deleted, :type => :boolean, :default=>false, :desc => "Includes deleted host node entries"
   def show(uuid=nil)
     if uuid
       host = HostNode[uuid] || UnknownUUIDError.raise(uuid)
       puts ERB.new(<<__END, nil, '-').result(binding)
-Host UUID:
-  <%= host.canonical_uuid %>
-Node ID:
-  <%= host.node_id %>
-CPU Cores (offerring):
-  <%= host.offering_cpu_cores %>
-Memory (offerring):
-  <%= host.offering_memory_size %>MB
-Hypervisor:
-  <%= host.hypervisor %>
+Host UUID: <%= host.canonical_uuid %>
+Node ID: <%= host.node_id %>
+CPU Cores (offerring): <%= host.offering_cpu_cores %>
+Memory (offerring): <%= host.offering_memory_size %>MB
+Hypervisor: <%= host.hypervisor %>
+Architecture: <%= host.arch %>
+Status: <%= host.status %>
+Create: <%= host.created_at %>
+Update: <%= host.updated_at %>
+<%- if !host.deleted_at.nil? -%>
+Deleted: <%= host.deleted_at %>
+<%- end -%>
 __END
     else
       cond = {}
-      all = HostNode.filter(cond).all
+      ds = if options[:deleted]
+             HostNode.filter(cond)
+           else
+             HostNode.filter(cond).alives
+           end
       puts ERB.new(<<__END, nil, '-').result(binding)
-<%- all.each { |row| -%>
-<%= "%-15s %-20s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
+<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status', 'Deleted'] %>
+<%- ds.each { |row| -%>
+<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status, !row.deleted_at.nil? ] %>
 <%- } -%>
 __END
     end

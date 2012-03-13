@@ -43,33 +43,36 @@ class Storage < Base
   end
 
   desc "show [UUID]", "Show list of storage nodes and details"
+  method_option :deleted, :type => :boolean, :default=>false, :desc => "Includes deleted storage node entries"
   def show(uuid=nil)
     if uuid
       st = StorageNode[uuid] || UnknownUUIDError.raise(uuid)
       puts ERB.new(<<__END, nil, '-').result(binding)
-UUID:
-  <%= st.canonical_uuid %>
-Node ID:
-  <%= st.node_id %>
-Disk space (offerring):
-  <%= st.offering_disk_space %>MB
-Storage:
-  <%= st.storage_type %>
-Transport:
-  <%= st.transport_type %>
-IP Address:
-  <%= st.ipaddr %>
-Export path:
-  <%= st.export_path %>
-Snapshot base path:
-  <%= st.snapshot_base_path %>
+UUID: <%= st.canonical_uuid %>
+Node ID: <%= st.node_id %>
+Disk space (offerring): <%= st.offering_disk_space %>MB
+Storage: <%= st.storage_type %>
+Transport: <%= st.transport_type %>
+IP Address: <%= st.ipaddr %>
+Export path: <%= st.export_path %>
+Snapshot base path: <%= st.snapshot_base_path %>
+Create: <%= st.created_at %>
+Update: <%= st.updated_at %>
+<%- if !st.deleted_at.nil? -%>
+Deleted: <%= st.deleted_at %>
+<%- end -%>
 __END
     else
       cond = {}
-      all = StorageNode.filter(cond).all
+      ds = if options[:deleted]
+             StorageNode.filter(cond)
+           else
+             StorageNode.filter(cond).alives
+           end
       puts ERB.new(<<__END, nil, '-').result(binding)
-<%- all.each { |row| -%>
-<%= "%-15s %-20s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
+<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status', 'Deleted'] %>
+<%- ds.each { |row| -%>
+<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status, !row.deleted_at.nil? ] %>
 <%- } -%>
 __END
     end
