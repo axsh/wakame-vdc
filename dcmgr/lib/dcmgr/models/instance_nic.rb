@@ -62,7 +62,7 @@ module Dcmgr::Models
     def validate
       super
 
-      # do not run validation if the row is maked as deleted.
+      # do not run validation if the row is marked as deleted.
       return true if self.deleted_at
 
       unless self.mac_addr.size == 12 && self.mac_addr =~ /^[0-9a-f]{12}$/

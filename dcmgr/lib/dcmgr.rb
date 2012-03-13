@@ -90,6 +90,7 @@ module Dcmgr
     autoload :Instance, 'dcmgr/models/instance'
     autoload :Image, 'dcmgr/models/image'
     autoload :HostNode, 'dcmgr/models/host_node'
+    autoload :HostNodeVnet, 'dcmgr/models/host_node_vnet'
     autoload :RequestLog, 'dcmgr/models/request_log'
     autoload :FrontendSystem, 'dcmgr/models/frontend_system'
     autoload :StorageNode, 'dcmgr/models/storage_node'

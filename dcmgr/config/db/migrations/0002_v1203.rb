@@ -12,6 +12,21 @@ Sequel.migration do
       add_index :deleted_at
     end
 
+    create_table(:host_node_vnets) do
+      primary_key :id, :type=>"int(11)"
+      column :host_node_id, "int(11)", :null=>false
+      column :network_id, "int(11)", :null=>false
+      column :broadcast_addr, "varchar(12)", :null=>false
+
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      column :deleted_at, "datetime"
+
+      index [:host_node_id]
+      index [:network_id]
+      index [:broadcast_addr]
+    end
+
     create_table(:network_ports) do
       primary_key :id, :type=>"int(11)"
       column :uuid, "varchar(255)", :null=>false
@@ -27,6 +42,7 @@ Sequel.migration do
   end
   
   down do
+    drop_table(:host_node_vnets)
     drop_table(:network_ports)
   end
 end

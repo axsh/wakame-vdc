@@ -20,6 +20,9 @@ module Dcmgr::Models
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
 
+    one_to_many :host_node_vnet
+    alias :vnet :host_node_vnet
+
     def_dataset_method(:online_nodes) do
       # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'online')))
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
@@ -132,6 +135,22 @@ module Dcmgr::Models
       avail_cpu_cores = self.online_nodes.sum(:offering_cpu_cores).to_i - ((alives_cpu_cores - stopped_cpu_cores) + (stopped_cpu_cores * usage_factor).floor)
       
       (avail_mem_size >= memory_size * num.to_i) && (avail_cpu_cores >= cpu_cores * num.to_i)
+    end
+
+    def add_vnet(network)
+      # Choose vendor ID of mac address.
+      vendor_id = if Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr.conf.mac_address_vendor_id
+                  else
+                    MacLease.default_vendor_id(self.instance_spec.hypervisor)
+                  end
+      m = MacLease.lease(vendor_id)
+      hn_vnet = HostNodeVnet.new
+      hn_vnet.host_node = self
+      hn_vnet.network = network
+      hn_vnet.broadcast_addr = m.mac_addr
+      hn_vnet.save
+      hn_vnet
     end
 
     protected
