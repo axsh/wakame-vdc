@@ -1,0 +1,6 @@
+# local / without-metadata
+uuid=lucid0
+uri=http://cdimage.wakame.jp/demo/vmimage/ubuntu-lucid-kvm-32.raw.gz
+arch=x86
+localname=ubuntu-lucid-kvm-32.raw
+storetype=local
