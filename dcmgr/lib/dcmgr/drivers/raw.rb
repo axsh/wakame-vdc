@@ -58,8 +58,7 @@ module Dcmgr
       private
       def vol_path
         vol_base_path = @volume[:storage_node][:export_path]
-        vol_account_path = "#{vol_base_path}/#{@volume[:account_id]}"
-        "#{vol_account_path}/#{@volume[:uuid]}"
+        "#{vol_base_path}/#{@volume[:uuid]}"
       end
 
       def cp_sparse(src, dst)

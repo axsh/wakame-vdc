@@ -21,13 +21,13 @@ module Dcmgr
         #
         # [TODO]
         iqn_prefix = "iqn.2010-09.jp.wakame"
-        target_node = "#{iqn_prefix}:#{@volume[:account_id]}.#{@volume[:uuid]}"
+        target_node = "#{iqn_prefix}:#{@volume[:uuid]}"
 
         # target
         sh("itadm create-target -n %s", [target_node])
 
 #        # target group
-#        target_group = "tg:#{@volume[:account_id]}.#{@volume[:uuid]}"
+#        target_group = "tg:#{@volume[:uuid]}"
 #        # target must be offline.
 #        # $ stmfadm create-tg a-shpoolxx.vol-chgqqw21
 #        # => stmfadm: STMF target must be offline
@@ -40,7 +40,7 @@ module Dcmgr
         sh("itadm list-target -v %s", [target_node])
 
 #        # host group
-#        host_group = "hg:#{@volume[:account_id]}.#{@volume[:uuid]}"
+#        host_group = "hg:#{@volume[:uuid]}"
 #        sh("stmfadm create-hg %s", [host_group])
 #        sh("stmfadm add-hg-member -g %s %s", [host_group, target_node])
 

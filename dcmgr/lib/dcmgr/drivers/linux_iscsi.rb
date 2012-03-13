@@ -13,10 +13,10 @@ module Dcmgr
         @volume_id = ctx.volume_id
         @node      = ctx.node
 
-        vol_path = File.join(@volume[:storage_node][:export_path], @volume[:account_id], @volume[:uuid]) 
+        vol_path = File.join(@volume[:storage_node][:export_path], @volume[:uuid]) 
         
         @volume[:transport_information] = iscsi = {}
-        iscsi[:iqn] = "#{IQN_PREFIX}:#{@volume[:account_id]}.#{@volume[:uuid]}"
+        iscsi[:iqn] = "#{IQN_PREFIX}:#{@volume[:uuid]}"
         iscsi[:tid] = pick_next_tid
         iscsi[:lun] = 1
         iscsi[:backing_store] = vol_path
