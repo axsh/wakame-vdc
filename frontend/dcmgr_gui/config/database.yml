@@ -2,19 +2,19 @@ development:
   adapter: mysql
   database: wakame_dcmgr_gui
   host: localhost
-  user: wakame_dcmgr_gui
-  password: passwd
+  user: root
+  password: 
 
 test:
   adapter: mysql
   database: wakame_dcmgr_gui
   host: localhost
-  user: wakame_dcmgr_gui
-  password: passwd
+  user: root
+  password:
 
 production:
   adapter: mysql
   database: wakame_dcmgr_gui
   host: localhost
-  user: wakame_dcmgr_gui
-  password: passwd
+  user: root
+  password:
