@@ -28,8 +28,10 @@ function debcontrol_depends() {
 }
 
 ## Install depend packages
+# if someone use different release, they want to modify this conf manually. so check if it exists.
+[[ -f /etc/apt/apt.conf.d/99default-release ]] || cp $VDC_ROOT/debian/config/apt/99default-release /etc/apt/apt.conf.d/
+# force overwrite other apt confs.
 cp $VDC_ROOT/debian/config/apt/wakame-vdc.list /etc/apt/sources.list.d/
-cp $VDC_ROOT/debian/config/apt/99default-release /etc/apt/apt.conf.d/
 cp $VDC_ROOT/debian/config/apt/99wakame-vdc /etc/apt/preferences.d/
 
 # debian packages
