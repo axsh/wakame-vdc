@@ -1,0 +1,20 @@
+<p><%= t('dialog.delete_group.message')%></p>
+<div id="create_delete_dialog">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_group.name") %>: </td>
+                <td>
+			<%= @name %>
+                </td>
+        </tr>
+        
+	<input type="hidden" id="group_id" value="<%= @uuid %>">
+	<tr>
+		<td><%= t("dialog.create_and_edit_group.description") %>: </td>
+        	<td>
+			<%= @description %>
+        	</td>
+	</tr>
+</table>
+
+</div>

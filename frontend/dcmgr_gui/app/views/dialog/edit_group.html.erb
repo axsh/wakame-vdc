@@ -1,0 +1,26 @@
+<style type="text/css">
+	#create_user_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+	}
+</style>
+<div id="create_group_dialog">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_group.name") %>: </td>
+                <td>
+			<input type="text" id="group_name" size="20" value="<%= @name %>" disabled>
+                </td>
+        </tr>
+        
+	<input type="hidden" id="uuid" value="<%= @uuid %>">
+</table>
+	<p><%= t("dialog.create_and_edit_group.description") %>: </p>
+        <p>
+		<textarea id="description" cols="10" rows=3 style="width:442px;height:100px" ><%= @description %></textarea>
+        </p>
+
+	<input type="hidden" id="enable" value="1">
+
+</table>
+</div>

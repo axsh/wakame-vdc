@@ -1,0 +1,84 @@
+<style type="text/css">
+	#delete_storagenode_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+	}
+        #delete_storagenode_dialog table tr td{
+	        padding: 3px;
+	        vertical-align: middle;
+        }
+
+        .valid-error { color: Red; }
+</style>
+<div id="delete_storagenode_dialog">
+<form id="fm">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_storagenode.account_id") %>: </td>
+                <td>
+     			<%= fields_for :selaccount, :remote => false, :url => request.url, 
+				:html => {:id => :selaccount, :method => :get,:style => "display: inline"} do |af| %>
+     		        <%= af.select(:account, accounts_with_prefix, :selected => 'a-shpoolxx') %>
+                        <% end %>&nbsp;
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_storagenode.storageid") %>: </td>
+		<td>
+  		    <select name="storageid" id="storageid">
+                    </select>
+                </td>
+        
+	<tr>
+    		<td><%= t("dialog.create_storagenode.disk_space") %>: </td>
+		<td>
+                    <div id="disk_space"><BR></div>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_storagenode.ipaddr") %>: </td>
+		<td>
+                    <div id="ipaddr"><BR></div>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_storagenode.transport_type") %>: </td>
+		<td>
+                    <div id="transport_type"><BR></div>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_storagenode.storage_type") %>: </td>
+		<td>
+                    <div id="storage_type"><BR></div>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_storagenode.base_path") %>: </td>
+		<td>
+                    <div id="base_path"><BR></div>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_storagenode.snapshot_base_path") %>: </td>
+		<td>
+                    <div id="snapshot_base_path"><BR></div>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_storagenode.status") %>: </td>
+		<td>
+                    <div id="status"><BR></div>
+                </td>
+        </tr>
+
+        <ul id="result">
+        </ul>
+        <input type="hidden" id="iscsi" value='<%= t("selectmenu.select_transport_type_iscsi") %>'>
+        <input type="hidden" id="zfs" value='<%= t("selectmenu.select_storage_type_zfs") %>'>
+        <input type="hidden" id="raw" value='<%= t("selectmenu.select_storage_type_raw") %>'>
+        <input type="hidden" id="storagepool_nothing" value='<%= t("selectmenu.storagepool_nothing") %>'>
+</table>
+</form>
+</div>
+

@@ -1,0 +1,127 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/users_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+        $.validator.addMethod('AN',
+          function(value,element) {
+           var r= new RegExp('^[A-Za-z][A-Za-z0-9\-]*$','gi');
+           return r.test(value);
+          },
+          'Please enter by alphabet or number.'
+        );
+	dcmgrGUI.usersPanel();
+});
+</script>
+
+<% end %>
+<% content_for :stylesheet do %>
+<style type="text/css">
+	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+	.ui-dialog .ui-dialog-content {margin:5px;}
+</style>
+<% end %>
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" /><%= t('users.header') %><a href="#" class="showhide"></a></h3>
+	<div id="list_load_mask" class="maincontent">
+		<div class="controller clearfix">
+		  <a href="javascript:void(0);" class="create_user"><%= t('users.button.create_user') %></a>
+		  <a href="javascript:void(0);" class="delete_user"><%= t('users.button.delete_user') %></a>
+		  <a href="javascript:void(0);" class="refresh" style="margin-left:-9px"><%= t('button.refresh') %></a>
+		</div>
+		<div class="controller clearfix">
+			<!-- <div class="l_float">
+							<span class="text">Viewing:</span>
+							<select class="select">
+								<option>All Users</option>
+							</select>
+							<input type="text" class="search" />
+						</div> -->
+      <div id="pagenate" class="r_float">
+			  <a href="javascript:void(0);" class="prev"></a>
+			  <p id="viewPagenate"></p>
+			  <a href="javascript:void(0);" class="next"></a>
+      </div>
+		</div>
+		<div id="display_users" class="display_area">
+			<% content_for :javascript_template do %>
+			<script id="usersListTemplate" type="text/x-jquery-tmpl">
+			<table class="ptn09" frame="void" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<th class="icon"></th>
+					<th><%= t('users.list.login_id') %></th>
+					<th class="header_edit_user"><%= t('users.list.edit_user') %></th>
+					<th class="header_link_group"><%= t('users.list.link_group') %></th>
+				</tr>
+		{{each(index,item) rows}}
+		<tr>
+		    {{if item.uuid }}
+			<td class="listradiobutton"><input id="${item.id}" type="radio" name="select" value="${item.uuid}" ></td>
+		    {{else}}
+			<td class="listradiobutton"></td>
+		    {{/if}}
+			<td>${item.login_id}</td>
+			<td>
+				{{if item.uuid }}
+				<div class="cen">
+					<a id="edit_${item.uuid}" href="javascript:void(0);" class="edit_user"><%= t('users.button.edit_user') %></a>
+				</div>
+				{{/if}}
+			</td>
+			<td>
+				{{if item.uuid }}
+					<a id="link_${item.uuid}" href="javascript:void(0);" class="link_group"><%= t('users.button.link_group') %></a>
+				{{/if}}
+			</td>
+		</tr>
+		{{/each}}
+			</table>
+			</script>
+			<% end %>
+		</div>
+	</div>
+	<div id="btm_maincontent_wide"></div>
+	<h3><img src="images/icon_ttl_detail.gif" /><%= t('users.details.header') %><a href="javascript:void(0);" class="showhide"></a></h3>
+ 		<div id="detail" class="maincontent">
+ 			<% content_for :javascript_template do %>
+			<script id="usersDetailTemplate" type="text/x-jquery-tmpl">
+			<div class="display_area">
+				<table class="ptn08" frame="void" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<td class="padcell"></td>
+						<td class="title"><%= t('users.details.login_id') %>:</td>
+						<td colspan="7">${item.login_id}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title"><%= t('users.details.name') %>:</td>
+                                                <td colspan="7">${item.name}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title"><%= t('users.details.created_at') %>:</td>
+						<td colspan="7">${item.created_at}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title"><%= t('users.details.last_login_at') %>:</td>
+						<td colspan="7">${item.last_login_at}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title"><%= t('users.details.locale') %>:</td>
+						<td colspan="7">${item.locale}</td>
+					</tr>
+
+					<tr>
+						<td class="padcell"></td>
+						<td class="title"><%= t('users.details.time_zone') %>:</td>
+						<td colspan="7">${item.time_zone}</td>
+					</tr>
+
+				</table>
+			</div>
+			</script>
+			<% end %>
+ 		</div><!-- maincontent -->
+	<div id="btm_maincontent_wide_last"></div>
+</div>

@@ -1,0 +1,72 @@
+<style type="text/css">
+	#create_image_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+	}
+        .valid-error { color: Red; }
+</style>
+<div id="create_image_dialog">
+<form id="fm">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_image.account_id") %>: </td>
+                <td>
+     			<%= fields_for :selaccount, :remote => false, :url => request.url, 
+				:html => {:id => :selaccount, :method => :get,:style => "display: inline"} do |af| %>
+     		        <%= af.select(:account, accounts_with_prefix, :selected => 'a-shpoolxx') %>
+                        <% end %>&nbsp;
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_image.imageid") %>: </td>
+		<td><input type="text" id="imageid" name="imageid" size="8"></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_image.arch") %>: </td>
+		<td>
+  		    <select name="arch" id="arch">
+                          <option value="x86"><%= t("selectmenu.select_arch_x86") %></option>
+                          <option value="x86_64" selected><%= t("selectmenu.select_arch_x86_64") %></option>
+                    </select>
+                </td>
+        </tr>
+        <input type="hidden" id="is_public" value='0'>
+
+</table>
+        <BR/>
+	<legend><%= t("dialog.create_image.image_location") %></legend>
+	<table cellspacing="5" cellpadding="5">
+		<tbody>
+                <tr><td>
+                 <%= t("dialog.create_image.location_annotation") % @machine_image_base_path %>   
+                </tr><td> 
+		<tr>
+			<td colspan="2">
+				<textarea cols="56" rows="2" name="image_location" id="image_location"></textarea>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+        <BR/>
+        <table>
+        <tr>
+         <td><%= t("dialog.create_image.md5sum") %>:</td>
+         <td><input type="text" id="md5sum" name="md5sum" size="32" readonly value=""></td>
+         <td><button id="md5get"><%= t("dialog.create_image.md5get") %></button></td>
+        </tr>
+        </table>
+        <BR/>
+	<legend><%= t("dialog.create_image.description") %></legend>
+	<table cellspacing="5" cellpadding="5">
+		<tbody>
+		<tr>
+			<td colspan="2">
+				<textarea cols="56" rows="5" name="description" id="description"></textarea>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
+</form>
+</div>
+
