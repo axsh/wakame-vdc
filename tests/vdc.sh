@@ -117,8 +117,7 @@ function run_standalone() {
   cd ${prefix_path}
   
   screen_open || abort "Failed to start new screen session"
-  screen_it collector "cd ./dcmgr"
-  screen_it collector "./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
+  screen_it collector "cd ./dcmgr; ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
   screen_it nsa       "cd ./dcmgr; ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
   screen_it hva "cd ./dcmgr; ./bin/hva -i demo1 2>&1 | tee ${tmp_path}/vdc-hva.log"
   screen_it metadata  "cd ./dcmgr/web/metadata; bundle exec unicorn -p ${metadata_port} -o ${metadata_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
