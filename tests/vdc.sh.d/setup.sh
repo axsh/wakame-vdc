@@ -12,7 +12,7 @@ egrep -v '^#' /etc/hosts | egrep -q $(hostname) || echo "127.0.0.1 $(hostname)" 
 echo "Configuring sysctl.conf parameters ... /etc/sysctl.d/10-hva-sysctl.conf"
 cp ${VDC_ROOT}/debian/config/10-hva-sysctl.conf /etc/sysctl.d/
 # reload sysctls
-initctl restart procps
+initctl start procps
 
 # stop system services.
 for i in apparmor dnsmasq tgt; do
