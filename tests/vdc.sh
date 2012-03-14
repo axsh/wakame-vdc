@@ -4,7 +4,7 @@
 set -e
 
 abs_path=$(cd $(dirname $0) && pwd)
-data_path=$abs_path/vdc
+data_path=$(cd "${0}.d" && pwd)
 prefix_path=$(cd ${abs_path}/../ && pwd)
 VDC_ROOT=$prefix_path
 tmp_path=$VDC_ROOT/tmp
