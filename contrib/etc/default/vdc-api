@@ -1,0 +1,12 @@
+# Comment out to run the lxc init script
+#RUN=yes
+
+## vdc
+VDC_ROOT=/home/wakame/wakame-vdc
+
+## for debug
+#DAEMON_COREFILE_LIMIT=unlimited
+
+## rack params
+#BIND_ADDR=0.0.0.0
+#PORT=9001

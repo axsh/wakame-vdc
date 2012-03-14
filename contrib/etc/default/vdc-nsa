@@ -1,0 +1,13 @@
+# Comment out to run the lxc init script
+#RUN=yes
+
+## vdc
+VDC_ROOT=/home/wakame/wakame-vdc
+
+## for debug
+#DAEMON_COREFILE_LIMIT=unlimited
+
+## agent params
+#AMQP_ADDR=127.0.0.1
+#AMQP_PORT=5672
+#NODE_ID=demo1
