@@ -13,7 +13,7 @@ screenrc_path=${tmp_path}/screenrc
 # screen mode: screen, tmux, bg
 screen_mode=${screen_mode:-'screen'}
 
-PATH="$PATH:${VDC_ROOT}/ruby/bin"
+PATH="${VDC_ROOT}/ruby/bin:$PATH"
 export PATH VDC_ROOT
 
 . ${abs_path}/builder/functions.sh
