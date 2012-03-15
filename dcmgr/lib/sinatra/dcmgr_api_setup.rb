@@ -1,0 +1,95 @@
+# -*- coding: utf-8 -*-
+
+require 'json'
+
+require 'sinatra/respond_with'
+require 'sinatra/namespace'
+require 'sinatra/sequel_transaction'
+require 'sinatra/json'
+
+require 'extlib/hash'
+
+# common setup for Dcmgr API Sinatra App.
+module Sinatra
+  module DcmgrAPISetup
+    # Returns deserialized hash from HTTP body. Serialization fromat
+    # is guessed from content type header. The query string params
+    # is returned if none of content type header is in HTTP headers.
+    # This method is called only when the request method is POST.
+
+    DEFAULT_OUTPUT_CONTENT_TYPE='application/json'
+    
+    BODY_PARSER = {
+      'application/json' => proc { |body| ::JSON.load(body) },
+      'text/json' => proc { |body| ::JSON.load(body) },
+      'application/yaml' => proc { |body| ::YAML.load(body) },
+      'text/yaml' => proc { |body| ::YAML.load(body) },
+    }
+
+
+    DO= proc {
+      disable :sessions
+      disable :show_exceptions
+
+      register Sinatra::RespondWith
+      register Sinatra::Namespace
+      register Sinatra::SequelTransaction
+
+      # avoid using Sinatra::JSON builtin encoder.
+      set :json_encoder, ::JSON
+      
+      # remove trailing extension from URI and add mapped mime types to
+      # http accept header. This helps to use file extension in URI with Sinatra::Namespace.
+      before do
+        rpi = request.path_info.sub(%r{\.([^\./]+)$}, '')
+        ext = $1
+        if ext
+          (settings.mime_types(ext) || []).each.each { |i|
+            request.accept << i
+          }
+          request.path_info = rpi
+        else
+          request.accept << DEFAULT_OUTPUT_CONTENT_TYPE
+        end
+      end
+
+      # merge request body data into @params.
+      before do
+        next if !(request.content_length.to_i > 0)
+        mime = request.preferred_type
+        parser = BODY_PARSER[mime]
+        hash = if parser.nil?
+                 # ActiveResource gives the one level nested hash which has
+                 # {'something key'=>real_params} so that dummy key is assinged here.
+                 {:dummy=>@params}
+               else
+                 begin
+                   parser.call(request.body)
+                 rescue => e
+                   error(406, 'Invalid request body.')
+                 end
+               end
+        
+        @params.merge!(hash.to_mash.values.first)
+      end
+
+      error(Sequel::DatabaseError) do |boom|
+        logger.error(boom)
+        boom = Dcmgr::Endpoints::Errors::DatabaseError.new("#{boom.class}: #{boom.message}")
+        body(respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
+        boom.code
+      end
+
+      # capture all child errors of APIError.
+      error(Dcmgr::Endpoints::Errors::APIError) do |boom|
+        Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+        body(respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
+        boom.code
+      end
+    }
+    
+    def self.registered(app)
+      app.class_eval &DO
+    end
+  end
+end

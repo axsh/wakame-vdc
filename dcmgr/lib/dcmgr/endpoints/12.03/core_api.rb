@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
 
 require 'sinatra/base'
-require 'sinatra/namespace'
-require 'sinatra/sequel_transaction'
-
-require 'json'
-require 'extlib/hash'
+require 'sinatra/dcmgr_api_setup'
 
 require 'dcmgr/endpoints/errors'
 
 module Dcmgr::Endpoints::V1203
   class CoreAPI < Sinatra::Base
     include Dcmgr::Logger
-    register Sinatra::Namespace
-    register Sinatra::SequelTransaction
+    register Sinatra::DcmgrAPISetup
 
     use Dcmgr::Rack::RequestLogger
 
@@ -25,11 +20,7 @@ module Dcmgr::Endpoints::V1203
 
     include Dcmgr::Endpoints::Helpers
 
-    disable :sessions
-    disable :show_exceptions
-
     before do
-      @params = parsed_request_body if request.post?
       if request.env[HTTP_X_VDC_ACCOUNT_UUID].to_s == ''
         raise E::InvalidRequestCredentials
       else
@@ -62,76 +53,7 @@ module Dcmgr::Endpoints::V1203
       find_by_uuid(:Account, account_uuid)
     end
 
-    # Returns deserialized hash from HTTP body. Serialization fromat
-    # is guessed from content type header. The query string params
-    # is returned if none of content type header is in HTTP headers.
-    # This method is called only when the request method is POST.
-    def parsed_request_body
-      # @mime_types should be defined by sinatra/respond_to.rb plugin.
-      if @mime_types.nil?
-        # use query string as requested params if Content-Type
-        # header was not sent.
-        # ActiveResource library tells the one level nested hash which has
-        # {'something key'=>real_params} so that dummy key is assinged here.
-        hash = {:dummy=>@params}
-      else
-        mime = @mime_types.first
-        begin
-          case mime.to_s
-          when 'application/json', 'text/json'
-            require 'json'
-            hash = JSON.load(request.body)
-            hash = hash.to_mash
-          when 'application/yaml', 'text/yaml'
-            require 'yaml'
-            hash = YAML.load(request.body)
-            hash = hash.to_mash
-          else
-            raise "Unsupported body document type: #{mime.to_s}"
-          end
-        rescue => e
-          # fall back to query string params
-          hash = {:dummy=>@params}
-        end
-      end
-      return hash.values.first
-    end
-
-    def response_to(res)
-      mime = @mime_types.first unless @mime_types.nil?
-      case mime.to_s
-      when 'application/yaml', 'text/yaml'
-        content_type 'yaml'
-        body res.to_yaml
-      when 'application/xml', 'text/xml'
-        raise NotImplementedError
-      else
-        content_type 'json'
-        body res.to_json(JSON::PRETTY_STATE_PROTOTYPE)
-      end
-    end
-
-    # I am not going to use error(ex, &blk) hook since it works only
-    # when matches the Exception class exactly. I expect to match
-    # whole subclasses of APIError so that override handle_exception!().
-    def handle_exception!(boom)
-      # Translate common non-APIError to APIError
-      boom = case boom
-             when Sequel::DatabaseError
-               DatabaseError.new
-             else
-               boom
-             end
-
-      if boom.kind_of?(E::APIError)
-        @env['sinatra.error'] = boom
-        Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
-        error(boom.status_code, response_to({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
-      else
-        logger.error(boom)
-        super
-      end
-    end
+    alias :response_to :respond_with
 
     def find_volume_snapshot(snapshot_id)
       vs = M::VolumeSnapshot[snapshot_id]
@@ -193,28 +115,17 @@ module Dcmgr::Endpoints::V1203
              }]
     end
 
-    def self.load_namespace(ns)
-      super(ns, binding)
-    end
+    # default output format.
+    respond_to :json, :yml
 
-    # Endpoint to handle VM instance.
-    load_namespace('12.03/instances')
-
-    load_namespace('12.03/images')
-
-    load_namespace('12.03/host_nodes')
-
-    load_namespace('12.03/volumes')
-
-    load_namespace('12.03/volume_snapshots')
-
-    load_namespace('12.03/security_groups')
-
-    load_namespace('12.03/storage_nodes')
-
-    load_namespace('12.03/ssh_key_pairs')
-
-    load_namespace('12.03/networks')
-    
+    load_namespace('instances')
+    load_namespace('images')
+    load_namespace('host_nodes')
+    load_namespace('volumes')
+    load_namespace('volume_snapshots')
+    load_namespace('security_groups')
+    load_namespace('storage_nodes')
+    load_namespace('ssh_key_pairs')
+    load_namespace('networks')
   end
 end
