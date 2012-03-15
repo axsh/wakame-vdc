@@ -24,6 +24,8 @@ module Dcmgr
         def status_code
           self.class.status_code
         end
+        # Sinatra reads http code from this method.
+        alias :code :status_code
 
         def error_code
           self.class.error_code
