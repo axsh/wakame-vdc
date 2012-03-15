@@ -18,7 +18,7 @@ module Dcmgr
           # sh("/bin/mkdir -p #{vol_path}") unless File.directory?(vol_path)
           cp_sparse(snap_file, vol_path)
           if $?.exitstatus != 0
-            raise "failed copy snapshot: #{snap_file}"
+            raise "failed to copy snapshot: #{snap_file}"
           end
         else
           unless File.exist?(vol_path)
