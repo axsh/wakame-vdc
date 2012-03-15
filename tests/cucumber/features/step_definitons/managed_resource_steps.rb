@@ -6,9 +6,9 @@ Before do
   @managed_resources = {}
 end
 
-After do
+After do |scenario|
   @managed_resources.each { |key,resources|
-    resources.each { |id| step "we make an api delete call to #{key}/#{id} with no options" }
+    resources.each { |id| step "we make an api delete call to #{key}s/#{id} with no options" }
   }
 end
 
