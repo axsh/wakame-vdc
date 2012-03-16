@@ -45,19 +45,18 @@ module Sinatra
         ext = $1
         if ext
           (settings.mime_types(ext) || []).each.each { |i|
-            request.accept << i
+            request.accept.unshift(i)
           }
           request.path_info = rpi
         else
-          request.accept << DEFAULT_OUTPUT_CONTENT_TYPE
+          request.accept.unshift(DEFAULT_OUTPUT_CONTENT_TYPE)
         end
       end
 
       # merge request body data into @params.
       before do
         next if !(request.content_length.to_i > 0)
-        mime = request.preferred_type
-        parser = BODY_PARSER[mime]
+        parser = BODY_PARSER[(request.content_type || request.preferred_type)]
         hash = if parser.nil?
                  # ActiveResource gives the one level nested hash which has
                  # {'something key'=>real_params} so that dummy key is assinged here.
