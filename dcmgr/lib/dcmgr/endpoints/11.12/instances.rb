@@ -106,19 +106,12 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
       raise "Unknown boot type"
     end
     
-    #instance.reload
-
-    return begin
-             res = response_to(instance.to_api_document)
-
-             commit_transaction
-             Dcmgr.messaging.submit("scheduler",
-                                    'schedule_instance', instance.canonical_uuid)
-             res
-           rescue ::Exception => e
-             p instance.to_api_document
-             raise e
-           end
+    res = instance.to_api_document
+    
+    commit_transaction
+    Dcmgr.messaging.submit("scheduler",
+                           'schedule_instance', instance.canonical_uuid)
+    response_to(res)
   end
 
   get '/:id' do
@@ -126,13 +119,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
     i = find_by_uuid(:Instance, params[:id])
     raise E::UnknownInstance if i.nil?
 
-    return begin
-             response_to(i.to_api_document)
-           rescue ::Exception => e
-             p i.to_api_document
-             raise e
-           end
-    #response_to(i.to_api_document)
+    response_to(i.to_api_document)
   end
 
   delete '/:id' do
@@ -150,7 +137,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
     when 'terminated', 'scheduling'
       raise E::InvalidInstanceState, i.state
     else
-      res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
     end
     response_to([i.canonical_uuid])
   end
@@ -160,7 +147,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
     i = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, i.state if i.state != 'running'
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'reboot', i.canonical_uuid)
-    response_to({})
+    response_to([i.canonical_uuid])
   end
 
   put '/:id/stop' do

@@ -54,11 +54,13 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/security_groups' do
       raise E::InvalidSecurityGroupRule, e.message
     end
 
+    res = g.to_api_document
+    
     commit_transaction
     # refresh security group rules on host nodes.
     Dcmgr.messaging.event_publish('hva/security_group_updated', :args=>[g.canonical_uuid])
 
-    response_to(g.to_api_document)
+    response_to(res)
   end
 
   delete '/:id' do

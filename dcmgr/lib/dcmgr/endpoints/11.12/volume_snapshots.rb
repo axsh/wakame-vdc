@@ -51,11 +51,14 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/volume_snapshots' do
     sp = vs.storage_node
     destination_key = Dcmgr::StorageService.destination_key(@account.canonical_uuid, params[:destination], sp.snapshot_base_path, vs.snapshot_filename)
     vs.update_destination_key(@account.canonical_uuid, destination_key)
-    commit_transaction
 
+    res = vs.to_api_document
     repository_address = Dcmgr::StorageService.repository_address(destination_key)
-    res = Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, repository_address)
-    response_to(vs.to_api_document)
+    
+    commit_transaction
+    Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, repository_address)
+    
+    response_to(res)
   end
 
   delete '/:id' do
@@ -80,10 +83,11 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/volume_snapshots' do
     raise E::UnknownVolumeSnapshot if vs.nil?
     sp = vs.storage_node
 
-    commit_transaction
-
     repository_address = Dcmgr::StorageService.repository_address(destination_key)
-    res = Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
+
+    commit_transaction
+    Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
+    
     response_to([vs.canonical_uuid])
   end
 

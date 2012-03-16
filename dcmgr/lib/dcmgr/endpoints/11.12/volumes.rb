@@ -131,10 +131,13 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/volumes' do
 
     v.instance = i
     v.save
-    commit_transaction
-    res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
-    response_to(v.to_api_document)
+    res = v.to_api_document
+    
+    commit_transaction
+    Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+
+    response_to(res)
   end
 
   get '/:id/detach' do
@@ -149,9 +152,12 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/volumes' do
     raise E::DetachVolumeFailure, "boot device can not be detached" if v.boot_dev == 1
     i = v.instance
     raise E::InvalidInstanceState unless i.live? && i.state == 'running'
+    res = v.to_api_document
+
     commit_transaction
-    res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
-    response_to(v.to_api_document)
+    Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+
+    response_to(res)
   end
 
 end
