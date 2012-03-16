@@ -83,7 +83,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
         repository_address = Dcmgr::StorageService.repository_address(vol.snapshot.destination_key)
       end
 
-      res = Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
+      Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
     end
 
     response_to(vol.to_api_document)
@@ -109,7 +109,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::UnknownVolume if v.nil?
 
     commit_transaction
-    res = Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'delete_volume', v.canonical_uuid)
+    Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'delete_volume', v.canonical_uuid)
     response_to([v.canonical_uuid])
   end
 
@@ -131,7 +131,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     v.instance = i
     v.save
     commit_transaction
-    res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+    Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
     response_to(v.to_api_document)
   end
@@ -149,7 +149,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     i = v.instance
     raise E::InvalidInstanceState unless i.live? && i.state == 'running'
     commit_transaction
-    res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+    Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
     response_to(v.to_api_document)
   end
 

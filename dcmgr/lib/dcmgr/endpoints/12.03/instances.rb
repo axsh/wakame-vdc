@@ -139,7 +139,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     when 'terminated', 'scheduling'
       raise E::InvalidInstanceState, i.state
     else
-      res = Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
     end
     response_to([i.canonical_uuid])
   end
@@ -149,7 +149,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     i = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, i.state if i.state != 'running'
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'reboot', i.canonical_uuid)
-    response_to({})
+    response_to([i.canonical_uuid])
   end
 
   put '/:id/stop' do

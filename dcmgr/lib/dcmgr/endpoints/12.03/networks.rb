@@ -155,8 +155,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     # Find better way of figuring out when an instance is not running.
     if not instance.host_node.nil?
-      res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
-                                   nic.canonical_uuid, port.canonical_uuid)
+      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
+                             nic.canonical_uuid, port.canonical_uuid)
     end
 
     port.instance_nic = nic
@@ -180,8 +180,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     # Find better way of figuring out when an instance is not running.
     if not instance.host_node.nil?
-      res = Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
-                                   nic.canonical_uuid, port.canonical_uuid)
+      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
+                             nic.canonical_uuid, port.canonical_uuid)
     end
 
     port.instance_nic = nil
