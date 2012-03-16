@@ -157,7 +157,7 @@ drive)
     network=`get_metadata ${mac_path}/x-network`
 
     shlog ifconfig $nic 0.0.0.0 down
-    shlog ifmetric $nic $metric
+    shlog which ifmetric && shlog ifmetric $nic $metric
     shlog ifconfig $nic $ip netmask $netmask broadcast $broadcast up
     #shlog route add -net $network netmask $netmask dev $nic
   done
