@@ -97,7 +97,7 @@ if [ -n "$HN" ]; then
   # Add it to the hosts file if not there yet
   grep -q "$HN" /etc/hosts
   if [ $? -ne 0 ]; then
-    echo '127.0.1.1 '$HN >> /etc/hosts
+    echo '127.0.0.1 '$HN >> /etc/hosts
   fi
 fi
 
