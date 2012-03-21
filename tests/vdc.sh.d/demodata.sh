@@ -14,48 +14,15 @@ prefix_len="${prefix_len:-$(/sbin/ip route show | awk '$9 == ip { sub(/.*\//, ""
 dns_server=${dns_server:-${ipaddr}}
 dhcp_server=${dhcp_server:-${ipaddr}}
 metadata_server=${metadata_server:-${ipaddr}}
-sta_server=${sta_server:-${ipaddr}}
+
+node_id=${node_id:-"demo1"}
 
 hva_arch=$(uname -m)
 
+(hva_id=${node_id} hva_arch=${hva_arch} . $data_path/demodata_hva.sh)
+(sta_id=${node_id} sta_server=${sta_server:-${ipaddr}} . $data_path/demodata_sta.sh)
+
 cd ${VDC_ROOT}/dcmgr/
-
-shlog ./bin/vdc-manage host add hva.demo1 \
-  --force \
-  --uuid hn-demo1 \
-  --account-id ${account_id} \
-  --cpu-cores 100 \
-  --memory-size 400000 \
-  --hypervisor ${hypervisor} \
-  --arch ${hva_arch}
-
-case ${sta_server} in
-  ${ipaddr})
-  shlog ./bin/vdc-manage storage add sta.demo1 \
-    --force \
-    --uuid sn-demo1 \
-    --account-id ${account_id} \
-    --base-path ${tmp_path}/volumes \
-    --disk-space $((1024 * 1024)) \
-    --ipaddr ${sta_server} \
-    --storage-type raw \
-    --snapshot-base-path ${tmp_path}/snap
-
-  #ln -fs ${vmimage_path}      ${vmimage_snap_path}
-  #ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
- ;;
-*)
-  shlog ./bin/vdc-manage storage add sta.demo1 \
-   --force \
-   --uuid sn-demo1 \
-   --account-id ${account_id} \
-   --base-path xpool \
-   --disk-space $((1024 * 1024)) \
-   --ipaddr ${sta_server} \
-   --storage-type zfs \
-   --snapshot-base-path /export/home/wakame/vdc/sta/snap
- ;;
-esac
 
 # vlan
 #shlog ./bin/vdc-manage vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
@@ -115,8 +82,8 @@ shlog ./bin/vdc-manage network dhcp addrange nw-demo3 10.101.0.60 10.101.0.80
 shlog ./bin/vdc-manage network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
 shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 
-shlog ./bin/vdc-manage tag map tag-shhost hn-demo1
-shlog ./bin/vdc-manage tag map tag-shstor sn-demo1
+shlog ./bin/vdc-manage tag map tag-shhost hn-${node_id}
+shlog ./bin/vdc-manage tag map tag-shstor sn-${node_id}
 shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
 
 shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}

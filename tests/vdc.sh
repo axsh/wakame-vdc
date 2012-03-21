@@ -13,6 +13,8 @@ screenrc_path=${tmp_path}/screenrc
 # screen mode: screen, tmux, bg
 screen_mode=${screen_mode:-'screen'}
 
+host_node_id=${host_node_id:-'demo1'}
+
 PATH="${VDC_ROOT}/ruby/bin:$PATH"
 export PATH VDC_ROOT
 
@@ -118,14 +120,14 @@ function run_standalone() {
   
   screen_open || abort "Failed to start new screen session"
   screen_it collector "cd ./dcmgr; ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
-  screen_it nsa       "cd ./dcmgr; ./bin/nsa -i demo1 2>&1 | tee ${tmp_path}/vdc-nsa.log"
-  screen_it hva "cd ./dcmgr; ./bin/hva -i demo1 2>&1 | tee ${tmp_path}/vdc-hva.log"
+  screen_it nsa       "cd ./dcmgr; ./bin/nsa -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-nsa.log"
+  screen_it hva       "cd ./dcmgr; ./bin/hva -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-hva.log"
   screen_it metadata  "cd ./dcmgr/web/metadata; bundle exec unicorn -p ${metadata_port} -o ${metadata_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
   screen_it api       "cd ./dcmgr/web/api; bundle exec unicorn -p ${api_port} -o ${api_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
   screen_it auth      "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${auth_port} -o ${auth_bind} ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
   screen_it proxy     "${abs_path}/builder/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${data_path}/proxy.conf"
   screen_it webui     "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${webui_port} -o ${webui_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
-  screen_it sta "cd ./dcmgr; ./bin/sta -i demo1 2>&1 | tee ${tmp_path}/vdc-sta.log"
+  screen_it sta       "cd ./dcmgr; ./bin/sta -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-sta.log"
 }
 
 mode=$1
