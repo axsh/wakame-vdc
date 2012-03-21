@@ -145,7 +145,6 @@ function run_multiple() {
   
   screen_open || abort "Failed to start new screen session"
   screen_it collector "cd ./dcmgr; ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
-  screen_it nsa       "cd ./dcmgr; ./bin/nsa -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-nsa.log"
   screen_it metadata  "cd ./dcmgr/web/metadata; bundle exec unicorn -p ${metadata_port} -o ${metadata_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
   screen_it api       "cd ./dcmgr/web/api; bundle exec unicorn -p ${api_port} -o ${api_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
   screen_it auth      "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${auth_port} -o ${auth_bind} ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
@@ -160,7 +159,10 @@ function run_multiple() {
     ip=${BASH_REMATCH[2]}
 
     if [[ "${ip}" == "${ipaddr}" ]]; then
+      screen_it nsa       "cd ./dcmgr; ./bin/nsa -i ${id} 2>&1 | tee ${tmp_path}/vdc-nsa.log"
+      sleep 1
       screen_it hva-${id} "cd ./dcmgr; ./bin/hva -i ${id} 2>&1 | tee ${tmp_path}/vdc-hva.log"
+      sleep 1
       screen_it sta-${id} "cd ./dcmgr; ./bin/sta -i ${id} 2>&1 | tee ${tmp_path}/vdc-sta.log"
     else
       screen_it hva-${id} "echo \"cd ${abs_path}/ && host_node_id=${id} ampq_server=${ipaddr} ./vdc-multiple.sh run_remote_hva 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh -o 'StrictHostKeyChecking no' ${ip}"
