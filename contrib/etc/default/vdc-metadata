@@ -8,5 +8,6 @@ VDC_ROOT=/home/wakame/wakame-vdc
 #DAEMON_COREFILE_LIMIT=unlimited
 
 ## rack params
+RACK_ENV=development
 #BIND_ADDR=0.0.0.0
 #PORT=9002
