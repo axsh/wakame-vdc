@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'dcmgr/rubygems'
+require 'dcmgr'
+
+Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
+
+begin
+  Dcmgr.run_initializers(:sequel)
+  puts "OK"
+rescue => e
+  puts "NG"
+  p e
+end
+

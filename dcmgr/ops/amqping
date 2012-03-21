@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'isono'
+
+include Isono::Runner::RpcServer
+
+class AmqPing < Isono::NodeModules::Base
+  initialize_hook do
+    EM.defer do
+      puts "OK"
+      Isono::NodeModules::RpcChannel.new(node)
+      exit(0)
+    end
+  end
+end
+
+manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
+manifest.instance_eval do
+  load_module AmqPing
+end
+
+Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
+
+ARGV.clear
+ARGV.push "-s"
+ARGV.push Dcmgr.conf.amqp_server_uri
+
+begin
+  start(manifest) do
+  end
+rescue => e
+  puts "NG"
+  p e
+  exit(1)
+end

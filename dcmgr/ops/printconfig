@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'dcmgr/rubygems'
+require 'dcmgr'
+
+Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
+Dcmgr.run_initializers
+
+PATH_SEPARATOR = '/'
+
+def dump_hash_tree(hash, pwd='')
+  hash.each { |k,v|
+    case v
+    when Hash
+      dump_hash_tree(v, "#{pwd}#{PATH_SEPARATOR}#{k}")
+    else
+      puts "#{pwd}#{PATH_SEPARATOR}#{k}=#{v}"
+    end
+  }
+end
+
+dump_hash_tree(Dcmgr.conf.to_hash)
