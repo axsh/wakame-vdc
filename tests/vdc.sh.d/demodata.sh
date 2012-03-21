@@ -117,47 +117,6 @@ INSERT INTO volume_snapshots values
  (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now());
 EOS
 
-image_features_opts=
-kvm -device ? 2>&1 | egrep 'name "lsi' -q || {
-  image_features_opts="--virtio"
-}
-
-for meta in $data_path/image-*.meta; do
-  (
-    . $meta
-    [[ -n "$localname" ]] || {
-      localname=$(basename "$uri")
-    }
-    
-    localpath=$tmp_path/images/$localname
-    chksum=$(md5sum $localpath | cut -d ' ' -f1)
-    
-    case $storetype in
-      "local")
-        shlog ./bin/vdc-manage image add local ${localpath} \
-          --md5sum $chksum \
-          --account-id ${account_id} \
-          --uuid wmi-${uuid} \
-          --arch ${arch} \
-          --description "${localname} local" \
-          --state init
-        ;;
-      
-      "volume")
-        shlog ./bin/vdc-manage image add volume snap-${uuid} \
-          --md5sum ${chksum} \
-          --account-id ${account_id} \
-          --uuid wmi-${uuid} \
-          --arch ${arch} \
-          --description "${localname} volume" \
-          --state init
-        ;;
-    esac
-
-    [[ -z "$image_features_opts" ]] || {
-      shlog ./bin/vdc-manage image features wmi-${uuid} ${image_features_opts}
-    }
-  )
-done
+(. $data_path/demodata_images.sh)
 
 exit 0
