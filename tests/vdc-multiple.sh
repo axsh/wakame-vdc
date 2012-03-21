@@ -4,7 +4,7 @@
 set -e
 
 abs_path=$(cd $(dirname $0) && pwd)
-data_path=$(cd "${0}.d" && pwd)
+data_path=$(cd "vdc.sh.d" && pwd)
 prefix_path=$(cd ${abs_path}/../ && pwd)
 VDC_ROOT=$prefix_path
 tmp_path=$VDC_ROOT/tmp
@@ -12,8 +12,6 @@ screenrc_path=${tmp_path}/screenrc
 
 # screen mode: screen, tmux, bg
 screen_mode=${screen_mode:-'screen'}
-
-host_node_id=${host_node_id:-'demo1'}
 
 PATH="${VDC_ROOT}/ruby/bin:$PATH"
 export PATH VDC_ROOT
@@ -94,6 +92,8 @@ function cleanup {
 }
 
 function init_db() {
+  host_nodes=${host_nodes:?"host_nodes needs to be set"}
+
   for dbname in wakame_dcmgr wakame_dcmgr_gui; do
     yes | mysqladmin -uroot drop ${dbname} || :
     mysqladmin -uroot create ${dbname}
@@ -109,24 +109,76 @@ function init_db() {
   #local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
   eval ${oauth_keys}
 
-  # Install demo data.
-  (. $data_path/demodata.sh)
+  did_have_main=0
+
+  for node in $host_nodes; do
+    [[ $node =~ ^([^:]+):([0-9.]+)$ ]] || abort "Failed to parse node 'name:ip': ${node}"
+    id=${BASH_REMATCH[1]}
+    ip=${BASH_REMATCH[2]}
+
+    if [[ "${ip}" == "${ipaddr}" ]]; then
+      # Install the main data.
+      (node_id=${id} . $data_path/demodata.sh)
+      did_have_main=1
+    else
+      (hva_id=${id} sta_id=${id} hva_arch=$(uname -m) ipaddr=${ip} add_host)
+    fi
+  done
+
+  [[ did_have_main != 1 ]] || abort "Main host node not defined."
 }
 
-function run_standalone() {
+function add_host() {
+  # Install remote host node demo data.
+  hva_arch=${hva_arch:?"hva_arch needs to be set"}
+  sta_server=${ipaddr:?"ipaddr needs to be set"}
+
+  (. $data_path/demodata_hva.sh)
+  (. $data_path/demodata_sta.sh)
+}
+
+function run_multiple() {
+  host_nodes=${host_nodes:?"host_nodes needs to be set"}
+
   # screen
   cd ${prefix_path}
   
   screen_open || abort "Failed to start new screen session"
   screen_it collector "cd ./dcmgr; ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
   screen_it nsa       "cd ./dcmgr; ./bin/nsa -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-nsa.log"
-  screen_it hva       "cd ./dcmgr; ./bin/hva -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-hva.log"
   screen_it metadata  "cd ./dcmgr/web/metadata; bundle exec unicorn -p ${metadata_port} -o ${metadata_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-metadata.log"
   screen_it api       "cd ./dcmgr/web/api; bundle exec unicorn -p ${api_port} -o ${api_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-api.log"
   screen_it auth      "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${auth_port} -o ${auth_bind} ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
   screen_it proxy     "${abs_path}/builder/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${data_path}/proxy.conf"
   screen_it webui     "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${webui_port} -o ${webui_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
-  screen_it sta       "cd ./dcmgr; ./bin/sta -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-sta.log"
+
+  sleep 1
+
+  for node in $host_nodes; do
+    [[ $node =~ ^([^:]+):([0-9.]+)$ ]] || abort "Failed to parse node 'name:ip': ${node}"
+    id=${BASH_REMATCH[1]}
+    ip=${BASH_REMATCH[2]}
+
+    if [[ "${ip}" == "${ipaddr}" ]]; then
+      screen_it hva-${id} "cd ./dcmgr; ./bin/hva -i ${id} 2>&1 | tee ${tmp_path}/vdc-hva.log"
+      screen_it sta-${id} "cd ./dcmgr; ./bin/sta -i ${id} 2>&1 | tee ${tmp_path}/vdc-sta.log"
+    else
+      screen_it hva-${id} "echo \"cd ${abs_path}/ && host_node_id=${id} ampq_server=${ipaddr} ./vdc-multiple.sh run_remote_hva 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh -o 'StrictHostKeyChecking no' ${ip}"
+      sleep 1
+      screen_it sta-${id} "echo \"cd ${abs_path}/ && host_node_id=${id} ampq_server=${ipaddr} ./vdc-multiple.sh run_remote_sta 2>&1 | tee ${tmp_path}/vdc-hva.log\" | ssh -o 'StrictHostKeyChecking no' ${ip}"
+      sleep 1
+    fi
+  done
+}
+
+function run_remote_hva() {
+  host_node_id=${host_node_id:?"host_node_id needs to be set"}
+  (cd ${prefix_path}/dcmgr; ./bin/hva -i ${host_node_id} -s amqp://${ampq_server}/ 2>&1 | tee ${tmp_path}/vdc-hva.log)
+}
+
+function run_remote_sta() {
+  host_node_id=${host_node_id:?"host_node_id needs to be set"}
+  (cd ${prefix_path}/dcmgr; ./bin/sta -i ${host_node_id} -s amqp://${ampq_server}/ 2>&1 | tee ${tmp_path}/vdc-sta.log)
 }
 
 mode=$1
@@ -142,6 +194,15 @@ case ${mode} in
   cleanup)
     cleanup
     ;;
+  add_host)
+    add_host
+    ;;
+  run_remote_hva)
+    run_remote_hva
+    ;;
+  run_remote_sta)
+    run_remote_sta
+    ;;
   *)
     # interactive mode
     cleanup
@@ -149,7 +210,7 @@ case ${mode} in
     init_db
     sleep 1
   
-    run_standalone
+    run_multiple
     screen_attach
     screen_close
     ;;
