@@ -25,46 +25,99 @@ create_volume_min_size 10
 account_instance_total_weight 100.0
 account_volume_total_size 100000 # 100GB
 
+# 1.0 means that 100% of resources are reserved for stopped instances.
 stopped_instance_usage_factor 1.0
 
+# lists the instances which alives and died within RECENT_TERMED_PERIOD sec.
 recent_terminated_instance_period 900
 
-mac_address_vendor_id nil
+# mac address vendor_id
+mac_address_vendor_id '525400'
 
+#
 # Scheduling Algorithms
-#host_node_scheduler :FindFirst
+#
+# * host_node_scheduler
+# * storage_node_scheduler
+# * network_scheduler
+#
+
 host_node_scheduler {
+  # Available host node(hva) schedulers:
+  #
+  # * :ExcludeSame
+  # * :FindFirst
+  # * :LeastUsage
+  # * :SpecifyNode
+  #
   scheduler :LeastUsage
 }
-  
-#storage_node_scheduler :FindFirst
+
 storage_node_scheduler {
+  # Available storage node(sta) schedulers:
+  #
+  # * :FindFirst
+  # * :LeastUsage
+  #
   scheduler :LeastUsage
 }
-#network_scheduler :FlatSingle
+
 network_scheduler {
+  # Available meta network schedulers:
+  #
+  # * :PerInstance
+  #
   scheduler :PerInstance
+
   options {
+    # Available network schedulers:
+    #
+    # * :FlatSingle
+    # * :NatOneToOne
+    # * :VifTemplate
+    #
+    # "network_scheduler_name" {
+    #   scheduler ":scheduler_type"
+    #   options {
+    #      .... ....
+    #   }
+    # }
+
+    # default network scheduler
     default {
+      # assign IP address from first found network to single interface.
       scheduler :FlatSingle
     }
+
+    # nat
     nat {
+      # one internal address + NAT external address to single interface.
       scheduler :NatOneToOne
       options {
+        # internal address
         network_id 'nw-demo1'
+        # external address
         nat_network_id 'nw-demo2'
       }
     }
+
+    # multiple vnic: type1
     vif3type1 {
+      # setup vnics by following InstanceSpec#vifs template.
       scheduler :VifTemplate
+      # map instance ehtX to network uuid.
       options( {
         'eth0' => 'nw-demo1',
         'eth1' => 'nw-demo2',
         'eth2' => 'nw-demo3',
       })
     }
+
+    # multiple vnic: type2
     vif3type2 {
+      # setup vnics by following InstanceSpec#vifs template.
       scheduler :VifTemplate
+      # map instance ehtX to network uuid.
       options( {
         'eth0' => 'nw-demo1',
         'eth1' => 'nw-demo4',
@@ -73,5 +126,3 @@ network_scheduler {
     }
   }
 }
-
-mac_address_vendor_id '525400'
