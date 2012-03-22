@@ -21,7 +21,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     desc "configuration file for dnsmasq dhcp"
     dhcp_hosts_conf File.expand_path('dnsmasq-dhcp.conf', '/var/tmp/')
   end
-  
+
   initialize_hook do
     if !manifest.config.enable_dnsmasq
       logger.info "Dnsmasq is disabled."
@@ -43,8 +43,8 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     else
       logger.warn("Failed to detect dnsmasq binary version")
     end
-    
-    myinstance.start_dnsmasq    
+
+    myinstance.start_dnsmasq
     myinstance.refresh_dnsmasq_conf
 
     event = Isono::NodeModules::EventChannel.new(node)
@@ -53,7 +53,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
       logger.info("refresh on instance.scheduled: #{args.inspect}")
       myinstance.refresh_dnsmasq_conf
     end
-    
+
     event.subscribe('hva/instance_terminated', '#') do |args|
       logger.info("refresh on instance_terminated: #{args.inspect}")
       myinstance.restart_dnsmasq
@@ -84,7 +84,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
     rescue Errno::ECHILD
       abort("Failed to exec dnsmasq process.")
     end
-  end    
+  end
 
   def restart_dnsmasq
     EM.defer {
@@ -118,13 +118,13 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
       end
     }
   end
-  
+
   def generate_dhcp_conf
     rpc = Isono::NodeModules::RpcChannel.new(node)
     # load entier macaddr,ipaddr pairs for all instances from collector.
     confdata = rpc.request('hva-collector', 'get_dhcp_conf', manifest.config.network_name)
 
-      render_conf(config_section.dhcp_hosts_conf, binding, <<'_EOS_') 
+    render_conf(config_section.dhcp_hosts_conf, binding, <<'_EOS_')
 server=8.8.8.8
 log-facility=/var/log/dnsmasq.log
 #log-queries
@@ -158,7 +158,7 @@ dhcp-option=<%= nwid %>,option:domain-name,<%= v[:domain_name] %>
 <%- } -%>
 _EOS_
 
-    render_conf(config_section.dhcp_hosts_conf + ".dhcp", binding, <<'_EOS_') 
+    render_conf(config_section.dhcp_hosts_conf + ".dhcp", binding, <<'_EOS_')
 <%- confdata.each { |nwid, v| -%>
 <%-   v[:mac2addr].each { |i| -%>
 <%= i[:mac_addr] %>,net:<%= nwid %>,<%= i[:ipaddr] %>,infinite
@@ -191,7 +191,7 @@ manifest.instance_eval do
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
   load_module Isono::NodeModules::NodeHeartbeat
   load_module SuperviseDnsmasq
-  
+
   config do |c|
     c.dnsmasq_bin_path = '/usr/sbin/dnsmasq'
     c.network_name = nil
