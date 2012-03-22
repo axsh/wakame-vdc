@@ -65,8 +65,8 @@ module Dcmgr
 
           block.each { |key,value|
             if key == :for_each
-              args.each { |arg|
-                str << ',' << actions_block_to_s(value, arg)
+              value[0].each { |arg|
+                str << ',' << actions_block_to_s(value[1], arg)
               }
             else
               tag = action_tags[key]
@@ -83,11 +83,7 @@ module Dcmgr
 
           str
         end
-
-        def flood_actions_to_s args
-          actions_block_to_s(actions, args)
-        end
-
+        
         def match_tags
           {
             :ip => 'ip',
@@ -111,8 +107,6 @@ module Dcmgr
 
             # Not really match tags, separate.
             :idle_timeout => 'idle_timeout=%i',
-
-            :for_each => :for_each,
           }
         end
 
@@ -136,8 +130,6 @@ module Dcmgr
             :output_reg1 => 'output:NXM_NX_REG1[]',
             :output_reg2 => 'output:NXM_NX_REG2[]',
             :resubmit => 'resubmit(,%i)',
-
-            :for_each => :for_each,
           }
         end
       end

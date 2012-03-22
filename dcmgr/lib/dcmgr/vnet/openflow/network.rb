@@ -15,6 +15,8 @@ module Dcmgr
         attr_reader :ports
         attr_reader :local_ports
 
+        attr_reader :subnet_macs
+
         # Use the actual network db object instead.
         attr_accessor :virtual
         attr_accessor :domain_name
@@ -37,14 +39,14 @@ module Dcmgr
           @datapath = dp
           @ports = []
           @local_ports = []
+          @subnet_macs = []
 
           @virtual = false
           @prefix = 0
         end
 
         def update
-          datapath.add_flood_flows(flood_flows, ports)
-          datapath.add_flood_flows(flood_local_flows, local_ports)
+          datapath.add_flows(flood_flows)
         end
 
         def add_port port, is_local
@@ -61,13 +63,9 @@ module Dcmgr
           @flood_flows ||= Array.new
         end
 
-        def flood_local_flows
-          @flood_local_flows ||= Array.new
-        end
-
         def install_virtual_network
-          flood_flows       << Flow.new(TABLE_VIRTUAL_DST, 1, {:reg1 => id, :reg2 => 0, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, :for_each => {:output => :placeholder})
-          flood_local_flows << Flow.new(TABLE_VIRTUAL_DST, 0, {:reg1 => id, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, :for_each => {:output => :placeholder})
+          flood_flows << Flow.new(TABLE_VIRTUAL_DST, 1, {:reg1 => id, :reg2 => 0, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, :for_each => [ports, {:output => :placeholder}])
+          flood_flows << Flow.new(TABLE_VIRTUAL_DST, 0, {:reg1 => id, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, :for_each => [local_ports, {:output => :placeholder}])
 
           learn_arp_match = "priority=#{1},idle_timeout=#{3600*10},table=#{TABLE_VIRTUAL_DST},reg1=#{id},reg2=#{0},NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]"
           learn_arp_actions = "output:NXM_NX_REG2[]"
@@ -92,10 +90,10 @@ module Dcmgr
         end
 
         def install_physical_network
-          flood_flows << Flow.new(TABLE_MAC_ROUTE,      1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => {:output => :placeholder})
-          flood_flows << Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => {:output => :placeholder})
-          flood_flows << Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => {:load_reg0 => :placeholder, :resubmit => TABLE_LOAD_SRC})
-          flood_flows << Flow.new(TABLE_ARP_ROUTE,      1, {:arp => nil, :dl_dst => 'FF:FF:FF:FF:FF:FF', :arp_tha => '00:00:00:00:00:00'}, :for_each => {:output => :placeholder})
+          flood_flows << Flow.new(TABLE_MAC_ROUTE,      1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [ports, {:output => :placeholder}])
+          flood_flows << Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [ports, {:output => :placeholder}])
+          flood_flows << Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [ports, {:load_reg0 => :placeholder, :resubmit => TABLE_LOAD_SRC}])
+          flood_flows << Flow.new(TABLE_ARP_ROUTE,      1, {:arp => nil, :dl_dst => 'FF:FF:FF:FF:FF:FF', :arp_tha => '00:00:00:00:00:00'}, :for_each => [ports, {:output => :placeholder}])
         end
 
         def request_metadata_server_mac port

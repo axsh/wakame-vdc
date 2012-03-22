@@ -29,10 +29,6 @@ module Dcmgr
           ovs_ofctl.add_flows_from_list flows
         end
 
-        def add_flood_flows flows, args
-          ovs_ofctl.add_flood_flows_from_list flows, args
-        end
-
         def del_flows flows
           ovs_ofctl.del_flows_from_list flows
         end
