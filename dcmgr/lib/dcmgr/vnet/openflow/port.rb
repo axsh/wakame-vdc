@@ -14,6 +14,7 @@ module Dcmgr
 
         attr_accessor :has_instance
         attr_accessor :is_active
+        attr_accessor :is_inserted
         attr_accessor :ip
         attr_accessor :mac
         attr_accessor :network
@@ -26,6 +27,7 @@ module Dcmgr
 
           @has_instance = false
           @is_active = false
+          @is_inserted = false
         end
 
         def init_eth
@@ -65,6 +67,10 @@ module Dcmgr
           @port_type = PORT_TYPE_INSTANCE_VNET
           queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => port_info.number}, [{:load_reg1 => network.id}, {:resubmit => TABLE_VIRTUAL_SRC}])
           queue_flow Flow.new(TABLE_VIRTUAL_DST, 2, {:reg1 => network.id, :dl_dst => hw}, {:output => port_info.number})
+        end
+
+        def init_instance_subnet hw, ip
+          queue_flow Flow.new(TABLE_CLASSIFIER, 7, {:dl_dst => hw}, {:output => port_info.number})
         end
 
         # Install flows:

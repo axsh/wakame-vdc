@@ -48,12 +48,25 @@ module Dcmgr
             if each.number == OpenFlowController::OFPP_LOCAL
               @local_hw = each.hw_addr
               logger.debug "OFPP_LOCAL: hw_addr:#{local_hw.to_s}"
+
             elsif each.name =~ /^eth/
               @eth_port = each.number
+
+              port = OpenFlowPort.new(datapath, each)
+              port.is_active = true
+              ports[each.number] = port
+
+              datapath.controller.insert_port self, port
+
+              # Wait for eth to be instantiated to avoid having the
+              # network die.
+              sleep(1) until port.lock.synchronize { port.is_inserted == true }
             end
           end
 
-          message.ports.each do | each |
+          message.ports.each do |each|
+            next if each.name =~ /^eth/
+
             port = OpenFlowPort.new(datapath, each)
             port.is_active = true
             ports[each.number] = port
