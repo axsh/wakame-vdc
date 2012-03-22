@@ -4,15 +4,6 @@ module Dcmgr
   module VNet
     module OpenFlow
       
-      # A class to indicate the match/etc is a placeholder?
-      class FlowPlaceholder
-        attr_accessor :index
-
-        def initialize index
-          @index = index
-        end
-      end
-
       class Flow
         attr_accessor :table
         attr_accessor :priority
@@ -69,35 +60,32 @@ module Dcmgr
           end
         end
 
-        def actions_block_to_s block, arg = nil
+        def actions_block_to_s block, args = nil
           str = ""
 
           block.each { |key,value|
-            tag = action_tags[key]
-            raise "No action tag: key:#{key.inspect}" if tag.nil?
-
-            if value.class == FlowPlaceholder
-              str << "," << tag % arg
+            if key == :for_each
+              args.each { |arg|
+                str << ',' << actions_block_to_s(value, arg)
+              }
             else
-              str << "," << tag % value
+              tag = action_tags[key]
+              raise "No action tag: key:#{key.inspect}" if tag.nil?
+
+              case value
+              when :placeholder
+                str << ',' << tag % args
+              else
+                str << ',' << tag % value
+              end
             end
           }
+
           str
         end
 
         def flood_actions_to_s args
-          str = ""
-
-          args.each { |arg|
-            if actions.class == Array
-              actions.each { |block|
-                str << actions_block_to_s(block, arg)
-              }
-            else
-              str << actions_block_to_s(actions, arg)
-            end
-          }
-          str
+          actions_block_to_s(actions, args)
         end
 
         def match_tags
@@ -123,6 +111,8 @@ module Dcmgr
 
             # Not really match tags, separate.
             :idle_timeout => 'idle_timeout=%i',
+
+            :for_each => :for_each,
           }
         end
 
@@ -146,6 +136,8 @@ module Dcmgr
             :output_reg1 => 'output:NXM_NX_REG1[]',
             :output_reg2 => 'output:NXM_NX_REG2[]',
             :resubmit => 'resubmit(,%i)',
+
+            :for_each => :for_each,
           }
         end
       end

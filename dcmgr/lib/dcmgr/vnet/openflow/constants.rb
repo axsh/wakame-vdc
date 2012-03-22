@@ -38,6 +38,9 @@ module Dcmgr
         TABLE_VIRTUAL_SRC = 6
         TABLE_VIRTUAL_DST = 7
 
+        TABLE_VIRTUAL_MAC_IN = 8
+        TABLE_VIRTUAL_MAC_OUT = 9
+
         # The ARP antispoof table ensures no ARP packet SHA or SPA field
         # matches the mac address owned by another port.
         #

@@ -66,8 +66,8 @@ module Dcmgr
         end
 
         def install_virtual_network
-          flood_flows       << Flow.new(TABLE_VIRTUAL_DST, 1, {:reg1 => id, :reg2 => 0, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, {:output => FlowPlaceholder.new(0)})
-          flood_local_flows << Flow.new(TABLE_VIRTUAL_DST, 0, {:reg1 => id, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, {:output => FlowPlaceholder.new(0)})
+          flood_flows       << Flow.new(TABLE_VIRTUAL_DST, 1, {:reg1 => id, :reg2 => 0, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, :for_each => {:output => :placeholder})
+          flood_local_flows << Flow.new(TABLE_VIRTUAL_DST, 0, {:reg1 => id, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, :for_each => {:output => :placeholder})
 
           learn_arp_match = "priority=#{1},idle_timeout=#{3600*10},table=#{TABLE_VIRTUAL_DST},reg1=#{id},reg2=#{0},NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]"
           learn_arp_actions = "output:NXM_NX_REG2[]"
@@ -92,10 +92,10 @@ module Dcmgr
         end
 
         def install_physical_network
-          flood_flows << Flow.new(TABLE_MAC_ROUTE,      1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, {:output => FlowPlaceholder.new(0)})
-          flood_flows << Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, {:output => FlowPlaceholder.new(0)})
-          flood_flows << Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, [{:load_reg0 => FlowPlaceholder.new(0)}, {:resubmit => TABLE_LOAD_SRC}])
-          flood_flows << Flow.new(TABLE_ARP_ROUTE,      1, {:arp => nil, :dl_dst => 'FF:FF:FF:FF:FF:FF', :arp_tha => '00:00:00:00:00:00'}, {:output => FlowPlaceholder.new(0)})
+          flood_flows << Flow.new(TABLE_MAC_ROUTE,      1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => {:output => :placeholder})
+          flood_flows << Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => {:output => :placeholder})
+          flood_flows << Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => {:load_reg0 => :placeholder, :resubmit => TABLE_LOAD_SRC})
+          flood_flows << Flow.new(TABLE_ARP_ROUTE,      1, {:arp => nil, :dl_dst => 'FF:FF:FF:FF:FF:FF', :arp_tha => '00:00:00:00:00:00'}, :for_each => {:output => :placeholder})
         end
 
         def request_metadata_server_mac port
@@ -143,6 +143,15 @@ module Dcmgr
 
           logger.info "Adding GRE tunnel: '#{command}'."
           system(command)
+        end
+
+        def install_mac_subnet broadcast_addr
+          flows << Flow.new(TABLE_CLASSIFIER, 7, {:ip => nil, :dl_dst => broadcast_addr}, [{:load_reg1 => id}, {:resubmit => TABLE_VIRTUAL_IN}])
+          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:dl_dst => broadcast_addr}, {:drop => nil })
+
+          datapath.add_flows flows        
+
+          logger.info "Adding mac subnet."
         end
 
       end
