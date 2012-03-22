@@ -30,6 +30,8 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
 
     if manifest.config.network_name.nil?
       abort("network_name is not set yet in nsa.conf")
+    else
+      logger.info "network_name: #{manifest.config.network_name}"
     end
 
     # check the dnsmasq binary version
@@ -91,6 +93,7 @@ class SuperviseDnsmasq < Isono::NodeModules::Base
       begin
         generate_dhcp_conf()
         if Process.waitpid(@dnsmasq_pid, Process::WNOHANG).nil?
+          # need to kill process in order to flush ip lease data.
           system("/bin/kill #{@dnsmasq_pid}")
         end
         start_dnsmasq
