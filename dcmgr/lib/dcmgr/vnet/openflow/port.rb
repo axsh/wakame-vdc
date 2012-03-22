@@ -50,7 +50,7 @@ module Dcmgr
 
         def init_gre_tunnel
           @port_type = PORT_TYPE_TUNNEL
-          queue_flow Flow.new(TABLE_CLASSIFIER, 7, {:in_port => port_info.number}, [{:load_reg1 => network.id, :load_reg2 => port_info.number}, {:resubmit => TABLE_VIRTUAL_SRC}])
+          queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => port_info.number}, [{:load_reg1 => network.id, :load_reg2 => port_info.number}, {:resubmit => TABLE_VIRTUAL_SRC}])
         end
 
         def init_instance_net hw, ip
@@ -63,7 +63,7 @@ module Dcmgr
 
         def init_instance_vnet hw, ip
           @port_type = PORT_TYPE_INSTANCE_VNET
-          queue_flow Flow.new(TABLE_CLASSIFIER, 7, {:in_port => port_info.number}, [{:load_reg1 => network.id}, {:resubmit => TABLE_VIRTUAL_SRC}])
+          queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => port_info.number}, [{:load_reg1 => network.id}, {:resubmit => TABLE_VIRTUAL_SRC}])
           queue_flow Flow.new(TABLE_VIRTUAL_DST, 2, {:reg1 => network.id, :dl_dst => hw}, {:output => port_info.number})
         end
 

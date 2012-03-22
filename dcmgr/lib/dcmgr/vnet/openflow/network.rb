@@ -47,6 +47,9 @@ module Dcmgr
 
         def update
           datapath.add_flows(flood_flows)
+          logger.debug "Updating: ports:#{ports.inspect}."
+          logger.debug "Updating: local_ports:#{local_ports.inspect}."
+          logger.debug "Updating: subnet_macs:#{subnet_macs.inspect}."
         end
 
         def add_port port, is_local
@@ -63,9 +66,11 @@ module Dcmgr
           @flood_flows ||= Array.new
         end
 
-        def install_virtual_network
-          flood_flows << Flow.new(TABLE_VIRTUAL_DST, 1, {:reg1 => id, :reg2 => 0, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, :for_each => [ports, {:output => :placeholder}])
+        def install_virtual_network(eth_port)
           flood_flows << Flow.new(TABLE_VIRTUAL_DST, 0, {:reg1 => id, :dl_dst => 'ff:ff:ff:ff:ff:ff'}, :for_each => [local_ports, {:output => :placeholder}])
+          flood_flows << Flow.new(TABLE_VIRTUAL_DST, 1,
+                                  {:reg1 => id, :reg2 => 0, :dl_dst => 'ff:ff:ff:ff:ff:ff'},
+                                  {:for_each => [ports, {:output => :placeholder}], :for_each2 => [subnet_macs, {:mod_dl_dst => :placeholder, :output => eth_port}]})
 
           learn_arp_match = "priority=#{1},idle_timeout=#{3600*10},table=#{TABLE_VIRTUAL_DST},reg1=#{id},reg2=#{0},NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]"
           learn_arp_actions = "output:NXM_NX_REG2[]"
@@ -144,14 +149,26 @@ module Dcmgr
         end
 
         def install_mac_subnet broadcast_addr
-          flows << Flow.new(TABLE_CLASSIFIER, 7, {:ip => nil, :dl_dst => broadcast_addr}, [{:load_reg1 => id}, {:resubmit => TABLE_VIRTUAL_IN}])
-          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:dl_dst => broadcast_addr}, {:drop => nil })
+          logger.info "Installing mac subnet: broadcast_addr:#{broadcast_addr}."
 
-          datapath.add_flows flows        
+          flows = []
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 4, {:dl_dst => broadcast_addr}, {:drop => nil })
 
-          logger.info "Adding mac subnet."
+          flood_flows << Flow.new(TABLE_CLASSIFIER, 7, {:dl_dst => broadcast_addr}, {:mod_dl_dst => 'ff:ff:ff:ff:ff:ff', :for_each => [local_ports, {:output => :placeholder}]})
+
+          datapath.add_flows flows
         end
 
+        def external_mac_subnet broadcast_addr
+          logger.info "Adding external mac subnet: broadcast_addr:#{broadcast_addr}."
+
+          subnet_macs << broadcast_addr
+
+          flows = []
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 4, {:dl_dst => broadcast_addr}, {:drop => nil })
+
+          datapath.add_flows flows
+        end
       end
 
     end

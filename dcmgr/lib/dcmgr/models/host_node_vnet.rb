@@ -39,7 +39,7 @@ module Dcmgr::Models
 
     def to_api_document(api_ver=nil)
       h = to_hash
-      h
+      h.merge!({:broadcast_addr => pretty_broadcast_addr})
     end
 
     private

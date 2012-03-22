@@ -16,12 +16,14 @@ module Dcmgr
         attr_reader :networks
         attr_reader :switch_name
         attr_reader :local_hw
+        attr_reader :eth_port
         
         def initialize dp, name
           @datapath = dp
           @ports = {}
           @networks = {}
           @switch_name = name
+          @eth_port = nil
         end
         
         def switch_ready
@@ -40,12 +42,14 @@ module Dcmgr
           logger.debug "n_tables: %u" % message.n_tables
           logger.debug "capabilities: %u" % message.capabilities
           logger.debug "actions: %u" % message.actions
-          logger.info  "ports: %s" % message.ports.collect { | each | each.number }.sort.join( ", " )
+          logger.info  "ports: %s" % message.ports.collect { |each| each.number }.sort.join( ", " )
 
-          message.ports.each do | each |
+          message.ports.each do |each|
             if each.number == OpenFlowController::OFPP_LOCAL
               @local_hw = each.hw_addr
               logger.debug "OFPP_LOCAL: hw_addr:#{local_hw.to_s}"
+            elsif each.name =~ /^eth/
+              @eth_port = each.number
             end
           end
 

@@ -64,9 +64,9 @@ module Dcmgr
           str = ""
 
           block.each { |key,value|
-            if key == :for_each
+            if key == :for_each || key == :for_each2
               value[0].each { |arg|
-                str << ',' << actions_block_to_s(value[1], arg)
+                str << actions_block_to_s(value[1], arg)
               }
             else
               tag = action_tags[key]
