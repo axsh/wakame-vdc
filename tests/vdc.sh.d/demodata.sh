@@ -18,6 +18,11 @@ metadata_server=${metadata_server:-${ipaddr}}
 node_id=${node_id:-"demo1"}
 
 hva_arch=$(uname -m)
+case ${hva_arch} in
+x86_64) ;;
+  i*86) hva_arch=x86 ;;
+     *) ;;
+esac
 
 (hva_id=${node_id} hva_arch=${hva_arch} . $data_path/demodata_hva.sh)
 (sta_id=${node_id} sta_server=${sta_server:-${ipaddr}} . $data_path/demodata_sta.sh)
