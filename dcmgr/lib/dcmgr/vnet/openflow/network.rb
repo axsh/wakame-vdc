@@ -102,12 +102,12 @@ module Dcmgr
         end
 
         def request_metadata_server_mac port
-          logger.info "Requesting metadata server mac: port:#{port} ip:#{metadata_server_ip.to_s}/#{metadata_server_port}."
+          logger.info "Requesting metadata server mac: port:#{port} mac:#{local_hw.to_s} ip:#{metadata_server_ip.to_s}/#{metadata_server_port}."
 
           # Add timeout? Or clean up manually.
           flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
                               :in_port => port, :arp => nil,
-                              :dl_dst => local_hw, :nw_dst => Isono::Util.default_gw_ipaddr,
+                              :dl_dst => local_hw.to_s, :nw_dst => Isono::Util.default_gw_ipaddr,
                               :nw_src => metadata_server_ip.to_s},
                             {:controller => nil, :local => nil})]
 

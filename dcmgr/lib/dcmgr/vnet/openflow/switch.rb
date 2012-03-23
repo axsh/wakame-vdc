@@ -46,10 +46,15 @@ module Dcmgr
 
           message.ports.each do |each|
             if each.number == OpenFlowController::OFPP_LOCAL
+              # 'local_hw' needs to be set before any networks or
+              # ports are initialized.
               @local_hw = each.hw_addr
               logger.debug "OFPP_LOCAL: hw_addr:#{local_hw.to_s}"
+            end
+          end
 
-            elsif each.name =~ /^eth/
+          message.ports.each do |each|
+            if each.name =~ /^eth/
               @eth_port = each.number
 
               port = OpenFlowPort.new(datapath, each)
