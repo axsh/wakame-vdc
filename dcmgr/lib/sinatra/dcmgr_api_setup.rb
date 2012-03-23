@@ -75,15 +75,15 @@ module Sinatra
       error(Sequel::DatabaseError) do |boom|
         logger.error(boom)
         boom = Dcmgr::Endpoints::Errors::DatabaseError.new("#{boom.class}: #{boom.message}")
-        body(respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
-        boom.code
+        status(boom.http_status)
+        respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code})
       end
 
       # capture all child errors of APIError.
       error(Dcmgr::Endpoints::Errors::APIError) do |boom|
-        Dcmgr::Logger.create('API Error').error("#{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
-        body(respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code}))
-        boom.code
+        logger.error("API Error: #{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+        status(boom.http_status)
+        respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code})
       end
     }
     
