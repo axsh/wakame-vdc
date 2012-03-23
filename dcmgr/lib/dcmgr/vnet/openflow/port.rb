@@ -65,7 +65,9 @@ module Dcmgr
 
         def init_instance_vnet hw, ip
           @port_type = PORT_TYPE_INSTANCE_VNET
-          queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => port_info.number}, [{:load_reg1 => network.id}, {:resubmit => TABLE_VIRTUAL_SRC}])
+          queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => port_info.number}, {:load_reg1 => network.id, :resubmit => TABLE_VIRTUAL_SRC})
+          queue_flow Flow.new(TABLE_VIRTUAL_SRC, 5, {:in_port => port_info.number, :dl_src => hw}, {:resubmit => TABLE_VIRTUAL_DST})
+          queue_flow Flow.new(TABLE_VIRTUAL_SRC, 7, {:in_port => port_info.number, :arp => nil, :dl_src => hw, :nw_src => ip, :arp_sha => hw}, {:resubmit => TABLE_VIRTUAL_DST})
           queue_flow Flow.new(TABLE_VIRTUAL_DST, 2, {:reg1 => network.id, :dl_dst => hw}, {:output => port_info.number})
         end
 

@@ -78,9 +78,10 @@ module Dcmgr
           flows = []
 
           # Pass packets to the dst table if it originates from an instance on this host. (reg2 == 0)
-          flows << Flow.new(TABLE_VIRTUAL_SRC, 2, {:reg1 => id, :reg2 => 0}, {:resubmit => TABLE_VIRTUAL_DST})
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 6, {:arp => nil, :reg1 => id, :reg2 => 0}, {:drop => nil})
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 4, {:reg1 => id, :reg2 => 0}, {:drop => nil})
           # If from an external host, learn the ARP for future use.
-          flows << Flow.new(TABLE_VIRTUAL_SRC, 1, {:reg1 => id, :arp => nil}, [{:learn => "#{learn_arp_match},#{learn_arp_actions}"}, {:resubmit => TABLE_VIRTUAL_DST}])
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 2, {:reg1 => id, :arp => nil}, [{:learn => "#{learn_arp_match},#{learn_arp_actions}"}, {:resubmit => TABLE_VIRTUAL_DST}])
           # Default action is to pass the packet to the dst table.
           flows << Flow.new(TABLE_VIRTUAL_SRC, 0, {:reg1 => id}, {:resubmit => TABLE_VIRTUAL_DST})
 
@@ -153,7 +154,7 @@ module Dcmgr
 
           flows = []
           flows << Flow.new(TABLE_CLASSIFIER, 7, {:dl_dst => broadcast_addr}, {:drop => nil })
-          flows << Flow.new(TABLE_VIRTUAL_SRC, 4, {:dl_dst => broadcast_addr}, {:drop => nil })
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 8, {:dl_dst => broadcast_addr}, {:drop => nil })
 
           flood_flows << Flow.new(TABLE_CLASSIFIER, 8, {:in_port => eth_port, :dl_dst => broadcast_addr}, {:mod_dl_dst => 'ff:ff:ff:ff:ff:ff', :load_reg1 => id, :load_reg2 => eth_port, :resubmit => TABLE_VIRTUAL_SRC})
 
@@ -167,7 +168,7 @@ module Dcmgr
 
           flows = []
           flows << Flow.new(TABLE_CLASSIFIER, 7, {:dl_dst => broadcast_addr}, {:drop => nil })
-          flows << Flow.new(TABLE_VIRTUAL_SRC, 4, {:dl_dst => broadcast_addr}, {:drop => nil })
+          flows << Flow.new(TABLE_VIRTUAL_SRC, 8, {:dl_dst => broadcast_addr}, {:drop => nil })
 
           datapath.add_flows flows
         end
