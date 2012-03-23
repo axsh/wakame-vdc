@@ -69,8 +69,8 @@ module Dcmgr
           queue_flow Flow.new(TABLE_VIRTUAL_DST, 2, {:reg1 => network.id, :dl_dst => hw}, {:output => port_info.number})
         end
 
-        def init_instance_subnet hw, ip
-          queue_flow Flow.new(TABLE_CLASSIFIER, 7, {:dl_dst => hw}, {:output => port_info.number})
+        def init_instance_subnet eth_port, hw, ip
+          queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => eth_port, :dl_dst => hw}, {:load_reg1 => network.id, :load_reg2 => eth_port, :resubmit => TABLE_VIRTUAL_SRC})
         end
 
         # Install flows:

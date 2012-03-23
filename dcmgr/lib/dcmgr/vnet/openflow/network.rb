@@ -148,13 +148,14 @@ module Dcmgr
           system(command)
         end
 
-        def install_mac_subnet broadcast_addr
+        def install_mac_subnet eth_port, broadcast_addr
           logger.info "Installing mac subnet: broadcast_addr:#{broadcast_addr}."
 
           flows = []
+          flows << Flow.new(TABLE_CLASSIFIER, 7, {:dl_dst => broadcast_addr}, {:drop => nil })
           flows << Flow.new(TABLE_VIRTUAL_SRC, 4, {:dl_dst => broadcast_addr}, {:drop => nil })
 
-          flood_flows << Flow.new(TABLE_CLASSIFIER, 7, {:dl_dst => broadcast_addr}, {:mod_dl_dst => 'ff:ff:ff:ff:ff:ff', :for_each => [local_ports, {:output => :placeholder}]})
+          flood_flows << Flow.new(TABLE_CLASSIFIER, 8, {:in_port => eth_port, :dl_dst => broadcast_addr}, {:mod_dl_dst => 'ff:ff:ff:ff:ff:ff', :load_reg1 => id, :load_reg2 => eth_port, :resubmit => TABLE_VIRTUAL_SRC})
 
           datapath.add_flows flows
         end
@@ -165,6 +166,7 @@ module Dcmgr
           subnet_macs << broadcast_addr
 
           flows = []
+          flows << Flow.new(TABLE_CLASSIFIER, 7, {:dl_dst => broadcast_addr}, {:drop => nil })
           flows << Flow.new(TABLE_VIRTUAL_SRC, 4, {:dl_dst => broadcast_addr}, {:drop => nil })
 
           datapath.add_flows flows
