@@ -65,7 +65,7 @@ module Sinatra
                  begin
                    parser.call(request.body)
                  rescue => e
-                   error(406, 'Invalid request body.')
+                   error(400, 'Invalid request body.')
                  end
                end
         
