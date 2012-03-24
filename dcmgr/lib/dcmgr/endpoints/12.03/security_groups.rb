@@ -1,20 +1,27 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/security_group'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
   
   get do
     # description 'Show lists of the security groups'
-    res = select_index(:SecurityGroup, {:start => params[:start],
-                         :limit => params[:limit]})
-    response_to(res)
+    ds = M::SecurityGroup.dataset
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::SecurityGroupCollection.new(paging_ds).generate
+    end
   end
 
   get '/:id' do
     # description 'Show the security group'
     g = find_by_uuid(:SecurityGroup, params[:id])
-    raise E::OperationNotPermitted unless examine_owner(g)
+    raise E::UnknownSecurityGroup, params[:id] if g.nil?
 
-    response_to(g.to_api_document)
+    respond_with(R::SecurityGroup.new(g).generate)
   end
 
   post do
@@ -29,7 +36,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::InvalidSecurityGroupRule, e.message
     end
     
-    response_to(g.to_api_document)
+    respond_with(R::SecurityGroup.new(g).generate)
   end
 
   put '/:id' do
@@ -58,7 +65,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     # refresh security group rules on host nodes.
     Dcmgr.messaging.event_publish('hva/security_group_updated', :args=>[g.canonical_uuid])
 
-    response_to(g.to_api_document)
+    respond_with(R::SecurityGroup.new(g).generate)
   end
 
   delete '/:id' do
