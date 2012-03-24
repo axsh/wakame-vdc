@@ -24,7 +24,6 @@ Feature: SecurityGroup API
       # Store the value in a registry matching the uuid, and do the
       # checks on that instead
       And the previous api call should not have [{"results":[...,{"uuid":},...]}] equal to <registry:uuid>
-      And the previous api call should not have [{"results":[...,{"description":},...]}] equal to "test lifecycle"
 
   Scenario: Invalid Rule Syntax
 
