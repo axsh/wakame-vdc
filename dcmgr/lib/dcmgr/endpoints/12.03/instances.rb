@@ -1,13 +1,61 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/instance'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
+  INSTANCE_META_STATE=['alive', 'alive_and_terminated'].freeze
+  INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
+  INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
+
+  # Show list of instances
+  # Filter Paramters:
+  # start: fixnum, optional 
+  # limit: fixnum, optional
+  # account_id:
+  # state: (running|stopped|terminated|alive)
+  # created_since, created_until:
+  # terminated_since, terminated_until:
+  # host_node_id:
   get do
-    # description 'Show list of instances'
-    # params start, fixnum, optional 
-    # params limit, fixnum, optional
-    res = select_index(:Instance, {:start => params[:start],
-                         :limit => params[:limit]})
-    response_to(res)
+    ds = M::Instance.dataset
+
+    if params[:state]
+      ds = if INSTANCE_META_STATE.member?(params[:state])
+             case params[:state]
+             when 'alive'
+               ds.lives
+             else
+               raise E::InvalidParameter, :state
+             end
+           elsif INSTANCE_STATE.member?(params[:state])
+             ds.filter(:state=>params[:state])
+           else
+             raise E::InvalidParameter, :state
+           end
+    end
+
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
+    ds = datetime_range_params_filter(:created, ds)
+    ds = datetime_range_params_filter(:terminated, ds)
+
+    if params[:host_node_id]
+      hn = M::HostNode[params[:host_node_id]] rescue raise(E::InvalidParameter, :host_node_id)
+      ds = ds.filter(:host_node_id=>hn.id)
+    end
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::InstanceCollection.new(paging_ds).generate
+    end
+  end
+
+  get '/:id' do
+    i = find_by_uuid(:Instance, params[:id])
+    raise E::UnknownInstance, params[:id] if i.nil?
+    
+    respond_with(R::Instance.new(i).generate)
   end
 
   post do
@@ -113,15 +161,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # if not, security_groups value is empty.
     instance = find_by_uuid(:Instance, instance.canonical_uuid)
 
-    response_to(instance.to_api_document)
-  end
-
-  get '/:id' do
-    #param :account_id, :string, :optional
-    i = find_by_uuid(:Instance, params[:id])
-    raise E::UnknownInstance if i.nil?
-    
-    response_to(i.to_api_document)
+    respond_with(R::Instance.new(instance).generate)
   end
 
   delete '/:id' do
@@ -141,7 +181,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     else
       Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
     end
-    response_to([i.canonical_uuid])
+    respond_with([i.canonical_uuid])
   end
 
   put '/:id/reboot' do
@@ -149,7 +189,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     i = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, i.state if i.state != 'running'
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'reboot', i.canonical_uuid)
-    response_to([i.canonical_uuid])
+    respond_with([i.canonical_uuid])
   end
 
   put '/:id/stop' do
@@ -163,7 +203,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     }
     
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'stop', i.canonical_uuid)
-    response_to([i.canonical_uuid])
+    respond_with([i.canonical_uuid])
   end
 
   put '/:id/start' do
@@ -175,6 +215,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     commit_transaction
     Dcmgr.messaging.submit("scheduler", 'schedule_start_instance', instance.canonical_uuid)
-    response_to([instance.canonical_uuid])
+    respond_with([instance.canonical_uuid])
   end
 end
