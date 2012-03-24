@@ -26,6 +26,7 @@ module Dcmgr
         end
         # Sinatra reads http code from this method.
         alias :code :status_code
+        alias :http_status :status_code
 
         def error_code
           self.class.error_code
@@ -114,5 +115,6 @@ module Dcmgr
     define_error(:InvalidVolumeState, 400, '140')
     define_error(:InvalidHostNodeID, 400, '141')
     define_error(:InvalidSecurityGroupRule, 400, '142')
+    define_error(:InvalidParameter, 400, '143')
   end
 end

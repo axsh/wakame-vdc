@@ -72,7 +72,7 @@ module Sinatra
         @params.merge!(hash.to_mash.values.first)
       end
 
-      error(Sequel::DatabaseError) do |boom|
+      error(Dcmgr::Models::ModelError, Sequel::DatabaseError) do |boom|
         logger.error(boom)
         boom = Dcmgr::Endpoints::Errors::DatabaseError.new("#{boom.class}: #{boom.message}")
         status(boom.http_status)

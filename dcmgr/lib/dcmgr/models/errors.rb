@@ -2,9 +2,10 @@
 
 module Dcmgr
   module Models
-    class InvalidUUIDError < StandardError; end
-    class UUIDPrefixDuplication < StandardError; end
+    class ModelError < StandardError; end
+    class InvalidUUIDError < ModelError; end
+    class UUIDPrefixDuplication < ModelError; end
 
-    class InvalidSecurityGroupRuleSyntax < StandardError; end
+    class InvalidSecurityGroupRuleSyntax < ModelError; end
   end
 end
