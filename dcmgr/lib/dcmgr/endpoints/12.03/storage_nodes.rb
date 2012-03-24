@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/storage_node'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
   get do
     # description 'Show lists of the storage_pools'
-    # params start, fixnum, optional
-    # params limit, fixnum, optional
-    res = select_index(:StorageNode, {:start => params[:start],
-                         :limit => params[:limit]})
-    response_to(res)
+    ds = M::StorageNode.dataset
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
+    ds = datetime_range_params_filter(:created, ds)
+    ds = datetime_range_params_filter(:deleted, ds)
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::StorageNodeCollection.new(paging_ds).generate
+    end
   end
   
   get '/:id' do
@@ -15,20 +23,20 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
     # params id, string, required
     pool_id = params[:id]
     raise E::UndefinedStorageNodeID if pool_id.nil?
-    vs = find_by_uuid(:StorageNode, pool_id)
-    raise E::UnknownStorageNode if vs.nil?
-    response_to(vs.to_api_document)
+    sn = find_by_uuid(:StorageNode, pool_id)
+    raise E::UnknownStorageNode if sn.nil?
+    respond_with(R::StorageNode.new(sn).generate)
   end
   
   post do
     sn = M::StorageNode.create(params)
-    response_to(sn.to_api_document)
+    respond_with(R::StorageNode.new(sn).generate)
   end
   
   delete '/:id' do
     sn = find_by_uuid(:StorageNode, params[:id])
     sn.destroy
-    response_to({:uuid=>sn.canonical_uuid})
+    respond_with(R::StorageNode.new(sn).generate)
   end
 
   put '/:id' do
@@ -42,6 +50,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
     }
 
     sn.update_fields(changed, changed.keys)
-    response_to(sn.to_api_document)
+    respond_with(R::StorageNode.new(sn).generate)
   end
 end
