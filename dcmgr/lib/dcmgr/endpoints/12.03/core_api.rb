@@ -49,6 +49,7 @@ module Dcmgr::Endpoints::V1203
       if model_class.is_a?(Symbol)
         model_class = Dcmgr::Models.const_get(model_class)
       end
+      raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
       model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
     end
 
