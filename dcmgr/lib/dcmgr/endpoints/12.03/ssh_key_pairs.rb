@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/ssh_key_pair'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   get do
-    # description "List ssh key pairs in account"
-    # params start, fixnum, optional
-    # params limit, fixnum, optional
-    res = select_index(:SshKeyPair, {:start => params[:start],
-                         :limit => params[:limit]})
-    response_to(res)
+    ds = M::SshKeyPair.dataset
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
+    ds = datetime_range_params_filter(:created, ds)
+    ds = datetime_range_params_filter(:deleted, ds)
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::SshKeyPairCollection.new(paging_ds).generate
+    end
   end
 
   get '/:id' do
@@ -15,8 +22,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     # params :id required
     # params :format optional [openssh,putty]
     ssh = find_by_uuid(:SshKeyPair, params[:id])
+    raise UnknownSshKeyPair, parmas[:id] if ssh.nil?
 
-    response_to(ssh.to_api_document)
+    respond_with(R::SshKeyPair.new(ssh).generate)
   end
 
   post do
@@ -45,35 +53,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       raise E::DatabaseError, e.message
     end
 
-    # include private_key data in response even if
-    # it's not going to be stored on DB.
-    response_to(ssh.to_api_document.merge(:private_key=>keydata[:private_key]))
+    respond_with(R::SshKeyPair.new(ssh, keydata[:private_key]).generate)
   end
 
   delete '/:id' do
     # description "Remove ssh key pair information"
     # params :id required
     ssh = find_by_uuid(:SshKeyPair, params[:id])
-    if examine_owner(ssh)
-      ssh.destroy
-    else
-      raise E::OperationNotPermitted
-    end
+    ssh.destroy
 
-    response_to([ssh.canonical_uuid])
+    respond_with([ssh.canonical_uuid])
   end
 
   put '/:id' do
     # description "Update ssh key pair information"
     ssh = find_by_uuid(:SshKeyPair, params[:id])
-    if examine_owner(ssh)
-      ssh.description = params[:description]
-      ssh.save_changes
-    else
-      raise E::OperationNotPermitted
-    end
+    ssh.description = params[:description]
+    ssh.save_changes
 
-    response_to([ssh.canonical_uuid])
+    respond_with([ssh.canonical_uuid])
   end
 end
 
