@@ -80,8 +80,6 @@ module Dcmgr
 
   require 'dcmgr/models/errors'
   module Models
-    autoload :Base, 'dcmgr/models/base'
-
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
     autoload :Tag, 'dcmgr/models/tag'
