@@ -1,13 +1,47 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/volume'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
+  VOLUME_META_STATE=['alive'].freeze
+  VOLUME_STATE=['available', 'attached', 'deleted'].freeze
+  VOLUME_STATE_PARAM_VALUES=(VOLUME_STATE + VOLUME_META_STATE).freeze
+
+  # Show list of volumes
+  # params start, fixnum, optional
+  # params limit, fixnum, optional
   get do
-    # description 'Show lists of the volume'
-    # params start, fixnum, optional
-    # params limit, fixnum, optional
-    res = select_index(:Volume, {:start => params[:start],
-                         :limit => params[:limit]})
-    response_to(res)
+    ds = M::Volume.dataset
+    if params[:state]
+      ds = if VOLUME_META_STATE.member?(params[:state])
+             case params[:state]
+             when 'alive'
+               ds.lives
+             else
+               raise E::InvalidParameter, :state
+             end
+           elsif VOLUME_STATE.member?(params[:state])
+             ds.filter(:state=>params[:state])
+           else
+             raise E::InvalidParameter, :state
+           end
+    end
+
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
+    ds = datetime_range_params_filter(:created, ds)
+    ds = datetime_range_params_filter(:deleted, ds)
+
+    if params[:storage_node_id]
+      hn = M::StorageNode[params[:storage_node_id]] rescue raise(E::InvalidParameter, :storage_node_id)
+      ds = ds.filter(:storage_node_id=>hn.id)
+    end
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::VolumeCollection.new(paging_ds).generate
+    end
   end
 
   get '/:id' do
@@ -16,7 +50,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     volume_id = params[:id]
     raise E::UndefinedVolumeID if volume_id.nil?
     v = find_by_uuid(:Volume, volume_id)
-    response_to(v.to_api_document)
+    raise E::UnknownVolume, params[:id] if v.nil?
+    respond_with(R::Volume.new(v).generate)
   end
   
   post do
@@ -86,7 +121,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
     end
 
-    response_to(vol.to_api_document)
+    respond_with(R::Volume.new(vol).generate)
   end
 
   delete '/:id' do
@@ -99,7 +134,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::UnknownVolume if vol.nil?
     raise E::InvalidVolumeState, "#{vol.state}" unless vol.state == "available"
 
-
     begin
       v  = M::Volume.delete_volume(@account.canonical_uuid, volume_id)
     rescue M::Volume::RequestError => e
@@ -110,7 +144,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     commit_transaction
     Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'delete_volume', v.canonical_uuid)
-    response_to([v.canonical_uuid])
+    respond_with([v.canonical_uuid])
   end
 
   put '/:id/attach' do
@@ -133,7 +167,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     commit_transaction
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 
-    response_to(v.to_api_document)
+    respond_with(R::Volume.new(v).generate)
   end
 
   put '/:id/detach' do
@@ -150,7 +184,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::InvalidInstanceState unless i.live? && i.state == 'running'
     commit_transaction
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
-    response_to(v.to_api_document)
+    respond_with(R::Volume.new(v).generate)
   end
 
 end
