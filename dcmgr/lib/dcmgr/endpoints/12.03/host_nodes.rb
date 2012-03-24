@@ -1,25 +1,33 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/host_node'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
   get do
-    # description 'Show list of host node'
-    res = select_index(:HostNode, {:start => params[:start],
-                         :limit => params[:limit]})
-    response_to(res)
+    ds = M::HostNode.dataset
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
+    ds = datetime_range_params_filter(:created, ds)
+    ds = datetime_range_params_filter(:deleted, ds)
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::HostNodeCollection.new(paging_ds).generate
+    end
   end
   
   get '/:id' do
     # description 'Show status of the host'
     # param :account_id, :string, :optional
     hn = find_by_uuid(:HostNode, params[:id])
-    raise OperationNotPermitted unless examine_owner(hn)
     
-    response_to(hn.to_api_document)
+    respond_with(R::HostNode.new(hn).generate)
   end
   
   post do
     hn = M::HostNode.create(params)
-    response_to(hn.to_api_document)
+    respond_with(R::HostNode.new(hn).generate)
   end
 
   delete '/:id' do
@@ -39,6 +47,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     }
 
     hn.update_fields(changed, changed.keys)
-    response_to(hn.to_api_document)
+    respond_with(R::HostNode.new(hn).generate)
   end
 end
