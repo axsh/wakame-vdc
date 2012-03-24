@@ -52,3 +52,20 @@ Feature: SshKeyPair API
     #  |  uuid        | description |
     #  | ssh-testkey1 | "test key1" |
     #Then the previous api call should not be successful
+
+  @api_from_12.03
+  Scenario: List ssh key pairs with filter options
+    Given a managed ssh_key_pair with the following options
+      | description |
+      | test key1   |
+    Given a managed ssh_key_pair with the following options
+      | description |
+      | test key2   |
+    When we make an api get call to ssh_key_pairs with the following options
+      |account_id|
+      |a-shpoolxx|
+    Then the previous api call should be successful
+    When we make an api get call to ssh_key_pairs with the following options
+      |created_since|
+      |2012-01-01T21:52:11+09:00|
+    Then the previous api call should be successful
