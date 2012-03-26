@@ -155,11 +155,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::UndefinedVolumeID if params[:id].nil?
 
     i = find_by_uuid(:Instance, params[:instance_id])
-    raise E::UnknownInstance if i.nil?
+    raise E::UnknownInstance, params[:instance_id] if i.nil?
     raise E::InvalidInstanceState unless i.live? && i.state == 'running'
 
     v = find_by_uuid(:Volume, params[:id])
-    raise E::UnknownVolume if v.nil?
+    raise E::UnknownVolume, params[:id] if v.nil?
     raise E::AttachVolumeFailure, "Volume is attached to running instance." if v.instance
 
     v.instance = i
