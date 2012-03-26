@@ -1,6 +1,8 @@
 @api_from_v12.03
 Feature: Storage Node API
 
+  # This scenario only passes when it runs with the database contents just after installed demo data.
+  # Because the same UUID is tried to use in the second time.
   Scenario: Create, update and delete for new storage node with specified UUID
     Given a managed storage_node with the following options
       | account_id  | uuid     | node_id   | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |

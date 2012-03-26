@@ -1,6 +1,8 @@
 @api_from_v12.03
 Feature: Host Node API
 
+  # This scenario only passes when it runs with the database contents just after installed demo data.
+  # Because the same UUID is tried to use in the second time.
   Scenario: Create, update and delete for new host node with specified UUID
     Given a managed host_node with the following options
       | account_id  | uuid     | node_id   | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
