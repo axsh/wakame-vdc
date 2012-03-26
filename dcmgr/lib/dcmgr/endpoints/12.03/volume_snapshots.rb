@@ -1,13 +1,48 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/volume_snapshot'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
+  VOLUME_SNAPSHOT_META_STATE=['alive'].freeze
+  VOLUME_SNAPSHOT_STATE=['available', 'deleted'].freeze
+  VOLUME_SNAPSHOT_STATE_PARAM_VALUES=(VOLUME_SNAPSHOT_STATE + VOLUME_SNAPSHOT_META_STATE).freeze
   get do
     # description 'Show lists of the volume_snapshots'
     # params start, fixnum, optional
     # params limit, fixnum, optional
-    res = select_index(:VolumeSnapshot, {:start => params[:start],
-                         :limit => params[:limit]})
-    response_to(res)
+    ds = M::VolumeSnapshot.dataset
+    if params[:state]
+      ds = if VOLUME_SNAPSHOT_META_STATE.member?(params[:state])
+             case params[:state]
+             when 'alive'
+               ds.alives
+             else
+               raise E::InvalidParameter, :state
+             end
+           elsif VOLUME_SNAPSHOT_STATE.member?(params[:state])
+             ds.filter(:state=>params[:state])
+           else
+             raise E::InvalidParameter, :state
+           end
+    end
+
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
+    ds = datetime_range_params_filter(:created, ds)
+    ds = datetime_range_params_filter(:deleted, ds)
+
+    if params[:storage_node_id]
+      sn = find_by_uuid(M::StorageNode, params[:storage_node_id])
+      raise UnknownStorageNode, params[:storage_node_id] if sn.nil?
+      
+      ds = ds.filter(:storage_node_id=>sn.id)
+    end
+
+    collection_respond_with(ds) do |paging_ds|
+      R::VolumeSnapshotCollection.new(paging_ds).generate
+    end
   end
 
   get '/upload_destination' do
@@ -33,7 +68,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
     snapshot_id = params[:id]
     raise E::UndefinedVolumeSnapshotID if snapshot_id.nil?
     vs = find_by_uuid(:VolumeSnapshot, snapshot_id)
-    response_to(vs.to_api_document)
+    raise E::UnknownVolumeSnapshot, snapshot_id if vs.nil?
+    respond_with(R::VolumeSnapshot.new(vs).generate)
   end
 
   post do
@@ -54,7 +90,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
 
     repository_address = Dcmgr::StorageService.repository_address(destination_key)
     Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, repository_address)
-    response_to(vs.to_api_document)
+    respond_with(R::VolumeSnapshot.new(vs).generate)
   end
 
   delete '/:id' do
@@ -82,6 +118,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
 
     repository_address = Dcmgr::StorageService.repository_address(destination_key)
     Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
-    response_to([vs.canonical_uuid])
+    respond_with([vs.canonical_uuid])
   end
 end
