@@ -29,10 +29,7 @@ module Dcmgr
         attr_accessor :ipv4_gw
         attr_accessor :prefix
 
-        attr_accessor :metadata_server_ip
-        attr_accessor :metadata_server_mac
-        attr_accessor :metadata_server_port
-        attr_accessor :metadata_server_output
+        attr_reader :services
 
         def initialize dp, id
           @id = id
@@ -43,13 +40,12 @@ module Dcmgr
 
           @virtual = false
           @prefix = 0
+
+          @services = {}
         end
 
         def update
           datapath.add_flows(flood_flows)
-          logger.debug "Updating: ports:#{ports.inspect}."
-          logger.debug "Updating: local_ports:#{local_ports.inspect}."
-          logger.debug "Updating: subnet_macs:#{subnet_macs.inspect}."
         end
 
         def add_port port, is_local
@@ -100,43 +96,6 @@ module Dcmgr
           flood_flows << Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [ports, {:output => :placeholder}])
           flood_flows << Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [ports, {:load_reg0 => :placeholder, :resubmit => TABLE_LOAD_SRC}])
           flood_flows << Flow.new(TABLE_ARP_ROUTE,      1, {:arp => nil, :dl_dst => 'FF:FF:FF:FF:FF:FF', :arp_tha => '00:00:00:00:00:00'}, :for_each => [ports, {:output => :placeholder}])
-        end
-
-        def request_metadata_server_mac port
-          logger.info "Requesting metadata server mac: port:#{port} mac:#{local_hw.to_s} ip:#{metadata_server_ip.to_s}/#{metadata_server_port}."
-
-          # Add timeout? Or clean up manually.
-          flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
-                              :in_port => port, :arp => nil,
-                              :dl_dst => local_hw.to_s, :nw_dst => Isono::Util.default_gw_ipaddr,
-                              :nw_src => metadata_server_ip.to_s},
-                            {:controller => nil, :local => nil})]
-
-          datapath.add_flows flows        
-          datapath.send_arp(port, Racket::L3::ARP::ARPOP_REQUEST,
-                            local_hw.to_s,
-                            Isono::Util.default_gw_ipaddr.to_s,
-                            nil,
-                            metadata_server_ip.to_s)
-        end
-
-        def install_metadata_server port, dest_hw
-          @metadata_server_output = port
-          @metadata_server_mac = dest_hw
-
-          logger.info "Adding metadata server: port:#{@metadata_server_output} mac:#{@metadata_server_mac.to_s} ip:#{metadata_server_ip.to_s}/#{metadata_server_port}."
-
-          flows = []
-
-          # Currently only add for the physical networks.
-          flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_dst => '169.254.169.254', :tp_dst => 80}, {:resubmit => TABLE_METADATA_OUTGOING})
-          flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_src => metadata_server_ip.to_s, :tp_src => metadata_server_port}, {:resubmit => TABLE_METADATA_INCOMING})
-
-          # Replace with dnat entries instead of custom tables.
-          #flows << Flow.new(TABLE_METADATA_OUTGOING, 0, {}, {:drop => nil})
-          flows << Flow.new(TABLE_METADATA_OUTGOING, 1, {}, {:controller => nil})
-
-          datapath.add_flows flows        
         end
 
         def add_gre_tunnel name, remote_ip
