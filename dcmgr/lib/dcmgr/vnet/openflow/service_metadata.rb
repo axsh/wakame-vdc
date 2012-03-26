@@ -25,6 +25,9 @@ module Dcmgr::VNet::OpenFlow
       @output = output_port
       @mac = dest_hw
 
+      @arp_retry.cancel if @arp_retry
+      @arp_retry = nil
+
       # Currently only add for the physical networks.
       flows = []
       flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_dst => '169.254.169.254', :tp_dst => 80}, {:resubmit => TABLE_METADATA_OUTGOING})
@@ -51,7 +54,6 @@ module Dcmgr::VNet::OpenFlow
                             self.install(message.in_port, message.arp_sha)
                           })
 
-      # Add timeout? Or clean up manually.
       flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
                           :in_port => port_number, :arp => nil,
                           :dl_dst => local_hw.to_s, :nw_dst => Isono::Util.default_gw_ipaddr,
@@ -59,14 +61,13 @@ module Dcmgr::VNet::OpenFlow
                         {:controller => nil, :local => nil})]
 
       datapath.add_flows flows        
-
-      # Add timer.
       datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
-                        local_hw.to_s,
-                        Isono::Util.default_gw_ipaddr.to_s,
-                        nil,
-                        ip.to_s)
+                        local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
 
+      @arp_retry = EM::PeriodicTimer.new(10) {
+        datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
+                          local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
+      }
     end
 
   end
