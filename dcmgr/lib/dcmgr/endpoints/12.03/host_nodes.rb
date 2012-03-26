@@ -11,6 +11,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
 
     ds = datetime_range_params_filter(:created, ds)
     ds = datetime_range_params_filter(:deleted, ds)
+
+    if params[:node_id]
+      ds = ds.filter(:node_id=>params[:node_id])
+    end
     
     collection_respond_with(ds) do |paging_ds|
       R::HostNodeCollection.new(paging_ds).generate
