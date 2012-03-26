@@ -6,6 +6,9 @@ module Dcmgr
   module Drivers
     class ESXi < Hypervisor
       include RbVmomi
+      include Dcmgr::Logger
+      include Dcmgr::Helpers::CliHelper
+      
       def run_instance(ctx)
         vm = find_vm(ctx)
         
@@ -31,23 +34,30 @@ module Dcmgr
         fm.DeleteDatastoreFile_Task(:name => dsPath, :datacenter => dc).wait_for_completion
       end
 
-      def reboot_instance(hc)
+      def reboot_instance(ctx)
         vm = find_vm(ctx)
         vm.PowerOffVM_Task.wait_for_completion
         vm.PowerOnVM_Task.wait_for_completion
       end
-
-      def attach_volume_to_guest(hc)
-        raise NotImplementedError
-      end
-
-      def detach_volume_from_guest(hc)
-        raise NotImplementedError
-      end
       
-      #def setup_metadata_iso(ctx)
+      def setup_metadata_drive(ctx,metadata_items)
+        super(ctx,metadata_items)
         
-      #end
+        begin
+          sh("genisoimage -R -o #{ctx.inst_data_dir}/metadata.iso #{ctx.metadata_img_path}")
+          sh("curl -s -u #{esxi_options(ctx)[:user]}:#{esxi_options(ctx)[:password]} -k -T #{ctx.inst_data_dir}/metadata.iso https://#{esxi_options(ctx)[:host]}/folder/#{ctx.inst[:uuid]}/metadata.iso?dsName=#{esxi_options(ctx)[:datastore]}")
+        ensure
+          sh("rm -rf #{ctx.inst_data_dir}") rescue logger.warn($!.message)
+        end
+      end
+
+      def attach_volume_to_guest(ctx)
+        raise NotImplementedError
+      end
+
+      def detach_volume_from_guest(ctx)
+        raise NotImplementedError
+      end
       
       private
       def find_vm(ctx)
@@ -64,14 +74,16 @@ module Dcmgr
       end
       
       def esxi_options(ctx)
-        {
+        @esxi_options = {
           :host => ctx.node.manifest.config.esxi_ipaddress,
           :user => ctx.node.manifest.config.esxi_username,
           :password => ctx.node.manifest.config.esxi_password,
           :insecure => true,
           :datastore => ctx.node.manifest.config.esxi_datastore,
           :datacenter => ctx.node.manifest.config.esxi_datacenter,
-        }
+        } if @esxi_options.nil?
+        
+        @esxi_options
       end
       #def upload_image(image_host,image_name,esxi_server_ip,esxi_user,esxi_password,esxi_datastore_name)
         #sh("curl -s -o - #{image_host}/#{image_name} | curl -s -u #{esxi_user}:#{esxi_password} -k -T - https://#{esxi_server_ip}/folder/dnsmasq.deb?dsName=datastore1")

@@ -10,6 +10,52 @@ module Dcmgr
 
       def reboot_instance(hc)
       end
+      
+      def setup_metadata_drive(hc,metadata_items)
+        begin
+          inst_data_dir = hc.inst_data_dir
+          FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
+          
+          logger.info("Setting up metadata drive image for :#{hc.inst_id}")
+          # truncate creates sparsed file.
+          sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'; sync;")
+          # TODO: need to lock loop device not to use same device from
+          # another thread/process.
+          lodev=`/sbin/losetup -f`.chomp
+          sh("/sbin/losetup #{lodev} '#{hc.metadata_img_path}'")
+          sh("mkfs.vfat -n METADATA '#{hc.metadata_img_path}'")
+          Dir.mkdir("#{hc.inst_data_dir}/tmp") unless File.exists?("#{hc.inst_data_dir}/tmp")
+          sh("/bin/mount -t vfat #{lodev} '#{hc.inst_data_dir}/tmp'")
+          
+          # build metadata directory tree
+          metadata_base_dir = File.expand_path("meta-data", "#{hc.inst_data_dir}/tmp")
+          FileUtils.mkdir_p(metadata_base_dir)
+          
+          metadata_items.each { |k, v|
+            if k[-1,1] == '/' && v.nil?
+              # just create empty folder
+              FileUtils.mkdir_p(File.expand_path(k, metadata_base_dir))
+              next
+            end
+            
+            dir = File.dirname(k)
+            if dir != '.'
+              FileUtils.mkdir_p(File.expand_path(dir, metadata_base_dir))
+            end
+            File.open(File.expand_path(k, metadata_base_dir), 'w') { |f|
+              f.puts(v.to_s)
+            }
+          }
+          # user-data
+          File.open(File.expand_path('user-data', "#{hc.inst_data_dir}/tmp"), 'w') { |f|
+            f.puts(hc.inst[:user_data])
+          }
+        ensure
+          # ignore any errors from cleanup work.
+          sh("/bin/umount -f '#{hc.inst_data_dir}/tmp'") rescue logger.warn($!.message)
+          sh("/sbin/losetup -d #{lodev}") rescue logger.warn($!.message)
+        end
+      end
 
       def attach_volume_to_guest(hc)
       end

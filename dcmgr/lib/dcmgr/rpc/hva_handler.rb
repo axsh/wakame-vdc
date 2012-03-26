@@ -134,18 +134,7 @@ module Dcmgr
                                                                       @vol[:transport_information][:lun]]
       end
 
-      def setup_metadata_drive
-        logger.info("Setting up metadata drive image for :#{@hva_ctx.inst_id}")
-        # truncate creates sparsed file.
-        sh("/usr/bin/truncate -s 10m '#{@hva_ctx.metadata_img_path}'; sync;")
-        # TODO: need to lock loop device not to use same device from
-        # another thread/process.
-        lodev=`/sbin/losetup -f`.chomp
-        sh("/sbin/losetup #{lodev} '#{@hva_ctx.metadata_img_path}'")
-        sh("mkfs.vfat -n METADATA '#{@hva_ctx.metadata_img_path}'")
-        Dir.mkdir("#{@hva_ctx.inst_data_dir}/tmp") unless File.exists?("#{@hva_ctx.inst_data_dir}/tmp")
-        sh("/bin/mount -t vfat #{lodev} '#{@hva_ctx.inst_data_dir}/tmp'")
-
+      def get_metadata_items
         vnic = @inst[:instance_nics].first || {}
         # Appendix B: Metadata Categories
         # http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/index.html?AESDG-chapter-instancedata.html
@@ -203,35 +192,6 @@ module Dcmgr
         else
           metadata_items.merge!({'public-keys/'=>nil})
         end
-
-        # build metadata directory tree
-        metadata_base_dir = File.expand_path("meta-data", "#{@hva_ctx.inst_data_dir}/tmp")
-        FileUtils.mkdir_p(metadata_base_dir)
-        
-        metadata_items.each { |k, v|
-          if k[-1,1] == '/' && v.nil?
-            # just create empty folder
-            FileUtils.mkdir_p(File.expand_path(k, metadata_base_dir))
-            next
-          end
-          
-          dir = File.dirname(k)
-          if dir != '.'
-            FileUtils.mkdir_p(File.expand_path(dir, metadata_base_dir))
-          end
-          File.open(File.expand_path(k, metadata_base_dir), 'w') { |f|
-            f.puts(v.to_s)
-          }
-        }
-        # user-data
-        File.open(File.expand_path('user-data', "#{@hva_ctx.inst_data_dir}/tmp"), 'w') { |f|
-          f.puts(@inst[:user_data])
-        }
-        
-      ensure
-        # ignore any errors from cleanup work.
-        sh("/bin/umount -f '#{@hva_ctx.inst_data_dir}/tmp'") rescue logger.warn($!.message)
-        sh("/sbin/losetup -d #{lodev}") rescue logger.warn($!.message)
       end
 
       job :run_local_store, proc {
@@ -253,34 +213,8 @@ module Dcmgr
 
         sleep 1
 
-        ###### Setup metadata for ESXi ######
-        inst_data_dir = @hva_ctx.inst_data_dir
-        FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
-        setup_metadata_drive
-        
-        #@hv.setup_metadata_iso if @hv.is_a?(Dcmgr::Drivers::ESXi)
-        if @hv.is_a?(Dcmgr::Drivers::ESXi)
-          begin
-          sh("genisoimage -R -o #{inst_data_dir}/metadata.iso #{@hva_ctx.metadata_img_path}")
-          #sh("mkdir #{inst_data_dir}/#{@hva_ctx.metadata_img_path}")
-          #sh("")
-          esxi_options = {
-            :host => @hva_ctx.node.manifest.config.esxi_ipaddress,
-            :user => @hva_ctx.node.manifest.config.esxi_username,
-            :password => @hva_ctx.node.manifest.config.esxi_password,
-            :insecure => true,
-            :datastore => @hva_ctx.node.manifest.config.esxi_datastore,
-            :datacenter => @hva_ctx.node.manifest.config.esxi_datacenter,
-          }
-          
-          sh("curl -s -u #{esxi_options[:user]}:#{esxi_options[:password]} -k -T #{inst_data_dir}/metadata.iso https://#{esxi_options[:host]}/folder/#{@hva_ctx.inst[:uuid]}/metadata.iso?dsName=#{esxi_options[:datastore]}")
-          ensure
-            sh("rm -rf #{inst_data_dir}")
-          end
-        end
-        ###### Finished setting up metadata drive. TODO: REFACTOR THIS! ######
-        
-        
+        #setup_metadata_drive
+        @hv.setup_metadata_drive(@hva_ctx,get_metadata_items)
         
         #check_interface
         @hv.run_instance(@hva_ctx)
