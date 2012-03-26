@@ -1,22 +1,33 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/network'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   get do
     # description "List networks in account"
     # params start, fixnum, optional
     # params limit, fixnum, optional
-    res = select_index(M::Network, {:start => params[:start],
-                         :limit => params[:limit]})
-    response_to(res)
+    ds = M::Network.dataset
+
+    if params[:account_id]
+      ds = ds.filter(:account_id=>params[:account_id])
+    end
+
+    ds = datetime_range_params_filter(:created, ds)
+    ds = datetime_range_params_filter(:deleted, ds)
+
+    collection_respond_with(ds) do |paging_ds|
+      R::NetworkCollection.new(paging_ds).generate
+    end
   end
 
   get '/:id' do
     # description "Retrieve details about a network"
     # params :id required
     nw = find_by_uuid(M::Network, params[:id])
-    examine_owner(nw) || raise(E::OperationNotPermitted)
+    raise E::UnknownNetwork, params[:id] if nw.nil?
 
-    response_to(nw.to_api_document)
+    respond_with(R::Network.new(nw).generate)
   end
 
   post do
@@ -35,14 +46,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     }
     nw = M::Network.create(savedata)
 
-    response_to(nw.to_api_document)
+    respond_with(R::Network.new(nw).generate)
   end
 
   delete '/:id' do
     # description "Remove network information"
     # params :id required
     nw = find_by_uuid(M::Network, params[:id])
-    examine_owner(nw) || raise(E::OperationNotPermitted)
+    raise E::UnknownNetwork, params[:id] if nw.nil?
     nw.destroy
 
     response_to([nw.canonical_uuid])
@@ -53,7 +64,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params id, string, required
     # params ipaddr, [String,Array], required
     nw = find_by_uuid(M::Network, params[:id])
-    examine_owner(nw) || raise(E::OperationNotPermitted)
+    raise E::UnknownNetwork, params[:id] if nw.nil?
 
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
       nw.ip_lease_dataset.add_reserved(ip)
@@ -66,7 +77,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params id, string, required
     # params ipaddr, [String,Array], required
     nw = find_by_uuid(M::Network, params[:id])
-    examine_owner(nw) || raise(E::OperationNotPermitted)
+    raise E::UnknownNetwork, params[:id] if nw.nil?
     
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
       nw.ip_lease_dataset.delete_reserved(ip)
@@ -79,14 +90,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params start, fixnum, optional
     # params limit, fixnum, optional
     nw = find_by_uuid(M::Network, params[:id])
-    examine_owner(nw) || raise(OperationNotPermitted)
-
-    result = []
-    nw.network_port.each { |port|
-      result << port.to_api_document.merge(:network_id => nw.canonical_uuid)
-    }
-
-    response_to(result)
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+    ds = nw.network_port_dataset
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::NetworkPortCollection.new(paging_ds).generate
+    end
   end
 
   get '/:id/ports/:port_id' do
@@ -95,26 +104,27 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params port_id, string, required
 
     # Find a better way to convert to canonical network uuid.
-    port = find_by_uuid(M::NetworkPort, params[:port_id])
     nw = find_by_uuid(M::Network, params[:id])
- 
+    raise E::UnknownNetwork, params[:id] if port.nil?
+    port = find_by_uuid(M::NetworkPort, params[:port_id])
+    raise E::UnknownNetworkPort, params[:port_id] if port.nil?
+    
     # Compare nw.id and port.network_id.
 
-    response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
+    respond_with(R::NetworkPort.new(port).generate)
   end
 
   post '/:id/ports' do
     # description "Create new network port"
     # params id, string, required
     nw = find_by_uuid(M::Network, params[:id])
-    examine_owner(nw) || raise(OperationNotPermitted)
 
     savedata = {
       :network_id => nw.id
     }
     port = M::NetworkPort.create(savedata)
 
-    response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
+    respond_with(R::NetworkPort.new(nw).generate)
   end
 
   delete '/:id/ports/:port_id' do
@@ -123,7 +133,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params port_id, string, required
     M::NetworkPort.lock!
     nw = find_by_uuid(M::Network, params[:id])
-    examine_owner(nw) || raise(OperationNotPermitted)
 
     port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
     raise(UnknownNetworkPort) if port.nil?
@@ -140,14 +149,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     result = []
 
     M::NetworkPort.lock!
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
     port = find_by_uuid(M::NetworkPort, params[:port_id])
-    raise(NetworkPortAlreadyAttached) unless port.instance_nic.nil?
+    raise E::UnknownNetworkPort, params[:port_id] if port.nil?
+    raise(E::NetworkPortAlreadyAttached) unless port.instance_nic.nil?
 
     nic = find_by_uuid(M::InstanceNic, params[:attachment_id])
-    raise(NetworkPortNicNotFound) if nic.nil?
-
-    nw = find_by_uuid(M::Network, params[:id])
-    examine_owner(nw) || raise(OperationNotPermitted)
+    raise(E::NetworkPortNicNotFound) if nic.nil?
 
     # Check that the vif belongs to network?
 
@@ -170,10 +179,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params id, string, required
     # params port_id, string, required
     M::NetworkPort.lock!
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
     port = find_by_uuid(M::NetworkPort, params[:port_id])
-
+    raise E::UnknownNetworkPort, params[:port_id] if port.nil?
     # Verify the network id.
-    raise(NetworkPortNotAttached) if port.instance_nic.nil?
+    raise(E::NetworkPortNotAttached) if port.instance_nic.nil?
 
     nic = port.instance_nic
     instance = nic.instance
