@@ -35,12 +35,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
   
   delete '/:id' do
     sn = find_by_uuid(:StorageNode, params[:id])
+    raise E::UnknownStorageNode if sn.nil?
     sn.destroy
     respond_with(R::StorageNode.new(sn).generate)
   end
 
   put '/:id' do
     sn = find_by_uuid(:StorageNode, params[:id])
+    raise E::UnknownStorageNode if sn.nil?
 
     changed = {}
     (M::StorageNode.columns - [:id]).each { |c|
