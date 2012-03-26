@@ -21,6 +21,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     # description 'Show status of the host'
     # param :account_id, :string, :optional
     hn = find_by_uuid(:HostNode, params[:id])
+    raise E::UnknownHostNode, params[:id] if hn.nil?
     
     respond_with(R::HostNode.new(hn).generate)
   end
@@ -32,12 +33,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
 
   delete '/:id' do
     hn = find_by_uuid(:HostNode, params[:id])
+    raise E::UnknownHostNode, params[:id] if hn.nil?
     hn.destroy
     response_to({:uuid=>hn.canonical_uuid})
   end
 
   put '/:id' do
     hn = find_by_uuid(:HostNode, params[:id])
+    raise E::UnknownHostNode, params[:id] if hn.nil?
 
     changed = {}
     (M::HostNode.columns - [:id]).each { |c|
