@@ -26,6 +26,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   get '/:id' do
     # description "Show a machine image details."
     i = find_by_uuid(:Image, params[:id])
+    raise E::UnknownImage, params[:id] if i.nil?
 
     respond_with(R::Image.new(i).generate)
   end
@@ -33,6 +34,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   delete '/:id' do
     # description 'Delete a machine image'
     i = find_by_uuid(:Image, params[:id])
+    raise E::UnknownImage, params[:id] if i.nil?
     if examine_owner(i)
       i.destroy
     else

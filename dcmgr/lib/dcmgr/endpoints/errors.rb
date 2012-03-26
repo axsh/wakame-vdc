@@ -97,7 +97,7 @@ module Dcmgr
     define_error(:AttachVolumeFailure, 400, '124')
     define_error(:InvalidInstanceState, 400, '125')
     define_error(:DuplicateHostname, 400, '126')
-    define_error(:UnknownImageID, 404, '127')
+    define_error(:UnknownImage, 404, '127')
     define_error(:UnknownInstanceSpec, 404, '128')
     define_error(:UnknownNetwork, 404, '129')
     define_error(:OutOfNetworkCapacity, 400, '130')
