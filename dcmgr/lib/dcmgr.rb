@@ -195,6 +195,7 @@ module Dcmgr
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
     autoload :Kvm , 'dcmgr/drivers/kvm'
     autoload :Lxc , 'dcmgr/drivers/lxc'
+    autoload :ESXi, 'dcmgr/drivers/esxi'
     autoload :BackingStore, 'dcmgr/drivers/backing_store'
     autoload :Zfs,          'dcmgr/drivers/zfs'
     autoload :Raw,          'dcmgr/drivers/raw'
@@ -202,6 +203,9 @@ module Dcmgr
     autoload :SunIscsi,     'dcmgr/drivers/sun_iscsi'
     autoload :LinuxIscsi,   'dcmgr/drivers/linux_iscsi'
     autoload :Comstar,      'dcmgr/drivers/comstar'
+    autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
+    autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
+    autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'
