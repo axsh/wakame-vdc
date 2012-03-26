@@ -254,6 +254,7 @@ module Dcmgr
       autoload :OpenFlowPort, 'dcmgr/vnet/openflow/port'
       autoload :OpenFlowSwitch, 'dcmgr/vnet/openflow/switch'
       autoload :OvsOfctl, 'dcmgr/vnet/openflow/ovs_ofctl'
+      autoload :PacketHandler, 'dcmgr/vnet/openflow/packet_handler'
     end
 
     module Tasks
