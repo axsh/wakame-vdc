@@ -22,7 +22,33 @@ module Dcmgr::VNet::OpenFlow
       # Replace with dnat entries instead of custom tables.
       flows << Flow.new(TABLE_METADATA_OUTGOING, 1, {}, {:controller => nil})
 
-      switch.datapath.add_flows flows        
+      switch.datapath.add_flows flows
+      switch.packet_handlers <<
+        PacketHandler.new(Proc.new { |switch,port,message|
+                            port.network.services[:metadata_server] and
+                            port.network.services[:metadata_server].of_port and
+                            message.ipv4? and message.tcp? and
+                            message.ipv4_daddr.to_s == "169.254.169.254" and message.tcp_dst_port == 80
+                          }, Proc.new { |switch,port,message|
+                            metadata_server = port.network.services[:metadata_server]
+
+                            if metadata_server.ip.to_s == Isono::Util.default_gw_ipaddr.to_s
+                              switch.install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
+                                                        metadata_server.of_port,
+                                                        port.network.local_hw,
+                                                        metadata_server.ip.to_s,
+                                                        metadata_server.listen_port)
+                            else
+                              switch.install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
+                                                        metadata_server.of_port,
+                                                        metadata_server.mac,
+                                                        metadata_server.ip.to_s,
+                                                        metadata_server.listen_port)
+                            end
+
+                            switch.datapath.send_packet_out(:packet_in => message,
+                                                            :actions => Trema::ActionOutput.new(:port => Dcmgr::VNet::OpenFlow::OpenFlowController::OFPP_TABLE))
+                          })
     end
 
     def request_mac switch, port
