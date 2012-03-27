@@ -134,6 +134,10 @@ module Dcmgr
                                                                       @vol[:transport_information][:lun]]
       end
 
+      def setup_metadata_drive
+        @hv.setup_metadata_drive(@hva_ctx,get_metadata_items)
+      end
+
       def get_metadata_items
         vnic = @inst[:instance_nics].first || {}
         # Appendix B: Metadata Categories
