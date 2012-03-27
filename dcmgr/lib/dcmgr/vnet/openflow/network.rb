@@ -21,10 +21,6 @@ module Dcmgr
         attr_accessor :virtual
         attr_accessor :domain_name
         attr_accessor :local_hw
-        attr_accessor :dhcp_hw
-        attr_accessor :dhcp_ip
-        # Can cause issues if dns_ip is not the same as dhcp_ip.
-        attr_accessor :dns_ip
         attr_accessor :ipv4_network
         attr_accessor :ipv4_gw
         attr_accessor :prefix
@@ -82,10 +78,10 @@ module Dcmgr
           flows << Flow.new(TABLE_VIRTUAL_SRC, 0, {:reg1 => id}, {:resubmit => TABLE_VIRTUAL_DST})
 
           # Catch ARP for the DHCP server.
-          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :arp => nil, :nw_dst => dhcp_ip.to_s}, {:controller => nil})
+          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :arp => nil, :nw_dst => services[:dhcp].ip.to_s}, {:controller => nil})
 
           # Catch DHCP requests.
-          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => dhcp_hw, :nw_dst => dhcp_ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
+          flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => services[:dhcp].mac, :nw_dst => services[:dhcp].ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
           flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
 
           datapath.add_flows flows

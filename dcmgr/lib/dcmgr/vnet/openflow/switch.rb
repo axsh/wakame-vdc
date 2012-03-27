@@ -217,7 +217,7 @@ module Dcmgr::VNet::OpenFlow
 
       logger.debug "DHCP: message:#{dhcp_in.to_s}."
 
-      if port.network.dhcp_ip.nil?
+      if port.network.services[:dhcp].ip.nil?
         logger.debug "DHCP: Port has no dhcp_ip: port:#{port.port_info.inspect}"
         return
       end
@@ -243,20 +243,25 @@ module Dcmgr::VNet::OpenFlow
       dhcp_out.yiaddr = Trema::IP.new(port.ip).to_i
       # Verify instead that discover has the right mac address.
       dhcp_out.chaddr = Trema::Mac.new(port.mac).to_short
-      dhcp_out.siaddr = port.network.dhcp_ip.to_i
+      dhcp_out.siaddr = port.network.services[:dhcp].ip.to_i
 
       subnet_mask = IPAddr.new(IPAddr::IN4MASK, Socket::AF_INET).mask(port.network.prefix)
 
-      dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => port.network.dhcp_ip.to_short)
+      dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => port.network.services[:dhcp].ip.to_short)
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (port.network.ipv4_network | ~subnet_mask).to_short)
-      dhcp_out.options << DHCP::DomainNameOption.new(:payload => port.network.domain_name.unpack('C*'))
-      dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => port.network.dns_ip.to_short) unless port.network.dns_ip.nil?
+      dhcp_out.options << DHCP::DomainNameOption.new(:payload => port.network.services[:dns].domain_name.unpack('C*'))
+      dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => port.network.services[:dns].ip.to_short) unless port.network.services[:dns].ip.nil?
       dhcp_out.options << DHCP::RouterOption.new(:payload => port.network.ipv4_gw.to_short) unless port.network.ipv4_gw.nil?
       dhcp_out.options << DHCP::SubnetMaskOption.new(:payload => subnet_mask.to_short)
 
       logger.debug "DHCP send: output:#{dhcp_out.to_s}."
-      datapath.send_udp(message.in_port, port.network.dhcp_hw.to_s, port.network.dhcp_ip.to_s, 67, port.mac.to_s, port.ip, 68, dhcp_out.pack)
+      datapath.send_udp(message.in_port,
+                        port.network.services[:dhcp].mac.to_s,
+                        port.network.services[:dhcp].ip.to_s,
+                        67,
+                        port.mac.to_s, port.ip, 68,
+                        dhcp_out.pack)
     end
 
   end

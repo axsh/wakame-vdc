@@ -6,11 +6,11 @@ module Dcmgr::VNet::OpenFlow
     include OpenFlowConstants
 
     attr_reader :switch
-    attr_reader :of_port
+    attr_accessor :of_port
 
-    attr_reader :mac
-    attr_reader :ip
-    attr_reader :listen_port
+    attr_accessor :mac
+    attr_accessor :ip
+    attr_accessor :listen_port
     
     def initialize(args = {})
       @switch = args[:switch]

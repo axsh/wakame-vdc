@@ -261,6 +261,7 @@ module Dcmgr
       autoload :PacketHandler, 'dcmgr/vnet/openflow/packet_handler'
       autoload :ServiceBase, 'dcmgr/vnet/openflow/service_base'
       autoload :ServiceDhcp, 'dcmgr/vnet/openflow/service_dhcp'
+      autoload :ServiceDns, 'dcmgr/vnet/openflow/service_dns'
       autoload :ServiceMetadata, 'dcmgr/vnet/openflow/service_metadata'
     end
 
