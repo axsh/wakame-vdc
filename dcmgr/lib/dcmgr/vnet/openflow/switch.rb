@@ -208,6 +208,11 @@ module Dcmgr::VNet::OpenFlow
     end
 
     def handle_dhcp(port, message)
+      if !message.udp?
+        logger.debug "DHCP: Message is not UDP."
+        return
+      end
+
       dhcp_in = DHCP::Message.from_udp_payload(message.udp_payload)
 
       logger.debug "DHCP: message:#{dhcp_in.to_s}."

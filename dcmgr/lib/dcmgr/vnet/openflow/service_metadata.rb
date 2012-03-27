@@ -2,28 +2,14 @@
 
 module Dcmgr::VNet::OpenFlow
 
-  class ServiceMetadata
+  class ServiceMetadata < ServiceBase
     include Dcmgr::Logger
-    include OpenFlowConstants
 
-    attr_reader :datapath
+    def install port, remote_mac
+      logger.info "Adding metadata server: port:#{port} mac:#{remote_mac.to_s} ip:#{ip.to_s}/#{listen_port}."
 
-    attr_reader :ip
-    attr_reader :mac
-    attr_reader :port
-    attr_reader :output
-    
-    def initialize(dp, ip, port)
-      @datapath = dp
-      @ip = ip
-      @port = port
-    end
-  
-    def install output_port, dest_hw
-      logger.info "Adding metadata server: port:#{output_port} mac:#{dest_hw.to_s} ip:#{ip.to_s}/#{port}."
-
-      @output = output_port
-      @mac = dest_hw
+      @of_port = port
+      @mac = remote_mac
 
       @arp_retry.cancel if @arp_retry
       @arp_retry = nil
@@ -31,27 +17,31 @@ module Dcmgr::VNet::OpenFlow
       # Currently only add for the physical networks.
       flows = []
       flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_dst => '169.254.169.254', :tp_dst => 80}, {:resubmit => TABLE_METADATA_OUTGOING})
-      flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_src => ip.to_s, :tp_src => port}, {:resubmit => TABLE_METADATA_INCOMING})
+      flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_src => ip.to_s, :tp_src => listen_port}, {:resubmit => TABLE_METADATA_INCOMING})
 
       # Replace with dnat entries instead of custom tables.
       flows << Flow.new(TABLE_METADATA_OUTGOING, 1, {}, {:controller => nil})
 
-      datapath.add_flows flows        
+      switch.datapath.add_flows flows        
     end
 
-    def request_mac switch, port_number, local_hw
-      logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{ip.to_s}/#{port}."
+    def request_mac switch, port
+      port_number = port.port_info.number
+      local_hw = port.port_info.hw_addr
 
+      logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{ip.to_s}/#{listen_port}."
+
+      # This needs to be per-network handler.
       switch.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
                             port.port_info.number == port_number and
-                            port.network.services[:metadata_server].output.nil? and
+                            port.network.services[:metadata_server].of_port.nil? and
                             message.arp? and
                             message.arp_oper == Racket::L3::ARP::ARPOP_REPLY and
                             message.arp_spa.to_s == port.network.services[:metadata_server].ip.to_s and
                             message.arp_tpa.to_s == Isono::Util.default_gw_ipaddr.to_s
                           }, Proc.new { |switch,port,message|
-                            self.install(message.in_port, message.arp_sha)
+                            self.install(port, message.arp_sha)
                           })
 
       flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
@@ -60,13 +50,13 @@ module Dcmgr::VNet::OpenFlow
                           :nw_src => ip.to_s},
                         {:controller => nil, :local => nil})]
 
-      datapath.add_flows flows        
-      datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
-                        local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
+      switch.datapath.add_flows flows        
+      switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
+                               local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
 
       @arp_retry = EM::PeriodicTimer.new(10) {
-        datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
-                          local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
+        switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
+                                 local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
       }
     end
 

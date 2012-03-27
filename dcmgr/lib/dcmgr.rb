@@ -259,6 +259,8 @@ module Dcmgr
       autoload :OpenFlowSwitch, 'dcmgr/vnet/openflow/switch'
       autoload :OvsOfctl, 'dcmgr/vnet/openflow/ovs_ofctl'
       autoload :PacketHandler, 'dcmgr/vnet/openflow/packet_handler'
+      autoload :ServiceBase, 'dcmgr/vnet/openflow/service_base'
+      autoload :ServiceDhcp, 'dcmgr/vnet/openflow/service_dhcp'
       autoload :ServiceMetadata, 'dcmgr/vnet/openflow/service_metadata'
     end
 
