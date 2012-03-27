@@ -41,7 +41,7 @@ module Dcmgr::VNet::OpenFlow
                             message.arp_spa.to_s == port.network.services[:metadata_server].ip.to_s and
                             message.arp_tpa.to_s == Isono::Util.default_gw_ipaddr.to_s
                           }, Proc.new { |switch,port,message|
-                            self.install(port, message.arp_sha)
+                            self.install(port_number, message.arp_sha)
                           })
 
       flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
