@@ -58,6 +58,15 @@ ms|metadata-server)
 md|metadata-drive)
   METADATA_LOCATION=drive
   ;;
+mcd|metadata-cd)
+  # Mount the metadata CD and setup the image inside
+  # to be used as metadata drive
+  METADATA_ISO_MOUNTPOINT=/mnt/metadata_cd
+  mount LABEL=META_CD ${METADATA_ISO_MOUNTPOINT}
+  /sbin/losetup `/sbin/losetup -f` ${METADATA_ISO_MOUNTPOINT}/metadata.img
+
+  METADATA_LOCATION=drive
+  ;;
 *)
   METADATA_LOCATION=drive
   ;;

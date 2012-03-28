@@ -44,7 +44,7 @@ module Dcmgr
         super(ctx,metadata_items)
         
         begin
-          sh("genisoimage -R -o #{ctx.inst_data_dir}/metadata.iso #{ctx.metadata_img_path}")
+          sh("genisoimage -V META_CD -R -o #{ctx.inst_data_dir}/metadata.iso #{ctx.metadata_img_path}")
           sh("curl -s -u #{esxi_options(ctx)[:user]}:#{esxi_options(ctx)[:password]} -k -T #{ctx.inst_data_dir}/metadata.iso https://#{esxi_options(ctx)[:host]}/folder/#{ctx.inst[:uuid]}/metadata.iso?dsName=#{esxi_options(ctx)[:datastore]}")
         ensure
           sh("rm -rf #{ctx.inst_data_dir}") rescue logger.warn($!.message)
