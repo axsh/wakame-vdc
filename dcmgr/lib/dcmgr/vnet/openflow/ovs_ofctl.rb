@@ -22,7 +22,7 @@ module Dcmgr
 
         def get_bridge_name datapath_id
           command = "#{@ovs_vsctl} --no-heading -- --columns=name find bridge datapath_id=%016x" % datapath_id
-          puts command if verbose == true
+          logger.debug command if verbose == true
           /^"(.*)"/.match(`#{command}`)[1]
         end
 
@@ -38,7 +38,7 @@ module Dcmgr
           recmds << "#{@ovs_ofctl} add-flow #{switch_name} - <<'#{eos}'"
           flows.each { |flow|
             full_flow = "#{flow.match_to_s},actions=#{flow.actions_to_s}"
-            puts "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose == true
+            logger.debug "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose == true
             recmds << full_flow
           }
           recmds << "#{eos}"
@@ -54,7 +54,7 @@ module Dcmgr
           recmds << "#{@ovs_ofctl} del-flows #{switch_name} - <<'#{eos}'"
           flows.each { |flow|
             full_flow = "#{flow.match_sparse_to_s}"
-            puts "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose == true
+            logger.debug "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose == true
             recmds << full_flow
           }
           recmds << "#{eos}"
