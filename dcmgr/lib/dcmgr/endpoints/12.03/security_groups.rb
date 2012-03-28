@@ -46,7 +46,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     g = find_by_uuid(:SecurityGroup, params[:id])
 
     raise E::UnknownSecurityGroup if g.nil?
-    raise E::OperationNotPermitted unless examine_owner(g)
 
     if params[:description]
       g.description = params[:description]
@@ -73,7 +72,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     g = find_by_uuid(:SecurityGroup, params[:id])
 
     raise E::UnknownSecurityGroup if g.nil?
-    raise E::OperationNotPermitted unless examine_owner(g)
 
     # raise E::OperationNotPermitted if g.instances.size > 0
     begin

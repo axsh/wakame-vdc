@@ -208,7 +208,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   #   # params dest_ip required
   #   # params tunnel_id required
   #   nw = find_by_uuid(M::Network, params[:id])
-  #   examine_owner(nw) || raise(OperationNotPermitted)
 
   #   tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
   #   command = "/usr/share/axsh/wakame-vdc/ovs/bin/ovs-vsctl add-port br0 #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{params[:dest_ip]} options:key=#{params[:tunnel_id]}"
@@ -222,7 +221,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   #   # params :id required
   #   # params :tunnel_id required
   #   nw = find_by_uuid(M::Network, params[:id])
-  #   examine_owner(nw) || raise(OperationNotPermitted)
 
   #   tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
 

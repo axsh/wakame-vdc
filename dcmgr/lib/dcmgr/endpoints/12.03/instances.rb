@@ -167,10 +167,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   delete '/:id' do
     # description 'Shutdown the instance'
     i = find_by_uuid(:Instance, params[:id])
-    if examine_owner(i)
-    else
-      raise E::OperationNotPermitted
-    end
 
     case i.state
     when 'stopped'

@@ -66,15 +66,6 @@ module Dcmgr::Endpoints::V1203
       vs
     end
 
-    def examine_owner(account_resource)
-      if @account.canonical_uuid == account_resource.account_id ||
-          @account.canonical_uuid == 'a-00000000'
-        return true
-      else
-        return false
-      end
-    end
-
     def select_index(model_class, data)
       if model_class.is_a?(Symbol)
         model_class = M.const_get(model_class)

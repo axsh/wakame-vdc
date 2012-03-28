@@ -35,11 +35,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     # description 'Delete a machine image'
     i = find_by_uuid(:Image, params[:id])
     raise E::UnknownImage, params[:id] if i.nil?
-    if examine_owner(i)
-      i.destroy
-    else
-      raise E::OperationNotPermitted
-    end
+    i.destroy
     respond_with([i.canonical_uuid])
   end
 end
