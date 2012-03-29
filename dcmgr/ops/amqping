@@ -26,11 +26,13 @@ end
 
 Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
 
+# for isono <= 0.2.9
 ARGV.clear
 ARGV.push "-s"
 ARGV.push Dcmgr.conf.amqp_server_uri
 
 begin
+#  start(manifest, {:amqp_server_uri => Dcmgr.conf.amqp_server_uri}) do
   start(manifest) do
   end
 rescue => e
