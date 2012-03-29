@@ -21,15 +21,23 @@ module Dcmgr::Cli
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         
-        full_path = File.expand_path(location)
-        File.exists?(full_path) || Error.raise("File not found: #{full_path}",100)
-        
-        #TODO: Check if :state is a valid state
         fields = options.dup
         fields[:boot_dev_type]=M::Image::BOOT_DEV_LOCAL
-        fields[:source] = {
-          :uri => "file://#{full_path}",
-        }
+        
+        # Check if location is an uri, otherwise treat it as a local path
+        if location =~ /^[a-z](?:[-a-z0-9\+\.])*:\/\//
+          fields[:source] = {
+            :uri => location
+          }
+        else
+          full_path = File.expand_path(location)
+          File.exists?(full_path) || Error.raise("File not found: #{full_path}",100)
+          
+          #TODO: Check if :state is a valid state
+          fields[:source] = {
+            :uri => "file://#{full_path}",
+          }
+        end
         puts add(M::Image, fields)
       end
 
