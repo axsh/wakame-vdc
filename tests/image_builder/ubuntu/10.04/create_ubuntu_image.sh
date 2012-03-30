@@ -5,6 +5,8 @@ swapsize=128
 init_script_location=$PWD/wakame-init
 dns_server=8.8.8.8
 
+metadata_type=$1
+
 #Function to generate the mount directory later on
 function randdir
 {
@@ -82,7 +84,7 @@ echo "Setting up the startup script"
 cp $init_script_location $tmp_mount_dir/etc/wakame_init
 chmod +x $tmp_mount_dir/etc/wakame_init
 sed -i '/exit 0/d' $tmp_mount_dir/etc/rc.local
-echo /etc/wakame_init >> $tmp_mount_dir/etc/rc.local
+echo "/etc/wakame_init ${metadata_type}" >> $tmp_mount_dir/etc/rc.local
 echo "exit 0" >> $tmp_mount_dir/etc/rc.local
 
 #Load acpiphp.ko at boot
