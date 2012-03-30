@@ -17,9 +17,9 @@ module Dcmgr
         # and a *-flat.vmdk file which contains the disk itself.
         # We need to copy both.
         inst_img_flat  = inst[:image][:source][:uri]
-        #TODO: make sure we only delete the last occurence of "-flat" in the filename
-        inst_img_meta = inst_img_flat.gsub("-flat","")
-        
+        # Delete the last occurence of "-flat" in the image file to form the metadata filename
+        *filename,extension = inst_img_flat.split "-flat",-1
+        inst_img_meta = filename.join("-flat") + extension
         
         # Collect the esxi data
         esxi_options = {
