@@ -5,6 +5,16 @@
 # directory to store VM local data.
 config.vm_data_dir = "/home/demo/vm"
 
+# Specific options for the ESXi hypervisor
+# These will be ignored if another hypervisor is used
+config.esxi_ipaddress     = "10.0.0.1"
+config.esxi_datacenter    = "ha-datacenter"
+config.esxi_datastore     = "datastore1"
+config.esxi_username      = "root"
+config.esxi_password      = "Some.Password1"
+# Setting this option to true lets you use SSL with untrusted certificates
+config.esxi_insecure      = false
+
 # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
 # * 'netfilter'
 # * 'legacy_netfilter' #no longer supported, has issues with multiple vnic vm isolation
