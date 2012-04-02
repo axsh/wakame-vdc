@@ -22,7 +22,7 @@ module Dcmgr
         vm.Destroy_Task.wait_for_completion
         
         ## Delete the metadata iso
-        opts = esxi_options(ctx)
+        opts = self.class.settings(ctx)
         vim = RbVmomi::VIM.connect opts
         dc = vim.serviceInstance.find_datacenter(opts[:datacenter]) or raise "datacenter [#{opts[:datacenter]}] not found"
         
@@ -43,9 +43,11 @@ module Dcmgr
       def setup_metadata_drive(ctx,metadata_items)
         super(ctx,metadata_items)
         
+        opts = self.class.settings(ctx)
+        
         begin
           sh("genisoimage -V META_CD -R -o #{ctx.inst_data_dir}/metadata.iso #{ctx.metadata_img_path}")
-          sh("curl -s -u #{esxi_options(ctx)[:user]}:#{esxi_options(ctx)[:password]} -k -T #{ctx.inst_data_dir}/metadata.iso https://#{esxi_options(ctx)[:host]}/folder/#{ctx.inst[:uuid]}/metadata.iso?dsName=#{esxi_options(ctx)[:datastore]}")
+          sh("curl -s -u #{opts[:user]}:#{opts[:password]} -k -T #{ctx.inst_data_dir}/metadata.iso https://#{opts[:host]}/folder/#{ctx.inst[:uuid]}/metadata.iso?dsName=#{opts[:datastore]}")
         ensure
           sh("rm -rf #{ctx.inst_data_dir}") rescue logger.warn($!.message)
         end
@@ -59,35 +61,32 @@ module Dcmgr
         raise NotImplementedError
       end
       
-      private
-      def find_vm(ctx)
-        inst = ctx.inst
-        
-        vmname = inst[:uuid]
-        
-        opts = esxi_options(ctx)
-        
-        vim = RbVmomi::VIM.connect opts
-        dc = vim.serviceInstance.find_datacenter(opts[:datacenter]) or raise "datacenter [#{opts[:datacenter]}] not found"
-
-        vm = dc.find_vm(vmname) or raise "VM [#{vmname}] not found"
-      end
-      
-      def esxi_options(ctx)
+      def self.settings(ctx)
         @esxi_options = {
           :host => ctx.node.manifest.config.esxi_ipaddress,
-          :user => ctx.node.manifest.config.esxi_username,
+          :user => ctx.node.manifest.config.esxi_username || "root",
           :password => ctx.node.manifest.config.esxi_password,
-          :insecure => true,
+          :insecure => ctx.node.manifest.config.esxi_insecure || false,
           :datastore => ctx.node.manifest.config.esxi_datastore,
           :datacenter => ctx.node.manifest.config.esxi_datacenter,
         } if @esxi_options.nil?
         
         @esxi_options
       end
-      #def upload_image(image_host,image_name,esxi_server_ip,esxi_user,esxi_password,esxi_datastore_name)
-        #sh("curl -s -o - #{image_host}/#{image_name} | curl -s -u #{esxi_user}:#{esxi_password} -k -T - https://#{esxi_server_ip}/folder/dnsmasq.deb?dsName=datastore1")
-      #end
+      
+      private
+      def find_vm(ctx)
+        inst = ctx.inst
+        
+        vmname = inst[:uuid]
+        
+        opts = self.class.settings(ctx)
+        
+        vim = RbVmomi::VIM.connect opts
+        dc = vim.serviceInstance.find_datacenter(opts[:datacenter]) or raise "datacenter [#{opts[:datacenter]}] not found"
+
+        vm = dc.find_vm(vmname) or raise "VM [#{vmname}] not found"
+      end
     end
   end
 end

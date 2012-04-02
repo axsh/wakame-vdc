@@ -22,14 +22,7 @@ module Dcmgr
         inst_img_meta = filename.join("-flat") + extension
         
         # Collect the esxi data
-        esxi_options = {
-          :host => ctx.node.manifest.config.esxi_ipaddress,
-          :user => ctx.node.manifest.config.esxi_username,
-          :password => ctx.node.manifest.config.esxi_password,
-          :insecure => true,
-          :datastore => ctx.node.manifest.config.esxi_datastore,
-          :datacenter => ctx.node.manifest.config.esxi_datacenter,
-        }
+        esxi_options = Dcmgr::Drivers::ESXi.settings(ctx)
         
         logger.debug("Creating ESXI vm: #{inst_uuid}")
         create_vm(inst,esxi_options)
