@@ -115,6 +115,11 @@ module Sinatra
     
     def self.registered(app)
       app.class_eval &DO
+
+      app.configure :development do
+        require 'sinatra/reloader'
+        app.register Sinatra::Reloader
+      end
     end
   end
 end
