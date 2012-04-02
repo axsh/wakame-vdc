@@ -53,6 +53,15 @@ shlog ./bin/vdc-manage network add \
  --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10
+shlog ./bin/vdc-manage network add \
+ --uuid nw-demo6 \
+ --ipv4-network 10.102.0.0 \
+ --ipv4_gw 10.102.0.1 \
+ --prefix 24 \
+ --domain vnet.local \
+ --metric 10 \
+ --link-interface br0
+
 # physical network
 shlog ./bin/vdc-manage network phy add eth0 --interface eth0
 # bridge only closed network
@@ -64,6 +73,8 @@ shlog ./bin/vdc-manage network forward nw-demo2 eth0
 shlog ./bin/vdc-manage network forward nw-demo3 eth0
 shlog ./bin/vdc-manage network forward nw-demo4 null1
 shlog ./bin/vdc-manage network forward nw-demo5 null2
+shlog ./bin/vdc-manage network forward nw-demo6 null1
+shlog ./bin/vdc-manage network gateway nw-demo6 eth0
 
 [ -f /etc/redhat-release ] && {
   # rhel
@@ -86,6 +97,7 @@ shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.60 10.100.0.80 # 
 shlog ./bin/vdc-manage network dhcp addrange nw-demo3 10.101.0.60 10.101.0.80
 shlog ./bin/vdc-manage network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
 shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
+shlog ./bin/vdc-manage network dhcp addrange nw-demo6 10.102.0.10 10.102.0.240
 
 shlog ./bin/vdc-manage tag map tag-shhost hn-${node_id}
 shlog ./bin/vdc-manage tag map tag-shstor sn-${node_id}

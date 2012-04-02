@@ -86,6 +86,8 @@ module Dcmgr
 
       def check_interface
         @inst[:instance_nics].each { |vnic|
+          next if vnic[:network_port].nil?
+
           network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
           
           fwd_if = phy_if = network[:physical_network][:interface]
@@ -166,6 +168,8 @@ module Dcmgr
         }
 
         @inst[:vif].each { |vnic|
+          next if vnic[:network_port].nil?
+
           netaddr  = IPAddress::IPv4.new("#{vnic[:ipv4][:network][:ipv4_network]}/#{vnic[:ipv4][:network][:prefix]}")
 
           # vfat doesn't allow folder name including ":".

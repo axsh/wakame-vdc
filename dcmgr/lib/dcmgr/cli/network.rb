@@ -211,6 +211,14 @@ __END
     nw.save
   end
 
+  desc "gateway UUID PHYSICAL", "Set forward interface for network"
+  def gateway(uuid, phynet)
+    nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+    phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
+    nw.gateway_network = phy
+    nw.save
+  end
+
   class PhyOps < Base
     namespace :phy
     M=Dcmgr::Models

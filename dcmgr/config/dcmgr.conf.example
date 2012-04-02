@@ -124,5 +124,26 @@ network_scheduler {
         'eth2' => 'nw-demo5',
       })
     }
+
+    # vnet: physical and nw-demo6
+    vnet_1_6 {
+      # setup vnics by following InstanceSpec#vifs template.
+      scheduler :VifTemplate
+      # map instance ehtX to network uuid.
+      options( {
+        'eth0' => 'nw-demo1',
+        'eth1' => 'nw-demo6',
+      })
+    }
+
+    # vnet: nw-demo6
+    vnet_6 {
+      # setup vnics by following InstanceSpec#vifs template.
+      scheduler :VifTemplate
+      # map instance ehtX to network uuid.
+      options( {
+        'eth0' => 'nw-demo6',
+      })
+    }
   }
 }

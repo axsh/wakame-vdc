@@ -29,6 +29,7 @@ module Dcmgr::Models
 
     one_to_many :dhcp_range
     many_to_one :physical_network
+    many_to_one :gateway_network, :class => PhysicalNetwork
 
     one_to_many :network_port
 
