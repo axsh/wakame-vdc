@@ -13,6 +13,7 @@ KEYSPATH=${SSHDIR}/authorized_keys
 
 METADATA_LOCATION=drive
 METADATA_DRIVE_MOUNTPOINT=/mnt/metadata
+METADATA_ISO_MOUNTPOINT=/mnt/metadata_cd
 
 function shlog() {
   echo "\$ $*"
@@ -61,7 +62,9 @@ md|metadata-drive)
 mcd|metadata-cd)
   # Mount the metadata CD and setup the image inside
   # to be used as metadata drive
-  METADATA_ISO_MOUNTPOINT=/mnt/metadata_cd
+  if [ ! -d ${METADATA_ISO_MOUNTPOINT} ]; then
+    mkdir -p ${METADATA_ISO_MOUNTPOINT}
+  fi
   mount LABEL=META_CD ${METADATA_ISO_MOUNTPOINT}
   /sbin/losetup `/sbin/losetup -f` ${METADATA_ISO_MOUNTPOINT}/metadata.img
 
@@ -164,11 +167,17 @@ drive)
     metric=`get_metadata ${mac_path}/x-metric`
     netmask=`get_metadata ${mac_path}/x-netmask`
     network=`get_metadata ${mac_path}/x-network`
+    dns=`get_metadata ${mac_path}/x-dns`
 
     shlog ifconfig $nic 0.0.0.0 down
     shlog which ifmetric && shlog ifmetric $nic $metric
     shlog ifconfig $nic $ip netmask $netmask broadcast $broadcast up
     #shlog route add -net $network netmask $netmask dev $nic
+
+    if [ ! -z ${dns} ]; then
+      grep -q "nameserver ${dns}" /etc/resolv.conf
+      [ $? == 0 ] || echo nameserver ${dns} >> /etc/resolv.conf
+    fi
   done
 
 

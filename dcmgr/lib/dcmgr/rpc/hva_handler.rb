@@ -180,6 +180,7 @@ module Dcmgr
             "network/interfaces/macs/#{mac}/security-groups" => @inst[:security_groups].join(' '),
             # wakame-vdc extention items.
             # TODO: need an iface index number?
+            "network/interfaces/macs/#{mac}/x-dns" => vnic[:ipv4][:network][:dns_server],
             "network/interfaces/macs/#{mac}/x-gateway" => vnic[:ipv4][:network][:ipv4_gw],
             "network/interfaces/macs/#{mac}/x-netmask" => netaddr.prefix.to_ip,
             "network/interfaces/macs/#{mac}/x-network" => vnic[:ipv4][:network][:ipv4_network],
