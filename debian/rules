@@ -40,16 +40,16 @@ build-stamp:
 	git clone https://github.com/sstephenson/ruby-build.git
 	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(CURDIR)/ruby)
 	gem install bundler rake --no-rdoc --no-ri
-	(cd $(CURDIR)/dcmgr && bundle install --path vendor/bundle)
-	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --path vendor/bundle)
+	(cd $(CURDIR)/dcmgr && bundle install --standalone --path=vendor/bundle)
+	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path=vendor/bundle)
 	touch $@
 clean:
 	dh_testdir
 	#dh_testroot
 	dh_prep
 	dh_clean
-	(cd $(CURDIR)/dcmgr/ && rm -rf vendor/bundle)
-	(cd $(CURDIR)/frontend/dcmgr_gui/ && rm -rf vendor/bundle)
+	(cd $(CURDIR)/dcmgr/ && (rm -rf .bundle/; rm -rf vendor/bundle))
+	(cd $(CURDIR)/frontend/dcmgr_gui/ && (rm -rf .bundle/; rm -rf vendor/bundle))
 	rm -rf $(CURDIR)/ruby-build $(CURDIR)/ruby $(CURDIR)/tmp
 
 install: build
