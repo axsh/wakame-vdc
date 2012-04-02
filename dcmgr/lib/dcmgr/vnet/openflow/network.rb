@@ -26,6 +26,7 @@ module Dcmgr
         attr_accessor :prefix
 
         attr_reader :services
+        attr_accessor :packet_handlers
 
         def initialize dp, id
           @id = id
@@ -38,6 +39,7 @@ module Dcmgr
           @prefix = 0
 
           @services = {}
+          @packet_handlers = []
         end
 
         def update

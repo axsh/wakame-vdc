@@ -180,6 +180,7 @@ module Dcmgr::VNet::OpenFlow
       end
 
       if !port.network.nil?
+        port.network.packet_handlers.each { |handler| handler.handle(self, port, message) }
         packet_handlers.each { |handler| handler.handle(self, port, message) }
       end
     end

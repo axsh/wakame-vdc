@@ -5,8 +5,8 @@ module Dcmgr::VNet::OpenFlow
   class ServiceDhcp < ServiceBase
     include Dcmgr::Logger
 
-    def install
-      switch.packet_handlers <<
+    def install(network)
+      network.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
                             message.ipv4? and message.udp? and
                             message.udp_src_port == 68 and message.udp_dst_port == 67 and
