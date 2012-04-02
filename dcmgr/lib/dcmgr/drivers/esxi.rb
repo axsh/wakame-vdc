@@ -62,14 +62,20 @@ module Dcmgr
       end
       
       def self.settings(ctx)
-        @esxi_options = {
-          :host => ctx.node.manifest.config.esxi_ipaddress,
-          :user => ctx.node.manifest.config.esxi_username || "root",
-          :password => ctx.node.manifest.config.esxi_password,
-          :insecure => ctx.node.manifest.config.esxi_insecure || false,
-          :datastore => ctx.node.manifest.config.esxi_datastore,
-          :datacenter => ctx.node.manifest.config.esxi_datacenter,
-        } if @esxi_options.nil?
+        if @esxi_options.nil?
+          @esxi_options = {
+            :host => ctx.node.manifest.config.esxi_ipaddress,
+            :user => ctx.node.manifest.config.esxi_username || "root",
+            :password => ctx.node.manifest.config.esxi_password,
+            :insecure => ctx.node.manifest.config.esxi_insecure || false,
+            :datastore => ctx.node.manifest.config.esxi_datastore,
+            :datacenter => ctx.node.manifest.config.esxi_datacenter,
+          }
+          
+          @esxi_options.each { |k,v|
+            raise "ESXi #{k} isn't set. Please set it in hva.conf" if v.nil?
+          }
+        end
         
         @esxi_options
       end
