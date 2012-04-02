@@ -10,7 +10,7 @@ GEM
     eventmachine (1.0.0.beta.3)
     extlib (0.9.15)
     ipaddress (0.8.0)
-    isono (0.2.9)
+    isono (0.2.10)
       amqp (= 0.7.4)
       eventmachine (= 1.0.0.beta.3)
       log4r
@@ -64,7 +64,7 @@ DEPENDENCIES
   configuration
   extlib (= 0.9.15)
   ipaddress (= 0.8.0)
-  isono (= 0.2.9)
+  isono (= 0.2.10)
   json (>= 1.2.0)
   mysql (>= 2.8.1)
   net-dhcp (>= 1.1.0)

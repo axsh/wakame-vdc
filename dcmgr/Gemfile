@@ -10,7 +10,7 @@ gem 'thor', '0.14.6'
 gem 'rbvmomi', '1.5.1'
 gem 'unicorn', '4.2.0'
 
-gem 'isono', '0.2.9'
+gem 'isono', '0.2.10'
 
 group :dcmgr do
   gem "rack", "1.4.1"
