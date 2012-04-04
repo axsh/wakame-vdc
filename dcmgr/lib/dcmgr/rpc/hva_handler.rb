@@ -445,11 +445,6 @@ module Dcmgr
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end
-
-      def pararell_curl(url, output_path)
-        script_root_path = File.join(File.expand_path('../../../../',__FILE__), 'script')
-        sh("#{script_root_path}/pararell-curl.sh --url=#{url} --output_path=#{output_path}")
-      end
     end
 
     class HvaContext
