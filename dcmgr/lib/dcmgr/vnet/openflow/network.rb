@@ -10,6 +10,7 @@ module Dcmgr
 
         attr_reader :id
         attr_reader :datapath
+        attr_reader :virtual
 
         # Add _numbers postfix.
         attr_reader :ports
@@ -17,25 +18,22 @@ module Dcmgr
 
         attr_reader :subnet_macs
 
-        # Use the actual network db object instead.
-        attr_accessor :virtual
-        attr_accessor :domain_name
         attr_accessor :local_hw
         attr_accessor :ipv4_network
-        attr_accessor :ipv4_gw
         attr_accessor :prefix
 
         attr_reader :services
         attr_accessor :packet_handlers
 
-        def initialize dp, id
+        def initialize dp, id, virtual
           @id = id
           @datapath = dp
+          @virtual = !!virtual
+
           @ports = []
           @local_ports = []
           @subnet_macs = []
 
-          @virtual = false
           @prefix = 0
 
           @services = {}
