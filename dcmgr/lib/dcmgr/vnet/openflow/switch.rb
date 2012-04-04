@@ -251,10 +251,14 @@ module Dcmgr::VNet::OpenFlow
       dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => port.network.services[:dhcp].ip.to_short)
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (port.network.ipv4_network | ~subnet_mask).to_short)
-      dhcp_out.options << DHCP::DomainNameOption.new(:payload => port.network.services[:dns].domain_name.unpack('C*'))
-      dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => port.network.services[:dns].ip.to_short) unless port.network.services[:dns].ip.nil?
-      dhcp_out.options << DHCP::RouterOption.new(:payload => port.network.ipv4_gw.to_short) unless port.network.ipv4_gw.nil?
+      dhcp_out.options << DHCP::RouterOption.new(:payload => port.network.ipv4_gw.to_short) if port.network.ipv4_gw
       dhcp_out.options << DHCP::SubnetMaskOption.new(:payload => subnet_mask.to_short)
+
+      dhcp_out.options << DHCP::DomainNameOption.new(:payload => port.network.services[:dns].domain_name.unpack('C*'))
+
+      if port.network.services[:dns] and port.network.services[:dns].ip
+        dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => port.network.services[:dns].ip.to_short)
+      end
 
       logger.debug "DHCP send: output:#{dhcp_out.to_s}."
       datapath.send_udp(message.in_port,
