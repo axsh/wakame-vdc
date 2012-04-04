@@ -40,6 +40,12 @@ module Dcmgr
 
           @services = {}
           @packet_handlers = []
+
+          eth_ports[datapath.datapath_id] ||= []
+        end
+
+        def eth_ports
+          @@eth_ports ||= {}
         end
 
         def update
@@ -49,11 +55,13 @@ module Dcmgr
         def add_port port, is_local
           ports << port
           local_ports << port if is_local
+          eth_ports[datapath.datapath_id] << port if !virtual and eth_ports[datapath.datapath_id].count(port) == 0
         end
 
         def remove_port port
           ports.delete port
           local_ports.delete port
+          eth_ports[datapath.datapath_id].delete port
         end
 
         def flood_flows
@@ -90,10 +98,10 @@ module Dcmgr
         end
 
         def install_physical_network
-          flood_flows << Flow.new(TABLE_MAC_ROUTE,      1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [ports, {:output => :placeholder}])
-          flood_flows << Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [ports, {:output => :placeholder}])
-          flood_flows << Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [ports, {:load_reg0 => :placeholder, :resubmit => TABLE_LOAD_SRC}])
-          flood_flows << Flow.new(TABLE_ARP_ROUTE,      1, {:arp => nil, :dl_dst => 'FF:FF:FF:FF:FF:FF', :arp_tha => '00:00:00:00:00:00'}, :for_each => [ports, {:output => :placeholder}])
+          flood_flows << Flow.new(TABLE_MAC_ROUTE,      1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [eth_ports[datapath.datapath_id], {:output => :placeholder}])
+          flood_flows << Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [eth_ports[datapath.datapath_id], {:output => :placeholder}])
+          flood_flows << Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [eth_ports[datapath.datapath_id], {:load_reg0 => :placeholder, :resubmit => TABLE_LOAD_SRC}])
+          flood_flows << Flow.new(TABLE_ARP_ROUTE,      1, {:arp => nil, :dl_dst => 'FF:FF:FF:FF:FF:FF', :arp_tha => '00:00:00:00:00:00'}, :for_each => [eth_ports[datapath.datapath_id], {:output => :placeholder}])
         end
 
         def add_gre_tunnel name, remote_ip
