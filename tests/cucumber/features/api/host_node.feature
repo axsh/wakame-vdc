@@ -1,25 +1,25 @@
 @api_from_v12.03
 Feature: Host Node API
 
-  # This scenario only passes when it runs with the database contents just after installed demo data.
-  # Because the same UUID is tried to use in the second time.
   Scenario: Create, update and delete for new host node with specified UUID
-    Given a managed host_node with the following options
-      | account_id  | uuid     | node_id   | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
-      | a-shpoolxx  | hn-test1 | hva.test1 | x86_64 | kvm        | 10                 | 1000                 |
+    Given we save to <rand_uuid> a random uuid with the prefix "hn-"
+      And we save to <rand_node_id> a random uuid with the prefix "hva."
+      And a managed host_node with the following options
+      | account_id | uuid        | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
+      | a-shpoolxx | <rand_uuid> | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
     Then from the previous api call take {"uuid":} and save it to <hn:uuid>
-      And the previous api call should have {"uuid":} equal to "hn-test1"
+      And the previous api call should have {"uuid":} equal to <rand_uuid>
 
-    When we make an api get call to host_nodes/hn-test1 with no options
+    When we make an api get call to host_nodes/<rand_uuid> with no options
     Then the previous api call should be successful
-      And the previous api call should have {"uuid":} equal to "hn-test1"
-      And the previous api call should have {"node_id":} equal to "hva.test1"
+      And the previous api call should have {"uuid":} equal to <rand_uuid>
+      And the previous api call should have {"node_id":} equal to <rand_node_id>
       And the previous api call should have {"arch":} equal to "x86_64"
       And the previous api call should have {"hypervisor":} equal to "kvm"
       And the previous api call should have {"offering_cpu_cores":} equal to 10
       And the previous api call should have {"offering_memory_size":} equal to 1000
 
-    When we make an api delete call to host_nodes/hn-test1 with no options
+    When we make an api delete call to host_nodes/<rand_uuid> with no options
     Then the previous api call should be successful
 
 

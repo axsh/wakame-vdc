@@ -20,6 +20,7 @@ end
 Given /^an instance ([^\s]+) is started in group ([^\s]+)$/ do |instance_name,group_name|
   steps %Q{
     Given the volume "wmi-secgtest" exists
+    And the instance_spec "is-demospec" exists for api until 11.12
     And an instance #{instance_name} is started with the following options
       | image_id     | instance_spec_id | ssh_key_id | security_groups                |
       | wmi-secgtest | is-demospec      | ssh-demo   | <registry:group_#{group_name}> |

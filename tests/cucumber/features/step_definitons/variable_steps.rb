@@ -143,6 +143,11 @@ When /^we save to <([^>]+)> [ ]*the following options$/ do |registry,options|
   @registry[registry] = options
 end
 
+When /^we save to <([^>]+)> [ ]*a random uuid with the prefix (.+)$/ do |registry,arg_prefix|
+  prefix = variable_get_value(arg_prefix)
+  @registry[registry] = "#{prefix}%08x" % rand(16 ** 8)
+end
+
 # Helper functions, move to appropriate file or make a hash relation
 # between descriptons and registry keys.
 Then /^the previous api call [ ]*(should|should\snot) have (.+) #{match_operator} (.+)$/ do |outcome,template,operator,value|

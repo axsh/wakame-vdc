@@ -4,16 +4,18 @@ Feature: Storage Node API
   # This scenario only passes when it runs with the database contents just after installed demo data.
   # Because the same UUID is tried to use in the second time.
   Scenario: Create, update and delete for new storage node with specified UUID
-    Given a managed storage_node with the following options
-      | account_id  | uuid     | node_id   | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx  | sn-test1 | sta.test1 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
+    Given we save to <rand_uuid> a random uuid with the prefix "sn-"
+      And we save to <rand_node_id> a random uuid with the prefix "sta."
+      And a managed storage_node with the following options
+      | account_id | uuid        | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
+      | a-shpoolxx | <rand_uuid> | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
-      And the previous api call should have {"uuid":} equal to "sn-test1"
+      And the previous api call should have {"uuid":} equal to <rand_uuid>
 
-    When we make an api get call to storage_nodes/sn-test1 with no options
+    When we make an api get call to storage_nodes/<rand_uuid> with no options
     Then the previous api call should be successful
-      And the previous api call should have {"uuid":} equal to "sn-test1"
-      And the previous api call should have {"node_id":} equal to "sta.test1"
+      And the previous api call should have {"uuid":} equal to <rand_uuid>
+      And the previous api call should have {"node_id":} equal to <rand_node_id>
       And the previous api call should have {"export_path":} equal to "/home/export"
       And the previous api call should have {"transport_type":} equal to "iscsi"
       And the previous api call should have {"storage_type":} equal to "raw"
@@ -21,7 +23,7 @@ Feature: Storage Node API
       And the previous api call should have {"snapshot_base_path":} equal to "/home/snapshot"
       And the previous api call should have {"offering_disk_space":} equal to 10000
 
-    When we make an api delete call to storage_nodes/sn-test1 with no options
+    When we make an api delete call to storage_nodes/<rand_uuid> with no options
     Then the previous api call should be successful
 
   Scenario: Create without node_id and success to map to unknown node.

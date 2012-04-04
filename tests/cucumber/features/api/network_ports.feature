@@ -7,7 +7,7 @@ Feature: Network Ports API
     # Make dedicated function for getting list size...
     When we make an api get call to networks/<network_uuid>/ports with no options
       Then the previous api call should be successful
-      And the previous api call should have [] with a size of 0
+      And the previous api call should have [{"results":[]}] with a size of 0
 
     # When we make an api post call to networks/<network_uuid>/ports with no options
     When we make an api post call to networks/<network_uuid>/ports with no options
@@ -17,7 +17,7 @@ Feature: Network Ports API
 
     When we make an api get call to networks/<network_uuid>/ports with no options
       Then the previous api call should be successful
-      And the previous api call should have [] with a size of 1
+      And the previous api call should have [{"results":[]}] with a size of 1
       # Check returned values
 
     When we make an api delete call to networks/<network_uuid>/ports/<port_uuid> with no options
@@ -25,7 +25,7 @@ Feature: Network Ports API
 
     When we make an api get call to networks/<network_uuid>/ports with no options
       Then the previous api call should be successful
-      And the previous api call should have [] with a size of 0
+      And the previous api call should have [{"results":[]}] with a size of 0
 
 
   Scenario: Verify port values
