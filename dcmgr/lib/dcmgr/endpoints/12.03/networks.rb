@@ -105,7 +105,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     # Find a better way to convert to canonical network uuid.
     nw = find_by_uuid(M::Network, params[:id])
-    raise E::UnknownNetwork, params[:id] if port.nil?
+    raise E::UnknownNetwork, params[:id] if nw.nil?
     port = find_by_uuid(M::NetworkPort, params[:port_id])
     raise E::UnknownNetworkPort, params[:port_id] if port.nil?
     
@@ -124,7 +124,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     }
     port = M::NetworkPort.create(savedata)
 
-    respond_with(R::NetworkPort.new(nw).generate)
+    respond_with(R::NetworkPort.new(port).generate)
   end
 
   delete '/:id/ports/:port_id' do
