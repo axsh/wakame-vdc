@@ -7,6 +7,7 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 
 Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
+#Dcmgr.run_initializers
 
 PATH_SEPARATOR = '/'
 
@@ -15,6 +16,10 @@ def dump_hash_tree(hash, pwd='')
     case v
     when Hash
       dump_hash_tree(v, "#{pwd}#{PATH_SEPARATOR}#{k}")
+    when Symbol
+      puts "#{pwd}#{PATH_SEPARATOR}#{k}=':#{v}'"
+    when String
+      puts "#{pwd}#{PATH_SEPARATOR}#{k}='#{v}'"
     else
       puts "#{pwd}#{PATH_SEPARATOR}#{k}=#{v}"
     end
