@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'logger'
 
 #　VDC manage 実行ベースクラス

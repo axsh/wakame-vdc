@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ストレージプール用vdc-manageコマンド発行
 class StorageManage < VdcManage
    # 対象（第一パラメータ）

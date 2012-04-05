@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 module DcmgrResource
   class StoragePool < Base
     def self.list(params = {})

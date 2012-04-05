@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 module DcmgrResource
   class HostPool < Base
     def self.list(params = {})

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 module DcmgrResource
   class Mock
     def self.load(load)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # インスタンススペック用vdc-manageコマンド発行
 class SpecManage < VdcManage
    # 対象（第一パラメータ）

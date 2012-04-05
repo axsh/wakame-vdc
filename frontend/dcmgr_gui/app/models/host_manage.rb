@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ホストプール用vdc-manageコマンド発行
 class HostManage < VdcManage
    # 対象（第一パラメータ）

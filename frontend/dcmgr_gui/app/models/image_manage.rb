@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # マシンイメージ用vdc-manageコマンド発行
 class ImageManage < VdcManage
    # 対象（第一パラメータ）

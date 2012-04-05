@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 module DcmgrResource
   class InstanceSpec < Base
     def self.list(params = {})
