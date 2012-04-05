@@ -67,10 +67,11 @@ class VdcManage
     r = issue(command_str,cmd)
   end
 
-　# 任意パラメータ
+  # 任意パラメータ
   def self.connect_options(d_options,i_options)
     @pattern = "";
-　　# 指定されたパラメータが、そのコマンドで定義されていればオプション形式で配列格納
+    
+    # 指定されたパラメータが、そのコマンドで定義されていればオプション形式で配列格納
     i_options.each {         
       |k,v| if d_options.rindex(k) && v != "" then 
               @commands.push("--" + k + "=\"" + v + "\"")
@@ -93,7 +94,7 @@ class VdcManage
               "exitcode" => $?.exitstatus,
               "detail" => r }
     else
-　　　# add時は成功のときにはUUIDが返却される
+      # add時は成功のときにはUUIDが返却される
       if cmd == "add" then
         prefix = get_prefix()
         regex = /^#{prefix}-[\w]+$/
@@ -102,7 +103,7 @@ class VdcManage
               "exitcode" => $?.exitstatus,
               "detail" => r }
         else
-　　　　　# ノードIDでないときは何かエラー
+          # ノードIDでないときは何かエラー
           ret = { "message" => "errmsg_%s_%s_failure" % [get_prefix(),cmd] ,
               "exitcode" => 9999,
               "detail" => r }
