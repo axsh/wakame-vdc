@@ -303,7 +303,6 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
     this.title = params['title'];
     this.button = params['button'];
     this.callback = params['callback'] ||null;
-    
     dcmgrGUI.notification.create_topic('close_dialog');
   },
   open: function(params){
@@ -571,6 +570,11 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
       if(data.item.updated_at) {
         data.item.updated_at = DcmgrGUI.date.parseISO8601(data.item.updated_at);
         data.item.updated_at = DcmgrGUI.date.getI18n(data.item.updated_at);
+      }
+
+      if(data.item.last_login_at) {
+        data.item.last_login_at = DcmgrGUI.date.parseISO8601(data.item.last_login_at);
+        data.item.last_login_at = DcmgrGUI.date.getI18n(data.item.last_login_at);
       }
 
       return data;

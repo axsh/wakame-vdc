@@ -1,0 +1,75 @@
+<style type="text/css">
+	#create_storagenode_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+	}
+        .valid-error { color: Red; }
+</style>
+<div id="create_storagenode_dialog">
+<form id="fm">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_storagenode.account_id") %>: </td>
+                <td>
+     			<%= fields_for :selaccount, :remote => false, :url => request.url, 
+				:html => {:id => :selaccount, :method => :get,:style => "display: inline"} do |af| %>
+     		        <%= af.select(:account, accounts_with_prefix, :selected => 'a-shpoolxx') %>
+                        <% end %>&nbsp;
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_storagenode.storageid") %>: </td>
+		<td><input type="text" id="storageid" name="storageid" size="8"></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_storagenode.disk_space") %>: </td>
+		<td><input type="text" id="disk_space" name="disk_space" size="20"></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_storagenode.ipaddr") %>: </td>
+		<td><input type="text" id="ipaddr" name="ipaddr" size="20"></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_storagenode.transport_type") %>: </td>
+		<td>
+  		    <select name="transport_type" id="transport_type">
+                          <option value="iscsi"><%= t("selectmenu.select_transport_type_iscsi") %></option>
+                    </select>
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_storagenode.storage_type") %>: </td>
+		<td>
+  		    <select name="arch" id="storage_type">
+                          <option value="zfs"><%= t("selectmenu.select_storage_type_zfs") %></option>
+                          <option value="raw"><%= t("selectmenu.select_storage_type_raw") %></option>
+                    </select>
+                </td>
+        </tr>
+</table>
+        <BR/>
+	<legend><%= t("dialog.create_storagenode.base_path") %></legend>
+	<table cellspacing="5" cellpadding="5">
+		<tbody>
+		<tr>
+			<td colspan="2">
+				<textarea cols="56" rows="5" name="base_path" id="base_path"></textarea>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+        <BR/>
+	<legend><%= t("dialog.create_storagenode.snapshot_base_path") %></legend>
+	<table cellspacing="5" cellpadding="5">
+		<tbody>
+		<tr>
+			<td colspan="2">
+				<textarea cols="56" rows="5" name="snapshot_base_path" id="snapshot_base_path"></textarea>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
+</form>
+</div>
+

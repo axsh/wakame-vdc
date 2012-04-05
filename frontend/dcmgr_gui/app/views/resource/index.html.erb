@@ -1,0 +1,112 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/resource_manage_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+        $.validator.addMethod('AN',
+          function(value,element) {
+           var r= new RegExp('^[A-Za-z][A-Za-z0-9\-]*$','gi');
+           return r.test(value);
+          },
+          'Please enter by alphabet or number.'
+        );
+        $.validator.addMethod('IP',
+          function(value,element) {
+           var r= new RegExp('^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$','gi');
+           return r.test(value);
+          },
+          'Please enter effective IP address.'
+        );
+        $.validator.addMethod('PATH',
+          function(value,element) {
+           var r= new RegExp('^(/[\\w-\\.!"#$%&=~\\|\\+\\*\\{\\}\\?<>\\[\\]\\\\]+)+$','gi');
+           return r.test(value);
+          },
+          'Please enter effective path name.'
+        );
+        $.validator.addMethod('GT',
+          function(value,element,param) {
+           if (value == '') { return true; };
+           return (value > param)? true:false;
+          },
+          'Please enter a value greater than {0}.'
+        );
+        $.validator.addMethod('relativePATH',
+          function(value,element) {
+           var r= new RegExp('^(/?[\\w-\\.!"#$%&=~\\|\\+\\*\\{\\}\\?<>\\[\\]\\\\]+)+$','gi');
+           return r.test(value);
+          },
+          'Please enter effective path name.'
+        );
+	dcmgrGUI.resourceManagePanel();
+});
+</script>
+<% end %>
+<% content_for :stylesheet do %>
+<style type="text/css">
+	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+	.ui-dialog .ui-dialog-content {margin:5px;}
+</style>
+<% end %>
+<div id="mainarea_wide">
+	<h3><img src="images/icon_resource.gif" /><%= t("resource.header") %></h3>
+	<div class="maincontent">
+		<ul class="resource clearfix">
+			<div class="grid3">
+				<%= t("resource.label.host_node") %>
+			</div>
+			<li>
+				<p><a href="javascript:void(0);" class="create_resource_hostnode"> 
+				<%= t("resource.button.host_node_create") %></a></p>
+			</li>
+			<li>
+				<p><a href="javascript:void(0);" class="edit_and_delete_resource_hostnode"> 
+				<%= t("resource.button.host_node_update") %></a></p>
+			</li>
+		</ul>
+		<ul class="resource clearfix">
+			<div class="grid3">
+				<%= t("resource.label.storage_node") %>
+			</div>
+			<li>
+				<p><a href="javascript:void(0);" class="create_resource_storagenode"> 
+				<%= t("resource.button.storage_node_create") %></a></p>
+			</li>
+			<li>
+				<p><a href="javascript:void(0);" class="delete_resource_storagenode"> 
+				<%= t("resource.button.storage_node_update") %></a></p>
+			</li>
+		</ul>
+		<ul class="resource clearfix">
+			<div class="grid3">
+				<%= t("resource.label.instance_spec") %>
+			</div>
+			<li>
+				<p><a href="javascript:void(0);" class="create_spec"> 
+				<%= t("resource.button.instance_spec_create") %></a></p>
+			</li>
+			<li>
+				<p><a href="javascript:void(0);" class="edit_and_delete_spec"> 
+				<%= t("resource.button.instance_spec_update") %></a></p>
+			</li>
+                        <li>
+				<p><a href="javascript:void(0);" class="additional_drives_and_IFs"> 
+				<%= t("resource.button.additional_drives_and_IFs") %></a></p>
+			</li>
+		</ul>
+		<ul class="resource clearfix">
+			<div class="grid3">
+				<%= t("resource.label.machine_image") %>
+			</div>
+			<li>
+				<p><a href="javascript:void(0);" class="create_machine_image"> 
+				<%= t("resource.button.machine_image_create") %></a></p>
+			</li>
+			<li>
+				<p><a href="javascript:void(0);" class="delete_machine_image"> 
+				<%= t("resource.button.machine_image_update") %></a></p>
+			</li>
+		</ul>
+	</div>
+	<div class="btm_maincontent mbt10"></div>
+</div>
+

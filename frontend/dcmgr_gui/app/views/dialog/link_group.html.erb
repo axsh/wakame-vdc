@@ -1,0 +1,80 @@
+<style type="text/css">
+#link_group_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+}
+/* dialog_tbl */
+#link_group_dialog #dialog_tbl {
+	margin-left: 20px;
+	width: 400px;
+	border-collapse: collapse;
+}
+#link_group_dialog #dialog_tbl tr:nth-child(odd){
+	background: #daf2f7;
+}
+#link_group_dialog #dialog_tbl tr:nth-child(even){
+	background: #FFFFFF;
+}
+#link_group_dialog #dialog_tbl tr th{
+	padding: 5px;
+	width: 374px;
+	background: #F5F5EB;
+	border: 1px solid #cccccc;
+	font-weight: bold;
+	text-align: center;
+}
+#link_group_dialog #dialog_tbl tr th.icon{
+	width: 20px;
+}
+
+#link_group_dialog #dialog_tbl tr td{
+	padding: 10px;
+	border: 1px solid #cccccc;
+	vertical-align: middle;
+}
+
+</style>
+<div id="link_group_dialog">
+<table>
+        <tr>
+    		<td><%= t("dialog.link_group.login_id") %>: </td>
+                <td>
+			<%= @login_id %>
+                </td>
+        </tr>
+        
+	<tr>
+		<td><%= t("dialog.link_group.name") %>: </td>
+        	<td>
+			<%= @user_name %>
+        	</td>
+	</tr>
+</table>
+<table id="dialog_tbl"  cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<th class="icon"><%= t('dialog.link_group.default') %></th>
+		<th class="icon"><%= t('dialog.link_group.select') %></th>
+		<th><%= t('dialog.link_group.group_name') %></th>
+		<th><%= t('dialog.link_group.description') %></th>
+	</tr>
+	<% i = 0 %>
+	<% @groups.each do |grp| %>
+        <tr>
+    		<td>
+		   <%= radio_button_tag('sel_default',grp.uuid,checked = @radio_sel[i]) %> 
+		</td>
+		<td>
+		   <%= check_box_tag('sel_link',grp.uuid,checked = @check_sel[i]	) %> 
+		</td>
+		<% i += 1 %>
+                <td>
+			<%= grp.name %>
+                </td>
+                <td>
+			<%= grp.description %>
+                </td>
+        </tr>
+        <% end %>
+</table>
+<input type="hidden" id="user_uuid" value="<%= @user_uuid %>">
+</div>

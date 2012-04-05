@@ -1,0 +1,49 @@
+<style type="text/css">
+	#create_image_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+	}
+        .valid-error { color: Red; }
+</style>
+<div id="delete_image_dialog">
+<form id="fm">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_image.account_id") %>: </td>
+                <td>
+     			<%= fields_for :selaccount, :remote => false, :url => request.url, 
+				:html => {:id => :selaccount, :method => :get,:style => "display: inline"} do |af| %>
+     		        <%= af.select(:account, accounts_with_prefix, :selected => 'a-shpoolxx') %>
+                        <% end %>&nbsp;
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_image.imageid") %>: </td>
+		<td>
+  		    <select name="imageid" id="imageid">
+                    </select>
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_image.arch") %>: </td>
+		<td>
+                    <div id="arch"><BR></dev>
+                </td>
+        </tr>
+        <tr>
+	         <td><%= t("dialog.create_image.image_location") %></td>
+                 <td>
+                    <div id="image_location"><BR></div> 
+                 <td> 
+        </tr>
+        <tr>
+	         <td><%= t("dialog.create_image.description") %></td>
+	         <td>
+		     <div id="description"><BR></div>
+	         </td>
+	</tr>
+	</table>
+
+</form>
+</div>
+

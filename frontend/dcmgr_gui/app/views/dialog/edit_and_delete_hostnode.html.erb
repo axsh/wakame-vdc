@@ -1,0 +1,80 @@
+<style type="text/css">
+	#edit_and_delete_hostnode_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+	}
+        #edit_and_delete_hostnode_dialog table tr td{
+	        padding: 3px;
+	        vertical-align: middle;
+        }
+
+        .valid-error { color: Red; }
+</style>
+<div id="edit_and_delete_hostnode_dialog">
+<form id="fm">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_hostnode.account_id") %>: </td>
+                <td>
+     			<%= fields_for :selaccount, :remote => false, :url => request.url, 
+				:html => {:id => :selaccount, :method => :get,:style => "display: inline"} do |af| %>
+     		        <%= af.select(:account, accounts_with_prefix, :selected => 'a-shpoolxx') %>
+                        <% end %>&nbsp;
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_hostnode.hostid") %>: </td>
+		<td>
+  		    <select name="hostid" id="hostid">
+                    </select>
+                </td>
+        
+	<tr>
+    		<td><%= t("dialog.create_and_edit_hostnode.cpu_cores") %>: </td>
+		<td><input type="text" id="cpu_cores" name="cpu_cores" size="5" disabled></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_hostnode.memory_size") %>: </td>
+		<td><input type="text" id="memory_size" name="memory_size" size="10" disabled></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_hostnode.arch") %>: </td>
+		<td>
+                    <div id="arch"><BR></div>
+                </td>
+        </tr>
+	
+        <tr>
+    		<td><%= t("dialog.create_and_edit_hostnode.hypervisor") %>: </td>
+		<td>
+                    <div id="hypervisor"><BR></div>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_hostnode.name") %>: </td>
+                <td>
+    		<% if @name %>
+        		<input type="text" id="name" size="20" value="<%= @name %>" disabled>
+		<% else %>
+			<input type="text" id="name" size="20" disabled>
+		<% end %>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_hostnode.status") %>: </td>
+		<td>
+                    <div id="status"><BR></div>
+                </td>
+        </tr>
+
+        <ul id="result">
+        </ul>
+        <input type="hidden" id="x86" value='<%= t("selectmenu.select_arch_x86") %>'>
+        <input type="hidden" id="x86_64" value='<%= t("selectmenu.select_arch_x86_64") %>'>
+        <input type="hidden" id="kvm" value='<%= t("selectmenu.select_hypervisor_kvm") %>'>
+        <input type="hidden" id="lxc" value='<%= t("selectmenu.select_hypervisor_lxc") %>'>
+        <input type="hidden" id="hostpool_nothing" value='<%= t("selectmenu.hostpool_nothing") %>'>
+</table>
+</form>
+</div>
+

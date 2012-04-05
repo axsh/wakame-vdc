@@ -1,0 +1,63 @@
+<style type="text/css">
+	#create_spec_dialog div {
+		padding-top :5px;
+		padding-bottom :5px;
+	}
+        .valid-error { color: Red; }
+</style>
+<div id="create_spec_dialog">
+<form id="fm">
+<table>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_spec.account_id") %>: </td>
+                <td>
+     			<%= fields_for :selaccount, :remote => false, :url => request.url, 
+				:html => {:id => :selaccount, :method => :get,:style => "display: inline"} do |af| %>
+     		        <%= af.select(:account, accounts_with_prefix, :selected => 'a-shpoolxx') %>
+                        <% end %>&nbsp;
+                </td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_spec.specid") %>: </td>
+		<td><input type="text" id="specid" name="specid" size="8"></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_spec.cpu_cores") %>: </td>
+		<td><input type="text" id="cpu_cores" name="cpu_cores" size="5"></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_spec.memory_size") %>: </td>
+		<td><input type="text" id="memory_size" name="memory_size" size="10"></td>
+        </tr>
+	<tr>
+    		<td><%= t("dialog.create_and_edit_spec.arch") %>: </td>
+		<td>
+  		    <select name="arch" id="arch">
+                          <option value="x86"><%= t("selectmenu.select_arch_x86") %></option>
+                          <option value="x86_64" selected><%= t("selectmenu.select_arch_x86_64") %></option>
+                    </select>
+                </td>
+        </tr>
+	
+        <tr>
+    		<td><%= t("dialog.create_and_edit_spec.hypervisor") %>: </td>
+		<td>
+  		    <select name="arch" id="hypervisor">
+                          <option value="kvm"><%= t("selectmenu.select_hypervisor_kvm") %></option>
+                          <option value="lxc"><%= t("selectmenu.select_hypervisor_lxc") %></option>
+                    </select>
+                </td>
+        </tr>
+        <tr>
+    		<td><%= t("dialog.create_and_edit_spec.quota_weight") %><BR>
+                    <%= t("dialog.create_and_edit_spec.quota_weight_default") %>: </td>
+                <td>
+			<input type="text" id="quota_weight" name="quota_weight" size="10">
+                </td>
+        </tr>
+        <ul id="result">
+        </ul>
+</table>
+</form>
+</div>
+
