@@ -53,10 +53,15 @@ module Dcmgr
         event.publish('hva/volume_detached', :args=>[@inst_id, @vol_id])
       end
 
+      # This method can be called sometime when the instance variables
+      # are also failed to be set. They need to be checked before looked
+      # up.
       def terminate_instance(state_update=false)
-        @hv.terminate_instance(HvaContext.new(self))
+        if @hv && @hva_ctx
+          @hv.terminate_instance(@hva_ctx)
+        end
 
-        unless @inst[:volume].nil?
+        if @inst && !@inst[:volume].nil?
           @inst[:volume].each { |volid, v|
             @vol_id = volid
             @vol = v
@@ -177,7 +182,20 @@ module Dcmgr
         end
       end
 
+      # syntax sugar to catch any errors and continue to work the code
+      # following.
+      def ignore_error(&blk)
+        begin
+          blk.call
+        rescue ::Exception => e
+          logger.error("Ignoring error: #{e.message}")
+          logger.error(e)
+        end
+      end
+
       job :run_local_store, proc {
+        # create hva context
+        @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         logger.info("Booting #{@inst_id}")
 
@@ -187,8 +205,6 @@ module Dcmgr
         # select hypervisor :kvm, :lxc, :esxi
         select_hypervisor
 
-        # create hva context
-        @hva_ctx = HvaContext.new(self)
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
 
         lstore = Drivers::LocalStore.select_local_store(@hv.class.to_s.downcase.split('::').last)
@@ -205,12 +221,16 @@ module Dcmgr
         @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
       }, proc {
-        terminate_instance(false) rescue logger.error($!)
-        update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
-                              'hva/instance_terminated')
+        ignore_error { terminate_instance(false) }
+        ignore_error {
+          update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
+                                'hva/instance_terminated')
+        }
       }
 
       job :run_vol_store, proc {
+        # create hva context
+        @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         @vol_id = request.args[1]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
@@ -220,9 +240,6 @@ module Dcmgr
 
         # select hypervisor :kvm, :lxc
         select_hypervisor
-
-        # create hva context
-        @hva_ctx = HvaContext.new(self)
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
 
@@ -251,11 +268,15 @@ module Dcmgr
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
       }, proc {
         # TODO: Run detach & destroy volume
-        update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
-                              'hva/instance_terminated')
-        terminate_instance(false) rescue logger.error($!)
-        update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
+        ignore_error { terminate_instance(false) }
+        ignore_error {
+          update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
+                                'hva/instance_terminated')
+        }
+        ignore_error {
+          update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
                               'hva/volume_deleted')
+        }
       }
 
       job :terminate do
@@ -269,7 +290,7 @@ module Dcmgr
 
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
-          terminate_instance(true)
+          ignore_error { terminate_instance(true) }
         ensure
           update_instance_state({:state=>:terminated,:terminated_at=>Time.now.utc},
                                 'hva/instance_terminated')
@@ -289,7 +310,7 @@ module Dcmgr
         select_hypervisor
 
         begin
-          terminate_instance(false)
+          ignore_error { terminate_instance(false) }
         ensure
           # just publish "hva/instance_terminated" to update security group rules once
           update_instance_state({}, 'hva/instance_terminated')
@@ -355,8 +376,7 @@ module Dcmgr
       }, proc {
         # TODO: Run detach volume
         # push back volume state to available.
-        update_volume_state({:state=>:available},
-                            'hva/volume_available')
+        ignore_error { update_volume_state({:state=>:available},'hva/volume_available') }
         logger.error("Attach failed: #{@vol_id} on #{@inst_id}")
       }
 
