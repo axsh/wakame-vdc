@@ -28,7 +28,14 @@ elif [ "$1" = "ovs-1.2.2" ]; then
     echo "Compiling Open vSwitch 1.2.2."
     curl http://openvswitch.org/releases/openvswitch-1.2.2.tar.gz -o openvswitch-1.2.2.tar.gz
     tar xzf openvswitch-1.2.2.tar.gz
-    cd openvswitch-1.2.2
+    mv openvswitch-1.2.2 openvswitch
+    cd openvswitch
+elif [ "$1" = "ovs-1.4.0" ]; then
+    echo "Compiling Open vSwitch 1.4.0."
+    curl http://openvswitch.org/releases/openvswitch-1.4.0.tar.gz -o openvswitch-1.4.0.tar.gz
+    tar xzf openvswitch-1.4.0.tar.gz
+    mv openvswitch-1.4.0 openvswitch
+    cd openvswitch
 else
     echo "Compiling Open vSwitch git."
     git clone git://openvswitch.org/openvswitch
@@ -46,7 +53,7 @@ done
 ./boot.sh && ./configure --prefix=$work_dir/ovs/ --with-linux=/lib/modules/`uname -r`/build/ > /dev/null
 (make && make install) > /dev/null
 
-install --mode=0644 ./datapath/linux/*_mod.ko /lib/modules/`uname -r`/kernel/drivers/net
+install --mode=0644 ./datapath/linux/*.ko /lib/modules/`uname -r`/kernel/drivers/net
 depmod
 
 cat ./debian/openvswitch-switch.init | sed -e "s:/usr/:$work_dir/ovs/:g" -e "s:### END INIT INFO:### END INIT INFO\n\nBRCOMPAT=yes:" > ./ovs-switch.tmp
