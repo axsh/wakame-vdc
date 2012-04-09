@@ -52,6 +52,10 @@ module Dcmgr
           sh("rm -rf #{ctx.inst_data_dir}") rescue logger.warn($!.message)
         end
       end
+      
+      def check_interface(ctx)
+        #TODO: Move interface creation here from esxi_local_store
+      end
 
       def attach_volume_to_guest(ctx)
         raise NotImplementedError

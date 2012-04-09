@@ -12,7 +12,7 @@ module Dcmgr
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
         # copy image file
         img_src = inst[:image][:source]
-        os_devpath = File.expand_path("#{inst[:uuid]}", inst_data_dir)
+        os_devpath = ctx.os_devpath
 
         # vmimage cache
         vmimg_cache_dir = File.expand_path("_base", ctx.node.manifest.config.vm_data_dir)

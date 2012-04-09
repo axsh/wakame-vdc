@@ -85,38 +85,12 @@ module Dcmgr
       end
 
       def check_interface
-        @inst[:instance_nics].each { |vnic|
-          next if vnic[:network_port].nil?
-
-          network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
-          
-          fwd_if = phy_if = network[:physical_network][:interface]
-          bridge_if = network[:link_interface]
-          
-          if network[:vlan_id].to_i > 0 && phy_if
-            fwd_if = "#{phy_if}.#{network[:vlan_id]}"
-            unless valid_nic?(vlan_if)
-              sh("/sbin/vconfig add #{phy_if} #{network[:vlan_id]}")
-              sh("/sbin/ip link set %s up", [fwd_if])
-              sh("/sbin/ip link set %s promisc on", [fwd_if])
-            end
-          end
-
-          unless valid_nic?(bridge_if)
-            sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-            sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
-            # There is null case for the forward interface to create closed bridge network.
-            if fwd_if
-              sh("/usr/sbin/brctl addif %s %s", [bridge_if, fwd_if])
-            end
-          end
-        }
-        sleep 1
+        @hv.check_interface(@hva_ctx)
       end
 
       def attach_vnic_to_port(vnic)
         logger.info("Attaching vnic to port: vnic:#{vnic.inspect}.")
-          
+
         sh("/sbin/ip link set %s up", [vnic[:uuid]])
         sh("/usr/sbin/brctl addif %s %s", [vnic[:network][:link_interface], vnic[:uuid]])
       end
@@ -215,8 +189,10 @@ module Dcmgr
 
         # create hva context
         @hva_ctx = HvaContext.new(self)
+        @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
 
-        Drivers::LocalStore.select_local_store(@hv.class.to_s.downcase.split('::').last).deploy_image(@inst,@hva_ctx)
+        lstore = Drivers::LocalStore.select_local_store(@hv.class.to_s.downcase.split('::').last)
+        lstore.deploy_image(@inst,@hva_ctx)
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
 
@@ -225,7 +201,7 @@ module Dcmgr
         #setup_metadata_drive
         @hv.setup_metadata_drive(@hva_ctx,get_metadata_items)
         
-        #check_interface
+        check_interface
         @hv.run_instance(@hva_ctx)
         update_instance_state({:state=>:running}, 'hva/instance_started')
       }, proc {
