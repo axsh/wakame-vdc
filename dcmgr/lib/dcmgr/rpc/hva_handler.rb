@@ -79,13 +79,17 @@ module Dcmgr
 
       def update_instance_state(opts, ev)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
-        rpc.request('hva-collector', 'update_instance', @inst_id, opts)
+        rpc.request('hva-collector', 'update_instance', @inst_id, opts) do |req|
+          req.oneshot = true
+        end
         event.publish(ev, :args=>[@inst_id])
       end
 
       def update_volume_state(opts, ev)
         raise "Can't update volume info without setting @vol_id" if @vol_id.nil?
-        rpc.request('sta-collector', 'update_volume', @vol_id, opts)
+        rpc.request('sta-collector', 'update_volume', @vol_id, opts) do |req|
+          req.oneshot = true
+        end
         event.publish(ev, :args=>[@vol_id])
       end
 
