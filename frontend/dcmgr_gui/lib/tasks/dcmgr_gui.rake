@@ -13,7 +13,8 @@ namespace :db do
 
     Account.create(:uuid => '00000000',
                    :name => 'wakame',
-                   :enable => 1
+                   :enable => 1,
+                   :is_admin => 1
                    )
                    
     User.create(:uuid => 'shpoolxx',
@@ -24,7 +25,8 @@ namespace :db do
 
     Account.create(:uuid => 'shpoolxx',
                   :name => 'demo',
-                  :enable => 1
+                  :enable => 1,
+                  :is_admin => 0
                   )
 
     sql = 'insert into users_accounts(user_id,account_id) values(?,?)'
