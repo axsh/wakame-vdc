@@ -82,7 +82,10 @@ module Dcmgr
         rpc.request('hva-collector', 'update_instance', @inst_id, opts) do |req|
           req.oneshot = true
         end
-        event.publish(ev, :args=>[@inst_id])
+        ev = [ev] unless ev.is_a? Array
+        ev.each { |e|
+          event.publish(e, :args=>[@inst_id])
+        }
       end
 
       def update_volume_state(opts, ev)
@@ -219,12 +222,13 @@ module Dcmgr
         
         check_interface
         @hv.run_instance(@hva_ctx)
-        update_instance_state({:state=>:running}, 'hva/instance_started')
+        # Node specific instance_started event for netfilter and general instance_started event for openflow
+        update_instance_state({:state=>:running}, ['hva/instance_started',"#{@inst[:host_node][:node_id]}/instance_started"])
       }, proc {
         ignore_error { terminate_instance(false) }
         ignore_error {
           update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
-                                'hva/instance_terminated')
+                                ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
         }
       }
 
@@ -264,14 +268,15 @@ module Dcmgr
         # run vm
         check_interface
         @hv.run_instance(@hva_ctx)
-        update_instance_state({:state=>:running}, 'hva/instance_started')
+        # Node specific instance_started event for netfilter and general instance_started event for openflow
+        update_instance_state({:state=>:running}, ['hva/instance_started',"#{@inst[:host_node][:node_id]}/instance_started"])
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
       }, proc {
         # TODO: Run detach & destroy volume
         ignore_error { terminate_instance(false) }
         ignore_error {
           update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
-                                'hva/instance_terminated')
+                                ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
         }
         ignore_error {
           update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
@@ -294,7 +299,7 @@ module Dcmgr
           ignore_error { terminate_instance(true) }
         ensure
           update_instance_state({:state=>:terminated,:terminated_at=>Time.now.utc},
-                                'hva/instance_terminated')
+                                ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
         end
       end
 
@@ -314,7 +319,7 @@ module Dcmgr
           ignore_error { terminate_instance(false) }
         ensure
           # just publish "hva/instance_terminated" to update security group rules once
-          update_instance_state({}, 'hva/instance_terminated')
+          update_instance_state({}, ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
         end
       end
 
@@ -336,7 +341,7 @@ module Dcmgr
           terminate_instance(false)
         ensure
           # 
-          update_instance_state({:state=>:stopped, :host_node_id=>nil}, 'hva/instance_terminated')
+          update_instance_state({:state=>:stopped, :host_node_id=>nil}, ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
         end
       end
 
