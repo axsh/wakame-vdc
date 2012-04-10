@@ -140,7 +140,7 @@ module Dcmgr::VNet::OpenFlow
       logger.debug "state: %#x" % message.phy_port.state
 
       case message.reason
-      when OpenFlowController::OFPPR_ADD
+      when Trema::PortStatus::OFPPR_ADD
         logger.info "Adding port: port:#{message.phy_port.number} name:#{message.phy_port.name}."
         raise "OpenFlowPort" if ports.has_key? message.phy_port.number
 
@@ -152,13 +152,13 @@ module Dcmgr::VNet::OpenFlow
 
         datapath.controller.insert_port self, port
 
-      when OpenFlowController::OFPPR_DELETE
+      when Trema::PortStatus::OFPPR_DELETE
         logger.info "Deleting instance port: port:#{message.phy_port.number}."
         raise "UnknownOpenflowPort" if not ports.has_key? message.phy_port.number
 
         datapath.controller.delete_port ports[message.phy_port.number] if ports.has_key? message.phy_port.number
 
-      when OpenFlowController::OFPPR_MODIFY
+      when Trema::PortStatus::OFPPR_MODIFY
         logger.info "Ignoring port modify..."
       end
     end
@@ -215,10 +215,11 @@ module Dcmgr::VNet::OpenFlow
       end
 
       dhcp_in = DHCP::Message.from_udp_payload(message.udp_payload)
+      nw_services = port.network.services
 
       logger.debug "DHCP: message:#{dhcp_in.to_s}."
 
-      if port.network.services[:dhcp].ip.nil?
+      if nw_services[:dhcp].nil?
         logger.debug "DHCP: Port has no dhcp_ip: port:#{port.port_info.inspect}"
         return
       end
@@ -244,26 +245,22 @@ module Dcmgr::VNet::OpenFlow
       dhcp_out.yiaddr = Trema::IP.new(port.ip).to_i
       # Verify instead that discover has the right mac address.
       dhcp_out.chaddr = Trema::Mac.new(port.mac).to_short
-      dhcp_out.siaddr = port.network.services[:dhcp].ip.to_i
+      dhcp_out.siaddr = nw_services[:dhcp].ip.to_i
 
       subnet_mask = IPAddr.new(IPAddr::IN4MASK, Socket::AF_INET).mask(port.network.prefix)
 
-      dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => port.network.services[:dhcp].ip.to_short)
+      dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => nw_services[:dhcp].ip.to_short)
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (port.network.ipv4_network | ~subnet_mask).to_short)
-      dhcp_out.options << DHCP::RouterOption.new(:payload => port.network.ipv4_gw.to_short) if port.network.ipv4_gw
+      dhcp_out.options << DHCP::RouterOption.new(:payload => nw_services[:gateway].ip.to_short) if nw_services[:gateway]
       dhcp_out.options << DHCP::SubnetMaskOption.new(:payload => subnet_mask.to_short)
-
-      dhcp_out.options << DHCP::DomainNameOption.new(:payload => port.network.services[:dns].domain_name.unpack('C*'))
-
-      if port.network.services[:dns] and port.network.services[:dns].ip
-        dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => port.network.services[:dns].ip.to_short)
-      end
+      dhcp_out.options << DHCP::DomainNameOption.new(:payload => nw_services[:dns].domain_name.unpack('C*'))
+      dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns]
 
       logger.debug "DHCP send: output:#{dhcp_out.to_s}."
       datapath.send_udp(message.in_port,
-                        port.network.services[:dhcp].mac.to_s,
-                        port.network.services[:dhcp].ip.to_s,
+                        nw_services[:dhcp].mac.to_s,
+                        nw_services[:dhcp].ip.to_s,
                         67,
                         port.mac.to_s, port.ip, 68,
                         dhcp_out.pack)

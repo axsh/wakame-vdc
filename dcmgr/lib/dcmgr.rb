@@ -262,6 +262,7 @@ module Dcmgr
       autoload :ServiceBase, 'dcmgr/vnet/openflow/service_base'
       autoload :ServiceDhcp, 'dcmgr/vnet/openflow/service_dhcp'
       autoload :ServiceDns, 'dcmgr/vnet/openflow/service_dns'
+      autoload :ServiceGateway, 'dcmgr/vnet/openflow/service_gateway'
       autoload :ServiceMetadata, 'dcmgr/vnet/openflow/service_metadata'
     end
 

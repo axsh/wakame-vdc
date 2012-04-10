@@ -61,9 +61,9 @@ module Dcmgr
           switches[datapath_id].switch_ready
         end
 
-        def features_reply message
-          raise "No switch found." unless switches.has_key? message.datapath_id
-          switches[message.datapath_id].features_reply message
+        def features_reply datapath_id, message
+          raise "No switch found." unless switches.has_key? datapath_id
+          switches[datapath_id].features_reply message
           
           @service_openflow.networks.each { |network| network[1].update }
         end
@@ -98,9 +98,9 @@ module Dcmgr
           }
         end
 
-        def port_status message
-          raise "No switch found." unless switches.has_key? message.datapath_id
-          switches[message.datapath_id].port_status message
+        def port_status datapath_id, message
+          raise "No switch found." unless switches.has_key? datapath_id
+          switches[datapath_id].port_status message
         end
 
         def packet_in datapath_id, message
@@ -108,8 +108,8 @@ module Dcmgr
           switches[datapath_id].packet_in message
         end
 
-        def vendor message
-          logger.debug "vendor message from #{message.datapath_id.to_hex}."
+        def vendor datapath_id, message
+          logger.debug "vendor message from #{datapath_id.to_hex}."
           logger.debug "transaction_id: #{message.transaction_id.to_hex}"
           logger.debug "data: #{message.buffer.unpack('H*')}"
         end

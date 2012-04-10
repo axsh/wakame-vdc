@@ -30,6 +30,16 @@ module Dcmgr
           @is_inserted = false
         end
 
+        def inspect
+          str = "<"
+          str << "@port_info=#{@port_info.inspect}, "
+          str << "@port_type=#{@port_type.inspect}, "
+          str << "@has_instance=#{@has_instance.inspect}, "
+          str << "@is_active=#{@is_active.inspect}, "
+          str << "@is_inserted=#{@is_inserted.inspect}>"
+          str
+        end
+
         def init_eth
           @port_type = PORT_TYPE_ETH
           queue_flow Flow.new(TABLE_CLASSIFIER, 6, {:udp => nil, :in_port => OpenFlowController::OFPP_LOCAL,

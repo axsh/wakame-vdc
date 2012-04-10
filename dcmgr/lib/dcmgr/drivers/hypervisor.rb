@@ -11,6 +11,36 @@ module Dcmgr
       def reboot_instance(hc)
       end
       
+      def check_interface(hc)
+        hc.inst[:instance_nics].each { |vnic|
+          next if vnic[:network_port].nil?
+
+          network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
+          
+          fwd_if = phy_if = network[:physical_network][:interface]
+          bridge_if = network[:link_interface]
+          
+          if network[:vlan_id].to_i > 0 && phy_if
+            fwd_if = "#{phy_if}.#{network[:vlan_id]}"
+            unless valid_nic?(vlan_if)
+              sh("/sbin/vconfig add #{phy_if} #{network[:vlan_id]}")
+              sh("/sbin/ip link set %s up", [fwd_if])
+              sh("/sbin/ip link set %s promisc on", [fwd_if])
+            end
+          end
+
+          unless valid_nic?(bridge_if)
+            sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+            sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
+            # There is null case for the forward interface to create closed bridge network.
+            if fwd_if
+              sh("/usr/sbin/brctl addif %s %s", [bridge_if, fwd_if])
+            end
+          end
+        }
+        sleep 1
+      end
+      
       def setup_metadata_drive(hc,metadata_items)
         begin
           inst_data_dir = hc.inst_data_dir
