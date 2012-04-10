@@ -1,14 +1,10 @@
 class UsersController < ApplicationController
   respond_to :json
+  before_filter :system_manager?
   
   # ユーザ管理初期画面
   def index
-    # 直接URL入力のガード（システムアカウントでないときはhomeへリダイレクト）
     account_uuid = User.primary_account_id(@current_user.uuid)
-    if account_uuid != '00000000' then
-      redirect_to :controller => 'home',
-                  :action => 'index'
-    end
   end
   
   # 指定ページのユーザ一覧取得

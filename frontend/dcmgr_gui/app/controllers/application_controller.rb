@@ -78,4 +78,14 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def redirect_to_unauthorized
+    redirect_to :controller => 'home',
+                :action => 'index'
+  end
+
+  def system_manager?
+    return true if @current_user.is_system_manager?
+    redirect_to_unauthorized
+  end
+
 end

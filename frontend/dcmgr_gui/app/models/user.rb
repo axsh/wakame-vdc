@@ -33,7 +33,12 @@ class User < BaseNew
     end
     super
   end
-
+  
+  def is_system_manager?
+    account = User.primary_account(self.primary_account_id)
+    account.is_admin
+  end
+  
   # ページ指定一覧の取得
   def self.list(params)
      start = params[:start].to_i
@@ -123,6 +128,10 @@ class User < BaseNew
     
     def primary_account_id(uuid)
       User.find(:uuid => uuid).primary_account_id
+    end
+    
+    def primary_account(account_id)
+      User.find(:primary_account_id => account_id).accounts.first
     end
     
     def encrypt_password(password)

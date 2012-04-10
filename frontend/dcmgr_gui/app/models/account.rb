@@ -18,6 +18,7 @@ class Account < BaseNew
     Boolean :enable, :default=>true
     DateTime :deleted_at, :null=>true
     Boolean :is_deleted, :default=>false
+    Boolean :is_admin, :default=>false
   end
 
   one_to_many  :tags
