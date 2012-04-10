@@ -254,8 +254,11 @@ module Dcmgr::VNet::OpenFlow
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (port.network.ipv4_network | ~subnet_mask).to_short)
       dhcp_out.options << DHCP::RouterOption.new(:payload => nw_services[:gateway].ip.to_short) if nw_services[:gateway]
       dhcp_out.options << DHCP::SubnetMaskOption.new(:payload => subnet_mask.to_short)
-      dhcp_out.options << DHCP::DomainNameOption.new(:payload => nw_services[:dns].domain_name.unpack('C*'))
-      dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns]
+
+      if nw_services[:dns] 
+        dhcp_out.options << DHCP::DomainNameOption.new(:payload => nw_services[:dns].domain_name.unpack('C*')) if nw_services[:dns].domain_name
+        dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns].ip
+      end
 
       logger.debug "DHCP send: output:#{dhcp_out.to_s}."
       datapath.send_udp(message.in_port,
