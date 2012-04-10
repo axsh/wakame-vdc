@@ -18,8 +18,6 @@ class VdcManage
   # 固定部分（必須指定）のコマンド記述
   def self.head_desc(subcom,required) 
     @commands = [];
-    # 実行パス
-    @commands.push(DcmgrGui::Application.config.vdcmanage_rpath)
     # 対象(host,storage,...)
     @commands.push(get_name())
     # 動作(add,del,...)
@@ -82,12 +80,20 @@ class VdcManage
   # 配列内容を文字列につなぐ。cdコマンドを付加
   def self.make_str()
     s = @commands.join(" ")
-    s = "(%s) 2>&1" % [s]
+    s = "%s 2>&1" % [s]
   end
 
   # コマンドを実行
   def self.issue(command_str,cmd)
-    r = `#{command_str}`
+    dcmgr_path = DcmgrGui::Application.config.dcmgr_path
+    ssh = 'ssh root@`hostname`'
+    ruby_path = "#{dcmgr_path}/ruby/bin"
+    gem_home = "GEM_HOME=#{dcmgr_path}/.vender/bundle/ruby/1.9.1"
+    bundle_gem_file = "BUNDLE_GEMFILE=#{dcmgr_path}/Gemfile"
+    export = "export PATH=$PATH:#{ruby_path};#{gem_home};#{bundle_gem_file};cd #{dcmgr_path};"
+    exec_cmd = "#{ssh} #{export} ./bin/vdc-manage #{command_str}"
+    Rails.logger.info("REMOTE COMMAND[#{exec_cmd}]")
+    r = `#{exec_cmd}`
     if $?.exitstatus != 0
       # コマンドステータスが0以外
       ret = { "message" => "errmsg_%s_%s_failure" % [get_prefix(),cmd] ,

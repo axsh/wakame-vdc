@@ -45,10 +45,14 @@ module DcmgrGui
     # Configure sensitive parameters which will be filtered from the log file.
     config.filter_parameters += [:password]
     # リモートのvdc_manage実行シェル(カレントはconfig）
-    config.vdcmanage_rpath = "../bin/rvdc-manage.sh" 
+    config.vdcmanage_rpath = File.join(config.root, '/bin/rvdc-manage.sh')
+
+    # dcmgr path
+    config.dcmgr_path = '/usr/share/axsh/wakame-vdc/dcmgr'
+
     # マシンイメージのベースパス
-    config.machine_image_base_path = "/usr/share/axsh/wakame-vdc/tmp/images"
+    config.machine_image_base_path = File.join(config.dcmgr_path, "/tmp/images")
     # リモートのマシンイメージのmd5を取得するシェル
-    config.md5_rpath = "../bin/rmd5sum.sh"
+    config.md5_rpath = File.join(config.root, '/bin/rmd5sum.sh')
   end
 end
