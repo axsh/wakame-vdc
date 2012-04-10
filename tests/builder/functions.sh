@@ -518,7 +518,7 @@ function init_db() {
   rake db:init
 
   cd ${prefix_path}/frontend/dcmgr_gui
-  rake db:init db:sample_data admin:generate_i18n oauth:create_table
+  rake db:init db:sample_data oauth:create_table
 
   echo ... rake oauth:create_consumer[${account_id}]
   local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
