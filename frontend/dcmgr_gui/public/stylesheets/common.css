@@ -398,7 +398,7 @@ body{
 	float: left;
 	padding-right: 10px;
 	margin-bottom: 5px;
-	width: 220px;
+	width: 215px;
 }
 #content #informationarea .title{
 	margin: 10px 0 0 0;
@@ -1404,6 +1404,7 @@ body{
 .grid3{
 	padding-top: 10px;
 	width: 300px;
+        padding-left: 10px;
 }
 .spacer20{
 	height: 20px;
