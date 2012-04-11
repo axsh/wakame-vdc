@@ -241,7 +241,7 @@ module Dcmgr::Models
         ent = {
           :vif_id => vif.canonical_uuid,
           :network_id => network.nil? ? nil : network.canonical_uuid,
-          :port_id => ports.nil? ? nil : ports.canonical_uuid,
+          :port_id => port.nil? ? nil : port.canonical_uuid,
         }
 
         direct_lease = direct_lease_ds.first
