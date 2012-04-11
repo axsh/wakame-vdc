@@ -97,18 +97,14 @@ module Dcmgr
         @hv.check_interface(@hva_ctx)
       end
 
-      def attach_vnic_to_port(vnic)
-        logger.info("Attaching vnic to port: vnic:#{vnic.inspect}.")
-
-        sh("/sbin/ip link set %s up", [vnic[:uuid]])
-        sh("/usr/sbin/brctl addif %s %s", [vnic[:network][:link_interface], vnic[:uuid]])
+      def attach_vnic_to_port
+        sh("/sbin/ip link set %s up", [@nic_id])
+        sh("/usr/sbin/brctl addif %s %s", [@link_interface, @nic_id])
       end
 
-      def detach_vnic_from_port(vnic)
-        logger.info("Detaching vnic from port: vnic:#{vnic.inspect}.")
-          
-        sh("/sbin/ip link set %s down", [vnic[:uuid]])
-        sh("/usr/sbin/brctl delif %s %s", [vnic[:network][:link_interface], vnic[:uuid]])
+      def detach_vnic_from_port
+        sh("/sbin/ip link set %s down", [@nic_id])
+        sh("/usr/sbin/brctl delif %s %s", [@link_interface, @nic_id])
       end
 
       def get_linux_dev_path
@@ -408,23 +404,29 @@ module Dcmgr
       end
 
       job :attach_nic do
-        @nic_id = request.args[0]
-        @port_id = request.args[1]
+        @link_interface = request.args[0]
+        @nic_id = request.args[1]
+        @port_id = request.args[2]
 
-        @nic = rpc.request('hva-collector', 'get_nic', @nic_id)
-        logger.info("Attaching #{@nic_id} top #{@port_id}")
-        
-        attach_vnic_to_port(@nic)
+        if @link_interface
+          logger.info("Attaching #{@nic_id} to #{@port_id} on #{@link_interface}.")
+          attach_vnic_to_port
+        else
+          logger.info("Attaching #{@nic_id} to #{@port_id} failed: no network / link interface found.")
+        end
       end
 
       job :detach_nic do
-        @nic_id = request.args[0]
-        @port_id = request.args[1]
+        @link_interface = request.args[0]
+        @nic_id = request.args[1]
+        @port_id = request.args[2]
 
-        @nic = rpc.request('hva-collector', 'get_nic', @nic_id)
-        logger.info("Detaching #{@nic_id} from #{@port_id}")
-        
-        detach_vnic_from_port(@nic)
+        if @link_interface
+          logger.info("Detaching #{@nic_id} from #{@port_id} on #{@link_interface}.")
+          detach_vnic_from_port
+        else
+          logger.info("Detaching #{@nic_id} from #{@port_id} failed: no network / link interface found.")
+        end
       end
 
       job :reboot, proc {
