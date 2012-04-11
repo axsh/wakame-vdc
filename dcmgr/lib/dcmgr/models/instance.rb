@@ -168,7 +168,7 @@ module Dcmgr::Models
             ent[:ipv4] = {
               # TODO: Only access the network through network_port.
               :network => vif.network.nil? ? nil : vif.network.to_hash,
-              :network_port => vif.network_port.first.nil? ? nil : vif.network_port.first.to_hash,
+              :network_port => vif.network_port.nil? ? nil : vif.network_port.to_hash,
               :address=> direct_lease.ipv4,
               :nat_network => vif.nat_network.nil? ? nil : vif.nat_network.to_hash,
               :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
@@ -237,11 +237,11 @@ module Dcmgr::Models
         end
 
         network = vif.network
-        ports = vif.network_port
+        port = vif.network_port
         ent = {
           :vif_id => vif.canonical_uuid,
           :network_id => network.nil? ? nil : network.canonical_uuid,
-          :port_id => ports.first.nil? ? nil : ports.first.canonical_uuid,
+          :port_id => ports.nil? ? nil : ports.canonical_uuid,
         }
 
         direct_lease = direct_lease_ds.first

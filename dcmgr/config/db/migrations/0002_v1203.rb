@@ -43,6 +43,11 @@ Sequel.migration do
       index [:network_id]
       index [:uuid], :unique=>true, :name=>:uuid
     end
+
+    alter_table(:instance_nics) do
+      # Migrate network_id to network_ports.
+      drop_column :network_id
+    end
   end
   
   down do

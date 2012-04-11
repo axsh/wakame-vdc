@@ -6,8 +6,8 @@ module Dcmgr::Models
     taggable 'vif'
 
     many_to_one :instance
+    one_to_one  :network_port, :class=>NetworkPort, :read_only=>true
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
-    many_to_one :network
     one_to_many :ip, :class=>IpLease
     one_to_many(:direct_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
       ds.where(:network_id=>self.network_id)
@@ -15,15 +15,29 @@ module Dcmgr::Models
     one_to_many(:nat_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
       ds.where(:network_id=>self.nat_network_id)
     end
-    one_to_many(:network_port, :class=>NetworkPort, :read_only=>true) do |ds|
-      ds.where(:instance_nic_id=>self.id)
-    end
-    
+
     subset(:alives, {:deleted_at => nil})
+
+    def network
+      return nil if network_port.nil?
+      network_port.network
+    end
+
+    def network_id
+      return nil if network_port.nil?
+      network_port.network_id
+    end
 
     def to_api_document
       hash = super
       hash.delete(instance_id)
+      hash.merge({:network_id => network_id})
+      hash
+    end
+
+    def to_hash
+      hash = super
+      hash.merge({:network_id => network_id})
       hash
     end
 
@@ -98,12 +112,7 @@ module Dcmgr::Models
     end
 
     def attach_to_network(network)
-      # The network is superfluous as the port has this information.
-      self.network = network
-      self.save
-
       # Verify no network is not set.
-
       NetworkPort.lock!
 
       savedata = {
@@ -114,10 +123,6 @@ module Dcmgr::Models
     end
 
     def detach_from_network
-      # The network is superfluous as the port has this information.
-      self.network = nil
-      self.save
-
       network_port_dataset.destroy
     end
 
