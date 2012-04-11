@@ -6,7 +6,8 @@ Feature: Storage Node API
   Scenario: Create, update and delete for new storage node with specified UUID
     Given we save to <rand_uuid> a random uuid with the prefix "sn-"
       And we save to <rand_node_id> a random uuid with the prefix "sta."
-      And a managed storage_node with the following options
+
+    Given a managed storage_node with the following options
       | account_id | uuid        | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
       | a-shpoolxx | <rand_uuid> | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
@@ -27,41 +28,45 @@ Feature: Storage Node API
     Then the previous api call should be successful
 
   Scenario: Create without node_id and success to map to unknown node.
+    Given we save to <rand_node_id> a random uuid with the prefix "sta."
+
     Given a managed storage_node with the following options
-      | account_id  | node_id     | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx  | sta.unknown | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
+      | account_id | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
+      | a-shpoolxx | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to storage_nodes/<registry:uuid> with the following options
-      | node_id     | 
-      | sta.unknown |
+      | node_id        |
+      | <rand_node_id> |
     Then the previous api call should be successful
 
     When we make an api get call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
-      And the previous api call should have {"node_id":} equal to "sta.unknown"
+      And the previous api call should have {"node_id":} equal to <rand_node_id>
 
     When we make an api delete call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
 
 
   Scenario: node_id should be reusable to new record.
+    Given we save to <rand_node_id> a random uuid with the prefix "sta."
+
     Given a managed storage_node with the following options
-      | account_id  | node_id      | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx  | sta.unknown1 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
+      | account_id | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
+      | a-shpoolxx | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api delete call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
 
     Given a managed storage_node with the following options
-      | account_id  | node_id      | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx  | sta.unknown1 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
+      | account_id | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
+      | a-shpoolxx | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api get call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
-      And the previous api call should have {"node_id":} equal to "sta.unknown1"
+      And the previous api call should have {"node_id":} equal to <rand_node_id>
 
     When we make an api delete call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
