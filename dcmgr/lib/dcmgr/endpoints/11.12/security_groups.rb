@@ -59,6 +59,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/security_groups' do
     commit_transaction
     # refresh security group rules on host nodes.
     Dcmgr.messaging.event_publish('hva/security_group_updated', :args=>[g.canonical_uuid])
+    Dcmgr.messaging.event_publish("#{g.canonical_uuid}/rules_updated")
 
     response_to(res)
   end

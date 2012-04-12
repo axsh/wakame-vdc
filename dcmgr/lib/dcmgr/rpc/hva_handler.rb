@@ -87,6 +87,18 @@ module Dcmgr
           event.publish(e, :args=>[@inst_id])
         }
       end
+      
+      def update_instance_state_to_terminated(opts)
+        update_instance_state(opts,
+                                ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
+
+        # Security group vnic left events for vnet netfilter
+        @inst[:security_groups].each { |secg|
+          @inst[:vif].each { |vnic|
+            event.publish("#{secg}/vnic_left", :args=>[vnic[:uuid]])
+          }
+        }
+      end
 
       def update_volume_state(opts, ev)
         raise "Can't update volume info without setting @vol_id" if @vol_id.nil?
@@ -224,11 +236,17 @@ module Dcmgr
         @hv.run_instance(@hva_ctx)
         # Node specific instance_started event for netfilter and general instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started',"#{@inst[:host_node][:node_id]}/instance_started"])
+        
+        # Security group vnic joined events for vnet netfilter
+        @inst[:security_groups].each { |secg|
+          @inst[:vif].each { |vnic|
+            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
+          }
+        }
       }, proc {
         ignore_error { terminate_instance(false) }
         ignore_error {
-          update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
-                                ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
+          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
         }
       }
 
@@ -271,12 +289,21 @@ module Dcmgr
         # Node specific instance_started event for netfilter and general instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started',"#{@inst[:host_node][:node_id]}/instance_started"])
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
+        
+        # Security group vnic joined events for vnet netfilter
+        @inst[:security_groups].each { |secg|
+          @inst[:vif].each { |vnic|
+            #p secg
+            #p "=========================="
+            #p vnic
+            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
+          }
+        }
       }, proc {
         # TODO: Run detach & destroy volume
         ignore_error { terminate_instance(false) }
         ignore_error {
-          update_instance_state({:state=>:terminated, :terminated_at=>Time.now.utc},
-                                ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
+          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
         }
         ignore_error {
           update_volume_state({:state=>:deleted, :deleted_at=>Time.now.utc},
@@ -298,8 +325,7 @@ module Dcmgr
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
           ignore_error { terminate_instance(true) }
         ensure
-          update_instance_state({:state=>:terminated,:terminated_at=>Time.now.utc},
-                                ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
+          update_instance_state_to_terminated({:state=>:terminated,:terminated_at=>Time.now.utc})
         end
       end
 
@@ -319,7 +345,7 @@ module Dcmgr
           ignore_error { terminate_instance(false) }
         ensure
           # just publish "hva/instance_terminated" to update security group rules once
-          update_instance_state({}, ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
+          update_instance_state_to_terminated({})
         end
       end
 
@@ -341,7 +367,7 @@ module Dcmgr
           terminate_instance(false)
         ensure
           # 
-          update_instance_state({:state=>:stopped, :host_node_id=>nil}, ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
+          update_instance_state_to_terminated({:state=>:stopped, :host_node_id=>nil})
         end
       end
 

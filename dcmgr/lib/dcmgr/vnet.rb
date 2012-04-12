@@ -37,11 +37,15 @@ module Dcmgr
         raise NotImplementedError
       end
       
-      def join_security_group(instance,group)
+      def get_instances(instances = nil)
         raise NotImplementedError
       end
       
-      def leave_security_group(instance,group)
+      def join_security_group(vnic,group)
+        raise NotImplementedError
+      end
+      
+      def leave_security_group(vnic,group)
         raise NotImplementedError
       end
       
