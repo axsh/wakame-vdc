@@ -280,6 +280,7 @@ module Dcmgr
       }
 
       job :terminate do
+        @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
@@ -322,6 +323,7 @@ module Dcmgr
       # resources to the instance , attached volumes and vnic, are kept
       # same sate.
       job :stop do
+        @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
@@ -339,6 +341,7 @@ module Dcmgr
       end
 
       job :attach, proc {
+        @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         @vol_id = request.args[1]
 
@@ -363,7 +366,7 @@ module Dcmgr
         # attach disk on guest os
         pci_devaddr=nil
         tryagain do
-          pci_devaddr = @hv.attach_volume_to_guest(HvaContext.new(self))
+          pci_devaddr = @hv.attach_volume_to_guest(@hva_ctx)
         end
         raise "Can't attach #{@vol_id} on #{@inst_id}" if pci_devaddr.nil?
 
@@ -381,6 +384,7 @@ module Dcmgr
       }
 
       job :detach do
+        @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         @vol_id = request.args[1]
 
@@ -395,7 +399,7 @@ module Dcmgr
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:detaching, :detached_at=>nil})
         # detach disk on guest os
         tryagain do
-          @hv.detach_volume_from_guest(HvaContext.new(self))
+          @hv.detach_volume_from_guest(@hva_ctx)
         end
 
         # detach disk on host os
@@ -430,6 +434,7 @@ module Dcmgr
       end
 
       job :reboot, proc {
+        @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
 
@@ -437,7 +442,7 @@ module Dcmgr
         select_hypervisor
 
         # reboot instance
-        @hv.reboot_instance(HvaContext.new(self))
+        @hv.reboot_instance(@hva_ctx)
       }
 
       def rpc
