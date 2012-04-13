@@ -5,8 +5,8 @@ Feature: Host Node API
     Given we save to <rand_uuid> a random uuid with the prefix "hn-"
       And we save to <rand_node_id> a random uuid with the prefix "hva."
       And a managed host_node with the following options
-      | account_id | uuid        | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
-      | a-shpoolxx | <rand_uuid> | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
+        | uuid        | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
+        | <rand_uuid> | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
     Then from the previous api call take {"uuid":} and save it to <hn:uuid>
       And the previous api call should have {"uuid":} equal to <rand_uuid>
 
@@ -27,8 +27,8 @@ Feature: Host Node API
     Given we save to <rand_node_id> a random uuid with the prefix "hva."
 
     Given a managed host_node with the following options
-      | account_id  | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
-      | a-shpoolxx  | x86_64 | kvm        | 10                 | 1000                 |
+      | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
+      | x86_64 | kvm        | 10                 | 1000                 |
     Then from the previous api call take {"uuid":} and save it to <hn:uuid>
 
     When we make an api update call to host_nodes/<hn:uuid> with the following options
@@ -44,16 +44,16 @@ Feature: Host Node API
   Scenario: node_id should be reusable to new record.
     Given we save to <rand_node_id> a random uuid with the prefix "hva."
       And a managed host_node with the following options
-      | account_id | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
-      | a-shpoolxx | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
+      | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
+      | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
     Then from the previous api call take {"uuid":} and save it to <hn:uuid>
 
     When we make an api delete call to host_nodes/<hn:uuid> with no options
     Then the previous api call should be successful
 
     Given a managed host_node with the following options
-      | account_id | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
-      | a-shpoolxx | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
+      | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
+      | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
     Then from the previous api call take {"uuid":} and save it to <hn:uuid>
 
     When we make an api get call to host_nodes/<hn:uuid> with no options
@@ -65,6 +65,6 @@ Feature: Host Node API
     Given we save to <rand_node_id> a random uuid with the prefix "sta."
 
     When we make an api create call to host_nodes with the following options
-      | account_id | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
-      | a-shpoolxx | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
+      | node_id        | arch   | hypervisor | offering_cpu_cores | offering_memory_size |
+      | <rand_node_id> | x86_64 | kvm        |                 10 |                 1000 |
     Then the previous api call should not be successful

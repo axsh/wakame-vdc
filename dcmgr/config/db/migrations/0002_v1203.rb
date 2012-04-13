@@ -1,15 +1,13 @@
 Sequel.migration do
   up do
     alter_table(:host_nodes) do
-      add_column :deleted_at, "datetime"
-
-      add_index :deleted_at
+      # HostNode is no longer an account associated resource.
+      drop_column :account_id
     end
 
     alter_table(:storage_nodes) do
-      add_column :deleted_at, "datetime"
-
-      add_index :deleted_at
+      # StorageNode is no longer an account associated resource.
+      drop_column :account_id
     end
 
     alter_table(:networks) do
@@ -53,5 +51,13 @@ Sequel.migration do
   down do
     drop_table(:host_node_vnets)
     drop_table(:network_ports)
+
+    alter_table(:host_nodes) do
+      add_column :account_id, "varchar(255)", :null=>false
+    end
+
+    alter_table(:storage_nodes) do
+      add_column :account_id, "varchar(255)", :null=>false
+    end
   end
 end

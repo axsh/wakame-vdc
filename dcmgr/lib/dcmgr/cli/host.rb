@@ -16,9 +16,7 @@ class Host < Base
   method_option :memory_size, :type => :numeric, :default=>1024, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :default=>'kvm', :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
   method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{HostNode::SUPPORTED_ARCH.join(', ')}]"
-  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :desc => "The account ID to own this"
   def add(node_id)
-    UnknownUUIDError.raise(options[:account_id]) if Account[options[:account_id]].nil?
     UnsupportedArchError.raise(options[:arch]) unless HostNode::SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
 
@@ -33,7 +31,6 @@ class Host < Base
               :offering_memory_size=>options[:memory_size],
               :hypervisor=>options[:hypervisor],
               :arch=>options[:arch],
-              :account_id=>options[:account_id],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     puts super(HostNode,fields)
@@ -42,17 +39,14 @@ class Host < Base
   desc "modify UUID [options]", "Modify a registered host node"
   method_option :name, :type => :string, :size => 255, :desc => "The name for the new host node"
   method_option :cpu_cores, :type => :numeric, :desc => "Number of cpu cores to be offered"
-  method_option :account_id, :type => :string, :desc => "The account ID to own this"
   method_option :memory_size, :type => :numeric, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
   def modify(uuid)
-    UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && Account[options[:account_id]].nil?
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
     fields = {
               :name=>options[:name],
               :offering_memory_size=>options[:memory_size],
               :offering_cpu_cores=>options[:cpu_cores],
-              :account_id=>options[:account_id],
               :hypervisor=>options[:hypervisor]
     }
     super(HostNode,uuid,fields)
@@ -64,7 +58,6 @@ class Host < Base
   end
 
   desc "show [UUID]", "Show list of host nodes and details"
-  method_option :deleted, :type => :boolean, :default=>false, :desc => "Includes deleted host node entries"
   def show(uuid=nil)
     if uuid
       host = HostNode[uuid] || UnknownUUIDError.raise(uuid)
@@ -78,21 +71,14 @@ Architecture: <%= host.arch %>
 Status: <%= host.status %>
 Create: <%= host.created_at %>
 Update: <%= host.updated_at %>
-<%- if !host.deleted_at.nil? -%>
-Deleted: <%= host.deleted_at %>
-<%- end -%>
 __END
     else
       cond = {}
-      ds = if options[:deleted]
-             HostNode.filter(cond)
-           else
-             HostNode.filter(cond).alives
-           end
+      ds = HostNode.filter(cond)
       puts ERB.new(<<__END, nil, '-').result(binding)
-<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status', 'Deleted'] %>
+<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status'] %>
 <%- ds.each { |row| -%>
-<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status, !row.deleted_at.nil? ] %>
+<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
 <%- } -%>
 __END
     end

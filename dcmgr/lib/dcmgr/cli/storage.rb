@@ -17,7 +17,6 @@ class Storage < Base
   method_option :transport_type, :type => :string, :default=>'iscsi', :desc => "Transport type [iscsi]"
   method_option :ipaddr, :type => :string, :required=>true, :desc => "IP address of transport target"
   method_option :storage_type, :type => :string, :default=>'zfs', :desc => "Storage type [#{StorageNode::SUPPORTED_BACKINGSTORE.join(', ')}]"
-  method_option :account_id, :type => :string, :default=>'a-shpoolxx', :desc => "The account ID to own this"
   def add(node_id)
     unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
       abort("Node ID is not registered yet: #{node_id}")
@@ -30,7 +29,6 @@ class Storage < Base
               :export_path=>options[:base_path],
               :snapshot_base_path => options[:snapshot_base_path],
               :ipaddr=>options[:ipaddr],
-              :account_id=>options[:account_id],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     
@@ -43,7 +41,6 @@ class Storage < Base
   end
 
   desc "show [UUID]", "Show list of storage nodes and details"
-  method_option :deleted, :type => :boolean, :default=>false, :desc => "Includes deleted storage node entries"
   def show(uuid=nil)
     if uuid
       st = StorageNode[uuid] || UnknownUUIDError.raise(uuid)
@@ -58,21 +55,14 @@ Export path: <%= st.export_path %>
 Snapshot base path: <%= st.snapshot_base_path %>
 Create: <%= st.created_at %>
 Update: <%= st.updated_at %>
-<%- if !st.deleted_at.nil? -%>
-Deleted: <%= st.deleted_at %>
-<%- end -%>
 __END
     else
       cond = {}
-      ds = if options[:deleted]
-             StorageNode.filter(cond)
-           else
-             StorageNode.filter(cond).alives
-           end
+      ds = StorageNode.filter(cond)
       puts ERB.new(<<__END, nil, '-').result(binding)
-<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status', 'Deleted'] %>
+<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status'] %>
 <%- ds.each { |row| -%>
-<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status, !row.deleted_at.nil? ] %>
+<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
 <%- } -%>
 __END
     end

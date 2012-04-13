@@ -5,12 +5,8 @@ require 'dcmgr/endpoints/12.03/responses/host_node'
 Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
   get do
     ds = M::HostNode.dataset
-    if params[:account_id]
-      ds = ds.filter(:account_id=>params[:account_id])
-    end
 
     ds = datetime_range_params_filter(:created, ds)
-    ds = datetime_range_params_filter(:deleted, ds)
 
     if params[:node_id]
       ds = ds.filter(:node_id=>params[:node_id])

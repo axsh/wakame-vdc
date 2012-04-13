@@ -6,12 +6,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
   get do
     # description 'Show lists of the storage_pools'
     ds = M::StorageNode.dataset
-    if params[:account_id]
-      ds = ds.filter(:account_id=>params[:account_id])
-    end
 
     ds = datetime_range_params_filter(:created, ds)
-    ds = datetime_range_params_filter(:deleted, ds)
     
     if params[:node_id]
       ds = ds.filter(:node_id=>params[:node_id])

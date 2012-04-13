@@ -6,10 +6,9 @@ Feature: Storage Node API
   Scenario: Create, update and delete for new storage node with specified UUID
     Given we save to <rand_uuid> a random uuid with the prefix "sn-"
       And we save to <rand_node_id> a random uuid with the prefix "sta."
-
     Given a managed storage_node with the following options
-      | account_id | uuid        | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx | <rand_uuid> | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
+      | uuid        | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
+      | <rand_uuid> | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       And the previous api call should have {"uuid":} equal to <rand_uuid>
 
@@ -31,8 +30,8 @@ Feature: Storage Node API
     Given we save to <rand_node_id> a random uuid with the prefix "sta."
 
     Given a managed storage_node with the following options
-      | account_id | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
+      | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
+      | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to storage_nodes/<registry:uuid> with the following options
@@ -52,16 +51,16 @@ Feature: Storage Node API
     Given we save to <rand_node_id> a random uuid with the prefix "sta."
 
     Given a managed storage_node with the following options
-      | account_id | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
+      | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
+      | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api delete call to storage_nodes/<registry:uuid> with no options
     Then the previous api call should be successful
 
     Given a managed storage_node with the following options
-      | account_id | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
+      | node_id        | export_path  | transport_type | storage_type |      ipaddr | snapshot_base_path | offering_disk_space |
+      | <rand_node_id> | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     |               10000 |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api get call to storage_nodes/<registry:uuid> with no options
@@ -73,6 +72,6 @@ Feature: Storage Node API
 
   Scenario: node_id should only accept begin with "sta."
     When we make an api create call to storage_nodes with the following options
-      | account_id  | node_id      | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
-      | a-shpoolxx  | hva.unknown2 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
+      | node_id      | export_path  | transport_type | storage_type | ipaddr      | snapshot_base_path | offering_disk_space |
+      | hva.unknown2 | /home/export | iscsi          | raw          | 192.168.0.1 | /home/snapshot     | 10000               |
     Then the previous api call should not be successful

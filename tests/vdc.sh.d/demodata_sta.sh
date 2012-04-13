@@ -3,7 +3,6 @@
 set -e
 
 tmp_path="$VDC_ROOT/tmp"
-account_id=${account_id:?"account_id needs to be set"}
 
 sta_id=${sta_id:?"sta_id needs to be set"}
 sta_server=${sta_server:-${ipaddr}}
@@ -17,7 +16,6 @@ case ${sta_server} in
   shlog ./bin/vdc-manage storage add sta.${sta_id} \
     --force \
     --uuid sn-${sta_id} \
-    --account-id ${account_id} \
     --base-path ${tmp_path}/volumes \
     --disk-space $((1024 * 1024)) \
     --ipaddr ${sta_server} \
@@ -31,7 +29,6 @@ case ${sta_server} in
   shlog ./bin/vdc-manage storage add sta.${sta_id} \
    --force \
    --uuid sn-${sta_id} \
-   --account-id ${account_id} \
    --base-path xpool \
    --disk-space $((1024 * 1024)) \
    --ipaddr ${sta_server} \

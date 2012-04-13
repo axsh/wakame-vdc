@@ -3,7 +3,7 @@
 require 'isono/models/node_state'
 
 module Dcmgr::Models
-  class StorageNode < AccountResource
+  class StorageNode < BaseNew
     taggable 'sn'
 
     BACKINGSTORE_ZFS = 'zfs'
@@ -22,8 +22,6 @@ module Dcmgr::Models
       filter(:node_id => r)
     end
     
-    subset(:alives, {:deleted_at => nil})
-
     def validate
       super
       # for compatibility: sta.xxx or sta-xxxx
@@ -32,7 +30,7 @@ module Dcmgr::Models
           errors.add(:node_id, "is invalid ID: #{self.node_id}")
         end
         
-        if (h = self.class.alives.filter(:node_id=>self.node_id).first) && h.id != self.id
+        if (h = self.class.filter(:node_id=>self.node_id).first) && h.id != self.id
           errors.add(:node_id, "#{self.node_id} is already been associated to #{h.canonical_uuid} ")
         end
       end
@@ -44,13 +42,6 @@ module Dcmgr::Models
       unless self.offering_disk_space > 0
         errors.add(:offering_disk_space, "it must have digit more than zero")
       end
-    end
-
-    # override Sequel::Model#delete not to delete rows but to set
-    # delete flags.
-    def delete
-      self.deleted_at = Time.now
-      self.save
     end
 
     def self.create_pool(params)
