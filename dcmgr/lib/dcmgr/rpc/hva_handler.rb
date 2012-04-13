@@ -33,7 +33,9 @@ module Dcmgr
                       :state=>:attaching,
                       :attached_at => nil,
                       :instance_id => @inst[:id], # needed after cleanup
-                      :host_device_name => @os_devpath})
+                      :host_device_name => @os_devpath}) do |req|
+          req.oneshot = true
+        end
       end
 
       def detach_volume_from_host
@@ -49,7 +51,9 @@ module Dcmgr
                       :host_device_name=>nil,
                       :instance_id=>nil,
                       :detached_at => Time.now.utc,
-                    })
+                    }) do |req|
+          req.oneshot = true
+        end
         event.publish('hva/volume_detached', :args=>[@inst_id, @vol_id])
       end
 
@@ -66,7 +70,7 @@ module Dcmgr
             @vol_id = volid
             @vol = v
             # force to continue detaching volumes during termination.
-            detach_volume_from_host rescue logger.error($!)
+            ignore_error { detach_volume_from_host }
             if state_update
               update_volume_state_to_available rescue logger.error($!)
             end
@@ -361,7 +365,7 @@ module Dcmgr
 
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:stopping})
-          terminate_instance(false)
+          ignore_error { terminate_instance(false) }
         ensure
           # 
           update_instance_state_to_terminated({:state=>:stopped, :host_node_id=>nil})
@@ -431,7 +435,7 @@ module Dcmgr
         end
 
         # detach disk on host os
-        detach_volume_from_host
+        ignore_error { detach_volume_from_host }
         update_volume_state_to_available
       end
 
