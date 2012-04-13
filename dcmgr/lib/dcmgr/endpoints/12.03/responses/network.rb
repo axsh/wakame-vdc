@@ -36,9 +36,9 @@ module Dcmgr::Endpoints::V1203::Responses
     def generate()
       @network_port.instance_exec {
         api_hash = to_hash.merge(:id=>canonical_uuid)
-        api_hash.delete(:instance_nic_id)
+        api_hash.delete(:network_vif_id)
         api_hash.merge({:id=>self.canonical_uuid,
-                         :attachment => self.instance_nic.nil? ? {} : {"id" => self.instance_nic.canonical_uuid},
+                         :attachment => self.network_vif.nil? ? {} : {"id" => self.network_vif.canonical_uuid},
                          :network_id => self.network.nil? ? nil : self.network.canonical_uuid,
                        })
       }

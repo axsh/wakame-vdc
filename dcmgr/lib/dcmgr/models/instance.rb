@@ -10,7 +10,7 @@ module Dcmgr::Models
     alias :spec :instance_spec
     many_to_one :host_node
     one_to_many :volume
-    one_to_many :instance_nic
+    one_to_many :instance_nic, :class=>NetworkVif, :join_table=>:instance_nic_join
     alias :nic :instance_nic
     many_to_many :security_groups, :join_table=>:instance_security_groups
     # TODO: remove ssh_key_pair_id column
@@ -292,7 +292,7 @@ module Dcmgr::Models
                     MacLease.default_vendor_id(self.instance_spec.hypervisor)
                   end
       m = MacLease.lease(vendor_id)
-      nic = InstanceNic.new(:mac_addr=>m.mac_addr)
+      nic = NetworkVif.new(:mac_addr=>m.mac_addr)
       nic.instance = self
       nic.device_index = vif_template[:index]
       nic.save
@@ -346,7 +346,7 @@ module Dcmgr::Models
       super()
       Image.lock!
       InstanceSpec.lock!
-      InstanceNic.lock!
+      NetworkVif.lock!
       Volume.lock!
       VolumeSnapshot.lock!
       IpLease.lock!

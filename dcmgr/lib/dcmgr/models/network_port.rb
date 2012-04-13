@@ -6,7 +6,8 @@ module Dcmgr::Models
     taggable 'port'
 
     many_to_one :network
-    many_to_one :instance_nic
+    many_to_one :network_vif
+    alias :vif :network_vif
 
     def validate
       super

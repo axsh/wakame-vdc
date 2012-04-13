@@ -35,7 +35,12 @@ module Dcmgr
         tasks = []
         enable_logging = node.manifest.config.packet_drop_log
         ipset_enabled = node.manifest.config.use_ipset
-        friend_ips = friends.map {|vnic_map| vnic_map[:ipv4][:address]}
+
+        friend_ips = friends.select { |vnic_map|
+          vnic_map[:ipv4] and vnic_map[:ipv4][:address]
+        }.map { |vnic_map|
+          vnic_map[:ipv4][:address]
+        }
         
         tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")
         tasks << AcceptIpFromFriends.new(friend_ips)

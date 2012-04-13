@@ -15,8 +15,8 @@ module Dcmgr::Models
       TYPE_MANUAL=>'manual'
     }
     
-    many_to_one :instance_nic
     many_to_one :network
+    many_to_one :network_vif
 
     def validate
       # validate ipv4 syntax
@@ -34,7 +34,7 @@ module Dcmgr::Models
     # check if the current lease is for NAT outside address lease.
     # @return [TrueClass,FalseClass] return true if the lease is for NAT outside.
     def is_natted?
-      instance_nic.network_id != network_id
+      network_vif.network_id != network_id
     end
 
     # get the lease of NAT outside network.
@@ -42,8 +42,8 @@ module Dcmgr::Models
     #    if the IpLease has a pair NAT address it will return
     #    outside IpLease.
     def nat_outside_lease
-      if self.instance_nic.nat_network_id
-        self.class.find(:instance_nic_id=>self.instance_nic.id, :network_id=>self.instance_nic.nat_network_id)
+      if self.network_vif.nat_network_id
+        self.class.find(:network_vif_id=>self.network_vif.id, :network_id=>self.network_vif.nat_network_id)
       else
         nil
       end
@@ -53,15 +53,15 @@ module Dcmgr::Models
     # @return [IpLease,nil] IpLease (outside) will return inside
     #     IpLease.
     def nat_inside_lease
-      if self.instance_nic.nat_network_id.nil?
-        self.class.find(:instance_nic_id=>self.instance_nic.id, :network_id=>nil)
+      if self.network_vif.nat_network_id.nil?
+        self.class.find(:network_vif_id=>self.network_vif.id, :network_id=>nil)
       else
         nil
       end
     end
 
-    def self.lease(instance_nic, network)
-      raise TypeError unless instance_nic.is_a?(InstanceNic)
+    def self.lease(network_vif, network)
+      raise TypeError unless network_vif.is_a?(NetworkVif)
       raise TypeError unless network.is_a?(Network)
 
       reserved = []
@@ -74,7 +74,7 @@ module Dcmgr::Models
       raise "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if addrs.empty?
       
       leaseaddr = IPAddress::IPv4.parse_u32(addrs[rand(addrs.size).to_i])
-      create(:ipv4=>leaseaddr.to_s, :network_id=>network.id, :instance_nic_id=>instance_nic.id)
+      create(:ipv4=>leaseaddr.to_s, :network_id=>network.id, :network_vif_id=>network_vif.id)
     end
   end
 end

@@ -64,11 +64,15 @@ module Dcmgr
           
           # Apply isolation tasks for this new instance to its friends
           inst_map[:vif].each { |vnic|
+            next if vnic[:ipv4].nil? or vnic[:ipv4][:network_port].nil?
+
             other_vnics = get_other_vnics(vnic,@cache)
             # Determine which vnics need to be isolated from this one
             friends = @isolator.determine_friends(vnic, other_vnics)
             
             friends.each { |friend|
+              next if friend[:ipv4].nil? or friend[:ipv4][:network_port].nil?
+
               # Put in the new isolation rules
               self.task_manager.apply_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
             }
@@ -86,6 +90,8 @@ module Dcmgr
         def init_instance(inst_map)
           # Call the factory to create all tasks for each vnic. Then apply them
           inst_map[:vif].each { |vnic|
+            next if vnic[:ipv4].nil? or vnic[:ipv4][:network_port].nil?
+
             # Get a list of all other vnics in this host
             other_vnics = get_other_vnics(vnic,@cache)
             
@@ -111,15 +117,20 @@ module Dcmgr
             
             #Clean up the isolation tasks in friends' chains
             inst_map[:vif].each { |vnic|
+              next if vnic[:ipv4].nil? or vnic[:ipv4][:network_port].nil?
+
               other_vnics = get_other_vnics(vnic,@cache)
               friends = @isolator.determine_friends(vnic, other_vnics)
               
               friends.each { |friend|
+                next if friend[:ipv4].nil? or friend[:ipv4][:network_port].nil?
                 self.task_manager.remove_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
               }
             }
             
             inst_map[:vif].each { |vnic|
+              next if vnic[:ipv4].nil? or vnic[:ipv4][:network_port].nil?
+
               # Removing the nat tasks separately because they include an arp reply
               # that isn't put in a separate chain
               other_vnics = get_other_vnics(vnic,@cache)

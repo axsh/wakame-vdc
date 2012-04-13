@@ -153,9 +153,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     raise E::UnknownNetwork, params[:id] if nw.nil?
     port = find_by_uuid(M::NetworkPort, params[:port_id])
     raise E::UnknownNetworkPort, params[:port_id] if port.nil?
-    raise(E::NetworkPortAlreadyAttached) unless port.instance_nic.nil?
+    raise(E::NetworkPortAlreadyAttached) unless port.network_vif.nil?
 
-    nic = find_by_uuid(M::InstanceNic, params[:attachment_id])
+    nic = find_by_uuid(M::NetworkVif, params[:attachment_id])
     raise(E::NetworkPortNicNotFound) if nic.nil?
 
     # Check that the vif belongs to network?
@@ -168,7 +168,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
                              nw.link_interface, nic.canonical_uuid, port.canonical_uuid)
     end
 
-    port.instance_nic = nic
+    port.network_vif = nic
     port.save_changes
 
     response_to({})
@@ -184,9 +184,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     port = find_by_uuid(M::NetworkPort, params[:port_id])
     raise E::UnknownNetworkPort, params[:port_id] if port.nil?
     # Verify the network id.
-    raise(E::NetworkPortNotAttached) if port.instance_nic.nil?
+    raise(E::NetworkPortNotAttached) if port.network_vif.nil?
 
-    nic = port.instance_nic
+    nic = port.network_vif
     instance = nic.instance
 
     # Find better way of figuring out when an instance is not running.
@@ -195,7 +195,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
                              nw.link_interface, nic.canonical_uuid, port.canonical_uuid)
     end
 
-    port.instance_nic = nil
+    port.network_vif = nil
     port.save_changes
     response_to({})
   end

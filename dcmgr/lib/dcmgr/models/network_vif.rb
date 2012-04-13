@@ -2,11 +2,14 @@
 
 module Dcmgr::Models
   # Network interface for running instance.
-  class InstanceNic < BaseNew
+  class NetworkVif < BaseNew
     taggable 'vif'
 
-    many_to_one :instance
-    one_to_one  :network_port, :class=>NetworkPort, :read_only=>true
+    # Remove? reverse lookup.
+    many_to_one :instance, :join_table=>:instance_nic_join
+    one_to_one  :network_port, :read_only=>true
+    alias :port :network_port
+
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
     one_to_many :ip, :class=>IpLease
     one_to_many(:direct_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
@@ -117,7 +120,7 @@ module Dcmgr::Models
 
       savedata = {
         :network_id => network.id,
-        :instance_nic_id => self.id
+        :network_vif_id => self.id
       }
       port = NetworkPort.create(savedata)
     end

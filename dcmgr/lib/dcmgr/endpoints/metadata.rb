@@ -163,10 +163,10 @@ module Dcmgr
 
         def get_instance_from_ip(src_ip)
           ip = Models::IpLease.find(:ipv4=>src_ip)
-          if ip.nil? || ip.instance_nic.nil?
+          if ip.nil? || ip.network_vif.nil?
             raise UnknownSourceIpError, src_ip
           end
-          ip.instance_nic.instance
+          ip.network_vif.instance
         end
       end
 
@@ -585,10 +585,10 @@ module Dcmgr
       private
       def instance
         ip = Models::IpLease.find(:ipv4 => request.ip)
-        if ip.nil? || ip.instance_nic.nil?
+        if ip.nil? || ip.network_vif.nil?
           raise UnknownSourceIpError, request.ip
         end
-        ip.instance_nic.instance.to_hash
+        ip.network_vif.instance.to_hash
       end
 
       def vnic_mac?(mac)

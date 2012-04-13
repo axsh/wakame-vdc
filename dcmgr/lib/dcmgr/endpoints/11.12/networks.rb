@@ -195,17 +195,17 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/ports' do
 
     M::NetworkPort.lock!
     port = find_by_uuid(:NetworkPort, params[:id])
-    raise(E::NetworkPortAlreadyAttached) unless port.instance_nic.nil?
+    raise(E::NetworkPortAlreadyAttached) unless port.network_vif.nil?
 
-    nic = find_by_uuid(:InstanceNic, params[:attachment_id])
-    raise(E::NetworkPortNicNotFound) if nic.nil?
+    vif = find_by_uuid(:NetworkVif, params[:attachment_id])
+    raise(E::NetworkPortNicNotFound) if vif.nil?
 
     nw = find_by_uuid(:Network, port[:network_id])
     examine_owner(nw) || raise(E::OperationNotPermitted)
 
     # Verify that the vif belongs to network?
 
-    port.instance_nic = nic
+    port.network_vif = vif
     port.save_changes
     response_to({})
   end
