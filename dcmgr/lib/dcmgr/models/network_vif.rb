@@ -34,13 +34,19 @@ module Dcmgr::Models
     def to_api_document
       hash = super
       hash.delete(instance_id)
-      hash.merge({:network_id => network_id})
+      hash.merge!({:network_id => network_id})
       hash
     end
 
     def to_hash
       hash = super
-      hash.merge({:network_id => network_id})
+      hash.merge!({ :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
+                    :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
+                    :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
+                    :network_id => self.network_id,
+                    :network => self.network.nil? ? nil : self.network.to_hash,
+                    :network_port => self.network_port.nil? ? nil : self.network_port.to_hash
+                  })
       hash
     end
 

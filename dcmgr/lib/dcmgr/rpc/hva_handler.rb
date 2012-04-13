@@ -489,6 +489,10 @@ module Dcmgr
         @hva.instance_variable_get(:@vol)
       end
 
+      def rpc
+        @hva.rpc
+      end
+
       def inst_data_dir
         File.expand_path("#{inst_id}", node.manifest.config.vm_data_dir)
       end
