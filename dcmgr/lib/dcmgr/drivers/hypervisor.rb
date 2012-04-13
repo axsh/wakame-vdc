@@ -15,7 +15,7 @@ module Dcmgr
         hc.inst[:instance_nics].each { |vnic|
           next if vnic[:network_port].nil?
 
-          network = rpc.request('hva-collector', 'get_network', vnic[:network_id])
+          network = hc.rpc.request('hva-collector', 'get_network', vnic[:network_id])
           
           fwd_if = phy_if = network[:physical_network][:interface]
           bridge_if = network[:link_interface]
