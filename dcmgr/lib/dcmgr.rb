@@ -80,6 +80,8 @@ module Dcmgr
 
   require 'dcmgr/models/errors'
   module Models
+    # Use yaml loader for serialization plugin.
+    require 'yaml'
     autoload :BaseNew, 'dcmgr/models/base_new'
     autoload :Account, 'dcmgr/models/account'
     autoload :Tag, 'dcmgr/models/tag'
