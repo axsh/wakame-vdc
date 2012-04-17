@@ -136,6 +136,10 @@ case ${mode} in
     (. $data_path/install.sh)
     (. $data_path/setup.sh)
     ;;
+  install::rhel)
+    (. $data_path/rhel/install.sh)
+    (. $data_path/rhel/setup.sh)
+    ;;
   init)
     init_db
     ;;

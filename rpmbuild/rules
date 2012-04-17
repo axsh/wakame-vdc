@@ -1,0 +1,107 @@
+#!/usr/bin/make -f
+
+# should be in wakame-vdc
+CURDIR ?= $(PWD)
+
+RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
+RPMBUILD_OPTS := --buildroot=$(RPM_BUILD_ROOT) rpmbuild/SPECS/wakame-vdc.spec
+
+# .deb
+#TMP_INSTALL_ROOT ?= debian/wakame-vdc
+# .rpm
+TMP_INSTALL_ROOT ?=
+
+VDC_INSTALL_ROOT ?= /usr/share/axsh/wakame-vdc
+
+build: build-stamp
+
+build-stamp:
+	# dh_testdir
+	CURDIR=${CURDIR} ./debian/build-ruby.mk build
+	touch $@
+clean:
+	# dh_testdir
+	##dh_testroot
+	#dh_prep
+	rpmbuild -bp $(RPMBUILD_OPTS)
+	#dh_clean
+	CURDIR=${CURDIR} ./debian/build-ruby.mk clean
+	rpmbuild --clean $(RPMBUILD_OPTS)
+
+install: build
+	#dh_testdir
+	#dh_testroot
+	#dh_clean
+	#dh_installdirs
+	#dh_install
+	# force to rewrite path info in text files.
+	fgrep -m 1 -r $(CURDIR) $(CURDIR)/$(TMP_INSTALL_ROOT) | \
+	  grep -v '^Binary file' | \
+	  awk -F: '{print $$1}' | \
+	  while read -r i; do \
+	    echo $$i; \
+	    cp -p $$i $$i.sed ;\
+	    sed -e 's|$(CURDIR)|$(VDC_INSTALL_ROOT)|g' < $$i > $$i.sed ;\
+	    mv $$i.sed $$i ;\
+	  done
+	# clean conf files from base package
+	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/dcmgr/config/*.conf
+	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/dcmgr/config/*.yml
+	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/frontend/dcmgr_gui/config/*.yml
+
+	# for unicorn shebang
+	fgrep -m 1 -r '#!/this/will/be/overwritten/or/wrapped/anyways/do/not/worry/ruby' $(CURDIR) | \
+	  grep -v '^Binary file' | \
+	  awk -F: '{print $$1}' | \
+	  while read -r i; do \
+	    echo $$i; \
+	    cp -p $$i $$i.sed ;\
+	    sed -e 's|#!/this/will/be/overwritten/or/wrapped/anyways/do/not/worry/ruby|#!$(VDC_INSTALL_ROOT)/ruby/bin/ruby|g' < $$i > $$i.sed ;\
+	    mv $$i.sed $$i ;\
+	  done
+
+	# replace /usr/bin/ruby shebangs.
+	fgrep -m 1 -r '#!/usr/bin/ruby' $(CURDIR) | \
+	  grep -v '^Binary file' | \
+	  awk -F: '{print $$1}' | \
+	  while read -r i; do \
+	    echo $$i; \
+	    cp -p $$i $$i.sed ;\
+	    sed -e 's|#!/usr/bin/ruby|#!$(VDC_INSTALL_ROOT)/ruby/bin/ruby|g' < $$i > $$i.sed ;\
+	    mv $$i.sed $$i ;\
+	  done
+
+binary-indep: build install
+
+binary-arch: build install
+	# dh_testdir
+	# dh_testroot
+	# dh_installchangelogs
+	# dh_installdocs
+	# # just for intsall *.default files.
+	# dh_installinit --no-start --no-restart-on-upgrade
+	# dh_link
+	# #dh_strip
+	# dh_compress
+	# dh_fixperms
+	# dh_makeshlibs
+	# dh_installdeb
+	# dh_shlibdeps -Xpsych.so
+	# # overwrite RPATH in binaries.
+	# # chrpath exits non-zero value if fails to replace RPATH. it can be ignored.
+	find $(CURDIR)/$(TMP_INSTALL_ROOT)/ -type f -name "*.so" | \
+	  while read -r i; do \
+	    (file -b "$$i" | grep -q '^ELF ' > /dev/null) && chrpath --replace $(VDC_INSTALL_ROOT)/ruby/lib "$$i" || : ;\
+	  done
+	# dh_gencontrol
+	# dh_md5sums
+	# dh_builddeb
+
+binary: binary-indep binary-arch
+	# rpmbuild -bc                 $(RPMBUILD_OPTS)
+	# => the task will do 'binary-arch' task.
+	#
+	rpmbuild -bi --short-circuit $(RPMBUILD_OPTS)
+	rpmbuild -bb --short-circuit $(RPMBUILD_OPTS)
+
+.PHONY: build clean binary-indep binary-arch binary install
