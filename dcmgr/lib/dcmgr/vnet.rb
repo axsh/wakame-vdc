@@ -37,6 +37,10 @@ module Dcmgr
         raise NotImplementedError
       end
       
+      def remove_foreign_vnic(group_id,vnic_id)
+        raise NotImplementedError
+      end
+      
       def get_instances(instances = nil)
         raise NotImplementedError
       end

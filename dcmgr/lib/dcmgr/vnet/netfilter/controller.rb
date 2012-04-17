@@ -37,8 +37,18 @@ module Dcmgr
           # Apply the current instances if there are any
           @cache.get[:instances].each { |inst_map|
             logger.info "initializing instance '#{inst_map[:uuid]}'"
-            self.init_instance(inst_map)
+            init_instance(inst_map)
           }
+        end
+        
+        def get_instances(instances = nil)
+          if instances.nil?
+            return @cache.get[:instances]
+          elsif instances.is_a?(String)
+            return @cache.get[:instances].find { |inst| inst[:uuid] == instances }
+          else
+            return nil
+          end
         end
         
         def apply_instance(instance)
@@ -61,51 +71,23 @@ module Dcmgr
           
           # Create all the rules for this instance
           init_instance(inst_map)
+        end
+        
+        def join_security_group(vnic,group)
+          # Apply isolation tasks for this new vnic to its friends
+          local_cache = @cache.get(true) #TODO: Check first if we know this vnic already
           
-          # Apply isolation tasks for this new instance to its friends
-          inst_map[:vif].each { |vnic|
-            next if vnic[:ipv4].nil? or vnic[:ipv4][:network_port].nil?
-
-            other_vnics = get_other_vnics(vnic,@cache)
-            # Determine which vnics need to be isolated from this one
-            friends = @isolator.determine_friends(vnic, other_vnics)
+          # We only need to add isolation rules if it's a foreign vnic
+          # Local vnics handle their isolation rules the moment they are created
+          unless is_local_vnic?(vnic)
+            foreign_vnic_map = local_cache[:security_groups].find {|secg| secg[:uuid] == group}[:foreign_vnics].find {|vnic_map| vnic_map[:uuid] == vnic}
+            local_friends = get_local_vnics_in_group(group).delete_if {|friend| friend[:uuid] == vnic}
             
-            friends.each { |friend|
-              next if friend[:ipv4].nil? or friend[:ipv4][:network_port].nil?
-
+            local_friends.each { |local_vnic_map|
               # Put in the new isolation rules
-              self.task_manager.apply_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
+              self.task_manager.apply_vnic_tasks(local_vnic_map,TaskFactory.create_tasks_for_isolation(local_vnic_map,[foreign_vnic_map],self.node))
             }
-          }
-        end
-        
-        def get_other_vnics(vnic,cache)
-          cache.get[:instances].map { |inst_map|
-              inst_map[:vif].delete_if { |other_vnic|
-                other_vnic == vnic
-            }
-          }.flatten
-        end
-        
-        def init_instance(inst_map)
-          # Call the factory to create all tasks for each vnic. Then apply them
-          inst_map[:vif].each { |vnic|
-            next if vnic[:ipv4].nil? or vnic[:ipv4][:network_port].nil?
-
-            # Get a list of all other vnics in this host
-            other_vnics = get_other_vnics(vnic,@cache)
-            
-            # Determine which vnics need to be isolated from this one
-            friends = @isolator.determine_friends(vnic, other_vnics)
-            
-            # Determine the security group rules for this vnic
-            security_groups = @cache.get[:security_groups].delete_if { |group|
-              not vnic[:security_groups].member? group[:uuid]
-            }
-          
-            self.task_manager.apply_vnic_chains(vnic)
-            self.task_manager.apply_vnic_tasks(vnic,TaskFactory.create_tasks_for_vnic(vnic,friends,security_groups,node))
-          }
+          end
         end
         
         def remove_instance(inst_id)
@@ -144,6 +126,23 @@ module Dcmgr
             # Remove the terminated instance from the cache
             @cache.remove_instance(inst_id)
           end
+        end
+        
+        def leave_security_group(vnic,group)
+          local_cache = @cache.get
+          
+          # We only need to remove isolation rules if it's a foreign vnic
+          if is_foreign_vnic?(vnic) 
+            foreign_vnic_map = local_cache[:security_groups].find {|secg| secg[:uuid] == group}[:foreign_vnics].find {|vnic_map| vnic_map[:uuid] == vnic}
+            local_friends = get_local_vnics_in_group(group).delete_if {|friend| friend[:uuid] == vnic}
+            
+            local_friends.each { |local_vnic_map|
+              # Put in the new isolation rules
+              self.task_manager.remove_vnic_tasks(local_vnic_map,TaskFactory.create_tasks_for_isolation(local_vnic_map,[foreign_vnic_map],self.node))
+            }
+          end
+          
+          @cache.remove_foreign_vnic(group,vnic)
         end
         
         def update_security_group(group)
@@ -193,6 +192,68 @@ module Dcmgr
               "ebtables -t nat --init-table",
               "ebtables -t filter --init-table",
           ]
+        end
+        
+        def is_local_vnic?(vnic_id)
+          local_vnics = @cache.get[:instances].map { |inst_map|
+              inst_map[:vif]
+            }.flatten
+          
+          not local_vnics.find {|vnic| vnic[:uuid] == vnic_id}.nil?
+        end
+        
+        def is_foreign_vnic?(vnic_id)
+          foreign_vnics = @cache.get[:security_groups].map {|group| group[:foreign_vnics]}.flatten
+          
+          not foreign_vnics.find {|vnic| vnic[:uuid] == vnic_id}.nil?
+        end
+        
+        def get_local_vnics_in_group(group_id)
+          @cache.get[:instances].map { |inst_map|
+            inst_map[:vif].delete_if { |vnic_map| not vnic_map[:security_groups].member?(group_id) }
+          }.flatten.uniq.compact
+        end
+        
+        def get_foreign_vnics_in_group(group_id)
+          @cache.get[:security_groups].find { |group| group[:uuid] == group_id }[:foreign_vnics]
+        end
+        
+        def get_other_vnics(vnic,cache)
+          cache.get[:instances].map { |inst_map|
+              inst_map[:vif].delete_if { |other_vnic|
+                other_vnic == vnic
+            }
+          }.flatten
+        end
+        
+        def init_instance(inst_map)
+          # Call the factory to create all tasks for each vnic. Then apply them
+          inst_map[:vif].each { |vnic|
+            # Get a list of all other vnics in this host
+            #other_vnics = get_other_vnics(vnic,@cache)
+            
+            # Determine which vnics need to be isolated from this one
+            #friends = @isolator.determine_friends(vnic, other_vnics)
+            friends = vnic[:security_groups].map {|group_id| 
+              get_local_vnics_in_group(group_id).concat get_foreign_vnics_in_group(group_id)
+            }.flatten.uniq
+            friends.delete_if {|friend| friend[:uuid] == vnic[:uuid]}
+            
+            # Determine the security group rules for this vnic
+            security_groups = @cache.get[:security_groups].delete_if { |group|
+              not vnic[:security_groups].member? group[:uuid]
+            }
+          
+            self.task_manager.apply_vnic_chains(vnic)
+            self.task_manager.apply_vnic_tasks(vnic,TaskFactory.create_tasks_for_vnic(vnic,friends,security_groups,node))
+            
+            # Add isolation tasks to friend vnics
+            vnic[:security_groups].each { |group_id|
+              get_local_vnics_in_group(group_id).delete_if {|friend| friend[:uuid] == vnic[:uuid]}.each { |friend|
+                self.task_manager.apply_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
+              }
+            }
+          }
         end
       end
     
