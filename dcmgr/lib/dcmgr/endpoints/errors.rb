@@ -116,9 +116,9 @@ module Dcmgr
     define_error(:InvalidHostNodeID, 400, '141')
     define_error(:InvalidSecurityGroupRule, 400, '142')
     define_error(:InvalidParameter, 400, '143')
-    define_error(:UnknownNetworkPort, 404, '144')
-    define_error(:NetworkPortAlreadyAttached, 500, '145')
-    define_error(:NetworkPortNicNotFound, 500, '146')
-    define_error(:NetworkPortNotAttached, 500, '147')
+    define_error(:UnknownNetworkVif, 404, '144')
+    define_error(:NetworkVifAlreadyAttached, 500, '145')
+    define_error(:NetworkVifNicNotFound, 500, '146')
+    define_error(:NetworkVifNotAttached, 500, '147')
   end
 end

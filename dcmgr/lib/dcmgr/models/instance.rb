@@ -10,8 +10,9 @@ module Dcmgr::Models
     alias :spec :instance_spec
     many_to_one :host_node
     one_to_many :volume
-    one_to_many :instance_nic, :class=>NetworkVif, :join_table=>:instance_nic_join
-    alias :nic :instance_nic
+    one_to_many :network_vif
+    alias :instance_nic :network_vif
+    alias :nic :network_vif
     many_to_many :security_groups, :join_table=>:instance_security_groups
     # TODO: remove ssh_key_pair_id column
     many_to_one :ssh_key_pair
@@ -166,9 +167,7 @@ module Dcmgr::Models
           else
             outside_lease = direct_lease.nat_outside_lease
             ent[:ipv4] = {
-              # TODO: Only access the network through network_port.
               :network => vif.network.nil? ? nil : vif.network.to_hash,
-              :network_port => vif.network_port.nil? ? nil : vif.network_port.to_hash,
               :address=> direct_lease.ipv4,
               :nat_network => vif.nat_network.nil? ? nil : vif.nat_network.to_hash,
               :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
@@ -237,11 +236,9 @@ module Dcmgr::Models
         end
 
         network = vif.network
-        port = vif.network_port
         ent = {
           :vif_id => vif.canonical_uuid,
-          :network_id => network.nil? ? nil : network.canonical_uuid,
-          :port_id => port.nil? ? nil : port.canonical_uuid,
+          :network_id => network.nil? ? nil : network.canonical_uuid
         }
 
         direct_lease = direct_lease_ds.first

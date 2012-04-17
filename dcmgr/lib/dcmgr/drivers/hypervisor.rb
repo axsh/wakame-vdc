@@ -13,7 +13,7 @@ module Dcmgr
       
       def check_interface(hc)
         hc.inst[:instance_nics].each { |vnic|
-          next if vnic[:network_port].nil?
+          next if vnic[:network].nil?
 
           network = hc.rpc.request('hva-collector', 'get_network', vnic[:network_id])
           

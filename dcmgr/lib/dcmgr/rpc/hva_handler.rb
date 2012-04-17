@@ -162,7 +162,7 @@ module Dcmgr
         }
 
         @inst[:vif].each { |vnic|
-          next if vnic[:network_port].nil?
+          next if vnic[:network].nil?
 
           netaddr  = IPAddress::IPv4.new("#{vnic[:ipv4][:network][:ipv4_network]}/#{vnic[:ipv4][:network][:prefix]}")
 
@@ -441,26 +441,24 @@ module Dcmgr
       job :attach_nic do
         @link_interface = request.args[0]
         @nic_id = request.args[1]
-        @port_id = request.args[2]
 
         if @link_interface
-          logger.info("Attaching #{@nic_id} to #{@port_id} on #{@link_interface}.")
+          logger.info("Attaching #{@nic_id} to #{@link_interface}.")
           attach_vnic_to_port
         else
-          logger.info("Attaching #{@nic_id} to #{@port_id} failed: no network / link interface found.")
+          logger.info("Attaching #{@nic_id} failed: no network / link interface found.")
         end
       end
 
       job :detach_nic do
         @link_interface = request.args[0]
         @nic_id = request.args[1]
-        @port_id = request.args[2]
 
         if @link_interface
-          logger.info("Detaching #{@nic_id} from #{@port_id} on #{@link_interface}.")
+          logger.info("Detaching #{@nic_id} from  #{@link_interface}.")
           detach_vnic_from_port
         else
-          logger.info("Detaching #{@nic_id} from #{@port_id} failed: no network / link interface found.")
+          logger.info("Detaching #{@nic_id} failed: no network / link interface found.")
         end
       end
 

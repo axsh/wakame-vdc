@@ -99,19 +99,19 @@ module Dcmgr
             
             #Clean up the isolation tasks in friends' chains
             inst_map[:vif].each { |vnic|
-              next if vnic[:ipv4].nil? or vnic[:ipv4][:network_port].nil?
+              next if vnic[:ipv4].nil? or vnic[:ipv4][:network].nil?
 
               other_vnics = get_other_vnics(vnic,@cache)
               friends = @isolator.determine_friends(vnic, other_vnics)
               
               friends.each { |friend|
-                next if friend[:ipv4].nil? or friend[:ipv4][:network_port].nil?
+                next if friend[:ipv4].nil? or friend[:ipv4][:network].nil?
                 self.task_manager.remove_vnic_tasks(friend,TaskFactory.create_tasks_for_isolation(friend,[vnic],self.node))
               }
             }
             
             inst_map[:vif].each { |vnic|
-              next if vnic[:ipv4].nil? or vnic[:ipv4][:network_port].nil?
+              next if vnic[:ipv4].nil? or vnic[:ipv4][:network].nil?
 
               # Removing the nat tasks separately because they include an arp reply
               # that isn't put in a separate chain

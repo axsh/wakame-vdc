@@ -35,11 +35,9 @@ module Dcmgr::Endpoints::V1203::Responses
           direct_lease_ds = vif.direct_ip_lease_dataset
 
           network = vif.network
-          port = vif.network_port
           ent = {
             :vif_id => vif.canonical_uuid,
             :network_id => network.nil? ? nil : network.canonical_uuid,
-            :port_id => port.nil? ? nil : port.canonical_uuid,
           }
 
           direct_lease = direct_lease_ds.first

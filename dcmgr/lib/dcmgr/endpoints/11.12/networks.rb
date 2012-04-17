@@ -118,109 +118,20 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/networks' do
 
   # Temporary names as the current code is incapable of having
   # multiple names with different operations.
-  get '/:id/get_port' do
-    # description 'List ports on this network'
+  get '/:id/get_vif' do
+    # description 'List vifs on this network'
     # params start, fixnum, optional
     # params limit, fixnum, optional
-    M::NetworkPort.lock!
+    M::NetworkVif.lock!
     nw = find_by_uuid(:Network, params[:id])
     examine_owner(nw) || raise(E::OperationNotPermitted)
 
     result = []
-    nw.network_port.each { |port|
-      result << port.to_api_document.merge(:network_id => nw.canonical_uuid)
+    nw.network_vif.each { |vif|
+      result << vif.to_api_document
     }
 
     response_to(result)
   end
 
-  put '/:id/add_port' do
-    # description 'Create a port on this network'
-    M::NetworkPort.lock!
-    nw = find_by_uuid(:Network, params[:id])
-    examine_owner(nw) || raise(E::OperationNotPermitted)
-
-    savedata = {
-      :network_id => nw.id
-    }
-    port = M::NetworkPort.create(savedata)
-
-    response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
-  end
-
-  put '/:id/del_port' do
-    # description 'Create a port on this network'
-    # param :port_id required
-    M::NetworkPort.lock!
-    nw = find_by_uuid(:Network, params[:id])
-    examine_owner(nw) || raise(E::OperationNotPermitted)
-
-    port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
-    raise(E::UnknownNetworkPort) if port.nil?
-
-    port.destroy
-    response_to({})
-  end
-
-end
-
-# Should be under '/networks/{network-id}/ports', however due to
-# lack of namespaces we put the create and index calls in the
-# root namespace.
-Dcmgr::Endpoints::V1112::CoreAPI.namespace '/ports' do
-  # description "Ports on a network"
-
-  get '/:id' do
-    # description "Retrieve details about a port"
-    # params :id required
-    port = find_by_uuid(:NetworkPort, params[:id])
-
-    # Find a better way to convert to canonical network uuid.
-    nw = find_by_uuid(:Network, port[:network_id])
-
-    response_to(port.to_api_document.merge(:network_id => nw.canonical_uuid))
-  end
-  
-  # delete '/:id' do
-  #   # description "Remove a port"
-  #   # params :id required
-  #     response_to({})
-  # end
-
-  put '/:id/attach' do
-    # description 'Attach a vif to this port'
-    # params :id required
-    # params :attachment_id required
-    result = []
-
-    M::NetworkPort.lock!
-    port = find_by_uuid(:NetworkPort, params[:id])
-    raise(E::NetworkPortAlreadyAttached) unless port.network_vif.nil?
-
-    vif = find_by_uuid(:NetworkVif, params[:attachment_id])
-    raise(E::NetworkPortNicNotFound) if vif.nil?
-
-    nw = find_by_uuid(:Network, port[:network_id])
-    examine_owner(nw) || raise(E::OperationNotPermitted)
-
-    # Verify that the vif belongs to network?
-
-    port.network_vif = vif
-    port.save_changes
-    response_to({})
-  end
-
-  put '/:id/detach' do
-    # description 'Detach a vif from this port'
-    # param :port_id required
-    # M::NetworkPort.lock!
-    # nw = find_by_uuid(:Network, params[:id])
-    # examine_owner(nw) || raise(E::OperationNotPermitted)
-
-    # port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
-    # raise(E::UnknownNetworkPort) if port.nil?
-
-    # port.destroy
-    response_to({})
-  end
 end

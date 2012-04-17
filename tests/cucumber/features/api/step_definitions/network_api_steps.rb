@@ -41,28 +41,25 @@ Given /^the instance (.+) is connected to the network (.+) with the nic stored i
       Then the previous api call should be successful
       And from the previous api call take {"vif":[...,,...]} and save it to <#{reg}> for {"network_id":} equal to #{network}
       And from <#{reg}> take {"vif_id":} and save it to <#{reg}uuid>
-      And from <#{reg}> take {"port_id":} and save it to <#{reg}port:uuid>
   }
 end
 
-When /^we attach to network (.+) port (.+) the attachment (.+)$/ do |arg_1,arg_2,attachment|
+When /^we attach to network (.+) the vif (.+)$/ do |arg_1,arg_2|
   network = variable_get_value(arg_1)
-  port = variable_get_value(arg_2)
+  vif = variable_get_value(arg_2)
 
   steps %Q{
-    When we make an api put call to networks/#{network}/ports/#{port}/attach with the following options
-      | attachment_id |
-      | #{attachment} |
+    When we make an api put call to networks/#{network}/vifs/#{vif}/attach with no options
       Then the previous api call should be successful
   }
 end
 
-When /^we detach from network (.+) port (.+) its current attachment$/ do |arg_1,arg_2|
+When /^we detach from network (.+) the vif (.+)$/ do |arg_1,arg_2|
   network = variable_get_value(arg_1)
-  port = variable_get_value(arg_2)
+  vif = variable_get_value(arg_2)
 
   steps %Q{
-    When we make an api put call to networks/#{network}/ports/#{port}/detach with no options
+    When we make an api put call to networks/#{network}/vifs/#{vif}/detach with no options
       Then the previous api call should be successful
   }
 end

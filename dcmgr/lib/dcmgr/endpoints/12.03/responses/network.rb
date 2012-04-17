@@ -27,25 +27,23 @@ module Dcmgr::Endpoints::V1203::Responses
     end
   end
 
-  class NetworkPort < Dcmgr::Endpoints::ResponseGenerator
-    def initialize(network_port)
-      raise ArgumentError if !network_port.is_a?(Dcmgr::Models::NetworkPort)
-      @network_port = network_port
+  class NetworkVif < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(network_vif)
+      raise ArgumentError if !network_vif.is_a?(Dcmgr::Models::NetworkVif)
+      @network_vif = network_vif
     end
 
     def generate()
-      @network_port.instance_exec {
+      @network_vif.instance_exec {
         api_hash = to_hash.merge(:id=>canonical_uuid)
-        api_hash.delete(:network_vif_id)
-        api_hash.merge({:id=>self.canonical_uuid,
-                         :attachment => self.network_vif.nil? ? {} : {"id" => self.network_vif.canonical_uuid},
+        api_hash.merge({ :id=>self.canonical_uuid,
                          :network_id => self.network.nil? ? nil : self.network.canonical_uuid,
                        })
       }
     end
   end
 
-  class NetworkPortCollection < Dcmgr::Endpoints::ResponseGenerator
+  class NetworkVifCollection < Dcmgr::Endpoints::ResponseGenerator
     def initialize(ds)
       raise ArgumentError if !ds.is_a?(Sequel::Dataset)
       @ds = ds
@@ -53,7 +51,7 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @ds.all.map { |i|
-        NetworkPort.new(i).generate
+        NetworkVif.new(i).generate
       }
     end
   end

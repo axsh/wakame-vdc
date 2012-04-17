@@ -85,118 +85,110 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     response_to({})
   end
 
-  get '/:id/ports' do
-    # description 'List ports on this network'
+  get '/:id/vifs' do
+    # description 'List vifs on this network'
     # params start, fixnum, optional
     # params limit, fixnum, optional
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
-    ds = nw.network_port_dataset
+    ds = nw.network_vif_dataset
     
     collection_respond_with(ds) do |paging_ds|
-      R::NetworkPortCollection.new(paging_ds).generate
+      R::NetworkVifCollection.new(paging_ds).generate
     end
   end
 
-  get '/:id/ports/:port_id' do
-    # description "Retrieve details about a port"
+  get '/:id/vifs/:vif_id' do
+    # description "Retrieve details about a vif"
     # params id, string, required
-    # params port_id, string, required
+    # params vif_id, string, required
 
     # Find a better way to convert to canonical network uuid.
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
-    port = find_by_uuid(M::NetworkPort, params[:port_id])
-    raise E::UnknownNetworkPort, params[:port_id] if port.nil?
+    vif = find_by_uuid(M::NetworkVif, params[:vif_id])
+    raise E::UnknownNetworkVif, params[:vif_id] if vif.nil?
     
-    # Compare nw.id and port.network_id.
+    # Compare nw.id and vif.network_id.
 
-    respond_with(R::NetworkPort.new(port).generate)
+    respond_with(R::NetworkVif.new(vif).generate)
   end
 
-  post '/:id/ports' do
-    # description "Create new network port"
+  post '/:id/vifs' do
+    # description "Create new network vif"
     # params id, string, required
     nw = find_by_uuid(M::Network, params[:id])
 
     savedata = {
       :network_id => nw.id
     }
-    port = M::NetworkPort.create(savedata)
+    vif = M::NetworkVif.create(savedata)
 
-    respond_with(R::NetworkPort.new(port).generate)
+    respond_with(R::NetworkVif.new(vif).generate)
   end
 
-  delete '/:id/ports/:port_id' do
-    # description 'Delete a port on this network'
+  delete '/:id/vifs/:vif_id' do
+    # description 'Delete a vif on this network'
     # params id, string, required
-    # params port_id, string, required
-    M::NetworkPort.lock!
+    # params vif_id, string, required
+    M::NetworkVif.lock!
     nw = find_by_uuid(M::Network, params[:id])
 
-    port = nw.network_port.detect { |itr| itr.canonical_uuid == params[:port_id] }
-    raise(UnknownNetworkPort) if port.nil?
+    vif = nw.network_vif.detect { |itr| itr.canonical_uuid == params[:vif_id] }
+    raise(UnknownNetworkVif) if vif.nil?
 
-    port.destroy
+    vif.destroy
     response_to({})
   end
 
-  put '/:id/ports/:port_id/attach' do
-    # description 'Attach a vif to this port'
+  put '/:id/vifs/:vif_id/attach' do
+    # description 'Attach a vif to this vif'
     # params id, string, required
-    # params port_id, string, required
-    # params attachment_id, string, required
+    # params vif_id, string, required
     result = []
 
-    M::NetworkPort.lock!
+    M::NetworkVif.lock!
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
-    port = find_by_uuid(M::NetworkPort, params[:port_id])
-    raise E::UnknownNetworkPort, params[:port_id] if port.nil?
-    raise(E::NetworkPortAlreadyAttached) unless port.network_vif.nil?
-
-    nic = find_by_uuid(M::NetworkVif, params[:attachment_id])
-    raise(E::NetworkPortNicNotFound) if nic.nil?
+    vif = find_by_uuid(M::NetworkVif, params[:vif_id])
+    raise(E::NetworkVifNicNotFound, params[:vif_id]) if vif.nil?
+    raise(E::NetworkVifAlreadyAttached) unless vif.network.nil?
 
     # Check that the vif belongs to network?
 
-    instance = nic.instance
+    instance = vif.instance
 
     # Find better way of figuring out when an instance is not running.
-    if not instance.host_node.nil?
+    if instance.host_node
       Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
-                             nw.link_interface, nic.canonical_uuid, port.canonical_uuid)
+                             nw.link_interface, vif.canonical_uuid)
     end
 
-    port.network_vif = nic
-    port.save_changes
-
+    vif.attach_to_network(nw)
     response_to({})
   end
 
-  put '/:id/ports/:port_id/detach' do
-    # description 'Detach a vif to this port'
+  put '/:id/vifs/:vif_id/detach' do
+    # description 'Detach a vif to this vif'
     # params id, string, required
-    # params port_id, string, required
-    M::NetworkPort.lock!
+    # params vif_id, string, required
+    M::NetworkVif.lock!
     nw = find_by_uuid(M::Network, params[:id])
-    raise E::UnknownNetwork, params[:id] if nw.nil?
-    port = find_by_uuid(M::NetworkPort, params[:port_id])
-    raise E::UnknownNetworkPort, params[:port_id] if port.nil?
+    raise(E::UnknownNetwork, params[:id]) if nw.nil?
+    vif = find_by_uuid(M::NetworkVif, params[:vif_id])
+    raise(E::UnknownNetworkVif, params[:vif_id]) if vif.nil?
     # Verify the network id.
-    raise(E::NetworkPortNotAttached) if port.network_vif.nil?
+    raise(E::NetworkVifNotAttached) if vif.network_id != nw.id
 
-    nic = port.network_vif
-    instance = nic.instance
+    instance = vif.instance
 
     # Find better way of figuring out when an instance is not running.
-    if not instance.host_node.nil?
+    if instance.host_node
       Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
-                             nw.link_interface, nic.canonical_uuid, port.canonical_uuid)
+                             nw.link_interface, vif.canonical_uuid)
     end
 
-    port.network_vif = nil
-    port.save_changes
+    vif.detach_from_network
     response_to({})
   end
 

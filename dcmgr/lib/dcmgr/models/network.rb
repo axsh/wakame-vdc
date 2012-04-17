@@ -31,7 +31,7 @@ module Dcmgr::Models
     many_to_one :physical_network
     many_to_one :gateway_network, :class => PhysicalNetwork
 
-    one_to_many :network_port
+    one_to_many :network_vif
 
     def before_validation
       self.link_interface ||= "br-#{self[:uuid]}"

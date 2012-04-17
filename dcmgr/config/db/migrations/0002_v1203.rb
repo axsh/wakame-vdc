@@ -29,19 +29,6 @@ Sequel.migration do
       index [:broadcast_addr]
     end
 
-    create_table(:network_ports) do
-      primary_key :id, :type=>"int(11)"
-      column :uuid, "varchar(255)", :null=>false
-      column :network_id, "int(11)", :null=>false
-      column :network_vif_id, "int(11)"
-      column :created_at, "datetime", :null=>false
-      column :updated_at, "datetime", :null=>false
-
-      index [:network_vif_id], :unique=>true
-      index [:network_id]
-      index [:uuid], :unique=>true, :name=>:uuid
-    end
-
     create_table(:network_services) do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "int(11)"
@@ -59,9 +46,8 @@ Sequel.migration do
     rename_table(:instance_nics, :network_vifs)
 
     alter_table(:network_vifs) do
-      # Migrate network_id to network_ports.
-      drop_column :network_id
       set_column_allow_null :instance_id, true
+      set_column_allow_null :network_id, true
 
       add_column :network_service_id, "int(11)"
     end
@@ -73,21 +59,10 @@ Sequel.migration do
       add_index [:network_vif_id, :network_id]
     end
 
-    create_table(:instance_nic_join) do
-      primary_key :id, :type=>"int(11)"
-      column :instance_id, "int(11)", :null=>false
-      column :network_vif_id, "int(11)", :null=>false
-
-      index [:instance_id]
-      index [:network_vif_id]
-    end
-
   end
   
   down do
     drop_table(:host_node_vnets)
-    drop_table(:instance_nic_join)
-    drop_table(:network_ports)
     drop_table(:network_vifs)
 
     alter_table(:host_nodes) do

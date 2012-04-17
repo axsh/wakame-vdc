@@ -5,10 +5,9 @@ module Dcmgr::Models
   class NetworkVif < BaseNew
     taggable 'vif'
 
-    # Remove? reverse lookup.
-    many_to_one :instance, :join_table=>:instance_nic_join
-    one_to_one  :network_port, :read_only=>true
-    alias :port :network_port
+    many_to_one :network
+
+    # To be moved to proper instance_nic.
 
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
     one_to_many :ip, :class=>IpLease
@@ -21,15 +20,10 @@ module Dcmgr::Models
 
     subset(:alives, {:deleted_at => nil})
 
-    def network
-      return nil if network_port.nil?
-      network_port.network
-    end
-
-    def network_id
-      return nil if network_port.nil?
-      network_port.network_id
-    end
+    # Remove? reverse lookup.
+    # many_to_one :instance, :join_table=>:instance_nic_join
+    many_to_one :instance
+    many_to_one :network_service
 
     def to_api_document
       hash = super
@@ -44,8 +38,7 @@ module Dcmgr::Models
                     :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
                     :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
                     :network_id => self.network_id,
-                    :network => self.network.nil? ? nil : self.network.to_hash,
-                    :network_port => self.network_port.nil? ? nil : self.network_port.to_hash
+                    :network => self.network.nil? ? nil : self.network.to_hash
                   })
       hash
     end
@@ -77,8 +70,6 @@ module Dcmgr::Models
       maclease = MacLease.find(:mac_addr=>self.mac_addr)
       maclease.destroy if maclease
       release_ip_lease
-
-      network_port_dataset.destroy
       super
     end
 
@@ -121,18 +112,14 @@ module Dcmgr::Models
     end
 
     def attach_to_network(network)
-      # Verify no network is not set.
-      NetworkPort.lock!
-
-      savedata = {
-        :network_id => network.id,
-        :network_vif_id => self.id
-      }
-      port = NetworkPort.create(savedata)
+      # Verify no network is previously set.
+      self.network = network
+      self.save_changes
     end
 
     def detach_from_network
-      network_port_dataset.destroy
+      self.network = nil
+      self.save_changes
     end
 
     private
@@ -143,7 +130,6 @@ module Dcmgr::Models
       #       i.e. single 0 to double 00
       str
     end
-    
-    
+
   end
 end
