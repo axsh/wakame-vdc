@@ -42,13 +42,28 @@ Sequel.migration do
       index [:uuid], :unique=>true, :name=>:uuid
     end
 
+    create_table(:network_services) do
+      primary_key :id, :type=>"int(11)"
+      column :network_vif_id, "int(11)"
+
+      column :name, "varchar(255)", :null=>false
+      column :incoming_port, "int(11)"
+      column :outcoming_port, "int(11)"
+
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+
+      index [:network_vif_id], :unique=>true
+    end
+
     rename_table(:instance_nics, :network_vifs)
 
     alter_table(:network_vifs) do
       # Migrate network_id to network_ports.
       drop_column :network_id
+      set_column_allow_null :instance_id, true
 
-      # add_column :network_port_id, "int(11)"
+      add_column :network_service_id, "int(11)"
     end
 
     alter_table(:ip_leases) do
