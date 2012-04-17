@@ -1,0 +1,55 @@
+#!/usr/bin/make -f
+
+ruby_ver ?= 1.9.2-p290
+
+# should be in wakame-vdc
+CURDIR ?= $(PWD)
+
+CFLAGS := -fno-strict-aliasing
+CXXFLAGS := -fno-strict-aliasing
+# configure options set by ruby-build
+CONFIGURE_OPTS := --disable-install-doc --enable-frame-address --enable-pthread --enable-ipv6 --with-bundled-sha1 --with-bundled-md5 --with-bundled-rmd160 --enable-rpath
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+        CFLAGS += -g -O0
+	CXXFLAGS += -g -O0
+else
+        CFLAGS += -g -O0
+	CXXFLAGS += -g -O0
+endif
+export CFLAGS CXXFLAGS CONFIGURE_OPTS
+
+PATH := $(CURDIR)/ruby/bin:${PATH}
+export PATH
+
+# unset GEM_HOME and GEM_PATH
+unexport GEM_HOME GEM_PATH
+
+build: build-ruby-stamp
+
+build-ruby-stamp: ruby-build ruby install-core-gem bundle-install
+	touch $@
+
+ruby-build:
+	(cd $(CURDIR); git clone https://github.com/sstephenson/ruby-build.git)
+
+ruby:
+	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(CURDIR)/ruby)
+
+install-core-gem: install-core-gem-stamp
+install-core-gem-stamp:
+	gem install bundler rake --no-rdoc --no-ri
+	touch $@
+
+bundle-install: bundle-install-stamp
+bundle-install-stamp:
+	(cd $(CURDIR)/dcmgr && bundle install --path vendor/bundle)
+	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --path vendor/bundle)
+	touch $@
+
+clean:
+	rm -rf $(CURDIR)/ruby-build $(CURDIR)/ruby $(CURDIR)/tmp
+	rm -f $(CURDIR)/build-ruby-stamp
+	rm -f $(CURDIR)/bundle-install-stamp
+	rm -f $(CURDIR)/install-core-gem-stamp
+
+.PHONY: build clean install-core-gem bundle-install
