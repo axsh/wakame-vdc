@@ -1,11 +1,8 @@
-# Comment out to run the lxc init script
+# source common params
+[ -f /etc/default/wakame-vdc ] && . /etc/default/wakame-vdc
+
+# Comment out to run the vdc init script
 #RUN=yes
-
-## vdc
-VDC_ROOT=/opt/axsh/wakame-vdc
-
-## for debug
-#DAEMON_COREFILE_LIMIT=unlimited
 
 ## agent specified
 #AMQP_ADDR=127.0.0.1

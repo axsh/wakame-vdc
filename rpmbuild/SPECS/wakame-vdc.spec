@@ -127,8 +127,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %files
 %defattr(-,root,root)
 %{prefix}/%{name}/
-%dir %{prefix}/%{name}/
 %config /etc/logrotate.d/flog-vdc
+%config(noreplace) /etc/default/wakame-vdc
 
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
