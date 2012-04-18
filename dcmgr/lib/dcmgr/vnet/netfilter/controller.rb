@@ -208,7 +208,7 @@ module Dcmgr
           not foreign_vnics.find {|vnic| vnic[:uuid] == vnic_id}.nil?
         end
         
-        def is_active_vnic?(vnic_id)
+        def is_active_vnic?(vnic)
           vnic[:ipv4] and vnic[:ipv4][:network]
         end
 
