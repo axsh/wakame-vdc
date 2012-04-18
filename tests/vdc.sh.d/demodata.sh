@@ -116,8 +116,8 @@ shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
 
 shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}
 
-shlog ./bin/vdc-manage spec  add --uuid is-demospec --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --weight 1
-shlog ./bin/vdc-manage spec  add --uuid is-demo2    --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --weight 1
+shlog ./bin/vdc-manage spec  add --uuid is-demospec --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --quota-weight 1
+shlog ./bin/vdc-manage spec  add --uuid is-demo2    --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --quota-weight 1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
