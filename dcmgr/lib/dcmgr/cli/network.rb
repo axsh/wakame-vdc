@@ -11,11 +11,11 @@ class Network < Base
     def validate_ipv4_range
       @network_addr = IPAddress::IPv4.new("#{options[:ipv4_network]}/#{options[:prefix]}").network
       if options[:ipv4_gw] && !@network_addr.include?(IPAddress::IPv4.new(options[:ipv4_gw]))
-        Error.raise("ipv4_gw #{options[:ipv4_gw]} is out of range from network address: #{@network_addr}")
+        Error.raise("ipv4_gw #{options[:ipv4_gw]} is out of range from network address: #{@network_addr}", 100)
       end
       # DHCP IP address has to be in same IP network.
       if options[:dhcp] && !@network_addr.include?(IPAddress::IPv4.new(options[:dhcp]))
-        Error.raise("dhcp server address #{options[:dhcp]} is out of range from network address: #{@network_addr}")
+        Error.raise("dhcp server address #{options[:dhcp]} is out of range from network address: #{@network_addr}", 100)
       end
     end
     private :validate_ipv4_range
