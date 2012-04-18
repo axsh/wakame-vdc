@@ -172,11 +172,11 @@ module Dcmgr
             
             unless old_group.nil? || new_group.nil?
               vnics.each { |vnic_map|
-                # Remove the old security group tasks
-                self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(old_group))
-                
                 # Add the new security group tasks
                 self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(new_group))
+                
+                # Remove the old security group tasks
+                self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(old_group))
               }
             end
           end
