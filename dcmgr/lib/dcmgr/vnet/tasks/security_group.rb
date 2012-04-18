@@ -8,7 +8,25 @@ module Dcmgr
         include Dcmgr::VNet::Netfilter
         def initialize(group_map)
           super()
-          group_map[:rules].each { |rule|
+          # Parse the rules in case they are referencing other security groups
+          parsed_rules = group_map[:rules].map { |rule|
+            ref_group_id = rule[:ip_source].scan(/sg-\w+/).first
+            if ref_group_id
+              ref_vnics = group_map[:referenced_groups].find { |ref_group| ref_group[:uuid] == ref_group_id }[:vnics]
+              new_rules = ref_vnics.map { |vnic|
+                new_rule = rule.dup
+                new_rule[:protocol] = "ip4"
+                new_rule[:ip_source] = "#{vnic[:ipv4][:address]}/32"
+                
+                new_rule
+              }
+              new_rules
+            else
+              rule
+            end
+          }.flatten.uniq
+          
+          parsed_rules.each { |rule|
             case rule[:ip_protocol]
             when 'tcp', 'udp'
               if rule[:ip_fport] == rule[:ip_tport]

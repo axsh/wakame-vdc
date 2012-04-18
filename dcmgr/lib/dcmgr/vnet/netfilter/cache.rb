@@ -17,7 +17,7 @@ module Dcmgr
         def update
           logger.info "updating cache from database"
           @cache = @rpc.request('hva-collector', 'get_netfilter_data', @node.node_id)
-          
+
           #Return nil to avoid the cache being returned by reference
           nil
         end
