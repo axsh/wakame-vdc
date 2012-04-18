@@ -116,6 +116,11 @@ rsync -avx `pwd`/contrib/etc/default     ${RPM_BUILD_ROOT}/etc/
 rsync -avx `pwd`/contrib/etc/init        ${RPM_BUILD_ROOT}/etc/
 rsync -avx `pwd`/contrib/etc/logrotate.d ${RPM_BUILD_ROOT}/etc/
 
+# unicorn configs
+rsync -avx `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
+rsync -avx `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
+rsync -avx `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
+
 %clean
 rm -rf ${RPM_BUILD_ROOT}
 
@@ -139,6 +144,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-nsa.conf
 %config /etc/init/vdc-sta.conf
 %config /etc/init/vdc-webui.conf
+%config %{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
+%config %{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
+%config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
 
 %files hva-vmapp-config
 %defattr(-,root,root)
