@@ -42,8 +42,8 @@ install-core-gem-stamp:
 
 bundle-install: bundle-install-stamp
 bundle-install-stamp:
-	(cd $(CURDIR)/dcmgr && bundle install --path vendor/bundle)
-	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --path vendor/bundle)
+	(cd $(CURDIR)/dcmgr && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path vendor/bundle)
 	touch $@
 
 clean:
