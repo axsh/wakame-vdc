@@ -45,6 +45,10 @@ module Dcmgr
         raise NotImplementedError
       end
       
+      def get_security_groups(secgs = nil)
+        raise NotImplementedError
+      end
+      
       def join_security_group(vnic,group)
         raise NotImplementedError
       end

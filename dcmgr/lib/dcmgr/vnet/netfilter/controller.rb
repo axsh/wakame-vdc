@@ -51,6 +51,16 @@ module Dcmgr
           end
         end
         
+        def get_security_groups(secgs = nil)
+          if secgs.nil?
+            return @cache.get[:security_groups]
+          elsif secgs.is_a?(String)
+            return @cache.get[:security_groups].find { |group| group[:uuid] == secgs }
+          else
+            return nil
+          end
+        end
+        
         def apply_instance(instance)
           if instance.is_a? String
             # We got a uuid. Find it in the cache.
