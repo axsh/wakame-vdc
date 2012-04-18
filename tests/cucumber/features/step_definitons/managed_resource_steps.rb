@@ -12,7 +12,7 @@ After do |scenario|
   }
 end
 
-managed_resource_types = '(instance|security_group|volume|ssh_key_pair|network|host_node|storage_node|image|instance_spec|volume_snapshot)'
+managed_resource_types = '(instance|security_group|volume|ssh_key_pair|network|host_node|storage_node|image|instance_spec|volume_snapshot|physical_network)'
 
 Given /^a managed #{managed_resource_types} with no options$/ do |type|
   step "we make an api create call to #{type}s with no options"

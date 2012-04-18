@@ -209,5 +209,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('storage_nodes')
     load_namespace('ssh_key_pairs')
     load_namespace('networks')
+    load_namespace('physical_networks')
   end
 end
