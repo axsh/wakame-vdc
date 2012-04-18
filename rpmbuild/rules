@@ -11,7 +11,7 @@ RPMBUILD_OPTS := --buildroot=$(RPM_BUILD_ROOT) rpmbuild/SPECS/wakame-vdc.spec
 # .rpm
 TMP_INSTALL_ROOT ?=
 
-VDC_INSTALL_ROOT ?= /usr/share/axsh/wakame-vdc
+VDC_INSTALL_ROOT ?= /opt/axsh/wakame-vdc
 
 build: build-stamp
 

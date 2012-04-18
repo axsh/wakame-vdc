@@ -1,4 +1,4 @@
-%define _prefix_path usr/share/axsh
+%define _prefix_path opt/axsh
 %define _vdc_git_uri git://github.com/axsh/wakame-vdc.git
 
 Name: wakame-vdc
