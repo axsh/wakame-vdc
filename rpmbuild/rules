@@ -102,6 +102,7 @@ binary: binary-indep binary-arch
 	# => the task will do 'binary-arch' task.
 	#
 	rpmbuild -bi --short-circuit $(RPMBUILD_OPTS)
+	rpmbuild -bl --short-circuit $(RPMBUILD_OPTS)
 	rpmbuild -bb --short-circuit $(RPMBUILD_OPTS)
 
 .PHONY: build clean binary-indep binary-arch binary install
