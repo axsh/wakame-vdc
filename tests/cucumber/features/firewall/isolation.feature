@@ -4,12 +4,10 @@ Feature: VM Isolation
     Given security group A exists with the following rules
       """
       tcp:22,22,ip4:0.0.0.0
-      icmp:-1,-1,ip4:0.0.0.0
       """
     And security group B exists with the following rules
       """
       tcp:22,22,ip4:0.0.0.0
-      icmp:-1,-1,ip4:0.0.0.0
       """
     And an instance instA1 is started in group A
     And an instance instA2 is started in group A
@@ -55,12 +53,10 @@ Feature: VM Isolation
     Given security group A exists with the following rules
       """
       tcp:22,22,ip4:0.0.0.0
-      icmp:-1,-1,ip4:0.0.0.0
       """
     And security group B exists with the following rules
       """
       tcp:22,22,ip4:0.0.0.0
-      icmp:-1,-1,ip4:0.0.0.0
       """
     And an instance instA1 is started in group A with scheduler vif3type1
     And an instance instA2 is started in group A with scheduler vif3type1
