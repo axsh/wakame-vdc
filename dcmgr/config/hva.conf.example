@@ -49,3 +49,4 @@ config.ovs_ofctl_path = '/usr/bin/ovs-ofctl'
 
 # Trema base directory
 config.trema_dir = '/home/demo/trema'
+config.trema_tmp = '/home/demo/trema/tmp'

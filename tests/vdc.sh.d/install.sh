@@ -73,10 +73,18 @@ cat ${VDC_ROOT}/debian/control | debcontrol_depends | xargs apt-get -y --force-y
 # directory to store VM local data.
 config.vm_data_dir = "${VDC_ROOT}/tmp/instances"
 
-# netfilter
+# Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
+# * 'netfilter'
+# * 'legacy_netfilter' #no longer supported, has issues with multiple vnic vm isolation
+# * 'openflow' #experimental, requires additional setup
+# * 'off'
+config.edge_networking = 'netfilter'
+
+# netfilter and openflow
 config.enable_ebtables = true
 config.enable_iptables = true
-config.enable_openflow = false
+config.enable_subnet = false
+config.enable_gre = true
 
 # physical nic index
 config.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
@@ -108,6 +116,7 @@ config.ovs_ofctl_path = '${VDC_ROOT}/ovs/bin/ovs-ofctl'
 
 # Trema base directory
 config.trema_dir = '${VDC_ROOT}/trema'
+config.trema_tmp = '${VDC_ROOT}/tmp/trema'
 EOS
 )
 
@@ -119,7 +128,7 @@ EOS
 
 
 # prepare direcotries under $VDC_ROOT/tmp.
-for i in "${VDC_ROOT}/tmp/instances" "${VDC_ROOT}/tmp/snap/" "${VDC_ROOT}/tmp/images/" "${VDC_ROOT}/tmp/volumes/"; do
+for i in "${VDC_ROOT}/tmp/instances" "${VDC_ROOT}/tmp/snap/" "${VDC_ROOT}/tmp/images/" "${VDC_ROOT}/tmp/volumes/"  "${VDC_ROOT}/tmp/trema/log/" "${VDC_ROOT}/tmp/trema/pid/" "${VDC_ROOT}/tmp/trema/sock/"; do
   [[ -d "$i" ]] || mkdir -p $i
 done
 
