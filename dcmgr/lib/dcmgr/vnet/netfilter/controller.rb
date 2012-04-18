@@ -109,7 +109,7 @@ module Dcmgr
             
             #Clean up the isolation tasks in friends' chains
             inst_map[:vif].each { |vnic|
-              next if is_active_vnic?(vnic)
+              is_active_vnic?(vnic) || next
 
               other_vnics = get_other_vnics(vnic,@cache)
               friends = @isolator.determine_friends(vnic, other_vnics)
@@ -121,7 +121,7 @@ module Dcmgr
             }
             
             inst_map[:vif].each { |vnic|
-              next if is_active_vnic?(vnic)
+              is_active_vnic?(vnic) || next
 
               # Removing the nat tasks separately because they include an arp reply
               # that isn't put in a separate chain
@@ -219,7 +219,7 @@ module Dcmgr
         end
         
         def is_active_vnic?(vnic)
-          vnic[:ipv4] and vnic[:ipv4][:network]
+          not (vnic[:ipv4].nil? or vnic[:ipv4][:network].nil?)
         end
 
         def get_local_vnics_in_group(group_id)
