@@ -29,6 +29,12 @@ esac
 
 cd ${VDC_ROOT}/dcmgr/
 
+# Physical network definitions
+shlog ./bin/vdc-manage network phy add eth0 --bridge br0 --bridge-type=bridge
+# bridge only closed network
+shlog ./bin/vdc-manage network phy add null1 --bridge br-null1 --bridge-type private
+shlog ./bin/vdc-manage network phy add null2 --bridge br-null2 --bridge-type private
+
 # vlan
 #shlog ./bin/vdc-manage vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
 #shlog ./bin/vdc-manage network add           --uuid   nw-demo1    --ipv4-gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata-port ${metadata_port} --vlan-id 1 --description demo
@@ -43,12 +49,11 @@ shlog ./bin/vdc-manage network add \
  --dhcp ${dhcp_server} \
  --metadata ${metadata_server} \
  --metadata-port ${metadata_port} \
- --description demo \
- --link-interface br0
+ --description demo
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --link-interface br0
+ --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --link-interface br0
+ --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10
 shlog ./bin/vdc-manage network add \
@@ -59,22 +64,15 @@ shlog ./bin/vdc-manage network add \
  --ipv4_gw 10.102.0.1 \
  --prefix 24 \
  --domain vnet6.local \
- --metric 10 \
- --link-interface br0
+ --metric 10
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo7 \
  --ipv4-network 10.103.0.0 \
  --ipv4_gw 10.103.0.1 \
  --prefix 24 \
  --domain vnet7.local \
- --metric 10 \
- --link-interface br0
+ --metric 10
 
-# physical network
-shlog ./bin/vdc-manage network phy add eth0 --interface eth0
-# bridge only closed network
-shlog ./bin/vdc-manage network phy add null1 --null
-shlog ./bin/vdc-manage network phy add null2 --null
 # set forward interface(= physical network) from network
 shlog ./bin/vdc-manage network forward nw-demo1 eth0
 shlog ./bin/vdc-manage network forward nw-demo2 eth0

@@ -184,11 +184,6 @@ module Dcmgr::Models
           errors.add(:dhcp_server, "Invalid IP address syntax: #{self.dhcp_server}")
         end
       end
-
-      if self.link_interface.size > 16
-        errors.add(:link_interface, "Can not be the character lenth more than 16(=IF_NAMESIZ) ASCII characters.")
-      end
-      
     end
 
     def to_hash

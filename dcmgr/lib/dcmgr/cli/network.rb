@@ -30,9 +30,6 @@ class Network < Base
         c.map(:dns, :dns_server)
         c.map(:metadata, :metadata_server)
         c.map(:metadata_port, :metadata_server_port)
-        c.option(:vlan_id, :vlan_lease_id) {
-          @vlan_pk
-        }
       }
     end
     private :map_network_params
@@ -49,19 +46,10 @@ class Network < Base
   method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
   method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
   method_option :bandwidth, :type => :numeric,  :desc => "The maximum bandwidth for the network in Mbit/s"
-  method_option :vlan_id, :type => :numeric, :default=>0, :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
-  method_option :link_interface, :type => :string, :desc => "Link interface name from virtual interfaces"
   method_option :description, :type => :string,  :desc => "Description for the network"
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
   method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
   def add
-    @vlan_pk = if options[:vlan_id].to_i > 0
-                 vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
-                 vlan.id
-               else
-                 0
-               end
-
     validate_ipv4_range
 
     fields = map_network_params
@@ -83,19 +71,10 @@ class Network < Base
   method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
   method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
   method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network" 
-  method_option :vlan_id, :type => :numeric, :desc => "Tag VLAN (802.1Q) ID of the network. 0 is for no VLAN network"
-  method_option :link_interface, :type => :string, :desc => "Link interface name from virtual interfaces"
   method_option :bandwidth, :type => :numeric, :desc => "The maximum bandwidth for the network in Mbit/s"
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :desc => "The account ID to own this"
   def modify(uuid)
-    @vlan_pk = if options[:vlan_id].to_i > 0
-                 vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || Error.raise("Invalid or Unknown VLAN ID: #{options[:vlan_id]}", 100)
-                 vlan.id
-               else
-                 0
-               end
-    
     validate_ipv4_range
 
     fields = map_network_params
@@ -120,7 +99,6 @@ class Network < Base
   end
 
   desc "show [UUID] [options]", "Show network(s)"
-  method_option :vlan_id, :type => :numeric, :desc => "Show networks in the VLAN ID"
   method_option :account_id, :type => :string, :desc => "Show networks with the account"
   def show(uuid=nil)
     if uuid
@@ -128,8 +106,6 @@ class Network < Base
       puts ERB.new(<<__END, nil, '-').result(binding)
 Network UUID:
   <%= nw.canonical_uuid %>
-Tag VLAN:
-  <%= nw.vlan_lease_id == 0 ? 'none' : nw.vlan_lease.tag_id %>
 IPv4:
   Network address: <%= nw.ipv4_ipaddress %>/<%= nw.prefix %>
   Gateway address: <%= nw.ipv4_gw %>
@@ -156,15 +132,11 @@ __END
     else
       cond = {}
       cond[:account_id]= options[:account_id] if options[:account_id]
-      if options[:vlan_id]
-        vlan = M::VlanLease.find(:tag_id=>options[:vlan_id]) || abort("Unknown Tag VLAN ID: #{options[:vlan_id]}")
-        cond[:vlan_lease_id] = vlan.id
-      end
 
       nw = M::Network.filter(cond).all
       puts ERB.new(<<__END, nil, '-').result(binding)
 <%- nw.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.ipv4_ipaddress %>/<%= row.prefix %>\t<%= (row.vlan_lease && row.vlan_lease.tag_id) %>
+<%= row.canonical_uuid %>\t<%= row.ipv4_ipaddress %>/<%= row.prefix %>
 <%- } -%>
 __END
     end
@@ -315,32 +287,36 @@ __END
     namespace :phy
     M=Dcmgr::Models
     
-    desc "add NAME [options]", "Add new physical network"
-    method_option :null, :type => :boolean, :desc => "Do not attach to any physical interfaces"
-    method_option :interface, :type => :string, :desc => "Physical interface name on host nodes"
+    desc "add NAME [options]", "Add new physical network. (NAME must be unique)"
+    method_option :bridge, :type => :string, :desc => "Bridge device name on the host node. (unique)"
+    method_option :bridge_type, :type => :string, :default=>'private', :desc => "Bridge device type: #{M::PhysicalNetwork::BRIDGE_TYPES.join(', ')}"
     method_option :description, :type => :string, :desc => "Description for the physical network"
     def add(name)
       M::PhysicalNetwork.find(:name=>name) && Error.raise("Duplicate physical network name: #{name}", 100)
-      phy = options[:null] ? nil : (options[:interface] || name)
-
+      if options[:bridge]
+        M::PhysicalNetwork.find(:bridge=>options[:bridge]) && Error.raise("Duplicate bridge name: #{options[:bridge]}", 100)
+      end
+      if options[:bridge_type] && !M::PhysicalNetwork::BRIDGE_TYPES.member?(options[:bridge_type].to_sym)
+        Error.raise("Unknown bridge type: #{options[:bridge_type]}", 100)
+      end
+      
       fields={
         :name=>name,
-        :interface=>phy,
+        :bridge=>options[:bridge],
+        :bridge_type=>options[:bridge_type],
         :description=>options[:description],
       }
       M::PhysicalNetwork.create(fields)
     end
 
     desc "modify NAME [options]", "Modify physical network parameters"
-    method_option :null, :type => :boolean, :desc => "Do not attach to any physical interfaces"
-    method_option :interface, :type => :string, :desc => "Physical interface name on host nodes"
+    method_option :bridge, :type => :string, :desc => "Bridge device name on the host node. (unique)"
+    method_option :bridge_type, :type => :string, :default=>'private', :desc => "Bridge device type: #{M::PhysicalNetwork::BRIDGE_TYPES.join(', ')}"
     method_option :description, :type => :string, :desc => "Description for the physical network"
     def modify(name)
       phy = M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
-      phy = options[:null] ? nil : options[:interface]
 
-      phy.update({
-                   :interface=>phy,
+      phy.update_only({
                    :description=>options[:description],
                  })
     end

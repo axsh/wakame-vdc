@@ -10,6 +10,19 @@ Sequel.migration do
       drop_column :account_id
     end
 
+    alter_table(:networks) do
+      add_column :gateway_network_id, "int(11)"
+      # VLAN ID became a physical network attribute.
+      drop_column :vlan_lease_id
+      # link_interface(=bridge name) moved to physican network table
+      # since this is a physical device attribute on the host OS.
+      drop_column :link_interface
+
+      # Linux tc accepts floating point value as bandwidth.
+      drop_column :bandwidth
+      add_column :bandwidth, "float"
+    end
+
     create_table(:host_node_vnets) do
       primary_key :id, :type=>"int(11)"
       column :host_node_id, "int(11)", :null=>false
@@ -57,10 +70,35 @@ Sequel.migration do
       drop_index [:instance_nic_id, :network_id]
       add_index [:network_vif_id, :network_id]
     end
+    
+    alter_table(:vlan_leases) do
+      # VLAN refers this physical network.
+      add_column :physical_network_id, "int(11)", :null=>false
+      # change uniqueness condition to combine physical network
+      drop_index :tag_id
+      add_index [:physical_network_id, :tag_id], :unique=>true
+    end
 
     alter_table(:images) do
       add_column :file_format, "varchar(255)", :null=>false
       add_column :root_device, "varchar(255)"
+    end
+
+    # Represents the L2 broadcast segemnt in physical network layer.
+    alter_table(:physical_networks) do
+      # physical interface name is described in hva.conf.
+      drop_column :interface
+      add_column :uuid, "varchar(255)", :null=>false
+      add_column :vlan_lease_id, "int(11)"
+      # Policy information
+      # Bridge information
+      # bridge name to be assigned as the host OS device name.
+      add_column :bridge, "varchar(255)", :null=>false
+      # bridge device type: ovs, bridge, macvlan
+      add_column :bridge_type, "varchar(255)", :null=>false
+
+      add_index [:bridge], :unique=>true
+      add_index [:uuid], :unique=>true, :name=>:uuid
     end
   end
   
@@ -81,6 +119,24 @@ Sequel.migration do
     alter_table(:images) do
       drop_column :file_format
       drop_column :root_device
+    end
+
+    alter_table(:vlan_leases) do
+      drop_column :physical_network_id
+      drop_index :tag_id
+      add_index [:tag_id], :unique=>true
+    end
+    
+    alter_table(:networks) do
+      drop_column :gateway_network_id
+      add_column :vlan_lease_id, "int(11)", :default=>0, :null=>false
+      add_column :link_interface, "varchar(255)", :null=>false
+    end
+
+    alter_table(:physical_networks) do
+      add_column :interface, "varchar(255)"
+      drop_column :bridge
+      drop_column :bridge_type
     end
   end
 end
