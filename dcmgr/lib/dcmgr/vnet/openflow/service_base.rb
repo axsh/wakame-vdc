@@ -3,6 +3,7 @@
 module Dcmgr::VNet::OpenFlow
 
   class ServiceBase
+    include Dcmgr::Logger
     include OpenFlowConstants
 
     attr_reader :switch

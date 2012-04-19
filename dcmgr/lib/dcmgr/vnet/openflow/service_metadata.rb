@@ -5,11 +5,8 @@ module Dcmgr::VNet::OpenFlow
   class ServiceMetadata < ServiceBase
     include Dcmgr::Logger
 
-    def install(network, port, remote_mac)
-      logger.info "Adding metadata server: port:#{port} mac:#{remote_mac.to_s} ip:#{ip.to_s}/#{listen_port}."
-
-      @of_port = port
-      @mac = remote_mac
+    def install(network)
+      logger.info "Adding metadata server: port:#{@of_port} mac:#{@mac.to_s} ip:#{ip.to_s}/#{listen_port}."
 
       @arp_retry.cancel if @arp_retry
       @arp_retry = nil
