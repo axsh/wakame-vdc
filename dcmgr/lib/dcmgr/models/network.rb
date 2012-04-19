@@ -31,8 +31,9 @@ module Dcmgr::Models
     many_to_one :physical_network
     many_to_one :gateway_network, :class => PhysicalNetwork
 
-    one_to_many :network_vif
-    many_to_many :network_service, :join_table => :network_vifs
+    def network_service
+      NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(:network_id => self.id).select_all(:network_services)
+    end
 
     def before_validation
       self.link_interface ||= "br-#{self[:uuid]}"
@@ -81,12 +82,12 @@ module Dcmgr::Models
     def to_hash
       h = super
       h.delete(:vlan_lease_id)
-      h.merge({
-                :bandwidth_mark=>self[:id],
-                :description=>description.to_s,
-                :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
-                :network_services => []
-              })
+      h.merge!({
+                 :bandwidth_mark=>self[:id],
+                 :description=>description.to_s,
+                 :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
+                 :network_services => []
+               })
       if self.physical_network
         h[:physical_network] = self.physical_network.to_hash
       end
@@ -96,6 +97,10 @@ module Dcmgr::Models
       }
 
       h
+    end
+
+    def to_api_document
+      to_hash.merge(:id=>self.canonical_uuid)
     end
 
     def before_destroy
@@ -111,10 +116,6 @@ module Dcmgr::Models
       }
       
       super
-    end
-
-    def to_api_document
-      to_hash.merge(:id=>self.canonical_uuid)
     end
 
     def nat_network
