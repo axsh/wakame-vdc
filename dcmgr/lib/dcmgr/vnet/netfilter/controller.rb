@@ -85,11 +85,11 @@ module Dcmgr
         
         def join_security_group(vnic,group)
           # Apply isolation tasks for this new vnic to its friends
-          local_cache = @cache.get(true) #TODO: Check first if we know this vnic already
+          local_cache = @cache.get(true) #TODO: Check first if this is a local vnic in the current cache
           
           # We only need to add isolation rules if it's a foreign vnic
           # Local vnics handle their isolation rules the moment they are created
-          unless is_local_vnic?(vnic)
+          if is_foreign_vnic?(vnic)
             foreign_vnic_map = local_cache[:security_groups].find {|secg| secg[:uuid] == group}[:foreign_vnics].find {|vnic_map| vnic_map[:uuid] == vnic}
             local_friends = get_local_vnics_in_group(group).delete_if {|friend| friend[:uuid] == vnic}
             
@@ -98,6 +98,8 @@ module Dcmgr
               self.task_manager.apply_vnic_tasks(local_vnic_map,TaskFactory.create_tasks_for_isolation(local_vnic_map,[foreign_vnic_map],self.node))
             }
           end
+          
+          add_vnic_to_ref_group(group,vnic)
         end
         
         def remove_instance(inst_id)
@@ -153,6 +155,8 @@ module Dcmgr
           end
           
           @cache.remove_foreign_vnic(group,vnic)
+          
+          remove_vnic_from_ref_group(group,vnic)
         end
         
         def update_security_group(group)
@@ -238,6 +242,60 @@ module Dcmgr
                 other_vnic == vnic
             }
           }.flatten
+        end
+        
+        def remove_vnic_from_ref_group(group_id,vnic_id)
+          #TODO: might not be needed to update if this is a local vnic. Cache will have updated when starting the instance
+          local_cache = @cache.get(false)
+          
+          local_cache[:security_groups].each { |secg_map|
+            dummy_group = secg_map[:referenced_groups].find { |ref_group| ref_group[:uuid] == group_id }
+            # Don't do anything if this group isn't referencing group_id
+            next if dummy_group.nil?
+            vnics = get_local_vnics_in_group(secg_map[:uuid])
+          
+            # Create a dummy security group that only contains the rules for this new vnic
+            # Delete the other rules in the dummy group so that only the new vnic is applied
+            dummy_group = secg_map
+            dummy_group[:rules].delete_if { |rule| rule[:ip_source] != group_id }
+            dummy_group[:referenced_groups].find {|ref_group| ref_group[:uuid] == group_id}[:vnics].delete_if { |vnic| vnic[:uuid] != vnic_id }
+            
+            vnics.each { |vnic_map|
+              # If the added vnic is local, then its rules are already applied. Don't reapply them
+              next if vnic_map[:uuid] == vnic_id
+              
+              self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(dummy_group))
+            }
+            
+            # Remove this vnic from the referenced group
+            @cache.remove_referenced_vnic(group_id,vnic_id)
+          }
+        end
+        
+        def add_vnic_to_ref_group(group_id,vnic_id)
+          #TODO: might not be needed to update if this is a local vnic. Cache will have updated when starting the instance
+          #local_cache = @cache.get(true)
+          local_cache = @cache.get
+          
+          local_cache[:security_groups].each { |secg_map|
+            dummy_group = secg_map[:referenced_groups].find { |ref_group| ref_group[:uuid] == group_id }
+            # Don't do anything if this group isn't referencing group_id
+            next if dummy_group.nil?
+            vnics = get_local_vnics_in_group(secg_map[:uuid])
+          
+            # Create a dummy security group that only contains the rules for this new vnic
+            # Delete the other rules in the dummy group so that only the new vnic is applied
+            dummy_group = secg_map
+            dummy_group[:rules].delete_if { |rule| rule[:ip_source] != group_id }
+            dummy_group[:referenced_groups].find {|ref_group| ref_group[:uuid] == group_id}[:vnics].delete_if { |vnic| vnic[:uuid] != vnic_id }
+            
+            vnics.each { |vnic_map|
+              # If the added vnic is local, then its rules are already applied. Don't reapply them
+              next if vnic_map[:uuid] == vnic_id
+              
+              self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(dummy_group))
+            }
+          }
         end
         
         def init_instance(inst_map)

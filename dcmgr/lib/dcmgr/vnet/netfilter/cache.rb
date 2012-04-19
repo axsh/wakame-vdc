@@ -65,6 +65,14 @@ module Dcmgr
           group[:foreign_vnics].delete_if { |vnic| vnic[:uuid] == vnic_id} unless group.nil?
         end
         
+        def remove_referenced_vnic(group_id,vnic_id)
+          group = @cache[:security_groups].each {|local_group| 
+            local_group[:referenced_groups].find { |group| group[:uuid] == group_id }[:vnics].delete_if { |vnic|
+              vnic[:uuid] == vnic_id
+            }
+          }
+        end
+        
         private
         # Returns true if there are still instances left in this security group on this host
         def instances_left_in_group?(group_id)

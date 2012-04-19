@@ -25,6 +25,14 @@ module Dcmgr
       def remove_instance(inst_id)
         raise NotImplementedError
       end
+      
+      def remove_referenced_vnic(group_id,vnic_id)
+        raise NotImplementedError
+      end
+      
+      def remove_foreign_vnic(group_id,vnic_id)
+        raise NotImplementedError
+      end
     end
     
     # A controller interface to be implemented
