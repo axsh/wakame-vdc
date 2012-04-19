@@ -30,7 +30,10 @@ module Dcmgr
   }
   
   autoload :Logger, 'dcmgr/logger'
-  
+  autoload :Configuration, 'dcmgr/configuration'
+  module Configurations
+    autoload :Hva, 'dcmgr/configurations/hva'
+  end
 
   require 'dcmgr/models/errors'
   module Models
