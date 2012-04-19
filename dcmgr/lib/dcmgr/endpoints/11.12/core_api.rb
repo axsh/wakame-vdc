@@ -83,6 +83,8 @@ module Dcmgr::Endpoints::V1112
         total_ds = model_class.where(:account_id=>[@account.canonical_uuid,
                                                    M::Account::SystemAccount::SharedPoolAccount.uuid,
                                                   ])
+      elsif [M::HostNode, M::StorageNode].member?(model_class)
+        total_ds = model_class
       else
         total_ds = model_class.where(:account_id=>@account.canonical_uuid)
       end

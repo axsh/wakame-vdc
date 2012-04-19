@@ -14,8 +14,7 @@
       # description 'Show status of the host'
       #param :account_id, :string, :optional
       hp = find_by_uuid(:HostNode, params[:id])
-      raise E::OperationNotPermitted unless examine_owner(hp)
-      
+      raise E::UnknownHostNode if hp.nil?
       response_to(hp.to_api_document)
     end
   end
