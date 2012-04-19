@@ -40,7 +40,8 @@ Sequel.migration do
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
 
-      index [:network_vif_id], :unique=>true
+      index [:network_vif_id]
+      index [:network_vif_id,:name], :unique=>true
     end
 
     rename_table(:instance_nics, :network_vifs)
@@ -63,7 +64,9 @@ Sequel.migration do
   
   down do
     drop_table(:host_node_vnets)
-    drop_table(:network_vifs)
+    drop_table(:network_services)
+
+    rename_table(:network_vifs, :instance_nics)
 
     alter_table(:host_nodes) do
       add_column :account_id, "varchar(255)", :null=>false

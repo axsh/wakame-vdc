@@ -99,6 +99,7 @@ module Dcmgr
     autoload :SecurityGroup, 'dcmgr/models/security_group'
     autoload :SecurityGroupRule, 'dcmgr/models/security_group_rule'
     autoload :InstanceSpec, 'dcmgr/models/instance_spec'
+    autoload :NetworkService, 'dcmgr/models/network_service'
     autoload :NetworkVif, 'dcmgr/models/network_vif'
     autoload :Network, 'dcmgr/models/network'
     autoload :IpLease, 'dcmgr/models/ip_lease'

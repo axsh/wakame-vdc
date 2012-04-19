@@ -82,7 +82,6 @@ shlog ./bin/vdc-manage network forward nw-demo3 eth0
 shlog ./bin/vdc-manage network forward nw-demo4 null1
 shlog ./bin/vdc-manage network forward nw-demo5 null2
 shlog ./bin/vdc-manage network forward nw-demo6 null1
-shlog ./bin/vdc-manage network gateway nw-demo6 eth0
 shlog ./bin/vdc-manage network forward nw-demo7 null1
 
 [ -f /etc/redhat-release ] && {
@@ -96,6 +95,14 @@ shlog ./bin/vdc-manage network forward nw-demo7 null1
   [ -n "${range_begin}" ] || range_begin=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMin:" { print $2 }'`
   [ -n "${range_end}"   ] || range_end=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMax:" { print $2 }'`
 }
+
+demo6_vif=$(./bin/vdc-manage network vif add nw-demo6 --ipv4=10.102.0.2)
+demo7_vif=$(./bin/vdc-manage network vif add nw-demo7 --ipv4=10.103.0.2)
+
+shlog ./bin/vdc-manage network service dhcp ${demo6_vif}
+shlog ./bin/vdc-manage network service dhcp ${demo7_vif}
+
+shlog ./bin/vdc-manage network service gateway nw-demo6 eth0
 
 shlog ./bin/vdc-manage network dhcp addrange nw-demo1 $range_begin $range_end
 shlog ./bin/vdc-manage network dhcp addrange nw-demo2 10.100.0.61 10.100.0.65

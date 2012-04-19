@@ -20,8 +20,6 @@ module Dcmgr::Models
 
     subset(:alives, {:deleted_at => nil})
 
-    # Remove? reverse lookup.
-    # many_to_one :instance, :join_table=>:instance_nic_join
     many_to_one :instance
     many_to_one :network_service
 

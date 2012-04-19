@@ -32,6 +32,7 @@ module Dcmgr::Models
     many_to_one :gateway_network, :class => PhysicalNetwork
 
     one_to_many :network_vif
+    many_to_many :network_service, :join_table => :network_vifs
 
     def before_validation
       self.link_interface ||= "br-#{self[:uuid]}"
@@ -84,11 +85,16 @@ module Dcmgr::Models
                 :bandwidth_mark=>self[:id],
                 :description=>description.to_s,
                 :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
+                :network_services => []
               })
       if self.physical_network
         h[:physical_network] = self.physical_network.to_hash
       end
      
+      self.network_service.each { |service|
+        h[:network_services] << service.to_hash
+      }
+
       h
     end
 
@@ -185,6 +191,15 @@ module Dcmgr::Models
       }
 
       self
+    end
+
+    def foo
+      vendor_id = if Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr.conf.mac_address_vendor_id
+                  else
+                    MacLease.default_vendor_id(self.instance_spec.hypervisor)
+                  end
+      m = MacLease.lease(vendor_id)
     end
 
     private

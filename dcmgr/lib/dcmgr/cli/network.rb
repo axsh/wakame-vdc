@@ -211,13 +211,81 @@ __END
     nw.save
   end
 
-  desc "gateway UUID PHYSICAL", "Set forward interface for network"
-  def gateway(uuid, phynet)
-    nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-    phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
-    nw.gateway_network = phy
-    nw.save
+  class VifOps < Base
+    namespace :vif
+    M=Dcmgr::Models
+
+    desc "add UUID", "Register a new vif"
+    method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
+    def add(uuid)
+      nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+
+      # Choose vendor ID of mac address.
+      vendor_id = if Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr.conf.mac_address_vendor_id
+                  else
+                    # M::MacLease.default_vendor_id(self.instance_spec.hypervisor)
+                    M::MacLease.default_vendor_id('kvm')
+                  end
+      m = M::MacLease.lease(vendor_id)
+
+      vif_data = {
+        :network_id => nw.id,
+        :mac_addr => m.mac_addr,
+      }
+
+      vif = M::NetworkVif.new(vif_data)
+      vif.save
+      ip_lease = nw.ip_lease_dataset.add_reserved(options[:ipv4])
+      ip_lease.network_vif_id = vif.id
+      ip_lease.save
+
+      puts vif.canonical_uuid
+    end
+
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
   end
+  register VifOps, 'vif', "vif [options]", "Maintain virtual interfaces"
+
+  class ServiceOps < Base
+    namespace :service
+    M=Dcmgr::Models
+
+    desc "gateway UUID PHYSICAL", "Set forward interface for network"
+    def gateway(uuid, phynet)
+      nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+      phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
+      nw.gateway_network = phy
+      nw.save
+    end
+
+    desc "dhcp VIF", "Set forward interface for network"
+    # method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
+    def dhcp(vif_uuid)
+      # nw = M::Network[nw_uuid] || UnknownUUIDError.raise(nw_uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(vif_uuid)
+
+      # ip_lease.network_vif_id = vif.id
+
+      service_data = {
+        :network_vif_id => vif.id,
+        :name => 'dhcp',
+        :incoming_port => 67,
+        :outcoming_port => 68,
+      }
+      
+      M::NetworkService.create(service_data)
+    end
+
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
+  end
+  register ServiceOps, 'service', "service [options]", "Maintain network services"
 
   class PhyOps < Base
     namespace :phy
