@@ -101,6 +101,8 @@ module Dcmgr
           hv = Dcmgr::Drivers::Lxc.new
         when "esxi"
           hv = Dcmgr::Drivers::ESXi.new
+        when "openvz"
+          hv = Dcmgr::Drivers::Openvz.new
         else
           raise "Unknown hypervisor type: #{hypervisor}"
         end

@@ -148,6 +148,7 @@ module Dcmgr
   module Helpers
     autoload :CliHelper, 'dcmgr/helpers/cli_helper'
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
+    autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
   end
 
@@ -197,6 +198,7 @@ module Dcmgr
     autoload :Kvm , 'dcmgr/drivers/kvm'
     autoload :Lxc , 'dcmgr/drivers/lxc'
     autoload :ESXi, 'dcmgr/drivers/esxi'
+    autoload :Openvz, 'dcmgr/drivers/openvz'
     autoload :BackingStore, 'dcmgr/drivers/backing_store'
     autoload :Zfs,          'dcmgr/drivers/zfs'
     autoload :Raw,          'dcmgr/drivers/raw'
@@ -207,6 +209,7 @@ module Dcmgr
     autoload :LocalStore,   'dcmgr/drivers/local_store.rb'
     autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
     autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
+    autoload :OpenvzLocalStore, 'dcmgr/drivers/openvz_local_store.rb'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'

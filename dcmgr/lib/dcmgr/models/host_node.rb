@@ -11,12 +11,13 @@ module Dcmgr::Models
     HYPERVISOR_KVM='kvm'
     HYPERVISOR_LXC='lxc'
     HYPERVISOR_ESXI='esxi'
+    HYPERVISOR_OPENVZ='openvz'
 
     ARCH_X86=:x86.to_s
     ARCH_X86_64=:x86_64.to_s
 
     SUPPORTED_ARCH=[ARCH_X86, ARCH_X86_64]
-    SUPPORTED_HYPERVISOR=[HYPERVISOR_KVM, HYPERVISOR_LXC, HYPERVISOR_ESXI]
+    SUPPORTED_HYPERVISOR=[HYPERVISOR_KVM, HYPERVISOR_LXC, HYPERVISOR_ESXI, HYPERVISOR_OPENVZ]
 
     one_to_many :instances
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
