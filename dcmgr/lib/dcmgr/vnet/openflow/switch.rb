@@ -200,7 +200,7 @@ module Dcmgr::VNet::OpenFlow
       match_outgoing = {:dl_src => message.macsa.to_s, :dl_dst => message.macda.to_s, :nw_src => msg_nw_src, :tp_src => message.tcp_src_port}
       action_outgoing = [{:mod_dl_dst => dest_hw, :mod_nw_dst => dest_ip, :mod_tp_dst => dest_tp}, {:output => dest_port}]
 
-      prefix_incoming = {:in_port => dest_port}
+      prefix_incoming = {:in_port => dest_port}.merge(prefix)
       match_incoming = {:dl_src => dest_hw.to_s, :dl_dst => message.macsa.to_s, :nw_dst => msg_nw_src, :tp_dst => message.tcp_src_port}
       action_incoming = [{:mod_dl_src => message.macda.to_s, :mod_nw_src => msg_nw_dst, :mod_tp_src => message.tcp_dst_port}, {:output => message.in_port}]
 
