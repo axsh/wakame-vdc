@@ -16,6 +16,8 @@ module Dcmgr
           ls = Dcmgr::Drivers::LinuxLocalStore.new
         when "esxi"
           ls = Dcmgr::Drivers::ESXiLocalStore.new
+        when "openvz"
+          ls = Dcmgr::Drivers::OpenvzLocalStore.new
         else
           raise "Unknown hypervisor type: #{hypervisor}"
         end
