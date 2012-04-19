@@ -6,6 +6,16 @@ module Dcmgr::Models
 
     many_to_one :network_vif
 
+    def to_hash
+      hash = super
+      hash.merge!(self.network_vif.to_hash_flat)
+    end
+
+    def to_api_document
+      hash = super
+      hash.merge!(self.network_vif.to_api_document)
+    end
+
     def before_validation
       # Verify type_id.
 

@@ -86,7 +86,7 @@ module Dcmgr::Models
                  :bandwidth_mark=>self[:id],
                  :description=>description.to_s,
                  :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
-                 :network_services => []
+                 :network_services => [],
                })
       if self.physical_network
         h[:physical_network] = self.physical_network.to_hash

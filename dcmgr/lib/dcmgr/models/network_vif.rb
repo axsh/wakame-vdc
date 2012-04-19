@@ -36,9 +36,19 @@ module Dcmgr::Models
                     :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
                     :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
                     :network_id => self.network_id,
-                    :network => self.network.nil? ? nil : self.network.to_hash
+                    :network => self.network.nil? ? nil : self.network.to_hash,
                   })
       hash
+    end
+
+    def to_hash_flat
+      hash = {
+        :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
+        :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
+        :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
+        :network_id => self.network_id,
+        :mac_addr => self.pretty_mac_addr,
+      }
     end
 
     def release_ip_lease
