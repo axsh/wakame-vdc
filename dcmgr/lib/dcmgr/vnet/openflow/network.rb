@@ -137,19 +137,19 @@ module Dcmgr::VNet::OpenFlow
     def add_service(switch, service)
       case service[:name]
       when 'dhcp'
-        logger.info "Adding DHCP service"
+        logger.info "Adding DHCP service."
         self.services[:dhcp] =
           ServiceDhcp.new({ :switch => switch,
                             :mac => service[:mac_addr],
                             :ip => IPAddr.new(service[:address])})
       when 'dns'
-        logger.info "Adding DNS service"
+        logger.info "Adding DNS service."
         self.services[:dns] =
           ServiceDns.new({ :switch => switch,
                            :mac => service[:mac_addr],
                            :ip => IPAddr.new(service[:address])})
       when 'gateway'
-        logger.info "Adding GATEWAY service"
+        logger.info "Adding GATEWAY service."
         self.services[:gateway] =
           ServiceGateway.new({ :switch => switch,
                                :mac => service[:mac_addr],

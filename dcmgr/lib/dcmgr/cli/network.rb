@@ -283,10 +283,10 @@ __END
       M::NetworkService.create(service_data)
     end
 
-    desc "gateway UUID VIF PHYSICAL", "Set gateway for network"
-    def gateway(uuid, vif_uuid, phynet)
-      nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+    desc "gateway VIF PHYSICAL", "Set gateway for network"
+    def gateway(vif_uuid, phynet)
       vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(vif_uuid)
+      nw = vif.network || UnknownUUIDError.raise(uuid)
       phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
 
       # Obsolete...
