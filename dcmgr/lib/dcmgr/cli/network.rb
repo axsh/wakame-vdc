@@ -254,27 +254,48 @@ __END
     namespace :service
     M=Dcmgr::Models
 
-    desc "gateway UUID PHYSICAL", "Set forward interface for network"
-    def gateway(uuid, phynet)
-      nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-      phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
-      nw.gateway_network = phy
-      nw.save
-    end
-
-    desc "dhcp VIF", "Set forward interface for network"
+    desc "dhcp VIF", "Set DHCP service for network"
     # method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
     def dhcp(vif_uuid)
-      # nw = M::Network[nw_uuid] || UnknownUUIDError.raise(nw_uuid)
       vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(vif_uuid)
-
-      # ip_lease.network_vif_id = vif.id
 
       service_data = {
         :network_vif_id => vif.id,
         :name => 'dhcp',
         :incoming_port => 67,
         :outcoming_port => 68,
+      }
+      
+      M::NetworkService.create(service_data)
+    end
+
+    desc "dns VIF", "Set DNS service for network"
+    # method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
+    def dns(vif_uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(vif_uuid)
+
+      service_data = {
+        :network_vif_id => vif.id,
+        :name => 'dns',
+        :incoming_port => 53,
+      }
+      
+      M::NetworkService.create(service_data)
+    end
+
+    desc "gateway UUID VIF PHYSICAL", "Set gateway for network"
+    def gateway(uuid, vif_uuid, phynet)
+      nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(vif_uuid)
+      phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
+
+      # Obsolete...
+      nw.gateway_network = phy
+      nw.save
+
+      service_data = {
+        :network_vif_id => vif.id,
+        :name => 'gateway',
       }
       
       M::NetworkService.create(service_data)
