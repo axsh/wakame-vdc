@@ -49,8 +49,8 @@ function install_dist_package {
   	emerge mysql
   	echo "Setup MySQL DB"
   	rc-update add mysql default
-  	/etc/init.d/mysql start
   	/usr/bin/mysql_install_db
+  	/etc/init.d/mysql start
   	echo "Setup MySQL DB done!"
   fi
 
