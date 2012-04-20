@@ -11,6 +11,7 @@ wakame_root=${wakame_root:-$(cd ${script_path}/../ && pwd)}
 . $script_path/wakame_utils.sh
 
 tmp_path="${wakame_root}/tmp"
+data_path="${wakame_root}/test/vdc.sh.d"
 account_id=${account_id:?"account_id needs to be set"}
 
 hypervisor=${hypervisor:?"hypervisor needs to be set"}
