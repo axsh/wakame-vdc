@@ -67,9 +67,10 @@ module Dcmgr
         
         def remove_referenced_vnic(group_id,vnic_id)
           group = @cache[:security_groups].each {|local_group| 
-            local_group[:referenced_groups].find { |group| group[:uuid] == group_id }[:vnics].delete_if { |vnic|
+            ref_group = local_group[:referenced_groups].find { |group| group[:uuid] == group_id }
+            ref_group[:vnics].delete_if { |vnic|
               vnic[:uuid] == vnic_id
-            }
+            } unless ref_group.nil?
           }
         end
         
