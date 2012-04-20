@@ -134,29 +134,45 @@ module Dcmgr::VNet::OpenFlow
       datapath.add_flows flows
     end
 
-    def add_service(switch, service)
-      case service[:name]
+    def add_service(switch, service_map)
+      if self.services.has_key? service_map[:name]
+        logger.info "Duplicate service: name:'#{service_map[:name]}'."
+      end
+
+      case service_map[:name]
       when 'dhcp'
         logger.info "Adding DHCP service."
-        self.services[:dhcp] =
-          ServiceDhcp.new({ :switch => switch,
-                            :mac => service[:mac_addr],
-                            :ip => IPAddr.new(service[:address])})
+        name = :dhcp
+        service = ServiceDhcp.new({ :switch => switch,
+                                    :mac => service_map[:mac_addr],
+                                    :ip => IPAddr.new(service_map[:address])})
       when 'dns'
         logger.info "Adding DNS service."
-        self.services[:dns] =
-          ServiceDns.new({ :switch => switch,
-                           :mac => service[:mac_addr],
-                           :ip => IPAddr.new(service[:address])})
+        name = :dns
+        service = ServiceDns.new({ :switch => switch,
+                                   :mac => service_map[:mac_addr],
+                                   :ip => IPAddr.new(service_map[:address])})
       when 'gateway'
         logger.info "Adding GATEWAY service."
-        self.services[:gateway] =
-          ServiceGateway.new({ :switch => switch,
-                               :mac => service[:mac_addr],
-                               :ip => IPAddr.new(service[:address])})
+        name = :gateway
+        service = ServiceGateway.new({ :switch => switch,
+                                       :mac => service_map[:mac_addr],
+                                       :ip => IPAddr.new(service_map[:address])})
+      when 'metadata'
+        logger.info "Adding METADATA service."
+        name = :metadata
+        service = ServiceMetadata.new({ :switch => switch,
+                                        :of_port => service_map[:port],
+                                        :mac => service_map[:mac_addr],
+                                        :ip => IPAddr.new(service_map[:address]),
+                                        :listen_port => service_map[:incoming_port]})
       else
-        logger.info "Unknown service name, not creating: '#{service[:name]}'."
+        logger.info "Unknown service name, not creating: '#{service_map[:name]}'."
+        return
       end
+
+      self.services[name] = service
+      service.install(self)
     end
 
   end
