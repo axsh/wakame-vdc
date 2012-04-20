@@ -44,7 +44,7 @@ module Dcmgr
             mac = vif[:mac_addr].unpack('A2'*6).join(':')
             host_ifname = vif[:uuid]
             bridge = vif[:network][:link_interface]
-            sh("vzctl set %s --netif_add %s,%s,%s,,%s --save",[ctid, ifname, mac, host_ifname, bridge])
+            sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[ctid, ifname, mac, host_ifname, mac, bridge])
           }
         end
         # set cpus
