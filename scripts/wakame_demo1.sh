@@ -5,7 +5,8 @@
 
 set -e
 
-script_path=${script_path:-(cd $(dirname $0) && pwd)}
+script_path=$(cd $(dirname $0) && pwd)
+wakame_root=${wakame_root:-$(cd ${script_path}/../ && pwd)}
 . $script_path/wakame_vars.sh
 . $script_path/wakame_utils.sh
 
@@ -16,7 +17,7 @@ hypervisor=${hypervisor:?"hypervisor needs to be set"}
 
 hva_arch=$(uname -m)
 
-cd ${VDC_ROOT}/dcmgr/
+cd ${wakame_root}/dcmgr/
 
 shlog ./bin/vdc-manage host add hva.demo1 \
   --force \
@@ -144,8 +145,8 @@ shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --
 
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
 INSERT INTO volume_snapshots values
- (1, '${account_id}', 'lucid1', 1, 'vol-lucid1', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-32.raw', NULL, now(), now()),
- (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now());
+ (1, '${account_id}', 'lucid1', 1, 'vol-lucid1', 1024, 0, 'available', 'local@local:none:${wakame_root}/tmp/images/ubuntu-lucid-kvm-32.raw', NULL, now(), now()),
+ (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${wakame_root}/tmp/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now());
 EOS
 
 image_features_opts=
