@@ -13,13 +13,44 @@ wakame_root=${wakame_root:-$(cd ${script_path}/../ && pwd)}
 tmp_path="${wakame_root}/tmp"
 data_path="${wakame_root}/tests/vdc.sh.d"
 account_id=${account_id:?"account_id needs to be set"}
-
 hypervisor=${hypervisor:?"hypervisor needs to be set"}
-
 hva_arch=$(uname -m)
 
-cd ${wakame_root}/dcmgr/
+# download demo image files.
+(
+  if [ ! -d ${wakame_root}/tmp/images ]; then
+    mkdir ${wakame_root}/tmp/images
+  fi
+  cd ${wakame_root}/tmp/images
+  
+  for meta in $(ls $data_path/image-*.meta); do
+    (
+      . $meta
+      [[ -n "$localname" ]] || {
+        localname=$(basename "$uri")
+      }
+      echo "$(basename ${meta}), ${localname} ..."
+      [[ -f "$localname" ]] || {
+        # TODO: use HEAD and compare local cached file size
+        echo "Downloading image file $localname ..."
+        f=$(basename "$uri")
+        curl "$uri" > "$f"
+        # check if the file name has .gz.
+        [[ "$f" == "${f%.gz}" ]] || {
+          # gunzip with keeping sparse area.
+          zcat "$f" | cp --sparse=always /dev/stdin "${f%.gz}"
+        }
+        [[ "${f%.gz}" == "$localname" ]] || {
+          cp -p --sparse=always "${f%.gz}" "$localname"
+        }
+        # do not remove .gz as they are used for gzipped file test cases.
+      }
+    )
+  done
+)
 
+# Setting up demo data.
+cd ${wakame_root}/dcmgr/
 shlog ./bin/vdc-manage host add hva.demo1 \
   --force \
   --uuid hn-demo1 \
