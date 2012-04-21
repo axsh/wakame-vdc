@@ -142,6 +142,9 @@ udp:53,53,ip4:0.0.0.0
 icmp:-1,-1,ip4:0.0.0.0
 EOF
 
+# change *.pem permission
+chmod 600 $data_path/pri.pem
+chmod 600 $data_path/pub.pem
 shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "demo key1"
 
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
