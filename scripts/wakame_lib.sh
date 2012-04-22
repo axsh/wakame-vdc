@@ -277,7 +277,7 @@ function run_standalone() {
   # forece reset and restart rabbitmq
 
   echo "Restarting rabbitmq..."
-  if [ "${DISTRIB_ID}" == "gentoo" ]; then
+  if [ "${DISTRIB_ID}" == "Gentoo" ]; then
   	/etc/init.d/rabbitmq status && /etc/init.d/rabbitmq stop
   else 
   	/etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
@@ -285,7 +285,7 @@ function run_standalone() {
 
   [ -f /var/lib/rabbitmq/mnesia/ ] && rm -rf /var/lib/rabbitmq/mnesia/
 
-  if [ "${DISTRIB_ID}" == "gentoo" ]; then
+  if [ "${DISTRIB_ID}" == "Gentoo" ]; then
         /etc/init.d/rabbitmq start
   else 
   	/etc/init.d/rabbitmq-server start
