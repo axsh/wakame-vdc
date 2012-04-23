@@ -177,6 +177,8 @@ module Dcmgr::VNet::OpenFlow
         logger.debug "Got IPv4/TCP packet; port:#{message.in_port} network:#{port.network.nil? ? 'nil' : port.network.id} source:#{message.ipv4_saddr.to_s}:#{message.tcp_src_port} dest:#{message.ipv4_daddr.to_s}:#{message.tcp_dst_port}."
       elsif message.ipv4? and message.udp?
         logger.debug "Got IPv4/UDP packet; port:#{message.in_port} source:#{message.ipv4_saddr.to_s}:#{message.udp_src_port} dest:#{message.ipv4_daddr.to_s}:#{message.udp_dst_port}."
+      else
+        logger.debug "Got Unknown packet; port:#{message.in_port} source:#{message.macsa.to_s} dest:#{message.macda.to_s}."
       end
 
       if !port.network.nil?

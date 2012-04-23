@@ -33,11 +33,13 @@ module Dcmgr::VNet::OpenFlow
       end
 
       network.datapath.add_flows([flow])
-      entries[ip] = { :mac => mac, :owner => owner }
+      entries[ip.to_s] = { :mac => mac, :owner => owner }
     end
 
     def handle(port, message)
-      entry = entries[message.arp_tpa]
+      entry = entries[message.arp_tpa.to_s]
+
+      logger.debug "arp_handler: tpa:'#{message.arp_tpa.to_s}' entry:#{entry[:mac].inspect}."
       return if entry.nil?
 
       network.datapath.send_arp(message.in_port, Racket::L3::ARP::ARPOP_REPLY,

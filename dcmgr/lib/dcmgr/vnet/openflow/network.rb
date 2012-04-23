@@ -93,6 +93,7 @@ module Dcmgr::VNet::OpenFlow
 
       arp_handler.install(self)
       arp_handler.add(services[:dhcp].mac, services[:dhcp].ip, services[:dhcp])
+      arp_handler.add(services[:gateway].mac, services[:gateway].ip, services[:gateway]) if services[:gateway]
     end
 
     def install_physical_network
