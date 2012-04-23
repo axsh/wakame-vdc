@@ -36,10 +36,12 @@ module Dcmgr::VNet::OpenFlow
       @prefix = 0
 
       @services = {}
-      @arp_handler = ArpHandler.new
       @packet_handlers = []
 
       eth_ports[datapath.datapath_id] ||= []
+
+      @arp_handler = ArpHandler.new
+      arp_handler.install(self)
     end
 
     def eth_ports
@@ -90,10 +92,6 @@ module Dcmgr::VNet::OpenFlow
       flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
 
       datapath.add_flows flows
-
-      arp_handler.install(self)
-      arp_handler.add(services[:dhcp].mac, services[:dhcp].ip, services[:dhcp])
-      arp_handler.add(services[:gateway].mac, services[:gateway].ip, services[:gateway]) if services[:gateway]
     end
 
     def install_physical_network
@@ -177,6 +175,10 @@ module Dcmgr::VNet::OpenFlow
 
       self.services[name] = service
       service.install(self)
+
+      if virtual && services[name].ip
+        arp_handler.add(services[name].mac, services[name].ip, services[name])
+      end
     end
 
   end

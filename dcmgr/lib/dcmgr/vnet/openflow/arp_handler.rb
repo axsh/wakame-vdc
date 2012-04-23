@@ -24,7 +24,10 @@ module Dcmgr::VNet::OpenFlow
     end
 
     def add(mac, ip, owner)
-      raise "Duplicate ip in arp handler." if entries.has_key? ip
+      if entries.has_key? ip.to_s
+        logger.debug "Duplicate ip in arp handler: ip:#{ip.to_s}."
+        return
+      end
 
       if network.virtual
         flow = Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :arp => nil, :nw_dst => ip.to_s}, {:controller => nil})
