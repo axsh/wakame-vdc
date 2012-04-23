@@ -10,10 +10,6 @@ Sequel.migration do
       drop_column :account_id
     end
 
-    alter_table(:networks) do
-      add_column :gateway_network_id, "int(11)"
-    end
-
     create_table(:host_node_vnets) do
       primary_key :id, :type=>"int(11)"
       column :host_node_id, "int(11)", :null=>false
