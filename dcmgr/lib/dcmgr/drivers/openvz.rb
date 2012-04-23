@@ -25,7 +25,9 @@ module Dcmgr
         template_file_path = File.expand_path("../../templates/#{hypervisor}/template.conf", __FILE__)
         output_file_path = "/etc/vz/conf/ve-openvz.conf-sample"
         
-        render_template(template_file_path, output_file_path)
+        render_template(template_file_path, output_file_path) do
+          binding
+        end
         
         # create openvz container
         ostemplate = File.basename(inst[:image][:source][:uri], ".tar.gz")
@@ -53,6 +55,24 @@ module Dcmgr
         sh("vzctl set %s --privvmpage %s --save",[ctid, (inst_spec[:memory_size] * 256)])
         sh("vzctl set %s --vmguarpages %s --save",[ctid, (inst_spec[:memory_size] * 256)])
         
+        # setup metadata drive
+        hn_metadata_path = "/vz/root/#{ctid}/metadata"
+        ve_metadata_path = "#{inst_data_dir}/metadata"
+        metadata_img_path = hc.metadata_img_path
+        FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
+        sh("mount -o loop -o ro #{metadata_img_path} #{ve_metadata_path}")
+        logger.debug("mount #{metadata_img_path} to #{ve_metadata_path}")
+        
+        # generate openvz mount config
+        template_mount_file_path = File.expand_path("../../templates/#{hypervisor}/template.mount", __FILE__)
+        output_mount_file_path = "/etc/vz/conf/#{ctid}.mount"
+        
+        render_template(template_mount_file_path, output_mount_file_path) do
+          binding
+        end
+        sh("chmod +x #{output_mount_file_path}")
+        logger.debug("created config /etc/vz/conf/#{ctid}.mount")
+        
         # start openvz container
         sh("vzctl start %s",[ctid])
         logger.debug("start container #{ctid}")
@@ -73,10 +93,13 @@ module Dcmgr
 
         # stop container
         sh("vzctl stop %s",[ctid])
+        sh("umount #{hc.inst_data_dir}/metadata")
         logger.debug("stop container #{ctid}")
 
         # delete container folder
         sh("vzctl destroy %s",[ctid])
+        sh("rm /etc/vz/conf/%s.conf.destroyed",[ctid])
+        sh("rm /etc/vz/conf/%s.mount.destroyed",[ctid])
         logger.debug("delete container folder /vz/private/#{ctid}")
       end
     end

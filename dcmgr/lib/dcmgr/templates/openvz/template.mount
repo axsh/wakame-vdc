@@ -1,0 +1,7 @@
+#!/bin/bash
+. /etc/vz/vz.conf
+. /etc/vz/conf/<%= ctid %>.conf
+SRC=<%= ve_metadata_path %>
+DST=<%= hn_metadata_path %>
+if [ ! -e ${DST} ]; then mkdir -p ${DST}; fi
+mount -n -t simfs ${SRC} ${DST} -o ${SRC}
