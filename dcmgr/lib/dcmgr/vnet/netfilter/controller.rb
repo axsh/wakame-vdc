@@ -25,14 +25,14 @@ module Dcmgr
           
           # Initialize Netfilter configuration
           cmds = []
-          cmds << init_iptables if node.manifest.config.enable_iptables
-          cmds << init_ebtables if node.manifest.config.enable_ebtables
+          cmds << init_iptables if Dcmgr.conf.enable_iptables
+          cmds << init_ebtables if Dcmgr.conf.enable_ebtables
           cmds.flatten! 
             
-          puts cmds.join("\n") if node.manifest.config.verbose_netfilter
+          puts cmds.join("\n") if Dcmgr.conf.verbose_netfilter
           system(cmds.join("\n"))
           
-          self.task_manager.apply_tasks([Dcmgr::VNet::Tasks::DebugIptables.new]) if node.manifest.config.debug_iptables
+          self.task_manager.apply_tasks([Dcmgr::VNet::Tasks::DebugIptables.new]) if Dcmgr.conf.debug_iptables
           
           # Apply the current instances if there are any
           @cache.get[:instances].each { |inst_map|

@@ -9,30 +9,29 @@ require 'isono'
 
 include Isono::Runner::RpcServer
 
+path = ['/etc/wakame-vdc/hva.conf', File.expand_path('config/hva.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
+abort("ERROR: Failed to load hva.conf") if path.nil?
+
+begin
+  Dcmgr.instance_eval {
+    @conf = Dcmgr::Configurations::Hva.load(path)
+  }
+rescue NoMethodError => e
+  abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
+rescue Dcmgr::Configuration::ValidationError => e
+  abort("Validation Error: #{path}\n  " +
+        e.errors.join("\n  ")
+        )
+end
+
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'hva'
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
 
-  config do |c|
-    c.vm_data_dir = '/var/lib/vm'
-    c.edge_networking = 'netfilter'
-    c.enable_ebtables = true
-    c.enable_iptables = true
-    c.enable_gre      = false
-    c.enable_subnet   = false
-    c.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
-    c.bridge_novlan   = 'br0'
-    c.verbose_netfilter = false
-    c.packet_drop_log   = false
-    c.debug_iptables    = false
-  end
-
-  load_config File.expand_path('config/hva.conf', app_root)
-
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::InstanceMonitor
-  case config.edge_networking
+  case Dcmgr.conf.edge_networking
   when 'openflow'
     load_module Dcmgr::NodeModules::DebugOpenFlow
     load_module Dcmgr::NodeModules::ServiceOpenFlow
@@ -41,7 +40,7 @@ manifest.instance_eval do
   when 'netfilter', 'legacy_netfilter'
     load_module Dcmgr::NodeModules::ServiceNetfilter
   else
-    raise "Configuration error: '#{config.edge_networking}' is not a valid option for edge_networking. Valid options are 'openflow', 'netfilter', 'legacy_netfilter' and 'off'"
+    raise "Configuration error: '#{Dcmgr.conf.edge_networking}' is not a valid option for edge_networking. Valid options are 'openflow', 'netfilter', 'legacy_netfilter' and 'off'"
   end
 end
 

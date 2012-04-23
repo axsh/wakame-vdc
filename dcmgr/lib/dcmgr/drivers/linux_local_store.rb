@@ -15,7 +15,7 @@ module Dcmgr
         os_devpath = ctx.os_devpath
 
         # vmimage cache
-        vmimg_cache_dir = File.expand_path("_base", ctx.node.manifest.config.vm_data_dir)
+        vmimg_cache_dir = File.expand_path("_base", Dcmgr.conf.vm_data_dir)
         FileUtils.mkdir_p(vmimg_cache_dir) unless File.exists?(vmimg_cache_dir)
         vmimg_basename = File.basename(img_src[:uri])
         vmimg_cache_path = File.expand_path(vmimg_basename, vmimg_cache_dir)

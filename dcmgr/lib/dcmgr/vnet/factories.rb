@@ -19,9 +19,9 @@ module Dcmgr
     class TaskManagerFactory
       def self.create_task_manager(node)
         manager = V::Netfilter::VNicProtocolTaskManager.new
-        manager.enable_ebtables = node.manifest.config.enable_ebtables
-        manager.enable_iptables = node.manifest.config.enable_iptables
-        manager.verbose_commands = node.manifest.config.verbose_netfilter
+        manager.enable_ebtables = Dcmgr.conf.enable_ebtables
+        manager.enable_iptables = Dcmgr.conf.enable_iptables
+        manager.verbose_commands = Dcmgr.conf.verbose_netfilter
         
         manager
       end
@@ -33,8 +33,8 @@ module Dcmgr
 
       def self.create_tasks_for_isolation(vnic,friends,node)
         tasks = []
-        enable_logging = node.manifest.config.packet_drop_log
-        ipset_enabled = node.manifest.config.use_ipset
+        enable_logging = Dcmgr.conf.packet_drop_log
+        ipset_enabled = Dcmgr.conf.use_ipset
 
         friend_ips = friends.select { |vnic_map|
           vnic_map[:ipv4] and vnic_map[:ipv4][:address]
@@ -66,7 +66,7 @@ module Dcmgr
 
       # Returns the tasks that drop all traffic
       def self.create_drop_tasks_for_vnic(vnic,node)
-        enable_logging = node.manifest.config.packet_drop_log
+        enable_logging = Dcmgr.conf.packet_drop_log
 
         #TODO: Add logging to ip drops
         #[DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: "),DropArpToHost.new]
@@ -79,7 +79,7 @@ module Dcmgr
         
         # Nat tasks
         if is_natted? vnic          
-          tasks << StaticNatLog.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if node.manifest.config.packet_drop_log
+          tasks << StaticNatLog.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], "SNAT #{vnic[:uuid]}", "DNAT #{vnic[:uuid]}") if Dcmgr.conf.packet_drop_log
           tasks << StaticNat.new(vnic[:ipv4][:address], vnic[:ipv4][:nat_address], clean_mac(vnic[:mac_addr]))
         end
         
@@ -94,8 +94,8 @@ module Dcmgr
         tasks = []
 
         host_addr = Isono::Util.default_gw_ipaddr
-        enable_logging = node.manifest.config.packet_drop_log
-        ipset_enabled = node.manifest.config.use_ipset
+        enable_logging = Dcmgr.conf.packet_drop_log
+        ipset_enabled = Dcmgr.conf.use_ipset
         
         # Drop all traffic that isn't explicitely accepted
         tasks += self.create_drop_tasks_for_vnic(vnic,node)

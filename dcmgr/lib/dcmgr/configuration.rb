@@ -69,7 +69,13 @@ module Dcmgr
       end
       
       def param(name, opts={})
-        if opts[:default]
+        case opts[:default]
+        when Proc
+          # create getter method if proc is set as default value
+          self.class_exec {
+            define_method(name.to_s.to_sym, &opts[:default])
+          }
+        else
           @initialize_callbacks << proc { |c|
             @config[name.to_s.to_sym] = opts[:default]
           }

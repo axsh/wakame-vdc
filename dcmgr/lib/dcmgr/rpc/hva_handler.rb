@@ -78,7 +78,7 @@ module Dcmgr
         end
         
         # cleanup vm data folder
-        FileUtils.rm_r(File.expand_path("#{@inst_id}", @node.manifest.config.vm_data_dir)) unless @hv.is_a?(Dcmgr::Drivers::ESXi)
+        FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir)) unless @hv.is_a?(Dcmgr::Drivers::ESXi)
       end
 
       def update_instance_state(opts, ev)
@@ -526,7 +526,7 @@ module Dcmgr
       end
 
       def inst_data_dir
-        File.expand_path("#{inst_id}", node.manifest.config.vm_data_dir)
+        File.expand_path("#{inst_id}", Dcmgr.conf.vm_data_dir)
       end
     end
 

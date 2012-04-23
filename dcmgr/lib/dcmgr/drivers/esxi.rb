@@ -68,12 +68,12 @@ module Dcmgr
       def self.settings(ctx)
         if @esxi_options.nil?
           @esxi_options = {
-            :host => ctx.node.manifest.config.esxi_ipaddress,
-            :user => ctx.node.manifest.config.esxi_username || "root",
-            :password => ctx.node.manifest.config.esxi_password,
-            :insecure => ctx.node.manifest.config.esxi_insecure || false,
-            :datastore => ctx.node.manifest.config.esxi_datastore,
-            :datacenter => ctx.node.manifest.config.esxi_datacenter,
+            :host => Dcmgr.conf.esxi_ipaddress,
+            :user => Dcmgr.conf.esxi_username,
+            :password => Dcmgr.conf.esxi_password,
+            :insecure => Dcmgr.conf.esxi_insecure,
+            :datastore => Dcmgr.conf.esxi_datastore,
+            :datacenter => Dcmgr.conf.esxi_datacenter,
           }
           
           @esxi_options.each { |k,v|
