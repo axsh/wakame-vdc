@@ -5,17 +5,10 @@ require 'ext/time'
 require 'dcmgr/initializer'
 
 module Dcmgr
+  DCMGR_ROOT = ENV['DCMGR_ROOT'] || File.expand_path('../../', __FILE__)
 
   include Dcmgr::Initializer
 
-  initializer_hooks {
-    Dcmgr.class_eval {
-      unless defined?(DCMGR_ROOT)
-        DCMGR_ROOT = ENV['DCMGR_ROOT'] || File.expand_path('../../', __FILE__)
-      end
-    }
-  }
-  
   # Add conf/initializers/*.rb loader 
   initializer_hooks {
     initializers_root = File.expand_path('config/initializers', DCMGR_ROOT) 
