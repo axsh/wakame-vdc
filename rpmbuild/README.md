@@ -26,7 +26,7 @@ Installing RPM Builder Software
 vdc.sh installs base packages to build RPMs.
 
     # cd ./wakame-vdc/
-    # ./test/vdc.sh install::rhel
+    # ./tests/vdc.sh install::rhel
 
 Building Wakame-VDC RPMs
 ------------------------
