@@ -21,6 +21,7 @@ module Dcmgr::VNet::OpenFlow
     attr_accessor :prefix
 
     attr_reader :services
+    attr_reader :arp_handler
     attr_accessor :packet_handlers
 
     def initialize dp, id, virtual
@@ -35,6 +36,7 @@ module Dcmgr::VNet::OpenFlow
       @prefix = 0
 
       @services = {}
+      @arp_handler = ArpHandler.new
       @packet_handlers = []
 
       eth_ports[datapath.datapath_id] ||= []
@@ -83,14 +85,14 @@ module Dcmgr::VNet::OpenFlow
       # Default action is to pass the packet to the dst table.
       flows << Flow.new(TABLE_VIRTUAL_SRC, 0, {:reg1 => id}, {:resubmit => TABLE_VIRTUAL_DST})
 
-      # Catch ARP for the DHCP server.
-      flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :arp => nil, :nw_dst => services[:dhcp].ip.to_s}, {:controller => nil})
-
       # Catch DHCP requests.
       flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => services[:dhcp].mac, :nw_dst => services[:dhcp].ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
       flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
 
       datapath.add_flows flows
+
+      arp_handler.install(self)
+      arp_handler.add(services[:dhcp].mac, services[:dhcp].ip, services[:dhcp])
     end
 
     def install_physical_network
@@ -135,6 +137,7 @@ module Dcmgr::VNet::OpenFlow
     end
 
     def add_service(switch, service_map)
+      # Need to search using constant.
       if self.services.has_key? service_map[:name]
         logger.info "Duplicate service: name:'#{service_map[:name]}'."
       end

@@ -29,7 +29,6 @@ module Dcmgr::Models
 
     one_to_many :dhcp_range
     many_to_one :physical_network
-    many_to_one :gateway_network, :class => PhysicalNetwork
 
     def network_service
       NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(:network_id => self.id).select_all(:network_services)

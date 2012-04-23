@@ -22,12 +22,12 @@ module Dcmgr::VNet::OpenFlow
       switch.datapath.add_flows flows
       network.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
-                            port.network.services[:metadata_server] and
-                            port.network.services[:metadata_server].of_port and
+                            port.network.services[:metadata] and
+                            port.network.services[:metadata].of_port and
                             message.ipv4? and message.tcp? and
                             message.ipv4_daddr.to_s == "169.254.169.254" and message.tcp_dst_port == 80
                           }, Proc.new { |switch,port,message|
-                            metadata_server = port.network.services[:metadata_server]
+                            metadata_server = port.network.services[:metadata]
 
                             if metadata_server.ip.to_s == Isono::Util.default_gw_ipaddr.to_s
                               switch.install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
@@ -58,10 +58,10 @@ module Dcmgr::VNet::OpenFlow
       network.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
                             port.port_info.number == port_number and
-                            port.network.services[:metadata_server].of_port.nil? and
+                            port.network.services[:metadata].of_port.nil? and
                             message.arp? and
                             message.arp_oper == Racket::L3::ARP::ARPOP_REPLY and
-                            message.arp_spa.to_s == port.network.services[:metadata_server].ip.to_s and
+                            message.arp_spa.to_s == port.network.services[:metadata].ip.to_s and
                             message.arp_tpa.to_s == Isono::Util.default_gw_ipaddr.to_s
                           }, Proc.new { |switch,port,message|
                             self.install(network, port_number, message.arp_sha)

@@ -289,10 +289,6 @@ __END
       nw = vif.network || UnknownUUIDError.raise(uuid)
       phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
 
-      # Obsolete...
-      nw.gateway_network = phy
-      nw.save
-
       service_data = {
         :network_vif_id => vif.id,
         :name => 'gateway',
