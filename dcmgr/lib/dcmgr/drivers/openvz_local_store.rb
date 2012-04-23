@@ -43,6 +43,11 @@ module Dcmgr
             logger.debug("vmimage cache deployed on #{vmimg_cache_path}")
           end
         end
+        
+        case inst[:image][:type]
+        when "raw"
+          sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path, ctx.os_devpath])
+        end
       end
 
       private

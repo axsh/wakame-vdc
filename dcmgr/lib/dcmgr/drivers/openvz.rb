@@ -21,7 +21,7 @@ module Dcmgr
         logger.debug("write a openvz container id #{ctid_file_path}")
 
         # generate openvz config
-        hypervisor = hc.inst[:host_node][:hypervisor]
+        hypervisor = inst[:host_node][:hypervisor]
         template_file_path = File.expand_path("../../templates/#{hypervisor}/template.conf", __FILE__)
         output_file_path = "/etc/vz/conf/ve-openvz.conf-sample"
         
@@ -30,10 +30,29 @@ module Dcmgr
         end
         
         # create openvz container
-        ostemplate = File.basename(inst[:image][:source][:uri], ".tar.gz")
-        sh("vzctl create %s --ostemplate %s --config %s",[ctid, ostemplate, hypervisor])
-        logger.debug("created container /vz/private/#{ctid}")
-        logger.debug("created config /etc/vz/conf/#{ctid}.conf")
+        private_folder = "/vz/private/#{ctid}"
+        config_file_path = "/etc/vz/conf/#{ctid}.conf" 
+        image = inst[:image]
+        case image[:type]
+        when "tar.gz"
+          ostemplate = File.basename(image[:source][:uri], ".tar.gz")
+          # create vm and config file
+          sh("vzctl create %s --ostemplate %s --config %s",[ctid, ostemplate, hypervisor])
+          logger.debug("created container #{praivate_folder}")
+          logger.debug("created config #{config_file_path}")
+        when "raw"
+          # copy config file
+          FileUtils.cp(output_file_path, config_file_path)
+          # create mount directory
+          FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
+          cmd = "mount %s %s"
+          args = [hc.os_devpath, private_folder]
+          if image[:boot_dev_type] == 2
+            cmd += " -o loop"
+          end
+          # mount vm image file
+          sh(cmd, args)
+        end
         
         # setup openvz config file
         inst_spec = inst[:instance_spec]
@@ -93,6 +112,7 @@ module Dcmgr
 
         # stop container
         sh("vzctl stop %s",[ctid])
+        sh("umount /vz/private/%s",[ctid])
         sh("umount #{hc.inst_data_dir}/metadata")
         logger.debug("stop container #{ctid}")
 
