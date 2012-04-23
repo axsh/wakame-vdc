@@ -41,5 +41,10 @@ module Dcmgr::Models
       super
     end
 
+    def to_hash
+      h = super
+      h[:vlan_lease]=vlan.to_hash if self.vlan
+      h
+    end
   end
 end

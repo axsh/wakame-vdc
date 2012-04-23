@@ -63,7 +63,7 @@ module Dcmgr
         vifs.each { |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
             sh("/sbin/ip link set %s up", [vif[:uuid]])
-            sh("/usr/sbin/brctl addif %s %s", [vif[:ipv4][:network][:link_interface], vif[:uuid]])
+            sh("/usr/sbin/brctl addif %s %s", [bridge_if_name(vif[:ipv4][:network][:physical_network]), vif[:uuid]])
           end
         }
 

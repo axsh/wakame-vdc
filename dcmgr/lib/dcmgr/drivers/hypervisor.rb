@@ -1,6 +1,8 @@
 module Dcmgr
   module Drivers
     class Hypervisor
+      include Dcmgr::Helpers::NicHelper
+      include Dcmgr::Helpers::CliHelper
 
       def run_instance(hc)
       end
@@ -17,30 +19,44 @@ module Dcmgr
 
           network = hc.rpc.request('hva-collector', 'get_network', vnic[:network_id])
           
-          fwd_if = phy_if = network[:physical_network][:interface]
-          bridge_if = network[:link_interface]
+          network_name = network[:physical_network][:name]
+          local_conf = Dcmgr.conf.networks[network_name]
+          if local_conf.nil?
+            raise "Missing local configuration for the network: #{network_name}"
+          end
+          unless valid_nic?(local_conf.interface)
+            raise "Interface not found for the network #{network_name}: #{local_conf.interface}"
+          end
+          unless valid_nic?(local_conf.bridge)
+            raise "Bridge not found for the network #{network_name}: #{local_conf.bridge}"
+          end
           
-          if network[:vlan_id].to_i > 0 && phy_if
-            fwd_if = "#{phy_if}.#{network[:vlan_id]}"
-            unless valid_nic?(vlan_if)
+          fwd_if = local_conf.interface
+          bridge_if = local_conf.bridge
+
+          if network[:physical_network][:vlan_lease]
+            fwd_if = "#{local_conf.interface}.#{network[:physical_network][:vlan_lease][:tag_id]}"
+            bridge_if = network[:physical_network][:uuid]
+            unless valid_nic?(fwd_if)
               sh("/sbin/vconfig add #{phy_if} #{network[:vlan_id]}")
               sh("/sbin/ip link set %s up", [fwd_if])
               sh("/sbin/ip link set %s promisc on", [fwd_if])
             end
-          end
 
-          unless valid_nic?(bridge_if)
-            sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-            sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
-            # There is null case for the forward interface to create closed bridge network.
-            if fwd_if
-              sh("/usr/sbin/brctl addif %s %s", [bridge_if, fwd_if])
+            # create new bridge only when the vlan is assigned to customer.
+            unless valid_nic?(bridge_if)
+              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
+              sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
+              # There is null case for the forward interface to create closed bridge network.
+              if fwd_if
+                sh("/usr/sbin/brctl addif %s %s", [bridge_if, fwd_if])
+              end
             end
           end
         }
         sleep 1
       end
-      
+
       def setup_metadata_drive(hc,metadata_items)
         begin
           inst_data_dir = hc.inst_data_dir
@@ -107,6 +123,16 @@ module Dcmgr
           raise "Unknown hypervisor type: #{hypervisor}"
         end
         hv
+      end
+
+      protected
+      def bridge_if_name(physical_network_data)
+        local_conf = Dcmgr.conf.networks[physical_network_data[:name]]
+        if physical_network_data[:vlan_lease]
+          physical_network_data[:uuid]
+        else
+          local_conf.bridge
+        end
       end
     end
   end

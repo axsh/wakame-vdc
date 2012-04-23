@@ -22,7 +22,6 @@ module Dcmgr::Models
       end
     end
     one_to_many :ip_lease, :extend=>IpLeaseMethods
-    many_to_one :vlan_lease
     
     many_to_one :nat_network, :key => :nat_network_id, :class => self
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
@@ -188,11 +187,9 @@ module Dcmgr::Models
 
     def to_hash
       h = super
-      h.delete(:vlan_lease_id)
       h.merge!({
                  :bandwidth_mark=>self[:id],
                  :description=>description.to_s,
-                 :vlan_id => vlan_lease.nil? ? 0 : vlan_lease.tag_id,
                  :network_services => [],
                })
       if self.physical_network
