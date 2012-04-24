@@ -85,10 +85,7 @@ Group: Development/Languages
 
 ## rpmbuild -bp
 %prep
-[ -d %{name}-%{version} ] || {
-  [ -d %{name} ] || git clone %{_vdc_git_uri}
-  mv %{name} %{name}-%{version}
-}
+[ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
 cd %{name}-%{version}
 %setup -T -D
 
