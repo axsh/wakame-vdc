@@ -4,6 +4,7 @@
 CURDIR ?= $(PWD)
 
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
+RPMBUILD_CMD  := fakeroot rpmbuild
 RPMBUILD_OPTS := --buildroot=$(RPM_BUILD_ROOT) rpmbuild/SPECS/wakame-vdc.spec
 
 # .deb
@@ -23,10 +24,10 @@ clean:
 	# dh_testdir
 	##dh_testroot
 	#dh_prep
-	rpmbuild -bp $(RPMBUILD_OPTS)
+	$(RPMBUILD_CMD) -bp $(RPMBUILD_OPTS)
 	#dh_clean
 	CURDIR=${CURDIR} make clean
-	rpmbuild --clean $(RPMBUILD_OPTS)
+	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS)
 
 install: build
 	#dh_testdir
@@ -98,11 +99,11 @@ binary-arch: build install
 	# dh_builddeb
 
 binary: binary-indep binary-arch
-	# rpmbuild -bc                 $(RPMBUILD_OPTS)
+	# $(RPMBUILD_CMD) -bc                 $(RPMBUILD_OPTS)
 	# => the task will do 'binary-arch' task.
 	#
-	rpmbuild -bi --short-circuit $(RPMBUILD_OPTS)
-	rpmbuild -bl --short-circuit $(RPMBUILD_OPTS)
-	rpmbuild -bb --short-circuit $(RPMBUILD_OPTS)
+	$(RPMBUILD_CMD) -bi --short-circuit $(RPMBUILD_OPTS)
+	$(RPMBUILD_CMD) -bl --short-circuit $(RPMBUILD_OPTS)
+	$(RPMBUILD_CMD) -bb --short-circuit $(RPMBUILD_OPTS)
 
 .PHONY: build clean binary-indep binary-arch binary install
