@@ -34,6 +34,119 @@ module Dcmgr::Models
       NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(:network_id => self.id).select_all(:network_services)
     end
 
+    def add_service_vif(ipv4)
+      # Choose vendor ID of mac address.
+      vendor_id = if Dcmgr.conf.mac_address_vendor_id
+                    Dcmgr.conf.mac_address_vendor_id
+                  else
+                    # M::MacLease.default_vendor_id(self.instance_spec.hypervisor)
+                    MacLease.default_vendor_id('kvm')
+                  end
+      m = MacLease.lease(vendor_id)
+
+      vif_data = {
+        :network_id => self.id,
+        :mac_addr => m.mac_addr,
+      }
+
+      vif = NetworkVif.new(vif_data)
+      vif.save
+      ip_lease = self.ip_lease_dataset.add_reserved(ipv4)
+      ip_lease.network_vif_id = vif.id
+      ip_lease.save
+      vif
+    end
+
+    def nat_network
+      Network.find(:id => self.nat_network_id)
+    end
+
+    def ipv4_ipaddress
+      IPAddress::IPv4.new("#{self.ipv4_network}/#{self.prefix}").network
+    end
+
+    def ipv4_gw_ipaddress
+      return nil if self.ipv4_gw.nil?
+      IPAddress::IPv4.new("#{self.ipv4_gw}/#{self.prefix}")
+    end
+
+    # check if the given IP addess is in the range of this network.
+    # @param [String] ipaddr IP address
+    def include?(ipaddr)
+      ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
+      self.ipv4_ipaddress.network.include?(ipaddr)
+    end
+
+    # return IpLease for IP address in this network
+    # @param [String] ipaddr IP address
+    def find_ip_lease(ipaddr)
+      ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
+      leases = self.ip_lease_dataset.where(:ipv4 => ipaddr.to_s)
+
+      return nil if leases.empty?
+      leases.first
+    end
+
+    # register reserved IP address in this network
+    def add_reserved(ipaddr)
+      raise "Out of subnet range: #{ipaddr} to #{self.ipv4_ipaddress}/#{self.prefix}" if !self.include?(ipaddr)
+      add_ip_lease(:ipv4=>ipaddr.to_s, :type=>IpLease::TYPE_RESERVED)
+    end
+
+    def available_ip_nums
+      self.ipv4_ipaddress.hosts.size - self.ip_lease_dataset.count
+    end
+
+    def ipv4_u32_dynamic_range_array
+      ary=[]
+      dhcp_range_dataset.each { |r|
+        ary += (r.range_begin.to_u32 .. r.range_end.to_u32).to_a
+      }
+      ary
+    end
+
+    def add_ipv4_dynamic_range(range_begin, range_end)
+      test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
+         case op
+         when :coverbegin
+           range.range_end = range_begin
+         when :coverend
+           range.range_begin = range_end
+         when :inccur
+           range.destroy
+         end
+         range.save_changes
+      }
+      
+      self.add_dhcp_range(:range_begin=>range_begin.to_s, :range_end=>range_end.to_s)
+      
+      self
+    end
+
+    def del_ipv4_dynamic_range(range_begin, range_end)
+      test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
+        case op
+        when :coverbegin
+          range.range_end = range_begin
+        when :coverend
+          range.range_begin = range_end
+        when :inccur
+          range.destroy
+        when :incnew
+          t = range.range_end
+          range.range_end = range_begin
+          self.add_dhcp_range(:range_begin=>range_end, :range_end=>t)
+        end
+        range.save_changes
+      }
+
+      self
+    end
+
+    #
+    # Sequel methods:
+    #
+
     def before_validation
       self.link_interface ||= "br-#{self[:uuid]}"
       super
@@ -115,91 +228,6 @@ module Dcmgr::Models
       }
       
       super
-    end
-
-    def nat_network
-      Network.find(:id => self.nat_network_id)
-    end
-
-    def ipv4_ipaddress
-      IPAddress::IPv4.new("#{self.ipv4_network}/#{self.prefix}").network
-    end
-
-    def ipv4_gw_ipaddress
-      return nil if self.ipv4_gw.nil?
-      IPAddress::IPv4.new("#{self.ipv4_gw}/#{self.prefix}")
-    end
-
-    # check if the given IP addess is in the range of this network.
-    # @param [String] ipaddr IP address
-    def include?(ipaddr)
-      ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
-      self.ipv4_ipaddress.network.include?(ipaddr)
-    end
-
-    # register reserved IP address in this network
-    def add_reserved(ipaddr)
-      raise "Out of subnet range: #{ipaddr} to #{self.ipv4_ipaddress}/#{self.prefix}" if !self.include?(ipaddr)
-      add_ip_lease(:ipv4=>ipaddr.to_s, :type=>IpLease::TYPE_RESERVED)
-    end
-
-    def available_ip_nums
-      self.ipv4_ipaddress.hosts.size - self.ip_lease_dataset.count
-    end
-
-    def ipv4_u32_dynamic_range_array
-      ary=[]
-      dhcp_range_dataset.each { |r|
-        ary += (r.range_begin.to_u32 .. r.range_end.to_u32).to_a
-      }
-      ary
-    end
-
-    def add_ipv4_dynamic_range(range_begin, range_end)
-      test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
-         case op
-         when :coverbegin
-           range.range_end = range_begin
-         when :coverend
-           range.range_begin = range_end
-         when :inccur
-           range.destroy
-         end
-         range.save_changes
-      }
-      
-      self.add_dhcp_range(:range_begin=>range_begin.to_s, :range_end=>range_end.to_s)
-      
-      self
-    end
-
-    def del_ipv4_dynamic_range(range_begin, range_end)
-      test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
-        case op
-        when :coverbegin
-          range.range_end = range_begin
-        when :coverend
-          range.range_begin = range_end
-        when :inccur
-          range.destroy
-        when :incnew
-          t = range.range_end
-          range.range_end = range_begin
-          self.add_dhcp_range(:range_begin=>range_end, :range_end=>t)
-        end
-        range.save_changes
-      }
-
-      self
-    end
-
-    def foo
-      vendor_id = if Dcmgr.conf.mac_address_vendor_id
-                    Dcmgr.conf.mac_address_vendor_id
-                  else
-                    MacLease.default_vendor_id(self.instance_spec.hypervisor)
-                  end
-      m = MacLease.lease(vendor_id)
     end
 
     private
