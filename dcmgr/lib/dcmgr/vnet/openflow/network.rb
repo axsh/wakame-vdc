@@ -87,10 +87,6 @@ module Dcmgr::VNet::OpenFlow
       # Default action is to pass the packet to the dst table.
       flows << Flow.new(TABLE_VIRTUAL_SRC, 0, {:reg1 => id}, {:resubmit => TABLE_VIRTUAL_DST})
 
-      # Catch DHCP requests.
-      flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => services[:dhcp].mac, :nw_dst => services[:dhcp].ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
-      flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
-
       datapath.add_flows flows
     end
 

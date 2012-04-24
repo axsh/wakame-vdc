@@ -12,11 +12,20 @@ module Dcmgr::VNet::OpenFlow
       network.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
                             message.ipv4? and message.udp? and
+                            (message.macda.to_s == 'ff:ff:ff:ff:ff:ff' || message.macda.to_s == self.mac) and
+                            (message.ipv4_daddr.to_s == '255.255.255.255' || message.ipv4_daddr == self.ip) and
                             message.udp_src_port == 68 and message.udp_dst_port == 67 and
                             (port.port_type == PORT_TYPE_INSTANCE_NET or port.port_type == PORT_TYPE_INSTANCE_VNET)
                           }, Proc.new { |switch,port,message|
                             self.handle(switch, port, message)
                           })
+
+      # Catch DHCP requests.
+      flows = []
+      flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :udp => nil, :dl_dst => self.mac, :nw_dst => self.ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
+      flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
+
+      network.datapath.add_flows(flows)
     end
 
     def handle(switch, port, message)

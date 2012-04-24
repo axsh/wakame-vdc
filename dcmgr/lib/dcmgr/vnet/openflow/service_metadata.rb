@@ -44,7 +44,7 @@ module Dcmgr::VNet::OpenFlow
                             end
 
                             switch.datapath.send_packet_out(:packet_in => message,
-                                                            :actions => Trema::ActionOutput.new(:port => Dcmgr::VNet::OpenFlow::OpenFlowController::OFPP_TABLE))
+                                                            :actions => Trema::ActionOutput.new(:port => OpenFlowController::OFPP_TABLE))
                           })
     end
 
