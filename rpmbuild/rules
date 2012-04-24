@@ -21,20 +21,10 @@ build-stamp:
 	CURDIR=${CURDIR} make build
 	touch $@
 clean:
-	# dh_testdir
-	##dh_testroot
-	#dh_prep
-	##$(RPMBUILD_CMD) -bp $(RPMBUILD_OPTS)
-	#dh_clean
 	CURDIR=${CURDIR} make clean
 	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS)
 
 install: build
-	#dh_testdir
-	#dh_testroot
-	#dh_clean
-	#dh_installdirs
-	#dh_install
 	# force to rewrite path info in text files.
 	fgrep -m 1 -r $(CURDIR) $(CURDIR)/$(TMP_INSTALL_ROOT) | \
 	  grep -v '^Binary file' | \
@@ -75,28 +65,12 @@ install: build
 binary-indep: build install
 
 binary-arch: build install
-	# dh_testdir
-	# dh_testroot
-	# dh_installchangelogs
-	# dh_installdocs
-	# # just for intsall *.default files.
-	# dh_installinit --no-start --no-restart-on-upgrade
-	# dh_link
-	# #dh_strip
-	# dh_compress
-	# dh_fixperms
-	# dh_makeshlibs
-	# dh_installdeb
-	# dh_shlibdeps -Xpsych.so
-	# # overwrite RPATH in binaries.
-	# # chrpath exits non-zero value if fails to replace RPATH. it can be ignored.
+	# overwrite RPATH in binaries.
+	# chrpath exits non-zero value if fails to replace RPATH. it can be ignored.
 	find $(CURDIR)/$(TMP_INSTALL_ROOT)/ -type f -name "*.so" | \
 	  while read -r i; do \
 	    (file -b "$$i" | grep -q '^ELF ' > /dev/null) && chrpath --replace $(VDC_INSTALL_ROOT)/ruby/lib "$$i" || : ;\
 	  done
-	# dh_gencontrol
-	# dh_md5sums
-	# dh_builddeb
 
 binary:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS)
