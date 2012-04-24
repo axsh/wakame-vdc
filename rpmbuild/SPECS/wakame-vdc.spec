@@ -105,19 +105,19 @@ sed "s,usr/share/axsh,%{_prefix_path},g" ./debian/dirs | while read dir; do
   [ -d ${RPM_BUILD_ROOT}/${dir} ] || mkdir -p ${RPM_BUILD_ROOT}/${dir}
 done
 
-rsync -avx --exclude=".git/*" --exclude="*~" `pwd`/dcmgr    ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
-rsync -avx --exclude=".git/*" --exclude="*~" `pwd`/frontend ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
-rsync -avx --exclude=".git/*" --exclude="*~" `pwd`/ruby     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/dcmgr    ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/frontend ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/ruby     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
 
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
-rsync -avx `pwd`/contrib/etc/default     ${RPM_BUILD_ROOT}/etc/
-rsync -avx `pwd`/contrib/etc/init        ${RPM_BUILD_ROOT}/etc/
-rsync -avx `pwd`/contrib/etc/logrotate.d ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/default     ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/init        ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/logrotate.d ${RPM_BUILD_ROOT}/etc/
 
 # unicorn configs
-rsync -avx `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
-rsync -avx `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
-rsync -avx `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
+rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
+rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
+rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
