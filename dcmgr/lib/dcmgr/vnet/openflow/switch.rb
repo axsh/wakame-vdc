@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'net/dhcp'
-require 'racket'
-
 module Dcmgr::VNet::OpenFlow
 
   class OpenFlowSwitch
@@ -208,67 +205,6 @@ module Dcmgr::VNet::OpenFlow
 
       datapath.add_flows [Flow.new(outgoing_table, 3, match_outgoing, action_outgoing),
                           Flow.new(incoming_table, 3, match_incoming, action_incoming)]
-    end
-
-    def handle_dhcp(port, message)
-      if !message.udp?
-        logger.debug "DHCP: Message is not UDP."
-        return
-      end
-
-      dhcp_in = DHCP::Message.from_udp_payload(message.udp_payload)
-      nw_services = port.network.services
-
-      logger.debug "DHCP: message:#{dhcp_in.to_s}."
-
-      if nw_services[:dhcp].nil?
-        logger.debug "DHCP: Port has no dhcp_ip: port:#{port.port_info.inspect}"
-        return
-      end
-
-      # Check incoming type...
-      message_type = dhcp_in.options.select { |each| each.type == $DHCP_MESSAGETYPE }
-      return if message_type.empty? or message_type[0].payload.empty?
-
-      # Verify dhcp_in values...
-
-      if message_type[0].payload[0] == $DHCP_MSG_DISCOVER
-        logger.debug "DHCP send: DHCP_MSG_OFFER."
-        dhcp_out = DHCP::Offer.new(:options => [DHCP::MessageTypeOption.new(:payload => [$DHCP_MSG_OFFER])])
-      elsif message_type[0].payload[0] == $DHCP_MSG_REQUEST
-        logger.debug "DHCP send: DHCP_MSG_ACK."
-        dhcp_out = DHCP::ACK.new(:options => [DHCP::MessageTypeOption.new(:payload => [$DHCP_MSG_ACK])])
-      else
-        logger.debug "DHCP send: no handler."
-        return
-      end
-
-      dhcp_out.xid = dhcp_in.xid
-      dhcp_out.yiaddr = Trema::IP.new(port.ip).to_i
-      # Verify instead that discover has the right mac address.
-      dhcp_out.chaddr = Trema::Mac.new(port.mac).to_short
-      dhcp_out.siaddr = nw_services[:dhcp].ip.to_i
-
-      subnet_mask = IPAddr.new(IPAddr::IN4MASK, Socket::AF_INET).mask(port.network.prefix)
-
-      dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => nw_services[:dhcp].ip.to_short)
-      dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
-      dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (port.network.ipv4_network | ~subnet_mask).to_short)
-      dhcp_out.options << DHCP::RouterOption.new(:payload => nw_services[:gateway].ip.to_short) if nw_services[:gateway]
-      dhcp_out.options << DHCP::SubnetMaskOption.new(:payload => subnet_mask.to_short)
-
-      if nw_services[:dns] 
-        dhcp_out.options << DHCP::DomainNameOption.new(:payload => nw_services[:dns].domain_name.unpack('C*')) if nw_services[:dns].domain_name
-        dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns].ip
-      end
-
-      logger.debug "DHCP send: output:#{dhcp_out.to_s}."
-      datapath.send_udp(message.in_port,
-                        nw_services[:dhcp].mac.to_s,
-                        nw_services[:dhcp].ip.to_s,
-                        67,
-                        port.mac.to_s, port.ip, 68,
-                        dhcp_out.pack)
     end
 
   end
