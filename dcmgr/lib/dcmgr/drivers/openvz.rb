@@ -103,12 +103,7 @@ module Dcmgr
         sleep 1
         
         # add vifs to bridge
-        vifs.each {|vif|
-          if vif[:ipv4] and vif[:ipv4][:network]
-            sh("/usr/sbin/brctl addif %s %s", [vif[:ipv4][:network][:link_interface], vif[:uuid]])
-            logger.debug("add virtual interface #{vif[:ipv4][:network][:link_interface]} to #{vif[:uuid]}")
-          end
-        }
+        add_vifs(vifs)
       end
 
       def terminate_instance(hc)
@@ -132,6 +127,28 @@ module Dcmgr
         sh("rm %s/%s.conf.destroyed",[config.ve_config_dir, ctid])
         sh("rm %s/%s.mount.destroyed",[config.ve_config_dir, ctid])
         logger.debug("delete container folder #{config.ve_private}/#{ctid}")
+      end
+      
+      def reboot_instance(hc)
+        # openvz container id
+        ctid = hc.inst[:id]
+        
+        # reboot container
+        sh("vzctl restart %s", [ctid])
+        logger.debug("restart container #{ctid}")
+        
+        # add vifs to bridge
+        add_vifs(hc.inst[:vif])
+      end
+
+      private
+      def add_vifs(vifs)
+        vifs.each {|vif|
+          if vif[:ipv4] and vif[:ipv4][:network]
+            sh("/usr/sbin/brctl addif %s %s", [vif[:ipv4][:network][:link_interface], vif[:uuid]])
+            logger.debug("add virtual interface #{vif[:ipv4][:network][:link_interface]} to #{vif[:uuid]}")
+          end
+        }
       end
     end
   end
