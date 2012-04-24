@@ -24,6 +24,7 @@ BuildRequires: openssl-devel
 BuildRequires: libxml2-devel
 BuildRequires: libxslt-devel
 BuildRequires: chrpath
+BuildRequires: fakeroot
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
