@@ -2,7 +2,7 @@
 %define _vdc_git_uri git://github.com/axsh/wakame-vdc.git
 
 Name: wakame-vdc
-Version: current
+Version: 12.03
 Release: 1.daily
 Summary: The wakame virtual data center.
 Group: Development/Languages
