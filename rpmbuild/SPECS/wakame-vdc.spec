@@ -122,6 +122,31 @@ rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{na
 %clean
 rm -rf ${RPM_BUILD_ROOT}
 
+%post
+
+%post dcmgr-vmapp-config
+/sbin/chkconfig --add mysqld
+/sbin/chkconfig       mysqld on
+/sbin/service         mysqld start
+/sbin/chkconfig --add rabbitmq-server
+/sbin/chkconfig       rabbitmq-server on
+/sbin/service         rabbitmq-server start
+/sbin/chkconfig --add tgtd
+/sbin/chkconfig       tgtd on
+/sbin/service         tgtd start
+
+%post hva-vmapp-config
+/sbin/chkconfig --del iptables
+/sbin/service         iptables stop
+/sbin/chkconfig --del ebtables
+/sbin/service         ebtables stop
+/sbin/chkconfig --add iscsi
+/sbin/chkconfig       iscsi  on
+/sbin/service         iscsi  start
+/sbin/chkconfig --add iscsid
+/sbin/chkconfig       iscsid on
+/sbin/service         iscsid start
+
 %files
 %defattr(-,root,root)
 %{prefix}/%{name}/
