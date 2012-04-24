@@ -17,7 +17,7 @@ build: build-stamp
 
 build-stamp:
 	# dh_testdir
-	CURDIR=${CURDIR} ./debian/build-ruby.mk build
+	CURDIR=${CURDIR} make build
 	touch $@
 clean:
 	# dh_testdir
@@ -25,7 +25,7 @@ clean:
 	#dh_prep
 	rpmbuild -bp $(RPMBUILD_OPTS)
 	#dh_clean
-	CURDIR=${CURDIR} ./debian/build-ruby.mk clean
+	CURDIR=${CURDIR} make clean
 	rpmbuild --clean $(RPMBUILD_OPTS)
 
 install: build
