@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require File.dirname(__FILE__) + '/openvz_config.rb'
+
 module Dcmgr
   module Drivers
     class Openvz < Hypervisor
@@ -9,6 +11,9 @@ module Dcmgr
       include Dcmgr::Helpers::TemplateHelper
       
       def run_instance(hc)
+        # load openvz conf
+        config = OpenvzConfig.new
+        
         # write a openvz container id
         inst = hc.inst
         inst_data_dir = hc.inst_data_dir
@@ -23,22 +28,22 @@ module Dcmgr
         # generate openvz config
         hypervisor = inst[:host_node][:hypervisor]
         template_file_path = File.expand_path("../../templates/#{hypervisor}/template.conf", __FILE__)
-        output_file_path = "/etc/vz/conf/ve-openvz.conf-sample"
+        output_file_path = "#{config.ve_config_dir}/ve-openvz.conf-sample"
         
         render_template(template_file_path, output_file_path) do
           binding
         end
         
         # create openvz container
-        private_folder = "/vz/private/#{ctid}"
-        config_file_path = "/etc/vz/conf/#{ctid}.conf" 
+        private_folder = "#{config.ve_private}/#{ctid}"
+        config_file_path = "#{config.ve_config_dir}/#{ctid}.conf" 
         image = inst[:image]
-        case image[:type]
+        case image[:file_format]
         when "tar.gz"
           ostemplate = File.basename(image[:source][:uri], ".tar.gz")
           # create vm and config file
           sh("vzctl create %s --ostemplate %s --config %s",[ctid, ostemplate, hypervisor])
-          logger.debug("created container #{praivate_folder}")
+          logger.debug("created container #{private_folder}")
           logger.debug("created config #{config_file_path}")
         when "raw"
           # copy config file
@@ -75,22 +80,22 @@ module Dcmgr
         sh("vzctl set %s --vmguarpages %s --save",[ctid, (inst_spec[:memory_size] * 256)])
         
         # setup metadata drive
-        hn_metadata_path = "/vz/root/#{ctid}/metadata"
+        hn_metadata_path = "#{config.ve_root}/#{ctid}/metadata"
         ve_metadata_path = "#{inst_data_dir}/metadata"
         metadata_img_path = hc.metadata_img_path
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
-        sh("mount -o loop -o ro #{metadata_img_path} #{ve_metadata_path}")
+        sh("mount -o loop -o ro %s %s", [metadata_img_path, ve_metadata_path])
         logger.debug("mount #{metadata_img_path} to #{ve_metadata_path}")
         
         # generate openvz mount config
         template_mount_file_path = File.expand_path("../../templates/#{hypervisor}/template.mount", __FILE__)
-        output_mount_file_path = "/etc/vz/conf/#{ctid}.mount"
+        output_mount_file_path = "#{config.ve_config_dir}/#{ctid}.mount"
         
         render_template(template_mount_file_path, output_mount_file_path) do
           binding
         end
-        sh("chmod +x #{output_mount_file_path}")
-        logger.debug("created config /etc/vz/conf/#{ctid}.mount")
+        sh("chmod +x %s", [output_mount_file_path])
+        logger.debug("created config #{output_mount_file_path}")
         
         # start openvz container
         sh("vzctl start %s",[ctid])
@@ -107,20 +112,26 @@ module Dcmgr
       end
 
       def terminate_instance(hc)
+        # load openvz conf
+        config = OpenvzConfig.new
+        
         # openvz container id
         ctid = hc.inst[:id]
 
         # stop container
         sh("vzctl stop %s",[ctid])
-        sh("umount /vz/private/%s",[ctid])
-        sh("umount #{hc.inst_data_dir}/metadata")
+        case hc.inst[:image][:file_format]
+        when "raw"
+          sh("umount %s/%s",[config.ve_private, ctid])
+        end
+        sh("umount %s/metadata", [hc.inst_data_dir])
         logger.debug("stop container #{ctid}")
 
         # delete container folder
         sh("vzctl destroy %s",[ctid])
-        sh("rm /etc/vz/conf/%s.conf.destroyed",[ctid])
-        sh("rm /etc/vz/conf/%s.mount.destroyed",[ctid])
-        logger.debug("delete container folder /vz/private/#{ctid}")
+        sh("rm %s/%s.conf.destroyed",[config.ve_config_dir, ctid])
+        sh("rm %s/%s.mount.destroyed",[config.ve_config_dir, ctid])
+        logger.debug("delete container folder #{config.ve_private}/#{ctid}")
       end
     end
   end

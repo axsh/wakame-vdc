@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require File.dirname(__FILE__) + '/openvz_config.rb'
+
 module Dcmgr
   module Drivers
     class OpenvzLocalStore < LocalStore
@@ -7,6 +9,9 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       
       def deploy_image(inst,ctx)
+        # load openvz conf
+        config = OpenvzConfig.new
+
         # setup vm data folder
         vm_data_dir = ctx.inst_data_dir
         FileUtils.mkdir(vm_data_dir) unless File.exists?(vm_data_dir)
@@ -15,7 +20,7 @@ module Dcmgr
         img_src = inst[:image][:source]
 
         # setup vm image cache folder
-        vmimg_cache_dir = File.expand_path("cache", "/vz/template")
+        vmimg_cache_dir = File.expand_path("cache", config.template)
         FileUtils.mkdir_p(vmimg_cache_dir) unless File.exists?(vmimg_cache_dir)
 
         # vm image cache
@@ -44,7 +49,7 @@ module Dcmgr
           end
         end
         
-        case inst[:image][:type]
+        case inst[:image][:file_format]
         when "raw"
           sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path, ctx.os_devpath])
         end
