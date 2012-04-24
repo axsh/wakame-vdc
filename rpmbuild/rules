@@ -24,7 +24,7 @@ clean:
 	# dh_testdir
 	##dh_testroot
 	#dh_prep
-	$(RPMBUILD_CMD) -bp $(RPMBUILD_OPTS)
+	##$(RPMBUILD_CMD) -bp $(RPMBUILD_OPTS)
 	#dh_clean
 	CURDIR=${CURDIR} make clean
 	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS)
