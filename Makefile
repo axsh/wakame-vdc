@@ -1,5 +1,3 @@
-#!/usr/bin/make -f
-
 ruby_ver ?= 1.9.2-p290
 
 # should be in wakame-vdc
