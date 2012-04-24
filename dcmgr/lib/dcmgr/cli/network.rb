@@ -217,30 +217,9 @@ __END
 
     desc "add UUID", "Register a new vif"
     method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
-    def add(uuid)
-      nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-
-      # Choose vendor ID of mac address.
-      vendor_id = if Dcmgr.conf.mac_address_vendor_id
-                    Dcmgr.conf.mac_address_vendor_id
-                  else
-                    # M::MacLease.default_vendor_id(self.instance_spec.hypervisor)
-                    M::MacLease.default_vendor_id('kvm')
-                  end
-      m = M::MacLease.lease(vendor_id)
-
-      vif_data = {
-        :network_id => nw.id,
-        :mac_addr => m.mac_addr,
-      }
-
-      vif = M::NetworkVif.new(vif_data)
-      vif.save
-      ip_lease = nw.ip_lease_dataset.add_reserved(options[:ipv4])
-      ip_lease.network_vif_id = vif.id
-      ip_lease.save
-
-      puts vif.canonical_uuid
+    def add(nw_uuid)
+      nw = M::Network[nw_uuid] || UnknownUUIDError.raise(nw_uuid)
+      puts nw.add_service_vif(options[:ipv4]).canonical_uuid
     end
 
     protected
@@ -254,10 +233,36 @@ __END
     namespace :service
     M=Dcmgr::Models
 
+    no_tasks {
+      def prepare_vif(uuid, options)
+        case uuid
+        when /^nw-/
+          options[:ipv4] || Error.raise("IP address is required when passing network UUID.")
+
+          nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+          lease = nw.find_ip_lease(options[:ipv4])
+
+          if lease.nil?
+            nw.add_service_vif(options[:ipv4])
+            lease = nw.find_ip_lease(options[:ipv4])
+          end
+          
+          lease.network_vif
+
+        when /^vif-/
+          options[:ipv4].nil? || Error.raise("Cannot pass IP address for VIF UUID.")
+          M::NetworkVif[uuid] || UnknownUUIDError.raise(uuid)
+        else
+          InvalidUUIDError.raise(uuid)
+        end
+      end
+    }
+
     desc "dhcp VIF", "Set DHCP service for network"
-    # method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
-    def dhcp(vif_uuid)
-      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(vif_uuid)
+    method_option :ipv4, :type => :string, :required => false, :desc => "The ip address"
+    def dhcp(uuid)
+      vif = prepare_vif(uuid, options)
+      puts vif.canonical_uuid
 
       service_data = {
         :network_vif_id => vif.id,
@@ -270,9 +275,10 @@ __END
     end
 
     desc "dns VIF", "Set DNS service for network"
-    # method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
-    def dns(vif_uuid)
-      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(vif_uuid)
+    method_option :ipv4, :type => :string, :required => false, :desc => "The ip address"
+    def dns(uuid)
+      vif = prepare_vif(uuid, options)
+      puts vif.canonical_uuid
 
       service_data = {
         :network_vif_id => vif.id,
@@ -284,9 +290,11 @@ __END
     end
 
     desc "gateway VIF PHYSICAL", "Set gateway for network"
-    def gateway(vif_uuid, phynet)
-      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(vif_uuid)
-      nw = vif.network || UnknownUUIDError.raise(uuid)
+    method_option :ipv4, :type => :string, :required => false, :desc => "The ip address"
+    def gateway(uuid, phynet)
+      vif = prepare_vif(uuid, options)
+      puts vif.canonical_uuid
+      nw = vif.network || Error.raise("Not attached to a network: #{uuid}")
       phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
 
       service_data = {
