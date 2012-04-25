@@ -38,7 +38,7 @@ module Dcmgr
         private_folder = "#{config.ve_private}/#{ctid}"
         config_file_path = "#{config.ve_config_dir}/#{ctid}.conf" 
         image = inst[:image]
-        case image[:format]
+        case image[:file_format]
         when "tgz"
           ostemplate = File.basename(image[:source][:uri], ".tar.gz")
           # create vm and config file
@@ -115,7 +115,7 @@ module Dcmgr
 
         # stop container
         sh("vzctl stop %s",[ctid])
-        case hc.inst[:image][:format]
+        case hc.inst[:image][:file_format]
         when "raw"
           sh("umount %s/%s",[config.ve_private, ctid])
         end

@@ -58,6 +58,9 @@ Sequel.migration do
       add_index [:network_vif_id, :network_id]
     end
 
+    alter_table(:images) do
+      add_column :file_format, "varchar(255)", :null=>false
+    end
   end
   
   down do
@@ -72,6 +75,10 @@ Sequel.migration do
 
     alter_table(:storage_nodes) do
       add_column :account_id, "varchar(255)", :null=>false
+    end
+
+    alter_table(:images) do
+      drop_column :file_format
     end
   end
 end
