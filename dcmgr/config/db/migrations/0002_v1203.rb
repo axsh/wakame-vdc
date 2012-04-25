@@ -60,6 +60,7 @@ Sequel.migration do
 
     alter_table(:images) do
       add_column :file_format, "varchar(255)", :null=>false
+      add_column :root_device, "varchar(255)"
     end
   end
   
@@ -79,6 +80,7 @@ Sequel.migration do
 
     alter_table(:images) do
       drop_column :file_format
+      drop_column :root_device
     end
   end
 end
