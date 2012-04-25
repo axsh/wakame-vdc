@@ -48,7 +48,7 @@ When /^instance ([^\s]+) pings ip (([^\s]+))$/ do |sender,username, ip|
     @instances[sender] = @api_last_result
   end
   
-  @ping_result[sender][ip] = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/ping.rb #{ip} #{TIMEOUT_BASE}", TIMEOUT_BASE).chomp
+  @ping_result[sender][ip] = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/ping.rb #{ip} #{TIMEOUT_PACKET_SENDING}", TIMEOUT_PACKET_SENDING).chomp
   @last_sender_name = sender
   @last_pinged_ip = ip
 end

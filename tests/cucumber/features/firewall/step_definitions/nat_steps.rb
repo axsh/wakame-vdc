@@ -39,17 +39,26 @@ end
 
 Given /^security group (.+) exists with the following rules$/ do |group_name, rules|
   @security_groups = {} if @security_groups.nil?
+  
   steps %Q{
     When we make a successful api create call to security_groups with the following options
-    | description                              |
-    | static nat test group: #{group_name}     |
+    | description                            |
+    | cucumber test group: #{group_name}     |
     Then the previous api call should be successful
     And from the previous api call take {"id":} and save it to <registry:group_#{group_name}>
+  }
+  
+  # Fill in the proper uuid if another group is referenced
+  parsed_rules = rules.gsub(/<Group (.+)>/) { |group| 
+    grp_name = group.split(" ").last
+    variable_get_value "<registry:group_#{grp_name}"
+  }
+  
+  steps %Q{
     When we successfully set the following rules for the security group
       """
-      #{rules}
+      #{parsed_rules}
       """
-    Then the previous api call should be successful
   }
 end
 
@@ -124,7 +133,12 @@ When /^instance (.+) sends a (tcp|udp) packet to ([^']+)'s (inside|outside) addr
   sender_address = @instances[sender]["vif"].first["ipv4"]["address"]
   receiver_address = @instances[receiver]["vif"].first["ipv4"][which_address]
   
-  @used_ip = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/tcp.rb #{receiver_address} #{port} #{TIMEOUT_BASE}", TIMEOUT_BASE+10).chomp
+  begin
+    @used_ip = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/tcp.rb #{receiver_address} #{port} #{TIMEOUT_PACKET_SENDING} 2> /dev/null", TIMEOUT_PACKET_SENDING+10).chomp
+  rescue RuntimeError => e
+    raise unless e.message[0..13] == "Retry Failure:"
+    @used_ip = "false"
+  end
   @last_sender = sender
 end
 
