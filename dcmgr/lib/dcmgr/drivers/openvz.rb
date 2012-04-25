@@ -50,13 +50,31 @@ module Dcmgr
           FileUtils.cp(output_file_path, config_file_path)
           # create mount directory
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
-          cmd = "mount %s %s"
-          args = [hc.os_devpath, private_folder]
-          if image[:boot_dev_type] == 2
-            cmd += " -o loop"
+          unless image[:root_device].nil?
+            # mount loopback device
+            sh("kpartx -a -s %s", [hc.os_devpath])
+            # find loopback device
+            k, v = image[:root_device].split(":")
+            case k
+            when "uuid"
+              cmd = "blkid -U %s"
+            when "label"
+              cmd = "blkid -L %s"
+            else
+              raise "unknown root device mapping key #{k}"
+            end
+            root_device = sh(cmd, [v])
+            # mount vm image file
+            sh("mount %s %s", [root_device[:stdout].chomp, private_folder])
+          else
+            cmd = "mount %s %s"
+            args = [hc.os_devpath, private_folder]
+            if image[:boot_dev_type] == 2
+              cmd += " -o loop"
+            end
+            # mount vm image file
+            sh(cmd, args)
           end
-          # mount vm image file
-          sh(cmd, args)
         end
         
         # setup openvz config file
@@ -112,12 +130,26 @@ module Dcmgr
         
         # openvz container id
         ctid = hc.inst[:id]
-
+        
+        # container directory
+        private_dir = "#{config.ve_private}/#{ctid}"
+        
         # stop container
         sh("vzctl stop %s",[ctid])
         case hc.inst[:image][:file_format]
         when "raw"
-          sh("umount %s/%s",[config.ve_private, ctid])
+          if hc.inst[:image][:root_device]
+            # find loopback device 
+            root_dev = sh("mount |grep %s | awk '{print $1}'", [private_dir])[:stdout].chomp
+            loop = root_dev.slice(/(loop[0-9]+)/)
+            lodev = "/dev/#{loop}"
+            # umount vm image directory
+            sh("umount %s",[private_dir])
+            sh("kpartx -d %s", [lodev])
+            sh("losetup -d %s", [lodev])
+          else
+            sh("umount %s",[private_dir])
+          end
         end
         sh("umount %s/metadata", [hc.inst_data_dir])
         logger.debug("stop container #{ctid}")
@@ -126,7 +158,7 @@ module Dcmgr
         sh("vzctl destroy %s",[ctid])
         sh("rm %s/%s.conf.destroyed",[config.ve_config_dir, ctid])
         sh("rm %s/%s.mount.destroyed",[config.ve_config_dir, ctid])
-        logger.debug("delete container folder #{config.ve_private}/#{ctid}")
+        logger.debug("delete container folder #{private_dir}")
       end
       
       def reboot_instance(hc)
