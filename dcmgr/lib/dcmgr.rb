@@ -256,6 +256,7 @@ module Dcmgr
 
     module OpenFlow
       autoload :ArpHandler, 'dcmgr/vnet/openflow/arp_handler'
+      autoload :IcmpHandler, 'dcmgr/vnet/openflow/icmp_handler'
       autoload :Flow, 'dcmgr/vnet/openflow/flow'
       autoload :OpenFlowConstants, 'dcmgr/vnet/openflow/constants'
       autoload :OpenFlowController, 'dcmgr/vnet/openflow/controller'

@@ -45,6 +45,10 @@ module Dcmgr
           controller.send_arp datapath_id, out_port, op_code, src_hw, src_ip, dst_hw, dst_ip
         end
 
+        def send_icmp out_port, options
+          controller.send_icmp datapath_id, out_port, options
+        end
+
         def send_udp out_port, src_hw, src_ip, src_port, dst_hw, dst_ip, dst_port, payload
           controller.send_udp datapath_id, out_port, src_hw, src_ip, src_port, dst_hw, dst_ip, dst_port, payload
         end

@@ -22,6 +22,7 @@ module Dcmgr::VNet::OpenFlow
 
     attr_reader :services
     attr_reader :arp_handler
+    attr_reader :icmp_handler
     attr_accessor :packet_handlers
 
     def initialize dp, id, virtual
@@ -38,10 +39,12 @@ module Dcmgr::VNet::OpenFlow
       @services = {}
       @packet_handlers = []
 
-      eth_ports[datapath.datapath_id] ||= []
-
       @arp_handler = ArpHandler.new
+      @icmp_handler = IcmpHandler.new
       arp_handler.install(self)
+      icmp_handler.install(self)
+
+      eth_ports[datapath.datapath_id] ||= []
     end
 
     def eth_ports
@@ -174,6 +177,7 @@ module Dcmgr::VNet::OpenFlow
 
       if virtual && services[name].ip
         arp_handler.add(services[name].mac, services[name].ip, services[name])
+        icmp_handler.add(services[name].mac, services[name].ip, services[name])
       end
     end
 

@@ -165,6 +165,39 @@ module Dcmgr
           send_packet_out(datapath_id, :data => raw_out.pack.ljust(64, "\0"), :actions => Trema::ActionOutput.new( :port => out_port ) )
         end
 
+        def send_icmp datapath_id, out_port, options
+          raw_out = Racket::Racket.new
+          raw_out.l2 = Racket::L2::Ethernet.new
+          raw_out.l2.src_mac = options[:src_hw]
+          raw_out.l2.dst_mac = options[:dst_hw]
+          
+          raw_out.l3 = Racket::L3::IPv4.new
+          raw_out.l3.src_ip = options[:src_ip]
+          raw_out.l3.dst_ip = options[:dst_ip]
+          raw_out.l3.protocol = 0x1
+          raw_out.l3.ttl = 128
+
+          case options[:op_code]
+          when Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST
+            raw_out.l4 = Racket::L4::ICMPEchoReply.new
+            raw_out.l4.id = options[:id]
+            raw_out.l4.sequence = options[:sequence]
+          else
+            raise "Unsupported ICMP type."
+          end
+
+          # raw_out.l4.payload = payload
+          raw_out.l4.fix!
+
+          raw_out.layers.compact.each { |l|
+            logger.debug "ICMP packet: layer:#{l.pretty}."
+          }
+
+          send_packet_out(datapath_id,
+                          :data => raw_out.pack.ljust(64, "\0"),
+                          :actions => Trema::ActionOutput.new(:port => out_port))
+        end
+
       end
 
 
