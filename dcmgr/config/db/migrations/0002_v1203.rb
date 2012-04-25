@@ -40,6 +40,8 @@ Sequel.migration do
       index [:network_vif_id,:name], :unique=>true
     end
 
+    drop_table(:security_group_rules)
+
     rename_table(:instance_nics, :network_vifs)
 
     alter_table(:network_vifs) do
