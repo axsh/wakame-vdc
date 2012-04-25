@@ -12,8 +12,7 @@ module Dcmgr::Models
     end
 
     def to_api_document
-      hash = super
-      hash.merge!(self.network_vif.to_api_document)
+      hash = to_hash
     end
 
     def before_validation

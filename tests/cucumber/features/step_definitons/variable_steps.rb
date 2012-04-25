@@ -24,7 +24,7 @@ end
 #   | id | name |
 #   |  1 | foo  |
 
-match_operator = '(equal to|with a size of|with the key|without the key)'
+match_operator = '(equal to|unequal to|with a size of|with the key|without the key)'
 
 def variable_get_value arg_value
   case arg_value
@@ -106,6 +106,8 @@ def variable_has_element(root, template, arg_operator, value)
     case arg_operator
     when 'equal to'
       Proc.new { |left| left == value }
+    when 'unequal to'
+      Proc.new { |left| left != value }
     when 'with a size of'
       Proc.new { |left| left.size == value }
     when 'with the key'
@@ -162,7 +164,7 @@ Then /^from the previous api call [ ]*take (.+) and save it to <([^>]+)>$/ do |t
   }  
 end
 
-Then /^from the previous api call [ ]*take (.+) and save it to <([^>]+)> for (.+) #{match_operator} (.+)$/ do |root_template,dest,match_template,operator,arg_value|
+Then /^from the previous api call [ ]*take (.+) and save it to <([^>]+)> [ ]*for (.+) #{match_operator} (.+)$/ do |root_template,dest,match_template,operator,arg_value|
   steps %Q{
     Then from <api:latest> take #{root_template} and save it to <#{dest}> for #{match_template} #{operator} #{arg_value}
   }
