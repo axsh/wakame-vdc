@@ -97,7 +97,6 @@ module Dcmgr
     autoload :Volume, 'dcmgr/models/volume'
     autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
     autoload :SecurityGroup, 'dcmgr/models/security_group'
-    autoload :SecurityGroupRule, 'dcmgr/models/security_group_rule'
     autoload :InstanceSpec, 'dcmgr/models/instance_spec'
     autoload :NetworkService, 'dcmgr/models/network_service'
     autoload :NetworkVif, 'dcmgr/models/network_vif'
