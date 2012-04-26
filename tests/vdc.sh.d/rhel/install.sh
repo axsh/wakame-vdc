@@ -9,7 +9,6 @@ export LANG=C
 export LC_ALL=C
 export DEBIAN_FRONTEND=noninteractive
 VDC_ROOT=${VDC_ROOT:?"VDC_ROOT needs to be set"}
-# export PATH=$PATH:${VDC_ROOT}/rpmbuild/bin:${VDC_ROOT}/ruby/bin
 
 # Read dependency information from debian/control.
 # % cat debian/control | debcontrol_depends
@@ -47,20 +46,20 @@ function rpmspec_depends() {
 # if someone use different release, they want to modify this conf manually. so check if it exists.
 ###[[ -f /etc/apt/apt.conf.d/99default-release ]] || cp $VDC_ROOT/debian/config/apt/99default-release /etc/apt/apt.conf.d/
 
-# rhel packages
-rpm -qa | grep epel || rpm -ivh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-5.noarch.rpm
-
-yum update -y
-yum upgrade -y
-cat ${VDC_ROOT}/rpmbuild/SPECS/*.spec | rpmspec_depends | xargs yum install -y
-
-# rabbitmq-server 2.6.1
+# 3rd party rpms
+rpm -qi epel-release >/dev/null || {
+  rpm -ivh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-5.noarch.rpm
+}
 rpm -qi rabbitmq-server | egrep ^Version | grep 2.6.1 -q || {
   rpm -ivh http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/rabbitmq-server-2.6.1-1.noarch.rpm
 }
 rpm -qi flog >/dev/null || {
   rpm -ivh http://cdimage.wakame.jp/packages/rhel/6/flog-1.8-4.$(arch).rpm
 }
+
+yum update -y
+yum upgrade -y
+cat ${VDC_ROOT}/rpmbuild/SPECS/*.spec | rpmspec_depends | xargs yum install -y
 
 # debian/rules installs local ruby binary and bundle install using the binary.
 (
