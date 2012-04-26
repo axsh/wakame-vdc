@@ -2,24 +2,19 @@
 
 set -e
 
-## Setup OS files
+export LANG=C
+export LC_ALL=C
 
-# hostname and /etc/hosts configuration
-hostname | diff /etc/hostname - >/dev/null || hostname > /etc/hostname
-egrep -v '^#' /etc/hosts | egrep -q $(hostname) || echo "127.0.0.1 $(hostname)" >> /etc/hosts
+data_path=${data_path:?"data_path needs to be set"}
+distro=${distro:?"distro needs to be set"}
 
-# always overwrite 10-hva-sysctl.conf since it may have updated entries.
-echo "Configuring sysctl.conf parameters ... /etc/sysctl.d/10-hva-sysctl.conf"
-cp ${VDC_ROOT}/debian/config/10-hva-sysctl.conf /etc/sysctl.d/
-# reload sysctls
-initctl start procps
+# before common
+(. $VDC_ROOT/tests/vdc.sh.d/setup.d/hostname.sh)
 
-# stop system services.
-for i in apparmor dnsmasq tgt; do
-  [[ -x /etc/init.d/$i ]] && {
-    /etc/init.d/$i stop
-    update-rc.d -f $i remove
-  } || :
-done
+# specified distro
+[ -d ${data_path}/${distro} ] || { echo "no such directory: ${data_path}/${distro}"; exit 1; }
+(. ${data_path}/${distro}/setup.sh)
+
+# after common
 
 exit 0
