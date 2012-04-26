@@ -132,13 +132,11 @@ function run_standalone() {
 mode=$1
 
 case ${mode} in
-  install)
-    (. $data_path/ubuntu/install.sh)
-    (. $data_path/ubuntu/setup.sh)
-    ;;
-  install::rhel)
-    (. $data_path/rhel/install.sh)
-    (. $data_path/rhel/setup.sh)
+  install|install::*)
+    # install | install::ubuntu | install::rhel | ...
+    distro=${mode##install::}; distro=${distro:-ubuntu}
+    (. $data_path/install.sh)
+    (. $data_path/setup.sh)
     ;;
   init)
     init_db

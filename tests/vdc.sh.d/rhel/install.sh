@@ -58,9 +58,4 @@ cat ${VDC_ROOT}/rpmbuild/SPECS/*.spec | rpmspec_depends | xargs yum install -y
   bundle install --path=vendor/bundle
 )
 
-(. $VDC_ROOT/tests/vdc.sh.d/install.d/config_dcmgr.sh)
-(. $VDC_ROOT/tests/vdc.sh.d/install.d/config_frontend.sh)
-(. $VDC_ROOT/tests/vdc.sh.d/install.d/tmp_dirs.sh)
-(. $VDC_ROOT/tests/vdc.sh.d/install.d/image_files.sh)
-
 exit 0

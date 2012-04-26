@@ -52,9 +52,4 @@ cat ${VDC_ROOT}/debian/control | debcontrol_depends | xargs apt-get -y --force-y
   bundle install --path=vendor/bundle
 )
 
-(. $VDC_ROOT/tests/vdc.sh.d/install.d/config_dcmgr.sh)
-(. $VDC_ROOT/tests/vdc.sh.d/install.d/config_frontend.sh)
-(. $VDC_ROOT/tests/vdc.sh.d/install.d/tmp_dirs.sh)
-(. $VDC_ROOT/tests/vdc.sh.d/install.d/image_files.sh)
-
 exit 0
