@@ -133,8 +133,8 @@ mode=$1
 
 case ${mode} in
   install)
-    (. $data_path/install.sh)
-    (. $data_path/setup.sh)
+    (. $data_path/ubuntu/install.sh)
+    (. $data_path/ubuntu/setup.sh)
     ;;
   install::rhel)
     (. $data_path/rhel/install.sh)
