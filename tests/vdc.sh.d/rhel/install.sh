@@ -10,23 +10,8 @@ export LC_ALL=C
 export DEBIAN_FRONTEND=noninteractive
 VDC_ROOT=${VDC_ROOT:?"VDC_ROOT needs to be set"}
 
-# Read dependency information from debian/control.
-# % cat debian/control | debcontrol_depends
-function debcontrol_depends() {
-  # 1. convert comma list to line list.
-  # 2. remove trailing spaces.
-  # 3. remove debian meta variables. i.e. ${shlib:Depends}
-  # 4. remove version conditions.
-  # 5. remove wakame-vdc packages.
-  awk -F: '$1 == "Depends" || $1 == "Build-Depends" { print substr($0, length($1)+2)}' | \
-    sed -e 's|\s*,\s*|\n|g' | \
-    sed -e 's/^[ ]*//g' -e 's/[ ]*$//' | \
-    sed -e '/\$/d' | \
-    sed  -e 's|[\(].*[\)]||g' | \
-    uniq | \
-    egrep -v '^wakame-vdc'
-}
-
+# Read dependency information from rpmbuild/SPECS/*.spec.
+# % cat rpmbuild/SPECS/*.spec | rpmspec_depends
 function rpmspec_depends() {
   # 1. convert space list to line list.
   # 2. remove trailing spaces.
@@ -44,7 +29,6 @@ function rpmspec_depends() {
 
 ## Install depend packages
 # if someone use different release, they want to modify this conf manually. so check if it exists.
-###[[ -f /etc/apt/apt.conf.d/99default-release ]] || cp $VDC_ROOT/debian/config/apt/99default-release /etc/apt/apt.conf.d/
 
 # 3rd party rpms
 rpm -qi epel-release >/dev/null || {
@@ -61,7 +45,7 @@ yum update -y
 yum upgrade -y
 cat ${VDC_ROOT}/rpmbuild/SPECS/*.spec | rpmspec_depends | xargs yum install -y
 
-# debian/rules installs local ruby binary and bundle install using the binary.
+# rpmbuild/rules installs local ruby binary and bundle install using the binary.
 (
   cd $VDC_ROOT
   # skip if build-stamp file exists
