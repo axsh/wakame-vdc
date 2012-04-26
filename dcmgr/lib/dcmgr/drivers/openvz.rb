@@ -52,20 +52,25 @@ module Dcmgr
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
           unless image[:root_device].nil?
             # mount loopback device
-            sh("kpartx -a -s %s", [hc.os_devpath])
+            new_device_file = sh("kpartx -a -s -v %s", [hc.os_devpath])
+            # wait udev queue
+            sh("udevadm settle")
+            # loopback device file
+            new_device_file = new_device_file[:stdout].split(nil).grep(/p[0-9]+p[0-9]+/).collect {|w| "/dev/mapper/#{w}"} 
             # find loopback device
             k, v = image[:root_device].split(":")
             case k
-            when "uuid"
-              cmd = "blkid -U %s"
-            when "label"
-              cmd = "blkid -L %s"
+            when "uuid","label"
             else
               raise "unknown root device mapping key #{k}"
             end
-            root_device = sh(cmd, [v])
-            # mount vm image file
-            sh("mount %s %s", [root_device[:stdout].chomp, private_folder])
+            search_word = "#{k.upcase}=#{v}"
+            device_file_list = sh("blkid -t %s |awk '{print $1}'", [search_word])
+            device_file_list = device_file_list[:stdout].split(":\n")
+            # root device
+            root_device = new_device_file & device_file_list
+            raise "root device does not exits #{image[:root_device]}" if root_device.empty?
+            sh("mount %s %s", [root_device[0], private_folder])
           else
             cmd = "mount %s %s"
             args = [hc.os_devpath, private_folder]
@@ -140,12 +145,12 @@ module Dcmgr
         when "raw"
           if hc.inst[:image][:root_device]
             # find loopback device 
-            root_dev = sh("mount |grep %s | awk '{print $1}'", [private_dir])[:stdout].chomp
-            loop = root_dev.slice(/(loop[0-9]+)/)
-            lodev = "/dev/#{loop}"
+            lodev = sh("losetup -a |grep %s/i |awk '{print $1}'", [hc.inst_data_dir])[:stdout].chomp.split(":")[0]
             # umount vm image directory
             sh("umount %s",[private_dir])
             sh("kpartx -d %s", [lodev])
+            # wait udev queue
+            sh("udevadm settle")
             sh("losetup -d %s", [lodev])
           else
             sh("umount %s",[private_dir])
