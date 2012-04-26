@@ -9,6 +9,15 @@ Sequel.migration do
       # StorageNode is no longer an account associated resource.
       drop_column :account_id
     end
+    
+    create_table(:security_group_references) do
+      primary_key :id, :type=>"int(11)"
+      column :referencer_id, "int(11)", :null=>false
+      column :referencee_id, "int(11)", :null=>false
+
+      index [:referencer_id]
+      index [:referencee_id]
+    end
 
     alter_table(:networks) do
       add_column :gateway_network_id, "int(11)"

@@ -7,6 +7,8 @@ module Dcmgr::Models
     taggable 'sg'
 
     many_to_many :instances,:join_table => :instance_security_groups
+    many_to_many :referencees, :class => self, :join_table => :security_group_references,:left_key => :referencer_id, :right_key => :referencee_id
+    many_to_many :referencers, :class => self, :join_table => :security_group_references,:right_key => :referencer_id, :left_key => :referencee_id
 
     def to_hash
       rules = []
@@ -16,7 +18,7 @@ module Dcmgr::Models
         
         rules << self.class.parse_rule(line.chomp)
       }
-      
+
       super.merge({
                     :rule => rule.to_s,
                     :rules => rules,
@@ -29,6 +31,34 @@ module Dcmgr::Models
     
     def after_save
       super
+    end
+
+    def before_save
+      super
+
+      current_ref_group_ids = []
+
+      # Establish relations with referenced groups
+      rule.to_s.each_line { |line|
+        next if line =~ /\A#/
+        next if line.length == 0
+
+        parsed_rule = self.class.parse_rule(line)
+        next if parsed_rule.nil?
+
+        ref_group_id = parsed_rule[:ip_source].scan(/sg-\w+/).first
+        next if ref_group_id.nil?
+
+        current_ref_group_ids << ref_group_id
+        if self.referencees.find {|ref| ref.canonical_uuid == ref_group_id}.nil? && (not SecurityGroup[ref_group_id].nil?)
+          self.add_referencee(SecurityGroup[ref_group_id])
+        end
+      }
+
+      # Destroy relations with groups that are no longer referenced
+      self.referencees_dataset.each { |referencee|
+        self.remove_referencee(referencee) unless current_ref_group_ids.member?(referencee.canonical_uuid)
+      }
     end
 
     def before_destroy
