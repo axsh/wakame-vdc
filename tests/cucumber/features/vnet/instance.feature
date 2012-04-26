@@ -7,4 +7,4 @@ Feature: Virtual Network Tests
     And the instance <instance_1:uuid> enables all network interfaces
     And the instance <instance_2:uuid> enables all network interfaces
 
-    When we ping from instance <instance_1:uuid> to <instance_2:uuid> over the network "nw-demo2"
+    When we ping from instance <instance_1:uuid> to instance <instance_2:uuid> over the network "nw-demo2"

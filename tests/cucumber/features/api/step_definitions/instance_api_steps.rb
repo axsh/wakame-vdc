@@ -25,6 +25,16 @@ Given /^a new instance with its uuid in <(.+)>$/ do |reg|
   }
 end
 
+Given /^a new instance with its uuid in <(.+)> and network scheduler (.+)$/ do |reg,arg_scheduler|
+  scheduler = variable_get_value(arg_scheduler)
+
+  steps %Q{
+    Given a new instance with its uuid in <#{reg}> and the following options
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled | network_scheduler |
+      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | false      | #{scheduler}      |
+  }
+end
+
 When /^the created instance has reached the state "(.+)"$/ do |state|
   steps %Q{
     When we wait #{TIMEOUT_BASE} seconds

@@ -155,7 +155,12 @@ module InstanceHelper
     end
 
     FileUtils.rm(private_key_path)
-    output
+    
+    if $?.exitstatus == 0
+      output
+    else
+      nil
+    end
   end
 
   def ssh_pipe(instance_id, user, command, &block)

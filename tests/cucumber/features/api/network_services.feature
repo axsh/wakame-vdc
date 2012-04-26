@@ -1,4 +1,4 @@
-@api_from_v12.03
+@api_from_v12.03 @openflow
 Feature: Network Services API
 
   Scenario: Verify default services for nw-demo6
@@ -26,3 +26,17 @@ Feature: Network Services API
     Then from <service:dhcp> take {"mac_addr":} and save it to <service:dhcp:mac_addr>
      And <service:dns>       should have {"mac_addr":} equal to <service:dhcp:mac_addr>
      And <service:gateway>   should have {"mac_addr":} unequal to <service:dhcp:mac_addr>
+
+
+  Scenario: Verify pinging of default services for nw-demo6
+
+    Given a new instance with its uuid in <instance_uuid> and network scheduler "vnet_1_6"
+      And instance <instance_uuid> enables "eth1" network interface
+
+    When the instance <instance_uuid> is connected to the network "nw-demo1" with the nic stored in <vif:>
+    Then the previous api call should have {"vif":[]} with a size of 3
+      And from <vif:> take {"ipv4":{"address":}} and save it to <vif:ipv4>
+      And we should be able to ping on ip <vif:ipv4> in 60 seconds or less
+
+    When we ping from instance <instance_uuid> to ip "10.102.0.1" over the network "nw-demo6"
+    And  we ping from instance <instance_uuid> to ip "10.102.0.2" over the network "nw-demo6"
