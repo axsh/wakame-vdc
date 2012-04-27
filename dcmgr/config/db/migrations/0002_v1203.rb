@@ -14,10 +14,12 @@ Sequel.migration do
       add_column :gateway_network_id, "int(11)"
       # VLAN ID became a physical network attribute.
       drop_column :vlan_lease_id
-      # link_interface(=bridge name) moved to physican network table
-      # since this is a physical device attribute on the host OS.
+      # link_interface(=bridge name) moved to hva.conf.
+      # this is a physical device attribute associated to the host OS.
       drop_column :link_interface
-
+      # mode name of network isolation/usage model:
+      #    securitygroup, l2overlay, passthru
+      add_column :network_mode, 'varchar(255)', :null=>false
       # Linux tc accepts floating point value as bandwidth.
       drop_column :bandwidth
       add_column :bandwidth, "float"
@@ -84,20 +86,16 @@ Sequel.migration do
       add_column :root_device, "varchar(255)"
     end
 
-    # Represents the L2 broadcast segemnt in physical network layer.
+    # DC network goes through customer traffic.
     alter_table(:physical_networks) do
       # physical interface name is described in hva.conf.
       drop_column :interface
       add_column :uuid, "varchar(255)", :null=>false
       add_column :vlan_lease_id, "int(11)"
       # Policy information
-      # Bridge information
-      # bridge name to be assigned as the host OS device name.
-      add_column :bridge, "varchar(255)", :null=>false
-      # bridge device type: ovs, bridge, macvlan
-      add_column :bridge_type, "varchar(255)", :null=>false
+      # supported network mode list
+      add_column :offering_network_modes, "text", :null=>false
 
-      add_index [:bridge], :unique=>true
       add_index [:uuid], :unique=>true, :name=>:uuid
     end
   end

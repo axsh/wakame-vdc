@@ -7,6 +7,12 @@ module Dcmgr::Models
   class Network < AccountResource
     taggable 'nw'
 
+    # Network Usage Mode. (Isolation/Firewall)
+    #   securitygroup: security grouped network.
+    #   l2overlay: L2 overlay private network. (L2 over IP)
+    #   passthru: do not apply any modifications to the packets from VM.
+    NETWORK_MODES=[:securitygroup, :l2overlay, :passthru].freeze
+
     module IpLeaseMethods
       def add_reserved(ipaddr, description=nil)
         model.create(:network_id=>model_object.id,
@@ -146,11 +152,6 @@ module Dcmgr::Models
     # Sequel methods:
     #
 
-    def before_validation
-      self.link_interface ||= "br-#{self[:uuid]}"
-      super
-    end
-
     def validate
       super
       
@@ -182,6 +183,10 @@ module Dcmgr::Models
         rescue => e
           errors.add(:dhcp_server, "Invalid IP address syntax: #{self.dhcp_server}")
         end
+      end
+
+      unless NETWORK_MODES.member?(self.network_mode.to_sym)
+        errors.add(:network_mode, "Unknown network mode: #{self.network_mode}")
       end
     end
 

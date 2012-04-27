@@ -49,6 +49,7 @@ class Network < Base
   method_option :description, :type => :string,  :desc => "Description for the network"
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
   method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
+  method_option :network_mode, :type => :string, :default=>'securitygroup', :desc => "Network mode: #{M::Network::NETWORK_MODES.join(', ')}"
   def add
     validate_ipv4_range
 
@@ -74,6 +75,7 @@ class Network < Base
   method_option :bandwidth, :type => :numeric, :desc => "The maximum bandwidth for the network in Mbit/s"
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :desc => "The account ID to own this"
+  method_option :network_mode, :type => :string, :desc => "Network mode: #{M::Network::NETWORK_MODES.join(', ')}"
   def modify(uuid)
     validate_ipv4_range
 
@@ -106,6 +108,7 @@ class Network < Base
       puts ERB.new(<<__END, nil, '-').result(binding)
 Network UUID:
   <%= nw.canonical_uuid %>
+Network Mode: <%= nw.network_mode %>
 IPv4:
   Network address: <%= nw.ipv4_ipaddress %>/<%= nw.prefix %>
   Gateway address: <%= nw.ipv4_gw %>
@@ -288,52 +291,55 @@ __END
     M=Dcmgr::Models
     
     desc "add NAME [options]", "Add new physical network. (NAME must be unique)"
-    method_option :bridge, :type => :string, :desc => "Bridge device name on the host node. (unique)"
-    method_option :bridge_type, :type => :string, :default=>'private', :desc => "Bridge device type: #{M::PhysicalNetwork::BRIDGE_TYPES.join(', ')}"
+    method_option :uuid, :type => :string, :desc => "UUID of the network"
     method_option :description, :type => :string, :desc => "Description for the physical network"
     def add(name)
       M::PhysicalNetwork.find(:name=>name) && Error.raise("Duplicate physical network name: #{name}", 100)
-      if options[:bridge]
-        M::PhysicalNetwork.find(:bridge=>options[:bridge]) && Error.raise("Duplicate bridge name: #{options[:bridge]}", 100)
-      end
-      if options[:bridge_type] && !M::PhysicalNetwork::BRIDGE_TYPES.member?(options[:bridge_type].to_sym)
-        Error.raise("Unknown bridge type: #{options[:bridge_type]}", 100)
-      end
       
       fields={
         :name=>name,
-        :bridge=>options[:bridge],
-        :bridge_type=>options[:bridge_type],
         :description=>options[:description],
       }
       M::PhysicalNetwork.create(fields)
     end
 
     desc "modify NAME [options]", "Modify physical network parameters"
-    method_option :bridge, :type => :string, :desc => "Bridge device name on the host node. (unique)"
-    method_option :bridge_type, :type => :string, :default=>'private', :desc => "Bridge device type: #{M::PhysicalNetwork::BRIDGE_TYPES.join(', ')}"
     method_option :description, :type => :string, :desc => "Description for the physical network"
     def modify(name)
-      phy = M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
-
+      phy = find_by_name_or_uuid(uuid)
       phy.update_only({
                    :description=>options[:description],
                  })
     end
 
-    desc "del NAME [options]", "Delete physical network"
+    desc "add-network-mode UUID/NAME MODENAME", "Add network mode (#{M::Network::NETWORK_MODES.join(', ')})"
+    def add_network_mode(uuid, modename)
+      phy = find_by_name_or_uuid(uuid)
+      phy.offering_network_modes.push(modename)
+      phy.save
+    end
+
+    desc "del-network-mode UUID/NAME MODENAME", "Delete network mode (#{M::Network::NETWORK_MODES.join(', ')})"
+    def del_network_mode(uuid, modename)
+      phy = find_by_name_or_uuid(uuid)
+      phy.offering_network_modes.delete(modename)
+      phy.save
+    end
+
+    desc "del UUID/NAME [options]", "Delete physical network"
     def del(name)
-      phy = M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
+      phy = M::PhysicalNetwork[uuid] || M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
       phy.destroy
     end
     
-    desc "show [NAME]", "Show/List physical network"
+    desc "show [UUID/NAME]", "Show/List physical network"
     def show(name=nil)
       if name
-        phy = M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
+        phy = find_by_name_or_uuid(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
-Physical Network:       <%= phy.name %>
-Forwarding Interface:   <%= phy.interface.nil? ? 'none': phy.interface %>
+Physical Network UUID: <%= phy.canonical_uuid %>
+Physical Network Name: <%= phy.name %>
+Offering Network Mode: <%= phy.offering_network_modes.join(', ') %>
 <%- if phy.description -%>
 Description:
 <%= phy.description %>
@@ -342,7 +348,7 @@ __END
       else
     print ERB.new(<<__END, nil, '-').result(binding)
 <%- M::PhysicalNetwork.order(:id).all.each { |l| -%>
-<%= "%-20s  %-15s" % [l.name, l.interface] %>
+<%= "%-20s  %-15s" % [l.canoical_uuid, l.name] %>
 <%- } -%>
 __END
       end
@@ -352,6 +358,16 @@ __END
     def self.basename
       "vdc-manage #{Network.namespace} #{self.namespace}"
     end
+
+    no_tasks {
+      def find_by_name_or_uuid(name)
+        begin
+          M::PhysicalNetwork[name]
+        rescue
+          M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
+        end
+      end
+    }
   end
   register PhyOps, 'phy', "phy [options]", "Maintain physical network"
 

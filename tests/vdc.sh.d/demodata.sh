@@ -30,10 +30,12 @@ esac
 cd ${VDC_ROOT}/dcmgr/
 
 # Physical network definitions
-shlog ./bin/vdc-manage network phy add eth0 --bridge br0 --bridge-type=bridge
+shlog ./bin/vdc-manage network phy add public
+shlog ./bin/vdc-manage network phy add-network-mode public securitygroup
+shlog ./bin/vdc-manage network phy del-network-mode public passthru
 # bridge only closed network
-shlog ./bin/vdc-manage network phy add null1 --bridge br-null1 --bridge-type private
-shlog ./bin/vdc-manage network phy add null2 --bridge br-null2 --bridge-type private
+shlog ./bin/vdc-manage network phy add null1
+shlog ./bin/vdc-manage network phy add null2
 
 # vlan
 #shlog ./bin/vdc-manage vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
@@ -74,9 +76,9 @@ shlog ./bin/vdc-manage network add \
  --metric 10
 
 # set forward interface(= physical network) from network
-shlog ./bin/vdc-manage network forward nw-demo1 eth0
-shlog ./bin/vdc-manage network forward nw-demo2 eth0
-shlog ./bin/vdc-manage network forward nw-demo3 eth0
+shlog ./bin/vdc-manage network forward nw-demo1 public
+shlog ./bin/vdc-manage network forward nw-demo2 public
+shlog ./bin/vdc-manage network forward nw-demo3 public
 shlog ./bin/vdc-manage network forward nw-demo4 null1
 shlog ./bin/vdc-manage network forward nw-demo5 null2
 shlog ./bin/vdc-manage network forward nw-demo6 null1
