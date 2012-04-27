@@ -53,6 +53,10 @@ module Dcmgr
           unless image[:root_device].nil?
             # mount loopback device
             new_device_file = sh("kpartx -a -s -v %s", [hc.os_devpath])
+            #
+            # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
+            # add map loop2p2 (253:3): 0 249856 linear /dev/loop2 974848
+            #
             # wait udev queue
             sh("udevadm settle")
             # loopback device file
@@ -66,6 +70,10 @@ module Dcmgr
             end
             search_word = "#{k.upcase}=#{v}"
             device_file_list = sh("blkid -t %s |awk '{print $1}'", [search_word])
+            #
+            # /dev/mapper/loop0p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4" 
+            # /dev/mapper/loop2p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
+            #
             device_file_list = device_file_list[:stdout].split(":\n")
             # root device
             root_device = new_device_file & device_file_list
@@ -94,13 +102,26 @@ module Dcmgr
             host_ifname = vif[:uuid]
             bridge = vif[:network][:link_interface]
             sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[ctid, ifname, mac, host_ifname, mac, bridge])
+            #
+            # NETIF="ifname=eth0,bridge=vzbr0,mac=52:54:00:68:BB:AC,host_ifname=vif-h63jg7pp,host_mac=52:54:00:68:BB:AC"
+            #
           }
         end
         # set cpus
         sh("vzctl set %s --cpus %s --save",[ctid, inst_spec[:cpu_cores]])
+        #
+        # CPUS="1"
+        #
+        
         # set memory size
         sh("vzctl set %s --privvmpage %s --save",[ctid, (inst_spec[:memory_size] * 256)])
+        #
+        # PRIVVMPAGES="65536"
+        #
         sh("vzctl set %s --vmguarpages %s --save",[ctid, (inst_spec[:memory_size] * 256)])
+        #
+        # VMGUARPAGES="65536"
+        # 
         
         # setup metadata drive
         hn_metadata_path = "#{config.ve_root}/#{ctid}/metadata"
@@ -145,6 +166,10 @@ module Dcmgr
         when "raw"
           # find loopback device 
           lodev = sh("losetup -a |grep %s/i |awk '{print $1}'", [hc.inst_data_dir])[:stdout].chomp.split(":")[0]
+          #
+          # /dev/loop0: [0801]:151429 (/path/to/dir/i-xxxx*)
+          #
+          
           # umount vm image directory
           sh("umount -d %s", [private_dir])
           if hc.inst[:image][:root_device]
