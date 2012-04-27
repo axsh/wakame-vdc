@@ -143,20 +143,19 @@ module Dcmgr
         sh("vzctl stop %s",[ctid])
         case hc.inst[:image][:file_format]
         when "raw"
+          # find loopback device 
+          lodev = sh("losetup -a |grep %s/i |awk '{print $1}'", [hc.inst_data_dir])[:stdout].chomp.split(":")[0]
+          # umount vm image directory
+          sh("umount -d %s", [private_dir])
           if hc.inst[:image][:root_device]
-            # find loopback device 
-            lodev = sh("losetup -a |grep %s/i |awk '{print $1}'", [hc.inst_data_dir])[:stdout].chomp.split(":")[0]
-            # umount vm image directory
-            sh("umount %s",[private_dir])
+            # delete device maps
             sh("kpartx -d %s", [lodev])
             # wait udev queue
             sh("udevadm settle")
             sh("losetup -d %s", [lodev])
-          else
-            sh("umount %s",[private_dir])
           end
         end
-        sh("umount %s/metadata", [hc.inst_data_dir])
+        sh("umount -d %s/metadata", [hc.inst_data_dir])
         logger.debug("stop container #{ctid}")
 
         # delete container folder
