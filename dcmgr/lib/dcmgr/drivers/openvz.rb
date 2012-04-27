@@ -52,7 +52,9 @@ module Dcmgr
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
           unless image[:root_device].nil?
             # mount loopback device
-            new_device_file = sh("kpartx -a -s -v %s", [hc.os_devpath])
+            lodev = sh("losetup -f")[:stdout].chomp
+            sh("losetup %s %s", [lodev, hc.os_devpath])
+            new_device_file = sh("kpartx -a -s -v %s", [lodev])
             #
             # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
             # add map loop2p2 (253:3): 0 249856 linear /dev/loop2 974848
