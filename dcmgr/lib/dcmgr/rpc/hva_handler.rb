@@ -118,12 +118,12 @@ module Dcmgr
 
       def attach_vnic_to_port
         sh("/sbin/ip link set %s up", [@nic_id])
-        sh("/usr/sbin/brctl addif %s %s", [@link_interface, @nic_id])
+        sh("/usr/sbin/brctl addif %s %s", [@bridge, @nic_id])
       end
 
       def detach_vnic_from_port
         sh("/sbin/ip link set %s down", [@nic_id])
-        sh("/usr/sbin/brctl delif %s %s", [@link_interface, @nic_id])
+        sh("/usr/sbin/brctl delif %s %s", [@bridge, @nic_id])
       end
 
       def get_linux_dev_path
@@ -439,30 +439,30 @@ module Dcmgr
         update_volume_state_to_available
       end
 
+      def bridge_if(dc_network_name)
+        dcn = Dcmgr.conf.dc_networks[dc_network_name]
+        raise "Unknown DC network: #{dc_network_name}" if dcn.nil?
+        dcn.bridge
+      end
+      
       job :attach_nic do
-        @link_interface = request.args[0]
+        @dc_network_name = request.args[0]
         @nic_id = request.args[1]
         @port_id = request.args[2]
 
-        if @link_interface
-          logger.info("Attaching #{@nic_id} to #{@port_id} on #{@link_interface}.")
-          attach_vnic_to_port
-        else
-          logger.info("Attaching #{@nic_id} to #{@port_id} failed: no network / link interface found.")
-        end
+        @bridge = bridge_if(@dc_network_name)
+        logger.info("Attaching #{@nic_id} to #{@port_id} on #{@bridge}.")
+        attach_vnic_to_port
       end
 
       job :detach_nic do
-        @link_interface = request.args[0]
+        @dc_network_name = request.args[0]
         @nic_id = request.args[1]
         @port_id = request.args[2]
 
-        if @link_interface
-          logger.info("Detaching #{@nic_id} from #{@port_id} on #{@link_interface}.")
-          detach_vnic_from_port
-        else
-          logger.info("Detaching #{@nic_id} from #{@port_id} failed: no network / link interface found.")
-        end
+        @bridge = bridge_if(@dc_network_name)
+        logger.info("Detaching #{@nic_id} from #{@port_id} on #{@bridge}.")
+        detach_vnic_from_port
       end
 
       job :reboot, proc {

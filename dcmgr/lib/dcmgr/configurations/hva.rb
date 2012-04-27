@@ -4,33 +4,43 @@ module Dcmgr
   module Configurations
     class Hva < Configuration
       
-      class Network < Configuration
+      class DcNetwork < Configuration
         param :interface
         param :bridge
+        param :bridge_type
 
         def initialize(network_name)
           super()
-          @config[:network] = network_name
+          @config[:name] = network_name
         end
         
         def validate(errors)
-          errors << "Missing interface parameter" unless @config[:interface]
-          errors << "Missing bridge parameter" unless @config[:bridge]
+          errors << "Missing interface parameter for the network #{@config[:name]}" unless @config[:interface]
+          errors << "Missing bridge_type parameter for the network #{@config[:name]}" unless @config[:bridge_type]
+
+          case @config[:bridge_type]
+          when 'ovs', 'linux'
+            # bridge name is needed in this case.
+            errors << "Missing bridge parameter for the network #{@config[:name]}" unless @config[:bridge]
+          when 'macvlan'
+          when 'private'
+          else
+            errors << "Unknown type value for bridge_type: #{@config[:bridge_type]}"
+          end
         end
       end
       
       module DSL
-        def network(name, &blk)
+        def dc_network(name, &blk)
           abort "" unless blk
           
-          conf = Network.new(name)
-          @config[:networks] ||= {}
-          @config[:networks][name] = conf.parse_dsl(&blk)
+          conf = DcNetwork.new(name)
+          @config[:dc_networks] ||= {}
+          @config[:dc_networks][name] = conf.parse_dsl(&blk)
         end
       end
 
       param :vm_data_dir
-      param :edge_networking, :default=>'netfilter'
       param :enable_iptables, :default=>true
       param :enable_ebtables, :default=>true
       param :hv_ifindex, :default=>2
@@ -48,9 +58,9 @@ module Dcmgr
       param :ovs_ofctl_path, :default => '/usr/bin/ovs-ofctl'
       # Trema base directory
       param :trema_dir, :default=>'/home/demo/trema'
-      param :trema_tmp, :default=>lambda do
+      param :trema_tmp, :default=> proc {
         @config[:trema_tmp] || (@config[:trema_dir] + '/tmp')
-      end
+      }
       
       param :esxi_ipaddress
       param :esxi_datacenter, :default => "ha-datacenter"

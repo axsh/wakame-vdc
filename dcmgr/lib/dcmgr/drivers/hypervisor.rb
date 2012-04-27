@@ -20,22 +20,22 @@ module Dcmgr
           network = hc.rpc.request('hva-collector', 'get_network', vnic[:network_id])
           
           network_name = network[:physical_network][:name]
-          local_conf = Dcmgr.conf.networks[network_name]
-          if local_conf.nil?
+          dcn = Dcmgr.conf.dc_networks[network_name]
+          if dcn.nil?
             raise "Missing local configuration for the network: #{network_name}"
           end
-          unless valid_nic?(local_conf.interface)
-            raise "Interface not found for the network #{network_name}: #{local_conf.interface}"
+          unless valid_nic?(dcn.interface)
+            raise "Interface not found for the network #{network_name}: #{dcn.interface}"
           end
-          unless valid_nic?(local_conf.bridge)
-            raise "Bridge not found for the network #{network_name}: #{local_conf.bridge}"
+          unless valid_nic?(dcn.bridge)
+            raise "Bridge not found for the network #{network_name}: #{dcn.bridge}"
           end
           
-          fwd_if = local_conf.interface
-          bridge_if = local_conf.bridge
+          fwd_if = dcn.interface
+          bridge_if = dcn.bridge
 
           if network[:physical_network][:vlan_lease]
-            fwd_if = "#{local_conf.interface}.#{network[:physical_network][:vlan_lease][:tag_id]}"
+            fwd_if = "#{dcn.interface}.#{network[:physical_network][:vlan_lease][:tag_id]}"
             bridge_if = network[:physical_network][:uuid]
             unless valid_nic?(fwd_if)
               sh("/sbin/vconfig add #{phy_if} #{network[:vlan_id]}")
@@ -123,16 +123,6 @@ module Dcmgr
           raise "Unknown hypervisor type: #{hypervisor}"
         end
         hv
-      end
-
-      protected
-      def bridge_if_name(physical_network_data)
-        local_conf = Dcmgr.conf.networks[physical_network_data[:name]]
-        if physical_network_data[:vlan_lease]
-          physical_network_data[:uuid]
-        else
-          local_conf.bridge
-        end
       end
     end
   end

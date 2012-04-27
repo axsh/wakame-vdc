@@ -157,14 +157,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # Check that the vif belongs to network?
 
     instance = vif.instance
+    vif.attach_to_network(nw)
 
     # Find better way of figuring out when an instance is not running.
     if instance.host_node
       Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
-                             nw.link_interface, vif.canonical_uuid)
+                             nw.physical_network.name, vif.canonical_uuid)
     end
 
-    vif.attach_to_network(nw)
     response_to({})
   end
 
@@ -181,14 +181,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     raise(E::NetworkVifNotAttached) if vif.network_id != nw.id
 
     instance = vif.instance
+    vif.detach_from_network
 
     # Find better way of figuring out when an instance is not running.
     if instance.host_node
       Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
-                             nw.link_interface, vif.canonical_uuid)
+                             nw.physical_network.name, vif.canonical_uuid)
     end
 
-    vif.detach_from_network
     response_to({})
   end
 
