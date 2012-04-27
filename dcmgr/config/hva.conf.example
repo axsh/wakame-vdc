@@ -3,50 +3,56 @@
 #------------------------
 
 # directory to store VM local data.
-config.vm_data_dir = "/home/demo/vm"
+vm_data_dir "/home/demo/vm"
 
 # Specific options for the ESXi hypervisor
 # These will be ignored if another hypervisor is used
-config.esxi_ipaddress     = "10.0.0.1"
-config.esxi_datacenter    = "ha-datacenter"
-config.esxi_datastore     = "datastore1"
-config.esxi_username      = "root"
-config.esxi_password      = "Some.Password1"
+esxi_ipaddress     "10.0.0.1"
+esxi_datacenter    "ha-datacenter"
+esxi_datastore     "datastore1"
+esxi_username      "root"
+esxi_password      "Some.Password1"
 # Setting this option to true lets you use SSL with untrusted certificates
-config.esxi_insecure      = false
+esxi_insecure      false
 
 # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
 # * 'netfilter'
 # * 'legacy_netfilter' #no longer supported, has issues with multiple vnic vm isolation
 # * 'openflow' #experimental, requires additional setup
 # * 'off'
-config.edge_networking = 'netfilter'
+edge_networking 'netfilter'
 
 # netfilter and openflow
-config.enable_ebtables = true
-config.enable_iptables = true
-config.enable_gre      = false
-config.enable_subnet   = false
+enable_ebtables true
+enable_iptables true
+enable_gre      false
+enable_subnet   false
 
 # display netfilter and openflow commands
-config.verbose_netfilter = false
-config.verbose_openflow  = false
+verbose_netfilter false
+verbose_openflow  false
 
 # netfilter log output flag
-config.packet_drop_log = false
+packet_drop_log false
 
 # debug netfilter
-config.debug_iptables = false
+debug_iptables false
 
 # Use ipset for netfilter
-config.use_ipset       = false
+use_ipset       false
 
 # Directory used by Open vSwitch daemon for run files
-config.ovs_run_dir = '/usr/var/run/openvswitch'
+ovs_run_dir '/usr/var/run/openvswitch'
 
 # Path for ovs-ofctl
-config.ovs_ofctl_path = '/usr/bin/ovs-ofctl'
+ovs_ofctl_path '/usr/bin/ovs-ofctl'
 
 # Trema base directory
-config.trema_dir = '/home/demo/trema'
-config.trema_tmp = '/home/demo/trema/tmp'
+trema_dir '/home/demo/trema'
+trema_tmp '/home/demo/trema/tmp'
+
+dc_network("public") {
+  bridge_type "linux"
+  interface "eth0"
+  bridge "br0"
+}
