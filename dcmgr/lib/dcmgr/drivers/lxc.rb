@@ -130,7 +130,7 @@ module Dcmgr
             vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
               f.puts "lxc.network.type = veth"
               if vif[:ipv4]
-                f.puts "lxc.network.link = #{vif[:ipv4][:network][:link_interface]}"
+                f.puts "lxc.network.link = #{bridge_if_name(vif[:ipv4][:network][:physical_network])}"
               end
               f.puts "lxc.network.veth.pair = #{vif[:uuid]}"
               f.puts "lxc.network.hwaddr = #{vif[:mac_addr].unpack('A2'*6).join(':')}"
