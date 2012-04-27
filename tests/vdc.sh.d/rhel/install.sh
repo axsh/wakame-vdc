@@ -32,7 +32,7 @@ function rpmspec_depends() {
 
 # 3rd party rpms
 (
- yum -qi curl >/dev/null || yum install -y curl
+ rpm -qi curl >/dev/null || yum install -y curl
 
  [ -d $VDC_ROOT/tests/vdc.sh.d/rhel/vendor ] || mkdir -p $VDC_ROOT/tests/vdc.sh.d/rhel/vendor
  cd $VDC_ROOT/tests/vdc.sh.d/rhel/vendor
