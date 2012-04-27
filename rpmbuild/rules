@@ -40,25 +40,16 @@ install: build
 	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/dcmgr/config/*.yml
 	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/frontend/dcmgr_gui/config/*.yml
 
-	# for unicorn shebang
-	fgrep -m 1 -r '#!/this/will/be/overwritten/or/wrapped/anyways/do/not/worry/ruby' $(CURDIR) | \
-	  grep -v '^Binary file' | \
-	  awk -F: '{print $$1}' | \
-	  while read -r i; do \
-	    echo $$i; \
-	    cp -p $$i $$i.sed ;\
-	    sed -e 's|#!/this/will/be/overwritten/or/wrapped/anyways/do/not/worry/ruby|#!$(VDC_INSTALL_ROOT)/ruby/bin/ruby|g' < $$i > $$i.sed ;\
-	    mv $$i.sed $$i ;\
-	  done
-
 	# replace /usr/bin/ruby shebangs.
-	fgrep -m 1 -r '#!/usr/bin/ruby' $(CURDIR) | \
+	# unicorn shebang: /this/will/be/overwritten/or/wrapped/anyways/do/not/worry/ruby
+	# statemachine: /opt/local/bin/ruby
+	egrep -m 1 -r '^#!.*/ruby'  $(CURDIR) | \
 	  grep -v '^Binary file' | \
 	  awk -F: '{print $$1}' | \
 	  while read -r i; do \
 	    echo $$i; \
 	    cp -p $$i $$i.sed ;\
-	    sed -e 's|#!/usr/bin/ruby|#!$(VDC_INSTALL_ROOT)/ruby/bin/ruby|g' < $$i > $$i.sed ;\
+	    sed -e 's|^#!.*/ruby|#!$(VDC_INSTALL_ROOT)/ruby/bin/ruby|g' < $$i > $$i.sed ;\
 	    mv $$i.sed $$i ;\
 	  done
 
