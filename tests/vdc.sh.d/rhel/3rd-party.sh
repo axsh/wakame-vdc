@@ -39,7 +39,7 @@ function download_3rd_party() {
   list_3rd_party | while read pkg_name pkg_uri; do
     echo downloading ${pkg_name} ...
     [ -f ${vendor_dir}/$(basename ${pkg_uri}) ] || {
-      curl ${pkg_uri} > ${vendor_dir}/${pkg_name}
+      curl ${pkg_uri} > ${vendor_dir}/$(basename ${pkg_uri})
     }
   done
 }
