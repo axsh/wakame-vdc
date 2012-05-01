@@ -134,7 +134,7 @@ mode=$1
 case ${mode} in
   install|install::*)
     # install | install::ubuntu | install::rhel | ...
-    distro=${mode##install::}; distro=${distro:-ubuntu}
+    distro=${mode##install::}; [[ "${distro}" = "install" ]] && distro=ubuntu
     (. $data_path/install.sh)
     (. $data_path/setup.sh)
     ;;
