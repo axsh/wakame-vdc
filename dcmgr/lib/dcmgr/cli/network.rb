@@ -289,13 +289,12 @@ __END
       M::NetworkService.create(service_data)
     end
 
-    desc "gateway VIF PHYSICAL", "Set gateway for network"
-    method_option :ipv4, :type => :string, :required => false, :desc => "The ip address"
-    def gateway(uuid, phynet)
-      vif = prepare_vif(uuid, options)
-      puts vif.canonical_uuid
-      nw = vif.network || Error.raise("Not attached to a network: #{uuid}")
-      phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
+    desc "gateway VIF", "Set gateway for network"
+    method_option :ipv4_from, :type => :string, :required => false, :desc => "The ip address"
+    def gateway(uuid_from)
+      vif = prepare_vif(uuid_from, {:ipv4 => options[:ipv4_from]})
+      nw = vif.network || Error.raise("Not attached to a network: #{uuid_from}")
+      puts "#{vif.canonical_uuid}"
 
       service_data = {
         :network_vif_id => vif.id,
