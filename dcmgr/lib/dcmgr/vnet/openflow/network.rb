@@ -175,7 +175,7 @@ module Dcmgr::VNet::OpenFlow
       self.services[name] = service
       service.install(self)
 
-      if virtual && services[name].ip
+      if virtual && services[name].ip && service_map[:instance_uuid].nil?
         arp_handler.add(services[name].mac, services[name].ip, services[name])
         icmp_handler.add(services[name].mac, services[name].ip, services[name])
       end
