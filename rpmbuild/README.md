@@ -41,3 +41,22 @@ Installing Wakame-VDC RPMs
 --------------------------
 
     # yum install /root/rpmbuild/RPMS/x86_64/wakame-vdc-*.rpm
+
+Developing Wakame-VDC RPMs
+--------------------------
+
+### Deploying Wakame-VDC
+
+    $ [ -d ~/rpmbuild/BUILD/ ] || mkdir -p ~/rpmbuild/BUILD/
+    $ cd ~/rpmbuild/BUILD/
+    $ git clone git://github.com/axsh/wakame-vdc.git wakame-vdc-12.03
+    $ cd wakame-vdc-12.03
+
+### Modifying files.
+
+    $ vi ./path/to/file...
+
+#### Building RPMs using SPEC.
+
+    $ rpmbuild -bc --short-circuit ./rpmbuild/SPECS/wakame-vdc.spec
+    $ rpmbuild -bb --short-circuit ./rpmbuild/SPECS/wakame-vdc.spec
