@@ -20,6 +20,8 @@ Sequel.migration do
       # mode name of network isolation/usage model:
       #    securitygroup, l2overlay, passthru
       add_column :network_mode, 'varchar(255)', :null=>false
+      # physical_networks table has been renamed to dc_networks.
+      rename_column :physical_network_id, :dc_network_id
       # Linux tc accepts floating point value as bandwidth.
       drop_column :bandwidth
       add_column :bandwidth, "float"
@@ -74,11 +76,11 @@ Sequel.migration do
     end
     
     alter_table(:vlan_leases) do
-      # VLAN refers this physical network.
-      add_column :physical_network_id, "int(11)", :null=>false
+      # The network underlaying this VLAN entry.
+      add_column :dc_network_id, "int(11)", :null=>false
       # change uniqueness condition to combine physical network
       drop_index :tag_id
-      add_index [:physical_network_id, :tag_id], :unique=>true
+      add_index [:dc_network_id, :tag_id], :unique=>true
     end
 
     alter_table(:images) do
@@ -86,8 +88,10 @@ Sequel.migration do
       add_column :root_device, "varchar(255)"
     end
 
+    rename_table(:physical_networks, :dc_networks)
+    
     # DC network goes through customer traffic.
-    alter_table(:physical_networks) do
+    alter_table(:dc_networks) do
       # physical interface name is described in hva.conf.
       drop_column :interface
       add_column :uuid, "varchar(255)", :null=>false
@@ -120,7 +124,7 @@ Sequel.migration do
     end
 
     alter_table(:vlan_leases) do
-      drop_column :physical_network_id
+      drop_column :dc_network_id
       drop_index :tag_id
       add_index [:tag_id], :unique=>true
     end
@@ -130,6 +134,8 @@ Sequel.migration do
       add_column :vlan_lease_id, "int(11)", :default=>0, :null=>false
       add_column :link_interface, "varchar(255)", :null=>false
     end
+
+    rename_table(:dc_networks, :physical_networks)
 
     alter_table(:physical_networks) do
       add_column :interface, "varchar(255)"

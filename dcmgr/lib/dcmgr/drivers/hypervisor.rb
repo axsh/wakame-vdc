@@ -19,7 +19,7 @@ module Dcmgr
 
           network = hc.rpc.request('hva-collector', 'get_network', vnic[:network_id])
           
-          network_name = network[:physical_network][:name]
+          network_name = network[:dc_network][:name]
           dcn = Dcmgr.conf.dc_networks[network_name]
           if dcn.nil?
             raise "Missing local configuration for the network: #{network_name}"
@@ -34,9 +34,9 @@ module Dcmgr
           fwd_if = dcn.interface
           bridge_if = dcn.bridge
 
-          if network[:physical_network][:vlan_lease]
-            fwd_if = "#{dcn.interface}.#{network[:physical_network][:vlan_lease][:tag_id]}"
-            bridge_if = network[:physical_network][:uuid]
+          if network[:dc_network][:vlan_lease]
+            fwd_if = "#{dcn.interface}.#{network[:dc_network][:vlan_lease][:tag_id]}"
+            bridge_if = network[:dc_network][:uuid]
             unless valid_nic?(fwd_if)
               sh("/sbin/vconfig add #{phy_if} #{network[:vlan_id]}")
               sh("/sbin/ip link set %s up", [fwd_if])

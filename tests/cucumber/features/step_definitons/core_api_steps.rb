@@ -62,7 +62,7 @@ When /^we make an api (create|update|delete|get|post|put) call to (.+) with no o
 
   initiate_api_call_results if @api_call_results.nil?
   @api_last_request = {:collection=>suffix, :action=>call, :options=>nil }
-  @api_last_result = APITest.send_action(call,"/#{suffix}",{})
+p  @api_last_result = APITest.send_action(call,"/#{suffix}",{})
   @api_call_results[call][suffix] = @api_last_result
   @registry['api:latest'] = @api_last_result.parsed_response
 end

@@ -178,11 +178,11 @@ __END
     end
   end
 
-  desc "forward UUID PHYSICAL", "Set forward interface for network"
-  def forward(uuid, phynet)
+  desc "forward UUID DCNET", "Set forward interface for the network"
+  def forward(uuid, dcnet)
     nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-    phy = M::PhysicalNetwork.find(:name=>phynet) || Error.raise("Unknown physical network: #{phynet}")
-    nw.physical_network = phy
+    dc = M::DcNetwork.find(:name=>dcnet) || Error.raise("Unknown dc network: #{dcnet}")
+    nw.dc_network = dc
     nw.save
   end
 
@@ -286,68 +286,66 @@ __END
   end
   register ServiceOps, 'service', "service [options]", "Maintain network services"
 
-  class PhyOps < Base
-    namespace :phy
+  class DcOps < Base
+    namespace :dc
     M=Dcmgr::Models
     
-    desc "add NAME [options]", "Add new physical network. (NAME must be unique)"
+    desc "add NAME [options]", "Add new dc network. (NAME must be unique)"
     method_option :uuid, :type => :string, :desc => "UUID of the network"
-    method_option :description, :type => :string, :desc => "Description for the physical network"
+    method_option :description, :type => :string, :desc => "Description for the dc network"
     def add(name)
-      M::PhysicalNetwork.find(:name=>name) && Error.raise("Duplicate physical network name: #{name}", 100)
+      M::DcNetwork.find(:name=>name) && Error.raise("Duplicate dc network name: #{name}", 100)
       
-      fields={
-        :name=>name,
-        :description=>options[:description],
-      }
-      M::PhysicalNetwork.create(fields)
+      fields=options.dup
+      fields[:name]=name
+      puts super(M::DcNetwork, fields)
     end
 
-    desc "modify NAME [options]", "Modify physical network parameters"
-    method_option :description, :type => :string, :desc => "Description for the physical network"
-    def modify(name)
-      phy = find_by_name_or_uuid(uuid)
-      phy.update_only({
-                   :description=>options[:description],
-                 })
+    desc "modify UUID/NAME [options]", "Modify dc network parameters"
+    method_option :uuid, :type => :string, :desc => "UUID of the network"
+    method_option :name, :type => :string, :desc => "Name of the network"
+    method_option :description, :type => :string, :desc => "Description for the dc network"
+    def modify(uuid)
+      dc = find_by_name_or_uuid(uuid)
+      super(M::DcNetwork, dc.canonical_uuid, options.dup)
     end
 
     desc "add-network-mode UUID/NAME MODENAME", "Add network mode (#{M::Network::NETWORK_MODES.join(', ')})"
     def add_network_mode(uuid, modename)
-      phy = find_by_name_or_uuid(uuid)
-      phy.offering_network_modes.push(modename)
-      phy.save
+      dc = find_by_name_or_uuid(uuid)
+      dc.offering_network_modes.push(modename)
+      dc.save
     end
 
     desc "del-network-mode UUID/NAME MODENAME", "Delete network mode (#{M::Network::NETWORK_MODES.join(', ')})"
     def del_network_mode(uuid, modename)
-      phy = find_by_name_or_uuid(uuid)
-      phy.offering_network_modes.delete(modename)
-      phy.save
+      dc = find_by_name_or_uuid(uuid)
+      dc.offering_network_modes.delete(modename)
+      dc.save
     end
 
-    desc "del UUID/NAME [options]", "Delete physical network"
+    desc "del UUID/NAME [options]", "Delete dc network"
     def del(name)
-      phy = M::PhysicalNetwork[uuid] || M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
-      phy.destroy
+      dc = find_by_name_or_uuid(name)
+      dc.destroy
     end
     
-    desc "show [UUID/NAME]", "Show/List physical network"
+    desc "show [UUID/NAME]", "Show/List dc network"
     def show(name=nil)
       if name
-        phy = find_by_name_or_uuid(uuid)
+        dc = find_by_name_or_uuid(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
-Physical Network UUID: <%= phy.canonical_uuid %>
-Physical Network Name: <%= phy.name %>
-Offering Network Mode: <%= phy.offering_network_modes.join(', ') %>
-<%- if phy.description -%>
+DC Network UUID: <%= dc.canonical_uuid %>
+DC Network Name: <%= dc.name %>
+Offering Network Mode: <%= dc.offering_network_modes.join(', ') %>
+<%- if dc.description -%>
 Description:
-<%= phy.description %>
+<%= dc.description %>
 <%- end -%>
 __END
       else
     print ERB.new(<<__END, nil, '-').result(binding)
-<%- M::PhysicalNetwork.order(:id).all.each { |l| -%>
+<%- M::DcNetwork.order(:id).all.each { |l| -%>
 <%= "%-20s  %-15s" % [l.canoical_uuid, l.name] %>
 <%- } -%>
 __END
@@ -362,14 +360,14 @@ __END
     no_tasks {
       def find_by_name_or_uuid(name)
         begin
-          M::PhysicalNetwork[name]
+          M::DcNetwork[name]
         rescue
-          M::PhysicalNetwork.find(:name=>name) || Error.raise("Unknown physical network: #{name}", 100)
+          M::DcNetwork.find(:name=>name) || Error.raise("Unknown dc network: #{name}", 100)
         end
       end
     }
   end
-  register PhyOps, 'phy', "phy [options]", "Maintain physical network"
+  register DcOps, 'dc', "dc [options]", "Maintain dc network"
 
   class DhcpOps < Base
     namespace :dhcp

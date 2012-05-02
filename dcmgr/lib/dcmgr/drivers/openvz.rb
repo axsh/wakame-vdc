@@ -102,7 +102,7 @@ module Dcmgr
             ifname = "eth#{vif[:device_index]}"
             mac = vif[:mac_addr].unpack('A2'*6).join(':')
             host_ifname = vif[:uuid]
-            bridge = bridge_if_name(vif[:ipv4][:network][:physical_network])
+            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
             sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[ctid, ifname, mac, host_ifname, mac, bridge])
             #
             # NETIF="ifname=eth0,bridge=vzbr0,mac=52:54:00:68:BB:AC,host_ifname=vif-h63jg7pp,host_mac=52:54:00:68:BB:AC"
@@ -208,8 +208,8 @@ module Dcmgr
       def add_vifs(vifs)
         vifs.each {|vif|
           if vif[:ipv4] and vif[:ipv4][:network]
-            sh("/usr/sbin/brctl addif %s %s", [bridge_if_name(vif[:ipv4][:network][:physical_network]), vif[:uuid]])
-            logger.debug("add virtual interface #{bridge_if_name(vif[:ipv4][:network][:physical_network])} to #{vif[:uuid]}")
+            sh("/usr/sbin/brctl addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
+            logger.debug("add virtual interface #{bridge_if_name(vif[:ipv4][:network][:dc_network])} to #{vif[:uuid]}")
           end
         }
       end

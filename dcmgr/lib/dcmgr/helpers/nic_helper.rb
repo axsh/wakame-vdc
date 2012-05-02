@@ -43,10 +43,10 @@ module Dcmgr
       end
 
       # Lookup bridge device name from given DC network name.
-      def bridge_if_name(physical_network_map)
-        local_conf = Dcmgr.conf.dc_networks[physical_network_map[:name]]
-        if physical_network_map[:vlan_lease]
-          physical_network_map[:uuid]
+      def bridge_if_name(dc_network_map)
+        local_conf = Dcmgr.conf.dc_networks[dc_network_map[:name]]
+        if dc_network_map[:vlan_lease]
+          dc_network_map[:uuid]
         else
           local_conf.bridge
         end

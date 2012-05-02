@@ -33,7 +33,7 @@ module Dcmgr::Models
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
     one_to_many :dhcp_range
-    many_to_one :physical_network
+    many_to_one :dc_network
 
     def network_service
       NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(:network_id => self.id).select_all(:network_services)
@@ -197,8 +197,8 @@ module Dcmgr::Models
                  :description=>description.to_s,
                  :network_services => [],
                })
-      if self.physical_network
-        h[:physical_network] = self.physical_network.to_hash
+      if self.dc_network
+        h[:dc_network] = self.dc_network.to_hash
       end
      
       self.network_service.each { |service|

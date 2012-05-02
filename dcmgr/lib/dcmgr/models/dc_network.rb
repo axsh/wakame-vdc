@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Models
-  # Physical network interface
-  class PhysicalNetwork < BaseNew
-    taggable('pn')
+  # Datacenter network definition
+  class DcNetwork < BaseNew
+    taggable('dcn')
     
     one_to_many :networks
     one_to_many :vlan_leases

@@ -60,7 +60,7 @@ module Dcmgr
     autoload :VlanLease, 'dcmgr/models/vlan_lease'
     autoload :Quota, 'dcmgr/models/quota'
     autoload :DhcpRange, 'dcmgr/models/dhcp_range'
-    autoload :PhysicalNetwork, 'dcmgr/models/physical_network'
+    autoload :DcNetwork, 'dcmgr/models/dc_network'
   end
 
   module Endpoints

@@ -30,12 +30,12 @@ esac
 cd ${VDC_ROOT}/dcmgr/
 
 # Physical network definitions
-shlog ./bin/vdc-manage network phy add public
-shlog ./bin/vdc-manage network phy add-network-mode public securitygroup
-shlog ./bin/vdc-manage network phy del-network-mode public passthru
+shlog ./bin/vdc-manage network dc add public
+shlog ./bin/vdc-manage network dc add-network-mode public securitygroup
+shlog ./bin/vdc-manage network dc del-network-mode public passthru
 # bridge only closed network
-shlog ./bin/vdc-manage network phy add null1
-shlog ./bin/vdc-manage network phy add null2
+shlog ./bin/vdc-manage network dc add null1
+shlog ./bin/vdc-manage network dc add null2
 
 # vlan
 #shlog ./bin/vdc-manage vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
