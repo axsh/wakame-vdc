@@ -74,6 +74,7 @@ gpgcheck=0
 _REPO_
 
 chroot \$1 yum update -y
+chroot \$1 yum install epel-release-6-5 -y
 chroot \$1 yum install wakame-vdc-dcmgr-vmapp-config -y
 chroot \$1 rm -f /etc/yum.repos.d/wakame-vdc-tmp.repo
 chroot \$1 yum update
