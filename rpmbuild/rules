@@ -23,6 +23,7 @@ build-stamp:
 clean:
 	CURDIR=${CURDIR} make clean
 	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS)
+	rm -f build-stamp
 
 install: build
 	# force to rewrite path info in text files.
