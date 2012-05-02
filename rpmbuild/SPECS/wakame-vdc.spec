@@ -38,12 +38,11 @@ Requires: logrotate
 Requires: flog
 
 # * wakame-vdc-dvd-config
-#Requires: wakame-vdc
 #Requires: qemu-kvm
 #[TODO] Requires: lxc
 
 # * wakame-vdc-dcmgr-vmapp-config
-#Requires: wakame-vdc
+#Requires: epel-release-6-5
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
@@ -69,6 +68,7 @@ Requires: ebtables iptables ethtool vconfig
 %package dcmgr-vmapp-config
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
+Requires: %{name} = %{version}-%{release}
 # TODO
 # + enable mysql,rabbitmq-server,tgtd(sta)
 # + disable iptables,ip6tables,ebtables
@@ -79,7 +79,7 @@ Group: Development/Languages
 %package hva-vmapp-config
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
-
+Requires: %{name} = %{version}-%{release}
 %description  hva-vmapp-config
 <insert long description, indented with spaces>
 
