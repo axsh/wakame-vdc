@@ -20,8 +20,12 @@ wakame_rpms="
  wakame-vdc-dcmgr-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
  wakame-vdc-hva-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
 "
+vmapp_names="
+ dcmgr
+ hva
+"
 
-. "${root_dir}/build_functions.sh"
+# . "${root_dir}/build_functions.sh"
 
 [[ $UID -ne 0 ]] && {
   echo "ERROR: Run as root" >/dev/stderr
@@ -53,8 +57,7 @@ ${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor_dir=$tmp_dir/re
  createrepo .
 )
 
-### for dcmgr-vmapp
-### [todo] hva-vmapp
+for vmapp_name in ${vmapp_names}; do
 
 cat <<EOF > $tmp_dir/execscript.sh
 #!/bin/bash
@@ -75,7 +78,7 @@ _REPO_
 
 chroot \$1 yum update -y
 chroot \$1 yum install epel-release-6-5 -y
-chroot \$1 yum install wakame-vdc-dcmgr-vmapp-config -y
+chroot \$1 yum install wakame-vdc-${vmapp_name}-vmapp-config -y
 chroot \$1 rm -f /etc/yum.repos.d/wakame-vdc-tmp.repo
 chroot \$1 yum update
 
@@ -127,8 +130,10 @@ chmod 755 $tmp_dir/execscript.sh
 ${tmp_dir}/vmbuilder/kvm/rhel/6/vmbuilder.sh \
   --distro_name=${base_distro} \
   --distro_ver=${base_distro_number} \
-  --raw=./wakame-vdc-dcmgr-vmapp.raw \
+  --raw=./wakame-vdc-${vmapp_name}-vmapp.raw \
   --rootsize=${rootsize} \
   --swapsize=${swapsize} \
   --debug=1 \
   --execscript="$tmp_dir/execscript.sh"
+
+done
