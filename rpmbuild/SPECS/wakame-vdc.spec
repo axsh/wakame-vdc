@@ -72,6 +72,7 @@ Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
 Requires: ebtables iptables ethtool vconfig
 Requires: qemu-kvm
+Requires: bridge-utils
 #[TODO] Requires: lxc
 %description  hva-vmapp-config
 <insert long description, indented with spaces>
