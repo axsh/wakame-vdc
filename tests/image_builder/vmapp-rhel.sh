@@ -127,6 +127,7 @@ chmod 755 $tmp_dir/execscript.sh
 }
 
 # generate image
+cd ${root_dir}
 ${tmp_dir}/vmbuilder/kvm/rhel/6/vmbuilder.sh \
   --distro_name=${base_distro} \
   --distro_ver=${base_distro_number} \
