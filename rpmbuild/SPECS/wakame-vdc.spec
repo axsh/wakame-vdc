@@ -41,20 +41,6 @@ Requires: flog
 #Requires: qemu-kvm
 #[TODO] Requires: lxc
 
-# * wakame-vdc-dcmgr-vmapp-config
-#Requires: epel-release-6-5
-Requires: mysql-server
-Requires: erlang
-Requires: rabbitmq-server
-Requires: nginx
-Requires: dnsmasq
-
-# * wakame-vdc-hva-vmapp-config
-#Requires: wakame-vdc
-Requires: ebtables iptables ethtool vconfig
-#Requires: qemu-kvm
-#[TODO] Requires: lxc
-
 # * no need
 ## ruby
 ## ruby-devel
@@ -69,6 +55,12 @@ Requires: ebtables iptables ethtool vconfig
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
+#Requires: epel-release-6-5
+Requires: mysql-server
+Requires: erlang
+Requires: rabbitmq-server
+Requires: nginx
+Requires: dnsmasq
 # TODO
 # + enable mysql,rabbitmq-server,tgtd(sta)
 # + disable iptables,ip6tables,ebtables
@@ -80,6 +72,9 @@ Requires: %{name} = %{version}-%{release}
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
+Requires: ebtables iptables ethtool vconfig
+Requires: qemu-kvm
+#[TODO] Requires: lxc
 %description  hva-vmapp-config
 <insert long description, indented with spaces>
 
