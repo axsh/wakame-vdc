@@ -36,6 +36,8 @@ Requires: initscripts
 Requires: dosfstools
 Requires: logrotate
 Requires: flog
+# for erlang, rabbitmq-server
+#Requires: epel-release-6-5
 
 # * wakame-vdc-dvd-config
 #Requires: qemu-kvm
@@ -55,15 +57,11 @@ Requires: flog
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
-#Requires: epel-release-6-5
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
 Requires: nginx
 Requires: dnsmasq
-# TODO
-# + enable mysql,rabbitmq-server,tgtd(sta)
-# + disable iptables,ip6tables,ebtables
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
