@@ -92,7 +92,7 @@ function download_3rd_party() {
 
 function install_3rd_party() {
   list_3rd_party | while read pkg_name pkg_uri pkg_file; do
-    rpm -qi ${pkg_name} >/dev/null || yum install -y ${vendor_dir}/${pkg_file}
+    rpm -qi ${pkg_name} >/dev/null || yum install -y --nogpgcheck ${vendor_dir}/${pkg_file}
   done
 }
 
