@@ -102,11 +102,9 @@ enabled=1
 gpgcheck=0
 _REPO_
 
-chroot \$1 yum ${yum_opts} update -y
 chroot \$1 yum ${yum_opts}                   --enablerepo=wakame-vdc install epel-release-6-5 -y
 chroot \$1 yum ${yum_opts} --enablerepo=epel --enablerepo=wakame-vdc install wakame-vdc-${vmapp_name}-vmapp-config -y
 chroot \$1 rm -f /etc/yum.repos.d/wakame-vdc-tmp.repo
-#chroot \$1 yum update
 
 cat <<'EOS' | chroot \$1 sh -c "cat | sh -ex"
 # change root passwd
