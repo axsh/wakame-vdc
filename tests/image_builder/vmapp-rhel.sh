@@ -1,13 +1,29 @@
 #!/bin/bash
 # virtual appliance build script
-rootsize=5000
-swapsize=1000
 
 set -e
 set -x
 
-base_distro="centos"
-base_distro_number="6"
+args=
+while [ $# -gt 0 ]; do
+  arg="$1"
+  case "${arg}" in
+    --*=*)
+      key=${arg%%=*}; key=${key##--}
+      value=${arg##--*=}
+      eval "${key}=\"${value}\""
+      ;;
+    *)
+      args="${args} ${arg}"
+      ;;
+  esac
+  shift
+done
+
+rootsize=${rootsize:-5000}
+swapsize=${swapsize:-1000}
+base_distro=${base_distro:-centos}
+base_distro_number=${base_distro_number:-6}
 
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
