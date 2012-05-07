@@ -41,7 +41,10 @@ Requires: flog
 
 # * wakame-vdc-dvd-config
 #Requires: qemu-kvm
-#[TODO] Requires: lxc
+#Requires: lxc = 0.7.5
+#Requires: dracut-kernel
+#Requires: kmod-openvswitch = 1.4.1
+#Requires: openvswitch = 1.4.1
 
 # * no need
 ## ruby
@@ -73,7 +76,10 @@ Requires: %{name} = %{version}-%{release}
 Requires: ebtables iptables ethtool vconfig
 Requires: qemu-kvm
 Requires: bridge-utils
-#[TODO] Requires: lxc
+Requires: lxc = 0.7.5
+Requires: dracut-kernel
+Requires: kmod-openvswitch = 1.4.1
+Requires: openvswitch = 1.4.1
 %description  hva-vmapp-config
 <insert long description, indented with spaces>
 
