@@ -31,7 +31,8 @@ function list_3rd_party() {
 epel-release-6-5       http://ftp.riken.go.jp/pub/Linux/fedora/epel/6/i386/epel-release-6-5.noarch.rpm            epel-release-6-5.noarch.rpm
 rabbitmq-server-2.6.1  http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/rabbitmq-server-2.6.1-1.noarch.rpm rabbitmq-server-2.6.1-1.noarch.rpm
 flog                   git://github.com/hansode/env-builder.git                                                   flog-1.8-3.${arch}.rpm
-kmod-openvswitch       git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.4.1-1.el6.${arch}.rpm
+openvswitch            git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.4.1-1.el6.${arch}.rpm
+openvswitch            git://github.com/hansode/env-builder.git                                                   openvswitch-1.4.1-1.${arch}.rpm
 lxc                    git://github.com/hansode/env-builder.git                                                   lxc-0.7.5-1.${arch}.rpm
 EOS
 }
@@ -66,7 +67,7 @@ function deploy_3rd_party() {
     flog)
       mv ${vendor_dir}/$(basename ${pkg_uri%%.git})/rhel/6/${pkg_name}/${pkg_file} ${vendor_dir}/.
       ;;
-    kmod-openvswitch)
+    openvswitch)
       cp ${HOME}/rpmbuild/RPMS/${arch}/${pkg_file} ${vendor_dir}/.
       ;;
     lxc)
