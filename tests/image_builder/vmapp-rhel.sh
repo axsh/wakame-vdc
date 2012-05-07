@@ -57,6 +57,16 @@ ${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor_dir=$tmp_dir/re
  createrepo .
 )
 
+yum_opts="--disablerepo='*'"
+case ${base_distro} in
+centos)
+  yum_opts="${yum_opts} --enablerepo=base"
+  ;;
+sl|scientific)
+  yum_opts="${yum_opts} --enablerepo=sl"
+  ;;
+esac
+
 for vmapp_name in ${vmapp_names}; do
 
 cat <<EOF > $tmp_dir/execscript.sh
@@ -76,11 +86,11 @@ enabled=1
 gpgcheck=0
 _REPO_
 
-chroot \$1 yum update -y
-chroot \$1 yum install epel-release-6-5 -y
-chroot \$1 yum install wakame-vdc-${vmapp_name}-vmapp-config -y
+chroot \$1 yum ${yum_opts} update -y
+chroot \$1 yum ${yum_opts}                   --enablerepo=wakame-vdc install epel-release-6-5 -y
+chroot \$1 yum ${yum_opts} --enablerepo=epel --enablerepo=wakame-vdc install wakame-vdc-${vmapp_name}-vmapp-config -y
 chroot \$1 rm -f /etc/yum.repos.d/wakame-vdc-tmp.repo
-chroot \$1 yum update
+#chroot \$1 yum update
 
 cat <<'EOS' | chroot \$1 sh -c "cat | sh -ex"
 # change root passwd
