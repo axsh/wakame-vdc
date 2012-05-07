@@ -58,6 +58,7 @@ for i in $wakame_rpms; do
 done
 
 # make temp apt repository.
+[[ -d "$tmp_dir/repos.d/archives" ]] && rm -rf   "$tmp_dir/repos.d/archives"
 [[ -d "$tmp_dir/repos.d/archives" ]] || mkdir -p "$tmp_dir/repos.d/archives"
 
 for i in $wakame_rpms; do
