@@ -50,6 +50,8 @@ module Dcmgr::Cli
       method_option :is_public, :type => :boolean, :default => false, :desc => "A flag that determines whether the new machine image is public or not."
       method_option :md5sum, :type => :string, :required => true, :desc => "The md5 checksum of the image you are registering."
       method_option :description, :type => :string, :desc => "An arbitrary description of the new machine image"
+      method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
+      method_option :root_device, :type => :string, :desc => "The root device of image"
       #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
       def volume(snapshot_id)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?

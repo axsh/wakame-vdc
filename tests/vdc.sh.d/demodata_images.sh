@@ -30,7 +30,9 @@ for meta in $data_path/image-*.meta; do
           --uuid wmi-${uuid} \
           --arch ${arch} \
           --description "${localname} local" \
-          --state init
+          --state init \
+          --file_format ${fileformat} \
+          --root_device ${rootdevice}
         ;;
       
       "volume")
@@ -40,7 +42,9 @@ for meta in $data_path/image-*.meta; do
           --uuid wmi-${uuid} \
           --arch ${arch} \
           --description "${localname} volume" \
-          --state init
+          --state init \
+          --file_format ${fileformat} \
+          --root_device ${rootdevice}
         ;;
     esac
 

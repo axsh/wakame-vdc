@@ -4,3 +4,6 @@ uri=http://cdimage.wakame.jp/demo/vmimage/ubuntu-lucid-kvm-32.raw.gz
 arch=x86
 localname=ubuntu-lucid-kvm-32.raw.gz
 storetype=local
+fileformat=raw
+rootdevice=uuid:5eb668a7-176b-44ac-b0c0-ff808c191420
+
