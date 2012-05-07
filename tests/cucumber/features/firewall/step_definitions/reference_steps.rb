@@ -24,7 +24,7 @@ When /^we successfully start an instance (.+) in group (.+) that listens on (tcp
     Given an instance #{instance_name} is started with the following options
     | image_id               | instance_spec_id | ssh_key_id | security_groups                | user_data           |
     | wmi-secgtest           | is-demospec      | ssh-demo   | <registry:group_#{group_name}> | #{protocol}:#{port} |
-    Then the started instance should start ssh in 60 seconds or less
+    Then the started instance should start ssh in #{TIMEOUT_CREATE_INSTANCE} seconds or less
   }
 end
 
