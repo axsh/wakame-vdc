@@ -23,40 +23,93 @@ done
 abs_path=$(cd $(dirname $0) && pwd)
 vendor_dir=${vendor_dir:-${abs_path}/vendor}
 [ -d ${vendor_dir} ] || mkdir -p ${vendor_dir}
-
+arch=$(arch)
 
 function list_3rd_party() {
   cat <<EOS | egrep -v ^#
-# pkg_name                         pkg_uri
-epel-release-6-5       http://ftp.riken.go.jp/pub/Linux/fedora/epel/6/i386/epel-release-6-5.noarch.rpm
-rabbitmq-server-2.6.1  http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/rabbitmq-server-2.6.1-1.noarch.rpm
-flog-1.8-4             http://cdimage.wakame.jp/packages/rhel/6/flog-1.8-4.$(arch).rpm
+# pkg_name                         pkg_uri                                                                        pkg_file
+epel-release-6-5       http://ftp.riken.go.jp/pub/Linux/fedora/epel/6/i386/epel-release-6-5.noarch.rpm            epel-release-6-5.noarch.rpm
+rabbitmq-server-2.6.1  http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/rabbitmq-server-2.6.1-1.noarch.rpm rabbitmq-server-2.6.1-1.noarch.rpm
+flog                   git://github.com/hansode/env-builder.git                                                   flog-1.8-3.${arch}.rpm
+kmod-openvswitch       git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.4.1-1.el6.${arch}.rpm
 EOS
+}
+
+function prepare_3rd_party() {
+  rpm -qi curl >/dev/null || yum install -y curl
+  list_3rd_party | while read pkg_name pkg_uri pkg_file; do
+    echo downloading ${pkg_name} ...
+    case ${pkg_uri} in
+    git://*)
+      [ -d ${vendor_dir}/$(basename ${pkg_uri%%.git}) ] || {
+        (cd ${vendor_dir} && git clone ${pkg_uri})
+      }
+      ;;
+    esac
+  done
+}
+
+function build_3rd_party() {
+  list_3rd_party | while read pkg_name pkg_uri pkg_file; do
+    case ${pkg_uri} in
+    git://*)
+      (cd ${vendor_dir}/$(basename ${pkg_uri%%.git})/rhel/6/${pkg_name} && make build)
+      ;;
+    esac
+  done
+}
+
+function deploy_3rd_party() {
+  list_3rd_party | while read pkg_name pkg_uri pkg_file; do
+    case ${pkg_name} in
+    flog)
+      mv ${vendor_dir}/$(basename ${pkg_uri%%.git})/rhel/6/${pkg_name}/${pkg_file} ${vendor_dir}/.
+      ;;
+    kmod-openvswitch)
+      cp ${HOME}/rpmbuild/RPMS/x86_64/kmod-openvswitch-1.4.1-1.el6.x86_64.rpm ${vendor_dir}/.
+      ;;
+    esac
+  done
 }
 
 function download_3rd_party() {
   rpm -qi curl >/dev/null || yum install -y curl
-  list_3rd_party | while read pkg_name pkg_uri; do
+  list_3rd_party | while read pkg_name pkg_uri pkg_file; do
     echo downloading ${pkg_name} ...
-    [ -f ${vendor_dir}/$(basename ${pkg_uri}) ] || {
-      curl ${pkg_uri} > ${vendor_dir}/$(basename ${pkg_uri})
-    }
+    case ${pkg_uri} in
+    http://*)
+      [ -f ${vendor_dir}/${pkg_file} ] || {
+        curl ${pkg_uri} > ${vendor_dir}/${pkg_file}
+      }
+      ;;
+    esac
   done
 }
 
 function install_3rd_party() {
-  list_3rd_party | while read pkg_name pkg_uri; do
-    rpm -qi ${pkg_name} >/dev/null || yum install -y ${vendor_dir}/$(basename ${pkg_uri})
+  list_3rd_party | while read pkg_name pkg_uri pkg_file; do
+    rpm -qi ${pkg_name} >/dev/null || yum install -y ${vendor_dir}/${pkg_file}
   done
 }
 
 
 case ${mode} in
+prepare)
+  prepare_3rd_party
+  ;;
+build)
+  build_3rd_party
+  ;;
+deploy)
+  deploy_3rd_party
+  ;;
 download)
+  prepare_3rd_party
+  build_3rd_party
+  deploy_3rd_party
   download_3rd_party
   ;;
 install)
-  download_3rd_party
   install_3rd_party
   ;;
 esac
