@@ -131,7 +131,7 @@ cd ${root_dir}
 ${tmp_dir}/vmbuilder/kvm/rhel/6/vmbuilder.sh \
   --distro_name=${base_distro} \
   --distro_ver=${base_distro_number} \
-  --raw=./wakame-vdc-${vmapp_name}-vmapp.raw \
+  --raw=./wakame-vdc-${vmapp_name}-vmapp_${base_distro}-${base_distro_number}.raw \
   --rootsize=${rootsize} \
   --swapsize=${swapsize} \
   --debug=1 \
