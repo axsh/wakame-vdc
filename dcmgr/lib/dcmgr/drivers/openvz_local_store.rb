@@ -51,7 +51,12 @@ module Dcmgr
         
         case inst[:image][:file_format]
         when "raw"
-          sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path, ctx.os_devpath])
+          case vmimg_cache_path
+          when /\.gz$/
+            sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path, ctx.os_devpath])
+          else
+            sh("cp -p --sparse=always %s %s",[vmimg_cache_path, ctx.os_devpath])
+          end
         end
       end
 
