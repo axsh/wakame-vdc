@@ -105,9 +105,20 @@ module Dcmgr
             next if ref.nil?
             
             lvnics = get_local_vnics_in_group(ref[:uuid])
+            referencer_vnic_map = ref[:vnic].find {|v| v[:uuid] == vnic}
             lvnics.each { |lvnic|
-              self.task_manager.apply_vnic_tasks(vnic,TaskFactory.create_tasks_for_ARP_isolation(lvnic,[vnic],node))
+              self.task_manager.apply_vnic_tasks(vnic,TaskFactory.create_tasks_for_ARP_isolation(lvnic,[referencer_vnic_map],node))
             }
+          }
+          
+          # If this vnic is a new referencee of one or more local groups, we need open ARP rules for every local vnic in the referencing group
+          lgroups = get_local_groups_that_reference_group(group)
+          lvnics = lgroups.map { |g| get_local_vnics_in_group(g[:uuid]) }.flatten
+          unless lgroups.empty?
+            referencee_vnic_map = get_referencee_vnics(lgroups.first).find {|rvnic_map| rvnic_map[:uuid] == vnic}
+          end 
+          lvnics.each { |local_vnic_map|
+            self.task_manager.apply_vnic_tasks(local_vnic_map,TaskFactory.create_tasks_for_ARP_isolation(local_vnic_map,[referencee_vnic_map],self.node))
           }
           
           add_vnic_to_ref_group(group,vnic)
@@ -285,6 +296,13 @@ module Dcmgr
           @cache.get[:instances].map { |inst_map|
             inst_map[:vif].delete_if { |vnic_map| not vnic_map[:security_groups].member?(group_id) }
           }.flatten.uniq.compact
+        end
+        
+        def get_local_groups_that_reference_group(ref_group_id)
+          @cache.get[:security_groups].map { |local_group|
+            next if local_group[:referencees].find {|r| r[:uuid] == ref_group_id }.nil?
+            local_group
+          }.compact
         end
         
         def get_foreign_vnics_in_group(group_id)
