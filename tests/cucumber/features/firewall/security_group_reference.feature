@@ -1,6 +1,6 @@
 Feature: Security groups referencing other security groups
 
-  Scenario: Single nic
+  Scenario: Extensive test
     Given the volume "wmi-secgtest" exists
       And the instance_spec "is-demospec" exists for api until 11.12
     And security group A exists with the following rules
@@ -60,6 +60,39 @@ Feature: Security groups referencing other security groups
     And we successfully terminate instance instA3
     And we successfully terminate instance instB1
     And we successfully terminate instance instC1
+    
+    And an instance instNewB1 is started in group B that listens on tcp port 345
+    And an instance instNewA1 is started in group A that listens on tcp port 345
+    And an instance instNewA2 is started in group A that listens on tcp port 345
+    
+    When instance instNewA1 sends a tcp packet to instance instNewB1 on port 345
+    Then the packet should not arrive successfully
+    
+    When instance instNewA2 sends a tcp packet to instance instNewB1 on port 345
+    Then the packet should not arrive successfully
+    
+    When we update security group B with the following rules
+      """
+      tcp:22,22,ip4:0.0.0.0
+      tcp:345,345,<Group A>
+      """
+    
+    When instance instNewA1 sends a tcp packet to instance instNewB1 on port 345
+    Then the packet should arrive successfully
+
+    When instance instNewA2 sends a tcp packet to instance instNewB1 on port 345
+    Then the packet should arrive successfully
+    
+    When instance instNewB1 sends a tcp packet to instance instNewA1 on port 345
+    Then the packet should not arrive successfully
+  
+    When instance instNewB1 sends a tcp packet to instance instNewA2 on port 345
+    Then the packet should not arrive successfully
+    
+    When we successfully terminate instance instNewA1
+    And we successfully terminate instance instNewA2
+    And we successfully terminate instance instNewB1
+    
     And we successfully delete security group A
     And we successfully delete security group B
     And we successfully delete security group C
