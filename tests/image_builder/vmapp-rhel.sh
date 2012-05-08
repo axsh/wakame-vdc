@@ -113,6 +113,7 @@ _REPO_
 chroot \$1 yum ${yum_opts}                   install epel-release-6-5 -y
 chroot \$1 yum ${yum_opts} --enablerepo=epel install wakame-vdc-${vmapp_name}-vmapp-config -y
 chroot \$1 rm -f /etc/yum.repos.d/wakame-vdc-tmp.repo
+chroot \$1 rm -f /etc/yum.repos.d/openvz.repo
 
 cat <<'EOS' | chroot \$1 sh -c "cat | sh -ex"
 # change root passwd
@@ -149,6 +150,7 @@ egrep -q ^umask \${devel_home}/.bashrc || {
 
 EOS
 
+rm -rf \$1/tmp/repos.d/
 EOF
 
 chmod 755 $tmp_dir/execscript.sh
