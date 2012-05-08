@@ -99,6 +99,17 @@ module Dcmgr
             }
           end
           
+          # If any local security groups are referencing this group, we need to add ARP rules to them
+          local_cache[:security_groups].each { |secg_map|
+            ref = get_referencer(secg_map[:uuid],group)
+            next if ref.nil?
+            
+            lvnics = get_local_vnics_in_group(ref[:uuid])
+            lvnics.each { |lvnic|
+              self.task_manager.apply_vnic_tasks(vnic,TaskFactory.create_tasks_for_ARP_isolation(lvnic,[vnic],node))
+            }
+          }
+          
           add_vnic_to_ref_group(group,vnic)
         end
         
@@ -159,27 +170,56 @@ module Dcmgr
           remove_vnic_from_ref_group(group,vnic)
         end
         
-        def update_security_group(group)
-          logger.info "updating security group '#{group}'"
+        def add_referencer(group_id,ref_group_id)
+          #local_cache = @cache.get(true) #TODO change this to update referencers?
+          @cache.update_referencers(group_id)
+
+          local_group = get_group(group_id)#local_cache[:security_groups].find { |group| group[:uuid] == group_id}
+          referencer = local_group[:referencers].find { |group| group[:uuid] == ref_group_id}
+          
+          # Open a hole in the ARP wall for the new referencer's vnics
+          get_local_vnics_in_group(group_id).each { |lvnic|
+            self.task_manager.apply_vnic_tasks(lvnic,TaskFactory.create_tasks_for_ARP_isolation(lvnic,referencer[:vnics],node))
+          }
+        end
+        
+        def remove_referencer(group_id,ref_group_id)
+          local_cache = @cache.get(false)
+
+          local_group = local_cache[:security_groups].find { |group| group[:uuid] == group_id}
+          referencer = local_group[:referencers].find { |group| group[:uuid] == ref_group_id}
+          
+          # Close the ARP wall for the old referencer's vnics
+          get_local_vnics_in_group(group_id).each { |lvnic|
+            self.task_manager.remove_vnic_tasks(lvnic,TaskFactory.create_tasks_for_ARP_isolation(lvnic,referencer[:vnics],node))
+          }
+        end
+        
+        def update_security_group(group_id)
+          logger.info "updating security group '#{group_id}'"
           # Get the old security group info from the cache
           old_cache = @cache.get
           
           # Get a list of vnics that are in this security group
-          vnics = old_cache[:instances].map {|inst_map| inst_map[:vif].delete_if { |vnic| not vnic[:security_groups].member?(group) } }.flatten
+          vnics = old_cache[:instances].map {|inst_map| inst_map[:vif].delete_if { |vnic| not vnic[:security_groups].member?(group_id) } }.flatten
           unless vnics.empty?
-            # Get the rules for this security group
-            old_group = old_cache[:security_groups].find {|sg| sg[:uuid] == group}
+            # Get the current rules for this security group
+            old_group = get_group(group_id)
+            old_referencee_vnics = get_referencee_vnics(old_group)
           
-            # Get the new info from the cache
-            new_cache = @cache.get(true)
-            new_group = new_cache[:security_groups].find {|sg| sg[:uuid] == group}
-            
+            # Get the new info from the database
+            @cache.update_rules(group_id)
+            new_group = get_group(group_id)
+            new_referencee_vnics = get_referencee_vnics(new_group)
+            #TODO: Open new holes in ARP wall for referencees
             unless old_group.nil? || new_group.nil?
               vnics.each { |vnic_map|
                 # Add the new security group tasks
+                self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_ARP_isolation(vnic_map,new_referencee_vnics,@node))
                 self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(new_group))
                 
                 # Remove the old security group tasks
+                self.task_manager.apply_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_ARP_isolation(vnic_map,old_referencee_vnics,@node))
                 self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(old_group))
               }
             end
@@ -216,6 +256,21 @@ module Dcmgr
           not local_vnics.find {|vnic| vnic[:uuid] == vnic_id}.nil?
         end
         
+        def get_referencee_vnics(group_map)
+          group_map[:referencees].map {|r| r[:vnics] }.flatten.uniq
+        end
+        
+        def get_referencer(group_id,ref_id)
+          group = @cache.get[:security_groups].find {|g| g[:uuid] == group_id}
+          raise "Unknown security group: #{group_id}" if group.nil?
+          
+          group[:referencers].find {|r| r[:uuid] == ref_id}
+        end
+        
+        def get_group(group_id)
+          @cache.get[:security_groups].find {|g| g[:uuid] == group_id}
+        end
+        
         def is_foreign_vnic?(vnic_id)
           foreign_vnics = @cache.get[:security_groups].map {|group| group[:foreign_vnics]}.flatten
           
@@ -249,7 +304,7 @@ module Dcmgr
           local_cache = @cache.get(false)
           
           local_cache[:security_groups].each { |secg_map|
-            dummy_group = secg_map[:referenced_groups].find { |ref_group| ref_group[:uuid] == group_id }
+            dummy_group = secg_map[:referencees].find { |ref_group| ref_group[:uuid] == group_id }
             # Don't do anything if this group isn't referencing group_id
             next if dummy_group.nil?
             vnics = get_local_vnics_in_group(secg_map[:uuid])
@@ -258,7 +313,7 @@ module Dcmgr
             # Delete the other rules in the dummy group so that only the new vnic is applied
             dummy_group = secg_map
             dummy_group[:rules].delete_if { |rule| rule[:ip_source] != group_id }
-            dummy_group[:referenced_groups].find {|ref_group| ref_group[:uuid] == group_id}[:vnics].delete_if { |vnic| vnic[:uuid] != vnic_id }
+            dummy_group[:referencees].find {|ref_group| ref_group[:uuid] == group_id}[:vnics].delete_if { |vnic| vnic[:uuid] != vnic_id }
             
             vnics.each { |vnic_map|
               # If the added vnic is local, then its rules are already applied. Don't reapply them
@@ -278,7 +333,7 @@ module Dcmgr
           local_cache = @cache.get
           
           local_cache[:security_groups].each { |secg_map|
-            dummy_group = secg_map[:referenced_groups].find { |ref_group| ref_group[:uuid] == group_id }
+            dummy_group = secg_map[:referencees].find { |ref_group| ref_group[:uuid] == group_id }
             # Don't do anything if this group isn't referencing group_id
             next if dummy_group.nil?
             vnics = get_local_vnics_in_group(secg_map[:uuid])
@@ -287,7 +342,7 @@ module Dcmgr
             # Delete the other rules in the dummy group so that only the new vnic is applied
             dummy_group = secg_map
             dummy_group[:rules].delete_if { |rule| rule[:ip_source] != group_id }
-            dummy_group[:referenced_groups].find {|ref_group| ref_group[:uuid] == group_id}[:vnics].delete_if { |vnic| vnic[:uuid] != vnic_id }
+            dummy_group[:referencees].find {|ref_group| ref_group[:uuid] == group_id}[:vnics].delete_if { |vnic| vnic[:uuid] != vnic_id }
             
             vnics.each { |vnic_map|
               # If the added vnic is local, then its rules are already applied. Don't reapply them

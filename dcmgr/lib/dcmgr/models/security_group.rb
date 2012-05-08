@@ -20,8 +20,9 @@ module Dcmgr::Models
       }
 
       super.merge({
+                    :id => self.canonical_uuid,
                     :rule => rule.to_s,
-                    :rules => rules,
+                    :rules => rules.compact,
                   })
     end
 
@@ -34,8 +35,6 @@ module Dcmgr::Models
     end
 
     def before_save
-      super
-
       current_ref_group_ids = []
 
       # Establish relations with referenced groups
@@ -53,12 +52,16 @@ module Dcmgr::Models
         if self.referencees.find {|ref| ref.canonical_uuid == ref_group_id}.nil? && (not SecurityGroup[ref_group_id].nil?)
           self.add_referencee(SecurityGroup[ref_group_id])
         end
-      }
+      } #TODO: Fix crash when adding reference rules on create
 
       # Destroy relations with groups that are no longer referenced
       self.referencees_dataset.each { |referencee|
-        self.remove_referencee(referencee) unless current_ref_group_ids.member?(referencee.canonical_uuid)
-      }
+        unless current_ref_group_ids.member?(referencee.canonical_uuid)
+          self.remove_referencee(referencee)
+        end
+      } unless self.referencees.empty?
+      
+      super
     end
 
     def before_destroy

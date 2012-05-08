@@ -31,6 +31,18 @@ module Dcmgr
       extend Dcmgr::Helpers::NicHelper
       include V::Tasks
 
+      def self.create_tasks_for_ARP_isolation(vnic,friends,node)
+        enable_logging = node.manifest.config.packet_drop_log
+        
+        friend_ips = friends.select { |vnic_map|
+          vnic_map[:ipv4] and vnic_map[:ipv4][:address]
+        }.map { |vnic_map|
+          vnic_map[:ipv4][:address]
+        }
+        
+        [AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")]
+      end
+
       def self.create_tasks_for_isolation(vnic,friends,node)
         tasks = []
         enable_logging = Dcmgr.conf.packet_drop_log
@@ -69,8 +81,8 @@ module Dcmgr
         enable_logging = Dcmgr.conf.packet_drop_log
 
         #TODO: Add logging to ip drops
-        #[DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: "),DropArpToHost.new]
-        [DropIpFromAnywhere.new]
+        [DropIpFromAnywhere.new, DropArpForwarding.new(enable_logging,"D arp #{vnic[:uuid]}: "),DropArpToHost.new]
+        #[DropIpFromAnywhere.new]
       end
       
       # Creates tasks related to network address translation
@@ -123,9 +135,13 @@ module Dcmgr
         # Accept ip traffic from the gateway that isn't blocked by other tasks
         tasks << AcceptIpFromGateway.new(vnic[:ipv4][:network][:ipv4_gw]) unless vnic[:ipv4][:network][:ipv4_gw].nil?
         
-        # Security group tasks
+        # Security group rules
         security_groups.each { |secgroup|
           tasks += self.create_tasks_for_secgroup(secgroup)
+          
+          # Accept ARP from referencing security groups
+          ref_vnics = secgroup[:referencers].map {|rg| rg[:vnics]}.flatten.uniq
+          tasks += self.create_tasks_for_ARP_isolation(vnic,ref_vnics,node)
         }
         
         tasks

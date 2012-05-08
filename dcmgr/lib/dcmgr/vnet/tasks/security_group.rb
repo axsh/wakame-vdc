@@ -12,7 +12,10 @@ module Dcmgr
           parsed_rules = group_map[:rules].map { |rule|
             ref_group_id = rule[:ip_source].scan(/sg-\w+/).first
             if ref_group_id
-              ref_vnics = group_map[:referenced_groups].find { |ref_group| ref_group[:uuid] == ref_group_id }[:vnics]
+              referencees = group_map[:referencees].find { |ref_group| ref_group[:uuid] == ref_group_id }
+              next if referencees.nil?
+              ref_vnics = referencees[:vnics]
+              
               new_rules = ref_vnics.map { |vnic|
                 new_rule = rule.dup
                 new_rule[:protocol] = "ip4"
@@ -24,7 +27,7 @@ module Dcmgr
             else
               rule
             end
-          }.flatten.uniq
+          }.flatten.uniq.compact
           
           parsed_rules.each { |rule|
             case rule[:ip_protocol]

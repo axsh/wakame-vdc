@@ -22,6 +22,31 @@ module Dcmgr
           nil
         end
         
+        def update_rules(group_id)
+          if @cache.nil?
+            self.update
+          else
+            group = get_group(group_id)
+            raise "Unknown security group: #{group_id}" if group.nil?
+            group[:rules] = @rpc.request('hva-collector', 'get_rules_of_security_group', group_id)
+            group[:referencees] = @rpc.request('hva-collector', 'get_referencees_of_security_group', group_id)
+          end
+          
+          nil
+        end
+        
+        def update_referencers(group_id)
+          if @cache.nil?
+            self.update
+          else
+            group = get_group(group_id)
+            raise "Unknown security group: #{group_id}" if group.nil?
+            group[:referencers] = @rpc.request('hva-collector', 'get_referencers_of_security_group', group_id)
+          end
+          
+          nil
+        end
+        
         # Returns the cache
         # if _force_update_ is set to true, the cache will be updated from the database
         def get(force_update = false)
@@ -31,17 +56,6 @@ module Dcmgr
           #TODO: Do this in a faster way than marshall
           Marshal.load( Marshal.dump(@cache) )
         end
-        
-        # Adds a newly started instance to the existing cache
-        # Commented out because the cache should be updated from the database instead
-        #def add_instance(inst_map)
-          #if @cache.is_a? Hash
-            #logger.info "adding instance '#{inst_map[:uuid]} to cache'"
-            #@cache << inst_map
-          #else
-          
-          #end
-        #end
         
         # Removes a terminated instance from the existing cache
         def remove_instance(inst_id)
@@ -67,7 +81,7 @@ module Dcmgr
         
         def remove_referenced_vnic(group_id,vnic_id)
           group = @cache[:security_groups].each {|local_group| 
-            ref_group = local_group[:referenced_groups].find { |group| group[:uuid] == group_id }
+            ref_group = local_group[:referencees].find { |group| group[:uuid] == group_id }
             ref_group[:vnics].delete_if { |vnic|
               vnic[:uuid] == vnic_id
             } unless ref_group.nil?
@@ -89,6 +103,10 @@ module Dcmgr
         def delete_group(group_id)
           logger.info "deleting #{group_id} from cache"
           @cache[:security_groups].delete_if {|group| group[:uuid] == group_id}
+        end
+        
+        def get_group(group_id)
+          @cache[:security_groups].find {|g| g[:uuid] == group_id}
         end
         
       end
