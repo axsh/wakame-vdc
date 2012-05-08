@@ -1,5 +1,33 @@
 Feature: Security groups referencing other security groups
 
+  Scenario: Simple test
+    Given the volume "wmi-secgtest" exists
+      And the instance_spec "is-demospec" exists for api until 11.12
+    And security group A exists with the following rules
+      """
+      tcp:22,22,ip4:0.0.0.0
+      """
+    And security group B exists with the following rules
+      """
+      tcp:22,22,ip4:0.0.0.0
+      tcp:345,345,<Group A>
+      """
+    
+    And an instance instB1 is started in group B that listens on tcp port 345
+    And an instance instA1 is started in group A that listens on tcp port 345
+    
+    When instance instA1 sends a tcp packet to instance instB1 on port 345
+    Then the packet should arrive successfully
+    
+    When instance instB1 sends a tcp packet to instance instA1 on port 345
+    Then the packet should not arrive successfully
+    
+    When we successfully terminate instance instA1
+    And we successfully terminate instance instB1
+    
+    And we successfully delete security group A
+    And we successfully delete security group B
+
   Scenario: Extensive test
     Given the volume "wmi-secgtest" exists
       And the instance_spec "is-demospec" exists for api until 11.12
