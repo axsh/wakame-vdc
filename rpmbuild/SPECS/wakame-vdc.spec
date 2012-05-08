@@ -68,19 +68,45 @@ Requires: dnsmasq
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
-# hva-vmapp-config
-%package hva-vmapp-config
+# hva-common-vmapp-config
+%package hva-common-vmapp-config
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
 Requires: ebtables iptables ethtool vconfig
-Requires: qemu-kvm
 Requires: bridge-utils
-Requires: lxc = 0.7.5
 Requires: dracut-kernel
 Requires: kmod-openvswitch = 1.4.1
 Requires: openvswitch = 1.4.1
-%description  hva-vmapp-config
+%description  hva-common-vmapp-config
+<insert long description, indented with spaces>
+
+# hypervisor:kvm
+%package hva-kvm-vmapp-config
+Summary: Configuration set for hva KVM VM appliance
+Group: Development/Languages
+Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: qemu-kvm
+%description  hva-kvm-vmapp-config
+<insert long description, indented with spaces>
+
+# hypervisor:lxc
+%package hva-lxc-vmapp-config
+Summary: Configuration set for hva LXC VM appliance
+Group: Development/Languages
+Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: lxc = 0.7.5
+%description  hva-lxc-vmapp-config
+<insert long description, indented with spaces>
+
+# hypervisor:openvz
+%package hva-openvz-vmapp-config
+Summary: Configuration set for hva OpenVZ VM appliance
+Group: Development/Languages
+Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: vzkernel
+Requires: vzctl
+%description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
 ## rpmbuild -bp
@@ -132,7 +158,7 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig --add tgtd
 /sbin/chkconfig       tgtd on
 
-%post hva-vmapp-config
+%post hva-common-vmapp-config
 /sbin/chkconfig --del iptables
 /sbin/chkconfig --del ebtables
 /sbin/chkconfig --add iscsi
@@ -164,9 +190,18 @@ rm -rf ${RPM_BUILD_ROOT}
 %config %{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
 %config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
 
-%files hva-vmapp-config
+%files hva-common-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
+
+%files hva-kvm-vmapp-config
+%defattr(-,root,root)
+
+%files hva-lxc-vmapp-config
+%defattr(-,root,root)
+
+%files hva-openvz-vmapp-config
+%defattr(-,root,root)
 
 %changelog

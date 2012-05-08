@@ -34,11 +34,17 @@ arch="x86_64"
 wakame_rpms="
  wakame-vdc-${wakame_version}-${wakame_release}.${arch}.rpm
  wakame-vdc-dcmgr-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
- wakame-vdc-hva-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
+ wakame-vdc-hva-common-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
+ wakame-vdc-hva-kvm-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
+ wakame-vdc-hva-lxc-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
+ wakame-vdc-hva-openvz-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
 "
 vmapp_names="
  dcmgr
- hva
+ hva-common
+ hva-kvm
+ hva-lxc
+ hva-openvz
 "
 
 # . "${root_dir}/build_functions.sh"
