@@ -145,7 +145,7 @@ devel_home=\$(getent passwd \${devel_user} 2>/dev/null | awk -F: '{print \$6}')
 
 echo \${devel_user}:\${devel_user} | chpasswd
 egrep -q ^umask \${devel_home}/.bashrc || {
-  echo umask 022 >> ${devel_home}/.bashrc
+  echo umask 022 >> \${devel_home}/.bashrc
 }
 
 EOS
