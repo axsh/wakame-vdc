@@ -79,6 +79,10 @@ function deploy_3rd_party() {
 
 function download_3rd_party() {
   rpm -qi curl >/dev/null || yum install -y curl
+  [ -f ${vendor_dir}/openvz.repo ] || {
+    curl http://download.openvz.org/openvz.repo > ${vendor_dir}/openvz.repo
+  }
+
   list_3rd_party | while read pkg_name pkg_uri pkg_file; do
     echo downloading ${pkg_name} ...
     case ${pkg_uri} in
@@ -92,6 +96,8 @@ function download_3rd_party() {
 }
 
 function install_3rd_party() {
+  rsync -a ${vendor_dir}/openvz.repo /etc/yum.repos.d/openvz.repo
+
   list_3rd_party | while read pkg_name pkg_uri pkg_file; do
     rpm -qi ${pkg_name} >/dev/null || yum install -y --nogpgcheck ${vendor_dir}/${pkg_file}
   done
