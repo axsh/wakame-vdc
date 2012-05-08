@@ -332,11 +332,13 @@ module Dcmgr
             dummy_group = secg_map
             dummy_group[:rules].delete_if { |rule| rule[:ip_source] != group_id }
             dummy_group[:referencees].find {|ref_group| ref_group[:uuid] == group_id}[:vnics].delete_if { |vnic| vnic[:uuid] != vnic_id }
+            referencer_vnic_map = dummy_group[:referencees].find {|ref_group| ref_group[:uuid] == group_id}[:vnics].first
             
             vnics.each { |vnic_map|
               # If the added vnic is local, then its rules are already applied. Don't reapply them
               next if vnic_map[:uuid] == vnic_id
               
+              self.task_manager.remove_vnic_tasks(vnic_map,TaskFactory.create_tasks_for_ARP_isolation(vnic_map,[referencer_vnic_map],node))
               self.task_manager.remove_vnic_tasks(vnic_map, TaskFactory.create_tasks_for_secgroup(dummy_group))
             }
             
