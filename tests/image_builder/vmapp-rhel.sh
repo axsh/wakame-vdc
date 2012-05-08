@@ -58,7 +58,7 @@ for i in $wakame_rpms; do
 done
 
 # make temp apt repository.
-[[ -d "$tmp_dir/repos.d/archives" ]] && rm -rf   "$tmp_dir/repos.d/archives"
+#[[ -d "$tmp_dir/repos.d/archives" ]] && rm -rf   "$tmp_dir/repos.d/archives"
 [[ -d "$tmp_dir/repos.d/archives" ]] || mkdir -p "$tmp_dir/repos.d/archives"
 
 for i in $wakame_rpms; do
@@ -74,7 +74,7 @@ ${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor_dir=$tmp_dir/re
  createrepo .
 )
 
-yum_opts="--disablerepo='*'"
+yum_opts="--disablerepo='*' --enablerepo=wakame-vdc --enablerepo=openvz-kernel-rhel6 --enablerepo=openvz-utils"
 case ${base_distro} in
 centos)
   yum_opts="${yum_opts} --enablerepo=base"
@@ -94,6 +94,7 @@ set -x
 
 echo "doing execscript.sh: \$1"
 rsync -a $tmp_dir/repos.d \$1/tmp/
+rsync -a $tmp_dir/repos.d/archives/openvz.repo \$1/etc/yum.repos.d/openvz.repo
 
 cat <<_REPO_ > \$1/etc/yum.repos.d/wakame-vdc-tmp.repo
 [wakame-vdc]
@@ -103,8 +104,8 @@ enabled=1
 gpgcheck=0
 _REPO_
 
-chroot \$1 yum ${yum_opts}                   --enablerepo=wakame-vdc install epel-release-6-5 -y
-chroot \$1 yum ${yum_opts} --enablerepo=epel --enablerepo=wakame-vdc install wakame-vdc-${vmapp_name}-vmapp-config -y
+chroot \$1 yum ${yum_opts}                   install epel-release-6-5 -y
+chroot \$1 yum ${yum_opts} --enablerepo=epel install wakame-vdc-${vmapp_name}-vmapp-config -y
 chroot \$1 rm -f /etc/yum.repos.d/wakame-vdc-tmp.repo
 
 cat <<'EOS' | chroot \$1 sh -c "cat | sh -ex"
