@@ -11,7 +11,7 @@ work_dir=${work_dir:?"work_dir needs to be set"}
 if [ ! -d $work_dir/trema/.git ]; then
     cd $work_dir
     git clone git://github.com/axsh/trema
-    (cd ./trema/ && git checkout ruby && ./build.rb && mkdir ./tmp/log) > /dev/null
+    (cd ./trema/ && bundle install && ./build.rb && mkdir ./tmp/log) > /dev/null
 fi
 
 # Open vSwitch install.
@@ -30,16 +30,12 @@ elif [ "$1" = "ovs-1.2.2" ]; then
     tar xzf openvswitch-1.2.2.tar.gz
     mv openvswitch-1.2.2 openvswitch
     cd openvswitch
-elif [ "$1" = "ovs-1.4.0" ]; then
+else
     echo "Compiling Open vSwitch 1.4.0."
     curl http://openvswitch.org/releases/openvswitch-1.4.0.tar.gz -o openvswitch-1.4.0.tar.gz
     tar xzf openvswitch-1.4.0.tar.gz
     mv openvswitch-1.4.0 openvswitch
     cd openvswitch
-else
-    echo "Compiling Open vSwitch git."
-    git clone git://openvswitch.org/openvswitch
-    cd ./openvswitch
 fi
 
 # Allow inclusion of patches to ovs.
