@@ -43,7 +43,9 @@ function prepare_3rd_party() {
     echo downloading ${pkg_name} ...
     case ${pkg_uri} in
     git://*)
-      [ -d ${vendor_dir}/$(basename ${pkg_uri%%.git}) ] || {
+      [ -d ${vendor_dir}/$(basename ${pkg_uri%%.git}) ] && {
+        (cd ${vendor_dir}/$(basename ${pkg_uri%%.git}) && git pull)
+      } || {
         (cd ${vendor_dir} && git clone ${pkg_uri})
       }
       ;;
