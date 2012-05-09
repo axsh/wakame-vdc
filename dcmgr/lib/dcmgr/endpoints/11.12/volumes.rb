@@ -37,7 +37,6 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/volumes' do
       if params[:storage_pool_id]
         sp = find_by_uuid(:StorageNode, params[:storage_pool_id])
         raise E::UnknownStorageNode if sp.nil?
-        raise E::StorageNodeNotPermitted if sp.account_id != @account.canonical_uuid
       end
     else
       raise E::UndefinedRequiredParameter
