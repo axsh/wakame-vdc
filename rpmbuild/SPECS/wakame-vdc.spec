@@ -36,6 +36,8 @@ Requires: initscripts
 Requires: dosfstools
 Requires: logrotate
 Requires: flog
+Requires: ntp
+Requires: ntpdate
 # for erlang, rabbitmq-server
 #Requires: epel-release-6-5
 
@@ -149,6 +151,8 @@ rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{na
 rm -rf ${RPM_BUILD_ROOT}
 
 %post
+/sbin/chkconfig       ntpd on
+/sbin/chkconfig       ntpdate on
 
 %post dcmgr-vmapp-config
 /sbin/chkconfig --add mysqld
