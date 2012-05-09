@@ -101,6 +101,7 @@ set -x
 echo "doing execscript.sh: \$1"
 rsync -a $tmp_dir/repos.d \$1/tmp/
 rsync -a $tmp_dir/repos.d/archives/openvz.repo \$1/etc/yum.repos.d/openvz.repo
+rsync -a ${wakame_dir}/tests/vdc.sh.d/rhel/setup.sh \$1/tmp/setup.sh
 
 cat <<_REPO_ > \$1/etc/yum.repos.d/wakame-vdc-tmp.repo
 [wakame-vdc]
@@ -112,8 +113,10 @@ _REPO_
 
 chroot \$1 yum ${yum_opts}                   install epel-release-6-5 -y
 chroot \$1 yum ${yum_opts} --enablerepo=epel install wakame-vdc-${vmapp_name}-vmapp-config -y
+chroot \$1 /tmp/setup.sh
 chroot \$1 rm -f /etc/yum.repos.d/wakame-vdc-tmp.repo
 chroot \$1 rm -f /etc/yum.repos.d/openvz.repo
+chroot \$1 rm -f /tmp/setup.sh
 
 cat <<'EOS' | chroot \$1 sh -c "cat | sh -ex"
 # change root passwd
