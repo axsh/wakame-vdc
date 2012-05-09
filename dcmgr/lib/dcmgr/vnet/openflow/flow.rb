@@ -23,7 +23,7 @@ module Dcmgr
 
           match.each { |key,value|
             tag = match_tags[key]
-            raise "No match tag: key:#{key.inspect}" if tag.nil?
+            raise "No match tag: key:'#{key.inspect}'." if tag.nil?
 
             str << "," << tag % value
           }
@@ -35,7 +35,7 @@ module Dcmgr
 
           match.each { |key,value|
             tag = match_tags[key]
-            raise "No match tag: key:#{key.inspect}" if tag.nil?
+            raise "No match tag: key:'#{key.inspect}'." if tag.nil?
 
             str << "," << tag % value
           }
@@ -89,6 +89,8 @@ module Dcmgr
             :ip => 'ip',
             :arp => 'arp',
             :icmp => 'icmp',
+            :icmp_type => 'icmp_type=%i',
+            :icmp_code => 'icmp_code=%i',
             :tcp => 'tcp',
             :udp => 'udp',
             :dl_dst => 'dl_dst=%s',
