@@ -35,15 +35,6 @@ config.enable_iptables = true
 config.enable_subnet = false
 config.enable_gre = true
 
-# physical nic index
-config.hv_ifindex      = 2 # ex. /sys/class/net/eth0/ifindex => 2
-
-# bridge device name prefix
-config.bridge_prefix   = 'br'
-
-# bridge device name novlan
-config.bridge_novlan   = 'br0'
-
 # display netfitler commands
 config.verbose_netfilter = false
 config.verbose_openflow  = false
@@ -66,5 +57,11 @@ config.ovs_ofctl_path = '${VDC_ROOT}/ovs/bin/ovs-ofctl'
 # Trema base directory
 config.trema_dir = '${VDC_ROOT}/trema'
 config.trema_tmp = '${VDC_ROOT}/tmp/trema'
+
+dc_network("public") {
+  bridge_type "linux"
+  interface "eth0"
+  bridge "br0"
+}
 EOS
 )
