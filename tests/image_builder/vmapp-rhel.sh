@@ -155,14 +155,12 @@ EOF
 
 chmod 755 $tmp_dir/execscript.sh
 
-[ -d ${tmp_dir}/vmbuilder ] || {
-  cd ${tmp_dir}
-  [ -d vmbuilder ] && {
-    cd vmbuilder
-    git pull
-  } || {
-    git clone git://github.com/hansode/vmbuilder.git
-  }
+cd ${tmp_dir}
+[ -d vmbuilder ] && {
+  cd vmbuilder
+  git pull
+} || {
+  git clone git://github.com/hansode/vmbuilder.git
 }
 
 # generate image
