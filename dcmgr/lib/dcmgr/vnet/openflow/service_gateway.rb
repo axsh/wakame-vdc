@@ -5,7 +5,7 @@ module Dcmgr::VNet::OpenFlow
   class ServiceGateway < ServiceBase
     include Dcmgr::Logger
 
-    def install(network)
+    def install
     end
 
   end

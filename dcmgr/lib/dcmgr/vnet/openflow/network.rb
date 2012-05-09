@@ -140,40 +140,37 @@ module Dcmgr::VNet::OpenFlow
         logger.info "Duplicate service: name:'#{service_map[:name]}'."
       end
 
+      args = {
+        :switch => switch,
+        :network => self,
+        :mac => service_map[:mac_addr],
+        :ip => IPAddr.new(service_map[:address]),
+      }
+
       case service_map[:name]
       when 'dhcp'
         logger.info "Adding DHCP service."
         name = :dhcp
-        service = ServiceDhcp.new({ :switch => switch,
-                                    :mac => service_map[:mac_addr],
-                                    :ip => IPAddr.new(service_map[:address])})
+        service = ServiceDhcp.new(args)
       when 'dns'
         logger.info "Adding DNS service."
         name = :dns
-        service = ServiceDns.new({ :switch => switch,
-                                   :mac => service_map[:mac_addr],
-                                   :ip => IPAddr.new(service_map[:address])})
+        service = ServiceDns.new(args)
       when 'gateway'
         logger.info "Adding GATEWAY service."
         name = :gateway
-        service = ServiceGateway.new({ :switch => switch,
-                                       :mac => service_map[:mac_addr],
-                                       :ip => IPAddr.new(service_map[:address])})
+        service = ServiceGateway.new(args)
       when 'metadata'
         logger.info "Adding METADATA service."
         name = :metadata
-        service = ServiceMetadata.new({ :switch => switch,
-                                        :of_port => service_map[:port],
-                                        :mac => service_map[:mac_addr],
-                                        :ip => IPAddr.new(service_map[:address]),
-                                        :listen_port => service_map[:incoming_port]})
+        service = ServiceMetadata.new(args.merge!({:of_port => service_map[:port], :listen_port => service_map[:incoming_port]}))
       else
         logger.info "Unknown service name, not creating: '#{service_map[:name]}'."
         return
       end
 
       self.services[name] = service
-      service.install(self)
+      service.install
 
       if virtual && services[name].ip && service_map[:instance_uuid].nil?
         arp_handler.add(services[name].mac, services[name].ip, services[name])

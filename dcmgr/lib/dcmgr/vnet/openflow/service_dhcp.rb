@@ -8,7 +8,7 @@ module Dcmgr::VNet::OpenFlow
   class ServiceDhcp < ServiceBase
     include Dcmgr::Logger
 
-    def install(network)
+    def install
       network.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
                             message.ipv4? and message.udp? and
@@ -35,7 +35,7 @@ module Dcmgr::VNet::OpenFlow
       end
 
       dhcp_in = DHCP::Message.from_udp_payload(message.udp_payload)
-      nw_services = port.network.services
+      nw_services = network.services
 
       logger.debug "DHCP: message:#{dhcp_in.to_s}."
 
@@ -62,11 +62,11 @@ module Dcmgr::VNet::OpenFlow
       dhcp_out.chaddr = Trema::Mac.new(port.mac).to_short
       dhcp_out.siaddr = self.ip.to_i
 
-      subnet_mask = IPAddr.new(IPAddr::IN4MASK, Socket::AF_INET).mask(port.network.prefix)
+      subnet_mask = IPAddr.new(IPAddr::IN4MASK, Socket::AF_INET).mask(network.prefix)
 
       dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => self.ip.to_short)
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
-      dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (port.network.ipv4_network | ~subnet_mask).to_short)
+      dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (network.ipv4_network | ~subnet_mask).to_short)
 
       if nw_services[:gateway]
         dhcp_out.options << DHCP::RouterOption.new(:payload => nw_services[:gateway].ip.to_short)

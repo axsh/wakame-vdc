@@ -7,6 +7,7 @@ module Dcmgr::VNet::OpenFlow
     include OpenFlowConstants
 
     attr_reader :switch
+    attr_reader :network
     attr_accessor :of_port
 
     attr_accessor :mac
@@ -15,6 +16,7 @@ module Dcmgr::VNet::OpenFlow
     
     def initialize(args = {})
       @switch = args[:switch]
+      @network = args[:network]
       @of_port = args[:of_port]
 
       @mac = args[:mac]

@@ -7,7 +7,7 @@ module Dcmgr::VNet::OpenFlow
 
     attr_accessor :domain_name
 
-    def install(network)
+    def install
     end
 
   end
