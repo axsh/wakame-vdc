@@ -36,8 +36,8 @@ function rpmspec_depends() {
 ${VDC_ROOT}/tests/vdc.sh.d/rhel/3rd-party.sh download
 ${VDC_ROOT}/tests/vdc.sh.d/rhel/3rd-party.sh install
 
-yum update -y
-yum upgrade -y
+#yum update -y
+#yum upgrade -y
 cat ${VDC_ROOT}/rpmbuild/SPECS/*.spec | rpmspec_depends | xargs yum install --disablerepo='openvz*' -y
 cat ${VDC_ROOT}/rpmbuild/SPECS/*.spec | rpmspec_depends | xargs yum install -y
 
