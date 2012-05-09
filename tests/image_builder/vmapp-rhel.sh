@@ -24,6 +24,13 @@ rootsize=${rootsize:-5000}
 swapsize=${swapsize:-1000}
 base_distro=${base_distro:-centos}
 base_distro_number=${base_distro_number:-6}
+# vmbuilder options
+ip=${ip:-}
+mask=${mask:-}
+net=${net:-}
+bcast=${bcast:-}
+gw=${gw:-}
+dns=${dns:-}
 
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
@@ -175,6 +182,12 @@ ${tmp_dir}/vmbuilder/kvm/rhel/6/vmbuilder.sh \
   --rootsize=${rootsize} \
   --swapsize=${swapsize} \
   --debug=1 \
-  --execscript="$tmp_dir/execscript.sh"
+  --execscript="$tmp_dir/execscript.sh" \
+  --ip=${ip} \
+  --mask=${mask} \
+  --net=${net} \
+  --bcast=${bcast} \
+  --gw=${gw} \
+  --dns=${dns}
 
 done
