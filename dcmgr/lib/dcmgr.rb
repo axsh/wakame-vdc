@@ -189,7 +189,6 @@ module Dcmgr
   require 'dcmgr/vnet'
   module VNet
     autoload :ControllerFactory, 'dcmgr/vnet/factories'
-    autoload :IsolatorFactory, 'dcmgr/vnet/factories'
     autoload :TaskFactory, 'dcmgr/vnet/factories'
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
     
@@ -252,11 +251,6 @@ module Dcmgr
       autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
-    end
-    
-    module Isolators
-      autoload :BySecurityGroup, 'dcmgr/vnet/isolators/by_securitygroup'
-      autoload :DummyIsolator, 'dcmgr/vnet/isolators/dummy'
     end
     
   end

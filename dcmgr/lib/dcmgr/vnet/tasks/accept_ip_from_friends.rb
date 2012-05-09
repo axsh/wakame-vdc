@@ -4,8 +4,7 @@ module Dcmgr
   module VNet
     module Tasks
     
-      # Explicitely allows IP traffic between "friend" instances
-      # Friends are determined by an Isolator class
+      # Explicitely allows IP traffic between "friend" nics
       class AcceptIpFromFriends < Task
         include Dcmgr::VNet::Netfilter
         attr_reader :friend_ips

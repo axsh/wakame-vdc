@@ -10,12 +10,6 @@ module Dcmgr
       end
     end
     
-    class IsolatorFactory
-      def self.create_isolator
-        V::Isolators::BySecurityGroup.new
-      end
-    end
-    
     class TaskManagerFactory
       def self.create_task_manager(node)
         manager = V::Netfilter::VNicProtocolTaskManager.new

@@ -53,8 +53,7 @@ module Dcmgr
           self.update if @cache.nil? || force_update
           
           # Always return a duplicate of the cache. We don't want any external program messing with the original contents.
-          #TODO: Do this in a faster way than marshall
-          Marshal.load( Marshal.dump(@cache) )
+          deep_clone(@cache)
         end
         
         # Removes a terminated instance from the existing cache
@@ -89,6 +88,10 @@ module Dcmgr
         end
         
         private
+        def deep_clone(something)
+          Marshal.load( Marshal.dump(something) )
+        end
+        
         # Returns true if there are still instances left in this security group on this host
         def instances_left_in_group?(group_id)
           other_vnics = @cache[:instances].map { |inst_map|

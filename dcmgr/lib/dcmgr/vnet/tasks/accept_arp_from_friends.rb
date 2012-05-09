@@ -4,8 +4,7 @@ module Dcmgr
   module VNet
     module Tasks
     
-      # Explicitely allows ARP traffic between "friend" instances
-      # Friends are decided by an Isolator class
+      # Explicitely allows ARP traffic between "friend" nics
       class AcceptARPFromFriends < Task
         include Dcmgr::VNet::Netfilter
         attr_reader :inst_ip

@@ -18,8 +18,6 @@ module Dcmgr
           
           @cache = NetfilterCache.new(@node)
           
-          @isolator = IsolatorFactory.create_isolator
-          
           self.task_manager = TaskManagerFactory.create_task_manager(node)
           raise "#{self.task_manager} must be a NetfilterTaskManager" unless self.task_manager.is_a?(NetfilterTaskManager)
           
@@ -135,8 +133,7 @@ module Dcmgr
             inst_map[:vif].each { |vnic|
               is_active_vnic?(vnic) || next
 
-              other_vnics = get_other_vnics(vnic,@cache)
-              friends = @isolator.determine_friends(vnic, other_vnics)
+              friends = get_friends(vnic)
               
               friends.each { |friend|
                 next if friend[:ipv4].nil? or friend[:ipv4][:network].nil?
@@ -149,9 +146,9 @@ module Dcmgr
 
               # Removing the nat tasks separately because they include an arp reply
               # that isn't put in a separate chain
-              other_vnics = get_other_vnics(vnic,@cache)
+              
               # Determine which vnics need to be isolated from this one
-              friends = @isolator.determine_friends(vnic, other_vnics)
+              friends = get_friends(vnic)
               
               self.task_manager.remove_vnic_tasks(vnic, TaskFactory.create_nat_tasks_for_vnic(vnic,self.node) )
               self.task_manager.remove_vnic_chains(vnic)
@@ -317,6 +314,15 @@ module Dcmgr
           }.flatten
         end
         
+        def get_friends(vnic_map)
+          friends = vnic_map[:security_groups].map {|group_id| 
+              get_local_vnics_in_group(group_id).concat get_foreign_vnics_in_group(group_id)
+            }.flatten.uniq
+          friends.delete_if {|friend| friend[:uuid] == vnic_map[:uuid]}
+          
+          friends
+        end
+        
         def remove_vnic_from_ref_group(group_id,vnic_id)
           #TODO: might not be needed to update if this is a local vnic. Cache will have updated when starting the instance
           local_cache = @cache.get(false)
@@ -380,11 +386,7 @@ module Dcmgr
             #other_vnics = get_other_vnics(vnic,@cache)
             
             # Determine which vnics need to be isolated from this one
-            #friends = @isolator.determine_friends(vnic, other_vnics)
-            friends = vnic[:security_groups].map {|group_id| 
-              get_local_vnics_in_group(group_id).concat get_foreign_vnics_in_group(group_id)
-            }.flatten.uniq
-            friends.delete_if {|friend| friend[:uuid] == vnic[:uuid]}
+            friends = get_friends(vnic)
             
             # Determine the security group rules for this vnic
             security_groups = @cache.get[:security_groups].delete_if { |group|

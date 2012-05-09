@@ -109,13 +109,6 @@ module Dcmgr
         }
       end
     end
-
-    # Abstract class that determines how to isolate instances (vnics) from each other
-    class Isolator
-      def determine_friends(me,others)
-        raise notImplementedError
-      end
-    end
     
   end
 end
