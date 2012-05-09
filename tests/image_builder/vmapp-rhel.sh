@@ -118,7 +118,7 @@ enabled=1
 gpgcheck=0
 _REPO_
 
-chroot \$1 yum ${yum_opts}                   install epel-release-6-5 -y
+chroot \$1 yum ${yum_opts}                   install epel-release-6-6 -y
 chroot \$1 yum ${yum_opts} --enablerepo=epel install wakame-vdc-${vmapp_name}-vmapp-config -y
 chroot \$1 /tmp/setup.sh
 chroot \$1 rm -f /etc/yum.repos.d/wakame-vdc-tmp.repo
