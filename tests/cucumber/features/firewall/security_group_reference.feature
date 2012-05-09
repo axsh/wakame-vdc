@@ -25,8 +25,8 @@ Feature: Security groups referencing other security groups
     When we successfully terminate instance instA1
     And we successfully terminate instance instB1
     
-    And we successfully delete security group A
     And we successfully delete security group B
+    And we successfully delete security group A
 
   Scenario: Extensive test
     Given the volume "wmi-secgtest" exists
@@ -121,6 +121,6 @@ Feature: Security groups referencing other security groups
     And we successfully terminate instance instNewA2
     And we successfully terminate instance instNewB1
     
-    And we successfully delete security group A
-    And we successfully delete security group B
     And we successfully delete security group C
+    And we successfully delete security group B
+    And we successfully delete security group A
