@@ -61,6 +61,10 @@ module Dcmgr
         @subject = subject
         @config = subject.config
       end
+
+      def config
+        self
+      end
     end
 
     class << self
