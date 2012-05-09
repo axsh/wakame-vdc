@@ -78,8 +78,9 @@ module Dcmgr
       param :edge_networking, :default => 'netfilter'
       
       def validate(errors)
-        errors << "vm_data_dir" unless @config.has_key?(:vm_data_dir)
-        unless File.exists?(@config[:vm_data_dir])
+        if @config[:vm_data_dir].nil?
+          errors << "vm_data_dir not set"
+        elsif !File.exists?(@config[:vm_data_dir])
           errors << "vm_data_dir does not exist: #{@config[:vm_data_dir]}"
         end
 
