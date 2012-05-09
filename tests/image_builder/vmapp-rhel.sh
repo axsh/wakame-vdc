@@ -35,17 +35,7 @@ dns=${dns:-}
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
 tmp_dir="${wakame_dir}/tmp/vmapp_builder"
-wakame_version="12.03"
-wakame_release="1.daily"
-arch="x86_64"
-wakame_rpms="
- wakame-vdc-${wakame_version}-${wakame_release}.${arch}.rpm
- wakame-vdc-dcmgr-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
- wakame-vdc-hva-common-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
- wakame-vdc-hva-kvm-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
- wakame-vdc-hva-lxc-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
- wakame-vdc-hva-openvz-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
-"
+
 vmapp_names="
  dcmgr
  hva-common
@@ -54,38 +44,13 @@ vmapp_names="
  hva-openvz
 "
 
-# . "${root_dir}/build_functions.sh"
-
 [[ $UID -ne 0 ]] && {
   echo "ERROR: Run as root" >/dev/stderr
   exit 1
 }
 
-[[ -d "$tmp_dir" ]] || mkdir -p "$tmp_dir"
-for i in $wakame_rpms; do
-  rpm_path="${HOME}/rpmbuild/RPMS/x86_64/$i"
-  [ -f ${rpm_path} ] || (
-    cd ${wakame_dir}
-    ./rpmbuild/rules binary
-  )
-done
-
-# make temp apt repository.
-#[[ -d "$tmp_dir/repos.d/archives" ]] && rm -rf   "$tmp_dir/repos.d/archives"
-[[ -d "$tmp_dir/repos.d/archives" ]] || mkdir -p "$tmp_dir/repos.d/archives"
-
-for i in $wakame_rpms; do
-  cp "${HOME}/rpmbuild/RPMS/${arch}/$i" "$tmp_dir/repos.d/archives"
-done
-
-# 3rd party rpms.
-${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor_dir=$tmp_dir/repos.d/archives
-
-# create local repository
-(
- cd "$tmp_dir/repos.d/archives"
- createrepo .
-)
+# build rhel repository.
+${wakame_dir}/tests/repo_builder/build-rhel.sh --repo_dir=${tmp_dir}/repos.d/archives/
 
 yum_opts="--disablerepo='*' --enablerepo=wakame-vdc --enablerepo=openvz-kernel-rhel6 --enablerepo=openvz-utils"
 case ${base_distro} in
