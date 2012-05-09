@@ -13,12 +13,14 @@ VDC_ROOT=${VDC_ROOT:?"VDC_ROOT needs to be set"}
 # Read dependency information from rpmbuild/SPECS/*.spec.
 # % cat rpmbuild/SPECS/*.spec | rpmspec_depends
 function rpmspec_depends() {
+  # 0. remove redhat meta variables.
   # 1. convert space list to line list.
   # 2. remove trailing spaces.
   # 3. remove debian meta variables. i.e. ${shlib:Depends}
   # 4. remove version conditions.
   # 5. remove wakame-vdc packages.
   awk -F: '$1 == "BuildRequires" || $1 == "Requires" { print substr($0, length($1)+2)}' | \
+    egrep -v '%|=' |\
     sed -e 's|\s* \s*|\n|g' | \
     sed -e 's/^[ ]*//g' -e 's/[ ]*$//' | \
     sed -e '/\$/d' | \
