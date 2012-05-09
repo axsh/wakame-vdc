@@ -24,6 +24,7 @@ module Dcmgr::Models
     many_to_one :instance
 
     plugin ArchiveChangedColumn, :histories
+    plugin ChangedColumnEvent, :accounting_log => [:state, :size]
     
     subset(:lives, {:deleted_at => nil})
 
@@ -168,6 +169,10 @@ module Dcmgr::Models
       v.request_params = params
       v
     end
-      
+
+    def on_changed_accounting_log(changed_column)
+      AccountingLog.record(self, changed_column)
+    end
+     
   end
 end

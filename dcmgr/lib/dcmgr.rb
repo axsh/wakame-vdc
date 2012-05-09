@@ -62,6 +62,7 @@ module Dcmgr
     autoload :Quota, 'dcmgr/models/quota'
     autoload :DhcpRange, 'dcmgr/models/dhcp_range'
     autoload :DcNetwork, 'dcmgr/models/dc_network'
+    autoload :AccountingLog, 'dcmgr/models/accounting_log'
   end
 
   module Endpoints

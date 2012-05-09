@@ -18,6 +18,7 @@ module Dcmgr::Models
     many_to_one :ssh_key_pair
 
     plugin ArchiveChangedColumn, :histories
+    plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size] 
     
     subset(:lives, {:terminated_at => nil})
     subset(:runnings, {:state => 'running'})
@@ -39,6 +40,7 @@ module Dcmgr::Models
     #   kvm:
     # {:vnc_port=>11}
     plugin :serialization
+
     serialize_attributes :yaml, :runtime_config
     # equal to SshKeyPair#to_hash
     serialize_attributes :yaml, :ssh_key_data
@@ -383,6 +385,10 @@ module Dcmgr::Models
       i.request_params = params.dup
 
       i
+    end
+
+    def on_changed_accounting_log(changed_column)
+		  AccountingLog.record(self, changed_column)
     end
 
   end

@@ -174,7 +174,7 @@ module Dcmgr::Endpoints::V1203
                if !(since_time < until_time)
                  raise E::InvalidParameter, "#{since_key} is larger than #{until_key}"
                end
-               ds.filter("#{param}_at" => since_time .. until_time)
+               ds.filter("#{param}_at >= ?", since_time).filter("#{param}_at <= ?", until_time)
              elsif since_time
                ds.filter("#{param}_at >= ?", since_time)
              elsif until_time
@@ -210,5 +210,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('ssh_key_pairs')
     load_namespace('networks')
     load_namespace('dc_networks')
+    load_namespace('reports')
   end
 end

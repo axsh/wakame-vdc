@@ -111,6 +111,24 @@ Sequel.migration do
 
       add_index [:uuid], :unique=>true, :name=>:uuid
     end
+		
+    create_table(:accounting_logs) do
+      primary_key :id, :type=>"int(11)"
+			column :uuid, "varchar(255)", :null=>false
+      column :account_id, "varchar(255)", :null=>false
+			column :resource_type, "varchar(255)", :null=>false
+      column :event_type, "varchar(255)", :null=>false
+			column :vchar_value, "varchar(255)", :null=>true
+			column :int_value, "bigint(20)", :null=>true
+      column :blob_value, "blob", :null=>true
+      column :created_at, "datetime", :null=>false
+
+			index [:uuid], :name=>:uuid
+      index [:account_id]
+      index [:resource_type]
+      index [:event_type]
+      index [:created_at]
+    end
   end
   
   down do

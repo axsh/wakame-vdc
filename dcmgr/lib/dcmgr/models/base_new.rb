@@ -439,6 +439,59 @@ module Dcmgr::Models
     end
   end
 
+ module ChangedColumnEvent
+   # This plugin is to call any method when each columns of model was changed.
+   # 
+   # Usage:
+   #   
+   #   plugin ChangedColumnEvent, :function_name => [:track_columns]
+   #
+   #   * :function_name - specify name that called by :track_columns event. Please create a function that added with a on_changed_ prefix. ( eg: on_changed_accounting_log)
+   #   * :track_columns - specify columns that can call :function_name when the table has been changed.
+   
+   def self.configure(model, track_columns)
+      raise "Invalid type" if !track_columns.is_a?(Hash)
+      track_columns.keys.each { |event_name|
+        model.track_column_set(event_name, track_columns)
+      }
+    end
+
+    module ClassMethods
+      attr_accessor :track_columns
+      def track_column_set(event_name, columns)
+        @track_columns = {} if @track_columns.nil?
+        @track_columns[event_name] = columns
+      end
+    end
+    
+    module InstanceMethods
+      def before_create
+        return false if super == false
+        apply_changed_event(self.columns)
+        true        
+      end
+      
+      def before_update
+        return false if super == false
+        apply_changed_event(self.changed_columns)
+        true        
+      end
+      
+      private
+      def apply_changed_event(changed_columns)
+        model.track_columns.keys.each do |event_name|
+          call_method = "on_changed_#{event_name.to_s}".to_sym
+          raise "Undefined method #{call_method}" if !model.method_defined?(call_method)
+
+          model.track_columns[event_name].values.find_all { |c|
+            match_column = c - (c - changed_columns)
+            self.__send__(call_method, match_column[0])  if !match_column.empty?
+          } 
+        end
+      end
+    end
+  end
+
   class BaseNew < Sequel::Model
 
     def to_hash()
