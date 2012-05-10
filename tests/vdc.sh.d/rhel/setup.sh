@@ -16,7 +16,7 @@ set -e
 #  RHEL6.0 does not support "apply_sysctl".
 #  apply_sysctl
 #)
-sed -i "s/^net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/"  /etc/sysctl.conf
+${VDC_ROOT}/tests/vdc.sh.d/rhel/sysctl.sh < ${VDC_ROOT}/tests/vdc.sh.d/rhel/sysctl.conf.d/bridge-if.conf
 
 # stop system services.
 for i in apparmor dnsmasq tgt; do
