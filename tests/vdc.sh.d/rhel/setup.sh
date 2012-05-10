@@ -21,7 +21,7 @@ set -e
 } || {
   pwd_path=${VDC_ROOT}/tests/vdc.sh.d/rhel/
 }
-${pwd_path}/sysctl.sh < ${pwd_path}/sysctl.conf.d/bridge-if.conf
+${pwd_path}/sysctl.sh < ${pwd_path}/sysctl.d/30-bridge-if.conf
 
 # stop system services.
 for i in apparmor dnsmasq tgt; do
