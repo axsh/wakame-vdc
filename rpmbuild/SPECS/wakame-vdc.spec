@@ -20,11 +20,10 @@ BuildRequires: make
 BuildRequires: gcc-c++ gcc
 BuildRequires: git
 BuildRequires: mysql-devel
-BuildRequires: openssl-devel
-BuildRequires: libxml2-devel
-BuildRequires: libxslt-devel
 BuildRequires: chrpath
 BuildRequires: fakeroot
+# Ruby binary build dependency
+BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
@@ -38,6 +37,10 @@ Requires: logrotate
 Requires: flog
 Requires: ntp
 Requires: ntpdate
+Requires: gzip
+Requires: tar
+# Ruby binary dependency
+Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 # for erlang, rabbitmq-server
 #Requires: epel-release-6-5
 
@@ -75,11 +78,12 @@ Requires: dnsmasq
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
-Requires: ebtables iptables ethtool vconfig
+Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
 Requires: kmod-openvswitch = 1.4.1
 Requires: openvswitch = 1.4.1
+Requires: kpartx
 %description  hva-common-vmapp-config
 <insert long description, indented with spaces>
 
