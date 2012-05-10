@@ -35,7 +35,9 @@ shlog ./bin/vdc-manage network dc add-network-mode public securitygroup
 shlog ./bin/vdc-manage network dc del-network-mode public passthru
 # bridge only closed network
 shlog ./bin/vdc-manage network dc add null1
+shlog ./bin/vdc-manage network dc add-network-mode null1 l2overlay
 shlog ./bin/vdc-manage network dc add null2
+shlog ./bin/vdc-manage network dc add-network-mode null2 l2overlay
 
 # vlan
 #shlog ./bin/vdc-manage vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
@@ -63,6 +65,7 @@ shlog ./bin/vdc-manage network add \
  --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo6 \
+ --network-mode l2overlay \
  --ipv4-network 10.102.0.0 \
  --ipv4_gw 10.102.0.1 \
  --prefix 24 \
@@ -71,6 +74,7 @@ shlog ./bin/vdc-manage network add \
   --service-type=std 
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo7 \
+ --network-mode l2overlay \
  --ipv4-network 10.103.0.0 \
  --ipv4_gw 10.103.0.1 \
  --prefix 24 \
