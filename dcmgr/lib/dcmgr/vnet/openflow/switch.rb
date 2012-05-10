@@ -169,19 +169,20 @@ module Dcmgr::VNet::OpenFlow
       end
 
       if message.arp?
-        logger.debug "Got ARP packet; port:#{message.in_port} network:#{port.network.nil? ? 'nil' : port.network.id} oper:#{message.arp_oper} source:#{message.arp_sha.to_s}/#{message.arp_spa.to_s} dest:#{message.arp_tha.to_s}/#{message.arp_tpa.to_s}."
+        logger.debug "Got ARP packet; port:#{message.in_port} network:#{port.networks.empty? ? 'nil' : port.networks.first.id} oper:#{message.arp_oper} source:#{message.arp_sha.to_s}/#{message.arp_spa.to_s} dest:#{message.arp_tha.to_s}/#{message.arp_tpa.to_s}."
       elsif message.ipv4? and message.tcp?
-        logger.debug "Got IPv4/TCP packet; port:#{message.in_port} network:#{port.network.nil? ? 'nil' : port.network.id} source:#{message.ipv4_saddr.to_s}:#{message.tcp_src_port} dest:#{message.ipv4_daddr.to_s}:#{message.tcp_dst_port}."
+        logger.debug "Got IPv4/TCP packet; port:#{message.in_port} network:#{port.networks.empty? ? 'nil' : port.networks.first.id} source:#{message.ipv4_saddr.to_s}:#{message.tcp_src_port} dest:#{message.ipv4_daddr.to_s}:#{message.tcp_dst_port}."
       elsif message.ipv4? and message.udp?
         logger.debug "Got IPv4/UDP packet; port:#{message.in_port} source:#{message.ipv4_saddr.to_s}:#{message.udp_src_port} dest:#{message.ipv4_daddr.to_s}:#{message.udp_dst_port}."
       else
         logger.debug "Got Unknown packet; port:#{message.in_port} source:#{message.macsa.to_s} dest:#{message.macda.to_s}."
       end
 
-      if !port.network.nil?
-        port.network.packet_handlers.each { |handler| handler.handle(self, port, message) }
-        packet_handlers.each { |handler| handler.handle(self, port, message) }
-      end
+      port.networks.each { |network|
+        network.packet_handlers.each { |handler| handler.handle(self, port, message) }
+      }
+
+      packet_handlers.each { |handler| handler.handle(self, port, message) }
     end
 
     def install_dnat_entry message, outgoing_table, incoming_table, dest_port, dest_hw, dest_ip, dest_tp

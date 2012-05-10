@@ -17,7 +17,7 @@ module Dcmgr
         attr_accessor :is_inserted
         attr_accessor :ip
         attr_accessor :mac
-        attr_accessor :network
+        attr_accessor :networks
 
         def initialize dp, port_info
           @datapath = dp
@@ -28,6 +28,7 @@ module Dcmgr
           @has_instance = false
           @is_active = false
           @is_inserted = false
+          @networks = []
         end
 
         def inspect
@@ -48,40 +49,40 @@ module Dcmgr
           queue_flow Flow.new(TABLE_CLASSIFIER, 5, {:udp => nil, :in_port => port_info.number,
                                 :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_src => '0.0.0.0', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst =>67},
                               {:local => nil})
-          queue_flow Flow.new(TABLE_CLASSIFIER, 2, {:in_port => port_info.number},  {:resubmit => TABLE_ROUTE_DIRECTLY})
-          queue_flow Flow.new(TABLE_MAC_ROUTE, 0, {}, {:output => port_info.number})
+          queue_flow Flow.new(TABLE_CLASSIFIER,     2, {:in_port => port_info.number},  {:resubmit => TABLE_ROUTE_DIRECTLY})
+          queue_flow Flow.new(TABLE_MAC_ROUTE,      0, {}, {:output => port_info.number})
           queue_flow Flow.new(TABLE_ROUTE_DIRECTLY, 0, {}, {:output => port_info.number})
-          queue_flow Flow.new(TABLE_LOAD_DST, 0, {}, [{:load_reg0 => port_info.number}, {:resubmit => TABLE_LOAD_SRC}])
-          queue_flow Flow.new(TABLE_LOAD_SRC, 4, {:in_port => port_info.number}, {:output_reg0 => nil})
-          queue_flow Flow.new(TABLE_ARP_ANTISPOOF, 1, {:arp => nil, :in_port => port_info.number}, {:resubmit => TABLE_ARP_ROUTE})
-          queue_flow Flow.new(TABLE_ARP_ROUTE, 0, {:arp => nil}, {:output => port_info.number})
+          queue_flow Flow.new(TABLE_LOAD_DST,       0, {}, [{:load_reg0 => port_info.number}, {:resubmit => TABLE_LOAD_SRC}])
+          queue_flow Flow.new(TABLE_LOAD_SRC,       4, {:in_port => port_info.number}, {:output_reg0 => nil})
+          queue_flow Flow.new(TABLE_ARP_ANTISPOOF,  1, {:arp => nil, :in_port => port_info.number}, {:resubmit => TABLE_ARP_ROUTE})
+          queue_flow Flow.new(TABLE_ARP_ROUTE,      0, {:arp => nil}, {:output => port_info.number})
 
           queue_flow Flow.new(TABLE_METADATA_INCOMING, 2, {:in_port => OpenFlowController::OFPP_LOCAL}, {:output => port_info.number})
           queue_flow Flow.new(TABLE_METADATA_OUTGOING, 4, {:in_port => port_info.number}, {:local => nil})
         end
 
-        def init_gre_tunnel
+        def init_gre_tunnel(network)
           @port_type = PORT_TYPE_TUNNEL
           queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => port_info.number}, [{:load_reg1 => network.id, :load_reg2 => port_info.number}, {:resubmit => TABLE_VIRTUAL_SRC}])
         end
 
-        def init_instance_net hw, ip
+        def init_instance_net(network, hw, ip)
           @port_type = PORT_TYPE_INSTANCE_NET
-          queue_flow Flow.new(TABLE_MAC_ROUTE, 1, {:dl_dst => hw}, {:output => port_info.number})
-          queue_flow Flow.new(TABLE_CLASSIFIER, 2, {:in_port => port_info.number, :dl_src => hw}, {:resubmit => TABLE_ROUTE_DIRECTLY})
+          queue_flow Flow.new(TABLE_MAC_ROUTE,      1, {:dl_dst => hw}, {:output => port_info.number})
+          queue_flow Flow.new(TABLE_CLASSIFIER,     2, {:in_port => port_info.number, :dl_src => hw}, {:resubmit => TABLE_ROUTE_DIRECTLY})
           queue_flow Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => hw}, {:output => port_info.number})
-          queue_flow Flow.new(TABLE_LOAD_DST, 1, {:dl_dst => hw}, {:drop => nil})
+          queue_flow Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => hw}, {:drop => nil})
         end
 
-        def init_instance_vnet hw, ip
+        def init_instance_vnet(network, hw, ip)
           @port_type = PORT_TYPE_INSTANCE_VNET
-          queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => port_info.number}, {:load_reg1 => network.id, :resubmit => TABLE_VIRTUAL_SRC})
+          queue_flow Flow.new(TABLE_CLASSIFIER,  8, {:in_port => port_info.number}, {:load_reg1 => network.id, :resubmit => TABLE_VIRTUAL_SRC})
           queue_flow Flow.new(TABLE_VIRTUAL_SRC, 5, {:in_port => port_info.number, :dl_src => hw}, {:resubmit => TABLE_VIRTUAL_DST})
           queue_flow Flow.new(TABLE_VIRTUAL_SRC, 7, {:in_port => port_info.number, :arp => nil, :dl_src => hw, :nw_src => ip, :arp_sha => hw}, {:resubmit => TABLE_VIRTUAL_DST})
           queue_flow Flow.new(TABLE_VIRTUAL_DST, 2, {:reg1 => network.id, :dl_dst => hw}, {:output => port_info.number})
         end
 
-        def init_instance_subnet eth_port, hw, ip
+        def init_instance_subnet(network, eth_port, hw, ip)
           queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => eth_port, :dl_dst => hw}, {:load_reg1 => network.id, :load_reg2 => eth_port, :resubmit => TABLE_VIRTUAL_SRC})
         end
 

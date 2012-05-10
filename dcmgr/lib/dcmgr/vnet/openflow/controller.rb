@@ -86,10 +86,10 @@ module Dcmgr
             return unless port.is_active
             port.is_active = false
 
-            if not port.network.nil?
-              port.network.remove_port port.port_info.number
-              port.network.update
-            end
+            port.networks.each { |network|
+              network.remove_port port.port_info.number
+              network.update
+            }
 
             port.datapath.del_flows port.active_flows
             port.active_flows.clear
