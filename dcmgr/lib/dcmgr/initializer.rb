@@ -12,26 +12,6 @@ module Dcmgr
         @conf
       end
       
-      def configure(config_path=nil, &blk)
-        return self if @conf
-        
-        if config_path.is_a?(String)
-          raise "Could not find configration file: #{config_path}" unless File.exists?(config_path)
-          
-          require 'configuration'
-          code= <<-__END
-            Configuration('global') do
-              #{File.read(config_path)}
-            end
-          __END
-          @conf = eval(code)
-        else
-          @conf = Configuration.for('global', &blk)
-        end
-        
-        self
-      end
-
       def load_conf(conf_class, files)
         path = files.find { |i| File.exists?(i) }
         abort("ERROR: Failed to load #{path}.") if path.nil?

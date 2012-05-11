@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 require 'extlib/module'
-require 'configuration'
 
 module Dcmgr
   module Scheduler
