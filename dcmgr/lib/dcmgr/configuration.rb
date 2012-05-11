@@ -171,6 +171,20 @@ module Dcmgr
           @opts = {}
           @on_param_create_hooks = []
         }
+
+        dsl_mods = []
+        c = klass
+        while c < Configuration && c.superclass.const_defined?(:DSL)
+          parent_dsl = c.superclass.const_get(:DSL)
+          if parent_dsl && parent_dsl.class === Module
+            dsl_mods << parent_dsl
+          end
+          c = c.superclass
+        end
+        # including order is ancestor -> descendants
+        dsl_mods.reverse.each { |i|
+          klass.const_get(:DSL).__send__(:include, i)
+        }
       end
 
       def on_param_create_hook(&blk)
