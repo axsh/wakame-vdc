@@ -3,6 +3,7 @@
 module Dcmgr::Models
   class VolumeSnapshot < AccountResource
     taggable 'snap'
+    accept_service_type
 
     STATE_TYPE_REGISTERING = "registering"
     STATE_TYPE_CREATING = "creating"

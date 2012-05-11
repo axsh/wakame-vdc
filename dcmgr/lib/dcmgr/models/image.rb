@@ -4,6 +4,7 @@ module Dcmgr::Models
   # Metadata catalogs for bootable image file.
   class Image < AccountResource
     taggable 'wmi'
+    accept_service_type
 
     BOOT_DEV_SAN=1
     BOOT_DEV_LOCAL=2

@@ -130,11 +130,26 @@ Sequel.migration do
       index [:created_at]
     end
 
+    # Add service_type column for service type resources
     alter_table(:instances) do
       add_column :service_type, "varchar(255)", :null=>false
     end
-
     alter_table(:volumes) do
+      add_column :service_type, "varchar(255)", :null=>false
+    end
+    alter_table(:volume_snapshots) do
+      add_column :service_type, "varchar(255)", :null=>false
+    end
+    alter_table(:security_groups) do
+      add_column :service_type, "varchar(255)", :null=>false
+    end
+    alter_table(:images) do
+      add_column :service_type, "varchar(255)", :null=>false
+    end
+    alter_table(:networks) do
+      add_column :service_type, "varchar(255)", :null=>false
+    end
+    alter_table(:ssh_key_pairs) do
       add_column :service_type, "varchar(255)", :null=>false
     end
   end
@@ -181,8 +196,22 @@ Sequel.migration do
     alter_table(:instances) do
       drop_column :service_type
     end
-
     alter_table(:volumes) do
+      drop_column :service_type
+    end
+    alter_table(:volume_snapshots) do
+      drop_column :service_type
+    end
+    alter_table(:security_groups) do
+      drop_column :service_type
+    end
+    alter_table(:images) do
+      drop_column :service_type
+    end
+    alter_table(:networks) do
+      drop_column :service_type
+    end
+    alter_table(:ssh_key_pairs) do
       drop_column :service_type
     end
   end

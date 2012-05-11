@@ -5,6 +5,7 @@ require 'ipaddress'
 module Dcmgr::Models
   class SecurityGroup < AccountResource
     taggable 'sg'
+    accept_service_type
 
     many_to_many :instances,:join_table => :instance_security_groups
     many_to_many :referencees, :class => self, :join_table => :security_group_references,:left_key => :referencer_id, :right_key => :referencee_id

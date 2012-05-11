@@ -6,6 +6,7 @@ module Dcmgr::Models
   # SSH Key database for account.
   class SshKeyPair < AccountResource
     taggable 'ssh'
+    accept_service_type
 
     def before_destroy
       # TODO: check running instances which are associated to ssh key

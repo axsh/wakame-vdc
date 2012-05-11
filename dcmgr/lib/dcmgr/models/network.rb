@@ -6,6 +6,7 @@ module Dcmgr::Models
   # IP network definitions.
   class Network < AccountResource
     taggable 'nw'
+    accept_service_type
 
     # Network Usage Mode. (Isolation/Firewall)
     #   securitygroup: security grouped network.
