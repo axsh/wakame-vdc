@@ -233,7 +233,7 @@ module Dcmgr::Models
         uuid =~ /^#{self.uuid_prefix}-[\w]+/
       end
     end
-        
+    
   end
 
   # Sequel::Model plugin extends :schema plugin to merge the column
@@ -439,17 +439,17 @@ module Dcmgr::Models
     end
   end
 
- module ChangedColumnEvent
-   # This plugin is to call any method when each columns of model was changed.
-   # 
-   # Usage:
-   #   
-   #   plugin ChangedColumnEvent, :function_name => [:track_columns]
-   #
-   #   * :function_name - specify name that called by :track_columns event. Please create a function that added with a on_changed_ prefix. ( eg: on_changed_accounting_log)
-   #   * :track_columns - specify columns that can call :function_name when the table has been changed.
-   
-   def self.configure(model, track_columns)
+  module ChangedColumnEvent
+    # This plugin is to call any method when each columns of model was changed.
+    # 
+    # Usage:
+    #   
+    #   plugin ChangedColumnEvent, :function_name => [:track_columns]
+    #
+    #   * :function_name - specify name that called by :track_columns event. Please create a function that added with a on_changed_ prefix. ( eg: on_changed_accounting_log)
+    #   * :track_columns - specify columns that can call :function_name when the table has been changed.
+    
+    def self.configure(model, track_columns)
       raise "Invalid type" if !track_columns.is_a?(Hash)
       track_columns.keys.each { |event_name|
         model.track_column_set(event_name, track_columns)

@@ -388,7 +388,7 @@ module Dcmgr::Models
     end
 
     def on_changed_accounting_log(changed_column)
-		  AccountingLog.record(self, changed_column)
+      AccountingLog.record(self, changed_column)
     end
 
   end
