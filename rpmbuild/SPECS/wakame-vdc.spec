@@ -30,9 +30,7 @@ Requires: openssh-server openssh-clients
 Requires: curl
 Requires: nc
 Requires: mysql
-Requires: iscsi-initiator-utils scsi-target-utils
 Requires: initscripts
-Requires: dosfstools
 Requires: logrotate
 Requires: flog
 Requires: ntp
@@ -42,19 +40,7 @@ Requires: tar
 # Ruby binary dependency
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 # for erlang, rabbitmq-server
-#Requires: epel-release-6-5
-
-# * wakame-vdc-dvd-config
-#Requires: qemu-kvm
-#Requires: lxc = 0.7.5
-#Requires: dracut-kernel
-#Requires: kmod-openvswitch = 1.4.1
-#Requires: openvswitch = 1.4.1
-
-# * no need
-## ruby
-## ruby-devel
-## rubygems
+# Requires: epel-release-6-6
 
 # (base)
 %description
@@ -78,6 +64,8 @@ Requires: dnsmasq
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
+Requires: dosfstools
+Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
