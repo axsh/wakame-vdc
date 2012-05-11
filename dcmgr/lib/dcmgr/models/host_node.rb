@@ -131,13 +131,7 @@ module Dcmgr::Models
     end
 
     def add_vnet(network)
-      # Choose vendor ID of mac address.
-      vendor_id = if Dcmgr.conf.mac_address_vendor_id
-                    Dcmgr.conf.mac_address_vendor_id
-                  else
-                    MacLease.default_vendor_id(self.instance_spec.hypervisor)
-                  end
-      m = MacLease.lease(vendor_id)
+      m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
       hn_vnet = HostNodeVnet.new
       hn_vnet.host_node = self
       hn_vnet.network = network

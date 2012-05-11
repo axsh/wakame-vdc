@@ -285,10 +285,8 @@ module Dcmgr::Models
       # Choose vendor ID of mac address.
       vendor_id = if vif_template[:vendor_id]
                     vif_template[:vendor_id]
-                  elsif Dcmgr.conf.mac_address_vendor_id
-                    Dcmgr.conf.mac_address_vendor_id
                   else
-                    MacLease.default_vendor_id(self.instance_spec.hypervisor)
+                    Dcmgr.conf.mac_address_vendor_id
                   end
       m = MacLease.lease(vendor_id)
       nic = NetworkVif.new(:mac_addr=>m.mac_addr)

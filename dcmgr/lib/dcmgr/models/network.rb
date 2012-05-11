@@ -40,14 +40,7 @@ module Dcmgr::Models
     end
 
     def add_service_vif(ipv4)
-      # Choose vendor ID of mac address.
-      vendor_id = if Dcmgr.conf.mac_address_vendor_id
-                    Dcmgr.conf.mac_address_vendor_id
-                  else
-                    # M::MacLease.default_vendor_id(self.instance_spec.hypervisor)
-                    MacLease.default_vendor_id('kvm')
-                  end
-      m = MacLease.lease(vendor_id)
+      m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
 
       vif_data = {
         :network_id => self.id,
