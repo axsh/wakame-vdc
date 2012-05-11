@@ -31,6 +31,6 @@ menu_order=$(egrep ^title /boot/grub/grub.conf | cat -n | grep "${grub_title}" |
   menu_offset=$((${menu_order} - 1))
 }
 
-sed -i "s,^default=.*,default=${menu_offset}," /boot/grub/grub.conf
+#sed -i "s,^default=.*,default=${menu_offset}," /boot/grub/grub.conf
 
 cat /boot/grub/grub.conf
