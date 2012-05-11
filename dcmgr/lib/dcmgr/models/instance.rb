@@ -88,6 +88,8 @@ module Dcmgr::Models
       self[:user_data] ||= ''
       self[:hostname] ||= self.uuid
       self[:hostname] = self[:hostname].downcase
+
+      self[:service_type] ||= Dcmgr.conf.default_service_type
       super
     end
 

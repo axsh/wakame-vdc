@@ -129,6 +129,14 @@ Sequel.migration do
       index [:event_type]
       index [:created_at]
     end
+
+    alter_table(:instances) do
+      add_column :service_type, "varchar(255)", :null=>false
+    end
+
+    alter_table(:volumes) do
+      add_column :service_type, "varchar(255)", :null=>false
+    end
   end
   
   down do
@@ -168,6 +176,14 @@ Sequel.migration do
       add_column :interface, "varchar(255)"
       drop_column :bridge
       drop_column :bridge_type
+    end
+
+    alter_table(:instances) do
+      drop_column :service_type
+    end
+
+    alter_table(:volumes) do
+      drop_column :service_type
     end
   end
 end

@@ -58,6 +58,11 @@ module Dcmgr::Models
         raise CapacityError, "Allocation exceeds storage node blank size: #{}"
       end
     end
+
+    def before_validate
+      self.service_type ||= Dcmgr.conf.default_service_type
+      super
+    end
     
     def validate
       # do not run validation if the row is maked as deleted.
