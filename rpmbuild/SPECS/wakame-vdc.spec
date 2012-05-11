@@ -105,6 +105,21 @@ Requires: vzctl
 %description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
+# hypervisor:*
+%package hva-full-vmapp-config
+Summary: Configuration set for hva OpenVZ VM appliance
+Group: Development/Languages
+Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: %{name}-hva-kvm-vmapp-config = %{version}-%{release}
+Requires: %{name}-hva-lxc-vmapp-config = %{version}-%{release}
+Requires: %{name}-hva-openvz-vmapp-config = %{version}-%{release}
+# build openvswitch module for vzkernel
+Requires: kernel-devel
+Requires: vzkernel-devel
+Requires: dkms
+%description hva-full-vmapp-config
+<insert long description, indented with spaces>
+
 ## rpmbuild -bp
 %prep
 [ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
@@ -226,13 +241,13 @@ apply_sysctl < /etc/sysctl.d/30-openvz.conf
 %config /etc/sysctl.d/30-bridge-if.conf
 
 %files hva-kvm-vmapp-config
-%defattr(-,root,root)
 
 %files hva-lxc-vmapp-config
-%defattr(-,root,root)
 
 %files hva-openvz-vmapp-config
 %defattr(-,root,root)
 %config /etc/sysctl.d/30-openvz.conf
+
+%files hva-full-vmapp-config
 
 %changelog

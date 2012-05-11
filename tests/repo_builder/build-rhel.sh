@@ -35,6 +35,7 @@ wakame_rpms="
  wakame-vdc-hva-kvm-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
  wakame-vdc-hva-lxc-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
  wakame-vdc-hva-openvz-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
+ wakame-vdc-hva-full-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
 "
 
 [[ $UID -ne 0 ]] && {

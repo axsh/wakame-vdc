@@ -42,6 +42,7 @@ vmapp_names="
  hva-kvm
  hva-lxc
  hva-openvz
+ hva-full
 "
 
 [[ $UID -ne 0 ]] && {
