@@ -8,6 +8,18 @@ module Dcmgr
       class LeastUsage < HostNodeScheduler
         include Dcmgr::Logger
 
+        class Configuration < Dcmgr::Configurations::Dcmgr::HostNodeScheduler
+          SORT_PRIORITY_KEYS=[:cpu, :memory].freeze
+          
+          param :sort_priority, :default=>:memory
+
+          def validate(errors)
+            unless SORT_PRIORITY_KEYS.member?(@config[:sort_priority])
+              errors << "Unknown sort priority: #{@config[:sort_priority]}"
+            end
+          end
+        end
+
         def schedule(instance)
           ds = Models::HostNode.online_nodes.filter(:arch=>instance.spec.arch,
                                                     :hypervisor=>instance.spec.hypervisor)
@@ -16,7 +28,12 @@ module Dcmgr
             hn.available_cpu_cores >= instance.cpu_cores && \
               hn.available_memory_size >= instance.memory_size
           }.sort_by { |hn|
-            hn.available_memory_size
+            case options.sort_priority
+            when :cpu
+              hn.available_cpu_cores
+            when :memory
+              hn.available_memory_size
+            end
           }.reverse.first
 
           raise HostNodeSchedulingError if host_node.nil?

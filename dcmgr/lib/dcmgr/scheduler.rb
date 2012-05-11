@@ -10,66 +10,100 @@ module Dcmgr
     class StorageNodeSchedulingError < SchedulerError; end
     class NetworkSchedulingError < SchedulerError; end
 
+    # Scheduler factory based on the service type.
+    class ServiceType
+      def initialize(service_type_obj)
+        st = if service_type_obj.respond_to?(:service_type)
+               service_type_obj.service_type
+             elsif [String, Symbol].member?(service_type_obj.class)
+               service_type_obj.to_s
+             else
+               service_type_obj
+             end
+        if Dcmgr.conf.service_types[st.to_s].nil?
+          raise "Unknown service type: #{service_type_obj}"
+        end
+        @service_type = st.to_s
+      end
+
+      def host_node
+        c = Scheduler.scheduler_class(conf.host_node_scheduler.scheduler_class, ::Dcmgr::Scheduler::HostNode)
+        c.new(conf.host_node_scheduler.option)
+      end
+
+      def host_node_ha
+        c = Scheduler.scheduler_class(conf.host_node_ha_scheduler.scheduler_class, ::Dcmgr::Scheduler::HostNode)
+        c.new(conf.host_node_ha_scheduler.option)
+      end
+
+      def storage_node
+        c = Scheduler.scheduler_class(conf.storage_node_scheduler.scheduler_class, ::Dcmgr::Scheduler::StorageNode)
+        c.new(conf.storage_node_scheduler.option)
+      end
+      
+      def network
+        c = Scheduler.scheduler_class(conf.network_scheduler.scheduler_class, ::Dcmgr::Scheduler::Network)
+        c.new(conf.network_scheduler.option)
+      end
+
+      private
+      def conf
+        Dcmgr.conf.service_types[@service_type]
+      end
+    end
+
+    def self.service_type(service_type)
+      ServiceType.new(service_type)
+    end
+
     # Factory method for HostNode scheduler
     def self.host_node()
-      c = scheduler_class(Dcmgr.conf.host_node_scheduler, ::Dcmgr::Scheduler::HostNode)
-      if Dcmgr.conf.host_node_scheduler.respond_to?(:options)
-        c.new(Dcmgr.conf.host_node_scheduler.options)
-      else
-        c.new
-      end
+      service_type(Dcmgr.conf.default_service_type).host_node
     end
 
     # Factory method for HostNode scheduler for HA
     def self.host_node_ha()
-      c = scheduler_class(Dcmgr.conf.host_node_ha_scheduler, ::Dcmgr::Scheduler::HostNode)
-      if Dcmgr.conf.host_node_ha_scheduler.respond_to?(:options)
-        c.new(Dcmgr.conf.host_node_ha_scheduler.options)
-      else
-        c.new
-      end
+      service_type(Dcmgr.conf.default_service_type).host_node_ha
     end
 
     # Factory method for StorageNode scheduler
     def self.storage_node()
-      c = scheduler_class(Dcmgr.conf.storage_node_scheduler, ::Dcmgr::Scheduler::StorageNode)
-      if Dcmgr.conf.storage_node_scheduler.respond_to?(:options)
-        c.new(Dcmgr.conf.storage_node_scheduler.options)
-      else
-        c.new
-      end
+      service_type(Dcmgr.conf.default_service_type).storage_node
     end
 
     # Factory method for Network scheduler
     def self.network()
-      c = scheduler_class(Dcmgr.conf.network_scheduler, ::Dcmgr::Scheduler::Network)
-      if Dcmgr.conf.network_scheduler.respond_to?(:options)
-        c.new(Dcmgr.conf.network_scheduler.options)
-      else
-        c.new
-      end
+      service_type(Dcmgr.conf.default_service_type).network
     end
 
     # common scheduler class finder
     def self.scheduler_class(input, namespace)
+      raise ArgumentError unless namespace.class == Module
+      
       c = case input
           when Symbol
             namespace.const_get(input)
-          when ::Configuration
-            if input.respond_to?(:scheduler)
-              namespace.const_get(input.scheduler)
+          when String
+            if namespace.const_defined?(input)
+              namespace.const_get(input)
             else
-              raise "Missing configuration key: scheduler"
+              Module.find_const(input)
             end
           else
-            raise "Unknown #{namespace.to_s} scheduler: #{input}"
+            if input.is_a?(Class) && s.scheduler_class < Module.find_const("#{namespace.to_s}Scheduler")
+              s.scheduler_class
+            else
+              raise ArgumentError, "Unknown scheduler identifier: #{input}"
+            end
           end
-      raise TypeError unless c < Module.find_const("#{namespace.to_s}Scheduler")
+      raise TypeError, "Invalid scheduler class ancestor: #{}" unless c < Module.find_const("#{namespace.to_s}Scheduler")
       c
     end
 
     # Allocate HostNode to Instance object.
     class HostNodeScheduler
+      attr_reader :options
+      
       def initialize(options=nil)
         @options = options
       end
@@ -83,6 +117,8 @@ module Dcmgr
 
     # Allocate StorageNode to Volume object.
     class StorageNodeScheduler
+      attr_reader :options
+
       def initialize(options=nil)
         @options = options
       end
@@ -111,6 +147,8 @@ module Dcmgr
 
     # Manage vnic for instances and assign network object.
     class NetworkScheduler
+      attr_reader :options
+
       def initialize(options=nil)
         @options = options
       end
@@ -121,6 +159,5 @@ module Dcmgr
         raise NotImplementedError
       end
     end
-
   end
 end
