@@ -7,7 +7,10 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
 
-Dcmgr.configure(File.expand_path('../../config/dcmgr.conf', __FILE__))
+Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
+                ['/etc/wakame-vdc/dcmgr.conf',
+                 File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
+                ])
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do

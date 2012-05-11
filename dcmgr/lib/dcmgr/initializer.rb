@@ -31,6 +31,23 @@ module Dcmgr
         
         self
       end
+
+      def load_conf(conf_class, files)
+        path = files.find { |i| File.exists?(i) }
+        abort("ERROR: Failed to load #{path}.") if path.nil?
+        
+        begin
+          ::Dcmgr.instance_eval {
+            @conf = conf_class.load(path)
+          }
+        rescue NoMethodError => e
+          abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
+        rescue Dcmgr::Configuration::ValidationError => e
+          abort("Validation Error: #{path}\n  " +
+                e.errors.join("\n  ")
+                )
+        end
+      end
       
       def run_initializers(*files)
         raise "Complete the configuration prior to run_initializers()." if @conf.nil?

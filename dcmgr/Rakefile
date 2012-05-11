@@ -9,7 +9,8 @@ CLOBBER.include("vendor/bundle/**/*", "*.gem")
 
 task :environment do
   require 'dcmgr'
-  Dcmgr.configure 'config/dcmgr.conf'
+  Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
+                  [File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)])
 end
 
 namespace :db do

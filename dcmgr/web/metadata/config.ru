@@ -5,7 +5,10 @@ $LOAD_PATH.unshift "#{File.dirname(__FILE__)}/../../lib"
 require 'dcmgr/rubygems'
 require 'dcmgr'
 
-Dcmgr.configure(File.expand_path('../../../config/dcmgr.conf', __FILE__))
+Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
+                ['/etc/wakame-vdc/dcmgr.conf',
+                 File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
+                ])
 
 use Dcmgr::Rack::RunInitializer, lambda {
   Dcmgr.run_initializers
