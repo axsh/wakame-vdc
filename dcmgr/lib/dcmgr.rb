@@ -26,6 +26,7 @@ module Dcmgr
   autoload :Configuration, 'dcmgr/configuration'
   module Configurations
     autoload :Hva, 'dcmgr/configurations/hva'
+    autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
   end
 
   require 'dcmgr/models/errors'
