@@ -2,7 +2,7 @@
 
 require 'sequel'
 if Sequel::DATABASES.first.nil?
-  db = Sequel.connect(Dcmgr.conf.database_url, :after_connect=>proc { |conn|
+  db = Sequel.connect(Dcmgr.conf.database_uri, :after_connect=>proc { |conn|
                         case conn.class.to_s
                         when 'Mysql2::Client', 'Mysql'
                           # send AUTOCOMMIT=0 for every new connections.
