@@ -71,8 +71,58 @@ module Dcmgr
       def initialize_callbacks
         @initialize_callbacks
       end
-      
+
+      # Show warning message if the old parameter is set.
+      def deprecated_warn_param(old_name, message=nil, &blk)
+        on_param_create_hook do |param_name, opts|
+          warn_msg = message || "WARN: Deprecated parameter: #{old_name}. Please use '#{param_name}'."
+          
+          alias_param old_name, param_name
+          self.const_get(:DSL).class_eval %Q{
+            def #{old_name}(v)
+              STDERR.puts "#{warn_msg}"
+              #{param_name.to_s}(v)
+            end
+          }
+        end
+      end
+
+      # Raise an error if the old parameter is set.
+      def deprecated_error_param(old_name, message=nil)
+        on_param_create_hook do |param_name, opts|
+          err_msg = message || "ERROR: Parameter is no longer supported: #{old_name}. Please use '#{param_name}'."
+          
+          alias_param old_name, param_name
+          self.const_get(:DSL).class_eval %Q{
+            def #{old_name}(v)
+              raise "#{err_msg}"
+            end
+          }
+        end
+      end
+
+      def alias_param (alias_name, ref_name)
+        # getter
+        self.class_eval %Q{
+          # Ruby alias show error if the method to be defined later is
+          # set. So create method to call the reference method.
+          def #{alias_name.to_s}()
+            #{ref_name}()
+          end
+        }
+        
+        # DSL setter
+        self.const_get(:DSL).class_eval %Q{
+          def #{alias_name}(v)
+            #{ref_name.to_s}(v)
+          end
+          alias_method :#{alias_name.to_s}=, :#{alias_name.to_s}
+        }
+      end
+
       def param(name, opts={})
+        opts = opts.merge(@opts)
+        
         case opts[:default]
         when Proc
           # create getter method if proc is set as default value
@@ -84,16 +134,19 @@ module Dcmgr
             @config[name.to_s.to_sym] = opts[:default]
           }
         end
-        
+
+        @on_param_create_hooks.each { |blk|
+          blk.call(name.to_s.to_sym, opts)
+        }
         self.const_get(:DSL).class_eval %Q{
           def #{name}(v)
             @config["#{name.to_s}".to_sym] = v
           end
-
-          def #{name}=(v)
-            #{name}(v)
-          end
+          alias_method :#{name.to_s}=, :#{name.to_s}
         }
+
+        @opts.clear
+        @on_param_create_hooks.clear
       end
 
       def load(*paths)
@@ -111,10 +164,17 @@ module Dcmgr
 
       private
       def inherited(klass)
+        super
         klass.const_set(:DSL, Module.new)
         klass.instance_eval {
           @initialize_callbacks = []
+          @opts = {}
+          @on_param_create_hooks = []
         }
+      end
+
+      def on_param_create_hook(&blk)
+        @on_param_create_hooks << blk
       end
     end
 
