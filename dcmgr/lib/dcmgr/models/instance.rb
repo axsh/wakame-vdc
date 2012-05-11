@@ -4,6 +4,7 @@ module Dcmgr::Models
   # Model class for running virtual instance.
   class Instance < AccountResource
     taggable 'i'
+    accept_service_type
 
     many_to_one :image
     many_to_one :instance_spec
@@ -89,7 +90,6 @@ module Dcmgr::Models
       self[:hostname] ||= self.uuid
       self[:hostname] = self[:hostname].downcase
 
-      self[:service_type] ||= Dcmgr.conf.default_service_type
       super
     end
 

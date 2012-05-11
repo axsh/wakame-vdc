@@ -3,6 +3,7 @@
 module Dcmgr::Models
   class Volume < AccountResource
     taggable 'vol'
+    accept_service_type
 
     STATUS_TYPE_REGISTERING = "registering"
     STATUS_TYPE_ONLINE = "online"
@@ -59,11 +60,6 @@ module Dcmgr::Models
       end
     end
 
-    def before_validate
-      self.service_type ||= Dcmgr.conf.default_service_type
-      super
-    end
-    
     def validate
       # do not run validation if the row is maked as deleted.
       return true if self.deleted_at
