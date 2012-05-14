@@ -16,7 +16,7 @@ module Dcmgr
           end
         end
 
-        module DSL
+        DSL do
           def self.load_section(class_name, conf_base_class, sched_namespace, &blk)
             raise ArgumentError unless conf_base_class < ::Dcmgr::Configuration
             raise ArgumentError unless ::Dcmgr::Scheduler::NAMESPACES.member?(sched_namespace)
@@ -71,7 +71,7 @@ module Dcmgr
           errors << "Missing name parameter" unless @config[:name]
         end
 
-        module DSL
+        DSL do
           def host_node_scheduler(class_name, &blk)
             @config[:host_node_scheduler] = Scheduler::DSL.load_section(class_name, HostNodeScheduler, ::Dcmgr::Scheduler::HostNode, &blk)
             self
@@ -94,7 +94,7 @@ module Dcmgr
         end
       end
       
-      module DSL
+      DSL do
         #
         # service_type("lb") {
         #   host_node_scheduler(:LbScheduler1) {}

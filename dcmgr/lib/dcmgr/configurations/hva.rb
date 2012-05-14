@@ -30,7 +30,7 @@ module Dcmgr
         end
       end
       
-      module DSL
+      DSL do
         def dc_network(name, &blk)
           abort "" unless blk
           
