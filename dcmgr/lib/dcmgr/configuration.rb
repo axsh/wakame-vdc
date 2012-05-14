@@ -162,6 +162,22 @@ module Dcmgr
         c
       end
 
+      # Helper method defines "module DSL" under the current conf class.
+      #
+      # This does mostly same things as "module DSL" but using
+      # "module" statement get the "DSL" constant defined in unexpected
+      # location if you combind to use with other Ruby DSL syntax.
+      #
+      # Usage:
+      # class Conf1 < Configuration
+      #   DSL do
+      #   end
+      # end
+      def DSL(&blk)
+        self.const_get(:DSL).class_eval(&blk)
+        self
+      end
+
       private
       def inherited(klass)
         super

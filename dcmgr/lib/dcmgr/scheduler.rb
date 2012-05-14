@@ -99,6 +99,24 @@ module Dcmgr
       c
     end
 
+    module HostNode
+      def self.scheduler_class(input)
+        Scheduler.scheduler_class(input, self)
+      end
+    end
+    
+    module StorageNode
+      def self.scheduler_class(input)
+        Scheduler.scheduler_class(input, self)
+      end
+    end
+    
+    module Network
+      def self.scheduler_class(input)
+        Scheduler.scheduler_class(input, self)
+      end
+    end
+
     # Common base class for schedulers
     class SchedulerBase
       attr_reader :options
