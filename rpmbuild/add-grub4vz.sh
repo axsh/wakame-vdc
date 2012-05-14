@@ -8,8 +8,8 @@ root_dev=$(awk '$2 == "/" {print $1}' /etc/fstab)
 
 rpm -qi ${pkg_name} >/dev/null || { echo "not available: ${pkg_name}" >&2; exit 1; }
 
-kernel_version=$(rpm -qi ${pkg_name} | egrep ^Version | awk '{print $3}')
-kernel_release=$(rpm -qi ${pkg_name} | egrep ^Release | awk '{print $3}')
+kernel_version=$(yum info ${pkg_name} | egrep ^Version | awk '{print $3}')
+kernel_release=$(yum info ${pkg_name} | egrep ^Release | awk '{print $3}')
 grub_title="OpenVZ (${kernel_version}-${kernel_release})"
 
 egrep ^title /boot/grub/grub.conf | grep "${grub_title}" -q && {
