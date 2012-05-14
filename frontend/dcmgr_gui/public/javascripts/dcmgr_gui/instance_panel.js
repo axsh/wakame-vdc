@@ -213,13 +213,15 @@ DcmgrGUI.prototype.instancePanel = function(){
         is_running = true;
       } else if(state =='shuttingdown') {
         is_shutting_down = true;
+      } else if(state =='stopped') {
+        is_stopped = true;
       } else{
         flag = false;
       }
     });
     
     if (flag == true){
-      if(is_running == true || is_shutting_down) {
+      if(is_running || is_shutting_down || is_stopped) {
         selectmenu.data('selectmenu').enableButton();
       } else {
         selectmenu.data('selectmenu').disableButton();
