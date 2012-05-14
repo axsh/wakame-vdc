@@ -8,7 +8,7 @@ module Dcmgr
       class LeastUsage < HostNodeScheduler
         include Dcmgr::Logger
 
-        class Configuration < Dcmgr::Configurations::Dcmgr::HostNodeScheduler
+        configuration do
           SORT_PRIORITY_KEYS=[:cpu, :memory].freeze
           
           param :sort_priority, :default=>:memory
