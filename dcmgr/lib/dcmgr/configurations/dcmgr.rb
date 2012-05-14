@@ -147,6 +147,7 @@ module Dcmgr
         errors << "database_uri is undefined." unless @config[:database_uri]
         errors << "amqp_server_uri is undefined." unless @config[:amqp_server_uri]
         errors << "default_service_type is undefined." unless @config[:default_service_type]
+        errors << "None of service_type is defined." unless @config[:service_types].is_a?(Hash)
         if @config[:mac_address_vendor_id].nil? || @config[:mac_address_vendor_id] !~ /^[\dA-Fa-f]{6}$/
           errors << "Invalid mac_address_vendor_id: #{@config[:mac_address_vendor_id]}"
         end
@@ -156,6 +157,10 @@ module Dcmgr
         end
         unless @config[:create_volume_min_size].is_a?(Integer)
           errors << "create_volume_min_size must be a decimal value: #{@config[:create_volume_min_size]}"
+        end
+
+        unless @config[:service_types][@config[:default_service_type].to_s]
+          errors << "Unable to find the definitions for default_service_type '#{@config[:default_service_type]}'."
         end
       end
     end
