@@ -15,6 +15,30 @@ module Dcmgr
             errors << "Missing scheduler_class parameter"
           end
         end
+
+        module DSL
+          def self.load_section(class_name, conf_base_class, sched_namespace, &blk)
+            raise ArgumentError unless conf_base_class < ::Dcmgr::Configuration
+            raise ArgumentError unless ::Dcmgr::Scheduler::NAMESPACES.member?(sched_namespace)
+            
+            c = ::Dcmgr::Scheduler.scheduler_class(class_name, sched_namespace)
+            s = Scheduler.new.parse_dsl do
+              config.scheduler_class = c
+            end
+            
+            if c.const_defined?(:Configuration)
+              c = c.const_get(:Configuration)
+              if c && c < conf_base_class
+                c = c.new
+                c.parse_dsl(&blk) if blk
+                s.parse_dsl do
+                  option c
+                end
+              end
+            end
+            s
+          end
+        end
       end
 
       # Optional parameter base classes for respective scheduler
@@ -49,88 +73,23 @@ module Dcmgr
 
         module DSL
           def host_node_scheduler(class_name, &blk)
-            s = Scheduler.new.parse_dsl do
-              config.scheduler_class = class_name
-            end
-
-            c = ::Dcmgr::Scheduler.scheduler_class(s.scheduler_class, ::Dcmgr::Scheduler::HostNode)
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
-              if c && c < HostNodeScheduler
-                c = c.new
-                c.parse_dsl(&blk) if blk
-                s.parse_dsl do
-                  option c
-                end
-              end
-            end
-
-            @config[:host_node_scheduler] = s
+            @config[:host_node_scheduler] = Scheduler::DSL.load_section(class_name, HostNodeScheduler, ::Dcmgr::Scheduler::HostNode, &blk)
             self
           end
 
           def host_node_ha_scheduler(class_name, &blk)
-            s = Scheduler.new.parse_dsl do
-              config.scheduler_class = class_name
-            end
-
-            c = ::Dcmgr::Scheduler.scheduler_class(s.scheduler_class, ::Dcmgr::Scheduler::HostNode)
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
-              if c && c < HostNodeScheduler
-                c = c.new
-                c.parse_dsl(&blk) if blk
-                s.parse_dsl do
-                  option c
-                end
-              end
-            end
-
-            @config[:host_node_ha_scheduler] = s
+            @config[:host_node_ha_scheduler] = Scheduler::DSL.load_section(class_name, HostNodeScheduler, ::Dcmgr::Scheduler::HostNode, &blk)
             self
           end
           
           def storage_node_scheduler(class_name, &blk)
-            s = Scheduler.new.parse_dsl do
-              config.scheduler_class = class_name
-            end
-            c = ::Dcmgr::Scheduler.scheduler_class(s.scheduler_class, ::Dcmgr::Scheduler::StorageNode)
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
-              if c && c < StorageNodeScheduler
-                c = c.new
-                c.parse_dsl(&blk) if blk
-                s.parse_dsl do
-                  option c
-                end
-              end
-            end
-
-            @config[:storage_node_scheduler] = s
+            @config[:storage_node_scheduler] = Scheduler::DSL.load_section(class_name, StorageNodeScheduler, ::Dcmgr::Scheduler::StorageNode, &blk)
             self
           end
 
           def network_scheduler(class_name, &blk)
-            s = Scheduler.new.parse_dsl do
-              config.scheduler_class = class_name
-            end
-            c = ::Dcmgr::Scheduler.scheduler_class(s.scheduler_class, ::Dcmgr::Scheduler::Network)
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
-              if c && c < NetworkScheduler
-                c = c.new
-                c.parse_dsl(&blk) if blk
-                s.parse_dsl do
-                  option c
-                end
-              end
-            end
-            @config[:network_scheduler] = s
+            @config[:network_scheduler] = Scheduler::DSL.load_section(class_name, NetworkScheduler, ::Dcmgr::Scheduler::Network, &blk)
             self
-          end
-
-          private
-          def load_options(conf_base_class)
           end
         end
       end

@@ -185,6 +185,8 @@ module Dcmgr
       autoload :VifTemplate, 'dcmgr/scheduler/network/vif_template'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
     end
+
+    NAMESPACES=[HostNode, StorageNode, Network]
   end
   
   require 'dcmgr/vnet'

@@ -89,8 +89,8 @@ module Dcmgr
               Module.find_const(input)
             end
           else
-            if input.is_a?(Class) && s.scheduler_class < Module.find_const("#{namespace.to_s}Scheduler")
-              s.scheduler_class
+            if input.is_a?(Class) && input < Module.find_const("#{namespace.to_s}Scheduler")
+              input
             else
               raise ArgumentError, "Unknown scheduler identifier: #{input}"
             end
@@ -99,14 +99,68 @@ module Dcmgr
       c
     end
 
-    # Allocate HostNode to Instance object.
-    class HostNodeScheduler
+    # Common base class for schedulers
+    class SchedulerBase
       attr_reader :options
       
       def initialize(options=nil)
         @options = options
       end
 
+      # helper method to create scheduler specific configuration class.
+      #
+      # Each scheduler can have configuration section in
+      # dcmgr.conf. Each section is a Dcmgr::Configuration class and
+      # the class has to be defined as "Configuration" constant.
+      #
+      # Example below shows a network scheduler class with the local conf class:
+      # class Scheduler1 < Dcmgr::Scheudler::NetworkScheduler
+      #   class Configuration < Dcmgr::Configurations::Dcmgr::NetworkScheduler
+      #     param :xxxx
+      #     param :yyyy
+      #   end
+      # end
+      # 
+      # The configuration loader retrieves the Configuration class
+      # when the option section is loaded in dcmgr.conf.
+      # 
+      # service_type("std") {
+      #   network_scheduler(:Scheduler1) {
+      #     # Here is the option section for Scheduler1 class.
+      #     xxxx :value1
+      #     config.yyyy = :value2
+      #   }
+      # }
+      #
+      # This helper method allows to define the local configuration class as below:
+      # class Scheduler1 < Dcmgr::Scheudler::NetworkScheduler
+      #   configuration do
+      #     param :xxxx
+      #     param :yyyy
+      #   end
+      # end
+      def self.configuration(&blk)
+        # create new configuration class if not exist.
+        unless self.const_defined?(:Configuration)
+          self.const_set(:Configuration, Class.new(self.configuration_class))
+        end
+        self.const_get(:Configuration).instance_eval(&blk)
+      end
+
+
+      def self.configuration_class
+        c = self
+        begin
+          v = c.instance_variable_get(:@configuration_class)
+          return v if v
+        end while c = c.superclass
+      end
+    end
+
+    # Allocate HostNode to Instance object.
+    class HostNodeScheduler < SchedulerBase
+      @configuration_class = Dcmgr::Configurations::Dcmgr::HostNodeScheduler
+      
       # @param Models::Instance instance
       # @return Models::HostNode
       def schedule(instance)
@@ -115,13 +169,9 @@ module Dcmgr
     end
 
     # Allocate StorageNode to Volume object.
-    class StorageNodeScheduler
-      attr_reader :options
+    class StorageNodeScheduler < SchedulerBase
+      @configuration_class = Dcmgr::Configurations::Dcmgr::StorageNodeScheduler
 
-      def initialize(options=nil)
-        @options = options
-      end
-      
       # @param Models::Volume volume
       # @return nil
       def schedule(volume)
@@ -145,14 +195,10 @@ module Dcmgr
     end
 
     # Manage vnic for instances and assign network object.
-    class NetworkScheduler
-      attr_reader :options
+    class NetworkScheduler < SchedulerBase
+      @configuration_class = Dcmgr::Configurations::Dcmgr::NetworkScheduler
 
-      def initialize(options=nil)
-        @options = options
-      end
-
-      # @param Models::HostNode host_node
+      # @param Models::Instance instance
       # @return Models::Network
       def schedule(instance)
         raise NotImplementedError
