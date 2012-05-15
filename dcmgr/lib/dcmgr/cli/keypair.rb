@@ -36,7 +36,7 @@ module Dcmgr::Cli
         begin
           generated_public_key = `ssh-keygen -yf #{options[:private_key]}`
         rescue => e
-          Error.raise "Couldn't generate the public key from the private key. Are you sure it is a private key with proper permissions?", 100
+          Error.raise "Could not generate the public key from the private key. Are you sure it is a private key with proper permissions?", 100
         end
         
         unless fields[:public_key].split(' ')[0] == generated_public_key.split(' ')[0] && fields[:public_key].split(' ')[1] == generated_public_key.split(' ')[1]
