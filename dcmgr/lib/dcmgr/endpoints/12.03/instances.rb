@@ -213,4 +213,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     Dcmgr.messaging.submit("scheduler", 'schedule_start_instance', instance.canonical_uuid)
     respond_with([instance.canonical_uuid])
   end
+  
+  put '/:id' do
+    # description 'Updates the security groups an instance is in'
+    # param :security_groups, array, :optional
+    instance = find_by_uuid(:Instance, params[:id])
+    
+    if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
+      params[:security_groups] = [params[:security_groups]] if params[:security_groups].is_a?(String)
+      
+      instance.set_security_groups(params[:security_groups])
+      respond_with(R::Instance.new(instance).generate)
+    end
+  end
 end
