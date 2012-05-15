@@ -32,8 +32,8 @@ module Dcmgr
         def schedule(instance)
           sched_name = instance.request_params['network_scheduler']
           if sched_name.nil? || sched_name == ''
-            if options.default
-              sched_conf = options.default
+            if options.schedulers[:default]
+              sched_conf = options.schedulers[:default]
             else
               raise "Unable to find any network schedulers"
             end
