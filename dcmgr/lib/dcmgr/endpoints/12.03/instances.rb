@@ -220,10 +220,32 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance = find_by_uuid(:Instance, params[:id])
     
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
-      params[:security_groups] = [params[:security_groups]] if params[:security_groups].is_a?(String)
+      security_group_uuids = params[:security_groups]
+      security_group_uuids = [security_group_uuids] if security_group_uuids.is_a?(String)
+
+      groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
+      # Remove old security groups
+      instance.security_groups_dataset.each { |group|
+        unless security_group_uuids.member?(group.canonical_uuid)
+          instance.remove_security_group(group)
+          instance.network_vif.each { |vnic|
+            Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
+          }
+        end
+      }
       
-      instance.set_security_groups(params[:security_groups])
-      respond_with(R::Instance.new(instance).generate)
+      # Add new security groups
+      current_group_ids = instance.security_groups_dataset.map {|g| g.canonical_uuid}
+      groups.each { |group|
+        unless current_group_ids.member?(group.canonical_uuid)
+          instance.add_security_group(group)
+          instance.network_vif.each { |vnic|
+            Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
+          }
+        end
+      }
     end
+    
+    respond_with(R::Instance.new(instance).generate)
   end
 end
