@@ -7,15 +7,16 @@ module Dcmgr
       class NetfilterController < Controller
         include Dcmgr::Logger
         attr_accessor :task_manager
+        attr_accessor :event
         attr_reader :node
         
         # This controller should use a cache
         
-        def initialize(node)
+        def initialize(node,event)
           logger.info "initializing controller"
           super()
           @node = node
-          
+          @event = event
           @cache = NetfilterCache.new(@node)
           
           self.task_manager = TaskManagerFactory.create_task_manager(node)
@@ -171,6 +172,25 @@ module Dcmgr
               # Put in the new isolation rules
               self.task_manager.remove_vnic_tasks(local_vnic_map,TaskFactory.create_tasks_for_isolation(local_vnic_map,[foreign_vnic_map],self.node))
             }
+          elsif is_local_vnic?(vnic)
+            vnic_map = get_local_vnic(vnic)
+            group_map = get_group(group)
+            
+            unless vnic_map.nil?
+              self.task_manager.remove_vnic_tasks(vnic_map,TaskFactory.create_tasks_for_secgroup(group_map))
+              
+              local_friends = get_local_vnics_in_group(group).delete_if {|friend| friend[:uuid] == vnic}
+            
+              local_friends.each { |local_vnic_map|
+                # Put in the new isolation rules
+                self.task_manager.remove_vnic_tasks(local_vnic_map,TaskFactory.create_tasks_for_isolation(local_vnic_map,[vnic_map],self.node))
+              }
+              
+              #Remove security group from the cache
+              @cache.remove_local_vnic_from_security_group(group,vnic)
+              
+              #TODO: Unsubscribe from the group if there are no instances left in it
+            end
           end
           
           @cache.remove_foreign_vnic(group,vnic)
@@ -234,7 +254,7 @@ module Dcmgr
           end
         end
         
-        private
+        #private
         def init_iptables
           [
             "iptables -t nat -F",
@@ -293,6 +313,14 @@ module Dcmgr
           @cache.get[:instances].map { |inst_map|
             inst_map[:vif].delete_if { |vnic_map| not vnic_map[:security_groups].member?(group_id) }
           }.flatten.uniq.compact
+        end
+        
+        def get_local_vnic(vnic_id)
+          @cache.get[:instances].map { |inst_map|
+            inst_map[:vif]
+          }.flatten.uniq.find { |vnic_map|
+            vnic_map[:uuid] == (vnic_id)
+          }
         end
         
         def get_local_groups_that_reference_group(ref_group_id)

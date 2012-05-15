@@ -87,6 +87,19 @@ module Dcmgr
           }
         end
         
+        def remove_local_vnic_from_security_group(group_id,vnic_id)
+          instance = @cache[:instances].find { |inst_map|
+            not inst_map[:vif].find {|vif_map| vif_map[:uuid] == vnic_id }.nil?
+          }
+          
+          unless instance.nil?
+            instance[:security_groups].delete(group_id)
+            instance[:vif].find {|vif_map| vif_map[:uuid] == vnic_id }[:security_groups].delete(group_id)
+            
+            delete_group(group_id) unless instances_left_in_group?(group_id)
+          end
+        end
+        
         private
         def deep_clone(something)
           Marshal.load( Marshal.dump(something) )

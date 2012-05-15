@@ -5,8 +5,8 @@ module Dcmgr
     # This file stores the factories. It is their job to read config files etc. to decide which implementation to use.
     V = Dcmgr::VNet
     class ControllerFactory
-      def self.create_controller(node)
-        V::Netfilter::NetfilterController.new(node)
+      def self.create_controller(node,event)
+        V::Netfilter::NetfilterController.new(node,event)
       end
     end
     
