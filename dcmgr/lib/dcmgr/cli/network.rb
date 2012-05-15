@@ -50,6 +50,7 @@ class Network < Base
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
   method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
   method_option :network_mode, :type => :string, :default=>'securitygroup', :desc => "Network mode: #{M::Network::NETWORK_MODES.join(', ')}"
+  method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   def add
     validate_ipv4_range
 
@@ -76,6 +77,7 @@ class Network < Base
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :desc => "The account ID to own this"
   method_option :network_mode, :type => :string, :desc => "Network mode: #{M::Network::NETWORK_MODES.join(', ')}"
+  method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   def modify(uuid)
     validate_ipv4_range
 
@@ -106,9 +108,9 @@ class Network < Base
     if uuid
       nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
       puts ERB.new(<<__END, nil, '-').result(binding)
-Network UUID:
-  <%= nw.canonical_uuid %>
+Network UUID: <%= nw.canonical_uuid %>
 Network Mode: <%= nw.network_mode %>
+Service Type: <%= nw.service_type %>
 IPv4:
   Network address: <%= nw.ipv4_ipaddress %>/<%= nw.prefix %>
   Gateway address: <%= nw.ipv4_gw %>

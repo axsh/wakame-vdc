@@ -26,6 +26,7 @@ module Dcmgr::Cli
     method_option :account_id, :type => :string, :desc => "The UUID of the account this security group belongs to.", :required => true
     method_option :description, :type => :string, :desc => "The description for this new security group."
     method_option :rule, :type => :string, :desc => "Path to the rule text file. (\"-\" is from STDIN)"
+    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the sercurity group. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
 
@@ -45,19 +46,14 @@ module Dcmgr::Cli
       if uuid
         group = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-Group UUID:
-  <%= group.canonical_uuid %>
-Account id:
-  <%= group.account_id %>
+Group UUID: <%= group.canonical_uuid %>
+Account id: <%= group.account_id %>
+Service Type: <%= group.service_type %>
+Rules:
+<%= group.rule %>
 <%- if group.description -%>
 Description:
   <%= group.description %>
-<%- end -%>
-<%- unless group.security_group_rules.empty? -%>
-Rules:
-<%- group.security_group_rules.each { |rule| -%>
-  <%= rule.permission %>
-<%- } -%>
 <%- end -%>
 __END
       else
@@ -73,6 +69,7 @@ __END
     method_option :account_id, :type => :string, :desc => "The UUID of the account this security group belongs to."
     method_option :description, :type => :string, :desc => "The description for this new security group."
     method_option :rule, :type => :string, :desc => "Path to the rule text file. (\"-\" is from STDIN)"
+    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the security group. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     def modify(uuid)
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
 

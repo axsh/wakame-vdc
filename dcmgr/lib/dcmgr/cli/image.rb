@@ -19,6 +19,7 @@ module Dcmgr::Cli
       method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
       method_option :root_device, :type => :string, :desc => "The root device of image"
       #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
+      method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       def local(location)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
@@ -53,7 +54,8 @@ module Dcmgr::Cli
       method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
       method_option :root_device, :type => :string, :desc => "The root device of image"
       #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
-      def volume(snapshot_id)
+      method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    def volume(snapshot_id)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(snapshot_id) if M::VolumeSnapshot[snapshot_id].nil?
@@ -77,6 +79,7 @@ module Dcmgr::Cli
     desc "modify UUID [options]", "Modify a registered machine image"
     method_option :description, :type => :string, :desc => "An arbitrary description of the machine image"
     method_option :state, :type => :string, :default => "init", :desc => "The state for the machine image"
+    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     def modify(uuid)
       #TODO: Check if state is valid here too
       super(M::Image,uuid,options)
@@ -93,24 +96,19 @@ module Dcmgr::Cli
       if uuid
         img = M::Image[uuid] || UnknownUUIDError.raise(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
-UUID:
-  <%= img.canonical_uuid %>
-Boot Type:
-  <%= img.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>
-Arch:
-  <%= img.arch %>
+UUID: <%= img.canonical_uuid %>
+Boot Type: <%= img.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>
+Arch: <%= img.arch %>
+MD5 Sum: <%= img.md5sum %>
+Is Public: <%= img.is_public %>
+State: <%= img.state %>
+Service Type: <%= img.service_type %>
+Features:
+<%= img.features %>
 <%- if img.description -%>
-MD5 Sum:
-  <%= img.md5sum %>
 Description:
   <%= img.description %>
 <%- end -%>
-Is Public:
-  <%= img.is_public %>
-State:
-  <%= img.state %>
-Features:
-<%= img.features %>
 __END
       else
         cond = {}

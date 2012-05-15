@@ -51,29 +51,32 @@ shlog ./bin/vdc-manage network add \
  --dhcp ${dhcp_server} \
  --metadata ${metadata_server} \
  --metadata-port ${metadata_port} \
+ --service-type=std \
  --description demo
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10
+ --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10
+ --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10
+ --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10
+ --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo6 \
  --ipv4-network 10.102.0.0 \
  --ipv4_gw 10.102.0.1 \
  --prefix 24 \
  --domain vnet6.local \
- --metric 10
+ --metric 10 \
+  --service-type=std 
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo7 \
  --ipv4-network 10.103.0.0 \
  --ipv4_gw 10.103.0.1 \
  --prefix 24 \
  --domain vnet7.local \
- --metric 10
+ --metric 10 \
+  --service-type=std
 
 # set forward interface(= physical network) from network
 shlog ./bin/vdc-manage network forward nw-demo1 public
@@ -123,7 +126,7 @@ shlog ./bin/vdc-manage spec  add --uuid is-demo2    --account-id ${account_id} -
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
-shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo
+shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo --service-type=std
 shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
 tcp:22,22,ip4:0.0.0.0
 EOF
@@ -139,7 +142,7 @@ udp:53,53,ip4:0.0.0.0
 icmp:-1,-1,ip4:0.0.0.0
 EOF
 
-shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "demo key1"
+shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "demo key1" --service-type=std
 
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
 INSERT INTO volume_snapshots values

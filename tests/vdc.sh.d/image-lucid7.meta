@@ -6,3 +6,4 @@ localname=ubuntu-lucid-kvm-ms-32.raw.gz
 storetype=local
 fileformat=raw
 rootdevice=uuid:5eb668a7-176b-44ac-b0c0-ff808c191420
+service_type=std

@@ -32,7 +32,8 @@ for meta in $data_path/image-*.meta; do
           --description "${localname} local" \
           --state init \
           --file_format ${fileformat} \
-          --root_device ${rootdevice}
+          --root_device ${rootdevice} \
+          --service-type ${service_type}
         ;;
       
       "volume")
@@ -44,7 +45,8 @@ for meta in $data_path/image-*.meta; do
           --description "${localname} volume" \
           --state init \
           --file_format ${fileformat} \
-          --root_device ${rootdevice}
+          --root_device ${rootdevice} \
+          --service-type ${service_type}
         ;;
     esac
 
