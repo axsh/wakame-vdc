@@ -193,6 +193,7 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %post hva-openvz-vmapp-config
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-openvz.conf
+%{prefix}/%{name}/rpmbuild/edit-grub4vz.sh add
 
 %files
 %defattr(-,root,root)
