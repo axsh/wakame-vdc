@@ -46,6 +46,8 @@ bundle-install-stamp:
 
 clean:
 	rm -rf $(CURDIR)/ruby-build $(CURDIR)/ruby $(CURDIR)/tmp
+	rm -rf $(CURDIR)/dcmgr/vendor/bundle
+	rm -rf $(CURDIR)/frontend/dcmgr_gui/vendor/bundle
 	rm -f $(CURDIR)/build-ruby-stamp
 	rm -f $(CURDIR)/bundle-install-stamp
 	rm -f $(CURDIR)/install-core-gem-stamp
