@@ -32,6 +32,7 @@ class RootCli < Thor
   register(Dcmgr::Cli::Spec, Dcmgr::Cli::Spec.namespace, "spec sub-command", "Operations for instance specifications")
   register(Dcmgr::Cli::Tag, Dcmgr::Cli::Tag.namespace, "tag sub-command", "Operations for tags")
   register(Dcmgr::Cli::Quota, Dcmgr::Cli::Quota.namespace, "quota sub-command", "Operations for quota")
+  register(Dcmgr::Cli::BackupStorage, Dcmgr::Cli::BackupStorage.namespace, "backupstorage sub-command", "Operations for backup storage")
 end
 
 

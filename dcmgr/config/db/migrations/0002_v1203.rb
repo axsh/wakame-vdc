@@ -213,6 +213,18 @@ Sequel.migration do
     alter_table(:ssh_key_pairs) do
       add_column :display_name, "varchar(255)", :null=>false
     end
+    
+    # Object storage stores backup objects.
+    create_table(:backup_storages) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false
+      column :storage_type, "varchar(255)", :null=>false
+      column :description, "text"
+      column :base_uri, "varchar(255)", :null=>false
+      column :deleted_at, "datetime"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+    end
   end
   
   down do
@@ -298,5 +310,6 @@ Sequel.migration do
     alter_table(:ssh_key_pairs) do
       drop_column :display_name
     end
+    drop_table(:backup_storages)
   end
 end

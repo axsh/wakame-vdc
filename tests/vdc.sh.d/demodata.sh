@@ -157,6 +157,9 @@ INSERT INTO volume_snapshots values
  (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now(), 'std', 'lucid6');
 EOS
 
+shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo1 --base-uri='file:///backups' --storage-type=local --description="local file storage"
+shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --base-uri='http://localhost:6789/backups' --storage-type=webdav --description="nginx based webdav storage"
+
 (. $data_path/demodata_images.sh)
 
 exit 0

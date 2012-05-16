@@ -66,6 +66,7 @@ module Dcmgr
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
     autoload :LoadBalancer, 'dcmgr/models/load_balancer'
     autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'    
+    autoload :BackupStorage, 'dcmgr/models/backup_storage'
   end
 
   module Endpoints
@@ -125,6 +126,7 @@ module Dcmgr
     autoload :Spec, 'dcmgr/cli/spec'
     autoload :Tag, 'dcmgr/cli/tag'
     autoload :Quota, 'dcmgr/cli/quota'
+    autoload :BackupStorage, 'dcmgr/cli/backup_storage'
 
     module Debug
       autoload :Base, 'dcmgr/cli/debug/base'
