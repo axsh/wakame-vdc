@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+VDC_ROOT=${VDC_ROOT:?"VDC_ROOT needs to be set"}
 
 ## Setup OS files
 
@@ -16,12 +17,8 @@ set -e
 #  RHEL6.0 does not support "apply_sysctl".
 #  apply_sysctl
 #)
-[ -z ${VDC_ROOT} ] && {
-  pwd_path=$(cd $(dirname $0) && pwd)
-} || {
-  pwd_path=${VDC_ROOT}/tests/vdc.sh.d/rhel/
-}
-${pwd_path}/sysctl.sh < ${pwd_path}/sysctl.d/30-bridge-if.conf
+
+${VDC_ROOT}/contrib/etc/sysctl.d/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-bridge-if.conf
 
 # stop system services.
 for i in apparmor dnsmasq tgt; do
