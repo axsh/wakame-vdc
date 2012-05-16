@@ -157,9 +157,8 @@ rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{na
 rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
 
 # /etc/sysctl.d
-# [TODO] should share /etc/sysctl.d
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
-rsync -aHA `pwd`/tests/vdc.sh.d/rhel/sysctl.d/ ${RPM_BUILD_ROOT}/etc/sysctl.d/
+rsync -aHA `pwd`/contrib/etc/sysctl.d/ ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -183,32 +182,10 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       iscsi  on
 /sbin/chkconfig --add iscsid
 /sbin/chkconfig       iscsid on
-# /etc/sysctl.d/30-bridge-if.conf
-function apply_sysctl() {
-  cat | egrep -v '^#|^$' | while read line; do
-    set ${line}
-    egrep ^$1 /etc/sysctl.conf -q || {
-      echo "$1 = $3" >> /etc/sysctl.conf
-    } && {
-      sed -i "s,^$1.*,$1 = $3," /etc/sysctl.conf
-    }
-  done
-}
-apply_sysctl < /etc/sysctl.d/30-bridge-if.conf
+/etc/sysctl.d/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
 
 %post hva-openvz-vmapp-config
-# /etc/sysctl.d/30-openvz.conf
-function apply_sysctl() {
-  cat | egrep -v '^#|^$' | while read line; do
-    set ${line}
-    egrep ^$1 /etc/sysctl.conf -q || {
-      echo "$1 = $3" >> /etc/sysctl.conf
-    } && {
-      sed -i "s,^$1.*,$1 = $3," /etc/sysctl.conf
-    }
-  done
-}
-apply_sysctl < /etc/sysctl.d/30-openvz.conf
+/etc/sysctl.d/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 
 %files
 %defattr(-,root,root)
@@ -238,6 +215,7 @@ apply_sysctl < /etc/sysctl.d/30-openvz.conf
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
+%config /etc/sysctl.d/sysctl.sh
 %config /etc/sysctl.d/30-bridge-if.conf
 
 %files hva-kvm-vmapp-config
