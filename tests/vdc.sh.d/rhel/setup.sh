@@ -18,7 +18,7 @@ VDC_ROOT=${VDC_ROOT:?"VDC_ROOT needs to be set"}
 #  apply_sysctl
 #)
 
-${VDC_ROOT}/contrib/etc/sysctl.d/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-bridge-if.conf
+${VDC_ROOT}/rpmbuild/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-bridge-if.conf
 
 # stop system services.
 for i in apparmor dnsmasq tgt; do

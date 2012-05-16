@@ -142,9 +142,16 @@ sed "s,usr/share/axsh,%{_prefix_path},g" ./debian/dirs | while read dir; do
   [ -d ${RPM_BUILD_ROOT}/${dir} ] || mkdir -p ${RPM_BUILD_ROOT}/${dir}
 done
 
-rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/dcmgr    ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
-rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/frontend ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
-rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/ruby     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+components="
+ dcmgr
+ frontend
+ ruby
+ rpmbuild
+"
+for component in ${components}; do
+  rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+done
+unset components
 
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
 rsync -aHA `pwd`/contrib/etc/default     ${RPM_BUILD_ROOT}/etc/
@@ -158,7 +165,7 @@ rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{na
 
 # /etc/sysctl.d
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
-rsync -aHA `pwd`/contrib/etc/sysctl.d/ ${RPM_BUILD_ROOT}/etc/sysctl.d/
+rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -182,10 +189,10 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       iscsi  on
 /sbin/chkconfig --add iscsid
 /sbin/chkconfig       iscsid on
-/etc/sysctl.d/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
+%{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
 
 %post hva-openvz-vmapp-config
-/etc/sysctl.d/sysctl.sh < /etc/sysctl.d/30-openvz.conf
+%{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 
 %files
 %defattr(-,root,root)
@@ -215,7 +222,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
-%config /etc/sysctl.d/sysctl.sh
 %config /etc/sysctl.d/30-bridge-if.conf
 
 %files hva-kvm-vmapp-config
