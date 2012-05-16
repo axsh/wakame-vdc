@@ -22,10 +22,11 @@ module_dir=/usr/src/${module_name}-${module_version}
 
 kpkg_devel_name=${kpkg_name}-devel
 rpm -qi ${kpkg_devel_name} >/dev/null || { echo "not available: ${kpkg_devel_name}" >&2; exit 1; }
-kernel_version=$(rpm -qi ${kpkg_devel_name} | egrep ^Version | awk '{print $3}')
-kernel_release=$(rpm -qi ${kpkg_devel_name} | egrep ^Release | awk '{print $3}')
-kernel_source_dir=$(rpm -ql ${kpkg_devel_name} | egrep /usr/src/kernels/${kernel_version}-${kernel_release} | head -1)
-kernel_lib_dir=$(rpm -ql ${kpkg_name} | grep /lib/modules/ | head -1)
+kernel_version=$(rpm -qi ${kpkg_devel_name} | egrep ^Version | awk '{print $3}' | sort -r | head -1)
+kernel_release=$(rpm -qi ${kpkg_devel_name} | egrep ^Release | awk '{print $3}' | sort -r | head -1)
+kernel_variant=${kernel_version}-${kernel_release}
+kernel_source_dir=$(rpm -ql ${kpkg_devel_name}-${kernel_variant} | egrep /usr/src/kernels/${kernel_variant} | head -1)
+kernel_lib_dir=$(rpm -ql ${kpkg_name}-${kernel_variant} | grep /lib/modules/ | head -1)
 kernel_lib_version=$(basename ${kernel_lib_dir})
 
 dkms_opts="-m ${module_name} -v ${module_version}"
