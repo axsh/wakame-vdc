@@ -12,45 +12,18 @@
 #%:
 #	dh $@
 
-ruby_ver := 1.9.2-p290
-
-CFLAGS := -fno-strict-aliasing
-CXXFLAGS := -fno-strict-aliasing
-# configure options set by ruby-build
-CONFIGURE_OPTS := --disable-install-doc --enable-frame-address --enable-pthread --enable-ipv6 --with-bundled-sha1 --with-bundled-md5 --with-bundled-rmd160 --enable-rpath
-ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-        CFLAGS += -g -O0
-	CXXFLAGS += -g -O0
-else
-        CFLAGS += -g -O0
-	CXXFLAGS += -g -O0
-endif
-export CFLAGS CXXFLAGS CONFIGURE_OPTS
-
-PATH := $(CURDIR)/ruby/bin:${PATH}
-export PATH
-
-# unset GEM_HOME and GEM_PATH
-unexport GEM_HOME GEM_PATH
-
 build: build-stamp
 
 build-stamp:
 	dh_testdir
-	git clone https://github.com/sstephenson/ruby-build.git
-	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(CURDIR)/ruby)
-	gem install bundler rake --no-rdoc --no-ri
-	(cd $(CURDIR)/dcmgr && bundle install --standalone --path=vendor/bundle)
-	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path=vendor/bundle)
+	(cd $(CURDIR); $(MAKE))
 	touch $@
 clean:
 	dh_testdir
 	#dh_testroot
 	dh_prep
 	dh_clean
-	(cd $(CURDIR)/dcmgr/ && (rm -rf .bundle/; rm -rf vendor/bundle))
-	(cd $(CURDIR)/frontend/dcmgr_gui/ && (rm -rf .bundle/; rm -rf vendor/bundle))
-	rm -rf $(CURDIR)/ruby-build $(CURDIR)/ruby $(CURDIR)/tmp
+	(cd $(CURDIR); $(MAKE) clean)
 
 install: build
 	dh_testdir
