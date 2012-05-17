@@ -33,6 +33,7 @@ rabbitmq-server-2.6.1  http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/r
 flog                   git://github.com/hansode/env-builder.git                                                   flog-1.8-3.$(case ${arch} in i*86) echo i386;; *) echo ${arch};; esac).rpm
 openvswitch            git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.4.1-1.el6.${arch}.rpm
 openvswitch            git://github.com/hansode/env-builder.git                                                   openvswitch-1.4.1-1.${arch}.rpm
+kmod-openvswitch-vzkernel git://github.com/hansode/env-builder.git                                                kmod-openvswitch-vzkernel-1.4.1-1.el6.${arch}.rpm
 lxc                    git://github.com/hansode/env-builder.git                                                   lxc-0.7.5-1.${arch}.rpm
 EOS
 }
@@ -67,9 +68,9 @@ function deploy_3rd_party() {
   list_3rd_party | while read pkg_name pkg_uri pkg_file; do
     case ${pkg_name} in
     flog)
-      mv ${vendor_dir}/$(basename ${pkg_uri%%.git})/rhel/6/${pkg_name}/${pkg_file} ${vendor_dir}/.
+      cp ${vendor_dir}/$(basename ${pkg_uri%%.git})/rhel/6/${pkg_name}/${pkg_file} ${vendor_dir}/.
       ;;
-    openvswitch)
+    openvswitch|kmod-openvswitch-vzkernel)
       cp ${HOME}/rpmbuild/RPMS/${arch}/${pkg_file} ${vendor_dir}/.
       ;;
     lxc)
