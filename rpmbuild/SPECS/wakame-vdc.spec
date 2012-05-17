@@ -102,6 +102,7 @@ Group: Development/Languages
 Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
 Requires: vzkernel
 Requires: vzctl
+Requires: kmod-openvswitch-vzkernel = 1.4.1
 %description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
@@ -114,9 +115,9 @@ Requires: %{name}-hva-kvm-vmapp-config = %{version}-%{release}
 Requires: %{name}-hva-lxc-vmapp-config = %{version}-%{release}
 Requires: %{name}-hva-openvz-vmapp-config = %{version}-%{release}
 # build openvswitch module for vzkernel
-Requires: kernel-devel
-Requires: vzkernel-devel
-Requires: dkms
+#Requires: kernel-devel
+#Requires: vzkernel-devel
+#Requires: dkms
 %description hva-full-vmapp-config
 <insert long description, indented with spaces>
 
