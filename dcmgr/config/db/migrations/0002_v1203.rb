@@ -191,6 +191,7 @@ Sequel.migration do
       add_column :service_type, "varchar(255)", :null=>false
     end
 
+<<<<<<< HEAD
     # Add display_name column
     alter_table(:instances) do
       add_column :display_name, "varchar(255)", :null=>false
@@ -213,6 +214,41 @@ Sequel.migration do
     alter_table(:ssh_key_pairs) do
       add_column :display_name, "varchar(255)", :null=>false
     end
+=======
+    # # it is changed to represent the attributes for the bootable
+    # # backup object. Any machine images have to be 
+    # # saved as backup object at first and then register nessecary
+    # # additional information here.
+    # alter_table(:images) do
+    #   add_column :backup_object_id, "varchar(255)", :null=>false
+    #   drop_column :source
+    #   drop_column :md5sum
+    #   drop_column :boot_dev_type
+    # end
+    
+    create_table(:backup_objects) do
+      primary_key :id, :type=>"int(11)"
+      column :account_id, "varchar(255)", :null=>false
+      column :uuid, "varchar(255)", :null=>false
+      column :service_type, "varchar(255)", :null=>false
+      column :backup_storage_id, "int(11)", :null=>false
+      column :size, "int(11)", :null=>false
+      column :status, "int(11)", :default=>0, :null=>false
+      column :state, "varchar(255)", :default=>"initialized", :null=>false
+      column :object_key, "varchar(255)", :null=>false
+      column :checksum, "varchar(255)", :null=>false
+      column :description, "text"
+      column :deleted_at, "datetime"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      
+      index [:uuid], :unique=>true, :name=>:uuid
+      index [:account_id]
+      index [:deleted_at]
+      index [:backup_storage_id]
+    end
+
+    # rename_table(:volume_snapshots, :backup_objects)
     
     # Object storage stores backup objects.
     create_table(:backup_storages) do
