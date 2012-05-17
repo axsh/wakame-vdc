@@ -57,7 +57,7 @@ RHEL6/CentOS6
     # yum install -y git
     # git clone git://github.com/axsh/wakame-vdc.git
     # cd ./wakame-vdc/
-    # ./tests/vdc.sh install
+    # ./tests/vdc.sh install::rhel
     # ./tests/vdc.sh run
 
 
