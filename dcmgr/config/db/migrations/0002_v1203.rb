@@ -140,6 +140,31 @@ Sequel.migration do
       index [:created_at]
     end
 
+    create_table(:load_balancers) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false
+      column :account_id, "varchar(255)", :null=>false
+      column :instance_id, "int(11)", :null=>false
+      column :state, "varchar(255)", :default=>'init', :null=>false
+      column :status, "varchar(255)", :default=>'init', :null=>false
+      column :name, "varchar(255)", :null=>false
+      column :description, "text", :null=>true
+      column :terminated_at, "datetime", :null=>true
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false  
+      index [:uuid], :name=>:uuid
+      index [:account_id]
+    end
+    
+    create_table(:load_balancer_targets) do
+      primary_key :id, :type=>"int(11)"
+      column :network_vif_id, "int(11)"
+      column :load_balancer_id, "int(11)"
+      column :created_at, "datetime", :null=>false
+      index [:network_vif_id]
+      index [:load_balancer_id]
+    end
+
     # Add service_type column for service type resources
     alter_table(:instances) do
       add_column :service_type, "varchar(255)", :null=>false
