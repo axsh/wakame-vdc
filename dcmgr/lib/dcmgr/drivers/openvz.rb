@@ -150,8 +150,6 @@ module Dcmgr
         logger.debug("start container #{ctid}")
         sleep 1
         
-        # add vifs to bridge
-        add_vifs(vifs)
       end
 
       def terminate_instance(hc)
@@ -202,19 +200,8 @@ module Dcmgr
         sh("vzctl restart %s", [ctid])
         logger.debug("restart container #{ctid}")
         
-        # add vifs to bridge
-        add_vifs(hc.inst[:vif])
       end
 
-      private
-      def add_vifs(vifs)
-        vifs.each {|vif|
-          if vif[:ipv4] and vif[:ipv4][:network]
-            sh("/usr/sbin/brctl addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
-            logger.debug("add virtual interface #{bridge_if_name(vif[:ipv4][:network][:dc_network])} to #{vif[:uuid]}")
-          end
-        }
-      end
     end
   end
 end
