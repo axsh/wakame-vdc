@@ -27,7 +27,11 @@ wakame_release="$(egrep ^Release: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec |
 
 repo_dir=${repo_dir:-${root_dir}/repo.d}
 
-arch="x86_64"
+arch=$(arch)
+case ${arch} in
+i*86) arch=i686;;
+esac
+
 wakame_rpms="
  wakame-vdc-${wakame_version}-${wakame_release}.${arch}.rpm
  wakame-vdc-dcmgr-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
