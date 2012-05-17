@@ -11,7 +11,6 @@ URL: http://wakame.jp/
 Source: %{_vdc_git_uri}
 Prefix: /%{_prefix_path}
 License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
-BuildArch: x86_64
 
 # * build
 BuildRequires: rpm-build
@@ -82,7 +81,9 @@ Requires: util-linux-ng
 Summary: Configuration set for hva KVM VM appliance
 Group: Development/Languages
 Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+%ifarch x86_64
 Requires: qemu-kvm
+%endif
 %description  hva-kvm-vmapp-config
 <insert long description, indented with spaces>
 
