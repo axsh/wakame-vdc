@@ -73,7 +73,7 @@ function deploy_3rd_party() {
       cp ${HOME}/rpmbuild/RPMS/${arch}/${pkg_file} ${vendor_dir}/.
       ;;
     lxc)
-      sudo cp /root/rpmbuild/RPMS/${arch}/${pkg_file} ${vendor_dir}/.
+      cp /root/rpmbuild/RPMS/${arch}/${pkg_file} ${vendor_dir}/.
       ;;
     esac
   done
