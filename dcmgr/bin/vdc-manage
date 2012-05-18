@@ -33,6 +33,11 @@ class RootCli < Thor
   register(Dcmgr::Cli::Tag, Dcmgr::Cli::Tag.namespace, "tag sub-command", "Operations for tags")
   register(Dcmgr::Cli::Quota, Dcmgr::Cli::Quota.namespace, "quota sub-command", "Operations for quota")
   register(Dcmgr::Cli::BackupStorage, Dcmgr::Cli::BackupStorage.namespace, "backupstorage sub-command", "Operations for backup storage")
+  register(Dcmgr::Cli::BackupObject, Dcmgr::Cli::BackupObject.namespace, "backupobject sub-command", "Operations for backup object")
+
+  def self.exit_on_failure?
+    true
+  end
 end
 
 
