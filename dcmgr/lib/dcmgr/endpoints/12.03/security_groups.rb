@@ -21,6 +21,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       ds = ds.filter(:account_id=>params[:account_id])
     end
     
+    if params[:service_type]
+      Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
+      ds = ds.filter(:service_type=>params[:service_type])
+    end
+    
     collection_respond_with(ds) do |paging_ds|
       R::SecurityGroupCollection.new(paging_ds).generate
     end

@@ -66,6 +66,10 @@ Feature: SshKeyPair API
       |a-shpoolxx|
     Then the previous api call should be successful
     When we make an api get call to ssh_key_pairs with the following options
-      |created_since|
+      |created_since            |
       |2012-01-01T21:52:11+09:00|
+    Then the previous api call should be successful
+    When we make an api get call to ssh_key_pairs with the following options
+      |service_type             |
+      |std                      |
     Then the previous api call should be successful
