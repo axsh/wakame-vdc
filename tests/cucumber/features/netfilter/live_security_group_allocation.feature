@@ -140,13 +140,68 @@ Feature: Live security group allocation
   Scenario: rules
     Given security group A exists with the following rules
       """
-      tcp:22,22,ip4:0.0.0.0
       icmp:-1,-1,ip4:0.0.0.0
       """
-    Given security group B exists with the following rules
+    And security group B exists with the following rules
       """
-      tcp:22,22,ip4:0.0.0.0
       tcp:345,345,ip4:0.0.0.0
       """
     And security group C exists with no rules
+    And security group D exists with the following rules
+      """
+      tcp:345,345,ip4:0.0.0.0
+      """
+    And an instance inst1 is started in group C That listens on tcp port 345
+    
+    Then we should not be able to ping instance inst1
+    And we should not be able to make a tcp connection on port 345 to instance inst1
+    
+    When instance inst1 is assigned to the following groups
+    | group_name |
+    | B          |
+    And we wait 3 seconds
+    Then we should not be able to ping instance inst1
+    But we should be able to make a tcp connection on port 345 to instance inst1
+    
+    When instance inst1 is assigned to the following groups
+    | group_name |
+    | A          |
+    And we wait 3 seconds
+    Then we should be able to ping instance inst1
+    But we should not be able to make a tcp connection on port 345 to instance inst1
+    
+    When instance inst1 is assigned to the following groups
+    | group_name |
+    | A          |
+    | B          |
+    And we wait 3 seconds
+    Then we should be able to ping instance inst1
+    And we should be able to make a tcp connection on port 345 to instance inst1
       
+    When instance inst1 is assigned to the following groups
+    | group_name |
+    | C          |
+    And we wait 3 seconds
+    Then we should not be able to ping instance inst1
+    And we should not be able to make a tcp connection on port 345 to instance inst1
+    
+    When instance inst1 is assigned to the following groups
+    | group_name |
+    | B          |
+    | D          |
+    And we wait 3 seconds
+    Then we should not be able to ping instance inst1
+    But we should be able to make a tcp connection on port 345 to instance inst1
+    
+    When instance inst1 is assigned to the following groups
+    | group_name |
+    | B          |
+    And we wait 3 seconds
+    Then we should not be able to ping instance inst1
+    But we should be able to make a tcp connection on port 345 to instance inst1
+
+    When we successfully terminate instance inst1
+    And we successfully delete security group A
+    And we successfully delete security group B
+    And we successfully delete security group C
+    And we successfully delete security group D
