@@ -299,37 +299,21 @@ module Dcmgr::Models
 
     # Join this instance to the list of security group using group's uuid.
     # @param [String,Array] security_group_uuids 
-    #def join_security_group(security_group_uuids)
-      #security_group_uuids = [security_group_uuids] if security_group_uuids.is_a?(String)
-      #joined_group_uuids = self.security_groups.map { |security_group|
-        #security_group.canonical_uuid
-      #}
-      #target_group_uuids = security_group_uuids.uniq - joined_group_uuids.uniq
-      #target_group_uuids.uniq!
-
-      #target_group_uuids.map { |target_group_uuid|
-        #if sg = SecurityGroup[target_group_uuid]
-          #InstanceSecurityGroup.create(:instance_id => self.id,
-                                       #:security_group_id => sg.id)
-        #end
-      #}
-    #end
-    
-    def set_security_groups(security_group_uuids)
-      groups = security_group_uuids.map {|group_id| SecurityGroup[group_id]}
-      
-      # Remove old security groups
-      self.security_groups_dataset.each { |group|
-        self.remove_security_group(group) unless security_group_uuids.member?(group.canonical_uuid)
+    def join_security_group(security_group_uuids)
+      security_group_uuids = [security_group_uuids] if security_group_uuids.is_a?(String)
+      joined_group_uuids = self.security_groups.map { |security_group|
+        security_group.canonical_uuid
       }
-      
-      # Add new security groups
-      current_group_ids = self.security_groups_dataset.map {|g| g.canonical_uuid}
-      groups.each { |group|
-        self.add_security_group(group) unless current_group_ids.member?(group.canonical_uuid)
+      target_group_uuids = security_group_uuids.uniq - joined_group_uuids.uniq
+      target_group_uuids.uniq!
+
+      target_group_uuids.map { |target_group_uuid|
+        if sg = SecurityGroup[target_group_uuid]
+          InstanceSecurityGroup.create(:instance_id => self.id,
+                                       :security_group_id => sg.id)
+        end
       }
     end
-    alias :join_security_group :set_security_groups
 
     def ips
       self.instance_nic.map { |nic| nic.ip }

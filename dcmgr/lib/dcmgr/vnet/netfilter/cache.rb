@@ -125,6 +125,12 @@ module Dcmgr
           @cache[:security_groups].find {|g| g[:uuid] == group_id}
         end
         
+        def get_vnic(vnic_id)
+          instance = @cache[:instances].find {|i|  i[:vif].find {|v| v[:uuid] == vnic_id } }
+          
+          instance[:vif].find {|v| v[:uuid] == vnic_id} unless instance.nil?
+        end
+        
       end
       
     end

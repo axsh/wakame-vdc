@@ -230,6 +230,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           instance.remove_security_group(group)
           instance.network_vif.each { |vnic|
             Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
+            Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
           }
         end
       }
@@ -241,6 +242,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           instance.add_security_group(group)
           instance.network_vif.each { |vnic|
             Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
+            Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
           }
         end
       }
