@@ -46,3 +46,15 @@ dc_network("public") {
   interface "eth0"
   bridge "br0"
 }
+
+dc_network("null1") {
+  bridge_type "linux"
+  interface "eth0"
+  bridge "br0"
+}
+
+dc_network("null2") {
+  bridge_type "linux"
+  interface "eth0"
+  bridge "br0"
+}
