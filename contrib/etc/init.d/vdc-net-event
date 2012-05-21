@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# for RHEL6
+
+###
+# chkconfig: 2345 99 89
+# description: vdc-net-event startup script.
+###
+
+### BEGIN INIT INFO
+# Provides: vdc-net-event
+# Required-start: $network
+# Required-stop:  $network
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: vdc-net-event startup script
+# Description: vdc-net-event startup script.
+### END INIT INFO
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+  start)
+        if [ -f /var/lock/subsys/network ]; then
+                /sbin/initctl emit -n vdc-net-device-up
+        fi
+        ;;
+  stop)
+        if [ -f /var/lock/subsys/network ]; then
+                /sbin/initctl emit -n vdc-net-device-down
+        fi
+        ;;
+  restart|force-reload)
+        $0 stop
+        $0 start
+        ;;
+  status)
+        test -f /var/lock/subsys/network
+        RETVAL=$?
+        if [ $RETVAL = 0 ]; then
+                echo active
+        else
+                echo in-active
+        fi
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|status|restart|force-reload}"
+        exit 1
+esac
+
+exit $RETVAL
