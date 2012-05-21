@@ -197,6 +197,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 %{prefix}/%{name}/rpmbuild/edit-grub4vz.sh add
 
+%post hva-full-vmapp-config
+%{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
+
 %files
 %defattr(-,root,root)
 %{prefix}/%{name}/
@@ -236,5 +239,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/sysctl.d/30-openvz.conf
 
 %files hva-full-vmapp-config
+%config /etc/sysctl.d/30-dump-core.conf
 
 %changelog
