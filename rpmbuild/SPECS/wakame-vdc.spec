@@ -158,6 +158,7 @@ unset components
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
 rsync -aHA `pwd`/contrib/etc/default     ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/init        ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/init.d      ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/logrotate.d ${RPM_BUILD_ROOT}/etc/
 
 # unicorn configs
@@ -175,6 +176,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %post
 /sbin/chkconfig       ntpd on
 /sbin/chkconfig       ntpdate on
+/sbin/chkconfig --add vdc-net-event
 
 %post dcmgr-vmapp-config
 /sbin/chkconfig --add mysqld
@@ -204,6 +206,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %{prefix}/%{name}/
 %config /etc/logrotate.d/flog-vdc
+%config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
 
 %files dcmgr-vmapp-config
