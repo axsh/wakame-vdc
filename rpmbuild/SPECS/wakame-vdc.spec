@@ -125,6 +125,7 @@ Requires: %{name}-hva-openvz-vmapp-config = %{version}-%{release}
 %prep
 [ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
 cd %{name}-%{version}
+git pull
 %setup -T -D
 
 ## rpmbuild -bc
