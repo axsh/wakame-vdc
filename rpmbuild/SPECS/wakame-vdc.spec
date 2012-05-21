@@ -20,7 +20,6 @@ BuildRequires: gcc-c++ gcc
 BuildRequires: git
 BuildRequires: mysql-devel
 BuildRequires: chrpath
-BuildRequires: fakeroot
 # Ruby binary build dependency
 BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
 
