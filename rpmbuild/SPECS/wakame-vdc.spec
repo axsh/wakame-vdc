@@ -181,8 +181,6 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       mysqld on
 /sbin/chkconfig --add rabbitmq-server
 /sbin/chkconfig       rabbitmq-server on
-/sbin/chkconfig --add tgtd
-/sbin/chkconfig       tgtd on
 
 %post hva-common-vmapp-config
 /sbin/chkconfig --del iptables
@@ -191,6 +189,8 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       iscsi  on
 /sbin/chkconfig --add iscsid
 /sbin/chkconfig       iscsid on
+/sbin/chkconfig --add tgtd
+/sbin/chkconfig       tgtd on
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
 
 %post hva-openvz-vmapp-config
