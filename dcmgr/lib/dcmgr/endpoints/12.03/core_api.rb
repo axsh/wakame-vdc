@@ -66,50 +66,6 @@ module Dcmgr::Endpoints::V1203
       vs
     end
 
-    def select_index(model_class, data)
-      if model_class.is_a?(Symbol)
-        model_class = M.const_get(model_class)
-      end
-
-      start = data[:start].to_i
-      start = start < 1 ? 0 : start
-      limit = data[:limit].to_i
-      limit = limit < 1 ? nil : limit
-
-      if [M::InstanceSpec.to_s].member?(model_class.to_s)
-        total_ds = model_class.where(:account_id=>[@account.canonical_uuid,
-                                                   M::Account::SystemAccount::SharedPoolAccount.uuid,
-                                                  ])
-      else
-        total_ds = model_class.where(:account_id=>@account.canonical_uuid)
-      end
-
-      if [M::Instance.to_s, M::Volume.to_s, M::VolumeSnapshot.to_s].member?(model_class.to_s)
-        total_ds = total_ds.alives_and_recent_termed
-      end
-      if [M::Image.to_s].member?(model_class.to_s)
-        total_ds = total_ds.or(:is_public=>true)
-      end
-
-      partial_ds  = total_ds.dup.order(:id.desc)
-      partial_ds = partial_ds.limit(limit, start) if limit.is_a?(Integer)
-
-      results = partial_ds.all.map {|i|
-        if [M::Image.to_s].member?(model_class.to_s)
-          i.to_api_document(@account.canonical_uuid)
-        else
-          i.to_api_document
-        end
-      }
-
-      res = [{
-               :owner_total => total_ds.count,
-               :start => start,
-               :limit => limit,
-               :results=> results
-             }]
-    end
-
     helpers do
       #
       #  - start
