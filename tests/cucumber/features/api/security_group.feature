@@ -36,11 +36,11 @@ Feature: SecurityGroup API
   @api_from_12.03
   Scenario: List security groups with filter options
     Given a managed security_group with the following options
-      | account_id | rule                      | description    |
-      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle |
+      | account_id | rule                      | description    | service_type |
+      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle | std          |
     Given a managed security_group with the following options
-      | account_id | rule                      | description    |
-      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle |
+      | account_id | rule                      | description    | service_type |
+      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle | std          |
     When we make an api get call to security_groups with the following options
       |account_id|
       |a-shpoolxx|

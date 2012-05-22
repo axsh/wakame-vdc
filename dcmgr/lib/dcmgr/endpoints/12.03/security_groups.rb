@@ -22,7 +22,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     end
     
     if params[:service_type]
-      Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
+      validate_service_type(params[:service_type])
       ds = ds.filter(:service_type=>params[:service_type])
     end
     
@@ -44,9 +44,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     # params description, string
     # params rule, string
     begin
-      g = M::SecurityGroup.create(:account_id=>@account.canonical_uuid,
-                                  :description=>params[:description],
-                                  :rule=>params[:rule])
+      savedata = {
+        :account_id=>@account.canonical_uuid,
+        :rule=>params[:rule],
+      }
+      if params[:service_type]
+        validate_service_type(params[:service_type])
+        savedata[:service_type] = params[:service_type]
+      end
+      savedata[:description] = params[:description] if params[:description]
+      g = M::SecurityGroup.create(savedata)
 
       send_reference_events(g,[],g.referencees)
     rescue M::InvalidSecurityGroupRuleSyntax => e
@@ -71,7 +78,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       old_referencees = g.referencees_dataset.to_a
       g.rule = params[:rule]
     end
-
+    if params[:service_type]
+      validate_service_type(params[:service_type])
+      g.service_type = params[:service_type]
+    end
+    
     begin
       g.save
     rescue M::InvalidSecurityGroupRuleSyntax => e
