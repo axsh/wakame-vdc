@@ -13,7 +13,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     ds = datetime_range_params_filter(:deleted, ds)
     
     if params[:service_type]
-      Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
+      validate_service_type(params[:service_type])
       ds = ds.filter(:service_type=>params[:service_type])
     end
     
@@ -50,6 +50,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       if params[:description]
         s.description = params[:description]
       end
+
+      if params[:service_type]
+        validate_service_type(params[:service_type])
+        s.service_type = params[:service_type]
+      end
     end
 
     begin
@@ -73,7 +78,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   put '/:id' do
     # description "Update ssh key pair information"
     ssh = find_by_uuid(:SshKeyPair, params[:id])
-    ssh.description = params[:description]
+    ssh.description = params[:description] if params[:description]
+    if params[:service_type]
+      validate_service_type(params[:service_type])
+      ssh.service_type = params[:service_type]
+    end
     ssh.save_changes
 
     respond_with([ssh.canonical_uuid])

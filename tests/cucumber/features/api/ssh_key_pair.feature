@@ -56,11 +56,11 @@ Feature: SshKeyPair API
   @api_from_12.03
   Scenario: List ssh key pairs with filter options
     Given a managed ssh_key_pair with the following options
-      | description |
-      | test key1   |
+      | description | service_type |
+      | test key1   | std          |
     Given a managed ssh_key_pair with the following options
-      | description |
-      | test key2   |
+      | description | service_type |
+      | test key2   | std          |
     When we make an api get call to ssh_key_pairs with the following options
       |account_id|
       |a-shpoolxx|
