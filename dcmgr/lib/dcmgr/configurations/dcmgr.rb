@@ -93,7 +93,18 @@ module Dcmgr
           end
         end
       end
-      
+
+      class StdServiceType < ServiceType
+      end
+
+      class LbServiceType < ServiceType
+        param :image_id
+        param :instance_spec_id
+        param :host_node_id
+        param :security_group
+        param :ssh_key_id
+      end 
+
       DSL do
         #
         # service_type("lb") {
