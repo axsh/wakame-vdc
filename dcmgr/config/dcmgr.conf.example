@@ -35,7 +35,7 @@ recent_terminated_instance_period 900
 mac_address_vendor_id '525400'
 
 
-service_type("std") {
+service_type("std", "StdServiceType") {
   #
   # Scheduling Algorithms
   #
@@ -122,4 +122,15 @@ service_type("std") {
        })
     }
   end
+}
+
+service_type("lb", "LbServiceType") {
+  image_id 'wmi-demolb'
+  instance_spec_id 'is-demospec'
+  host_node_id 'hn-demo1'
+  security_group 'sg-demofgr'
+  ssh_key_id 'ssh-demo'
+  host_node_scheduler :LeastUsage
+  storage_node_scheduler :LeastUsage
+  network_scheduler :FlatSingle
 }
