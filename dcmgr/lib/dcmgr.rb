@@ -64,6 +64,7 @@ module Dcmgr
     autoload :DhcpRange, 'dcmgr/models/dhcp_range'
     autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
+    autoload :LoadBalancer, 'dcmgr/models/load_balancer'
   end
 
   module Endpoints
