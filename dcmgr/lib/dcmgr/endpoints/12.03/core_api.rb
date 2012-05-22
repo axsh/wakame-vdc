@@ -66,6 +66,10 @@ module Dcmgr::Endpoints::V1203
       vs
     end
 
+    def validate_service_type(service_type)
+      Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
+    end
+
     helpers do
       #
       #  - start
