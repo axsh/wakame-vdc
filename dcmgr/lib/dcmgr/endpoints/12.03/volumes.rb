@@ -39,6 +39,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       ds = ds.filter(:storage_node_id=>hn.id)
     end
     
+    if params[:service_type]
+      validate_service_type(params[:service_type])
+      ds = ds.filter(:service_type=>params[:service_type])
+    end
+    
     collection_respond_with(ds) do |paging_ds|
       R::VolumeCollection.new(paging_ds).generate
     end
@@ -86,6 +91,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     vol = M::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
       if vs
         v.snapshot_id = vs.canonical_uuid
+      end
+
+      if params[:service_type]
+        validate_service_type(params[:service_type])
+        v.service_type = params[:service_type]
       end
     end
     vol.save

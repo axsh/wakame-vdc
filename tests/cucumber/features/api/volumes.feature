@@ -73,3 +73,24 @@ Feature: Volume API
  
     When we successfully create a snapshot from the created volume
     Then the created volume_snapshots should reach state available in 60 seconds or less 
+
+  @api_from_12.03
+  Scenario: List volumes with filter options
+    Given a managed volume with the following options
+      | volume_size | service_type |
+      |          10 | std          |
+    Given a managed volume with the following options
+      | volume_size | service_type |
+      |          20 | std          |
+    When we make an api get call to volumes with the following options
+      |account_id|
+      |a-shpoolxx|
+    Then the previous api call should be successful
+    When we make an api get call to volumes with the following options
+      |created_since            |
+      |2012-01-01T21:52:11+09:00|
+    Then the previous api call should be successful
+    When we make an api get call to volumes with the following options
+      |service_type             |
+      |std                      |
+    Then the previous api call should be successful
