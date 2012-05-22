@@ -146,6 +146,7 @@ Sequel.migration do
       column :account_id, "varchar(255)", :null=>false
       column :instance_id, "int(11)", :null=>false
       column :description, "text", :null=>true
+      column :terminated_at, "datetime", :null=>true
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false  
       index [:uuid], :name=>:uuid
