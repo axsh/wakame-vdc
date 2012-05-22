@@ -179,7 +179,9 @@ module Dcmgr::Models
         end
       end
 
-      unless NETWORK_MODES.member?(self.network_mode.to_sym)
+      if self.network_mode.nil?
+        errors.add(:network_mode, "Unset network mode")
+      elsif !NETWORK_MODES.member?(self.network_mode.to_sym)
         errors.add(:network_mode, "Unknown network mode: #{self.network_mode}")
       end
     end

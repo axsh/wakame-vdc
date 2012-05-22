@@ -16,6 +16,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     ds = datetime_range_params_filter(:created, ds)
     ds = datetime_range_params_filter(:deleted, ds)
 
+    if params[:service_type]
+      validate_service_type(params[:service_type])
+      ds = ds.filter(:service_type=>params[:service_type])
+    end
+    
     collection_respond_with(ds) do |paging_ds|
       R::NetworkCollection.new(paging_ds).generate
     end
@@ -42,8 +47,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       :ipv4_gw => params[:gw],
       :ipv4_network => params[:network],
       :prefix => params[:prefix].to_i,
-      :description => params[:description],
+      :network_mode => params[:network_mode],
     }
+    if params[:service_type]
+      validate_service_type(params[:service_type])
+      savedata[:service_type] = params[:service_type]
+    end
+    savedata[:description] = params[:description] if params[:description]
     nw = M::Network.create(savedata)
 
     respond_with(R::Network.new(nw).generate)
