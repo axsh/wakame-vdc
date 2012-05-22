@@ -9,7 +9,9 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @load_balancer.instance_exec {
-        to_hash.merge(:id=>canonical_uuid)
+        to_hash.merge(:id=>canonical_uuid,
+                      :state=>state,
+                      :status=>status)
       } 
 
     end
