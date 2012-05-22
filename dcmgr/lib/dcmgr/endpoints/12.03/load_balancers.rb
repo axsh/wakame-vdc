@@ -11,6 +11,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       ds = ds.filter(:account_id=>params[:account_id])
     end
 
+    ds = datetime_range_params_filter(:created, ds)
+    ds = datetime_range_params_filter(:terminated, ds)
+
     collection_respond_with(ds) do |paging_ds|
       R::LoadBalancerCollection.new(paging_ds).generate
     end
