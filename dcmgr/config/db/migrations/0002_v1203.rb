@@ -148,7 +148,6 @@ Sequel.migration do
       column :description, "text", :null=>true
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false  
-      column :service_type, "varchar(255)", :null=>false, :default=>'lb'
       index [:uuid], :name=>:uuid
       index [:account_id]
     end
