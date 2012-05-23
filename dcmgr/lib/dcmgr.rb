@@ -54,7 +54,7 @@ module Dcmgr
     autoload :NetworkVif, 'dcmgr/models/network_vif'
     autoload :Network, 'dcmgr/models/network'
     autoload :IpLease, 'dcmgr/models/ip_lease'
-    autoload :InstanceSecurityGroup, 'dcmgr/models/instance_security_group'
+    autoload :NetworkVifSecurityGroup, 'dcmgr/models/network_vif_security_group'
     autoload :SshKeyPair, 'dcmgr/models/ssh_key_pair'
     autoload :History, 'dcmgr/models/history'
     autoload :HostnameLease, 'dcmgr/models/hostname_lease'

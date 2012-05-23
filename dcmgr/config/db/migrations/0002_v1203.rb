@@ -65,8 +65,18 @@ Sequel.migration do
       index [:network_vif_id]
       index [:network_vif_id,:name], :unique=>true
     end
+    
+    create_table(:network_vif_security_groups) do
+      primary_key :id, :type=>"int(11)"
+      column :network_vif_id, "int(11)", :null=>false
+      column :security_group_id, "int(11)", :null=>false
+
+      index [:network_vif_id]
+      index [:security_group_id]
+    end
 
     drop_table(:security_group_rules)
+    drop_table(:instance_security_groups)
 
     rename_table(:instance_nics, :network_vifs)
 
