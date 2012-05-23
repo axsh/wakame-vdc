@@ -34,6 +34,7 @@ esac
 
 wakame_rpms="
  wakame-vdc-${wakame_version}-${wakame_release}.${arch}.rpm
+ wakame-vdc-debug-config-${wakame_version}-${wakame_release}.${arch}.rpm
  wakame-vdc-dcmgr-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
  wakame-vdc-hva-common-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm
  wakame-vdc-hva-kvm-vmapp-config-${wakame_version}-${wakame_release}.${arch}.rpm

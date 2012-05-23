@@ -44,6 +44,14 @@ Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 %description
 <insert long description, indented with spaces>
 
+# debug-config
+%package debug-config
+Summary: Configuration set for debug
+Group: Development/Languages
+Requires: %{name} = %{version}-%{release}
+%description debug-config
+<insert long description, indented with spaces>
+
 # dcmgr-vmapp-config
 %package dcmgr-vmapp-config
 Summary: Configuration set for dcmgr VM appliance
@@ -178,6 +186,9 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       ntpdate on
 /sbin/chkconfig --add vdc-net-event
 
+%post debug-config
+%{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
+
 %post dcmgr-vmapp-config
 /sbin/chkconfig --add mysqld
 /sbin/chkconfig       mysqld on
@@ -199,15 +210,16 @@ rm -rf ${RPM_BUILD_ROOT}
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 %{prefix}/%{name}/rpmbuild/edit-grub4vz.sh add
 
-%post hva-full-vmapp-config
-%{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
-
 %files
 %defattr(-,root,root)
 %{prefix}/%{name}/
 %config /etc/logrotate.d/flog-vdc
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
+
+%files debug-config
+%defattr(-,root,root)
+%config /etc/sysctl.d/30-dump-core.conf
 
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
@@ -242,6 +254,5 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/sysctl.d/30-openvz.conf
 
 %files hva-full-vmapp-config
-%config /etc/sysctl.d/30-dump-core.conf
 
 %changelog
