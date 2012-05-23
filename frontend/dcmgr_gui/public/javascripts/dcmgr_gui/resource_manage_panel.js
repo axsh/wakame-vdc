@@ -247,12 +247,12 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
         		success: function(json,status) {
                              // 一覧情報をセーブ、ホストノードIDの一覧セレクトを作成
 			     var sel = $('#hostid');
-                             $.data(acc,'host_nodes',json.host_pool);
+                             $.data(acc,'host_nodes',json.host_node);
                              sel.children().remove();
-                             if (json.host_pool.owner_total > 0) {
-                                for(var i = 0;i < json.host_pool.owner_total;i++)
+                             if (json.host_node.owner_total > 0) {
+                                for(var i = 0;i < json.host_node.owner_total;i++)
                                 {
-                                    var rec = json.host_pool.results[i].result;
+                                    var rec = json.host_node.results[i].result;
                                     var html = '<option value="' + rec.uuid + '">' + rec.id +'</option>';
                                     sel.append(html);  
                                 }
@@ -262,7 +262,7 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
                              else
                              {
                                 // ホストノードがない場合、選択不可にして、画面項目内容クリア
-                                var html = '<option value="">' + f.find('#hostpool_nothing').val()  + '</option>';
+                                var html = '<option value="">' + f.find('#hostnode_nothing').val()  + '</option>';
                                 sel.append(html);
                                 f.find('#cpu_cores').val("");
                                 f.find(':text').attr("disabled","disabled");
@@ -284,10 +284,10 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
 		var hostid = $('#hostid').val();
                 if (hostid != '') {
                         // 一覧情報をキャッシュから取り出し
-			var host_pool = $.data(acc,'host_nodes');
-                        for (var i = 0;i < host_pool.owner_total;i++)
+			var host_node = $.data(acc,'host_nodes');
+                        for (var i = 0;i < host_node.owner_total;i++)
                         {
-			    var rec = host_pool.results[i].result;
+			    var rec = host_node.results[i].result;
                             if (hostid == rec.uuid) {
                             // 選択されたホストノードであれば、項目に値をセット
                                 f.find('#cpu_cores').val(rec.offering_cpu_cores);
@@ -511,12 +511,12 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
         		success: function(json,status) {
                              // 一覧情報をセーブ、ストレージノードIDの一覧セレクトを作成
 			     var sel = $('#storageid');
-                             $.data(acc,'storage_nodes',json.storage_pool);
+                             $.data(acc,'storage_nodes',json.storage_node);
                              sel.children().remove();
-                             if (json.storage_pool.owner_total > 0) {
-                                for(var i = 0;i < json.storage_pool.owner_total;i++)
+                             if (json.storage_node.owner_total > 0) {
+                                for(var i = 0;i < json.storage_node.owner_total;i++)
                                 {
-                                    var rec = json.storage_pool.results[i].result;
+                                    var rec = json.storage_node.results[i].result;
                                     var html = '<option value="' + rec.uuid + '">' + rec.id + '</option>';
                                     sel.append(html);  
                                 }
@@ -526,7 +526,7 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
                              else
                              {
                                 // ストレージノードがない場合は表示クリア
-                                var html = '<option value="">' + f.find('#storagepool_nothing').val()  + '</option>';
+                                var html = '<option value="">' + f.find('#storagenode_nothing').val()  + '</option>';
                                 sel.append(html);
                                 $('#disk_space').html("<BR>");
                                 $('#ipaddr').html("<BR>");
@@ -546,10 +546,10 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
                 var acc = $('#selaccount_account').get(0);
 		var storageid = $('#storageid').val();
                 if (storageid != '') {
-			var storage_pool = $.data(acc,'storage_nodes');
-                        for (var i = 0;i < storage_pool.owner_total;i++)
+			var storage_node = $.data(acc,'storage_nodes');
+                        for (var i = 0;i < storage_node.owner_total;i++)
                         {
-			    var rec = storage_pool.results[i].result;
+			    var rec = storage_node.results[i].result;
                             if (storageid == rec.uuid) {
                                 $('#disk_space').html(rec.offering_disk_space);
                                 $('#ipaddr').html(rec.ipaddr);
@@ -1414,7 +1414,7 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
                              else
                              {
                                 // マシンイメージがない場合、選択不可にして、画面項目内容クリア
-                                var html = '<option value="">' + f.find('#storagepool_nothing').val()  + '</option>';
+                                var html = '<option value="">' + f.find('#storagenode_nothing').val()  + '</option>';
                                 sel.append(html);
                                 $('#arch').html("<BR>");
                                 $('#image_location').html("<BR>");

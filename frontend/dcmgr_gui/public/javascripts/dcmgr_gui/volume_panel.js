@@ -90,12 +90,12 @@ DcmgrGUI.prototype.volumePanel = function(){
   create_volume_buttons[create_button_name] = function() {
     var volume_size = $(this).find('#volume_size').val();
     var unit = $(this).find('#unit').find('option:selected').val();
-    var storage_pool_id = $(this).find('#storage_pool').find('option:selected').val();
+    var storage_node_id = $(this).find('#storage_node').find('option:selected').val();
     if(!volume_size){
      $('#volume_size').focus();
      return false;
     }
-    var data = "size="+volume_size+"&unit="+unit+"&storage_pool_id="+storage_pool_id;
+    var data = "size="+volume_size+"&unit="+unit+"&storage_node_id="+storage_node_id;
     
     var request = new DcmgrGUI.Request;
     request.post({
@@ -117,21 +117,21 @@ DcmgrGUI.prototype.volumePanel = function(){
     callback: function(){
       var self = this;
       var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
-      $(this).find('#select_storage_pool').empty().html(loading_image);
+      $(this).find('#select_storage_node').empty().html(loading_image);
       
       var request = new DcmgrGUI.Request;
       request.get({
-        "url": '/storage_pools/show_storage_pools.json',
+        "url": '/storage_nodes/show_storage_nodes.json',
         success: function(json,status){
-          var select_html = '<select id="storage_pool" name="storage_pool"></select>';
-          $(self).find('#select_storage_pool').empty().html(select_html);
-          var results = json.storage_pool.results;
+          var select_html = '<select id="storage_node" name="storage_node"></select>';
+          $(self).find('#select_storage_node').empty().html(select_html);
+          var results = json.storage_node.results;
           var size = results.length;
-          var select_storage_pool = $(self).find('#storage_pool');
+          var select_storage_node = $(self).find('#storage_node');
           for (var i=0; i < size ; i++) {
             var uuid = results[i].result.uuid;
             var html = '<option value="'+ uuid +'">'+uuid+'</option>';
-            select_storage_pool.append(html);
+            select_storage_node.append(html);
           }
 
           var params = { 'button': bt_create_volume, 'element_id': 1 };

@@ -73,11 +73,11 @@ DcmgrGui::Application.routes.draw do
   #home
   get    'home' ,:to => 'home#index'
   
-  #host_pools
-  get    'host_pools' ,:to => 'host_pools#index'
-  get    'host_pools/list/:id' ,:to => 'host_pools#list'
-  get    'host_pools/show/:id' ,:to => 'host_pools#show'
-  get    'host_pools/show_host_pools' ,:to => 'host_pools#show_host_pools'
+  #host_nodes
+  get    'host_nodes' ,:to => 'host_nodes#index'
+  get    'host_nodes/list/:id' ,:to => 'host_nodes#list'
+  get    'host_nodes/show/:id' ,:to => 'host_nodes#show'
+  get    'host_nodes/show_host_nodes' ,:to => 'host_nodes#show_host_nodes'
   
   #machine_images
   get    'machine_images' ,:to => 'machine_images#index'
@@ -161,11 +161,11 @@ DcmgrGui::Application.routes.draw do
   get    'sessions/information', :to  => 'sessions#information'
   resource :session, :only => [:new, :create, :destroy]
   
-  #storage_pools
-  get    'storage_pools' ,:to => 'storage_pools#index'
-  get    'storage_pools/list/:id' ,:to => 'storage_pools#list'
-  get    'storage_pools/show/:id' ,:to => 'storage_pools#show'
-  get    'storage_pools/show_storage_pools' ,:to => 'storage_pools#show_storage_pools'
+  #storage_nodes
+  get    'storage_nodes' ,:to => 'storage_nodes#index'
+  get    'storage_nodes/list/:id' ,:to => 'storage_nodes#list'
+  get    'storage_nodes/show/:id' ,:to => 'storage_nodes#show'
+  get    'storage_nodes/show_storage_nodes' ,:to => 'storage_nodes#show_storage_nodes'
   
   #volumes
   get    'volumes' ,:to => 'volumes#index'

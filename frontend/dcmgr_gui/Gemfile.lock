@@ -78,6 +78,7 @@ GEM
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)
+    ruby-vdc (0.0.1)
 
 PLATFORMS
   ruby
@@ -92,3 +93,4 @@ DEPENDENCIES
   sequel (= 3.34.1)
   thor (= 0.14.6)
   unicorn (= 4.3.0)
+  ruby-vdc (= 0.0.1)

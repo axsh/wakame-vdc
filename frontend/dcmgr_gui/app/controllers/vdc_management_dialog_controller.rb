@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require "yaml"
 
 class VdcManagementDialogController < ApplicationController
@@ -52,14 +53,14 @@ class VdcManagementDialogController < ApplicationController
     }
 
     # WebAPI経由でホストプールの一覧情報を取得
-    host_pools = DcmgrResource::HostPool.list(data)
-    logger.debug(host_pools[0])  
+    host_nodes = DcmgrResource::HostNode.list(data)
+    logger.debug(host_nodes[0])  
 
     if save_account_uuid != account_uuid then 
         ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
     end
     
-    render  :json => host_pools[0]     
+    render  :json => host_nodes[0]     
   end
 
   # ホストノード情報更新
@@ -132,14 +133,14 @@ class VdcManagementDialogController < ApplicationController
     }
 
     # WebAPI経由でストレージプールの一覧情報を取得
-    storage_pools = DcmgrResource::StoragePool.list(data)
-    logger.debug(storage_pools[0])  
+    storage_nodes = DcmgrResource::StorageNode.list(data)
+    logger.debug(storage_nodes[0])  
 
     if save_account_uuid != account_uuid then 
         ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
     end
     
-    render  :json => storage_pools[0]     
+    render  :json => storage_nodes[0]     
   end
 
   # ストレージノード削除処理
