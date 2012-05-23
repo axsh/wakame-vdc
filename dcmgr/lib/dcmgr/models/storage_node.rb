@@ -8,8 +8,9 @@ module Dcmgr::Models
 
     BACKINGSTORE_ZFS = 'zfs'
     BACKINGSTORE_RAW = 'raw'
+    BACKINGSTORE_IFS = 'ifs'
 
-    SUPPORTED_BACKINGSTORE = [BACKINGSTORE_ZFS, BACKINGSTORE_RAW]
+    SUPPORTED_BACKINGSTORE = [BACKINGSTORE_ZFS, BACKINGSTORE_RAW, BACKINGSTORE_IFS]
 
     one_to_many :volumes
     one_to_many :volume_snapshots

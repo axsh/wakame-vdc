@@ -30,6 +30,8 @@ module Dcmgr
           @storage = Dcmgr::Drivers::S3Storage.new(@account[:id], bucket, path)
         when 'iijgio'
           @storage = Dcmgr::Drivers::IIJGIOStorage.new(@account[:id], bucket, path)
+        when 'ifs'
+          @storage = Dcmgr::Drivers::IfsStorage.new(@account[:id], bucket, path)
       else
         raise "#{@driver} is not a recognized storage driver"
       end

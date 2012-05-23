@@ -163,6 +163,9 @@ module Dcmgr
     autoload :LinuxLocalStore, 'dcmgr/drivers/linux_local_store.rb'
     autoload :ESXiLocalStore, 'dcmgr/drivers/esxi_local_store.rb'
     autoload :OpenvzLocalStore, 'dcmgr/drivers/openvz_local_store.rb'
+    autoload :Ifs, 'dcmgr/drivers/ifs.rb'
+    autoload :IfsIscsi, 'dcmgr/drivers/ifs_iscsi'
+    autoload :IfsStorage, 'dcmgr/drivers/ifs_storage'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'

@@ -14,4 +14,9 @@ iijgio:
   bucket: ""
   access_key: ""
   secret_key: ""
-
+ifs:
+  driver: "ifs"
+  display_name: "Indelible FS"
+  bucket: "127.0.0.1:8090"
+  access_key: ""
+  secret_key: ""

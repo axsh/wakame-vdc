@@ -22,6 +22,8 @@ module Dcmgr
           bs = Dcmgr::Drivers::Raw.new
         when "zfs"
           bs = Dcmgr::Drivers::Zfs.new
+        when "ifs"
+          bs = Dcmgr::Drivers::Ifs.new
         else
           raise "Unknown backing_store type: #{backing_store}"
         end
