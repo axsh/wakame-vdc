@@ -1,0 +1,98 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/host_node_panel.js' %>
+<script type="text/javascript">
+jQuery(function($){
+    dcmgrGUI.hostNodePanel();
+});
+</script>
+<% end %>
+<div id="mainarea_wide">
+    <h3><img src="images/icon_resource.gif" /><%= t("hostnodes.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
+ <div id="list_load_mask" class="maincontent">
+        <div class="controller clearfix">
+        <a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%= t("button.refresh") %></a>
+      </div>
+        <div class="controller clearfix">
+         <div id="pagenate" class="r_float">
+                  <a href="javascript:void(0);" class="prev"></a>
+                  <p id="viewPagenate"></p>
+                  <a href="javascript:void(0);" class="next"></a>
+         </div>
+        </div>
+        <div id="display_host_nodes" class="display_area">
+            <% content_for :javascript_template do %>
+            <script id="hostNodesListTemplate" type="text/x-jquery-tmpl">
+             <table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+               <tr>
+                 <th></th>
+                 <th style="width:150px"><%= t("hostnodes.list.host_node_id") %></th>
+                   <th><%= t("hostnodes.list.hyper_visor") %></th>
+                  <th><%= t("hostnodes.list.cpu_cores") %></th>
+                     <th><%= t("hostnodes.list.memory_size") %></th>
+                     <th><%= t("hostnodes.list.state") %></th>
+               </tr>
+               {{each(index,item) rows}}
+               <tr>
+                    {{if item.uuid }}
+                        <td class="center listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
+                    {{else}}
+                        <td class="listcheckbox"></td>
+                    {{/if}}
+                    <td class="vtip" title="uuid">${item.uuid}</td>
+                    <td class="vitp center" title="hypervisor">${item.hypervisor}</td>
+                    <td class="vtip center" title="offering_cpu_cores">${item.offering_cpu_cores}</td>
+                    <td class="vtip center" title="offering_memory_size">${item.offering_memory_size}</td>
+                    <td class="vtip center state" title="status">${item.status}</td>
+                </tr>
+               {{/each}}
+               </table>
+            </script>
+            <% end %>
+        </div>
+    </div>
+    <div id="btm_maincontent_wide"></div>
+    <h3><img src="images/icon_ttl_detail.gif" /><%= t("hostnodes.details.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
+    <div id="detail" class="maincontent">
+        <% content_for :javascript_template do %>
+        <script id="hostNodesDetailTemplate" type="text/x-jquery-tmpl">
+        <div id="${item.id}" class="display_area">
+            <h4 class="ptn01"><%= t("hostnodes.details.host_node_id") %>:<span class="instansid">${item.id}</span></h4>
+            <table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td class="padcell"></td>
+                    <td class="title"><%= t("hostnodes.details.host_node_id") %>:</td>
+                    <td>${item.uuid}</td>
+                    <td class="padcell"></td>
+                    <td class="title"><%= t("hostnodes.details.hyper_visor") %>:</td>
+                    <td>${item.hypervisor}</td>
+                </tr>
+                <tr>
+                    <td class="padcell"></td>
+                    <td class="title"><%= t("hostnodes.details.cpu_cores") %>:</td>
+                    <td>${item.offering_cpu_cores}</td>
+                    <td class="padcell"></td>
+                    <td class="title"><%= t("hostnodes.details.memory_size") %>:</td>
+                    <td>${item.offering_memory_size}</td>
+                </tr>
+                <tr>
+                    <td class="padcell"></td>
+                    <td class="title"><%= t("hostnodes.details.status") %>:</td>
+                    <td class="state" colspan="7">${item.status}</td>
+                </tr>
+                <tr>
+                    <td class="padcell"></td>
+                    <td class="title"><%= t("hostnodes.details.created_at") %>:</td>
+                    <td colspan="7">${item.created_at}</td>
+                </tr>
+                <tr>
+                    <td class="padcell"></td>
+                    <td class="title"><%= t("hostnodes.details.updated_at") %>:</td>
+                    <td colspan="7">${item.updated_at}</td>
+                </tr>
+            </table>
+        </div>
+        </script>
+        <% end %>
+    </div><!-- maincontent -->
+    <div id="btm_maincontent_wide_last"></div>
+</div><!-- mainarea_wide -->

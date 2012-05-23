@@ -25,11 +25,11 @@ class VolumesController < ApplicationController
                params[:size].to_i * 1024 * 1024
              end
       
-      storage_pool_id = params[:storage_pool_id] #option
+      storage_node_id = params[:storage_node_id] #option
       
       data = {
         :volume_size => size,
-        :storage_pool_id => storage_pool_id
+        :storage_node_id => storage_node_id
       }
       
       @volume = DcmgrResource::Volume.create(data)

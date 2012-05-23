@@ -1,0 +1,2 @@
+module StorageNodesHelper
+end
