@@ -3,7 +3,7 @@
 #------------------------
 
 # directory to store VM local data.
-config.vm_data_dir = "${VDC_ROOT}/tmp/instances"
+config.vm_data_dir = '${VDC_ROOT}/tmp/instances'
 
 # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
 # * 'netfilter'
@@ -41,10 +41,10 @@ config.ovs_ofctl_path = '${VDC_ROOT}/ovs/bin/ovs-ofctl'
 config.trema_dir = '${VDC_ROOT}/trema'
 config.trema_tmp = '${VDC_ROOT}/tmp/trema'
 
-dc_network("public") {
-  bridge_type "linux"
-  interface "eth0"
-  bridge "br0"
+dc_network('public') {
+  bridge_type 'linux'
+  interface 'eth0'
+  bridge 'br0'
 }
 
 dc_network("null1") {
