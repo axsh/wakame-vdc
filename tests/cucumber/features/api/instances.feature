@@ -27,6 +27,27 @@ Feature: Instance API
     When we make an api delete call to instances/<registry:id> with no options
       Then the previous api call should be successful  
 
+  @api_from_12.03
+  Scenario: List instances with filter options
+    Given a managed instance with the following options
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type |
+      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | std          |
+    Given a managed instance with the following options
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type |
+      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | std          |
+    When we make an api get call to security_groups with the following options
+      |account_id|
+      |a-shpoolxx|
+    Then the previous api call should be successful
+    When we make an api get call to instances with the following options
+      |created_since            |
+      |2012-01-01T21:52:11+09:00|
+    Then the previous api call should be successful
+    When we make an api get call to instances with the following options
+      |service_type             |
+      |std                      |
+    Then the previous api call should be successful
+
   @api_from_v12.03
   Scenario: Create and delete new kvm instance
     # Security groups is an array?...

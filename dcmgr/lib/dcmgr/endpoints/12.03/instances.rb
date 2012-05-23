@@ -45,6 +45,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       hn = M::HostNode[params[:host_node_id]] rescue raise(E::InvalidParameter, :host_node_id)
       ds = ds.filter(:host_node_id=>hn.id)
     end
+
+    if params[:service_type]
+      Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
+      ds = ds.filter(:service_type=>params[:service_type])
+    end
     
     collection_respond_with(ds) do |paging_ds|
       R::InstanceCollection.new(paging_ds).generate
@@ -114,6 +119,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       if params[:ha_enabled] == 'true'
         i.ha_enabled = 1
+      end
+
+      if params[:service_type]
+        i.service_type = params[:service_type]
       end
     end
     instance.save
