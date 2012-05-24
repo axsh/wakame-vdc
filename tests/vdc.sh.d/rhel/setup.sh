@@ -20,6 +20,7 @@ VDC_ROOT=${VDC_ROOT:?"VDC_ROOT needs to be set"}
 
 ${VDC_ROOT}/rpmbuild/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-bridge-if.conf
 ${VDC_ROOT}/rpmbuild/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-openvz.conf
+${VDC_ROOT}/rpmbuild/set-openvswitch-conf.sh
 
 # stop system services.
 for i in apparmor dnsmasq tgtd; do
