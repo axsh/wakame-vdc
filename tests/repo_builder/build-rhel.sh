@@ -27,9 +27,10 @@ wakame_release="$(egrep ^Release: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec |
 
 repo_dir=${repo_dir:-${root_dir}/repo.d}
 
-arch=$(arch)
+arch=${arch:-$(arch)}
 case ${arch} in
-i*86) arch=i686;;
+i*86)   basearch=i386; arch=i686;;
+x86_64) basearch=${arch};;
 esac
 
 wakame_rpms="
@@ -58,16 +59,16 @@ for i in $wakame_rpms; do
 done
 
 # make temp yum repository.
-[[ -d "$tmp_dir/repos.d/archives" ]] || mkdir -p "$tmp_dir/repos.d/archives"
-[[ -d "${repo_dir}" ]] || mkdir -p "${repo_dir}"
+[[ -d "$tmp_dir/repos.d/archives/${basearch}" ]] || mkdir -p "$tmp_dir/repos.d/archives/${basearch}"
+[[ -d "${repo_dir}/${basearch}" ]] || mkdir -p "${repo_dir}/${basearch}"
 
 for i in $wakame_rpms; do
-  cp "${HOME}/rpmbuild/RPMS/${arch}/$i" "${repo_dir}"
+  cp "${HOME}/rpmbuild/RPMS/${arch}/$i" "${repo_dir}/${basearch}"
 done
 
 # 3rd party rpms.
-${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor_dir=$tmp_dir/repos.d/archives
-rsync -a $tmp_dir/repos.d/archives/*.rpm ${repo_dir}/
+${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor_dir=$tmp_dir/repos.d/archives/${basearch}
+rsync -a $tmp_dir/repos.d/archives/${basearch}/*.rpm ${repo_dir}/${basearch}
 
 # create local repository
 (
