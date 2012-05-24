@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1203
   class VolumeSnapshot < Base
+    include DcmgrResource::ListMethods
 
     def self.list(params = {})
       data = self.find(:all, :params => params)
@@ -8,10 +9,6 @@ module DcmgrResource::V1203
       data.each { |row|
         results << row.attributes
       }
-    end
-
-    def self.show(snapshot_id)
-      self.get(snapshot_id)
     end
   
     def self.create(params)

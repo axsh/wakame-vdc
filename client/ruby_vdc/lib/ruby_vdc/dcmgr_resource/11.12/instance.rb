@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1112
   class Instance < Base
-    def self.list(params = {})
-      self.find(:all,:params => params)
-    end
-    
-    def self.show(instance_id)
-      self.get(instance_id)
-    end
+    include DcmgrResource::ListMethods
     
     def self.create(params)
       instance = self.new
