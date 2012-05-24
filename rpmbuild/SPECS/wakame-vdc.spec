@@ -187,6 +187,7 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       ntpd on
 /sbin/chkconfig       ntpdate on
 /sbin/chkconfig --add vdc-net-event
+%{prefix}/%{name}/rpmbuild/set-openvswitch-conf.sh
 
 %post debug-config
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
