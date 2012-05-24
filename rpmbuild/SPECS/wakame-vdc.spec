@@ -35,6 +35,7 @@ Requires: ntp
 Requires: ntpdate
 Requires: gzip
 Requires: tar
+Requires: prelink
 # Ruby binary dependency
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 # for erlang, rabbitmq-server
@@ -164,10 +165,11 @@ done
 unset components
 
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
-rsync -aHA `pwd`/contrib/etc/default     ${RPM_BUILD_ROOT}/etc/
-rsync -aHA `pwd`/contrib/etc/init        ${RPM_BUILD_ROOT}/etc/
-rsync -aHA `pwd`/contrib/etc/init.d      ${RPM_BUILD_ROOT}/etc/
-rsync -aHA `pwd`/contrib/etc/logrotate.d ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/default        ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/init           ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/init.d         ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/logrotate.d    ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/prelink.conf.d ${RPM_BUILD_ROOT}/etc/
 
 # unicorn configs
 rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
@@ -216,6 +218,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/logrotate.d/flog-vdc
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
+%config /etc/prelink.conf.d/wakame-vdc.conf
 
 %files debug-config
 %defattr(-,root,root)
