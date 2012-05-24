@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1203
-  class Volume < Base
-    include DcmgrResource::ListMethods
-  
+  module VolumeMethods
     def self.create(params)
       volume = self.new
       volume.volume_size = params[:volume_size]
@@ -39,5 +37,10 @@ module DcmgrResource::V1203
       self.collection_name = @collection
       result
     end
+  end
+
+  class Volume < Base
+    include DcmgrResource::ListMethods
+    include VolumeMethods
   end
 end
