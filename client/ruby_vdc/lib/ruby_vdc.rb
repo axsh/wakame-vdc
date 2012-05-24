@@ -34,6 +34,12 @@ module DcmgrResource
     autoload :StorageNode,    'ruby_vdc/dcmgr_resource/12.03/storage_node'
     autoload :Volume,         'ruby_vdc/dcmgr_resource/12.03/volume'
     autoload :VolumeSnapshot, 'ruby_vdc/dcmgr_resource/12.03/volume_snapshot'
+
+    autoload :InstanceMethods,       'ruby_vdc/dcmgr_resource/12.03/instance'
+    autoload :SecurityGroupMethods,  'ruby_vdc/dcmgr_resource/12.03/security_group'
+    autoload :SshKeyPairMethods,     'ruby_vdc/dcmgr_resource/12.03/ssh_key_pair'
+    autoload :VolumeMethods,         'ruby_vdc/dcmgr_resource/12.03/volume'
+    autoload :VolumeSnapshotMethods, 'ruby_vdc/dcmgr_resource/12.03/volume_snapshot'
   end
 
 end

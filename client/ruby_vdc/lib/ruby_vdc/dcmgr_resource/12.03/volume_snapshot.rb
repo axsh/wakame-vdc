@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1203
-  class VolumeSnapshot < Base
-    include DcmgrResource::ListMethods
-
+  module VolumeSnapshotMethods
     def self.list(params = {})
       data = self.find(:all, :params => params)
       results = []
@@ -35,5 +33,10 @@ module DcmgrResource::V1203
       result = self.get(:upload_destination)
       result
     end
+  end    
+
+  class VolumeSnapshot < Base
+    include DcmgrResource::ListMethods
+    include VolumeSnapshotMethods
   end
 end

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1203
-  class Instance < Base
-    include DcmgrResource::ListMethods
-
+  module InstanceMethods
     def self.create(params)
       instance = self.new
       instance.image_id = params[:image_id]
@@ -43,6 +41,10 @@ module DcmgrResource::V1203
       self.collection_name = @collection
       result.body
     end
-    
+  end
+
+  class Instance < Base
+    include DcmgrResource::ListMethods
+    include InstanceMethods
   end
 end

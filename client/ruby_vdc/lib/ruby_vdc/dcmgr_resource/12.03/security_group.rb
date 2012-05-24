@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1203
-  class SecurityGroup < Base
-    include DcmgrResource::ListMethods
-
+  module SecurityGroupMethods
     def self.create(params)
       security_group = self.new
       security_group.description = params[:description]
@@ -28,5 +26,10 @@ module DcmgrResource::V1203
     def self.destroy(uuid)
       self.delete(uuid).body
     end      
+  end
+
+  class SecurityGroup < Base
+    include DcmgrResource::ListMethods
+    include SecurityGroupMethods
   end
 end

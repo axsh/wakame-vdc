@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1203
-  class SshKeyPair < Base
-    include DcmgrResource::ListMethods
-    
+  module SshKeyPairMethods
     def self.create(params)
       ssh_key_pair = self.new
       ssh_key_pair.download_once = params[:download_once]
@@ -13,6 +11,10 @@ module DcmgrResource::V1203
     def self.destroy(uuid)
       self.delete(uuid).body
     end
-    
+  end
+
+  class SshKeyPair < Base
+    include DcmgrResource::ListMethods
+    include SshKeyPairMethods
   end
 end
