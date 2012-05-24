@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1112
   class SecurityGroup < Base
+    include DcmgrResource::ListMethods
 
     def self.create(params)
       security_group = self.new
@@ -20,14 +21,6 @@ module DcmgrResource::V1112
       {'security_group'=>@attributes}.to_json
     end
 
-    def self.list(params = {})
-     self.find(:all,:params => params)
-    end
-
-    def self.show(uuid)
-      self.get(uuid)
-    end
-              
     def self.update(uuid,params)
       self.put(uuid,params).body
     end

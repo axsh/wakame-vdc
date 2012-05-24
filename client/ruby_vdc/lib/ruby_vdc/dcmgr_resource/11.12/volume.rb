@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1112
   class Volume < Base
-    def self.list(params = {})
-      self.find(:all,:params => params)
-    end
+    include DcmgrResource::ListMethods
   
     def self.create(params)
       volume = self.new
@@ -40,10 +38,6 @@ module DcmgrResource::V1112
       result = self.get(:status)
       self.collection_name = @collection
       result
-    end
-
-    def self.show(volume_id)
-      self.get(volume_id)
     end
   end
 end

@@ -4,13 +4,7 @@ require 'yaml'
 
 module DcmgrResource::V1112
   class Image < Base
-    def self.list(params = {})
-      self.find(:all,:params => params)
-    end
-    
-    def self.show(image_id)
-      self.get(image_id)
-    end
+    include DcmgrResource::ListMethods
   end
 
   Image.preload_resource('Result', Module.new {
