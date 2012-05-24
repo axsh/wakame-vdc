@@ -24,6 +24,7 @@ rootsize=${rootsize:-5000}
 swapsize=${swapsize:-1000}
 base_distro=${base_distro:-centos}
 base_distro_number=${base_distro_number:-6}
+base_distro_arch=${base_distro_arch:-x86_64}
 # vmbuilder options
 ip=${ip:-}
 mask=${mask:-}
@@ -35,6 +36,13 @@ dns=${dns:-}
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
 tmp_dir="${wakame_dir}/tmp/vmapp_builder"
+
+#arch=${arch:-$(arch)}
+arch=${base_distro_arch}
+case ${arch} in
+i*86)   basearch=i386; arch=i686;;
+x86_64) basearch=${arch};;
+esac
 
 vmapp_names="
  dcmgr
@@ -73,7 +81,7 @@ set -x
 
 echo "doing execscript.sh: \$1"
 rsync -a $tmp_dir/repos.d \$1/tmp/
-rsync -a $tmp_dir/repos.d/archives/openvz.repo \$1/etc/yum.repos.d/openvz.repo
+rsync -a $tmp_dir/repos.d/archives/${arch}/openvz.repo \$1/etc/yum.repos.d/openvz.repo
 
 cat <<_REPO_ > \$1/etc/yum.repos.d/wakame-vdc-tmp.repo
 [wakame-vdc]
@@ -141,7 +149,8 @@ cd ${root_dir}
 ${tmp_dir}/vmbuilder/kvm/rhel/6/vmbuilder.sh \
   --distro_name=${base_distro} \
   --distro_ver=${base_distro_number} \
-  --raw=./wakame-vdc-${vmapp_name}-vmapp_${base_distro}-${base_distro_number}.raw \
+  --distro_arch=${arch} \
+  --raw=./wakame-vdc-${vmapp_name}-vmapp_${base_distro}-${base_distro_number}.${arch}.raw \
   --rootsize=${rootsize} \
   --swapsize=${swapsize} \
   --debug=1 \
