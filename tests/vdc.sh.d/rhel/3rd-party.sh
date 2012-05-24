@@ -21,14 +21,15 @@ while [ $# -gt 0 ]; do
 done
 
 abs_path=$(cd $(dirname $0) && pwd)
-vendor_dir=${vendor_dir:-${abs_path}/vendor}
-[ -d ${vendor_dir} ] || mkdir -p ${vendor_dir}
 arch=${arch:-$(arch)}
 case ${arch} in
 i*86)   basearch=i386; arch=i686;;
 x86_64) basearch=${arch};;
 esac
 
+vendor_dir=${vendor_dir:-${abs_path}/vendor}
+vendor_dir=${vendor_dir}/${basearch}
+[ -d ${vendor_dir} ] || mkdir -p ${vendor_dir}
 
 function list_3rd_party() {
   cat <<EOS | egrep -v ^#
