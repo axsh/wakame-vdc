@@ -88,6 +88,7 @@ Then /^the previous api call should fail with the HTTP code (\d+)$/ do |rescode|
 end
 
 Then /^the previous api call should not make the entry for the uuid (.+)$/ do |uuid|
+  uuid = evaluate_argument(uuid)
   res = APITest.get("/#{@api_last_request[:collection]}/#{uuid}")
   res.code.should == 404
 end
@@ -104,8 +105,9 @@ Then /^the created (.+) should reach state (.+) in (\d+) seconds or less$/ do |s
 end
 
 Then /^the (.+) with id (.+) should reach state (.+) in (\d+) seconds or less$/ do |suffix,uuid,state,seconds|
+  uuid = evaluate_argument(uuid)
+  state.gsub!("\"", '')
   retry_until(seconds.to_f) do
-    sleep(1)
     APITest.get("/#{suffix}/#{uuid}")["state"] == state
   end
 end
