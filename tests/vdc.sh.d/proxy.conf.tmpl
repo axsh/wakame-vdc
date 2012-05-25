@@ -12,8 +12,8 @@ http {
 
   access_log   /dev/stdout;
 
-  client_max_body_size    10m;
-  client_body_buffer_size 128k;
+  client_max_body_size    999999g; # Allows enough size to test image file upload.
+  client_body_buffer_size 3m;      # For speed up image file uploading.
 
   sendfile       on;
   tcp_nopush     on;
