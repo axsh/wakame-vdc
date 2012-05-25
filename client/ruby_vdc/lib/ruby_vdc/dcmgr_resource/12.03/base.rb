@@ -11,5 +11,13 @@ module DcmgrResource::V1203
 
     self.prefix = '/api/12.03/'
 
+    def total
+      attributes['total']
+    end
+
+    def owner_total
+      attributes['total']
+    end
+
   end
 end
