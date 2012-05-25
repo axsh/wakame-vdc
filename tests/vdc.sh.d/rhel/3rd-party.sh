@@ -38,10 +38,10 @@ function list_3rd_party() {
 epel-release-6-6       http://ftp.riken.go.jp/pub/Linux/fedora/epel/6/i386/epel-release-6-6.noarch.rpm            epel-release-6-6.noarch.rpm
 rabbitmq-server-2.6.1  http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/rabbitmq-server-2.6.1-1.noarch.rpm rabbitmq-server-2.6.1-1.noarch.rpm
 flog                   git://github.com/hansode/env-builder.git                                                   flog-1.8-3.${basearch}.rpm
-openvswitch            git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.4.1-1.el6.${basearch}.rpm
-openvswitch            git://github.com/hansode/env-builder.git                                                   openvswitch-1.4.1-1.${basearch}.rpm
-kmod-openvswitch-vzkernel git://github.com/hansode/env-builder.git                                                kmod-openvswitch-vzkernel-1.4.1-1.el6.${basearch}.rpm
-lxc                    git://github.com/hansode/env-builder.git                                                   lxc-0.7.5-1.${basearch}.rpm
+openvswitch            git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.4.1-1.el6.${arch}.rpm
+openvswitch            git://github.com/hansode/env-builder.git                                                   openvswitch-1.4.1-1.${arch}.rpm
+kmod-openvswitch-vzkernel git://github.com/hansode/env-builder.git                                                kmod-openvswitch-vzkernel-1.4.1-1.el6.${arch}.rpm
+lxc                    git://github.com/hansode/env-builder.git                                                   lxc-0.7.5-1.${arch}.rpm
 EOS
 }
 
@@ -78,10 +78,10 @@ function deploy_3rd_party() {
       cp ${vendor_dir}/$(basename ${pkg_uri%%.git})/rhel/6/${pkg_name}/${pkg_file} ${vendor_dir}/.
       ;;
     openvswitch|kmod-openvswitch-vzkernel)
-      cp ${HOME}/rpmbuild/RPMS/${basearch}/${pkg_file} ${vendor_dir}/.
+      cp ${HOME}/rpmbuild/RPMS/${arch}/${pkg_file} ${vendor_dir}/.
       ;;
     lxc)
-      cp /root/rpmbuild/RPMS/${basearch}/${pkg_file} ${vendor_dir}/.
+      cp /root/rpmbuild/RPMS/${arch}/${pkg_file} ${vendor_dir}/.
       ;;
     esac
   done
