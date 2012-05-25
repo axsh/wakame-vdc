@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1203
-  class InstanceSpec < Base
+  class InstanceSpec < DcmgrResource::V1112::Base
     include DcmgrResource::ListMethods
-    
-    self.prefix = '/api/11.12/'
   end
 end

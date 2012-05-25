@@ -17,7 +17,7 @@ module DcmgrResource
       
       def total_resource
         result = self.find(:first,:params => {:start => 0,:limit => 1})
-        result.owner_total
+        result.total
       end
 
       def get_resource_state_count(resources, state)
@@ -46,12 +46,18 @@ module DcmgrResource
   end
 
   module ListMethods
-    def self.list(params = {})
-      self.find(:all,:params => params)
+    def self.included(base)
+      base.extend(ClassMethods)
     end
     
-    def self.show(uuid)
-      self.get(uuid)
+    module ClassMethods
+      def list(params = {})
+        self.find(:all,:params => params)
+      end
+      
+      def show(uuid)
+        self.get(uuid)
+      end
     end
   end
 

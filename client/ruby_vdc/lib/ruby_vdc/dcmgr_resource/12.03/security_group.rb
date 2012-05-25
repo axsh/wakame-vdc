@@ -1,12 +1,26 @@
 # -*- coding: utf-8 -*-
 module DcmgrResource::V1203
   module SecurityGroupMethods
-    def self.create(params)
-      security_group = self.new
-      security_group.description = params[:description]
-      security_group.rule = params[:rule]
-      security_group.save
-      security_group
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+    
+    module ClassMethods
+      def create(params)
+        security_group = self.new
+        security_group.description = params[:description]
+        security_group.rule = params[:rule]
+        security_group.save
+        security_group
+      end
+
+      def update(uuid,params)
+        self.put(uuid,params).body
+      end
+      
+      def destroy(uuid)
+        self.delete(uuid).body
+      end      
     end
 
     # workaround for the bug:
@@ -18,14 +32,6 @@ module DcmgrResource::V1203
       require 'json'
       {'security_group'=>@attributes}.to_json
     end
-
-    def self.update(uuid,params)
-      self.put(uuid,params).body
-    end
-    
-    def self.destroy(uuid)
-      self.delete(uuid).body
-    end      
   end
 
   class SecurityGroup < Base
