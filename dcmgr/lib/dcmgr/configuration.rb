@@ -70,8 +70,12 @@ module Dcmgr
     end
 
     class << self
-      def initialize_callbacks
-        @initialize_callbacks
+      def on_initialize_hook(&blk)
+        @on_initialize_hooks << blk
+      end
+
+      def on_initialize_hooks
+        @on_initialize_hooks
       end
 
       # Show warning message if the old parameter is set.
@@ -132,9 +136,9 @@ module Dcmgr
             define_method(name.to_s.to_sym, &opts[:default])
           }
         else
-          @initialize_callbacks << proc { |c|
+          on_initialize_hook do |c|
             @config[name.to_s.to_sym] = opts[:default]
-          }
+          end
         end
 
         @on_param_create_hooks.each { |blk|
@@ -185,7 +189,7 @@ module Dcmgr
         super
         klass.const_set(:DSL, Module.new)
         klass.instance_eval {
-          @initialize_callbacks = []
+          @on_initialize_hooks = []
           @opts = {}
           @on_param_create_hooks = []
         }
@@ -215,8 +219,16 @@ module Dcmgr
     def initialize
       @config = {}
 
-      self.class.initialize_callbacks.each { |c|
-        self.instance_eval(&c)
+      hook_lst = []
+      c = self.class
+      while c < Configuration
+        hook_lst << c.instance_variable_get(:@on_initialize_hooks)
+        c = c.superclass
+      end
+      hook_lst.reverse.each { |l|
+        l.each { |c|
+          self.instance_eval(&c)
+        }
       }
     end
 
