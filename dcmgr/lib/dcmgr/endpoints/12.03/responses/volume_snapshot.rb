@@ -12,6 +12,7 @@ module Dcmgr::Endpoints::V1203::Responses
         to_hash.merge(:id=>canonical_uuid)
           .merge({:destination_id => self.destination,
                    :destination_name => self.display_name,
+                   :storage_node_id => self.storage_node ? self.storage_node.canonical_uuid : nil,
                  })
       }
     end
