@@ -45,4 +45,10 @@ module DcmgrResource::V1203
     include DcmgrResource::ListMethods
     include VolumeSnapshotMethods
   end
+
+  VolumeSnapshot.preload_resource('Result', Module.new {
+    def storage_node
+      attributes['storage_node'] ||= StorageNode.find(attributes['storage_node_id'])
+    end
+  })
 end
