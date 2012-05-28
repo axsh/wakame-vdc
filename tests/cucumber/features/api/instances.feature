@@ -79,3 +79,19 @@ Feature: Instance API
       |display_name             |
       |instance1                |
     Then the previous api call should be successful
+
+  @api_from_12.03
+  Scenario: Backup image file (local store)
+    Given a managed instance with the following options
+      | image_id   | instance_spec_id |
+      | wmi-lucid7 | is-demo2         |
+    Then from the previous api call take {"id":} and save it to <registry:id>
+
+    When the created instance has reached the state "running"
+    
+    When we make an api put call to instances/<registry:id>/image with no options
+      Then the previous api call should be successful
+      Then from the previous api call take {"backup_object_id":} and save it to <registry:backup_object_id>
+      Then from the previous api call take {"image_id":} and save it to <registry:image_id>
+
+    When the backup_objects with id <registry:backup_object_id> should reach state "available" in 60 seconds or less

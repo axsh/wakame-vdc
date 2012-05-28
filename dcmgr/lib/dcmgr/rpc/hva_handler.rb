@@ -481,6 +481,43 @@ module Dcmgr
         @hv.reboot_instance(@hva_ctx)
       }
 
+      job :backup_image, proc {
+        @inst_id = request.args[0]
+        @backupobject_id = request.args[1]
+        @image_id = request.args[2]
+        @hva_ctx = HvaContext.new(self)
+
+        logger.info("Backing up the image file for #{@inst_id} as #{@backupobject_id}.")
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+        @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
+        @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
+
+        raise "Invalid instance state (expected running): #{@inst[:state]}" if @inst[:state].to_s != 'running'
+        #raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
+
+        begin
+          snap_filename = @hva_ctx.os_devpath
+          # @backing_store.create_snapshot(StaContext.new(self), snapshot_storage.snapshot(snap_filename))
+
+          logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
+          bk = Dcmgr::Drivers::Webdav.new(:base_uri=>@bo[:backup_storage][:base_uri])
+          bk.upload(snap_filename, @bo[:object_key])
+          logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
+      
+        rescue => e
+          logger.error(e)
+          raise "snapshot has not be uploaded"
+        end
+        
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
+        logger.info("created new backup object: #{@backupobject_id}")
+        
+      }, proc {
+        # TODO: need to clear generated temp files or remote files in remote snapshot repository.
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+        logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id}")
+      }
+
       def rpc
         @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
       end

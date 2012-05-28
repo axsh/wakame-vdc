@@ -12,6 +12,16 @@ module Dcmgr::Models
     
     class RequestError < RuntimeError; end
 
+    def self.entry_new(account, size, &blk)
+      bo = self.new
+      bo.account_id = account.canonical_uuid
+      bo.size = size.to_i
+      bo.state = :creating
+      blk.call(bo)
+      bo.object_key ||= bo.canonical_uuid
+      bo
+    end
+    
     def self.entry_delete(uuid)
       bo = self[uuid]
       if bo.state.to_sym != :available

@@ -274,4 +274,28 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     commit_transaction
     respond_with(R::Instance.new(instance).generate)
   end
+
+  # Create image from the alive instance.
+  put '/:id/image' do
+    instance = find_by_uuid(:Instance, params[:id])
+    raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
+
+    bkst = M::BackupStorage['bkst-demo2']
+    bo = M::BackupObject.entry_new(@account, 999999) do |i|
+      if params[:description]
+        i.description = params[:description]
+      end
+    end
+    bo.backup_storage = bkst
+    bo.save
+    #image = M::Image.entry_new()
+    
+    commit_transaction
+    Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'backup_image',
+                           instance.canonical_uuid, bo.canonical_uuid) #, image.canonical_uuid)
+    respond_with({:instance_id=>instance.canonical_uuid,
+                   :backup_object_id => bo.canonical_uuid,
+                   :image_id => nil,
+                 })
+  end
 end

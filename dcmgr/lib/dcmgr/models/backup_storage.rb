@@ -4,8 +4,9 @@ module Dcmgr::Models
   class BackupStorage < BaseNew
     taggable 'bkst'
 
-    STORAGE_TYPES=[:local, :webdav].freeze
-
+    STORAGE_TYPES=[:sta, :webdav].freeze
+    one_to_many :backup_objects
+      
     def validate
       unless STORAGE_TYPES.member?(self.storage_type.to_sym)
         errors.add(:storage_type, "Unknown storage type: #{self.storage_type}")

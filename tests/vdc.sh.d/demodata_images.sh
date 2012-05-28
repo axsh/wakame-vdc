@@ -12,6 +12,9 @@ kvm -device ? 2>&1 | egrep 'name "lsi' -q || {
   image_features_opts="--virtio"
 }
 
+shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo1 --base-uri="sta://sta.demo1${VDC_ROOT}/tmp/images" --storage-type=sta --description='local backup storage for sta.demo1'
+shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --base-uri='http://localhost:8080/images/' --storage-type=webdav --description='nginx based webdav storage'
+
 for meta in $data_path/image-*.meta; do
   (
     . $meta
