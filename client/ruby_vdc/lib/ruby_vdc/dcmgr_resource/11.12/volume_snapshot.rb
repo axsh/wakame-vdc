@@ -4,4 +4,10 @@ module DcmgrResource::V1112
     include DcmgrResource::ListMethods
     include DcmgrResource::V1203::VolumeSnapshotMethods
   end
+
+  VolumeSnapshot.preload_resource('Result', Module.new {
+    def storage_node
+      nil
+    end
+  })
 end
