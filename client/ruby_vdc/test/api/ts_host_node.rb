@@ -3,23 +3,26 @@
 require 'test/unit'
 
 class TestHostNode <  Test::Unit::TestCase
-  def test_host_node_1112
-    assert_nothing_raised() {
-      host_node = DcmgrResource::V1112::HostNode.find(:first).results.first
-
-      # puts "host_node_1112.inspect: #{host_node.inspect}"
-
-      assert_equal(nil, host_node.node_id)
-    }
+  def api_class(version)
+    case version
+    when :v1112 then DcmgrResource::V1112::HostNode
+    when :v1203 then DcmgrResource::V1203::HostNode
+    end
   end
 
-  def test_host_node_1203
-    assert_nothing_raised() {
-      host_node = DcmgrResource::V1203::HostNode.find(:first).results.first
+  include TestBaseMethods
 
-      # puts "host_node_1203.inspect: #{host_node.inspect}"
+  def test_host_node
+    [:v1112, :v1203].each { |api_ver|
+      assert_nothing_raised() {
+        host_node = api_class(api_ver).find(:first).results.first
 
-      assert_not_equal(nil, host_node.node_id)
+        if api_ver == :v1112
+          assert_equal(nil, host_node.node_id)
+        else
+          assert_not_equal(nil, host_node.node_id)
+        end
+      }
     }
   end
 
