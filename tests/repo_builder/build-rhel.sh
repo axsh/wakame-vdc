@@ -67,8 +67,8 @@ for i in $wakame_rpms; do
 done
 
 # 3rd party rpms.
-${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor_dir=$tmp_dir/repos.d/archives/${basearch}
-rsync -a $tmp_dir/repos.d/archives/${basearch}/*.rpm ${repo_dir}/${basearch}
+${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor_dir=$tmp_dir/repos.d/archives
+rsync -a $tmp_dir/repos.d/archives/${basearch}/*.rpm ${repo_dir}/${basearch}/
 
 # create local repository
 (
