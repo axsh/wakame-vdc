@@ -14,7 +14,6 @@ class TestSshKeyPair <  Test::Unit::TestCase
     [:v1112, :v1203].each { |api_ver|
       assert_nothing_raised() {
         ssh_key_pair = api_class(api_ver).find(:first).results.first
-        # puts "ssh_key_pair_1112.inspect: #{ssh_key_pair.inspect}"
       }
     }
   end

@@ -17,7 +17,13 @@ class TestVolume <  Test::Unit::TestCase
       assert_nothing_raised() {
         volume = api_class(api_ver).find(:first).results.first
 
-        # puts "volume_1112.inspect: #{volume.inspect}"
+        if api_ver == :v1112
+          assert_raise(NoMethodError) { volume.account_id }
+          assert_equal(String, volume.instance_id.class)
+        else
+          assert_not_nil(volume.account_id)
+          assert_equal(Fixnum, volume.instance_id.class)
+        end
       }
     }
   end

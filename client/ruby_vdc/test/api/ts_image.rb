@@ -17,8 +17,8 @@ class TestImage <  Test::Unit::TestCase
       assert_nothing_raised() {
         image = api_class(api_ver).find(:first).results.first
 
-        uri = image.source.uri
-        features = image.features
+        assert_not_nil(image.source.uri)
+        assert_not_nil(image.features)
       }
     }
   end

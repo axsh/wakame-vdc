@@ -12,11 +12,16 @@ class TestStorageNode <  Test::Unit::TestCase
 
   include TestBaseMethods
 
-  def test_storage_node_1112
+  def test_storage_node
     [:v1112, :v1203].each { |api_ver|
       assert_nothing_raised() {
         storage_node = api_class(api_ver).find(:first).results.first
-        # assert_equal(nil, storage_node.node_id)
+
+        if api_ver == :v1112
+          assert_raise(NoMethodError) { storage_node.node_id }
+        else
+          assert_not_nil(storage_node.node_id)
+        end
       }
     }
   end
@@ -25,8 +30,6 @@ class TestStorageNode <  Test::Unit::TestCase
     [:v1112, :v1203].each { |api_ver|
       assert_nothing_raised() {
         list = api_class(api_ver).list
-
-        # puts "storage_node_1203.list.inspect: #{list.inspect}"
       }
     }
   end
