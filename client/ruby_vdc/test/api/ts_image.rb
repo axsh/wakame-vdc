@@ -3,21 +3,23 @@
 require 'test/unit'
 
 class TestImage <  Test::Unit::TestCase
-  def test_image_1112
-    assert_nothing_raised() {
-      image = DcmgrResource::V1112::Image.find(:first).results.first
-
-      uri = image.source.uri
-      features = image.features
-    }
+  def api_class(version)
+    case version
+    when :v1112 then DcmgrResource::V1112::Image
+    when :v1203 then DcmgrResource::V1203::Image
+    end
   end
 
-  def test_image_1203
-    assert_nothing_raised() {
-      image = DcmgrResource::V1203::Image.find(:first).results.first
+  include TestBaseMethods
 
-      uri = image.source.uri
-      features = image.features
+  def test_image
+    [:v1112, :v1203].each { |api_ver|
+      assert_nothing_raised() {
+        image = api_class(api_ver).find(:first).results.first
+
+        uri = image.source.uri
+        features = image.features
+      }
     }
   end
 
