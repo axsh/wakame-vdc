@@ -138,7 +138,6 @@ module Dcmgr
   module Rpc
     autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
     autoload :StaHandler, 'dcmgr/rpc/sta_handler'
-    autoload :KvmHelper, 'dcmgr/rpc/hva_handler'
   end
 
   # namespace for custom Rack HTTP middleware.
