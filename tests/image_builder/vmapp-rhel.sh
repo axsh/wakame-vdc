@@ -24,7 +24,7 @@ rootsize=${rootsize:-5000}
 swapsize=${swapsize:-1000}
 base_distro=${base_distro:-centos}
 base_distro_number=${base_distro_number:-6}
-base_distro_arch=${base_distro_arch:-x86_64}
+base_distro_arch=${base_distro_arch:-$(arch)}
 # vmbuilder options
 ip=${ip:-}
 mask=${mask:-}
