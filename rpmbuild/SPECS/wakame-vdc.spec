@@ -22,6 +22,8 @@ BuildRequires: mysql-devel
 BuildRequires: chrpath
 # Ruby binary build dependency
 BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
+# vmapp dependency
+BuildRequires: parted
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
