@@ -16,8 +16,6 @@ class TestInstance <  Test::Unit::TestCase
     [:v1112, :v1203].each { |api_ver|
       assert_nothing_raised() {
         instance = api_class(api_ver).find(:first).results.first
-
-        # puts "instance_1112.inspect: #{instance.inspect}"
       }
     }
   end
