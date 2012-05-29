@@ -30,11 +30,11 @@ Feature: Instance API
   @api_from_12.03
   Scenario: List instances with filter options
     Given a managed instance with the following options
-      | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type |
-      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | std          |
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type | display_name |
+      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | std          | instance1    |
     Given a managed instance with the following options
-      | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type |
-      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | std          |
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type | display_name |
+      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | std          | instance2    |
     When we make an api get call to security_groups with the following options
       |account_id|
       |a-shpoolxx|
@@ -46,4 +46,8 @@ Feature: Instance API
     When we make an api get call to instances with the following options
       |service_type             |
       |std                      |
+    Then the previous api call should be successful
+    When we make an api get call to instances with the following options
+      |display_name             |
+      |instance1                |
     Then the previous api call should be successful

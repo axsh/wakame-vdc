@@ -5,13 +5,13 @@ Feature: SshKeyPair API
 
   Scenario: Create, update and delete for new ssh key pair
     Given a managed ssh_key_pair with the following options
-      | description |
-      | test key1   |
+      | description | display_name |
+      | test key1   | testkey1     |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to ssh_key_pairs/<registry:uuid> with the following options
-      | description   |
-      | test key key1 |
+      | description   | display_name |
+      | test key key1 | testkeykey1  |
     Then the previous api call should be successful
 
     When we make an api get call to ssh_key_pairs/<registry:uuid> with no options
@@ -36,11 +36,11 @@ Feature: SshKeyPair API
 
   Scenario: List ssh key pairs
     Given a managed ssh_key_pair with the following options
-      | description |
-      | test key1   |
+      | description | display_name |
+      | test key1   | testkey1     |
     Given a managed ssh_key_pair with the following options
-      | description |
-      | test key2   |
+      | description | display_name |
+      | test key2   | testkey2     |
     When we make an api get call to ssh_key_pairs with no options
     Then the previous api call should be successful
 
@@ -56,11 +56,11 @@ Feature: SshKeyPair API
   @api_from_12.03
   Scenario: List ssh key pairs with filter options
     Given a managed ssh_key_pair with the following options
-      | description | service_type |
-      | test key1   | std          |
+      | description | service_type | display_name |
+      | test key1   | std          | testkey1     |
     Given a managed ssh_key_pair with the following options
-      | description | service_type |
-      | test key2   | std          |
+      | description | service_type | display_name |
+      | test key2   | std          | testkey2     |
     When we make an api get call to ssh_key_pairs with the following options
       |account_id|
       |a-shpoolxx|
@@ -73,3 +73,8 @@ Feature: SshKeyPair API
       |service_type             |
       |std                      |
     Then the previous api call should be successful
+    When we make an api get call to ssh_key_pairs with the following options
+      |display_name             |
+      |testkey1                 |
+    Then the previous api call should be successful
+

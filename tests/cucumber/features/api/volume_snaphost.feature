@@ -1,11 +1,11 @@
-@api_from_v11.12 @api_until_v11.12
+@api_from_v11.12
 Feature: Snapshot Volume API
   
   Scenario: Create and delete new snapshot volume
 
     When we make a successful api create call to volumes with the following options
-      | volume_size |
-      | 10          |
+      | volume_size | display_name |
+      | 10          | volume1      |
     Then the created volumes should reach state available in 60 seconds or less
 
     When we successfully create a snapshot from the created volume

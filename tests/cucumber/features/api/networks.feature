@@ -3,8 +3,8 @@ Feature: Network API
 
   Scenario: Create and delete a random network
     Given a managed network with the following options
-      |  network |       gw | prefix | description | network_mode |
-      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     |
+      |  network |       gw | prefix | description | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     | network1     |
       Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       # And the previous api call should have {"uuid":} equal to /^nw-*/
     When we make an api get call to networks/<registry:uuid> with no options
@@ -19,8 +19,8 @@ Feature: Network API
     # Make sure the network name doesn't exist in the database...
 
     # When we make an api create call to networks with the following options
-    #   |  network |       gw | prefix | description |
-    #   | 10.1.2.0 | 10.1.2.1 |     20 | test create |
+    #   |  network |       gw | prefix | description | display_name |
+    #   | 10.1.2.0 | 10.1.2.1 |     20 | test create | network1     |
     # Then the previous api call should be successful
     # # And the previous api call should have {"uuid":} equal to /^nw-*/
     # And from the previous api call save to registry uuid the value for key uuid
@@ -31,8 +31,8 @@ Feature: Network API
       Then the previous api call should be successful
 
     Given a managed network with the following options
-      |  network |       gw | prefix | description | network_mode |
-      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     |
+      |  network |       gw | prefix | description | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     | network1     |
 
     When we make an api get call to networks with no options
       Then the previous api call should be successful
@@ -45,8 +45,8 @@ Feature: Network API
   Scenario: Verify network values after creation
     # Test both random network name and nw-test1.
     Given a managed network with the following options
-      |  network |       gw | prefix | description        | network_mode |
-      | 10.1.2.0 | 10.1.2.1 |     20 | test create values | passthru     |
+      |  network |       gw | prefix | description        | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.1 |     20 | test create values | passthru     | network1     |
       And the previous api call should have {"ipv4_network":} equal to "10.1.2.0"
       And the previous api call should have {"ipv4_gw":} equal to "10.1.2.1"
       And the previous api call should have {"prefix":} equal to 20
@@ -68,18 +68,18 @@ Feature: Network API
 
   Scenario: Fail to create a network through the core API
     When we make an api create call to networks with the following options
-      |   network |       gw | prefix | description | network_mode |
-      | 256.1.2.0 | 10.1.2.1 |     20 | test fail   | passthru     |
+      |   network |       gw | prefix | description | network_mode | display_name |
+      | 256.1.2.0 | 10.1.2.1 |     20 | test fail   | passthru     | network1     |
     Then the previous api call should not be successful
 
     When we make an api create call to networks with the following options
-      |  network | gw       | prefix | description | network_mode |
-      | 10.1.2.0 | 10.1.2.a |     20 | test fail   | passthru     |
+      |  network | gw       | prefix | description | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.a |     20 | test fail   | passthru     | network1     |
     Then the previous api call should not be successful
 
     When we make an api create call to networks with the following options
-      |  network |       gw | prefix | description | network_mode |
-      | 10.1.2.0 | 10.1.2.1 |     33 | test fail   | passthru     |
+      |  network |       gw | prefix | description | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.1 |     33 | test fail   | passthru     | network1     |
     Then the previous api call should not be successful
 
 
@@ -128,11 +128,11 @@ Feature: Network API
 
   Scenario: List networks with filter options
     Given a managed network with the following options
-      |  network |       gw | prefix | description | network_mode |
-      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     |
+      |  network |       gw | prefix | description | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     | network1     |
     Given a managed network with the following options
-      |  network |       gw | prefix | description | network_mode |
-      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     |
+      |  network |       gw | prefix | description | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     | network2     |
     When we make an api get call to networks with the following options
       |account_id|
       |a-shpoolxx|
@@ -144,4 +144,8 @@ Feature: Network API
     When we make an api get call to networks with the following options
       |service_type             |
       |std                      |
+    Then the previous api call should be successful
+    When we make an api get call to networks with the following options
+      |display_name             |
+      |network1                 |
     Then the previous api call should be successful
