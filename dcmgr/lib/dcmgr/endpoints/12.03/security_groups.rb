@@ -26,6 +26,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       ds = ds.filter(:service_type=>params[:service_type])
     end
     
+    if params[:display_name]
+      ds = ds.filter(:display_name=>params[:display_name])
+    end
     collection_respond_with(ds) do |paging_ds|
       R::SecurityGroupCollection.new(paging_ds).generate
     end
@@ -43,6 +46,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     # description 'Register a new security group'
     # params description, string
     # params rule, string
+    # params display_name, string
     begin
       savedata = {
         :account_id=>@account.canonical_uuid,
@@ -53,6 +57,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
         savedata[:service_type] = params[:service_type]
       end
       savedata[:description] = params[:description] if params[:description]
+      savedata[:display_name] = params[:display_name] if params[:display_name]
       g = M::SecurityGroup.create(savedata)
 
       send_reference_events(g,[],g.referencees)
@@ -81,6 +86,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     if params[:service_type]
       validate_service_type(params[:service_type])
       g.service_type = params[:service_type]
+    end
+    if params[:display_name]
+      g.display_name = params[:display_name]
     end
     
     begin

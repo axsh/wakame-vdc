@@ -17,6 +17,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       ds = ds.filter(:service_type=>params[:service_type])
     end
     
+    if params[:display_name]
+      ds = ds.filter(:display_name=>params[:display_name])
+    end
+    
     collection_respond_with(ds) do |paging_ds|
       R::SshKeyPairCollection.new(paging_ds).generate
     end
@@ -36,6 +40,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     # description "Create ssh key pair information"
     # params :download_once optional set true if you do not want
     #        to save private key info on database.
+    # params :display_name optional
     keydata = nil
 
     ssh = M::SshKeyPair.entry_new(@account) do |s|
@@ -54,6 +59,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       if params[:service_type]
         validate_service_type(params[:service_type])
         s.service_type = params[:service_type]
+      end
+
+      if params[:display_name]
+        s.display_name = params[:display_name]
       end
     end
 
@@ -83,6 +92,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       validate_service_type(params[:service_type])
       ssh.service_type = params[:service_type]
     end
+    ssh.display_name = params[:display_name] if params[:display_name]
     ssh.save_changes
 
     respond_with([ssh.canonical_uuid])

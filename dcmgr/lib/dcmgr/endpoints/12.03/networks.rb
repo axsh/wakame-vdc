@@ -21,6 +21,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       ds = ds.filter(:service_type=>params[:service_type])
     end
     
+    if params[:display_name]
+      ds = ds.filter(:display_name=>params[:display_name])
+    end
+    
     collection_respond_with(ds) do |paging_ds|
       R::NetworkCollection.new(paging_ds).generate
     end
@@ -42,6 +46,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params :prefix optional  netmask bit length. it will be
     #               set 24 if none.
     # params :description optional description for the network
+    # params :display_name optional
     savedata = {
       :account_id=>@account.canonical_uuid,
       :ipv4_gw => params[:gw],
@@ -52,6 +57,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     if params[:service_type]
       validate_service_type(params[:service_type])
       savedata[:service_type] = params[:service_type]
+    end
+    if params[:display_name]
+      savedata[:display_name] = params[:display_name]
     end
     savedata[:description] = params[:description] if params[:description]
     nw = M::Network.create(savedata)
