@@ -75,7 +75,7 @@ cd ${root_dir}
 rsync -ax --delete ${base_chroot_dir}/ ${dest_chroot_dir}/
 sync
 
-for mount_target in proc dev dev/pts sys; do
+for mount_target in proc dev; do
   mount | grep ${dest_chroot_dir}/${mount_target} || mount --bind /${mount_target} ${dest_chroot_dir}/${mount_target}
 done
 
@@ -116,7 +116,7 @@ EOS
   } || :
 }
 
-for mount_target in proc dev/pts dev sys; do
+for mount_target in proc dev; do
   mount | grep ${dest_chroot_dir}/${mount_target} || umount ${dest_chroot_dir}/${mount_target}
 done
 
