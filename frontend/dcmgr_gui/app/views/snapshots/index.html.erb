@@ -85,7 +85,7 @@
 			    <td class="title"><%= t("snapshots.details.capacity") %>:</td>
 		      <td>${item.size}</td>
 			  </tr>
-		    <tr>
+        <tr>
           <td class="padcell"></td>
           <td class="title"><%= t("snapshots.details.origin_volume_id") %>:</td>
           <td>${item.origin_volume_id}</td>
@@ -93,19 +93,25 @@
           <td class="title"><%= t("snapshots.details.status") %>:</td>
           <td class="state">${item.state}</td>
         </tr>
-		    <tr>
+	<tr>
           <td class="padcell"></td>
           <td class="title"><%= t("snapshots.details.destination") %>:</td>
           <td class="state">${item.destination_name}</td>
+	{{if item.storage_node_id }}
+          <td class="padcell"></td>
+          <td class="title"><%= t("snapshots.details.storage_node_id") %>:</td>
+          <td class="state">${item.storage_node_id}</td>
+        {{else}}
           <td class="padcell"></td>
           <td class="title"><%= t("snapshots.details.backing_store") %>:</td>
           <td class="state">${item.backing_store}</td>
+        {{/if}}
         </tr>
         <tr>
-					<td class="padcell"></td>
-         	<td class="title"><%= t("snapshots.details.created_at") %>:</td>
-         	<td colspan="7">${item.created_at}</td>
-				</tr>
+	  <td class="padcell"></td>
+          <td class="title"><%= t("snapshots.details.created_at") %>:</td>
+          <td colspan="7">${item.created_at}</td>
+	</tr>
 			</table>
       </div>
     </script>
