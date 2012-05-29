@@ -22,7 +22,9 @@ done
 
 base_distro=${base_distro:-centos}
 base_distro_number=${base_distro_number:-6}
-base_distro_arch=${base_distro_arch:-x86_64}
+base_distro_arch=${base_distro_arch:-$(arch)}
+
+execscript=${execscript:-}
 
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
@@ -89,7 +91,7 @@ sl|scientific)
 esac
 
 # run in chrooted env.
-cat <<EOS | setarch ${arch} chroot ${dest_chroot_dir}/  bash -x
+cat <<EOS | setarch ${arch} chroot ${dest_chroot_dir}/  bash -ex
 uname -m
 
 yum ${yum_opts} update -y
@@ -107,6 +109,12 @@ sleep 30
 ./rpmbuild/rules binary
 sync
 EOS
+
+[ -z "${execscript}" ] || {
+  [ -x "${execscript}" ] && {
+    setarch ${arch} ${execscript} ${dest_chroot_dir}
+  } || :
+}
 
 for mount_target in proc dev/pts dev sys; do
   mount | grep ${dest_chroot_dir}/${mount_target} || umount ${dest_chroot_dir}/${mount_target}
