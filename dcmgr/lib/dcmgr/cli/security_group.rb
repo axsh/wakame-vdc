@@ -27,6 +27,7 @@ module Dcmgr::Cli
     method_option :description, :type => :string, :desc => "The description for this new security group."
     method_option :rule, :type => :string, :desc => "Path to the rule text file. (\"-\" is from STDIN)"
     method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the sercurity group. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :display_name, :type => :string, :required => true, :desc => "Display name of the security group"
     def add
       UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
 
@@ -70,6 +71,7 @@ __END
     method_option :description, :type => :string, :desc => "The description for this new security group."
     method_option :rule, :type => :string, :desc => "Path to the rule text file. (\"-\" is from STDIN)"
     method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the security group. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :display_name, :type => :string, :desc => "Display name of the security group"
     def modify(uuid)
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
 

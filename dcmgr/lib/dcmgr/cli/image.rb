@@ -20,6 +20,7 @@ module Dcmgr::Cli
       method_option :root_device, :type => :string, :desc => "The root device of image"
       #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+      method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       def local(location)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
@@ -55,6 +56,7 @@ module Dcmgr::Cli
       method_option :root_device, :type => :string, :desc => "The root device of image"
       #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+      method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
     def volume(snapshot_id)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
@@ -80,6 +82,7 @@ module Dcmgr::Cli
     method_option :description, :type => :string, :desc => "An arbitrary description of the machine image"
     method_option :state, :type => :string, :default => "init", :desc => "The state for the machine image"
     method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :display_name, :type => :string, :desc => "Display name of the machine image"
     def modify(uuid)
       #TODO: Check if state is valid here too
       super(M::Image,uuid,options)
