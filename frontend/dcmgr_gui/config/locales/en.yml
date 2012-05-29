@@ -312,6 +312,7 @@ en:
       header: "Details"
       snapshot_id: "Snapshot ID"
       snapshot: "Snapshot"
+      storage_node_id: "StorageNode ID"
       capacity: "Capacity"
       origin_volume_id: "OriginVolumeID"
       destination: "Destiantion"

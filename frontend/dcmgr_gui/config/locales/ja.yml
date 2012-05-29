@@ -306,6 +306,7 @@ ja:
       header: "詳細"
       snapshot_id: "スナップショットID"
       snapshot: "スナップショット"
+      storage_node_id: "ストレージプールID"
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
       destination: "保存先"
