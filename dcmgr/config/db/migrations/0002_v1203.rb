@@ -152,6 +152,29 @@ Sequel.migration do
     alter_table(:ssh_key_pairs) do
       add_column :service_type, "varchar(255)", :null=>false
     end
+
+    # Add display_name column
+    alter_table(:instances) do
+      add_column :display_name, "varchar(255)", :null=>false
+    end
+    alter_table(:volumes) do
+      add_column :display_name, "varchar(255)", :null=>false
+    end
+    alter_table(:volume_snapshots) do
+      add_column :display_name, "varchar(255)", :null=>false
+    end
+    alter_table(:security_groups) do
+      add_column :display_name, "varchar(255)", :null=>false
+    end
+    alter_table(:images) do
+      add_column :display_name, "varchar(255)", :null=>false
+    end
+    alter_table(:networks) do
+      add_column :display_name, "varchar(255)", :null=>false
+    end
+    alter_table(:ssh_key_pairs) do
+      add_column :display_name, "varchar(255)", :null=>false
+    end
   end
   
   down do
@@ -213,6 +236,29 @@ Sequel.migration do
     end
     alter_table(:ssh_key_pairs) do
       drop_column :service_type
+    end
+
+    # Delete display_name column
+    alter_table(:instances) do
+      drop_column :display_name
+    end
+    alter_table(:volumes) do
+      drop_column :display_name
+    end
+    alter_table(:volume_snapshots) do
+      drop_column :display_name
+    end
+    alter_table(:security_groups) do
+      drop_column :display_name
+    end
+    alter_table(:images) do
+      drop_column :display_name
+    end
+    alter_table(:networks) do
+      drop_column :display_name
+    end
+    alter_table(:ssh_key_pairs) do
+      drop_column :display_name
     end
   end
 end
