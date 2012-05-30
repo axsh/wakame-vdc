@@ -9,6 +9,7 @@ DcmgrGUI.prototype.dashboardPanel = function(){
     $("#total_image").empty().html(loading_image);
     $("#total_volume").empty().html(loading_image);
     $("#total_snapshot").empty().html(loading_image);
+    $("#total_network").empty().html(loading_image);
     $("#total_security_group").empty().html(loading_image);
     $("#total_keypair").empty().html(loading_image);
     
@@ -17,6 +18,7 @@ DcmgrGUI.prototype.dashboardPanel = function(){
       total_image: $.getJSON('/machine_images/total.json'),
       total_volume: $.getJSON('/volumes/total.json'),
       total_snapshot: $.getJSON('/snapshots/total.json'),
+      total_network: $.getJSON('/networks/total.json'),
       total_security_group: $.getJSON('/security_groups/total.json'),
       total_keypair: $.getJSON('/keypairs/total.json')
     }).error(function (e) {
@@ -25,6 +27,7 @@ DcmgrGUI.prototype.dashboardPanel = function(){
       $("#total_image").empty().html('');
       $("#total_volume").empty().html('');
       $("#total_snapshot").empty().html('');
+      $("#total_network").empty().html('');
       $("#total_security_group").empty().html('');
       $("#total_keypair").empty().html('');
     }).next(function(results) {
@@ -32,6 +35,7 @@ DcmgrGUI.prototype.dashboardPanel = function(){
       $('#total_image').html(results.total_image);
       $('#total_volume').html(results.total_volume);
       $('#total_snapshot').html(results.total_snapshot);
+      $('#total_network').html(results.total_network);
       $('#total_security_group').html(results.total_security_group);
       $('#total_keypair').html(results.total_keypair);
     });

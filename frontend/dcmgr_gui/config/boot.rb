@@ -14,13 +14,28 @@ end if File.exist?(gemfile)
 
 require 'ruby_vdc'
 
-DcmgrResource::Account = DcmgrResource::V1203::Account
-DcmgrResource::HostNode = DcmgrResource::V1203::HostNode
-DcmgrResource::Image = DcmgrResource::V1203::Image
-DcmgrResource::Instance = DcmgrResource::V1203::Instance
-DcmgrResource::InstanceSpec = DcmgrResource::V1203::InstanceSpec
-DcmgrResource::SecurityGroup = DcmgrResource::V1203::SecurityGroup
-DcmgrResource::SshKeyPair = DcmgrResource::V1203::SshKeyPair
-DcmgrResource::StorageNode = DcmgrResource::V1203::StorageNode
-DcmgrResource::Volume = DcmgrResource::V1203::Volume
-DcmgrResource::VolumeSnapshot = DcmgrResource::V1203::VolumeSnapshot
+if false
+  DcmgrResource::Account = DcmgrResource::V1112::Account
+  DcmgrResource::HostNode = DcmgrResource::V1112::HostNode
+  DcmgrResource::Image = DcmgrResource::V1112::Image
+  DcmgrResource::Instance = DcmgrResource::V1112::Instance
+  DcmgrResource::InstanceSpec = DcmgrResource::V1112::InstanceSpec
+  DcmgrResource::Network = DcmgrResource::V1112::Network
+  DcmgrResource::SecurityGroup = DcmgrResource::V1112::SecurityGroup
+  DcmgrResource::SshKeyPair = DcmgrResource::V1112::SshKeyPair
+  DcmgrResource::StorageNode = DcmgrResource::V1112::StorageNode
+  DcmgrResource::Volume = DcmgrResource::V1112::Volume
+  DcmgrResource::VolumeSnapshot = DcmgrResource::V1112::VolumeSnapshot
+else
+  DcmgrResource::Account = DcmgrResource::V1203::Account
+  DcmgrResource::HostNode = DcmgrResource::V1203::HostNode
+  DcmgrResource::Image = DcmgrResource::V1203::Image
+  DcmgrResource::Instance = DcmgrResource::V1203::Instance
+  DcmgrResource::InstanceSpec = DcmgrResource::V1203::InstanceSpec
+  DcmgrResource::Network = DcmgrResource::V1203::Network
+  DcmgrResource::SecurityGroup = DcmgrResource::V1203::SecurityGroup
+  DcmgrResource::SshKeyPair = DcmgrResource::V1203::SshKeyPair
+  DcmgrResource::StorageNode = DcmgrResource::V1203::StorageNode
+  DcmgrResource::Volume = DcmgrResource::V1203::Volume
+  DcmgrResource::VolumeSnapshot = DcmgrResource::V1203::VolumeSnapshot
+end

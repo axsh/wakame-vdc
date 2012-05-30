@@ -198,6 +198,7 @@ ja:
       machine_images: "マシンイメージ"
       volumes: "ボリューム"
       snapshots: "スナップショット"
+      networks: "ネットワーク"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
   instances:
@@ -332,6 +333,18 @@ ja:
       status: "状態"
       created_at: "作成日"
       updated_at: "更新日"
+  networks:
+    header: "ネットワーク"
+    list:
+      network_id: "ネットワークID"
+      domain_name: "ドメインネーム"
+      created: ""
+    details:
+      header: "詳細"
+      network_id: "ネットワークID"
+      domain_name: "ドメインネーム"
+      created_at: "作成日"
+      updated_at: "更新日"
   security_groups:
     header: "セキュリティグループ"
     button:
@@ -428,7 +441,7 @@ ja:
     instances:
       header: "インスタンス"
       instances: "インスタンス"
-      host_pools: "ホストプール"
+      host_nodes: "ホストプール"
     images:
       header: "イメージ"
       machine_images: "マシンイメージ"
@@ -436,9 +449,10 @@ ja:
       header: "ブロックストア"
       volumes: "ボリューム"
       snapshots: "スナップショット"
-      storage_pools: "ストレージプール"
+      storage_nodes: "ストレージプール"
     network_security:
       header: "セキュリティー"
+      networks: "ネットワーク"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
     system_management:
