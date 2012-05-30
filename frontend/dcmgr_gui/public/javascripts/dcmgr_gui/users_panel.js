@@ -53,7 +53,7 @@ DcmgrGUI.prototype.usersPanel = function(){
   // 一覧内容更新コールバック    
   c_list.element.bind('dcmgrGUI.contentChange', function(event,params){
     var user = params.data.user;
-    c_pagenate.changeTotal(user.owner_total);
+    c_pagenate.changeTotal(user.total);
     c_list.setData(user.results);
     c_list.singleCheckList(c_list.detail_template);
 

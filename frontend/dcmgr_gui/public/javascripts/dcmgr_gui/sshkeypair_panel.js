@@ -42,7 +42,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     
   c_list.element.bind('dcmgrGUI.contentChange', function(event,params){
     var ssh_key_pair = params.data.ssh_key_pair;
-    c_pagenate.changeTotal(ssh_key_pair.owner_total);
+    c_pagenate.changeTotal(ssh_key_pair.total);
     c_list.setData(ssh_key_pair.results);
     c_list.singleCheckList(c_list.detail_template);
     c_list.element.find(".show_key").each(function(key,value){

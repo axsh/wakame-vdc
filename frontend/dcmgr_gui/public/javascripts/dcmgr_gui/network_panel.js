@@ -41,7 +41,7 @@ DcmgrGUI.prototype.networkPanel = function(){
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var network = params.data.network;
-    c_pagenate.changeTotal(network.owner_total);
+    c_pagenate.changeTotal(network.total);
     c_list.setData(network.results);
     c_list.multiCheckList(c_list.detail_template);
   });
