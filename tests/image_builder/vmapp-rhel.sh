@@ -81,7 +81,7 @@ set -x
 
 echo "doing execscript.sh: \$1"
 rsync -a $tmp_dir/repos.d \$1/tmp/
-rsync -a $tmp_dir/repos.d/archives/${arch}/openvz.repo \$1/etc/yum.repos.d/openvz.repo
+rsync -a $tmp_dir/repos.d/archives/${basearch}/openvz.repo \$1/etc/yum.repos.d/openvz.repo
 
 cat <<_REPO_ > \$1/etc/yum.repos.d/wakame-vdc-tmp.repo
 [wakame-vdc]
