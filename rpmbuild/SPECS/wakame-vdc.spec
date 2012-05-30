@@ -210,6 +210,7 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig --add tgtd
 /sbin/chkconfig       tgtd on
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
+%{prefix}/%{name}/rpmbuild/add-loopdev.sh
 
 %post hva-openvz-vmapp-config
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-openvz.conf
