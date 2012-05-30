@@ -12,11 +12,20 @@ module DcmgrResource::V1112
     self.prefix = '/api/11.12/'
 
     def total
-      attributes['owner_total']
+      attributes['total']
     end
+  end
 
-    def owner_total
-      attributes['owner_total']
+  module ListTranslateMethods
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+    
+    module ClassMethods
+      def instantiate_record(record, prefix_options = {})
+        record['total'] = record.delete('owner_total')
+        super(record, prefix_options)
+      end
     end
   end
 end
