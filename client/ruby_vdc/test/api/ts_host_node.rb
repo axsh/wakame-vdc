@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'test/unit'
-
 class TestHostNode <  Test::Unit::TestCase
   def api_class(version)
     case version
