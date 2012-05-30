@@ -8,7 +8,7 @@ module TestBaseMethods
       object = api_class(api_ver).find(:first,:params => {:start => 0,:limit => 1})
 
       assert_not_nil(object.total)
-      assert_not_nil(object.owner_total)
+      assert_raise(NoMethodError) { object.owner_total }
     }
   end
 end

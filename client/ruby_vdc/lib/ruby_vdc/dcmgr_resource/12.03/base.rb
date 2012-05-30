@@ -14,10 +14,5 @@ module DcmgrResource::V1203
     def total
       attributes['total']
     end
-
-    def owner_total
-      attributes['total']
-    end
-
   end
 end

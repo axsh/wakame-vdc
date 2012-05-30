@@ -5,6 +5,7 @@ require 'yaml'
 module DcmgrResource::V1112
   class Image < Base
     include DcmgrResource::ListMethods
+    include ListTranslateMethods
   end
 
   Image.preload_resource('Result', Module.new {
