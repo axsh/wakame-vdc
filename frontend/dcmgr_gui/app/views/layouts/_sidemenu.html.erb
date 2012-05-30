@@ -48,6 +48,9 @@
 		</li>
 		<li class="parent"><h3><img src="/images/icon_security.gif" width="20" height="20" /><%= t("sidemenu.network_security.header") %></h3>
 			<ul>
+				<%= li_link_to_current(t("sidemenu.network_security.networks"), 'networks', 'index')%>
+			</ul>
+			<ul>
 				<%= li_link_to_current(t("sidemenu.network_security.security_groups"), 'security_groups', 'index')%>
 			</ul>
 			<ul>

@@ -203,6 +203,7 @@ en:
       machine_images: "Machine Images"
       volumes: "Volumes"
       snapshots: "Snapshots"
+      networks: "Networks"
       security_groups: "Security Groups"
       key_pairs: "Key Pairs"
   instances:
@@ -338,6 +339,25 @@ en:
       status: "Status"
       created_at: "Created At"
       updated_at: "Updated At"
+  networks:
+    header: "Networks"
+    button:
+      create_network: "Create Network"
+      delete_network: "Delete Network"
+    network_actions:
+      header: "Network Actions"
+      attach_network: "Attach Network"
+      detach_network: "Detach Network"
+    list:
+      network_id: "Network ID"
+      domain_name: "Domain Name"
+      created: "Created"
+    details:
+      header: "Details"
+      network_id: "Network ID"
+      domain_name: "Domain Name"
+      created_at: "Created At"
+      updated_at: "Updated At"
   security_groups:
     header: "Security Groups"
     button:
@@ -434,7 +454,7 @@ en:
     instances:
       header: "INSTANCES"
       instances: "Instances"
-      host_pools: "Host Pools"
+      host_nodes: "Host Nodes"
     images:
       header: "IMAGES"
       machine_images: "Machine Images"
@@ -442,9 +462,10 @@ en:
       header: "BLOCK STORE"
       volumes: "Volumes"
       snapshots: "Snapshots"
-      storage_pools: "Storage Pools"
+      storage_nodes: "Storage Nodes"
     network_security:
       header: "NETWORK & SECURITY"
+      networks: "Networks"
       security_groups: "Security Groups"
       key_pairs: "Key Pairs"
     system_management:

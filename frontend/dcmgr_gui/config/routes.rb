@@ -136,6 +136,12 @@ DcmgrGui::Application.routes.draw do
   post   'groups/:id' ,:to => 'groups#destroy'
   post   'groups/link_group_users/:id' ,:to => 'groups#link_group_users'
   
+  #networks
+  get    'networks' ,:to => 'networks#index'
+  get    'networks/list/:id' ,:to => 'networks#list'
+  get    'networks/total' ,:to => 'networks#total'
+  get    'networks/show/:id' ,:to => 'networks#show'
+
   #security_groups
   get    'security_groups' ,:to => 'security_groups#index'
   get    'security_groups/list/:id' ,:to => 'security_groups#list'
