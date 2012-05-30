@@ -14,6 +14,7 @@ module DcmgrResource
     autoload :Image,          'ruby_vdc/dcmgr_resource/11.12/image'
     autoload :Instance,       'ruby_vdc/dcmgr_resource/11.12/instance'
     autoload :InstanceSpec,   'ruby_vdc/dcmgr_resource/11.12/instance_spec'
+    autoload :Network,        'ruby_vdc/dcmgr_resource/11.12/network'
     autoload :SecurityGroup,  'ruby_vdc/dcmgr_resource/11.12/security_group'
     autoload :SshKeyPair,     'ruby_vdc/dcmgr_resource/11.12/ssh_key_pair'
     autoload :StorageNode,    'ruby_vdc/dcmgr_resource/11.12/storage_node'
@@ -28,7 +29,8 @@ module DcmgrResource
     autoload :HostNode,       'ruby_vdc/dcmgr_resource/12.03/host_node'
     autoload :Image,          'ruby_vdc/dcmgr_resource/12.03/image'
     autoload :Instance,       'ruby_vdc/dcmgr_resource/12.03/instance'
-    autoload :InstanceSpec,   'ruby_vdc/dcmgr_resource/12.03/instance_spec' # Obsolete
+    autoload :InstanceSpec,   'ruby_vdc/dcmgr_resource/12.03/instance_spec'
+    autoload :Network,        'ruby_vdc/dcmgr_resource/12.03/network'
     autoload :SecurityGroup,  'ruby_vdc/dcmgr_resource/12.03/security_group'
     autoload :SshKeyPair,     'ruby_vdc/dcmgr_resource/12.03/ssh_key_pair'
     autoload :StorageNode,    'ruby_vdc/dcmgr_resource/12.03/storage_node'
