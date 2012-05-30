@@ -29,15 +29,33 @@ module Dcmgr
           end
         end
       end
+
+      class LocalStore < Configuration
+        # enable local image cache under "vm_data_dir/_base"
+        param :enable_image_caching, :default=>true
+        param :image_cache_dir, :default => proc {
+          File.expand_path('_base', @config[:vm_data_dir])
+        }
+        param :enable_cache_checksum, :default=>true
+      end
       
       DSL do
         def dc_network(name, &blk)
           abort "" unless blk
           
           conf = DcNetwork.new(name)
-          @config[:dc_networks] ||= {}
           @config[:dc_networks][name] = conf.parse_dsl(&blk)
         end
+
+        # local store driver configuration section.
+        def local_store(&blk)
+          @config[:local_store].parse_dsl(&blk)
+        end
+      end
+
+      on_initialize_hook do
+        @config[:dc_networks] = {}
+        @config[:local_store] = LocalStore.new
       end
 
       param :vm_data_dir
@@ -76,6 +94,10 @@ module Dcmgr
       # * 'openflow' #experimental, requires additional setup
       # * 'off'
       param :edge_networking, :default => 'netfilter'
+
+      param :script_root_path, :default => proc {
+        File.expand_path('script', DCMGR_ROOT)
+      }
       
       def validate(errors)
         if @config[:vm_data_dir].nil?

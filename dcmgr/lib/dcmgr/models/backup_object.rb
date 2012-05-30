@@ -39,5 +39,9 @@ module Dcmgr::Models
       self.deleted_at ||= Time.now
       self.save
     end
+
+    def uri
+      self.backup_storage.base_uri + self.object_key
+    end
   end
 end
