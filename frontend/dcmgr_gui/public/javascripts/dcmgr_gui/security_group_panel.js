@@ -79,7 +79,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var security_group = params.data.security_group;
-    c_pagenate.changeTotal(security_group.owner_total);
+    c_pagenate.changeTotal(security_group.total);
     c_list.setData(security_group.results);
     c_list.singleCheckList(c_list.detail_template);
 

@@ -249,8 +249,8 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
 			     var sel = $('#hostid');
                              $.data(acc,'host_nodes',json.host_node);
                              sel.children().remove();
-                             if (json.host_node.owner_total > 0) {
-                                for(var i = 0;i < json.host_node.owner_total;i++)
+                             if (json.host_node.total > 0) {
+                                for(var i = 0;i < json.host_node.total;i++)
                                 {
                                     var rec = json.host_node.results[i].result;
                                     var html = '<option value="' + rec.uuid + '">' + rec.id +'</option>';
@@ -285,7 +285,7 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
                 if (hostid != '') {
                         // 一覧情報をキャッシュから取り出し
 			var host_node = $.data(acc,'host_nodes');
-                        for (var i = 0;i < host_node.owner_total;i++)
+                        for (var i = 0;i < host_node.total;i++)
                         {
 			    var rec = host_node.results[i].result;
                             if (hostid == rec.uuid) {
@@ -513,8 +513,8 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
 			     var sel = $('#storageid');
                              $.data(acc,'storage_nodes',json.storage_node);
                              sel.children().remove();
-                             if (json.storage_node.owner_total > 0) {
-                                for(var i = 0;i < json.storage_node.owner_total;i++)
+                             if (json.storage_node.total > 0) {
+                                for(var i = 0;i < json.storage_node.total;i++)
                                 {
                                     var rec = json.storage_node.results[i].result;
                                     var html = '<option value="' + rec.uuid + '">' + rec.id + '</option>';
@@ -547,7 +547,7 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
 		var storageid = $('#storageid').val();
                 if (storageid != '') {
 			var storage_node = $.data(acc,'storage_nodes');
-                        for (var i = 0;i < storage_node.owner_total;i++)
+                        for (var i = 0;i < storage_node.total;i++)
                         {
 			    var rec = storage_node.results[i].result;
                             if (storageid == rec.uuid) {
@@ -903,8 +903,8 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
 			     var sel = $('#specid');
                              $.data(acc,'specs',json.instance_spec);
                              sel.children().remove();
-                             if (json.instance_spec.owner_total > 0) {
-                                for(var i = 0;i < json.instance_spec.owner_total;i++)
+                             if (json.instance_spec.total > 0) {
+                                for(var i = 0;i < json.instance_spec.total;i++)
                                 {
                                     var rec = json.instance_spec.results[i].result;
                                     var html = '<option value="' + rec.uuid + '">' + rec.id +'</option>';
@@ -1121,8 +1121,8 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
 			     var sel = $('#specid');
                              $.data(acc,'specs',json.instance_spec);
                              sel.children().remove();
-                             if (json.instance_spec.owner_total > 0) {
-                                for(var i = 0;i < json.instance_spec.owner_total;i++)
+                             if (json.instance_spec.total > 0) {
+                                for(var i = 0;i < json.instance_spec.total;i++)
                                 {
                                     var rec = json.instance_spec.results[i].result;
                                     var html = '<option value="' + rec.uuid + '">' + rec.id +'</option>';
@@ -1156,7 +1156,7 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
                 if (specid != '') {
                         // キャッシュ情報を取り出し
 			var instance_spec = $.data(acc,'specs');
-                        for (var i = 0;i < instance_spec.owner_total;i++)
+                        for (var i = 0;i < instance_spec.total;i++)
                         {
 			    var rec = instance_spec.results[i].result;
                             if (specid == rec.uuid) {
@@ -1401,8 +1401,8 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
 			     var sel = $('#imageid');
                              $.data(acc,'machine_images',json.image);
                              sel.children().remove();
-                             if (json.image.owner_total > 0) {
-                                for(var i = 0;i < json.image.owner_total;i++)
+                             if (json.image.total > 0) {
+                                for(var i = 0;i < json.image.total;i++)
                                 {
                                     var rec = json.image.results[i].result;
                                     var html = '<option value="' + rec.uuid + '">' + rec.id + '</option>';
@@ -1432,7 +1432,7 @@ DcmgrGUI.prototype.resourceManagePanel = function(){
                 if (imageid != '') {
                         // 一覧情報をキャッシュより取り出し
 			var image = $.data(acc,'machine_images');
-                        for (var i = 0;i < image.owner_total;i++)
+                        for (var i = 0;i < image.total;i++)
                         {
 			    var rec = image.results[i].result;
                             // 選択されたマシンイメージの場合、画面内の各項目に値をセット

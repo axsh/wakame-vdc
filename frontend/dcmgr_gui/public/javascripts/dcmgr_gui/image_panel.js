@@ -60,7 +60,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var image = params.data.image;
-    c_pagenate.changeTotal(image.owner_total);
+    c_pagenate.changeTotal(image.total);
     c_list.setData(image.results);
     c_list.singleCheckList(c_list.detail_template);
   });

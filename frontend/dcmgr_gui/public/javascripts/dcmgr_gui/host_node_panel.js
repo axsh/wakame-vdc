@@ -49,7 +49,7 @@ DcmgrGUI.prototype.hostNodePanel = function(){
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var host_node = params.data.host_node;
-    c_pagenate.changeTotal(host_node.owner_total);
+    c_pagenate.changeTotal(host_node.total);
     c_list.setData(host_node.results);
     c_list.multiCheckList(c_list.detail_template);
   });

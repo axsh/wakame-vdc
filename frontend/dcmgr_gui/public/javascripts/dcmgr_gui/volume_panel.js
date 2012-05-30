@@ -53,7 +53,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var volume = params.data.volume;
-    c_pagenate.changeTotal(volume.owner_total);
+    c_pagenate.changeTotal(volume.total);
     c_list.setData(volume.results);
     c_list.multiCheckList(c_list.detail_template);
   });

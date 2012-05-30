@@ -56,7 +56,7 @@ class User < BaseNew
      # 返却ハッシュ構造を調整
      partial_ds.each{|row| results[i] = {:result => row.values };i+=1 }
      res1 = [{
-            :owner_total => total_ds.count,
+            :total => total_ds.count,
             :start => start,
             :limit => limit,
             :results=> results

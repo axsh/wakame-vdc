@@ -49,7 +49,7 @@ DcmgrGUI.prototype.storageNodePanel = function(){
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var storage_node = params.data.storage_node;
-    c_pagenate.changeTotal(storage_node.owner_total);
+    c_pagenate.changeTotal(storage_node.total);
     c_list.setData(storage_node.results);
     c_list.multiCheckList(c_list.detail_template);
   });

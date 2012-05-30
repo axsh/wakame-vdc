@@ -54,7 +54,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var instance = params.data.instance;
-    c_pagenate.changeTotal(instance.owner_total);
+    c_pagenate.changeTotal(instance.total);
     c_list.setData(instance.results);
     c_list.multiCheckList(c_list.detail_template);
   });
