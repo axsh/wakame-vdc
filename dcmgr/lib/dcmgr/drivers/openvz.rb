@@ -95,7 +95,6 @@ module Dcmgr
         end
         
         # setup openvz config file
-        inst_spec = inst[:instance_spec]
         vifs = inst[:vif]
         
         # set virtual interface
@@ -114,17 +113,17 @@ module Dcmgr
           }
         end
         # set cpus
-        sh("vzctl set %s --cpus %s --save",[ctid, inst_spec[:cpu_cores]])
+        sh("vzctl set %s --cpus %s --save",[ctid, inst[:cpu_cores]])
         #
         # CPUS="1"
         #
         
         # set memory size
-        sh("vzctl set %s --privvmpage %s --save",[ctid, (inst_spec[:memory_size] * 256)])
+        sh("vzctl set %s --privvmpage %s --save",[ctid, (inst[:memory_size] * 256)])
         #
         # PRIVVMPAGES="65536"
         #
-        sh("vzctl set %s --vmguarpages %s --save",[ctid, (inst_spec[:memory_size] * 256)])
+        sh("vzctl set %s --vmguarpages %s --save",[ctid, (inst[:memory_size] * 256)])
         #
         # VMGUARPAGES="65536"
         # 
