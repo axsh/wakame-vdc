@@ -164,9 +164,14 @@ __END
   method_option :ipv4, :type => :string, :required => true, :desc => "The ip address to reserve"
   def reserve(uuid)
     nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-    
-    if nw.include?(IPAddress(options[:ipv4]))
-      nw.ip_lease_dataset.add_reserved(options[:ipv4])
+
+    reservaddr =  begin
+                    IPAddress(options[:ipv4])
+                  rescue ArgumentError => e
+                    Error.raise("Invalid IP address: #{options[:ipv4]}: #{e.message}", 100)
+                  end
+    if nw.include?(reservaddr)
+      nw.ip_lease_dataset.add_reserved(reservaddr.to_s)
     else
       Error.raise("IP address is out of range: #{options[:ipv4]} => #{nw.ipv4_ipaddress}/#{nw.prefix}",100)
     end
@@ -177,8 +182,17 @@ __END
   def release(uuid)
     nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
 
-    if nw.ip_lease_dataset.delete_reserved(options[:ipv4]) == 0
-      Error.raise("The IP is not reserved in network #{uuid}: #{options[:ipv4]}", 100)
+    releaseaddr = begin
+                    IPAddress(options[:ipv4])
+                  rescue ArgumentError => e
+                    Error.raise("Invalid IP address: #{options[:ipv4]}: #{e.message}", 100)
+                  end
+    if nw.include?(releaseaddr)
+      if nw.ip_lease_dataset.delete_reserved(releaseaddr) == 0
+        Error.raise("The IP is not reserved in network #{uuid}: #{options[:ipv4]}", 100)
+      end
+    else
+      Error.raise("IP address is out of range: #{options[:ipv4]} => #{nw.ipv4_ipaddress}/#{nw.prefix}",100)
     end
   end
 
