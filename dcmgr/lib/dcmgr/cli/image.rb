@@ -9,64 +9,50 @@ module Dcmgr::Cli
     class AddOperation < Base
       namespace :add
 
-      desc "local IMAGE_LOCATION [options]", "Register local store machine image"
+      desc "local backup_object_id [options]", "Register local store machine image"
       method_option :uuid, :type => :string, :desc => "The UUID for the new machine image"
       method_option :account_id, :type => :string, :required => true, :desc => "The UUID of the account that this machine image belongs to"
       method_option :arch, :type => :string, :default => 'x86_64', :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
       method_option :is_public, :type => :boolean, :default => false, :desc => "A flag that determines whether the new machine image is public or not"
-      method_option :md5sum, :type => :string, :required => true, :desc => "The md5 checksum of the image you are registering."
       method_option :description, :type => :string, :desc => "An arbitrary description of the new machine image"
       method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
       method_option :root_device, :type => :string, :desc => "The root device of image"
       #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
-      def local(location)
+      def local(backup_object_id)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
+        UnknownUUIDError.raise(backup_object_id) unless M::BackupObject[backup_object_id]
         
         fields = options.dup
+        fields[:backup_object_id]=backup_object_id
         fields[:boot_dev_type]=M::Image::BOOT_DEV_LOCAL
         
-        # Check if location is an uri, otherwise treat it as a local path
-        if location =~ /^[a-z](?:[-a-z0-9\+\.])*:\/\//
-          fields[:source] = {
-            :uri => location
-          }
-        else
-          full_path = File.expand_path(location)
-          File.exists?(full_path) || Error.raise("File not found: #{full_path}",100)
-          
-          #TODO: Check if :state is a valid state
-          fields[:source] = {
-            :uri => "file://#{full_path}",
-          }
-        end
         puts add(M::Image, fields)
       end
 
-      desc "volume snapshot_id [options]", "Register volume store machine image."
+      desc "volume backup_object_id [options]", "Register volume store machine image."
       method_option :uuid, :type => :string, :desc => "The UUID for the new machine image."
       method_option :account_id, :type => :string, :required => true, :desc => "The UUID of the account that this machine image belongs to."
       method_option :arch, :type => :string, :default => 'x86_64', :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
       method_option :is_public, :type => :boolean, :default => false, :desc => "A flag that determines whether the new machine image is public or not."
-      method_option :md5sum, :type => :string, :required => true, :desc => "The md5 checksum of the image you are registering."
       method_option :description, :type => :string, :desc => "An arbitrary description of the new machine image"
       method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
       method_option :root_device, :type => :string, :desc => "The root device of image"
       #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
-    def volume(snapshot_id)
+      def volume(backup_object_id)
         UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
-        UnknownUUIDError.raise(snapshot_id) if M::VolumeSnapshot[snapshot_id].nil?
+        UnknownUUIDError.raise(backup_object_id) if M::BackupObject[backup_object_id].nil?
+        
         #TODO: Check if :state is a valid state
         fields = options.dup
         fields[:boot_dev_type]=M::Image::BOOT_DEV_SAN
-        fields[:source] = {
-          :snapshot_id => snapshot_id,
-        }
+        fields[:backup_object_id]=backup_object_id
+        
         puts add(M::Image, fields)
       end
       
@@ -81,11 +67,23 @@ module Dcmgr::Cli
     desc "modify UUID [options]", "Modify a registered machine image"
     method_option :description, :type => :string, :desc => "An arbitrary description of the machine image"
     method_option :state, :type => :string, :default => "init", :desc => "The state for the machine image"
-    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :account_id, :type => :string, :desc => "The UUID of the account that this machine image belongs to."
+    method_option :arch, :type => :string, :default => 'x86_64', :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
+    method_option :is_public, :type => :boolean,  :desc => "A flag that determines whether the new machine image is public or not."
+    method_option :description, :type => :string, :desc => "An arbitrary description of the new machine image"
+    method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
+    method_option :root_device, :type => :string, :desc => "The root device of image"
+    method_option :service_type, :type => :string, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name of the machine image"
+    method_option :backup_object_id, :type => :string, :desc => "Backup object for the machine image"
     def modify(uuid)
-      #TODO: Check if state is valid here too
-      super(M::Image,uuid,options)
+      UnknownUUIDError.raise(uuid) if M::Image[uuid].nil?
+      UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
+      UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
+
+      fields = options.dup
+
+      super(M::Image,uuid,fields)
     end
 
     desc "del IMAGE_ID", "Delete registered machine image"
@@ -100,9 +98,9 @@ module Dcmgr::Cli
         img = M::Image[uuid] || UnknownUUIDError.raise(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
 UUID: <%= img.canonical_uuid %>
+Account ID: <%= img.account_id %>
 Boot Type: <%= img.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>
 Arch: <%= img.arch %>
-MD5 Sum: <%= img.md5sum %>
 Is Public: <%= img.is_public %>
 State: <%= img.state %>
 Service Type: <%= img.service_type %>

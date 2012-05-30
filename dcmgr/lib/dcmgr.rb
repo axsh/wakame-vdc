@@ -128,6 +128,7 @@ module Dcmgr
     autoload :Tag, 'dcmgr/cli/tag'
     autoload :Quota, 'dcmgr/cli/quota'
     autoload :BackupStorage, 'dcmgr/cli/backup_storage'
+    autoload :BackupObject, 'dcmgr/cli/backup_object'
 
     module Debug
       autoload :Base, 'dcmgr/cli/debug/base'

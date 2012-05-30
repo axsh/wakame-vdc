@@ -9,13 +9,10 @@ module Dcmgr::Models
     BOOT_DEV_SAN=1
     BOOT_DEV_LOCAL=2
 
-    # serialize plugin must be defined at the bottom of all class
-    # method calls.
-    # Possible source column data:
-    # {:snapshot_id=>'snap-xxxxxx'}
-    # {:uri=>'http://localhost/xxx/xxx'}
+    many_to_one :backup_object, :class=>BackupObject, :dataset=> lambda { BackupObject.filter(:uuid=>self.backup_object_id[BackupObject.uuid_prefix.size + 1, 255]) }
+
     plugin :serialization
-    serialize_attributes :yaml, :source, :features
+    serialize_attributes :yaml, :features
     
     def after_initialize
       super
@@ -34,22 +31,9 @@ module Dcmgr::Models
       unless HostNode::SUPPORTED_ARCH.member?(self.arch)
         errors.add(:arch, "Unsupported arch type: #{self.arch}")
       end
-      
-      # validate source
-      md = self.source
-      case self.boot_dev_type
-      when BOOT_DEV_LOCAL
-        errors.add(:source, "Unknown image URI") if md[:uri].nil? || md[:uri] == ''
-      when BOOT_DEV_SAN
-        errors.add(:source, "Unknown snapshot ID") if md[:snapshot_id].nil? || md[:snapshot_id] == '' || VolumeSnapshot[md[:snapshot_id]].nil?
-      end
     end
 
     # note on "lookup_account_id":
-    # the source column sometime contains the information which
-    # should not be shown to other accounts. so that the method takes
-    # an argument who is looking into then filters the data in source
-    # column accordingly.
     def to_api_document(lookup_account_id)
       h = super()
       if self.account_id == lookup_account_id
