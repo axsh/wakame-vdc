@@ -351,11 +351,14 @@ en:
     list:
       network_id: "Network ID"
       domain_name: "Domain Name"
+      ipv4_network: "IPv4 Network"
       created: "Created"
     details:
       header: "Details"
       network_id: "Network ID"
       domain_name: "Domain Name"
+      ipv4_network: "IPv4 Network"
+      ipv4_gw: "IPv4 Gateway"
       created_at: "Created At"
       updated_at: "Updated At"
   security_groups:
