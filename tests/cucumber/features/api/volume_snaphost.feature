@@ -23,7 +23,8 @@ Feature: Snapshot Volume API
     When we make a successful api create call to volumes with the following options
       | volume_size | display_name |
       | 10          | volume1      |
-    Then the created volumes should reach state available in 60 seconds or less
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+    And the created volumes should reach state available in 60 seconds or less
 
     When we successfully create a snapshot from the created volume
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
@@ -37,6 +38,9 @@ Feature: Snapshot Volume API
     When we make an api get call to volume_snapshots/<registry:uuid> with no options
     Then the previous api call should be successful
     And the previous api call should have {"display_name":} equal to "volume2"
+
+    When we successfully delete the created volumes
+    Then the created volumes should reach state deleted in 60 seconds or less
 
   Scenario: Show destination to upload volume snapshot
     When we make an api get call to volume_snapshots/upload_destination with no options
