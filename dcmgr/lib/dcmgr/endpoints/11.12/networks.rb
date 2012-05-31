@@ -34,6 +34,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/networks' do
       :ipv4_network => params[:network],
       :prefix => params[:prefix].to_i,
       :description => params[:description],
+      :network_mode => params[:network_mode]
     }
     nw = M::Network.create(savedata)
 
@@ -91,29 +92,25 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/networks' do
   end
 
   put '/:id/del_pool' do
-    description 'Unlabel network pool name'
+    # description 'Unlabel network pool name'
     # param :name required
-    control do
-      M::Tag.lock!
-      nw = find_by_uuid(:Network, params[:id])
-      examine_owner(nw) || raise(E::OperationNotPermitted)
+    M::Tag.lock!
+    nw = find_by_uuid(:Network, params[:id])
+    examine_owner(nw) || raise(E::OperationNotPermitted)
 
-      nw.unlabel_tag(:NetworkPool, params[:name], @account.canonical_uuid)
-      response_to({})
-    end
+    nw.unlabel_tag(:NetworkPool, params[:name], @account.canonical_uuid)
+    response_to({})
   end
 
-  put '/:id/get_pool' do
-    description 'List network pool name'
+  get '/:id/get_pool' do
+    # description 'List network pool name'
     # param :name required
-    control do
-      M::Tag.lock!
-      nw = find_by_uuid(:Network, params[:id])
-      examine_owner(nw) || raise(E::OperationNotPermitted)
+    M::Tag.lock!
+    nw = find_by_uuid(:Network, params[:id])
+    examine_owner(nw) || raise(E::OperationNotPermitted)
 
-      res = nw.tags_dataset.filter(:type_id=>Tags.type_id(:NetworkPool)).all.map{|i| i.to_api_document }
-      response_to(res)
-    end
+    res = nw.tags_dataset.filter(:type_id=>Tags.type_id(:NetworkPool)).all.map{|i| i.to_api_document }
+    response_to(res)
   end
 
   # Temporary names as the current code is incapable of having

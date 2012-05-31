@@ -11,8 +11,8 @@ end
 Given /^a new network with its uuid in <(.+)>$/ do |reg|
   steps %Q{
     Given a managed network with the following options
-      |  network |       gw | prefix | description   |
-      | 10.1.2.0 | 10.1.2.1 |     20 | "test create" |
+      |  network |       gw | prefix | description   | network_mode |
+      | 10.1.2.0 | 10.1.2.1 |     20 | "test create" | passthru     |
     Then from the previous api call take {"uuid":} and save it to <#{reg}>
   }
 end

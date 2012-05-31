@@ -120,5 +120,6 @@ module Dcmgr
     define_error(:NetworkVifAlreadyAttached, 500, '145')
     define_error(:NetworkVifNicNotFound, 500, '146')
     define_error(:NetworkVifNotAttached, 500, '147')
+    define_error(:UndefinedNetworkID, 404, '148')
   end
 end

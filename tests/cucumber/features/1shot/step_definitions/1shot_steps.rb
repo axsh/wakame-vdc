@@ -27,8 +27,8 @@ end
 When /^we successfully start an instance of (.*) and (.+) with the new security group and key pair$/ do |image,spec|
   steps %Q{
     Given a new instance with its uuid in <1shot:uuid> and the following options
-      | image_id | instance_spec_id | ssh_key_id                                            | security_groups                                         |
-      | #{image} | #{spec}          | #{@api_call_results["create"]["ssh_key_pairs"]["id"]} | #{@api_call_results["create"]["security_groups"]["id"]} |
+      | image_id | instance_spec_id | ssh_key_id                                            | security_groups                                         | display_name |
+      | #{image} | #{spec}          | #{@api_call_results["create"]["ssh_key_pairs"]["id"]} | #{@api_call_results["create"]["security_groups"]["id"]} | instance1    |
   }
 end
 
@@ -51,8 +51,8 @@ end
 When /^we create a snapshot from the created volume$/ do
   steps %Q{
     Given a managed volume_snapshot with the following options
-    | volume_id                                       | destination |
-    | #{@api_call_results["create"]["volumes"]["id"]} | local       |
+    | volume_id                                       | destination | display_name |
+    | #{@api_call_results["create"]["volumes"]["id"]} | local       | snapshot1    |
   }
 end
 

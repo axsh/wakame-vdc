@@ -40,13 +40,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
       ds = ds.filter(:storage_node_id=>sn.id)
     end
 
+    if params[:display_name]
+      ds = ds.filter(:display_name=>params[:display_name])
+    end
+
     collection_respond_with(ds) do |paging_ds|
       R::VolumeSnapshotCollection.new(paging_ds).generate
     end
   end
 
   get '/upload_destination' do
-    c = StorageService::snapshot_repository_config.dup
+    c = Dcmgr::StorageService::snapshot_repository_config.dup
     tmp = c['local']
     c.delete('local')
     results = {}
@@ -77,6 +81,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
     # params volume_id, string, required
     # params detination, string, required
     # params storage_pool_id, string, optional
+    # params display_name, string, optional
     raise E::UndefinedVolumeID if params[:volume_id].nil?
 
     v = find_by_uuid(:Volume, params[:volume_id])
@@ -86,6 +91,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
     sp = vs.storage_node
     destination_key = Dcmgr::StorageService.destination_key(@account.canonical_uuid, params[:destination], sp.snapshot_base_path, vs.snapshot_filename)
     vs.update_destination_key(@account.canonical_uuid, destination_key)
+    vs.update_snapshot_display_name(params[:display_name]) if params[:display_name]
     commit_transaction
 
     repository_address = Dcmgr::StorageService.repository_address(destination_key)
@@ -119,5 +125,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
     repository_address = Dcmgr::StorageService.repository_address(destination_key)
     Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
     respond_with([vs.canonical_uuid])
+  end
+
+  put '/:id' do
+    # description "Update volume snapshot information"
+    # params id, string, required
+    # params display_name, string, optional
+    raise E::UndefindVolumeSnapshotID if params[:id].nil?
+
+    vs = find_by_uuid(:VolumeSnapshot, params[:id])
+    raise E::UnknownVolumeSnapshot if vs.nil?
+
+    vs.update_snapshot_display_name(params[:display_name]) if params[:display_name]
+    commit_transaction
+    respond_with(R::VolumeSnapshot.new(vs).generate)
   end
 end

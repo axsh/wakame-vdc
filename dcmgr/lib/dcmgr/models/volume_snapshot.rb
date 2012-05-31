@@ -91,6 +91,10 @@ module Dcmgr::Models
     def self.store_local?(destination)
       destination.nil?
     end 
-
+    
+    def update_snapshot_display_name(display_name)
+      self.display_name = display_name
+      self.save_changes
+    end
   end
 end

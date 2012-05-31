@@ -7,3 +7,4 @@ storetype=volume
 fileformat=raw
 rootdevice=uuid:5eb668a7-176b-44ac-b0c0-ff808c191420
 service_type=std
+display_name=lucid1

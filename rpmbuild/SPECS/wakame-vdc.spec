@@ -22,6 +22,8 @@ BuildRequires: mysql-devel
 BuildRequires: chrpath
 # Ruby binary build dependency
 BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
+# vmapp dependency
+BuildRequires: parted
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
@@ -35,6 +37,7 @@ Requires: ntp
 Requires: ntpdate
 Requires: gzip
 Requires: tar
+Requires: prelink
 # Ruby binary dependency
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 # for erlang, rabbitmq-server
@@ -164,10 +167,11 @@ done
 unset components
 
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
-rsync -aHA `pwd`/contrib/etc/default     ${RPM_BUILD_ROOT}/etc/
-rsync -aHA `pwd`/contrib/etc/init        ${RPM_BUILD_ROOT}/etc/
-rsync -aHA `pwd`/contrib/etc/init.d      ${RPM_BUILD_ROOT}/etc/
-rsync -aHA `pwd`/contrib/etc/logrotate.d ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/default        ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/init           ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/init.d         ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/logrotate.d    ${RPM_BUILD_ROOT}/etc/
+rsync -aHA `pwd`/contrib/etc/prelink.conf.d ${RPM_BUILD_ROOT}/etc/
 
 # unicorn configs
 rsync -aHA `pwd`/dcmgr/contrib/unicorn-api.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
@@ -205,10 +209,11 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig --add tgtd
 /sbin/chkconfig       tgtd on
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
+%{prefix}/%{name}/rpmbuild/add-loopdev.sh
+%{prefix}/%{name}/rpmbuild/set-openvswitch-conf.sh
 
 %post hva-openvz-vmapp-config
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-openvz.conf
-%{prefix}/%{name}/rpmbuild/edit-grub4vz.sh add
 
 %files
 %defattr(-,root,root)
@@ -216,6 +221,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/logrotate.d/flog-vdc
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
+%config /etc/prelink.conf.d/wakame-vdc.conf
 
 %files debug-config
 %defattr(-,root,root)

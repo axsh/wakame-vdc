@@ -51,6 +51,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       ds = ds.filter(:service_type=>params[:service_type])
     end
     
+    if params[:display_name]
+      ds = ds.filter(:display_name=>params[:display_name])
+    end
+    
     collection_respond_with(ds) do |paging_ds|
       R::InstanceCollection.new(paging_ds).generate
     end
@@ -74,7 +78,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :ssh_key_id, string, :optional
     # param :network_id, string, :optional
     # param :ha_enabled, string, :optional
-    
+    # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
     spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
     
@@ -123,6 +127,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       if params[:service_type]
         i.service_type = params[:service_type]
+      end
+      
+      if params[:display_name]
+        i.display_name = params[:display_name]
       end
     end
     instance.save
@@ -225,8 +233,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   
   put '/:id' do
     # description 'Updates the security groups an instance is in'
+    # param :id, string, :required
     # param :security_groups, array, :optional
+    # param :display_name, :string, :optional
+    raise E::UndefinedInstanceID if params[:id].nil?
+    
     instance = find_by_uuid(:Instance, params[:id])
+    raise E::UnknownInstance if instance.nil?
     
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
       security_group_uuids = params[:security_groups]
@@ -257,6 +270,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       }
     end
     
+    instance.display_name = params[:display_name ] if params[:display_name]
+    instance.save_changes
+
+    commit_transaction
     respond_with(R::Instance.new(instance).generate)
   end
 end

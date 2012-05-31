@@ -54,15 +54,16 @@ shlog ./bin/vdc-manage network add \
  --metadata ${metadata_server} \
  --metadata-port ${metadata_port} \
  --service-type=std \
- --description demo
+ --description demo \
+ --display_name demo1
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
+ --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name=demo2
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
+ --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name=demo3
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
+ --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name=demo4
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std
+ --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name=demo5
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo6 \
  --network-mode l2overlay \
@@ -71,7 +72,8 @@ shlog ./bin/vdc-manage network add \
  --prefix 24 \
  --domain vnet6.local \
  --metric 10 \
-  --service-type=std 
+ --service-type=std \
+ --display_name=demo6
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo7 \
  --network-mode l2overlay \
@@ -80,7 +82,8 @@ shlog ./bin/vdc-manage network add \
  --prefix 24 \
  --domain vnet7.local \
  --metric 10 \
-  --service-type=std
+ --service-type=std \
+ --display_name=demo7
 
 # set forward interface(= physical network) from network
 shlog ./bin/vdc-manage network forward nw-demo1 public
@@ -130,7 +133,7 @@ shlog ./bin/vdc-manage spec  add --uuid is-demo2    --account-id ${account_id} -
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth1
 shlog ./bin/vdc-manage spec  addvif is-demo2 eth2
 
-shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo --service-type=std
+shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo --service-type=std --display_name=demo
 shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
 tcp:22,22,ip4:0.0.0.0
 EOF
@@ -146,12 +149,12 @@ udp:53,53,ip4:0.0.0.0
 icmp:-1,-1,ip4:0.0.0.0
 EOF
 
-shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "demo key1" --service-type=std
+shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "demo key1" --service-type=std --display_name=demo
 
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
 INSERT INTO volume_snapshots values
- (1, '${account_id}', 'lucid1', 1, 'vol-lucid1', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-32.raw', NULL, now(), now(), 'std'),
- (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now(), 'std');
+ (1, '${account_id}', 'lucid1', 1, 'vol-lucid1', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-32.raw', NULL, now(), now(), 'std', 'lucid1'),
+ (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now(), 'std', 'lucid6');
 EOS
 
 (. $data_path/demodata_images.sh)

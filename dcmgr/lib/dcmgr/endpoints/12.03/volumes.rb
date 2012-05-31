@@ -44,6 +44,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       ds = ds.filter(:service_type=>params[:service_type])
     end
     
+    if params[:display_name]
+      ds = ds.filter(:display_name=>params[:display_name])
+    end
+    
     collection_respond_with(ds) do |paging_ds|
       R::VolumeCollection.new(paging_ds).generate
     end
@@ -64,6 +68,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     # params volume_size, string, required
     # params snapshot_id, string, optional
     # params storage_pool_id, string, optional
+    # params display_name, string, optional
     sp = vs = vol = nil
     # input parameter validation
     if params[:snapshot_id]
@@ -96,6 +101,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       if params[:service_type]
         validate_service_type(params[:service_type])
         v.service_type = params[:service_type]
+      end
+
+      if params[:display_name]
+        v.display_name = params[:display_name]
       end
     end
     vol.save
@@ -196,4 +205,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     respond_with(R::Volume.new(v).generate)
   end
 
+  put '/:id' do
+    # description 'Update volume information'
+    # params id, string, required
+    # params display_name, string, optional
+    raise E::UndefinedVolumeID if params[:id].nil?
+
+    v = find_by_uuid(:Volume, params[:id])
+    raise E::UnknownVolume if v.nil?
+
+    v.display_name = params[:display_name] if params[:display_name]
+    v.save_changes
+    commit_transaction
+
+    respond_with(R::Volume.new(v).generate)
+  end
 end
