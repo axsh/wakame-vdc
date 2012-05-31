@@ -238,4 +238,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   #   response_to({})
   # end
 
+  put '/:id' do
+    # description
+    # param :id, string, :required
+    # param :display_name , string, :optional
+    raise E::UndefinedNetworkID if params[:id].nil?
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork if nw.nil?
+    
+    nw.display_name = params[:display_name] if params[:display_name]
+    nw.save_changes
+    
+    commit_transaction
+    respond_with(R::Network.new(nw).generate)
+  end
 end

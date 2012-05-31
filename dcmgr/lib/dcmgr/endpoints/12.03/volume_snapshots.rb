@@ -126,4 +126,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
     Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
     respond_with([vs.canonical_uuid])
   end
+
+  put '/:id' do
+    # description "Update volume snapshot information"
+    # params id, string, required
+    # params display_name, string, optional
+    raise E::UndefindVolumeSnapshotID if params[:id].nil?
+
+    vs = find_by_uuid(:VolumeSnapshot, params[:id])
+    raise E::UnknownVolumeSnapshot if vs.nil?
+
+    vs.update_snapshot_display_name(params[:display_name]) if params[:display_name]
+    commit_transaction
+    respond_with(R::VolumeSnapshot.new(vs).generate)
+  end
 end

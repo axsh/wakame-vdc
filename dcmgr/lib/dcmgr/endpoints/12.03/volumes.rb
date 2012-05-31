@@ -205,4 +205,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     respond_with(R::Volume.new(v).generate)
   end
 
+  put '/:id' do
+    # description 'Update volume information'
+    # params id, string, required
+    # params display_name, string, optional
+    raise E::UndefinedVolumeID if params[:id].nil?
+
+    v = find_by_uuid(:Volume, params[:id])
+    raise E::UnknownVolume if v.nil?
+
+    v.display_name = params[:display_name] if params[:display_name]
+    v.save_changes
+    commit_transaction
+
+    respond_with(R::Volume.new(v).generate)
+  end
 end

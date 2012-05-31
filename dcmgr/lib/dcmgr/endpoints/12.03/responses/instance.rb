@@ -26,6 +26,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :hostname => hostname,
           :ha_enabled => ha_enabled,
           :instance_spec_id => instance_spec.canonical_uuid,
+          :display_name => self.display_name
         }
         if self.ssh_key_data
           h[:ssh_key_pair] = self.ssh_key_data[:uuid]

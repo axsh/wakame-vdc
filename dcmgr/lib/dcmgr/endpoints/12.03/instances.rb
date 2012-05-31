@@ -233,8 +233,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   
   put '/:id' do
     # description 'Updates the security groups an instance is in'
+    # param :id, string, :required
     # param :security_groups, array, :optional
+    # param :display_name, :string, :optional
+    raise E::UndefinedInstanceID if params[:id].nil?
+    
     instance = find_by_uuid(:Instance, params[:id])
+    raise E::UnknownInstance if instance.nil?
     
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
       security_group_uuids = params[:security_groups]
@@ -265,6 +270,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       }
     end
     
+    instance.display_name = params[:display_name ] if params[:display_name]
+    instance.save_changes
+
+    commit_transaction
     respond_with(R::Instance.new(instance).generate)
   end
 end
