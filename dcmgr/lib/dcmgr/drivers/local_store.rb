@@ -4,7 +4,8 @@ module Dcmgr
   module Drivers
     class LocalStore
 
-      def deploy_image(img)
+      # download and prepare image file to ctx.os_devpath.
+      def deploy_image(inst,ctx)
         raise NotImplementedError
       end
       
