@@ -10,7 +10,35 @@ Feature: Volume API
     
     When we make an api delete call to volumes/<registry:uuid> with no options
     Then the previous api call should be successful  
-    
+
+  @api_from_v12.03  
+  Scenario: Update volume information
+    Given a managed volume with the following options
+      | volume_size | display_name |
+      |          10 | volume1      |
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+      And the created volumes should reach state available in 60 seconds or less
+
+    When we make an api update call to volumes/<registry:uuid> with the following options
+      | display_name |
+      | volume2      |
+    Then the previous api call should be successful
+
+    When we make an api get call to volumes/<registry:uuid> with no options
+    Then the previous api call should be successful
+    And the previous api call should have {"display_name":} equal to "volume2"
+
+  Scenario: Get index of volume
+    Given a managed volume with the following options
+      | volume_size | display_name |
+      |          10 | volume1      |
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+      And the created volumes should reach state available in 60 seconds or less
+
+    When we make an api get call to volumes with no options
+    Then the previous api call should be successful
+    And the previous api call should not have [{"results":}] with a size of 0
+
   Scenario: Create blank volume less than minimum size
     When we make an api create call to volumes with the following options
       | volume_size | display_name |
@@ -97,4 +125,4 @@ Feature: Volume API
     When we make an api get call to volumes with the following options
       |display_name             |
       |volume1                  |
-    Then the previous api call should be successful
+   Then the previous api call should be successful

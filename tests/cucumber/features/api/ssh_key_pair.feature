@@ -3,15 +3,25 @@ Feature: SshKeyPair API
 
   Scenario: Create, update and delete for new ssh key pair with UUID
 
-  Scenario: Create, update and delete for new ssh key pair
+  Scenario: Create and delete for new ssh key pair
     Given a managed ssh_key_pair with the following options
       | description | display_name |
-      | test key1   | testkey1     |
+      | test key1   | sshkey1     |
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+
+    When we make an api delete call to ssh_key_pairs/<registry:uuid> with no options
+    Then the previous api call should be successful
+
+  @api_until_v11.12
+  Scenario: Update ssh key pair
+    Given a managed ssh_key_pair with the following options
+      | description |
+      | test key1   |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to ssh_key_pairs/<registry:uuid> with the following options
-      | description   | display_name |
-      | test key key1 | testkeykey1  |
+      | description   |
+      | test key key1 |
     Then the previous api call should be successful
 
     When we make an api get call to ssh_key_pairs/<registry:uuid> with no options
@@ -19,8 +29,23 @@ Feature: SshKeyPair API
     And the previous api call should have {"description":} equal to "test key key1"
     And the previous api call should have {} with the key "finger_print"
 
-    When we make an api delete call to ssh_key_pairs/<registry:uuid> with no options
+  @api_from_v12.03
+  Scenario: Update ssh key pair
+    Given a managed ssh_key_pair with the following options
+      | description | display_name |
+      | test key1   | sshkey1     |
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+
+    When we make an api update call to ssh_key_pairs/<registry:uuid> with the following options
+      | description   | display_name | 
+      | test key key1 | sshkey2      |
     Then the previous api call should be successful
+
+    When we make an api get call to ssh_key_pairs/<registry:uuid> with no options
+    Then the previous api call should be successful
+    And the previous api call should have {"description":} equal to "test key key1"
+    And the previous api call should have {"display_name":} equal to "sshkey2"
+    And the previous api call should have {} with the key "finger_print"
 
   Scenario: Create new ssh key pair and fail to duplicate delete
     Given a managed ssh_key_pair with no options
@@ -37,10 +62,10 @@ Feature: SshKeyPair API
   Scenario: List ssh key pairs
     Given a managed ssh_key_pair with the following options
       | description | display_name |
-      | test key1   | testkey1     |
+      | test key1   | sshkey1     |
     Given a managed ssh_key_pair with the following options
       | description | display_name |
-      | test key2   | testkey2     |
+      | test key2   | sshkey2     |
     When we make an api get call to ssh_key_pairs with no options
     Then the previous api call should be successful
 
@@ -57,10 +82,10 @@ Feature: SshKeyPair API
   Scenario: List ssh key pairs with filter options
     Given a managed ssh_key_pair with the following options
       | description | service_type | display_name |
-      | test key1   | std          | testkey1     |
+      | test key1   | std          | sshkey1     |
     Given a managed ssh_key_pair with the following options
       | description | service_type | display_name |
-      | test key2   | std          | testkey2     |
+      | test key2   | std          | sshkey2     |
     When we make an api get call to ssh_key_pairs with the following options
       |account_id|
       |a-shpoolxx|
@@ -75,6 +100,6 @@ Feature: SshKeyPair API
     Then the previous api call should be successful
     When we make an api get call to ssh_key_pairs with the following options
       |display_name             |
-      |testkey1                 |
+      |sshkey1                  |
     Then the previous api call should be successful
 

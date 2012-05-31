@@ -25,6 +25,21 @@ Feature: Network API
     # # And the previous api call should have {"uuid":} equal to /^nw-*/
     # And from the previous api call save to registry uuid the value for key uuid
 
+  @api_from_v12.03
+  Scenario: Update network information
+    Given a managed network with the following options
+      |  network |       gw | prefix | description | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.1 |     20 | test create | passthru     | network1     |
+    Then from the previous api call take {"id":} and save it to <registry:id>
+
+    When we make an api update call to networks/<registry:id> with the following options
+      | display_name |
+      | network2     |
+    Then the previous api call should be successful
+
+    When we make an api get call to networks/<registry:id> with no options
+    Then the previous api call should be successful
+    And the previous api call should have {"display_name":} equal to "network2"
 
   Scenario: Get index of networks
     When we make an api get call to networks with no options
@@ -41,7 +56,7 @@ Feature: Network API
 
   Scenario: Fail to create a duplicate named network
 
-
+  @api_from_v12.03
   Scenario: Verify network values after creation
     # Test both random network name and nw-test1.
     Given a managed network with the following options
@@ -51,6 +66,7 @@ Feature: Network API
       And the previous api call should have {"ipv4_gw":} equal to "10.1.2.1"
       And the previous api call should have {"prefix":} equal to 20
       And the previous api call should have {"description":} equal to "test create values"
+      And the previous api call should have {"display_name":} equal to "network1"
       # Save to registry
       And from the previous api call take {"uuid":} and save it to <registry:uuid>
 
@@ -62,6 +78,7 @@ Feature: Network API
       And the previous api call should have {"ipv4_gw":} equal to "10.1.2.1"
       And the previous api call should have {"prefix":} equal to 20
       And the previous api call should have {"description":} equal to "test create values"
+      And the previous api call should have {"display_name":} equal to "network1"
 
     When we make an api delete call to networks/<registry:uuid> with no options
       Then the previous api call should be successful
