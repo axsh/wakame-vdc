@@ -189,7 +189,6 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       ntpd on
 /sbin/chkconfig       ntpdate on
 /sbin/chkconfig --add vdc-net-event
-%{prefix}/%{name}/rpmbuild/set-openvswitch-conf.sh
 
 %post debug-config
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
@@ -211,6 +210,7 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       tgtd on
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
 %{prefix}/%{name}/rpmbuild/add-loopdev.sh
+%{prefix}/%{name}/rpmbuild/set-openvswitch-conf.sh
 
 %post hva-openvz-vmapp-config
 %{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-openvz.conf
