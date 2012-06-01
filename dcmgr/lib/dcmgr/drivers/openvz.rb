@@ -42,7 +42,7 @@ module Dcmgr
         image = inst[:image]
         case image[:file_format]
         when "tgz"
-          ostemplate = File.basename(image[:source][:uri], ".tar.gz")
+          ostemplate = File.basename(image[:backup_object][:uri], ".tar.gz")
           # create vm and config file
           sh("vzctl create %s --ostemplate %s --config %s",[ctid, ostemplate, hypervisor])
           logger.debug("created container #{private_folder}")

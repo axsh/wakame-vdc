@@ -16,7 +16,7 @@ module Dcmgr
         # ESXi images have a *.vmdk file containing metadata
         # and a *-flat.vmdk file which contains the disk itself.
         # We need to copy both.
-        inst_img_flat  = inst[:image][:source][:uri]
+        inst_img_flat  = inst[:image][:backup_object][:uri]
         # Delete the last occurence of "-flat" in the image file to form the metadata filename
         *filename,extension = inst_img_flat.split "-flat",-1
         inst_img_meta = filename.join("-flat") + extension
