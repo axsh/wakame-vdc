@@ -98,6 +98,7 @@ module Dcmgr
 
         # Security group vnic left events for vnet netfilter
         @inst[:vif].each { |vnic|
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_destroyed", :args=>[vnic[:uuid]])
           vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_left", :args=>[vnic[:uuid]])
           }
@@ -238,10 +239,11 @@ module Dcmgr
         check_interface
         @hv.run_instance(@hva_ctx)
         # Node specific instance_started event for netfilter and general instance_started event for openflow
-        update_instance_state({:state=>:running}, ['hva/instance_started',"#{@inst[:host_node][:node_id]}/instance_started"])
+        update_instance_state({:state=>:running}, ['hva/instance_started'])
         
         # Security group vnic joined events for vnet netfilter
         @inst[:vif].each { |vnic|
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", args=>[vnic[:uuid]])
           vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
           }
@@ -290,11 +292,14 @@ module Dcmgr
         check_interface
         @hv.run_instance(@hva_ctx)
         # Node specific instance_started event for netfilter and general instance_started event for openflow
-        update_instance_state({:state=>:running}, ['hva/instance_started',"#{@inst[:host_node][:node_id]}/instance_started"])
+        update_instance_state({:state=>:running}, ['hva/instance_started'])
+        
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
         
         # Security group vnic joined events for vnet netfilter
         @inst[:vif].each { |vnic|
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
+          
           vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
           }
