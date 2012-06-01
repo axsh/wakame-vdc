@@ -14,7 +14,7 @@ class InstancesController < ApplicationController
       :security_groups => params[:security_groups],
       :ssh_key => params[:ssh_key]
     }
-    instance = DcmgrResource::Instance.create(data)
+    instance = Hijiki::DcmgrResource::Instance.create(data)
     render :json => instance
   end
   
@@ -23,13 +23,13 @@ class InstancesController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    instances = DcmgrResource::Instance.list(data)
+    instances = Hijiki::DcmgrResource::Instance.list(data)
     respond_with(instances[0],:to => [:json])
   end
   
   def show
     instance_id = params[:id]
-    detail = DcmgrResource::Instance.show(instance_id)
+    detail = Hijiki::DcmgrResource::Instance.show(instance_id)
     respond_with(detail,:to => [:json])
   end
   
@@ -37,7 +37,7 @@ class InstancesController < ApplicationController
     instance_ids = params[:ids]
     res = []
     instance_ids.each do |instance_id|
-      res << DcmgrResource::Instance.destroy(instance_id)
+      res << Hijiki::DcmgrResource::Instance.destroy(instance_id)
     end
     render :json => res
   end
@@ -46,7 +46,7 @@ class InstancesController < ApplicationController
     instance_ids = params[:ids]
     res = []
     instance_ids.each do |instance_id|
-      res << DcmgrResource::Instance.reboot(instance_id)
+      res << Hijiki::DcmgrResource::Instance.reboot(instance_id)
     end
     render :json => res
   end
@@ -55,7 +55,7 @@ class InstancesController < ApplicationController
     instance_ids = params[:ids]
     res = []
     instance_ids.each do |instance_id|
-      res << DcmgrResource::Instance.start(instance_id)
+      res << Hijiki::DcmgrResource::Instance.start(instance_id)
     end
     render :json => res
   end
@@ -64,16 +64,16 @@ class InstancesController < ApplicationController
     instance_ids = params[:ids]
     res = []
     instance_ids.each do |instance_id|
-      res << DcmgrResource::Instance.stop(instance_id)
+      res << Hijiki::DcmgrResource::Instance.stop(instance_id)
     end
     render :json => res
   end
   
   def total
-   all_resource_count = DcmgrResource::Instance.total_resource
-   all_resources = DcmgrResource::Instance.find(:all,:params => {:start => 0, :limit => all_resource_count})
+   all_resource_count = Hijiki::DcmgrResource::Instance.total_resource
+   all_resources = Hijiki::DcmgrResource::Instance.find(:all,:params => {:start => 0, :limit => all_resource_count})
    resources = all_resources[0].results
-   terminated_resource_count = DcmgrResource::Instance.get_resource_state_count(resources, 'terminated')
+   terminated_resource_count = Hijiki::DcmgrResource::Instance.get_resource_state_count(resources, 'terminated')
    total = all_resource_count - terminated_resource_count
    render :json => total
   end

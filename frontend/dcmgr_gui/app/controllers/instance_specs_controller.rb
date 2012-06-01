@@ -5,7 +5,7 @@ class InstanceSpecsController < ApplicationController
   end
   
   def show_instance_specs
-    instance_specs = DcmgrResource::InstanceSpec.list
+    instance_specs = Hijiki::DcmgrResource::InstanceSpec.list
     respond_with(instance_specs[0], :to => [:json])
   end
 end

@@ -53,7 +53,7 @@ class VdcManagementDialogController < ApplicationController
     }
 
     # WebAPI経由でホストプールの一覧情報を取得
-    host_nodes = DcmgrResource::HostNode.list(data)
+    host_nodes = Hijiki::DcmgrResource::HostNode.list(data)
     logger.debug(host_nodes[0])  
 
     if save_account_uuid != account_uuid then 
@@ -133,7 +133,7 @@ class VdcManagementDialogController < ApplicationController
     }
 
     # WebAPI経由でストレージプールの一覧情報を取得
-    storage_nodes = DcmgrResource::StorageNode.list(data)
+    storage_nodes = Hijiki::DcmgrResource::StorageNode.list(data)
     logger.debug(storage_nodes[0])  
 
     if save_account_uuid != account_uuid then 
@@ -197,7 +197,7 @@ class VdcManagementDialogController < ApplicationController
     }
 
     # WebAPI経由でインスタンススペックの一覧情報を取得
-    specs = DcmgrResource::InstanceSpec.list(data)
+    specs = Hijiki::DcmgrResource::InstanceSpec.list(data)
     logger.debug(specs[0])  
 
     if save_account_uuid != account_uuid then 
@@ -253,7 +253,7 @@ class VdcManagementDialogController < ApplicationController
       logger.debug(uuid)
 
       # WebAPI経由で特定インスタンススペックの詳細情報を取得
-      spec = DcmgrResource::InstanceSpec.show(uuid)
+      spec = Hijiki::DcmgrResource::InstanceSpec.show(uuid)
       logger.debug(spec.inspect)  
     
       if save_account_uuid != account_uuid then 
@@ -313,7 +313,7 @@ class VdcManagementDialogController < ApplicationController
       logger.debug(uuid)
 
       # WebAPI経由で特定インスタンススペックの詳細情報を取得
-      spec = DcmgrResource::InstanceSpec.show(uuid)
+      spec = Hijiki::DcmgrResource::InstanceSpec.show(uuid)
       logger.debug(spec.inspect)  
     
       if save_account_uuid != account_uuid then 
@@ -515,7 +515,7 @@ class VdcManagementDialogController < ApplicationController
       :limit => 1000
     }
 
-    machine_images = DcmgrResource::Image.list(data)
+    machine_images = Hijiki::DcmgrResource::Image.list(data)
     logger.debug(machine_images[0])  
 
     if save_account_uuid != account_uuid then 

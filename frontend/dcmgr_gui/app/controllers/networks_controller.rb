@@ -13,7 +13,7 @@ class NetworksController < ApplicationController
     #     data = {
     #       :snapshot_id => snapshot_id
     #     }
-    #     res << DcmgrResource::Network.create(data)
+    #     res << Hijiki::DcmgrResource::Network.create(data)
     #   end
     #   render :json => res
     # else
@@ -32,7 +32,7 @@ class NetworksController < ApplicationController
     #     :storage_node_id => storage_node_id
     #   }
       
-    #   @network = DcmgrResource::Network.create(data)
+    #   @network = Hijiki::DcmgrResource::Network.create(data)
 
     #   render :json => @network
     # end
@@ -42,7 +42,7 @@ class NetworksController < ApplicationController
     # network_ids = params[:ids]
     # res = []
     # network_ids.each do |network_id|
-    #   res << DcmgrResource::Network.destroy(network_id)
+    #   res << Hijiki::DcmgrResource::Network.destroy(network_id)
     # end
     # render :json => res
   end
@@ -52,14 +52,14 @@ class NetworksController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    networks = DcmgrResource::Network.list(data)
+    networks = Hijiki::DcmgrResource::Network.list(data)
     respond_with(networks[0],:to => [:json])
   end
   
   # GET networks/vol-24f1af4d.json
   def show
     network_id = params[:id]
-    detail = DcmgrResource::Network.show(network_id)
+    detail = Hijiki::DcmgrResource::Network.show(network_id)
     respond_with(detail,:to => [:json])
   end
 
@@ -71,7 +71,7 @@ class NetworksController < ApplicationController
     #   data = {
     #     :network_id => network_id
     #   }
-    #   res << DcmgrResource::Network.attach(network_id, instance_id)
+    #   res << Hijiki::DcmgrResource::Network.attach(network_id, instance_id)
     # end
     # render :json => res
   end
@@ -80,16 +80,16 @@ class NetworksController < ApplicationController
     # network_ids = params[:ids]
     # res = []
     # network_ids.each do |network_id|
-    #   res << DcmgrResource::Network.detach(network_id)
+    #   res << Hijiki::DcmgrResource::Network.detach(network_id)
     # end
     # render :json => res
   end
   
   def total
-    all_resource_count = DcmgrResource::Network.total_resource
-    all_resources = DcmgrResource::Network.find(:all,:params => {:start => 0, :limit => all_resource_count})
+    all_resource_count = Hijiki::DcmgrResource::Network.total_resource
+    all_resources = Hijiki::DcmgrResource::Network.find(:all,:params => {:start => 0, :limit => all_resource_count})
     resources = all_resources[0].results
-    # deleted_resource_count = DcmgrResource::Network.get_resource_state_count(resources, 'deleted')
+    # deleted_resource_count = Hijiki::DcmgrResource::Network.get_resource_state_count(resources, 'deleted')
     total = all_resource_count # - deleted_resource_count
     render :json => total
   end

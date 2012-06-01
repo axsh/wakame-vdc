@@ -54,12 +54,12 @@ class DialogController < ApplicationController
   
   def delete_security_group
     @uuid = params[:ids][0]
-    @security_group = DcmgrResource::SecurityGroup.show(@uuid)
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.show(@uuid)
   end
   
   def edit_security_group
     @uuid = params[:ids][0]
-    @security_group = DcmgrResource::SecurityGroup.show(@uuid)
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.show(@uuid)
     
     @description =  @security_group["description"]
     @rule = @security_group["rule"]

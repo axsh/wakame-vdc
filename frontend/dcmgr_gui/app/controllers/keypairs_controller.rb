@@ -9,19 +9,19 @@ class KeypairsController < ApplicationController
      :start => params[:start].to_i - 1,
      :limit => params[:limit]
    }
-   @ssh_key_pair = DcmgrResource::SshKeyPair.list(data)
+   @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.list(data)
    respond_with(@ssh_key_pair[0],:to => [:json])
   end
   
   def show
     uuid = params[:id]
-    @ssh_key_pair = DcmgrResource::SshKeyPair.show(uuid)
+    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.show(uuid)
     respond_with(@ssh_key_pair,:to => [:json])
   end
   
   def destroy
     name = params[:id]
-    @ssh_key_pair = DcmgrResource::SshKeyPair.destroy(name)
+    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.destroy(name)
     render :json => @ssh_key_pair    
   end
   
@@ -30,7 +30,7 @@ class KeypairsController < ApplicationController
       :download_once => params[:download_once]
     }
     
-    @ssh_key_pair = DcmgrResource::SshKeyPair.create(data)
+    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.create(data)
     @filename = @ssh_key_pair.uuid + ".pem"
     
     send_data(@ssh_key_pair.private_key,{
@@ -41,18 +41,18 @@ class KeypairsController < ApplicationController
   end
   
   def show_keypairs
-    @ssh_key_pair = DcmgrResource::SshKeyPair.list
+    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.list
     respond_with(@ssh_key_pair[0],:to => [:json])
   end
   
   def total
-   total_resource = DcmgrResource::SshKeyPair.total_resource
+   total_resource = Hijiki::DcmgrResource::SshKeyPair.total_resource
    render :json => total_resource
   end
   
   def prk_download
     uuid = params[:id]
-    @ssh_key_pair = DcmgrResource::SshKeyPair.show(uuid)
+    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.show(uuid)
     @filename = @ssh_key_pair['uuid'] + ".pem"
     send_data(@ssh_key_pair['private_key'],{
               :filename => @filename,
