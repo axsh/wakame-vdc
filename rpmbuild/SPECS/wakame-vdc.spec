@@ -3,7 +3,7 @@
 
 Name: wakame-vdc
 Version: 12.03
-Release: 1.daily
+Release: 1.daily%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
 Vendor: Axsh Co. LTD <dev@axsh.net>
