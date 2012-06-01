@@ -223,6 +223,9 @@ Sequel.migration do
       drop_column :source
       drop_column :md5sum
       #drop_column :boot_dev_type
+
+      # Add missing deleted time column.
+      add_column :deleted_at, "datetime"
     end
     
     create_table(:backup_objects) do

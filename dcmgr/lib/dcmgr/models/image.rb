@@ -14,6 +14,8 @@ module Dcmgr::Models
     plugin :serialization
     serialize_attributes :yaml, :features
     
+    plugin ArchiveChangedColumn, :histories
+    
     def after_initialize
       super
       unless self.features.is_a?(Hash) 
@@ -62,6 +64,14 @@ module Dcmgr::Models
 
     def get_feature(key)
       self.features[key]
+    end
+
+    # override Sequel::Model#delete not to delete rows but to set
+    # delete flags.
+    def delete
+      self.state = :deleted if self.state != :deleted
+      self.deleted_at ||= Time.now
+      self.save
     end
     
   end
