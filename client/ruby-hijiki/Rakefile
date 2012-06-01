@@ -1,8 +1,10 @@
 require 'rubygems'
-#GEMSPEC = Gem::Specification.load('ruby-hijiki.gemspec')
+require 'rubygems/package_task'
+
+spec = Gem::Specification.load('ruby-hijiki.gemspec')
 
 desc "Build ruby-hijiki, then run tests."
-task :default => [:test]
+task :default => [:test, :package]
 
 desc 'Generate documentation'
 begin
@@ -16,4 +18,8 @@ end
 
 task :test do
   sh %{cd test && ruby ts_all.rb}
+end
+
+Gem::PackageTask.new(spec) do |pkg|
+  pkg.need_tar = true
 end
