@@ -6,7 +6,7 @@ class MachineImagesController < ApplicationController
   
   def show
     image_id = params[:id]
-    detail = DcmgrResource::Image.show(image_id)
+    detail = Hijiki::DcmgrResource::Image.show(image_id)
     respond_with(detail,:to => [:json])
   end
 
@@ -16,12 +16,12 @@ class MachineImagesController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    image = DcmgrResource::Image.list(data)
+    image = Hijiki::DcmgrResource::Image.list(data)
     respond_with(image[0],:to => [:json])
   end
   
   def total
-   total_resource = DcmgrResource::Image.total_resource
+   total_resource = Hijiki::DcmgrResource::Image.total_resource
    render :json => total_resource
   end
 end

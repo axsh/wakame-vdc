@@ -10,14 +10,14 @@ class SecurityGroupsController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    @security_group = DcmgrResource::SecurityGroup.list(data)
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.list(data)
     respond_with(@security_group[0],:to => [:json])
   end
   
   # security_groups/detail/s-000001.json
   def show
     uuid = params[:id]
-    @security_group = DcmgrResource::SecurityGroup.show(uuid)
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.show(uuid)
     respond_with(@security_group,:to => [:json])
   end
 
@@ -26,13 +26,13 @@ class SecurityGroupsController < ApplicationController
       :description => params[:description],
       :rule => params[:rule]
     }
-    @security_group = DcmgrResource::SecurityGroup.create(data)
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.create(data)
     render :json => @security_group
   end
   
   def destroy
     uuid = params[:id]
-    @security_group = DcmgrResource::SecurityGroup.destroy(uuid)
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.destroy(uuid)
     render :json => @security_group    
   end
   
@@ -42,17 +42,17 @@ class SecurityGroupsController < ApplicationController
       :description => params[:description],
       :rule => params[:rule]
     }
-    @security_group = DcmgrResource::SecurityGroup.update(uuid,data)
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.update(uuid,data)
     render :json => @security_group    
   end
   
   def show_groups
-    @security_group = DcmgrResource::SecurityGroup.list
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.list
     respond_with(@security_group[0],:to => [:json])
   end
   
   def total
-   total_resource = DcmgrResource::SecurityGroup.total_resource
+   total_resource = Hijiki::DcmgrResource::SecurityGroup.total_resource
    render :json => total_resource
   end
 end

@@ -9,19 +9,19 @@ class HostNodesController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    host_nodes = DcmgrResource::HostNode.list(data)
+    host_nodes = Hijiki::DcmgrResource::HostNode.list(data)
     logger.debug(host_nodes.inspect)  
     respond_with(host_nodes[0], :to => [:json])
   end
   
   def show
     host_node_id = params[:id]
-    detail = DcmgrResource::HostNode.show(host_node_id)
+    detail = Hijiki::DcmgrResource::HostNode.show(host_node_id)
     respond_with(detail,:to => [:json])
   end
   
   def show_host_nodes
-    host_nodes = DcmgrResource::HostNode.list
+    host_nodes = Hijiki::DcmgrResource::HostNode.list
     respond_with(host_nodes[0],:to => [:json])
   end
 

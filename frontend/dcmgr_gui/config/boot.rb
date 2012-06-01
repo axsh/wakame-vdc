@@ -12,30 +12,34 @@ rescue Bundler::GemNotFound => e
   exit!
 end if File.exist?(gemfile)
 
-require 'ruby_vdc'
+require 'hijiki'
 
-if false
-  DcmgrResource::Account = DcmgrResource::V1112::Account
-  DcmgrResource::HostNode = DcmgrResource::V1112::HostNode
-  DcmgrResource::Image = DcmgrResource::V1112::Image
-  DcmgrResource::Instance = DcmgrResource::V1112::Instance
-  DcmgrResource::InstanceSpec = DcmgrResource::V1112::InstanceSpec
-  DcmgrResource::Network = DcmgrResource::V1112::Network
-  DcmgrResource::SecurityGroup = DcmgrResource::V1112::SecurityGroup
-  DcmgrResource::SshKeyPair = DcmgrResource::V1112::SshKeyPair
-  DcmgrResource::StorageNode = DcmgrResource::V1112::StorageNode
-  DcmgrResource::Volume = DcmgrResource::V1112::Volume
-  DcmgrResource::VolumeSnapshot = DcmgrResource::V1112::VolumeSnapshot
-else
-  DcmgrResource::Account = DcmgrResource::V1203::Account
-  DcmgrResource::HostNode = DcmgrResource::V1203::HostNode
-  DcmgrResource::Image = DcmgrResource::V1203::Image
-  DcmgrResource::Instance = DcmgrResource::V1203::Instance
-  DcmgrResource::InstanceSpec = DcmgrResource::V1203::InstanceSpec
-  DcmgrResource::Network = DcmgrResource::V1203::Network
-  DcmgrResource::SecurityGroup = DcmgrResource::V1203::SecurityGroup
-  DcmgrResource::SshKeyPair = DcmgrResource::V1203::SshKeyPair
-  DcmgrResource::StorageNode = DcmgrResource::V1203::StorageNode
-  DcmgrResource::Volume = DcmgrResource::V1203::Volume
-  DcmgrResource::VolumeSnapshot = DcmgrResource::V1203::VolumeSnapshot
+module Hijiki::DcmgrResource
+
+  if false
+    Account = V1112::Account
+    HostNode = V1112::HostNode
+    Image = V1112::Image
+    Instance = V1112::Instance
+    InstanceSpec = V1112::InstanceSpec
+    Network = V1112::Network
+    SecurityGroup = V1112::SecurityGroup
+    SshKeyPair = V1112::SshKeyPair
+    StorageNode = V1112::StorageNode
+    Volume = V1112::Volume
+    VolumeSnapshot = V1112::VolumeSnapshot
+  else
+    Account = V1203::Account
+    HostNode = V1203::HostNode
+    Image = V1203::Image
+    Instance = V1203::Instance
+    InstanceSpec = V1203::InstanceSpec
+    Network = V1203::Network
+    SecurityGroup = V1203::SecurityGroup
+    SshKeyPair = V1203::SshKeyPair
+    StorageNode = V1203::StorageNode
+    Volume = V1203::Volume
+    VolumeSnapshot = V1203::VolumeSnapshot
+  end
+
 end

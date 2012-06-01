@@ -14,7 +14,7 @@ class SnapshotsController < ApplicationController
         :volume_id => volume_id,
         :destination => destination
       }
-      res << DcmgrResource::VolumeSnapshot.create(data)
+      res << Hijiki::DcmgrResource::VolumeSnapshot.create(data)
     end
     render :json => res
   end
@@ -23,7 +23,7 @@ class SnapshotsController < ApplicationController
     snapshot_ids = params[:ids]
     res = []
     snapshot_ids.each do |snapshot_id|
-      res << DcmgrResource::VolumeSnapshot.delete(snapshot_id)
+      res << Hijiki::DcmgrResource::VolumeSnapshot.delete(snapshot_id)
     end
     render :json => res
   end
@@ -33,27 +33,27 @@ class SnapshotsController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    snapshots = DcmgrResource::VolumeSnapshot.list(data)
+    snapshots = Hijiki::DcmgrResource::VolumeSnapshot.list(data)
     respond_with(snapshots[0], :to => [:json])
   end
 
   def show
     snapshot_id = params[:id]
-    detail = DcmgrResource::VolumeSnapshot.show(snapshot_id)
+    detail = Hijiki::DcmgrResource::VolumeSnapshot.show(snapshot_id)
     respond_with(detail,:to => [:json])
   end
   
   def total
-    all_resource_count = DcmgrResource::VolumeSnapshot.total_resource
-    all_resources = DcmgrResource::VolumeSnapshot.find(:all,:params => {:start => 0, :limit => all_resource_count})
+    all_resource_count = Hijiki::DcmgrResource::VolumeSnapshot.total_resource
+    all_resources = Hijiki::DcmgrResource::VolumeSnapshot.find(:all,:params => {:start => 0, :limit => all_resource_count})
     resources = all_resources[0].results
-    deleted_resource_count = DcmgrResource::VolumeSnapshot.get_resource_state_count(resources, 'deleted')
+    deleted_resource_count = Hijiki::DcmgrResource::VolumeSnapshot.get_resource_state_count(resources, 'deleted')
     total = all_resource_count - deleted_resource_count
     render :json => total
   end
   
   def upload_destination
-    destinations = DcmgrResource::VolumeSnapshot.upload_destination
+    destinations = Hijiki::DcmgrResource::VolumeSnapshot.upload_destination
     render :json => destinations[0]
   end
 end
