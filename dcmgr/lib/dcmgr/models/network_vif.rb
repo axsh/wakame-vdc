@@ -38,6 +38,7 @@ module Dcmgr::Models
       hash.merge!({ :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
                     :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
                     :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
+                    :host_node_id => self.instance.nil? ? nil : self.instance.host_node.node_id,
                     :network_id => self.network_id,
                     :network => self.network.nil? ? nil : self.network.to_hash,
                     :security_groups => self.security_groups.map {|n| n.canonical_uuid },

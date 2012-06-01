@@ -290,18 +290,14 @@ module Dcmgr::Models
       nic.instance = self
       nic.device_index = vif_template[:index]
       nic.save
-    end
 
-    # Join this instance to the list of security group using group's uuid.
-    # @param [String,Array] security_group_uuids 
-    def join_security_group(security_group_uuids)
-      security_group_uuids = [security_group_uuids] if security_group_uuids.is_a?(String)
+      groups = self.request_params["security_groups"]
+      groups = [groups] unless groups.is_a? Array
+      groups.each { |group_id|
+        nic.add_security_group(SecurityGroup[group_id])
+      } unless self.request_params["security_groups"].nil?
       
-      self.nic.each { |vnic|
-        security_group_uuids.each { |secg_id|
-          vnic.add_security_group( SecurityGroup[secg_id] )
-        }
-      }
+      nic
     end
 
     def ips

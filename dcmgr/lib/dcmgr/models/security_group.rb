@@ -66,7 +66,7 @@ module Dcmgr::Models
     end
 
     def before_destroy
-      return false if self.instances.size > 0
+      return false if self.network_vif.size > 0
       return false if self.referencers.size > 0
 
       super
