@@ -126,7 +126,6 @@ service_type("std", "StdServiceType") {
 
 service_type("lb", "LbServiceType") {
   image_id 'wmi-demolb'
-  instance_spec_id 'is-demospec'
   host_node_id 'hn-demo1'
   security_group 'sg-demofgr'
   ssh_key_id 'ssh-demo'

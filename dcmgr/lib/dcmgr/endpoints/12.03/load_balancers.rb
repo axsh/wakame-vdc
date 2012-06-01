@@ -20,12 +20,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   post do
-
     # copy request params
     lb_conf = Dcmgr.conf.service_types['lb']
-     
+    spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)    
+    
     raise "E::UnknownImage" unless lb_conf.config.include? :image_id
-    raise "E::UnknownInstanceSpec" unless lb_conf.config.include? :instance_spec_id
     raise "E::UnknownHostNode" unless lb_conf.config.include? :host_node_id
     raise "E::UnknownSecurityGroup" unless lb_conf.config.include? :security_group
     raise "E::UnknownSshKeyPair" unless lb_conf.config.include? :ssh_key_id
@@ -43,7 +42,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   
     # make params for internal request.
     values  = {'image_id' => lb_conf.image_id,
-               'instance_spec_id' => lb_conf.instance_spec_id,
+               'instance_spec_id' => spec.canonical_uuid,
                'host_node_id' => lb_conf.host_node_id,
                'security_group' => lb_conf.security_group,
                'ssh_key_id' => lb_conf.ssh_key_id
