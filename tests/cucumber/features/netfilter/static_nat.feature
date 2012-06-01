@@ -14,7 +14,8 @@ Feature: Static Nat
     And we successfully delete the created security_groups
     
   Scenario: Nat isolation
-    Given security group A exists with the following rules
+    Given the volume "wmi-secgtest" exists
+    And security group A exists with the following rules
       """
       tcp:22,22,ip4:0.0.0.0
       tcp:999,999,ip4:0.0.0.0
@@ -31,7 +32,7 @@ Feature: Static Nat
     And a natted instance inst3 is started in group B that listens on tcp port 999 and udp port 999
 
     When instance inst1 sends a tcp packet to inst2's outside address on port 999
-      Then it should use its inside ip
+      Then it should use its outside ip
     When instance inst1 sends a tcp packet to inst2's inside address on port 999
       Then it should use its inside ip
     When instance inst1 sends a tcp packet to inst3's inside address on port 999
@@ -40,7 +41,7 @@ Feature: Static Nat
       Then it should use its outside ip
     
     When instance inst2 sends a tcp packet to inst1's outside address on port 999
-      Then it should use its inside ip
+      Then it should use its outside ip
     When instance inst2 sends a tcp packet to inst1's inside address on port 999
       Then it should use its inside ip
     When instance inst2 sends a tcp packet to inst3's inside address on port 999
