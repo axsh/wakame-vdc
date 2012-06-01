@@ -19,11 +19,9 @@ module Dcmgr
           FileUtils.mkdir_p(vmimg_cache_dir) unless File.exists?(vmimg_cache_dir)
           download_to_local_cache(img_src_uri, vmimg_basename, inst[:image][:backup_object][:checksum])
         else
-          # TODO: no cache mode
-          raise NotImplemented
+          paralell_curl(img_src_uri, vmimg_cache_path(vmimg_basename))
         end
         
-        ####
         logger.debug("copying #{vmimg_cache_path(vmimg_basename)} to #{ctx.os_devpath}")
 
         case inst[:image][:file_format]
@@ -36,9 +34,9 @@ module Dcmgr
           end
         end
 
+      ensure
         unless Dcmgr.conf.local_store.enable_image_caching
-          # TODO: clean up tmp download files if no cache mode
-          raise NotImplemented
+          File.unlink(vmimg_cache_path(vmimg_basename)) rescue nil
         end
       end
 
@@ -48,10 +46,14 @@ module Dcmgr
         Dcmgr.conf.local_store.image_cache_dir
       end
 
-      def vmimg_cache_path(img_id)
-        File.expand_path(img_id, vmimg_cache_dir)
+      def download_tmp_dir
+        ENV['TMPDIR'] || ENV['TMP'] || '/var/tmp'
       end
       
+      def vmimg_cache_path(img_id)
+        File.expand_path(img_id, (Dcmgr.conf.local_store.enable_image_caching ? vmimg_cache_dir : download_tmp_dir))
+      end
+
       def download_to_local_cache(img_src_uri, basename, checksum)
         begin
           if File.mtime(vmimg_cache_path(basename)) <= File.mtime("#{vmimg_cache_path(basename)}.md5")
