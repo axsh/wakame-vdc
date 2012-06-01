@@ -23,7 +23,7 @@ root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../../"
 tmp_dir="${wakame_dir}/tmp/vmapp_builder"
 wakame_version="$(egrep ^Version: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec | awk '{print $2}')"
-wakame_release="$(egrep ^Release: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec | awk '{print $2}')"
+wakame_release="$(egrep ^Release: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec | awk '{print $2}' | sed 's,%{?dist},*,')"
 
 repo_dir=${repo_dir:-${root_dir}/repo.d}
 
@@ -63,7 +63,7 @@ done
 [[ -d "${repo_dir}/${basearch}" ]] || mkdir -p "${repo_dir}/${basearch}"
 
 for i in $wakame_rpms; do
-  cp "${HOME}/rpmbuild/RPMS/${arch}/$i" "${repo_dir}/${basearch}"
+  cp ${HOME}/rpmbuild/RPMS/${arch}/$i ${repo_dir}/${basearch}
 done
 
 # 3rd party rpms.
