@@ -243,7 +243,7 @@ module Dcmgr
         
         # Security group vnic joined events for vnet netfilter
         @inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", args=>[vnic[:uuid]])
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
           vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
           }
