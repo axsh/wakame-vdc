@@ -125,5 +125,8 @@ module Dcmgr
     define_error(:UnknowLoadBalancerID, 404, '150')
     define_error(:DuplicateNetworkVif, 400, '151')
     define_error(:UndefinedImageID, 404, '152')
+    
+    define_error(:UnknownBackupStorage, 404, '153')
+    define_error(:DestroyedUUIDResource, 404, '154')
   end
 end

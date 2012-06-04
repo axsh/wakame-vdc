@@ -172,5 +172,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('dc_networks')
     load_namespace('reports')
     load_namespace('load_balancers')
+    load_namespace('backup_storages')
   end
 end
