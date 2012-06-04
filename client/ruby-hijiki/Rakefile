@@ -4,7 +4,7 @@ require 'rubygems/package_task'
 spec = Gem::Specification.load('ruby-hijiki.gemspec')
 
 desc "Build ruby-hijiki, then run tests."
-task :default => [:test, :package]
+task :default => [:package]
 
 desc 'Generate documentation'
 begin
