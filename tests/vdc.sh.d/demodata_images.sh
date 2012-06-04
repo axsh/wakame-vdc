@@ -21,16 +21,25 @@ for meta in $data_path/image-*.meta; do
     [[ -n "$localname" ]] || {
       localname=$(basename "$uri")
     }
-    
-    localpath=$tmp_path/images/$localname
+
+    localpath="${tmp_path}/images/${localname}"
     chksum=$(md5sum $localpath | cut -d ' ' -f1)
-    size=$(ls -l "$localpath" | awk '{print $5}')
-    
+    alloc_size=$(ls -l "$localpath" | awk '{print $5}')
+    if (file $localpath | grep ': gzip compressed data,' > /dev/null)
+    then
+      # get the uncompressed size embedded in the .gz file.
+      size=$(gzip -l "$localpath" | awk -v fname="${localpath%.gz}" '$4 == fname {print $2}')
+    else
+      size=$alloc_size
+    fi
+
     shlog ./bin/vdc-manage backupobject add \
       --storage-id=bkst-demo2 \
       --uuid bo-${uuid} \
+      --display-name="$localname" \
       --object-key=$localname \
       --size=$size \
+      --allocation-size=$alloc_size \
       --checksum="$chksum" \
       --description='kvm 32bit'
     
