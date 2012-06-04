@@ -256,6 +256,7 @@ Sequel.migration do
     create_table(:backup_storages) do
       primary_key :id, :type=>"int(11)"
       column :uuid, "varchar(255)", :null=>false
+      column :display_name, "varchar(255)", :null=>false
       column :storage_type, "varchar(255)", :null=>false
       column :description, "text"
       column :base_uri, "varchar(255)", :null=>false
