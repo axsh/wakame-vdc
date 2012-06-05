@@ -58,6 +58,7 @@ en:
       available_groups: "Available Groups"
       launch_in: "Launch in"
       user_data: "User Data"
+      display_name: "Instance Name"
     create_volume:
       header: "Create Volume"
       size: "Size"
@@ -263,6 +264,7 @@ en:
       source: "Source"
       owner: "Owner"
       state: "State"
+      display_name: "Image Name"
     details:
       header: "Details"
       wmi_id: "WMI Id"
@@ -273,6 +275,7 @@ en:
       status: "Status"
       created_at: "Created_at"
       updated_at: "Updated_at"
+      display_name: "Image Name"
   volumes:
     header: "Volumes"
     button:
