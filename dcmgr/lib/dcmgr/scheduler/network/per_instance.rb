@@ -30,23 +30,28 @@ module Dcmgr
         end
         
         def schedule(instance)
-          sched_name = instance.request_params['network_scheduler']
-          if sched_name.nil? || sched_name == ''
-            if options.schedulers[:default]
-              sched_conf = options.schedulers[:default]
-            else
-              raise "Unable to find any network schedulers"
-            end
+          if instance.request_params[:vifs]
+            sched = VifParamTemplate.new
           else
-            if options.schedulers[sched_name.to_sym]
-              sched_conf = options.schedulers[sched_name.to_sym]
+            sched_name = instance.request_params['network_scheduler']
+            if sched_name.nil? || sched_name == ''
+              if options.schedulers[:default]
+                sched_conf = options.schedulers[:default]
+              else
+                raise "Unable to find any network schedulers"
+              end
             else
-              raise "Unknown scheduler definition: #{sched_name} for the instance #{instance.canonical_uuid}"
+              if options.schedulers[sched_name.to_sym]
+                sched_conf = options.schedulers[sched_name.to_sym]
+              else
+                raise "Unknown scheduler definition: #{sched_name} for the instance #{instance.canonical_uuid}"
+              end
             end
-          end
           
-          sched_class = sched_conf.scheduler_class
-          sched = sched_class.new(sched_conf.option)
+            sched_class = sched_conf.scheduler_class
+            sched = sched_class.new(sched_conf.option)
+          end
+
           logger.info("Selected network scheduler: #{sched_name} #{sched_class} for the instance #{instance.canonical_uuid}")
           sched.schedule(instance)
         end
