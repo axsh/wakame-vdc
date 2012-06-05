@@ -187,6 +187,7 @@ module Dcmgr
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'
       autoload :NatOneToOne, 'dcmgr/scheduler/network/nat_one_to_one'
       autoload :VifTemplate, 'dcmgr/scheduler/network/vif_template'
+      autoload :VifParamTemplate, 'dcmgr/scheduler/network/vif_param_template'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
     end
 
