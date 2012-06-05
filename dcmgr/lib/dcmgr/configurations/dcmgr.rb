@@ -92,6 +92,11 @@ module Dcmgr
       end
 
       class ServiceType < Configuration
+
+        # default backup storage to upload backup object from the
+        # service type nodes.
+        param :backup_storage_id
+        
         def initialize(service_type)
           super()
           @config[:name] = service_type
@@ -99,6 +104,7 @@ module Dcmgr
         
         def validate(errors)
           errors << "Missing name parameter" unless @config[:name]
+          STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
         end
 
         DSL do

@@ -497,11 +497,39 @@ module Dcmgr
 
         begin
           snap_filename = @hva_ctx.os_devpath
-          # @backing_store.create_snapshot(StaContext.new(self), snapshot_storage.snapshot(snap_filename))
+
+          ev_callback = proc { |cmd, *value|
+            case cmd
+            when :setattr
+              # update checksum & allocation_size of the backup object
+              rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {
+                            :checksum=>value[0],
+                            :allocation_size => value[1],
+                          })
+            when :progress
+              # update upload progress of backup object
+              #rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:progress=>value[0]}) do |req|
+              #  req.oneshot = true
+              #end
+            else
+              raise "Unknown callback command: #{cmd}"
+            end
+          }.tap { |i|
+            i.instance_eval {
+              def setattr(checksum, alloc_size)
+                self.call(:setattr, checksum, alloc_size)
+              end
+
+              def progress(percent)
+                self.call(:progress, percent)
+              end
+            }
+          }
 
           logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
-          bk = Dcmgr::Drivers::Webdav.new(:base_uri=>@bo[:backup_storage][:base_uri])
-          bk.upload(snap_filename, @bo[:object_key])
+          lstore = Drivers::LocalStore.select_local_store(@inst[:host_node][:hypervisor])
+          lstore.upload_image(@inst, @hva_ctx, @bo, ev_callback)
+          
           logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
       
         rescue => e
@@ -510,12 +538,14 @@ module Dcmgr
         end
         
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
-        logger.info("created new backup object: #{@backupobject_id}")
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
+        logger.info("uploaded new backup object: #{@inst_id} #{@backupobject_id} #{@image_id}")
         
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
-        logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id}")
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+        logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id} #{@image_id}")
       }
 
       def rpc

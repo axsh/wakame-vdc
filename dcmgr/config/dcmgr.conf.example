@@ -36,6 +36,8 @@ mac_address_vendor_id '525400'
 
 
 service_type("std", "StdServiceType") {
+  backup_storage_id 'bkst-demo2'
+
   #
   # Scheduling Algorithms
   #

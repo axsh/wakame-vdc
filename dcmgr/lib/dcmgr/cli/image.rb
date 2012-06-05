@@ -17,7 +17,7 @@ module Dcmgr::Cli
       method_option :description, :type => :string, :desc => "An arbitrary description of the new machine image"
       method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
       method_option :root_device, :type => :string, :desc => "The root device of image"
-      #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
+      method_option :state, :type => :string, :default => "available", :desc => "The state for the new machine image"
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       def local(backup_object_id)
@@ -40,7 +40,7 @@ module Dcmgr::Cli
       method_option :description, :type => :string, :desc => "An arbitrary description of the new machine image"
       method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
       method_option :root_device, :type => :string, :desc => "The root device of image"
-      #method_option :state, :type => :string, :default => "init", :desc => "The state for the new machine image"
+      method_option :state, :type => :string, :default => "available", :desc => "The state for the new machine image"
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       def volume(backup_object_id)
@@ -66,12 +66,12 @@ module Dcmgr::Cli
 
     desc "modify UUID [options]", "Modify a registered machine image"
     method_option :description, :type => :string, :desc => "An arbitrary description of the machine image"
-    method_option :state, :type => :string, :default => "init", :desc => "The state for the machine image"
+    method_option :state, :type => :string, :desc => "The state for the machine image"
     method_option :account_id, :type => :string, :desc => "The UUID of the account that this machine image belongs to."
-    method_option :arch, :type => :string, :default => 'x86_64', :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
+    method_option :arch, :type => :string, :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
     method_option :is_public, :type => :boolean,  :desc => "A flag that determines whether the new machine image is public or not."
     method_option :description, :type => :string, :desc => "An arbitrary description of the new machine image"
-    method_option :file_format, :type => :string, :default => "raw", :desc => "The file format for the new machine image"
+    method_option :file_format, :type => :string, :desc => "The file format for the new machine image"
     method_option :root_device, :type => :string, :desc => "The root device of image"
     method_option :service_type, :type => :string, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name of the machine image"

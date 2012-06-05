@@ -142,20 +142,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance.state = :scheduling
     instance.save
 
+    bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
+    
     case wmi.boot_dev_type
     when M::Image::BOOT_DEV_SAN
-      # create new volume from snapshot.
-      snapshot_id = wmi.source[:snapshot_id]
-      vs = find_volume_snapshot(snapshot_id)
+      # create new volume from backup object.
 
-      if !M::StorageNode.check_domain_capacity?(vs.size)
+      if !M::StorageNode.check_domain_capacity?(bo.size)
         raise E::OutOfDiskSpace
       end
       
-      vol = M::Volume.entry_new(@account, vs.size, params.to_hash) do |v|
-        if vs
-          v.snapshot_id = vs.canonical_uuid
-        end
+      vol = M::Volume.entry_new(@account, bo.size, params.to_hash) do |v|
+        v.snapshot_id = bo.canonical_uuid
         v.boot_dev = 1
       end
       # assign instance -> volume
@@ -279,23 +277,27 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   put '/:id/image' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
-
-    bkst = M::BackupStorage['bkst-demo2']
-    bo = M::BackupObject.entry_new(@account, 999999) do |i|
+    
+    bkst = M::BackupStorage[Dcmgr.conf.service_types[instance.service_type].backup_storage_id]
+    bo = M::BackupObject.entry_new(@account, instance.image.backup_object.values[:size]) do |i|
       if params[:description]
         i.description = params[:description]
       end
+      i.backup_storage = bkst
     end
-    bo.backup_storage = bkst
-    bo.save
-    #image = M::Image.entry_new()
+    image = instance.image.entry_clone do |i|
+      if params[:description]
+        i.description = params[:description]
+      end
+      i.backup_object_id = bo.canonical_uuid
+    end
     
     commit_transaction
     Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'backup_image',
-                           instance.canonical_uuid, bo.canonical_uuid) #, image.canonical_uuid)
+                           instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
     respond_with({:instance_id=>instance.canonical_uuid,
                    :backup_object_id => bo.canonical_uuid,
-                   :image_id => nil,
+                   :image_id => image.canonical_uuid,
                  })
   end
 end

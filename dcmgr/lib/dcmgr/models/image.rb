@@ -73,6 +73,25 @@ module Dcmgr::Models
       self.deleted_at ||= Time.now
       self.save
     end
+
+    def self.entry_new(account, arch, boot_dev_type, file_format, &blk)
+      img = self.new
+      img.account_id = account.canonical_uuid
+      img.arch = arch
+      img.boot_dev_type = boot_dev_type
+      img.file_format = file_format
+      blk.call(img)
+      img.save
+    end
+    
+    def entry_clone(&blk)
+      self.class.entry_new(self.account, self.arch, self.boot_dev_type, self.file_format) do |i|
+        i.features = self.features
+        i.root_device = self.root_device
+        i.service_type = self.service_type
+        blk.call(i)
+      end
+    end
     
   end
 end

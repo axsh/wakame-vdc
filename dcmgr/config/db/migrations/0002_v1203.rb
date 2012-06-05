@@ -219,7 +219,7 @@ Sequel.migration do
     # # saved as backup object at first and then register nessecary
     # # additional information here.
     alter_table(:images) do
-      add_column :backup_object_id, "varchar(255)", :null=>false
+      add_column :backup_object_id, "varchar(255)"
       drop_column :source
       drop_column :md5sum
       #drop_column :boot_dev_type

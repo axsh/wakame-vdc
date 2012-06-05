@@ -8,6 +8,10 @@ module Dcmgr
       def deploy_image(inst,ctx)
         raise NotImplementedError
       end
+
+      def upload_image(inst, ctx, bo, ev_callback)
+        raise NotImplementedError
+      end
       
       def self.select_local_store(hypervisor)
         case hypervisor

@@ -40,6 +40,24 @@ module Dcmgr
         end
       end
 
+      def upload_image(inst, ctx, bo, evcb)
+
+        bkup_basename = "#{inst[:uuid]}.tmp"
+        take_snapshot_for_backup()
+        sh("cp -p --sparse=always %s /dev/stdout | gzip -f > %s", [ctx.os_devpath, File.expand_path(bkup_basename, download_tmp_dir)])
+        alloc_size = File.size(File.expand_path(bkup_basename, download_tmp_dir))
+        res = sh("md5sum %s | awk '{print $1}'", [File.expand_path(bkup_basename, download_tmp_dir)])
+        
+        evcb.setattr(res[:stdout].chomp, alloc_size)
+
+        # upload image file
+        sh("curl -q -T %s %s", [File.expand_path(bkup_basename, download_tmp_dir), bo[:uri]])
+        evcb.progress(100)
+      ensure
+        clean_snapshot_for_backup()
+        File.unlink(File.expand_path(bkup_basename, download_tmp_dir)) rescue nil
+      end
+
       protected
 
       def vmimg_cache_dir
@@ -86,6 +104,11 @@ module Dcmgr
           logger.debug("calculating checksum of #{vmimg_cache_path(basename)}")
           sh("md5sum #{vmimg_cache_path(basename)} | awk '{print $1}' > #{vmimg_cache_path(basename)}.md5")
         end
+      end
+
+      def take_snapshot_for_backup()
+      end
+      def clean_snapshot_for_backup()
       end
 
       private
