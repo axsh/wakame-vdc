@@ -7,29 +7,33 @@ module Dcmgr::Models
 
     many_to_one :backup_storage
     plugin ArchiveChangedColumn, :histories
+    # TODO put logs to accounting log.
 
     subset(:alives, {:deleted_at => nil})
     
     class RequestError < RuntimeError; end
 
+    def after_initialize
+      super
+      self.object_key ||= self.canonical_uuid
+    end
+    
     def self.entry_new(account, size, &blk)
       bo = self.new
       bo.account_id = account.canonical_uuid
       bo.size = size.to_i
       bo.state = :creating
       blk.call(bo)
-      bo.object_key ||= bo.canonical_uuid
-      bo
+      bo.save
     end
-    
-    def self.entry_delete(uuid)
-      bo = self[uuid]
-      if bo.state.to_sym != :available
+
+    def entry_delete
+      if self.state.to_sym != :available
         raise RequestError, "invalid delete request"
       end
-      bo.state = :deleting
-      bo.save_changes
-      bo
+      self.state = :deleting
+      self.save_changes
+      self
     end
 
     # override Sequel::Model#delete not to delete rows but to set
