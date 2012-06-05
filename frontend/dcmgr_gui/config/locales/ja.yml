@@ -217,6 +217,7 @@ ja:
       memory_size: "メモリーサイズ"
       ip: "IP"
       state: "状態"
+      display_name: "インスタンス名"
     details:
       header: "詳細"
       instance: "インスタンス"
@@ -229,6 +230,7 @@ ja:
       ssh_key_pair: "SSHキーペア"
       created_at: "作成日"
       security_groups: "セキュリティグループ"
+      display_name: "インスタンス名"
   hostpools:
     header: "ホストプール"
     list:

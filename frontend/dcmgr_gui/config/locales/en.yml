@@ -222,6 +222,7 @@ en:
       memory_size: "Memory Size"
       ip: "IP"
       state: "State"
+      display_name: "Instance Name"
     details:
       header: "Details"
       instance: "Instance"
@@ -234,6 +235,7 @@ en:
       ssh_key_pair: "SSH Key Pair"
       created_at: "Created At"
       security_groups: "Security Groups"
+      display_name: "Instance Name"
   hostpools:
     header: "Host Pools"
     list:
