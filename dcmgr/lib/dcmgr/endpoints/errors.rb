@@ -103,8 +103,8 @@ module Dcmgr
     define_error(:OutOfNetworkCapacity, 400, '130')
     define_error(:InvalidVolumeSnapshotState, 400, '131')
 
-    define_error(:UndefinedSecurityGroup, 400, '132')
-    define_error(:UnknownSecurityGroup, 400, '133')
+    define_error(:UndefinedSecurityGroup, 404, '132')
+    define_error(:UnknownSecurityGroup, 404, '133')
     define_error(:SecurityGroupNotPermitted, 400, '134')
     deprecated_error(:DuplicatedSecurityGroup, 400, '135')
 
