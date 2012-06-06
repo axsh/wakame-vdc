@@ -167,6 +167,7 @@ module Dcmgr
     autoload :Ifs, 'dcmgr/drivers/ifs.rb'
     autoload :IfsIscsi, 'dcmgr/drivers/ifs_iscsi'
     autoload :IfsStorage, 'dcmgr/drivers/ifs_storage'
+    autoload :Haproxy, 'dcmgr/drivers/haproxy'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'
