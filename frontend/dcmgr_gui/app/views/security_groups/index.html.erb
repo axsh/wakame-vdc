@@ -40,7 +40,7 @@ jQuery(function($){
 			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
 				<tr>
 					<th></th>
-					<th><%= t("security_groups.list.name") %></th>
+					<th><%= t("security_groups.list.display_name") %></th>
 					<th><%= t("security_groups.list.descriptions") %></th>
 					<th><%= t("security_groups.list.action") %></th>
 				</tr>
@@ -51,8 +51,8 @@ jQuery(function($){
 					{{else}}
 						<td class="listradiobutton"></td>
 					{{/if}}
-					<td class="vtip" title="uuid" style="width:130px">${item.uuid}</td>
-					<td class="vtip" title="description" style="width:500px">${item.description}</td>
+					<td class="vtip" title="display_name" style="width:150px">${item.display_name}</td>
+					<td class="vtip" title="description" style="width:350px">${item.description}</td>
 					{{if item.uuid }}
 					<td class="vtip center" title="action">
 						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.uuid}"><%= t("security_groups.button.edit_security_group") %></a>
@@ -77,8 +77,13 @@ jQuery(function($){
 				<table class="ptn07" frame="void" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td class="padcell"></td>
-						<td class="title"><%= t("security_groups.details.name") %>:</td>
+						<td class="title"><%= t("security_groups.details.security_group_id") %>:</td>
 						<td>${item.uuid}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title" style="width:150px"><%= t("security_groups.details.display_name") %>:</td>
+						<td>${item.display_name}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>

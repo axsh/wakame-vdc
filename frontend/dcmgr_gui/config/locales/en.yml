@@ -373,15 +373,17 @@ en:
       delete_security_group: "Delete Security Group"
       edit_security_group: "Edit"
     list:
-      name: "Name"
+      security_group_id: "Security Group ID"
       descriptions: "Description"
       action: "Action"
+      display_name: "Security Group Name"
     details:
       header: "Details"
-      name: "Name"
+      security_group_id: "Security Group ID"
       description: "Description"
       created_at: "Created At"
       updated_at: "Updated At"
+      display_name: "Security Group Name"
   keypairs:
     header: "Key Pairs"
     button:
