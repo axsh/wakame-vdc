@@ -81,6 +81,7 @@ Requires: dracut-kernel
 Requires: kmod-openvswitch = 1.4.1
 Requires: openvswitch = 1.4.1
 Requires: kpartx
+Requires: libcgroup
 # includes /sbin/losetup
 Requires: util-linux-ng
 %description  hva-common-vmapp-config
