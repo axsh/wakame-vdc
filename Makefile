@@ -2,6 +2,7 @@ ruby_ver ?= 1.9.2-p290
 
 # should be in wakame-vdc
 CURDIR ?= $(PWD)
+RUBYDIR ?= $(CURDIR)/ruby
 
 CFLAGS := -fno-strict-aliasing
 CXXFLAGS := -fno-strict-aliasing
@@ -16,7 +17,7 @@ else
 endif
 export CFLAGS CXXFLAGS CONFIGURE_OPTS
 
-PATH := $(CURDIR)/ruby/bin:${PATH}
+PATH := $(RUBYDIR)/bin:${PATH}
 export PATH
 
 # unset GEM_HOME and GEM_PATH
@@ -31,7 +32,7 @@ ruby-build:
 	(cd $(CURDIR); git clone https://github.com/sstephenson/ruby-build.git)
 
 ruby:
-	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(CURDIR)/ruby)
+	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(RUBYDIR))
 
 install-core-gem: install-core-gem-stamp
 install-core-gem-stamp:
@@ -45,7 +46,7 @@ bundle-install-stamp:
 	touch $@
 
 clean:
-	rm -rf $(CURDIR)/ruby-build $(CURDIR)/ruby
+	rm -rf $(CURDIR)/ruby-build $(RUBYDIR)
 	rm -rf $(CURDIR)/dcmgr/vendor/bundle
 	rm -rf $(CURDIR)/frontend/dcmgr_gui/vendor/bundle
 	rm -f $(CURDIR)/build-ruby-stamp
