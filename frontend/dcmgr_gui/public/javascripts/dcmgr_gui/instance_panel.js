@@ -205,6 +205,7 @@ DcmgrGUI.prototype.instancePanel = function(){
     var ids = c_list.currentMultiChecked()['ids'];
     var is_running = false;
     var is_shutting_down = false;
+    var is_stopped = false;
     var flag = true;
     $.each(ids, function(key, uuid){
       var row_id = '#row-'+uuid;

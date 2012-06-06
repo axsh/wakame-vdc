@@ -12,7 +12,8 @@ class InstancesController < ApplicationController
       :hostname => params[:host_name],
       :user_data => params[:user_data],
       :security_groups => params[:security_groups],
-      :ssh_key => params[:ssh_key]
+      :ssh_key => params[:ssh_key],
+      :display_name => params[:display_name]
     }
     instance = Hijiki::DcmgrResource::Instance.create(data)
     render :json => instance
