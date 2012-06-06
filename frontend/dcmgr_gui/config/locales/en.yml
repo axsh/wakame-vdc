@@ -87,6 +87,7 @@ en:
     edit_security_group:
       header: "Edit Security Group"
     create_and_edit_security_group:
+      display_name: "Security Group Name"
       description: "Description"
       rule: "Rule"
     delete_security_group:

@@ -8,6 +8,7 @@ module Hijiki::DcmgrResource::V1203
     module ClassMethods
       def create(params)
         security_group = self.new
+        security_group.display_name = params[:display_name]
         security_group.description = params[:description]
         security_group.rule = params[:rule]
         security_group.save
