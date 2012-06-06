@@ -96,6 +96,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
     end
     
+    if params[:vifs]
+      params[:vifs] = JSON::load(params[:vifs])
+    end
+
     # params is a Mash object. so coverts to raw Hash object.
     instance = M::Instance.entry_new(@account, wmi, spec, params.to_hash) do |i|
       # Set common parameters from user's request.
@@ -134,12 +138,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
     instance.save
-
-    if params[:nf_group].is_a?(Array) || params[:nf_group].is_a?(String)
-      instance.join_security_group(params[:nf_group])
-    elsif params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
-      instance.join_security_group(params[:security_groups])
-    end
     
     instance.state = :scheduling
     instance.save
@@ -247,22 +245,22 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
       groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
       # Remove old security groups
-      instance.security_groups_dataset.each { |group|
-        unless security_group_uuids.member?(group.canonical_uuid)
-          instance.remove_security_group(group)
-          instance.network_vif.each { |vnic|
+      instance.nic.each { |vnic|
+        vnic.security_groups_dataset.each { |group|
+          unless security_group_uuids.member?(group.canonical_uuid)
+            vnic.remove_security_group(group)
             Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
             Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
-          }
-        end
+          end
+        }
       }
       
       # Add new security groups
-      current_group_ids = instance.security_groups_dataset.map {|g| g.canonical_uuid}
+      current_group_ids = instance.nic.first.security_groups_dataset.map {|g| g.canonical_uuid}
       groups.each { |group|
         unless current_group_ids.member?(group.canonical_uuid)
-          instance.add_security_group(group)
-          instance.network_vif.each { |vnic|
+          instance.nic.each { |vnic|
+            vnic.add_security_group(group)
             Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
             Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
           }

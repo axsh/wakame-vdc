@@ -93,7 +93,18 @@ module Dcmgr
           end
         end
       end
-      
+
+      class StdServiceType < ServiceType
+      end
+
+      class LbServiceType < ServiceType
+        param :image_id
+        param :instance_spec_id
+        param :host_node_id
+        param :security_group
+        param :ssh_key_id
+      end 
+
       DSL do
         #
         # service_type("lb") {
@@ -101,9 +112,10 @@ module Dcmgr
         #   storage_node_scheduler(:LbScheduler1) {}
         #   network_scheduler(:LbScheduler1) {}
         # }
-        def service_type(name, &blk)
+        def service_type(name, class_name, &blk)
+          raise ArgumentError unless Dcmgr.const_get(class_name) < ServiceType
           @config[:service_types] ||= {}
-          @config[:service_types][name] = ServiceType.new(name).parse_dsl(&blk)
+          @config[:service_types][name] = Dcmgr.const_get(class_name).new(name).parse_dsl(&blk)
           self
         end
       end

@@ -6,7 +6,7 @@ module Dcmgr::Models
     taggable 'vif'
 
     many_to_one :network
-
+    many_to_many :security_groups, :join_table=>:network_vif_security_groups
     # To be moved to proper instance_nic.
 
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
@@ -26,7 +26,10 @@ module Dcmgr::Models
     def to_api_document
       hash = super
       hash.delete(instance_id)
-      hash.merge!({:network_id => network_id})
+      hash.merge!({
+        :network_id => network_id},
+        :security_groups => self.security_groups.map {|n| n.canonical_uuid }
+      )
       hash
     end
 
@@ -35,8 +38,10 @@ module Dcmgr::Models
       hash.merge!({ :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
                     :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
                     :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
+                    :host_node_id => self.instance.nil? ? nil : self.instance.host_node.node_id,
                     :network_id => self.network_id,
                     :network => self.network.nil? ? nil : self.network.to_hash,
+                    :security_groups => self.security_groups.map {|n| n.canonical_uuid },
                   })
       hash
     end
@@ -78,6 +83,8 @@ module Dcmgr::Models
       maclease = MacLease.find(:mac_addr=>self.mac_addr)
       maclease.destroy if maclease
       release_ip_lease
+      self.remove_all_security_groups
+      self.remove_all_security_groups
       super
     end
 

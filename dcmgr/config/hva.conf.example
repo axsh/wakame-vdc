@@ -17,7 +17,6 @@ esxi_insecure      false
 
 # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
 # * 'netfilter'
-# * 'legacy_netfilter' #no longer supported, has issues with multiple vnic vm isolation
 # * 'openflow' #experimental, requires additional setup
 # * 'off'
 edge_networking 'netfilter'

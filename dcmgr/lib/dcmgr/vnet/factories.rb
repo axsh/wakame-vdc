@@ -28,27 +28,19 @@ module Dcmgr
       def self.create_tasks_for_ARP_isolation(vnic,friends,node)
         enable_logging = node.manifest.config.packet_drop_log
         
-        friend_ips = friends.select { |vnic_map|
-          vnic_map[:ipv4] and vnic_map[:ipv4][:address]
-        }.map { |vnic_map|
-          vnic_map[:ipv4][:address]
-        }
+        friend_ips = friends.map { |friend| friend[:address] }.compact
         
-        [AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")]
+        [AcceptARPFromFriends.new(vnic[:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")]
       end
 
       def self.create_tasks_for_isolation(vnic,friends,node)
         tasks = []
         enable_logging = Dcmgr.conf.packet_drop_log
         ipset_enabled = Dcmgr.conf.use_ipset
-
-        friend_ips = friends.select { |vnic_map|
-          vnic_map[:ipv4] and vnic_map[:ipv4][:address]
-        }.map { |vnic_map|
-          vnic_map[:ipv4][:address]
-        }
         
-        tasks << AcceptARPFromFriends.new(vnic[:ipv4][:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")
+        friend_ips = friends.map { |friend| friend[:address] }.compact
+        
+        tasks << AcceptARPFromFriends.new(vnic[:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")
         tasks << AcceptIpFromFriends.new(friend_ips)
         
         if is_natted? vnic          
@@ -58,7 +50,8 @@ module Dcmgr
             # Not implemented yet
             #tasks << ExcludeFromNatIpSet.new(friend_ips,vnic[:ipv4][:address])
           else
-            tasks << ExcludeFromNat.new(friend_ips,vnic[:ipv4][:address])
+            #tasks << ExcludeFromNat.new(friend_ips,vnic[:ipv4][:address])
+            tasks << ExcludeFromNat.new(friend_ips,vnic[:address])
           end
         end
         

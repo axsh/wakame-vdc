@@ -54,7 +54,7 @@ module Dcmgr
     autoload :NetworkVif, 'dcmgr/models/network_vif'
     autoload :Network, 'dcmgr/models/network'
     autoload :IpLease, 'dcmgr/models/ip_lease'
-    autoload :InstanceSecurityGroup, 'dcmgr/models/instance_security_group'
+    autoload :NetworkVifSecurityGroup, 'dcmgr/models/network_vif_security_group'
     autoload :SshKeyPair, 'dcmgr/models/ssh_key_pair'
     autoload :History, 'dcmgr/models/history'
     autoload :HostnameLease, 'dcmgr/models/hostname_lease'
@@ -64,6 +64,7 @@ module Dcmgr
     autoload :DhcpRange, 'dcmgr/models/dhcp_range'
     autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
+    autoload :LoadBalancer, 'dcmgr/models/load_balancer'
   end
 
   module Endpoints
@@ -186,6 +187,7 @@ module Dcmgr
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'
       autoload :NatOneToOne, 'dcmgr/scheduler/network/nat_one_to_one'
       autoload :VifTemplate, 'dcmgr/scheduler/network/vif_template'
+      autoload :VifParamTemplate, 'dcmgr/scheduler/network/vif_param_template'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
     end
 

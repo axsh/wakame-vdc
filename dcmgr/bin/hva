@@ -37,7 +37,7 @@ manifest.instance_eval do
     load_module Dcmgr::NodeModules::ServiceOpenFlow
   when 'off'
     # Don't load openflow nor netfilter
-  when 'netfilter', 'legacy_netfilter'
+  when 'netfilter'
     load_module Dcmgr::NodeModules::ServiceNetfilter
   else
     raise "Configuration error: '#{Dcmgr.conf.edge_networking}' is not a valid option for edge_networking. Valid options are 'openflow', 'netfilter', 'legacy_netfilter' and 'off'"

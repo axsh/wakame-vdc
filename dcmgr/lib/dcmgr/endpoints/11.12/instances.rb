@@ -70,12 +70,6 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
       end
     end
     instance.save
-
-    if params[:nf_group].is_a?(Array) || params[:nf_group].is_a?(String)
-      instance.join_security_group(params[:nf_group])
-    elsif params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
-      instance.join_security_group(params[:security_groups])
-    end
     
     instance.state = :scheduling
     instance.save

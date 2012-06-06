@@ -168,15 +168,17 @@ module Dcmgr
         sh("vzctl stop %s",[ctid])
         case hc.inst[:image][:file_format]
         when "raw"
-          # find loopback device 
-          lodev = sh("losetup -a |grep %s/i |awk '{print $1}'", [hc.inst_data_dir])[:stdout].chomp.split(":")[0]
-          #
-          # /dev/loop0: [0801]:151429 (/path/to/dir/i-xxxx*)
-          #
-          
           # umount vm image directory
           sh("umount -d %s", [private_dir])
           if hc.inst[:image][:root_device]
+            # find loopback device
+            img_file_path = "#{hc.inst_data_dir}/#{hc.inst[:uuid]}"
+            inode = sh("ls -i %s |awk '{print $1}'", [img_file_path])[:stdout].chomp
+            lodev = sh("losetup -a |grep %s |awk '{print $1}'", [inode])[:stdout].chomp.split(":")[0]
+            #
+            # /dev/loop0: [0801]:151429 (/path/to/dir/i-xxxx*)
+            #
+            
             # delete device maps
             sh("kpartx -d %s", [lodev])
             # wait udev queue

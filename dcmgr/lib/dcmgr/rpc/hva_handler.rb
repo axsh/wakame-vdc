@@ -97,8 +97,9 @@ module Dcmgr
                                 ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
 
         # Security group vnic left events for vnet netfilter
-        @inst[:security_groups].each { |secg|
-          @inst[:vif].each { |vnic|
+        @inst[:vif].each { |vnic|
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_destroyed", :args=>[vnic[:uuid]])
+          vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_left", :args=>[vnic[:uuid]])
           }
         }
@@ -162,7 +163,6 @@ module Dcmgr
           'public-ipv4'    => @inst[:nat_ips].first,
           'ramdisk-id' => nil,
           'reservation-id' => nil,
-          'security-groups' => @inst[:security_groups].join(' '),
         }
 
         @inst[:vif].each { |vnic|
@@ -179,7 +179,7 @@ module Dcmgr
             "network/interfaces/macs/#{mac}/mac" => vnic[:mac_addr].unpack('A2'*6).join(':'),
             "network/interfaces/macs/#{mac}/public-hostname" => @inst[:hostname],
             "network/interfaces/macs/#{mac}/public-ipv4s" => vnic[:ipv4][:nat_address],
-            "network/interfaces/macs/#{mac}/security-groups" => @inst[:security_groups].join(' '),
+            "network/interfaces/macs/#{mac}/security-groups" => vnic[:security_groups].join(' '),
             # wakame-vdc extention items.
             # TODO: need an iface index number?
             "network/interfaces/macs/#{mac}/x-dns" => vnic[:ipv4][:network][:dns_server],
@@ -239,11 +239,12 @@ module Dcmgr
         check_interface
         @hv.run_instance(@hva_ctx)
         # Node specific instance_started event for netfilter and general instance_started event for openflow
-        update_instance_state({:state=>:running}, ['hva/instance_started',"#{@inst[:host_node][:node_id]}/instance_started"])
+        update_instance_state({:state=>:running}, ['hva/instance_started'])
         
         # Security group vnic joined events for vnet netfilter
-        @inst[:security_groups].each { |secg|
-          @inst[:vif].each { |vnic|
+        @inst[:vif].each { |vnic|
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
+          vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
           }
         }
@@ -291,12 +292,15 @@ module Dcmgr
         check_interface
         @hv.run_instance(@hva_ctx)
         # Node specific instance_started event for netfilter and general instance_started event for openflow
-        update_instance_state({:state=>:running}, ['hva/instance_started',"#{@inst[:host_node][:node_id]}/instance_started"])
+        update_instance_state({:state=>:running}, ['hva/instance_started'])
+        
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
         
         # Security group vnic joined events for vnet netfilter
-        @inst[:security_groups].each { |secg|
-          @inst[:vif].each { |vnic|
+        @inst[:vif].each { |vnic|
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
+          
+          vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
           }
         }

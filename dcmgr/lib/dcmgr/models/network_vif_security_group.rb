@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Models
-  class InstanceSecurityGroup < BaseNew
+  class NetworkVifSecurityGroup < BaseNew
 
-    many_to_one :instance
+    many_to_one :network_vif
     many_to_one :security_group
   end
 end

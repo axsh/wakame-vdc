@@ -21,7 +21,6 @@ module Dcmgr::Endpoints::V1203::Responses
           :status => self.status,
           :ssh_key_pair => nil,
           :volume => [],
-          :security_groups => self.security_groups.map {|n| n.canonical_uuid },
           :vif => [],
           :hostname => hostname,
           :ha_enabled => ha_enabled,

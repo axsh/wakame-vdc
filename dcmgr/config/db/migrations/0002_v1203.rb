@@ -65,8 +65,18 @@ Sequel.migration do
       index [:network_vif_id]
       index [:network_vif_id,:name], :unique=>true
     end
+    
+    create_table(:network_vif_security_groups) do
+      primary_key :id, :type=>"int(11)"
+      column :network_vif_id, "int(11)", :null=>false
+      column :security_group_id, "int(11)", :null=>false
+
+      index [:network_vif_id]
+      index [:security_group_id]
+    end
 
     drop_table(:security_group_rules)
+    drop_table(:instance_security_groups)
 
     rename_table(:instance_nics, :network_vifs)
 
@@ -128,6 +138,28 @@ Sequel.migration do
       index [:resource_type]
       index [:event_type]
       index [:created_at]
+    end
+
+    create_table(:load_balancers) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false
+      column :account_id, "varchar(255)", :null=>false
+      column :instance_id, "int(11)", :null=>false
+      column :description, "text", :null=>true
+      column :terminated_at, "datetime", :null=>true
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false  
+      index [:uuid], :name=>:uuid
+      index [:account_id]
+    end
+    
+    create_table(:load_balancer_targets) do
+      primary_key :id, :type=>"int(11)"
+      column :network_vif_id, "int(11)"
+      column :load_balancer_id, "int(11)"
+      column :created_at, "datetime", :null=>false
+      index [:network_vif_id]
+      index [:load_balancer_id]
     end
 
     # Add service_type column for service type resources
