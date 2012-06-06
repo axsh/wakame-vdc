@@ -96,6 +96,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   launch_instance_buttons[close_button_name] = function() { $(this).dialog("close"); };  
   launch_instance_buttons[launch_button_name] = function() {
     var image_id = $(this).find('#image_id').val();
+    var display_name = $(this).find('#display_name').val();
     var host_node_id = $(this).find('#host_node').find('option:selected').val();
     var host_name = $(this).find('#host_name').val();
     var instance_spec_id = $(this).find('#instance_specs').val();
@@ -113,7 +114,8 @@ DcmgrGUI.prototype.imagePanel = function(){
               +"&host_name="+host_name
               +"&user_data="+user_data
               +"&" + security_groups.join('&')
-              +"&ssh_key="+ssh_key_pair;
+              +"&ssh_key="+ssh_key_pair
+              +"&display_name="+display_name;
     
     request = new DcmgrGUI.Request;
     request.post({
@@ -145,20 +147,32 @@ DcmgrGUI.prototype.imagePanel = function(){
         'host_node': false,
         'instance_spec': false,
         'ssh_keypair': false,
-        'security_groups': false
+        'security_groups': false,
+        'display_name': false
       };
 
       var ready = function(data) {
         if(data['host_node'] == true &&
            data['instance_spec'] == true &&
            data['ssh_keypair'] == true &&
-           data['security_groups'] == true) {  
+           data['security_groups'] == true &&
+           data['display_name'] == true) {  
           bt_launch_instance.disabledButton(1, false);
         } else {
           bt_launch_instance.disabledButton(1, true);
         }
       }
- 
+
+      $(this).find('#display_name').keyup(function(){
+       if( $(this).val() ) {
+         is_ready['display_name'] = true;
+         ready(is_ready);
+       } else {
+         is_ready['display_name'] = false;
+         ready(is_ready);
+       }
+      });
+
       parallel({
         //get host_nodes
         host_nodes: 

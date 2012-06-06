@@ -15,6 +15,7 @@ module Hijiki::DcmgrResource::V1203
         instance.user_data = params[:user_data]
         instance.security_groups = params[:security_groups]
         instance.ssh_key_id = params[:ssh_key]
+        instance.display_name = params[:display_name]
         instance.save
         instance
       end
