@@ -62,6 +62,7 @@ class DialogController < ApplicationController
     @security_group = Hijiki::DcmgrResource::SecurityGroup.show(@uuid)
     
     @description =  @security_group["description"]
+    @display_name =  @security_group["display_name"]
     @rule = @security_group["rule"]
     render :create_and_edit_security_group
   end

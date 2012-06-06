@@ -87,6 +87,7 @@ en:
     edit_security_group:
       header: "Edit Security Group"
     create_and_edit_security_group:
+      display_name: "Security Group Name"
       description: "Description"
       rule: "Rule"
     delete_security_group:
@@ -373,15 +374,17 @@ en:
       delete_security_group: "Delete Security Group"
       edit_security_group: "Edit"
     list:
-      name: "Name"
+      security_group_id: "Security Group ID"
       descriptions: "Description"
       action: "Action"
+      display_name: "Security Group Name"
     details:
       header: "Details"
-      name: "Name"
+      security_group_id: "Security Group ID"
       description: "Description"
       created_at: "Created At"
       updated_at: "Updated At"
+      display_name: "Security Group Name"
   keypairs:
     header: "Key Pairs"
     button:

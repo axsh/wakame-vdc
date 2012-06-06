@@ -12,6 +12,12 @@
     </p>
     <%- end -%>
     <input type="hidden" id="security_group_id" value="<%= @uuid %>">
+    <div id="security_group_display_name_field">
+    <p>
+      <%= t("dialog.create_and_edit_security_group.display_name") %>
+    </p> 
+    <input type="text" id="security_group_display_name" size="43" value="<%= @display_name %>">
+    </div>
     <div id="security_group_description_field">
     <p>
       <%= t("dialog.create_and_edit_security_group.description") %>
