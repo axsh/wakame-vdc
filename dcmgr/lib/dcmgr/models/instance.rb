@@ -139,6 +139,10 @@ module Dcmgr::Models
       self.status = :offline if self.status != :offline
       self.save
     end
+
+    def destroyed?
+      !self.terminated_at.nil?
+    end
     
     # dump column data as hash with details of associated models.
     # this is for internal use.

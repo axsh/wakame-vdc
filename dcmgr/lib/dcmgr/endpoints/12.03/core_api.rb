@@ -50,7 +50,12 @@ module Dcmgr::Endpoints::V1203
         model_class = Dcmgr::Models.const_get(model_class)
       end
       raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
-      model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+      i = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+      # check if it is deleted logically.
+      if i.respond_to?(:destroyed?)
+        raise E::DestroyedUUIDResource, uuid.to_s if i.destroyed?
+      end
+      i
     end
 
     def find_account(account_uuid)
