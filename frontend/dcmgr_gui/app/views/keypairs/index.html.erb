@@ -41,7 +41,8 @@ jQuery(function($){
 			<table class="ptn04" frame="void" cellpadding="0" cellspacing="0" border="0">
 				<tr>
 					<th class="icon"></th>
-					<th><%= t('keypairs.list.access_key_id') %></th>
+					<th><%= t('keypairs.list.display_name') %></th>
+					<th><%= t('keypairs.list.description') %></th>
 					<th class="header_show_key"><%= t('keypairs.list.secret_access_key') %></th>
 				</tr>
 				{{each(index,item) rows}}
@@ -51,7 +52,8 @@ jQuery(function($){
 				{{else}}
 					<td class="listradiobutton"></td>
 				{{/if}}
-					<td>${item.uuid}</td>
+					<td>${item.display_name}</td>
+					<td>${item.description}</td>
 					<td>
 					{{if item.uuid }}
 						{{if item.private_key}}
@@ -77,13 +79,23 @@ jQuery(function($){
 				<table class="ptn08" frame="void" cellpadding="0" cellspacing="0" border="0">
 					<tr>
 						<td class="padcell"></td>
-						<td class="title"><%= t('keypairs.details.uuid') %>:</td>
+						<td class="title"><%= t('keypairs.details.keypair_id') %>:</td>
 						<td colspan="7">${item.uuid}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title"><%= t('keypairs.details.display_name') %>:</td>
+						<td colspan="7">${item.display_name}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>
 						<td class="title"><%= t('keypairs.details.fingerprint') %>:</td>
 						<td colspan="7">${item.finger_print}</td>
+					</tr>
+					<tr>
+						<td class="padcell"></td>
+						<td class="title"><%= t('keypairs.details.description') %>:</td>
+						<td colspan="7">${item.description}</td>
 					</tr>
 					<tr>
 						<td class="padcell"></td>

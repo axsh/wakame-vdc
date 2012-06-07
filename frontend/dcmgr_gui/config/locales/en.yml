@@ -393,10 +393,15 @@ en:
       show_secret_accesskey: "Show Secret Access Key"
     list:
       access_key_id: "Access Key ID"
+      display_name: "Keypair Name"
+      description: "Description"
       secret_access_key: "Secret Access Key"
     details:
       header: "Details"
       uuid: "UUID"
+      keypari_id: "Keypair ID"
+      display_name: "Keypair Name"
+      description: "Description"
       fingerprint: "Fingerprint"
       created_at: "Created"
       updated_at: "Updated"

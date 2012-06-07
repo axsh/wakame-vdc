@@ -377,10 +377,15 @@ ja:
       show_secret_accesskey: "シークレットキーを取得"
     list:
       access_key_id: "アクセスキーID"
+      display_name: "キーペア名"
+      description: "詳細"
       secret_access_key: "シークレットキー"
     details:
       header: "詳細"
       uuid: "UUID"
+      keypair_id: "キーペアID"
+      display_name: "キーペア名"
+      description: "詳細"
       fingerprint: "フィンガープリント"
       created_at: "作成日"
       updated_at: "更新日"
