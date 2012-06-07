@@ -24,31 +24,29 @@ for meta in $data_path/image-*.meta; do
     
     case $storetype in
       "local")
-        shlog ./bin/vdc-manage image add local ${localpath} \
+        shlog ./bin/vdc-manage image add local "${localpath}" \
           --md5sum $chksum \
           --account-id ${account_id} \
           --uuid wmi-${uuid} \
           --arch ${arch} \
-          --description "${localname} local" \
-          --state init \
+          --description "'${localname} local'" \
           --file_format ${fileformat} \
           --root_device ${rootdevice} \
           --service-type ${service_type} \
-	  --display_name ${display_name}
+	  --display_name "'${display_name}'"
         ;;
       
       "volume")
-        shlog ./bin/vdc-manage image add volume snap-${uuid} \
+        shlog ./bin/vdc-manage image add volume "snap-${uuid}" \
           --md5sum ${chksum} \
           --account-id ${account_id} \
           --uuid wmi-${uuid} \
           --arch ${arch} \
-          --description "${localname} volume" \
-          --state init \
+          --description "'${localname} volume'" \
           --file_format ${fileformat} \
           --root_device ${rootdevice} \
           --service-type ${service_type} \
-	  --display_name ${display_name}
+	  --display_name "'${display_name}'"
         ;;
     esac
 

@@ -54,16 +54,16 @@ shlog ./bin/vdc-manage network add \
  --metadata ${metadata_server} \
  --metadata-port ${metadata_port} \
  --service-type=std \
- --description demo \
- --display_name demo1
+ --description "'demo'" \
+ --display_name "'demo1'"
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name=demo2
+ --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name="'demo2'"
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name=demo3
+ --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name="'demo3'"
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name=demo4
+ --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name="'demo4'"
 shlog ./bin/vdc-manage network add \
- --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name=demo5
+ --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type=std --display_name="'demo5'"
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo6 \
  --network-mode l2overlay \
@@ -73,7 +73,7 @@ shlog ./bin/vdc-manage network add \
  --domain vnet6.local \
  --metric 10 \
  --service-type=std \
- --display_name=demo6
+ --display_name="'demo6'"
 shlog ./bin/vdc-manage network add \
  --uuid nw-demo7 \
  --network-mode l2overlay \
@@ -83,7 +83,7 @@ shlog ./bin/vdc-manage network add \
  --domain vnet7.local \
  --metric 10 \
  --service-type=std \
- --display_name=demo7
+ --display_name="'demo7'"
 
 # set forward interface(= physical network) from network
 shlog ./bin/vdc-manage network forward nw-demo1 public
@@ -149,7 +149,7 @@ udp:53,53,ip4:0.0.0.0
 icmp:-1,-1,ip4:0.0.0.0
 EOF
 
-shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "demo key1" --service-type=std --display_name=demo
+shlog ./bin/vdc-manage keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "'demo key1'" --service-type=std --display_name="'demo'"
 
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
 INSERT INTO volume_snapshots values
