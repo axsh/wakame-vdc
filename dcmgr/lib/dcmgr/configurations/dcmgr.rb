@@ -54,6 +54,36 @@ module Dcmgr
       # end
       class HostNodeScheduler < Configuration
       end
+      
+      class HostNodeSchedulerRule < Configuration
+
+        DSL do
+          def self.load_section(class_name, conf_base_class, &blk)
+            raise ArgumentError unless conf_base_class < ::Dcmgr::Configuration
+            #p ::Dcmgr::Scheduler.constants
+            #raise ArgumentError unless ::Dcmgr::Scheduler::NAMESPACES.member?(rule_namespace)
+            #rule_namespace = ::Dcmgr::Scheduler::HostNode::Rules
+            
+            c = ::Dcmgr::Scheduler::HostNode::Rules.rule_class(class_name)
+            s = Scheduler.new.parse_dsl do
+              config.scheduler_class = c
+            end
+            
+            if c.const_defined?(:Configuration)
+              c = c.const_get(:Configuration)
+              if c && c < conf_base_class
+                c = c.new
+                c.parse_dsl(&blk) if blk
+                s.parse_dsl do
+                  option c
+                end
+              end
+            end
+            s
+          end
+        end
+
+      end
 
       class StorageNodeScheduler < Configuration
       end

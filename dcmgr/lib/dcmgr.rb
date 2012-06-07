@@ -183,6 +183,11 @@ module Dcmgr
       autoload :LeastUsage, 'dcmgr/scheduler/host_node/least_usage'
       autoload :ExcludeSame, 'dcmgr/scheduler/host_node/exclude_same'
       autoload :SpecifyNode, 'dcmgr/scheduler/host_node/specify_node'
+      autoload :PipedRules, 'dcmgr/scheduler/host_node/piped_rules'
+      module Rules
+        autoload :AccountLeastUsage, 'dcmgr/scheduler/host_node/rules/account_least_usage'
+        autoload :AssignSpecToGroup, 'dcmgr/scheduler/host_node/rules/assign_spec_to_group'
+      end
     end
     module Network
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'

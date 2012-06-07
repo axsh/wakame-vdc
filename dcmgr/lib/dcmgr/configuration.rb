@@ -19,8 +19,10 @@ module Dcmgr
         case c
         when Configuration
           walk_tree(c, &blk)
-        when Hash, Array
+        when Hash
           c.values.each { |c1| walk_tree(c1, &blk) if c1.is_a?(Configuration) }
+        when Array
+          c.each { |c1| walk_tree(c1, &blk) if c1.is_a?(Configuration) }
         end
       }
     end
