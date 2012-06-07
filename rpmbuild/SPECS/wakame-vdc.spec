@@ -184,6 +184,8 @@ rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
 rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
+[ -d ${RPM_BUILD_ROOT}/etc/%{name} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}
+
 %clean
 RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules clean
 rm -rf %{prefix}/%{name}/ruby
@@ -226,6 +228,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
 %config /etc/prelink.conf.d/wakame-vdc.conf
+%dir /etc/%{name}/
 
 %files debug-config
 %defattr(-,root,root)
