@@ -12,8 +12,8 @@ kvm -device ? 2>&1 | egrep 'name "lsi' -q || {
   image_features_opts="--virtio"
 }
 
-shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo1 --display-name="local storage" --base-uri="sta://sta.demo1${VDC_ROOT}/tmp/images" --storage-type=sta --description='local backup storage for sta.demo1'
-shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="webdav storage" --base-uri='http://localhost:8080/images/' --storage-type=webdav --description='nginx based webdav storage'
+shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo1 --display-name="'local storage'" --base-uri="'sta://sta.demo1${VDC_ROOT}/tmp/images'" --storage-type=sta --description="'local backup storage for sta.demo1'"
+shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webdav storage'" --base-uri="'http://localhost:8080/images/'" --storage-type=webdav --description="'nginx based webdav storage'"
 
 for meta in $data_path/image-*.meta; do
   (
@@ -36,12 +36,12 @@ for meta in $data_path/image-*.meta; do
     shlog ./bin/vdc-manage backupobject add \
       --storage-id=bkst-demo2 \
       --uuid bo-${uuid} \
-      --display-name="$localname" \
+      --display-name="'$localname'" \
       --object-key=$localname \
       --size=$size \
       --allocation-size=$alloc_size \
       --checksum="$chksum" \
-      --description='kvm 32bit'
+      --description="'kvm 32bit'"
     
     case $storetype in
       "local")
