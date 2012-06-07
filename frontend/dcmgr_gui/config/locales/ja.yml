@@ -285,6 +285,7 @@ ja:
       detach_volume: "デタッチ"
     list:
       volume_id: "ボリュームID"
+      display_name: "ボリューム名"
       capacity: "容量"
       snapshot_id: "スナップショットID"
       created: "作成日"
@@ -292,6 +293,7 @@ ja:
     details:
       header: "詳細"
       volume_id: "ボリュームID"
+      display_name: "ボリューム名"
       capacity: "容量"
       snapshot_id: "スナップショットID"
       status: "状態"

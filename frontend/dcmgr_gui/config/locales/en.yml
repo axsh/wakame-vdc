@@ -291,6 +291,7 @@ en:
       detach_volume: "Detach Volume"
     list:
       volume_id: "Volume ID"
+      display_name: "Volume Name"
       capacity: "Capacity"
       snapshot_id: "Snapshot ID"
       created: "Created"
@@ -298,6 +299,7 @@ en:
     details:
       header: "Details"
       volume_id: "Volume ID"
+      display_name: "Volume Name"
       capacity: "Capacity"
       snapshot_id: "Snapshot ID"
       status: "Status"

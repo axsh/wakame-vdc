@@ -46,7 +46,7 @@ jQuery(function($){
 			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
 				<tr> 
 					<th></th>
-					<th><%= t("volumes.list.volume_id") %></th>
+					<th><%= t("volumes.list.display_name") %></th>
 					<th><%= t("volumes.list.capacity") %></th>
 					<th><%= t("volumes.list.snapshot_id") %></th>
 					<th><%= t("volumes.list.created") %></th>
@@ -59,7 +59,7 @@ jQuery(function($){
 					{{else}}
 					<td class="listcheckbox"></td>
 					{{/if}}
-					<td class="vtip uuid" title="volume-id">${item.uuid}</td>
+					<td class="vtip display_name" title="display_name">${item.display_name}</td>
 					<td class="vtip center volume_size" title="capacity" style="width:40px">${item.size}</td>
 					<td class="vtip center" title="snapshot">${item.snapshot_id}</td>
 					<td class="vtip" title="created">${item.created_at}</td>
@@ -84,13 +84,17 @@ jQuery(function($){
 						<td class="title"><%= t("volumes.details.volume_id") %>:</td>
 						<td class="volume_size">${item.uuid}</td>
 						<td class="padcell"></td>
+						<td class="title"><%= t("volumes.details.display_name") %>:</td>
+						<td>${item.display_name}</td>
+                                        </tr>
+                                        <tr>
+						<td class="padcell"></td>
 						<td class="title"><%= t("volumes.details.capacity") %>:</td>
 						<td>${item.size}</td>
-					</tr>
-					<tr>
 						<td class="padcell"></td>
 						<td class="title"><%= t("volumes.details.snapshot_id") %>:</td>
 						<td>${item.snapshot_id}</td>
+                                        <tr>
 						<td class="padcell"></td>
 						<td class="title"><%= t("volumes.details.status") %>:</td>
 						<td class="state">${item.state}</td>
