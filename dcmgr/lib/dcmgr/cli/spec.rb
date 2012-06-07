@@ -97,7 +97,7 @@ __END
     method_option :index, :type => :numeric, :desc => "The index value for the interface. (>=0)"
     method_option :bandwidth, :type => :numeric, :default=>100000, :desc => "The bandwidth (kbps) of the interface"
     def addvif(uuid, name)
-      spec = M::InstanceSpec[uuid]
+      spec = M::InstanceSpec[uuid] || UnknownUUIDError.raise(uuid)
 
       index = if options[:index].nil?
                 # find max index value.
@@ -113,7 +113,7 @@ __END
     
     desc "delvif UUID name", "Delete interfance"
     def delvif(uuid, name)
-      spec = M::InstanceSpec[uuid]
+      spec = M::InstanceSpec[uuid] || UnknownUUIDError.raise(uuid)
       spec.remove_vif(name)
       spec.save
     end
@@ -136,7 +136,7 @@ __END
     method_option :index, :type => :numeric, :desc => "The index value for the interface. (>=0)"
     method_option :size, :type => :numeric, :default=>100, :desc => "Size of the drive. (MB)"
     def adddrive(uuid, type, name)
-      spec = M::InstanceSpec[uuid]
+      spec = M::InstanceSpec[uuid] || UnknownUUIDError.raise(uuid)
 
       index = if options[:index].nil?
                 # find max index value.
@@ -160,7 +160,7 @@ __END
 
     desc "deldrive UUID name", "Delete drive"
     def deldrive(uuid, name)
-      spec = M::InstanceSpec[uuid]
+      spec = M::InstanceSpec[uuid] || UnknownUUIDError.raise(uuid)
       spec.remove_drive(name)
       spec.save
     end
@@ -170,7 +170,7 @@ __END
     method_option :size, :type => :numeric, :desc => "Size of the drive. (MB)"
     method_option :snapshot_id, :type => :string, :desc => "Snapshot ID to copy the content for new drive. Only for "
     def modifydrive(uuid, name)
-      spec = M::InstanceSpec[uuid]
+      spec = M::InstanceSpec[uuid] || UnknownUUIDError.raise(uuid)
       if options[:index]
         spec.update_drive_index(name, options[:index].to_i)
       end

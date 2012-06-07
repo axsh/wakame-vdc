@@ -127,8 +127,7 @@ __END
     desc "features IMAGE_ID", "Set features attribute to the image"
     method_option :virtio, :type => :boolean, :desc => "Virtio ready image."
     def features(uuid)
-      img = M::Image[uuid]
-      UnknownUUIDError.raise(uuid) if img.nil?
+      img = M::Image[uuid] || UnknownUUIDError.raise(uuid)
 
       if options[:virtio]
         img.set_feature(:virtio, options[:virtio])
