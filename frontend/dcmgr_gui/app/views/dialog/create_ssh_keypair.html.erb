@@ -1,6 +1,14 @@
 <div id="create_ssh_keypair_dialog">
   <table>
     <tr>
+      <td><%= t("dialog.create_ssh_keypair.display_name")%>: </td>
+      <td><input id="ssh_keypair_display_name" type="text" size=43 value=""></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.create_ssh_keypair.description")%>: </td>
+      <td><input id="ssh_keypair_description" type="text" size= 43 value=""></td>
+    </tr>
+    <tr>
       <td><%= t("dialog.create_ssh_keypair.download_once")%>: </td>
       <td>
 	<input id="ssh_keypair_download_once" type="checkbox" name="download_once" checked>

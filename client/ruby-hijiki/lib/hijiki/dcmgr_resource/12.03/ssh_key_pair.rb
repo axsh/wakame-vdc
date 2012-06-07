@@ -8,6 +8,8 @@ module Hijiki::DcmgrResource::V1203
     module ClassMethods
       def create(params)
         ssh_key_pair = self.new
+        ssh_key_pair.display_name = params[:display_name]
+        ssh_key_pair.description = params[:description]
         ssh_key_pair.download_once = params[:download_once]
         ssh_key_pair.save
         ssh_key_pair

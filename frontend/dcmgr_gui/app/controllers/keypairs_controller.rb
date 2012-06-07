@@ -27,9 +27,11 @@ class KeypairsController < ApplicationController
   
   def create_ssh_keypair
     data = {
+      :display_name => params[:display_name],
+      :description => params[:description],
       :download_once => params[:download_once]
     }
-    
+
     @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.create(data)
     @filename = @ssh_key_pair.uuid + ".pem"
     
