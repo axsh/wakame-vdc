@@ -42,6 +42,9 @@ install-core-gem-stamp:
 bundle-install: bundle-install-stamp
 bundle-install-stamp:
 	(cd $(CURDIR)/dcmgr && bundle install --standalone --path vendor/bundle)
+	# Use hijiki gem in local since the local version is the latest.
+	(cd $(CURDIR)/frontend/dcmgr_gui && mkdir -p vendor/cache)
+	(cd $(CURDIR)/client/ruby-hijiki && rake gem && mv pkg/ruby-hijiki-*.gem ../../frontend/dcmgr_gui/vendor/cache)
 	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path vendor/bundle)
 	touch $@
 
