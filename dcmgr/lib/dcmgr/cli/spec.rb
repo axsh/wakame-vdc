@@ -20,8 +20,8 @@ module Dcmgr::Cli
       UnsupportedHypervisorError.raise(options[:hypervisor]) unless M::HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
       uuid = super(M::InstanceSpec,options)
       # add one interface as default
-      invoke("addvif", [uuid, 'eth0'])
-      invoke("adddrive", [uuid, 'local', 'ephemeral1'])
+      addvif(uuid, 'eht0')
+      adddrive(uuid, 'local', 'ephemeral1')
       puts uuid
     end
     
