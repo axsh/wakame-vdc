@@ -16,7 +16,7 @@ module Dcmgr
         def schedule(instance)
           index = 0
 
-          instance.request_params[:vifs].each { |name, param|
+          instance.request_params['vifs'].each { |name, param|
             # Remove index?
             vnic = instance.add_nic({ :index => index,
                                       :bandwidth => 100000})

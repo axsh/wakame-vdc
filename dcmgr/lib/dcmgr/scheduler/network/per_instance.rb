@@ -30,8 +30,10 @@ module Dcmgr
         end
         
         def schedule(instance)
-          if instance.request_params[:vifs]
-            sched = VifParamTemplate.new
+          if instance.request_params['vifs']
+            sched_name = 'VifParamTemplate'
+            sched_class = VifParamTemplate
+            sched = sched_class.new
           else
             sched_name = instance.request_params['network_scheduler']
             if sched_name.nil? || sched_name == ''

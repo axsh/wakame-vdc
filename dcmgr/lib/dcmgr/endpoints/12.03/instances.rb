@@ -96,8 +96,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
     end
     
-    if params[:vifs]
-      params[:vifs] = JSON::load(params[:vifs])
+    if params['vifs'].class == String
+      params['vifs'] = JSON::load(params['vifs'])
     end
 
     # params is a Mash object. so coverts to raw Hash object.
