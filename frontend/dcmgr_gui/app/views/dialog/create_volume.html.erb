@@ -1,6 +1,10 @@
 <div id="create_volume_dialog">
 	<table>
 		<tr>
+			<td><%= t("dialog.create_volume.display_name") %>:</td>
+                        <td><input id="display_name" type="text" name="display_name"></td>
+                </tr>
+                <tr>
 			<td><%= t("dialog.create_volume.size") %>:</td>
 			<td>
 				<input id="volume_size" type="text" name="size" size="2" maxlength="3">

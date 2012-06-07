@@ -11,6 +11,7 @@ module Hijiki::DcmgrResource::V1203
         volume.volume_size = params[:volume_size]
         volume.snapshot_id = params[:snapshot_id]
         volume.storage_pool_id = params[:storage_pool_id]
+        volume.display_name = params[:display_name]
         volume.save
         volume
       end

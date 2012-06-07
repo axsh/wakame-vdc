@@ -26,10 +26,12 @@ class VolumesController < ApplicationController
              end
       
       storage_node_id = params[:storage_node_id] #option
+      display_name = params[:display_name]
       
       data = {
         :volume_size => size,
-        :storage_node_id => storage_node_id
+        :storage_node_id => storage_node_id,
+        :display_name => display_name
       }
       
       @volume = Hijiki::DcmgrResource::Volume.create(data)

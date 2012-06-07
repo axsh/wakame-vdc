@@ -61,6 +61,7 @@ ja:
       display_name: "インスタンス名"
     create_volume:
       header: "ボリュームを作成"
+      display_name: "ボリューム名"
       size: "サイズ"
       storage: "ストレージ"
     attach_volume:

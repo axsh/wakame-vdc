@@ -61,6 +61,7 @@ en:
       display_name: "Instance Name"
     create_volume:
       header: "Create Volume"
+      display_name: "Volume Name"
       size: "Size"
       storage: "Storage"
     attach_volume:

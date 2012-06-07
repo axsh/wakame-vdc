@@ -88,6 +88,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var create_volume_buttons = {};
   create_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
   create_volume_buttons[create_button_name] = function() {
+    var display_name = $(this).find('#display_name').val();
     var volume_size = $(this).find('#volume_size').val();
     var unit = $(this).find('#unit').find('option:selected').val();
     var storage_node_id = $(this).find('#storage_node').find('option:selected').val();
@@ -95,7 +96,7 @@ DcmgrGUI.prototype.volumePanel = function(){
      $('#volume_size').focus();
      return false;
     }
-    var data = "size="+volume_size+"&unit="+unit+"&storage_node_id="+storage_node_id;
+    var data = "size="+volume_size+"&unit="+unit+"&storage_node_id="+storage_node_id+"&display_name="+display_name;
     
     var request = new DcmgrGUI.Request;
     request.post({
@@ -111,7 +112,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var bt_create_volume = new DcmgrGUI.Dialog({
     target:'.create_volume',
     width:400,
-    height:200,
+    height:250,
     title:$.i18n.prop('create_volume_header'),
     path:'/create_volume',
     callback: function(){
@@ -120,6 +121,40 @@ DcmgrGUI.prototype.volumePanel = function(){
       $(this).find('#select_storage_node').empty().html(loading_image);
       
       var request = new DcmgrGUI.Request;
+      var is_ready = {
+        'display_name': false,
+        'volume_size': false
+      }
+
+      var ready = function(data) {
+        if(data['display_name'] == true &&
+           data['volume_size'] == true) {
+          bt_create_volume.disabledButton(1, false);
+        } else {
+          bt_create_volume.disabledButton(1, true);
+        }
+      }
+
+      $(this).find('#display_name').keyup(function(){
+       if( $(this).val() ) {
+         is_ready['display_name'] = true;
+         ready(is_ready);
+       } else {
+         is_ready['display_name'] = false;
+         ready(is_ready);
+       }
+      });
+
+      $(this).find('#volume_size').keyup(function(){
+       if( $(this).val() ) {
+         is_ready['volume_size'] = true;
+         ready(is_ready);
+       } else {
+         is_ready['volume_size'] = false;
+         ready(is_ready);
+       }
+      });
+
       request.get({
         "url": '/storage_nodes/show_storage_nodes.json',
         success: function(json,status){
@@ -135,8 +170,6 @@ DcmgrGUI.prototype.volumePanel = function(){
           }
 
           var params = { 'button': bt_create_volume, 'element_id': 1 };
-          $(self).find('#volume_size').bind('paste', params, DcmgrGUI.Util.availableTextField);
-          $(self).find('#volume_size').bind('keyup', params, DcmgrGUI.Util.availableTextField);
         }
       });
     },
