@@ -34,7 +34,7 @@ module Dcmgr
         rescue ::Exception => e
           logger.error("Faild to bind HAProxy: #{e.message}")
         ensure
-          #remove_temporary
+          remove_temporary
           logger.info("Delete config file: #{output_file_path}")
         end
       end
