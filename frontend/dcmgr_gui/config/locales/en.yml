@@ -314,6 +314,7 @@ en:
       delete_snapshot: "Delete Snapshot"
     list:
       snapshot_id: "Snapshot ID"
+      display_name: "Snapshot Name"
       capacity: "Capacity"
       origin_volume_id: "OriginVolume ID"
       destination: "Destination"
@@ -322,6 +323,7 @@ en:
     details:
       header: "Details"
       snapshot_id: "Snapshot ID"
+      display_name: "Snapshot Name"
       snapshot: "Snapshot"
       storage_node_id: "StorageNode ID"
       capacity: "Capacity"
