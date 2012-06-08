@@ -59,13 +59,17 @@ service_type("std", "StdServiceType") {
   # * :LeastUsage
   # * :PipedRules do
   #
-  #     through(:AssignSpecToGroup) {
-  #       template({
-  #         'is-spec1' => 'hg-group1',
-  #         'is-spec2' => 'hg-group2'
-  #       })
+  #     through(:RequestParamToGroup) {
+  #       default 'tag-shhost'
+  #    
+  #       key 'instance_spec_id'
+  #       pair 'is-demo1', 'tag-hosts1'
+  #       pair 'is-demo2', 'tag-hosts2'
   #     }
-  #     through(:AccountLeastUsage)
+  #  
+  #     through(:LeastUsageBy) {
+  #       key 'account_id'
+  #     }
   #
   #   end
   #

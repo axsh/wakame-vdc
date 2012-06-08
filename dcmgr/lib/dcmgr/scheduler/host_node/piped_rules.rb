@@ -85,10 +85,6 @@ module Dcmgr
             end
           }
           
-          #host_nodes.each { |item|
-            #p item
-          #}
-          
           instance.host_node = host_nodes.first
         end
       end

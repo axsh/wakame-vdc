@@ -185,8 +185,8 @@ module Dcmgr
       autoload :SpecifyNode, 'dcmgr/scheduler/host_node/specify_node'
       autoload :PipedRules, 'dcmgr/scheduler/host_node/piped_rules'
       module Rules
-        autoload :AccountLeastUsage, 'dcmgr/scheduler/host_node/rules/account_least_usage'
-        autoload :AssignSpecToGroup, 'dcmgr/scheduler/host_node/rules/assign_spec_to_group'
+        autoload :RequestParamToGroup, 'dcmgr/scheduler/host_node/rules/request_param_to_group'
+        autoload :LeastUsageBy, 'dcmgr/scheduler/host_node/rules/least_usage_by'
       end
     end
     module Network

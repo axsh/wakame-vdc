@@ -2,7 +2,10 @@
 
 module Dcmgr::Scheduler::HostNode::Rules
 
-  class AccountLeastUsage < Rule
+  class LeastUsageBy < Rule
+    configuration do
+      param :key
+    end
 
     def filter(dataset,instance)
       reorder(dataset.all,instance)
@@ -10,7 +13,7 @@ module Dcmgr::Scheduler::HostNode::Rules
     
     def reorder(array,instance)
       array.sort_by! { |hn|
-        hn.instances.delete_if { |i| i.account != instance.account || i.state != "running" }.size
+        hn.instances.delete_if { |i| i.request_params[options.key] != instance.request_params[options.key] || i.state == "terminated" || i.state == "stopped" }.size
       }
       
       array
