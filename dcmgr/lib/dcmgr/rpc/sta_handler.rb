@@ -10,12 +10,12 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
 
       def select_backing_store
-        backing_store = @node.manifest.config.backing_store 
+        backing_store = Dcmgr.conf.backing_store 
         @backing_store = Dcmgr::Drivers::BackingStore.select_backing_store(backing_store)
       end
 
       def select_iscsi_target
-        iscsi_target = @node.manifest.config.iscsi_target
+        iscsi_target = Dcmgr.conf.iscsi_target
         @iscsi_target = Dcmgr::Drivers::IscsiTarget.select_iscsi_target(iscsi_target, @node)
       end
 
