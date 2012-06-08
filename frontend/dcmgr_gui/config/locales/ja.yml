@@ -77,6 +77,7 @@ ja:
     create_snapshot:
       header: "スナップショットを作成"
       message: "スナップショットを作成します。よろしいですか？"
+      display_name: "スナップショット名"
     create_volume_from_snapshot:
       header: "ボリュームを作成"
       message: "ボリュームを作成します。よろしいですか？"

@@ -1,6 +1,13 @@
 <div id="create_snapshost_dialog">
 <p><%= t("dialog.create_snapshot.message") %></p>
+<br />
 <% form_tag :action => "create_snapshot" do %>
+<table>
+  <tr>
+    <td><%= t("dialog.create_snapshot.display_name")%>: </td>
+    <td><input id="snapshot_display_name" type="text" value=""></td>
+  </tr>
+</table>
 <br />
 store to:&nbsp;  
 <span id="select_destination">

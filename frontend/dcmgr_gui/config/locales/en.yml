@@ -77,6 +77,7 @@ en:
     create_snapshot:
       header: "Create Snapshot"
       message: "Are you sure you want to create the following snapshot?"
+      display_name: "Volume Name"
     create_volume_from_snapshot:
       header: "Create Volume "
       message: "Are you sure you want to create the following volume?"

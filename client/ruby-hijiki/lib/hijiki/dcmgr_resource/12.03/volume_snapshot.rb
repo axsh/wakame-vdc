@@ -18,6 +18,7 @@ module Hijiki::DcmgrResource::V1203
         snapshot = self.new
         snapshot.volume_id = params[:volume_id]
         snapshot.destination = params[:destination]
+        snapshot.display_name = params[:display_name]
         snapshot.save
         snapshot
       end

@@ -212,6 +212,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var create_snapshot_buttons = {};
   create_snapshot_buttons[close_button_name] = function() { $(this).dialog("close"); }; 
   create_snapshot_buttons[create_button_name] = function() {
+    var display_name = $(this).find('#snapshot_display_name').val();
     var volume_snapshots = $(this).find('#create_snapshots').find('li');
     var destination = $(this).find('#destination').val();
     var ids = []
@@ -219,7 +220,7 @@ DcmgrGUI.prototype.volumePanel = function(){
      ids.push($(this).text())
     })
 
-    var data = $.param({ids:ids, destination:destination});
+    var data = $.param({ids:ids, destination:destination, display_name:display_name});
     var request = new DcmgrGUI.Request;
     request.post({
       "url": '/snapshots',
@@ -235,7 +236,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var bt_create_snapshot = new DcmgrGUI.Dialog({
     target:'.create_snapshot',
     width:400,
-    height:250,
+    height:300,
     title:$.i18n.prop('create_snapshot_header'),
     path:'/create_snapshot',
     button: create_snapshot_buttons,
@@ -259,7 +260,9 @@ DcmgrGUI.prototype.volumePanel = function(){
             }
           });
           $(self).find("#destination").empty().html(select_destination);
-          bt_create_snapshot.disabledButton(1, false);
+          var params = { 'button': bt_create_snapshot, 'element_id': 1 };
+          $(self).find("#snapshot_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
+          $(self).find("#snapshot_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
         }
       });
     }
