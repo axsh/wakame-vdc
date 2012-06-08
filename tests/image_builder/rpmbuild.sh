@@ -105,8 +105,8 @@ sleep 3
 ./tests/vdc.sh install::rhel
 sync
 
-sleep 30
-./rpmbuild/rules binary
+sleep 3
+./rpmbuild/rules binary-snap
 sync
 EOS
 
