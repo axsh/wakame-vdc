@@ -5,7 +5,8 @@ CURDIR ?= $(PWD)
 
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
 RPMBUILD_CMD  := rpmbuild
-RPMBUILD_OPTS := rpmbuild/SPECS/wakame-vdc.spec
+RPMBUILD_SPEC := rpmbuild/SPECS/wakame-vdc.spec
+RPMBUILD_OPTS :=
 
 # .deb
 #TMP_INSTALL_ROOT ?= debian/wakame-vdc
@@ -22,7 +23,7 @@ build-stamp:
 	touch $@
 clean:
 	CURDIR=${CURDIR} make clean
-	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS)
+	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 	rm -f build-stamp
 
 install: build
@@ -65,6 +66,6 @@ binary-arch: build install
 	  done
 
 binary:
-	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS)
+	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 
 .PHONY: build clean binary-indep binary-arch binary install
