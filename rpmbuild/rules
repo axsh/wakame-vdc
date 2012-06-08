@@ -68,4 +68,10 @@ binary-arch: build install
 binary:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 
-.PHONY: build clean binary-indep binary-arch binary install
+binary-snap:
+	mv $(RPMBUILD_SPEC) $(RPMBUILD_SPEC).tmp
+	sed "s,^Release: .*,Release: $$(rpmbuild/gen-release-id.sh)%{?dist}," $(RPMBUILD_SPEC).tmp > $(RPMBUILD_SPEC)
+	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
+	mv $(RPMBUILD_SPEC).tmp $(RPMBUILD_SPEC)
+
+.PHONY: build clean binary-indep binary-arch binary binary-snap install
