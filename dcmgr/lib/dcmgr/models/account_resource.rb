@@ -27,14 +27,11 @@ module Dcmgr::Models
           super
         end
       end
+      
     end
     
     def account
       Account[self.account_id]
-    end
-
-    def destroyed?
-      !self.deleted_at.nil?
     end
 
   end
