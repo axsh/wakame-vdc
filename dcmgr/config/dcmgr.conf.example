@@ -59,13 +59,13 @@ service_type("std", "StdServiceType") {
   # * :LeastUsage
   # * :PipedRules do
   #
-  #     add(:AssignSpecToGroup) {
+  #     through(:AssignSpecToGroup) {
   #       template({
   #         'is-spec1' => 'hg-group1',
   #         'is-spec2' => 'hg-group2'
   #       })
   #     }
-  #     add(:AccountLeastUsage)
+  #     through(:AccountLeastUsage)
   #
   #   end
   #

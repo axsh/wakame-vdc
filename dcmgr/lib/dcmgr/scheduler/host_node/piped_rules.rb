@@ -47,7 +47,7 @@ module Dcmgr
         configuration do
           DSL do
 
-            def add(rule_name, &blk)
+            def through(rule_name, &blk)
               @config[:rules] ||= []
               c = ::Dcmgr::Scheduler::HostNode::Rules.rule_class(rule_name)
               
