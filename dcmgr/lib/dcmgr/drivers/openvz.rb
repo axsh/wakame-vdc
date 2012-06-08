@@ -173,8 +173,8 @@ module Dcmgr
           if hc.inst[:image][:root_device]
             # find loopback device
             img_file_path = "#{hc.inst_data_dir}/#{hc.inst[:uuid]}"
-            inode = sh("ls -i %s |awk '{print $1}'", [img_file_path])[:stdout].chomp
-            lodev = sh("losetup -a |grep %s |awk '{print $1}'", [inode])[:stdout].chomp.split(":")[0]
+            fs = File::Stat.new(img_file_path)
+            lodev = sh("losetup -a |grep %s |awk '{print $1}'", [fs.ino])[:stdout].chomp.split(":")[0]
             #
             # /dev/loop0: [0801]:151429 (/path/to/dir/i-xxxx*)
             #
