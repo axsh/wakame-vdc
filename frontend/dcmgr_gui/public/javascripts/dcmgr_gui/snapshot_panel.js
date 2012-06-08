@@ -86,13 +86,14 @@ DcmgrGUI.prototype.snapshotPanel = function(){
   var create_volume_buttons = {};
   create_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
   create_volume_buttons[create_button_name] = function() { 
+    var display_name = $(this).find('#snapshot_display_name').val();
     var create_volumes = $(this).find('#create_volumes').find('li');
     var ids = []
     $.each(create_volumes,function(){
      ids.push($(this).text())
     })
 
-    var data = $.param({ids:ids})
+    var data = $.param({ids:ids, display_name:display_name})
     
     var request = new DcmgrGUI.Request;
     request.post({
@@ -108,9 +109,14 @@ DcmgrGUI.prototype.snapshotPanel = function(){
   var bt_create_volume = new DcmgrGUI.Dialog({
     target:'.create_volume',
     width:400,
-    height:200,
+    height:250,
     title:$.i18n.prop('create_volume_header'),
     path:'/create_volume_from_snapshot',
+    callback: function(){
+      var params = { 'button': bt_create_volume, 'element_id': 1 };
+      $(this).find("#snapshot_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
+      $(this).find("#snapshot_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
+    },
     button: create_volume_buttons
   });
   
@@ -150,6 +156,7 @@ DcmgrGUI.prototype.snapshotPanel = function(){
   bt_create_volume.target.bind('click',function(){
     if(!bt_create_volume.is_disabled()) {
       bt_create_volume.open(c_list.getCheckedInstanceIds());
+      bt_create_volume.disabledButton(1, true);
     }
   });
   

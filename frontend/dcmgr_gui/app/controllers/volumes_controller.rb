@@ -7,11 +7,13 @@ class VolumesController < ApplicationController
   
   def create
     snapshot_ids = params[:ids]
+    display_name = params[:display_name]
     if snapshot_ids
       res = []
       snapshot_ids.each do |snapshot_id|
         data = {
-          :snapshot_id => snapshot_id
+          :snapshot_id => snapshot_id,
+          :display_name => display_name
         }
         res << Hijiki::DcmgrResource::Volume.create(data)
       end
@@ -26,7 +28,6 @@ class VolumesController < ApplicationController
              end
       
       storage_node_id = params[:storage_node_id] #option
-      display_name = params[:display_name]
       
       data = {
         :volume_size => size,

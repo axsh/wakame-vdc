@@ -81,6 +81,7 @@ ja:
     create_volume_from_snapshot:
       header: "ボリュームを作成"
       message: "ボリュームを作成します。よろしいですか？"
+      display_name: "ボリューム名"
     delete_snapshot:
       header: "スナップショットを削除"
       message: "スナップをショットを削除します。よろしいですか？"

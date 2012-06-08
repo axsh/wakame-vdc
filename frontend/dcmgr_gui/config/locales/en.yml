@@ -77,10 +77,11 @@ en:
     create_snapshot:
       header: "Create Snapshot"
       message: "Are you sure you want to create the following snapshot?"
-      display_name: "Volume Name"
+      display_name: "Snapshot Name"
     create_volume_from_snapshot:
       header: "Create Volume "
       message: "Are you sure you want to create the following volume?"
+      display_name: "Volume Name"
     delete_snapshot:
       header: "Delete Snapshot"
       message: "Are you sure you want to delete the following snapshot?"
