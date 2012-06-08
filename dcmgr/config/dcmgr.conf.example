@@ -57,6 +57,17 @@ service_type("std", "StdServiceType") {
   #
   # * :FindFirst
   # * :LeastUsage
+  # * :PipedRules do
+  #
+  #     add(:AssignSpecToGroup) {
+  #       template({
+  #         'is-spec1' => 'hg-group1',
+  #         'is-spec2' => 'hg-group2'
+  #       })
+  #     }
+  #     add(:AccountLeastUsage)
+  #
+  #   end
   #
   storage_node_scheduler :LeastUsage
 
