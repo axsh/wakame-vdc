@@ -54,7 +54,7 @@ for i in $wakame_rpms; do
   rpm_path="${HOME}/rpmbuild/RPMS/${arch}/$i"
   [ -f ${rpm_path} ] || (
     cd ${wakame_dir}
-    ./rpmbuild/rules binary
+    ./rpmbuild/rules binary-snap
   )
 done
 
