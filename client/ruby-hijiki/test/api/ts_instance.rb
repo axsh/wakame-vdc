@@ -3,7 +3,6 @@
 class TestInstance <  Test::Unit::TestCase
   def api_class(version)
     case version
-    when :v1112 then Hijiki::DcmgrResource::V1112::Instance
     when :v1203 then Hijiki::DcmgrResource::V1203::Instance
     end
   end
@@ -11,7 +10,7 @@ class TestInstance <  Test::Unit::TestCase
   include TestBaseMethods
 
   def test_instance
-    [:v1112, :v1203].each { |api_ver|
+    [:v1203].each { |api_ver|
       assert_nothing_raised() {
         instance = api_class(api_ver).find(:first).results.first
       }

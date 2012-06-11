@@ -3,7 +3,6 @@
 class TestNetwork <  Test::Unit::TestCase
   def api_class(version)
     case version
-    when :v1112 then Hijiki::DcmgrResource::V1112::Network
     when :v1203 then Hijiki::DcmgrResource::V1203::Network
     end
   end
@@ -11,7 +10,7 @@ class TestNetwork <  Test::Unit::TestCase
   include TestBaseMethods
 
   def test_network
-    [:v1112, :v1203].each { |api_ver|
+    [:v1203].each { |api_ver|
       assert_nothing_raised() {
         object = api_class(api_ver).find(:first).results.first
 
