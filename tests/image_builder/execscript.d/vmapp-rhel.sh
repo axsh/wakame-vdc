@@ -20,7 +20,9 @@ uname -m
 cd /tmp
 [ -d wakame-vdc ] || git clone git://github.com/axsh/wakame-vdc.git
 cd wakame-vdc
-./tests/image_builder/vmapp-rhel.sh --base_distro_arch=$(uname -m)
+
+# for tests/repo_builder/build-rhel.sh
+./tests/image_builder/vmapp-rhel.sh --base_distro_arch=$(uname -m) --rpm_release=git
 EOS
 
 # pwd => /home/scientific/work/repos/git/github.com/wakame-vdc/tests/image_builder

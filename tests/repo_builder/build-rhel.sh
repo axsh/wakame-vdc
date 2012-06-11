@@ -22,11 +22,21 @@ done
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../../"
 tmp_dir="${wakame_dir}/tmp/vmapp_builder"
+
 wakame_version="$(egrep ^Version: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec | awk '{print $2}')"
-wakame_release="$(egrep ^Release: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec | awk '{print $2}' | sed 's,%{.*},*,')"
+
+# [ spec | git }
+rpm_release=${rpm_release:-spec}
+case "${rpm_release}" in
+git)
+  wakame_release="$(${wakame_dir}/rpmbuild/gen-release-id.sh).*"
+  ;;
+*)
+  wakame_release="$(egrep ^Release: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec | awk '{print $2}' | sed 's,%{.*},*,')"
+  ;;
+esac
 
 repo_dir=${repo_dir:-${root_dir}/repo.d}
-
 arch=${arch:-$(arch)}
 case ${arch} in
 i*86)   basearch=i386; arch=i686;;

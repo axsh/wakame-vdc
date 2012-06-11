@@ -33,6 +33,9 @@ bcast=${bcast:-}
 gw=${gw:-}
 dns=${dns:-}
 
+# for tests/repo_builder/build-rhel.sh
+rpm_release=${rpm_release:-spec}
+
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
 tmp_dir="${wakame_dir}/tmp/vmapp_builder"
@@ -59,7 +62,7 @@ vmapp_names="
 }
 
 # build rhel repository.
-${wakame_dir}/tests/repo_builder/build-rhel.sh --repo_dir=${tmp_dir}/repos.d/archives/
+${wakame_dir}/tests/repo_builder/build-rhel.sh --repo_dir=${tmp_dir}/repos.d/archives/ --rpm_release=${rpm_release}
 
 yum_opts="--disablerepo='*' --enablerepo=wakame-vdc --enablerepo=openvz-kernel-rhel6 --enablerepo=openvz-utils"
 case ${base_distro} in
