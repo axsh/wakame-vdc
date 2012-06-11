@@ -41,6 +41,17 @@ class KeypairsController < ApplicationController
               :status => 200
             })
   end
+
+  def edit_ssh_keypair
+    uuid = params[:id]
+    data = {
+      :display_name => params[:display_name],
+      :description => params[:description]
+    }
+
+    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.update(uuid,data)
+    render :json => @ssh_key_pair
+  end
   
   def show_keypairs
     @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.list

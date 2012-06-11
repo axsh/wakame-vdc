@@ -1,116 +1,124 @@
 <% content_for :javascript do %>
 <%= javascript_include_tag 'dcmgr_gui/sshkeypair_panel.js' %>
 <script type="text/javascript">
-jQuery(function($){
-	dcmgrGUI.sshKeyPairPanel();
-});
+  jQuery(function($){
+  dcmgrGUI.sshKeyPairPanel();
+  });
 </script>
 
 <% end %>
 <% content_for :stylesheet do %>
 <style type="text/css">
-	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
-	.ui-dialog .ui-dialog-content {margin:5px;}
+  .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+  .ui-dialog .ui-dialog-content {margin:5px;}
 </style>
 <% end %>
 <div id="mainarea_wide">
-	<h3><img src="images/icon_resource.gif" /><%= t('keypairs.header') %><a href="#" class="showhide"></a></h3>
-	<div id="list_load_mask" class="maincontent">
-		<div class="controller clearfix">
-		  <a href="javascript:void(0);" class="create_ssh_keypair"><%= t('keypairs.button.create_keypair') %></a>
-		  <a href="javascript:void(0);" class="delete_ssh_keypair"><%= t('keypairs.button.delete_keypair') %></a>
-		  <a href="javascript:void(0);" class="refresh" style="margin-left:-9px"><%= t('button.refresh') %></a>
-		</div>
-		<div class="controller clearfix">
-			<!-- <div class="l_float">
-							<span class="text">Viewing:</span>
-							<select class="select">
-								<option>All SSH Key Pairs</option>
-							</select>
-							<input type="text" class="search" />
-						</div> -->
+  <h3><img src="images/icon_resource.gif" /><%= t('keypairs.header') %><a href="#" class="showhide"></a></h3>
+  <div id="list_load_mask" class="maincontent">
+    <div class="controller clearfix">
+      <a href="javascript:void(0);" class="create_ssh_keypair"><%= t('keypairs.button.create_keypair') %></a>
+      <a href="javascript:void(0);" class="delete_ssh_keypair"><%= t('keypairs.button.delete_keypair') %></a>
+      <a href="javascript:void(0);" class="refresh" style="margin-left:-9px"><%= t('button.refresh') %></a>
+    </div>
+    <div class="controller clearfix">
+      <!-- <div class="l_float">
+	   <span class="text">Viewing:</span>
+	   <select class="select">
+	     <option>All SSH Key Pairs</option>
+	   </select>
+	   <input type="text" class="search" />
+      </div> -->
       <div id="pagenate" class="r_float">
-			  <a href="javascript:void(0);" class="prev"></a>
-			  <p id="viewPagenate"></p>
-			  <a href="javascript:void(0);" class="next"></a>
+	<a href="javascript:void(0);" class="prev"></a>
+	<p id="viewPagenate"></p>
+	<a href="javascript:void(0);" class="next"></a>
       </div>
-		</div>
-		<div id="display_ssh_keypairs" class="display_area">
-			<% content_for :javascript_template do %>
-			<script id="sshKeyPairsListTemplate" type="text/x-jquery-tmpl">
-			<table class="ptn04" frame="void" cellpadding="0" cellspacing="0" border="0">
-				<tr>
-					<th class="icon"></th>
-					<th><%= t('keypairs.list.display_name') %></th>
-					<th><%= t('keypairs.list.description') %></th>
-					<th class="header_show_key"><%= t('keypairs.list.secret_access_key') %></th>
-				</tr>
-				{{each(index,item) rows}}
-				<tr>
-		    {{if item.uuid }}
-					<td class="listradiobutton"><input id="${item.id}" type="radio" name="select" value="${item.id}" ></td>
-				{{else}}
-					<td class="listradiobutton"></td>
-				{{/if}}
-					<td>${item.display_name}</td>
-					<td>${item.description}</td>
-					<td>
-					{{if item.uuid }}
-						{{if item.private_key}}
-							<a id="button_${item.uuid}" href="javascript:void(0);" class="show_key"><%= t('keypairs.button.show_secret_accesskey') %></a>
-						{{else}}
-							<a href="javascript:void(0);" class="show_key"><%= t('keypairs.button.show_secret_accesskey') %></a>
-						{{/if}}
-					{{/if}}
-					</td>
-				</tr>
-				{{/each}}
-			</table>
-			</script>
-			<% end %>
-		</div>
-	</div>
-	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_ttl_detail.gif" /><%= t('keypairs.details.header') %><a href="javascript:void(0);" class="showhide"></a></h3>
- 		<div id="detail" class="maincontent">
- 			<% content_for :javascript_template do %>
-			<script id="sshKeypairsDetailTemplate" type="text/x-jquery-tmpl">
-			<div class="display_area">
-				<table class="ptn08" frame="void" cellpadding="0" cellspacing="0" border="0">
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t('keypairs.details.keypair_id') %>:</td>
-						<td colspan="7">${item.uuid}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t('keypairs.details.display_name') %>:</td>
-						<td colspan="7">${item.display_name}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t('keypairs.details.fingerprint') %>:</td>
-						<td colspan="7">${item.finger_print}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t('keypairs.details.description') %>:</td>
-						<td colspan="7">${item.description}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t('keypairs.details.created_at') %>:</td>
-						<td colspan="7">${item.created_at}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t('keypairs.details.updated_at') %>:</td>
-						<td colspan="7">${item.updated_at}</td>
-					</tr>
-				</table>
-			</div>
-			</script>
-			<% end %>
- 		</div><!-- maincontent -->
-	<div id="btm_maincontent_wide_last"></div>
+    </div>
+    <div id="display_ssh_keypairs" class="display_area">
+      <% content_for :javascript_template do %>
+      <script id="sshKeyPairsListTemplate" type="text/x-jquery-tmpl">
+	<table class="ptn04" frame="void" cellpadding="0" cellspacing="0" border="0">
+	  <tr>
+	    <th class="icon"></th>
+	    <th><%= t('keypairs.list.display_name') %></th>
+	    <th><%= t('keypairs.list.description') %></th>
+	    <th class="header_show_key"><%= t('keypairs.list.secret_access_key') %></th>
+	    <th><%= t('keypairs.list.action') %></th>
+	  </tr>
+	  {{each(index,item) rows}}
+	  <tr>
+	    {{if item.uuid }}
+	    <td class="listradiobutton"><input id="${item.id}" type="radio" name="select" value="${item.id}" ></td>
+	    {{else}}
+	    <td class="listradiobutton"></td>
+	    {{/if}}
+	    <td>${item.display_name}</td>
+	    <td>${item.description}</td>
+	    <td>
+	      {{if item.uuid }}
+	      {{if item.private_key}}
+	      <a id="button_${item.uuid}" href="javascript:void(0);" class="show_key"><%= t('keypairs.button.show_secret_accesskey') %></a>
+	      {{else}}
+	      <a href="javascript:void(0);" class="show_key"><%= t('keypairs.button.show_secret_accesskey') %></a>
+	      {{/if}}
+	      {{/if}}
+	    </td>
+	    {{if item.uuid }}
+	    <td class="vtip center" title="action">
+	      <a href="javascript:void(0);" class="edit_ssh_keypair" id="edit_${item.uuid}"><%= t('keypairs.button.edit_keypair') %></a>
+	    </td>
+	    {{else}}
+	    <td class="vtip center" title="action"></td>
+	    {{/if}}
+	  </tr>
+	  {{/each}}
+	</table>
+      </script>
+      <% end %>
+    </div>
+  </div>
+  <div id="btm_maincontent_wide"></div>
+  <h3><img src="images/icon_ttl_detail.gif" /><%= t('keypairs.details.header') %><a href="javascript:void(0);" class="showhide"></a></h3>
+  <div id="detail" class="maincontent">
+    <% content_for :javascript_template do %>
+    <script id="sshKeypairsDetailTemplate" type="text/x-jquery-tmpl">
+      <div class="display_area">
+	<table class="ptn08" frame="void" cellpadding="0" cellspacing="0" border="0">
+	  <tr>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t('keypairs.details.keypair_id') %>:</td>
+	    <td colspan="7">${item.uuid}</td>
+	  </tr>
+	  <tr>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t('keypairs.details.display_name') %>:</td>
+	    <td colspan="7">${item.display_name}</td>
+	  </tr>
+	  <tr>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t('keypairs.details.fingerprint') %>:</td>
+	    <td colspan="7">${item.finger_print}</td>
+	  </tr>
+	  <tr>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t('keypairs.details.description') %>:</td>
+	    <td colspan="7">${item.description}</td>
+	  </tr>
+	  <tr>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t('keypairs.details.created_at') %>:</td>
+	    <td colspan="7">${item.created_at}</td>
+	  </tr>
+	  <tr>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t('keypairs.details.updated_at') %>:</td>
+	    <td colspan="7">${item.updated_at}</td>
+	  </tr>
+	</table>
+      </div>
+    </script>
+    <% end %>
+  </div><!-- maincontent -->
+  <div id="btm_maincontent_wide_last"></div>
 </div>

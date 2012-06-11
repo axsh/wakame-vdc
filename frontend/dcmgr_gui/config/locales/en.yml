@@ -96,8 +96,16 @@ en:
     delete_security_group:
       header: "Delete Security Group"
       message: "Are you sure you want to delete the following security_group?"
+    create_and_edit_ssh_keypair:
+      uuid: "Keypair ID"
+      display_name: "Keypair Name"
+      description: "Description"
+      download_once: "Download Once"
     create_ssh_keypair:
       header: "Create SSH Key Pair"
+      uuid: "Keypair ID"
+      display_name: "Keypair Name"
+      description: "Description"
       download_once: "Download Once"
     delete_ssh_keypair:
       header: "Delete SSH Key Pair"
@@ -397,6 +405,7 @@ en:
     button:
       create_keypair: "Create Key Pair"
       delete_keypair: "Delete"
+      edit_keypair: "Edit"
       show_secret_accesskey: "Show Secret Access Key"
     list:
       access_key_id: "Access Key ID"

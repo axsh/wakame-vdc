@@ -96,8 +96,16 @@ ja:
     delete_security_group:
       header: "セキュリティーグループを削除"
       message: "セキュリティーグループを削除します。よろしいですか？"
+    create_and_edit_ssh_keypair:
+      uuid: "キーペアID"
+      display_name: "キーペア名"
+      description: "詳細"
+      download_once: "1回限り"
     create_ssh_keypair:
       header: "キーペアを作成"
+      uuid: "キーペアID"
+      display_name: "キーペア名"
+      description: "詳細"
       download_once: "1回限り"
     delete_ssh_keypair:
       header: "キーペアを削除"
@@ -381,6 +389,7 @@ ja:
     button:
       create_keypair: "キーペアを作成"
       delete_keypair: "削除"
+      edit_keypair: "編集"
       show_secret_accesskey: "シークレットキーを取得"
     list:
       access_key_id: "アクセスキーID"

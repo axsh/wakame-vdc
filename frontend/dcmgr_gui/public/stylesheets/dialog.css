@@ -32,6 +32,10 @@
 	padding: 3px;
 }
 
+#create_and_edit_ssh_keypair_dialog table tr td {
+	padding: 3px;
+}
+
 #launch_instance_dialog #manipulation {
   vertical-align: middle;
 }

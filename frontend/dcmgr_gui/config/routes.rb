@@ -28,6 +28,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/launch_instance', :to => 'dialog#launch_instance'
   get    'dialog/create_ssh_keypair', :to => 'dialog#create_ssh_keypair'
   post   'dialog/delete_ssh_keypair', :to => 'dialog#delete_ssh_keypair'
+  post   'dialog/edit_ssh_keypair', :to => 'dialog#edit_ssh_keypair'
 
   # user/group managment dialog
   get    'dialog/create_user', :to => 'user_management_dialog#create_user'
@@ -108,6 +109,7 @@ DcmgrGui::Application.routes.draw do
   get    'keypairs' ,:to => 'keypairs#index'
   get    'keypairs/list/:id' ,:to => 'keypairs#list'
   get    'keypairs/create_ssh_keypair' ,:to => 'keypairs#create_ssh_keypair'
+  get    'keypairs/edit_ssh_keypair' ,:to => 'keypairs#edit_ssh_keypair'
   get    'keypairs/all' ,:to => 'keypairs#show_keypairs'
   get    'keypairs/total' ,:to => 'keypairs#total'
   get    'keypairs/prk_download/:id' ,:to => 'keypairs#prk_download'

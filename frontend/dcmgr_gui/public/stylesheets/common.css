@@ -957,6 +957,18 @@ body{
 	background-position: 0 -22px;
 }
 
+#content #mainarea_wide table.ptn04 tr td a.edit_ssh_keypair{
+  display: block:
+	width: 15en;
+	height: 22px;
+	font-size: 10px;
+	line-height: 0;
+}
+
+#content #mainarea_wide table.ptn04 tr td a.edit_ssh_keypair:hover{
+	background-position: 0 -22px;
+}
+
 /* ptn05 */
 #content #mainarea_wide table.ptn05{
 	margin-left: 20px;
