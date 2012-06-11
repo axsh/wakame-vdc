@@ -8,7 +8,7 @@
   <div id="security_group_name_field">
     <%- if @uuid -%>
     <p>
-    UUID: <%= @uuid %>
+    <%= t("dialog.create_and_edit_security_group.uuid")%>: <%= @uuid %>
     </p>
     <%- end -%>
     <input type="hidden" id="security_group_id" value="<%= @uuid %>">

@@ -90,6 +90,7 @@ ja:
     edit_security_group:
       header: "セキュリティグループを編集"
     create_and_edit_security_group:
+      uuid: "セキュリティグループID"
       display_name: "セキュリティグループ名"
       description: "詳細"
       rule: "ルール"

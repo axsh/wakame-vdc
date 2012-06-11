@@ -41,6 +41,7 @@ class SecurityGroupsController < ApplicationController
     uuid = params[:id]
     data = {
       :description => params[:description],
+      :display_name => params[:display_name],
       :rule => params[:rule]
     }
     @security_group = Hijiki::DcmgrResource::SecurityGroup.update(uuid,data)
