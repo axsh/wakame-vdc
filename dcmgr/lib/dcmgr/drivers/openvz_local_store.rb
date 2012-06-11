@@ -39,7 +39,7 @@ module Dcmgr
             logger.debug("verified vm cache image: #{vmimg_cache_path}")
           else
             logger.debug("not verified vm cache image: #{vmimg_cache_path}")
-            sh("rm -f %s", [vmimg_cache_path])
+            File.unlink(vmimg_cache_path)
             tmp_id = Isono::Util::gen_id
             logger.debug("copying #{img_src[:uri]} to #{vmimg_cache_path}")
             paralell_curl("#{img_src[:uri]}", "#{vmimg_cache_path}.#{tmp_id}")

@@ -196,9 +196,14 @@ module Dcmgr
         
         # delete container folder
         sh("vzctl destroy %s",[ctid])
-        sh("rm %s/%s.conf.destroyed",[config.ve_config_dir, ctid])
-        sh("rm %s/%s.mount.destroyed",[config.ve_config_dir, ctid])
         logger.debug("delete container folder #{private_dir}")
+        # delete config file and mount file
+        container_config = "#{config.ve_config_dir}/#{ctid}"
+        config_file_path = "#{container_config}.conf.destroyed"
+        mount_file_path = "#{container_config}.mount.destroyed"
+        File.unlink(config_file_path, mount_file_path)
+        logger.debug("delete config file #{config_file_path}")
+        logger.debug("delete mount file #{mount_file_path}")
       end
       
       def reboot_instance(hc)
