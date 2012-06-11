@@ -412,6 +412,7 @@ en:
       display_name: "Keypair Name"
       description: "Description"
       secret_access_key: "Secret Access Key"
+      action: "Action"
     details:
       header: "Details"
       uuid: "UUID"

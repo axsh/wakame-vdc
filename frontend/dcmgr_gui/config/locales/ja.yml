@@ -396,6 +396,7 @@ ja:
       display_name: "キーペア名"
       description: "詳細"
       secret_access_key: "シークレットキー"
+      action: "アクション"
     details:
       header: "詳細"
       uuid: "UUID"
