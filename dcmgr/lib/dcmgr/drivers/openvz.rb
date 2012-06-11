@@ -188,7 +188,12 @@ module Dcmgr
         end
         sh("umount -d %s/metadata", [hc.inst_data_dir])
         logger.debug("stop container #{ctid}")
-
+        
+        # wait stopped of container status
+        tryagain do
+          sh("vzctl status %s", [ctid])[:stdout].chomp.include?("down")
+        end
+        
         # delete container folder
         sh("vzctl destroy %s",[ctid])
         sh("rm %s/%s.conf.destroyed",[config.ve_config_dir, ctid])
