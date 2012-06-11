@@ -42,6 +42,10 @@ Name:
   <%= tag.name %>
 Type id:
   <%= tag.type_id %>
+Mapped uuids:
+<%- tag.mapped_uuids.each { |tagmap| -%>
+  <%= tagmap[:uuid] %>
+<%- } -%>
 Attributes:
   <%= tag.attributes %>
 __END
