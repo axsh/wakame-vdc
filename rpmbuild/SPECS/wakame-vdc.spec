@@ -24,6 +24,8 @@ BuildRequires: chrpath
 BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
 # vmapp dependency
 BuildRequires: parted
+# build local cache
+BuildRequires: yum-utils
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
