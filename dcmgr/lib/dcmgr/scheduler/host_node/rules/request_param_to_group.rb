@@ -32,7 +32,7 @@ module Dcmgr::Scheduler::HostNode::Rules
       request_param = instance.request_params[options.key]
       tag_id = options.pairs[request_param] || options.default
       
-      host_node_ids = Dcmgr::Models::Tag[tag_id].mapped_uuids.map { |tagmap| tagmap[:uuid] }
+      host_node_ids = Dcmgr::Tags::HostNodeGroup[tag_id].mapped_uuids.map { |tagmap| tagmap[:uuid] }
     end
   end
         

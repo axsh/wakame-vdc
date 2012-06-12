@@ -27,16 +27,16 @@ module Dcmgr::Models
   # end
   #
   # @example Retrieve tag
-  # t = Tag.declare(account_id, :NetworkPool, 'xxxxx')
+  # t = Tag.declare(account_id, :NetworkGroup, 'xxxxx')
   # t.mapped_uuids # => ['nw-11111', 'nw-22222' ,'nw-33333']
   #
   # @example Lable a tag from tag
-  # t = Tag.declare(account_id, :NetworkPool, 'nwgroup1')
+  # t = Tag.declare(account_id, :NetworkGroup, 'nwgroup1')
   # t.lable('nw-xxxxx')
   # t.lable('nw-yyyyy')
   # 
   # @example Label a tag from resource
-  # t = Tag.declare(account_id, :NetworkPool, 'nwgroup1')
+  # t = Tag.declare(account_id, :NetworkGroup, 'nwgroup1')
   # nw = Network['nw-44444']
   # nw.label_tag(t)
   # nw.label_tag('tag-xxxxx')

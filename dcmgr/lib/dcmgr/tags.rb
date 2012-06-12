@@ -2,7 +2,7 @@
 
 module Dcmgr::Tags
   include Dcmgr
-  KEY_MAP={10=>:NetworkPool, 11=>:HostPool, 12=>:StoragePool}.freeze
+  KEY_MAP={10=>:NetworkGroup, 11=>:HostNodeGroup, 12=>:StorageNodeGroup}.freeze
   MODEL_MAP=KEY_MAP.invert.freeze
 
   def self.type_id(class_or_sym)
@@ -16,7 +16,8 @@ module Dcmgr::Tags
     MODEL_MAP[k] || raise("Unknown key to get type_id: #{class_or_sym}")
   end
   
-  class NetworkPool < Models::Tag
+  class NetworkGroup < Models::Tag
+    taggable 'nwg'
     def accept_mapping?(to)
       to.is_a?(Dcmgr::Models::Network)
     end
@@ -30,7 +31,8 @@ module Dcmgr::Tags
     end
   end
   
-  class HostPool < Models::Tag
+  class HostNodeGroup < Models::Tag
+    taggable 'hng'
     def accept_mapping?(to)
       to.is_a?(Dcmgr::Models::HostNode)
     end
@@ -46,7 +48,8 @@ module Dcmgr::Tags
     end    
   end
   
-  class StoragePool < Models::Tag
+  class StorageNodeGroup < Models::Tag
+    taggable 'sng'
     def accept_mapping?(to)
       to.is_a?(Dcmgr::Models::StorageNode)
     end

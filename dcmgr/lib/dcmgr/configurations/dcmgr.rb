@@ -157,13 +157,13 @@ module Dcmgr
       param :amqp_server_uri
       
       # UUID for shared host pool or group.
-      param :default_shared_host_pool, :default=> 'tag-shhost'
+      param :default_shared_host_pool, :default=> 'hng-shhost'
 
       # UUID for shared network pool or group.
-      param :default_shared_network_pool, :default=> 'tag-shnet'
+      param :default_shared_network_pool, :default=> 'nwg-shnet'
 
       # UUID for shared storage pool or group.
-      param :default_shared_storage_pool, :default=> 'tag-shstor'
+      param :default_shared_storage_pool, :default=> 'sng-shstor'
 
       # system wide limit size in MB for creating new volume.
       # (not affect at cloning from snapshot)

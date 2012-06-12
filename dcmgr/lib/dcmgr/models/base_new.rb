@@ -99,7 +99,7 @@ module Dcmgr::Models
       # lable_tag('tag-xxxxx')
       # t = Tag['tag-xxxx']
       # label_tag(t)
-      # label_tag(:NetworkPool, 'newname1', 'account_id')
+      # label_tag(:NetworkGroup, 'newname1', 'account_id')
       def label_tag(arg1, arg2=nil, arg3=nil)
         tag = case arg1
               when String
@@ -126,7 +126,7 @@ module Dcmgr::Models
       # unlable_tag('tag-xxxxx')
       # t = Tag['tag-xxxx']
       # unlabel_tag(t)
-      # unlabel_tag(:NetworkPool, 'newname1', 'account_id')
+      # unlabel_tag(:NetworkGroup, 'newname1', 'account_id')
       def unlabel_tag(arg1, arg2=nil, arg3=nil)
         tag = case arg1
               when String

@@ -8,13 +8,13 @@ database_uri 'mysql2://localhost/wakame_dcmgr?user=root'
 amqp_server_uri 'amqp://localhost/'
 
 # UUID for shared host pool or group.
-default_shared_host_pool 'tag-shhost'
+default_shared_host_pool 'hng-shhost'
 
 # UUID for shared network pool or group.
-default_shared_network_pool 'tag-shnet'
+default_shared_network_pool 'nwg-shnet'
 
 # UUID for shared storage pool or group.
-default_shared_storage_pool 'tag-shstor'
+default_shared_storage_pool 'sng-shstor'
 
 # system wide limit size in MB for creating new volume.
 # (not affect at cloning from snapshot)
@@ -60,11 +60,11 @@ service_type("std", "StdServiceType") {
   # * :PipedRules do
   #
   #     through(:RequestParamToGroup) {
-  #       default 'tag-shhost'
+  #       default 'hng-shhost'
   #    
   #       key 'instance_spec_id'
-  #       pair 'is-demo1', 'tag-hosts1'
-  #       pair 'is-demo2', 'tag-hosts2'
+  #       pair 'is-demo1', 'hng-hosts1'
+  #       pair 'is-demo2', 'hng-hosts2'
   #     }
   #  
   #     through(:LeastUsageBy) {
