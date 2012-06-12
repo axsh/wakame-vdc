@@ -36,7 +36,7 @@ module Dcmgr
             
             begin
               # download backup object to the tmporary place.
-              snapshot_storage = Drivers::SnapshotStorage.snapshot_storage(@backup_object[:backup_storage])
+              snapshot_storage = Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
               logger.info("Downloading to #{@backup_object[:uuid]}: #{snap_tmp_path}")
               snapshot_storage.download(@backup_object, snap_tmp_path)
               logger.info("Finish to download #{@backup_object[:uuid]}: #{snap_tmp_path}")
@@ -146,7 +146,7 @@ module Dcmgr
         raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
         
         begin 
-          snapshot_storage = Dcmgr::Drivers::SnapshotStorage.snapshot_storage(@backup_object[:backup_storage])
+          snapshot_storage = Dcmgr::Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
           select_backing_store
 
           logger.info("Taking new snapshot for #{@volume_id}")

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Drivers
-  class IfsStorage < SnapshotStorage
+  class IfsStorage < BackupStorage
     include Dcmgr::Logger
     include Dcmgr::Helpers::CliHelper
 

@@ -41,7 +41,7 @@ module Dcmgr
       end
 
       def upload_image(inst, ctx, bo, evcb)
-        snapshot_stg = Dcmgr::Drivers::SnapshotStorage.snapshot_storage(bo[:backup_storage])
+        snapshot_stg = Dcmgr::Drivers::BackupStorage.snapshot_storage(bo[:backup_storage])
         
         bkup_basename = "#{inst[:uuid]}.tmp"
         take_snapshot_for_backup()

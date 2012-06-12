@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Drivers
-  class LocalStorage < SnapshotStorage
+  class LocalStorage < BackupStorage
     include Dcmgr::Logger
     include Dcmgr::Helpers::CliHelper
 

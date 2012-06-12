@@ -149,7 +149,7 @@ module Dcmgr
   end
   
   module Drivers
-    autoload :SnapshotStorage, 'dcmgr/drivers/snapshot_storage'
+    autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :LocalStorage, 'dcmgr/drivers/local_storage'
     autoload :S3Storage, 'dcmgr/drivers/s3_storage'
     autoload :IIJGIOStorage, 'dcmgr/drivers/iijgio_storage'
@@ -173,7 +173,6 @@ module Dcmgr
     autoload :IfsIscsi, 'dcmgr/drivers/ifs_iscsi'
     autoload :IfsStorage, 'dcmgr/drivers/ifs_storage'
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
-    autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :Webdav, 'dcmgr/drivers/webdav'
   end
   

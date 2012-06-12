@@ -2,7 +2,7 @@
 
 module Dcmgr::Drivers
   
-  class IIJGIOStorage < SnapshotStorage
+  class IIJGIOStorage < BackupStorage
     include Dcmgr::Logger
     include Dcmgr::Helpers::SnapshotStorageHelper
 

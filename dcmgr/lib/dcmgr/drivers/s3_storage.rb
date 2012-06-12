@@ -2,7 +2,7 @@
 
 module Dcmgr::Drivers
   
-  class S3Storage < SnapshotStorage
+  class S3Storage < BackupStorage
     include Dcmgr::Logger
     include Dcmgr::Helpers::SnapshotStorageHelper
 

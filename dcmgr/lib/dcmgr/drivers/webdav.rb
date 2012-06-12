@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Drivers
-  class Webdav < SnapshotStorage
+  class Webdav < BackupStorage
     include Dcmgr::Logger
     include Dcmgr::Helpers::CliHelper
 

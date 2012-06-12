@@ -5,6 +5,7 @@ require 'uri'
 module Dcmgr
   module Helpers
     module SnapshotStorageHelper
+      include Dcmgr::Helpers::CliHelper
       
       def bucket_name(uri)
         uri = URI.parse(uri)

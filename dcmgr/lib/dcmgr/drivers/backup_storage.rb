@@ -5,6 +5,11 @@ module Dcmgr::Drivers
   # upload/donwload/delete items on the backup stroage.
   class BackupStorage
 
+    def initialize(backup_storage, opts={})
+      @backup_storage = backup_storage
+      @opts = opts
+    end
+
     # Upload volume file to the backup storage.
     # @param src_path the local path to upload.
     # @param dst_key  destination key(path) to upload. Relative path
@@ -35,6 +40,25 @@ module Dcmgr::Drivers
     def delete(dst_key)
       raise NotImplementedError
     end
+
+    def self.snapshot_storage(backup_storage, opts={})
+      storage = case backup_storage[:storage_type]
+                when 'local'
+                  LocalStorage.new(backup_storage, opts)
+                when 's3'
+                  S3Storage.new(backup_storage, opts)
+                when 'iijgio'
+                  IIJGIOStorage.new(backup_storage, opts)
+                when 'ifs'
+                  IfsStorage.new(backup_storage, opts)
+                when 'webdav'
+                  Webdav.new(backup_storage, opts)
+                else
+                  raise "Unknown backup storage driver: #{backup_storage[:storage_type]}"
+                end
+      storage
+    end
+    
   end
 end
   
