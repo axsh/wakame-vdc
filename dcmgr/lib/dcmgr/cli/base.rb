@@ -64,7 +64,7 @@ module Dcmgr::Cli
 
     no_tasks {
       def add(model,options)
-        raise ArgumentError unless options.is_a? Hash
+        raise ArgumentError, "options must be a Hash" unless options.is_a? Hash
         #TODO: Make this check a little tighter by checking that the model is either from the wakame backend or frontend
         #UnknownModelError.raise(model) unless model < Dcmgr::Models::BaseNew
         UnknownModelError.raise(model) unless model < Sequel::Model
@@ -93,7 +93,7 @@ module Dcmgr::Cli
       def modify(model,uuid,fields)
         #UnknownModelError.raise(model) unless model < Dcmgr::Models::BaseNew
         UnknownModelError.raise(model) unless model < Sequel::Model
-        raise ArgumentError unless fields.is_a? Hash
+        raise ArgumentError, "fields must be a Hash" unless fields.is_a? Hash
         to_modify = model[uuid] || UnknownUUIDError.raise(uuid)
         
         #Use a copy of the fields hash so this method can work with frozen hashes
