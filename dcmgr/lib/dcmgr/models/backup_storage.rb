@@ -4,7 +4,7 @@ module Dcmgr::Models
   class BackupStorage < BaseNew
     taggable 'bkst'
 
-    STORAGE_TYPES=[:sta, :webdav].freeze
+    STORAGE_TYPES=[:local, :webdav, :s3, :iijgio, :ifs].freeze
     one_to_many :backup_objects
       
     def validate

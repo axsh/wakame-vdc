@@ -5,37 +5,49 @@ module Dcmgr::Drivers
     include Dcmgr::Helpers::CliHelper
     attr_reader :volume_snaphost_path
 
-    def initialize(account_id, bucket, volume_snaphost_path, options = {})
-      @account_id = account_id
+    #def initialize(bucket, volume_snaphost_path, options = {})
+    def initialize(backup_storage, options = {})
       @env = []
-      @volume_snaphost_path = volume_snaphost_path
-      @bucket = bucket
-      @tmp_dir = options[:tmp_dir] || '/var/tmp'
+      @backup_storage = backup_storage
+      @options = options
     end
 
     def setenv(key, value)
       @env.push("#{key}=#{value}")
     end
     
-    def clear
-      sh("/bin/rm #{@temporary_file}") if File.exists?(@temporary_file)
+    def download(src_bo, dst_path)
+      raise NotImplementedError
     end
 
-    def snapshot(filename)
-      raise 'filename is empty' if filename == ''
-      @temporary_file = File.join(@tmp_dir, filename)
-    end
-
-    def download(filename)
-    end
-
-    def upload(filename)
+    def upload(src_path, dst_bo)
+      raise NotImplementedError
     end
 
     def delete(filename)
+      raise NotImplementedError
     end
 
     def check(filename)
+      raise NotImplementedError
+    end
+
+    def self.snapshot_storage(backup_storage, opts={})
+      storage = case backup_storage[:storage_type]
+                when 'local'
+                  LocalStorage.new(backup_storage, opts)
+                when 's3'
+                  S3Storage.new(backup_storage, opts)
+                when 'iijgio'
+                  IIJGIOStorage.new(backup_storage, opts)
+                when 'ifs'
+                  IfsStorage.new(backup_storage, opts)
+                when 'webdav'
+                  Webdav.new(backup_storage, opts)
+                else
+                  raise "Unknown backup storage driver: #{backup_storage[:storage_type]}"
+                end
+      storage
     end
   end
 end

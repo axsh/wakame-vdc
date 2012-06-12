@@ -59,13 +59,6 @@ module Dcmgr::Endpoints::V1203
 
     alias :response_to :respond_with
 
-    def find_volume_snapshot(snapshot_id)
-      vs = M::VolumeSnapshot[snapshot_id]
-      raise E::UnknownVolumeSnapshot if vs.nil?
-      raise E::InvalidVolumeState unless vs.state.to_s == 'available'
-      vs
-    end
-
     def validate_service_type(service_type)
       Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
     end

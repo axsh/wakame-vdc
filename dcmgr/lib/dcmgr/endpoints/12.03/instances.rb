@@ -277,18 +277,24 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   put '/:id/image' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
+
+    bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
+    bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
     
-    bkst = M::BackupStorage[Dcmgr.conf.service_types[instance.service_type].backup_storage_id]
-    bo = M::BackupObject.entry_new(@account, instance.image.backup_object.values[:size]) do |i|
-      if params[:description]
-        i.description = params[:description]
-      end
-      i.backup_storage = bkst
+    bo = M::BackupObject.entry_new(bkst,
+                                   @account, instance.image.backup_object.values[:size]) do |i|
+      [:display_name, :description].each { |k|
+        if params[k]
+          i[k] = params[:k]
+        end
+      }
     end
     image = instance.image.entry_clone do |i|
-      if params[:description]
-        i.description = params[:description]
-      end
+      [:display_name, :description].each { |k|
+        if params[k]
+          i[k] = params[:k]
+        end
+      }
       i.backup_object_id = bo.canonical_uuid
     end
     

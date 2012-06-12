@@ -103,14 +103,13 @@ module Dcmgr::Models
       }
     end
 
-    def self.delete_volume(account_id, uuid)
-      v = self.dataset.where(:account_id=>account_id).where(:uuid=>uuid.split('-').last).first
-      if v.state.to_sym != :available
+    def entry_delete()
+      if self.state.to_sym != :available
         raise RequestError, "invalid delete request"
       end
-      v.state = :deregistering
-      v.save_changes
-      v
+      self.state = :deleting
+      self.save_changes
+      self
     end
 
     def merge_pool_data
@@ -132,20 +131,23 @@ module Dcmgr::Models
         :detached_at => self.detached_at,
       }
     end
+
+    SNAPSHOT_READY_STATES = [:attached, :available].freeze
+    ONDISK_STATES = [:available, :attaching, :attached, :detaching].freeze
     
     def ready_to_take_snapshot?
-      %w(available attached).member?(self.state)
+      SNAPSHOT_READY_STATES.member?(self.state.to_sym)
     end
-
+    
     def ondisk_state?
-      %w(available attaching detaching attached).member?(self.state)
+      ONDISK_STATES.member?(self.state.to_sym)
     end
 
-    def create_snapshot(account_id)
-      vs = VolumeSnapshot.create(:account_id=>account_id,
-                                 :storage_node_id=>self.storage_node_id,
-                                 :origin_volume_id=>self.canonical_uuid,
-                                 :size=>self.size)
+    def entry_new_backup_object(bkst, account_id=nil, &blk)
+      BackupObject.entry_new(bkst,
+                             (account_id || self.account_id),
+                             self.size * 1024 * 1024,
+                             &blk)
     end
 
     # override Sequel::Model#delete not to delete rows but to set
@@ -155,10 +157,6 @@ module Dcmgr::Models
       self.state = :deleted if self.state != :deleted
       self.status = :offline if self.status != :offline
       self.save
-    end
-
-    def snapshot
-      VolumeSnapshot[self.snapshot_id]
     end
 
     def self.entry_new(account, size, params, &blk)

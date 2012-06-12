@@ -49,6 +49,7 @@ Feature: Volume API
     Given a managed volume with the following options
       | volume_size | display_name |
       |          10 | volume1      |
+    Then the previous api call should be successful
 
   Scenario: Create blank volume more than maximum size
     When we make an api create call to volumes with the following options
@@ -60,6 +61,7 @@ Feature: Volume API
     Given a managed volume with the following options
       | volume_size | display_name |
       |        3000 | volume1      |
+    Then the previous api call should be successful
   
   Scenario: Attach and Detach volume to Instance
     Given the volume "wmi-lucid6" exists
@@ -92,16 +94,24 @@ Feature: Volume API
     When we successfully detach the created volume
     Then the created volumes should reach state available in 60 seconds or less
 
-  Scenario: Create snaphost from volume
+  Scenario: Create backup from volume
     Given a managed volume with the following options
       | volume_size | display_name |
       |          10 | volume1      |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       And the created volumes should reach state available in 60 seconds or less
  
-    When we successfully create a snapshot from the created volume
-    Then the created volume_snapshots should reach state available in 60 seconds or less 
+    When we make an api put call to volumes/<registry:uuid>/backup with no options
+    Then from the previous api call take {"uuid":} and save it to <registry:backup_uuid>
+    And the backups with id <registry:backup_uuid> should reach state "available" in 60 seconds or less
 
+  Scenario: Create volume from backup
+    Given a managed volume with the following options
+      | backup_object_id | display_name |
+      | bo-lucid7        | volume1      |
+    Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+      And the created volumes should reach state available in 60 seconds or less
+ 
   @api_from_12.03
   Scenario: List volumes with filter options
     Given a managed volume with the following options

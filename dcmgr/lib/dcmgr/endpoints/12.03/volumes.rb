@@ -64,38 +64,37 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   end
   
   post do
-    # description 'Create the new volume'
-    # params volume_size, string, required
-    # params snapshot_id, string, optional
-    # params storage_pool_id, string, optional
-    # params display_name, string, optional
     sp = vs = vol = nil
     # input parameter validation
-    if params[:snapshot_id]
-      vs = find_volume_snapshot(params[:snapshot_id])
+    if params[:backup_object_id]
+      bo = vs = find_by_uuid(:BackupObject, params[:backup_object_id])
     elsif params[:volume_size]
       if !(Dcmgr.conf.create_volume_max_size.to_i >= params[:volume_size].to_i) ||
           !(params[:volume_size].to_i >= Dcmgr.conf.create_volume_min_size.to_i)
-        raise E::InvalidVolumeSize
-      end
-      if params[:storage_pool_id]
-        sp = find_by_uuid(:StorageNode, params[:storage_pool_id])
-        raise E::UnknownStorageNode if sp.nil?
+        raise E::InvalidVolumeSize, params[:volume_size]
       end
     else
       raise E::UndefinedRequiredParameter
     end
 
-    volume_size = (vs ? vs.size : params[:volume_size].to_i)
+    # TODO: storage node group assignment
+    if params[:storage_node_id]
+      sp = find_by_uuid(:StorageNode, params[:storage_node_id])
+      raise E::UnknownStorageNode, params[:storage_node_id] if sp.nil?
+    end
 
-    if !M::StorageNode.check_domain_capacity?(volume_size)
+    volume_size = (bo ? bo.size / (1024 * 1024) : params[:volume_size].to_i)
+
+    if sp
+      # TODO: check only for storage node from params[:storage_node_id]
+    elsif !M::StorageNode.check_domain_capacity?(volume_size)
       raise E::OutOfDiskSpace
     end
 
     # params is a Mash object. so coverts to raw Hash object.
     vol = M::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
-      if vs
-        v.snapshot_id = vs.canonical_uuid
+      if bo
+        v.backup_object_id = vs.canonical_uuid
       end
 
       if params[:service_type]
@@ -131,12 +130,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
       commit_transaction
 
-      repository_address = nil
-      if vol.snapshot
-        repository_address = Dcmgr::StorageService.repository_address(vol.snapshot.destination_key)
-      end
-
-      Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid, repository_address)
+      Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid)
     end
 
     respond_with(R::Volume.new(vol).generate)
@@ -153,16 +147,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::InvalidVolumeState, "#{vol.state}" unless vol.state == "available"
 
     begin
-      v  = M::Volume.delete_volume(@account.canonical_uuid, volume_id)
+      vol.entry_delete
     rescue M::Volume::RequestError => e
       logger.error(e)
       raise E::InvalidDeleteRequest
     end
-    raise E::UnknownVolume if v.nil?
 
     commit_transaction
-    Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'delete_volume', v.canonical_uuid)
-    respond_with([v.canonical_uuid])
+    Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'delete_volume', vol.canonical_uuid)
+    respond_with([vol.canonical_uuid])
   end
 
   put '/:id/attach' do
@@ -203,6 +196,31 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     commit_transaction
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
     respond_with(R::Volume.new(v).generate)
+  end
+
+  # Create new backup
+  put '/:id/backup' do
+    raise E::UndefinedVolumeID if params[:id].nil?
+    v = find_by_uuid(:Volume, params[:id])
+    raise E::UnknownVolume, params[:id] if v.nil?
+    raise E::InvalidVolumeState, params[:id] unless v.ready_to_take_snapshot?
+
+    bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[v.service_type].backup_storage_id
+    bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
+    
+    bo = v.entry_new_backup_object(bkst,
+                                   @account.canonical_uuid) do |i|
+      [:display_name, :description].each { |k|
+        if params[k]
+          i[k] = params[k]
+        end
+      }
+    end
+    
+    commit_transaction
+
+    Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'create_snapshot', v.canonical_uuid, bo.canonical_uuid)
+    respond_with(R::BackupObject.new(bo).generate)
   end
 
   put '/:id' do

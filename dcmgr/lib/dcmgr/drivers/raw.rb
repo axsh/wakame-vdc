@@ -9,22 +9,18 @@ module Dcmgr
       def create_volume(ctx, snap_file = nil)
         @volume_id   = ctx.volume_id
         @volume      = ctx.volume
-        @snapshot    = ctx.snapshot
+        @backup_object    = ctx.backup_object
 
         logger.info("creating new volume: id:#{@volume_id} path:#{vol_path}.")
         logger.debug("volume: #{@volume.inspect}.")
 
-        if @snapshot
+        if @backup_object
           # sh("/bin/mkdir -p #{vol_path}") unless File.directory?(vol_path)
           cp_sparse(snap_file, vol_path)
-          if $?.exitstatus != 0
-            raise "failed to copy snapshot: #{snap_file}"
-          end
         else
           unless File.exist?(vol_path)
             logger.info("creating parent filesystem(size:#{@volume[:size]}): #{vol_path}")
 
-            sh("/bin/mkdir -p #{File.dirname(vol_path)}") unless File.directory?(File.dirname(vol_path))
             sh("/bin/dd if=/dev/zero of=#{vol_path} bs=1 count=0 seek=#{@volume[:size] * 1024 * 1024}")
             du_hs(vol_path)
 
@@ -42,22 +38,25 @@ module Dcmgr
         sh("/bin/rm %s", [vol_path]) if File.exists?(vol_path)
       end
 
-      def create_snapshot(ctx, snap_file)
-        @volume      = ctx.volume
+      def create_snapshot(ctx)
+        @volume = ctx.volume
 
-        logger.info("creating new snapshot: #{snap_file}")
-        cp_sparse(vol_path, snap_file)
-        if $?.exitstatus != 0
-          raise "failed snapshot file : #{snap_file}"
-        end
-        du_hs(snap_file)
+        cp_sparse(vol_path, snapshot_path(ctx))
+        du_hs(snapshot_path(ctx))
+      end
 
-        logger.info("created new snapshot: #{snap_file}")
+      def delete_snapshot(ctx)
+        File.unlink(snapshot_path(ctx)) rescue nil
+      end
+
+      def snapshot_path(ctx)
+        File.expand_path("#{ctx.volume[:uuid]}.tmp", Dcmgr.conf.raw_backing_store.snapshot_tmp_dir)
       end
 
       private
       def vol_path
         vol_base_path = @volume[:storage_node][:export_path]
+        raise "Volume base path does not exist: #{vol_base_path}" unless File.directory?(vol_base_path)
         "#{vol_base_path}/#{@volume[:uuid]}"
       end
 

@@ -267,6 +267,11 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
     end
 
+    alter_table(:volumes) do
+      drop_column :snapshot_id
+      add_column :backup_object_id, "varchar(255)"
+    end
+
     # Isono gem got new session_id column as of v0.2.12. 
     alter_table(:job_states) do
       add_column :session_id, "varchar(80)", :null=>true
@@ -363,6 +368,11 @@ Sequel.migration do
     alter_table(:job_states) do
       drop_column :session_id
       drop_index [:session_id]
+    end
+
+    alter_table(:volumes) do
+      drop_column :backup_object_id
+      add_column :snapshot_id, "varchar(255)"
     end
   end
 end

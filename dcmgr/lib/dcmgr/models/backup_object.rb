@@ -18,9 +18,10 @@ module Dcmgr::Models
       self.object_key ||= self.canonical_uuid
     end
     
-    def self.entry_new(account, size, &blk)
+    def self.entry_new(bkst, account, size, &blk)
       bo = self.new
-      bo.account_id = account.canonical_uuid
+      bo.backup_storage = (bkst.is_a?(BackupStorage) ? bkst : BackupStorage[bkst.to_s])
+      bo.account_id = (account.is_a?(Account) ? account.canonical_uuid : account.to_s)
       bo.size = size.to_i
       bo.state = :creating
       blk.call(bo)

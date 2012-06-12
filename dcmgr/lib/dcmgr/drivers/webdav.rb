@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Drivers
-  class Webdav < BackupStorage
+  class Webdav < SnapshotStorage
     include Dcmgr::Logger
     include Dcmgr::Helpers::CliHelper
 
-    def initialize(opts)
-      @base_uri = opts[:base_uri]
-    end
-    
-    def upload(src_path, dst_key)
-      sh("curl -q -T %s %s", [src_path, abs_uri(dst_key)])
+    def upload(src_path, dst_bo)
+      sh("curl -q -T %s %s", [src_path, abs_uri(dst_bo)])
     end
 
-    def download(src_key, dst_path)
-      sh("curl -q -O %s %s", [dst_path, abs_uri(src_key)])
+    def download(src_bo, dst_path)
+      sh("curl -q -o %s %s", [dst_path, abs_uri(src_bo)])
     end
 
     def delete
@@ -22,8 +18,8 @@ module Dcmgr::Drivers
     end
 
     private
-    def abs_uri(dst_key)
-      @base_uri + dst_key
+    def abs_uri(bo)
+      @backup_storage[:base_uri] + bo[:object_key]
     end
   end
 end

@@ -41,7 +41,8 @@ module Dcmgr
       end
 
       def upload_image(inst, ctx, bo, evcb)
-
+        snapshot_stg = Dcmgr::Drivers::SnapshotStorage.snapshot_storage(bo[:backup_storage])
+        
         bkup_basename = "#{inst[:uuid]}.tmp"
         take_snapshot_for_backup()
         sh("cp -p --sparse=always %s /dev/stdout | gzip -f > %s", [ctx.os_devpath, File.expand_path(bkup_basename, download_tmp_dir)])
@@ -51,7 +52,7 @@ module Dcmgr
         evcb.setattr(res[:stdout].chomp, alloc_size)
 
         # upload image file
-        sh("curl -q -T %s %s", [File.expand_path(bkup_basename, download_tmp_dir), bo[:uri]])
+        snapshot_stg.upload(File.expand_path(bkup_basename, download_tmp_dir), bo)
         evcb.progress(100)
       ensure
         clean_snapshot_for_backup()

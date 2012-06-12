@@ -5,15 +5,30 @@ module Dcmgr
     class BackingStore
 
       def create_volume(ctx, snapshot_file=nil)
+        raise NotImplementedError
       end
 
       def delete_volume(ctx)
+        raise NotImplementedError
       end
 
-      def create_snapshot(ctx, snapshot_file)
+      # Take a snapshot where snapshot_path() addresses.
+      # @param StaContext ctx
+      def create_snapshot(ctx)
+        raise NotImplementedError
       end
 
-      def delete_snapshot(ctx, snapshot_file)
+      # Delete a snapshot where snapshot_path() addresses.
+      def delete_snapshot(ctx)
+        raise NotImplementedError
+      end
+
+      # Generate a snapshot path using seed info.
+      # It has to reproduce same result when the same parameters are given.
+      # @param StaContext ctx
+      # @return String absolute path to the snapshot 
+      def snapshot_path(ctx)
+        raise NotImplemented
       end
 
       def self.select_backing_store(backing_store)

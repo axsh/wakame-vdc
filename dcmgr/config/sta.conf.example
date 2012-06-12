@@ -3,12 +3,12 @@
 #------------------------
 
 # iSCSI target
-#config.iscsi_target = 'comstar'
+# comstart, sun_iscsi, linux_iscsi
 config.iscsi_target = 'linux_iscsi'
 
 # Initiator address is IP or ALL
 config.initiator_address = 'ALL'
 
 # Backing Store
-#config.backing_store = 'zfs'
-config.backing_store = 'raw'
+# raw zfs ifs
+backing_store_driver('raw')

@@ -4,6 +4,27 @@ module Dcmgr
   module Configurations
     class Sta < Configuration
 
+      class RawBackingStore < Configuration
+        param :snapshot_tmp_dir, :default=>'/var/tmp'
+
+        def validate(errors)
+          unless File.directory?(@config[:snapshot_tmp_dir])
+            errors << "Could not find the snapshot_tmp_dir: #{@config[:snapshot_tmp_dir]}"
+          end
+        end
+      end
+
+      DSL do
+        # Backing Store Driver
+        # raw, zfs, ifs
+        def backing_store_driver(driver, &blk)
+          @config[:backing_store] = driver
+          @config["#{driver}_backing_store"] = RawBackingStore.new.tap {
+            parse_dsl(&blk) if blk
+          }
+        end
+      end
+      
       param :tmp_dir, :default=>'/var/tmp'
       
       # iSCSI Target Driver
@@ -13,10 +34,6 @@ module Dcmgr
       # Initiator address is IP or ALL
       param :initiator_address,  :default=>'ALL'
 
-      # Backing Store Driver
-      # raw, zfs, ifs
-      param :backing_store, :default=>'raw'
-      
       def validate(errors)
         if @config[:iscsi_target].nil?
           errors << "iscsi_target is not set"
