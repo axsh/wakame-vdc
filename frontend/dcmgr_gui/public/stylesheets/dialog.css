@@ -66,6 +66,10 @@
   padding: 0 3px 0 3px;
 }
 
+#edit_machine_image_dialog table tr td {
+        padding: 3px;
+}
+
 #create_snapshost_dialog #create_snapshots {
   padding-top: 10px;
 }

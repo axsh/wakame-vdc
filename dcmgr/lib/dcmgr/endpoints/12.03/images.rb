@@ -43,4 +43,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     i.destroy
     respond_with([i.canonical_uuid])
   end
+
+  put '/:id' do
+    # description 'Update a machine image'
+    # param :id, string, :required
+    # param :display_name, string, :optional
+    # param :description, string, :optional
+    raise E::UndefinedImageID if params[:id].nil?
+    i = find_by_uuid(:Image, params[:id])
+    raise E::UnknownImage, params[:id] if i.nil?
+
+    i.display_name = params[:display_name] if params[:display_name]
+    i.description = params[:description] if params[:description]
+    i.save_changes
+
+    commit_transaction
+    respond_with(R::Image.new(i).generate)
+  end
 end

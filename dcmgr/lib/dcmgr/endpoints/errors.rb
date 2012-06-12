@@ -124,5 +124,6 @@ module Dcmgr
     define_error(:UndefinedLoadBalancerID, 404, '149')
     define_error(:UnknowLoadBalancerID, 404, '150')
     define_error(:DuplicateNetworkVif, 400, '151')
+    define_error(:UndefinedImageID, 404, '152')
   end
 end

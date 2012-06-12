@@ -9,7 +9,6 @@ class MachineImagesController < ApplicationController
     detail = Hijiki::DcmgrResource::Image.show(image_id)
     respond_with(detail,:to => [:json])
   end
-
     
   def list
     data = {
@@ -20,6 +19,16 @@ class MachineImagesController < ApplicationController
     respond_with(image[0],:to => [:json])
   end
   
+  def update
+    image_id = params[:id]
+    data = {
+      :display_name => params[:display_name],
+      :description => params[:description]
+    }
+    image = Hijiki::DcmgrResource::Image.update(image_id,data)
+    render :json => image
+  end
+
   def total
    total_resource = Hijiki::DcmgrResource::Image.total_resource
    render :json => total_resource

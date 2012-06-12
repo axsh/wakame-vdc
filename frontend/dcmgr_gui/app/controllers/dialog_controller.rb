@@ -70,6 +70,13 @@ class DialogController < ApplicationController
   def launch_instance
     @image_id = params[:ids][0]
   end
+
+  def edit_machine_image
+    @uuid = params[:ids][0]
+    @machine_image = Hijiki::DcmgrResource::Image.show(@uuid)
+    @display_name = @machine_image["display_name"]
+    @description = @machine_image["description"]
+  end
   
   def create_ssh_keypair
     render :create_and_edit_ssh_keypair

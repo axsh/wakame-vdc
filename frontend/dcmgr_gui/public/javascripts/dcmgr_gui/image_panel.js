@@ -40,6 +40,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   
   var close_button_name = $.i18n.prop('close_button'); 
   var launch_button_name = $.i18n.prop('launch_button');
+  var update_button_name = $.i18n.prop('update_button');
   
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
@@ -63,6 +64,50 @@ DcmgrGUI.prototype.imagePanel = function(){
     c_pagenate.changeTotal(image.total);
     c_list.setData(image.results);
     c_list.singleCheckList(c_list.detail_template);
+
+    var edit_machine_image_buttons = {};
+    edit_machine_image_buttons[close_button_name] = function() { $(this).dialog("close"); };
+    edit_machine_image_buttons[update_button_name] = function(event) {
+      var image_id = $(this).find('#image_id').val();
+      var display_name = $(this).find('#machine_image_display_name').val();
+      var description = $(this).find('#machine_image_description').val();
+      var data = 'display_name=' + display_name
+                +'&description=' + description;
+
+      var request = new DcmgrGUI.Request;
+      request.put({
+        "url": '/machine_images/'+ image_id +'.json',
+        "data": data,
+        success: function(json, status){
+          bt_refresh.element.trigger('dcmgrGUI.refresh');
+        }
+      });
+      $(this).dialog("close");
+    }
+
+    var bt_edit_machine_image = new DcmgrGUI.Dialog({
+      target:'.edit_machine_image',
+      width:500,
+      height:250,
+      title:$.i18n.prop('edit_machine_image_header'),
+      path:'/edit_machine_image',
+      button: edit_machine_image_buttons,
+      callback: function(){
+        var params = { 'button': bt_edit_machine_image, 'element_id': 1 };
+        $(this).find('#machine_image_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#machine_image_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
+      }
+    });
+
+    bt_edit_machine_image.target.bind('click',function(event){
+      var uuid = $(this).attr('id').replace(/edit_(wmi-[a-z0-9]+)/,'$1');
+      if( uuid ){
+        bt_edit_machine_image.open({"ids":[uuid]});
+      }
+      c_list.checkRadioButton(uuid);
+    });
+
+    $(bt_edit_machine_image.target).button({ disabled: false });
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();

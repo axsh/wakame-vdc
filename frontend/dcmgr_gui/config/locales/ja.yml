@@ -59,6 +59,11 @@ ja:
       launch_in: "選択済み"
       user_data: "ユーザデータ"
       display_name: "インスタンス名"
+    edit_machine_image:
+      header: "マシンイメージ編集"
+      uuid: "WMI ID"
+      display_name: "イメージ名"
+      description: "詳細"
     create_volume:
       header: "ボリュームを作成"
       display_name: "ボリューム名"
@@ -267,6 +272,7 @@ ja:
     header: "マシンイメージ"
     button:
       launch_instance: "起動"
+      edit_machine_image: "編集"
     list:
       wmi_id: "WMI ID"
       description: "詳細"
