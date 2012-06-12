@@ -122,9 +122,9 @@ shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 shlog ./bin/vdc-manage network dhcp addrange nw-demo6 10.102.0.10 10.102.0.240
 shlog ./bin/vdc-manage network dhcp addrange nw-demo7 10.103.0.10 10.103.0.240
 
-shlog ./bin/vdc-manage tag map tag-shhost hn-${node_id}
-shlog ./bin/vdc-manage tag map tag-shstor sn-${node_id}
-shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
+shlog ./bin/vdc-manage tag map hng-shhost hn-${node_id}
+shlog ./bin/vdc-manage tag map sng-shstor sn-${node_id}
+shlog ./bin/vdc-manage tag map nwg-shnet  nw-demo1
 
 shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}
 

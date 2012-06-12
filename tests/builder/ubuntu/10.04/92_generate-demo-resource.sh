@@ -160,13 +160,13 @@ shlog ./bin/vdc-manage network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 
 for h in ${host_nodes};do
     hvaname=demo$(echo ${h} | sed -e 's/\./ /g' | awk '{print $4}')
-    shlog ./bin/vdc-manage tag map tag-shhost hn-${hvaname}
+    shlog ./bin/vdc-manage tag map hng-shhost hn-${hvaname}
 done
 for s in ${storage_nodes};do
     staname=demo$(echo ${s} | sed -e 's/\./ /g' | awk '{print $4}')
-    shlog ./bin/vdc-manage tag map tag-shstor sn-${staname}
+    shlog ./bin/vdc-manage tag map sng-shstor sn-${staname}
 done
-shlog ./bin/vdc-manage tag map tag-shnet  nw-demo1
+shlog ./bin/vdc-manage tag map nwg-shnet  nw-demo1
 
 shlog ./bin/vdc-manage network reserve nw-demo1 --ipv4=${ipaddr}
 
