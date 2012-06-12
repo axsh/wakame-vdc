@@ -51,17 +51,23 @@ module Dcmgr
         sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?delete"
       end
       
-      def create_snapshot(ctx, snap_file)
+      def create_snapshot(ctx)
         @volume      = ctx.volume
         @vol_path  = @volume[:storage_node][:export_path]
         @ip        = @volume[:storage_node][:ipaddr]
-        @snapshot    = ctx.snapshot
 
-        new_snap_path = @snapshot[:destination_key].split("/",2).last
+        new_snap_path = snapshot_path(ctx)
         sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume[:uuid]}?duplicate=#{new_snap_path}"
-        raise "failed snapshot file : #{@snapshot[:filename]}" if $?.exitstatus != 0
 
-        logger.info("created new snapshot: #{@snapshot[:filename]}")
+        logger.info("created new snapshot: #{new_snap_path}")
+      end
+
+      # do nothing because IFS's snapshot is as same as the backup object.
+      def delete_snapshot(ctx)
+      end
+
+      def snapshot_path(ctx)
+        ctx.backup_object[:object_key]
       end
       
     end

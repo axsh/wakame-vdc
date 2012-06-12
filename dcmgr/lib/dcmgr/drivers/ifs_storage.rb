@@ -5,20 +5,14 @@ module Dcmgr::Drivers
     include Dcmgr::Logger
     include Dcmgr::Helpers::CliHelper
 
-    def download(filename)
+    def download(src_bo, dst_path)
     end
 
-    def upload(filename)
-      
+    def upload(src_path, dst_bo)
     end
 
     def delete(filename)
-      #ifs_filename = filename.split(".").first
-      #p @bucket
-      tmp_arr = @volume_snaphost_path.split ":"
-      port = tmp_arr.first
-      path = tmp_arr.last
-      sh "curl -s http://#{@bucket}:#{port}/ifsutils/#{path}/#{filename}?delete"
+      sh "curl -s #{@backup_storage[:base_uri]}/ifsutils/#{filename}?delete"
     end
   end
 end

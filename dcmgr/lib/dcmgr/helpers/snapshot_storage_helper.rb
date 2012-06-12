@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 require 'rexml/document'
+require 'uri'
 
 module Dcmgr
   module Helpers
     module SnapshotStorageHelper
       
-      def key(filename)
-        File.join(@account_id, filename)
+      def bucket_name(uri)
+        uri = URI.parse(uri)
+        paths = uri.path.split('/')
+        raise "Bucket name needs to be set at the top of path: #{uri}" if paths.size < 2
+        path[1]
       end
-
+      
       def execute(cmd, args)
-        script_root_path = File.join(File.expand_path('../../../../',__FILE__), 'script')
-        script = File.join(script_root_path, 'storage_service')
+        script = File.join(Dcmgr.conf.script_root_path, 'storage_service')
         cmd = "/usr/bin/env #{@env.join(' ')} %s " + cmd 
         args = [script] + args
         res = sh(cmd, args)
