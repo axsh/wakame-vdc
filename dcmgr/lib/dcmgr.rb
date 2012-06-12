@@ -65,6 +65,7 @@ module Dcmgr
     autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
     autoload :LoadBalancer, 'dcmgr/models/load_balancer'
+    autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'    
   end
 
   module Endpoints

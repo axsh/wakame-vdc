@@ -72,4 +72,96 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
      
     respond_with(R::LoadBalancer.new(lb).generate)
   end
+  
+  put '/:id/register' do
+    raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?  
+
+    lb = find_by_uuid(:LoadBalancer, params[:id])
+    raise E::UnknownInstance if lb.nil?
+    
+    request_vifs = params[:vifs]
+    raise E::UnknownNetworkVif if request_vifs.nil?
+
+    request_vifs = request_vifs.each_line.to_a if request_vifs.is_a?(String)
+    hold_vifs = lb.load_balancer_targets.collect {|t| t.network_vif_uuid }
+    target_vifs = request_vifs - hold_vifs
+    raise(E::DuplicateNetworkVif) if target_vifs.empty? 
+
+    targets = []
+    target_vifs.each do |uuid| 
+      vif = M::NetworkVif[uuid]
+      ip_lease = vif.direct_ip_lease
+      next if ip_lease.empty?
+
+      targets << {
+        :ipv4 => ip_lease.first.ipv4,
+      }
+
+      lb.add_target(vif.canonical_uuid)
+      lb.save
+    end
+
+    raise E::UnknownNetworkVif if targets.empty?
+
+    EM.defer do
+      proxy = Dcmgr::Drivers::Haproxy.new
+      proxy.set_mode(haproxy_mode(lb.instance_protocol))
+      proxy.set_balance(lb.balance_name)
+      proxy.set_cookie_name(lb.cookie_name)
+      targets.each do |t|
+        proxy.add_server(t[:ipv4], lb.instance_port)
+      end
+
+      proxy.bind do 
+        EM.schedule do
+          conn = Dcmgr.messaging.amqp_client
+          channel = AMQP::Channel.new(conn)
+          ex = channel.topic(lb.topic_name, lb.queue_options)
+          begin 
+            channel = AMQP::Channel.new(conn)
+            queue = AMQP::Queue.new(channel, lb.queue_name, :exclusive => false, :auto_delete => true)
+            queue.bind(ex)
+            queue.publish(proxy.config)
+          rescue Exception => e
+            logger.error(e.message)
+          end
+        end 
+      end
+
+    end
+    
+    commit_transaction
+    respond_with(R::LoadBalancer.new(lb).generate)
+  end
+
+  put '/:id/unregister' do
+    #pending
+  end
+
+  put '/:id/enable' do
+    #pending
+  end
+
+  put '/:id/disable' do
+    #pending
+  end
+  
+  put '/:id' do
+    #pending
+  end
+
+  delete '/:id' do
+    #pending
+  end
+  
+  private
+  def haproxy_mode(protocol) 
+    case protocol
+      when 'tcp', 'ssl'
+        'tcp'
+      when 'http', 'https'
+        'http'
+    end
+  end
+
 end

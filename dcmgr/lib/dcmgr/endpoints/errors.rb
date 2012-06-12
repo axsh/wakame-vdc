@@ -121,5 +121,8 @@ module Dcmgr
     define_error(:NetworkVifNicNotFound, 500, '146')
     define_error(:NetworkVifNotAttached, 500, '147')
     define_error(:UndefinedNetworkID, 404, '148')
+    define_error(:UndefinedLoadBalancerID, 404, '149')
+    define_error(:UnknowLoadBalancerID, 404, '150')
+    define_error(:DuplicateNetworkVif, 400, '151')
   end
 end
