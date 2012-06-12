@@ -43,20 +43,20 @@ module Dcmgr
       def upload_image(inst, ctx, bo, evcb)
         snapshot_stg = Dcmgr::Drivers::BackupStorage.snapshot_storage(bo[:backup_storage])
         
-        bkup_basename = "#{inst[:uuid]}.tmp"
+        bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
         take_snapshot_for_backup()
-        sh("cp -p --sparse=always %s /dev/stdout | gzip -f > %s", [ctx.os_devpath, File.expand_path(bkup_basename, download_tmp_dir)])
-        alloc_size = File.size(File.expand_path(bkup_basename, download_tmp_dir))
-        res = sh("md5sum %s | awk '{print $1}'", [File.expand_path(bkup_basename, download_tmp_dir)])
+        sh("cp -p --sparse=always %s /dev/stdout | gzip -f > %s", [ctx.os_devpath, bkup_tmp_path])
+        alloc_size = File.size(bkup_tmp_path)
+        res = sh("md5sum %s | awk '{print $1}'", [bkup_tmp_path])
         
         evcb.setattr(res[:stdout].chomp, alloc_size)
 
         # upload image file
-        snapshot_stg.upload(File.expand_path(bkup_basename, download_tmp_dir), bo)
+        snapshot_stg.upload(bkup_tmp_path, bo)
         evcb.progress(100)
       ensure
         clean_snapshot_for_backup()
-        File.unlink(File.expand_path(bkup_basename, download_tmp_dir)) rescue nil
+        File.unlink(bkup_tmp_path) rescue nil
       end
 
       protected
