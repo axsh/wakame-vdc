@@ -166,6 +166,12 @@ module Dcmgr
         
         # stop container
         sh("vzctl stop %s",[ctid])
+
+        # wait stopped of container status
+        tryagain do
+          sh("vzctl status %s", [ctid])[:stdout].chomp.include?("down")
+        end
+        
         case hc.inst[:image][:file_format]
         when "raw"
           # umount vm image directory
@@ -188,11 +194,6 @@ module Dcmgr
         end
         sh("umount -d %s/metadata", [hc.inst_data_dir])
         logger.debug("stop container #{ctid}")
-        
-        # wait stopped of container status
-        tryagain do
-          sh("vzctl status %s", [ctid])[:stdout].chomp.include?("down")
-        end
         
         # delete container folder
         sh("vzctl destroy %s",[ctid])
