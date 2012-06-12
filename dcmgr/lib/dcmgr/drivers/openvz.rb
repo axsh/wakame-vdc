@@ -202,6 +202,9 @@ module Dcmgr
         container_config = "#{config.ve_config_dir}/#{ctid}"
         config_file_path = "#{container_config}.conf.destroyed"
         mount_file_path = "#{container_config}.mount.destroyed"
+        raise "config file does not exists #{config_file_path}" unless File.exist?(config_file_path)
+        raise "mount file does not exists #{mount_file_path}" unless File.exist?(mount_file_path)
+
         File.unlink(config_file_path, mount_file_path)
         logger.debug("delete config file #{config_file_path}")
         logger.debug("delete mount file #{mount_file_path}")
