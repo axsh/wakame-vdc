@@ -97,5 +97,33 @@ __DESC
         :uuid   => object.canonical_uuid
       )
     end
+    
+    desc "unmap UUID OBJECT_UUID", "Unmap a tag from a taggable object"
+    long_desc <<__DESC
+Unmap a tag from a taggable object.
+
+ UUID: Tag canonical UUID. 
+ OBJECT_UUID: The canonical UUID represents the object to label this tag.
+__DESC
+    def unmap(uuid, object_uuid)
+      #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
+      #This is so the Taggable.find method can be used to determine the Model class based on canonical uuid
+      M.constants.each {|c| M.const_get(c) }
+      
+      object = M::Taggable.find(object_uuid)
+      tag    = M::Taggable.find(uuid)
+
+      UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
+      UnknownUUIDError.raise(object_uuid) if object.nil?
+      Error.raise("Tag '#{uuid}' can not be mapped to a '#{object.class}'.",100) unless tag.accept_mapping?(object)
+      
+      mapping = M::TagMapping.find(
+        :tag_id => tag.id,
+        :uuid   => object.canonical_uuid
+      )
+      
+      raise "#{tag.canonical_uuid} is not mapped to #{object.canonical_uuid}" if mapping.nil?
+      mapping.destroy
+    end
   end
 end
