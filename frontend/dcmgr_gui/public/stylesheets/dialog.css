@@ -66,6 +66,10 @@
   padding: 0 3px 0 3px;
 }
 
+#edit_instance_dialog table tr td {
+	padding: 3px;
+}
+
 #edit_machine_image_dialog table tr td {
         padding: 3px;
 }

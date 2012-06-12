@@ -59,6 +59,10 @@ en:
       launch_in: "Launch in"
       user_data: "User Data"
       display_name: "Instance Name"
+    edit_instance:
+      header: "Edit Instance"
+      instance_id: "Instance ID"
+      display_name: "Instance Name"
     edit_machine_image:
       header: "Edit Machine Image"
       uuid: "WMI ID"
@@ -233,6 +237,8 @@ en:
       reboot: "Reboot"
       start: "Start"
       stop: "Stop"
+    button:
+      edit_instance: "Edit"
     list:
       instance_id: "Instance ID"
       wmi_id: "WMI ID"
@@ -241,6 +247,7 @@ en:
       ip: "IP"
       state: "State"
       display_name: "Instance Name"
+      action: "Action"
     details:
       header: "Details"
       instance: "Instance"
@@ -286,6 +293,7 @@ en:
       owner: "Owner"
       state: "State"
       display_name: "Image Name"
+      action: "Action"
     details:
       header: "Details"
       wmi_id: "WMI Id"

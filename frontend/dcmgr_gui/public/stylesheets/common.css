@@ -860,6 +860,13 @@ body{
 	line-height: 0;
 }
 
+#content #mainarea_wide table.ptn01 tr td a.edit_instance{
+  display: block;
+	width: 5em;
+	font-size: 10px;
+	line-height: 0;
+}
+
 /* ptn02 */
 #content #mainarea_wide table.a{
 	margin-left: 20px;

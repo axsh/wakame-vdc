@@ -47,6 +47,10 @@ module Hijiki::DcmgrResource::V1203
         self.collection_name = @collection
         result.body
       end
+
+      def update(instance_id,params)
+        self.put(instance_id,params).body
+      end
     end
   end
 

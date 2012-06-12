@@ -59,6 +59,10 @@ ja:
       launch_in: "選択済み"
       user_data: "ユーザデータ"
       display_name: "インスタンス名"
+    edit_instance:
+      header: "インスタンスを編集"
+      instance_id: "インスタンスID"
+      display_name: "インスタンス名"
     edit_machine_image:
       header: "マシンイメージ編集"
       uuid: "WMI ID"
@@ -228,6 +232,8 @@ ja:
       reboot: "再起動"
       start: "再開"
       stop: "一時停止"
+    button:
+      edit_instance: "編集"
     list:
       instance_id: "インスタンスID"
       wmi_id: "WMI ID"
@@ -236,6 +242,7 @@ ja:
       ip: "IP"
       state: "状態"
       display_name: "インスタンス名"
+      action: "アクション"
     details:
       header: "詳細"
       instance: "インスタンス"
@@ -280,6 +287,7 @@ ja:
       owner: "オーナー"
       state: "状態"
       display_name: "イメージ名"
+      action: "アクション"
     details:
       header: "詳細"
       wmi_id: "WMI ID"

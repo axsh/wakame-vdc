@@ -46,6 +46,7 @@ jQuery(function($){
 	    <th><%= t("instances.list.memory_size") %></th>
 	    <th><%= t("instances.list.ip") %></th>
 	    <th><%= t("instances.list.state") %></th>
+	    <th><%= t("instances.list.action") %></th>
 	  </tr>
 	  {{each(index,item) rows}}
 	  <tr id="row-${item.id}">
@@ -69,6 +70,13 @@ jQuery(function($){
 	      {{/if}}
               {{/each}}</td>
 	    <td class="state vtip center" title="status">${item.state}</td>
+	    {{if item.id}}
+            <td class="vtip center" title="action">
+              <a href="javascript:void(0);" class="edit_instance" id="edit_${item.id}"><%= t('instances.button.edit_instance') %></a>
+            </td>
+            {{else}}
+            <td class="vtip center" title="action"></td>
+            {{/if}}
           </tr>
 	  {{/each}}
 	</table>

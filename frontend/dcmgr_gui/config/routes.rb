@@ -22,6 +22,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/stop_instances', :to => 'dialog#stop_instances'
   post   'dialog/reboot_instances', :to => 'dialog#reboot_instances'
   post   'dialog/terminate_instances', :to => 'dialog#terminate_instances'
+  post   'dialog/edit_instance', :to => 'dialog#edit_instance'
   get    'dialog/create_security_group', :to => 'dialog#create_security_group'
   post   'dialog/delete_security_group', :to => 'dialog#delete_security_group'
   post   'dialog/edit_security_group', :to => 'dialog#edit_security_group'
@@ -102,7 +103,8 @@ DcmgrGui::Application.routes.draw do
   get    'instances/show/:id' ,:to => 'instances#show'
   post   'instances/start' ,:to => 'instances#start'
   post   'instances/stop' ,:to => 'instances#stop'
-  
+  put    'instances/:id', :to => 'instances#update'
+
   #instance_specs
   get    'instance_specs/all' ,:to => 'instance_specs#show_instance_specs'
   

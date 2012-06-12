@@ -46,6 +46,12 @@ class DialogController < ApplicationController
     @instance_ids = params[:ids]
   end
   
+  def edit_instance
+    @instance_id = params[:ids][0]
+    @instance = Hijiki::DcmgrResource::Instance.show(@instance_id)
+    @display_name = @instance["display_name"]
+  end
+
   def create_security_group
     @description = ''
     @rule = ''

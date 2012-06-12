@@ -31,6 +31,7 @@ class InstancesController < ApplicationController
   def show
     instance_id = params[:id]
     detail = Hijiki::DcmgrResource::Instance.show(instance_id)
+p detail
     respond_with(detail,:to => [:json])
   end
   
@@ -68,6 +69,15 @@ class InstancesController < ApplicationController
       res << Hijiki::DcmgrResource::Instance.stop(instance_id)
     end
     render :json => res
+  end
+
+  def update
+    instance_id = params[:id]
+    data = {
+	:display_name => params[:display_name]
+    }
+    instance = Hijiki::DcmgrResource::Instance.update(instance_id,data)
+    render :json => instance
   end
   
   def total
