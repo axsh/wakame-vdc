@@ -22,8 +22,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   post do
     # copy request params
     lb_conf = Dcmgr.conf.service_types['lb']
-    spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)    
-    
+    spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
+
     raise "E::UnknownImage" unless lb_conf.config.include? :image_id
     raise "E::UnknownHostNode" unless lb_conf.config.include? :host_node_id
     raise "E::UnknownSecurityGroup" unless lb_conf.config.include? :security_group
@@ -38,29 +38,29 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                 ]
 
     # copy env
-    env_keys.each { |key| origin_env[key] = env[key] } 
-  
+    env_keys.each { |key| origin_env[key] = env[key] }
+
     # make params for internal request.
     values  = {'image_id' => lb_conf.image_id,
                'instance_spec_id' => spec.canonical_uuid,
                'host_node_id' => lb_conf.host_node_id,
                'security_group' => lb_conf.security_group,
                'ssh_key_id' => lb_conf.ssh_key_id
-    } 
+    }
 
     # TODO: Using sinatra plugin.
-    env['rack.request.form_vars'] = values.collect { |k,v| "#{k}=#{v}" }.join('&') 
+    env['rack.request.form_vars'] = values.collect { |k,v| "#{k}=#{v}" }.join('&')
     env['rack.request.form_hash'] = ::Rack::Utils.parse_query(env['rack.request.form_vars'])
     env['REQUEST_PATH'] = '/api/12.03/instances.json'
     env['PATH_INFO'] = '/instances'
     env['REQUEST_URI'] = '/api/12.03/instances.json'
-    
+
     # Create Instance
     http_status, headers, body = self.dup.call(env)
 
     # undo env
     env_keys.each { |key| env[key] = origin_env[key] }
-    
+
     # create load balancer
     b = ::JSON.load(body.shift)
 
@@ -69,23 +69,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                                 :description => params[:description],
                                 :instance_id => i.id,
                                 )
-     
+
     respond_with(R::LoadBalancer.new(lb).generate)
   end
-  
+
   put '/:id/register' do
-    raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?  
+    raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
 
     lb = find_by_uuid(:LoadBalancer, params[:id])
     raise E::UnknownInstance if lb.nil?
-    
+
     request_vifs = params[:vifs]
     raise E::UnknownNetworkVif if request_vifs.nil?
 
     request_vifs = request_vifs.each_line.to_a if request_vifs.is_a?(String)
     hold_vifs = lb.load_balancer_targets.collect {|t| t.network_vif_id }
     target_vifs = request_vifs - hold_vifs
-    raise(E::DuplicateNetworkVif) if target_vifs.empty? 
+    raise(E::DuplicateNetworkVif) if target_vifs.empty?
 
     config_params = {
       :instance_protocol => lb.instance_protocol,
@@ -99,7 +99,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     }
 
     targets = []
-    target_vifs.each do |uuid| 
+    target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
       next if ip_lease.empty?
@@ -113,17 +113,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     raise E::UnknownNetworkVif if config_params[:ipset].empty?
-    update_load_balancer_config(config_params)  
+    update_load_balancer_config(config_params)
     commit_transaction
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
   put '/:id/unregister' do
-    raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?  
+    raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
 
     lb = find_by_uuid(:LoadBalancer, params[:id])
     raise E::UnknownInstance if lb.nil?
-    
+
     request_vifs = params[:vifs]
     raise E::UnknownNetworkVif if request_vifs.nil?
 
@@ -144,12 +144,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :topic_name => lb.topic_name,
       :queue_options => lb.queue_options,
       :queue_name => lb.queue_name,
-      :ipset => [] 
+      :ipset => []
     }
 
     targets = []
     target_vifs = hold_vifs - request_vifs
-    target_vifs.each do |uuid| 
+    target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
       next if ip_lease.empty?
@@ -158,10 +158,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
         :ipv4 => ip_lease.first.ipv4,
       }
     end
- 
-    update_load_balancer_config(config_params)  
+
+    update_load_balancer_config(config_params)
     commit_transaction
-    respond_with(R::LoadBalancer.new(lb).generate) 
+    respond_with(R::LoadBalancer.new(lb).generate)
   end
 
   put '/:id/enable' do
@@ -171,7 +171,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   put '/:id/disable' do
     #pending
   end
-  
+
   put '/:id' do
     #pending
   end
@@ -204,9 +204,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     commit_transaction
     respond_with(R::LoadBalancer.new(lb).generate)
   end
-  
-  private
-  def haproxy_mode(protocol) 
+
+ private
+  def haproxy_mode(protocol)
     case protocol
       when 'tcp', 'ssl'
         'tcp'
@@ -214,7 +214,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
         'http'
     end
   end
-  
+
   def update_load_balancer_config(params)
     EM.defer do
       proxy = Dcmgr::Drivers::Haproxy.new
@@ -225,12 +225,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
         proxy.add_server(t[:ipv4], params[:instance_port])
       end
 
-      proxy.bind do 
+      proxy.bind do
         EM.schedule do
           conn = Dcmgr.messaging.amqp_client
           channel = AMQP::Channel.new(conn)
           ex = channel.topic(params[:topic_name], params[:queue_options])
-          begin 
+          begin
             channel = AMQP::Channel.new(conn)
             queue = AMQP::Queue.new(channel, params[:queue_name], :exclusive => false, :auto_delete => true)
             queue.bind(ex)
@@ -238,10 +238,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
           rescue Exception => e
             logger.error(e.message)
           end
-        end 
+        end
       end
 
     end
- 
+
   end
 end
