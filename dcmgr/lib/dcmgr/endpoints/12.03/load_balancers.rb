@@ -177,7 +177,32 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   delete '/:id' do
-    #pending
+    lb = find_by_uuid(:LoadBalancer, params[:id])
+    raise E::UnknownInstance if lb.nil?
+
+    raise E::ExistsRegisteredInstance unless lb.load_balancer_targets.empty?
+
+    lb_i = lb.instance
+
+    # TODO: Using sinatra plugin.
+    env['REQUEST_PATH'] = "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
+    env['PATH_INFO'] = "/instances/#{lb_i.canonical_uuid}.json"
+    env['REQUEST_URI'] = "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
+
+    # Create Instance
+    http_status, headers, body = self.dup.call(env)
+
+    # create load balancer
+    b = ::JSON.load(body.shift)
+
+    if b.include? lb_i.canonical_uuid
+      lb.destroy
+    else
+      raise E::InvalidLoadBalancerState, lb.state
+    end
+
+    commit_transaction
+    respond_with(R::LoadBalancer.new(lb).generate)
   end
   
   private
