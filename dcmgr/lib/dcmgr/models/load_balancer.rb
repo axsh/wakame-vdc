@@ -35,9 +35,9 @@ module Dcmgr::Models
        }   
     end
     
-    def add_target(network_vif_uuid)
+    def add_target(network_vif_id)
       lbt = LoadBalancerTarget.new
-      lbt.network_vif_id = network_vif_uuid
+      lbt.network_vif_id = network_vif_id
       lbt.load_balancer_id = self.id
       lbt.save
       lbt
@@ -46,6 +46,7 @@ module Dcmgr::Models
     def remove_target(network_vif_id)
       lbt = LoadBalancerTarget.find(:network_vif_id => network_vif_id)
       lbt.delete
+      lbt
     end
  
     # override Sequel::Model#delete not to delete rows but to set

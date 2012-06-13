@@ -87,55 +87,80 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     target_vifs = request_vifs - hold_vifs
     raise(E::DuplicateNetworkVif) if target_vifs.empty? 
 
+    config_params = {
+      :instance_protocol => lb.instance_protocol,
+      :instance_port => lb.instance_port,
+      :balance_name => lb.balance_name,
+      :cookie_name => lb.cookie_name,
+      :topic_name => lb.topic_name,
+      :queue_options => lb.queue_options,
+      :queue_name => lb.queue_name,
+      :ipset => []
+    }
+
     targets = []
     target_vifs.each do |uuid| 
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
       next if ip_lease.empty?
 
-      targets << {
+      config_params[:ipset] << {
         :ipv4 => ip_lease.first.ipv4,
       }
 
-      lb.add_target(vif.canonical_uuid)
+      lb.add_target(uuid)
       lb.save
     end
 
-    raise E::UnknownNetworkVif if targets.empty?
-
-    EM.defer do
-      proxy = Dcmgr::Drivers::Haproxy.new
-      proxy.set_mode(haproxy_mode(lb.instance_protocol))
-      proxy.set_balance(lb.balance_name)
-      proxy.set_cookie_name(lb.cookie_name)
-      targets.each do |t|
-        proxy.add_server(t[:ipv4], lb.instance_port)
-      end
-
-      proxy.bind do 
-        EM.schedule do
-          conn = Dcmgr.messaging.amqp_client
-          channel = AMQP::Channel.new(conn)
-          ex = channel.topic(lb.topic_name, lb.queue_options)
-          begin 
-            channel = AMQP::Channel.new(conn)
-            queue = AMQP::Queue.new(channel, lb.queue_name, :exclusive => false, :auto_delete => true)
-            queue.bind(ex)
-            queue.publish(proxy.config)
-          rescue Exception => e
-            logger.error(e.message)
-          end
-        end 
-      end
-
-    end
-    
+    raise E::UnknownNetworkVif if config_params[:ipset].empty?
+    update_load_balancer_config(config_params)  
     commit_transaction
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
   put '/:id/unregister' do
-    #pending
+    raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?  
+
+    lb = find_by_uuid(:LoadBalancer, params[:id])
+    raise E::UnknownInstance if lb.nil?
+    
+    request_vifs = params[:vifs]
+    raise E::UnknownNetworkVif if request_vifs.nil?
+
+    request_vifs = request_vifs.each_line.to_a if request_vifs.is_a?(String)
+    hold_vifs = lb.load_balancer_targets.collect {|t| t.network_vif_id }
+    remove_vifs = request_vifs & hold_vifs
+    remove_vifs.each do |uuid|
+     lb.remove_target(uuid)
+     lb.save
+    end
+
+    config_params = {
+      :instance_protocol => lb.instance_protocol,
+      :instance_port => lb.instance_port,
+      :balance_name => lb.balance_name,
+      :cookie_name => lb.cookie_name,
+      :topic_name => lb.topic_name,
+      :queue_options => lb.queue_options,
+      :queue_name => lb.queue_name,
+      :ipset => [] 
+    }
+
+    targets = []
+    target_vifs = hold_vifs - request_vifs
+    target_vifs.each do |uuid| 
+      vif = M::NetworkVif[uuid]
+      ip_lease = vif.direct_ip_lease
+      next if ip_lease.empty?
+
+      config_params[:ipset] << {
+        :ipv4 => ip_lease.first.ipv4,
+      }
+    end
+ 
+    update_load_balancer_config(config_params)  
+    commit_transaction
+    respond_with(R::LoadBalancer.new(lb).generate) 
   end
 
   put '/:id/enable' do
@@ -163,5 +188,34 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
         'http'
     end
   end
+  
+  def update_load_balancer_config(params)
+    EM.defer do
+      proxy = Dcmgr::Drivers::Haproxy.new
+      proxy.set_mode(haproxy_mode(params[:instance_protocol]))
+      proxy.set_balance(params[:balance_name])
+      proxy.set_cookie_name(params[:cookie_name])
+      params[:ipset].each do |t|
+        proxy.add_server(t[:ipv4], params[:instance_port])
+      end
 
+      proxy.bind do 
+        EM.schedule do
+          conn = Dcmgr.messaging.amqp_client
+          channel = AMQP::Channel.new(conn)
+          ex = channel.topic(params[:topic_name], params[:queue_options])
+          begin 
+            channel = AMQP::Channel.new(conn)
+            queue = AMQP::Queue.new(channel, params[:queue_name], :exclusive => false, :auto_delete => true)
+            queue.bind(ex)
+            queue.publish(proxy.config)
+          rescue Exception => e
+            logger.error(e.message)
+          end
+        end 
+      end
+
+    end
+ 
+  end
 end

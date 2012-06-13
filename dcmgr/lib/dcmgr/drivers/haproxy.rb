@@ -21,17 +21,15 @@ module Dcmgr
      
       def bind(&blk)
         begin
-          raise "Undefined server" if servers.length == 0 
-
           template_file_path = "haproxy.cfg"
           render_template(template_file_path, output_file_path) do
             binding
           end
-          logger.info("Create config file: #{output_file_path}")
           blk.call
           logger.info("Update #{template_file_path}")
         rescue ::Exception => e
-          logger.error("Faild to bind HAProxy: #{e.message}")
+          logger.error(e)
+          raise 'Faild to bind HAProxy'
         ensure
           remove_temporary
           logger.info("Delete config file: #{output_file_path}")
