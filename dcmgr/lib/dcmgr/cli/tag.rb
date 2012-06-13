@@ -70,6 +70,7 @@ __END
     def del(uuid)
       tag = M::Taggable.find(uuid)
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
+      tag.remove_all_mapped_uuids
       super(tag.class,uuid)
     end
     
