@@ -1,0 +1,7 @@
+<p><%= t("dialog.delete_backup.message") %></p>
+<br />
+<ul id="delete_backups">
+        <% @backup_object_ids.each do |backup_obj_id| %>
+                <li><%= backup_obj_id %></li>
+        <% end %>
+</ul>

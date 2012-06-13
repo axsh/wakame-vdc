@@ -6,8 +6,8 @@ class DialogController < ApplicationController
   def create_volume
   end
   
-  def create_volume_from_snapshot
-    @snapshot_ids = params[:ids]
+  def create_volume_from_backup
+    @backup_object_ids = params[:ids]
   end
 
   def attach_volume
@@ -28,12 +28,12 @@ class DialogController < ApplicationController
     @display_name = @volume["display_name"]
   end
 
-  def create_snapshot
+  def create_backup
     @volume_ids = params[:ids]
   end
   
-  def delete_snapshot
-    @snapshot_ids = params[:ids]
+  def delete_backup
+    @backup_object_ids = params[:ids]
   end
   
   def start_instances

@@ -1159,7 +1159,7 @@ body{
 	margin-left:7px;
 }
 
-#content #mainarea_wide .controller a.delete_snapshot{
+#content #mainarea_wide .controller a.delete_backup{
 	display: block;
 	float: left;
 	width: 14em;
@@ -1169,7 +1169,7 @@ body{
 	margin-left:7px;
 }
 
-#content #mainarea_wide .controller a.create_snapshot{
+#content #mainarea_wide .controller a.create_backup{
 	display: block;
   float: left;
 	width: 14em;

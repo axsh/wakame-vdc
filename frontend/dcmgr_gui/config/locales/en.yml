@@ -71,7 +71,7 @@ en:
     create_volume:
       header: "Create Volume"
       display_name: "Volume Name"
-      size: "Size"
+      capacity: "Size"
       storage: "Storage"
     attach_volume:
       header: "Attach Volume"
@@ -87,17 +87,17 @@ en:
       header: "Edit Volume"
       volume_id: "Volume ID"
       display_name: "Volume Name"
-    create_snapshot:
-      header: "Create Snapshot"
-      message: "Are you sure you want to create the following snapshot?"
-      display_name: "Snapshot Name"
-    create_volume_from_snapshot:
-      header: "Create Volume "
+    create_backup:
+      header: "Create Backup"
+      message: "Are you sure you want to create the following backup?"
+      display_name: "Backup Name"
+    create_volume_from_backup:
+      header: "Create Volume"
       message: "Are you sure you want to create the following volume?"
       display_name: "Volume Name"
-    delete_snapshot:
-      header: "Delete Snapshot"
-      message: "Are you sure you want to delete the following snapshot?"
+    delete_backup:
+      header: "Delete Backup"
+      message: "Are you sure you want to delete the following backup?"
     create_security_group:
       header: "Create Security Group"
     edit_security_group:
@@ -229,7 +229,7 @@ en:
       instance: "Instances"
       machine_images: "Machine Images"
       volumes: "Volumes"
-      snapshots: "Snapshots"
+      backups: "Backups"
       networks: "Networks"
       security_groups: "Security Groups"
       key_pairs: "Key Pairs"
@@ -306,16 +306,16 @@ en:
       owner: "Owner"
       arch: "Arch"
       status: "Status"
-      created_at: "Created_at"
-      updated_at: "Updated_at"
+      created_at: "Created at"
+      updated_at: "Updated at"
       display_name: "Image Name"
   volumes:
     header: "Volumes"
     button:
       create_volume: "Create Volume"
       delete_volume: "Delete Volume"
-      create_snapshot: "Create Snapshot"
       edit_volume: "Edit"
+      create_backup: "Create Backup"
     volume_actions:
       header: "Volume Actions"
       attach_volume: "Attach Volume"
@@ -324,43 +324,43 @@ en:
       volume_id: "Volume ID"
       display_name: "Volume Name"
       capacity: "Capacity"
-      snapshot_id: "Snapshot ID"
-      created: "Created"
+      backup_object_id: "Backup Object ID"
+      created_at: "Created"
       status: "Status"
       action: "Action"
     details:
       header: "Details"
       volume_id: "Volume ID"
       display_name: "Volume Name"
-      capacity: "Capacity"
-      snapshot_id: "Snapshot ID"
+      capacity: "Size"
+      backup_object_id: "Backup Object ID"
       status: "Status"
       created_at: "Created At"
       updated_at: "Updated At"
-  snapshots:
-    header: "Snapshots"
+  backups:
+    header: "Backups"
     button:
       create_volume: "Create Volume"
-      delete_snapshot: "Delete Snapshot"
+      delete_backup: "Delete Backup"
     list:
-      snapshot_id: "Snapshot ID"
-      display_name: "Snapshot Name"
-      capacity: "Capacity"
+      backup_object_id: "Backup Object ID"
+      display_name: "Backup Name"
+      capacity: "Size"
       origin_volume_id: "OriginVolume ID"
-      destination: "Destination"
-      created: "Created"
+      checksum: "Checksum"
+      created_at: "Created"
       status: "Status"
     details:
       header: "Details"
-      snapshot_id: "Snapshot ID"
-      display_name: "Snapshot Name"
-      snapshot: "Snapshot"
-      storage_node_id: "StorageNode ID"
-      capacity: "Capacity"
+      backup_object_id: "Backup Object ID"
+      display_name: "Backup Name"
+      backup_storage_id: "Backup Storage ID"
+      capacity: "Size"
       origin_volume_id: "OriginVolumeID"
-      destination: "Destiantion"
-      backing_store: "BackingStore"
+      checksum: "Checksum"
+      state: "State"
       status: "Status"
+      description: "Description"
       created_at: "Created At"
       updated_at: "Updated At"
   storage_pools:
@@ -517,7 +517,7 @@ en:
     block_store:
       header: "BLOCK STORE"
       volumes: "Volumes"
-      snapshots: "Snapshots"
+      backups: "Backups"
       storage_nodes: "Storage Nodes"
     network_security:
       header: "NETWORK & SECURITY"

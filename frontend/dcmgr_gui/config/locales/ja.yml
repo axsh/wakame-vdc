@@ -87,17 +87,17 @@ ja:
       header: "ボリュームを編集"
       volume_id: "ボリュームID"
       display_name: "ボリューム名"
-    create_snapshot:
-      header: "スナップショットを作成"
-      message: "スナップショットを作成します。よろしいですか？"
-      display_name: "スナップショット名"
-    create_volume_from_snapshot:
+    create_backup:
+      header: "バックアップを作成"
+      message: "バックアップを作成します。よろしいですか？"
+      display_name: "バックアップ名"
+    create_volume_from_backup:
       header: "ボリュームを作成"
       message: "ボリュームを作成します。よろしいですか？"
       display_name: "ボリューム名"
-    delete_snapshot:
-      header: "スナップショットを削除"
-      message: "スナップをショットを削除します。よろしいですか？"
+    delete_backup:
+      header: "バックアップを削除"
+      message: "バックアップを削除します。よろしいですか？"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:
@@ -224,7 +224,7 @@ ja:
       instance: "インスタンス"
       machine_images: "マシンイメージ"
       volumes: "ボリューム"
-      snapshots: "スナップショット"
+      backups: "バックアップ"
       networks: "ネットワーク"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
@@ -308,8 +308,8 @@ ja:
     button:
       create_volume: "ボリュームを作成"
       delete_volume: "ボリュームを削除"
-      create_snapshot: "スナップショットを作成"
       edit_volume: "編集"
+      create_backup: "バックアップを作成"
     volume_actions:
       header: "アクション"
       attach_volume: "アタッチ"
@@ -318,7 +318,7 @@ ja:
       volume_id: "ボリュームID"
       display_name: "ボリューム名"
       capacity: "容量"
-      snapshot_id: "スナップショットID"
+      backup_object_id: "バックアップID"
       created: "作成日"
       status: "状態"
       action: "編集"
@@ -327,33 +327,33 @@ ja:
       volume_id: "ボリュームID"
       display_name: "ボリューム名"
       capacity: "容量"
-      snapshot_id: "スナップショットID"
+      backup_object_id: "バックアップID"
       status: "状態"
       created_at: "作成日"
       updated_at: "更新日"
-  snapshots:
-    header: "スナップショット"
+  backups:
+    header: "バックアップ"
     button:
       create_volume: "ボリュームを作成"
-      delete_snapshot: "スナップショットを削除"
+      delete_backup: "バックアップを削除"
     list:
-      snapshot_id: "スナップショットID"
-      display_name: "スナップショット名"
+      backup_object_id: "バックアップID"
+      display_name: "バックアップ名"
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
-      destination: "保存先"
-      created: "作成日"
+      checksum: "チェックサム"
+      created_at: "作成日"
       status: "状態"
     details:
       header: "詳細"
-      snapshot_id: "スナップショットID"
-      display_name: "スナップショット名"
-      snapshot: "スナップショット"
-      storage_node_id: "ストレージプールID"
+      backup_object_id: "バックアップID"
+      display_name: "バックアップ名"
+      backup_storage_id: "バックアップストレージID"
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
-      destination: "保存先"
-      backing_store: "バッキングストア"
+      checksum: "チェックサム"
+      description: "説明"
+      state: "状態"
       status: "状態"
       created_at: "作成日"
       updated_at: "更新日"
@@ -502,7 +502,7 @@ ja:
     block_store:
       header: "ブロックストア"
       volumes: "ボリューム"
-      snapshots: "スナップショット"
+      backups: "バックアップ"
       storage_nodes: "ストレージプール"
     network_security:
       header: "セキュリティー"

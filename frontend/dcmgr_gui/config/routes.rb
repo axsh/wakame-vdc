@@ -12,13 +12,13 @@ DcmgrGui::Application.routes.draw do
 
   #dialog
   get    'dialog/create_volume', :to => 'dialog#create_volume'
-  post   'dialog/create_volume_from_snapshot', :to => 'dialog#create_volume_from_snapshot'
+  post   'dialog/create_volume_from_backup', :to => 'dialog#create_volume_from_backup'
   post   'dialog/attach_volume', :to => 'dialog#attach_volume'
   post   'dialog/detach_volume', :to => 'dialog#detach_volume'
   post   'dialog/delete_volume', :to => 'dialog#delete_volume'
   post   'dialog/edit_volume', :to => 'dialog#edit_volume'
-  post   'dialog/create_snapshot', :to => 'dialog#create_snapshot'
-  post   'dialog/delete_snapshot', :to => 'dialog#delete_snapshot'
+  post   'dialog/create_backup', :to => 'dialog#create_backup'
+  post   'dialog/delete_backup', :to => 'dialog#delete_backup'
   post   'dialog/start_instances', :to => 'dialog#start_instances'
   post   'dialog/stop_instances', :to => 'dialog#stop_instances'
   post   'dialog/reboot_instances', :to => 'dialog#reboot_instances'
@@ -158,15 +158,14 @@ DcmgrGui::Application.routes.draw do
   delete 'security_groups/:id' ,:to => 'security_groups#destroy'
   put    'security_groups/:id' ,:to => 'security_groups#update'
   
-  #snapshots
-  get    'snapshots' ,:to => 'snapshots#index'
-  get    'snapshots/list/:id' ,:to => 'snapshots#list'
-  get    'snapshots/total' ,:to => 'snapshots#total'
-  get    'snapshots/show/:id' ,:to => 'snapshots#show'
-  post   'snapshots' ,:to => 'snapshots#create'
-  delete 'snapshots/:id' ,:to => 'snapshots#destroy'
-  get    'snapshots/upload_destination',:to => 'snapshots#upload_destination'
-
+  #backups
+  get    'backups' ,:to => 'backups#index'
+  get    'backups/list/:id' ,:to => 'backups#list'
+  get    'backups/total' ,:to => 'backups#total'
+  get    'backups/show/:id' ,:to => 'backups#show'
+  post   'backups' ,:to => 'backups#create'
+  delete 'backups/:id' ,:to => 'backups#destroy'
+  
   #sessions
   get    'login' => 'sessions#new', :as => :login
   get    'logout' => 'sessions#destroy', :as => :logout
