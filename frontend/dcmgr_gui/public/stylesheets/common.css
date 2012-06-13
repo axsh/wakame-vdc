@@ -846,25 +846,13 @@ body{
 	text-align: center;
 }
 
-#content #mainarea_wide table.ptn01 tr td a.edit_security_group{
+#content #mainarea_wide table.ptn01 tr td a{
   display: block;
 	width: 5em;
 	font-size: 10px;
 	line-height: 0;
-}
-
-#content #mainarea_wide table.ptn01 tr td a.edit_machine_image{
-  display: block;
-	width: 5em;
-	font-size: 10px;
-	line-height: 0;
-}
-
-#content #mainarea_wide table.ptn01 tr td a.edit_instance{
-  display: block;
-	width: 5em;
-	font-size: 10px;
-	line-height: 0;
+	margin-left:auto;
+	margin-right:auto;
 }
 
 /* ptn02 */
@@ -960,6 +948,15 @@ body{
 	vertical-align: middle;
 }
 
+#content #mainarea_wide table.ptn04 tr td a {
+	display: block;
+	width: 5em;
+	font-size: 10px;
+	line-height: 0;
+	margin-left:auto;
+	margin-right:auto;
+}
+
 #content #mainarea_wide table.ptn04 tr td a.show_key{
   display: block;
 	width: 15em;
@@ -968,18 +965,6 @@ body{
 	line-height: 0;
 }
 #content #mainarea_wide table.ptn04 tr td a.show_key:hover{
-	background-position: 0 -22px;
-}
-
-#content #mainarea_wide table.ptn04 tr td a.edit_ssh_keypair{
-  display: block:
-	width: 15en;
-	height: 22px;
-	font-size: 10px;
-	line-height: 0;
-}
-
-#content #mainarea_wide table.ptn04 tr td a.edit_ssh_keypair:hover{
 	background-position: 0 -22px;
 }
 

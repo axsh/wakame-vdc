@@ -5,6 +5,10 @@
 	padding: 3px 10px;
 }
 
+#edit_volume_dialog table tr td {
+	padding: 3px;
+}
+
 #launch_instance_dialog table tr td {
   padding: 5px 10px;
 }

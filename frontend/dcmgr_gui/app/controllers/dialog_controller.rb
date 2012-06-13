@@ -22,6 +22,12 @@ class DialogController < ApplicationController
     @volume_ids = params[:ids]
   end
   
+  def edit_volume
+    @volume_id = params[:ids][0]
+    @volume = Hijiki::DcmgrResource::Volume.show(@volume_id)
+    @display_name = @volume["display_name"]
+  end
+
   def create_snapshot
     @volume_ids = params[:ids]
   end

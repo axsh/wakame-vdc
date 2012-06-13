@@ -20,6 +20,10 @@ module Hijiki::DcmgrResource::V1203
         self.delete(volume_id).body
       end
       
+      def update(volume_id, params)
+	self.put(volume_id,params).body
+      end
+
       def attach(volume_id, instance_id)
         @collection ||= self.collection_name
         self.collection_name = File.join(@collection,volume_id)

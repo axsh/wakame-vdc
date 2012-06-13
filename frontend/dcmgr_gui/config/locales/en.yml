@@ -83,6 +83,10 @@ en:
     delete_volume:
       header: "Delete Volume"
       message: "Are you sure you want to delete the following volume?"
+    edit_volume:
+      header: "Edit Volume"
+      volume_id: "Volume ID"
+      display_name: "Volume Name"
     create_snapshot:
       header: "Create Snapshot"
       message: "Are you sure you want to create the following snapshot?"
@@ -311,6 +315,7 @@ en:
       create_volume: "Create Volume"
       delete_volume: "Delete Volume"
       create_snapshot: "Create Snapshot"
+      edit_volume: "Edit"
     volume_actions:
       header: "Volume Actions"
       attach_volume: "Attach Volume"
@@ -322,6 +327,7 @@ en:
       snapshot_id: "Snapshot ID"
       created: "Created"
       status: "Status"
+      action: "Action"
     details:
       header: "Details"
       volume_id: "Volume ID"
@@ -386,12 +392,14 @@ en:
       detach_network: "Detach Network"
     list:
       network_id: "Network ID"
+      display_name: "Network Name"
       domain_name: "Domain Name"
       ipv4_network: "IPv4 Network"
       created: "Created"
     details:
       header: "Details"
       network_id: "Network ID"
+      display_name: "Network Name"
       domain_name: "Domain Name"
       ipv4_network: "IPv4 Network"
       ipv4_gw: "IPv4 Gateway"

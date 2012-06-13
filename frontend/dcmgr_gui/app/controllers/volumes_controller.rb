@@ -66,6 +66,15 @@ class VolumesController < ApplicationController
     respond_with(detail,:to => [:json])
   end
 
+  def update
+    volume_id = params[:id]
+    data = {
+      :display_name => params[:display_name]
+    }
+    volume = Hijiki::DcmgrResource::Volume.update(volume_id,data)
+    render :json => volume
+  end
+
   def attach
     instance_id = params[:instance_id]
     volume_ids = params[:volume_ids]

@@ -16,6 +16,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/attach_volume', :to => 'dialog#attach_volume'
   post   'dialog/detach_volume', :to => 'dialog#detach_volume'
   post   'dialog/delete_volume', :to => 'dialog#delete_volume'
+  post   'dialog/edit_volume', :to => 'dialog#edit_volume'
   post   'dialog/create_snapshot', :to => 'dialog#create_snapshot'
   post   'dialog/delete_snapshot', :to => 'dialog#delete_snapshot'
   post   'dialog/start_instances', :to => 'dialog#start_instances'
@@ -187,6 +188,7 @@ DcmgrGui::Application.routes.draw do
   get    'volumes/show/:id' ,:to => 'volumes#show'
   post   'volumes' ,:to => 'volumes#create'
   delete 'volumes' ,:to => 'volumes#destroy'
+  put    'volumes/:id' , :to => 'volumes#update'
 
   #resorce (management)
   get    'resource' ,:to => 'resource#index'

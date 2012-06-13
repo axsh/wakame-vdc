@@ -45,6 +45,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var close_button_name = $.i18n.prop('close_button');
   var create_button_name = $.i18n.prop('create_button');
   var delete_button_name = $.i18n.prop('delete_button');
+  var update_button_name = $.i18n.prop('update_button');
   
   c_list.setDetailTemplate({
     template_id:'#volumesDetailTemplate',
@@ -56,6 +57,48 @@ DcmgrGUI.prototype.volumePanel = function(){
     c_pagenate.changeTotal(volume.total);
     c_list.setData(volume.results);
     c_list.multiCheckList(c_list.detail_template);
+
+    var edit_volume_buttons = {};
+    edit_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
+    edit_volume_buttons[update_button_name] = function(event) {
+      var volume_id = $(this).find('#volume_id').val();
+      var display_name = $(this).find('#volume_display_name').val();
+      var data = 'display_name=' + display_name;
+
+      var request = new DcmgrGUI.Request;
+      request.put({
+        "url": '/volumes/'+ volume_id +'.json',
+        "data": data,
+        success: function(json, status){
+          bt_refresh.element.trigger('dcmgrGUI.refresh');
+        }
+      });
+      $(this).dialog("close");
+    }
+
+    bt_edit_volume = new DcmgrGUI.Dialog({
+      target:'.edit_volume',
+      width:500,
+      height:200,
+      title:$.i18n.prop('edit_volume_header'),
+      path:'/edit_volume',
+      button: edit_volume_buttons,
+      callback: function(){
+        var params = { 'button': bt_edit_volume, 'element_id': 1 };
+        $(this).find('#volume_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#volume_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
+      }
+    });
+
+    bt_edit_volume.target.bind('click',function(event){
+      var uuid = $(this).attr('id').replace(/edit_(vol-[a-z0-9]+)/,'$1');
+      if( uuid ){
+        bt_edit_volume.open({"ids":[uuid]});
+      }
+      c_list.checkRadioButton(uuid);
+    });
+
+    $(bt_edit_volume.target).button({ disabled: false });
   });
   
   c_list.filter.add(function(data){
