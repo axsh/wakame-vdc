@@ -181,6 +181,7 @@ rsync -aHA `pwd`/contrib/etc/prelink.conf.d ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
 rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
 rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
+rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-auth.conf
 
 # /etc/sysctl.d
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
@@ -244,15 +245,20 @@ rm -rf ${RPM_BUILD_ROOT}
 %config(noreplace) /etc/default/vdc-nsa
 %config(noreplace) /etc/default/vdc-sta
 %config(noreplace) /etc/default/vdc-webui
+%config(noreplace) /etc/default/vdc-proxy
+%config(noreplace) /etc/default/vdc-auth
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-metadata.conf
 %config /etc/init/vdc-nsa.conf
 %config /etc/init/vdc-sta.conf
 %config /etc/init/vdc-webui.conf
+%config /etc/init/vdc-proxy.conf
+%config /etc/init/vdc-auth.conf
 %config %{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
 %config %{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
 %config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
+%config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-auth.conf
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
