@@ -153,7 +153,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
       
       vol = M::Volume.entry_new(@account, bo.size, params.to_hash) do |v|
-        v.snapshot_id = bo.canonical_uuid
+        v.backup_object_id = bo.canonical_uuid
         v.boot_dev = 1
       end
       # assign instance -> volume
