@@ -165,6 +165,7 @@ Sequel.migration do
       column :load_balancer_id, "int(11)"
       column :created_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
+      column :is_deleted, "int(11)", :null=>false
       index [:load_balancer_id, :network_vif_id], :unique=>true
     end
 
