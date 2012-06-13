@@ -131,5 +131,7 @@ module Dcmgr
     define_error(:UndefinedBackupObject, 404, '155')
     define_error(:UnknownBackupObject, 404, '156')
     define_error(:InvalidBackupObjectState, 500, '157')
+    define_error(:ExistsRegisteredInstance, 400, '158')
+    define_error(:InvalidLoadBalancerState, 400, '159')
   end
 end
