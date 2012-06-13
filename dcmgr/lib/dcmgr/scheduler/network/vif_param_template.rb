@@ -17,13 +17,16 @@ module Dcmgr
           index = 0
 
           instance.request_params['vifs'].each { |name, param|
-            # Remove index?
-            vnic = instance.add_nic({ :index => index,
-                                      :bandwidth => 100000})
-            index += 1
+            vnic_params = {
+              :index => param['index'] ? param['index'].to_i : index,
+              :bandwidth => 100000,
+            }
 
-            next if param['network'].nil?
-            network = Models::Network[param['network']]
+            index = [index, vnic_params[:index]].max + 1
+            vnic = instance.add_nic(vnic_params)
+
+            next if param['network'].nil? || param['network'].to_s == ""
+            network = Models::Network[param['network'].to_s]
             next if network.nil?
 
             vnic.attach_to_network(network)

@@ -16,6 +16,9 @@ module Hijiki::DcmgrResource::V1203
         instance.security_groups = params[:security_groups]
         instance.ssh_key_id = params[:ssh_key]
         instance.display_name = params[:display_name]
+
+        instance.vifs = params[:vifs] if params[:vifs]
+
         instance.save
         instance
       end
