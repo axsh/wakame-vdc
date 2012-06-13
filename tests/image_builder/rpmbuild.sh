@@ -75,6 +75,24 @@ cd ${root_dir}
 rsync -ax --delete ${base_chroot_dir}/ ${dest_chroot_dir}/
 sync
 
+### after-deploy
+case "${after_deploy}" in
+use-s3snap)
+  # skip deploying openvz.repo at "3rd-party.sh download"
+  cd ${dest_chroot_dir}/tmp
+
+  curl -O -R http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/snap/rhel/6/current/wakame-vdc-snap.repo
+  rsync -a ./wakame-vdc-snap.repo ${dest_chroot_dir}/etc/yum.repos.d/openvz.repo
+
+  [ -d wakame-vdc ] || git clone git://github.com/axsh/wakame-vdc.git
+  [ -d wakame-vdc/tests/vdc.sh.d/rhel/vendor/${basearch} ] || mkdir -p wakame-vdc/tests/vdc.sh.d/rhel/vendor/${basearch}
+  rsync -a ./wakame-vdc-snap.repo wakame-vdc/tests/vdc.sh.d/rhel/vendor/${basearch}/openvz.repo
+  ;;
+*)
+  ;;
+esac
+### after-deploy
+
 for mount_target in proc dev; do
   mount | grep ${dest_chroot_dir}/${mount_target} || mount --bind /${mount_target} ${dest_chroot_dir}/${mount_target}
 done
