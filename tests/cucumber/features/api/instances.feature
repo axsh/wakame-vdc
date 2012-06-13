@@ -94,4 +94,4 @@ Feature: Instance API
       Then from the previous api call take {"backup_object_id":} and save it to <registry:backup_object_id>
       Then from the previous api call take {"image_id":} and save it to <registry:image_id>
 
-    When the backups with id <registry:backup_object_id> should reach state "available" in 120 seconds or less
+    When the backup_objects with id <registry:backup_object_id> should reach state "available" in 120 seconds or less

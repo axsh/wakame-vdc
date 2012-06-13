@@ -103,7 +103,7 @@ Feature: Volume API
  
     When we make an api put call to volumes/<registry:uuid>/backup with no options
     Then from the previous api call take {"uuid":} and save it to <registry:backup_uuid>
-    And the backups with id <registry:backup_uuid> should reach state "available" in 60 seconds or less
+    And the backup_objects with id <registry:backup_uuid> should reach state "available" in 60 seconds or less
 
   Scenario: Create volume from backup
     Given a managed volume with the following options

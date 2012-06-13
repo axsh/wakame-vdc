@@ -2,7 +2,7 @@
 
 require 'dcmgr/endpoints/12.03/responses/backup_object'
 
-Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backups' do
+Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
   BACKUP_OBJECT_META_STATE=['alive'].freeze
   BACKUP_OBJECT_STATE=['available', 'deleted'].freeze
   BACKUP_OBJECT_STATE_PARAM_VALUES=(BACKUP_OBJECT_STATE + BACKUP_OBJECT_META_STATE).freeze
