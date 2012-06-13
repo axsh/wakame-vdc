@@ -37,7 +37,7 @@ module Dcmgr::Models
     
     def add_target(network_vif_uuid)
       lbt = LoadBalancerTarget.new
-      lbt.network_vif_uuid = network_vif_uuid
+      lbt.network_vif_id = network_vif_uuid
       lbt.load_balancer_id = self.id
       lbt.save
       lbt

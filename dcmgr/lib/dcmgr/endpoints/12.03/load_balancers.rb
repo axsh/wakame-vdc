@@ -83,7 +83,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     raise E::UnknownNetworkVif if request_vifs.nil?
 
     request_vifs = request_vifs.each_line.to_a if request_vifs.is_a?(String)
-    hold_vifs = lb.load_balancer_targets.collect {|t| t.network_vif_uuid }
+    hold_vifs = lb.load_balancer_targets.collect {|t| t.network_vif_id }
     target_vifs = request_vifs - hold_vifs
     raise(E::DuplicateNetworkVif) if target_vifs.empty? 
 

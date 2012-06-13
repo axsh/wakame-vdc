@@ -150,7 +150,7 @@ Sequel.migration do
       column :instance_protocol, "varchar(4)", :null=>false
       column :instance_port, "int(11)", :null=>false
       column :balance_name, "varchar(255)", :null=>false
-      column :cookie_name, "varchar)255)", :null=>true
+      column :cookie_name, "varchar(255)", :null=>true
       column :description, "text", :null=>true
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false  
@@ -161,7 +161,7 @@ Sequel.migration do
     
     create_table(:load_balancer_targets) do
       primary_key :id, :type=>"int(11)"
-      column :network_vif_uuid, "varchar(255)", :null=>false
+      column :network_vif_id, "varchar(255)", :null=>false
       column :load_balancer_id, "int(11)"
       column :created_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
