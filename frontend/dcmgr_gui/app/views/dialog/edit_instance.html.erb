@@ -1,0 +1,13 @@
+<div id="edit_instance_dialog">
+  <table>
+    <tr>
+      <td><%= t("dialog.edit_instance.instance_id")%>: </td>
+      <td><%= @instance_id %></td>
+      <td><input type="hidden" id="instance_id" value="<%= @instance_id %>"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.edit_instance.display_name")%>: </td>
+      <td><input id="instance_display_name" type="text" size=43 value="<%= @display_name %>"></td>
+    </tr>
+  </table>
+</div>

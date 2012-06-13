@@ -1,0 +1,17 @@
+<div id="edit_machine_image_dialog">
+  <table>
+    <tr>
+      <td><%= t("dialog.edit_machine_image.uuid")%>: </td>
+      <td><%= @uuid %></td>
+      <td><input type="hidden" id="image_id" value="<%= @uuid %>"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.edit_machine_image.display_name")%>: </td>
+      <td><input id="machine_image_display_name" type="text" size=43 value="<%= @display_name %>"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.edit_machine_image.description")%>: </td>
+      <td><input id="machine_image_description" type="text" size= 43 value="<%= @description %>"></td>
+    </tr>
+  </table>
+</div>

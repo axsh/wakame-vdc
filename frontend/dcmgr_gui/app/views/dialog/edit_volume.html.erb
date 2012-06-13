@@ -1,0 +1,13 @@
+<div id="edit_volume_dialog">
+  <table>
+    <tr>
+      <td><%= t("dialog.edit_volume.volume_id")%>: </td>
+      <td><%= @volume_id %></td>
+      <td><input type="hidden" id="volume_id" value="<%= @volume_id %>"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.edit_volume.display_name")%>: </td>
+      <td><input id="volume_display_name" type="text" size=43 value="<%= @display_name %>"></td>
+    </tr>
+  </table>
+</div>
