@@ -45,7 +45,7 @@
 	<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
 	  <tr> 
 	    <th></th>
-	    <th><%= t("networks.list.network_id") %></th>
+	    <th><%= t("networks.list.display_name") %></th>
 	    <th><%= t("networks.list.ipv4_network") %></th>
 	    <th><%= t("networks.list.domain_name") %></th>
 	  </tr>
@@ -56,7 +56,7 @@
 	    {{else}}
 	    <td class="listcheckbox"></td>
 	    {{/if}}
-	    <td class="vtip uuid" title="network-id">${item.uuid}</td>
+	    <td class="vtip display name" title="display-name">${item.display_name}</td>
 	    <td class="vtip ipv4 network" title="ipv4-network">${item.ipv4_network}</td>
 	    <td class="vtip domain name" title="domain-name">${item.domain_name}</td>
 	  </tr>
@@ -79,21 +79,31 @@
 	    <td class="title"><%= t("networks.details.network_id") %>:</td>
 	    <td class="state">${item.uuid}</td>
 	    <td class="padcell"></td>
-	    <td class="title"><%= t("networks.details.domain_name") %>:</td>
-	    <td class="state">${item.domain_name}</td>
+	    <td class="title"><%= t("networks.details.display_name") %>:</td>
+	    <td class="state">${item.display_name}</td>
 	  </tr>
 	  <tr>
 	    <td class="padcell"></td>
+	    <td class="title"><%= t("networks.details.domain_name") %>:</td>
+	    <td class="state">${item.domain_name}</td>
+	    <td class="padcell"></td>
 	    <td class="title"><%= t("networks.details.ipv4_network") %>:</td>
 	    <td class="state">${item.ipv4_network}</td>
+	  </tr>
+	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("networks.details.ipv4_gw") %>:</td>
-	    <td class="state">${item.ipv4_gw}</td>
+	    <td class="state" colspan="7">${item.ipv4_gw}</td>
 	  </tr>
 	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("networks.details.created_at") %>:</td>
 	    <td colspan="7">${item.created_at}</td>
+	  </tr>
+	  <tr>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t("networks.details.updated_at") %>:</td>
+	    <td colspan="7">${item.updated_at}</td>
 	  </tr>
 	</table>
       </div>
