@@ -167,5 +167,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('load_balancers')
     load_namespace('backup_storages')
     load_namespace('backup_objects')
+    load_namespace('host_node_groups')
   end
 end
