@@ -129,6 +129,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     request_vifs = request_vifs.each_line.to_a if request_vifs.is_a?(String)
     hold_vifs = lb.load_balancer_targets.collect {|t| t.network_vif_id }
+    raise E::UnknownNetworkVif if hold_vifs.empty?
     remove_vifs = request_vifs & hold_vifs
     remove_vifs.each do |uuid|
      lb.remove_target(uuid)
