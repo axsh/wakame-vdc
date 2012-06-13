@@ -119,7 +119,7 @@ jQuery(function($){
 	    <td>{{each(index,network) item.vif}}{{if network.ipv4 != null }}${network.ipv4.nat_address}{{/if}}{{/each}}</td>
             <td class="padcell"></td>
 	    <td class="title">Local IP:</td>
-	    <td>{{each(index,network) item.vif}}{{if network.ipv4 != null}}${network.ipv4.address}{{/if}}{{/each}}</td>
+	    <td>{{each(index,network) item.vif}}{{if network.ipv4 != null }}${network.ipv4.address} {{/if}}{{/each}}</td>
 	  </tr>
 	  <tr>
 	    <td class="padcell"></td>
@@ -129,16 +129,28 @@ jQuery(function($){
 	    <td class="title"><%= t("instances.details.ssh_key_pair") %>:</td>
 	    <td>${item.ssh_key_pair}</td>
 	  </tr>
+          {{if item.security_groups != null }}
 	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("instances.details.security_groups") %>:</td>
 	    <td colspan="7">{{each(index,nf) item.security_groups}}${nf}<br />{{/each}}</td>
 	  </tr>
+          {{/if}}
           <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("instances.details.created_at") %>:</td>
 	    <td colspan="7">${item.created_at}</td>
           </tr>
+          {{each(index,vif) item.vif}}
+	  <tr>
+	    <td class="padcell"></td>
+	    <td class="title">Interface:</td>
+	    <td class="state">${vif.vif_id}</td>
+	    <td class="padcell"></td>
+	    <td class="state">${vif.network_id}</td>
+	    <td class="state">{{if vif.ipv4 != null }}${vif.ipv4.address} ${vif.ipv4.nat_address}{{/if}}</td>
+	  </tr>
+          {{/each}}
 	</table>
       </div>
     </script>
