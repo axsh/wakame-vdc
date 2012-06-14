@@ -5,8 +5,8 @@ set -e
 LANG=C
 
 git_version=$(git log -n 1 --pretty=format:"%h")
-#git_date=$(git log -n 1 --pretty=format:"%ad" --date=short | sed 's,-,,g')
-git_datetime=$(date --date="$(git log -n 1 --pretty=format:"%ad" --date=iso)" +%Y%m%d%H%M%S)
+#git_date=$(git log -n 1 --pretty=format:"%cd" --date=short | sed 's,-,,g')
+git_datetime=$(date --date="$(git log -n 1 --pretty=format:"%cd" --date=iso)" +%Y%m%d%H%M%S)
 
 # * ${git_date}git${git_version}
 # - geoclue
