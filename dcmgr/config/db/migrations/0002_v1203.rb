@@ -162,11 +162,12 @@ Sequel.migration do
     create_table(:load_balancer_targets) do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "varchar(255)", :null=>false
-      column :load_balancer_id, "int(11)"
+      column :load_balancer_id, "int(11)", :null => false
       column :created_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
       column :is_deleted, "int(11)", :null=>false
-      index [:load_balancer_id, :network_vif_id], :unique=>true
+      index [:load_balancer_id, :network_vif_id, :is_deleted], :unique=>true,
+             :name=>'load_balancer_targets_load_balancer_id_network_vif_id_index'
     end
 
     # Add service_type column for service type resources
