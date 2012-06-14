@@ -39,6 +39,7 @@ Requires: ntp
 Requires: ntpdate
 Requires: gzip
 Requires: tar
+Requires: file
 Requires: prelink
 # Ruby binary dependency
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
