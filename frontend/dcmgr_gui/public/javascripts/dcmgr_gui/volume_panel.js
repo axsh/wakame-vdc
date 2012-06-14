@@ -155,7 +155,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var bt_create_volume = new DcmgrGUI.Dialog({
     target:'.create_volume',
     width:400,
-    height:250,
+    height:200,
     title:$.i18n.prop('create_volume_header'),
     path:'/create_volume',
     callback: function(){
@@ -279,7 +279,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var bt_create_backup = new DcmgrGUI.Dialog({
     target:'.create_backup',
     width:400,
-    height:300,
+    height:250,
     title:$.i18n.prop('create_backup_header'),
     path:'/create_backup',
     button: create_backup_buttons,
@@ -288,27 +288,6 @@ DcmgrGUI.prototype.volumePanel = function(){
       var params = { 'button': bt_create_backup, 'element_id': 1 };
       $(self).find("#backup_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
       $(self).find("#backup_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
-      
-      var request = new DcmgrGUI.Request;
-      request.get({
-        "url": '/snapshots/upload_destination',
-        success: function(json,status){
-          var select_html = '<select name="destination" id="destination"></select>';
-          var select_destination = '';
-          $(self).find('#select_destination').empty().html(select_html);
-          $.each(json.results, function(key, item) {
-            if (item.destination_id == 'local') {
-              select_destination += '<option value=' + item.destination_id + ' selected>' + item.destination_name + '</option>';
-            } else {
-              select_destination += '<option value=' + item.destination_id + '>' + item.destination_name + '</option>';
-            }
-          });
-          $(self).find("#destination").empty().html(select_destination);
-          var params = { 'button': bt_create_snapshot, 'element_id': 1 };
-          $(self).find("#snapshot_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
-          $(self).find("#snapshot_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
-        }
-      });
     }
   });
   
