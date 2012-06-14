@@ -184,6 +184,7 @@ DcmgrGui::Application.routes.draw do
   get    'volumes/list/:id' ,:to => 'volumes#list'
   put    'volumes/attach' ,:to => 'volumes#attach'
   put    'volumes/detach' ,:to => 'volumes#detach'
+  put    'volumes/backup' ,:to => 'volumes#backup'
   get    'volumes/total' ,:to => 'volumes#total'
   get    'volumes/show/:id' ,:to => 'volumes#show'
   post   'volumes' ,:to => 'volumes#create'

@@ -21,8 +21,8 @@
   <div id="list_load_mask" class="maincontent">
     <div class="controller clearfix">
       <a href="javascript:void(0);" class="create_volume"><%= t("volumes.button.create_volume") %></a>
-      <a href="javascript:void(0);" class="delete_volume" ><%= t("volumes.button.delete_volume") %></a>
-      <a href="javascript:void(0);" class="create_snapshot"><%= t("volumes.button.create_snapshot") %></a>
+      <a href="javascript:void(0);" class="delete_volume"><%= t("volumes.button.delete_volume") %></a>
+      <a href="javascript:void(0);" class="create_backup"><%= t("volumes.button.create_backup") %></a>
       <select name="volume_action" id="volume_action" style="height:10px">
         <option value="" selected="selected"><%= t("selectmenu.select_action") %></option>
         <optgroup label="Action">
@@ -48,7 +48,7 @@
 	    <th></th>
 	    <th><%= t("volumes.list.display_name") %></th>
 	    <th><%= t("volumes.list.capacity") %></th>
-	    <th><%= t("volumes.list.snapshot_id") %></th>
+	    <th><%= t("volumes.list.backup_object_id") %></th>
 	    <th><%= t("volumes.list.created") %></th>
 	    <th><%= t("volumes.list.status") %></th>
 	    <th><%= t("volumes.list.action") %></th>
@@ -60,9 +60,9 @@
 	    {{else}}
 	    <td class="listcheckbox"></td>
 	    {{/if}}
-	    <td class="vtip display_name" title="display_name">${item.display_name}</td>
-	    <td class="vtip center volume_size" title="capacity" style="width:40px">${item.size}</td>
-	    <td class="vtip center" title="snapshot">${item.snapshot_id}</td>
+	    <td class="vtip display_name" title="display name">${item.display_name}</td>
+	    <td class="vtip center volume_size" title="size" style="width:40px">${item.size}</td>
+	    <td class="vtip center" title="backup object id">${item.backup_object_id}</td>
 	    <td class="vtip" title="created">${item.created_at}</td>
 	    <td class="state vtip center" title="status">${item.state}</td>
 	    {{if item.uuid }}
@@ -100,8 +100,8 @@
 	    <td class="title"><%= t("volumes.details.capacity") %>:</td>
 	    <td>${item.size}</td>
 	    <td class="padcell"></td>
-	    <td class="title"><%= t("volumes.details.snapshot_id") %>:</td>
-	    <td>${item.snapshot_id}</td>
+	    <td class="title"><%= t("volumes.details.backup_object_id") %>:</td>
+	    <td>${item.backup_object_id}</td>
           <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("volumes.details.status") %>:</td>

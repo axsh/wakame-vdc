@@ -6,13 +6,13 @@ class VolumesController < ApplicationController
   end
   
   def create
-    snapshot_ids = params[:ids]
+    backup_object_ids = params[:ids]
     display_name = params[:display_name]
-    if snapshot_ids
+    if backup_object_ids
       res = []
-      snapshot_ids.each do |snapshot_id|
+      backup_object_ids.each do |backup_object_id|
         data = {
-          :snapshot_id => snapshot_id,
+          :backup_object_id => backup_object_id,
           :display_name => display_name
         }
         res << Hijiki::DcmgrResource::Volume.create(data)
@@ -27,11 +27,9 @@ class VolumesController < ApplicationController
                params[:size].to_i * 1024 * 1024
              end
       
-      storage_node_id = params[:storage_node_id] #option
-      
       data = {
         :volume_size => size,
-        :storage_node_id => storage_node_id,
+        :storage_node_id => params[:storage_node_id],
         :display_name => display_name
       }
       
@@ -104,5 +102,14 @@ class VolumesController < ApplicationController
     deleted_resource_count = Hijiki::DcmgrResource::Volume.get_resource_state_count(resources, 'deleted')
     total = all_resource_count - deleted_resource_count
     render :json => total
+  end
+
+  def backup
+    destination = params[:destination]
+    display_name = params[:display_name]
+    res = (params[:ids] || []).map do |volume_id|
+      Hijiki::DcmgrResource::Volume.backup(volume_id, {:display_name=>display_name, :destination=>destination})
+    end
+    render :json => res
   end
 end

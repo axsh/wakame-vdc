@@ -11,7 +11,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     return [{
       "uuid":'',
       "size":'',
-      "snapshot_id":'',
+      "backup_object_id":'',
       "created_at":'',
       "state":''
     }]
@@ -21,7 +21,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     return {
       "uuid" : "-",
       "size" : "-",
-      "snapshot_id" : "-",
+      "backup_object_id" : "-",
       "created_at" : "-",
       "updated_at" : "-",
       "state" : ""
@@ -252,21 +252,21 @@ DcmgrGUI.prototype.volumePanel = function(){
     button: delete_volume_buttons
   });
   
-  var create_snapshot_buttons = {};
-  create_snapshot_buttons[close_button_name] = function() { $(this).dialog("close"); }; 
-  create_snapshot_buttons[create_button_name] = function() {
-    var display_name = $(this).find('#snapshot_display_name').val();
-    var volume_snapshots = $(this).find('#create_snapshots').find('li');
+  var create_backup_buttons = {};
+  create_backup_buttons[close_button_name] = function() { $(this).dialog("close"); }; 
+  create_backup_buttons[create_button_name] = function() {
+    var display_name = $(this).find('#backup_display_name').val();
+    var volume_backups = $(this).find('#create_backups').find('li');
     var destination = $(this).find('#destination').val();
     var ids = []
-    $.each(volume_snapshots,function(){
+    $.each(volume_backups,function(){
      ids.push($(this).text())
     })
 
     var data = $.param({ids:ids, destination:destination, display_name:display_name});
     var request = new DcmgrGUI.Request;
-    request.post({
-      "url": '/snapshots',
+    request.put({
+      "url": '/volumes/backup',
       "data": data,
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
@@ -276,17 +276,18 @@ DcmgrGUI.prototype.volumePanel = function(){
     $(this).dialog("close");
   }
   
-  var bt_create_snapshot = new DcmgrGUI.Dialog({
-    target:'.create_snapshot',
+  var bt_create_backup = new DcmgrGUI.Dialog({
+    target:'.create_backup',
     width:400,
     height:300,
-    title:$.i18n.prop('create_snapshot_header'),
-    path:'/create_snapshot',
-    button: create_snapshot_buttons,
+    title:$.i18n.prop('create_backup_header'),
+    path:'/create_backup',
+    button: create_backup_buttons,
     callback: function() {
       var self = this;
-      var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
-      $(this).find('#select_destination').empty().html(loading_image);
+      var params = { 'button': bt_create_backup, 'element_id': 1 };
+      $(self).find("#backup_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
+      $(self).find("#backup_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
       
       var request = new DcmgrGUI.Request;
       request.get({
@@ -392,10 +393,10 @@ DcmgrGUI.prototype.volumePanel = function(){
     }
   });
 
-  bt_create_snapshot.target.bind('click',function(){
-    if(!bt_create_snapshot.is_disabled()) { 
-      bt_create_snapshot.open(c_list.getCheckedInstanceIds());
-      bt_create_snapshot.disabledButton(1, true);
+  bt_create_backup.target.bind('click',function(){
+    if(!bt_create_backup.is_disabled()) { 
+      bt_create_backup.open(c_list.getCheckedInstanceIds());
+      bt_create_backup.disabledButton(1, true);
     }
   });
 
@@ -467,7 +468,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   selectmenu.data('selectmenu').disableButton();
   $(bt_create_volume.target).button({ disabled: false });
   $(bt_delete_volume.target).button({ disabled: true });
-  $(bt_create_snapshot.target).button({ disabled: true });
+  $(bt_create_backup.target).button({ disabled: true });
   $(bt_refresh.target).button({ disabled: false });
   
   var actions = {};
@@ -475,7 +476,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     var ids = c_list.currentMultiChecked()['ids'];
     var is_available = false;
     var is_attached = false;
-    var is_deregistering = false;
+    var is_deleting = false;
     var flag = true;
 
     $.each(ids, function(key, uuid){
@@ -485,8 +486,8 @@ DcmgrGUI.prototype.volumePanel = function(){
         is_available = true;
       } else if(state == 'attached') {
         is_attached = true;
-      } else if(state == 'deregistering') {
-        is_deregistering = true;
+      } else if(state == 'deleting') {
+        is_deleting = true;
       } else{
         flag = false;
       }
@@ -496,35 +497,35 @@ DcmgrGUI.prototype.volumePanel = function(){
 
       if(is_available == true && is_attached == true) {
         bt_delete_volume.enableDialogButton();
-        bt_create_snapshot.enableDialogButton();
+        bt_create_backup.enableDialogButton();
         selectmenu.data('selectmenu').disableButton();
       }
  
       if(is_available == false && is_attached == true) {
         bt_delete_volume.disableDialogButton();
-        bt_create_snapshot.disableDialogButton();
+        bt_create_backup.disableDialogButton();
         selectmenu.data('selectmenu').enableButton();
       }
       
       if(is_available == true && is_attached == false) {
         bt_delete_volume.enableDialogButton();
-        bt_create_snapshot.enableDialogButton();
+        bt_create_backup.enableDialogButton();
         selectmenu.data('selectmenu').enableButton();
       }
       
       if (is_available == false && is_attached == false) {
         bt_delete_volume.disableDialogButton();
-        bt_create_snapshot.disableDialogButton();
+        bt_create_backup.disableDialogButton();
         selectmenu.data('selectmenu').disableButton();
       }
 
-      if (is_deregistering == true) {
+      if (is_deleting == true) {
         bt_delete_volume.enableDialogButton();
       }
 
     } else{
       bt_delete_volume.disableDialogButton();
-      bt_create_snapshot.disableDialogButton();
+      bt_create_backup.disableDialogButton();
       selectmenu.data('selectmenu').disableButton();
     }
   }
@@ -532,7 +533,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   dcmgrGUI.notification.subscribe('checked_box', actions, 'changeButtonState');
   dcmgrGUI.notification.subscribe('unchecked_box', actions, 'changeButtonState');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_volume, 'disableDialogButton');
-  dcmgrGUI.notification.subscribe('change_pagenate', bt_create_snapshot, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_create_backup, 'disableDialogButton');
   dcmgrGUI.notification.subscribe('change_pagenate', selectmenu.data('selectmenu'), 'disableButton');
   
   //list
