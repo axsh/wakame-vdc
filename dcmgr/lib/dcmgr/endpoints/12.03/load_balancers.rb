@@ -19,6 +19,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
   end
 
+  get '/:id' do
+    lb = find_by_uuid(:LoadBalancer, params[:id])
+    raise E::UnknownLoadBalancer, params[:id] if lb.nil?
+
+    respond_with(R::LoadBalancer.new(lb).generate)
+  end
+
   post do
     # copy request params
     lb_conf = Dcmgr.conf.service_types['lb']
