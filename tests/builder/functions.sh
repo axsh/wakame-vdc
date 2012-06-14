@@ -100,7 +100,7 @@ function set_default_variables() {
   for arg in $*; do
     case ${arg} in
       --*=*)
-        key=${arg%%=*}; key=${key##--}
+        key=${arg%%=*}; key=$(echo ${key##--} | tr - _)
         value=${arg##--*=}
         eval ${key}=${value}
         opts="${opts} ${key}"

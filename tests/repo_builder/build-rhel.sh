@@ -8,7 +8,7 @@ while [ $# -gt 0 ]; do
   arg="$1"
   case "${arg}" in
     --*=*)
-      key=${arg%%=*}; key=${key##--}
+      key=${arg%%=*}; key=$(echo ${key##--} | tr - _)
       value=${arg##--*=}
       eval "${key}=\"${value}\""
       ;;
