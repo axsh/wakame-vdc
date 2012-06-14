@@ -124,6 +124,8 @@ ja:
     delete_ssh_keypair:
       header: "キーペアを削除"
       message: "キーペアを削除します。よろしいですか？"
+      keypair_id: "キーペアID"
+      display_name: "キーペア名"
     create_and_edit_user:
       login_id: "ログインID"
       name: "ユーザ名"

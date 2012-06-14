@@ -124,6 +124,8 @@ en:
     delete_ssh_keypair:
       header: "Delete SSH Key Pair"
       message: "Are you sure you want to delete the following key pair?"
+      keypair_id: "Keypair ID"
+      display_name: "Keypair Name"
     create_and_edit_user:
       login_id: "Login ID"
       name: "User Name"

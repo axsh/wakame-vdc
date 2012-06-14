@@ -177,7 +177,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   delete_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
   delete_ssh_keypair_buttons[delete_button_name] = function() { 
     var ssh_keypair_id = $(this).find('#ssh_keypair_id').val();
-    
+
     var request = new DcmgrGUI.Request;
     request.del({
       "url": '/keypairs/'+ ssh_keypair_id +'.json',
@@ -192,7 +192,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   var bt_delete_ssh_keypair = new DcmgrGUI.Dialog({
     target: '.delete_ssh_keypair',
     width: 400,
-    height: 200,
+    height: 250,
     title: $.i18n.prop('delete_ssh_keypair_header'),
     path: '/delete_ssh_keypair',
     button: delete_ssh_keypair_buttons

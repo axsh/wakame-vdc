@@ -1,4 +1,16 @@
-<p><%= t('dialog.delete_ssh_keypair.message')%></p>
-<br />
-<span ><%= @ssh_keypair_id %></span>
-<input type="hidden" id="ssh_keypair_id" value="<%= @ssh_keypair_id %>">
+<div id="delete_ssh_keypair_dialog">
+  <div class="message">
+    <p><%= t('dialog.delete_ssh_keypair.message')%></p>
+  </div>
+  <table>
+    <tr>
+      <td><%= t('dialog.delete_ssh_keypair.keypair_id')%>:</td>
+      <td><%= @ssh_keypair_id %></td>
+      <td><input type="hidden" id="ssh_keypair_id" value="<%= @ssh_keypair_id %>"></td>
+    </tr>
+    <tr>
+      <td><%= t('dialog.delete_ssh_keypair.display_name')%>:</td>
+      <td><%= @display_name %></td>
+    </tr>
+  </table>
+</div>

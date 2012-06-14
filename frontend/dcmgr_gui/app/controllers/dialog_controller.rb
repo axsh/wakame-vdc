@@ -96,6 +96,8 @@ class DialogController < ApplicationController
   
   def delete_ssh_keypair
     @ssh_keypair_id = params[:ids][0]
+    @ssh_keypair = Hijiki::DcmgrResource::SshKeyPair.show(@ssh_keypair_id)
+    @display_name = @ssh_keypair["display_name"]
   end
 
   def edit_ssh_keypair

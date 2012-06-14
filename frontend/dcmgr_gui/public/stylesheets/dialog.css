@@ -40,6 +40,14 @@
 	padding: 3px;
 }
 
+#delete_ssh_keypair_dialog table {
+	margin: 10px;
+}
+
+#delete_ssh_keypair_dialog table tr td {
+	padding: 3px;
+}
+
 #launch_instance_dialog #manipulation {
   vertical-align: middle;
 }
