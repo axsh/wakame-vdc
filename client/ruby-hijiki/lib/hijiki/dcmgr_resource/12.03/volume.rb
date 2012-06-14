@@ -9,8 +9,8 @@ module Hijiki::DcmgrResource::V1203
       def create(params)
         volume = self.new
         volume.volume_size = params[:volume_size]
-        volume.snapshot_id = params[:snapshot_id]
-        volume.storage_pool_id = params[:storage_pool_id]
+        volume.backup_object_id = params[:backup_object_id]
+        volume.storage_node_id = params[:storage_node_id]
         volume.display_name = params[:display_name]
         volume.save
         volume

@@ -14,8 +14,8 @@ module Hijiki::DcmgrResource::V1203
         self.get(uuid)
       end
       
-      def destroy(snapshot_id)
-        self.delete(snapshot_id).body
+      def destroy(backup_object_id)
+        self.delete(backup_object_id).body
       end
       
       def status(account_id)
@@ -31,10 +31,4 @@ module Hijiki::DcmgrResource::V1203
   class BackupObject < Base
     include BackupObjectMethods
   end
-
-  BackupObject.preload_resource('Result', Module.new {
-    def storage_node
-      attributes['storage_node'] ||= StorageNode.find(attributes['storage_node_id'])
-    end
-  })
 end
