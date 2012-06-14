@@ -251,6 +251,7 @@ ja:
       header: "詳細"
       instance: "インスタンス"
       instance_id: "インスタンスID"
+      interface: "インタフェース"
       wmi_id: "WMI ID"
       cpu_cores: "CPUコア数"
       memory_size: "メモリーサイズ"

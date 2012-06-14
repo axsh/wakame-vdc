@@ -256,6 +256,7 @@ en:
       header: "Details"
       instance: "Instance"
       instance_id: "Instance ID"
+      interface: "Interface"
       wmi_id: "WMI ID"
       cpu_cores: "CPU Cores"
       memory_size: "Memory Size"
