@@ -126,7 +126,7 @@ module Dcmgr
     autoload :KeyPair, 'dcmgr/cli/keypair'
     autoload :SecurityGroup, 'dcmgr/cli/security_group'
     autoload :Spec, 'dcmgr/cli/spec'
-    autoload :Tag, 'dcmgr/cli/tag'
+    autoload :ResourceGroup, 'dcmgr/cli/resource_group'
     autoload :Quota, 'dcmgr/cli/quota'
     autoload :BackupStorage, 'dcmgr/cli/backup_storage'
     autoload :BackupObject, 'dcmgr/cli/backup_object'

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Cli
-  class Tag < Base
-    namespace :tag
+  class ResourceGroup < Base
+    namespace :resourcegroup
     M = Dcmgr::Models
     T = Dcmgr::Tags
 
