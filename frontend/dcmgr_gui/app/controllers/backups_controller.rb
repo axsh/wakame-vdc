@@ -5,22 +5,6 @@ class BackupsController < ApplicationController
   def index
   end
 
-  def create
-    volume_ids = params[:ids]
-    destination = params[:destination]
-    display_name = params[:display_name]
-    res = []
-    volume_ids.each do |volume_id|
-      data = {
-        :volume_id => volume_id,
-        :destination => destination,
-        :display_name => display_name
-      }
-      res << Hijiki::DcmgrResource::BackupObject.create(data)
-    end
-    render :json => res
-  end
-
   def destroy
     snapshot_ids = params[:ids]
     res = []

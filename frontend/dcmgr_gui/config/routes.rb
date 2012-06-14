@@ -164,7 +164,6 @@ DcmgrGui::Application.routes.draw do
   get    'backups/list/:id' ,:to => 'backups#list'
   get    'backups/total' ,:to => 'backups#total'
   get    'backups/show/:id' ,:to => 'backups#show'
-  post   'backups' ,:to => 'backups#create'
   delete 'backups/:id' ,:to => 'backups#destroy'
   
   #sessions
