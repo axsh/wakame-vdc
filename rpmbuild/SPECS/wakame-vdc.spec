@@ -200,7 +200,7 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig --add vdc-net-event
 
 %post debug-config
-%{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
+%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
 
 %post dcmgr-vmapp-config
 /sbin/chkconfig --add mysqld
@@ -217,12 +217,12 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       iscsid on
 /sbin/chkconfig --add tgtd
 /sbin/chkconfig       tgtd on
-%{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
-%{prefix}/%{name}/rpmbuild/add-loopdev.sh
-%{prefix}/%{name}/rpmbuild/set-openvswitch-conf.sh
+%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
+%{prefix}/%{name}/rpmbuild/helpers/add-loopdev.sh
+%{prefix}/%{name}/rpmbuild/helpers/set-openvswitch-conf.sh
 
 %post hva-openvz-vmapp-config
-%{prefix}/%{name}/rpmbuild/sysctl.sh < /etc/sysctl.d/30-openvz.conf
+%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 
 %files
 %defattr(-,root,root)

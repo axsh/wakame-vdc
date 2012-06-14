@@ -29,7 +29,7 @@ wakame_version="$(egrep ^Version: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec |
 rpm_release=${rpm_release:-spec}
 case "${rpm_release}" in
 git)
-  wakame_release="$(${wakame_dir}/rpmbuild/gen-release-id.sh).*"
+  wakame_release="$(${wakame_dir}/rpmbuild/helpers/gen-release-id.sh).*"
   ;;
 *)
   wakame_release="$(egrep ^Release: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec | awk '{print $2}' | sed 's,%{.*},*,')"

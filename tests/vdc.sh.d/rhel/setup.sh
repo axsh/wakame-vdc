@@ -18,10 +18,10 @@ VDC_ROOT=${VDC_ROOT:?"VDC_ROOT needs to be set"}
 #  apply_sysctl
 #)
 
-${VDC_ROOT}/rpmbuild/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-bridge-if.conf
-${VDC_ROOT}/rpmbuild/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-openvz.conf
-${VDC_ROOT}/rpmbuild/set-openvswitch-conf.sh
-${VDC_ROOT}/rpmbuild/add-loopdev.sh
+${VDC_ROOT}/rpmbuild/helpers/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-bridge-if.conf
+${VDC_ROOT}/rpmbuild/helpers/sysctl.sh < ${VDC_ROOT}/contrib/etc/sysctl.d/30-openvz.conf
+${VDC_ROOT}/rpmbuild/helpers/set-openvswitch-conf.sh
+${VDC_ROOT}/rpmbuild/helpers/add-loopdev.sh
 
 # stop system services.
 for i in apparmor dnsmasq tgtd; do
