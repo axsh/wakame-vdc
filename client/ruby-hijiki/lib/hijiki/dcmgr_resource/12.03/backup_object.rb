@@ -8,23 +8,10 @@ module Hijiki::DcmgrResource::V1203
     module ClassMethods
       def list(params = {})
         data = self.find(:all, :params => params)
-        #results = []
-        #data.each { |row|
-        #  results << row.attributes
-        #}
       end
 
       def show(uuid)
         self.get(uuid)
-      end
-      
-      def create(params)
-        snapshot = self.new
-        snapshot.volume_id = params[:volume_id]
-        snapshot.destination = params[:destination]
-        snapshot.display_name = params[:display_name]
-        snapshot.save
-        snapshot
       end
       
       def destroy(snapshot_id)

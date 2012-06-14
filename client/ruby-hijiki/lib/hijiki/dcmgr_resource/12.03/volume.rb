@@ -47,6 +47,12 @@ module Hijiki::DcmgrResource::V1203
         self.collection_name = @collection
         result
       end
+
+      def backup(volume_id, params={})
+        params = params.select {|k,v| [:display_name, :description].member?(k.to_sym) }
+        result = self.find(volume_id).put(:backup, params)
+        result.body
+      end
     end
   end
 
