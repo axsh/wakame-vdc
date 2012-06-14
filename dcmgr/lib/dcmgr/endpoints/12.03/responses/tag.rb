@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Endpoints::V1203::Responses
-  class HostNodeGroup < Dcmgr::Endpoints::ResponseGenerator
-    def initialize(host_node_group)
-      raise ArgumentError if !host_node_group.is_a?(Dcmgr::Tags::HostNodeGroup)
-      @host_node_group = host_node_group
+  class Tag < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(tag)
+      raise ArgumentError, "Tag must be a #{Dcmgr::Models::Tag}" if !tag.is_a?(Dcmgr::Models::Tag)
+      @tag = tag
     end
 
     def generate()
-      @host_node_group.instance_exec {
+      @tag.instance_exec {
         to_hash.merge(
           :id=>canonical_uuid,
           :mapped_uuids => mapped_uuids.map {|mapping| mapping[:uuid]}
@@ -17,7 +17,7 @@ module Dcmgr::Endpoints::V1203::Responses
     end
   end
 
-  class HostNodeGroupCollection < Dcmgr::Endpoints::ResponseGenerator
+  class TagCollection < Dcmgr::Endpoints::ResponseGenerator
     def initialize(ds)
       raise ArgumentError if !ds.is_a?(Sequel::Dataset)
       @ds = ds
@@ -25,7 +25,7 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @ds.all.map { |i|
-        HostNodeGroup.new(i).generate
+        Tag.new(i).generate
       }
     end
   end
