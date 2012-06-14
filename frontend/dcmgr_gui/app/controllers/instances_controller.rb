@@ -15,6 +15,32 @@ class InstancesController < ApplicationController
       :ssh_key => params[:ssh_key],
       :display_name => params[:display_name]
     }
+
+    if params[:vifs] and !params[:vifs].empty?
+      vifs = {}
+      vif_index = 0
+
+      params[:vifs].each { |name|
+        case name
+        when 'none'
+        when 'disconnected'
+          vifs["eth#{vif_index}"] = {
+            :index => vif_index,
+            :network => '',
+          }
+        else
+          vifs["eth#{vif_index}"] = {
+            :index => vif_index,
+            :network => name,
+          }
+        end
+
+        vif_index += 1
+      }
+
+      data.merge!(:vifs => vifs)
+    end
+
     instance = Hijiki::DcmgrResource::Instance.create(data)
     render :json => instance
   end
