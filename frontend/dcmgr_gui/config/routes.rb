@@ -145,6 +145,7 @@ DcmgrGui::Application.routes.draw do
   #networks
   get    'networks' ,:to => 'networks#index'
   get    'networks/list/:id' ,:to => 'networks#list'
+  get    'networks/all' ,:to => 'networks#show_networks'
   get    'networks/total' ,:to => 'networks#total'
   get    'networks/show/:id' ,:to => 'networks#show'
 

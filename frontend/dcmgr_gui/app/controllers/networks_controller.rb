@@ -85,6 +85,11 @@ class NetworksController < ApplicationController
     # render :json => res
   end
   
+  def show_networks
+    @network = Hijiki::DcmgrResource::Network.list
+    respond_with(@network[0],:to => [:json])
+  end
+
   def total
     all_resource_count = Hijiki::DcmgrResource::Network.total_resource
     all_resources = Hijiki::DcmgrResource::Network.find(:all,:params => {:start => 0, :limit => all_resource_count})
