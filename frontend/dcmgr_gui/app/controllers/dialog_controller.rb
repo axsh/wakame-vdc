@@ -65,8 +65,9 @@ class DialogController < ApplicationController
   end
   
   def delete_security_group
-    @uuid = params[:ids][0]
-    @security_group = Hijiki::DcmgrResource::SecurityGroup.show(@uuid)
+    @security_group_id = params[:ids][0]
+    @security_group = Hijiki::DcmgrResource::SecurityGroup.show(@security_group_id)
+    @display_name = @security_group["display_name"]
   end
   
   def edit_security_group

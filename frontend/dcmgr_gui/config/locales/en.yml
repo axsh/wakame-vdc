@@ -110,6 +110,8 @@ en:
     delete_security_group:
       header: "Delete Security Group"
       message: "Are you sure you want to delete the following security_group?"
+      security_group_id: "Security Group ID"
+      display_name: "Security Group Name"
     create_and_edit_ssh_keypair:
       uuid: "Keypair ID"
       display_name: "Keypair Name"

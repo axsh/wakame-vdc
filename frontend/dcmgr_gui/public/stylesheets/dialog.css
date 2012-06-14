@@ -89,3 +89,11 @@
 #create_backup_dialog #create_backups {
   padding-top: 10px;
 }
+
+#delete_security_group_dialog table {
+	margin: 10px;
+}
+
+#delete_security_group_dialog table tr td {
+	padding: 3px;
+}

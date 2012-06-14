@@ -1,4 +1,16 @@
-<p><%= t("dialog.delete_security_group.message") %></p>
-<br />
-	<span id="delete_group_name"><%= @uuid %></span>
-	<input type="hidden" id="security_group_id" value="<%= @uuid %>">
+<div id="delete_security_group_dialog">
+  <div class="message">
+    <p><%= t('dialog.delete_security_group.message')%></p>
+  </div>
+  <table>
+    <tr>
+      <td><%= t('dialog.delete_security_group.security_group_id')%>:</td>
+      <td><%= @security_group_id %></td>
+      <td><input type="hidden" id="security_group_id" value="<%= @security_group_id %>"></td>
+    </tr>
+    <tr>
+      <td><%= t('dialog.delete_security_group.display_name')%>:</td>
+      <td><%= @display_name %></td>
+    </tr>
+  </table>
+</div>

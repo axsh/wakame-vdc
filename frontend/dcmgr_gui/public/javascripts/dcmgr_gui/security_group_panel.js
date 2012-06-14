@@ -227,7 +227,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
   var bt_delete_security_group = new DcmgrGUI.Dialog({
     target:'.delete_security_group',
     width:400,
-    height:200,
+    height:250,
     title:$.i18n.prop('delete_security_group_header'),
     path:'/delete_security_group',
     button: delete_security_group_buttons

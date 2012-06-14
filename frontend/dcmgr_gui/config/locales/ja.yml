@@ -110,6 +110,8 @@ ja:
     delete_security_group:
       header: "セキュリティーグループを削除"
       message: "セキュリティーグループを削除します。よろしいですか？"
+      security_group_id: "セキュリティグループID"
+      display_name: "セキュリティグループ名"
     create_and_edit_ssh_keypair:
       uuid: "キーペアID"
       display_name: "キーペア名"
