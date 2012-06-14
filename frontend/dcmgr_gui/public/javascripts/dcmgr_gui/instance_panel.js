@@ -120,7 +120,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   
   var instance_action_helper = function(action){
     
-    var instances = $(this).find('#instances').find('li');
+    var instances = $(this).find('#instances').find('td.instance_id');
     var ids = [];
     
     $.each(instances, function() {

@@ -44,9 +44,13 @@ ja:
     terminate_instances:
       header: "インスタンスを停止"
       message: "インスタンスを停止します。よろしいですか?"
+      instance_id: "インスタンスID"
+      display_name: "インスタンス名"
     reboot_instances:
       header: "インスタンスを再起動"
       message: "インスタンスを再起動します。よろしいですか？"
+      instance_id: "インスタンスID"
+      display_name: "インスタンス名"
     launch_instance:
       header: "インスタンスを起動"
       wmi_id: "WMI ID"
@@ -200,6 +204,16 @@ ja:
       md5sum: "イメージのMD5値"
       md5get: "MD5値取得"
       description: "説明"
+    start_instances:
+      header: "インスタンスを再開"
+      message: "インスタンスを再開します。よろしいですか?"
+      instance_id: "インスタンスID"
+      display_name: "インスタンス名"
+    stop_instances:
+      header: "インスタンスを一時停止"
+      message: "インスタンスを一時停止します。よろしいですか?"
+      instance_id: "インスタンスID"
+      display_name: "インスタンス名"
   login:
     sign_in: "ログイン"
     user: "ユーザー"

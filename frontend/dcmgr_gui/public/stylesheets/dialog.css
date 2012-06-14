@@ -97,3 +97,55 @@
 #delete_security_group_dialog table tr td {
 	padding: 3px;
 }
+
+#terminate_instances_dialog table {
+	margin: 10px;
+}
+
+#terminate_instances_dialog table tr td {
+	padding: 3px;
+}
+
+#terminate_instances_dialog table tr td.border {
+	padding: 3px;
+	border-bottom: 1px solid #cccccc;
+}
+
+#reboot_instances_dialog table {
+	margin: 10px;
+}
+
+#reboot_instances_dialog table tr td {
+	padding: 3px;
+}
+
+#reboot_instances_dialog table tr td.border {
+	padding: 3px;
+	border-bottom: 1px solid #cccccc;
+}
+
+#stop_instances_dialog table {
+	margin: 10px;
+}
+
+#stop_instances_dialog table tr td {
+	padding: 3px;
+}
+
+#stop_instances_dialog table tr td.border {
+	padding: 3px;
+	border-bottom: 1px solid #cccccc;
+}
+
+#start_instances_dialog table {
+	margin: 10px;
+}
+
+#start_instances_dialog table tr td {
+	padding: 3px;
+}
+
+#start_instances_dialog table tr td.border {
+	padding: 3px;
+	border-bottom: 1px solid #cccccc;
+}

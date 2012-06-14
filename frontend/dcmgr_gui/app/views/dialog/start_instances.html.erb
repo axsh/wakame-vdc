@@ -1,8 +1,17 @@
-<p><%= t("dialog.start_instances.message") %></p>
-<br />
-<ul id="instances">
-	<% @instance_ids.each do |instance_id| %>
-		<li><%= instance_id %></li>
-	<% end %>
-</ul>
-</script>
+<div id="start_instances_dialog">
+  <div class="message">
+    <p><%= t("dialog.start_instances.message") %></p>
+  </div>
+  <table id="instances">
+    <% @instances.each do |i| %>
+    <tr>
+      <td><%= t("dialog.start_instances.instance_id") %></td>
+      <td class="instance_id"><%= i["id"] %></td>
+    </tr>
+    <tr>
+      <td class="border"><%= t("dialog.start_instances.display_name") %></td>
+      <td class="border"><%= i["display_name"] %></td>
+    </tr>
+    <% end %>
+  </table>
+</div>

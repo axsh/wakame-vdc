@@ -38,18 +38,34 @@ class DialogController < ApplicationController
   
   def start_instances
     @instance_ids = params[:ids]
+    @instances = []
+    @instance_ids.each do |i|
+      @instances << Hijiki::DcmgrResource::Instance.show(i)
+    end
   end
   
   def stop_instances
     @instance_ids = params[:ids]
+    @instances = []
+    @instance_ids.each do |i|
+      @instances << Hijiki::DcmgrResource::Instance.show(i)
+    end
   end
   
   def reboot_instances
     @instance_ids = params[:ids]
+    @instances = []
+    @instance_ids.each do |i|
+      @instances << Hijiki::DcmgrResource::Instance.show(i)
+    end
   end
   
   def terminate_instances
     @instance_ids = params[:ids]
+    @instances = []
+    @instance_ids.each do |i|
+      @instances << Hijiki::DcmgrResource::Instance.show(i)
+    end
   end
   
   def edit_instance

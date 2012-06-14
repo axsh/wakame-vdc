@@ -57,7 +57,6 @@ class InstancesController < ApplicationController
   def show
     instance_id = params[:id]
     detail = Hijiki::DcmgrResource::Instance.show(instance_id)
-p detail
     respond_with(detail,:to => [:json])
   end
   
