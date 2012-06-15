@@ -40,8 +40,8 @@ module Dcmgr::Models
         errors.add(:storage_type, "unknown storage type: #{self.storage_type}")
       end
 
-      unless self.offering_disk_space > 0
-        errors.add(:offering_disk_space, "it must have digit more than zero")
+      unless self.offering_disk_space_mb > 0
+        errors.add(:offering_disk_space_mb, "it must have digit more than zero")
       end
     end
 
@@ -78,22 +78,25 @@ module Dcmgr::Models
       h
     end
 
+    include Dcmgr::Helpers::ByteUnit
+    
     # Returns total disk usage of associated volumes.
-    def disk_usage
-      volumes_dataset.lives.sum(:size).to_i
+    def disk_usage(byte_unit=B)
+      convert_byte(volumes_dataset.lives.sum(:size).to_i, byte_unit)
     end
 
     # Returns available space of the storage node.
-    def free_disk_space
-      self.offering_disk_space - self.disk_usage
+    def free_disk_space(byte_unit=B)
+      convert_byte((self.offering_disk_space_mb * (1024 ** 2))  - self.disk_usage,
+                   byte_unit)
     end
 
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(size, num=1)
       alives_size = Volume.dataset.lives.filter.sum(:size).to_i
-      avail_size = self.online_nodes.sum(:offering_disk_space).to_i - alives_size
-      
-      (avail_size >= size * num.to_i)
+      offer_size = self.online_nodes.sum(:offering_disk_space_mb).to_i * (1024 ** 2)
+
+      (offer_size - alives_size >= size * num.to_i)
     end
     
   end

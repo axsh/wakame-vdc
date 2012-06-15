@@ -8,6 +8,7 @@ module Dcmgr
     class StaHandler < EndpointBuilder
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
+      include Dcmgr::Helpers::ByteUnit
 
       def select_backing_store
         backing_store = Dcmgr.conf.backing_store 
@@ -44,7 +45,7 @@ module Dcmgr
               logger.error(e)
               raise "snapshot not downloaded"
             end
-            logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{@volume[:size]} MB)")
+            logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
             
             @backing_store.create_volume(@sta_ctx, snap_tmp_path)
           ensure
@@ -52,7 +53,7 @@ module Dcmgr
           end
           
         else
-          logger.info("Creating new empty volume #{@volume_id} (#{@volume[:size]} MB)")
+          logger.info("Creating new empty volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
           @backing_store.create_volume(@sta_ctx, nil)
         end
         logger.info("Finish to create new volume #{@volume_id}.")

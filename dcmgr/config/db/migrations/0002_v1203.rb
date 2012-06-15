@@ -8,6 +8,9 @@ Sequel.migration do
     alter_table(:storage_nodes) do
       # StorageNode is no longer an account associated resource.
       drop_column :account_id
+
+      # make unit size clear.
+      rename_column :offering_disk_space, :offering_disk_space_mb
     end
     
     create_table(:security_group_references) do
@@ -272,6 +275,7 @@ Sequel.migration do
     alter_table(:volumes) do
       drop_column :snapshot_id
       add_column :backup_object_id, "varchar(255)"
+      set_column_type :size, "bigint"
     end
 
     # Isono gem got new session_id column as of v0.2.12. 

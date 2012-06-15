@@ -39,9 +39,9 @@ module Dcmgr
           end
         else
           # create volume
-          #sh("/usr/sbin/zfs create -p -V %s %s", ["#{@volume[:size]}m", vol_path])
+          #sh("/usr/sbin/zfs create -p -V %s %s", ["#{@volume[:size]}", vol_path])
           # thin provisioning
-          sh("/usr/sbin/zfs create -p -s -V %s %s", ["#{@volume[:size]}m", vol_path])
+          sh("/usr/sbin/zfs create -p -s -V %s %s", ["#{@volume[:size]}", vol_path])
           if $?.exitstatus != 0
             raise "volume already exists: #{@volume_id}"
           end

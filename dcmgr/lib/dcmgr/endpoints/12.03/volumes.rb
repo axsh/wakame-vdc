@@ -83,7 +83,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       raise E::UnknownStorageNode, params[:storage_node_id] if sp.nil?
     end
 
-    volume_size = (bo ? bo.size / (1024 * 1024) : params[:volume_size].to_i)
+    volume_size = (bo ? bo.size : params[:volume_size].to_i * (1024 * 1024))
 
     if sp
       # TODO: check only for storage node from params[:storage_node_id]

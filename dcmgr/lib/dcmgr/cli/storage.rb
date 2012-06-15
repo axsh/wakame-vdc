@@ -23,7 +23,7 @@ class Storage < Base
     end
 
     fields = {:node_id=>node_id,
-              :offering_disk_space=>options[:disk_space],
+              :offering_disk_space_mb=>options[:disk_space],
               :transport_type=>options[:transport_type],
               :storage_type=>options[:storage_type],
               :export_path=>options[:base_path],
@@ -47,7 +47,7 @@ class Storage < Base
       puts ERB.new(<<__END, nil, '-').result(binding)
 UUID: <%= st.canonical_uuid %>
 Node ID: <%= st.node_id %>
-Disk space (offerring): <%= st.offering_disk_space %>MB
+Disk space (offerring): <%= st.offering_disk_space_mb %>MB
 Storage: <%= st.storage_type %>
 Transport: <%= st.transport_type %>
 IP Address: <%= st.ipaddr %>

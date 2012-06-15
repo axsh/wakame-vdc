@@ -51,12 +51,8 @@ module Dcmgr::Models
       unless sp.is_a?(StorageNode)
         raise "unknown class: #{sp.class}"
       end
-      volume_size = sp.volumes_dataset.lives.sum(:size).to_i
-      # check if the sum of available volume and new volume is under
-      # the limit of offering capacity.
-      total_size = sp.offering_disk_space - volume_size.to_i
-      if self.size > total_size
-        raise CapacityError, "Allocation exceeds storage node blank size: #{}"
+      if self.size > sp.free_disk_space
+        raise CapacityError, "Allocation exceeds storage node blank size: #{self.size(MB)} MB (#{self.canonical_uuid}) > #{sp.free_disk_space(MB)} MB (#{sp.canonical_uuid})"
       end
     end
 
@@ -172,6 +168,12 @@ module Dcmgr::Models
     def on_changed_accounting_log(changed_column)
       AccountingLog.record(self, changed_column)
     end
-     
+
+    include Dcmgr::Helpers::ByteUnit
+    
+    def size(byte_unit=B)
+      convert_byte(self[:size], byte_unit)
+    end
+
   end
 end

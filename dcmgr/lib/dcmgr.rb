@@ -108,6 +108,7 @@ module Dcmgr
     autoload :NicHelper, 'dcmgr/helpers/nic_helper'
     autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
+    autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
   end
 
   autoload :Tags, 'dcmgr/tags'

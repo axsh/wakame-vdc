@@ -5,6 +5,7 @@ module Dcmgr
     class Raw < BackingStore
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
+      include Dcmgr::Helpers::ByteUnit
 
       def create_volume(ctx, snap_file = nil)
         @volume_id   = ctx.volume_id
@@ -19,18 +20,16 @@ module Dcmgr
           cp_sparse(snap_file, vol_path)
         else
           unless File.exist?(vol_path)
-            logger.info("creating parent filesystem(size:#{@volume[:size]}): #{vol_path}")
+            logger.info("#{@volume_id}: creating blank volume (#{convert_byte(@volume[:size], MB)} MB): #{vol_path}")
 
-            sh("/bin/dd if=/dev/zero of=#{vol_path} bs=1 count=0 seek=#{@volume[:size] * 1024 * 1024}")
+            sh("/bin/dd if=/dev/zero of=#{vol_path} bs=1 count=0 seek=#{@volume[:size]}")
             du_hs(vol_path)
 
-            logger.info("create parent filesystem(size:#{@volume[:size]}): #{vol_path}")
+            logger.info("#{@volume_id}: Finish to create blank volume (#{convert_byte(@volume[:size], MB)} MB): #{vol_path}")
           else
             raise "volume already exists: #{@volume_id}"
           end
         end
-
-        logger.info("created new volume: #{@volume_id}")
       end
 
       def delete_volume(ctx)

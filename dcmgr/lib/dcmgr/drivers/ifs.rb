@@ -35,7 +35,7 @@ module Dcmgr
           sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{snap_path}?duplicate=#{new_vol_path}/#{@volume_id}"
         else
           #TODO: Check if file was created successfully
-          sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?allocate=#{@volume[:size] * 1024 * 1024}"
+          sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?allocate=#{@volume[:size]}"
         end
 
         logger.info("created new volume: #{@volume_id}")
