@@ -32,6 +32,10 @@ def variable_get_value arg_value
     arg_value[/^"(.*)"$/, 1]
   when /^[0-9]+$/
     arg_value.to_i
+  when /^\[.*\]/
+    arr = eval(arg_value)
+    arr.class.should == Array
+    arr
   when /^<.+>$/
     @registry[arg_value[/^<(.+)>$/, 1]]
   when /^nil$/
