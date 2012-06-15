@@ -57,6 +57,17 @@ DcmgrGUI.prototype.volumePanel = function(){
     c_pagenate.changeTotal(volume.total);
     c_list.setData(volume.results);
     c_list.multiCheckList(c_list.detail_template);
+    c_list.element.find(".edit_volume").each(function(key,value){
+      $(this).button({ disabled: false });
+      var uuid = $(value).attr('id').replace(/edit_(vol-[a-z0-9]+)/,'$1');
+      if( uuid ){
+        $(this).bind('click',function(){
+          bt_edit_volume.open({"ids":[uuid]});
+        });
+      } else {
+        $(this).button({ disabled: true });
+      }
+    });
 
     var edit_volume_buttons = {};
     edit_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
@@ -89,16 +100,6 @@ DcmgrGUI.prototype.volumePanel = function(){
         $(this).find('#volume_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
-
-    bt_edit_volume.target.bind('click',function(event){
-      var uuid = $(this).attr('id').replace(/edit_(vol-[a-z0-9]+)/,'$1');
-      if( uuid ){
-        bt_edit_volume.open({"ids":[uuid]});
-      }
-      c_list.checkRadioButton(uuid);
-    });
-
-    $(bt_edit_volume.target).button({ disabled: false });
   });
   
   c_list.filter.add(function(data){
