@@ -9,7 +9,14 @@ module Dcmgr::Models
     end
 
     class RequestError < RuntimeError; end
-    
+
+    def validate
+      validates_includes ['http','https','tcp','ssl'], :protocol
+      validates_includes ['http','https','tcp','ssl'], :instance_protocol
+      validates_includes 1..65535, :port
+      validates_includes 1..65535, :instance_port
+    end
+
     def state
       @state = self.instance.state
     end
