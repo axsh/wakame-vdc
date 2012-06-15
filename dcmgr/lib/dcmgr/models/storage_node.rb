@@ -45,23 +45,6 @@ module Dcmgr::Models
       end
     end
 
-    def self.create_pool(params)
-      self.create(:account_id => params[:account_id],
-                  :node_id => params[:node_id],
-                  :offering_disk_space => params[:offering_disk_space],
-                  :transport_type => params[:transport_type],
-                  :storage_type => params[:storage_type],
-                  :export_path => params[:export_path],
-                  :ipaddr => params[:ipaddr],
-                  :snapshot_base_path => params[:snapshot_base_path])
-    end
-
-    def self.get_lists(uuid)
-      self.dataset.where(:account_id => uuid).all.map{|row|
-        row.values
-      }
-    end
-
     # Show status of the agent.
     def status
       node.nil? ? :offline : node.state
