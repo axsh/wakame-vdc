@@ -12,14 +12,26 @@ class DialogController < ApplicationController
 
   def attach_volume
     @volume_ids = params[:ids]
+    @volumes = []
+    @volume_ids.each do |v|
+      @volumes << Hijiki::DcmgrResource::Volume.show(v)
+    end
   end
   
   def detach_volume
     @volume_ids = params[:ids]
+    @volumes = []
+    @volume_ids.each do |v|
+      @volumes << Hijiki::DcmgrResource::Volume.show(v)
+    end
   end
   
   def delete_volume
     @volume_ids = params[:ids]
+    @volumes = []
+    @volume_ids.each do |v|
+      @volumes << Hijiki::DcmgrResource::Volume.show(v)
+    end
   end
   
   def edit_volume
@@ -30,6 +42,10 @@ class DialogController < ApplicationController
 
   def create_backup
     @volume_ids = params[:ids]
+    @volumes = []
+    @volume_ids.each do |v|
+      @volumes << Hijiki::DcmgrResource::Volume.show(v)
+    end
   end
   
   def delete_backup

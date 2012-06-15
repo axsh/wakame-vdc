@@ -1,7 +1,17 @@
-<p><%= t("dialog.delete_volume.message") %></p>
-<br />
-<ul id="delete_volumes">
-	<% @volume_ids.each do |volume_id| %>
-		<li><%= volume_id %></li>
-	<% end %>
-</ul>
+<div id="delete_volume_dialog">
+  <div class="message">
+    <p><%= t("dialog.delete_volume.message") %></p>
+  </div>
+  <table id="volumes">
+    <% @volumes.each do |v| %>
+    <tr>
+      <td><%= t("dialog.delete_volume.volume_id") %></td>
+      <td class="volume_id"><%= v["id"] %></td>
+    </tr>
+    <tr>
+      <td class="border"><%= t("dialog.delete_volume.display_name") %></td>
+      <td class="border"><%= v["display_name"] %></td>
+    </tr>
+    <% end %>
+  </table>
+</div>

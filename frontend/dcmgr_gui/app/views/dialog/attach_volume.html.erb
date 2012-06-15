@@ -1,9 +1,16 @@
 <div id="attach_volume_dialog">
-<p><%= t("dialog.attach_volume.instance_id") %>: <input id="instance_id" type="text" value=""></p>
-<br />
-<ul id="attach_volumes">
-  <% @volume_ids.each do |volume_id| %>
-    <li><%= volume_id %></li>
-  <% end %>
-</ul>
+  <p><%= t("dialog.attach_volume.instance_id") %>: <input id="instance_id" type="text" value=""></p>
+  <br />
+  <table id="volumes">
+    <% @volumes.each do |v| %>
+    <tr>
+      <td><%= t("dialog.attach_volume.volume_id") %></td>
+      <td class="volume_id"><%= v["id"] %></td>
+    </tr>
+    <tr>
+      <td class="border"><%= t("dialog.attach_volume.display_name") %></td>
+      <td class="border"><%= v["display_name"] %></td>
+    </tr>
+    <% end %>
+  </table>
 </div>

@@ -17,6 +17,11 @@
 	padding: 3px 10px;
 }
 
+#attach_volume_dialog table tr td.border {
+        padding: 3px 10px;
+        border-bottom: 1px solid #cccccc;
+}
+
 #launch_instance_dialog #view_image_id {
   padding-top: 2px;
   padding-right: 4px;
@@ -148,4 +153,43 @@
 #start_instances_dialog table tr td.border {
 	padding: 3px;
 	border-bottom: 1px solid #cccccc;
+}
+
+#delete_volume_dialog table {
+        margin: 10px;
+}
+
+#delete_volume_dialog table tr td {
+        padding: 3px 10px;
+}
+
+#delete_volume_dialog table tr td.border {
+        padding: 3px 10px;
+        border-bottom: 1px solid #cccccc;
+}
+
+#create_backup_dialog table {
+        margin: 10px;
+}
+
+#create_backup_dialog table tr td {
+        padding: 3px 10px;
+}
+
+#create_backup_dialog table tr td.border {
+        padding: 3px 10px;
+        border-bottom: 1px solid #cccccc;
+}
+
+#detach_volume_dialog table {
+        margin: 10px;
+}
+
+#detach_volume_dialog table tr td {
+        padding: 3px 10px;
+}
+
+#detach_volume_dialog table tr td.border {
+        padding: 3px 10px;
+        border-bottom: 1px solid #cccccc;
 }

@@ -81,12 +81,17 @@ en:
       header: "Attach Volume"
       volume_id: "Volume ID"
       instance_id: "Instance ID"
+      display_name: "Volume Name"
     detach_volume:
       header: "Detach Volume"
       message: "Are you sure you want to detach the following volume?"
+      volume_id: "Volume ID"
+      display_name: "Volume Name"
     delete_volume:
       header: "Delete Volume"
       message: "Are you sure you want to delete the following volume?"
+      volume_id: "Volume ID"
+      display_name: "Volume Name"
     edit_volume:
       header: "Edit Volume"
       volume_id: "Volume ID"
@@ -95,6 +100,8 @@ en:
       header: "Create Backup"
       message: "Are you sure you want to create the following backup?"
       display_name: "Backup Name"
+      volume_id: "Volume ID"
+      volume_display_name: "Volume Name"
     create_volume_from_backup:
       header: "Create Volume"
       message: "Are you sure you want to create the following volume?"

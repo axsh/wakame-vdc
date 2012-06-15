@@ -81,12 +81,17 @@ ja:
       header: "ボリュームをアタッチ"
       volume_id: "ボリュームID"
       instance_id: "インスタンスID"
+      display_name: "ボリューム名"
     detach_volume:
       header: "ボリュームをデタッチ"
       message: "ボリュームをデタッチします。よろしいですか？"
+      volume_id: "ボリュームID"
+      display_name: "ボリューム名"
     delete_volume:
       header: "ボリュームを削除"
       message: "ボリュームを削除します。よろしいですか？"
+      volume_id: "ボリュームID"
+      display_name: "ボリューム名"
     edit_volume:
       header: "ボリュームを編集"
       volume_id: "ボリュームID"
@@ -95,6 +100,8 @@ ja:
       header: "バックアップを作成"
       message: "バックアップを作成します。よろしいですか？"
       display_name: "バックアップ名"
+      volume_id: "ボリュームID"
+      volume_display_name: "ボリューム名"
     create_volume_from_backup:
       header: "ボリュームを作成"
       message: "ボリュームを作成します。よろしいですか？"

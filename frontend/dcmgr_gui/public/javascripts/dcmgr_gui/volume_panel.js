@@ -222,7 +222,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var delete_volume_buttons = {};
   delete_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
   delete_volume_buttons[delete_button_name] = function() { 
-    var delete_volumes = $(this).find('#delete_volumes').find('li');
+    var delete_volumes = $(this).find('#volumes').find('td.volume_id');
     var ids = []
     $.each(delete_volumes,function(){
      ids.push($(this).text())
@@ -246,7 +246,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   var bt_delete_volume = new DcmgrGUI.Dialog({
     target:'.delete_volume',
     width:400,
-    height:200,
+    height:250,
     title:$.i18n.prop('delete_volume_header'),
     path:'/delete_volume',
     button: delete_volume_buttons
@@ -256,7 +256,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   create_backup_buttons[close_button_name] = function() { $(this).dialog("close"); }; 
   create_backup_buttons[create_button_name] = function() {
     var display_name = $(this).find('#backup_display_name').val();
-    var volume_backups = $(this).find('#create_backups').find('li');
+    var volume_backups = $(this).find('#backups').find('td.volume_id');
     var destination = $(this).find('#destination').val();
     var ids = []
     $.each(volume_backups,function(){
@@ -294,7 +294,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   attach_volume_buttons = {};
   attach_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
   attach_volume_buttons[attach_button_name] = function() {
-    var attach_volumes = $(this).find('#attach_volumes').find('li');
+    var attach_volumes = $(this).find('#volumes').find('td.volume_id');
     var volume_ids = []
     $.each(attach_volumes,function(){
      volume_ids.push($(this).text())
@@ -332,7 +332,7 @@ DcmgrGUI.prototype.volumePanel = function(){
   detach_volume_buttons = {}
   detach_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
   detach_volume_buttons[detach_button_name] = function() { 
-    var detach_volumes = $(this).find('#detach_volumes').find('li');
+    var detach_volumes = $(this).find('#volumes').find('td.volume_id');
     var ids = []
     $.each(detach_volumes,function(){
      ids.push($(this).text())

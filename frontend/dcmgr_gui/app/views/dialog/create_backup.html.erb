@@ -1,18 +1,22 @@
 <div id="create_backup_dialog">
-<p><%= t("dialog.create_backup.message") %></p>
-<br />
-<% form_tag :action => "create_backup" do %>
-<table>
-  <tr>
-    <td><%= t("dialog.create_backup.display_name")%>: </td>
-    <td><input id="backup_display_name" type="text" value=""></td>
-  </tr>
-</table>
-<br />
-<ul id="create_backups">
-  <% @volume_ids.each do |volume_id| %>
-    <li><%= volume_id %></li>
+  <p><%= t("dialog.create_backup.message") %></p>
+  <br />
+  <% form_tag :action => "create_backup" do %>
+  <table id="backups">
+    <tr>
+      <td class="border"><%= t("dialog.create_backup.display_name")%>: </td>
+      <td class="border"><input id="backup_display_name" type="text" value=""></td>
+    </tr>
+    <% @volumes.each do |v| %>
+    <tr>
+      <td><%= t("dialog.create_backup.volume_id") %></td>
+      <td class="volume_id"><%= v["id"] %></td>
+    </tr>
+    <tr>
+      <td class="border"><%= t("dialog.create_backup.volume_display_name") %></td>
+      <td class="border"><%= v["display_name"] %></td>
+    </tr>
+    <% end %>
+  </table>
   <% end %>
-</ul>
-<% end %>
 </div>
