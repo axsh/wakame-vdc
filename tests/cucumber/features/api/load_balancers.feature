@@ -3,8 +3,8 @@ Feature: Load Balancer API
 
    Scenario: Create and delete new load balancer
    Given a managed load_balancer with the following options
-    | instance_spec_id | protocol | port | instance_protocol | instance_port | balance_name | cookie_name | description |
-    | is-demospec      | http     | 80   | 80                | 80            | leastconn    | demo        | demo        |
+    | instance_spec_id | protocol | port | instance_protocol | instance_port | balance_name | cookie_name | description | display_name |
+    | is-demospec      | http     | 80   | http              | 80            | leastconn    | demo        | demo        | demo         |
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created load_balancer has reached the state "running"
