@@ -1,0 +1,10 @@
+# local / with metadata server script / gzip
+uuid=lucid7d
+uri=http://cdimage.wakame.jp/demo/vmimage/ubuntu-lucid-kvm-md-32.raw.gz
+arch=x86
+localname=ubuntu-lucid-kvm-md-32.raw.gz
+storetype=local
+file_format=raw
+root_device=uuid:0dd97af3-eabb-4534-b38a-5b9b196a4ad0
+service_type=std
+display_name=lucid7d
