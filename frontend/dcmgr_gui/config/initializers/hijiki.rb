@@ -2,6 +2,8 @@
 
 require 'hijiki'
 
+Hijiki.load(File.expand_path('config/instance_spec.yml', ::Rails.root))
+
 module Hijiki::DcmgrResource
 
   Account = V1203::Account

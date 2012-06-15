@@ -3,15 +3,14 @@
 require 'active_resource'
 
 module Hijiki
+  # configuration file loader. Need to call this 
+  def self.load(spec_yml)
+    DcmgrResource::V1203::InstanceSpec.load_spec(spec_yml)
+  end
+  
   module DcmgrResource
 
     require 'hijiki/dcmgr_resource/base'
-
-    module V1112
-      require 'hijiki/dcmgr_resource/11.12/base'
-
-      autoload :InstanceSpec,   'hijiki/dcmgr_resource/11.12/instance_spec'
-    end
 
     module V1203
       require 'hijiki/dcmgr_resource/12.03/base'
@@ -29,7 +28,6 @@ module Hijiki
       autoload :VolumeSnapshot, 'hijiki/dcmgr_resource/12.03/volume_snapshot'
       autoload :BackupObject,   'hijiki/dcmgr_resource/12.03/backup_object'
 
-      autoload :InstanceMethods,       'hijiki/dcmgr_resource/12.03/instance'
       autoload :SecurityGroupMethods,  'hijiki/dcmgr_resource/12.03/security_group'
       autoload :SshKeyPairMethods,     'hijiki/dcmgr_resource/12.03/ssh_key_pair'
       autoload :VolumeMethods,         'hijiki/dcmgr_resource/12.03/volume'

@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
-  module InstanceMethods
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
-    
+  class Instance < Base
     module ClassMethods
       def create(params)
         instance = self.new
@@ -18,6 +14,12 @@ module Hijiki::DcmgrResource::V1203
         instance.display_name = params[:display_name]
 
         instance.vifs = params[:vifs] if params[:vifs]
+
+        is = InstanceSpec.show(params[:instance_spec_id]) || raise("Unknown instance spec: #{params[instance_spec_id]}")
+        instance.cpu_cores = is.cpu_cores
+        instance.memory_size = is.memory_size
+        instance.hypervisor = is.hypervisor
+        instance.quota_weight = is.quota_weight
 
         instance.save
         instance
@@ -55,10 +57,8 @@ module Hijiki::DcmgrResource::V1203
         self.put(instance_id,params).body
       end
     end
-  end
-
-  class Instance < Base
+    extend ClassMethods
+    
     include Hijiki::DcmgrResource::ListMethods
-    include InstanceMethods
   end
 end

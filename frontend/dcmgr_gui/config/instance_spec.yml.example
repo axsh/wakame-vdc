@@ -1,0 +1,10 @@
+is-small:
+  cpu_cores: 1
+  memory_size: 1024
+  hypervisor: 'openvz'
+  quota_weight: 1.0
+is-large:
+  cpu_cores: 2
+  memory_size: 2048
+  hypervisor: 'openvz'
+  quota_weight: 2.0
