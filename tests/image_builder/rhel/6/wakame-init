@@ -12,7 +12,7 @@ SSHDIR=/${USER}/.ssh/
 KEYSPATH=${SSHDIR}/authorized_keys
 
 METADATA_LOCATION=drive
-METADATA_DRIVE_MOUNTPOINT=/mnt/metadata
+METADATA_DRIVE_MOUNTPOINT=/metadata
 
 function shlog() {
   echo "\$ $*"
@@ -65,7 +65,12 @@ esac
 
 case "$METADATA_LOCATION" in
 drive)
-  mountpoint -q ${METADATA_DRIVE_MOUNTPOINT}
+  # /mnt/metadata is obsolete.
+  for metadata_drive_location in ${METADATA_DRIVE_MOUNTPOINT} /metadata /mnt/metadata; do
+    mountpoint -q ${metadata_drive_location} || continue
+    METADATA_DRIVE_MOUNTPOINT=${metadata_drive_location}
+  done
+
   if [ $? != 0 ]; then
     if [ ! -d ${METADATA_DRIVE_MOUNTPOINT} ]; then
       mkdir ${METADATA_DRIVE_MOUNTPOINT}
