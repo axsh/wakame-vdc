@@ -72,7 +72,11 @@ jQuery(function($){
 	    <td class="state vtip center" title="status">${item.state}</td>
 	    {{if item.id}}
             <td class="vtip center" title="action">
+	      {{if item.state != "terminated" }}
               <a href="javascript:void(0);" class="edit_instance" id="edit_${item.id}"><%= t('instances.button.edit_instance') %></a>
+	      {{else}}
+              <a href="javascript:void(0);" class="edit_instance"><%= t('instances.button.edit_instance') %></a>
+	      {{/if}}
             </td>
             {{else}}
             <td class="vtip center" title="action"></td>

@@ -58,6 +58,17 @@ DcmgrGUI.prototype.instancePanel = function(){
     c_pagenate.changeTotal(instance.total);
     c_list.setData(instance.results);
     c_list.multiCheckList(c_list.detail_template);
+    c_list.element.find(".edit_instance").each(function(key,value){
+      $(this).button({ disabled: false });
+      var uuid = $(value).attr('id').replace(/edit_(i-[a-z0-9]+)/,'$1');
+      if( uuid ){
+        $(this).bind('click',function(){
+          bt_edit_instance.open({"ids":[uuid]});
+        });
+      } else {
+        $(this).button({ disabled: true });
+      }
+    });
 
     var edit_instance_buttons = {};
     edit_instance_buttons[close_button_name] = function() { $(this).dialog("close"); };
@@ -90,16 +101,6 @@ DcmgrGUI.prototype.instancePanel = function(){
         $(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
-
-    bt_edit_instance.target.bind('click',function(event){
-      var uuid = $(this).attr('id').replace(/edit_(i-[a-z0-9]+)/,'$1');
-      if( uuid ){
-        bt_edit_instance.open({"ids":[uuid]});
-      }
-      c_list.checkRadioButton(uuid);
-    });
-
-    $(bt_edit_instance.target).button({ disabled: false });
   });
   
   c_list.filter.add(function(data){
