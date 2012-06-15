@@ -9,15 +9,10 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @load_balancer.instance_exec {
-        targets = []
-        load_balancer_targets.each { |t|
-          targets << t.to_hash
-        }
-
         to_hash.merge(:id=>canonical_uuid,
               :state=>state,
               :status=>status,
-              :targets=>targets
+              :targets=> load_balancer_targets.collect { |t|t.to_hash }
         )
       }
     end
