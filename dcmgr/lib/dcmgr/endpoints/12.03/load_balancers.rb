@@ -75,6 +75,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb = M::LoadBalancer.create(:account_id => @account.canonical_uuid,
                                 :description => params[:description],
                                 :instance_id => i.id,
+                                :balance_name => params[:balace_name] || 'leastconn',
+                                :protocol => params[:protocol] || 'http',
+                                :port => params[:port] || 80,
+                                :instance_protocol => params[:instance_protocol] || 'http',
+                                :instance_port => params[:instance_port] || 80,
+                                :display_name => params[:display_name],
+                                :cookie_name => params[:cookie_name]
                                 )
 
     respond_with(R::LoadBalancer.new(lb).generate)
