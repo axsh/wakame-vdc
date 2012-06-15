@@ -10,7 +10,6 @@ module Hijiki::DcmgrResource::V1203
         volume = self.new
         volume.volume_size = params[:volume_size]
         volume.backup_object_id = params[:backup_object_id]
-        volume.storage_node_id = params[:storage_node_id]
         volume.display_name = params[:display_name]
         volume.save
         volume

@@ -135,12 +135,11 @@ DcmgrGUI.prototype.volumePanel = function(){
     var display_name = $(this).find('#display_name').val();
     var volume_size = $(this).find('#volume_size').val();
     var unit = $(this).find('#unit').find('option:selected').val();
-    var storage_node_id = $(this).find('#storage_node').find('option:selected').val();
     if(!volume_size){
      $('#volume_size').focus();
      return false;
     }
-    var data = "size="+volume_size+"&unit="+unit+"&storage_node_id="+storage_node_id+"&display_name="+display_name;
+    var data = "size="+volume_size+"&unit="+unit+"&display_name="+display_name;
     
     var request = new DcmgrGUI.Request;
     request.post({

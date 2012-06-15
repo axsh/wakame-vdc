@@ -29,7 +29,6 @@ class VolumesController < ApplicationController
       
       data = {
         :volume_size => size,
-        :storage_node_id => params[:storage_node_id],
         :display_name => display_name
       }
       
