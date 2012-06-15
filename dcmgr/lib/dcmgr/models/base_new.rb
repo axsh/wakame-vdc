@@ -494,6 +494,8 @@ module Dcmgr::Models
 
   class BaseNew < Sequel::Model
 
+    plugin :validation_helpers
+
     def to_hash()
       self.values.dup
     end
