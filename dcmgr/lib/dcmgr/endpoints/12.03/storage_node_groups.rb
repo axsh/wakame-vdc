@@ -4,4 +4,4 @@ require 'dcmgr/endpoints/12.03/tag/tag_endpoint_factory'
 include Dcmgr::Endpoints::V1203::Tag
 
 
-Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_node_groups', &TagEndpointFactory.make_tag_endpoint(Dcmgr::Tags::StorageNodeGroup)
+Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_node_groups', &TagEndpointFactory.make_tag_endpoint(Dcmgr::Tags::StorageNodeGroup,:storage_nodes)

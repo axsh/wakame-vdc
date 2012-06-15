@@ -9,7 +9,7 @@ module Dcmgr::Endpoints::V1203::Tag
     E = Dcmgr::Endpoints::Errors
     R = Dcmgr::Endpoints::V1203::Responses
     
-    def self.make_tag_endpoint(tag_subclass)
+    def self.make_tag_endpoint(tag_subclass,mapped_resource)
       Proc.new do
         
         get do
@@ -77,7 +77,7 @@ module Dcmgr::Endpoints::V1203::Tag
         put '/:id' do
           # description 'Updates a host node group'
           # param :id, string, :required
-          # param :host_nodes, string|array, :optional
+          # param #{mapped_resource}, string|array, :optional
           # param :name, string, :optional
           g = tag_subclass[params[:id]]
           raise E::UnknownUUIDResource, params[:id] if g.nil?
@@ -88,10 +88,10 @@ module Dcmgr::Endpoints::V1203::Tag
             g[:name] = params[:name]
           end
           
-          if params[:host_nodes] == "" || params[:host_nodes] == []
+          if params[mapped_resource] == "" || params[mapped_resource] == []
             g.remove_all_mapped_uuids
-          elsif params[:host_nodes].is_a?(Array) || params[:host_nodes].is_a?(String)
-            host_node_uuids = params[:host_nodes]
+          elsif params[mapped_resource].is_a?(Array) || params[mapped_resource].is_a?(String)
+            host_node_uuids = params[mapped_resource]
             host_node_uuids = [host_node_uuids] if host_node_uuids.is_a?(String)
             
             # Check if there are any invalid uuids in the request
@@ -121,7 +121,7 @@ module Dcmgr::Endpoints::V1203::Tag
               )
             }
           else
-            raise E::InvalidParameter, "host_nodes should be a 'String' or 'Array'. Got '#{params[:host_nodes].class}' instead." unless params[:host_nodes].nil?
+            raise E::InvalidParameter, "host_nodes should be a 'String' or 'Array'. Got '#{params[mapped_resource].class}' instead." unless params[mapped_resource].nil?
           end
           
           g.save_changes
