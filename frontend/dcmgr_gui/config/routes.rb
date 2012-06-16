@@ -192,6 +192,11 @@ DcmgrGui::Application.routes.draw do
   delete 'volumes' ,:to => 'volumes#destroy'
   put    'volumes/:id' , :to => 'volumes#update'
 
+  #load balancers
+  get    'load_balancers', :to => 'load_balancers#index'
+  get    'load_balancers/list/:id' ,:to => 'load_balancers#list'
+  get    'load_balancers/show/:id', :to => 'load_balancers#show'
+
   #resorce (management)
   get    'resource' ,:to => 'resource#index'
 end

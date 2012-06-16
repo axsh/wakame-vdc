@@ -18,5 +18,5 @@ module Hijiki::DcmgrResource
   Volume = V1203::Volume
   VolumeSnapshot = V1203::VolumeSnapshot
   BackupObject = V1203::BackupObject
-
+  LoadBalancer = V1203::LoadBalancer
 end

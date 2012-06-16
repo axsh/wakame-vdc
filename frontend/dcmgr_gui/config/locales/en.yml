@@ -312,6 +312,24 @@ en:
       status: "Status"
       created_at: "Creaed At"
       updated_at: "Updated At"
+  load_balancers:
+    header: "Load Balancers"
+    button:
+      create_load_balancer: "Create Load Balancer"
+      delete_load_balancer: "Delete Load Balancer"
+    list:
+      id: "ID"
+      display_name: "Name"
+      ip: "IP"
+      state: "State"
+    details:
+      header: "Details"
+      load_balancer_id: "Load Balancer ID"
+      ip: "IP"
+      register_instances: "Register Instances"
+      status: "Status"
+      created_at: "Creaed At"
+      display_name: "Load Balancer Name"
   machine_images:
     header: "Machine Images"
     button:
@@ -538,6 +556,9 @@ en:
       header: "INSTANCES"
       instances: "Instances"
       host_nodes: "Host Nodes"
+    appliances:
+      header: "Appliacnes"
+      load_balancers: "LoadBalancers"
     images:
       header: "IMAGES"
       machine_images: "Machine Images"
