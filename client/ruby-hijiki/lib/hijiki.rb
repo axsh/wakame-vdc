@@ -27,12 +27,14 @@ module Hijiki
       autoload :Volume,         'hijiki/dcmgr_resource/12.03/volume'
       autoload :VolumeSnapshot, 'hijiki/dcmgr_resource/12.03/volume_snapshot'
       autoload :BackupObject,   'hijiki/dcmgr_resource/12.03/backup_object'
+      autoload :LoadBalancer,   'hijiki/dcmgr_resource/12.03/load_balancer'
 
       autoload :SecurityGroupMethods,  'hijiki/dcmgr_resource/12.03/security_group'
       autoload :SshKeyPairMethods,     'hijiki/dcmgr_resource/12.03/ssh_key_pair'
       autoload :VolumeMethods,         'hijiki/dcmgr_resource/12.03/volume'
       autoload :VolumeSnapshotMethods, 'hijiki/dcmgr_resource/12.03/volume_snapshot'
       autoload :BackupObjectMethods, 'hijiki/dcmgr_resource/12.03/backup_object'
+      autoload :LoadBalancerMethods, 'hijiki/dcmgr_resource/12.03/load_balancer'
     end
 
   end
