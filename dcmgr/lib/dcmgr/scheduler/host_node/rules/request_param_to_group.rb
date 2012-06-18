@@ -30,9 +30,19 @@ module Dcmgr::Scheduler::HostNode::Rules
     private
     def get_host_node_ids(instance)
       request_param = instance.request_params[options.key]
-      tag_id = options.pairs[request_param] || options.default
+
+      begin
+        raise NoMethodError if options.default.nil?
+      rescue NoMethodError => e
+        raise Dcmgr::Scheduler::HostNodeSchedulingError, "No default host node group set"
+      end
       
-      host_node_ids = Dcmgr::Tags::HostNodeGroup[tag_id].mapped_uuids.map { |tagmap| tagmap[:uuid] }
+      tag_id = options.pairs[request_param] || options.default rescue options.default
+      host_node_group = Dcmgr::Tags::HostNodeGroup[tag_id]
+      
+      raise Dcmgr::Scheduler::HostNodeSchedulingError, "Unknown host node group: #{tag_id}" if host_node_group.nil?
+      
+      host_node_ids = host_node_group.mapped_uuids.map { |tagmap| tagmap[:uuid] }
     end
   end
         

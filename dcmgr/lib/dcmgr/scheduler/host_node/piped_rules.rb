@@ -85,6 +85,8 @@ module Dcmgr
             end
           }
           
+          raise HostNodeSchedulingError, "No suitable host node found after piping through all rules." if host_nodes.empty?
+          
           instance.host_node = host_nodes.first
         end
       end
