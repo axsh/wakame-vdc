@@ -3,6 +3,7 @@
 module Dcmgr
   module VNet
     
+    V = Dcmgr::VNet
     class TaskManagerFactory
       def self.create_task_manager(node)
         manager = V::Netfilter::VNicProtocolTaskManager.new
