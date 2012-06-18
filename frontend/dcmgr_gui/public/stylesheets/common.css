@@ -445,7 +445,6 @@ body{
 }
 #content #mainarea_wide h3 img{
 	margin-top: -4px;
-	/margin-top: -2px;
 	margin-right: 5px;
 	vertical-align: middle;
 }
@@ -506,7 +505,6 @@ body{
 #content #mainarea_wide ul#actionlist{
 	position: absolute;
 	margin: 26px 0 0 7px;
-  /margin: 32px 0 0 -552px;
 	padding: 0;
 	border-top: 1px solid #cccccc;
 	display: none;
@@ -588,7 +586,6 @@ body{
 #content #mainarea_wide ul#rsvinstancelist{
   position: fixed;
   margin: 26px 0 0 140px;
-  /margin: 32px 0 0 -419px;
   padding: 0;
   border-top: 1px solid #cccccc;
   display: none;
@@ -1205,7 +1202,6 @@ body{
 #content #mainarea_wide ul#volumelist{
 	position: absolute;
 	margin: 26px 0 0 126px;
-	/margin: 32px 0 0 -552px;
 	padding: 0;
 	border-top: 1px solid #cccccc;
 	display: none;
@@ -1623,8 +1619,8 @@ body{
 /*----clearfix----*/
 
 .clearfix:after {
-  content: ".";  /* êVÇµÇ¢óvëfÇçÏÇÈ */
-  display: block;  /* ÉuÉçÉbÉNÉåÉxÉãóvëfÇ… */
+  content: ".";
+  display: block;
   clear: both;
   height: 0;
   visibility: hidden;

@@ -33,7 +33,7 @@ DcmgrGUI.Request = DcmgrGUI.Class.create({
   },
   put: function(params){
     params['type'] = 'PUT';
-    return this._request(params)
+    return this._request(params);
   },
   post: function(params){
     params['type'] = 'POST';
@@ -70,7 +70,7 @@ DcmgrGUI.Filter = DcmgrGUI.Class.create({
         this.apply(next_index,data);
       } else {
         return data;
-      };
+      }
     }
   }
 });
@@ -84,11 +84,11 @@ DcmgrGUI.Converter.unit = function(data, unit_type){
   var unit = '';
   switch(unit_type) {
     case 'megabyte':
-      unit = 'MB'
+      unit = 'MB';
     break;
 
     case 'gigabyte':
-      unit = 'GB'
+      unit = 'GB';
     break;
   }
   return  data + unit;
@@ -124,7 +124,7 @@ DcmgrGUI.date.parseISO8601 = function (str) {
 DcmgrGUI.date.setTimezoneOffset = function(date_str, utc_offset){
   date_str.setUTCSeconds(utc_offset);
   return date_str;
-}
+};
 
 DcmgrGUI.date.getI18n = function(date_str){
 
@@ -164,7 +164,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     this.prev.bind("click",{obj: this},function(event){
       var self = event.data.obj;
       if (self.prev.button("option","disabled")) { 
-        return false 
+        return false;
       };
 
       self.updatePage.call(this,event);
@@ -174,7 +174,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     this.next.bind("click",{obj: this},function(event){
       var self = event.data.obj;
       if (self.next.button("option","disabled")) { 
-        return false 
+        return false;
       };
       
       self.updatePage.call(this,event);
@@ -201,7 +201,7 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     }
   },
   getPageCount: function(total,row){
-    return Math.ceil(total / row)
+    return Math.ceil(total / row);
   },
   changeTotal: function(total){
     this.total = total;
@@ -240,15 +240,15 @@ DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
     this.offset = this.getOffsetCount();
     if (this.start !== 0 && this.offset !==0 ) {
       var current_page = '<input type="text" id="current_page" style="width:20px;height:13px" value="'+ this.current_page +'">';
-      var page = $.i18n.prop('page_pagenate', [this.page_count])
-      var total = $.i18n.prop('total_pagenate', [this.total])
+      var page = $.i18n.prop('page_pagenate', [this.page_count]);
+      var total = $.i18n.prop('total_pagenate', [this.total]);
       var html = current_page + ' / ' + page + ' : ' + total;
-      html += ' ' + this.view
+      html += ' ' + this.view;
     } else{
       var html = '';
     }
     $("#viewPagenate").html(html);
-    this.changePage()
+    this.changePage();
   },
   updatePage: function(event){
     var self = event.data.obj;
@@ -320,7 +320,7 @@ DcmgrGUI.Dialog = DcmgrGUI.Class.create({
   },
   getWidgetButton: function(num) {
     var widget = $(this.content.dialog('widget')
-                    .find(".ui-button-text")[num])
+                    .find(".ui-button-text")[num]);
     return widget;
   },
   disabledButton: function(num, disabled){
@@ -405,40 +405,40 @@ DcmgrGUI.Util = {};
 DcmgrGUI.Util.getPagePath = function(path,page,format){
     var format = format||'json';
     return path + page + '.' + format;
-}
+};
 DcmgrGUI.Util.setfillData = function(maxrows,json){
     var fillCount = maxrows-json.length;
     var emptyObj = [];
     for (var key in json[0]) {
-      emptyObj.key = ''
+      emptyObj.key = '';
     }
     for(var i=0;i<fillCount;i++){
       json.push(emptyObj);
     }
   return json;
-}
+};
 
 DcmgrGUI.Util.getLoadingImage = function(type){
   switch(type) {
     case "ball":
-      var image = 'loader_ball.gif'
+      var image = 'loader_ball.gif';
     break;
     
     case "boxes":
-      var image = 'loader_boxes.gif'
+      var image = 'loader_boxes.gif';
     break;
     
     default:
-      var image = 'loader_ball.gif'
+      var image = 'loader_ball.gif';
     break;
   }
   return '<img src="images/'+image+'" />';
-}
+};
 
 
 DcmgrGUI.Util.getPagenateData = function(start,limit){
   return "start=" + start + "&" + "limit=" + limit;
-}
+};
 
 DcmgrGUI.Util.createUIButton = function(element,options){
   return element
@@ -452,7 +452,7 @@ DcmgrGUI.Util.createUIButton = function(element,options){
           .focus(function(){
             element.removeClass("ui-state-focus");
           });
-}
+};
 
 DcmgrGUI.Util.availableTextField = function(e){
 
@@ -479,12 +479,12 @@ DcmgrGUI.Util.availableTextField = function(e){
     }
   }
   return true;
-}
+};
 
 DcmgrGUI.Event = DcmgrGUI.Class.create({
 
   initialize: function(){
-    this.events = {}
+    this.events = {};
   },
   attach: function(event_name, func){
     if(!this.events[event_name] && typeof func === "function") {
@@ -520,7 +520,7 @@ DcmgrGUI.Notification = DcmgrGUI.Class.create({
       this.topics[topic_id].push({'target': target,
                                   'method_name': method_name,
                                   'options': options,
-                                  'subscription_id': this.subscription_id})
+                                  'subscription_id': this.subscription_id});
       var subscription_id = this.subscription_id;
       this.subscription_id += 1;
       return subscription_id;
@@ -557,8 +557,8 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     DcmgrGUI.ContentBase.prototype.initialize(params);
     this.checked_list = {};
     this.detail_template = {};
-    this.maxrow = params.maxrow
-    this.page = params.page
+    this.maxrow = params.maxrow;
+    this.page = params.page;
     this.detail_filter = new DcmgrGUI.Filter(); 
     this.detail_filter.add(function(data){
       
@@ -607,13 +607,13 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
             if($(this).val() === id){
               $(this).attr('checked',true);
             }
-          })
+          });
         }
-      })
+      });
     });
     
     this.element.bind('dcmgrGUI.updateList',function(event,params){
-      self.update(params.request,true)
+      self.update(params.request,true);
     });
     dcmgrGUI.notification.create_topic('checked_box');
     dcmgrGUI.notification.create_topic('unchecked_box');
@@ -623,24 +623,24 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     this.detail_template = template;
   },
   getCheckedInstanceIds:function(){
-    var ids = []
+    var ids = [];
     for(var id in this.checked_list){
       ids.push(id);
     }
     return { 
-      'ids':ids 
-    }
+      'ids':ids
+    };
   },
   checkRadioButton:function(id){
     $('#'+id).attr("checked", true);
   },
   setData:function(json){
-    var rows = []
+    var rows = [];
     if(!json){
-      rows = this.getEmptyData()
+      rows = this.getEmptyData();
     }else{
       $.each(json,function(key,value){
-        rows.push(value.result)
+        rows.push(value.result);
       });
     }
     var row = this.maxrow || 10;
@@ -655,7 +655,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     }
   },
   clearCheckedList:function(){
-    this.checked_list = {}
+    this.checked_list = {};
   },
   changeStatus:function(state){
     $.each(this.checked_list,function(id,obj){
@@ -681,7 +681,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
     
     return {
       'ids':ids
-    }
+    };
   },
   singleCheckList:function(params){
     var self = this;
@@ -698,7 +698,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
           });
            
           c_detail.element.bind('dcmgrGUI.contentChange',function(event,params){
-            var data = { item:params.data }
+            var data = { item:params.data };
             //initialize
             if(!params.data){
               data.item = self.getEmptyData();
@@ -740,7 +740,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
               id:check_id,
               template_id:params.template_id
             })
-          }
+          };
           
           //step2:bind event dcmgrGUI.contentChange
           var detail_element = self.checked_list[check_id].c_detail.element;
@@ -748,7 +748,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
             if(self.checked_list[check_id]){
             
               //step4:marge data in template
-              var data = { item:params.data }
+              var data = { item:params.data };
               
               //initialize
               if(!params.data){
@@ -776,7 +776,7 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
           //remove detail
           if(self.checked_list[check_id]){
             $($('#detail').find('#'+check_id)).remove();
-            delete self.checked_list[check_id]
+            delete self.checked_list[check_id];
           }
         }
       });
@@ -789,12 +789,12 @@ DcmgrGUI.Detail = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
 
 DcmgrGUI.Refresh = DcmgrGUI.Class.create({
   initialize: function(){
-    this.target = '.refresh'
+    this.target = '.refresh';
     this.element = $(this.target);
     var self = this;
     self.element.live('click',function(){
       self.element.trigger('dcmgrGUI.refresh');
-    })
+    });
   }
 });
 
