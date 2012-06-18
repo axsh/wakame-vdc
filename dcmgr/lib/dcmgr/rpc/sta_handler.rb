@@ -62,7 +62,7 @@ module Dcmgr
         select_iscsi_target
         opt = @iscsi_target.create(@sta_ctx)
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:available, :transport_information=>opt})
-        logger.info("Finish to register to iscsi target: #{@volume_id}")
+        logger.info("Finished registering iscsi target: #{@volume_id}")
       end
 
       job :create_volume, proc {
