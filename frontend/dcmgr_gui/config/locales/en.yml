@@ -20,6 +20,7 @@ en:
     launch: "Launch"
     start: "Start"
     stop: "Stop"
+    backup: "Backup"
   selectmenu:
     select_action: "Select an Action"
     select_region: "Region: "
@@ -220,6 +221,11 @@ en:
       message: "Are you sure you want to stop those instances?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+    backup_instances:
+      header: "Backup Instances"
+      message: "Are you sure you want to backup those instances?"
+      instance_id: "Instance ID"
+      display_name: "Instance Name"
   login:
     sign_in: "Sign In"
     user: "User"
@@ -262,6 +268,7 @@ en:
       stop: "Stop"
     button:
       edit_instance: "Edit"
+      backup_instance: "Backup"
     list:
       instance_id: "Instance ID"
       wmi_id: "WMI ID"

@@ -35,6 +35,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   var terminate_button_name = $.i18n.prop('terminate_button');
   var reboot_button_name = $.i18n.prop('reboot_button');
   var update_button_name =$.i18n.prop('update_button');
+  var backup_button_name =$.i18n.prop('backup_button');
 
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
@@ -196,6 +197,18 @@ DcmgrGUI.prototype.instancePanel = function(){
     button: instance_terminate_buttons
   });
   
+  var instance_backup_buttons = {};
+  instance_backup_buttons[close_button_name] = function() { $(this).dialog("close"); }
+  instance_backup_buttons[backup_button_name] = function() { instance_action_helper.call(this, 'backup'); }
+  var bt_instance_backup = new DcmgrGUI.Dialog({
+    target:'.backup_instances',
+    width:400,
+    height:200,
+    title: $.i18n.prop('backup_instances_header'),
+    path:'/backup_instances',
+    button:instance_backup_buttons
+  });
+  
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
@@ -243,6 +256,15 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
   $(bt_refresh.target).button({ disabled: false });
   selectmenu.data('selectmenu').disableButton();
+  $(bt_instance_backup.target).button({ disabled: false });
+  bt_instance_backup.target.bind('click', function() {
+    var selected_ids = c_list.getCheckedInstanceIds();
+    if( selected_ids ){
+      bt_instance_backup.open(selected_ids);
+    }
+    return false;
+  });
+
 
   var actions = {};
   actions.changeButtonState = function() {

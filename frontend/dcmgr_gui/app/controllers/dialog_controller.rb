@@ -84,6 +84,14 @@ class DialogController < ApplicationController
     end
   end
   
+  def backup_instances
+    @instance_ids = params[:ids]
+    @instances = []
+    @instance_ids.each do |i|
+      @instances << Hijiki::DcmgrResource::Instance.show(i)
+    end
+  end
+
   def edit_instance
     @instance_id = params[:ids][0]
     @instance = Hijiki::DcmgrResource::Instance.show(@instance_id)

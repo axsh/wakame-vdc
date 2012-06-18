@@ -56,6 +56,11 @@ module Hijiki::DcmgrResource::V1203
       def update(instance_id,params)
         self.put(instance_id,params).body
       end
+
+      def backup(instance_id)
+        result = self.find(instance_id).put(:backup)
+        result.body
+      end
     end
     extend ClassMethods
     

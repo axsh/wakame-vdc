@@ -96,6 +96,15 @@ class InstancesController < ApplicationController
     render :json => res
   end
 
+  def backup
+    instance_ids = params[:ids]
+    res = []
+    instance_ids.each do |instance_id|
+      res << Hijiki::DcmgrResource::Instance.backup(instance_id)
+    end
+    render :json => res
+  end
+  
   def update
     instance_id = params[:id]
     data = {

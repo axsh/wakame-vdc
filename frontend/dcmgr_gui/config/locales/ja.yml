@@ -221,6 +221,11 @@ ja:
       message: "インスタンスを一時停止します。よろしいですか?"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+    backup_instances:
+      header: "インスタンスのバックアップ"
+      message: "インスタンスのバックアップを取得します。よろしいですか？"
+      instance_id: "インスタンスID"
+      display_name: "インスタンス名"
   login:
     sign_in: "ログイン"
     user: "ユーザー"
@@ -263,6 +268,7 @@ ja:
       stop: "一時停止"
     button:
       edit_instance: "編集"
+      backup_instance: "バックアップ"
     list:
       instance_id: "インスタンスID"
       wmi_id: "WMI ID"
