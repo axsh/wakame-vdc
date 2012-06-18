@@ -209,13 +209,11 @@ module Dcmgr
   
   require 'dcmgr/vnet'
   module VNet
-    autoload :ControllerFactory, 'dcmgr/vnet/factories'
     autoload :TaskFactory, 'dcmgr/vnet/factories'
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
     
     module Netfilter
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
-      autoload :NetfilterController, 'dcmgr/vnet/netfilter/controller'
       autoload :Chain, 'dcmgr/vnet/netfilter/chain'
       autoload :IptablesChain, 'dcmgr/vnet/netfilter/chain'
       autoload :EbtablesChain, 'dcmgr/vnet/netfilter/chain'
