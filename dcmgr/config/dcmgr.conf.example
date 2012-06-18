@@ -52,13 +52,6 @@ service_type("std", "StdServiceType") {
   # * :FindFirst
   # * :LeastUsage
   # * :SpecifyNode
-  #
-  host_node_scheduler :LeastUsage
-
-  # Available storage node(sta) schedulers:
-  #
-  # * :FindFirst
-  # * :LeastUsage
   # * :PipedRules do
   #
   #     through(:RequestParamToGroup) {
@@ -74,6 +67,13 @@ service_type("std", "StdServiceType") {
   #     }
   #
   #   end
+  #
+  host_node_scheduler :LeastUsage
+
+  # Available storage node(sta) schedulers:
+  #
+  # * :FindFirst
+  # * :LeastUsage
   #
   storage_node_scheduler :LeastUsage
 
