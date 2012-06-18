@@ -273,8 +273,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::Instance.new(instance).generate)
   end
 
-  # Create image from the alive instance.
-  put '/:id/image' do
+  # Create image backup from the alive instance.
+  put '/:id/backup' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
 
