@@ -30,7 +30,7 @@ module Dcmgr
 
         def initialize service_openflow
           @service_openflow = service_openflow
-          @default_ofctl = OvsOfctl.new service_openflow.node.manifest.config
+          @default_ofctl = OvsOfctl.new
 
           @switches = {}
         end

@@ -19,7 +19,7 @@ module Dcmgr
       include V::Tasks
 
       def self.create_tasks_for_ARP_isolation(vnic,friends,node)
-        enable_logging = node.manifest.config.packet_drop_log
+        enable_logging = Dcmgr.conf.packet_drop_log
         
         friend_ips = friends.map { |friend| friend[:address] }.compact
         

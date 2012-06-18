@@ -11,7 +11,7 @@ module Dcmgr
         attr_accessor :verbose
         attr_accessor :switch_name
 
-        def initialize config
+        def initialize
           # TODO: Make ovs_vsctl use a real config option.
           @ovs_ofctl = Dcmgr.conf.ovs_ofctl_path
           @ovs_vsctl = Dcmgr.conf.ovs_ofctl_path.dup

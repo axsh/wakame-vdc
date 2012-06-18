@@ -41,7 +41,7 @@ module Dcmgr
            [tinfo[:tid], tinfo[:lun], tinfo[:backing_store]])
         # bind target
         sh("/usr/sbin/tgtadm --lld iscsi --op bind --mode=target --tid=%s --initiator-address=%s",
-           [tinfo[:tid], node.manifest.config.initiator_address])
+           [tinfo[:tid], Dcmgr.conf.initiator_address])
       end
       
       private
