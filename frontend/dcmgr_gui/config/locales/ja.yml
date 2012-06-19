@@ -54,7 +54,6 @@ ja:
     launch_instance:
       header: "インスタンスを起動"
       wmi_id: "WMI ID"
-      host: "ホスト"
       host_name: "ホスト名"
       instance_spec: "スペック"
       ssh_key_pair: "SSHキーペア"

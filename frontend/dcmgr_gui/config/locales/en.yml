@@ -55,7 +55,6 @@ en:
     launch_instance:
       header: "Launch Instance"
       wmi_id: "WMI ID"
-      host: "Host"
       host_name: "Host Name"
       instance_spec: "Instance Spec"
       ssh_key_pair: "SSH Key Pair"

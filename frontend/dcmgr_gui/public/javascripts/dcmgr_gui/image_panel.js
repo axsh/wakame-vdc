@@ -142,7 +142,6 @@ DcmgrGUI.prototype.imagePanel = function(){
   launch_instance_buttons[launch_button_name] = function() {
     var image_id = $(this).find('#image_id').val();
     var display_name = $(this).find('#display_name').val();
-    var host_node_id = $(this).find('#host_node').find('option:selected').val();
     var host_name = $(this).find('#host_name').val();
     var instance_spec_id = $(this).find('#instance_specs').val();
     var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').text();
@@ -154,7 +153,6 @@ DcmgrGUI.prototype.imagePanel = function(){
     });
 
     var data = "image_id="+image_id
-              +"&host_node_id="+host_node_id
               +"&instance_spec_id="+instance_spec_id
               +"&host_name="+host_name
               +"&user_data="+user_data
@@ -183,13 +181,11 @@ DcmgrGUI.prototype.imagePanel = function(){
       var self = this;
       
       var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
-      $(this).find('#select_host_node').empty().html(loading_image);
       $(this).find('#select_ssh_key_pair').empty().html(loading_image);
       $(this).find("#left_select_list").mask($.i18n.prop('loading_parts'));
       
       var request = new DcmgrGUI.Request;
       var is_ready = {
-        'host_node': false,
         'instance_spec': false,
         'ssh_keypair': false,
         'security_groups': false,
@@ -197,8 +193,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       };
 
       var ready = function(data) {
-        if(data['host_node'] == true &&
-           data['instance_spec'] == true &&
+        if(data['instance_spec'] == true &&
            data['ssh_keypair'] == true &&
            data['security_groups'] == true &&
            data['display_name'] == true) {  
@@ -219,27 +214,6 @@ DcmgrGUI.prototype.imagePanel = function(){
       });
 
       parallel({
-        //get host_nodes
-        host_nodes: 
-          request.get({
-            "url": '/host_nodes/show_host_nodes.json',
-            success: function(json,status){
-              var select_html = '<select id="host_node" name="host_node"></select>';
-              $(self).find('#select_host_node').empty().html(select_html);
-              
-              var results = json.host_node.results;
-              var size = results.length;
-              var select_host_node = $(self).find('#host_node');
-              for (var i=0; i < size ; i++) {
-                if(results[i].result.status == 'online') {
-                  is_ready['host_node'] = true;
-                  var uuid = results[i].result.uuid;
-                  var html = '<option value="'+ uuid +'">'+uuid+'</option>';
-                  select_host_node.append(html);
-                }
-              }
-            }
-          }),
         //get instance_specs
         instance_specs: 
           request.get({
@@ -268,7 +242,7 @@ DcmgrGUI.prototype.imagePanel = function(){
             "url": '/keypairs/all.json',
             "data": "",
             success: function(json,status){
-              var select_html = '<select id="ssh_key_pair" name="host_node"></select>';
+              var select_html = '<select id="ssh_key_pair" name="ssh_key_pair"></select>';
               $(self).find('#select_ssh_key_pair').empty().html(select_html);
 
               var results = json.ssh_key_pair.results;
