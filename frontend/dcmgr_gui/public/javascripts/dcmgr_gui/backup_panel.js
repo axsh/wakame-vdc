@@ -31,6 +31,7 @@ DcmgrGUI.prototype.backupPanel = function(){
   var create_button_name = $.i18n.prop('create_button');
   var delete_button_name = $.i18n.prop('delete_button');
   var close_button_name = $.i18n.prop('close_button');
+  var update_button_name = $.i18n.prop('update_button');
   
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
@@ -54,8 +55,51 @@ DcmgrGUI.prototype.backupPanel = function(){
     c_pagenate.changeTotal(backup.total);
     c_list.setData(backup.results);
     c_list.multiCheckList(c_list.detail_template);
+    c_list.element.find(".edit_backup").each(function(key,value){
+      $(this).button({ disabled: false });
+      var uuid = $(value).attr('id').replace(/edit_(bo-[a-z0-9]+)/,'$1');
+      if( uuid ){
+        $(this).bind('click',function(){
+          bt_edit_backup.open({"ids":[uuid]});
+        });
+      } else {
+        $(this).button({ disabled: true });
+      }
+    });
+
+    var edit_backup_buttons = {};
+    edit_backup_buttons[close_button_name] = function() { $(this).dialog("close"); };
+    edit_backup_buttons[update_button_name] = function(event) {
+      var backup_id = $(this).find('#backup_object_id').val();
+      var display_name = $(this).find('#backup_display_name').val();
+      var data = 'display_name=' + display_name;
+
+      var request = new DcmgrGUI.Request;
+      request.put({
+        "url": '/backups/'+ backup_id +'.json',
+        "data": data,
+        success: function(json, status){
+          bt_refresh.element.trigger('dcmgrGUI.refresh');
+        }
+      });
+      $(this).dialog("close");
+    }
+
+    bt_edit_backup = new DcmgrGUI.Dialog({
+      target:'.edit_backup',
+      width:500,
+      height:200,
+      title:$.i18n.prop('edit_backup_header'),
+      path:'/edit_backup',
+      button: edit_backup_buttons,
+      callback: function(){
+        var params = { 'button': bt_edit_backup, 'element_id': 1 };
+        $(this).find('#backup_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#backup_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
+      }
+    });
   });
-  
+
   c_list.filter.add(function(data){
     var results = data.backup_object.results;
     var size = results.length;

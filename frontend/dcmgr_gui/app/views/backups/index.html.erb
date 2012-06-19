@@ -45,6 +45,7 @@
 	    <th><%= t("backups.list.capacity") %></th>
 	    <th><%= t("backups.list.created_at") %></th>
 	    <th><%= t("backups.list.status") %></th>
+	    <th><%= t("backups.list.action") %></th>
 	  </tr>
 	  {{each(index,item) rows}}
 	  <tr id="row-${item.uuid}">
@@ -57,6 +58,17 @@
 	    <td class="vtip center" title="capacity">${item.size}</td>
 	    <td class="vtip" title="created at">${item.created_at}</td>
 	    <td class="state vtip center" title="status">${item.state}</td>
+	    {{if item.uuid }}
+	    <td class="vtip center" title="action">
+	      {{if item.state != "deleted" }}
+	      <a href="javascript:void(0);" class="edit_backup" id="edit_${item.uuid}"><%= t('volumes.button.edit_volume') %></a>
+	      {{else}}
+	      <a href="javascript:void(0);" class="edit_backup"><%= t('volumes.button.edit_volume') %></a>
+	      {{/if}}
+	    </td>
+	    {{else}}
+	    <td class="vtip center" title="action"></td>
+	    {{/if}}
 	  </tr>
 	  {{/each}}
 	</table>
@@ -111,6 +123,11 @@
 	    <td class="padcell"></td>
             <td class="title"><%= t("backups.details.created_at") %>:</td>
             <td colspan="7">${item.created_at}</td>
+	  </tr>
+          <tr>
+	    <td class="padcell"></td>
+            <td class="title"><%= t("backups.details.updated_at") %>:</td>
+            <td colspan="7">${item.updated_at}</td>
 	  </tr>
 	</table>
       </div>

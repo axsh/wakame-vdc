@@ -18,6 +18,10 @@ module Hijiki::DcmgrResource::V1203
         self.delete(backup_object_id).body
       end
       
+      def update(backup_object_id,params)
+        self.put(backup_object_id,params).body
+      end
+
       def status(account_id)
         @collection ||= self.collection_name
         self.collection_name = File.join(@collection,account_id)

@@ -19,6 +19,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/edit_volume', :to => 'dialog#edit_volume'
   post   'dialog/create_backup', :to => 'dialog#create_backup'
   post   'dialog/delete_backup', :to => 'dialog#delete_backup'
+  post   'dialog/edit_backup', :to => 'dialog#edit_backup'
   post   'dialog/start_instances', :to => 'dialog#start_instances'
   post   'dialog/stop_instances', :to => 'dialog#stop_instances'
   post   'dialog/reboot_instances', :to => 'dialog#reboot_instances'
@@ -167,7 +168,8 @@ DcmgrGui::Application.routes.draw do
   get    'backups/total' ,:to => 'backups#total'
   get    'backups/show/:id' ,:to => 'backups#show'
   delete 'backups/:id' ,:to => 'backups#destroy'
-  
+  put    'backups/:id' ,:to => 'backups#update'
+
   #sessions
   get    'login' => 'sessions#new', :as => :login
   get    'logout' => 'sessions#destroy', :as => :logout

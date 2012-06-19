@@ -109,6 +109,11 @@ ja:
     delete_backup:
       header: "バックアップを削除"
       message: "バックアップを削除します。よろしいですか？"
+    edit_backup:
+      header: "バックアップを編集"
+      message: "バックアップを編集します。よろしいですか？"
+      backup_id: "バックアップID"
+      display_name: "バックアップ名"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:
@@ -394,6 +399,7 @@ ja:
       checksum: "チェックサム"
       created_at: "作成日"
       status: "状態"
+      action: "アクション"
     details:
       header: "詳細"
       backup_object_id: "バックアップID"

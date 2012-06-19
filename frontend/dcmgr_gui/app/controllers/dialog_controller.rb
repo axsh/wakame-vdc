@@ -51,6 +51,12 @@ class DialogController < ApplicationController
   def delete_backup
     @backup_object_ids = params[:ids]
   end
+
+  def edit_backup
+    @backup_object_id = params[:ids][0]
+    @backup_object = Hijiki::DcmgrResource::BackupObject.show(@backup_object_id)
+    @display_name = @backup_object["display_name"]
+  end
   
   def start_instances
     @instance_ids = params[:ids]

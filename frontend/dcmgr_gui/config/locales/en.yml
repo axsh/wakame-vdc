@@ -110,6 +110,11 @@ en:
     delete_backup:
       header: "Delete Backup"
       message: "Are you sure you want to delete the following backup?"
+    edit_backup:
+      header: "Edit Backup"
+      message: "Are you sure you want to edit the following backup?"
+      backup_id: "Backup ID"
+      display_name: "Backup Name"
     create_security_group:
       header: "Create Security Group"
     edit_security_group:
@@ -395,6 +400,7 @@ en:
       checksum: "Checksum"
       created_at: "Created"
       status: "Status"
+      action: "Action"
     details:
       header: "Details"
       backup_object_id: "Backup Object ID"

@@ -29,6 +29,15 @@ class BackupsController < ApplicationController
     respond_with(detail,:to => [:json])
   end
   
+  def update
+    backup_id = params[:id]
+    data = {
+      :display_name => params[:display_name]
+    }
+    backup = Hijiki::DcmgrResource::BackupObject.update(backup_id,data)
+    render :json => backup
+  end
+
   def total
     all_resource_count = Hijiki::DcmgrResource::BackupObject.total_resource
     all_resources = Hijiki::DcmgrResource::BackupObject.find(:all,:params => {:start => 0, :limit => all_resource_count})

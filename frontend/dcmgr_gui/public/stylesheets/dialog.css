@@ -181,6 +181,14 @@
         border-bottom: 1px solid #cccccc;
 }
 
+#edit_backup_dialog table {
+        margin: 10px;
+}
+
+#edit_backup_dialog table tr td {
+        padding: 3px;
+}
+
 #detach_volume_dialog table {
         margin: 10px;
 }
