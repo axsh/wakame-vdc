@@ -1,10 +1,20 @@
-<p><%= t("dialog.create_volume_from_backup.message") %></p>
-<br />
-<%= t("dialog.create_volume_from_backup.display_name") %>: 
-<input id="backup_display_name" type="text" value="">
-<br />
-<ul id="create_volumes">
-        <% @backup_object_ids.each do |backup_obj_id| %>
-                <li><%= backup_obj_id %></li>
-        <% end %>
-</ul>
+<div id="create_volume_from_backup_dialog">
+  <p><%= t("dialog.create_volume_from_backup.message") %></p>
+  <br />
+  <table id="backups">
+    <tr>
+      <td class="border"><%= t("dialog.create_volume_from_backup.display_name")%>: </td>
+      <td class="border"><input id="backup_display_name" type="text" value=""></td>
+    </tr>
+    <% @backup_objects.each do |b| %>
+    <tr>
+      <td><%= t("dialog.create_volume_from_backup.backup_id") %></td>
+      <td class="backup_id"><%= b["id"] %></td>
+    </tr>
+    <tr>
+      <td class="border"><%= t("dialog.create_volume_from_backup.backup_display_name") %></td>
+      <td class="border"><%= b["display_name"] %></td>
+    </tr>
+    <% end %>
+  </table>
+</div>

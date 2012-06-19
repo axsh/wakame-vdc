@@ -106,9 +106,13 @@ ja:
       header: "ボリュームを作成"
       message: "ボリュームを作成します。よろしいですか？"
       display_name: "ボリューム名"
+      backup_id: "バックアップID"
+      backup_display_name: "バックアップ名"
     delete_backup:
       header: "バックアップを削除"
       message: "バックアップを削除します。よろしいですか？"
+      backup_id: "バックアップID"
+      display_name: "バックアップ名"
     edit_backup:
       header: "バックアップを編集"
       message: "バックアップを編集します。よろしいですか？"

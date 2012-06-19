@@ -107,9 +107,13 @@ en:
       header: "Create Volume"
       message: "Are you sure you want to create the following volume?"
       display_name: "Volume Name"
+      backup_id: "Backup ID"
+      backup_display_name: "Backup Name"
     delete_backup:
       header: "Delete Backup"
       message: "Are you sure you want to delete the following backup?"
+      backup_id: "Backup ID"
+      display_name: "Backup Name"
     edit_backup:
       header: "Edit Backup"
       message: "Are you sure you want to edit the following backup?"

@@ -131,7 +131,7 @@ DcmgrGUI.prototype.backupPanel = function(){
   create_volume_buttons[close_button_name] = function() { $(this).dialog("close"); };
   create_volume_buttons[create_button_name] = function() { 
     var display_name = $(this).find('#backup_display_name').val();
-    var create_volumes = $(this).find('#create_volumes').find('li');
+    var create_volumes = $(this).find('#backups').find('td.backup_id');
     var ids = []
     $.each(create_volumes,function(){
      ids.push($(this).text())
@@ -167,7 +167,7 @@ DcmgrGUI.prototype.backupPanel = function(){
   var delete_backup_buttons = {};
   delete_backup_buttons[close_button_name] = function() { $(this).dialog("close"); }
   delete_backup_buttons[delete_button_name] = function() { 
-    var delete_backups = $(this).find('#delete_backups').find('li');
+    var delete_backups = $(this).find('#backups').find('td.backup_id');
     var ids = []
     $.each(delete_backups,function(){
      ids.push($(this).text())

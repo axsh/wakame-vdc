@@ -8,6 +8,10 @@ class DialogController < ApplicationController
   
   def create_volume_from_backup
     @backup_object_ids = params[:ids]
+    @backup_objects = []
+    @backup_object_ids.each do |b|
+      @backup_objects << Hijiki::DcmgrResource::BackupObject.show(b)
+    end
   end
 
   def attach_volume
@@ -50,6 +54,10 @@ class DialogController < ApplicationController
   
   def delete_backup
     @backup_object_ids = params[:ids]
+    @backup_objects = []
+    @backup_object_ids.each do |b|
+      @backup_objects << Hijiki::DcmgrResource::BackupObject.show(b)
+    end
   end
 
   def edit_backup

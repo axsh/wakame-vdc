@@ -201,3 +201,29 @@
         padding: 3px 10px;
         border-bottom: 1px solid #cccccc;
 }
+
+#create_volume_from_backup_dialog table {
+	margin: 10px;
+}
+
+#create_volume_from_backup_dialog table tr td{
+        padding: 3px 10px;
+}
+
+#create_volume_from_backup_dialog table tr td.border {
+        padding: 3px 10px;
+        border-bottom: 1px solid #cccccc;
+}
+
+#delete_backup_dialog table {
+        margin: 10px;
+}
+
+#delete_backup_dialog table tr td {
+        padding: 3px 10px;
+}
+
+#delete_backup_dialog table tr td.border {
+        padding: 3px 10px;
+        border-bottom: 1px solid #cccccc;
+}
