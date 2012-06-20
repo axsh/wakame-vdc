@@ -121,7 +121,8 @@ function download_3rd_party() {
 function install_3rd_party() {
   rsync -a ${vendor_dir}/openvz.repo /etc/yum.repos.d/openvz.repo
 
-  list_3rd_party | while read pkg_name pkg_uri pkg_file; do
+  list_3rd_party | while read pkg_name pkg_uri; do
+    pkg_file=$(basename ${pkg_uri})
     rpm -qi ${pkg_name} >/dev/null || yum install -y --nogpgcheck ${vendor_dir}/${pkg_file}
   done
 }
