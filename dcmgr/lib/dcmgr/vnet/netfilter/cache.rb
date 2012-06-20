@@ -3,9 +3,17 @@
 module Dcmgr
   module VNet
     module Netfilter
+
+      module CacheErrors
+        class GroupNotFoundError < Exception
+        end
+        class VNicNotFoundError < Exception
+        end
+      end
     
       class NetfilterCache
         include Dcmgr::Logger
+        include CacheErrors
         
         def initialize(node)
           # Initialize the values needed to do rpc requests
@@ -266,22 +274,28 @@ module Dcmgr
         
         def get_referencee_vnics(group_id)
           group_map = get_group(group_id)
+          raise GroupNotFoundError, "Security group not found in cache: '#{group_id}'" if group_map.nil?
           deep_clone group_map[:referencees].map {|r| r[:vnics] }.flatten.uniq
         end
         
         def get_referencer(group_id,ref_id)
           group = get_group(group_id)
+          raise GroupNotFoundError, "Security group not found in cache: '#{group_id}'" if group.nil?
           
           deep_clone group[:referencers].find {|r| r[:uuid] == ref_id}
         end
         
         def get_local_vnics_in_group(group_id)
           group = get_group(group_id)
+          raise GroupNotFoundError, "Security group not found in cache: '#{group_id}'" if group.nil?
+          
           deep_clone group[:local_vnics]
         end
         
         def get_foreign_vnics_in_group(group_id)
           group = get_group(group_id)
+          raise GroupNotFoundError, "Security group not found in cache: '#{group_id}'" if group.nil?
+          
           group[:foreign_vnics]
         end
         
@@ -294,6 +308,8 @@ module Dcmgr
         
         def get_all_local_friends(vnic_id)
           vnic_map = get_vnic(vnic_id)
+          raise VNicNotFoundError, "VNic not found in cache: '#{vnic_id}'" if vnic_map.nil?
+          
           friends = vnic_map[:security_groups].map {|group_id| 
             get_local_vnics_in_group(group_id)
           }.flatten.uniq
@@ -319,6 +335,7 @@ module Dcmgr
         
         def get_all_friends(vnic_id)
           vnic_map = get_vnic(vnic_id)
+          raise VNicNotFoundError, "VNic not found in cache: '#{vnic_id}'" if vnic_map.nil?
           friends = vnic_map[:security_groups].map {|group_id| 
             get_local_vnics_in_group(group_id) + get_foreign_vnics_in_group(group_id)
           }.flatten.uniq
