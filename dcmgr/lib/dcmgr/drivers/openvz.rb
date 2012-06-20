@@ -22,12 +22,23 @@ module Dcmgr
         inst_data_dir = hc.inst_data_dir
         ctid_file_path = File.expand_path('openvz.ctid', inst_data_dir)
         ctid = inst[:id]
-        
+
         File.open(ctid_file_path, "w") { |f|
           f.write(ctid)
         }
         logger.debug("write a openvz container id #{ctid_file_path}")
-
+        
+        # delete old config file
+        config_file_path = "#{config.ve_config_dir}/#{ctid}.conf" 
+        mount_file_path = "#{config.ve_config_dir}/#{ctid}.mount"
+        File.unlink(config_file_path) if File.exists?(config_file_path)
+        File.unlink(mount_file_path) if File.exists?(mount_file_path)
+        
+        destroy_config_file_path = "#{config_file_path}.destroyed"
+        destroy_mount_file_path = "#{mount_file_path}.destroyed"
+        File.unlink(destroy_config_file_path) if File.exists?(destroy_config_file_path)
+        File.unlink(destroy_mount_file_path) if File.exists?(destroy_mount_file_path)
+        
         # generate openvz config
         hypervisor = inst[:host_node][:hypervisor]
         template_file_path = "template.conf"
@@ -39,7 +50,6 @@ module Dcmgr
         
         # create openvz container
         private_folder = "#{config.ve_private}/#{ctid}"
-        config_file_path = "#{config.ve_config_dir}/#{ctid}.conf" 
         image = inst[:image]
         case image[:file_format]
         when "tgz"
@@ -145,13 +155,12 @@ module Dcmgr
         
         # generate openvz mount config
         template_mount_file_path = "template.mount"
-        output_mount_file_path = "#{config.ve_config_dir}/#{ctid}.mount"
         
-        render_template(template_mount_file_path, output_mount_file_path) do
+        render_template(template_mount_file_path, mount_file_path) do
           binding
         end
-        sh("chmod +x %s", [output_mount_file_path])
-        logger.debug("created config #{output_mount_file_path}")
+        sh("chmod +x %s", [mount_file_path])
+        logger.debug("created config #{mount_file_path}")
         
         # start openvz container
         sh("vzctl start %s",[inst_id])
