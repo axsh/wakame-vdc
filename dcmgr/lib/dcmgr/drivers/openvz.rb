@@ -18,6 +18,7 @@ module Dcmgr
         
         # write a openvz container id
         inst = hc.inst
+        inst_id = hc.inst_id
         inst_data_dir = hc.inst_data_dir
         ctid_file_path = File.expand_path('openvz.ctid', inst_data_dir)
         ctid = inst[:id]
@@ -94,6 +95,12 @@ module Dcmgr
           end
         end
         
+        # set name
+        sh("vzctl set %s --name %s --save",[ctid, inst_id])
+        #
+        # Name="i-xxxx"
+        #
+        
         # setup openvz config file
         vifs = inst[:vif]
         
@@ -106,24 +113,24 @@ module Dcmgr
             # host_mac become a randomly generated MAC Address.
             host_mac = nil
             bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-            sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[ctid, ifname, mac, host_ifname, host_mac, bridge])
+            sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[inst_id, ifname, mac, host_ifname, host_mac, bridge])
             #
             # NETIF="ifname=eth0,bridge=vzbr0,mac=52:54:00:68:BB:AC,host_ifname=vif-h63jg7pp,host_mac=52:54:00:68:BB:AC"
             #
           }
         end
         # set cpus
-        sh("vzctl set %s --cpus %s --save",[ctid, inst[:cpu_cores]])
+        sh("vzctl set %s --cpus %s --save",[inst_id, inst[:cpu_cores]])
         #
         # CPUS="1"
         #
         
         # set memory size
-        sh("vzctl set %s --privvmpage %s --save",[ctid, (inst[:memory_size] * 256)])
+        sh("vzctl set %s --privvmpage %s --save",[inst_id, (inst[:memory_size] * 256)])
         #
         # PRIVVMPAGES="65536"
         #
-        sh("vzctl set %s --vmguarpages %s --save",[ctid, (inst[:memory_size] * 256)])
+        sh("vzctl set %s --vmguarpages %s --save",[inst_id, (inst[:memory_size] * 256)])
         #
         # VMGUARPAGES="65536"
         # 
@@ -147,8 +154,8 @@ module Dcmgr
         logger.debug("created config #{output_mount_file_path}")
         
         # start openvz container
-        sh("vzctl start %s",[ctid])
-        logger.debug("start container #{ctid}")
+        sh("vzctl start %s",[inst_id])
+        logger.debug("start container #{inst_id}")
         sleep 1
         
       end
@@ -160,15 +167,18 @@ module Dcmgr
         # openvz container id
         ctid = hc.inst[:id]
         
+        # openvz container name
+        inst_id = hc.inst_id
+        
         # container directory
         private_dir = "#{config.ve_private}/#{ctid}"
         
         # stop container
-        sh("vzctl stop %s",[ctid])
+        sh("vzctl stop %s",[inst_id])
 
         # wait stopped of container status
         tryagain do
-          sh("vzctl status %s", [ctid])[:stdout].chomp.include?("down")
+          sh("vzctl status %s", [inst_id])[:stdout].chomp.include?("down")
         end
         
         case hc.inst[:image][:file_format]
@@ -177,7 +187,7 @@ module Dcmgr
           sh("umount -d %s", [private_dir])
           if hc.inst[:image][:root_device]
             # find loopback device
-            img_file_path = "#{hc.inst_data_dir}/#{hc.inst[:uuid]}"
+            img_file_path = "#{hc.inst_data_dir}/#{inst_id}"
             fs = File::Stat.new(img_file_path)
             lodev = sh("losetup -a |grep %s |awk '{print $1}'", [fs.ino])[:stdout].chomp.split(":")[0]
             #
@@ -192,10 +202,10 @@ module Dcmgr
           end
         end
         sh("umount -d %s/metadata", [hc.inst_data_dir])
-        logger.debug("stop container #{ctid}")
+        logger.debug("stop container #{inst_id}")
         
         # delete container folder
-        sh("vzctl destroy %s",[ctid])
+        sh("vzctl destroy %s",[inst_id])
         logger.debug("delete container folder #{private_dir}")
         # delete config file and mount file
         container_config = "#{config.ve_config_dir}/#{ctid}"
@@ -210,12 +220,12 @@ module Dcmgr
       end
       
       def reboot_instance(hc)
-        # openvz container id
-        ctid = hc.inst[:id]
+        # openvz container name
+        inst_id = hc.inst_id
         
         # reboot container
-        sh("vzctl restart %s", [ctid])
-        logger.debug("restart container #{ctid}")
+        sh("vzctl restart %s", [inst_id])
+        logger.debug("restart container #{inst_id}")
         
       end
 
