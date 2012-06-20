@@ -40,7 +40,7 @@ module Dcmgr
               snapshot_storage = Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
               logger.info("Downloading to #{@backup_object[:uuid]}: #{snap_tmp_path}")
               snapshot_storage.download(@backup_object, snap_tmp_path)
-              logger.info("Finish to download #{@backup_object[:uuid]}: #{snap_tmp_path}")
+              logger.info("Finished downloading #{@backup_object[:uuid]}: #{snap_tmp_path}")
             rescue => e
               logger.error(e)
               raise "snapshot not downloaded"
@@ -56,7 +56,7 @@ module Dcmgr
           logger.info("Creating new empty volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
           @backing_store.create_volume(@sta_ctx, nil)
         end
-        logger.info("Finish to create new volume #{@volume_id}.")
+        logger.info("Finished creating new volume #{@volume_id}.")
         
         logger.info("Registering to iscsi target: #{@volume_id}")
         select_iscsi_target
