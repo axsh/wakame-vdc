@@ -65,12 +65,6 @@ module Dcmgr::Endpoints::V1203
       item
     end
 
-    def find_account(account_uuid)
-      find_by_uuid(:Account, account_uuid)
-    end
-
-    alias :response_to :respond_with
-
     def validate_service_type(service_type)
       Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
     end
