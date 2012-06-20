@@ -8,6 +8,24 @@ module Dcmgr::Models
       ds.filter(:is_deleted => 0) 
     end
 
+    subset(:alives, {:deleted_at => nil})
+
+    def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+      filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
+    }
+
+    def_dataset_method(:by_state) do |state|
+      # SELECT * FROM `load_balancers` WHERE ('instance_id' IN (SELECT `id` FROM `instances` WHERE (`state` = 'running')))
+      r = Instance.filter(:state => state).select(:id)
+      filter(:instance_id => r)
+    end
+
+    def_dataset_method(:by_status) do |status|
+      # SELECT * FROM `load_balancers` WHERE ('instance_id' IN (SELECT `id` FROM `instances` WHERE (`status` = 'online')))
+      r = Instance.filter(:status => status).select(:id)
+      filter(:instance_id => r)
+    end
+    
     class RequestError < RuntimeError; end
 
     def validate

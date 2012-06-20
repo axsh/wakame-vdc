@@ -3,16 +3,36 @@
 require 'dcmgr/endpoints/12.03/responses/load_balancer'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
+  LOAD_BALANCER_META_STATE = ['alive', 'alive_with_deleted'].freeze
+  LOAD_BALANCER_STATE=['running', 'terminated'].freeze
+  LOAD_BALANCER_STATE_ALL=(LOAD_BALANCER_STATE + LOAD_BALANCER_META_STATE).freeze
 
   get do
     ds = M::LoadBalancer.dataset
+
+    if params[:state]
+      ds = if LOAD_BALANCER_META_STATE.member?(params[:state])
+             case params[:state]
+             when 'alive'
+               ds.lives
+             when 'alive_with_deleted'
+               ds.alives_and_deleted
+             else
+               raise E::InvalidParameter, :state
+             end
+           elsif LOAD_BALANCER_STATE.member?(params[:state])
+             ds.by_state(params[:state])
+           else
+             raise E::InvalidParameter, :state
+           end
+    end
 
     if params[:account_id]
       ds = ds.filter(:account_id=>params[:account_id])
     end
 
     ds = datetime_range_params_filter(:created, ds)
-    ds = datetime_range_params_filter(:terminated, ds)
+    ds = datetime_range_params_filter(:deleted, ds)
 
     collection_respond_with(ds) do |paging_ds|
       R::LoadBalancerCollection.new(paging_ds).generate
