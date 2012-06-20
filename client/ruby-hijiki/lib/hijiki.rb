@@ -52,7 +52,6 @@ module Hijiki
       autoload :SshKeyPair,     'hijiki/dcmgr_resource/12.03/ssh_key_pair'
       autoload :StorageNode,    'hijiki/dcmgr_resource/12.03/storage_node'
       autoload :Volume,         'hijiki/dcmgr_resource/12.03/volume'
-      autoload :VolumeSnapshot, 'hijiki/dcmgr_resource/12.03/volume_snapshot'
       autoload :BackupObject,   'hijiki/dcmgr_resource/12.03/backup_object'
       autoload :LoadBalancer,   'hijiki/dcmgr_resource/12.03/load_balancer'
     end
