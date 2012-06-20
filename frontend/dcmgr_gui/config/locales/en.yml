@@ -566,7 +566,7 @@ en:
       instances: "Instances"
       host_nodes: "Host Nodes"
     appliances:
-      header: "Appliacnes"
+      header: "Appliances"
       load_balancers: "LoadBalancers"
     images:
       header: "IMAGES"
