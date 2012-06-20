@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource
-
   @debug = false
 
   class << self
     attr_accessor :debug
   end
   
+end
+module Hijiki::DcmgrResource::Common
+
   class Base < ActiveResource::Base
 
     # self.site = 'http://your.dcmgr.api.server'
@@ -27,7 +29,7 @@ module Hijiki::DcmgrResource
             if item.state == state
               resource_count += 1;
             end
-          end 
+          end
         end
         resource_count
       end
@@ -52,7 +54,7 @@ module Hijiki::DcmgrResource
     
     module ClassMethods
       def list(params = {})
-        self.find(:all,:params => params)
+        self.find(:all,:params => params.merge({}))
       end
       
       def show(uuid)

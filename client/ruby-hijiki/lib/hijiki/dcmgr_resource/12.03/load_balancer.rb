@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
-  module LoadBalancerMethods
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
+  class LoadBalancer < Base
 
     module ClassMethods
       def list(params = {})
-        data = self.find(:all, :params => params)
+        data = self.find(:all, :params => params.merge({:state=>'alive_with_deleted'}))
       end
 
       def show(uuid)
@@ -19,17 +16,10 @@ module Hijiki::DcmgrResource::V1203
       end
 
       def status(account_id)
-        @collection ||= self.collection_name
-        self.collection_name = File.join(@collection,account_id)
-        result = self.get(:status)
-        self.collection_name = @collection
-        result
+        self.find(account_id).get(:status)
       end
     end
-  end
+    extend ClassMethods
 
-  class LoadBalancer < Base
-    include Hijiki::DcmgrResource::ListMethods
-    include LoadBalancerMethods
   end
 end

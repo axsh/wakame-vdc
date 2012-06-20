@@ -2,12 +2,10 @@
 module Hijiki::DcmgrResource::V1203
   class Instance < Base
     module ClassMethods
+      include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
+
       def list(params = {})
-        self.find(:all,:params => params.merge({:state=>'alive_with_terminated'}))
-      end
-      
-      def show(uuid)
-        self.get(uuid)
+        super(params.merge({:state=>'alive_with_terminated'}))
       end
       
       def create(params)

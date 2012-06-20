@@ -7,7 +7,7 @@ module Hijiki::DcmgrResource::V1203
     attr_accessor :debug
   end
   
-  class Base < Hijiki::DcmgrResource::Base
+  class Base < Hijiki::DcmgrResource::Common::Base
 
     self.prefix = '/api/12.03/'
 

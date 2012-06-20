@@ -10,7 +10,34 @@ module Hijiki
   
   module DcmgrResource
 
-    require 'hijiki/dcmgr_resource/base'
+    # Helps to create alias module names for the specified version of
+    # active resource classes.
+    # setup_aliases(:V1203) does the similar things with following:
+    # 
+    # module Hijiki::DcmgrResource
+    #   Account  = V1203::Account
+    #   Image    = V1203::Image
+    #   Instance = V1203::Instance
+    #   Volume   = V1203::Volume
+    #   ...
+    #   ...
+    # end
+    def self.setup_aliases(version_sym, namespace=self)
+      raise ArgumentError, "Undefined API version: #{version_sym}" unless self.const_get(version_sym)
+      raise ArgumentError, "Need to set"  unless namespace.is_a?(Module)
+
+      version_mod = Hijiki::DcmgrResource.const_get(version_sym)
+      namespace.module_eval {
+        version_mod.constants(false).each { |k|
+          next if k.to_sym == :Base
+          self.const_set(k, version_mod.const_get(k))
+        }
+      }
+    end
+
+    module Common
+      require 'hijiki/dcmgr_resource/base'
+    end
 
     module V1203
       require 'hijiki/dcmgr_resource/12.03/base'
@@ -28,11 +55,6 @@ module Hijiki
       autoload :VolumeSnapshot, 'hijiki/dcmgr_resource/12.03/volume_snapshot'
       autoload :BackupObject,   'hijiki/dcmgr_resource/12.03/backup_object'
       autoload :LoadBalancer,   'hijiki/dcmgr_resource/12.03/load_balancer'
-
-      autoload :SecurityGroupMethods,  'hijiki/dcmgr_resource/12.03/security_group'
-      autoload :SshKeyPairMethods,     'hijiki/dcmgr_resource/12.03/ssh_key_pair'
-      autoload :VolumeSnapshotMethods, 'hijiki/dcmgr_resource/12.03/volume_snapshot'
-      autoload :LoadBalancerMethods, 'hijiki/dcmgr_resource/12.03/load_balancer'
     end
 
   end

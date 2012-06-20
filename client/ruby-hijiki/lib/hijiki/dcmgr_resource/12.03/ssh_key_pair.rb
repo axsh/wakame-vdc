@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
-  module SshKeyPairMethods
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
-    
+  class SshKeyPair < Base
+
     module ClassMethods
+      include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
+
       def create(params)
         ssh_key_pair = self.new
         ssh_key_pair.display_name = params[:display_name]
@@ -14,19 +13,16 @@ module Hijiki::DcmgrResource::V1203
         ssh_key_pair.save
         ssh_key_pair
       end
-
+      
       def update(uuid,params)
         self.put(uuid,params).body
       end
-
+      
       def destroy(uuid)
         self.delete(uuid).body
       end
     end
-  end
+    extend ClassMethods
 
-  class SshKeyPair < Base
-    include Hijiki::DcmgrResource::ListMethods
-    include SshKeyPairMethods
   end
 end

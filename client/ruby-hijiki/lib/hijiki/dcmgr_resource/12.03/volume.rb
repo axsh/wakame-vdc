@@ -3,12 +3,10 @@ module Hijiki::DcmgrResource::V1203
   class Volume < Base
 
     module ClassMethods
+      include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
+
       def list(params = {})
-        self.find(:all,:params => params.merge({:state=>'alive_with_deleted'}))
-      end
-      
-      def show(uuid)
-        self.get(uuid)
+        super(params.merge({:state=>'alive_with_deleted'}))
       end
 
       def create(params)

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
-  module SecurityGroupMethods
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
-    
+  class SecurityGroup < Base
+
     module ClassMethods
+      include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
+
       def create(params)
         security_group = self.new
         security_group.display_name = params[:display_name]
@@ -23,6 +22,7 @@ module Hijiki::DcmgrResource::V1203
         self.delete(uuid).body
       end      
     end
+    extend ClassMethods
 
     # workaround for the bug:
     #  the value of the key "rule" is encoded to JSON wrongly by
@@ -33,10 +33,5 @@ module Hijiki::DcmgrResource::V1203
       require 'json'
       {'security_group'=>@attributes}.to_json
     end
-  end
-
-  class SecurityGroup < Base
-    include Hijiki::DcmgrResource::ListMethods
-    include SecurityGroupMethods
   end
 end
