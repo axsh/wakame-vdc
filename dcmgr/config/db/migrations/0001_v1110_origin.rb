@@ -430,10 +430,10 @@ Sequel.migration do
     self[:accounts].insert(:id=>100, :uuid=>'00000000', :description=>'datacenter system account', :updated_at=>Time.now, :created_at=>Time.now)
     self[:accounts].insert(:id=>101, :uuid=>'shpoolxx', :description=>'system account for shared resources', :updated_at=>Time.now, :created_at=>Time.now)
     self[:quotas].insert(:id=>1, :account_id=>100,
-                         :instance_total_weight=>Dcmgr.conf.account_instance_total_weight, :volume_total_size=>Dcmgr.conf.account_volume_total_size,
+                         :instance_total_weight=>1000000, :volume_total_size=>9999999,
                          :updated_at=>Time.now, :created_at=>Time.now)
     self[:quotas].insert(:id=>2, :account_id=>101,
-                         :instance_total_weight=>Dcmgr.conf.account_instance_total_weight, :volume_total_size=>Dcmgr.conf.account_volume_total_size,
+                         :instance_total_weight=>1000000, :volume_total_size=>9999999,
                          :updated_at=>Time.now, :created_at=>Time.now)
     self[:tags].insert(:id=>1, :uuid=>'shhost', :account_id=>'a-shpoolxx', :type_id=>11, :name=>"default_shared_hosts", :updated_at=>Time.now, :created_at=>Time.now)
     self[:tags].insert(:id=>2, :uuid=>'shnet', :account_id=>'a-shpoolxx', :type_id=>10,:name=>"default_shared_networks", :updated_at=>Time.now, :created_at=>Time.now)

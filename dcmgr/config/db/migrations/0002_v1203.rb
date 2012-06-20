@@ -283,6 +283,9 @@ Sequel.migration do
       add_column :session_id, "varchar(80)", :null=>true
       add_index [:session_id]
     end
+
+    # move quota information to frontend.
+    drop_table(:quotas)
   end
   
   down do
@@ -379,6 +382,18 @@ Sequel.migration do
     alter_table(:volumes) do
       drop_column :backup_object_id
       add_column :snapshot_id, "varchar(255)"
+    end
+
+    # move quota information to frontend.
+    create_table(:quotas) do
+      primary_key :id, :type=>"int(11)"
+      column :account_id, "int(11)", :null=>false
+      column :instance_total_weight, "double"
+      column :volume_total_size, "int(11)"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      
+      index [:account_id], :unique=>true
     end
   end
 end

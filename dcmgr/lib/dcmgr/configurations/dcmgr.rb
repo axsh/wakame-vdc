@@ -176,10 +176,6 @@ module Dcmgr
       param :create_volume_max_size, :default=>3000
       param :create_volume_min_size, :default=>10
 
-      # Default account quota limit
-      param :account_instance_total_weight, :default=>100.0
-      param :account_volume_total_size, :default=>100000 # 100GB
-
       # 1.0 means that 100% of resources are reserved for stopped instances.
       param :stopped_instance_usage_factor, :default=>1.0
 

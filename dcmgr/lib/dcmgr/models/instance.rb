@@ -107,12 +107,6 @@ module Dcmgr::Models
         @update_hostname = false
       end
 
-      # sum() returns nil if there is no instance rows.
-      lives_weight = self.class.filter(:account_id=>self.account_id).lives.sum(:quota_weight) || 0.0
-      unless lives_weight <= self.account.quota.instance_total_weight
-        raise HostError, "Out of quota limit: #{self.account_id}'s current weight capacity: #{lives_weight} (<= #{self.account.quota.instance_total_weight})"
-      end
-
       super
     end
 

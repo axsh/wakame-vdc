@@ -57,14 +57,6 @@ module Dcmgr::Models
       # do not run validation if the row is maked as deleted.
       return true if self.deleted_at
 
-      if new?
-        # TODO: Here may not be the right place for capacity validation.
-        per_account_total = self.class.filter(:account_id=>self.account_id).lives.sum(:size).to_i
-        if self.account.quota.volume_total_size * (1024 ** 2) < per_account_total + self.size.to_i
-          raise CapacityError, "Allocation exceeds account's quota: #{self.account.quota.volume_total_size}MB, #{self.size.to_i} bytes, #{per_account_total} bytes"
-        end
-      end
-
       errors.add(:size, "Invalid volume size.") if self.size == 0
       
       super

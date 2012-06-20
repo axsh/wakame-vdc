@@ -61,7 +61,6 @@ module Dcmgr
     autoload :HostnameLease, 'dcmgr/models/hostname_lease'
     autoload :MacLease, 'dcmgr/models/mac_lease'
     autoload :VlanLease, 'dcmgr/models/vlan_lease'
-    autoload :Quota, 'dcmgr/models/quota'
     autoload :DhcpRange, 'dcmgr/models/dhcp_range'
     autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
@@ -128,7 +127,6 @@ module Dcmgr
     autoload :SecurityGroup, 'dcmgr/cli/security_group'
     autoload :Spec, 'dcmgr/cli/spec'
     autoload :ResourceGroup, 'dcmgr/cli/resource_group'
-    autoload :Quota, 'dcmgr/cli/quota'
     autoload :BackupStorage, 'dcmgr/cli/backup_storage'
     autoload :BackupObject, 'dcmgr/cli/backup_object'
 
