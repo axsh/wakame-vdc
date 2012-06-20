@@ -4,7 +4,7 @@ require 'dcmgr/endpoints/12.03/responses/image'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   IMAGE_META_STATE = ['alive', 'alive_with_deleted'].freeze
-  IMAGE_STATE=['available', 'attached', 'deleted'].freeze
+  IMAGE_STATE=['available', 'deleted'].freeze
   IMAGE_STATE_ALL=(IMAGE_STATE + IMAGE_META_STATE).freeze
  
   post do
