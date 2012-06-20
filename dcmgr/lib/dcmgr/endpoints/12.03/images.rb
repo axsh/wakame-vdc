@@ -30,7 +30,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
 
   get '/:id' do
     # description "Show a machine image details."
-    i = find_by_uuid(:Image, params[:id])
+    i = find_image_by_uuid(params[:id])
     raise E::UnknownImage, params[:id] if i.nil?
 
     respond_with(R::Image.new(i).generate)
@@ -38,7 +38,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
 
   delete '/:id' do
     # description 'Delete a machine image'
-    i = find_by_uuid(:Image, params[:id])
+    i = find_image_by_uuid(params[:id])
     raise E::UnknownImage, params[:id] if i.nil?
     i.destroy
     respond_with([i.canonical_uuid])
@@ -50,7 +50,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     # param :display_name, string, :optional
     # param :description, string, :optional
     raise E::UndefinedImageID if params[:id].nil?
-    i = find_by_uuid(:Image, params[:id])
+    i = find_image_by_uuid(params[:id])
     raise E::UnknownImage, params[:id] if i.nil?
 
     i.display_name = params[:display_name] if params[:display_name]
@@ -60,4 +60,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     commit_transaction
     respond_with(R::Image.new(i).generate)
   end
+
+  def find_image_by_uuid(uuid)
+    item = M::Image[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+
+    if item.is_public == 1
+      # return immediatly when the public flag is set.
+    elsif @account && item.account_id != @account.canonical_uuid
+      raise E::UnknownUUIDResrouce, uuid.to_s
+    end
+    if params[:service_type] && params[:service_type] != item.service_type
+      raise E::UnknownUUIDResource, uuid.to_s
+    end
+    item
+  end
+
 end

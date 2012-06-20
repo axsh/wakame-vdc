@@ -53,6 +53,7 @@ for meta in $data_path/image-*.meta; do
           --file-format ${file_format} \
           --root-device ${root_device} \
           --service-type ${service_type} \
+          --is_public \
 	  --display-name "'${display_name}'"
         ;;
       
@@ -65,6 +66,7 @@ for meta in $data_path/image-*.meta; do
           --file-format ${file_format} \
           --root-device ${root_device} \
           --service-type ${service_type} \
+          --is_public \
 	  --display-name "'${display_name}'"
         ;;
     esac

@@ -24,33 +24,45 @@ module Dcmgr::Endpoints::V1203
     include Dcmgr::Endpoints::Helpers
 
     before do
-      if request.env[HTTP_X_VDC_ACCOUNT_UUID].to_s == ''
-        raise E::InvalidRequestCredentials
+      requester_account_id = request.env[HTTP_X_VDC_ACCOUNT_UUID]
+      if requester_account_id.nil?
+        @account = nil
       else
         begin
           # find or create account entry.
-          @account = M::Account[request.env[HTTP_X_VDC_ACCOUNT_UUID]] || \
-          M::Account.create(:uuid=>M::Account.trim_uuid(request.env[HTTP_X_VDC_ACCOUNT_UUID]))
+          @account = M::Account[requester_account_id] || \
+            M::Account.create(:uuid=>M::Account.trim_uuid(requester_account_id))
         rescue => e
           logger.error(e)
           raise E::InvalidRequestCredentials, "#{e.message}"
         end
-        raise E::InvalidRequestCredentials if @account.nil?
+        
+        raise E::DisabledAccount if @account.disable?
+
+        # Force overwrite the filtering parameter.
+        params[:account_id] = @account.canonical_uuid
       end
 
       @requester_token = request.env[HTTP_X_VDC_REQUESTER_TOKEN]
-      #@frontend = M::FrontendSystem[request.env[RACK_FRONTEND_SYSTEM_ID]]
-
-      #raise E::InvalidRequestCredentials if !(@account && @frontend)
-      raise E::DisabledAccount if @account.disable?
     end
 
+    # Common method to fetch single resource for PUT,DELETE
+    # /resource/uuid request.
+    # 
     def find_by_uuid(model_class, uuid)
       if model_class.is_a?(Symbol)
         model_class = Dcmgr::Models.const_get(model_class)
       end
       raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
-      model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+      item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+
+      if @account && item.account_id != @account.canonical_uuid
+        raise E::UnknownUUIDResrouce, uuid.to_s
+      end
+      if params[:service_type] && params[:service_type] != item.service_type
+        raise E::UnknownUUIDResource, uuid.to_s
+      end
+      item
     end
 
     def find_account(account_uuid)
