@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
-  module BackupObjectMethods
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
-    
+  class BackupObject < Base
+
     module ClassMethods
       def list(params = {})
-        data = self.find(:all, :params => params)
+        self.find(:all,:params => params.merge({:state=>'alive_with_deleted'}))
       end
-
+      
       def show(uuid)
         self.get(uuid)
       end
@@ -23,16 +20,10 @@ module Hijiki::DcmgrResource::V1203
       end
 
       def status(account_id)
-        @collection ||= self.collection_name
-        self.collection_name = File.join(@collection,account_id)
-        result = self.get(:status)
-        self.collection_name = @collection
-        result
+        self.find(account_id).get(:status)
       end
-    end    
-  end
-
-  class BackupObject < Base
-    include BackupObjectMethods
+    end
+    extend ClassMethods
+    
   end
 end

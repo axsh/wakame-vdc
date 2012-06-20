@@ -11,6 +11,12 @@ module Dcmgr::Models
 
     many_to_one :backup_object, :class=>BackupObject, :dataset=> lambda { BackupObject.filter(:uuid=>self.backup_object_id[BackupObject.uuid_prefix.size + 1, 255]) }
 
+    subset(:alives, {:deleted_at => nil})
+
+    def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+      filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
+    }
+
     plugin :serialization
     serialize_attributes :yaml, :features
     

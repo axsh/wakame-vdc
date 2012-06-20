@@ -31,9 +31,7 @@ module Hijiki
 
       autoload :SecurityGroupMethods,  'hijiki/dcmgr_resource/12.03/security_group'
       autoload :SshKeyPairMethods,     'hijiki/dcmgr_resource/12.03/ssh_key_pair'
-      autoload :VolumeMethods,         'hijiki/dcmgr_resource/12.03/volume'
       autoload :VolumeSnapshotMethods, 'hijiki/dcmgr_resource/12.03/volume_snapshot'
-      autoload :BackupObjectMethods, 'hijiki/dcmgr_resource/12.03/backup_object'
       autoload :LoadBalancerMethods, 'hijiki/dcmgr_resource/12.03/load_balancer'
     end
 

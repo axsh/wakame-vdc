@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
-  module ImageMethods
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
+  class Image < Base
 
     module ClassMethods
+      def list(params = {})
+        self.find(:all,:params => params.merge({:state=>'alive_with_deleted'}))
+      end
+      
+      def show(uuid)
+        self.get(uuid)
+      end
+      
       def update(uuid,params)
         self.put(uuid,params).body
       end
     end
-  end
-
-  class Image < Base
-    include Hijiki::DcmgrResource::ListMethods
-    include ImageMethods
+    extend ClassMethods
+    
   end
 end

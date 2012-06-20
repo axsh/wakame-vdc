@@ -3,7 +3,7 @@
 require 'dcmgr/endpoints/12.03/responses/instance'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
-  INSTANCE_META_STATE=['alive', 'alive_and_terminated'].freeze
+  INSTANCE_META_STATE=['alive', 'alive_with_terminated'].freeze
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
@@ -24,6 +24,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
              case params[:state]
              when 'alive'
                ds.lives
+             when 'alive_with_terminated'
+               ds.alives_and_termed
              else
                raise E::InvalidParameter, :state
              end

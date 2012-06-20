@@ -3,14 +3,35 @@
 require 'dcmgr/endpoints/12.03/responses/image'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
+  IMAGE_META_STATE = ['alive', 'alive_with_deleted'].freeze
+  IMAGE_STATE=['available', 'attached', 'deleted'].freeze
+  IMAGE_STATE_ALL=(IMAGE_STATE + IMAGE_META_STATE).freeze
+ 
   post do
     # description 'Register new machine image'
     raise NotImplementedError
   end
 
   get do
-    # description 'Show list of machine images'
     ds = M::Image.dataset
+
+    if params[:state]
+      ds = if IMAGE_META_STATE.member?(params[:state])
+             case params[:state]
+             when 'alive'
+               ds.lives
+             when 'alive_with_deleted'
+               ds.alives_and_deleted
+             else
+               raise E::InvalidParameter, :state
+             end
+           elsif IMAGE_STATE.member?(params[:state])
+             ds.filter(:state=>params[:state])
+           else
+             raise E::InvalidParameter, :state
+           end
+    end
+    
     if params[:account_id]
       ds = ds.filter(:account_id=>params[:account_id])
     end

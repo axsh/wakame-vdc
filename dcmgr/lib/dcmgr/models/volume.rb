@@ -29,11 +29,8 @@ module Dcmgr::Models
     
     subset(:lives, {:deleted_at => nil})
 
-    RECENT_TERMED_PERIOD=(60 * 15)
-    # lists the volumes are available and deleted within
-    # RECENT_TERMED_PERIOD sec.
-    def_dataset_method(:alives_and_recent_termed) {
-      filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - RECENT_TERMED_PERIOD))
+    def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+      filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
     
     # serialization plugin must be defined at the bottom of all class

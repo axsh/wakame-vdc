@@ -10,6 +10,10 @@ module Dcmgr::Models
     # TODO put logs to accounting log.
 
     subset(:alives, {:deleted_at => nil})
+
+    def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+      filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
+    }
     
     class RequestError < RuntimeError; end
 

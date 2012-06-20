@@ -2,6 +2,14 @@
 module Hijiki::DcmgrResource::V1203
   class Instance < Base
     module ClassMethods
+      def list(params = {})
+        self.find(:all,:params => params.merge({:state=>'alive_with_terminated'}))
+      end
+      
+      def show(uuid)
+        self.get(uuid)
+      end
+      
       def create(params)
         instance = self.new
         instance.image_id = params[:image_id]
@@ -63,7 +71,5 @@ module Hijiki::DcmgrResource::V1203
       end
     end
     extend ClassMethods
-    
-    include Hijiki::DcmgrResource::ListMethods
   end
 end

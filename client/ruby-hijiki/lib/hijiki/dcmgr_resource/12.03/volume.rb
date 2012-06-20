@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
-  module VolumeMethods
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
-    
+  class Volume < Base
+
     module ClassMethods
+      def list(params = {})
+        self.find(:all,:params => params.merge({:state=>'alive_with_deleted'}))
+      end
+      
+      def show(uuid)
+        self.get(uuid)
+      end
+
       def create(params)
         volume = self.new
         volume.volume_size = params[:volume_size]
@@ -53,10 +58,7 @@ module Hijiki::DcmgrResource::V1203
         result.body
       end
     end
-  end
-
-  class Volume < Base
-    include Hijiki::DcmgrResource::ListMethods
-    include VolumeMethods
+    extend ClassMethods
+    
   end
 end

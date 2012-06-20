@@ -3,7 +3,7 @@
 require 'dcmgr/endpoints/12.03/responses/volume'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
-  VOLUME_META_STATE=['alive'].freeze
+  VOLUME_META_STATE=['alive', 'alive_with_deleted'].freeze
   VOLUME_STATE=['available', 'attached', 'deleted'].freeze
   VOLUME_STATE_PARAM_VALUES=(VOLUME_STATE + VOLUME_META_STATE).freeze
 
@@ -17,6 +17,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
              case params[:state]
              when 'alive'
                ds.lives
+             when 'alive_with_deleted'
+               ds.alives_and_deleted
              else
                raise E::InvalidParameter, :state
              end

@@ -24,14 +24,10 @@ module Dcmgr::Models
     subset(:runnings, {:state => 'running'})
     subset(:stops, {:state => 'stopped'})
 
-    #RECENT_TERMED_PERIOD=(60 * 15)
-    RECENT_TERMED_PERIOD = Dcmgr.conf.recent_terminated_instance_period
     # lists the instances which alives and died within
-    # RECENT_TERMED_PERIOD sec.
-    # it was difficult for me to write exprs in virtual row syntax as
-    # per subset(). ;-(
-    def_dataset_method(:alives_and_recent_termed) {
-      filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - RECENT_TERMED_PERIOD))
+    # term_period sec.
+    def_dataset_method(:alives_and_termed) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
+      filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - term_period))
     }
     
     # serialization plugin must be defined at the bottom of all class
