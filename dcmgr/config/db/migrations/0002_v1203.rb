@@ -286,6 +286,12 @@ Sequel.migration do
 
     # move quota information to frontend.
     drop_table(:quotas)
+
+    # remove instance_specs from dcmgr.
+    alter_table(:instances) do
+      add_column :hypervisor, "varchar(255)", :null=>false
+      drop_column  :instance_spec_id
+    end
   end
   
   down do
@@ -394,6 +400,12 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
       
       index [:account_id], :unique=>true
+    end
+
+    # remove instance_specs from dcmgr.
+    alter_table(:instances) do
+      drop_column :hypervisor
+      add_column :instance_spec_id, "int(11)", :null=>false
     end
   end
 end

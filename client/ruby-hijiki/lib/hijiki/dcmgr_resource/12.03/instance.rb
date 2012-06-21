@@ -11,7 +11,6 @@ module Hijiki::DcmgrResource::V1203
       def create(params)
         instance = self.new
         instance.image_id = params[:image_id]
-        instance.instance_spec_id = params[:instance_spec_id]
         instance.host_pool_id = params[:host_pool_id]
         instance.host_name = params[:host_name]
         instance.user_data = params[:user_data]
@@ -27,6 +26,9 @@ module Hijiki::DcmgrResource::V1203
         instance.hypervisor = is.hypervisor
         instance.quota_weight = is.quota_weight
 
+        # rename the key to instance_spec_name.
+        instance.instance_spec_name = params[:instance_spec_id]
+        
         instance.save
         instance
       end

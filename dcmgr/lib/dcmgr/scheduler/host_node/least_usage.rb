@@ -21,8 +21,8 @@ module Dcmgr
         end
 
         def schedule(instance)
-          ds = Models::HostNode.online_nodes.filter(:arch=>instance.spec.arch,
-                                                    :hypervisor=>instance.spec.hypervisor)
+          ds = Models::HostNode.online_nodes.filter(:arch=>instance.image.arch,
+                                                    :hypervisor=>instance.hypervisor)
 
           host_node = ds.all.find_all { |hn|
             hn.available_cpu_cores >= instance.cpu_cores && \

@@ -7,8 +7,6 @@ module Dcmgr::Models
     accept_service_type
 
     many_to_one :image
-    many_to_one :instance_spec
-    alias :spec :instance_spec
     many_to_one :host_node
     one_to_many :volume
     one_to_many :network_vif
@@ -141,7 +139,6 @@ module Dcmgr::Models
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :vif=>[],
               })
-      h.merge!({:instance_spec=>instance_spec.to_hash}) unless instance_spec.nil?
       h[:volume]={}
       if self.volume
         self.volume.each { |v|
@@ -192,7 +189,7 @@ module Dcmgr::Models
         :host_node   => self.host_node && self.host_node.canonical_uuid,
         :cpu_cores   => cpu_cores,
         :memory_size => memory_size,
-        :arch        => spec.arch,
+        :arch        => image.arch,
         :image_id    => image.canonical_uuid,
         :created_at  => self.created_at,
         :state => self.state,
@@ -203,7 +200,7 @@ module Dcmgr::Models
         :vif => [],
         :hostname => hostname,
         :ha_enabled => ha_enabled,
-        :instance_spec_id => instance_spec.canonical_uuid,
+        :instance_spec_id => nil,
       }
       if self.ssh_key_data
         h[:ssh_key_pair] = self.ssh_key_data[:uuid]
@@ -252,20 +249,6 @@ module Dcmgr::Models
       }
 
       h
-    end
-
-    # Returns the hypervisor type for the instance.
-    def hypervisor
-      self.instance_spec.hypervisor
-    end
-
-    # Returns the architecture type of the image
-    def arch
-      self.image.arch
-    end
-
-    def config
-      self.instance_spec.config
     end
 
     def add_nic(vif_template)
@@ -319,7 +302,6 @@ module Dcmgr::Models
     def self.lock!
       super()
       Image.lock!
-      InstanceSpec.lock!
       NetworkVif.lock!
       Volume.lock!
       VolumeSnapshot.lock!
@@ -343,20 +325,15 @@ module Dcmgr::Models
     # Factory method for Models::Instance object.
     # This method helps to set association values have to be
     # set mandatry until initial save to the database.
-    def self.entry_new(account, image, spec, params, &blk)
+    def self.entry_new(account, image, params, &blk)
       raise ArgumentError unless account.is_a?(Account)
       raise ArgumentError unless image.is_a?(Image)
-      raise ArgumentError unless spec.is_a?(InstanceSpec)
       # Mash is passed in some cases.
       raise ArgumentError unless params.class == ::Hash
 
       i = self.new &blk
       i.account_id = account.canonical_uuid
       i.image = image
-      i.instance_spec = spec
-      i.cpu_cores = spec.cpu_cores
-      i.memory_size = spec.memory_size
-      i.quota_weight = spec.quota_weight
       i.request_params = params.dup
 
       i

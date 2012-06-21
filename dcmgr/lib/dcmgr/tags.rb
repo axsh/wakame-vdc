@@ -37,11 +37,11 @@ module Dcmgr::Tags
       to.is_a?(Dcmgr::Models::HostNode)
     end
 
-    def pick(spec)
+    def pick(instance)
       mapped_uuids.map { |t|
         Dcmgr::Models::HostNode[t.uuid]
       }.find_all { |h|
-        h.check_capacity(spec)
+        h.check_capacity(instance)
       }.sort_by { |h|
         h.instances.count
       }.reverse.first

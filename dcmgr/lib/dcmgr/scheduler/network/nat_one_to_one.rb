@@ -19,7 +19,8 @@ module Dcmgr
           network = Models::Network[options.network_id]
           nat_network = Models::Network[options.nat_network_id]
 
-          vif_template = instance.spec.vifs.find{ |name,v| v[:index] == 0 }.last
+          return unless instance.request_params[:vifs].is_a?(Hash)
+          vif_template = instance.request_params[:vifs].find{ |name,v| v[:index] == 0 }.last
 
           vnic = instance.add_nic(vif_template)
           vnic.nat_network = nat_network

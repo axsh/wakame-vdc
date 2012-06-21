@@ -8,8 +8,8 @@ module Dcmgr
         include Dcmgr::Logger
 
         def schedule(instance)
-          ds = Models::HostNode.online_nodes.filter(:arch=>instance.spec.arch,
-                                                    :hypervisor=>instance.spec.hypervisor)
+          ds = Models::HostNode.online_nodes.filter(:arch=>instance.image.arch,
+                                                    :hypervisor=>instance.hypervisor)
 
           host_node = ds.all.find_all { |hn|
             hn.node_id != instance.host_node.node_id

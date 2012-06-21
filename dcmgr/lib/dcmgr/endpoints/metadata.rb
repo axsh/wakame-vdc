@@ -374,7 +374,7 @@ module Dcmgr
       end
 
       get '/:version/meta-data/instance-type' do
-        instance[:instance_spec][:uuid]
+        instance[:request_params][:instance_spec_id]
       end
 
       get '/:version/meta-data/kernel-id' do

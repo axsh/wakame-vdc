@@ -82,9 +82,37 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :ha_enabled, string, :optional
     # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
-    spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
+    spec = M::InstanceSpec[params[:instance_spec_id]]
+    if spec
+      params[:hypervisor]   = spec.hypervisor
+      params[:cpu_cores]    = spec.cpu_cores
+      params[:memory_size]  = spec.memory_size
+      params[:quota_weight] = spec.quota_weight
+    end
+
+    if params[:hypervisor]
+      if M::HostNode.online_nodes.filter(:hypervisor=>params[:hypervisor]).empty?
+        raise E::InvalidParameter, :hypervisor
+      end
+    else
+      raise E::InvalidParameter, :hypervisor
+    end
     
-    if !M::HostNode.check_domain_capacity?(spec.cpu_cores, spec.memory_size)
+    params[:cpu_cores] = params[:cpu_cores].to_i
+    if params[:cpu_cores].between?(1, 128)
+      
+    else
+      raise E::InvalidParameter, :cpu_cores
+    end
+
+    params[:memory_size] = params[:memory_size].to_i
+    if params[:memory_size].between?(128, 999999)
+      
+    else
+      raise E::InvalidParameter, :memory_size
+    end
+    
+    if !M::HostNode.check_domain_capacity?(params[:cpu_cores], params[:memory_size])
       raise E::OutOfHostCapacity
     end
     
@@ -103,7 +131,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
 
     # params is a Mash object. so coverts to raw Hash object.
-    instance = M::Instance.entry_new(@account, wmi, spec, params.to_hash) do |i|
+    instance = M::Instance.entry_new(@account, wmi, params.to_hash) do |i|
+      i.hypervisor = params[:hypervisor]
+      i.cpu_cores = params[:cpu_cores]
+      i.memory_size = params[:memory_size]
+      i.quota_weight = params[:quota_weight] || 0.0
+      
       # Set common parameters from user's request.
       i.user_data = params[:user_data] || ''
       # set only when not nil as the table column has not null

@@ -66,14 +66,6 @@ module Dcmgr::Models
       end
     end
 
-    def before_destroy
-      if !Instance.lives.filter(:instance_spec_id=>self.id).empty?
-        raise "There are one or more running instances refers this record."
-      end
-      
-      super
-    end
-
     def to_api_document
       doc = super()
       doc.delete(:config)

@@ -10,8 +10,7 @@ module Dcmgr
         def schedule(instance)
           # add single interface and set network
           network = Models::Network.first
-          vif_template = instance.spec.vifs[instance.spec.vifs.keys.first] ||
-            {:index=>0, :bandwidth=>100000}
+          vif_template = instance.request_params[:vifs] || {:index=>0}
           
           vnic = instance.add_nic(vif_template)
           vnic.attach_to_network(network)

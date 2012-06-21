@@ -14,7 +14,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :host_node   => self.host_node && self.host_node.canonical_uuid,
           :cpu_cores   => cpu_cores,
           :memory_size => memory_size,
-          :arch        => spec.arch,
+          :arch        => image.arch,
           :image_id    => image.canonical_uuid,
           :created_at  => self.created_at,
           :state => self.state,
@@ -24,7 +24,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :vif => [],
           :hostname => hostname,
           :ha_enabled => ha_enabled,
-          :instance_spec_id => instance_spec.canonical_uuid,
+          :hypervisor => hypervisor,
           :display_name => self.display_name
         }
         if self.ssh_key_data

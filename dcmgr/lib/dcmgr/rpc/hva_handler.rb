@@ -11,7 +11,7 @@ module Dcmgr
       include Dcmgr::Helpers::NicHelper
 
       def select_hypervisor
-        @hv = Dcmgr::Drivers::Hypervisor.select_hypervisor(@inst[:instance_spec][:hypervisor])
+        @hv = Dcmgr::Drivers::Hypervisor.select_hypervisor(@inst[:hypervisor])
       end
 
       def attach_volume_to_host
@@ -152,7 +152,7 @@ module Dcmgr
           'hostname' => @inst[:hostname],
           'instance-action' => @inst[:state],
           'instance-id' => @inst[:uuid],
-          'instance-type' => @inst[:instance_spec][:uuid],
+          'instance-type' => @inst[:request_params][:instance_spec_id],
           'kernel-id' => nil,
           'local-hostname' => @inst[:hostname],
           'local-ipv4' => @inst[:ips].first,

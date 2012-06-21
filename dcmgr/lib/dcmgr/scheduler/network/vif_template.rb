@@ -10,7 +10,8 @@ module Dcmgr
         end
         
         def schedule(instance)
-          instance.spec.vifs.each { |name, vif|
+          return unless instance.request_params[:vifs].is_a?(Hash)
+          instance.request_params[:vifs].each { |name, vif|
             vnic = instance.add_nic(vif)
             next if options.template[name].nil?
 

@@ -70,14 +70,16 @@ module Dcmgr::Models
       node.nil? ? :offline : node.state
     end
 
-    # Returns true/false if the host pool has enough capacity to run the spec.
-    # @param [InstanceSpec] spec 
-    def check_capacity(spec)
-      raise TypeError unless spec.is_a?(InstanceSpec)
-      inst_on_hp = self.instances_dataset.lives.all
+    # Returns true/false if the host node has enough capacity to run
+    # the given instance.
+    # @param [Instance] instance
+    def check_capacity(instance)
+      raise ArgumentError unless instance.is_a?(Instance)
 
-      (self.offering_cpu_cores >= inst_on_hp.inject(0) {|t, i| t += i.cpu_cores } + spec.cpu_cores) &&
-        (self.offering_memory_size >= inst_on_hp.inject(0) {|t, i| t += i.memory_size } + spec.memory_size)
+      using_cpu_cores, using_memory_size = (self.instances_dataset.lives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first || {:a=>0, :b=>0}).values
+
+      (self.offering_cpu_cores >= using_cpu_cores + instance.cpu_cores) &&
+        (self.offering_memory_size >= using_memory_size + instance.memory_size)
     end
     
     def to_api_document
@@ -109,10 +111,9 @@ module Dcmgr::Models
 
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
-      alives_mem_size = Instance.dataset.lives.filter.sum(:memory_size).to_i
-      stopped_mem_size = Instance.dataset.lives.filter(:state=>'stopped').sum(:memory_size).to_i
-      alives_cpu_cores = Instance.dataset.lives.filter.sum(:cpu_cores).to_i
-      stopped_cpu_cores = Instance.dataset.lives.filter(:state=>'stopped').sum(:cpu_cores).to_i
+      ds = Instance.dataset.lives.filter
+      alives_cpu_cores, alives_mem_size = (ds.select{[sum(:cpu_cores), sum(:memory_size)]}.naked.first || {:a=>0, :b=>0}).values
+      stopped_cpu_cores, stopped_mem_size = (ds.filter(:state=>'stopped').select{ [sum(:cpu_cores), sum(:memory_size)] } .naked.first || {:a=>0, :b=>0}).values
       # instance releases the resources during stopped state normally. however admins may
       # want to manage the reserved resource ratio for stopped
       # instances. "stopped_instance_usage_factor" conf parameter allows its control.
@@ -124,8 +125,10 @@ module Dcmgr::Models
       # resources for stopped instances are reserved and rest of 50%
       # may fail to start again.
       usage_factor = (Dcmgr.conf.stopped_instance_usage_factor || 1.0).to_f
-      avail_mem_size = self.online_nodes.sum(:offering_memory_size).to_i - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)
-      avail_cpu_cores = self.online_nodes.sum(:offering_cpu_cores).to_i - ((alives_cpu_cores - stopped_cpu_cores) + (stopped_cpu_cores * usage_factor).floor)
+
+      offer_cpu, offer_mem = (self.online_nodes.select { [sum(:offering_cpu_cores), sum(:offering_memory_size)]}.naked.first || {:a=>0, :b=>0}).values
+      avail_mem_size = offer_mem - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)
+      avail_cpu_cores = offer_cpu - ((alives_cpu_cores - stopped_cpu_cores) + (stopped_cpu_cores * usage_factor).floor)
       
       (avail_mem_size >= memory_size * num.to_i) && (avail_cpu_cores >= cpu_cores * num.to_i)
     end
