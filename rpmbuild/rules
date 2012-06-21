@@ -6,7 +6,7 @@ CURDIR ?= $(PWD)
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
 RPMBUILD_CMD  := rpmbuild
 RPMBUILD_SPEC := rpmbuild/SPECS/wakame-vdc.spec
-RPMBUILD_OPTS :=
+RPMBUILD_OPTS := --target=`arch`
 
 # .deb
 #TMP_INSTALL_ROOT ?= debian/wakame-vdc
