@@ -190,6 +190,10 @@ rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
 [ -d ${RPM_BUILD_ROOT}/etc/%{name} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}
 
+# rails app config
+ln -s /etc/%{name}/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/instance_spec.yml
+ln -s /etc/%{name}/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+
 %clean
 RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules clean
 rm -rf %{prefix}/%{name}/ruby
