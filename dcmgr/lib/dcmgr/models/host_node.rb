@@ -76,7 +76,7 @@ module Dcmgr::Models
     def check_capacity(instance)
       raise ArgumentError unless instance.is_a?(Instance)
 
-      using_cpu_cores, using_memory_size = (self.instances_dataset.lives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first || {:a=>0, :b=>0}).values
+      using_cpu_cores, using_memory_size = self.instances_dataset.lives.select { [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map {|i| i || 0}
 
       (self.offering_cpu_cores >= using_cpu_cores + instance.cpu_cores) &&
         (self.offering_memory_size >= using_memory_size + instance.memory_size)
@@ -111,9 +111,9 @@ module Dcmgr::Models
 
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
-      ds = Instance.dataset.lives.filter
-      alives_cpu_cores, alives_mem_size = (ds.select{[sum(:cpu_cores), sum(:memory_size)]}.naked.first || {:a=>0, :b=>0}).values
-      stopped_cpu_cores, stopped_mem_size = (ds.filter(:state=>'stopped').select{ [sum(:cpu_cores), sum(:memory_size)] } .naked.first || {:a=>0, :b=>0}).values
+      ds = Instance.dataset.lives
+      alives_cpu_cores, alives_mem_size = ds.select{[sum(:cpu_cores), sum(:memory_size)]}.naked.first.values.map { |i| i || 0 }
+      stopped_cpu_cores, stopped_mem_size = ds.filter(:state=>'stopped').select{ [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map { |i| i || 0 }
       # instance releases the resources during stopped state normally. however admins may
       # want to manage the reserved resource ratio for stopped
       # instances. "stopped_instance_usage_factor" conf parameter allows its control.
@@ -126,7 +126,7 @@ module Dcmgr::Models
       # may fail to start again.
       usage_factor = (Dcmgr.conf.stopped_instance_usage_factor || 1.0).to_f
 
-      offer_cpu, offer_mem = (self.online_nodes.select { [sum(:offering_cpu_cores), sum(:offering_memory_size)]}.naked.first || {:a=>0, :b=>0}).values
+      offer_cpu, offer_mem = self.online_nodes.select { [sum(:offering_cpu_cores), sum(:offering_memory_size)] }.naked.first.values.map {|i| i || 0 }
       avail_mem_size = offer_mem - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)
       avail_cpu_cores = offer_cpu - ((alives_cpu_cores - stopped_cpu_cores) + (stopped_cpu_cores * usage_factor).floor)
       
