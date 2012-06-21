@@ -4,21 +4,24 @@ module Dcmgr::Scheduler::HostNode::Rules
 
   class LeastUsageBy < Rule
     configuration do
-      param :key
+      param :key, :default=>:cpu_cores
+
+      def validate(errors)
+        unless [:cpu_cores, :memory_size, :quota_weight].member?(@config[:key].to_sym)
+          errors << "Unknown key value for LeasetUsageBy: #{@config[:key]}"
+        end
+      end
     end
 
     def filter(dataset,instance)
-      reorder(dataset.all,instance)
+      dataset
     end
     
     def reorder(array,instance)
-      array.sort_by! { |hn|
-        hn.instances.delete_if { |i| i.request_params[options.key] != instance.request_params[options.key] || i.state == "terminated" || i.state == "stopped" }.size
+      array.sort_by { |hn|
+        hn.instances_dataset.lives.sum(options.key)
       }
-      
-      array
     end
 
   end
-
 end

@@ -29,14 +29,28 @@ module Dcmgr
         class Rule < Dcmgr::Scheduler::SchedulerBase
           @configuration_class = ::Dcmgr::Configurations::Dcmgr::HostNodeSchedulerRule
           
-          def filter(datastore)
-            raise NotImplementedError
+          def filter(dataset)
+            dataset
           end
           
           def reorder(array)
-            raise NotImplementedError
+            array
           end
           
+        end
+
+        # Basic filter rule which is normally set.
+        class Common < Rule
+          def filter(dataset,instance)
+            dataset.online_nodes.filter(:hypervisor=>instance.hypervisor)
+                                        #:arch=>instance.image.arch)
+          end
+          
+          def reorder(array,instance)
+            array.select { |hn|
+              hn.check_capacity(instance)
+            }
+          end
         end
       end
 
@@ -45,10 +59,15 @@ module Dcmgr
         include Dcmgr::Logger
 
         configuration do
+          param :max_results, :default=>100
+
+          on_initialize_hook do
+            @config[:rules] = []
+          end
+
           DSL do
 
             def through(rule_name, &blk)
-              @config[:rules] ||= []
               c = ::Dcmgr::Scheduler::HostNode::Rules.rule_class(rule_name)
               
               unless c < ::Dcmgr::Scheduler::HostNode::Rules::Rule
@@ -66,28 +85,48 @@ module Dcmgr
           end
         end
 
-        def schedule(instance)
-          host_nodes = ::Dcmgr::Models::HostNode.dataset
-          
-          options.rules.each { |rule|
+        def initialize(*args)
+          super
+          @rules = options.rules.map { |rule|
             rule_class = rule.scheduler_class
-            rule_inst = rule_class.new(rule.option)
+            rule_class.new(rule.option)
+          }
+p          @rules.unshift(Rules::Common.new(nil))
+        end
+        
+        def schedule(instance)
+          # set filter needed commonly.
+          hn_ds = ::Dcmgr::Models::HostNode.dataset
+          
+p          rules = @rules.map { |rule| rule.dup }
+
+          # First pass:
+          # Build the dataset filters.
+          hn_ds = rules.inject(hn_ds) {|ds, r|
+            logger.debug("Filtering through #{r}")
             
-            logger.debug("Filtering through #{rule_class}")
-            
-            case host_nodes
-              when Sequel::Dataset
-                host_nodes = rule_inst.filter(host_nodes,instance)
-              when Array
-                host_nodes = rule_inst.reorder(host_nodes,instance)
-              else
-                raise "#{rule} did not return a dataset nor array! Returned: #{host_nodes.class}"
-            end
+            r.filter(ds, instance).tap { |i|
+              unless i.is_a?(Sequel::Dataset)
+                raise TypeError, "Invalid return type (#{i.class}) from #{r}#filter. Expected Sequel::Dataset."
+              end
+            }
+          }
+          logger.debug( hn_ds.limit(options.max_results).sql )
+          # Second pass:
+          # Run the query from the dataset and continues to process the returned array.
+          hn_ary = rules.inject(hn_ds.limit(options.max_results).all) {|ary, r|
+            logger.debug("Reordering through #{r}")
+
+            r.reorder(ary, instance).tap { |i|
+              unless i.is_a?(::Array)
+                raise TypeError, "Invalid return type (#{i.class}) from #{r}#reorder. Expected Array."
+              end
+            }
           }
           
-          raise HostNodeSchedulingError, "No suitable host node found after piping through all rules." if host_nodes.empty?
+          raise HostNodeSchedulingError, "No suitable host node found after piping through all rules." if hn_ary.empty?
           
-          instance.host_node = host_nodes.first
+          instance.host_node = hn_ary.first
         end
       end
     end

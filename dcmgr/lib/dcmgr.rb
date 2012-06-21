@@ -192,6 +192,7 @@ module Dcmgr
       module Rules
         autoload :RequestParamToGroup, 'dcmgr/scheduler/host_node/rules/request_param_to_group'
         autoload :LeastUsageBy, 'dcmgr/scheduler/host_node/rules/least_usage_by'
+        autoload :ScatterBy, 'dcmgr/scheduler/host_node/rules/scatter_by'
       end
     end
     module Network
