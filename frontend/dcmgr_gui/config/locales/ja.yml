@@ -234,6 +234,24 @@ ja:
       message: "インスタンスのバックアップを取得します。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+    create_load_balancer:
+      header:
+        display_name: "ロードバランサ名"
+        load_balancer: "ロードバランサ"
+        instance: "インスタンス"
+        load_balancer_protocol: "プロトコル"
+        load_balancer_port: "ポート"
+        instance_protocol: "プロトコル"
+        instance_port: "ポート"
+      certificate:
+        header: "証明書"
+        name: "証明書名"
+        private_key: "プライベートキー"
+        public_key: "パブリックキー"
+        chain: "証明書チェイン"
+      sticky_session:
+        header: "スティッキーセッション"
+        cookie_name: "Cookie名"
   login:
     sign_in: "ログイン"
     user: "ユーザー"
@@ -557,7 +575,7 @@ ja:
       host_nodes: "ホストプール"
     appliances:
       header: "アプライアンス"
-      load_balancers: "ロードバランサー"
+      load_balancers: "ロードバランサ"
     images:
       header: "イメージ"
       machine_images: "マシンイメージ"

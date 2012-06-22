@@ -45,9 +45,9 @@
 	  {{each(index,item) rows}}
 	  <tr id="row-${item.uuid}">
 	    {{if item.uuid }}
-	    <td class="listcheckbox"><input type="checkbox" value="${item.uuid}" > </td>
+	    <td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
 	    {{else}}
-	    <td class="listcheckbox"></td>
+	    <td class="listradiobutton"></td>
 	    {{/if}}
 	    <td class="vtip display_name" title="display name">${item.display_name}</td>
 	    <td class="vtip ip" title="ip">

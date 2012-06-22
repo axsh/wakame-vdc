@@ -234,6 +234,24 @@ en:
       message: "Are you sure you want to backup those instances?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+    create_load_balancer:
+      header:
+        display_name: "Load Balancer Name"
+        load_balancer: "Load Balancer"
+        instance: "Instance"
+        load_balancer_protocol: "Protocol"
+        load_balancer_port: "Port"
+        instance_protocol: "Protocol"
+        instance_port: "Port"
+      certificate:
+        header: "Certificate"
+        name: "Name"
+        private_key: "Private Key"
+        public_key: "Public Key"
+        chain: "Certificate Chain"
+      sticky_session:
+        header: "Sticky Session"
+        cookie_name: "Cookie Name"
   login:
     sign_in: "Sign In"
     user: "User"

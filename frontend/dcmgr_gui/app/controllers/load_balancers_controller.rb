@@ -5,6 +5,27 @@ class LoadBalancersController < ApplicationController
   def index
   end
 
+  def create
+     data = {
+      :display_name => params[:display_name],
+      :load_balancer_protocol => params[:load_balancer_protocol],
+      :load_balancer_port => params[:load_balancer_port],
+      :instance_protocol => params[:instance_protocol],
+      :instance_port => params[:instance_port],
+      :certificate_name => params[:certificate_name],
+      :private_key => params[:private_key],
+      :public_key => params[:public_key],
+      :certificate_chain => params[:certificate_chain],
+      :cookie_name => params[:cookie_name]
+    }
+
+    # TODO: specify instance spec id
+    data[:instance_spec_id] = 'is-demospec'
+
+    lb = Hijiki::DcmgrResource::LoadBalancer.create(data)
+    render :json => lb
+  end
+
   def show
     volume_id = params[:id]
     detail = Hijiki::DcmgrResource::LoadBalancer.show(volume_id)

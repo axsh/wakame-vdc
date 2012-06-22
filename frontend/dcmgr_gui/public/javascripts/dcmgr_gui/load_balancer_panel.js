@@ -8,24 +8,11 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   };
 
   DcmgrGUI.List.prototype.getEmptyData = function(){
-    return [{
-      "uuid":'',
-      "size":'',
-      "backup_object_id":'',
-      "created_at":'',
-      "state":''
-    }]
+    return [{}]
   }
 
   DcmgrGUI.Detail.prototype.getEmptyData = function(){
-    return {
-      "uuid" : "-",
-      "size" : "-",
-      "backup_object_id" : "-",
-      "created_at" : "-",
-      "updated_at" : "-",
-      "state" : ""
-    }
+    return {}
   }
 
   var c_pagenate = new DcmgrGUI.Pagenate({
@@ -53,18 +40,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     var load_balancer = params.data.load_balancer;
     c_pagenate.changeTotal(load_balancer.total);
     c_list.setData(load_balancer.results);
-    c_list.multiCheckList(c_list.detail_template);
-    c_list.element.find(".edit_load_balancer").each(function(key,value){
-      $(this).button({ disabled: false });
-      var uuid = $(value).attr('id').replace(/edit_(vol-[a-z0-9]+)/,'$1');
-      if( uuid ){
-        $(this).bind('click',function(){
-          bt_edit_load_balancer.open({"ids":[uuid]});
-        });
-      } else {
-        $(this).button({ disabled: true });
-      }
-    });
+    c_list.singleCheckList(c_list.detail_template);
   });
 
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -73,91 +49,48 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   create_load_balancer_buttons[close_button_name] = function() { $(this).dialog("close"); };
   create_load_balancer_buttons[create_button_name] = function() {
     var display_name = $(this).find('#display_name').val();
-    var load_balancer_size = $(this).find('#load_balancer_size').val();
-    var unit = $(this).find('#unit').find('option:selected').val();
-    if(!load_balancer_size){
-     $('#load_balancer_size').focus();
-     return false;
-    }
-    var data = "size="+load_balancer_size+"&unit="+unit+"&display_name="+display_name;
+    var load_balancer_protocol = $(this).find('#load_balancer_protocol').val();
+    var load_balancer_port = $(this).find('#load_balancer_port').val();
+    var instance_protocol = $(this).find('#instance_protocol').val();
+    var instance_port = $(this).find('#instance_port').val();
+    var certificate_name = $(this).find('#certificate_name').val();
+    var public_key = $(this).find('#public_key').val();
+    var private_key = $(this).find('#private_key').val();
+    var certificate_chain = $(this).find('#certificate_chain').val();
+    var cookie_name = $(this).find('#cookie_name').val();
+
+    var data = "display_name="+display_name
+               +"&load_balancer_protocol="+load_balancer_protocol
+               +"&load_balancer_port="+load_balancer_port
+               +"&instance_protocol="+instance_protocol
+               +"&instance_port="+instance_port
+               +"&certificate_name="+certificate_name
+               +"&private_key="+private_key
+               +"&public_key="+public_key
+               +"&certificate_chain="+certificate_chain
+               +"&cookie_name="+cookie_name;
 
     var request = new DcmgrGUI.Request;
     request.post({
       "url": '/load_balancers',
       "data": data,
       success: function(json,status){
-        console.log(json);
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
+
     $(this).dialog("close");
   }
 
   var bt_create_load_balancer = new DcmgrGUI.Dialog({
     target:'.create_load_balancer',
-    width:400,
-    height:200,
+    width:600,
+    height:430,
     title:$.i18n.prop('create_load_balancer_header'),
     path:'/create_load_balancer',
     callback: function(){
-      var self = this;
-      var loading_image = DcmgrGUI.Util.getLoadingImage('boxes');
-      $(this).find('#select_load_balancer').empty().html(loading_image);
-
-      var request = new DcmgrGUI.Request;
-      var is_ready = {
-        'display_name': false,
-        'load_balancer_size': false
-      }
-
-      var ready = function(data) {
-        if(data['display_name'] == true &&
-           data['load_balancer_size'] == true) {
-          bt_create_load_balancer.disabledButton(1, false);
-        } else {
-          bt_create_load_balancer.disabledButton(1, true);
-        }
-      }
-
-      $(this).find('#display_name').keyup(function(){
-       if( $(this).val() ) {
-         is_ready['display_name'] = true;
-         ready(is_ready);
-       } else {
-         is_ready['display_name'] = false;
-         ready(is_ready);
-       }
-      });
-
-      $(this).find('#load_balancer_size').keyup(function(){
-       if( $(this).val() ) {
-         is_ready['load_balancer_size'] = true;
-         ready(is_ready);
-       } else {
-         is_ready['load_balancer_size'] = false;
-         ready(is_ready);
-       }
-      });
-
-      request.get({
-        "url": '/load_balancers/show_load_balancers.json',
-        success: function(json,status){
-          console.log(json);
-          var select_html = '<select id="load_balancer" name="load_balancer"></select>';
-          $(self).find('#select_load_balancer').empty().html(select_html);
-          var results = json.load_balancer.results;
-          var size = results.length;
-          var select_load_balancer = $(self).find('#load_balancer');
-          for (var i=0; i < size ; i++) {
-            var uuid = results[i].result.uuid;
-            var html = '<option value="'+ uuid +'">'+uuid+'</option>';
-            select_load_balancer.append(html);
-          }
-
-          var params = { 'button': bt_create_load_balancer, 'element_id': 1 };
-        }
-      });
-    },
+      bt_create_load_balancer.disabledButton(1, false);
+   },
     button: create_load_balancer_buttons
   });
 
@@ -175,6 +108,13 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
       },true);
     });
   });
+
+  bt_create_load_balancer.target.bind('click',function(){
+    bt_create_load_balancer.open();
+  });
+
+  $(bt_create_load_balancer.target).button({ disabled: false });
+  $(bt_refresh.target).button({ disabled: false });
 
   //list
   c_list.setData(null);

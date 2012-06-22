@@ -158,7 +158,8 @@ Sequel.migration do
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false  
       column :deleted_at, "datetime", :null=>true
-      index [:uuid], :name=>:uuid
+      column :display_name, "varchar(255)", :null=>true
+      index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
     end
     

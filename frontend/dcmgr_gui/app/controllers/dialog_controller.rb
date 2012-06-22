@@ -162,4 +162,8 @@ class DialogController < ApplicationController
     @description = @ssh_keypair["description"]
     render :create_and_edit_ssh_keypair
   end
+
+  def create_load_balancer
+    @load_balancer_ids = params[:ids]
+  end
 end

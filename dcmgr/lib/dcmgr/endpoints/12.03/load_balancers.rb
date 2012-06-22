@@ -72,21 +72,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                'instance_spec_id' => spec.canonical_uuid,
                'host_node_id' => lb_conf.host_node_id,
                'security_group' => lb_conf.security_group,
-               'ssh_key_id' => lb_conf.ssh_key_id
+               'ssh_key_id' => lb_conf.ssh_key_id,
+               'service_type' => lb_conf.name
     }
 
     # TODO: Using sinatra plugin.
-    env['rack.request.form_vars'] = values.collect { |k,v| "#{k}=#{v}" }.join('&')
-    env['rack.request.form_hash'] = ::Rack::Utils.parse_query(env['rack.request.form_vars'])
-    env['REQUEST_PATH'] = '/api/12.03/instances.json'
-    env['PATH_INFO'] = '/instances'
-    env['REQUEST_URI'] = '/api/12.03/instances.json'
+    _req = ::Rack::Request.new \
+      ::Rack::MockRequest.env_for("/api/12.03/instances.json",
+      :params => values)
 
-    # Create Instance
-    http_status, headers, body = self.dup.call(env)
+    _req.env['PATH_INFO'] = '/instances'
+    _req.env['SERVER_NAME'] = env['SERVER_NAME']
+    _req.env['SERVER_PORT'] = env['SERVER_PORT']
+    _req.env['CONTENT_TYPE'] = 'application/json'
+    _req.env['REQUEST_METHOD'] = env['REQUEST_METHOD']
+    _req.env['HTTP_X_VDC_ACCOUNT_UUID'] = env['HTTP_X_VDC_ACCOUNT_UUID']
 
-    # undo env
-    env_keys.each { |key| env[key] = origin_env[key] }
+    http_status, headers, body = self.dup.call(_req.env)
 
     # create load balancer
     b = ::JSON.load(body.shift)

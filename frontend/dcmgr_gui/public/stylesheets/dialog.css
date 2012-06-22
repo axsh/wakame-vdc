@@ -227,3 +227,63 @@
         padding: 3px 10px;
         border-bottom: 1px solid #cccccc;
 }
+
+#create_load_balancer_dialog table tr td{
+  text-align: center;
+}
+
+#create_load_balancer_dialog #certificate_group legend {
+  padding: 0 3px 0 3px;
+}
+
+#create_load_balancer_dialog #sticky_session_grouplegend {
+  padding: 0 3px 0 3px;
+}
+
+#create_load_balancer_dialog div {
+  padding-top :5px;
+  padding-bottom :5px;
+}
+
+#create_load_balancer_dialog .header {
+  text-align: center;
+}
+
+#create_load_balancer_dialog .title {
+  text-align: right;
+}
+
+#create_load_balancer_dialog #load_balancer_protocol {
+  width: 80px;
+}
+
+#create_load_balancer_dialog #instance_protocol {
+  width: 80px;
+}
+
+#create_load_balancer_dialog #load_balancer table {
+  width: 500px;
+}
+
+#create_load_balancer_dialog #certificate {
+  padding-top: 10px;
+  width: 500px;
+}
+
+#create_load_balancer_dialog #certificate_group {
+  padding-top: 10px;
+}
+
+#create_load_balancer_dialog #sticky_session{
+  padding-top: 15px;
+  width: 500px;
+}
+
+#create_load_balancer_dialog #sticky_session_group {
+  padding-top: 10px;
+}
+
+#create_load_balancer_dialog table {
+  text-align: "right";
+}
+
