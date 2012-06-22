@@ -11,15 +11,12 @@ require 'thor'
 require 'thor/group'
 require 'erb'
 
-
-#################
-# CLI main part
-
 Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 ['/etc/wakame-vdc/dcmgr.conf',
                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
                 ])
 Dcmgr.run_initializers('sequel')
+
 
 class RootCli < Thor
   register(Dcmgr::Cli::Network,  Dcmgr::Cli::Network.namespace, "network sub-command", "Operations for network information")
@@ -34,21 +31,139 @@ class RootCli < Thor
   register(Dcmgr::Cli::BackupStorage, Dcmgr::Cli::BackupStorage.namespace, "backupstorage sub-command", "Operations for backup storage")
   register(Dcmgr::Cli::BackupObject, Dcmgr::Cli::BackupObject.namespace, "backupobject sub-command", "Operations for backup object")
 
-  def self.exit_on_failure?
-    true
+  #def self.exit_on_failure?
+  #  true
+  #end
+end
+
+module TxMode
+  module Bulk
+    def before_loop
+      Dcmgr::Models::BaseNew.db << 'BEGIN;'
+      super
+    end
+    
+    def after_loop
+      super
+      Dcmgr::Models::BaseNew.db << 'COMMIT;'
+    end
+  end
+  
+  module Each
+    def loop_eval(str)
+      Dcmgr::Models::BaseNew.db.transaction do
+        super
+      end
+    end
+  end
+end
+
+module VdcManageShell
+
+  def loop_eval(str)
+    args = Shellwords.shellsplit(str)
+    if !args.empty?
+      RootCli.start(args.dup)
+    end
+  end
+
+  def print_result(result)
+    # do nothing from ripl.
+  end
+  
+end
+
+module MultiLine
+  def before_loop
+    super
+    @buffer = []
+  end
+
+  def prompt
+    @buffer.empty? ? super : (config[:middle_prompt] || ' > ')
+  end
+
+  def loop_once
+    catch(:multiline) do
+      super
+      @buffer = []
+    end
+  end
+
+  def eval_input(input)
+    @buffer << input.sub(/\\$/,'')
+    if middle_line?(input)
+      throw(:multiline)
+    else
+      super(@buffer.join(' '))
+    end
+  end
+
+  private
+  def middle_line?(str)
+    str =~ /\\$/
   end
 end
 
 
-begin
-  RootCli.start
-rescue => e
-  orig_e = e
-  e = Dcmgr::Cli::Error.new(e,101) unless e.is_a?(Dcmgr::Cli::Error)
-  STDERR.puts "ERROR: #{e.message} (#{orig_e.backtrace.first})"
-  if e.respond_to?(:exit_code)
-    exit(e.exit_code)
-  else
-    exit(1)
+require 'optparse'
+
+TX_MODES=['each', 'none', 'bulk'].freeze
+options = {:tx_mode=>TX_MODES.first}
+
+argv = ARGV.dup
+OptionParser.new { |o|
+  o.banner += " [TASK [options]]"
+  o.on('--tx TYPE', '--tx-mode=TYPE', "Set transaction mode (default: #{TX_MODES.first}): #{TX_MODES.join(', ')}") { |v|
+    if TX_MODES.member?(v)
+      options[:tx_mode]=v.to_sym
+    else
+      abort("Unknown tx-mode value: #{v}")
+    end
+  }
+  o.on_tail('-h', '--help', 'Show this message') do
+    puts o.help
+    RootCli.start(["-h"])
+    exit
   end
+}.order!(argv)
+
+if RootCli.tasks.keys.member?(argv.first)
+  # CLI mode
+  begin
+    Dcmgr::Models::BaseNew.db.transaction do
+      RootCli.start(argv)
+    end
+  rescue => e
+    orig_e = e
+    e = Dcmgr::Cli::Error.new(e,101) unless e.is_a?(Dcmgr::Cli::Error)
+    STDERR.puts "ERROR: #{e.message} (#{orig_e.backtrace.first})"
+    if e.respond_to?(:exit_code)
+      exit(e.exit_code)
+    else
+      exit(1)
+    end
+  end
+else
+  # Interactive shell mode
+  require 'ripl'
+  require 'shellwords'
+  
+  Ripl::Shell.include VdcManageShell
+  if options[:tx_mode] == :each
+    Ripl::Shell.include TxMode::Each
+  else
+    Ripl::Shell.include TxMode::Bulk
+  end
+  Ripl::Shell.include MultiLine
+  Ripl::History.module_eval {
+    # disable write history file. I could't find not to include Ripl::History.
+    def write_history; end
+  }
+  Ripl::Shell.create(:prompt => 'vdc-manage>> ',
+                     :result_prompt => '',
+                     :name   => 'vdc-manage',
+                     :irbrc  => nil,
+                     :readline=>true,
+                     ).loop
 end
