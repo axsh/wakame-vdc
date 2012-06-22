@@ -10,4 +10,32 @@
       <td><input id="instance_display_name" type="text" size=43 value="<%= @display_name %>"></td>
     </tr>
   </table>
+  
+  <br />
+  
+  <fieldset id="security_group_field">
+		<legend><%= t("dialog.edit_instance.security_group") %></legend><legend>
+		</legend><table cellspacing="5" cellpadding="5">
+		<tbody>
+			<tr><th><span id="available_groups"><%= t("dialog.edit_instance.available_groups") %></span></th>
+			<th></th>
+			<th><span id="assign_groups"><%= t("dialog.edit_instance.groups_to_assign") %></span></th>
+		</tr><tr>
+		    <td>
+		        <select id="left_select_list" size="5" multiple="multiple" name="left_select_list"></select>
+		    </td>
+				<td id="manipulation">
+					<button id="right_button">&gt;</button>
+					<br> <br>
+					<button id="left_button">&lt;</button>
+				</td>
+		    <td>
+		        <select id="right_select_list" size="5" multiple="multiple" name="right_select_list">
+		        </select>
+		    </td>
+			</tr>
+		</tbody>
+	</table>
+	</fieldset>
+  
 </div>

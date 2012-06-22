@@ -37,6 +37,16 @@
 	height: 190px;
 }
 
+#edit_instance_dialog #left_select_list {
+	width: 200px;
+	height: 190px;
+}
+
+#edit_instance_dialog #right_select_list {
+	width: 200px;
+	height: 190px;
+}
+
 #create_ssh_keypair_dialog table tr td {
 	padding: 3px;
 }
@@ -57,7 +67,18 @@
   vertical-align: middle;
 }
 
+#edit_instance_dialog #manipulation {
+  vertical-align: middle;
+}
+
 #launch_instance_dialog #security_group_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin: 3px;
+  width: 480px;
+}
+
+#edit_instance_dialog #security_group_field {
   border: 1px solid gray;
   padding: 10px;
   margin: 3px;

@@ -108,7 +108,8 @@ class InstancesController < ApplicationController
   def update
     instance_id = params[:id]
     data = {
-	:display_name => params[:display_name]
+      :display_name => params[:display_name],
+      :security_groups => params[:security_groups]
     }
     instance = Hijiki::DcmgrResource::Instance.update(instance_id,data)
     render :json => instance

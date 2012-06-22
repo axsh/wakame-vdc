@@ -76,7 +76,11 @@ DcmgrGUI.prototype.instancePanel = function(){
     edit_instance_buttons[update_button_name] = function(event) {
       var instance_id = $(this).find('#instance_id').val();
       var display_name = $(this).find('#instance_display_name').val();
-      var data = 'display_name=' + display_name;
+      var security_groups = [];
+      $.each($(this).find('#right_select_list').find('option'),function(i){
+       security_groups.push("security_groups[]="+ $(this).text());
+      });
+      var data = 'display_name=' + display_name + '&' + security_groups.join('&');
 
       var request = new DcmgrGUI.Request;
       request.put({
@@ -91,15 +95,57 @@ DcmgrGUI.prototype.instancePanel = function(){
 
     var bt_edit_instance = new DcmgrGUI.Dialog({
       target:'.edit_instance',
-      width:500,
-      height:200,
+      width:550,
+      height:450,
       title:$.i18n.prop('edit_instance_header'),
       path:'/edit_instance',
       button: edit_instance_buttons,
       callback: function(){
+        var self = this;
+        
         var params = { 'button': bt_edit_instance, 'element_id': 1 };
         $(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#left_select_list').mask($.i18n.prop('loading_parts'));
+        
+        var request = new DcmgrGUI.Request;
+        
+        parallel({
+          security_groups: 
+            request.get({
+              "url": '/security_groups/all.json',
+              "data": "",
+              success: function(json,status){
+                var data = [];
+                var results = json.security_group.results;
+                var size = results.length;
+                for (var i=0; i < size ; i++) {
+                  data.push({
+                    "value" : results[i].result.uuid,
+                    "name" : results[i].result.uuid,
+                  });
+                }
+                
+                var security_group = new DcmgrGUI.ItemSelector({
+                  'left_select_id' : '#left_select_list',
+                  'right_select_id' : '#right_select_list',
+                  'data' : data,
+                  'target' : self
+                });
+                
+                $(self).find('#right_button').click(function(){
+                  security_group.leftToRight();
+                });
+
+                $(self).find('#left_button').click(function(){
+                  security_group.rightToLeft();
+                });
+                
+              }
+            })
+        }).next(function(results) {
+          $("#left_select_list").unmask();
+        });
       }
     });
   });
