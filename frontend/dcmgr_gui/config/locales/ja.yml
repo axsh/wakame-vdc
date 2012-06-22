@@ -66,6 +66,9 @@ ja:
       header: "インスタンスを編集"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+      security_group: "セキュリティーグループ設定"
+      available_groups: "セキュリティーグループ"
+      groups_to_assign: "選択済み"
     edit_machine_image:
       header: "マシンイメージ編集"
       uuid: "WMI ID"

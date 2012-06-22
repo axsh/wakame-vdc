@@ -58,7 +58,7 @@ en:
       host_name: "Host Name"
       instance_spec: "Instance Spec"
       ssh_key_pair: "SSH Key Pair"
-      security_group: "Security Group"
+      security_group: "Security Groups"
       available_groups: "Available Groups"
       launch_in: "Launch in"
       user_data: "User Data"
@@ -67,6 +67,9 @@ en:
       header: "Edit Instance"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+      security_group: "Security Groups"
+      available_groups: "Avaiable groups"
+      groups_to_assign: "Groups to assign"
     edit_machine_image:
       header: "Edit Machine Image"
       uuid: "WMI ID"
