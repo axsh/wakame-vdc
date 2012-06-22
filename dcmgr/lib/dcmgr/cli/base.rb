@@ -13,11 +13,9 @@ module Dcmgr::Cli
       public
       # add before/after task hook.
       def invoke_task(task, *args)
-        Dcmgr::Models::BaseNew.db.transaction do
-          before_task
-          super(task, *args)
-          after_task
-        end
+        before_task
+        super(task, *args)
+        after_task
       end
     
       protected
