@@ -81,8 +81,8 @@ Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
-Requires: kmod-openvswitch = 1.4.1
-Requires: openvswitch = 1.4.1
+Requires: kmod-openvswitch
+Requires: openvswitch
 Requires: kpartx
 Requires: libcgroup
 # includes /sbin/losetup
@@ -106,7 +106,7 @@ Requires: qemu-kvm
 Summary: Configuration set for hva LXC VM appliance
 Group: Development/Languages
 Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
-Requires: lxc = 0.7.5
+Requires: lxc
 %description  hva-lxc-vmapp-config
 <insert long description, indented with spaces>
 
@@ -117,7 +117,7 @@ Group: Development/Languages
 Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
 Requires: vzkernel
 Requires: vzctl
-Requires: kmod-openvswitch-vzkernel = 1.4.1
+Requires: kmod-openvswitch-vzkernel
 %description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
