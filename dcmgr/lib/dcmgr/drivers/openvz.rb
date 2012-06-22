@@ -31,13 +31,25 @@ module Dcmgr
         # delete old config file
         config_file_path = "#{config.ve_config_dir}/#{ctid}.conf" 
         mount_file_path = "#{config.ve_config_dir}/#{ctid}.mount"
-        File.unlink(config_file_path) if File.exists?(config_file_path)
-        File.unlink(mount_file_path) if File.exists?(mount_file_path)
+        if File.exists?(config_file_path)
+          File.unlink(config_file_path)
+          logger.debug("old config file was deleted #{config_file_path}")
+        end
+        if File.exists?(mount_file_path)
+          File.unlink(mount_file_path)
+          logger.debug("old mount file was deleted #{mount_file_path}")
+        end
         
         destroy_config_file_path = "#{config_file_path}.destroyed"
         destroy_mount_file_path = "#{mount_file_path}.destroyed"
-        File.unlink(destroy_config_file_path) if File.exists?(destroy_config_file_path)
-        File.unlink(destroy_mount_file_path) if File.exists?(destroy_mount_file_path)
+        if File.exists?(destroy_config_file_path)
+          File.unlink(destroy_config_file_path)
+          logger.debug("old config file was deleted #{destroy_config_file_path}")
+        end
+        if File.exists?(destroy_mount_file_path)
+          File.unlink(destroy_mount_file_path)
+          logger.debug("old mount file was deleted #{destroy_config_file_path}")
+        end
         
         # generate openvz config
         hypervisor = inst[:host_node][:hypervisor]
@@ -47,6 +59,7 @@ module Dcmgr
         render_template(template_file_path, output_file_path) do
           binding
         end
+        logger.debug("created config #{output_file_path}")
         
         # create openvz container
         private_folder = "#{config.ve_private}/#{ctid}"
@@ -60,6 +73,7 @@ module Dcmgr
           logger.debug("created config #{config_file_path}")
         when "raw"
           # copy config file
+          raise "config file does not exist #{output_file_path}" unless File.exists?(output_file_path)
           FileUtils.cp(output_file_path, config_file_path)
           # create mount directory
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
@@ -150,6 +164,7 @@ module Dcmgr
         ve_metadata_path = "#{inst_data_dir}/metadata"
         metadata_img_path = hc.metadata_img_path
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
+        raise "metadata image does not exists #{metadata_img_path}" unless File.exists?(metadata_img_path)
         sh("mount -o loop -o ro %s %s", [metadata_img_path, ve_metadata_path])
         logger.debug("mount #{metadata_img_path} to #{ve_metadata_path}")
         
@@ -189,15 +204,20 @@ module Dcmgr
         tryagain do
           sh("vzctl status %s", [inst_id])[:stdout].chomp.include?("down")
         end
+        logger.debug("stop container #{inst_id}")
         
         case hc.inst[:image][:file_format]
         when "raw"
           # umount vm image directory
+          raise "private directory does not exists #{private_dir}" unless File.directory?(private_dir)
           sh("umount -d %s", [private_dir])
+          logger.debug("unmounted private directory #{private_dir}")
           if hc.inst[:image][:root_device]
             # find loopback device
             img_file_path = "#{hc.inst_data_dir}/#{inst_id}"
+            raise "image file does not exists #{img_file_path}" unless File.exists?(img_file_path)
             fs = File::Stat.new(img_file_path)
+            logger.debug("image file inode: #{fs.ino}")
             lodev = sh("losetup -a |grep %s |awk '{print $1}'", [fs.ino])[:stdout].chomp.split(":")[0]
             #
             # /dev/loop0: [0801]:151429 (/path/to/dir/i-xxxx*)
@@ -211,7 +231,7 @@ module Dcmgr
           end
         end
         sh("umount -d %s/metadata", [hc.inst_data_dir])
-        logger.debug("stop container #{inst_id}")
+        logger.debug("unmounted metadata directory #{hc.inst_data_dir}/metadata")
         
         # delete container folder
         sh("vzctl destroy %s",[inst_id])
