@@ -44,6 +44,7 @@ module Dcmgr::Models
       m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
 
       vif_data = {
+        :account_id => self.account_id,
         :network_id => self.id,
         :mac_addr => m.mac_addr,
       }

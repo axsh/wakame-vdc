@@ -2,7 +2,7 @@
 
 module Dcmgr::Models
   # Network interface for running instance.
-  class NetworkVif < BaseNew
+  class NetworkVif < AccountResource
     taggable 'vif'
 
     many_to_one :network

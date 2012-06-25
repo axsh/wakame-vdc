@@ -87,7 +87,9 @@ Sequel.migration do
       set_column_allow_null :instance_id, true
       set_column_allow_null :network_id, true
 
-      add_column :network_service_id, "int(11)"
+      add_column :account_id, "varchar(255)", :null=>false
+
+      add_index [:account_id]
     end
 
     alter_table(:ip_leases) do
