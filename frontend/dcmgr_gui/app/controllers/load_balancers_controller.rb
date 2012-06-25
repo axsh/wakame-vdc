@@ -27,8 +27,14 @@ class LoadBalancersController < ApplicationController
   end
 
   def show
-    volume_id = params[:id]
-    detail = Hijiki::DcmgrResource::LoadBalancer.show(volume_id)
+    load_balancer_id = params[:id]
+    detail = Hijiki::DcmgrResource::LoadBalancer.show(load_balancer_id)
+    respond_with(detail,:to => [:json])
+  end
+
+  def destroy
+    load_balancer_id = params[:id]
+    detail = Hijiki::DcmgrResource::LoadBalancer.destroy(load_balancer_id)
     respond_with(detail,:to => [:json])
   end
 
@@ -37,8 +43,8 @@ class LoadBalancersController < ApplicationController
       :start => params[:start].to_i - 1,
       :limit => params[:limit]
     }
-    volumes = Hijiki::DcmgrResource::LoadBalancer.list(data)
-    respond_with(volumes[0],:to => [:json])
+    results = Hijiki::DcmgrResource::LoadBalancer.list(data)
+    respond_with(results[0],:to => [:json])
   end
 
   def total
