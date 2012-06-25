@@ -151,7 +151,7 @@ function run_multiple() {
   screen_it api       "cd ./dcmgr; bundle exec unicorn -p ${api_port} -o ${api_bind} ./config-dcmgr.ru 2>&1 | tee ${tmp_path}/vdc-dcmgr.log"
   screen_it auth      "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${auth_port} -o ${auth_bind} ./app/api/config.ru 2>&1 | tee ${tmp_path}/vdc-auth.log"
   sleep 1
-  screen_it proxy     "${abs_path}/builder/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${data_path}/proxy.conf"
+  screen_it proxy     "${abs_path}/builder/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${tmp_path}/proxy.conf"
   screen_it webui     "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${webui_port} -o ${webui_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
   sleep 1
 
