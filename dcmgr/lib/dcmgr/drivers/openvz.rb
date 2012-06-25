@@ -238,6 +238,15 @@ module Dcmgr
         
       end
 
+      def poweroff_instance(hc)
+        sh("vzctl stop %s", [hc.inst_id])
+      end
+
+      def poweron_instance(hc)
+        sh("vzctl start %s", [hc.inst_id])
+      end
+
+
     end
   end
 end

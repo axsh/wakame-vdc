@@ -548,6 +548,31 @@ module Dcmgr
         logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id} #{@image_id}")
       }
 
+      job :poweroff, proc {
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+
+        select_hypervisor
+
+        @hv.poweroff_instance(@hva_ctx)
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:halted})
+        logger.info("PowerOff #{@inst_id}")
+      }
+
+      job :poweron, proc {
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+        @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+
+        select_hypervisor
+
+        # reboot instance
+        @hv.poweron_instance(@hva_ctx)
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:running})
+        logger.info("PowerOn #{@inst_id}")
+      }
+      
       def rpc
         @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
       end

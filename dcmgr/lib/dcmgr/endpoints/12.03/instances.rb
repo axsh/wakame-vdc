@@ -341,4 +341,34 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                    :image_id => image.canonical_uuid,
                  })
   end
+
+  # Halt the running instance.
+  put '/:id/poweroff' do
+    instance = find_by_uuid(:Instance, params[:id])
+    raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
+
+    instance.state = :halting
+    instance.save
+
+    commit_transaction
+    Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweroff',
+                           instance.canonical_uuid)
+    respond_with({:instance_id=>instance.canonical_uuid,
+                 })
+  end  
+
+  # Restart the instance from halted state.
+  put '/:id/poweron' do
+    instance = find_by_uuid(:Instance, params[:id])
+    raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)
+
+    instance.state = :starting
+    instance.save
+
+    commit_transaction
+    Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweron',
+                           instance.canonical_uuid)
+    respond_with({:instance_id=>instance.canonical_uuid,
+                 })
+  end  
 end
