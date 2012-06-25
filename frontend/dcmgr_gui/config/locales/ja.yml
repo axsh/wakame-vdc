@@ -255,6 +255,10 @@ ja:
       sticky_session:
         header: "スティッキーセッション"
         cookie_name: "Cookie名"
+    delete_load_balancer:
+      message: "ロードバランサを破棄します。よろしいですか？"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
   login:
     sign_in: "ログイン"
     user: "ユーザー"

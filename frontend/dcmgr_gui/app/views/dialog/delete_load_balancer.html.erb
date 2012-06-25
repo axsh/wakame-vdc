@@ -1,0 +1,17 @@
+<div id="delete_load_balancer_dialog">
+  <div class="message">
+    <p><%= t("dialog.delete_load_balancer.message") %></p>
+    <br />
+  </div>
+  <table id="load_balance">
+    <tr>
+      <td><%= t("dialog.delete_load_balancer.load_balancer_id") %>:&nbsp;</td>
+      <td><%= @load_balancer["id"] %></td>
+      <td><input type="hidden" id="load_balancer_id" value="<%= @load_balancer["id"] %>"></td>
+    </tr>
+    <tr>
+      <td class="border"><%= t("dialog.delete_load_balancer.display_name") %>:&nbsp;</td>
+      <td class="border"><%= @load_balancer["display_name"] %></td>
+    </tr>
+  </table>
+</div>

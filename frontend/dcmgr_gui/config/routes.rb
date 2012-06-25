@@ -35,6 +35,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/delete_ssh_keypair', :to => 'dialog#delete_ssh_keypair'
   post   'dialog/edit_ssh_keypair', :to => 'dialog#edit_ssh_keypair'
   get    'dialog/create_load_balancer', :to => 'dialog#create_load_balancer'
+  post   'dialog/delete_load_balancer', :to => 'dialog#delete_load_balancer'
 
   # user/group managment dialog
   get    'dialog/create_user', :to => 'user_management_dialog#create_user'
@@ -200,6 +201,7 @@ DcmgrGui::Application.routes.draw do
   get    'load_balancers/list/:id' ,:to => 'load_balancers#list'
   get    'load_balancers/show/:id', :to => 'load_balancers#show'
   post   'load_balancers', :to => 'load_balancers#create'
+  delete 'load_balancers/:id', :to => 'load_balancers#destroy'
 
   #resorce (management)
   get    'resource' ,:to => 'resource#index'

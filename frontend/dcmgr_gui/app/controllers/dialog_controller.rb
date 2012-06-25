@@ -166,4 +166,11 @@ class DialogController < ApplicationController
   def create_load_balancer
     @load_balancer_ids = params[:ids]
   end
+
+  def delete_load_balancer
+    @load_balancer_id = params[:ids][0]
+    @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+    @display_name = @load_balancer["display_name"]
+  end
+
 end

@@ -94,6 +94,30 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     button: create_load_balancer_buttons
   });
 
+  var delete_load_balancer_buttons = {};
+  delete_load_balancer_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  delete_load_balancer_buttons[delete_button_name] = function() {
+    var load_balancer_id = $(this).find('#load_balancer_id').val();
+    var request = new DcmgrGUI.Request;
+    request.del({
+      "url": '/load_balancers/' + load_balancer_id + '.json',
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+
+    $(this).dialog("close");
+  }
+
+  var bt_delete_load_balancer = new DcmgrGUI.Dialog({
+    target:'.delete_load_balancer',
+    width:400,
+    height:210,
+    title:$.i18n.prop('delete_load_balancer_header'),
+    path:'/delete_load_balancer',
+    button: delete_load_balancer_buttons
+  });
+
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/load_balancers/list/',c_list.page);
@@ -113,7 +137,15 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     bt_create_load_balancer.open();
   });
 
+  bt_delete_load_balancer.target.bind('click',function(){
+    var id = c_list.currentChecked();
+    if( id ){
+      bt_delete_load_balancer.open({"ids":[id]});
+    }
+  });
+
   $(bt_create_load_balancer.target).button({ disabled: false });
+  $(bt_delete_load_balancer.target).button({ disabled: false });
   $(bt_refresh.target).button({ disabled: false });
 
   //list

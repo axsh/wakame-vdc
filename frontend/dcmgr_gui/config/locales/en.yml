@@ -255,6 +255,10 @@ en:
       sticky_session:
         header: "Sticky Session"
         cookie_name: "Cookie Name"
+    delete_load_balancer:
+      message: "Are you sure you want to delete the following Load Balancer?"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
   login:
     sign_in: "Sign In"
     user: "User"
