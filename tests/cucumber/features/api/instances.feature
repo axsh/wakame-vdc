@@ -95,3 +95,19 @@ Feature: Instance API
       Then from the previous api call take {"image_id":} and save it to <registry:image_id>
 
     When the backup_objects with id <registry:backup_object_id> should reach state "available" in 120 seconds or less
+
+  @api_from_12.03
+  Scenario: Poweroff and Poweron instance
+    Given a managed instance with the following options
+      | image_id   | cpu_cores | memory_size | quota_weight  | hypervisor       |
+      | wmi-lucid7 | 1         | 256         | 1.0           | <env:HYPERVISOR> |
+    Then from the previous api call take {"id":} and save it to <registry:id>
+
+    When the created instance has reached the state "running"
+
+    When we make an api put call to instances/<registry:id>/poweroff with no options
+      Then the previous api call should be successful
+    When the created instance has reached the state "halted"
+    When we make an api put call to instances/<registry:id>/poweron with no options
+      Then the previous api call should be successful
+    When the created instance has reached the state "running"

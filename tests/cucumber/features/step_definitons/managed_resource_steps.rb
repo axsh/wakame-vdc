@@ -23,6 +23,18 @@ Given /^a managed #{managed_resource_types} with no options$/ do |type|
 end
 
 Given /^a managed #{managed_resource_types} with the following options$/ do |type,options|
+  case type.to_s
+  when 'instance'
+    if options.headers.member?('hypervisor')
+      options.map_column!('hypervisor') do |i|
+        if i =~ /^<env:(.*)>$/
+          ENV[$1]
+        else
+          i
+        end
+      end
+    end
+  end
   step "we make an api create call to #{type}s with the following options", options
   step "the previous api call should be successful"
 
