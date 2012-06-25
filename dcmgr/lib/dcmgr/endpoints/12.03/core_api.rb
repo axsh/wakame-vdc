@@ -57,7 +57,7 @@ module Dcmgr::Endpoints::V1203
       item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
 
       if @account && item.account_id != @account.canonical_uuid
-        raise E::UnknownUUIDResrouce, uuid.to_s
+        raise E::UnknownUUIDResource, uuid.to_s
       end
       if params[:service_type] && params[:service_type] != item.service_type
         raise E::UnknownUUIDResource, uuid.to_s
