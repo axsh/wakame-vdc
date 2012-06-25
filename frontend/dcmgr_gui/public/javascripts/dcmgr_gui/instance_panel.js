@@ -107,11 +107,25 @@ DcmgrGUI.prototype.instancePanel = function(){
         $(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#left_select_list').mask($.i18n.prop('loading_parts'));
+        $(this).find('#right_select_list').mask($.i18n.prop('loading_parts'));
         
         var request = new DcmgrGUI.Request;
         
         parallel({
-          security_groups: 
+          security_groups:function(){
+            
+            var instance_id = document.getElementById('instance_id').value
+            var selected_groups = []
+            request.get({
+              "url": '/instances/show/'+instance_id+'.json',
+              "data": "",
+              success: function(json,status) {
+                if (json.vif.length > 0) {
+                  selected_groups = json.vif[0]['security_groups']
+                }
+              },
+            })
+            
             request.get({
               "url": '/security_groups/all.json',
               "data": "",
@@ -119,10 +133,12 @@ DcmgrGUI.prototype.instancePanel = function(){
                 var data = [];
                 var results = json.security_group.results;
                 var size = results.length;
+                
                 for (var i=0; i < size ; i++) {
                   data.push({
                     "value" : results[i].result.uuid,
                     "name" : results[i].result.uuid,
+                    "selected" : !($.inArray(results[i].result.uuid, selected_groups) == -1)
                   });
                 }
                 
@@ -143,8 +159,10 @@ DcmgrGUI.prototype.instancePanel = function(){
                 
               }
             })
+          }
         }).next(function(results) {
           $("#left_select_list").unmask();
+          $("#right_select_list").unmask();
         });
       }
     });
