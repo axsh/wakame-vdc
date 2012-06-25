@@ -424,6 +424,8 @@ PasswordAuthentication no
   egrep '^PasswordAuthentication' ./sshd_config.tmp -q || {
     sed -e '$ a\
 PasswordAuthentication no' ./sshd_config.tmp > ./sshd_config
+  } && {
+    mv ./sshd_config.tmp ./sshd_config
   }
   mv ./sshd_config $tmp_root/etc/ssh/sshd_config
   rm -f ./sshd_config.tmp
