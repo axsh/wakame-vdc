@@ -110,7 +110,8 @@ DcmgrGUI.prototype.instancePanel = function(){
         $(this).find('#right_select_list').mask($.i18n.prop('loading_parts'));
         
         var ready = function(data) {
-          if(data['security_groups'] == true) {  
+          if(data['security_groups'] == true &&
+            data['display_name'] == true) {  
             bt_edit_instance.disabledButton(1, false);
           } else {
             bt_edit_instance.disabledButton(1, true);
