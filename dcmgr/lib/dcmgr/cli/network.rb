@@ -154,8 +154,8 @@ __END
     nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
 
     print ERB.new(<<__END, nil, '-').result(binding)
-<%- nw.ip_lease_dataset.order(:ipv4).all.each { |l| -%>
-<%= "%-20s  %-15s" % [l.ipv4, M::IpLease::TYPE_MESSAGES[l.alloc_type]] %>
+<%- nw.network_vif_ip_lease_dataset.order(:ipv4).all.each { |l| -%>
+<%= "%-20s  %-15s" % [l.ipv4, M::NetworkVifIpLease::TYPE_MESSAGES[l.alloc_type]] %>
 <%- } -%>
 __END
   end
@@ -171,7 +171,7 @@ __END
                     Error.raise("Invalid IP address: #{options[:ipv4]}: #{e.message}", 100)
                   end
     if nw.include?(reservaddr)
-      nw.ip_lease_dataset.add_reserved(reservaddr.to_s)
+      nw.network_vif_ip_lease_dataset.add_reserved(reservaddr.to_s)
     else
       Error.raise("IP address is out of range: #{options[:ipv4]} => #{nw.ipv4_ipaddress}/#{nw.prefix}",100)
     end
@@ -188,7 +188,7 @@ __END
                     Error.raise("Invalid IP address: #{options[:ipv4]}: #{e.message}", 100)
                   end
     if nw.include?(releaseaddr)
-      if nw.ip_lease_dataset.delete_reserved(releaseaddr) == 0
+      if nw.network_vif_ip_lease_dataset.delete_reserved(releaseaddr.to_s) == 0
         Error.raise("The IP is not reserved in network #{uuid}: #{options[:ipv4]}", 100)
       end
     else

@@ -14,22 +14,22 @@ module Dcmgr::Models
     #   passthru: do not apply any modifications to the packets from VM.
     NETWORK_MODES=[:securitygroup, :l2overlay, :passthru].freeze
 
-    module IpLeaseMethods
-      def add_reserved(ipaddr, description=nil)
-        model.create(:network_id=>model_object.id,
+    module NetworkVifIpLeaseMethods
+      def add_reserved(ipaddr)
+        model.create(:network_id => model_object.id,
                      :ipv4=>ipaddr,
-                     :alloc_type=>IpLease::TYPE_RESERVED,
-                     :description=>description)
+                     :alloc_type=> NetworkVifIpLease::TYPE_RESERVED,
+                     :description=>ipaddr)
       end
 
       def delete_reserved(ipaddr)
         model.filter(:network_id=>model_object.id,
-                     :alloc_type=>IpLease::TYPE_RESERVED,
-                     :ipv4=>ipaddr).delete
+                     :alloc_type=>NetworkVifIpLease::TYPE_RESERVED,
+                     :ipv4=>ipaddr).destroy
       end
     end
-    one_to_many :ip_lease, :extend=>IpLeaseMethods
-    
+    one_to_many :network_vif_ip_lease, :class=>NetworkVifIpLease, :extend=>NetworkVifIpLeaseMethods
+
     many_to_one :nat_network, :key => :nat_network_id, :class => self
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
@@ -51,9 +51,9 @@ module Dcmgr::Models
 
       vif = NetworkVif.new(vif_data)
       vif.save
-      ip_lease = self.ip_lease_dataset.add_reserved(ipv4)
+      ip_lease = self.network_vif_ip_lease_dataset.add_reserved(ipv4)
       ip_lease.network_vif_id = vif.id
-      ip_lease.save
+      ip_lease.save_changes
       vif
     end
 
@@ -81,8 +81,7 @@ module Dcmgr::Models
     # @param [String] ipaddr IP address
     def find_ip_lease(ipaddr)
       ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
-      leases = self.ip_lease_dataset.where(:ipv4 => ipaddr.to_s)
-
+      leases = NetworkVifIpLease.dataset.where(:ipv4 => ipaddr.to_s)
       return nil if leases.empty?
       leases.first
     end
@@ -217,7 +216,7 @@ module Dcmgr::Models
       }
       
       #Delete all reserved ipleases in this network
-      self.ip_lease_dataset.filter(:alloc_type => IpLease::TYPE_RESERVED).each { |i|
+      self.network_vif_ip_lease_dataset.filter(:alloc_type => NetworkVifIpLease::TYPE_RESERVED).each { |i|
         i.destroy
       }
       

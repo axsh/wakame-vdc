@@ -10,11 +10,11 @@ module Dcmgr::Models
     # To be moved to proper instance_nic.
 
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
-    one_to_many :ip, :class=>IpLease
-    one_to_many(:direct_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
+    one_to_many :ip, :class=>NetworkVifIpLease
+    one_to_many(:direct_ip_lease, :class=>NetworkVifIpLease, :read_only=>true) do |ds|
       ds.where(:network_id=>self.network_id)
     end
-    one_to_many(:nat_ip_lease, :class=>IpLease, :read_only=>true) do |ds|
+    one_to_many(:nat_ip_lease, :class=>NetworkVifIpLease, :read_only=>true) do |ds|
       ds.where(:network_id=>self.nat_network_id)
     end
 
