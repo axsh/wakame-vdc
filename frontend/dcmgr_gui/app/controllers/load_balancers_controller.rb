@@ -56,7 +56,3 @@ class LoadBalancersController < ApplicationController
      render :json => total
    end
 end
-
-  def destroy
-    load_balancer_id = params[:id]
-    detail = Hijiki::DcmgrResource::LoadBalancer.destroy(load_balancer_id)
