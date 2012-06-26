@@ -126,7 +126,6 @@ module Dcmgr::Endpoints::V1203::Tag
           
           g.save_changes
 
-          commit_transaction
           respond_with(R::Tag.new(g).generate)
         end
         

@@ -179,8 +179,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     # Find better way of figuring out when an instance is not running.
     if instance.host_node
-      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
-                             nw.dc_network.name, vif.canonical_uuid)
+      on_after_commit do
+        Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'attach_nic',
+                               nw.dc_network.name, vif.canonical_uuid)
+      end
     end
 
     response_to({})
@@ -203,8 +205,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     # Find better way of figuring out when an instance is not running.
     if instance.host_node
-      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
-                             nw.dc_network.name, vif.canonical_uuid)
+      on_after_commit do
+        Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'detach_nic',
+                               nw.dc_network.name, vif.canonical_uuid)
+      end
     end
 
     response_to({})
@@ -249,7 +253,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     nw.display_name = params[:display_name] if params[:display_name]
     nw.save_changes
     
-    commit_transaction
     respond_with(R::Network.new(nw).generate)
   end
 end

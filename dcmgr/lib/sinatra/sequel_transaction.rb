@@ -15,13 +15,15 @@ module Sinatra
       public
       # commit manually before return from the request block
       def commit_transaction
-        db = Sequel::DATABASES.first
-        db << db.__send__(:commit_transaction_sql)
+        STDERR.puts "Deprecated method. Use on_after_commit() instead."
+      end
+      
+      def on_after_commit(&blk)
+        Sequel::DATABASES.first.after_commit &blk
       end
       
       private
       def route_eval(&block)
-        
         db = Sequel::DATABASES.first
         begin
           db.transaction do
@@ -31,6 +33,7 @@ module Sinatra
           db.disconnect
           raise e
         end
+
       end
     end
 
