@@ -93,10 +93,11 @@ Sequel.migration do
     end
 
     alter_table(:ip_leases) do
-      rename_column :instance_nic_id, :network_vif_id
+      drop_column :instance_nic_id
+      drop_column :alloc_type
+      drop_column :description
 
       drop_index [:instance_nic_id, :network_id]
-      add_index [:network_vif_id, :network_id]
     end
     
     alter_table(:vlan_leases) do
@@ -174,6 +175,21 @@ Sequel.migration do
       column :is_deleted, "int(11)", :null=>false
       index [:load_balancer_id, :network_vif_id, :is_deleted], :unique=>true,
              :name=>'load_balancer_targets_load_balancer_id_network_vif_id_index'
+    end
+
+    create_table(:network_vif_ip_leases) do
+      primary_key :id, :type=>"int(11)"
+      column :network_id, "int(11)", :null=>false
+      column :network_vif_id, "int(11)", :null=>false
+      column :ipv4, "varchar(50)", :null=>false
+      column :alloc_type, "int(11)", :default=>0, :null=>false
+      column :description, "text"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      column :deleted_at, "datetime", :null=>true
+      column :is_deleted, "int(11)", :null=>false
+      index [:network_id, :network_vif_id, :is_deleted], :unique=>true,
+             :name=>'network_vif_ip_leases_network_id_network_vif_id_index'
     end
 
     # Add service_type column for service type resources
@@ -404,11 +420,21 @@ Sequel.migration do
       
       index [:account_id], :unique=>true
     end
-
+    
     # remove instance_specs from dcmgr.
     alter_table(:instances) do
       drop_column :hypervisor
       add_column :instance_spec_id, "int(11)", :null=>false
+    end
+
+    drop_table(:network_vif_ip_leases)
+
+    alter_table(:ip_leases) do
+      add_column :instance_nic_id, "int(11)", :null=>false
+      add_column :alloc_type, "int(11)", :default=>0, :null=>false
+      add_column :description, "text"
+
+      add_index[:instance_nic_id, :network_id]
     end
   end
 end
