@@ -189,10 +189,13 @@ rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}
 rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
 [ -d ${RPM_BUILD_ROOT}/etc/%{name} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}
+[ -d ${RPM_BUILD_ROOT}/etc/%{name}/dcmgr_gui ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}/dcmgr_gui
 
 # rails app config
-ln -s /etc/%{name}/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/instance_spec.yml
-ln -s /etc/%{name}/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+[ -f ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml ] && rm -f ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{name}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{name}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/instance_spec.yml
+ln -s /etc/%{name}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/dcmgr_gui.yml
 
 %clean
 RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules clean
