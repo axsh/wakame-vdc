@@ -104,6 +104,24 @@ class InstancesController < ApplicationController
     end
     render :json => res
   end
+
+  def poweroff
+    instance_ids = params[:ids]
+    res = []
+    instance_ids.each do |instance_id|
+      res << Hijiki::DcmgrResource::Instance.poweroff(instance_id)
+    end
+    render :json => res
+  end
+
+  def poweron
+    instance_ids = params[:ids]
+    res = []
+    instance_ids.each do |instance_id|
+      res << Hijiki::DcmgrResource::Instance.poweron(instance_id)
+    end
+    render :json => res
+  end
   
   def update
     instance_id = params[:id]

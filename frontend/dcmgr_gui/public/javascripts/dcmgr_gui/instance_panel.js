@@ -36,6 +36,8 @@ DcmgrGUI.prototype.instancePanel = function(){
   var reboot_button_name = $.i18n.prop('reboot_button');
   var update_button_name =$.i18n.prop('update_button');
   var backup_button_name =$.i18n.prop('backup_button');
+  var poweroff_button_name =$.i18n.prop('poweroff_button');
+  var poweron_button_name =$.i18n.prop('poweron_button');
 
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
@@ -307,6 +309,34 @@ DcmgrGUI.prototype.instancePanel = function(){
     button:instance_backup_buttons
   });
   
+  var instance_poweroff_buttons = {};
+  instance_poweroff_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  instance_poweroff_buttons[poweroff_button_name] = function() {
+    instance_action_helper.call(this,'poweroff');
+  }
+  var bt_instance_poweroff = new DcmgrGUI.Dialog({
+    target:'.poweroff_instances',
+    width:400,
+    height:200,
+    title:$.i18n.prop('poweroff_instances_header'),
+    path:'/poweroff_instances',
+    button: instance_poweroff_buttons
+  });
+
+  var instance_poweron_buttons = {};
+  instance_poweron_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  instance_poweron_buttons[poweron_button_name] = function() {
+    instance_action_helper.call(this,'poweron');
+  }
+  var bt_instance_poweron = new DcmgrGUI.Dialog({
+    target:'.poweron_instances',
+    width:400,
+    height:200,
+    title:$.i18n.prop('poweron_instances_header'),
+    path:'/poweron_instances',
+    button: instance_poweron_buttons
+  });
+
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
@@ -348,6 +378,12 @@ DcmgrGUI.prototype.instancePanel = function(){
         break;
       case 'stop':
         bt_instance_stop.open(selected_ids);
+        break;
+      case 'poweroff':
+        bt_instance_poweroff.open(selected_ids);
+        break;
+      case 'poweron':
+        bt_instance_poweron.open(selected_ids);
         break;
       }
     }

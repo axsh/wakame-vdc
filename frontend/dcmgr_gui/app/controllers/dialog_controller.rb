@@ -106,6 +106,10 @@ class DialogController < ApplicationController
     end
   end
 
+  alias :poweroff_instances :backup_instances
+  alias :poweron_instances :backup_instances
+
+  
   def edit_instance
     @instance_id = params[:ids][0]
     @instance = Hijiki::DcmgrResource::Instance.show(@instance_id)

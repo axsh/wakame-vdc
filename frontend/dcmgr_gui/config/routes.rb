@@ -26,6 +26,8 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/terminate_instances', :to => 'dialog#terminate_instances'
   post   'dialog/edit_instance', :to => 'dialog#edit_instance'
   post   'dialog/backup_instances', :to => 'dialog#backup_instances'
+  post   'dialog/poweroff_instances', :to => 'dialog#poweroff_instances'
+  post   'dialog/poweron_instances', :to => 'dialog#poweron_instances'
   get    'dialog/create_security_group', :to => 'dialog#create_security_group'
   post   'dialog/delete_security_group', :to => 'dialog#delete_security_group'
   post   'dialog/edit_security_group', :to => 'dialog#edit_security_group'
@@ -109,6 +111,8 @@ DcmgrGui::Application.routes.draw do
   post   'instances/start' ,:to => 'instances#start'
   post   'instances/stop' ,:to => 'instances#stop'
   post   'instances/backup' ,:to => 'instances#backup'
+  post   'instances/poweroff' ,:to => 'instances#poweroff'
+  post   'instances/poweron' ,:to => 'instances#poweron'
   put    'instances/:id', :to => 'instances#update'
 
   #instance_specs

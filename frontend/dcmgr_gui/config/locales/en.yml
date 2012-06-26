@@ -21,6 +21,8 @@ en:
     start: "Start"
     stop: "Stop"
     backup: "Backup"
+    poweron: "PowerOn"
+    poweroff: "PowerOff"
   selectmenu:
     select_action: "Select an Action"
     select_region: "Region: "
@@ -259,6 +261,16 @@ en:
       message: "Are you sure you want to delete the following Load Balancer?"
       load_balancer_id: "Load Balancer ID"
       display_name: "Load Balancer Name"
+    poweron_instances:
+      header: "PowerOn Instances"
+      message: "Are you sure you want to turn those instances on?"
+      instance_id: "Instance ID"
+      display_name: "Instance Name"
+    poweroff_instances:
+      header: "PowerOff Instances"
+      message: "Are you sure you want to turn those instances off?"
+      instance_id: "Instance ID"
+      display_name: "Instance Name"
   login:
     sign_in: "Sign In"
     user: "User"

@@ -69,6 +69,16 @@ module Hijiki::DcmgrResource::V1203
         result = self.find(instance_id).put(:backup)
         result.body
       end
+
+      def poweroff(instance_id)
+        result = self.find(instance_id).put(:poweroff)
+        result.body
+      end
+
+      def poweron(instance_id)
+        result = self.find(instance_id).put(:poweron)
+        result.body
+      end
     end
     extend ClassMethods
   end

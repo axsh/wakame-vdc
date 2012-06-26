@@ -20,6 +20,8 @@ ja:
     launch: "起動"
     start: "再開"
     stop: "一時停止"
+    poweron: "電源オン"
+    poweroff: "電源オフ"
   selectmenu:
     select_action: "アクション"
     select_region: "データセンタ: "
@@ -259,6 +261,16 @@ ja:
       message: "ロードバランサを破棄します。よろしいですか？"
       load_balancer_id: "ロードバランサID"
       display_name: "ロードバランサ名"
+    poweron_instances:
+      header: "インスタンスの電源オフ"
+      message: "インスタンスの電源をオンにします。よろしいですか？"
+      instance_id: "インスタンスID"
+      display_name: "インスタンス名"
+    poweroff_instances:
+      header: "インスタンスの電源オフ"
+      message: "インスタンスの電源をオフにします。よろしいですか？"
+      instance_id: "インスタンスID"
+      display_name: "インスタンス名"
   login:
     sign_in: "ログイン"
     user: "ユーザー"
