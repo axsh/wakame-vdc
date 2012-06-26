@@ -177,12 +177,7 @@ rsync -aHA `pwd`/contrib/etc/init           ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/init.d         ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/logrotate.d    ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/prelink.conf.d ${RPM_BUILD_ROOT}/etc/
-
-# unicorn configs
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-auth.conf
+rsync -aHA `pwd`/contrib/etc/wakame-vdc     ${RPM_BUILD_ROOT}/etc/
 
 # /etc/sysctl.d
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
@@ -263,10 +258,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-webui.conf
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
-%config %{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
-%config %{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
-%config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
-%config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-auth.conf
+%config /etc/wakame-vdc/unicorn-common.conf
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
