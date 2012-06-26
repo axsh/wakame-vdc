@@ -560,13 +560,15 @@ body{
 }
 
 #content #mainarea_wide .controller a.backup_instances{
-	display: block;
-        margin-left: 10px;
-	float: left;
-	width: 119px;
-	height: 23px;
-	font-size: 11px;
-	line-height: 0;
+  display: block;
+  margin-left: 10px;
+  float: left;
+  width: 119px;
+  height: 23px;
+  font-size: 11px;
+  line-height: 0;
+  margin-left: 168px;
+  margin-top: -25px;
 }
 
 #content #mainarea_wide .controller #reservedinstance{
