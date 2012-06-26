@@ -74,7 +74,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     raise E::UnknownNetwork, params[:id] if nw.nil?
     nw.destroy
 
-    response_to([nw.canonical_uuid])
+    respond_with([nw.canonical_uuid])
   end
 
   put '/:id/dhcp/reserve' do
@@ -87,7 +87,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
       nw.ip_lease_dataset.add_reserved(ip)
     }
-    response_to({})
+    respond_with({})
   end
   
   put '/:id/dhcp/release' do
@@ -100,7 +100,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
       nw.ip_lease_dataset.delete_reserved(ip)
     }
-    response_to({})
+    respond_with({})
   end
 
   get '/:id/vifs' do
@@ -156,7 +156,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     raise(UnknownNetworkVif) if vif.nil?
 
     vif.destroy
-    response_to({})
+    respond_with({})
   end
 
   put '/:id/vifs/:vif_id/attach' do
@@ -185,7 +185,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       end
     end
 
-    response_to({})
+    respond_with({})
   end
 
   put '/:id/vifs/:vif_id/detach' do
@@ -198,7 +198,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     vif = find_by_uuid(M::NetworkVif, params[:vif_id])
     raise(E::UnknownNetworkVif, params[:vif_id]) if vif.nil?
     # Verify the network id.
-    raise(E::NetworkVifNotAttached) if vif.network_id != nw.id
+    raise(E::NetworkVifNotAttached) if vif.network_id.nil? or vif.network_id != nw.id
 
     instance = vif.instance
     vif.detach_from_network
@@ -211,7 +211,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       end
     end
 
-    response_to({})
+    respond_with({})
   end
 
   # # Make GRE tunnels, currently used for testing purposes.
@@ -227,7 +227,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   #   command = "/usr/share/axsh/wakame-vdc/ovs/bin/ovs-vsctl add-port br0 #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{params[:dest_ip]} options:key=#{params[:tunnel_id]}"
 
   #   system(command)
-  #   response_to({})
+  #   respond_with({})
   # end
 
   # delete '/:id/tunnels/:tunnel_id' do
@@ -239,7 +239,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
   #   tunnel_name = "gre-#{params[:dest_id]}-#{params[:tunnel_id]}"
 
   #   system("/usr/share/axsh/wakame-vdc/ovs/bin/ovs-vsctl del-port br0 #{tunnel_name}")
-  #   response_to({})
+  #   respond_with({})
   # end
 
   put '/:id' do
