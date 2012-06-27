@@ -149,8 +149,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     raise E::UnknownNetworkVif if config_params[:ipset].empty?
-    update_load_balancer_config(config_params)
-    commit_transaction
+    on_after_commit do
+      update_load_balancer_config(config_params)
+    end
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
@@ -195,8 +196,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       }
     end
 
-    update_load_balancer_config(config_params)
-    commit_transaction
+    on_after_commit do
+      update_load_balancer_config(config_params)
+    end
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
@@ -237,7 +239,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       raise E::InvalidLoadBalancerState, lb.state
     end
 
-    commit_transaction
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 

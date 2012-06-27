@@ -6,12 +6,18 @@ module Hijiki::DcmgrResource::V1203
     self.prefix = '/api/12.03/networks/:network_id/'
     self.element_name = 'vifs'
 
-    module ClassMethods
-      
+    def detach
+      self.put(:detach)
+    end
+
+    class << self
       def find_vif(network_id, vif_id)
         find(vif_id, :params => { :network_id => network_id })
       end
 
+      def detach_vif(network_id, vif_id)
+        find_vif(network_id, vif_id).detach
+      end
     end
 
   end

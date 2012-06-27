@@ -177,22 +177,23 @@ rsync -aHA `pwd`/contrib/etc/init           ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/init.d         ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/logrotate.d    ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/prelink.conf.d ${RPM_BUILD_ROOT}/etc/
-
-# unicorn configs
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-auth.conf
+rsync -aHA `pwd`/contrib/etc/wakame-vdc     ${RPM_BUILD_ROOT}/etc/
 
 # /etc/sysctl.d
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
 rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
 [ -d ${RPM_BUILD_ROOT}/etc/%{name} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}
+[ -d ${RPM_BUILD_ROOT}/etc/%{name}/dcmgr_gui ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}/dcmgr_gui
 
 # rails app config
-ln -s /etc/%{name}/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/instance_spec.yml
-ln -s /etc/%{name}/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+[ -f ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml ] && rm -f ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{name}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{name}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/instance_spec.yml
+ln -s /etc/%{name}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+
+#
+mkdir -p ${RPM_BUILD_ROOT}/var/log/%{name}
 
 %clean
 RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules clean
@@ -237,6 +238,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config(noreplace) /etc/default/wakame-vdc
 %config /etc/prelink.conf.d/wakame-vdc.conf
 %dir /etc/%{name}/
+%dir /var/log/%{name}
 
 %files debug-config
 %defattr(-,root,root)
@@ -260,10 +262,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-webui.conf
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
-%config %{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
-%config %{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
-%config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
-%config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-auth.conf
+%config /etc/wakame-vdc/unicorn-common.conf
+%dir /etc/%{name}/dcmgr_gui
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
