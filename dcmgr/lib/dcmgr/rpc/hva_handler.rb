@@ -140,7 +140,8 @@ module Dcmgr
       end
 
       def get_metadata_items
-        vnic = @inst[:instance_nics].first || {}
+        vnic = @inst[:instance_nics].first
+
         # Appendix B: Metadata Categories
         # http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/index.html?AESDG-chapter-instancedata.html
         metadata_items = {
@@ -156,7 +157,7 @@ module Dcmgr
           'kernel-id' => nil,
           'local-hostname' => @inst[:hostname],
           'local-ipv4' => @inst[:ips].first,
-          'mac' => vnic[:mac_addr].unpack('A2'*6).join(':'),
+          'mac' => vnic ? vnic[:mac_addr].unpack('A2'*6).join(':') : nil,
           'placement/availability-zone' => nil,
           'product-codes' => nil,
           'public-hostname' => @inst[:hostname],
