@@ -12,10 +12,10 @@ module Dcmgr::Models
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
     one_to_many :ip, :class=>NetworkVifIpLease
     one_to_many(:direct_ip_lease, :class=>NetworkVifIpLease, :read_only=>true) do |ds|
-      ds.where(:network_id=>self.network_id)
+      ds.where(:network_id=>self.network_id).alives
     end
     one_to_many(:nat_ip_lease, :class=>NetworkVifIpLease, :read_only=>true) do |ds|
-      ds.where(:network_id=>self.nat_network_id)
+      ds.where(:network_id=>self.nat_network_id).alives
     end
 
     subset(:alives, {:deleted_at => nil})
@@ -54,6 +54,17 @@ module Dcmgr::Models
         :network_id => self.network_id,
         :mac_addr => self.pretty_mac_addr,
       }
+    end
+
+    def lease_ip_lease
+      network = self.network
+      if self.network && self.direct_ip_lease.empty?
+        IpLease.lease(self, network)
+      end
+      nat_network = self.nat_network
+      if nat_network && self.nat_ip_lease.empty?
+        IpLease.lease(self, nat_network)
+      end
     end
 
     def release_ip_lease
@@ -130,6 +141,7 @@ module Dcmgr::Models
       # Verify no network is previously set.
       self.network = network
       self.save_changes
+      lease_ip_lease
     end
 
     def detach_from_network
