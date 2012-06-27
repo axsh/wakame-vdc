@@ -263,6 +263,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
 %config /etc/wakame-vdc/unicorn-common.conf
+%dir /etc/%{name}/dcmgr_gui
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
