@@ -20,8 +20,8 @@ end
 Given /^a new instance with its uuid in <(.+)>$/ do |reg|
   steps %Q{
     Given a new instance with its uuid in <#{reg}> and the following options
-      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled | network_scheduler |
-      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | false      | vif3type1         |
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled |
+      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | false      |
   }
 end
 
