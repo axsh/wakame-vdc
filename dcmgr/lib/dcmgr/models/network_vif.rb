@@ -147,6 +147,7 @@ module Dcmgr::Models
     def detach_from_network
       self.network = nil
       self.save_changes
+      release_ip_lease
     end
 
     private
