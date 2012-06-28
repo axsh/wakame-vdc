@@ -9,8 +9,8 @@ module Sinatra
   #
   # Frontend sends "X-VDC-Account-Quota" header with JSON document. The
   # dcmgr API evaluate the document if the request can go through or
-  # reject. This plugin allows to set evaluation routines into the Sinatra
-  # before filter using custom DSL syntax.
+  # reject. This plugin allows to insert evaluation routines into the Sinatra
+  # condition using custom DSL syntax.
   #
   # Typical HTTP request becomes like below:
   # 
@@ -24,18 +24,23 @@ module Sinatra
   # and 10.0 instances.
   #
   # # Basic usage of this extension.
+  # Sinatra::QuotaEvaluation.evaluators do
+  #   quota_key 'security_group.count' do
+  #     # quota_value == 5
+  #     quota_value <= Models::SecurityGroup.count
+  #   end
+  # end
+  #
   # class App < Sinatra::Base
   #   register Sinatra::QuotaEvaluation
   #
-  #   quota 'security_groups.count' do
-  #     post '/aaaa/bbbb' do
-  #       # quota_value == 5
-  #       quota_value <= Models::SecurityGroup.count
-  #     end
-  #   end
-  #
+  #   quota 'security_group.count'
   #   post '/aaaa/bbbb' do
   #     puts "total security group count is less than or equal to 5."
+  #   end
+  #
+  #   quota 'security_group.xxxxx'
+  #   put '/aaaa/bbbb' do
   #   end
   # end
   #
@@ -46,12 +51,7 @@ module Sinatra
   #   register Sinatra::QuotaEvaluation
   #
   #   namespace '/security groups' do
-  #     quota 'security_groups.count' do
-  #       post do
-  #         # do evaluation
-  #       end
-  #     end
-  #
+  #     quota 'security_groups.count'
   #     post do
   #       puts "create security group"
   #     end
@@ -59,7 +59,7 @@ module Sinatra
   # end
   # 
   module QuotaEvaluation
-    module ClassMethods
+    class << self
 
       class DSL
         attr_reader :tuples
@@ -69,54 +69,55 @@ module Sinatra
         end
         
         def initialize
-          @tuples = []
+          @tuples = {}
         end
         
-        def post(pattern=nil, &blk)
-          @tuples << ['POST', pattern, blk]
-        end
-
-        def put(pattern=nil, &blk)
-          @tuples << ['PUT', pattern, blk]
+        def quota_key(key, &blk)
+          raise ArgumentError, "#{key} was set previously." if @tuples[key]
+          @tuples[key] = [blk]
         end
       end
 
       def quota_defs
-        @quota_defs
+        @quota_defs ||= {}
       end
-      
-      # DSL for quota checking
-      def quota(quota_key, &blk)
+
+      def evaluators(&blk)
         dsl = DSL.parse(&blk)
-        quota_defs[quota_key] = dsl.tuples
+        self.quota_defs.merge!(dsl.tuples)
+      end
+    end
 
-        return self if Dcmgr.conf.skip_quota_evaluation
+    module ClassMethods
+      # Set sinatra condition for this quota key to the endpoint.
+      def quota(*quota_keys)
+        quota_keys.each { |quota_key|
+          tuple = QuotaEvaluation.quota_defs[quota_key]
+          raise ArgumentError, "#{quota_key} is unset" unless tuple
+        }
         
-        dsl.tuples.group_by {|i| i[1] }.each { |pattern, tls|
-          checks = {}
-          tls.each { |tuple|
-            verb, pattern, b = tuple
-            checks[verb] = b
-          }
-          self.before pattern do
-            next true if @quota_request[quota_key].nil?
+        return self if Dcmgr.conf.skip_quota_evaluation
 
+        self.condition {
+          puts "condition"
+          quota_keys.each { |quota_key|
+            puts "condition: #{quota_key}"
+            tuple = QuotaEvaluation.quota_defs[quota_key]
             begin
               @current_quota_key = quota_key
-              chk_blk = checks[request.request_method]
-              if chk_blk
-                if self.instance_eval &chk_blk
-                  # common error for invalid result of quota
-                  # evaluation. it is recommended to raise an error
-                  # with nice message from chk_blk.
-                  halt 400, "Exceeds quota limitation: #{request.request_method} #{request.path_info}"
-                end
+              if self.instance_eval &tuple[0]
+                # common error for invalid result of quota
+                # evaluation. it is recommended to raise an error
+                # with nice message from the block.
+                halt 400, "Exceeds quota limitation: #{request.request_method} #{request.path_info}"
               end
             ensure
               @current_quota_key = nil
             end
-          end
+          }
+          true
         }
+        
         self
       end
     end
@@ -127,24 +128,17 @@ module Sinatra
       end
 
       def quota_value(key=self.quota_key)
+        # set in before filter.
         @quota_request[key]
       end
     end
-
     
     module NamespacedMethods
       include ClassMethods
-
-      def quota_defs
-        base.instance_variable_get(:@quota_defs)
-      end
     end
 
     def self.registered(app)
       app.extend ClassMethods
-      app.class_eval {
-        @quota_defs = {}
-      }
       app.helpers HelperMethods
 
       # Parse quota request from the frontend.
@@ -164,5 +158,4 @@ module Sinatra
       end
     end
   end
-
 end
