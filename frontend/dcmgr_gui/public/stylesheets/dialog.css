@@ -61,17 +61,11 @@
   vertical-align: middle;
 }
 
-#launch_instance_dialog #security_group_field {
-  border: 1px solid gray;
-  padding: 10px;
-  margin: 3px;
-  width: 480px;
-}
-
 #security_group_field {
   border: 1px solid gray;
   padding: 10px;
-  margin: 3px;
+  margin-top: 15px;
+  margin-left: 15px;
   width: 490px;
 }
 
@@ -86,7 +80,7 @@
 #launch_instance_dialog #user_data_field {
   border: 1px solid gray;
   padding: 10px;
-  margin: 3px;
+  margin-left: 15px;
   width: 490px;
 }
 
