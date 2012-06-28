@@ -93,13 +93,22 @@ module Sinatra
       def quota(*quota_keys)
         quota_keys.each { |quota_key|
           tuple = QuotaEvaluation.quota_defs[quota_key]
-          raise ArgumentError, "#{quota_key} is unset" unless tuple
+          raise ArgumentError, "#{quota_key} is unknown quota key" unless tuple
         }
         
         return self if Dcmgr.conf.skip_quota_evaluation
 
         self.condition {
+          # Skip quota evaluation if the quota document is not
+          # avaialble.
+          # For example, missing X-VDC-Account-Quota header or empty
+          # JSON document. Missing X-VDC-Account-ID header also
+          # results in skipping evaluation.
+          return true if @quota_request.nil? || @quota_request.empty?
+          
           quota_keys.each { |quota_key|
+            next unless @quota_request.has_key?(quota_key)
+            
             tuple = QuotaEvaluation.quota_defs[quota_key]
             begin
               @current_quota_key = quota_key
@@ -143,7 +152,13 @@ module Sinatra
       app.before do
         @quota_request = {}
         quota_json = request.env['HTTP_X_VDC_ACCOUNT_QUOTA']
-        if quota_json
+        # Account quota is the specific values for the account set
+        # by X-VDC-Account-ID. The JSON document in
+        # X-VDC-Account-Quota should be ignored if the
+        # X-VDC-Account-ID header did not come along with. 
+        if quota_json && request.env.has_key?('HTTP_X_VDC_ACCOUNT_ID')
+          # JSON parse error is expected to raise error and halts
+          # further request processing.
           @quota_request = ::JSON.parse(quota_json)
         end
       end
