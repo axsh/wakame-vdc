@@ -66,6 +66,12 @@ class DialogController < ApplicationController
     @display_name = @backup_object["display_name"]
   end
   
+  def detach_vif
+    @vif_id = params[:vif_id]
+    @network_id = params[:network_id]
+    @result = Hijiki::DcmgrResource::NetworkVif.find_vif(@network_id, @vif_id).detach
+  end
+
   def start_instances
     @instance_ids = params[:ids]
     @instances = []

@@ -1,3 +1,17 @@
+function detach_vif(network_id, vif_id) {
+  var data = "network_id=" + network_id + "&vif_id=" + vif_id
+
+  request = new DcmgrGUI.Request;
+  request.post({
+    "url": '/dialog/detach_vif',
+    "data": data,
+    success: function(json,status){
+      bt_refresh.element.trigger('dcmgrGUI.refresh');
+    }
+  });
+  $(this).dialog("close");
+}
+
 DcmgrGUI.prototype.instancePanel = function(){
   var total = 0;
   var maxrow = 10;
@@ -195,7 +209,44 @@ DcmgrGUI.prototype.instancePanel = function(){
                 
               }
             })
-          }
+          },
+
+        //get networks
+        networks: 
+          request.get({
+            "url": '/networks/all.json',
+            "data": "",
+            success: function(json,status){
+              var create_select_item = function(name) {
+                var select_html = '<select id="' + name + '" name="' + name + '"></select>';
+                $(self).find('#select_' + name).empty().html(select_html);
+                return $(self).find('#' + name);
+              }
+
+              var append_select_item = function(select_item, uuid, selected) {
+                  select_item.append('<option value="'+ uuid +'"' + (selected ? ' selected="selected"' : '') + '>'+uuid+'</option>');
+              }
+
+              var create_select_eth = function(name, results, selected) {
+                var select_eth = create_select_item(name);
+                append_select_item(select_eth, 'disconnected', !selected);
+
+                for (var i=0; i < size ; i++) {
+                  append_select_item(select_eth, results[i].result.uuid, results[i].result.uuid == selected);
+                }
+              }
+
+              var results = json.network.results;
+              var size = results.length;
+
+              is_ready['networks'] = true;
+              ready(is_ready);
+
+              for (var i=0; i < select_current_eth.length ; i++) {
+                create_select_eth('eth' + i, results, select_current_eth[i]);
+              }                
+            }
+          })
         }).next(function(results) {
           $("#left_select_list").unmask();
           $("#right_select_list").unmask();
