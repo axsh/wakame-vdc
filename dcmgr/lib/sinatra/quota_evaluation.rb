@@ -99,9 +99,7 @@ module Sinatra
         return self if Dcmgr.conf.skip_quota_evaluation
 
         self.condition {
-          puts "condition"
           quota_keys.each { |quota_key|
-            puts "condition: #{quota_key}"
             tuple = QuotaEvaluation.quota_defs[quota_key]
             begin
               @current_quota_key = quota_key
