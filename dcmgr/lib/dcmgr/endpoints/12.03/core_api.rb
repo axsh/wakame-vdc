@@ -4,6 +4,7 @@ require 'time'
 
 require 'sinatra/base'
 require 'sinatra/dcmgr_api_setup'
+require 'sinatra/quota_evaluation'
 
 require 'dcmgr/endpoints/errors'
 
@@ -11,6 +12,7 @@ module Dcmgr::Endpoints::V1203
   class CoreAPI < Sinatra::Base
     include Dcmgr::Logger
     register Sinatra::DcmgrAPISetup
+    register Sinatra::QuotaEvaluation
 
     use Dcmgr::Rack::RequestLogger
 
