@@ -13,6 +13,31 @@ Installation Requirements
 + Local Area Network (LAN)
 + Internet connection
 
+### yum pre-estup
+
+Downloading repo file and put it to your /etc/yum.repos.d/ repository.
+
+    # curl -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo -o /etc/yum.repos.d/wakame-vdc.repo
+
+Base Installation
+-----------------
+
+    # yum install wakame-vdc
+
+Dcmgr Installation
+------------------
+
+    # yum install http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-7.noarch.rpm
+    # yum install wakame-vdc-dcmgr-vmapp-config
+
+Hva installation
+----------------
+
+    # yum search  wakame-vdc-hva
+    # yum install wakame-vdc-hva-<hypervisor>-vmapp-config
+
+Developer Zone
+==============
 
 Installing RPM Builder Software
 -------------------------------
