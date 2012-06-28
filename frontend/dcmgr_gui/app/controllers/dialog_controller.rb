@@ -120,6 +120,12 @@ class DialogController < ApplicationController
     @instance_id = params[:ids][0]
     @instance = Hijiki::DcmgrResource::Instance.show(@instance_id)
     @display_name = @instance["display_name"]
+
+    @vifs = []
+
+    @instance['vif'].each { |vif|
+      @vifs << vif
+    }
   end
 
   def create_security_group
