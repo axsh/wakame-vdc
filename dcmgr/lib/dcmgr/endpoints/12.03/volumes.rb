@@ -64,7 +64,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::UnknownVolume, params[:id] if v.nil?
     respond_with(R::Volume.new(v).generate)
   end
-  
+
+  quota 'volume.size', 'volume.count'
   post do
     sp = vs = vol = nil
     # input parameter validation
@@ -206,6 +207,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   end
 
   # Create new backup
+  quota 'backup_object.size', 'backup_object.count'
   put '/:id/backup' do
     raise E::UndefinedVolumeID if params[:id].nil?
     v = find_by_uuid(:Volume, params[:id])

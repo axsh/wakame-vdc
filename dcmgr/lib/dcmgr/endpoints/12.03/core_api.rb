@@ -7,6 +7,7 @@ require 'sinatra/dcmgr_api_setup'
 require 'sinatra/quota_evaluation'
 
 require 'dcmgr/endpoints/errors'
+require 'dcmgr/endpoints/12.03/quota_definitions'
 
 module Dcmgr::Endpoints::V1203
   class CoreAPI < Sinatra::Base
