@@ -122,6 +122,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::OperationNotPermitted
     end
 
-    response_to([g.canonical_uuid])
+    respond_with([g.canonical_uuid])
   end
 end
