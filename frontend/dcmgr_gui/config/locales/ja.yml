@@ -262,6 +262,10 @@ ja:
       message: "ロードバランサを破棄します。よろしいですか？"
       load_balancer_id: "ロードバランサID"
       display_name: "ロードバランサ名"
+    register_load_balancer:
+      header: "インスタンスの割り当て"
+      instances: "インスタンス"
+      register_instances: "割り当て"
     poweron_instances:
       header: "インスタンスの電源オフ"
       message: "インスタンスの電源をオンにします。よろしいですか？"
@@ -359,6 +363,9 @@ ja:
       updated_at: "更新日"
   load_balancers:
     header: "ロードバランサ"
+    load_balancer_actions:
+      register_instance: "インスタンスの割り当て"
+      unregister_instance: "インスタンスの解除"
     button:
       create_load_balancer: "ロードバランサを起動"
       delete_load_balancer: "ロードバランサを破棄"

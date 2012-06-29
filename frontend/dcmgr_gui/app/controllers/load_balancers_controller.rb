@@ -55,4 +55,18 @@ class LoadBalancersController < ApplicationController
      total = all_resource_count - deleted_resource_count
      render :json => total
    end
+
+   def register_instances
+     load_balancer_id = params[:load_balancer_id]
+     vifs = params[:vifs]
+     res = Hijiki::DcmgrResource::LoadBalancer.register(load_balancer_id, vifs)
+     render :json => res
+   end
+
+   def unregister_instances
+     load_balancer_id = params[:load_balancer_id]
+     vifs = params[:vifs]
+     res = Hijiki::DcmgrResource::LoadBalancer.unregister(load_balancer_id, vifs)
+     render :json => res
+   end
 end

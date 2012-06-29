@@ -189,4 +189,16 @@ class DialogController < ApplicationController
     @display_name = @load_balancer["display_name"]
   end
 
+  def register_load_balancer
+    @load_balancer_id = params[:ids][0]
+    @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+    @display_name = @load_balancer["display_name"]
+  end
+
+  def unregister_load_balancer
+    @load_balancer_id = params[:ids][0]
+    @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+    @display_name = @load_balancer["display_name"]
+  end
+
 end

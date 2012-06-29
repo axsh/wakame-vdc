@@ -262,6 +262,10 @@ en:
       message: "Are you sure you want to delete the following Load Balancer?"
       load_balancer_id: "Load Balancer ID"
       display_name: "Load Balancer Name"
+    register_load_balancer:
+      header: "Register Load Balancer"
+      instances: "Instances"
+      register_instances: "Register Instance"
     poweron_instances:
       header: "PowerOn Instances"
       message: "Are you sure you want to turn those instances on?"
@@ -360,6 +364,9 @@ en:
       updated_at: "Updated At"
   load_balancers:
     header: "Load Balancers"
+    load_balancer_actions:
+      register_instance: "Register Instance"
+      unregister_instance: "Unregister Instance"
     button:
       create_load_balancer: "Create Load Balancer"
       delete_load_balancer: "Delete Load Balancer"
