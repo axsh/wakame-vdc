@@ -20,26 +20,43 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
   get '/:id' do
     # description 'Show status of the host'
     # param :account_id, :string, :optional
-    hn = find_by_uuid(:HostNode, params[:id])
+    hn = find_by_public_uuid(:HostNode, params[:id])
     raise E::UnknownHostNode, params[:id] if hn.nil?
     
     respond_with(R::HostNode.new(hn).generate)
   end
   
   post do
+    # description 'Create a new host node'
+    # param :id, :string, :required
+    # param :arch, :string, :required
+    # param :hypervisor, :string, :required
+    # param :name, :string, :optional
+    # param :offering_cpu_cores, :int, :required
+    # param :offering_memory_size, :int, :required
+    params.delete(:account_id) if params[:account_id]
     hn = M::HostNode.create(params)
     respond_with(R::HostNode.new(hn).generate)
   end
 
   delete '/:id' do
-    hn = find_by_uuid(:HostNode, params[:id])
+    # description 'Delete host node'
+    # param :id, :string, :required
+    hn = find_by_public_uuid(:HostNode, params[:id])
     raise E::UnknownHostNode, params[:id] if hn.nil?
     hn.destroy
     respond_with({:uuid=>hn.canonical_uuid})
   end
 
   put '/:id' do
-    hn = find_by_uuid(:HostNode, params[:id])
+    # description 'Update host node'
+    # param :id, :string, :required
+    # param :arch, :string, :optional
+    # param :hypervisor, :string, :optional
+    # param :name, :string, :optional
+    # param :offering_cpu_cores, :int, :optional
+    # param :offering_memory_size, :int, :optional
+    hn = find_by_public_uuid(:HostNode, params[:id])
     raise E::UnknownHostNode, params[:id] if hn.nil?
 
     changed = {}

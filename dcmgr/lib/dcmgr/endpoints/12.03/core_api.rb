@@ -68,6 +68,19 @@ module Dcmgr::Endpoints::V1203
       item
     end
 
+    def find_by_public_uuid(model_class, uuid)
+      if model_class.is_a?(Symbol)
+        model_class = Dcmgr::Models.const_get(model_class)
+      end
+      raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
+      item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+
+      if params[:service_type] && params[:service_type] != item.service_type
+        raise E::UnknownUUIDResource, uuid.to_s
+      end
+      item
+    end
+
     def validate_service_type(service_type)
       Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
     end
