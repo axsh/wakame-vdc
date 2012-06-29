@@ -21,7 +21,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
   end
 
   get '/:id' do
-    dcn = find_by_uuid(:DcNetwork, params[:id])
+    dcn = find_by_public_uuid(:DcNetwork, params[:id])
 
     respond_with(R::DcNetwork.new(dcn).generate)
   end
@@ -38,14 +38,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
   end
 
   delete '/:id' do
-    dcn = find_by_uuid(:DcNetwork, params[:id])
+    dcn = find_by_public_uuid(:DcNetwork, params[:id])
     dcn.destroy
 
     respond_with([dcn.canonical_uuid])
   end
 
   put '/:id' do
-    dcn = find_by_uuid(:DcNetwork, params[:id])
+    dcn = find_by_public_uuid(:DcNetwork, params[:id])
     
     changed = {}
     (M::DcNetwork.columns - [:id]).each { |c|
@@ -59,13 +59,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
   end
 
   get '/:id/offering_modes' do
-    dcn = find_by_uuid(:DcNetwork, params[:id])
+    dcn = find_by_public_uuid(:DcNetwork, params[:id])
     respond_with(dcn.offering_network_modes || [])
   end
   
   # modify offering network mode list
   put '/:id/offering_modes/add' do
-    dcn = find_by_uuid(:DcNetwork, params[:id])
+    dcn = find_by_public_uuid(:DcNetwork, params[:id])
     modelst = case params[:mode]
               when String
                 params[:mode].split(',')
@@ -82,7 +82,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
   end
 
   put '/:id/offering_modes/delete' do
-    dcn = find_by_uuid(:DcNetwork, params[:id])
+    dcn = find_by_public_uuid(:DcNetwork, params[:id])
     modelst = case params[:mode]
               when String
                 params[:mode].split(',')
