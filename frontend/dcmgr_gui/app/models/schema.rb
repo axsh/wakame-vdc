@@ -6,12 +6,8 @@ require 'erb'
 module Schema
   extend self
   
-  def connect(str)
-    @db = Sequel.connect(str)
-  end
-  
   def current_connect
-    @db
+    Sequel::DATABASES.first
   end
   
   def config(env,file)
@@ -20,7 +16,7 @@ module Schema
     
   attr_reader :db
   def table_exists?(table_name)
-    @db.table_exists? table_name
+    current_connect.table_exists? table_name
   end
 
   def create!
@@ -30,7 +26,7 @@ module Schema
     models.each { |model|
       model.create_table!
     }
-    @db.create_table? :users_accounts do
+    current_connect.create_table? :users_accounts do
       primary_key :id, :type=>Integer
       Fixnum :user_id, :null => false
       Fixnum :account_id, :null => false
@@ -39,7 +35,7 @@ module Schema
 
   def drop!
     models.each { |model|
-      @db.drop_table(model.table_name)
+      current_connect.drop_table(model.table_name)
     }
   end
   

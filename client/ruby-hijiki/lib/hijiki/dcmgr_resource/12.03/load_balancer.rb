@@ -35,6 +35,23 @@ module Hijiki::DcmgrResource::V1203
       def status(account_id)
         self.find(account_id).get(:status)
       end
+
+      def register(load_balancer_id, vifs)
+        @collection ||= self.collection_name
+        self.collection_name = File.join(@collection, load_balancer_id)
+        result = self.put(:register, {:load_balancer_id => load_balancer_id, :vifs => vifs})
+        self.collection_name = @collection
+        result.body
+      end
+
+      def unregister(load_balancer_id, vifs)
+        @collection ||= self.collection_name
+        self.collection_name = File.join(@collection, load_balancer_id)
+        result = self.put(:unregister, {:load_balancer_id => load_balancer_id, :vifs => vifs})
+        self.collection_name = @collection
+        result.body
+      end
+
     end
     extend ClassMethods
 

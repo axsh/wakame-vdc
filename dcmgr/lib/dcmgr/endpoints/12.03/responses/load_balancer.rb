@@ -35,10 +35,16 @@ module Dcmgr::Endpoints::V1203::Responses
           h[:vif] << ent
         }
 
+        network_vif_ids = []
+        load_balancer_targets.collect {|t|
+          network_vif_ids << t[:network_vif_id].split('-')[1]
+        }
+
+        target_instances = Dcmgr::Models::NetworkVif.where(:uuid => network_vif_ids).all.collect{|t|t.instance.canonical_uuid}
         to_hash.merge(:id=>canonical_uuid,
               :state=>state,
               :status=>status,
-              :targets=> load_balancer_targets.collect { |t|t.to_hash },
+              :target_instances=> target_instances,
               :vif=>h[:vif]
         )
       }

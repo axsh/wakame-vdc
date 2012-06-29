@@ -141,5 +141,9 @@ class InstancesController < ApplicationController
    total = all_resource_count - terminated_resource_count
    render :json => total
   end
-  
+
+  def show_instances
+    instances = Hijiki::DcmgrResource::Instance.list
+    respond_with(instances[0],:to => [:json])
+  end
 end

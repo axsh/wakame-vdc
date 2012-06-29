@@ -5,7 +5,7 @@ module Hijiki::DcmgrResource::V1203
       include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
 
       def list(params = {})
-        super(params.merge({:state=>'alive_with_terminated'}))
+        super(params.merge({:state=>'alive_with_terminated', :service_type=>'std'}))
       end
       
       def create(params)

@@ -631,7 +631,7 @@ body{
 	height: 23px;
 	font-size: 11px;
 	line-height: 0;
-	margin-left:7px;
+  margin: 0px 10px 0px 10px
 }
 
 #load_balancer_action-button {
@@ -639,6 +639,10 @@ body{
   margin-left:7px;
   font-size: 11px;
   height:23px;
+}
+
+#load_balancer_action-menu {
+  font-size: 11px;
 }
 
 #content #mainarea_wide .controller a.create_ssh_keypair{

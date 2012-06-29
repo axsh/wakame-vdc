@@ -38,14 +38,10 @@ end
 
 module TxMode
   module Bulk
-    def before_loop
-      Dcmgr::Models::BaseNew.db << 'BEGIN;'
-      super
-    end
-    
-    def after_loop
-      super
-      Dcmgr::Models::BaseNew.db << 'COMMIT;'
+    def loop
+      Dcmgr::Models::BaseNew.db.transaction do
+        super
+      end
     end
   end
   
@@ -128,7 +124,7 @@ OptionParser.new { |o|
   end
 }.order!(argv)
 
-if RootCli.tasks.keys.member?(argv.first)
+if !argv.empty?
   # CLI mode
   begin
     Dcmgr::Models::BaseNew.db.transaction do
