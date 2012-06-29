@@ -1,19 +1,13 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-begin
-  require 'rubygems'
-  require 'bundler/setup'
-rescue Exception => e
-end
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+load File.expand_path('../../config/boot.rb', __FILE__)
+
 require 'thor'
 require 'thor/group'
 require 'erb'
-
-$LOAD_PATH.unshift File.expand_path('../../config', __FILE__)
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-
-require 'environment'
 
 module Cli
   require 'cli/errors'
@@ -24,11 +18,14 @@ module Cli
   autoload :Error, 'cli/errors'
 end
 
-
 class RootCli < Thor
   register(Cli::AccountCli, Cli::AccountCli.namespace, "account sub-command", "Operations for accounts")
   register(Cli::UserCli, Cli::UserCli.namespace, "user sub-command", "Operations for users")
 end
+
+require File.expand_path('../../config/initializers/sequel', __FILE__)
+# load model classes under app/models.
+require 'autoload'
 
 begin
   RootCli.start
