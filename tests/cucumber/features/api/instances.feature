@@ -4,8 +4,8 @@ Feature: Instance API
   Scenario: Create and delete new instance (volume store)
     # Security groups is an array?...
     Given a managed instance with the following options
-      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled | network_scheduler | display_name |
-      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | false      | vif3type1         | instance1    |
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled | display_name |
+      | wmi-lucid6 | is-small         | ssh-demo   | sg-demofgr      | false      | instance1    |
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
@@ -16,8 +16,8 @@ Feature: Instance API
   Scenario: Create and delete new instance (local store)
     # Security groups is an array?...
     Given a managed instance with the following options
-      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled | network_scheduler | display_name |
-      | wmi-lucid7 | is-demo2         | ssh-demo   | sg-demofgr      | false      | vif3type1         | instance1    |
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled | display_name |
+      | wmi-lucid7 | is-small         | ssh-demo   | sg-demofgr      | false      | instance1    |
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
@@ -28,8 +28,8 @@ Feature: Instance API
   @api_from_12.03
   Scenario: Update new instance information
     Given a managed instance with the following options
-      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled | network_scheduler | display_name |
-      | wmi-lucid7 | is-demo2         | ssh-demo   | sg-demofgr      | false      | vif3type1         | instance1    |
+      | image_id   | instance_spec_id | ssh_key_id | security_groups | ha_enabled | display_name |
+      | wmi-lucid7 | is-small         | ssh-demo   | sg-demofgr      | false      | instance1    |
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
@@ -46,7 +46,7 @@ Feature: Instance API
   Scenario: Get index of instance
     Given a managed instance with the following options
       | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type | display_name |
-      | wmi-lucid7 | is-demo2         | ssh-demo   | sg-demofgr      | std          | instance1    |
+      | wmi-lucid7 | is-small         | ssh-demo   | sg-demofgr      | std          | instance1    |
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
@@ -59,10 +59,10 @@ Feature: Instance API
   Scenario: List instances with filter options
     Given a managed instance with the following options
       | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type | display_name |
-      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | std          | instance1    |
+      | wmi-lucid6 | is-small         | ssh-demo   | sg-demofgr      | std          | instance1    |
     Given a managed instance with the following options
       | image_id   | instance_spec_id | ssh_key_id | security_groups | service_type | display_name |
-      | wmi-lucid6 | is-demo2         | ssh-demo   | sg-demofgr      | std          | instance2    |
+      | wmi-lucid6 | is-small         | ssh-demo   | sg-demofgr      | std          | instance2    |
     When we make an api get call to security_groups with the following options
       |account_id|
       |a-shpoolxx|
@@ -84,7 +84,7 @@ Feature: Instance API
   Scenario: Backup image file (local store)
     Given a managed instance with the following options
       | image_id   | instance_spec_id |
-      | wmi-lucid7 | is-demo2         |
+      | wmi-lucid7 | is-small         |
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
