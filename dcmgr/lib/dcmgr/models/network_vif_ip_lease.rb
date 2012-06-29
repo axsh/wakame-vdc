@@ -3,7 +3,7 @@ require 'ipaddress'
 module Dcmgr::Models
   class NetworkVifIpLease < BaseNew
     class RequestError < RuntimeError; end
-    
+
     TYPE_AUTO=0
     TYPE_RESERVED=1
     TYPE_MANUAL=2
@@ -25,13 +25,13 @@ module Dcmgr::Models
 
       # validate ipv4 syntax
       begin
-        addr = IPAddress::IPv4.new(self.ipv4)
+        addr = IPAddress::IPv4::parse_u32(self.ipv4_i)
         # validate if ipv4 is in the range of network_id.
         unless network.include?(addr)
           errors.add(:ipv4, "IP address #{addr} is out of range: #{network.canonical_uuid})")
         end
         # Set IP address string canonicalized by IPAddress class.
-        self.ipv4 = addr.to_s
+        self[:ipv4] = addr.to_i
       rescue => e
         errors.add(:ipv4, "Invalid IP address syntax: #{self.ipv4} (#{e})")
       end
@@ -39,15 +39,15 @@ module Dcmgr::Models
 
     def before_save
       if new?
-        ip = IpLease.create(:network_id => self.network_id,
-                            :ipv4 => self.ipv4)
+        IpLease.create(:network_id => self.network_id,
+                       :ipv4 => self.ipv4)
       end
       
       super
     end
 
     def before_destroy
-      IpLease.filter(:network_id=>self.network_id, :ipv4=>self.ipv4).destroy
+      IpLease.filter(:network_id=>self.network_id, :ipv4=>self.ipv4_i).destroy
       super
     end
 
@@ -88,5 +88,13 @@ module Dcmgr::Models
       end
     end
 
+    def ipv4_s
+      IPAddress::IPv4::parse_u32(self[:ipv4])
+    end
+    alias :ipv4 :ipv4_s
+
+    def ipv4_i
+      self[:ipv4]
+    end
   end
 end

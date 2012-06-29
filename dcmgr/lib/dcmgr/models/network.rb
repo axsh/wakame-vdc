@@ -17,7 +17,7 @@ module Dcmgr::Models
     module NetworkVifIpLeaseMethods
       def add_reserved(ipaddr)
         model.create(:network_id => model_object.id,
-                     :ipv4=>ipaddr,
+                     :ipv4=>IPAddress::IPv4.new(ipaddr).to_i,
                      :alloc_type=> NetworkVifIpLease::TYPE_RESERVED,
                      :description=>ipaddr)
       end
@@ -81,7 +81,7 @@ module Dcmgr::Models
     # @param [String] ipaddr IP address
     def find_ip_lease(ipaddr)
       ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
-      leases = NetworkVifIpLease.dataset.where(:ipv4 => ipaddr.to_s)
+      leases = NetworkVifIpLease.dataset.where(:ipv4 => ipaddr.to_i)
       return nil if leases.empty?
       leases.first
     end
