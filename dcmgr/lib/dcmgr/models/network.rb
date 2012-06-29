@@ -25,7 +25,7 @@ module Dcmgr::Models
       def delete_reserved(ipaddr)
         model.filter(:network_id=>model_object.id,
                      :alloc_type=>NetworkVifIpLease::TYPE_RESERVED,
-                     :ipv4=>ipaddr).destroy
+                     :ipv4=>IPAddress::IPv4.new(ipaddr).to_i).destroy
       end
     end
     one_to_many :network_vif_ip_lease, :class=>NetworkVifIpLease, :extend=>NetworkVifIpLeaseMethods

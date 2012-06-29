@@ -85,7 +85,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     raise E::UnknownNetwork, params[:id] if nw.nil?
 
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
-      nw.ip_lease_dataset.add_reserved(ip)
+      nw.network_vif_ip_lease_dataset.add_reserved(ip)
     }
     respond_with({})
   end
@@ -98,7 +98,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     raise E::UnknownNetwork, params[:id] if nw.nil?
     
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
-      nw.ip_lease_dataset.delete_reserved(ip)
+      nw.network_vif_ip_lease_dataset.delete_reserved(ip)
     }
     respond_with({})
   end
