@@ -3,8 +3,6 @@
 set -e
 set -x
 
-owner=$(whoami)
-
 archs="x86_64 i686"
 rpm_dir=pool/vdc/current
 s3_repo_uri=s3://dlc.wakame.axsh.jp/packages/rhel/6/
@@ -31,12 +29,9 @@ for arch in ${archs}; do
 
   for subdir in ${subdirs}; do
     pkg_dir=${chroot_dir}/${subdir}
-    sudo bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* ${pkg_dir}/*.rpm ${rpm_dir}/${basearch}/ || :"
+    bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* ${pkg_dir}/*.rpm ${rpm_dir}/${basearch}/ || :"
   done
 done
-
-# change owner to `whoami`
-sudo chown -R ${owner} ${rpm_dir}/
 
 # cleanup old wakame-vdc rpms.
 find ${rpm_dir} -type f -name "wakame-*" -mtime +5 | sort | while read line; do
