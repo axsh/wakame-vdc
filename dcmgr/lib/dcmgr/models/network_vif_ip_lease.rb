@@ -30,8 +30,10 @@ module Dcmgr::Models
         unless network.include?(addr)
           errors.add(:ipv4, "IP address #{addr} is out of range: #{network.canonical_uuid})")
         end
-        unless IpLease.filter(:network_id=>self.network_id, :ipv4=>self.ipv4_i).first.nil?
-          errors.add(:ipv4, "IP address #{addr} already exists")
+        if new?
+          unless IpLease.filter(:network_id=>self.network_id, :ipv4=>self.ipv4_i).first.nil?
+            errors.add(:ipv4, "IP address #{addr} already exists")
+          end
         end
         # Set IP address string canonicalized by IPAddress class.
         self[:ipv4] = addr.to_i
