@@ -69,7 +69,7 @@ module Dcmgr::Models
     end
 
     def remove_target(network_vif_id)
-      lbt = LoadBalancerTarget.find(:network_vif_id => network_vif_id)
+      lbt = LoadBalancerTarget.find(:network_vif_id => network_vif_id, :is_deleted => 0)
       lbt.delete
       lbt
     end
