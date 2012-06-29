@@ -81,7 +81,7 @@ module Dcmgr::Models
     # @param [String] ipaddr IP address
     def find_ip_lease(ipaddr)
       ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
-      leases = NetworkVifIpLease.dataset.where(:ipv4 => ipaddr.to_i)
+      leases = NetworkVifIpLease.dataset.where(:ipv4 => ipaddr.to_i).alives
       return nil if leases.empty?
       leases.first
     end
