@@ -35,7 +35,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     hn = find_by_uuid(:HostNode, params[:id])
     raise E::UnknownHostNode, params[:id] if hn.nil?
     hn.destroy
-    response_to({:uuid=>hn.canonical_uuid})
+    respond_with({:uuid=>hn.canonical_uuid})
   end
 
   put '/:id' do

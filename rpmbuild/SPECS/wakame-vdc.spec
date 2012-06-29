@@ -192,8 +192,10 @@ ln -s /etc/%{name}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{nam
 ln -s /etc/%{name}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/instance_spec.yml
 ln -s /etc/%{name}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/dcmgr_gui.yml
 
-#
+# log directory
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{name}
+mkdir -p ${RPM_BUILD_ROOT}/var/log/%{name}/dcmgr_gui
+ln -s /var/log/%{name}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/log
 
 %clean
 RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules clean
@@ -239,6 +241,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/prelink.conf.d/wakame-vdc.conf
 %dir /etc/%{name}/
 %dir /var/log/%{name}
+%dir /var/log/%{name}/dcmgr_gui
 
 %files debug-config
 %defattr(-,root,root)

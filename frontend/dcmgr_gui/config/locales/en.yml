@@ -72,6 +72,7 @@ en:
       security_group: "Security Groups"
       available_groups: "Avaiable groups"
       groups_to_assign: "Groups to assign"
+      interface: "Interface"
     edit_machine_image:
       header: "Edit Machine Image"
       uuid: "WMI ID"

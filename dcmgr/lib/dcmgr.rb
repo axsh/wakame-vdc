@@ -120,8 +120,6 @@ module Dcmgr
     autoload :Network, 'dcmgr/cli/network'
     autoload :Host, 'dcmgr/cli/host'
     autoload :Storage, 'dcmgr/cli/storage'
-    autoload :AccountCli, 'dcmgr/cli/account'
-    autoload :UsersCli, 'dcmgr/cli/user'
     autoload :Vlan, 'dcmgr/cli/vlan'
     autoload :Image, 'dcmgr/cli/image'
     autoload :KeyPair, 'dcmgr/cli/keypair'

@@ -27,22 +27,12 @@
   padding-right: 4px;
 }
 
-#launch_instance_dialog #left_select_list {
+#left_select_list {
 	width: 200px;
 	height: 190px;
 }
 
-#launch_instance_dialog #right_select_list {
-	width: 200px;
-	height: 190px;
-}
-
-#edit_instance_dialog #left_select_list {
-	width: 200px;
-	height: 190px;
-}
-
-#edit_instance_dialog #right_select_list {
+#right_select_list {
 	width: 200px;
 	height: 190px;
 }
@@ -71,18 +61,12 @@
   vertical-align: middle;
 }
 
-#launch_instance_dialog #security_group_field {
+#security_group_field {
   border: 1px solid gray;
   padding: 10px;
-  margin: 3px;
-  width: 480px;
-}
-
-#edit_instance_dialog #security_group_field {
-  border: 1px solid gray;
-  padding: 10px;
-  margin: 3px;
-  width: 480px;
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 490px;
 }
 
 #launch_instance_dialog #security_group_field legend {
@@ -96,7 +80,7 @@
 #launch_instance_dialog #user_data_field {
   border: 1px solid gray;
   padding: 10px;
-  margin: 3px;
+  margin-left: 15px;
   width: 490px;
 }
 

@@ -4,9 +4,35 @@ require 'sinatra/base'
 require 'sequel'
 
 module Sinatra
-  # wrap routed request with sequel transaction block.
-  # note: this is NOT thread safe. please ensure not to be used in the
-  # multi-threaded apps.
+  # Provide single DB transaction for single HTTP request and the
+  # hooks that called after transaction. Hooks are also reset
+  # at every requests.
+  #
+  # register Sinatra::SequelTransaction
+  #
+  # # Below POST block is wrapped with "BEGIN; COMMIT/ROLLBACK;" SQL
+  # # queries.
+  # post do
+  #   Sequel::DATABASES.first['INSERT INTO xxxx .....']
+  # end
+  #
+  # # The transaction is rolled back if an Exception is raised from
+  # # the request block.
+  # put do
+  #   raise RuntimeError
+  # end
+  #
+  # # Example of on_after_commit.
+  # post do
+  #   Sequel::DATABASES.first['INSERT INTO xxxx .....']
+  #
+  #   on_after_commit do
+  #     puts "commited"
+  #   end
+  #   on_after_commit do
+  #     puts "second hook"
+  #   end
+  # end
   module SequelTransaction
     module Helpers
       # TODO: abstract database connection. it means that do not use

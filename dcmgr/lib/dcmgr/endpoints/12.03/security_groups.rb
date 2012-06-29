@@ -42,6 +42,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     respond_with(R::SecurityGroup.new(g).generate)
   end
 
+  quota 'security_group.count'
   post do
     # description 'Register a new security group'
     # params description, string
@@ -122,6 +123,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::OperationNotPermitted
     end
 
-    response_to([g.canonical_uuid])
+    respond_with([g.canonical_uuid])
   end
 end

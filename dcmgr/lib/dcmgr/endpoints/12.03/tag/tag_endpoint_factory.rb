@@ -71,7 +71,7 @@ module Dcmgr::Endpoints::V1203::Tag
           raise E::UnknownUUIDResource, params[:id] unless tag.is_a? M::Tag
           tag.remove_all_mapped_uuids
           tag.destroy
-          response_to([tag.canonical_uuid])
+          respond_with([tag.canonical_uuid])
         end
         
         put '/:id' do

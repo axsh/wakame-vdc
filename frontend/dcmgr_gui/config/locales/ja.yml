@@ -71,6 +71,7 @@ ja:
       security_group: "セキュリティーグループ設定"
       available_groups: "セキュリティーグループ"
       groups_to_assign: "選択済み"
+      interface: "インタフェース"
     edit_machine_image:
       header: "マシンイメージ編集"
       uuid: "WMI ID"
