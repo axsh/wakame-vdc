@@ -45,7 +45,7 @@ module Dcmgr::Models
     def before_save
       if new?
         IpLease.create(:network_id => self.network_id,
-                       :ipv4 => self.ipv4)
+                       :ipv4 => self.ipv4_i)
       end
       
       super
@@ -94,7 +94,7 @@ module Dcmgr::Models
     end
 
     def ipv4_s
-      IPAddress::IPv4::parse_u32(self[:ipv4])
+      IPAddress::IPv4::parse_u32(self[:ipv4]).to_s
     end
     alias :ipv4 :ipv4_s
 
