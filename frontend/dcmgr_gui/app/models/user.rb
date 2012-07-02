@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 require 'digest/sha1'
+require 'i18n'
+require 'tzinfo'
 
 class User < BaseNew
   taggable 'u'
@@ -20,10 +22,20 @@ class User < BaseNew
   end
 
   many_to_many :accounts,:join_table => :users_accounts
+
+  def validate
+    unless TZInfo::Timezone.all_identifiers.member?(self.time_zone)
+      errors.add(:time_zone, "Unknown time zone identifier: #{self.time_zone}")
+    end
+  end
  
-  def before_create
-    set(:locale => I18n.default_locale.to_s)
-    set(:time_zone => Time.zone.name)
+  def before_validation
+    self[:locale] ||= I18n.default_locale.to_s
+    self[:time_zone] ||= DEFAULT_TIMEZONE
+    super
+  end
+
+  def before_save
     set(:last_login_at => Time.now.utc)
     super
   end
