@@ -7,8 +7,6 @@ require 'tzinfo'
 class User < BaseNew
   taggable 'u'
   with_timestamps
-  plugin :single_table_inheritance, :uuid, :model_map=>{}
-  plugin :subclasses
 
   inheritable_schema do
     Time   :last_login_at, :null=>false
