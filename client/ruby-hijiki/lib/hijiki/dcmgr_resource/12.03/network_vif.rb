@@ -6,6 +6,10 @@ module Hijiki::DcmgrResource::V1203
     self.prefix = '/api/12.03/networks/:network_id/'
     self.element_name = 'vifs'
 
+    def attach
+      self.put(:attach)
+    end
+
     def detach
       self.put(:detach)
     end
