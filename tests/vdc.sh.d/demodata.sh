@@ -170,4 +170,16 @@ INSERT INTO volume_snapshots values
  (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now(), 'std', 'lucid6');
 EOS
 
+# Install user/account definitions to the GUI database.
+cd ${VDC_ROOT}/frontend/dcmgr_gui/
+
+cat <<EOF | ./bin/gui-manage
+account add --name="wakame" --uuid=a-00000000
+user add --name="wakame" --uuid=u-00000000 --login_id=wakame --password=wakame --primary-account-id=a-00000000
+user associate u-00000000 --account-ids "a-00000000"
+account add --name="demo" --uuid=a-shpoolxx
+user add --name="demo" --uuid=u-shpoolxx --login_id=demo --password=demo --primary-account-id=a-shpoolxx
+user associate u-shpoolxx --account-ids "a-shpoolxx"
+EOF
+
 exit 0
