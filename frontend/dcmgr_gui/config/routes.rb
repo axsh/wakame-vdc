@@ -20,6 +20,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/create_backup', :to => 'dialog#create_backup'
   post   'dialog/delete_backup', :to => 'dialog#delete_backup'
   post   'dialog/edit_backup', :to => 'dialog#edit_backup'
+  post   'dialog/attach_vif', :to => 'dialog#attach_vif'
   post   'dialog/detach_vif', :to => 'dialog#detach_vif'
   post   'dialog/start_instances', :to => 'dialog#start_instances'
   post   'dialog/stop_instances', :to => 'dialog#stop_instances'
