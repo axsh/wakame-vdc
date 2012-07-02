@@ -1,8 +1,10 @@
 <script type="text/javascript">
-  var select_current_eth = new Array();
+  var select_current_nw = new Array();
+  var select_current_vif = new Array();
 
   <% @vifs.each do |vif| %>
-    select_current_eth.push("<%= vif['network_id'] %>");
+    select_current_nw.push("<%= vif['network_id'] %>");
+    select_current_vif.push("<%= vif['vif_id'] %>");
   <% end %>
 </script>
 
@@ -54,6 +56,7 @@
         <td><%= t("dialog.edit_instance.interface") %> eth<%= index %>:</td>
         <td><%= @vifs[index]["vif_id"] %></td>
         <td id="select_eth<%= index %>"></td>
+        <td id="attach_eth<%= index %>"></td>
         <td><button id="vif_detach" onclick="detach_vif('<%= @vifs[index]["network_id"] %>', '<%= @vifs[index]["vif_id"] %>')">Detach</button></td>
       </tr>
     <% end %>

@@ -1,3 +1,16 @@
+function attach_vif(network_id, vif_id) {
+  var data = "network_id=" + network_id + "&vif_id=" + vif_id
+
+  request = new DcmgrGUI.Request;
+  request.post({
+    "url": '/dialog/attach_vif',
+    "data": data,
+    success: function(json,status){
+      bt_refresh.element.trigger('dcmgrGUI.refresh');
+    }
+  });
+}
+
 function detach_vif(network_id, vif_id) {
   var data = "network_id=" + network_id + "&vif_id=" + vif_id
 
@@ -9,7 +22,6 @@ function detach_vif(network_id, vif_id) {
       bt_refresh.element.trigger('dcmgrGUI.refresh');
     }
   });
-  $(this).dialog("close");
 }
 
 DcmgrGUI.prototype.instancePanel = function(){
@@ -136,7 +148,8 @@ DcmgrGUI.prototype.instancePanel = function(){
         
         var is_ready = {
           'display_name' : true,
-          'security_groups' : true
+          'security_groups' : true,
+          'networks' : true,
         }
         var on_ready = function(size){
           if(size > 0) {
@@ -236,14 +249,22 @@ DcmgrGUI.prototype.instancePanel = function(){
                 }
               }
 
+              var create_attach_vif = function(index, vif_id) {
+                var on_click_html = "var s_eth = document.getElementById('eth" + index + "'); attach_vif(s_eth.options[s_eth.selectedIndex].value, '" + vif_id + "');"
+                var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '" onClick="' + on_click_html + '")">Attach</button>'
+
+                $(self).find('#attach_eth' + index).empty().html(select_html);
+              }
+
               var results = json.network.results;
               var size = results.length;
 
               is_ready['networks'] = true;
               ready(is_ready);
 
-              for (var i=0; i < select_current_eth.length ; i++) {
-                create_select_eth('eth' + i, results, select_current_eth[i]);
+              for (var i=0; i < select_current_nw.length ; i++) {
+                create_select_eth('eth' + i, results, select_current_nw[i]);
+                create_attach_vif(i, select_current_vif[i]);
               }                
             }
           })
