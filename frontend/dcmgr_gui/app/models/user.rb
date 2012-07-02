@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+require 'digest/sha1'
+
 class User < BaseNew
   taggable 'u'
   with_timestamps
@@ -135,7 +138,7 @@ class User < BaseNew
     end
     
     def encrypt_password(password)
-      salt = Digest::SHA1.hexdigest(DcmgrGui::Application.config.secret_token)
+      salt = Digest::SHA1.hexdigest(SECRET_TOKEN)
       Digest::SHA1.hexdigest("--#{salt}--#{password}--")
     end
 
