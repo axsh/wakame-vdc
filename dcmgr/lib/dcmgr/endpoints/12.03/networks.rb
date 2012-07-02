@@ -163,8 +163,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # description 'Attach a vif to this vif'
     # params id, string, required
     # params vif_id, string, required
-    result = []
-
     M::NetworkVif.lock!
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
@@ -185,7 +183,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       end
     end
 
-    respond_with({})
+    respond_with(R::NetworkVif.new(vif).generate)
   end
 
   put '/:id/vifs/:vif_id/detach' do
@@ -211,7 +209,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       end
     end
 
-    respond_with({})
+    respond_with(R::NetworkVif.new(vif).generate)
   end
 
   # # Make GRE tunnels, currently used for testing purposes.
