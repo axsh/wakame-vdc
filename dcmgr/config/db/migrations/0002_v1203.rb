@@ -93,7 +93,7 @@ Sequel.migration do
     end
 
     alter_table(:ip_leases) do
-      set_column_type :ipv4, "int(4)"
+      set_column_type :ipv4, "int(11)", :unsigned=>true
       drop_column :instance_nic_id
       drop_column :alloc_type
       drop_column :description
@@ -182,7 +182,7 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :network_id, "int(11)", :null=>false
       column :network_vif_id, "int(11)", :null=>false
-      column :ipv4, "int(4)", :null=>false
+      column :ipv4, "int(11)", :null=>false, :unsigned=>true
       column :alloc_type, "int(11)", :default=>0, :null=>false
       column :description, "text"
       column :created_at, "datetime", :null=>false
