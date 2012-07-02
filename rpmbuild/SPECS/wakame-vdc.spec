@@ -197,6 +197,12 @@ mkdir -p ${RPM_BUILD_ROOT}/var/log/%{name}
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{name}/dcmgr_gui
 ln -s /var/log/%{name}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/log
 
+# lib directory
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{name}
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{name}/tmp
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{name}/tmp/instances
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{name}/tmp/images
+
 %clean
 RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules clean
 rm -rf %{prefix}/%{name}/ruby
@@ -241,6 +247,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/prelink.conf.d/wakame-vdc.conf
 %dir /etc/%{name}/
 %dir /var/log/%{name}
+%dir /var/lib/%{name}
+%dir /var/lib/%{name}/tmp
 
 %files debug-config
 %defattr(-,root,root)
@@ -267,12 +275,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/wakame-vdc/unicorn-common.conf
 %dir /etc/%{name}/dcmgr_gui
 %dir /var/log/%{name}/dcmgr_gui
+%dir /var/lib/%{name}/tmp/images
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
 %config /etc/sysctl.d/30-bridge-if.conf
+%dir /var/lib/%{name}/tmp/instances
 
 %files hva-kvm-vmapp-config
 
