@@ -1,6 +1,8 @@
 # download demo image files.
 (
   cd $VDC_ROOT/tmp/images
+  # remove md5sum cache files.
+  rm -f *.md5
   
   for meta in $(ls $data_path/image-*.meta); do
     (

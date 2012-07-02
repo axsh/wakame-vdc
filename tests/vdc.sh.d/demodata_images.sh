@@ -23,7 +23,11 @@ for meta in $data_path/image-*.meta; do
     }
 
     localpath="${tmp_path}/images/${localname}"
-    chksum=$(md5sum $localpath | cut -d ' ' -f1)
+    if [[ "$localpath" -nt "${localpath}.md5" ]]; then
+      chksum=$(md5sum "$localpath" | cut -d ' ' -f1 | tee "${localpath}.md5")
+    else
+      chksum=$(cat "${localpath}.md5")
+    fi
     alloc_size=$(ls -l "$localpath" | awk '{print $5}')
     if (file $localpath | grep ': gzip compressed data,' > /dev/null)
     then
