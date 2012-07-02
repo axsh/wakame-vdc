@@ -96,7 +96,6 @@ Sequel.migration do
       set_column_type :ipv4, "int(11)", :unsigned=>true
       drop_column :instance_nic_id
       drop_column :alloc_type
-      drop_column :description
 
       drop_index [:instance_nic_id, :network_id]
     end
@@ -433,7 +432,6 @@ Sequel.migration do
     alter_table(:ip_leases) do
       add_column :instance_nic_id, "int(11)", :null=>false
       add_column :alloc_type, "int(11)", :default=>0, :null=>false
-      add_column :description, "text"
 
       add_index[:instance_nic_id, :network_id]
     end

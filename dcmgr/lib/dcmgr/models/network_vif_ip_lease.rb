@@ -45,7 +45,8 @@ module Dcmgr::Models
     def before_save
       if new?
         IpLease.create(:network_id => self.network_id,
-                       :ipv4 => self.ipv4_i)
+                       :ipv4 => self.ipv4_i,
+                       :description => self.ipv4)
       end
       
       super
