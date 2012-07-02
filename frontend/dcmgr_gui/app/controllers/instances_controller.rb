@@ -16,7 +16,7 @@ class InstancesController < ApplicationController
       :display_name => params[:display_name]
     }
 
-    if params[:vifs] and !params[:vifs].empty?
+    if params[:vifs]
       vifs = {}
       vif_index = 0
 
@@ -38,7 +38,7 @@ class InstancesController < ApplicationController
         vif_index += 1
       }
 
-      data.merge!(:vifs => vifs)
+      data.merge!(:vifs => vifs) if !vifs.empty?
     end
 
     instance = Hijiki::DcmgrResource::Instance.create(data)
