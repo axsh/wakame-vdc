@@ -89,6 +89,17 @@ Sequel.migration do
       Integer :user_id, :null=>false
       Integer :account_id, :null=>false
     end
+
+    create_table(:account_quota) do
+      primary_key :id
+      Integer :account_id, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      String :quota_type, :null=>false
+      Float :quota_value, :null=>false
+
+      index [:account_id, :quota_type], :unique=>true
+    end
   end
   
   down do

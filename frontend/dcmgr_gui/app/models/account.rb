@@ -23,6 +23,7 @@ class Account < BaseNew
 
   one_to_many  :tags
   many_to_many :users,:join_table => :users_accounts
+  one_to_many :account_quota, :class=>AccountQuota
   
   def disable?
     not self.enable
@@ -36,6 +37,25 @@ class Account < BaseNew
     h = self.values.dup
     h[:id] = h[:uuid] = self.canonical_uuid
     h
+  end
+
+  # Each AccountQuota is unique set of account_id and quota_type
+  # column.
+  # It allows to use "add_account_quota()" association method and
+  # rejects to add multiple rows with same quota_type.
+  def _add_account_quota(account_quota)
+    account_quota.account_id=pk
+    if account_quota.new?
+      aq = self.account_quota_dataset.filter(:quota_type=>account_quota.quota_type).first
+      if aq.nil?
+        account_quota
+      else
+        aq.set_except(account_quota.values, :id)
+        aq
+      end
+    else
+      account_quota
+    end.save
   end
 
   # Delete relations before setting an account to deleted
