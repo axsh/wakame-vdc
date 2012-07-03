@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# $ pararell-curl.sh --url=[url]
-# $ pararell-curl.sh --url=[url] --thread=6
+# $ parallel-curl.sh --url=[url]
+# $ parallel-curl.sh --url=[url] --thread=6
 #
 LANG=C
 LC_ALL=C
