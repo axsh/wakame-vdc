@@ -1,9 +1,16 @@
 namespace :db do
   desc 'Initialize database'
-  task :init => :environment do
-    Schema::create!
+  task :init => [ :environment ] do
+    Sequel.extension :migration
+    Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('db/migrations', Rails.root), 9999)
   end
-  
+
+  desc 'Drop database'
+  task :drop => [ :environment ] do
+    Sequel.extension :migration
+    Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('db/migrations', Rails.root), 0)
+  end
+
   task :sample_data => :environment do
     User.create(:uuid => '00000000',
                 :login_id => 'wakame',
