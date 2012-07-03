@@ -1,7 +1,8 @@
 %define _prefix_path opt/axsh
 %define _vdc_git_uri git://github.com/axsh/wakame-vdc.git
+%define oname wakame-vdc
 
-Name: wakame-vdc
+Name: %{oname}
 Version: 12.03
 Release: 1.daily%{?dist}
 Summary: The wakame virtual data center.
@@ -54,7 +55,7 @@ Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 %package debug-config
 Summary: Configuration set for debug
 Group: Development/Languages
-Requires: %{name} = %{version}-%{release}
+Requires: %{oname} = %{version}-%{release}
 %description debug-config
 <insert long description, indented with spaces>
 
@@ -62,7 +63,7 @@ Requires: %{name} = %{version}-%{release}
 %package dcmgr-vmapp-config
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
-Requires: %{name} = %{version}-%{release}
+Requires: %{oname} = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
@@ -75,7 +76,7 @@ Requires: dnsmasq
 %package hva-common-vmapp-config
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
-Requires: %{name} = %{version}-%{release}
+Requires: %{oname} = %{version}-%{release}
 Requires: dosfstools
 Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
@@ -94,7 +95,7 @@ Requires: util-linux-ng
 %package hva-kvm-vmapp-config
 Summary: Configuration set for hva KVM VM appliance
 Group: Development/Languages
-Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 %ifarch x86_64
 Requires: qemu-kvm
 %endif
@@ -105,7 +106,7 @@ Requires: qemu-kvm
 %package hva-lxc-vmapp-config
 Summary: Configuration set for hva LXC VM appliance
 Group: Development/Languages
-Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 Requires: lxc
 %description  hva-lxc-vmapp-config
 <insert long description, indented with spaces>
@@ -114,7 +115,7 @@ Requires: lxc
 %package hva-openvz-vmapp-config
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
-Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 Requires: vzkernel
 Requires: vzctl
 Requires: kmod-openvswitch-vzkernel
@@ -125,10 +126,10 @@ Requires: kmod-openvswitch-vzkernel
 %package hva-full-vmapp-config
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
-Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
-Requires: %{name}-hva-kvm-vmapp-config = %{version}-%{release}
-Requires: %{name}-hva-lxc-vmapp-config = %{version}-%{release}
-Requires: %{name}-hva-openvz-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-kvm-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-lxc-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-openvz-vmapp-config = %{version}-%{release}
 # build openvswitch module for vzkernel
 #Requires: kernel-devel
 #Requires: vzkernel-devel
@@ -138,14 +139,14 @@ Requires: %{name}-hva-openvz-vmapp-config = %{version}-%{release}
 
 ## rpmbuild -bp
 %prep
-[ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
-cd %{name}-%{version}
+[ -d %{oname}-%{version} ] || git clone %{_vdc_git_uri} %{oname}-%{version}
+cd %{oname}-%{version}
 git pull
 %setup -T -D
 
 ## rpmbuild -bc
 %build
-RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules build
+RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules build
 
 ## rpmbuid -bi
 %install
@@ -165,11 +166,11 @@ components="
  rpmbuild
 "
 for component in ${components}; do
-  rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+  rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 done
 unset components
 
-rsync -aHA %{prefix}/%{name}/ruby ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+rsync -aHA %{prefix}/%{oname}/ruby ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
 rsync -aHA `pwd`/contrib/etc/default        ${RPM_BUILD_ROOT}/etc/
@@ -183,29 +184,29 @@ rsync -aHA `pwd`/contrib/etc/wakame-vdc     ${RPM_BUILD_ROOT}/etc/
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
 rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
-[ -d ${RPM_BUILD_ROOT}/etc/%{name} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}
-[ -d ${RPM_BUILD_ROOT}/etc/%{name}/dcmgr_gui ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}/dcmgr_gui
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
 
 # rails app config
-[ -f ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml ] && rm -f ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml
-ln -s /etc/%{name}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/database.yml
-ln -s /etc/%{name}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/instance_spec.yml
-ln -s /etc/%{name}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+[ -f ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml ] && rm -f ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{oname}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
+ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/dcmgr_gui.yml
 
 # log directory
-mkdir -p ${RPM_BUILD_ROOT}/var/log/%{name}
-mkdir -p ${RPM_BUILD_ROOT}/var/log/%{name}/dcmgr_gui
-ln -s /var/log/%{name}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/log
+mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}
+mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}/dcmgr_gui
+ln -s /var/log/%{oname}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/log
 
 # lib directory
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{name}
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{name}/tmp
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{name}/tmp/instances
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{name}/tmp/images
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
 
 %clean
-RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules clean
-rm -rf %{prefix}/%{name}/ruby
+RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
+rm -rf %{prefix}/%{oname}/ruby
 rm -rf ${RPM_BUILD_ROOT}
 
 %post
@@ -214,7 +215,7 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig --add vdc-net-event
 
 %post debug-config
-%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
+%{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
 
 %post dcmgr-vmapp-config
 /sbin/chkconfig --add mysqld
@@ -231,24 +232,24 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       iscsid on
 /sbin/chkconfig --add tgtd
 /sbin/chkconfig       tgtd on
-%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
-%{prefix}/%{name}/rpmbuild/helpers/add-loopdev.sh
-%{prefix}/%{name}/rpmbuild/helpers/set-openvswitch-conf.sh
+%{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
+%{prefix}/%{oname}/rpmbuild/helpers/add-loopdev.sh
+%{prefix}/%{oname}/rpmbuild/helpers/set-openvswitch-conf.sh
 
 %post hva-openvz-vmapp-config
-%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
+%{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 
 %files
 %defattr(-,root,root)
-%{prefix}/%{name}/
+%{prefix}/%{oname}/
 %config /etc/logrotate.d/flog-vdc
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
 %config /etc/prelink.conf.d/wakame-vdc.conf
-%dir /etc/%{name}/
-%dir /var/log/%{name}
-%dir /var/lib/%{name}
-%dir /var/lib/%{name}/tmp
+%dir /etc/%{oname}/
+%dir /var/log/%{oname}
+%dir /var/lib/%{oname}
+%dir /var/lib/%{oname}/tmp
 
 %files debug-config
 %defattr(-,root,root)
@@ -273,16 +274,16 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
 %config /etc/wakame-vdc/unicorn-common.conf
-%dir /etc/%{name}/dcmgr_gui
-%dir /var/log/%{name}/dcmgr_gui
-%dir /var/lib/%{name}/tmp/images
+%dir /etc/%{oname}/dcmgr_gui
+%dir /var/log/%{oname}/dcmgr_gui
+%dir /var/lib/%{oname}/tmp/images
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
 %config /etc/sysctl.d/30-bridge-if.conf
-%dir /var/lib/%{name}/tmp/instances
+%dir /var/lib/%{oname}/tmp/instances
 
 %files hva-kvm-vmapp-config
 
