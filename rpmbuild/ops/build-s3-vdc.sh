@@ -4,6 +4,7 @@ set -e
 set -x
 
 archs="x86_64 i686"
+basearchs="x86_64 i386"
 rpm_dir=pool/vdc/current
 s3_repo_uri=s3://dlc.wakame.axsh.jp/packages/rhel/6/
 
@@ -38,11 +39,30 @@ find ${rpm_dir} -type f -name "wakame-*" -mtime +5 | sort | while read line; do
   rm -f ${line}
 done
 
+# delete non-pair rpms
+for i in ${rpm_dir}/*/wakame*.rpm; do
+  file=$(basename $i)
+  echo ${file%%.el6.*.rpm}
+done \
+ | sort \
+ | uniq -c \
+ | sort \
+ | awk '$1 == 1 {print $2}' \
+ | while read line; do
+     find pool/vdc/current/ -type f -name ${line}*
+   done | while read target; do
+     [ -f ${target} ] || continue
+     rm -f ${target}
+   done
+
 # create repository metadata files.
 (
  cd ${rpm_dir}
  createrepo .
 )
+
+# generate index
+./gen-index-html.sh > ${rpm_dir}/index.html
 
 # sync rpms to amazon s3.
 s3cmd sync ${rpm_dir} ${s3_repo_uri} --delete-removed --acl-public --check-md5
