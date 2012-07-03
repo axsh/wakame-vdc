@@ -215,5 +215,39 @@ Consumer Secret:
   <%= oauth_consumer.secret %>
 __END
     end
+
+    class QuotaOperation < Thor
+      namespace :quota
+      
+      desc "set UUID TYPE VALUE", "Set quota to the account."
+      def set(uuid, quota_type, quota_value)
+        account = Account[uuid] || UnknownUUIDError.raise(uuid)
+
+        account.add_account_quota(AccountQuota.new(:quota_type=>quota_type,
+                                                   :quota_value=>quota_value.to_f))
+        
+        #quota = account.account_quota_dataset.filter(:quota_type=>quota_type).first
+        #if quota.nil?
+        #else
+        #  quota.set(:quota_value=>quota_value.to_f)
+        #  quota.save_changes
+        #end
+      end
+
+      desc 'drop UUID TYPE', "Drop quota from the account."
+      def drop(uuid, quota_type)
+        account = Account[uuid] || UnknownUUIDError.raise(uuid)
+        account.account_quota_dataset.filter(:quota_type=>quota_type).delete
+      end
+
+      desc 'dropall UUID', "Drop all quota from the account."
+      def dropall(uuid)
+        account = Account[uuid] || UnknownUUIDError.raise(uuid)
+        account.remove_all_account_quota
+      end
+    end
+
+    register QuotaOperation, 'quota', "quota [#{QuotaOperation.tasks.keys.join(', ')}] UUID [options]", "Set/Unset quota values for the account"
+    
   end
 end
