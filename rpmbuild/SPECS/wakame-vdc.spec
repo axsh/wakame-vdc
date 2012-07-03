@@ -137,6 +137,14 @@ Requires: %{oname}-hva-openvz-vmapp-config = %{version}-%{release}
 %description hva-full-vmapp-config
 <insert long description, indented with spaces>
 
+# vdcsh
+%package vdcsh
+Summary: vdcsh
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description vdcsh
+<insert long description, indented with spaces>
+
 ## rpmbuild -bp
 %prep
 [ -d %{oname}-%{version} ] || git clone %{_vdc_git_uri} %{oname}-%{version}
@@ -192,6 +200,13 @@ rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 ln -s /etc/%{oname}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
 ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
 ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+
+# vdcsh
+[ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d
+[ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder  ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder
+rsync -aHA `pwd`/tests/vdc.sh   ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
+rsync -aHA `pwd`/tests/vdc.sh.d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
+rsync -aHA `pwd`/tests/builder/functions.sh ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder/functions.sh
 
 # log directory
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}
@@ -250,6 +265,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
 %dir /var/lib/%{oname}/tmp
+%exclude %{prefix}/%{oname}/tests/
+
+%files vdcsh
+%defattr(-,root,root)
+%{prefix}/%{oname}/tests/vdc.sh
+%{prefix}/%{oname}/tests/vdc.sh.d/
+%{prefix}/%{oname}/tests/builder/
+%dir %{prefix}/%{oname}/tests
 
 %files debug-config
 %defattr(-,root,root)
