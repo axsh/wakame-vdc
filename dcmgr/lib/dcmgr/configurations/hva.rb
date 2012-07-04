@@ -72,6 +72,7 @@ module Dcmgr
       param :enable_gre, :default=>false
       param :enable_subnet, :default=>false
 
+      param :brctl_path, :default => '/usr/sbin/brctl'
       param :ovs_run_dir, :default=>'/usr/var/run/openvswitch'
       # Path for ovs-ofctl
       param :ovs_ofctl_path, :default => '/usr/bin/ovs-ofctl'

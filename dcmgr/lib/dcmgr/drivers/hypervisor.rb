@@ -51,11 +51,11 @@ module Dcmgr
 
             # create new bridge only when the vlan is assigned to customer.
             unless valid_nic?(bridge_if)
-              sh("/usr/sbin/brctl addbr %s",    [bridge_if])
-              sh("/usr/sbin/brctl setfd %s 0",    [bridge_if])
+              sh("#{Dcmgr.conf.brctl_path} addbr %s",    [bridge_if])
+              sh("#{Dcmgr.conf.brctl_path} setfd %s 0",    [bridge_if])
               # There is null case for the forward interface to create closed bridge network.
               if fwd_if
-                sh("/usr/sbin/brctl addif %s %s", [bridge_if, fwd_if])
+                sh("#{Dcmgr.conf.brctl_path} addif %s %s", [bridge_if, fwd_if])
               end
             end
           end
