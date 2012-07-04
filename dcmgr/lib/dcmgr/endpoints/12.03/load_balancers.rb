@@ -68,6 +68,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     # copy env
     env_keys.each { |key| origin_env[key] = env[key] }
 
+    amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
+    user_data = []
+    user_data << "AMQP_SERVER=#{amqp_settings[:host]}"
+    user_data << "AMQP_PORT=#{amqp_settings[:port]}"
+
     # make params for internal request.
     values  = {'image_id' => lb_conf.image_id,
                'instance_spec_id' => spec.canonical_uuid,
@@ -284,7 +289,3 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
   end
 end
-    amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
-    user_data = []
-    user_data << "AMQP_SERVER=#{amqp_settings[:host]}"
-    user_data << "AMQP_PORT=#{amqp_settings[:port]}"
