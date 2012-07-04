@@ -16,18 +16,29 @@ for arch in ${archs}; do
   x86_64) basearch=${arch};;
   esac
 
-  [ -d ${rpm_dir}/${basearch} ] || mkdir -p ${rpm_dir}/${basearch}
-
   chroot_dir=$(cd ../../ && pwd)/tmp/vmapp_builder/chroot/dest/centos-6_${arch}
 
+  #
+  # arch, basearch
+  #
+  [ -d ${rpm_dir}/${basearch} ] || mkdir -p ${rpm_dir}/${basearch}
   subdirs="
     tmp/wakame-vdc/tests/vdc.sh.d/rhel/vendor/${basearch}
     root/rpmbuild/RPMS/${arch}
   "
-  #1  tmp/wakame-vdc/tmp/vmapp_builder/repos.d/archives/${basearch}
-  #2  tmp/wakame-vdc/tests/vdc.sh.d/rhel/vendor/${basearch}
-  #3  root/rpmbuild/RPMS/${basearch}
+  for subdir in ${subdirs}; do
+    pkg_dir=${chroot_dir}/${subdir}
+    bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* ${pkg_dir}/*.rpm ${rpm_dir}/${basearch}/ || :"
+  done
 
+  #
+  # noarch
+  #
+  basearch=noarch; arch=noarch
+  [ -d ${rpm_dir}/${basearch} ] || mkdir -p ${rpm_dir}/${basearch}
+  subdirs="
+    root/rpmbuild/RPMS/${arch}
+  "
   for subdir in ${subdirs}; do
     pkg_dir=${chroot_dir}/${subdir}
     bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* ${pkg_dir}/*.rpm ${rpm_dir}/${basearch}/ || :"
@@ -49,7 +60,10 @@ done \
  | sort \
  | awk '$1 == 1 {print $2}' \
  | while read line; do
-     find pool/vdc/current/ -type f -name ${line}*
+     # without noarch
+     for basearch in ${basearchs}; do
+       find pool/vdc/current/${basearch} -type f -name ${line}*
+     done
    done | while read target; do
      [ -f ${target} ] || continue
      rm -f ${target}

@@ -4,7 +4,7 @@ set -e
 #set -x
 
 archs="x86_64 i686"
-basearchs="x86_64 i386"
+basearchs="x86_64 i386 noarch"
 rpm_dir=pool/vdc/current
 s3_repo_uri=s3://dlc.wakame.axsh.jp/packages/rhel/6/
 
