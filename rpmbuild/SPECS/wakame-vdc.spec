@@ -45,7 +45,7 @@ Requires: prelink
 # Ruby binary dependency
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 # for erlang, rabbitmq-server
-# Requires: epel-release-6-6
+# Requires: epel-release-6-x
 
 # (base)
 %description
@@ -130,10 +130,6 @@ Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 Requires: %{oname}-hva-kvm-vmapp-config = %{version}-%{release}
 Requires: %{oname}-hva-lxc-vmapp-config = %{version}-%{release}
 Requires: %{oname}-hva-openvz-vmapp-config = %{version}-%{release}
-# build openvswitch module for vzkernel
-#Requires: kernel-devel
-#Requires: vzkernel-devel
-#Requires: dkms
 %description hva-full-vmapp-config
 <insert long description, indented with spaces>
 
@@ -163,10 +159,7 @@ CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
 
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
 
-# directory list via debian/dirs
-sed "s,usr/share/axsh,%{_prefix_path},g" ./debian/dirs | while read dir; do
-  [ -d ${RPM_BUILD_ROOT}/${dir} ] || mkdir -p ${RPM_BUILD_ROOT}/${dir}
-done
+mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 components="
  dcmgr
