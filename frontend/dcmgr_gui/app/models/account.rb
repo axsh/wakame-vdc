@@ -13,6 +13,7 @@ class Account < BaseNew
   
   many_to_many :users,:join_table => :users_accounts
   one_to_many :account_quota, :class=>AccountQuota
+  one_to_many :oauth_consumers
   
   def disable?
     not self.enable

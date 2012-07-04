@@ -32,7 +32,7 @@ Sequel.migration do
       String :secret, :null=>false, :size=>40
       Integer :account_id, :null=>false
       
-      index [:account_id], :unique=>true, :name=>:account_id
+      index [:account_id], :unique=>false
       index [:key], :unique=>true
     end
     
