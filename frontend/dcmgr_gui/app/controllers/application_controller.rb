@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+require 'authentication'
+require 'util'
+
 class ApplicationController < ActionController::Base
   # disable reqeust forgery check since some pages are missing to set
   # the token on using POST.
