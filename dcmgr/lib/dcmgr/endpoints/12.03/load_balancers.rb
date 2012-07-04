@@ -57,17 +57,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     raise "E::UnknownSecurityGroup" unless lb_conf.config.include? :security_group
     raise "E::UnknownSshKeyPair" unless lb_conf.config.include? :ssh_key_id
 
-    origin_env = {}
-    env_keys = ['rack.request.form_vars',
-                'rack.request.form_hash',
-                'REQUEST_PATH',
-                'PATH_INFO',
-                'REQUEST_URI'
-                ]
-
-    # copy env
-    env_keys.each { |key| origin_env[key] = env[key] }
-
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
     user_data = []
     user_data << "AMQP_SERVER=#{amqp_settings[:host]}"
