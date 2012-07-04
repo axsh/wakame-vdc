@@ -39,15 +39,6 @@ module Taggable
     !find(uuid).nil?
   end
 
-  def self.configure(model)
-    model.schema_builders << proc {
-      unless has_column?(:uuid)
-        # add :uuid column with unique index constraint.
-        column(:uuid, String, :size=>8, :null=>false, :fixed=>true, :unique=>true)
-      end
-    }
-  end
-
   module InstanceMethods
     # read-only instance method to retrieve @uuid_prefix class
     # variable.
@@ -261,28 +252,11 @@ class BaseNew < Sequel::Model
     install_data_hooks.each{|h| h.call }
   end
 
-  # Add callbacks to setup the initial data. The hooks will be
-  # called when Model1.install_data() is called.
-  # 
-  # class Model1 < Base
-  #   install_data_hooks do
-  #     Model1.create({:col1=>1, :col2=>2})
-  #   end
-  # end
-  def self.install_data_hooks(&blk)
-    @install_data_hooks ||= []
-    if blk
-      @install_data_hooks << blk
-    end
-    @install_data_hooks
-  end
-
-
   private
   def self.inherited(klass)
     super
+    klass.set_dataset(db[klass.implicit_table_name])
 
-    klass.plugin InheritableSchema
     klass.class_eval {
 
       # Add timestamp columns and set callbacks using Timestamps
@@ -292,15 +266,6 @@ class BaseNew < Sequel::Model
       #   with_timestamps
       # end
       def self.with_timestamps
-        self.schema_builders << proc {
-          unless has_column?(:created_at)
-            column(:created_at, Time, :null=>false)
-          end
-          unless has_column?(:updated_at)
-            column(:updated_at, Time, :null=>false)
-          end
-        }
-      
         self.plugin :timestamps, :update_on_create=>true
       end
 

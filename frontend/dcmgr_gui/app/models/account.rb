@@ -11,17 +11,6 @@ class Account < BaseNew
   DISABLED=0
   ENABLED=1
   
-  inheritable_schema do
-    primary_key :id, :type=>Integer
-    String :name, :null=>false
-    String :description, :default=>""
-    Boolean :enable, :default=>true
-    DateTime :deleted_at, :null=>true
-    Boolean :is_deleted, :default=>false
-    Boolean :is_admin, :default=>false
-  end
-
-  one_to_many  :tags
   many_to_many :users,:join_table => :users_accounts
   one_to_many :account_quota, :class=>AccountQuota
   

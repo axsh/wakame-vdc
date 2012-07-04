@@ -8,17 +8,6 @@ class User < BaseNew
   taggable 'u'
   with_timestamps
 
-  inheritable_schema do
-    Time   :last_login_at, :null=>false
-    String :name, :fixed=>true, :size=>200, :null=>false
-    primary_key :id, :type=>Integer
-    String :login_id, :unique=>true
-    String :password, :null=>false
-    String :primary_account_id
-    String :locale, :size=>255, :null => false
-    String :time_zone, :size=>255, :null => false
-  end
-
   many_to_many :accounts,:join_table => :users_accounts
 
   def validate
