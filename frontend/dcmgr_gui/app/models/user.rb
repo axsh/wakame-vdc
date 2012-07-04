@@ -14,6 +14,10 @@ class User < BaseNew
     unless TZInfo::Timezone.all_identifiers.member?(self.time_zone)
       errors.add(:time_zone, "Unknown time zone identifier: #{self.time_zone}")
     end
+
+    if self.primary_account_id && !Account.check_uuid_format(self.primary_account_id)
+      errors.add(:primary_account_id, "Invalid account ID syntax: #{self.primary_account_id}")
+    end
   end
  
   def before_validation
@@ -37,8 +41,11 @@ class User < BaseNew
   end
   
   def is_system_manager?
-    account = User.primary_account(self.primary_account_id)
-    account.is_admin
+    self.primary_account.is_admin
+  end
+
+  def primary_account
+    Account[self.primary_account_id]
   end
   
   # ページ指定一覧の取得
