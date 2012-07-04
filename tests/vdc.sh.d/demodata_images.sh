@@ -32,7 +32,7 @@ shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webd
         # TODO: use HEAD and compare local cached file size
         echo "Downloading image file $localname ..."
         f=$(basename "$uri")
-        curl "$uri" > "$f"
+        ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
         # check if the file name has .gz.
         [[ "$f" == "${f%.gz}" ]] || {
           # gunzip with keeping sparse area.
