@@ -73,7 +73,8 @@ git pull
 %install
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
 
-[ -d ${RPM_BUILD_ROOT}/etc/%{oname} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
+mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
+mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
 
 # generate /etc/%{oname}/*.conf
 config_examples="dcmgr nsa sta"
@@ -89,6 +90,13 @@ for config_template in ${config_templates}; do
 done
 unset config_templates
 unset VDC_ROOT
+
+# /etc/%{oname}/dcmgr_gui/*.yml
+config_ymls="database instance_spec dcmgr_gui"
+for config_yml in ${config_ymls}; do
+  cp -p `pwd`/frontend/dcmgr_gui/config/${config_yml}.yml.example ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui/${config_yml}.yml
+done
+unset config_ymls
 
 %post dcmgr-vmapp-config
 # activate upstart system job
@@ -115,6 +123,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/%{oname}/nsa.conf
 %config /etc/%{oname}/sta.conf
 %config /etc/%{oname}/proxy.conf
+%config /etc/%{oname}/dcmgr_gui/database.yml
+%config /etc/%{oname}/dcmgr_gui/instance_spec.yml
+%config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
 
 %files hva-vmapp-config
 %config /etc/%{oname}/hva.conf
