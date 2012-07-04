@@ -225,13 +225,6 @@ __END
 
         account.add_account_quota(AccountQuota.new(:quota_type=>quota_type,
                                                    :quota_value=>quota_value.to_f))
-        
-        #quota = account.account_quota_dataset.filter(:quota_type=>quota_type).first
-        #if quota.nil?
-        #else
-        #  quota.set(:quota_value=>quota_value.to_f)
-        #  quota.save_changes
-        #end
       end
 
       desc 'drop UUID TYPE', "Drop quota from the account."
