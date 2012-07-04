@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/load_balancer'
+require 'amqp'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_META_STATE = ['alive', 'alive_with_deleted'].freeze
@@ -73,7 +74,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                'host_node_id' => lb_conf.host_node_id,
                'security_group' => lb_conf.security_group,
                'ssh_key_id' => lb_conf.ssh_key_id,
-               'service_type' => lb_conf.name
+               'service_type' => lb_conf.name,
+               'user_data' => user_data.join("\n")
     }
 
     # TODO: Using sinatra plugin.
@@ -282,3 +284,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
   end
 end
+    amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
+    user_data = []
+    user_data << "AMQP_SERVER=#{amqp_settings[:host]}"
+    user_data << "AMQP_PORT=#{amqp_settings[:port]}"

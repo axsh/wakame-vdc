@@ -139,6 +139,7 @@ module Dcmgr
         param :host_node_id
         param :security_group
         param :ssh_key_id
+        param :amqp_server_uri
       end 
 
       DSL do

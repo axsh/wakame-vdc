@@ -145,4 +145,8 @@ service_type("lb", "LbServiceType") {
   host_node_scheduler :LeastUsage
   storage_node_scheduler :LeastUsage
   network_scheduler :FlatSingle
+
+  # Please specify the addresses that can be referenced from within an instance of the load balancer.
+  # amqp_server_uri is saved to userdata in instance of the load balancer.
+  amqp_server_uri 'amqp://example.com/'
 }
