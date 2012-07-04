@@ -8,7 +8,7 @@ log_dir=${abs_path}/logs
 
 # make vmapp
 # -> make vmapp{32,64}
-#    -> tests/image_builder/rpmbuild.sh --execscript=./execscript.d/vmapp-rhel.sh --base-distro-arch={x86_64,i686}
+#    -> rpmbuild/ops/rpmbuild.sh --execscript=./execscript.d/vmapp-rhel.sh --base-distro-arch={x86_64,i686}
 #       -> build-rootfs-tree.sh ...
 #       -> ./tests/vdc.sh install::rhel
 #          -> ./tests/vdc.sh.d/rhel/install.sh
@@ -27,7 +27,7 @@ log_dir=${abs_path}/logs
  date
 
  # build vmapp & rpm
- cd ${wakame_root}/tests/image_builder/
+ # cd ${wakame_root}/tests/image_builder/
  for arch in x86_64 i686; do
    time ./rpmbuild.sh --execscript=./execscript.d/vmapp-rhel.sh --base-distro-arch=${arch}
  done
