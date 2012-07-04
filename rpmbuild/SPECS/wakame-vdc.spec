@@ -158,7 +158,6 @@ RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules build
 CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
 
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
-
 mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 components="
@@ -204,6 +203,9 @@ rsync -aHA `pwd`/tests/builder/functions.sh ${RPM_BUILD_ROOT}/%{prefix}/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}/dcmgr_gui
 ln -s /var/log/%{oname}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/log
+
+# tmp directory
+ln -s /var/lib/%{oname}/tmp ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tmp
 
 # lib directory
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
@@ -265,6 +267,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{prefix}/%{oname}/tests/vdc.sh.d/
 %{prefix}/%{oname}/tests/builder/
 %dir %{prefix}/%{oname}/tests
+%attr(0600, root, root) %{prefix}/%{oname}/tests/vdc.sh.d/pri.pem
 
 %files debug-config
 %defattr(-,root,root)
