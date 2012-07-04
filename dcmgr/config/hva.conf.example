@@ -3,55 +3,58 @@
 #------------------------
 
 # directory to store VM local data.
-vm_data_dir "/home/demo/vm"
-
-# Specific options for the ESXi hypervisor
-# These will be ignored if another hypervisor is used
-esxi_ipaddress     "10.0.0.1"
-esxi_datacenter    "ha-datacenter"
-esxi_datastore     "datastore1"
-esxi_username      "root"
-esxi_password      "Some.Password1"
-# Setting this option to true lets you use SSL with untrusted certificates
-esxi_insecure      false
+config.vm_data_dir = '/var/lib/wakame-vdc/tmp/instances'
 
 # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
 # * 'netfilter'
+# * 'legacy_netfilter' #no longer supported, has issues with multiple vnic vm isolation
 # * 'openflow' #experimental, requires additional setup
 # * 'off'
-edge_networking 'netfilter'
+config.edge_networking = 'netfilter'
 
 # netfilter and openflow
-enable_ebtables true
-enable_iptables true
-enable_gre      false
-enable_subnet   false
+config.enable_ebtables = true
+config.enable_iptables = true
+config.enable_subnet = false
+config.enable_gre = true
 
-# display netfilter and openflow commands
-verbose_netfilter false
-verbose_openflow  false
+# display netfitler commands
+config.verbose_netfilter = false
+config.verbose_openflow  = false
 
 # netfilter log output flag
-packet_drop_log false
+config.packet_drop_log = false
 
 # debug netfilter
-debug_iptables false
+config.debug_iptables = false
 
 # Use ipset for netfilter
-use_ipset       false
+config.use_ipset       = false
 
 # Directory used by Open vSwitch daemon for run files
-ovs_run_dir '/usr/var/run/openvswitch'
+config.ovs_run_dir = '/var/lib/wakame-vdc/ovs/var/run/openvswitch'
 
 # Path for ovs-ofctl
-ovs_ofctl_path '/usr/bin/ovs-ofctl'
+config.ovs_ofctl_path = '/var/lib/wakame-vdc/ovs/bin/ovs-ofctl'
 
 # Trema base directory
-trema_dir '/home/demo/trema'
-trema_tmp '/home/demo/trema/tmp'
+config.trema_dir = '/var/lib/wakame-vdc/trema'
+config.trema_tmp = '/var/lib/wakame-vdc/tmp/trema'
 
-dc_network("public") {
-  bridge_type "linux"
-  interface "eth0"
-  bridge "br0"
+dc_network('public') {
+  bridge_type 'linux'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('null1') {
+  bridge_type 'linux'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('null2') {
+  bridge_type 'linux'
+  interface 'eth0'
+  bridge 'br0'
 }
