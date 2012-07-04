@@ -227,23 +227,4 @@ class Account < BaseNew
       c
     end
   end
-
-  install_data_hooks do
-    Account.subclasses.each { |m|
-      Account.create(m.default_values.dup)
-    }
-  end
-
-  SystemAccount.define_account(:DatacenterAccount) do
-    pk 100
-    uuid '00000000'
-    description 'datacenter system account'
-
-    # DatacenterAccount never be disabled
-    def before_save
-      super
-      self.enabled = Account::ENABLED
-    end
-  end
-  
 end
