@@ -196,7 +196,6 @@ rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 [ -d ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
 
 # rails app config
-[ -f ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml ] && rm -f ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
 ln -s /etc/%{oname}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
 ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
 ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/dcmgr_gui.yml
