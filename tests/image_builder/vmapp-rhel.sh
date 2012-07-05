@@ -44,14 +44,14 @@ i*86)   basearch=i386; arch=i686;;
 x86_64) basearch=${arch};;
 esac
 
-vmapp_names="
+vmapp_names="${vmapp_names:-
  dcmgr
  hva-common
  hva-kvm
  hva-lxc
  hva-openvz
  hva-full
-"
+}"
 
 [[ $UID -ne 0 ]] && {
   echo "ERROR: Run as root" >/dev/stderr
