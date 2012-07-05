@@ -25,6 +25,8 @@ log_dir=${abs_path}/logs
 [ -d ${log_dir} ] || mkdir -p ${log_dir}
 
 (
+ cd ${abs_path}
+
  date
  git pull
  build_id=$(git log -n 1 --pretty=format:"%h")
