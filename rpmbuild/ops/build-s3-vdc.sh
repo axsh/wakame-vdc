@@ -3,10 +3,8 @@
 set -e
 set -x
 
-archs="x86_64 i686"
-basearchs="x86_64 i386"
-rpm_dir=pool/vdc/current
-s3_repo_uri=s3://dlc.wakame.axsh.jp/packages/rhel/6/
+. ./config_s3.env
+
 
 [ -d ${rpm_dir} ] || mkdir -p ${rpm_dir}
 
@@ -77,6 +75,3 @@ done \
 
 # generate index
 ./gen-index-html.sh > ${rpm_dir}/index.html
-
-# sync rpms to amazon s3.
-s3cmd sync ${rpm_dir} ${s3_repo_uri} --delete-removed --acl-public --check-md5

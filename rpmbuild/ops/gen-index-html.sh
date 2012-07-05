@@ -3,10 +3,10 @@
 set -e
 #set -x
 
-archs="x86_64 i686"
-basearchs="x86_64 i386 noarch"
-rpm_dir=pool/vdc/current
-s3_repo_uri=s3://dlc.wakame.axsh.jp/packages/rhel/6/
+. ./config_s3.env
+
+# add noarch to basearchs
+basearchs="${basearchs} noarch"
 
 release_id=$(
   for basearch in ${basearchs}; do
