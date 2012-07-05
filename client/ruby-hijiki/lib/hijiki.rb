@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-require 'active_resource'
-
 module Hijiki
   # configuration file loader. Need to call this 
   def self.load(spec_yml)
     DcmgrResource::V1203::InstanceSpec.load_spec(spec_yml)
   end
   
+  require 'hijiki/request_attribute'
+    
   module DcmgrResource
 
     # Helps to create alias module names for the specified version of

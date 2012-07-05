@@ -7,6 +7,9 @@ module Hijiki::DcmgrResource
   end
   
 end
+
+require 'active_resource'
+
 module Hijiki::DcmgrResource::Common
 
   class Base < ActiveResource::Base
@@ -65,19 +68,18 @@ module Hijiki::DcmgrResource::Common
 
 end
 
-ActiveResource::Connection.class_eval do 
-  
-  class << self
-    def set_vdc_account_uuid(uuid)
-      class_variable_set(:@@vdc_account_uuid,uuid)
-    end
-  end
+ActiveResource::Connection.class_eval do
 
-  private
-  def default_header
-    @default_header = {
-      'X-VDC-ACCOUNT-UUID' => self.class.send(:class_variable_get,:@@vdc_account_uuid)
-    }
+  alias :build_request_headers_orig :build_request_headers
+  def build_request_headers(headers, http_method, uri)
+    h = build_request_headers_orig(headers, http_method, uri)
+    ra = Thread.current[:hijiki_request_attribute]
+    ra.build_http_headers
+    if ra
+      h.update(ra.build_http_headers)
+    else
+      h
+    end
   end
   
   def configure_http(http)
