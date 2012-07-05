@@ -79,9 +79,6 @@ binary:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 
 binary-snap:
-	mv $(RPMBUILD_SPEC) $(RPMBUILD_SPEC).tmp
-	sed "s,^Release: .*,Release: $$(rpmbuild/helpers/gen-release-id.sh)%{?dist}," $(RPMBUILD_SPEC).tmp > $(RPMBUILD_SPEC)
-	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
-	mv $(RPMBUILD_SPEC).tmp $(RPMBUILD_SPEC)
+	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh)"
 
 .PHONY: build clean binary-indep binary-arch binary binary-snap install
