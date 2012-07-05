@@ -26,11 +26,14 @@ log_dir=${abs_path}/logs
 
 (
  date
+ git pull
+ build_id=$(git log -n 1 --pretty=format:"%h")
+
  cd ${wakame_root}/rpmbuild/ops
 
  # build vmapp & rpm
  for arch in x86_64 i686; do
-   time ./rpmbuild.sh --execscript=./execscript.d/vmapp-rhel.sh --base-distro-arch=${arch}
+   time ./rpmbuild.sh --execscript=./execscript.d/vmapp-rhel.sh --base-distro-arch=${arch} --build-id=${build_id}
  done
 
  # upload rpms to s3

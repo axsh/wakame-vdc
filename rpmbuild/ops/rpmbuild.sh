@@ -124,7 +124,7 @@ sleep 3
 sync
 
 sleep 3
-./rpmbuild/rules binary-snap
+VDC_BUILD_ID=${build_id} ./rpmbuild/rules binary-snap
 sync
 EOS
 

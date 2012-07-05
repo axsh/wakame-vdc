@@ -8,6 +8,8 @@ RPMBUILD_CMD  := rpmbuild
 RPMBUILD_SPEC := rpmbuild/SPECS/wakame-vdc.spec
 RPMBUILD_OPTS := --target=`arch`
 
+VDC_BUILD_ID ?= master
+
 # .deb
 #TMP_INSTALL_ROOT ?= debian/wakame-vdc
 # .rpm
@@ -79,6 +81,6 @@ binary:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 
 binary-snap:
-	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh)"
+	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))"
 
 .PHONY: build clean binary-indep binary-arch binary binary-snap install
