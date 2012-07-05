@@ -37,7 +37,8 @@ log_dir=${abs_path}/logs
  done
 
  # upload rpms to s3
- time ./build-s3-vdc.sh 2>&1
+ time ./createrepo-vdc.sh 2>&1
+ time yes | ./syncrepo-vdc.sh build 2>&1
  date
  # upload vmapps to s3
  time ./build-s3-vmapp.sh 2>&1
