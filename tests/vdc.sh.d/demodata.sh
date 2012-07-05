@@ -180,6 +180,9 @@ user associate u-00000000 --account-ids "a-00000000"
 account add --name="demo" --uuid=a-shpoolxx
 user add --name="demo" --uuid=u-shpoolxx --login_id=demo --password=demo --primary-account-id=a-shpoolxx
 user associate u-shpoolxx --account-ids "a-shpoolxx"
+
+account quota set a-shpoolxx instance.count 10.0
+account quota set a-shpoolxx instance.quota_weight 10.0
 EOF
 
 exit 0
