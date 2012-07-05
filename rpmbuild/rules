@@ -3,12 +3,15 @@
 # should be in wakame-vdc
 CURDIR ?= $(PWD)
 
+VDC_BUILD_ID  ?= master
+VDC_SPEC_BASE := rpmbuild/SPECS/wakame-vdc.spec
+VDC_SPEC_SUBS := rpmbuild/SPECS/wakame-vdc-example-1box.spec
+
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
 RPMBUILD_CMD  := rpmbuild
-RPMBUILD_SPEC := rpmbuild/SPECS/wakame-vdc.spec rpmbuild/SPECS/wakame-vdc-example-1box.spec
 RPMBUILD_OPTS := --target=`arch`
-
-VDC_BUILD_ID ?= master
+RPMCLEAN_SPEC := $(VDC_SPEC_BASE)
+RPMBUILD_SPEC := $(VDC_SPEC_BASE) $(VDC_SPEC_SUBS)
 
 # .deb
 #TMP_INSTALL_ROOT ?= debian/wakame-vdc
@@ -25,7 +28,7 @@ build-stamp:
 	touch $@
 clean:
 	CURDIR=${CURDIR} make clean
-	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
+	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS) $(RPMCLEAN_SPEC)
 	rm -f build-stamp
 
 install: build
