@@ -2,9 +2,16 @@
 %define _vdc_git_uri git://github.com/axsh/wakame-vdc.git
 %define oname wakame-vdc
 
+# * rpmbuild -bb ./wakame-vdc.spec \
+# --define "build_id $(../helpers/gen-release-id.sh)"
+# --define "build_id $(../helpers/gen-release-id.sh [ commit-hash ])"
+
+%define release_id 1.daily
+%{?build_id:%define release_id %{build_id}}
+
 Name: %{oname}
 Version: 12.03
-Release: 1.daily%{?dist}
+Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
 Vendor: Axsh Co. LTD <dev@axsh.net>
@@ -143,9 +150,16 @@ Requires: %{oname} = %{version}-%{release}
 
 ## rpmbuild -bp
 %prep
-[ -d %{oname}-%{version} ] || git clone %{_vdc_git_uri} %{oname}-%{version}
-cd %{oname}-%{version}
+[ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
+cd %{name}-%{version}
+git checkout master
 git pull
+[ -z "%{build_id}" ] || {
+  build_id=%{build_id}
+  git checkout ${build_id##*git}
+  unset build_id
+} && :
+
 %setup -T -D
 
 ## rpmbuild -bc

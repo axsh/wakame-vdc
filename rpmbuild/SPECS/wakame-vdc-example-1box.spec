@@ -4,8 +4,8 @@
 %define osubname example-1box
 
 # * rpmbuild -bb ./wakame-vdc-example-1box.spec \
-# --define "build_id 1.daily"
 # --define "build_id $(../helpers/gen-release-id.sh)"
+# --define "build_id $(../helpers/gen-release-id.sh [ commit-hash ])"
 
 %define release_id 1.daily
 %{?build_id:%define release_id %{build_id}}
@@ -64,7 +64,14 @@ Requires: %{name}-hva-vmapp-config
 %prep
 [ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
 cd %{name}-%{version}
+git checkout master
 git pull
+[ -z "%{build_id}" ] || {
+  build_id=%{build_id}
+  git checkout ${build_id##*git}
+  unset build_id
+} && :
+
 %setup -T -D
 
 ## rpmbuild -bc
