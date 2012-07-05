@@ -8,6 +8,10 @@ module Dcmgr::Models
     
     many_to_one :network
 
+    def_dataset_method(:leased_ip_bound_lease) {
+        select(:ip_leases__ipv4, :prev__ipv4___prev, :follow__ipv4___follow).join_table(:left, :ip_leases___prev, :ip_leases__ipv4=>:prev__ipv4 +1).join_table(:left, :ip_leases___follow, :ip_leases__ipv4=>:follow__ipv4 - 1).filter({:prev__ipv4=>nil} | {:follow__ipv4=>nil})
+    }
+
     def validate
       # validate ipv4 syntax
       begin
