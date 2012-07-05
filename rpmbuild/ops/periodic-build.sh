@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -x
+set -e
 
 abs_path=$(cd $(dirname $0) && pwd)
 wakame_root=$(cd ${abs_path}/../../ && pwd)
@@ -25,14 +26,12 @@ log_dir=${abs_path}/logs
 
 (
  date
+ cd ${wakame_root}/rpmbuild/ops
 
  # build vmapp & rpm
- # cd ${wakame_root}/tests/image_builder/
  for arch in x86_64 i686; do
    time ./rpmbuild.sh --execscript=./execscript.d/vmapp-rhel.sh --base-distro-arch=${arch}
  done
-
- cd ${abs_path}
 
  # upload rpms to s3
  time ./build-s3-vdc.sh 2>&1
