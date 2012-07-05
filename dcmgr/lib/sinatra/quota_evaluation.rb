@@ -156,7 +156,7 @@ module Sinatra
         # by X-VDC-Account-ID. The JSON document in
         # X-VDC-Account-Quota should be ignored if the
         # X-VDC-Account-ID header did not come along with. 
-        if quota_json && request.env.has_key?('HTTP_X_VDC_ACCOUNT_ID')
+        if quota_json && request.env.has_key?('HTTP_X_VDC_ACCOUNT_UUID')
           # JSON parse error is expected to raise error and halts
           # further request processing.
           @quota_request = ::JSON.parse(quota_json)
