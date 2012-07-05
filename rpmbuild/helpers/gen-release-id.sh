@@ -7,10 +7,8 @@ set -e
 
 LANG=C
 
-build_id=${1}
-[ -z "${build_id}" ] || git checkout ${build_id} >/dev/null 2>&1
-
-git_version=$(git log -n 1 --pretty=format:"%h")
+build_id=${1:-master}
+git_version=$(git log ${build_id} -n 1 --pretty=format:"%h")
 git_datetime=$(date --date="$(git log -n 1 --pretty=format:"%cd" --date=iso)" +%Y%m%d%H%M%S)
 
 # * ${git_date}git${git_version}
@@ -35,5 +33,3 @@ git_datetime=$(date --date="$(git log -n 1 --pretty=format:"%cd" --date=iso)" +%
 # - mipv6-daemon
 
 echo ${git_datetime}git${git_version}
-
-[ -z "${build_id}" ] || git checkout master >/dev/null 2>&1
