@@ -5,7 +5,7 @@ CURDIR ?= $(PWD)
 
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
 RPMBUILD_CMD  := rpmbuild
-RPMBUILD_SPEC := rpmbuild/SPECS/wakame-vdc.spec
+RPMBUILD_SPEC := rpmbuild/SPECS/wakame-vdc.spec rpmbuild/SPECS/wakame-vdc-example-1box.spec
 RPMBUILD_OPTS := --target=`arch`
 
 VDC_BUILD_ID ?= master
