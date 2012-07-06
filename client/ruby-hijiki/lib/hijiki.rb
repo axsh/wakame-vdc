@@ -24,7 +24,7 @@ module Hijiki
     # end
     def self.setup_aliases(version_sym, namespace=self)
       raise ArgumentError, "Undefined API version: #{version_sym}" unless self.const_get(version_sym)
-      raise ArgumentError, "Need to set"  unless namespace.is_a?(Module)
+      raise ArgumentError, "Invalid namespace class."  unless namespace.is_a?(Module)
 
       version_mod = Hijiki::DcmgrResource.const_get(version_sym)
       namespace.module_eval {

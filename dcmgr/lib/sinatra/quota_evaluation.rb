@@ -73,7 +73,7 @@ module Sinatra
         end
         
         def quota_key(key, &blk)
-          raise ArgumentError, "#{key} was set previously." if @tuples[key]
+          raise ArgumentError, "#{key} was set already." if @tuples[key]
           @tuples[key] = [blk]
         end
       end
