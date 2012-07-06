@@ -69,7 +69,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                'security_group' => lb_conf.security_group,
                'ssh_key_id' => lb_conf.ssh_key_id,
                'service_type' => lb_conf.name,
-               'user_data' => user_data.join("\n")
+               'user_data' => user_data.join("\n"),
+               'vifs' => {
+                 'eth0' => {'index' => '0', 'network' => lb_conf.instances_network},
+                 'eth1' => {'index' => '1', 'network' => lb_conf.management_network}
+               }
     }
 
     # TODO: Using sinatra plugin.

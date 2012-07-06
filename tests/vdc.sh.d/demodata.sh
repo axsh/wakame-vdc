@@ -54,6 +54,9 @@ network dc add null1
 network dc add-network-mode null1 l2overlay
 network dc add null2
 network dc add-network-mode null2 l2overlay
+network dc add management
+network dc add-network-mode management securitygroup
+network dc del-network-mode management passthru
 
 # vlan
 #vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
@@ -100,6 +103,15 @@ network add \
  --metric 10 \
  --service-type std \
  --display-name "demo7"
+network add \
+ --uuid nw-demo8 \
+ --ipv4-network 10.1.0.0 \
+ --ipv4_gw 10.1.0.1 \
+ --prefix 24 \
+ --domain vnet8.local \
+ --metric 10 \
+ --service-type lb \
+ --display-name "demo8"
 
 # set forward interface(= physical network) from network
 network forward nw-demo1 public
@@ -109,6 +121,7 @@ network forward nw-demo4 null1
 network forward nw-demo5 null2
 network forward nw-demo6 null1
 network forward nw-demo7 null1
+network forward nw-demo8 management
 
 network service dhcp nw-demo6 --ipv4=10.102.0.2
 network service dhcp nw-demo7 --ipv4=10.103.0.2
@@ -128,6 +141,7 @@ network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
 network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 network dhcp addrange nw-demo6 10.102.0.10 10.102.0.240
 network dhcp addrange nw-demo7 10.103.0.10 10.103.0.240
+network dhcp addrange nw-demo8 10.1.0.10 10.1.0.240
 
 resourcegroup map hng-shhost hn-${node_id}
 resourcegroup map sng-shstor sn-${node_id}

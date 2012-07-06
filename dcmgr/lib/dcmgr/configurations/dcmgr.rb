@@ -137,9 +137,10 @@ module Dcmgr
         param :image_id
         param :instance_spec_id
         param :host_node_id
-        param :security_group
         param :ssh_key_id
         param :amqp_server_uri
+        param :instances_network
+        param :management_network
       end 
 
       DSL do
