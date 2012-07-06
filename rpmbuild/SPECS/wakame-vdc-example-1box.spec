@@ -113,12 +113,19 @@ for sys_default_conf in ${sys_default_confs}; do
   sed -i s,^#RUN=.*,RUN=yes, /etc/default/vdc-${sys_default_conf}
 done
 
+# set demo parameters
+for sys_default_conf in /etc/default/vdc-*; do sed -i s,^#NODE_ID=.*,NODE_ID=demo1, ${sys_default_conf}; done
+[ -f /etc/wakame-vdc/unicorn-common.conf ] && sed -i "s,^worker_processes .*,worker_processes 1," /etc/wakame-vdc/unicorn-common.conf
+
 %post hva-vmapp-config
 # activate upstart system job
 sys_default_confs="hva"
 for sys_default_conf in ${sys_default_confs}; do
   sed -i s,^#RUN=.*,RUN=yes, /etc/default/vdc-${sys_default_conf}
 done
+
+# set demo parameters
+for sys_default_conf in /etc/default/vdc-*; do sed -i s,^#NODE_ID=.*,NODE_ID=demo1, ${sys_default_conf}; done
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
