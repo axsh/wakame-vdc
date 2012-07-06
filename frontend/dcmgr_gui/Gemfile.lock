@@ -1,5 +1,5 @@
 PATH
-  remote: /home/katsuo/dev/wakame-vdc/client/ruby-hijiki
+  remote: /root/wakame-vdc/client/ruby-hijiki
   specs:
     ruby-hijiki (0.0.3)
       activeresource (~> 3.0.0)
