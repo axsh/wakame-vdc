@@ -57,7 +57,7 @@ module Hijiki::DcmgrResource::Common
     
     module ClassMethods
       def list(params = {})
-        self.find(:all,:params => params.merge({}))
+        self.find(:all,:params => params.merge({:service_type=>'std'}))
       end
       
       def show(uuid)
