@@ -39,7 +39,7 @@ module Dcmgr::Cli
     method_option :allocation_size, :type => :numeric, :desc => "The allcated file size of the backup object."
     method_option :checksum, :type => :string, :desc => "The checksum of the backup object."
     method_option :description, :type => :string, :desc => "Description of the backup storage"
-    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the backup object. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :desc => "Service type of the backup object. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     def modify(uuid)
       bo = M::BackupObject[uuid] || UnknownUUIDError.raise(uuid)
       fields = options.dup

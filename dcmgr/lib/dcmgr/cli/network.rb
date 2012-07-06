@@ -78,7 +78,7 @@ class Network < Base
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :desc => "The account ID to own this"
   method_option :network_mode, :type => :string, :desc => "Network mode: #{M::Network::NETWORK_MODES.join(', ')}"
-  method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+  method_option :service_type, :type => :string, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :desc => "Display name of the network"
   def modify(uuid)
     validate_ipv4_range
