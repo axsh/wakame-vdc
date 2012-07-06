@@ -193,5 +193,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('host_node_groups')
     load_namespace('storage_node_groups')
     load_namespace('network_groups')
+    load_namespace('accounts')
   end
 end
