@@ -102,7 +102,7 @@ case ${mode} in
 
       # run build iso image.
       [[ ! -e "${build_image}" ]] && { 
-        ${prefix_path}/dcmgr/script/pararell-curl.sh --url=${build_image_source} --output_path=$build_image
+        ${prefix_path}/dcmgr/script/parallel-curl.sh --url=${build_image_source} --output_path=$build_image
       }
 
       if [ -e "${build_image}" ]; then

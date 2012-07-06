@@ -78,7 +78,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     i.description = params[:description] if params[:description]
     i.save_changes
 
-    commit_transaction
     respond_with(R::Image.new(i).generate)
   end
 

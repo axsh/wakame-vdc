@@ -64,7 +64,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::UnknownVolume, params[:id] if v.nil?
     respond_with(R::Volume.new(v).generate)
   end
-  
+
+  quota 'volume.size', 'volume.count'
   post do
     sp = vs = vol = nil
     # input parameter validation
@@ -115,9 +116,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       vol.state = :scheduling
       vol.save
 
-      commit_transaction
-
-      Dcmgr.messaging.submit("scheduler", 'schedule_volume', vol.canonical_uuid)
+      on_after_commit do
+        Dcmgr.messaging.submit("scheduler", 'schedule_volume', vol.canonical_uuid)
+      end
     else
       begin
         vol.storage_node = sp
@@ -130,9 +131,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       vol.state = :pending
       vol.save
 
-      commit_transaction
-
-      Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid)
+      on_after_commit do
+        Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'create_volume', vol.canonical_uuid)
+      end
     end
 
     respond_with(R::Volume.new(vol).generate)
@@ -155,8 +156,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       raise E::InvalidDeleteRequest
     end
 
-    commit_transaction
-    Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'delete_volume', vol.canonical_uuid)
+    on_after_commit do
+      Dcmgr.messaging.submit("sta-handle.#{vol.storage_node.node_id}", 'delete_volume', vol.canonical_uuid)
+    end
     respond_with([vol.canonical_uuid])
   end
 
@@ -177,8 +179,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     v.instance = i
     v.save
-    commit_transaction
-    Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+
+    on_after_commit do
+      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
+    end
 
     respond_with(R::Volume.new(v).generate)
   end
@@ -195,12 +199,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     raise E::DetachVolumeFailure, "boot device can not be detached" if v.boot_dev == 1
     i = v.instance
     raise E::InvalidInstanceState unless i.live? && i.state == 'running'
-    commit_transaction
-    Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+
+    on_after_commit do
+      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'detach', i.canonical_uuid, v.canonical_uuid)
+    end
     respond_with(R::Volume.new(v).generate)
   end
 
   # Create new backup
+  quota 'backup_object.size', 'backup_object.count'
   put '/:id/backup' do
     raise E::UndefinedVolumeID if params[:id].nil?
     v = find_by_uuid(:Volume, params[:id])
@@ -218,10 +225,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
         end
       }
     end
-    
-    commit_transaction
 
-    Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'create_snapshot', v.canonical_uuid, bo.canonical_uuid)
+    on_after_commit do
+      Dcmgr.messaging.submit("sta-handle.#{v.storage_node.node_id}", 'create_snapshot', v.canonical_uuid, bo.canonical_uuid)
+    end
     respond_with(R::BackupObject.new(bo).generate)
   end
 
@@ -236,7 +243,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     v.display_name = params[:display_name] if params[:display_name]
     v.save_changes
-    commit_transaction
 
     respond_with(R::Volume.new(v).generate)
   end

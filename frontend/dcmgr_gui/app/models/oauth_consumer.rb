@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
+
 require 'oauth'
+
 class OauthConsumer < BaseNew
-  
-  many_to_one :account
-  
   with_timestamps
   
-  inheritable_schema do
-    primary_key :id, :type=>Integer
-    String :key, :null => false, :size => 40
-    String :secret, :null => false, :size => 40
-    Integer :account_id, :null => false, :unique=>true
-    index :key, :unique=>true
+  many_to_one :account
+
+  private
+  def before_validation
+    self[:key] ||= OAuth::Helper.generate_key(40)[0,40]
+    self[:secret] ||= OAuth::Helper.generate_key(40)[0,40]
+    super
   end
 end

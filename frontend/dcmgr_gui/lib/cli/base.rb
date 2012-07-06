@@ -9,25 +9,6 @@ module Cli
       "#{super()} #{namespace}"
     end
 
-    no_tasks {
-      public
-      # add before/after task hook.
-      def invoke_task(task, *args)
-        BaseNew.db.transaction do
-          before_task
-          super(task, *args)
-          after_task
-        end
-      end
-    
-      protected
-      def before_task
-      end
-      
-      def after_task
-      end
-    }
-    
     def add(model,options)
       raise ArgumentError unless options.is_a? Hash
       #TODO: Make this check a little tighter by checking that the model is either from the wakame backend or frontend

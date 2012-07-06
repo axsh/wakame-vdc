@@ -21,6 +21,8 @@ en:
     start: "Start"
     stop: "Stop"
     backup: "Backup"
+    poweron: "PowerOn"
+    poweroff: "PowerOff"
   selectmenu:
     select_action: "Select an Action"
     select_region: "Region: "
@@ -58,7 +60,7 @@ en:
       host_name: "Host Name"
       instance_spec: "Instance Spec"
       ssh_key_pair: "SSH Key Pair"
-      security_group: "Security Group"
+      security_group: "Security Groups"
       available_groups: "Available Groups"
       launch_in: "Launch in"
       user_data: "User Data"
@@ -67,6 +69,10 @@ en:
       header: "Edit Instance"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+      security_group: "Security Groups"
+      available_groups: "Avaiable groups"
+      groups_to_assign: "Groups to assign"
+      interface: "Interface"
     edit_machine_image:
       header: "Edit Machine Image"
       uuid: "WMI ID"
@@ -234,6 +240,42 @@ en:
       message: "Are you sure you want to backup those instances?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+    create_load_balancer:
+      header:
+        display_name: "Load Balancer Name"
+        load_balancer: "Load Balancer"
+        instance: "Instance"
+        load_balancer_protocol: "Protocol"
+        load_balancer_port: "Port"
+        instance_protocol: "Protocol"
+        instance_port: "Port"
+      certificate:
+        header: "Certificate"
+        name: "Name"
+        private_key: "Private Key"
+        public_key: "Public Key"
+        chain: "Certificate Chain"
+      sticky_session:
+        header: "Sticky Session"
+        cookie_name: "Cookie Name"
+    delete_load_balancer:
+      message: "Are you sure you want to delete the following Load Balancer?"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
+    register_load_balancer:
+      header: "Register Load Balancer"
+      instances: "Instances"
+      register_instances: "Register Instance"
+    poweron_instances:
+      header: "PowerOn Instances"
+      message: "Are you sure you want to turn those instances on?"
+      instance_id: "Instance ID"
+      display_name: "Instance Name"
+    poweroff_instances:
+      header: "PowerOff Instances"
+      message: "Are you sure you want to turn those instances off?"
+      instance_id: "Instance ID"
+      display_name: "Instance Name"
   login:
     sign_in: "Sign In"
     user: "User"
@@ -322,6 +364,9 @@ en:
       updated_at: "Updated At"
   load_balancers:
     header: "Load Balancers"
+    load_balancer_actions:
+      register_instance: "Register Instance"
+      unregister_instance: "Unregister Instance"
     button:
       create_load_balancer: "Create Load Balancer"
       delete_load_balancer: "Delete Load Balancer"

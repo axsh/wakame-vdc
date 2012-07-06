@@ -42,6 +42,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     respond_with(R::SecurityGroup.new(g).generate)
   end
 
+  quota 'security_group.count'
   post do
     # description 'Register a new security group'
     # params description, string
@@ -97,12 +98,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::InvalidSecurityGroupRule, e.message
     end
 
-    commit_transaction
     # refresh security group rules on host nodes.
-    Dcmgr.messaging.event_publish('hva/security_group_updated', :args=>[g.canonical_uuid])
-    Dcmgr.messaging.event_publish("#{g.canonical_uuid}/rules_updated")
-
-    send_reference_events(g,old_referencees,g.referencees) if params[:rule]
+    on_after_commit do
+      Dcmgr.messaging.event_publish('hva/security_group_updated', :args=>[g.canonical_uuid])
+      Dcmgr.messaging.event_publish("#{g.canonical_uuid}/rules_updated")
+    
+      send_reference_events(g,old_referencees,g.referencees) if params[:rule]
+    end
 
     respond_with(R::SecurityGroup.new(g).generate)
   end
@@ -121,6 +123,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::OperationNotPermitted
     end
 
-    response_to([g.canonical_uuid])
+    respond_with([g.canonical_uuid])
   end
 end

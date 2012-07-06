@@ -19,7 +19,7 @@ module Dcmgr::Models
 
     def after_initialize
       super
-      self.object_key ||= self.canonical_uuid
+      self[:object_key] ||= self.canonical_uuid
     end
     
     def self.entry_new(bkst, account, size, &blk)

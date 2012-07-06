@@ -50,13 +50,23 @@
 	</fieldset>
 	<br />
 		
+	<table>
+          <tr><td>eth0:</td><td id="select_eth0"></td></tr>
+	  <tr><td>eth1:</td><td id="select_eth1"></td></tr>
+	  <tr><td>eth2:</td><td id="select_eth2"></td></tr>
+	  <tr><td>eth3:</td><td id="select_eth3"></td></tr>
+	  <tr><td>eth4:</td><td id="select_eth4"></td></tr>
+        </table>
+
+	<br />
+
 	<fieldset id="user_data_field">
 	<legend><%= t("dialog.launch_instance.user_data") %></legend>
 	<table cellspacing="5" cellpadding="5">
 		<tbody>
 		<tr>
 			<td colspan="2">
-				<textarea cols="56" rows="5" name="user_data" id="user_data"></textarea>
+				<textarea cols="64" rows="5" name="user_data" id="user_data"></textarea>
 			</td>
 		</tr>
 		</tbody>

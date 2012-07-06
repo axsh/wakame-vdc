@@ -16,7 +16,7 @@ class InstancesController < ApplicationController
       :display_name => params[:display_name]
     }
 
-    if params[:vifs] and !params[:vifs].empty?
+    if params[:vifs]
       vifs = {}
       vif_index = 0
 
@@ -38,7 +38,7 @@ class InstancesController < ApplicationController
         vif_index += 1
       }
 
-      data.merge!(:vifs => vifs)
+      data.merge!(:vifs => vifs) if !vifs.empty?
     end
 
     instance = Hijiki::DcmgrResource::Instance.create(data)
@@ -104,11 +104,30 @@ class InstancesController < ApplicationController
     end
     render :json => res
   end
+
+  def poweroff
+    instance_ids = params[:ids]
+    res = []
+    instance_ids.each do |instance_id|
+      res << Hijiki::DcmgrResource::Instance.poweroff(instance_id)
+    end
+    render :json => res
+  end
+
+  def poweron
+    instance_ids = params[:ids]
+    res = []
+    instance_ids.each do |instance_id|
+      res << Hijiki::DcmgrResource::Instance.poweron(instance_id)
+    end
+    render :json => res
+  end
   
   def update
     instance_id = params[:id]
     data = {
-	:display_name => params[:display_name]
+      :display_name => params[:display_name],
+      :security_groups => params[:security_groups]
     }
     instance = Hijiki::DcmgrResource::Instance.update(instance_id,data)
     render :json => instance
@@ -122,5 +141,9 @@ class InstancesController < ApplicationController
    total = all_resource_count - terminated_resource_count
    render :json => total
   end
-  
+
+  def show_instances
+    instances = Hijiki::DcmgrResource::Instance.list
+    respond_with(instances[0],:to => [:json])
+  end
 end

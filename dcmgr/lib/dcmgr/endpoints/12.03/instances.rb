@@ -69,6 +69,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::Instance.new(i).generate)
   end
 
+  quota 'instance.quota_weight', 'instance.count'
   post do
     # description 'Runs a new VM instance'
     # param :image_id, string, :required
@@ -201,9 +202,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise "Unknown boot type"
     end
 
-    commit_transaction
-    Dcmgr.messaging.submit("scheduler",
-                           'schedule_instance', instance.canonical_uuid)
+    on_after_commit do
+      Dcmgr.messaging.submit("scheduler",
+                             'schedule_instance', instance.canonical_uuid)
+    end
 
     # retrieve latest instance data.
     # if not, security_groups value is empty.
@@ -223,7 +225,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     when 'terminated', 'scheduling'
       raise E::InvalidInstanceState, i.state
     else
-      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+      on_after_commit do
+        Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'terminate', i.canonical_uuid)
+      end
     end
     respond_with([i.canonical_uuid])
   end
@@ -232,7 +236,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # description 'Reboots the instance'
     i = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, i.state if i.state != 'running'
-    Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'reboot', i.canonical_uuid)
+
+    on_after_commit do
+      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'reboot', i.canonical_uuid)
+    end
     respond_with([i.canonical_uuid])
   end
 
@@ -245,8 +252,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     i.nic.each { |nic|
       nic.release_ip_lease
     }
-    
-    Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'stop', i.canonical_uuid)
+
+    on_after_commit do
+      Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'stop', i.canonical_uuid)
+    end
     respond_with([i.canonical_uuid])
   end
 
@@ -257,8 +266,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance.state = :scheduling
     instance.save
 
-    commit_transaction
-    Dcmgr.messaging.submit("scheduler", 'schedule_start_instance', instance.canonical_uuid)
+    on_after_commit do
+      Dcmgr.messaging.submit("scheduler", 'schedule_start_instance', instance.canonical_uuid)
+    end
     respond_with([instance.canonical_uuid])
   end
   
@@ -282,8 +292,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         vnic.security_groups_dataset.each { |group|
           unless security_group_uuids.member?(group.canonical_uuid)
             vnic.remove_security_group(group)
-            Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
-            Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
+            on_after_commit do
+              Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
+              Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
+            end
           end
         }
       }
@@ -294,8 +306,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         unless current_group_ids.member?(group.canonical_uuid)
           instance.nic.each { |vnic|
             vnic.add_security_group(group)
-            Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
-            Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
+            on_after_commit do
+              Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
+              Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
+            end
           }
         end
       }
@@ -304,11 +318,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance.display_name = params[:display_name ] if params[:display_name]
     instance.save_changes
 
-    commit_transaction
     respond_with(R::Instance.new(instance).generate)
   end
 
   # Create image backup from the alive instance.
+  quota 'backup_object.size', 'backup_object.count', 'image.count'
   put '/:id/backup' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
@@ -333,12 +347,45 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       i.backup_object_id = bo.canonical_uuid
     end
     
-    commit_transaction
-    Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'backup_image',
-                           instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+    on_after_commit do
+      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'backup_image',
+                             instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
+    end
     respond_with({:instance_id=>instance.canonical_uuid,
                    :backup_object_id => bo.canonical_uuid,
                    :image_id => image.canonical_uuid,
                  })
   end
+
+  # Halt the running instance.
+  put '/:id/poweroff' do
+    instance = find_by_uuid(:Instance, params[:id])
+    raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
+
+    instance.state = :halting
+    instance.save
+
+    on_after_commit do
+      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweroff',
+                             instance.canonical_uuid)
+    end
+    respond_with({:instance_id=>instance.canonical_uuid,
+                 })
+  end  
+
+  # Restart the instance from halted state.
+  put '/:id/poweron' do
+    instance = find_by_uuid(:Instance, params[:id])
+    raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)
+
+    instance.state = :starting
+    instance.save
+
+    on_after_commit do
+      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'poweron',
+                             instance.canonical_uuid)
+    end
+    respond_with({:instance_id=>instance.canonical_uuid,
+                 })
+  end  
 end

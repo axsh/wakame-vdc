@@ -11,17 +11,20 @@ DcmgrGui::Application.configure do
 
   # Show full error reports and disable caching
   config.consider_all_requests_local       = true
-  config.action_view.debug_rjs             = true
-  config.action_controller.perform_caching = false
+  if config.respond_to?(:action_controller)
+    config.action_view.debug_rjs             = true
+    config.action_controller.perform_caching = false
+  
+    # Only use best-standards-support built into browsers
+    config.action_dispatch.best_standards_support = :builtin
+    #config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect'
+  end
 
   # Don't care if the mailer can't send
   #config.action_mailer.raise_delivery_errors = false
 
   # Print deprecation notices to the Rails logger
   config.active_support.deprecation = :log
-
-  # Only use best-standards-support built into browsers
-  config.action_dispatch.best_standards_support = :builtin
   
   # Config authentication for WebAPI
   # Setting proxy server
@@ -38,10 +41,10 @@ DcmgrGui::Application.configure do
   config.auth_port = 3000
   config.auth_root_user = 'root'
 
-  config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
-  config.i18n.default_locale = :en
-  #config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect'
+  if config.respond_to?(:i18n)
+    config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
+    config.i18n.default_locale = :en
+  end
 end
 
 require 'pp'
-

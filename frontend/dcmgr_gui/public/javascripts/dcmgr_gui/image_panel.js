@@ -151,12 +151,17 @@ DcmgrGUI.prototype.imagePanel = function(){
     $.each(launch_in,function(i){
      security_groups.push("security_groups[]="+ $(this).text());
     });
+    var vifs = [];
+    for (var i=0; i < 5 ; i++) {
+        vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
+    }      
 
     var data = "image_id="+image_id
               +"&instance_spec_id="+instance_spec_id
               +"&host_name="+host_name
               +"&user_data="+user_data
               +"&" + security_groups.join('&')
+              +"&" + vifs.join('&')
               +"&ssh_key="+ssh_key_pair
               +"&display_name="+display_name;
     
@@ -189,6 +194,7 @@ DcmgrGUI.prototype.imagePanel = function(){
         'instance_spec': false,
         'ssh_keypair': false,
         'security_groups': false,
+        'networks': false,
         'display_name': false
       };
 
@@ -196,6 +202,7 @@ DcmgrGUI.prototype.imagePanel = function(){
         if(data['instance_spec'] == true &&
            data['ssh_keypair'] == true &&
            data['security_groups'] == true &&
+           data['networks'] == true &&
            data['display_name'] == true) {  
           bt_launch_instance.disabledButton(1, false);
         } else {
@@ -302,7 +309,46 @@ DcmgrGUI.prototype.imagePanel = function(){
                 on_ready(security_group.getRightSelectionCount());
               });
             }
+        }),
+
+        //get networks
+        networks: 
+          request.get({
+            "url": '/networks/all.json',
+            "data": "",
+            success: function(json,status){
+              var create_select_item = function(name) {
+                var select_html = '<select id="' + name + '" name="' + name + '"></select>';
+                $(self).find('#select_' + name).empty().html(select_html);
+                return $(self).find('#' + name);
+              }
+
+              var append_select_item = function(select_item, uuid) {
+                select_item.append('<option value="'+ uuid +'">'+uuid+'</option>');
+              }
+
+              var create_select_eth = function(name, results) {
+                var select_eth = create_select_item(name);
+                append_select_item(select_eth, 'none')
+                append_select_item(select_eth, 'disconnected')
+
+                for (var i=0; i < size ; i++) {
+                  append_select_item(select_eth, results[i].result.uuid)
+                }
+              }
+
+              var results = json.network.results;
+              var size = results.length;
+
+              is_ready['networks'] = true;
+              ready(is_ready);
+
+              for (var i=0; i < 5 ; i++) {
+                create_select_eth('eth' + i, results);
+              }                
+            }
           })
+
       }).next(function(results) {
         $("#left_select_list").unmask();
       });

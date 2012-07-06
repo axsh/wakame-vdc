@@ -19,7 +19,7 @@ module Dcmgr
           FileUtils.mkdir_p(vmimg_cache_dir) unless File.exists?(vmimg_cache_dir)
           download_to_local_cache(img_src_uri, vmimg_basename, inst[:image][:backup_object][:checksum])
         else
-          paralell_curl(img_src_uri, vmimg_cache_path(vmimg_basename))
+          parallel_curl(img_src_uri, vmimg_cache_path(vmimg_basename))
         end
         
         logger.debug("copying #{vmimg_cache_path(vmimg_basename)} to #{ctx.os_devpath}")
@@ -99,7 +99,7 @@ module Dcmgr
         File.unlink("#{vmimg_cache_path(basename)}") rescue nil
         File.unlink("#{vmimg_cache_path(basename)}.md5") rescue nil
         
-        paralell_curl(img_src_uri, vmimg_cache_path(basename))
+        parallel_curl(img_src_uri, vmimg_cache_path(basename))
         
         if Dcmgr.conf.local_store.enable_cache_checksum
           logger.debug("calculating checksum of #{vmimg_cache_path(basename)}")
@@ -113,9 +113,9 @@ module Dcmgr
       end
 
       private
-      def paralell_curl(url, output_path)
+      def parallel_curl(url, output_path)
         logger.debug("downloading #{url} as #{output_path}")
-        sh("#{Dcmgr.conf.script_root_path}/pararell-curl.sh --url=#{url} --output_path=#{output_path}")
+        sh("#{Dcmgr.conf.script_root_path}/parallel-curl.sh --url=#{url} --output_path=#{output_path}")
       end
     end
   end

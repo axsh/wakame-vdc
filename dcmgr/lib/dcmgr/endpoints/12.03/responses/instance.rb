@@ -50,6 +50,8 @@ module Dcmgr::Endpoints::V1203::Responses
             }
           end
           
+          ent[:security_groups] = vif.security_groups.map {|sg| sg.canonical_uuid}
+          
           h[:vif] << ent
         }
 

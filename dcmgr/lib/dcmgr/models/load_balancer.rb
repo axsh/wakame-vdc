@@ -3,7 +3,7 @@
 module Dcmgr::Models
   class LoadBalancer < AccountResource
     taggable 'lb'
-    one_to_one :instance, :class=>Instance, :key => :id
+    many_to_one :instance
     one_to_many :load_balancer_targets, :key => :load_balancer_id do |ds|
       ds.filter(:is_deleted => 0) 
     end
@@ -69,7 +69,7 @@ module Dcmgr::Models
     end
 
     def remove_target(network_vif_id)
-      lbt = LoadBalancerTarget.find(:network_vif_id => network_vif_id)
+      lbt = LoadBalancerTarget.find(:network_vif_id => network_vif_id, :is_deleted => 0)
       lbt.delete
       lbt
     end

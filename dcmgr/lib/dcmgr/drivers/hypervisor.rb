@@ -13,6 +13,12 @@ module Dcmgr
       def reboot_instance(hc)
       end
       
+      def poweroff_instance(hc)
+      end
+
+      def poweron_instance(hc)
+      end
+
       def check_interface(hc)
         hc.inst[:instance_nics].each { |vnic|
           next if vnic[:network].nil?

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'securerandom'
+
 module Dcmgr::Models
   class RequestLog < BaseNew
 
@@ -8,7 +10,7 @@ module Dcmgr::Models
 
     def after_initialize
       super
-      self[:request_id] ||= Isono::Util.gen_id
+      self[:request_id] ||= SecureRandom.hex(20)
       t = Time.now
       self[:requested_at] = t
       self[:requested_at_usec] = t.usec

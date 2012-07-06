@@ -1,7 +1,7 @@
 Wakame-VDC
 ============
 
-Wakame-VDC is a toolkit for IaaS cloud.
+Wakame-VDC is the Data Center Level Hypervisor.
 
 See details for http://wakame.jp/wiki/ (in English)
 
@@ -13,15 +13,19 @@ Features:
 
 * Hypervisor
  * KVM
+ * VMware ESXi
  * LXC
+ * OpenVZ
 
 * Network
  * Security Group (L3)
  * Distributed Firewall
  * Distributed NAT
+ * Open vSwitch (OpenFlow) + Trema Based Controller
 
 * Storage
  * Solaris ZFS + iSCSI
+ * Indelible FS
  * Tired snapshot management
 
 * Management

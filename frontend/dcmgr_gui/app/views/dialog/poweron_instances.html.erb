@@ -1,0 +1,17 @@
+<div id="poweron_instances_dialog">
+  <div class="message">
+    <p><%= t("dialog.poweron_instances.message") %></p>
+  </div>
+  <table id="instances">
+    <%- @instances.each do |i| -%>
+    <tr>
+      <td><%= t("dialog.poweron_instances.instance_id") %></td>
+      <td class="instance_id"><%= i["id"] %></td>
+    </tr>
+    <tr>
+      <td class="border"><%= t("dialog.poweron_instances.display_name") %></td>
+      <td class="border"><%= i["display_name"] %></td>
+    </tr>
+    <%- end -%>
+  </table>
+</div>

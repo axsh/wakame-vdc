@@ -16,7 +16,8 @@ module Dcmgr
         def schedule(instance)
           index = 0
 
-          return unless instance.request_params[:vifs].is_a?(Hash)
+          return unless instance.request_params['vifs'].is_a?(Hash)
+
           instance.request_params['vifs'].each { |name, param|
             vnic_params = {
               :index => param['index'] ? param['index'].to_i : index,

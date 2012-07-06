@@ -3,10 +3,15 @@
 # should be in wakame-vdc
 CURDIR ?= $(PWD)
 
+VDC_BUILD_ID  ?= master
+VDC_SPEC_BASE := rpmbuild/SPECS/wakame-vdc.spec
+VDC_SPEC_SUBS := rpmbuild/SPECS/wakame-vdc-example-1box.spec
+
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
 RPMBUILD_CMD  := rpmbuild
-RPMBUILD_SPEC := rpmbuild/SPECS/wakame-vdc.spec
 RPMBUILD_OPTS := --target=`arch`
+RPMCLEAN_SPEC := $(VDC_SPEC_BASE)
+RPMBUILD_SPEC := $(VDC_SPEC_BASE) $(VDC_SPEC_SUBS)
 
 # .deb
 #TMP_INSTALL_ROOT ?= debian/wakame-vdc
@@ -23,7 +28,7 @@ build-stamp:
 	touch $@
 clean:
 	CURDIR=${CURDIR} make clean
-	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
+	$(RPMBUILD_CMD) --clean $(RPMBUILD_OPTS) $(RPMCLEAN_SPEC)
 	rm -f build-stamp
 
 install: build
@@ -54,6 +59,16 @@ install: build
 	    sed -e 's|^#!.*/ruby|#!$(VDC_INSTALL_ROOT)/ruby/bin/ruby|g' < $$i > $$i.sed ;\
 	    mv $$i.sed $$i ;\
 	  done
+	# replace "/usr/bin/env ruby" shebangs.
+	egrep -m 1 -r '^#!/usr/bin/env ruby'  $(CURDIR) | \
+	  grep -v '^Binary file' | \
+	  awk -F: '{print $$1}' | \
+	  while read -r i; do \
+	    echo $$i; \
+	    cp -p $$i $$i.sed ;\
+	    sed -e 's|^#!/usr/bin/env ruby|#!$(VDC_INSTALL_ROOT)/ruby/bin/ruby|g' < $$i > $$i.sed ;\
+	    mv $$i.sed $$i ;\
+	  done
 
 binary-indep: build install
 
@@ -69,9 +84,6 @@ binary:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 
 binary-snap:
-	mv $(RPMBUILD_SPEC) $(RPMBUILD_SPEC).tmp
-	sed "s,^Release: .*,Release: $$(rpmbuild/helpers/gen-release-id.sh)%{?dist}," $(RPMBUILD_SPEC).tmp > $(RPMBUILD_SPEC)
-	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
-	mv $(RPMBUILD_SPEC).tmp $(RPMBUILD_SPEC)
+	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))"
 
 .PHONY: build clean binary-indep binary-arch binary binary-snap install

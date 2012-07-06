@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/load_balancer'
+require 'amqp'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_META_STATE = ['alive', 'alive_with_deleted'].freeze
@@ -56,37 +57,34 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     raise "E::UnknownSecurityGroup" unless lb_conf.config.include? :security_group
     raise "E::UnknownSshKeyPair" unless lb_conf.config.include? :ssh_key_id
 
-    origin_env = {}
-    env_keys = ['rack.request.form_vars',
-                'rack.request.form_hash',
-                'REQUEST_PATH',
-                'PATH_INFO',
-                'REQUEST_URI'
-                ]
-
-    # copy env
-    env_keys.each { |key| origin_env[key] = env[key] }
+    amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
+    user_data = []
+    user_data << "AMQP_SERVER=#{amqp_settings[:host]}"
+    user_data << "AMQP_PORT=#{amqp_settings[:port]}"
 
     # make params for internal request.
     values  = {'image_id' => lb_conf.image_id,
                'instance_spec_id' => spec.canonical_uuid,
                'host_node_id' => lb_conf.host_node_id,
                'security_group' => lb_conf.security_group,
-               'ssh_key_id' => lb_conf.ssh_key_id
+               'ssh_key_id' => lb_conf.ssh_key_id,
+               'service_type' => lb_conf.name,
+               'user_data' => user_data.join("\n")
     }
 
     # TODO: Using sinatra plugin.
-    env['rack.request.form_vars'] = values.collect { |k,v| "#{k}=#{v}" }.join('&')
-    env['rack.request.form_hash'] = ::Rack::Utils.parse_query(env['rack.request.form_vars'])
-    env['REQUEST_PATH'] = '/api/12.03/instances.json'
-    env['PATH_INFO'] = '/instances'
-    env['REQUEST_URI'] = '/api/12.03/instances.json'
+    _req = ::Rack::Request.new \
+      ::Rack::MockRequest.env_for("/api/12.03/instances.json",
+      :params => values)
 
-    # Create Instance
-    http_status, headers, body = self.dup.call(env)
+    _req.env['PATH_INFO'] = '/instances'
+    _req.env['SERVER_NAME'] = env['SERVER_NAME']
+    _req.env['SERVER_PORT'] = env['SERVER_PORT']
+    _req.env['CONTENT_TYPE'] = 'application/json'
+    _req.env['REQUEST_METHOD'] = env['REQUEST_METHOD']
+    _req.env['HTTP_X_VDC_ACCOUNT_UUID'] = env['HTTP_X_VDC_ACCOUNT_UUID']
 
-    # undo env
-    env_keys.each { |key| env[key] = origin_env[key] }
+    http_status, headers, body = self.dup.call(_req.env)
 
     # create load balancer
     b = ::JSON.load(body.shift)
@@ -147,8 +145,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     raise E::UnknownNetworkVif if config_params[:ipset].empty?
-    update_load_balancer_config(config_params)
-    commit_transaction
+    on_after_commit do
+      update_load_balancer_config(config_params)
+    end
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
@@ -193,8 +192,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       }
     end
 
-    update_load_balancer_config(config_params)
-    commit_transaction
+    on_after_commit do
+      update_load_balancer_config(config_params)
+    end
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
@@ -235,7 +235,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       raise E::InvalidLoadBalancerState, lb.state
     end
 
-    commit_transaction
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 

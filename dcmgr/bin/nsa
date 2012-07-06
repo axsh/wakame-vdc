@@ -13,6 +13,7 @@ require 'isono'
 
 require 'erb'
 require 'eventmachine'
+require 'ipaddress'
 
 class SuperviseDnsmasq < Isono::NodeModules::Base
   include Dcmgr::Logger

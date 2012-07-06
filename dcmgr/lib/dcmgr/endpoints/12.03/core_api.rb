@@ -4,13 +4,16 @@ require 'time'
 
 require 'sinatra/base'
 require 'sinatra/dcmgr_api_setup'
+require 'sinatra/quota_evaluation'
 
 require 'dcmgr/endpoints/errors'
+require 'dcmgr/endpoints/12.03/quota_definitions'
 
 module Dcmgr::Endpoints::V1203
   class CoreAPI < Sinatra::Base
     include Dcmgr::Logger
     register Sinatra::DcmgrAPISetup
+    register Sinatra::QuotaEvaluation
 
     use Dcmgr::Rack::RequestLogger
 
@@ -57,8 +60,21 @@ module Dcmgr::Endpoints::V1203
       item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
 
       if @account && item.account_id != @account.canonical_uuid
-        raise E::UnknownUUIDResrouce, uuid.to_s
+        raise E::UnknownUUIDResource, uuid.to_s
       end
+      if params[:service_type] && params[:service_type] != item.service_type
+        raise E::UnknownUUIDResource, uuid.to_s
+      end
+      item
+    end
+
+    def find_by_public_uuid(model_class, uuid)
+      if model_class.is_a?(Symbol)
+        model_class = Dcmgr::Models.const_get(model_class)
+      end
+      raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
+      item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
+
       if params[:service_type] && params[:service_type] != item.service_type
         raise E::UnknownUUIDResource, uuid.to_s
       end
@@ -168,6 +184,7 @@ module Dcmgr::Endpoints::V1203
     load_namespace('storage_nodes')
     load_namespace('ssh_key_pairs')
     load_namespace('networks')
+    load_namespace('network_vifs')
     load_namespace('dc_networks')
     load_namespace('reports')
     load_namespace('load_balancers')

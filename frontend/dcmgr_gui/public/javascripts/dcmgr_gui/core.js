@@ -806,14 +806,23 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
     this.right_select_id = params.right_select_id;
     this.data = params.data;
     
-    this.leftSelectionsArray = [];
+    this.leftSelectionsArray = this.emptyArray(this.data.length);
     var dataSize = this.data.length;
     for(var i = 0;i < dataSize ;i++) {
-      var html = '<option id="'+i+'" value="'+ this.data[i]['value'] +'">'+ this.data[i]['name'] +'</option>';
-      this.leftSelectionsArray[i] = $(html);
+      if (!this.data[i]['selected']) {
+        var html = '<option id="'+i+'" value="'+ this.data[i]['value'] +'">'+ this.data[i]['name'] +'</option>';
+        this.leftSelectionsArray[i] = $(html);
+      }
     }
     this.rightSelectionsArray = this.emptyArray(this.data.length);
+    for(var i = 0;i < dataSize ;i++) {
+      if (this.data[i]['selected']) {
+        var html = '<option id="'+i+'" value="'+ this.data[i]['value'] +'">'+ this.data[i]['name'] +'</option>';
+        this.rightSelectionsArray[i] = $(html);
+      }
+    }
     
+    this.refreshOptions(this.right_select_id,this.rightSelectionsArray);
     this.refreshOptions(this.left_select_id,this.leftSelectionsArray);
   },
   refreshOptions: function(select_id,selectionsArray){

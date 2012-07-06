@@ -1,26 +1,32 @@
 # -*- coding: utf-8 -*-
+
+require 'digest/sha1'
+require 'i18n'
+require 'tzinfo'
+
 class User < BaseNew
   taggable 'u'
   with_timestamps
-  plugin :single_table_inheritance, :uuid, :model_map=>{}
-  plugin :subclasses
-
-  inheritable_schema do
-    Time   :last_login_at, :null=>false
-    String :name, :fixed=>true, :size=>200, :null=>false
-    primary_key :id, :type=>Integer
-    String :login_id, :unique=>true
-    String :password, :null=>false
-    String :primary_account_id
-    String :locale, :size=>255, :null => false
-    String :time_zone, :size=>255, :null => false
-  end
 
   many_to_many :accounts,:join_table => :users_accounts
+
+  def validate
+    unless TZInfo::Timezone.all_identifiers.member?(self.time_zone)
+      errors.add(:time_zone, "Unknown time zone identifier: #{self.time_zone}")
+    end
+
+    if self.primary_account_id && !Account.check_uuid_format(self.primary_account_id)
+      errors.add(:primary_account_id, "Invalid account ID syntax: #{self.primary_account_id}")
+    end
+  end
  
-  def before_create
-    set(:locale => I18n.default_locale.to_s)
-    set(:time_zone => Time.zone.name)
+  def before_validation
+    self[:locale] ||= I18n.default_locale.to_s
+    self[:time_zone] ||= DEFAULT_TIMEZONE
+    super
+  end
+
+  def before_save
     set(:last_login_at => Time.now.utc)
     super
   end
@@ -35,8 +41,11 @@ class User < BaseNew
   end
   
   def is_system_manager?
-    account = User.primary_account(self.primary_account_id)
-    account.is_admin
+    self.primary_account.is_admin
+  end
+
+  def primary_account
+    Account[self.primary_account_id]
   end
   
   # ページ指定一覧の取得
@@ -135,7 +144,7 @@ class User < BaseNew
     end
     
     def encrypt_password(password)
-      salt = Digest::SHA1.hexdigest(DcmgrGui::Application.config.secret_token)
+      salt = Digest::SHA1.hexdigest(SECRET_TOKEN)
       Digest::SHA1.hexdigest("--#{salt}--#{password}--")
     end
 

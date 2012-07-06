@@ -33,9 +33,6 @@ bcast=${bcast:-}
 gw=${gw:-}
 dns=${dns:-}
 
-# for tests/repo_builder/build-rhel.sh
-rpm_release=${rpm_release:-spec}
-
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
 tmp_dir="${wakame_dir}/tmp/vmapp_builder"
@@ -47,14 +44,14 @@ i*86)   basearch=i386; arch=i686;;
 x86_64) basearch=${arch};;
 esac
 
-vmapp_names="
+vmapp_names="${vmapp_names:-
  dcmgr
  hva-common
  hva-kvm
  hva-lxc
  hva-openvz
  hva-full
-"
+}"
 
 [[ $UID -ne 0 ]] && {
   echo "ERROR: Run as root" >/dev/stderr
@@ -62,7 +59,36 @@ vmapp_names="
 }
 
 # build rhel repository.
-${wakame_dir}/tests/repo_builder/build-rhel.sh --repo_dir=${tmp_dir}/repos.d/archives/ --rpm_release=${rpm_release}
+repo_dir=${tmp_dir}/repos.d/archives/
+[[ -d "${repo_dir}/${basearch}" ]] || mkdir -p "${repo_dir}/${basearch}"
+
+wakame_version="$(egrep ^Version: ${wakame_dir}/rpmbuild/SPECS/wakame-vdc.spec | awk '{print $2}')"
+wakame_release="$(${wakame_dir}/rpmbuild/helpers/gen-release-id.sh).*"
+wakame_rpms="
+ wakame-vdc-${wakame_version}-${wakame_release}
+ wakame-vdc-*-${wakame_version}-${wakame_release}
+"
+
+# make temp yum repository.
+for i in ${wakame_rpms}; do
+  for rpm_arch in ${arch} noarch; do
+    for f in /root/rpmbuild/RPMS/${rpm_arch}/${i}.${rpm_arch}.rpm; do
+      [ -f "${f}" ] && cp "${f}" ${repo_dir}/${basearch}/
+    done
+  done
+done
+
+# 3rd party rpms.
+${wakame_dir}/tests/vdc.sh.d/rhel/3rd-party.sh download --vendor-dir=${repo_dir}
+
+# create local repository
+(
+ cd "${repo_dir}"
+ createrepo .
+)
+
+echo "Created => ${repo_dir}"
+
 
 yum_opts="--disablerepo='*' --enablerepo=wakame-vdc --enablerepo=openvz-kernel-rhel6 --enablerepo=openvz-utils"
 case ${base_distro} in
@@ -150,9 +176,9 @@ cd ${tmp_dir}
 # generate image
 cd ${root_dir}
 ${tmp_dir}/vmbuilder/kvm/rhel/6/vmbuilder.sh \
-  --distro_name=${base_distro} \
-  --distro_ver=${base_distro_number} \
-  --distro_arch=${arch} \
+  --distro-name=${base_distro} \
+  --distro-ver=${base_distro_number} \
+  --distro-arch=${arch} \
   --raw=./wakame-vdc-${vmapp_name}-vmapp_${base_distro}-${base_distro_number}.${arch}.raw \
   --rootsize=${rootsize} \
   --swapsize=${swapsize} \

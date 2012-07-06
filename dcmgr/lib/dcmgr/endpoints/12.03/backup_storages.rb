@@ -65,8 +65,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_storages' do
   end
   
   delete '/:id' do
-    bkst = M::BackupStorage[params[:id]] || raise(UnknownBackupStorage, params[:id])
-    raise E::DestroyedUUIDResource, bkst.canonical_uuid if !bkst.deleted_at.nil?
+    bkst = find_by_uuid(:BackupStorage, params[:id])
     bkst.destroy
     
     respond_with([bkst.canonical_uuid])

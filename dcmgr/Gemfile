@@ -17,5 +17,6 @@ gem "json", ">= 1.2.0"
 gem "net-dhcp", ">= 1.1.0"
 gem "bit-struct", ">= 0.13.6"
 gem "racket", ">= 1.0.11"
+gem 'ripl'
 
 gem 'isono', '0.2.12'

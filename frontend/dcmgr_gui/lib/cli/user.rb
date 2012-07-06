@@ -55,7 +55,7 @@ module Cli
           new_user = User[new_uuid]
           prim_acc = Account[options[:primary_account_id]]
           new_user.add_account(prim_acc)
-          new_user.primary_account_id = prim_acc.uuid
+          new_user.primary_account_id = prim_acc.canonical_uuid
           new_user.save
         end
         puts "uuid: #{new_uuid}"

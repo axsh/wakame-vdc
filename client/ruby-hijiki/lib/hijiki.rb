@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-require 'active_resource'
-
 module Hijiki
   # configuration file loader. Need to call this 
   def self.load(spec_yml)
     DcmgrResource::V1203::InstanceSpec.load_spec(spec_yml)
   end
   
+  require 'hijiki/request_attribute'
+    
   module DcmgrResource
 
     # Helps to create alias module names for the specified version of
@@ -48,6 +48,7 @@ module Hijiki
       autoload :Instance,       'hijiki/dcmgr_resource/12.03/instance'
       autoload :InstanceSpec,   'hijiki/dcmgr_resource/12.03/instance_spec'
       autoload :Network,        'hijiki/dcmgr_resource/12.03/network'
+      autoload :NetworkVif,     'hijiki/dcmgr_resource/12.03/network_vif'
       autoload :SecurityGroup,  'hijiki/dcmgr_resource/12.03/security_group'
       autoload :SshKeyPair,     'hijiki/dcmgr_resource/12.03/ssh_key_pair'
       autoload :StorageNode,    'hijiki/dcmgr_resource/12.03/storage_node'

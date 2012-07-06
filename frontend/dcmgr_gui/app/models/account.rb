@@ -11,18 +11,9 @@ class Account < BaseNew
   DISABLED=0
   ENABLED=1
   
-  inheritable_schema do
-    primary_key :id, :type=>Integer
-    String :name, :null=>false
-    String :description, :default=>""
-    Boolean :enable, :default=>true
-    DateTime :deleted_at, :null=>true
-    Boolean :is_deleted, :default=>false
-    Boolean :is_admin, :default=>false
-  end
-
-  one_to_many  :tags
   many_to_many :users,:join_table => :users_accounts
+  one_to_many :account_quota, :class=>AccountQuota
+  one_to_many :oauth_consumers
   
   def disable?
     not self.enable
@@ -36,6 +27,25 @@ class Account < BaseNew
     h = self.values.dup
     h[:id] = h[:uuid] = self.canonical_uuid
     h
+  end
+
+  # Each AccountQuota is unique set of account_id and quota_type
+  # column.
+  # It allows to use "add_account_quota()" association method and
+  # rejects to add multiple rows with same quota_type.
+  def _add_account_quota(account_quota)
+    account_quota.account_id=pk
+    if account_quota.new?
+      aq = self.account_quota_dataset.filter(:quota_type=>account_quota.quota_type).first
+      if aq.nil?
+        account_quota
+      else
+        aq.set_except(account_quota.values, :id)
+        aq
+      end
+    else
+      account_quota
+    end.save
   end
 
   # Delete relations before setting an account to deleted
@@ -218,23 +228,4 @@ class Account < BaseNew
       c
     end
   end
-
-  install_data_hooks do
-    Account.subclasses.each { |m|
-      Account.create(m.default_values.dup)
-    }
-  end
-
-  SystemAccount.define_account(:DatacenterAccount) do
-    pk 100
-    uuid '00000000'
-    description 'datacenter system account'
-
-    # DatacenterAccount never be disabled
-    def before_save
-      super
-      self.enabled = Account::ENABLED
-    end
-  end
-  
 end

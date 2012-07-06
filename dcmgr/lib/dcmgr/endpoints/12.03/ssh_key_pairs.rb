@@ -36,6 +36,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     respond_with(R::SshKeyPair.new(ssh).generate)
   end
 
+  quota 'ssh_key_pair.count'
   post do
     # description "Create ssh key pair information"
     # params :download_once optional set true if you do not want

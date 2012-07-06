@@ -139,6 +139,7 @@ module Dcmgr
         param :host_node_id
         param :security_group
         param :ssh_key_id
+        param :amqp_server_uri
       end 
 
       DSL do
@@ -186,6 +187,10 @@ module Dcmgr
       param :mac_address_vendor_id, :default=>'525400'
 
       param :default_service_type, :default=>'std'
+
+      # Skip quota check even if frontend sends X-VDC-Account-Quota
+      # header.
+      param :skip_quota_evaluation, :default=>false
       
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]

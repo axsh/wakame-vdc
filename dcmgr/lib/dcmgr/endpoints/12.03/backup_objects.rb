@@ -60,6 +60,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
     respond_with(R::BackupObject.new(bo).generate)
   end
 
+  quota 'backup_object.size', 'backup_object.count'
   post do
     bkst = M::BackupStorage[params[:backup_storage_id]] || raise(E::UnknownBackupStorage, params[:backup_storage_id])
     bo = M::BackupObject.create(:backup_storage_id=>bkst.id,
@@ -105,10 +106,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
       raise E::InvalidDeleteRequest
     end
 
-    commit_transaction
-
     # TODO: send delete object message to the backup storage agent.
-    # Dcmgr.messaging.submit("bkst-handle.#{bo.backup_storage.node_id}", 'delete_object', bo.canonical_uuid)
+    # on_after_commit do
+    #   Dcmgr.messaging.submit("bkst-handle.#{bo.backup_storage.node_id}", 'delete_object', bo.canonical_uuid)
+    # end
     respond_with([bo.canonical_uuid])
   end
 end

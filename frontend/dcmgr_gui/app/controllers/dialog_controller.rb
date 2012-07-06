@@ -66,6 +66,18 @@ class DialogController < ApplicationController
     @display_name = @backup_object["display_name"]
   end
   
+  def attach_vif
+    @vif_id = params[:vif_id]
+    @network_id = params[:network_id]
+    Hijiki::DcmgrResource::NetworkVif.find_vif(@network_id, @vif_id).attach
+  end
+
+  def detach_vif
+    @vif_id = params[:vif_id]
+    @network_id = params[:network_id]
+    Hijiki::DcmgrResource::NetworkVif.find_vif(@network_id, @vif_id).detach
+  end
+
   def start_instances
     @instance_ids = params[:ids]
     @instances = []
@@ -106,10 +118,20 @@ class DialogController < ApplicationController
     end
   end
 
+  alias :poweroff_instances :backup_instances
+  alias :poweron_instances :backup_instances
+
+  
   def edit_instance
     @instance_id = params[:ids][0]
     @instance = Hijiki::DcmgrResource::Instance.show(@instance_id)
     @display_name = @instance["display_name"]
+
+    @vifs = []
+
+    @instance['vif'].each { |vif|
+      @vifs << vif
+    }
   end
 
   def create_security_group
@@ -162,4 +184,27 @@ class DialogController < ApplicationController
     @description = @ssh_keypair["description"]
     render :create_and_edit_ssh_keypair
   end
+
+  def create_load_balancer
+    @load_balancer_ids = params[:ids]
+  end
+
+  def delete_load_balancer
+    @load_balancer_id = params[:ids][0]
+    @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+    @display_name = @load_balancer["display_name"]
+  end
+
+  def register_load_balancer
+    @load_balancer_id = params[:ids][0]
+    @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+    @display_name = @load_balancer["display_name"]
+  end
+
+  def unregister_load_balancer
+    @load_balancer_id = params[:ids][0]
+    @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+    @display_name = @load_balancer["display_name"]
+  end
+
 end

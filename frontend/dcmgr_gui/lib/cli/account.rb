@@ -183,37 +183,76 @@ __END
       }
     end
     
-
-    desc "oauth UUID [options]", "Generate or show OAuth key and secret"
-    def oauth(uuid)
-      require 'oauth'
-      acc = Account[uuid]
-      Error.raise("Unknown frontend account UUID: #{uuid}", 100) if acc == nil or acc.is_deleted
-
-      oauth_token = OauthToken.new
-      oauth_token.generate_keys
-      oauth_consumer = OauthConsumer.find(:account_id => acc.id)
-      if oauth_consumer.nil?
-        oauth_consumer = OauthConsumer.create(
-                                              :key => oauth_token.token,
-                                              :secret => oauth_token.secret,
-                                              :account_id => acc.id
-                                              )
+    class OAuthOperation < Base
+      namespace :oauth
+      
+      desc "add ACCOUNT_UUID", "Generate/Add OAuth key and secret"
+      def add(account_uuid)
+        account = Account[account_uuid] || UnknownUUIDError.raise(account_uuid)
+        oauth = OauthConsumer.new
+        account.add_oauth_consumer(oauth)
+        puts "Access key: #{oauth.key}"
+        puts "Secret key: #{oauth.secret}"
       end
 
-      puts ERB.new(<<__END, nil, '-').result(binding)
-Account UUID:
-<%- if acc.class == Account -%>
-  <%= acc.canonical_uuid %>
-<%- else -%>
-  <%= Account.uuid_prefix%>-<%= acc.uuid %>
-<%- end -%>
+      desc "del ACCESSKEY", "Delete OAuth access key"
+      def del(access_key)
+        oauth = OauthConsumer.find(:key=>access_key) || UnknownUUIDError.raise(uuid)
+        oauth.destroy
+      end
 
-Consumer Key:
-  <%= oauth_consumer.key %>
-Consumer Secret:
-  <%= oauth_consumer.secret %>
+      desc "show ACCOUNT_UUID|ACCESSKEY", "List/Show OAuth access key"
+      def show(key_or_account)
+        if Account.check_uuid_format(key_or_account)
+          account = Account[key_or_account] || UnknownUUIDError.raise(uuid)
+          puts ERB.new(<<__END, nil, '-').result(binding)
+Account ID: <%= account.canonical_uuid %>
+<%- account.oauth_consumers.each { |consumer| -%>
+-----------------
+Access Key: <%= consumer.key %>
+Secret Key: <%= consumer.secret %>
+<%- } -%>
 __END
+        else
+          consumer = OauthConsumer.find(:key=>key_or_account) || Error.raise("Unknown OAuth Access Key: #{key_or_account}", 100)
+          puts ERB.new(<<__END, nil, '-').result(binding)
+Access Key: <%= consumer.key %>
+Secret Key: <%= consumer.secret %>
+Created: <%= consumer.created_at %>
+Updated: <%= consumer.updated_at %>
+Account ID: <%= consumer.account.canonical_uuid %>
+__END
+        end
+      end
     end
+    
+    register OAuthOperation, 'oauth', "oauth [#{OAuthOperation.tasks.keys.join(', ')}] UUID [options]", "Set/Unset quota values for the account"
+
+    class QuotaOperation < Base
+      namespace :quota
+      
+      desc "set UUID TYPE VALUE", "Set quota to the account."
+      def set(uuid, quota_type, quota_value)
+        account = Account[uuid] || UnknownUUIDError.raise(uuid)
+
+        account.add_account_quota(AccountQuota.new(:quota_type=>quota_type,
+                                                   :quota_value=>quota_value.to_f))
+      end
+
+      desc 'drop UUID TYPE', "Drop quota from the account."
+      def drop(uuid, quota_type)
+        account = Account[uuid] || UnknownUUIDError.raise(uuid)
+        account.account_quota_dataset.filter(:quota_type=>quota_type).delete
+      end
+
+      desc 'dropall UUID', "Drop all quota from the account."
+      def dropall(uuid)
+        account = Account[uuid] || UnknownUUIDError.raise(uuid)
+        account.remove_all_account_quota
+      end
+    end
+
+    register QuotaOperation, 'quota', "quota [#{QuotaOperation.tasks.keys.join(', ')}] UUID [options]", "Set/Unset quota values for the account"
+    
   end
 end

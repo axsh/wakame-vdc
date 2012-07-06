@@ -64,8 +64,8 @@ class Host < Base
       puts ERB.new(<<__END, nil, '-').result(binding)
 Host UUID: <%= host.canonical_uuid %>
 Node ID: <%= host.node_id %>
-CPU Cores (offerring): <%= host.offering_cpu_cores %>
-Memory (offerring): <%= host.offering_memory_size %>MB
+CPU Cores (offering): <%= host.offering_cpu_cores %>
+Memory (offering): <%= host.offering_memory_size %>MB
 Hypervisor: <%= host.hypervisor %>
 Architecture: <%= host.arch %>
 Status: <%= host.status %>
@@ -76,9 +76,9 @@ __END
       cond = {}
       ds = HostNode.filter(cond)
       puts ERB.new(<<__END, nil, '-').result(binding)
-<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status'] %>
+<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Hypervisor', 'Status'] %>
 <%- ds.each { |row| -%>
-<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
+<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.hypervisor, row.status] %>
 <%- } -%>
 __END
     end

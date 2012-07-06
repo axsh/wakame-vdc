@@ -4,4 +4,7 @@
 # If you change this key, all old signed cookies will become invalid!
 # Make sure the secret is at least 30 characters and all random,
 # no regular words or you'll be exposed to dictionary attacks.
-DcmgrGui::Application.config.secret_token = '019f403202066d3f19e7a5c0e6c3d142989446aa65c13bb3c30c129695db'
+SECRET_TOKEN='019f403202066d3f19e7a5c0e6c3d142989446aa65c13bb3c30c129695db'
+if defined?(DcmgrGui::Application)
+  DcmgrGui::Application.config.secret_token = SECRET_TOKEN
+end

@@ -20,12 +20,16 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/create_backup', :to => 'dialog#create_backup'
   post   'dialog/delete_backup', :to => 'dialog#delete_backup'
   post   'dialog/edit_backup', :to => 'dialog#edit_backup'
+  post   'dialog/attach_vif', :to => 'dialog#attach_vif'
+  post   'dialog/detach_vif', :to => 'dialog#detach_vif'
   post   'dialog/start_instances', :to => 'dialog#start_instances'
   post   'dialog/stop_instances', :to => 'dialog#stop_instances'
   post   'dialog/reboot_instances', :to => 'dialog#reboot_instances'
   post   'dialog/terminate_instances', :to => 'dialog#terminate_instances'
   post   'dialog/edit_instance', :to => 'dialog#edit_instance'
   post   'dialog/backup_instances', :to => 'dialog#backup_instances'
+  post   'dialog/poweroff_instances', :to => 'dialog#poweroff_instances'
+  post   'dialog/poweron_instances', :to => 'dialog#poweron_instances'
   get    'dialog/create_security_group', :to => 'dialog#create_security_group'
   post   'dialog/delete_security_group', :to => 'dialog#delete_security_group'
   post   'dialog/edit_security_group', :to => 'dialog#edit_security_group'
@@ -34,6 +38,10 @@ DcmgrGui::Application.routes.draw do
   get    'dialog/create_ssh_keypair', :to => 'dialog#create_ssh_keypair'
   post   'dialog/delete_ssh_keypair', :to => 'dialog#delete_ssh_keypair'
   post   'dialog/edit_ssh_keypair', :to => 'dialog#edit_ssh_keypair'
+  get    'dialog/create_load_balancer', :to => 'dialog#create_load_balancer'
+  post   'dialog/delete_load_balancer', :to => 'dialog#delete_load_balancer'
+  post   'dialog/register_load_balancer', :to => 'dialog#register_load_balancer'
+  post   'dialog/unregister_load_balancer', :to => 'dialog#unregister_load_balancer'
 
   # user/group managment dialog
   get    'dialog/create_user', :to => 'user_management_dialog#create_user'
@@ -107,7 +115,10 @@ DcmgrGui::Application.routes.draw do
   post   'instances/start' ,:to => 'instances#start'
   post   'instances/stop' ,:to => 'instances#stop'
   post   'instances/backup' ,:to => 'instances#backup'
+  post   'instances/poweroff' ,:to => 'instances#poweroff'
+  post   'instances/poweron' ,:to => 'instances#poweron'
   put    'instances/:id', :to => 'instances#update'
+  get    'instances/all', :to => 'instances#show_instances'
 
   #instance_specs
   get    'instance_specs/all' ,:to => 'instance_specs#show_instance_specs'
@@ -198,6 +209,10 @@ DcmgrGui::Application.routes.draw do
   get    'load_balancers', :to => 'load_balancers#index'
   get    'load_balancers/list/:id' ,:to => 'load_balancers#list'
   get    'load_balancers/show/:id', :to => 'load_balancers#show'
+  post   'load_balancers', :to => 'load_balancers#create'
+  delete 'load_balancers/:id', :to => 'load_balancers#destroy'
+  put    'load_balancers/register_instances', :to => 'load_balancers#register_instances'
+  put    'load_balancers/unregister_instances', :to => 'load_balancers#unregister_instances'
 
   #resorce (management)
   get    'resource' ,:to => 'resource#index'

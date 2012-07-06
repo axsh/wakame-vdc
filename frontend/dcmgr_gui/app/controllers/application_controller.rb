@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+require 'authentication'
+require 'util'
+
 class ApplicationController < ActionController::Base
   # disable reqeust forgery check since some pages are missing to set
   # the token on using POST.
@@ -9,6 +12,17 @@ class ApplicationController < ActionController::Base
   before_filter :set_locale
   before_filter :set_application
 
+  before_filter do |req|
+    if logged_in? && current_account
+      Thread.current[:hijiki_request_attribute] = Hijiki::RequestAttribute.new(current_account.canonical_uuid)
+    end
+    true
+  end
+
+  after_filter do
+    Thread.current[:hijiki_request_attribute] = nil
+    true
+  end
 
   def set_application
     @site = DCMGR_GUI_SITE

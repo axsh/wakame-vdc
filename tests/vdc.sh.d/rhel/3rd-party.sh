@@ -36,9 +36,9 @@ function list_3rd_party_builder() {
   cat <<EOS | egrep -v ^#
 # pkg_name                         pkg_uri                                                                        pkg_file
 flog                   git://github.com/hansode/env-builder.git                                                   flog-1.8-3.${basearch}.rpm
-openvswitch            git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.4.1-1.el6.${arch}.rpm
-openvswitch            git://github.com/hansode/env-builder.git                                                   openvswitch-1.4.1-1.${arch}.rpm
-kmod-openvswitch-vzkernel git://github.com/hansode/env-builder.git                                                kmod-openvswitch-vzkernel-1.4.1-1.el6.${arch}.rpm
+openvswitch            git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.5.0-1.el6.${arch}.rpm
+openvswitch            git://github.com/hansode/env-builder.git                                                   openvswitch-1.5.0-1.${arch}.rpm
+kmod-openvswitch-vzkernel git://github.com/hansode/env-builder.git                                                kmod-openvswitch-vzkernel-1.5.0-1.el6.${arch}.rpm
 lxc                    git://github.com/hansode/env-builder.git                                                   lxc-0.7.5-1.${arch}.rpm
 EOS
 }
@@ -48,11 +48,12 @@ function list_3rd_party() {
   cat <<EOS | egrep -v ^#
 # pkg_name                pkg_uri
 epel-release-6-7          http://ftp.riken.go.jp/pub/Linux/fedora/epel/6/i386/epel-release-6-7.noarch.rpm
+elrepo-release            http://elrepo.org/elrepo-release-6-4.el6.elrepo.noarch.rpm
 rabbitmq-server-2.6.1     http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/rabbitmq-server-2.6.1-1.noarch.rpm
 flog                      ${vdc_current_base_url}/flog-1.8-3.${basearch}.rpm
-openvswitch               ${vdc_current_base_url}/kmod-openvswitch-1.4.1-1.el6.${arch}.rpm
-openvswitch               ${vdc_current_base_url}/openvswitch-1.4.1-1.${arch}.rpm
-kmod-openvswitch-vzkernel ${vdc_current_base_url}/kmod-openvswitch-vzkernel-1.4.1-1.el6.${arch}.rpm
+openvswitch               ${vdc_current_base_url}/kmod-openvswitch-1.5.0-1.el6.${arch}.rpm
+openvswitch               ${vdc_current_base_url}/openvswitch-1.5.0-1.${arch}.rpm
+kmod-openvswitch-vzkernel ${vdc_current_base_url}/kmod-openvswitch-vzkernel-1.5.0-1.el6.${arch}.rpm
 lxc                       ${vdc_current_base_url}/lxc-0.7.5-1.${arch}.rpm
 EOS
 }

@@ -36,7 +36,7 @@ module Dcmgr
             end
           }.reverse.first
 
-          raise HostNodeSchedulingError if host_node.nil?
+          raise HostNodeSchedulingError, "Unable to find a suitable host node for #{instance.image.arch} #{instance.hypervisor}." if host_node.nil?
           instance.host_node = host_node
         end
       end

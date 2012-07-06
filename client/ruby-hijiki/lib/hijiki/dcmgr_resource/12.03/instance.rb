@@ -5,7 +5,7 @@ module Hijiki::DcmgrResource::V1203
       include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
 
       def list(params = {})
-        super(params.merge({:state=>'alive_with_terminated'}))
+        super(params.merge({:state=>'alive_with_terminated', :service_type=>'std'}))
       end
       
       def create(params)
@@ -38,26 +38,17 @@ module Hijiki::DcmgrResource::V1203
       end
       
       def reboot(instance_id)
-        @collection ||= self.collection_name
-        self.collection_name = File.join(@collection,instance_id)
-        result = self.put(:reboot)
-        self.collection_name = @collection
+        result = self.find(instance_id).put(:reboot)
         result.body
       end
 
       def start(instance_id)
-        @collection ||= self.collection_name
-        self.collection_name = File.join(@collection,instance_id)
-        result = self.put(:start)
-        self.collection_name = @collection
+        result = self.find(instance_id).put(:start)
         result.body
       end
 
       def stop(instance_id)
-        @collection ||= self.collection_name
-        self.collection_name = File.join(@collection,instance_id)
-        result = self.put(:stop)
-        self.collection_name = @collection
+        result = self.find(instance_id).put(:stop)
         result.body
       end
 
@@ -67,6 +58,16 @@ module Hijiki::DcmgrResource::V1203
 
       def backup(instance_id)
         result = self.find(instance_id).put(:backup)
+        result.body
+      end
+
+      def poweroff(instance_id)
+        result = self.find(instance_id).put(:poweroff)
+        result.body
+      end
+
+      def poweron(instance_id)
+        result = self.find(instance_id).put(:poweron)
         result.body
       end
     end

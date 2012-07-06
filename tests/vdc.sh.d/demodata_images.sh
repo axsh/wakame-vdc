@@ -15,6 +15,38 @@ kvm -device ? 2>&1 | egrep 'name "lsi' -q || {
 shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo1 --display-name="'local storage'" --base-uri="'file://${VDC_ROOT}/tmp/images'" --storage-type=local --description="'local backup storage under ${VDC_ROOT}/tmp/images'"
 shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webdav storage'" --base-uri="'http://localhost:8080/images/'" --storage-type=webdav --description="'nginx based webdav storage'"
 
+# download demo image files.
+(
+  cd $VDC_ROOT/tmp/images
+  # remove md5sum cache files.
+  rm -f *.md5
+
+  for meta in $(ls $data_path/image-*.meta); do
+    (
+      . $meta
+      [[ -n "$localname" ]] || {
+        localname=$(basename "$uri")
+      }
+      echo "$(basename ${meta}), ${localname} ..."
+      [[ -f "$localname" ]] || {
+        # TODO: use HEAD and compare local cached file size
+        echo "Downloading image file $localname ..."
+        f=$(basename "$uri")
+        ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
+        # check if the file name has .gz.
+        [[ "$f" == "${f%.gz}" ]] || {
+          # gunzip with keeping sparse area.
+          zcat "$f" | cp --sparse=always /dev/stdin "${f%.gz}"
+        }
+        [[ "${f%.gz}" == "$localname" ]] || {
+          cp -p --sparse=always "${f%.gz}" "$localname"
+        }
+        # do not remove .gz as they are used for gzipped file test cases.
+      }
+    )
+  done
+)
+
 for meta in $data_path/image-*.meta; do
   (
     . $meta
@@ -23,7 +55,11 @@ for meta in $data_path/image-*.meta; do
     }
 
     localpath="${tmp_path}/images/${localname}"
-    chksum=$(md5sum $localpath | cut -d ' ' -f1)
+    if [[ "$localpath" -nt "${localpath}.md5" ]]; then
+      chksum=$(md5sum "$localpath" | cut -d ' ' -f1 | tee "${localpath}.md5")
+    else
+      chksum=$(cat "${localpath}.md5")
+    fi
     alloc_size=$(ls -l "$localpath" | awk '{print $5}')
     if (file $localpath | grep ': gzip compressed data,' > /dev/null)
     then

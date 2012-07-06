@@ -1,3 +1,29 @@
+function attach_vif(network_id, vif_id) {
+  var data = "network_id=" + network_id + "&vif_id=" + vif_id
+
+  request = new DcmgrGUI.Request;
+  request.post({
+    "url": '/dialog/attach_vif',
+    "data": data,
+    success: function(json,status){
+      bt_refresh.element.trigger('dcmgrGUI.refresh');
+    }
+  });
+}
+
+function detach_vif(network_id, vif_id) {
+  var data = "network_id=" + network_id + "&vif_id=" + vif_id
+
+  request = new DcmgrGUI.Request;
+  request.post({
+    "url": '/dialog/detach_vif',
+    "data": data,
+    success: function(json,status){
+      bt_refresh.element.trigger('dcmgrGUI.refresh');
+    }
+  });
+}
+
 DcmgrGUI.prototype.instancePanel = function(){
   var total = 0;
   var maxrow = 10;
@@ -36,6 +62,8 @@ DcmgrGUI.prototype.instancePanel = function(){
   var reboot_button_name = $.i18n.prop('reboot_button');
   var update_button_name =$.i18n.prop('update_button');
   var backup_button_name =$.i18n.prop('backup_button');
+  var poweroff_button_name =$.i18n.prop('poweroff_button');
+  var poweron_button_name =$.i18n.prop('poweron_button');
 
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
@@ -76,7 +104,11 @@ DcmgrGUI.prototype.instancePanel = function(){
     edit_instance_buttons[update_button_name] = function(event) {
       var instance_id = $(this).find('#instance_id').val();
       var display_name = $(this).find('#instance_display_name').val();
-      var data = 'display_name=' + display_name;
+      var security_groups = [];
+      $.each($(this).find('#right_select_list').find('option'),function(i){
+       security_groups.push("security_groups[]="+ $(this).text());
+      });
+      var data = 'display_name=' + display_name + '&' + security_groups.join('&');
 
       var request = new DcmgrGUI.Request;
       request.put({
@@ -91,15 +123,155 @@ DcmgrGUI.prototype.instancePanel = function(){
 
     var bt_edit_instance = new DcmgrGUI.Dialog({
       target:'.edit_instance',
-      width:500,
-      height:200,
+      width:550,
+      height:450,
       title:$.i18n.prop('edit_instance_header'),
       path:'/edit_instance',
       button: edit_instance_buttons,
       callback: function(){
+        var self = this;
+        
         var params = { 'button': bt_edit_instance, 'element_id': 1 };
         $(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#left_select_list').mask($.i18n.prop('loading_parts'));
+        $(this).find('#right_select_list').mask($.i18n.prop('loading_parts'));
+        
+        var ready = function(data) {
+          if(data['security_groups'] == true &&
+            data['display_name'] == true) {  
+            bt_edit_instance.disabledButton(1, false);
+          } else {
+            bt_edit_instance.disabledButton(1, true);
+          }
+        }
+        
+        var is_ready = {
+          'display_name' : true,
+          'security_groups' : true,
+          'networks' : true,
+        }
+        var on_ready = function(size){
+          if(size > 0) {
+            is_ready['security_groups'] = true;
+            ready(is_ready);
+          } else {
+            is_ready['security_groups'] = false;
+            ready(is_ready);
+          }
+        }
+        
+        $(this).find('#display_name').keyup(function(){
+         if( $(this).val() ) {
+           is_ready['display_name'] = true;
+           ready(is_ready);
+         } else {
+           is_ready['display_name'] = false;
+           ready(is_ready);
+         }
+        });
+        
+        var request = new DcmgrGUI.Request;
+        
+        parallel({
+          security_groups:function(){
+            var instance_id = document.getElementById('instance_id').value
+            var selected_groups = []
+            request.get({
+              "url": '/instances/show/'+instance_id+'.json',
+              "data": "",
+              success: function(json,status) {
+                if (json.vif.length > 0) {
+                  selected_groups = json.vif[0]['security_groups']
+                }
+              },
+            })
+            
+            request.get({
+              "url": '/security_groups/all.json',
+              "data": "",
+              success: function(json,status){
+                var data = [];
+                var results = json.security_group.results;
+                var size = results.length;
+                
+                for (var i=0; i < size ; i++) {
+                  data.push({
+                    "value" : results[i].result.uuid,
+                    "name" : results[i].result.uuid,
+                    "selected" : !($.inArray(results[i].result.uuid, selected_groups) == -1)
+                  });
+                }
+                
+                var security_group = new DcmgrGUI.ItemSelector({
+                  'left_select_id' : '#left_select_list',
+                  'right_select_id' : '#right_select_list',
+                  'data' : data,
+                  'target' : self
+                });
+                
+                $(self).find('#right_button').click(function(){
+                  security_group.leftToRight();
+                  on_ready(security_group.getRightSelectionCount());
+                });
+
+                $(self).find('#left_button').click(function(){
+                  security_group.rightToLeft();
+                  on_ready(security_group.getRightSelectionCount());
+                });
+                
+              }
+            })
+          },
+
+        //get networks
+        networks: 
+          request.get({
+            "url": '/networks/all.json',
+            "data": "",
+            success: function(json,status){
+              var create_select_item = function(name) {
+                var select_html = '<select id="' + name + '" name="' + name + '"></select>';
+                $(self).find('#select_' + name).empty().html(select_html);
+                return $(self).find('#' + name);
+              }
+
+              var append_select_item = function(select_item, uuid, selected) {
+                  select_item.append('<option value="'+ uuid +'"' + (selected ? ' selected="selected"' : '') + '>'+uuid+'</option>');
+              }
+
+              var create_select_eth = function(name, results, selected) {
+                var select_eth = create_select_item(name);
+                append_select_item(select_eth, 'disconnected', !selected);
+
+                for (var i=0; i < size ; i++) {
+                  append_select_item(select_eth, results[i].result.uuid, results[i].result.uuid == selected);
+                }
+              }
+
+              var create_attach_vif = function(index, vif_id) {
+                var on_click_html = "var s_eth = document.getElementById('eth" + index + "'); attach_vif(s_eth.options[s_eth.selectedIndex].value, '" + vif_id + "');"
+                var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '" onClick="' + on_click_html + '")">Attach</button>'
+
+                $(self).find('#attach_eth' + index).empty().html(select_html);
+              }
+
+              var results = json.network.results;
+              var size = results.length;
+
+              is_ready['networks'] = true;
+              ready(is_ready);
+
+              for (var i=0; i < select_current_nw.length ; i++) {
+                create_select_eth('eth' + i, results, select_current_nw[i]);
+                create_attach_vif(i, select_current_vif[i]);
+              }                
+            }
+          })
+        }).next(function(results) {
+          $("#left_select_list").unmask();
+          $("#right_select_list").unmask();
+        });
       }
     });
   });
@@ -209,6 +381,34 @@ DcmgrGUI.prototype.instancePanel = function(){
     button:instance_backup_buttons
   });
   
+  var instance_poweroff_buttons = {};
+  instance_poweroff_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  instance_poweroff_buttons[poweroff_button_name] = function() {
+    instance_action_helper.call(this,'poweroff');
+  }
+  var bt_instance_poweroff = new DcmgrGUI.Dialog({
+    target:'.poweroff_instances',
+    width:400,
+    height:200,
+    title:$.i18n.prop('poweroff_instances_header'),
+    path:'/poweroff_instances',
+    button: instance_poweroff_buttons
+  });
+
+  var instance_poweron_buttons = {};
+  instance_poweron_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  instance_poweron_buttons[poweron_button_name] = function() {
+    instance_action_helper.call(this,'poweron');
+  }
+  var bt_instance_poweron = new DcmgrGUI.Dialog({
+    target:'.poweron_instances',
+    width:400,
+    height:200,
+    title:$.i18n.prop('poweron_instances_header'),
+    path:'/poweron_instances',
+    button: instance_poweron_buttons
+  });
+
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
@@ -250,6 +450,12 @@ DcmgrGUI.prototype.instancePanel = function(){
         break;
       case 'stop':
         bt_instance_stop.open(selected_ids);
+        break;
+      case 'poweroff':
+        bt_instance_poweroff.open(selected_ids);
+        break;
+      case 'poweron':
+        bt_instance_poweron.open(selected_ids);
         break;
       }
     }

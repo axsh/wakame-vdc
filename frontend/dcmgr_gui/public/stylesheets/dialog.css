@@ -27,12 +27,12 @@
   padding-right: 4px;
 }
 
-#launch_instance_dialog #left_select_list {
+#left_select_list {
 	width: 200px;
 	height: 190px;
 }
 
-#launch_instance_dialog #right_select_list {
+#right_select_list {
 	width: 200px;
 	height: 190px;
 }
@@ -57,11 +57,16 @@
   vertical-align: middle;
 }
 
-#launch_instance_dialog #security_group_field {
+#edit_instance_dialog #manipulation {
+  vertical-align: middle;
+}
+
+#security_group_field {
   border: 1px solid gray;
   padding: 10px;
-  margin: 3px;
-  width: 480px;
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 490px;
 }
 
 #launch_instance_dialog #security_group_field legend {
@@ -75,7 +80,7 @@
 #launch_instance_dialog #user_data_field {
   border: 1px solid gray;
   padding: 10px;
-  margin: 3px;
+  margin-left: 15px;
   width: 490px;
 }
 
@@ -227,3 +232,63 @@
         padding: 3px 10px;
         border-bottom: 1px solid #cccccc;
 }
+
+#create_load_balancer_dialog table tr td{
+  text-align: center;
+}
+
+#create_load_balancer_dialog #certificate_group legend {
+  padding: 0 3px 0 3px;
+}
+
+#create_load_balancer_dialog #sticky_session_grouplegend {
+  padding: 0 3px 0 3px;
+}
+
+#create_load_balancer_dialog div {
+  padding-top :5px;
+  padding-bottom :5px;
+}
+
+#create_load_balancer_dialog .header {
+  text-align: center;
+}
+
+#create_load_balancer_dialog .title {
+  text-align: right;
+}
+
+#create_load_balancer_dialog #load_balancer_protocol {
+  width: 80px;
+}
+
+#create_load_balancer_dialog #instance_protocol {
+  width: 80px;
+}
+
+#create_load_balancer_dialog #load_balancer table {
+  width: 500px;
+}
+
+#create_load_balancer_dialog #certificate {
+  padding-top: 10px;
+  width: 500px;
+}
+
+#create_load_balancer_dialog #certificate_group {
+  padding-top: 10px;
+}
+
+#create_load_balancer_dialog #sticky_session{
+  padding-top: 15px;
+  width: 500px;
+}
+
+#create_load_balancer_dialog #sticky_session_group {
+  padding-top: 10px;
+}
+
+#create_load_balancer_dialog table {
+  text-align: "right";
+}
+

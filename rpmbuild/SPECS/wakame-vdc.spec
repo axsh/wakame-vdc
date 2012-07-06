@@ -1,9 +1,17 @@
 %define _prefix_path opt/axsh
 %define _vdc_git_uri git://github.com/axsh/wakame-vdc.git
+%define oname wakame-vdc
 
-Name: wakame-vdc
+# * rpmbuild -bb ./wakame-vdc.spec \
+# --define "build_id $(../helpers/gen-release-id.sh)"
+# --define "build_id $(../helpers/gen-release-id.sh [ commit-hash ])"
+
+%define release_id 1.daily
+%{?build_id:%define release_id %{build_id}}
+
+Name: %{oname}
 Version: 12.03
-Release: 1.daily%{?dist}
+Release: %{release_id}%{?dist}
 Summary: The wakame virtual data center.
 Group: Development/Languages
 Vendor: Axsh Co. LTD <dev@axsh.net>
@@ -44,7 +52,7 @@ Requires: prelink
 # Ruby binary dependency
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 # for erlang, rabbitmq-server
-# Requires: epel-release-6-6
+# Requires: epel-release-6-x
 
 # (base)
 %description
@@ -54,7 +62,7 @@ Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 %package debug-config
 Summary: Configuration set for debug
 Group: Development/Languages
-Requires: %{name} = %{version}-%{release}
+Requires: %{oname} = %{version}-%{release}
 %description debug-config
 <insert long description, indented with spaces>
 
@@ -62,7 +70,7 @@ Requires: %{name} = %{version}-%{release}
 %package dcmgr-vmapp-config
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
-Requires: %{name} = %{version}-%{release}
+Requires: %{oname} = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
@@ -75,14 +83,14 @@ Requires: dnsmasq
 %package hva-common-vmapp-config
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
-Requires: %{name} = %{version}-%{release}
+Requires: %{oname} = %{version}-%{release}
 Requires: dosfstools
 Requires: iscsi-initiator-utils scsi-target-utils
 Requires: ebtables iptables ethtool vconfig iproute
 Requires: bridge-utils
 Requires: dracut-kernel
-Requires: kmod-openvswitch = 1.4.1
-Requires: openvswitch = 1.4.1
+Requires: kmod-openvswitch
+Requires: openvswitch
 Requires: kpartx
 Requires: libcgroup
 # includes /sbin/losetup
@@ -94,7 +102,7 @@ Requires: util-linux-ng
 %package hva-kvm-vmapp-config
 Summary: Configuration set for hva KVM VM appliance
 Group: Development/Languages
-Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 %ifarch x86_64
 Requires: qemu-kvm
 %endif
@@ -105,8 +113,8 @@ Requires: qemu-kvm
 %package hva-lxc-vmapp-config
 Summary: Configuration set for hva LXC VM appliance
 Group: Development/Languages
-Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
-Requires: lxc = 0.7.5
+Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
+Requires: lxc
 %description  hva-lxc-vmapp-config
 <insert long description, indented with spaces>
 
@@ -114,10 +122,10 @@ Requires: lxc = 0.7.5
 %package hva-openvz-vmapp-config
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
-Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 Requires: vzkernel
 Requires: vzctl
-Requires: kmod-openvswitch-vzkernel = 1.4.1
+Requires: kmod-openvswitch-vzkernel
 %description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
@@ -125,27 +133,38 @@ Requires: kmod-openvswitch-vzkernel = 1.4.1
 %package hva-full-vmapp-config
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
-Requires: %{name}-hva-common-vmapp-config = %{version}-%{release}
-Requires: %{name}-hva-kvm-vmapp-config = %{version}-%{release}
-Requires: %{name}-hva-lxc-vmapp-config = %{version}-%{release}
-Requires: %{name}-hva-openvz-vmapp-config = %{version}-%{release}
-# build openvswitch module for vzkernel
-#Requires: kernel-devel
-#Requires: vzkernel-devel
-#Requires: dkms
+Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-kvm-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-lxc-vmapp-config = %{version}-%{release}
+Requires: %{oname}-hva-openvz-vmapp-config = %{version}-%{release}
 %description hva-full-vmapp-config
+<insert long description, indented with spaces>
+
+# vdcsh
+%package vdcsh
+Summary: vdcsh
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description vdcsh
 <insert long description, indented with spaces>
 
 ## rpmbuild -bp
 %prep
 [ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
 cd %{name}-%{version}
+git checkout master
 git pull
+[ -z "%{build_id}" ] || {
+  build_id=%{build_id}
+  git checkout ${build_id##*git}
+  unset build_id
+} && :
+
 %setup -T -D
 
 ## rpmbuild -bc
 %build
-RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules build
+RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules build
 
 ## rpmbuid -bi
 %install
@@ -153,11 +172,7 @@ RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules build
 CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
 
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
-
-# directory list via debian/dirs
-sed "s,usr/share/axsh,%{_prefix_path},g" ./debian/dirs | while read dir; do
-  [ -d ${RPM_BUILD_ROOT}/${dir} ] || mkdir -p ${RPM_BUILD_ROOT}/${dir}
-done
+mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 components="
  dcmgr
@@ -165,11 +180,11 @@ components="
  rpmbuild
 "
 for component in ${components}; do
-  rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+  rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 done
 unset components
 
-rsync -aHA %{prefix}/%{name}/ruby ${RPM_BUILD_ROOT}/%{prefix}/%{name}/
+rsync -aHA %{prefix}/%{oname}/ruby ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
 [ -d ${RPM_BUILD_ROOT}/etc ] || mkdir -p ${RPM_BUILD_ROOT}/etc
 rsync -aHA `pwd`/contrib/etc/default        ${RPM_BUILD_ROOT}/etc/
@@ -177,26 +192,44 @@ rsync -aHA `pwd`/contrib/etc/init           ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/init.d         ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/logrotate.d    ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/prelink.conf.d ${RPM_BUILD_ROOT}/etc/
-
-# unicorn configs
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
-rsync -aHA `pwd`/contrib/unicorn-common.conf ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-auth.conf
+rsync -aHA `pwd`/contrib/etc/wakame-vdc     ${RPM_BUILD_ROOT}/etc/
 
 # /etc/sysctl.d
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
 rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
-[ -d ${RPM_BUILD_ROOT}/etc/%{name} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{name}
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
 
 # rails app config
-ln -s /etc/%{name}/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/instance_spec.yml
-ln -s /etc/%{name}/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{name}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+ln -s /etc/%{oname}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
+ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+
+# vdcsh
+[ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d
+[ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder  ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder
+rsync -aHA `pwd`/tests/vdc.sh   ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
+rsync -aHA `pwd`/tests/vdc.sh.d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
+rsync -aHA `pwd`/tests/builder/functions.sh ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder/functions.sh
+
+# log directory
+mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}
+mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}/dcmgr_gui
+ln -s /var/log/%{oname}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/log
+
+# tmp directory
+ln -s /var/lib/%{oname}/tmp ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tmp
+
+# lib directory
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
 
 %clean
-RUBYDIR=%{prefix}/%{name}/ruby rpmbuild/rules clean
-rm -rf %{prefix}/%{name}/ruby
+RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
+rm -rf %{prefix}/%{oname}/ruby
 rm -rf ${RPM_BUILD_ROOT}
 
 %post
@@ -205,7 +238,7 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig --add vdc-net-event
 
 %post debug-config
-%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
+%{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
 
 %post dcmgr-vmapp-config
 /sbin/chkconfig --add mysqld
@@ -222,21 +255,33 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       iscsid on
 /sbin/chkconfig --add tgtd
 /sbin/chkconfig       tgtd on
-%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
-%{prefix}/%{name}/rpmbuild/helpers/add-loopdev.sh
-%{prefix}/%{name}/rpmbuild/helpers/set-openvswitch-conf.sh
+%{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
+%{prefix}/%{oname}/rpmbuild/helpers/add-loopdev.sh
+%{prefix}/%{oname}/rpmbuild/helpers/set-openvswitch-conf.sh
 
 %post hva-openvz-vmapp-config
-%{prefix}/%{name}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
+%{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 
 %files
 %defattr(-,root,root)
-%{prefix}/%{name}/
+%{prefix}/%{oname}/
 %config /etc/logrotate.d/flog-vdc
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
 %config /etc/prelink.conf.d/wakame-vdc.conf
-%dir /etc/%{name}/
+%dir /etc/%{oname}/
+%dir /var/log/%{oname}
+%dir /var/lib/%{oname}
+%dir /var/lib/%{oname}/tmp
+%exclude %{prefix}/%{oname}/tests/
+
+%files vdcsh
+%defattr(-,root,root)
+%{prefix}/%{oname}/tests/vdc.sh
+%{prefix}/%{oname}/tests/vdc.sh.d/
+%{prefix}/%{oname}/tests/builder/
+%dir %{prefix}/%{oname}/tests
+%attr(0600, root, root) %{prefix}/%{oname}/tests/vdc.sh.d/pri.pem
 
 %files debug-config
 %defattr(-,root,root)
@@ -260,16 +305,17 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-webui.conf
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
-%config %{prefix}/%{name}/dcmgr/config/unicorn-dcmgr.conf
-%config %{prefix}/%{name}/dcmgr/config/unicorn-metadata.conf
-%config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-webui.conf
-%config %{prefix}/%{name}/frontend/dcmgr_gui/config/unicorn-auth.conf
+%config /etc/wakame-vdc/unicorn-common.conf
+%dir /etc/%{oname}/dcmgr_gui
+%dir /var/log/%{oname}/dcmgr_gui
+%dir /var/lib/%{oname}/tmp/images
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
 %config /etc/sysctl.d/30-bridge-if.conf
+%dir /var/lib/%{oname}/tmp/instances
 
 %files hva-kvm-vmapp-config
 

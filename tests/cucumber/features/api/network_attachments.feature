@@ -5,7 +5,7 @@ Feature: Network Attachments API
     Given a new instance with its uuid in <instance_uuid>
 
     When the instance <instance_uuid> is connected to the network "nw-demo1" with the nic stored in <vif:>
-      Then the previous api call should have {"vif":[]} with a size of 3
+      Then the previous api call should have {"vif":[]} with a size of 1
       And the previous api call should not have {"vif":[...,{"network_id":},...]} equal to nil
       And from <vif:> take {"ipv4":{"address":}} and save it to <vif:ipv4>
       And we should be able to ping on ip <vif:ipv4> in 60 seconds or less
@@ -13,13 +13,13 @@ Feature: Network Attachments API
     When we detach from network "nw-demo1" the vif <vif:uuid>
     And we make an api get call to instances/<instance_uuid> with no options
       Then the previous api call should be successful
-      And the previous api call should have {"vif":[]} with a size of 3
+      And the previous api call should have {"vif":[]} with a size of 1
       And the previous api call should have {"vif":[...,{"network_id":},...]} equal to nil
       And we should not be able to ping on ip <vif:ipv4> in 10 seconds or less
 
     When we attach to network "nw-demo1" the vif <vif:uuid>
     And the instance <instance_uuid> is connected to the network "nw-demo1" with the nic stored in <vif_new:>
-      And the previous api call should have {"vif":[]} with a size of 3
+      And the previous api call should have {"vif":[]} with a size of 1
       And the previous api call should not have {"vif":[...,{"network_id":},...]} equal to nil
       And we should be able to ping on ip <vif:ipv4> in 10 seconds or less
 
@@ -39,12 +39,12 @@ Feature: Network Attachments API
     When we detach from network "nw-demo1" the vif <vif:uuid>
     And we make an api get call to instances/<instance_uuid> with no options
       Then the previous api call should be successful
-      And the previous api call should have {"vif":[]} with a size of 3
+      And the previous api call should have {"vif":[]} with a size of 1
       And the previous api call should have {"vif":[...,{"network_id":},...]} equal to nil
 
     When we attach to network "nw-demo1" the vif <vif:uuid>
     And the instance <instance_uuid> is connected to the network "nw-demo1" with the nic stored in <vif_new:>
-      And the previous api call should have {"vif":[]} with a size of 3
+      And the previous api call should have {"vif":[]} with a size of 1
       And the previous api call should not have {"vif":[...,{"network_id":},...]} equal to nil
 
 

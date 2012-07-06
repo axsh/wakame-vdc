@@ -38,7 +38,7 @@ module Authentication
   end
     
   def current_account
-    @current_account ||= Account.find(:uuid => self.current_user.primary_account_id)
+    @current_account ||= Account[self.current_user.primary_account_id]
   end
   
   #overwrite
@@ -62,10 +62,6 @@ module Authentication
   end
   
   def login_required
-    if current_user
-      uuid = 'a-'+current_user.primary_account_id
-      ActiveResource::Connection.set_vdc_account_uuid(uuid)
-    end
     authorized? || access_denied
   end
   

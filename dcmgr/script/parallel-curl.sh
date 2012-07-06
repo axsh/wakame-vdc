@@ -1,24 +1,27 @@
 #!/bin/bash
 #
-# $ pararell-curl.sh --url=[url]
-# $ pararell-curl.sh --url=[url] --thread=6
+# $ parallel-curl.sh --url=[url]
+# $ parallel-curl.sh --url=[url] --thread=6
 #
 LANG=C
 LC_ALL=C
 
 set -e
 
-opts=""
-# extract opts
-for arg in $*; do
-  case $arg in
+args=
+while [ $# -gt 0 ]; do
+  arg="$1"
+  case "${arg}" in
     --*=*)
-      key=${arg%%=*}; key=${key##--}
+      key=${arg%%=*}; key=$(echo ${key##--} | tr - _)
       value=${arg##--*=}
-      eval ${key}=${value}
-      opts="${opts} ${key}"
+      eval "${key}=\"${value}\""
+      ;;
+    *)
+      args="${args} ${arg}"
       ;;
   esac
+  shift
 done
 
 url=${url:-http://ftp.riken.jp/Linux/centos/6.0/isos/i386/CentOS-6.0-i386-bin-DVD.iso}

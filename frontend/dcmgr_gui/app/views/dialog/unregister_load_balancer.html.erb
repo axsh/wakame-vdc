@@ -1,0 +1,55 @@
+<style type="text/css">
+
+#unregister_load_balancer_dialog #instances_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-left: 15px;
+  width: 490px;
+}
+
+#unregister_load_balancer_dialog #instances_field legend {
+  padding: 0 3px 0 3px;
+}
+
+#unregister_load_balancer_dialog #instances_field table tr th {
+  text-align: center;
+}
+
+#unregister_load_balancer_dialog table tr td {
+  padding: 5px 10px;
+}
+
+#unregister_load_balancer_dialog #manipulation {
+  vertical-align: middle;
+}
+
+</style>
+
+<div id="unregister_load_balancer_dialog">
+ <fieldset id="instances_field">
+  <legend><%= t("dialog.unregister_load_balancer.header") %></legend><legend>
+  </legend><table cellspacing="5" cellpadding="5">
+  <tbody>
+    <tr>
+      <th><span id="instances"><%= t("dialog.unregister_load_balancer.instances") %></span></th>
+      <th></th>
+      <th><span id="unregister_instances"><%= t("dialog.unregister_load_balancer.unregister_instances") %></span></th>
+      </tr/>
+      <tr>
+      <td>
+         <select id="left_select_list" size="5" multiple="multiple" name="left_select_list"></select>
+       </td>
+     <td id="manipulation">
+       <button id="right_button">&gt;</button>
+       <br> <br>
+       <button id="left_button">&lt;</button>
+     </td>
+     <td>
+       <select id="right_select_list" size="5" multiple="multiple" name="right_select_list">
+       </select>
+     </td>
+    </tr>
+  </tbody>
+ </table>
+ </fieldset>
+</div>
