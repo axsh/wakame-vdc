@@ -2,11 +2,12 @@
 require 'isono'
 require 'fileutils'
 require 'ipaddress'
+require 'forwardable'
 
 module Dcmgr
   module Rpc
     class HvaHandler < EndpointBuilder
-      include Dcmgr::Logger
+      #include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
@@ -72,7 +73,7 @@ module Dcmgr
             # force to continue detaching volumes during termination.
             ignore_error { detach_volume_from_host }
             if state_update
-              update_volume_state_to_available rescue logger.error($!)
+              update_volume_state_to_available rescue @hva_ctx.logger.error($!)
             end
           }
         end
@@ -207,8 +208,8 @@ module Dcmgr
         begin
           blk.call
         rescue ::Exception => e
-          logger.error("Ignoring error: #{e.message}")
-          logger.error(e)
+          @hva_ctx.logger.error("Ignoring error: #{e.message}")
+          @hva_ctx.logger.error(e)
         end
       end
 
@@ -216,7 +217,7 @@ module Dcmgr
         # create hva context
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
-        logger.info("Booting #{@inst_id}")
+        @hva_ctx.logger.info("Booting #{@inst_id}")
 
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
@@ -262,7 +263,7 @@ module Dcmgr
         @vol_id = request.args[1]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
-        logger.info("Booting #{@inst_id}")
+        @hva_ctx.logger.info("Booting #{@inst_id}")
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
         # select hypervisor :kvm, :lxc
@@ -278,7 +279,7 @@ module Dcmgr
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
         
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:attaching, :attached_at=>nil})
-        logger.info("Attaching #{@vol_id} on #{@inst_id}")
+        @hva_ctx.logger.info("Attaching #{@vol_id} on #{@inst_id}")
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
         get_linux_dev_path
@@ -383,7 +384,7 @@ module Dcmgr
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
-        logger.info("Attaching #{@vol_id}")
+        @hva_ctx.logger.info("Attaching #{@vol_id}")
         raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'available'
 
         # select hypervisor :kvm, :lxc
@@ -397,7 +398,7 @@ module Dcmgr
         # attach disk on host os
         attach_volume_to_host
 
-        logger.info("Attaching #{@vol_id} on #{@inst_id}")
+        @hva_ctx.logger.info("Attaching #{@vol_id} on #{@inst_id}")
 
         # attach disk on guest os
         pci_devaddr=nil
@@ -411,12 +412,12 @@ module Dcmgr
                       :attached_at=>Time.now.utc,
                       :guest_device_name=>pci_devaddr})
         event.publish('hva/volume_attached', :args=>[@inst_id, @vol_id])
-        logger.info("Attached #{@vol_id} on #{@inst_id}")
+        @hva_ctx.logger.info("Attached #{@vol_id} on #{@inst_id}")
       }, proc {
         # TODO: Run detach volume
         # push back volume state to available.
         ignore_error { update_volume_state({:state=>:available},'hva/volume_available') }
-        logger.error("Attach failed: #{@vol_id} on #{@inst_id}")
+        @hva_ctx.logger.error("Attach failed: #{@vol_id} on #{@inst_id}")
       }
 
       job :detach do
@@ -426,7 +427,7 @@ module Dcmgr
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
-        logger.info("Detaching #{@vol_id} on #{@inst_id}")
+        @hva_ctx.logger.info("Detaching #{@vol_id} on #{@inst_id}")
         raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'attached'
 
         # select hypervisor :kvm, :lxc
@@ -487,7 +488,7 @@ module Dcmgr
         @image_id = request.args[2]
         @hva_ctx = HvaContext.new(self)
 
-        logger.info("Backing up the image file for #{@inst_id} as #{@backupobject_id}.")
+        @hva_ctx.logger.info("Backing up the image file for #{@inst_id} as #{@backupobject_id}.")
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
@@ -526,26 +527,26 @@ module Dcmgr
             }
           }
 
-          logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
+          @hva_ctx.logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
           lstore = Drivers::LocalStore.select_local_store(@inst[:host_node][:hypervisor])
           lstore.upload_image(@inst, @hva_ctx, @bo, ev_callback)
           
-          logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
+          @hva_ctx.logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
       
         rescue => e
-          logger.error(e)
+          @hva_ctx.logger.error(e)
           raise "snapshot has not be uploaded"
         end
         
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
         rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
-        logger.info("uploaded new backup object: #{@inst_id} #{@backupobject_id} #{@image_id}")
+        @hva_ctx.logger.info("uploaded new backup object: #{@inst_id} #{@backupobject_id} #{@image_id}")
         
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
         rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
-        logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id} #{@image_id}")
+        @hva_ctx.logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id} #{@image_id}")
       }
 
       def rpc
@@ -599,6 +600,35 @@ module Dcmgr
       def inst_data_dir
         File.expand_path("#{inst_id}", Dcmgr.conf.vm_data_dir)
       end
+
+      def logger
+        CustomLogger.new(self)
+      end
+
+      class CustomLogger
+        def initialize(hva_context)
+          @hva_context = hva_context
+        end
+
+        ["fatal", "error", "warn", "info", "debug"].each do |level|
+          define_method(level){|msg|
+            logger.__send__(level, "#{msg} (inst_id: #{@hva_context.inst_id})")
+          }
+        end
+
+        def default_logdev
+          ::Logger::LogDevice.new($>)
+        end
+
+        def logger
+          l = ::Logger.new(default_logdev)
+          l.progname = "HvaHandler"
+          l
+        end
+
+
+      end
+
     end
 
   end
