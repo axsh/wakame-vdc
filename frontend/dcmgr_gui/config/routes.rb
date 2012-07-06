@@ -7,6 +7,7 @@ DcmgrGui::Application.routes.draw do
   post   'accounts/switch' ,:to => 'accounts#switch'
   get    'accounts' ,:to => 'accounts#index'
   get    'accounts/password' ,:to => 'accounts#password'
+  get    'accounts/usage', :to => 'accounts#usage'
   post   'accounts/password' ,:to => 'accounts#password'
   post   'accounts/update_settings', :to => 'accounts#update_settings'
 

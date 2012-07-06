@@ -13,33 +13,28 @@ DcmgrGUI.prototype.dashboardPanel = function(){
     $("#total_security_group").empty().html(loading_image);
     $("#total_keypair").empty().html(loading_image);
     
-    parallel({
-      total_instance: $.getJSON('/instances/total.json'),
-      total_image: $.getJSON('/machine_images/total.json'),
-      total_volume: $.getJSON('/volumes/total.json'),
-      total_backup: $.getJSON('/backups/total.json'),
-      total_network: $.getJSON('/networks/total.json'),
-      total_security_group: $.getJSON('/security_groups/total.json'),
-      total_keypair: $.getJSON('/keypairs/total.json')
-    }).error(function (e) {
-      this.cancel();
-      $("#total_instance").empty().html('');
-      $("#total_image").empty().html('');
-      $("#total_volume").empty().html('');
-      $("#total_backup").empty().html('');
-      $("#total_network").empty().html('');
-      $("#total_security_group").empty().html('');
-      $("#total_keypair").empty().html('');
-    }).next(function(results) {
-      $('#total_instance').html(results.total_instance);
-      $('#total_image').html(results.total_image);
-      $('#total_volume').html(results.total_volume);
-      $('#total_backup').html(results.total_backup);
-      $('#total_network').html(results.total_network);
-      $('#total_security_group').html(results.total_security_group);
-      $('#total_keypair').html(results.total_keypair);
+    var request = new DcmgrGUI.Request;
+    request.get({
+      "url": '/accounts/usage.json',
+      success: function(json, status){
+        var fill_usage = function(id, quota_key) {
+          var usage = json[quota_key];
+          var usage_msg = usage['current'];
+          if( typeof usage['quota'] != 'undefined' ){
+            usage_msg = usage_msg + "/" + usage['quota'];
+          }
+          $(id).html(usage_msg);
+        }
+
+        fill_usage('#total_instance', 'instance.count');
+        fill_usage('#total_image', 'image.count');
+        fill_usage('#total_volume', 'volume.count');
+        fill_usage('#total_backup', 'backup_object.count');
+        fill_usage('#total_network', 'network.count');
+        fill_usage('#total_security_group', 'security_group.count');
+        fill_usage('#total_keypair', 'ssh_key_pair.count');
+      }
     });
-    
   });
 
   $(bt_refresh.target).button({ disabled: false });
