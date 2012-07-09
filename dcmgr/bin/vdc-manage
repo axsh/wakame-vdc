@@ -38,7 +38,7 @@ end
 
 module TxMode
   module Bulk
-    def loop
+    def in_loop
       Dcmgr::Models::BaseNew.db.transaction do
         super
       end
@@ -168,7 +168,7 @@ else
   }
   
   Ripl::Shell.include VdcManageShell
-  if options[:tx_mode] == :each
+  if options[:tx_mode].to_sym == :each
     Ripl::Shell.include TxMode::Each
   else
     Ripl::Shell.include TxMode::Bulk
