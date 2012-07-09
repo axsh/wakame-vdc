@@ -47,6 +47,19 @@ del)
   }
 
   sed -i "${grub_line_from},${grub_line_to}d" /boot/grub/grub.conf
+
+  menu_offset=0
+  sed -i "s,^default=.*,default=${menu_offset}," /boot/grub/grub.conf
+  ;;
+
+enable)
+  menu_order=$(egrep ^title /boot/grub/grub.conf | cat -n | grep "${grub_title}" | tail | awk '{print $1}')
+  [ -z ${menu_order} ] && {
+    menu_offset=0
+  } || {
+    menu_offset=$((${menu_order} - 1))
+  }
+  sed -i "s,^default=.*,default=${menu_offset}," /boot/grub/grub.conf
   ;;
 
 *)
