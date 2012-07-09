@@ -24,7 +24,7 @@ cat <<EOS
  "http://www.w3.org/TR/html4/strict.dtd">
 <html>
  <head>
-  <title>Wakame-VDC Daily Build</title>
+  <title>Wakame-VDC Continuous Build</title>
  </head>
  <body><div id="pageWrapper">
 
