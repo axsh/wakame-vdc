@@ -14,7 +14,7 @@ for arch in ${archs}; do
   vmapp_src_dir=${chroot_dir}/tmp/wakame-vdc/tests/image_builder
 
   pool_dir=pool/vmapp/${arch}
-  [ -d ${pool_dir} ] || mkdir -d ${pool_dir}
+  [ -d ${pool_dir} ] || mkdir -p ${pool_dir}
 
   ls -la ${vmapp_src_dir}/
 

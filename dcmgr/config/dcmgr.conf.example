@@ -140,11 +140,12 @@ service_type("std", "StdServiceType") {
 service_type("lb", "LbServiceType") {
   image_id 'wmi-demolb'
   host_node_id 'hn-demo1'
-  security_group 'sg-demofgr'
   ssh_key_id 'ssh-demo'
+  instances_network 'nw-demo1'
+  management_network 'nw-demo8'
   host_node_scheduler :LeastUsage
   storage_node_scheduler :LeastUsage
-  network_scheduler :FlatSingle
+  network_scheduler :VifParamTemplate
 
   # Please specify the addresses that can be referenced from within an instance of the load balancer.
   # amqp_server_uri is saved to userdata in instance of the load balancer.

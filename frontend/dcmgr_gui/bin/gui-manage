@@ -25,8 +25,8 @@ end
 
 module TxMode
   module Bulk
-    def loop
-      Dcmgr::Models::BaseNew.db.transaction do
+    def in_loop
+      BaseNew.db.transaction do
         super
       end
     end
@@ -34,7 +34,7 @@ module TxMode
   
   module Each
     def loop_eval(str)
-      Dcmgr::Models::BaseNew.db.transaction do
+      BaseNew.db.transaction do
         super
       end
     end
@@ -104,7 +104,7 @@ else
   require 'shellwords'
   
   Ripl::Shell.include GuiManageShell
-  if options[:tx_mode] == :each
+  if options[:tx_mode].to_sym == :each
     Ripl::Shell.include TxMode::Each
   else
     Ripl::Shell.include TxMode::Bulk

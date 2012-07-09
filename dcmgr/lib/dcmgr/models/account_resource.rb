@@ -15,19 +15,14 @@ module Dcmgr::Models
     # Sequel plugin for setting up hooks needed for service type support.
     module EnableServiceType
       module InstanceMethods
+        # Do not validate service type value in the model class. CLI
+        # needs to be able to add arbitrary service type name when
+        # dcmgr.conf misses the definition for the name.
         def before_validation
           self.service_type ||= Dcmgr.conf.default_service_type
           super
         end
-
-        def validate
-          unless Dcmgr.conf.service_types[self.service_type.to_s]
-            errors.add(:service_type, "Unknown service type: #{self.service_type}")
-          end
-          super
-        end
       end
-      
     end
     
     def account

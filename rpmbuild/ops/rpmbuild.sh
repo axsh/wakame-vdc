@@ -1,6 +1,8 @@
 #!/bin/bash
 # rpm build script
 
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+
 set -e
 set -x
 

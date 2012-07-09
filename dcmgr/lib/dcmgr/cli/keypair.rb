@@ -55,7 +55,7 @@ module Dcmgr::Cli
     desc "modify UUID [options]", "Modify an existing key pair"
     method_option :account_id, :type => :string, :desc => "The UUID of the account this key pair belongs to"
     method_option :description, :type => :string, :desc => "Description for this key pair"
-    method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the key pair. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :service_type, :type => :string, :desc => "Service type of the key pair. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name for the key pair"
     def modify(uuid)
       UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?

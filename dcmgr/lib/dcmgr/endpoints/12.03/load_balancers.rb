@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/load_balancer'
+require 'sinatra/internal_request'
 require 'amqp'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_META_STATE = ['alive', 'alive_with_deleted'].freeze
   LOAD_BALANCER_STATE=['running', 'terminated'].freeze
   LOAD_BALANCER_STATE_ALL=(LOAD_BALANCER_STATE + LOAD_BALANCER_META_STATE).freeze
+
+  register Sinatra::InternalRequest
 
   get do
     ds = M::LoadBalancer.dataset
@@ -63,33 +66,24 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     user_data << "AMQP_PORT=#{amqp_settings[:port]}"
 
     # make params for internal request.
-    values  = {'image_id' => lb_conf.image_id,
+    request_params  = {'image_id' => lb_conf.image_id,
                'instance_spec_id' => spec.canonical_uuid,
                'host_node_id' => lb_conf.host_node_id,
                'security_group' => lb_conf.security_group,
                'ssh_key_id' => lb_conf.ssh_key_id,
                'service_type' => lb_conf.name,
-               'user_data' => user_data.join("\n")
+               'user_data' => user_data.join("\n"),
+               'vifs' => {
+                 'eth0' => {'index' => '0', 'network' => lb_conf.instances_network},
+                 'eth1' => {'index' => '1', 'network' => lb_conf.management_network}
+               }
     }
 
-    # TODO: Using sinatra plugin.
-    _req = ::Rack::Request.new \
-      ::Rack::MockRequest.env_for("/api/12.03/instances.json",
-      :params => values)
+    http_status, headers, body = internal_request("/api/12.03/instances.json", request_params, {
+      'PATH_INFO' => '/instances',
+    })
 
-    _req.env['PATH_INFO'] = '/instances'
-    _req.env['SERVER_NAME'] = env['SERVER_NAME']
-    _req.env['SERVER_PORT'] = env['SERVER_PORT']
-    _req.env['CONTENT_TYPE'] = 'application/json'
-    _req.env['REQUEST_METHOD'] = env['REQUEST_METHOD']
-    _req.env['HTTP_X_VDC_ACCOUNT_UUID'] = env['HTTP_X_VDC_ACCOUNT_UUID']
-
-    http_status, headers, body = self.dup.call(_req.env)
-
-    # create load balancer
-    b = ::JSON.load(body.shift)
-
-    i = find_by_uuid(:Instance, b['id'])
+    i = find_by_uuid(:Instance, body['id'])
     lb = M::LoadBalancer.create(:account_id => @account.canonical_uuid,
                                 :description => params[:description],
                                 :instance_id => i.id,
@@ -218,18 +212,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     lb_i = lb.instance
 
-    # TODO: Using sinatra plugin.
-    env['REQUEST_PATH'] = "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
-    env['PATH_INFO'] = "/instances/#{lb_i.canonical_uuid}.json"
-    env['REQUEST_URI'] = "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
+    http_status, headers, body = internal_request("/api/12.03/instances.json", {}, {
+      'REQUEST_PATH' => "/api/12.03/instances/#{lb_i.canonical_uuid}.json",
+      'PATH_INFO' => "/instances/#{lb_i.canonical_uuid}.json",
+      'REQUEST_URI' => "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
+    })
 
-    # Create Instance
-    http_status, headers, body = self.dup.call(env)
-
-    # create load balancer
-    b = ::JSON.load(body.shift)
-
-    if b.include? lb_i.canonical_uuid
+    if body.include? lb_i.canonical_uuid
       lb.destroy
     else
       raise E::InvalidLoadBalancerState, lb.state
@@ -253,7 +242,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       proxy = Dcmgr::Drivers::Haproxy.new
       proxy.set_mode(haproxy_mode(params[:instance_protocol]))
       proxy.set_balance(params[:balance_name])
-      proxy.set_cookie_name(params[:cookie_name])
+      proxy.set_cookie_name(params[:cookie_name]) unless params[:cookie_name].empty?
       params[:ipset].each do |t|
         proxy.add_server(t[:ipv4], params[:instance_port])
       end

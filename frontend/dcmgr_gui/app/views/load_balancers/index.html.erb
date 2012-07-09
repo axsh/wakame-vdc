@@ -60,8 +60,8 @@
 	    <td class="vtip display_name" title="display name">${item.display_name}</td>
 	    <td class="vtip ip" title="ip">
      {{each(index,item) vif}}
-       {{if vif.ipv4}}
-       ${vif.ipv4.ipv4.nat_address}
+       {{if vif.ipv4 && index == 0}}
+       ${vif.ipv4.ipv4.address}
        {{/if}}
      {{/each}}</td>
 	    <td class="state vtip center" title="state">${item.state}</td>
@@ -91,7 +91,7 @@
     <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.ip") %></td>
-	    <td>${item.ip}</td>
+	    <td>${item.vif[0].ipv4.address}</td>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.status") %></td>
 	    <td>${item.status}</td>
