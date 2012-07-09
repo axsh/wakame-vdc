@@ -18,19 +18,20 @@ release_id=$(
   done | sort -r | uniq | head -1
 )
 
+title="Wakame-VDC Continuous Build"
 
 cat <<EOS
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
  "http://www.w3.org/TR/html4/strict.dtd">
 <html>
  <head>
-  <title>Wakame-VDC Daily Build</title>
+  <title>${title}</title>
  </head>
  <body><div id="pageWrapper">
 
 <div id="header"><a href="http://wakame.jp/"></a></div>
 
-<h1>Wakame-VDC Daily Build</h1>
+<h1>${title}</h1>
 
 <h2>ID: ${release_id}</h2>
 

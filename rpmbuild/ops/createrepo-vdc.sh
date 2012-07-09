@@ -32,14 +32,13 @@ for arch in ${archs}; do
   #
   # noarch
   #
-  basearch=noarch; arch=noarch
-  [ -d ${rpm_dir}/${basearch} ] || mkdir -p ${rpm_dir}/${basearch}
+  [ -d ${rpm_dir}/noarch ] || mkdir -p ${rpm_dir}/noarch
   subdirs="
-    root/rpmbuild/RPMS/${arch}
+    root/rpmbuild/RPMS/noarch
   "
   for subdir in ${subdirs}; do
     pkg_dir=${chroot_dir}/${subdir}
-    bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* ${pkg_dir}/*.rpm ${rpm_dir}/${basearch}/ || :"
+    bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* ${pkg_dir}/*.rpm ${rpm_dir}/noarch/ || :"
   done
 done
 
