@@ -53,12 +53,21 @@ Requires: %{name}-common-vmapp-config
 
 # example:full
 %package full-vmapp-config
-Summary: Configuration set for hva %{osubname}
+Summary: Configuration set for full %{osubname}
 Group: Development/Languages
 Requires: %{name}-dcmgr-vmapp-config
 Requires: %{name}-hva-vmapp-config
 %description full-vmapp-config
 <insert long description, indented with spaces>
+
+# example:experiment
+%package experiment-vmapp-config
+Summary: Configuration set for experiment %{osubname}
+Group: Development/Languages
+Requires: %{name}-full-vmapp-config
+%description experiment-vmapp-config
+<insert long description, indented with spaces>
+
 
 ## rpmbuild -bp
 %prep
@@ -124,6 +133,14 @@ for sys_default_conf in ${sys_default_confs}; do
   sed -i s,^#RUN=.*,RUN=yes, /etc/default/vdc-${sys_default_conf}
 done
 
+%post experiment-vmapp-config
+# add ifcfg-br0 ifcfg-eth0
+%{prefix}/%{oname}/rpmbuild/helpers/setup-bridge-if.sh
+# add vzkernel entry
+%{prefix}/%{oname}/rpmbuild/helpers/edit-grub4vz.sh add
+# edit boot order to use vzkernel as default.
+%{prefix}/%{oname}/rpmbuild/helpers/edit-grub4vz.sh enable
+
 # set demo parameters
 for sys_default_conf in /etc/default/vdc-*; do sed -i s,^#NODE_ID=.*,NODE_ID=demo1, ${sys_default_conf}; done
 
@@ -146,5 +163,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/%{oname}/hva.conf
 
 %files full-vmapp-config
+
+%files experiment-vmapp-config
 
 %changelog
