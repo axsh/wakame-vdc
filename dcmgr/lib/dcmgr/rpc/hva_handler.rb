@@ -2,12 +2,11 @@
 require 'isono'
 require 'fileutils'
 require 'ipaddress'
-require 'forwardable'
 
 module Dcmgr
   module Rpc
     class HvaHandler < EndpointBuilder
-      #include Dcmgr::Logger
+      include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
