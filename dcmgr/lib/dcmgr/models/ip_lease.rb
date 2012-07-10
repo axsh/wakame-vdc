@@ -32,16 +32,36 @@ module Dcmgr::Models
       raise TypeError unless network_vif.is_a?(NetworkVif)
       raise TypeError unless network.is_a?(Network)
 
-      reserved = []
-      reserved << network.ipv4_gw_ipaddress if network.ipv4_gw
-      reserved << IPAddress::IPv4.new(network.dhcp_server) if network.dhcp_server
-      reserved = reserved.map {|i| i.to_u32 }
-      # use SELECT FOR UPDATE to lock rows within same network.
-      addrs = network.ipv4_u32_dynamic_range_array - 
-        reserved - network.network_vif_ip_lease_dataset.alives.for_update.all.map {|i| i.ipv4_i }
-      raise "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if addrs.empty?
+      latest = network.network_vif_ip_lease_dataset.alives.max(:updated_at)
+      latest_ip = network.network_vif_ip_lease_dataset.alives.filter(:updated_at =>latest).filter(:alloc_type =>NetworkVifIpLease::TYPE_AUTO).map {|i| i.ipv4_i}
+      if latest_ip.empty?
+        ipaddr = nil
+      else
+        ipaddr = latest_ip.first
+      end
 
-      leaseaddr = IPAddress::IPv4.parse_u32(addrs[rand(addrs.size).to_i])
+      leaseaddr = nil
+      network.dhcp_range_dataset.all.each {|i|
+        begin
+          leaseaddr = i.available_ip(ipaddr)
+          unless leaseaddr.nil?
+            ipaddr = IPAddress::IPv4.parse_u32(leaseaddr)
+            if network[:ipv4_gw] == ipaddr.to_s ||
+                network[:dns_server] == ipaddr.to_s ||
+                network[:dhcp_server] == ipaddr.to_s ||
+                network[:metadata_server] == ipaddr.to_s
+
+              network.network_vif_ip_lease_dataset.add_reserved(ipaddr.to_s)
+              ipaddr = ipaddr.to_i
+            end
+          end
+          break if leaseaddr.nil?
+        end while self.find(:ipv4=>leaseaddr)
+        break unless leaseaddr.nil?
+      }
+      raise "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if leaseaddr.nil?
+
+      leaseaddr = IPAddress::IPv4.parse_u32(leaseaddr)
       NetworkVifIpLease.create(:ipv4=>leaseaddr.to_i, :network_id=>network.id, :network_vif_id=>network_vif.id, :description=>leaseaddr.to_s)
     end
   end

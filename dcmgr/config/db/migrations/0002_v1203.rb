@@ -37,6 +37,7 @@ Sequel.migration do
       # Linux tc accepts floating point value as bandwidth.
       drop_column :bandwidth
       add_column :bandwidth, "float"
+      add_column :ip_assignment, "varchar(255)", :null=>false
     end
 
     create_table(:host_node_vnets) do
@@ -191,8 +192,8 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
       column :is_deleted, "int(11)", :null=>false
-      index [:network_id, :network_vif_id, :is_deleted], :unique=>true,
-             :name=>'network_vif_ip_leases_network_id_network_vif_id_index'
+      index [:network_id, :network_vif_id, :ipv4, :is_deleted], :unique=>true,
+             :name=>'network_vif_ip_leases_network_id_network_vif_id_ipv4_index'
     end
 
     # Add service_type column for service type resources
@@ -343,6 +344,7 @@ Sequel.migration do
     
     alter_table(:networks) do
       drop_column :gateway_network_id
+      drop_column :ip_assignment
       add_column :vlan_lease_id, "int(11)", :default=>0, :null=>false
       add_column :link_interface, "varchar(255)", :null=>false
     end
