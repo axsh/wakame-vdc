@@ -28,6 +28,7 @@ module Dcmgr::Models
     plugin ChangedColumnEvent, :accounting_log => [:state, :size]
     
     subset(:lives, {:deleted_at => nil})
+    subset(:alives, {:deleted_at => nil})
 
     def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))

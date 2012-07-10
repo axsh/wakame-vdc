@@ -19,6 +19,7 @@ module Dcmgr::Models
     plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size] 
     
     subset(:lives, {:terminated_at => nil})
+    subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => 'running'})
     subset(:stops, {:state => 'stopped'})
 
