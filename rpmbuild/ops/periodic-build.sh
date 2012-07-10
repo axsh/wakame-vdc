@@ -18,13 +18,12 @@ git pull
 build_id=$(git log -n 1 --pretty=format:"%h")
 
 function build_yum_repo () {
-  time ./createrepo-vdc.sh 2>&1
+  time yes | ./syncrepo-vdc.sh backup 2>&1
+  time       ./createrepo-vdc.sh 2>&1
   time yes | ./syncrepo-vdc.sh build 2>&1
-  # upload vmapps to s3
-  time ./build-s3-vmapp.sh 2>&1
 }
 
-
+# map task name
 case "$1" in
 monthly|weekly)
   task=self-integrate
@@ -41,6 +40,18 @@ hourly)
 esac
 
 (
-  BUILD_ID=${build_id} ./rules ${task}
-  build_yum_repo
+BUILD_ID=${build_id} ./rules ${task}
+build_yum_repo
+
+case "$1" in
+monthly|weekly|daily)
+  # upload vmapps to s3
+  time ./build-s3-vmapp.sh 2>&1
+  ;;
+hourly)
+  ;;
+*)
+  ;;
+esac
+
 ) 2>&1 | tee ${log_dir}/build.log.`date +%Y%m%d-%s` 2>&1
