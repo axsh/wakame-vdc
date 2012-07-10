@@ -27,7 +27,7 @@ for arch in ${archs}; do
   "
   for subdir in ${subdirs}; do
     pkg_dir=${chroot_dir}/${subdir}
-    bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* ${pkg_dir}/*.rpm ${rpm_dir}/${basearch}/ || :"
+    bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* --exclude=elrepo-* ${pkg_dir}/*.rpm ${rpm_dir}/${basearch}/ || :"
   done
 
   #
@@ -40,7 +40,7 @@ for arch in ${archs}; do
   "
   for subdir in ${subdirs}; do
     pkg_dir=${chroot_dir}/${subdir}
-    bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* ${pkg_dir}/*.rpm ${rpm_dir}/noarch/ || :"
+    bash -c "[ -d ${pkg_dir} ] && rsync -av --exclude=epel-* --exclude=elrepo-* ${pkg_dir}/*.rpm ${rpm_dir}/noarch/ || :"
   done
 done
 
