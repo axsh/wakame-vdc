@@ -200,6 +200,7 @@ module Dcmgr
       autoload :VifTemplate, 'dcmgr/scheduler/network/vif_template'
       autoload :VifParamTemplate, 'dcmgr/scheduler/network/vif_param_template'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
+      autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
     end
 
     NAMESPACES=[HostNode, StorageNode, Network]
