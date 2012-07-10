@@ -334,16 +334,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                                    @account, instance.image.backup_object.values[:size]) do |i|
       [:display_name, :description].each { |k|
         if params[k]
-          i[k] = params[:k]
+          i[k] = params[k]
         end
       }
     end
     image = instance.image.entry_clone do |i|
       [:display_name, :description].each { |k|
         if params[k]
-          i[k] = params[:k]
+          i[k] = params[k]
         end
       }
+      
+      i.is_public = false
+      i.account_id = @account.canonical_uuid
       i.backup_object_id = bo.canonical_uuid
     end
     
