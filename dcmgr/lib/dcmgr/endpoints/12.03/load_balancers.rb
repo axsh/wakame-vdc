@@ -54,29 +54,39 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     # copy request params
     lb_conf = Dcmgr.conf.service_types['lb']
     spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
+    lb_port = params[:port].to_i
 
     raise "E::UnknownImage" unless lb_conf.config.include? :image_id
     raise "E::UnknownHostNode" unless lb_conf.config.include? :host_node_id
-    raise "E::UnknownSecurityGroup" unless lb_conf.config.include? :security_group
     raise "E::UnknownSshKeyPair" unless lb_conf.config.include? :ssh_key_id
+    raise "E::InvalidLoadBalancerPort" unless lb_port >= 1 && lb_port <= 65535
 
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
+
     user_data = []
     user_data << "AMQP_SERVER=#{amqp_settings[:host]}"
     user_data << "AMQP_PORT=#{amqp_settings[:port]}"
 
+    security_group_rules = []
+    security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
+    lb_security_group = create_security_group(security_group_rules + ["tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"])
+    instance_security_group = create_security_group(security_group_rules)
+
     # make params for internal request.
-    request_params  = {'image_id' => lb_conf.image_id,
-               'instance_spec_id' => spec.canonical_uuid,
-               'host_node_id' => lb_conf.host_node_id,
-               'security_group' => lb_conf.security_group,
-               'ssh_key_id' => lb_conf.ssh_key_id,
-               'service_type' => lb_conf.name,
-               'user_data' => user_data.join("\n"),
-               'vifs' => {
-                 'eth0' => {'index' => '0', 'network' => lb_conf.instances_network},
-                 'eth1' => {'index' => '1', 'network' => lb_conf.management_network}
-               }
+    request_params = {'image_id' => lb_conf.image_id,
+                      'instance_spec_id' => spec.canonical_uuid,
+                      'host_node_id' => lb_conf.host_node_id,
+                      'ssh_key_id' => lb_conf.ssh_key_id,
+                      'service_type' => lb_conf.name,
+                      'user_data' => user_data.join("\n"),
+                      'vifs' => [{'index' => '0',
+                                  'network' => lb_conf.instances_network,
+                                  'security_groups' => instance_security_group
+                                 },{
+                                  'index' => '1',
+                                  'network' => lb_conf.management_network,
+                                  'security_groups' => lb_security_group
+                      }]
     }
 
     http_status, headers, body = internal_request("/api/12.03/instances.json", request_params, {
@@ -265,5 +275,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     end
 
+  end
+
+  def create_security_group(rules)
+   http_status, headers, body = internal_request("/api/12.03/security_groups.json",{
+      'account_id' => @account.canonical_uuid,
+      'rule' => rules.join("\n"),
+      'service_type' => 'lb',
+      'description' => '',
+      'display_name' => ''
+    }, {
+      'PATH_INFO' => '/security_groups',
+    })
+    body['uuid']
   end
 end
