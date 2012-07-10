@@ -266,12 +266,18 @@ module Dcmgr::Models
       nic.device_index = vif_template[:index]
       nic.save
 
-      groups = self.request_params["security_groups"]
+      if !request_params.has_key?('security_groups') && !vif_template[:security_groups].empty?
+        groups = vif_template[:security_groups]
+      else
+        # TODO: this code will delete. it's remained for compatibility.
+        groups = self.request_params["security_groups"]
+      end
+
       groups = [groups] unless groups.is_a? Array
       groups.each { |group_id|
         nic.add_security_group(SecurityGroup[group_id])
-      } unless self.request_params["security_groups"].nil?
-      
+      } unless groups.nil?
+
       nic
     end
 
