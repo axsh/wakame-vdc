@@ -43,7 +43,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
       validate_service_type(params[:service_type])
       ds = ds.filter(:service_type=>params[:service_type])
     end
-    
+
+    if params[:is_public]
+      ds = ds.or(:is_public=>1)
+    end
+
     collection_respond_with(ds) do |paging_ds|
       R::ImageCollection.new(paging_ds).generate
     end
@@ -84,10 +88,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   def find_image_by_uuid(uuid)
     item = M::Image[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
 
-    if item.is_public == 1
+    if item.is_public == true
       # return immediatly when the public flag is set.
     elsif @account && item.account_id != @account.canonical_uuid
-      raise E::UnknownUUIDResrouce, uuid.to_s
+      raise E::UnknownUUIDResoruce, uuid.to_s
     end
     if params[:service_type] && params[:service_type] != item.service_type
       raise E::UnknownUUIDResource, uuid.to_s
