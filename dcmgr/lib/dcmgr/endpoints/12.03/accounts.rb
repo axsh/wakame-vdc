@@ -5,7 +5,7 @@ require 'dcmgr/endpoints/12.03/responses/account'
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
   namespace '/:id' do
     before do
-      @account = M::Account[params[:id]] || raise(UnknownUUIDError, params[:id])
+      @account = M::Account[params[:id]] || raise(E::UnknownUUIDResource, params[:id])
     end
 
     get do
