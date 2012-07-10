@@ -7,15 +7,12 @@ module Sinatra
   module InternalRequest
     module HelperMethods
 
-      include Sinatra::JSON
-
       def internal_request(url, request_params, options={})
 
         _req = ::Rack::Request.new \
           ::Rack::MockRequest.env_for(url,
           :params => request_params)
 
-        _req.env['PATH_INFO'] = '/instances'
         _req.env['SERVER_NAME'] = env['SERVER_NAME']
         _req.env['SERVER_PORT'] = env['SERVER_PORT']
         _req.env['CONTENT_TYPE'] = 'application/json'
