@@ -164,13 +164,6 @@ CMDSET
 
 shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo --service-type std --display-name demo
 shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
-tcp:22,22,ip4:0.0.0.0
-EOF
-shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
-tcp:22,22,ip4:0.0.0.0
-tcp:80,80,ip4:0.0.0.0
-EOF
-shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
 # demo rule for demo instances
 tcp:22,22,ip4:0.0.0.0
 tcp:80,80,ip4:0.0.0.0
