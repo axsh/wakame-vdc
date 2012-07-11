@@ -4,6 +4,8 @@ ruby_ver ?= 1.9.2-p290
 CURDIR ?= $(PWD)
 RUBYDIR ?= $(CURDIR)/ruby
 
+RUBY_MIRROR_SITE ?= http://core.ring.gr.jp/archives/lang/ruby/
+
 CFLAGS := -fno-strict-aliasing
 CXXFLAGS := -fno-strict-aliasing
 # configure options set by ruby-build
@@ -30,6 +32,7 @@ build-ruby-stamp: ruby-build ruby install-core-gem bundle-install
 
 ruby-build:
 	(cd $(CURDIR); git clone https://github.com/sstephenson/ruby-build.git)
+	(cd $(CURDIR)/ruby-build; sed -i s,http://ftp.ruby-lang.org/pub/ruby/,$(RUBY_MIRROR_SITE), share/ruby-build/*)
 
 ruby:
 	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(RUBYDIR))
