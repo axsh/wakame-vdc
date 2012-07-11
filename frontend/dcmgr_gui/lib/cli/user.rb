@@ -14,7 +14,7 @@ module Cli
     desc "add [options]", "Create a new user."
     method_option :name, :type => :string, :required => true, :aliases => "-n", :desc => "The name for the new user." #Maximum size: 200
     method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new user."
-    method_option :login_id, :type => :string, :aliases => "-l", :desc => "Optional: The login_id for the new user." #Maximum size: 255
+    method_option :login_id, :type => :string, :required=>true, :aliases => "-l", :desc => "The login_id for the new user." #Maximum size: 255
     method_option :password, :type => :string, :aliases => "-p", :desc => "The password for the new user." #Maximum size: 255
     method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "Optional: The primary account to associate this user with." #Maximum size: 255
     method_option :locale, :type => :string, :default=>"en", :desc => "The preffered display language for GUI."
@@ -22,7 +22,7 @@ module Cli
     def add
       if options[:name].length > 200
         Error.raise("User name can not be longer than 200 characters", 100)
-      elsif options[:login_id] != nil && options[:login_id].length > 255
+      elsif options[:login_id].length > 255
         Error.raise("User login_id can not be longer than 255 characters",100)
       elsif options[:password] != nil && options[:password].length > 255
         Error.raise("User password can not be longer than 255 characters", 100)
@@ -32,16 +32,6 @@ module Cli
         #Check if the primary account uuid exists
         Error.raise("Unknown Account UUID #{options[:primary_account_id]}",100) if options[:primary_account_id] != nil && Account[options[:primary_account_id]].nil?
         
-        #The login id is needed to log into the web ui. Therefore we set it to name if it isn't provided.
-        if options[:login_id].nil?
-          login_id = options[:name]
-        else
-          login_id = options[:login_id]
-        end
-        
-        #Check if username is available
-        Error.raise("Login id already in use: '#{login_id}'.",100) unless User.find(:name => login_id).nil?
-        
         #Generate password if password is null.
         passwd = options[:password] || Array.new(12) do PASSWD_TABLE[rand(PASSWD_TABLE.size)]; end.join
         
@@ -49,7 +39,7 @@ module Cli
         pwd_hash = User.encrypt_password(passwd)
         
         #Put them in there
-        fields = {:name => options[:name], :login_id => login_id, :password => pwd_hash,
+        fields = {:name => options[:name], :login_id => options[:login_id], :password => pwd_hash,
           :locale => options[:locale],
           :time_zone => options[:time_zone],
         }
