@@ -8,15 +8,8 @@ load File.expand_path('../../config/boot.rb', __FILE__)
 require 'thor'
 require 'thor/group'
 require 'erb'
-
-module Cli
-  require 'cli/errors'
-
-  autoload :Base, 'cli/base'
-  autoload :AccountCli, 'cli/account'
-  autoload :UserCli, 'cli/user'
-  autoload :Error, 'cli/errors'
-end
+# load model classes under app/models.
+require 'autoload'
 
 class RootCli < Thor
   register(Cli::AccountCli, Cli::AccountCli.namespace, "account sub-command", "Operations for accounts")
@@ -77,8 +70,6 @@ end
 require File.expand_path('../../config/initializers/secret_token', __FILE__)
 require File.expand_path('../../config/initializers/timezone', __FILE__)
 require File.expand_path('../../config/initializers/sequel', __FILE__)
-# load model classes under app/models.
-require 'autoload'
 
 require 'optparse'
 
