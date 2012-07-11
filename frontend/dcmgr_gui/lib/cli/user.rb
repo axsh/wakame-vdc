@@ -105,7 +105,7 @@ __END
 <%- } -%>
 __END
       end
-    end    
+    end
 
     desc "modify UUID [options]", "Update an existing user."    
     method_option :name, :type => :string, :aliases => "-n", :desc => "The new name for the user." #Maximum size: 200    
@@ -170,7 +170,7 @@ __END
       }
     end
     
-    desc "dissociate UUID", "Dissociate a user from one or multiple accounts."    
+    desc "dissociate UUID", "Dissociate a user from one or multiple accounts."
     method_option :account_ids, :type => :array, :required => true, :aliases => "-a", :desc => "The id of the acounts to dissociate these user from. Any non-existing or non numeral id will be ignored" 
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def dissociate(uuid)
