@@ -14,8 +14,10 @@ else
   db = Sequel::DATABASES.first
 end
 
-#require 'logger' 
-#db.loggers << Logger.new(STDERR)
+if ENV['DEBUG_SQL']
+  require 'logger'
+  db.loggers << Logger.new(STDERR)
+end
 case db.adapter_scheme
 when :mysql, :mysql2
   Sequel::MySQL.default_charset = 'utf8'
