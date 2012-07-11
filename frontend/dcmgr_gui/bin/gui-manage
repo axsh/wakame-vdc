@@ -39,9 +39,8 @@ module ExitAtError
     begin
       # Ensure Thor to raise exception.
       ENV['THOR_DEBUG']='1'
-      # "debugging" flag is only available in Thor 0.14.x.
-      Thor::Base.debugging = true 
-      super
+      # "--debug" flag is only available in Thor 0.14.x.
+      super("--debug #{str}")
     rescue ::Exception => e
       STDERR.puts "ERROR: #{e.message}"
       if $options[:errexit]
