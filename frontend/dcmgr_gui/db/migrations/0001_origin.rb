@@ -43,7 +43,7 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :last_login_at, :null=>false
       String :name, :null=>false, :size=>200, :fixed=>true
-      String :login_id, :size=>255
+      String :login_id, :null=>false, :size=>255
       String :password, :null=>false, :size=>255
       String :primary_account_id, :size=>255
       String :locale, :null=>false, :size=>255

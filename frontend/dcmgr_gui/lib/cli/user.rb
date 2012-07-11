@@ -79,10 +79,8 @@ User UUID:
   <%= user.canonical_uuid %>
 Name:
   <%= user.name %>
-<%- if user.login_id -%>
 Login ID:
   <%= user.login_id %>
-<%- end -%>
 Locale: <%= user.locale %>
 Time Zone: <%= user.time_zone %>
 <%- if user.primary_account_id -%>
