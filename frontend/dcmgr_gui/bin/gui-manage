@@ -103,7 +103,7 @@ if !argv.empty?
     end
   rescue => e
     e = Cli::Error.new(e,101) unless e.is_a?(Cli::Error)
-    STDERR.puts "ERROR: " + e.message
+    STDERR.puts "ERROR: #{e.message}"
     if e.respond_to?(:exit_code)
       exit(e.exit_code)
     else
