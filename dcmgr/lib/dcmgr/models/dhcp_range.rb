@@ -58,31 +58,57 @@ module Dcmgr::Models
     def available_ip(addr=nil)
       ipaddr = case self.network[:ip_assignment]
                when "asc"
-                 first = addr || start_range
-                 boundaries = leased_ips(first, end_range).leased_ip_bound_lease.limit(2).all
-                 ip = check_ascending_order(boundaries, first)
+                 range = addr || start_range
+                 boundaries = leased_ips(range, end_range).leased_ip_bound_lease.limit(2).all
+                 ip = check_ascending_order(boundaries, range, end_range)
                  if ip.nil?
-                   last = addr || end_range
-                   boundaries = leased_ips(start_range, last).leased_ip_bound_lease.limit(2).all
-                   ip = check_ascending_order(boundaries, start_range)
+                   range = addr || end_range
+                   boundaries = leased_ips(start_range, range).leased_ip_bound_lease.limit(2).all
+                   ip = check_ascending_order(boundaries, start_range, range)
                  end
                  ip
                when "desc"
+                 range = addr || end_range
+                 boundaries = leased_ips(start_range, range).leased_ip_bound_lease.limit(2).order(:ip_leases__ipv4.desc).all
+                 ip = check_descending_order(boundaries, start_range, range)
+                 if ip.nil?
+                   range = addr || start_range
+                   boundaries = leased_ips(range, end_range).leased_ip_bound_lease.limit(2).order(:ip_leases__ipv4.desc).all
+                   ip = check_descending_order(boundaries, range, end_range)
+                 end    
+                 ip
                else
                end
     end
 
-    def check_ascending_order(boundaries, addr)
-      return addr if boundaries.size == 0
+    def check_ascending_order(boundaries, first, last)
+      return first if boundaries.size == 0
 
       boundary = boundaries.first
-      return addr if boundary[:prev].nil? && boundary[:ipv4] != addr
+      return first if boundary[:prev].nil? && boundary[:ipv4] != first
 
       ipaddr = nil
       boundaries.each do |b|
           next unless b[:follow].nil?
           
-          ipaddr = b[:ipv4]+1 if b[:ipv4]+1 <= end_range
+          ipaddr = b[:ipv4]+1 if b[:ipv4]+1 <= last
+          break unless ipaddr.nil?
+      end
+
+      ipaddr
+    end
+
+    def check_descending_order(boundaries, first, last)
+      return last if boundaries.size == 0
+
+      boundary = boundaries.first
+      return last if boundary[:follow].nil? && boundary[:ipv4] != last
+
+      ipaddr = nil
+      boundaries.each do |b|
+          next unless b[:prev].nil?
+          
+          ipaddr = b[:ipv4]-1 if b[:ipv4]-1 >= first
           break unless ipaddr.nil?
       end
 
