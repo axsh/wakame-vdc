@@ -6,7 +6,7 @@ module Hijiki::DcmgrResource::V1203
       include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
 
       def list(params = {})
-        super(params.merge({:state=>'alive_with_deleted'}))
+        super({:state=>'alive_with_deleted', :is_public=>true}.merge(params))
       end
       
       def update(uuid,params)
