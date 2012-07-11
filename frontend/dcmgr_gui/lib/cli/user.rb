@@ -72,25 +72,18 @@ module Cli
 
     desc "show [UUID] [options]", "Show one user or all users currently in the database"        
     def show(uuid = nil)
-      if uuid        
+      if uuid
         user = User[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-User UUID:
-  <%= user.canonical_uuid %>
-Name:
-  <%= user.name %>
-Login ID:
-  <%= user.login_id %>
+User UUID: <%= user.canonical_uuid %>
+Name: <%= user.name %>
+Login ID: <%= user.login_id %>
 Locale: <%= user.locale %>
 Time Zone: <%= user.time_zone %>
+Created : <%= user.created_at %>
+Updated : <%= user.updated_at %>
 <%- if user.primary_account_id -%>
-Primary Account:
-<%- prim_acc = Account.find(:uuid => user.primary_account_id) -%>
-  <%- if prim_acc.class == Account -%>
-  <%= prim_acc.canonical_uuid %>\t<%= prim_acc.name %>
-<%- else -%>
-  <%= Account.uuid_prefix%>-<%= prim_acc.uuid %>\t<%= prim_acc.name %>
-<%- end -%>
+Primary Account: <%= user.primary_account_id %>
 <%- end -%>
 <%- unless user.accounts.empty? -%>
 Associated accounts:
