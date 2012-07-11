@@ -191,7 +191,7 @@ account quota set a-shpoolxx instance.count 10.0
 account quota set a-shpoolxx instance.quota_weight 10.0
 
 account add --name="demo1" --uuid=a-demo1
-user add --name="demo1" --uuid=u-demo1 --login_id=demo1 --password=demo1 --primary-account-id=a-demo1
+user add --name="demo1" --uuid=u-demo1 --login_id=demo1 --password=demo1 --primary-account-id=a-demo1 --locale="ja" --time-zone="Asia/Tokyo"
 user associate u-demo1 --account-ids "a-demo1"
 account quota set a-demo1 instance.count 10.0
 account quota set a-demo1 instance.quota_weight 10.0

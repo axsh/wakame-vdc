@@ -2,6 +2,7 @@
 
 require 'sequel'
 require 'yaml'
+require 'tzinfo'
 
 #TODO: Print only the first line of an exception?
 module Cli
@@ -16,6 +17,8 @@ module Cli
     method_option :login_id, :type => :string, :aliases => "-l", :desc => "Optional: The login_id for the new user." #Maximum size: 255
     method_option :password, :type => :string, :aliases => "-p", :desc => "The password for the new user." #Maximum size: 255
     method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "Optional: The primary account to associate this user with." #Maximum size: 255
+    method_option :locale, :type => :string, :default=>"en", :desc => "The preffered display language for GUI."
+    method_option :time_zone, :type => :string, :default=>DEFAULT_TIMEZONE, :desc => "The display timezone for GUI."
     def add
       if options[:name].length > 200
         Error.raise("User name can not be longer than 200 characters", 100)
@@ -46,7 +49,10 @@ module Cli
         pwd_hash = User.encrypt_password(passwd)
         
         #Put them in there
-        fields = {:name => options[:name], :login_id => login_id, :password => pwd_hash}
+        fields = {:name => options[:name], :login_id => login_id, :password => pwd_hash,
+          :locale => options[:locale],
+          :time_zone => options[:time_zone],
+        }
         fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
         new_uuid = super(User,fields)
         
@@ -77,6 +83,8 @@ Name:
 Login ID:
   <%= user.login_id %>
 <%- end -%>
+Locale: <%= user.locale %>
+Time Zone: <%= user.time_zone %>
 <%- if user.primary_account_id -%>
 Primary Account:
 <%- prim_acc = Account.find(:uuid => user.primary_account_id) -%>
@@ -111,6 +119,8 @@ __END
     method_option :name, :type => :string, :aliases => "-n", :desc => "The new name for the user." #Maximum size: 200    
     method_option :login_id, :type => :string, :aliases => "-l", :desc => "The new login_id for the user." #Maximum size: 255
     method_option :password, :type => :string, :aliases => "-p", :desc => "The new password for the user." #Maximum size: 255
+    method_option :locale, :type => :string, :desc => "The preffered display language for GUI."
+    method_option :time_zone, :type => :string, :desc => "The display timezone for GUI."
     def modify(uuid)
       Error.raise("User name can not be longer than 200 characters",100) if options[:name] != nil && options[:name].length > 200
       Error.raise("User login_id can not be longer than 255 characters",100) if options[:login_id] != nil && options[:login_id].length > 255
