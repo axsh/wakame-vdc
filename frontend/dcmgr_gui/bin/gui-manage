@@ -11,6 +11,8 @@ require 'erb'
 # load model classes under app/models.
 require 'autoload'
 
+require File.expand_path('../../config/initializers/timezone', __FILE__)
+
 class RootCli < Thor
   register(Cli::AccountCli, Cli::AccountCli.namespace, "account sub-command", "Operations for accounts")
   register(Cli::UserCli, Cli::UserCli.namespace, "user sub-command", "Operations for users")
@@ -67,7 +69,6 @@ module GuiManageShell
 end
 
 require File.expand_path('../../config/initializers/secret_token', __FILE__)
-require File.expand_path('../../config/initializers/timezone', __FILE__)
 require File.expand_path('../../config/initializers/sequel', __FILE__)
 
 require 'optparse'

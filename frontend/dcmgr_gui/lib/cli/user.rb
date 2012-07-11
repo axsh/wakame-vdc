@@ -18,7 +18,7 @@ module Cli
     method_option :password, :type => :string, :aliases => "-p", :desc => "The password for the new user." #Maximum size: 255
     method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "Optional: The primary account to associate this user with." #Maximum size: 255
     method_option :locale, :type => :string, :default=>"en", :desc => "The preffered display language for GUI."
-    method_option :time_zone, :type => :string, :default=>DEFAULT_TIMEZONE, :desc => "The display timezone for GUI."
+    method_option :time_zone, :type => :string, :default=>::DEFAULT_TIMEZONE, :desc => "The display timezone for GUI."
     def add
       if options[:name].length > 200
         Error.raise("User name can not be longer than 200 characters", 100)
