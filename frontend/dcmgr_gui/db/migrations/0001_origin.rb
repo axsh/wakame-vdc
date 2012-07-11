@@ -48,6 +48,7 @@ Sequel.migration do
       String :primary_account_id, :size=>255
       String :locale, :null=>false, :size=>255
       String :time_zone, :null=>false, :size=>255
+      Boolean :enabled, :null=>false, :default=>true
       
       index [:login_id], :unique=>true, :name=>:login_id
       index [:uuid], :unique=>true, :name=>:uuid

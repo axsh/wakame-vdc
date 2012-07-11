@@ -80,6 +80,7 @@ Name: <%= user.name %>
 Login ID: <%= user.login_id %>
 Locale: <%= user.locale %>
 Time Zone: <%= user.time_zone %>
+Enable: <%= user.enabled %>
 Created : <%= user.created_at %>
 Updated : <%= user.updated_at %>
 <%- if user.primary_account_id -%>
@@ -191,6 +192,20 @@ __END
           end
         end
       }
+    end
+
+    desc "enable UUID", "Enable the user."
+    def enable(uuid)
+      user = User[uuid] || UnknownUUIDError.raise(uuid)
+      user.enabled = true
+      user.save
+    end
+
+    desc "enable UUID", "Disable the user."
+    def disable(uuid)
+      user = User[uuid] || UnknownUUIDError.raise(uuid)
+      user.enabled = false
+      user.save
     end
     
   end
