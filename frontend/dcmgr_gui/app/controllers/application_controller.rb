@@ -2,6 +2,7 @@
 
 require 'authentication'
 require 'util'
+require 'i18n'
 
 class ApplicationController < ActionController::Base
   # disable reqeust forgery check since some pages are missing to set
