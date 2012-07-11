@@ -57,6 +57,8 @@ end
 module ExitAtError
   def loop_eval(str)
     begin
+      # Ensure Thor to raise exception.
+      ENV['THOR_DEBUG']='1'
       super
     rescue ::Exception => e
       STDERR.puts "ERROR: #{e.message}"
@@ -73,8 +75,6 @@ module VdcManageShell
   def loop_eval(str)
     args = Shellwords.shellsplit(str)
     if !args.empty?
-      # Thor raise exception when the env is set.
-      ENV['THOR_DEBUG']='1'
       RootCli.start(args.dup)
     end
   end
