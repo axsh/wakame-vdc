@@ -144,6 +144,8 @@ OptionParser.new { |o|
 }.order!(argv)
 
 if !argv.empty?
+  # Ensure to raise exception from Thor v0.15.x
+  ENV['THOR_DEBUG']='1'
   # CLI mode
   begin
     Dcmgr::Models::BaseNew.db.transaction do

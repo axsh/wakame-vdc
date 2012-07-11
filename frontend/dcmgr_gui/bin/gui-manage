@@ -97,6 +97,8 @@ OptionParser.new { |o|
 }.order!(argv)
 
 if !argv.empty?
+  # Ensure to raise exception from Thor v0.14.x.
+  argv = argv + ['--debug']
   begin
     BaseNew.db.transaction do
       RootCli.start(argv)
