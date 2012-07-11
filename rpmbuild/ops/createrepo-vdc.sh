@@ -45,28 +45,24 @@ for arch in ${archs}; do
 done
 
 # cleanup old wakame-vdc rpms.
-find ${rpm_dir} -type f -name "wakame-*" -mtime +5 | sort | while read line; do
-  rm -f ${line}
-done
-
-# delete non-pair rpms
 for i in ${rpm_dir}/*/wakame*.rpm; do
   file=$(basename $i)
   echo ${file%%.el6.*.rpm}
 done \
  | sort \
- | uniq -c \
+ | uniq \
  | sort \
- | awk '$1 == 1 {print $2}' \
  | while read line; do
-     # without noarch
-     for basearch in ${basearchs}; do
-       find pool/vdc/current/${basearch} -type f -name ${line}*
+     echo ${line##*-}
+   done \
+   | sort -r \
+   | uniq \
+   | cat -n \
+   | awk '$1 >= 5 {print $2}' \
+   | while read build_id; do
+       echo "delete ${build_id}"
+       find ${rpm_dir} -type f | grep ${build_id} | xargs rm
      done
-   done | while read target; do
-     [ -f ${target} ] || continue
-     rm -f ${target}
-   done
 
 # create repository metadata files.
 (
