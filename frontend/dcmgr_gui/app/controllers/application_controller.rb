@@ -25,6 +25,15 @@ class ApplicationController < ActionController::Base
     true
   end
 
+  # check if the current user is locked out.
+  before_filter do |req|
+    if current_user && !current_user.enabled
+      render :status=>403, :text=>"Forbidden"
+      return false
+    end
+    true
+  end
+
   def set_application
     @site = DCMGR_GUI_SITE
     true
