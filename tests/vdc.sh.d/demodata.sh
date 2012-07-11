@@ -44,7 +44,7 @@ cd ${VDC_ROOT}/dcmgr/
   [ -n "${range_end}"   ] || range_end=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMax:" { print $2 }'`
 }
 
-cat <<CMDSET | grep -v '^#' | ./bin/vdc-manage
+cat <<CMDSET | grep -v '^#' | ./bin/vdc-manage -e
 # Physical network definitions
 network dc add public
 network dc add-network-mode public securitygroup
@@ -187,7 +187,7 @@ EOS
 # Install user/account definitions to the GUI database.
 cd ${VDC_ROOT}/frontend/dcmgr_gui/
 
-cat <<EOF | ./bin/gui-manage
+cat <<EOF | ./bin/gui-manage -e
 account add --name="wakame" --uuid=a-00000000
 user add --name="wakame" --uuid=u-00000000 --login_id=wakame --password=wakame --primary-account-id=a-00000000
 user associate u-00000000 --account-ids "a-00000000"
