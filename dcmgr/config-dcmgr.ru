@@ -12,6 +12,8 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
 Dcmgr.run_initializers
 
 map '/api' do
+  use Dcmgr::Rack::RequestLogger
+
   map '/12.03' do
     run Dcmgr::Endpoints::V1203::CoreAPI.new
   end

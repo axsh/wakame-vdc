@@ -15,8 +15,6 @@ module Dcmgr::Endpoints::V1203
     register Sinatra::DcmgrAPISetup
     register Sinatra::QuotaEvaluation
 
-    use Dcmgr::Rack::RequestLogger
-
     # To access constants in this namespace
     include Dcmgr::Endpoints
 
