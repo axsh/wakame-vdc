@@ -315,6 +315,12 @@ Sequel.migration do
       add_column :hypervisor, "varchar(255)", :null=>false
       drop_column  :instance_spec_id
     end
+
+    alter_table(:dhcp_ranges) do
+      set_column_type :range_begin, "int(11)", :unsigned=>true, :null=>false
+      set_column_type :range_end, "int(11)", :unsigned=>true, :null=>false
+      add_column :description, "varchar(255)"
+    end
   end
   
   down do
@@ -439,6 +445,12 @@ Sequel.migration do
       add_column :alloc_type, "int(11)", :default=>0, :null=>false
 
       add_index[:instance_nic_id, :network_id]
+    end
+
+    alter_table(:dhcp_ranges) do
+      set_column_type :range_begin, "varchar(255)", :null=>false
+      set_column_type :range_end, "varchar(255)", :null=>false
+      drop_column :description
     end
   end
 end

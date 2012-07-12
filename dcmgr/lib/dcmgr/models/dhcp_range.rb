@@ -28,90 +28,51 @@ module Dcmgr::Models
     end
 
     def range_begin
-      IPAddress::IPv4.new("#{super}/#{network.prefix}")
+      IPAddress::IPv4.parse_u32(super, network.prefix)
     end
 
     def range_end
-      IPAddress::IPv4.new("#{super}/#{network.prefix}")
+      IPAddress::IPv4.parse_u32(super, network.prefix)
     end
 
-    def start_range
-      if self.range_begin.network?
-        self.range_begin.first.to_i
-      else
-        self.range_begin.to_i
-      end
+    def leased_ips(from, to)
+      IpLease.where(:ip_leases__network_id=>self.network_id).filter(:ip_leases__ipv4=>from..to)
     end
 
-    def end_range
-      if (self.range_end)[3] == 255
-        self.range_end.last.to_i
-      else
-        self.range_end.to_i
-      end
-    end
-
-    def leased_ips(first, last)
-      IpLease.where(:ip_leases__network_id=>self.network_id).filter(:ip_leases__ipv4=>first..last)
-    end
-
-    def available_ip(addr=nil)
+    def available_ip(from, to)
       ipaddr = case self.network[:ip_assignment]
                when "asc"
-                 range = addr || start_range
-                 boundaries = leased_ips(range, end_range).leased_ip_bound_lease.limit(2).all
-                 ip = check_ascending_order(boundaries, range, end_range)
-                 if ip.nil?
-                   range = addr || end_range
-                   boundaries = leased_ips(start_range, range).leased_ip_bound_lease.limit(2).all
-                   ip = check_ascending_order(boundaries, start_range, range)
-                 end
-                 ip
+                 boundaries = leased_ips(from, to).leased_ip_bound_lease.limit(2).all
+                 ip = get_assignment_ip(boundaries, from, to)
                when "desc"
-                 range = addr || end_range
-                 boundaries = leased_ips(start_range, range).leased_ip_bound_lease.limit(2).order(:ip_leases__ipv4.desc).all
-                 ip = check_descending_order(boundaries, start_range, range)
-                 if ip.nil?
-                   range = addr || start_range
-                   boundaries = leased_ips(range, end_range).leased_ip_bound_lease.limit(2).order(:ip_leases__ipv4.desc).all
-                   ip = check_descending_order(boundaries, range, end_range)
-                 end    
-                 ip
+                 boundaries = leased_ips(from, to).leased_ip_bound_lease.limit(2).order(:ip_leases__ipv4.desc).all
+                 ip = get_assignment_ip(boundaries, to, from)
                else
                end
     end
 
-    def check_ascending_order(boundaries, first, last)
-      return first if boundaries.size == 0
+    def get_assignment_ip(boundaries, from, to)
+      if from <= to
+        turn = [:prev,:follow]
+        inequality_sign = :<
+        number = :+
+      else
+        turn = [:follow, :prev]
+        inequality_sign = :>
+        number = :-
+      end
+      return from if boundaries.size == 0
 
       boundary = boundaries.first
-      return first if boundary[:prev].nil? && boundary[:ipv4] != first
-
+      return from if boundary[turn[0]].nil? && boundary[:ipv4] != from
+      
       ipaddr = nil
       boundaries.each do |b|
-          next unless b[:follow].nil?
-          
-          ipaddr = b[:ipv4]+1 if b[:ipv4]+1 <= last
-          break unless ipaddr.nil?
+        next unless b[turn[1]].nil?
+        
+        ipaddr = b[:ipv4].method(number).call(1) if b[:ipv4].method(inequality_sign).call(to)
+        break unless ipaddr.nil?
       end
-
-      ipaddr
-    end
-
-    def check_descending_order(boundaries, first, last)
-      return last if boundaries.size == 0
-
-      boundary = boundaries.first
-      return last if boundary[:follow].nil? && boundary[:ipv4] != last
-
-      ipaddr = nil
-      boundaries.each do |b|
-          next unless b[:prev].nil?
-          
-          ipaddr = b[:ipv4]-1 if b[:ipv4]-1 >= first
-          break unless ipaddr.nil?
-      end
-
       ipaddr
     end
 
@@ -133,8 +94,8 @@ module Dcmgr::Models
         ary.push([ipaddr-1]) if i[:prev].nil?
         ary.last.push(ipaddr+1) if i[:follow].nil?
       }
-      ary.first.unshift(start_range)
-      ary.last.push(end_range)
+      ary.first.unshift(range_begin.to_i)
+      ary.last.push(range_end.to_i)
 
       ary
     end

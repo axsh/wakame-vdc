@@ -105,6 +105,8 @@ module Dcmgr::Models
     end
 
     def add_ipv4_dynamic_range(range_begin, range_end)
+      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self[:prefix]}")
+      range_end = IPAddress::IPv4.new("#{range_end}/#{self[:prefix]}")
       test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
          case op
          when :coverbegin
@@ -117,7 +119,7 @@ module Dcmgr::Models
          range.save_changes
       }
       
-      self.add_dhcp_range(:range_begin=>range_begin.to_s, :range_end=>range_end.to_s)
+      self.add_dhcp_range(:range_begin=>range_begin, :range_end=>range_end)
       
       self
     end
