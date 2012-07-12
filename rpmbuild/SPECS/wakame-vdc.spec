@@ -178,6 +178,8 @@ RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules build
 %install
 # don't run "rpmbuild/rules binary"
 CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
+# clean ruby-hijiki work dir to build
+[ -d `pwd`/client/ruby-hijiki/pkg ] && rm -rf `pwd`/client/ruby-hijiki/pkg
 
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
@@ -186,6 +188,7 @@ components="
  dcmgr
  frontend
  rpmbuild
+ client
 "
 for component in ${components}; do
   rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
