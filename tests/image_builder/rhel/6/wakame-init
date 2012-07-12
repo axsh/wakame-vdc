@@ -65,20 +65,27 @@ esac
 
 case "$METADATA_LOCATION" in
 drive)
-  # /mnt/metadata is obsolete.
-  for metadata_drive_location in ${METADATA_DRIVE_MOUNTPOINT} /metadata /mnt/metadata; do
-    mountpoint -q ${metadata_drive_location} || continue
-    METADATA_DRIVE_MOUNTPOINT=${metadata_drive_location}
-  done
+  already_mounted=`mount -l | grep "\[METADATA\]"`
+  
+  if [ -z "$already_mounted" ]; then
+    # /mnt/metadata is obsolete.
+    for metadata_drive_location in ${METADATA_DRIVE_MOUNTPOINT} /metadata /mnt/metadata; do
+      mountpoint -q ${metadata_drive_location} || continue
+      METADATA_DRIVE_MOUNTPOINT=${metadata_drive_location}
+    done
 
-  if [ $? != 0 ]; then
     if [ ! -d ${METADATA_DRIVE_MOUNTPOINT} ]; then
+      echo "Creating directory: ${METADATA_DRIVE_MOUNTPOINT}"
       mkdir ${METADATA_DRIVE_MOUNTPOINT}
     fi
+    echo "Mounting metadata drive on: ${METADATA_DRIVE_MOUNTPOINT}"
     mount LABEL=METADATA ${METADATA_DRIVE_MOUNTPOINT} || {
       echo no such labeled device: METADATA | logger
       exit 1
     }
+  else
+    METADATA_DRIVE_MOUNTPOINT=`echo "$already_mounted" | cut -d " " -f3`
+    echo "Metadata drive already mounted on: ${METADATA_DRIVE_MOUNTPOINT}"
   fi
   ;;
 server)
