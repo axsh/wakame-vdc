@@ -5,6 +5,7 @@ require 'time'
 require 'sinatra/base'
 require 'sinatra/dcmgr_api_setup'
 require 'sinatra/quota_evaluation'
+require 'sinatra/internal_request'
 
 require 'dcmgr/endpoints/errors'
 require 'dcmgr/endpoints/12.03/quota_definitions'
@@ -13,6 +14,7 @@ module Dcmgr::Endpoints::V1203
   class CoreAPI < Sinatra::Base
     include Dcmgr::Logger
     register Sinatra::DcmgrAPISetup
+    register Sinatra::InternalRequest
     register Sinatra::QuotaEvaluation
 
     # To access constants in this namespace
