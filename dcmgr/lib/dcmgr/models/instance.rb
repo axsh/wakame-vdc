@@ -274,10 +274,12 @@ module Dcmgr::Models
         groups = self.request_params["security_groups"]
       end
 
-      groups = [groups] unless groups.is_a? Array
-      groups.each { |group_id|
-        nic.add_security_group(SecurityGroup[group_id])
-      } unless groups.nil?
+      if !groups.nil?
+        groups = [groups] unless groups.is_a? Array
+        groups.each { |group_id|
+          nic.add_security_group(SecurityGroup[group_id])
+        }
+      end
 
       nic
     end

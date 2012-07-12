@@ -79,7 +79,15 @@ module Dcmgr::Models
     def delete
       self.deleted_at ||= Time.now
       self.save_changes
-    end      
+    end
+
+    def network_vifs(device_index=nil)
+      if device_index
+        self.instance.network_vif.select {|vif| vif if vif.device_index == device_index}[0]
+      else
+        self.instance.network_vif
+      end
+    end
 
   end
 end

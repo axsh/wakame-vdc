@@ -10,6 +10,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_STATE_ALL=(LOAD_BALANCER_STATE + LOAD_BALANCER_META_STATE).freeze
 
   register Sinatra::InternalRequest
+  PUBLIC_DEVICE_INDEX = 0
+  MANAGEMENT_DEVICE_INDEX = 1
 
   get do
     ds = M::LoadBalancer.dataset
@@ -69,7 +71,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     security_group_rules = []
     security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
-    lb_security_group = create_security_group(security_group_rules + ["tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"])
+    security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
+
     instance_security_group = create_security_group(security_group_rules)
 
     # make params for internal request.
@@ -79,13 +82,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                       'ssh_key_id' => lb_conf.ssh_key_id,
                       'service_type' => lb_conf.name,
                       'user_data' => user_data.join("\n"),
-                      'vifs' => [{'index' => '0',
+                      'vifs' => [{'index' => PUBLIC_DEVICE_INDEX.to_s,
                                   'network' => lb_conf.instances_network,
                                   'security_groups' => instance_security_group
                                  },{
-                                  'index' => '1',
+                                  'index' => MANAGEMENT_DEVICE_INDEX.to_s,
                                   'network' => lb_conf.management_network,
-                                  'security_groups' => lb_security_group
+                                  'security_groups' => ''
                       }]
     }
 
@@ -134,6 +137,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :ipset => []
     }
 
+    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
+    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
+
     targets = []
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
@@ -144,9 +150,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
         :ipv4 => ip_lease.first.ipv4,
       }
 
+      # register instance to load balancer.
       lb.add_target(uuid)
       lb.save
+
+      # update security groups to registered instance.
+      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
+      request_params = {
+        :id => vif.instance.canonical_uuid,
+        :security_groups => lb_security_groups + i_security_groups
+      }
+      update_security_groups(request_params)
     end
+
 
     raise E::UnknownNetworkVif if config_params[:ipset].empty?
     on_after_commit do
@@ -167,10 +183,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     request_vifs = request_vifs.each_line.to_a if request_vifs.is_a?(String)
     hold_vifs = lb.load_balancer_targets.collect {|t| t.network_vif_id }
     raise E::UnknownNetworkVif if hold_vifs.empty?
+
+    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
+    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
     remove_vifs = request_vifs & hold_vifs
     remove_vifs.each do |uuid|
      lb.remove_target(uuid)
      lb.save
+
+     # update security groups to registered instance.
+     vif = find_by_uuid(:NetworkVif, uuid)
+     i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
+     request_params = {
+       :id => vif.instance.canonical_uuid,
+       :security_groups => i_security_groups - lb_security_groups
+     }
+     update_security_groups(request_params)
+
     end
 
     config_params = {
@@ -289,4 +318,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     })
     body['uuid']
   end
+
+  def update_security_groups(params)
+    path = "/instances/#{params[:id]}"
+    uri = "/api/12.03/#{path}.json"
+    http_status, headers, body = internal_request(uri,{
+      'security_groups' => params[:security_groups]
+    }, {
+      'PATH_INFO' => "#{path}",
+      'REQUEST_METHOD' => 'PUT',
+      'REQUEST_URI' => uri,
+      'REQUEST_PATH' => uri
+    })
+    body
+  end
+
 end
