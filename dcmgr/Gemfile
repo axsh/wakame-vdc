@@ -18,5 +18,6 @@ gem "net-dhcp", ">= 1.1.0"
 gem "bit-struct", ">= 0.13.6"
 gem "racket", ">= 1.0.11"
 gem 'ripl'
+gem "rack-test", "0.6.1"
 
 gem 'isono', '0.2.12'
