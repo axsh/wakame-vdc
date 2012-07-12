@@ -1,4 +1,4 @@
-/var/log/wakame-vdc/vdc-*.log {
+/var/log/wakame-vdc/*.log {
     daily
     rotate 10
     compress
