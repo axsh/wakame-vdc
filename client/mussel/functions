@@ -1,0 +1,59 @@
+# -*-Shell-script-*-
+#
+#
+#
+
+args=
+for arg in $*; do
+  case $arg in
+    --*=*)
+      key=${arg%%=*}; key=$(echo ${key##--} | tr - _)
+      value=${arg##--*=}
+      eval "${key}=\"${value}\""
+      ;;
+    *)
+      args="${args} ${arg}"
+      ;;
+  esac
+done
+
+
+function shlog() {
+  echo "\$ $*"
+  eval $*
+}
+
+function call_api() {
+  shlog curl $*
+}
+
+function cmd_index() {
+  call_api -s -X GET -H ${http_header} ${base_uri}/${1}s.${format}
+}
+
+function cmd_show() {
+  [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; exit 1; }
+  call_api -s -X GET -H ${http_header} ${base_uri}/${1}s/${3}.${format}
+}
+
+function cmd_xget() {
+  call_api -s -X GET -H ${http_header} ${base_uri}/${1}s/${3}/${2}.${format}
+}
+
+function cmd_destroy() {
+  [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; exit 1; }
+  call_api -s -X DELETE -H ${http_header}  \
+   ${base_uri}/${1}s/${3}.${format}
+}
+
+function cmd_help() {
+  echo "$0 ${1} [help|${2}]" >&2
+}
+
+function cmd_default() {
+  [ $# = 1 ] && cmd_index $* || $0 ${1} help
+}
+
+function run_cmd() {
+  :
+}

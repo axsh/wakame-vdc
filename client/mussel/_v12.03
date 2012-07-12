@@ -1,0 +1,70 @@
+# -*-Shell-script-*-
+#
+# 12.03
+#
+
+
+# instance
+
+## required
+image_id=${image_id:-wmi-lucid5}
+instance_spec_name=${instance_spec_name:-is-small}
+security_groups=${security_groups:-sg-demofgr}
+ssh_key_id=${ssh_key_id:-ssh-demo}
+hypervisor=${hypervisor:-openvz}
+cpu_cores=${cpu_cores:-1}
+memory_size=${memory_size:-1024}
+
+## optional
+display_name=${display_name:-}
+host_name=${host_name:-}
+#host_pool_id=${host_pool_id:-}
+#quota_weight=${quota_weight:-1.0}
+#user_data=${user_data:-}
+
+
+function run_cmd() {
+case "${1}" in
+
+instance)
+  case "${2}" in
+  help)    cmd_help    ${1} "index|show|create|destroy|reboot" ;;
+  index)   cmd_index   $* ;;
+  show)    cmd_show    $* ;;
+  destroy) cmd_destroy $* ;;
+  create)
+    call_api -s -X POST -H ${http_header}  \
+     --data-urlencode "image_id=${image_id}" \
+     --data-urlencode "instance_spec_name=${instance_spec_name}"  \
+     --data-urlencode "security_groups[]=${security_groups}" \
+     --data-urlencode "ssh_key_id=${ssh_key_id}" \
+     --data-urlencode "hypervisor=${hypervisor}" \
+     --data-urlencode "cpu_cores=${cpu_cores}" \
+     --data-urlencode "memory_size=${memory_size}" \
+     --data-urlencode "display_name=${display_name}" \
+     --data-urlencode "host_name=${host_name}" \
+     ${base_uri}/${1}s.${format}
+    ;;
+  reboot|stop|start)
+    call_api -s -X PUT -H ${http_header} -d "''" \
+     ${base_uri}/${1}s/${3}/${2}.${format}
+    ;;
+  *)       cmd_default $* ;;
+  esac
+  ;;
+
+host_node|storage_node|image|network|security_group|ssh_key_pair)
+  case "${2}" in
+  help)    cmd_help    ${1} "index|show" ;;
+  index)   cmd_index   $* ;;
+  show)    cmd_show    $* ;;
+  *)       cmd_default $* ;;
+  esac
+  ;;
+
+*)
+  echo "$0 [instance] [method]" >&2
+  ;;
+
+esac
+}
