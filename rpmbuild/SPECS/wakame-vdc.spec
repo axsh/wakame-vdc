@@ -60,6 +60,7 @@ Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 
 # debug-config
 %package debug-config
+BuildArch: noarch
 Summary: Configuration set for debug
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
@@ -68,6 +69,7 @@ Requires: %{oname} = %{version}-%{release}
 
 # dcmgr-vmapp-config
 %package dcmgr-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
@@ -81,6 +83,7 @@ Requires: dnsmasq
 
 # hva-common-vmapp-config
 %package hva-common-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
@@ -100,6 +103,7 @@ Requires: util-linux-ng
 
 # hypervisor:kvm
 %package hva-kvm-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva KVM VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -111,6 +115,7 @@ Requires: qemu-kvm
 
 # hypervisor:lxc
 %package hva-lxc-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva LXC VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -120,6 +125,7 @@ Requires: lxc
 
 # hypervisor:openvz
 %package hva-openvz-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -131,6 +137,7 @@ Requires: kmod-openvswitch-vzkernel
 
 # hypervisor:*
 %package hva-full-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -142,6 +149,7 @@ Requires: %{oname}-hva-openvz-vmapp-config = %{version}-%{release}
 
 # vdcsh
 %package vdcsh
+BuildArch: noarch
 Summary: vdcsh
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
