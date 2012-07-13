@@ -158,6 +158,9 @@ Sequel.migration do
       column :balance_name, "varchar(255)", :null=>false
       column :cookie_name, "varchar(255)", :null=>true
       column :description, "text", :null=>true
+      column :private_key, "text", :null=>true
+      column :public_key, "text", :null=>true
+      column :certificate_chain, "text", :null=>true
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false  
       column :deleted_at, "datetime", :null=>true
