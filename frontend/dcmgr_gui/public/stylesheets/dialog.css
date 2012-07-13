@@ -251,11 +251,11 @@
 }
 
 #create_load_balancer_dialog .header {
-  text-align: center;
+  text-align: left;
 }
 
 #create_load_balancer_dialog .title {
-  text-align: right;
+  text-align: left;
 }
 
 #create_load_balancer_dialog #load_balancer_protocol {
@@ -266,26 +266,21 @@
   width: 80px;
 }
 
-#create_load_balancer_dialog #load_balancer table {
-  width: 500px;
+#create_load_balancer_dialog .setting_title {
+  padding-top: 20px;
+  padding-left: 2px;
+  padding-bottom: 2px;
+  text-align: left;
+
 }
 
-#create_load_balancer_dialog #certificate {
-  padding-top: 10px;
-  width: 500px;
-}
-
-#create_load_balancer_dialog #certificate_group {
-  padding-top: 10px;
+#create_load_balancer_dialog .setting_field {
+  padding-left:10px;
 }
 
 #create_load_balancer_dialog #sticky_session{
   padding-top: 15px;
   width: 500px;
-}
-
-#create_load_balancer_dialog #sticky_session_group {
-  padding-top: 10px;
 }
 
 #create_load_balancer_dialog table {
