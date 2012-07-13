@@ -146,6 +146,18 @@ module Dcmgr::Models
       self
     end
 
+    def reserved_ip?(ip)
+      ipaddr = ip.to_s
+      if self[:ipv4_gw] == ipaddr ||
+          self[:dns_server] == ipaddr ||
+          self[:dhcp_server] == ipaddr ||
+          self[:metadata_server] == ipaddr
+        return true
+      else
+        return false
+      end
+    end
+
     #
     # Sequel methods:
     #

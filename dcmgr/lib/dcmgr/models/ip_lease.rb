@@ -47,6 +47,8 @@ module Dcmgr::Models
                     ip = get_lease_address(network, nil, ipaddr)
                     ip = get_lease_address(network, ipaddr, nil) if ip.nil?
                     ip
+                  else
+                    raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
                   end
       raise "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if leaseaddr.nil?
 
@@ -62,35 +64,41 @@ module Dcmgr::Models
                  ranges.order(:range_begin.asc)
                when "desc"
                  ranges.order(:range_end.desc)
+               else
+                 raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
                end
       ranges.all.each {|i|
+        start_range = i.range_begin.to_i
+        end_range = i.range_end.to_i
         unless from_ipaddr.nil?
-          next if from_ipaddr >= i.range_end.to_i
+          next if from_ipaddr >= end_range
           f = from_ipaddr
-          f = i.range_begin.to_i if from_ipaddr <= i.range_begin.to_i
+          f = start_range if from_ipaddr <= start_range
         else
-          f = i.range_begin.to_i
+          f = start_range
         end
         unless to_ipaddr.nil?
-          next if to_ipaddr <= i.range_begin.to_i
+          next if to_ipaddr <= start_range
           t = to_ipaddr
-          t = i.range_end.to_i if to_ipaddr >= i.range_end.to_i
+          t = end_range if to_ipaddr >= end_range
         else
-          t = i.range_end.to_i
+          t = end_range
         end
         begin
           leaseaddr = i.available_ip(f, t)
-          check_ip = IPAddress::IPv4.parse_u32(leaseaddr)
-          if [0,255].member?(check_ip[3])
+          break if leaseaddr.nil?
+          check_ip = IPAddress::IPv4.parse_u32(leaseaddr, network[:prefix])
+          if [0,255].member?(check_ip[3]) || network.reserved_ip?(check_ip)
             network.network_vif_ip_lease_dataset.add_reserved(check_ip.to_s)
             case network[:ip_assignment]
             when "asc"
               f = check_ip.to_i
             when "desc"
               t = check_ip.to_i
+            else
+              raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
             end
           end
-          break if leaseaddr.nil?
         end while self.find(:ipv4=>leaseaddr)
         break unless leaseaddr.nil?
       }
