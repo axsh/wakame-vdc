@@ -28,7 +28,7 @@ function call_api() {
 }
 
 function cmd_index() {
-  call_api -s -X GET -H ${http_header} ${base_uri}/${1}s.${format}
+  call_api -s -X GET -H ${http_header} "${base_uri}/${1}s.${format}?${xquery}"
 }
 
 function cmd_show() {
