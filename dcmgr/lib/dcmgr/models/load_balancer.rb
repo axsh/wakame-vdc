@@ -30,7 +30,7 @@ module Dcmgr::Models
 
     def validate
       validates_includes ['http','https','tcp','ssl'], :protocol
-      validates_includes ['http','https','tcp','ssl'], :instance_protocol
+      validates_includes ['http','tcp'], :instance_protocol
       validates_includes 1..65535, :port
       validates_includes 1..65535, :instance_port
     end
