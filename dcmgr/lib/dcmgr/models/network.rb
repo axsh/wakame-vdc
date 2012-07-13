@@ -125,6 +125,8 @@ module Dcmgr::Models
     end
 
     def del_ipv4_dynamic_range(range_begin, range_end)
+      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self[:prefix]}")
+      range_end = IPAddress::IPv4.new("#{range_end}/#{self[:prefix]}")
       test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
         case op
         when :coverbegin

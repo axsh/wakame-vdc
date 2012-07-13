@@ -74,15 +74,16 @@ network add \
  --metadata-port ${metadata_port} \
  --service-type std \
  --description "demo" \
- --display-name "demo1"
+ --display-name "demo1" \
+ --ip-assignment "asc"
 network add \
- --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo2'"
+ --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo2'" --ip-assignment "asc"
 network add \
- --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo3'"
+ --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo3'" --ip-assignment "asc"
 network add \
- --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo4'"
+ --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo4'" --ip-assignment "asc"
 network add \
- --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo5'"
+ --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo5'" --ip-assignment "asc"
 network add \
  --uuid nw-demo6 \
  --network-mode l2overlay \
@@ -92,7 +93,8 @@ network add \
  --domain vnet6.local \
  --metric 10 \
  --service-type std \
- --display-name "demo6"
+ --display-name "demo6" \
+ --ip-assignment "asc"
 network add \
  --uuid nw-demo7 \
  --network-mode l2overlay \
@@ -102,7 +104,8 @@ network add \
  --domain vnet7.local \
  --metric 10 \
  --service-type std \
- --display-name "demo7"
+ --display-name "demo7" \
+ --ip-assignment "asc"
 network add \
  --uuid nw-demo8 \
  --ipv4-network 10.1.0.0 \
@@ -111,7 +114,8 @@ network add \
  --domain vnet8.local \
  --metric 10 \
  --service-type lb \
- --display-name "demo8"
+ --display-name "demo8" \
+ --ip-assignment "asc"
 
 # set forward interface(= physical network) from network
 network forward nw-demo1 public

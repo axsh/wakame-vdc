@@ -52,6 +52,7 @@ class Network < Base
   method_option :network_mode, :type => :string, :default=>'securitygroup', :desc => "Network mode: #{M::Network::NETWORK_MODES.join(', ')}"
   method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :required => true, :desc => "Display name of the network"
+  method_option :ip_assignment, :type => :string, :default=>'asc', :desc => "How to assign the IP address of the network"
   def add
     validate_ipv4_range
 

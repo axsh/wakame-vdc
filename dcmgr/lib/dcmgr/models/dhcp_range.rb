@@ -27,6 +27,10 @@ module Dcmgr::Models
       end
     end
 
+    def before_save
+      self[:description] = "begin:#{self.range_begin}/end:#{self.range_end}"
+    end
+
     def range_begin
       IPAddress::IPv4.parse_u32(super, network.prefix)
     end
