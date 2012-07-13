@@ -9,7 +9,7 @@ ja:
     sign_out: "サインアウト"
   button:
     refresh: "更新"
-    terminate: "停止"
+    terminate: "破棄"
     reboot: "再起動"
     create: "作成"
     update: "更新"
@@ -44,8 +44,8 @@ ja:
     display: "{0}年{1}月{2}日 {3}時{4}分{5}秒"
   dialog:
     terminate_instances:
-      header: "インスタンスを停止"
-      message: "インスタンスを停止します。よろしいですか?"
+      header: "インスタンスを破棄"
+      message: "インスタンスを破棄します。よろしいですか?"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
     reboot_instances:
@@ -312,7 +312,7 @@ ja:
     header: "インスタンス"
     instance_actions:
       header: "アクション"
-      terminate: "停止"
+      terminate: "破棄"
       reboot: "再起動"
       start: "再開"
       stop: "一時停止"
