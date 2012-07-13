@@ -21,7 +21,7 @@ cd   tmp/vmapp_builder/chroot/base
 
 distro_name="centos"
 distro_relver="6"
-distro_subver="2"
+distro_subver="3"
 distro_ver="${distro_relver}"
 
 distro="${distro_name}-${distro_ver}"
