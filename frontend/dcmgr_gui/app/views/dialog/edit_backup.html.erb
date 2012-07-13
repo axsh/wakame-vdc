@@ -1,0 +1,13 @@
+<div id="edit_backup_dialog">
+  <table>
+    <tr>
+      <td><%= t("dialog.edit_backup.backup_id")%>: </td>
+      <td><%= @backup_object_id %></td>
+      <td><input type="hidden" id="backup_object_id" value="<%= @backup_object_id %>"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.edit_backup.display_name")%>: </td>
+      <td><input id="backup_display_name" type="text" size=30 value="<%= @display_name %>"></td>
+    </tr>
+  </table>
+</div>
