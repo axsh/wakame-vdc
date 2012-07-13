@@ -106,10 +106,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
       raise E::InvalidDeleteRequest
     end
 
-    # TODO: send delete object message to the backup storage agent.
-    # on_after_commit do
-    #   Dcmgr.messaging.submit("bkst-handle.#{bo.backup_storage.node_id}", 'delete_object', bo.canonical_uuid)
-    # end
     respond_with([bo.canonical_uuid])
   end
 end
