@@ -37,7 +37,7 @@ Sequel.migration do
       # Linux tc accepts floating point value as bandwidth.
       drop_column :bandwidth
       add_column :bandwidth, "float"
-      add_column :ip_assignment, "varchar(255)", :null=>false
+      add_column :ip_assignment, "varchar(255)", :default=>"asc", :null=>false
     end
 
     create_table(:host_node_vnets) do
