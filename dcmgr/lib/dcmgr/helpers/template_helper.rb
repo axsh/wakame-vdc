@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'erb'
-require 'pry'
+
 module Dcmgr
   module Helpers
     module TemplateHelper
