@@ -130,11 +130,16 @@ jQuery(function($){
 	  </tr>
 	  <tr>
 	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.status") %>:</td>
+	    <td class="title"><%= t("instances.details.state") %>:</td>
 	    <td class="state">${item.state}</td>
 	    <td class="padcell"></td>
+	    <td class="title"><%= t("instances.details.status") %>:</td>
+	    <td class="status">${item.status}</td>
+	  </tr>
+	  <tr>
+	    <td class="padcell"></td>
 	    <td class="title"><%= t("instances.details.ssh_key_pair") %>:</td>
-	    <td>${item.ssh_key_pair}</td>
+	    <td colspan="7">${item.ssh_key_pair}</td>
 	  </tr>
           {{if item.security_groups != null }}
 	  <tr>

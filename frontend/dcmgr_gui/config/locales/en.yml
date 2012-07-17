@@ -337,6 +337,7 @@ en:
       cpu_cores: "CPU Cores"
       memory_size: "Memory Size"
       status: "Status"
+      state: "State"
       ip: "IP"
       ssh_key_pair: "SSH Key Pair"
       created_at: "Created At"
