@@ -286,24 +286,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
         proxy.add_server(t[:ipv4], params[:instance_port])
       end
 
-      proxy.bind do
-        EM.schedule do
-          conn = Dcmgr.messaging.amqp_client
-          channel = AMQP::Channel.new(conn)
-          ex = channel.topic(params[:topic_name], params[:queue_options])
-          begin
-            channel = AMQP::Channel.new(conn)
-            queue = AMQP::Queue.new(channel, params[:queue_name], :exclusive => false, :auto_delete => true)
-            queue.bind(ex)
-            queue.publish(proxy.config)
-          rescue Exception => e
-            logger.error(e.message)
-          end
-        end
-      end
+  def update_load_balancer_config(values)
+    proxy = Dcmgr::Drivers::Haproxy.new
+    proxy.set_mode(haproxy_mode(values[:instance_protocol]))
+    proxy.set_balance(values[:balance_name])
+    proxy.set_cookie_name(values[:cookie_name]) unless values[:cookie_name].empty?
 
+    if !values[:ipset].empty?
+      values[:ipset].each do |t|
+        proxy.add_server(t[:ipv4], values[:instance_port])
+      end
     end
 
+    proxy.render_remote_template('haproxy.cfg', {
+      :topic_name => values[:topic_name],
+      :queue_options => values[:queue_options],
+      :queue_name => values[:queue_name]
+    })
   end
 
   def create_security_group(rules)

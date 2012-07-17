@@ -5,37 +5,20 @@ module Dcmgr
       include Dcmgr::Logger
       include Dcmgr::Helpers::TemplateHelper
 
-      template_base_dir "haproxy"
-      
       attr_reader :listen
-      
+
+      @template_base_dir = "haproxy"
+
       def initialize
         @listen = {}
-        @listen[:servers] = {} 
+        @listen[:servers] = {}
         set_balance('leastconn')
         set_appsession({})
         set_name('balancer')
         set_bind('*', 80)
         @listen
       end
-     
-      def bind(&blk)
-        begin
-          template_file_path = "haproxy.cfg"
-          render_template(template_file_path, output_file_path) do
-            binding
-          end
-          blk.call
-          logger.info("Update #{template_file_path}")
-        rescue ::Exception => e
-          logger.error(e)
-          raise 'Faild to bind HAProxy'
-        ensure
-          remove_temporary
-          logger.info("Delete config file: #{output_file_path}")
-        end
-      end
-     
+
       def add_server(address, port, options = {})
 
          if @listen[:servers].has_key? address
@@ -59,13 +42,13 @@ module Dcmgr
 
       def remove_server(address)
         @listen[:servers].delete(address)
-        servers 
+        servers
       end
-     
+
       def set_cookie_name(name)
         @listen[:appsession][:cookie] = name
       end
-      
+
       def set_mode(mode)
 
         if !['tcp', 'http', 'health'].include? mode
@@ -74,7 +57,7 @@ module Dcmgr
 
         @listen[:mode] = mode
       end
-      
+
       def set_balance(name, param = nil)
 
         if !['roundrobin', 'static-rr', 'leastconn', 'source', 'uri',
@@ -87,7 +70,7 @@ module Dcmgr
 
         @listen[:balance] = balance
       end
-      
+
       def set_appsession(appsession)
         @listen[:appsession] = {
           :cookie => 'SERVERID',
@@ -96,7 +79,7 @@ module Dcmgr
         }
         @listen[:appsession].merge!(appsession)
       end
-      
+
       def set_bind(address, port)
         @listen[:bind] = "#{address}:#{port}"
       end
@@ -105,27 +88,12 @@ module Dcmgr
         @listen[:name] = name
       end
 
-      def config
-        File.open(output_file_path, "r") {|f| f.read }
-      end
-      
       private
-      def tmp_path
-        '/var/tmp'
-      end
-
-      def tmp_file
-        "haproxy-#{self.object_id}.cfg"
-      end
- 
-      def output_file_path
-        File.join(tmp_path, tmp_file)
-      end
 
       def next_server_name
         "srv-#{total_server+1}"
       end
-      
+
       def next_cookie_name
         "cookie-#{total_server+1}"
       end
@@ -133,15 +101,10 @@ module Dcmgr
       def total_server
         @listen[:servers].length.to_i
       end
-     
+
       def servers
         @listen[:servers]
       end
- 
-      def remove_temporary
-        ::FileUtils.rm(output_file_path)  
-      end
-      
     end
   end
 end
