@@ -276,15 +276,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
   end
 
-  def update_load_balancer_config(params)
-    EM.defer do
-      proxy = Dcmgr::Drivers::Haproxy.new
-      proxy.set_mode(haproxy_mode(params[:instance_protocol]))
-      proxy.set_balance(params[:balance_name])
-      proxy.set_cookie_name(params[:cookie_name]) unless params[:cookie_name].empty?
-      params[:ipset].each do |t|
-        proxy.add_server(t[:ipv4], params[:instance_port])
-      end
 
   def update_load_balancer_config(values)
     proxy = Dcmgr::Drivers::Haproxy.new
