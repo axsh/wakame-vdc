@@ -109,17 +109,20 @@ module Taggable
       raise "Invalid uuid or unsupported uuid: #{p_uuid} in #{self}"
     end
 
-    # Checks the general uuid syntax
-    def check_trimmed_uuid_format(uuid)
-      uuid.match(/^[a-z0-9 ]*$/) && uuid.length <= 8
-    end
-
     # Checks the uuid syntax if it is for the Taggable class.
     def check_uuid_format(uuid)
       uuid =~ /^#{self.uuid_prefix}-/
     end
   end
-    
+
+  def self.apply(model)
+    model.def_dataset_method(:by_uuid) do |uuid|
+      if model.check_uuid_format(uuid)
+        uuid = model.trim_uuid(uuid)
+      end
+      self.where(:uuid=>uuid)
+    end
+  end
 end
 
 # Sequel::Model plugin extends :schema plugin to merge the column

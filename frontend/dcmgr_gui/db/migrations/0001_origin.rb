@@ -2,7 +2,7 @@ Sequel.migration do
   up do
     create_table(:accounts, :ignore_index_errors=>true) do
       primary_key :id
-      String :uuid, :null=>false, :size=>8, :fixed=>true
+      String :uuid, :null=>false, :size=>255
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       String :name, :null=>false, :size=>255
@@ -38,7 +38,7 @@ Sequel.migration do
     
     create_table(:users, :ignore_index_errors=>true) do
       primary_key :id
-      String :uuid, :null=>false, :size=>8, :fixed=>true
+      String :uuid, :null=>false, :size=>255
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :last_login_at, :null=>false

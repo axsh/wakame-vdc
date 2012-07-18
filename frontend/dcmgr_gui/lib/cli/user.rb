@@ -152,7 +152,7 @@ __END
         else
           user.add_account(Account[a])
           if user.primary_account_id.nil?
-            user.primary_account_id = Account.trim_uuid(a)
+            user.primary_account_id = a
             user.save
           end
           puts "User #{uuid} successfully associated with account #{a}." if options[:verbose]

@@ -199,7 +199,7 @@ class Account < BaseNew
     def uuid(uuid=nil)
       if uuid.is_a?(String)
         uuid = uuid.downcase
-        unless self.check_trimmed_uuid_format(uuid)
+        unless self.check_uuid_format(uuid)
           raise "Invalid syntax of uuid: #{uuid}"
         end
         default_values[:uuid] = uuid

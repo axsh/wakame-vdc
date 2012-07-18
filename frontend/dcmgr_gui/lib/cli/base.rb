@@ -19,7 +19,6 @@ module Cli
       
       if fields.has_key?("uuid") || fields.has_key?(:uuid)
         fields[:uuid] = model.trim_uuid(fields[:uuid]) if model.check_uuid_format(fields[:uuid])
-        Error.raise("UUID syntax invalid: #{fields[:uuid]}",100) unless model.check_trimmed_uuid_format(fields[:uuid])
       end
       
       #Create database fields
