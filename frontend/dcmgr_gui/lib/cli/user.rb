@@ -19,6 +19,7 @@ module Cli
     method_option :primary_account_id, :type => :string, :aliases => "-a", :desc => "Optional: The primary account to associate this user with." #Maximum size: 255
     method_option :locale, :type => :string, :default=>"en", :desc => "The preffered display language for GUI."
     method_option :time_zone, :type => :string, :default=>::DEFAULT_TIMEZONE, :desc => "The display timezone for GUI."
+    method_option :description, :type => :string, :desc => "Description field."
     def add
       if options[:name].length > 200
         Error.raise("User name can not be longer than 200 characters", 100)
@@ -42,6 +43,7 @@ module Cli
         fields = {:name => options[:name], :login_id => options[:login_id], :password => pwd_hash,
           :locale => options[:locale],
           :time_zone => options[:time_zone],
+          :description => options[:description],
         }
         fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
         new_uuid = super(User,fields)
@@ -84,6 +86,10 @@ Deleted: <%= user.deleted_at %>
 <%- if user.primary_account_id -%>
 Primary Account: <%= user.primary_account_id %>
 <%- end -%>
+<%- if user.description -%>
+Description:
+<%= user.description %>
+<%- end -%>
 <%- unless user.accounts.empty? -%>
 Associated accounts:
 <%- user.accounts.each { |row| -%>
@@ -120,6 +126,7 @@ __END
     method_option :password, :type => :string, :aliases => "-p", :desc => "The new password for the user." #Maximum size: 255
     method_option :locale, :type => :string, :desc => "The preffered display language for GUI."
     method_option :time_zone, :type => :string, :desc => "The display timezone for GUI."
+    method_option :description, :type => :string, :desc => "Description field."
     method_option :with_deleted, :type => :boolean, :aliases => "-d", :desc => "Modify deleted user."
     def modify(uuid)
       Error.raise("User name can not be longer than 200 characters",100) if options[:name] != nil && options[:name].length > 200

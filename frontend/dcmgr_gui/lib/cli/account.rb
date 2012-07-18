@@ -17,11 +17,8 @@ module Cli
       if options[:name] != nil && options[:name].length > 255
         raise "Account name can not be longer than 255 characters."
       end
-      if options[:description] != nil && options[:description].length > 100
-        raise "Account description can not be longer than 100 chracters."
-      end
       
-      fields = {:name => options[:name],:description => options[:description], :enable => Account::ENABLED}
+      fields = {:name => options[:name],:description => options[:description]}
       fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
       puts super(Account,fields)
     end
@@ -114,8 +111,7 @@ __END
       if to_enable.enable?
         puts "Account #{uuid} is already enabled." if options[:verbose]
       else
-        to_enable.enable = Account::ENABLED
-        to_enable.updated_at = Time.now.utc.iso8601
+        to_enable.enabled = true
         to_enable.save
 
         puts "Account #{uuid} has been enabled." if options[:verbose]
@@ -131,8 +127,7 @@ __END
       if to_disable.disable?
         puts "Account #{id} is already disabled." if options[:verbose]
       else
-        to_disable.enable = Account::DISABLED
-        to_disable.updated_at = Time.now.utc.iso8601
+        to_disable.enabled = false
         to_disable.save
         
         puts "Account #{uuid} has been disabled." if options[:verbose]

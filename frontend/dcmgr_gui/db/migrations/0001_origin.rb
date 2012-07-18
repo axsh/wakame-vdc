@@ -6,8 +6,8 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       String :name, :null=>false, :size=>255
-      String :description, :size=>255
-      TrueClass :enable, :default=>true
+      String :description, :text=>true
+      TrueClass :enabled, :default=>true
       DateTime :deleted_at
       TrueClass :is_admin, :default=>false
       
@@ -50,6 +50,7 @@ Sequel.migration do
       String :time_zone, :null=>false, :size=>255
       Boolean :enabled, :null=>false, :default=>true
       DateTime :deleted_at
+      String :description, :text=>true
       
       index [:login_id], :unique=>true, :name=>:login_id
       index [:uuid], :unique=>true, :name=>:uuid
