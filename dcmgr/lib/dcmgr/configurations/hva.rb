@@ -37,6 +37,7 @@ module Dcmgr
           File.expand_path('_base', @config[:vm_data_dir])
         }
         param :enable_cache_checksum, :default=>true
+        param :max_cached_images, :default=>10
       end
       
       DSL do
