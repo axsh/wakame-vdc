@@ -10,7 +10,7 @@ module Cli
     PASSWD_TABLE='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('').freeze
     
     desc "add [options]", "Create a new user."
-    method_option :name, :type => :string, :required => true, :aliases => "-n", :desc => "The name for the new user." #Maximum size: 200
+    method_option :name, :type => :string, :required => true, :aliases => "-n", :desc => "The display name for the new user." #Maximum size: 200
     method_option :uuid, :type => :string, :aliases => "-u", :desc => "The UUID for the new user."
     method_option :login_id, :type => :string, :required=>true, :aliases => "-l", :desc => "The login_id for the new user." #Maximum size: 255
     method_option :password, :type => :string, :aliases => "-p", :desc => "The password for the new user." #Maximum size: 255
@@ -60,7 +60,7 @@ module Cli
       end
     end
 
-    desc "show [UUID] [options]", "Show one user or all users currently in the database"        
+    desc "show [UUID] [options]", "Show one user or all users currently in the database"
     method_option :with_deleted, :type => :boolean, :aliases => "-d", :desc => "Show deleted users."
     def show(uuid = nil)
       if uuid
@@ -118,10 +118,10 @@ __END
       end
     end
 
-    desc "modify UUID [options]", "Update an existing user."    
-    method_option :name, :type => :string, :aliases => "-n", :desc => "The new name for the user." #Maximum size: 200    
-    method_option :login_id, :type => :string, :aliases => "-l", :desc => "The new login_id for the user." #Maximum size: 255
-    method_option :password, :type => :string, :aliases => "-p", :desc => "The new password for the user." #Maximum size: 255
+    desc "modify UUID [options]", "Update an existing user."
+    method_option :name, :type => :string, :aliases => "-n", :desc => "The display name for the user." #Maximum size: 200
+    method_option :login_id, :type => :string, :aliases => "-l", :desc => "Login ID for the user." #Maximum size: 255
+    method_option :password, :type => :string, :aliases => "-p", :desc => "Password for the user." #Maximum size: 255
     method_option :locale, :type => :string, :desc => "The preffered display language for GUI."
     method_option :time_zone, :type => :string, :desc => "The display timezone for GUI."
     method_option :description, :type => :string, :desc => "Description field."
