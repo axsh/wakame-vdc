@@ -240,7 +240,7 @@ __END
       desc 'drop UUID TYPE', "Drop quota from the account."
       def drop(uuid, quota_type)
         account = Account[uuid] || UnknownUUIDError.raise(uuid)
-        account.account_quota_dataset.filter(:quota_type=>quota_type).delete
+        account.account_quota_dataset.filter(:quota_type=>quota_type).each {|aq| aq.destroy }
       end
 
       desc 'dropall UUID', "Drop all quota from the account."
