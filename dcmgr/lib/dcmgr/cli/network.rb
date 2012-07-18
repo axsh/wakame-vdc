@@ -111,7 +111,8 @@ class Network < Base
     if uuid
       nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
       puts ERB.new(<<__END, nil, '-').result(binding)
-Network UUID: <%= nw.canonical_uuid %>
+UUID: <%= nw.canonical_uuid %>
+Name: <%= nw.display_name %>
 Network Mode: <%= nw.network_mode %>
 Service Type: <%= nw.service_type %>
 IPv4:

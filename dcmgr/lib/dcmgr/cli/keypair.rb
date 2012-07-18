@@ -70,8 +70,8 @@ module Dcmgr::Cli
       if uuid
         keypair = M::SshKeyPair[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-Keypair UUID: <%= keypair.canonical_uuid %>
-Account id: <%= keypair.account_id %>
+UUID: <%= keypair.canonical_uuid %>
+Account ID: <%= keypair.account_id %>
 Finger print: <%= keypair.finger_print %>
 Service Type: <%= keypair.service_type %>
 Public Key:

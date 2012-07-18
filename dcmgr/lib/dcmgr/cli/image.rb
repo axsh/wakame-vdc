@@ -95,6 +95,7 @@ module Dcmgr::Cli
         img = M::Image[uuid] || UnknownUUIDError.raise(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
 UUID: <%= img.canonical_uuid %>
+Name: <%= img.display_name %>
 Account ID: <%= img.account_id %>
 Boot Type: <%= img.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>
 Arch: <%= img.arch %>

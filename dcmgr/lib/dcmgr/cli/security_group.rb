@@ -43,16 +43,17 @@ module Dcmgr::Cli
     desc "show [UUID]", "Show security group(s)"
     def show(uuid=nil)
       if uuid
-        group = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
+        sg = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-Group UUID: <%= group.canonical_uuid %>
-Account id: <%= group.account_id %>
-Service Type: <%= group.service_type %>
+UUID: <%= sg.canonical_uuid %>
+Name: <%= sg.display_name %>
+Account ID: <%= sg.account_id %>
+Service Type: <%= sg.service_type %>
 Rules:
-<%= group.rule %>
-<%- if group.description -%>
+<%= sg.rule %>
+<%- if sg.description -%>
 Description:
-  <%= group.description %>
+  <%= sg.description %>
 <%- end -%>
 __END
       else
