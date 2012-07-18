@@ -196,6 +196,73 @@ end
 
 class BaseNew < Sequel::Model
 
+  module LogicalDelete
+    class FilterClause < Sequel::ASTTransformer
+      include Sequel::SQL
+      
+      private
+      def v2(o)
+        if o.is_a?(ComplexExpression) && check_target_ast(o)
+          1
+        else
+          super
+        end
+      end
+      
+      def v(o)
+        if o.is_a?(ComplexExpression)
+          if check_target_ast(o)
+            return ComplexExpression.new(:NOOP, 1)
+          else
+            is_rejected = o.args.reject! { |o2|
+              check_target_ast(o2)
+            }
+            return super(o) if is_rejected.nil?
+          end
+          
+          return case o.op
+                 when *ComplexExpression::N_ARITY_OPERATORS
+                   if o.args.empty?
+                     ComplexExpression.new(:NOOP, 1)
+                   else
+                     super(o) #ComplexExpression.new(o.op, *v(o.args))
+                   end
+                 when *ComplexExpression::TWO_ARITY_OPERATORS
+                   super(o.args.first)
+                 when *ComplexExpression::ONE_ARITY_OPERATORS
+                   ComplexExpression.new(:NOOP, 1)
+                 end
+        else
+          super
+        end
+      end
+      
+      # find "deleted_at IS NULL" SQL clause.
+      def check_target_ast(o)
+        o.is_a?(Sequel::SQL::ComplexExpression) && o.op == :IS && o.args.first == :deleted_at && o.args.last == nil
+      end
+    end
+
+    def self.apply(model)
+      model.subset(:alives, {:deleted_at=>nil})
+      model.set_dataset(model.dataset.where(:deleted_at=>nil))
+
+      model.def_dataset_method(:with_deleted) do
+        self.opts[:where] = FilterClause.new.transform(self.opts[:where] || self.opts[:having])
+        self
+      end
+      
+      model.class_eval {
+        # override Sequel::Model#_delete not to delete rows but to set
+        # delete flags.
+        def _destroy_delete
+          self.deleted_at ||= Time.now
+          self.save
+        end
+      }
+    end
+  end
+  
   def self.Proxy(klass)
     colnames = klass.schema.columns.map {|i| i[:name] }
     colnames.delete_if(klass.primary_key) if klass.restrict_primary_key?
