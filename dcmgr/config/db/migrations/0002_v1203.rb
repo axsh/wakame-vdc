@@ -113,6 +113,7 @@ Sequel.migration do
     alter_table(:images) do
       add_column :file_format, "varchar(255)", :null=>false
       add_column :root_device, "varchar(255)"
+      add_column :is_cacheable, "tinyint(1)", :default=>false, :null=>false
     end
 
     rename_table(:physical_networks, :dc_networks)
@@ -341,6 +342,7 @@ Sequel.migration do
     alter_table(:images) do
       drop_column :file_format
       drop_column :root_device
+      drop_column :is_cacheable
     end
 
     alter_table(:vlan_leases) do
