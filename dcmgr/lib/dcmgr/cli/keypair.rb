@@ -14,7 +14,6 @@ module Dcmgr::Cli
     method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type for the key pair. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :required => true, :desc => "Display name for the key pair"
     def add
-      UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       private_key_path = File.expand_path(options[:private_key]) if options[:private_key]
       public_key_path = File.expand_path(options[:public_key])
       
@@ -58,7 +57,6 @@ module Dcmgr::Cli
     method_option :service_type, :type => :string, :desc => "Service type of the key pair. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name for the key pair"
     def modify(uuid)
-      UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
       super(M::SshKeyPair,uuid,options)
     end
     

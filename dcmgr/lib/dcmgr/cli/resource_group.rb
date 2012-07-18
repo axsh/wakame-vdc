@@ -15,7 +15,6 @@ module Dcmgr::Cli
     method_option :name, :type => :string, :desc => "The name for the new tag", :required => true
     method_option :attributes, :type => :string, :desc => "The attributes for the new tag"
     def add
-      UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       Error.raise("Invalid type: '#{options[:type]}'. Valid types are [#{TYPES.keys.join(", ")}].",100) unless TYPES.member? options[:type]
       
       fields = options.dup.tap {|h| h.delete(:type)}
@@ -30,7 +29,6 @@ module Dcmgr::Cli
     def modify(uuid)
       tag = M::Taggable.find(uuid)
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
-      UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
       
       super(tag.class,uuid,options)
     end
