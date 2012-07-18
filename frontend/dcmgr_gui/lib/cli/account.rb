@@ -27,34 +27,22 @@ module Cli
     end
     
     desc "show [UUID] [options]", "Show all accounts currently in the database"    
-    method_option :deleted, :type => :boolean, :default => false, :aliases => "-d", :desc => "Show deleted accounts."
+    method_option :with_deleted, :type => :boolean, :default => false, :aliases => "-d", :desc => "Show deleted accounts."
     def show(uuid = nil)
       if uuid
-        acc = Account[uuid] || UnknownUUIDError.raise(uuid)
+        ds = Account.by_uuid(uuid)
+        if options[:with_deleted]
+          ds = ds.with_deleted
+        end
+        acc = ds.first || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-Account UUID:
-<%- if acc.class == Account -%>
-  <%= acc.canonical_uuid %>
-<%- else -%>
-  <%= Account.uuid_prefix%>-<%= acc.uuid %>
-<%- end -%>
-Enabled:
-<%- if acc.enable? -%>
-  Yes
-<%- else -%>
-  No
-<%- end -%>
-<%- if acc.name -%>
-Name:
-  <%= acc.name %>
-<%- end -%>
-<%- if acc.description -%>
-Description:
-  <%= acc.description %>
-<%- end -%>
-<%- if acc.is_deleted -%>
-Deleted at:
-  <%= acc.deleted_at %>
+UUID: <%= acc.canonical_uuid %>
+Name: <%= acc.name %>
+Enabled: <%= acc.enabled %>
+Created: <%= acc.created_at %>
+Updated: <%= acc.updated_at %>
+<%- if acc.deleted_at -%>
+Deleted: <%= acc.deleted_at %>
 <%- end -%>
 <%- unless acc.users.empty? -%>
 Associated users:
@@ -62,19 +50,37 @@ Associated users:
   <%= row.canonical_uuid %>\t<%= row.name %>
 <%- } -%>
 <%- end -%>
+<%- if acc.description -%>
+<%- unless acc.account_quota.empty? -%>
+Quota:
+<%- acc.account_quota.each { |aq| -%>
+  <%= aq.quota_type %> <%= aq.quota_value %>
+<%- } -%>
+<%- end -%>
+Description:
+<%= acc.description %>
+<%- end -%>
 __END
       else
-        #This needs an "|| false" because options[:deleted] is usually nil which isn't the same as false
-        acc = Account.filter(:is_deleted => (options[:deleted] || false )).all
-        puts ERB.new(<<__END, nil, '-').result(binding)
-<%- acc.each { |row| -%>
-<%- if row.class == Account -%>
-<%= row.canonical_uuid %>\t<%= row.name %>
-<%- else -%>
-<%= Account.uuid_prefix%>-<%= row.uuid %>\t<%= row.name %>
-<%- end -%>
-<%- } -%>
-__END
+        ds = Account.dataset
+        if options[:with_deleted]
+          ds = ds.with_deleted
+        end
+        table = [['UUID', 'Name', 'Created', 'Enabled']]
+        if options[:with_deleted]
+          table[0] << 'Deleted'
+        end
+        ds.each {|u|
+          row = [u.canonical_uuid, u.name, u.created_at.to_s, u.enabled.to_s]
+          if options[:with_deleted]
+            row << (!u.deleted_at.nil?).to_s
+          end
+          
+          table << row
+        }
+        if table.size > 1
+          shell.print_table(table)
+        end
       end
     end
     
@@ -92,7 +98,7 @@ __END
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def del(uuid)
       to_do = Account[uuid]
-      Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_do == nil or to_do.is_deleted
+      Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_do == nil
 
       super(Account,uuid)
       
@@ -103,7 +109,7 @@ __END
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def enable(uuid)
       to_enable = Account[uuid]
-      Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_enable == nil or to_enable.is_deleted
+      Error.raise("Unknown frontend account UUID: #{uuid}", 100) if to_enable == nil
       
       if to_enable.enable?
         puts "Account #{uuid} is already enabled." if options[:verbose]
@@ -120,7 +126,7 @@ __END
     method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "Print feedback on what is happening."
     def disable(uuid)
       to_disable = Account[uuid]
-      UnknownUUIDError.raise(uuid) if to_disable == nil or to_disable.is_deleted
+      UnknownUUIDError.raise(uuid) if to_disable == nil
       
       if to_disable.disable?
         puts "Account #{id} is already disabled." if options[:verbose]

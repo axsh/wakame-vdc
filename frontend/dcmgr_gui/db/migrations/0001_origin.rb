@@ -9,10 +9,10 @@ Sequel.migration do
       String :description, :size=>255
       TrueClass :enable, :default=>true
       DateTime :deleted_at
-      TrueClass :is_deleted, :default=>false
       TrueClass :is_admin, :default=>false
       
       index [:uuid], :unique=>true, :name=>:uuid
+      index [:deleted_at]
     end
     
     create_table(:information) do
@@ -49,9 +49,11 @@ Sequel.migration do
       String :locale, :null=>false, :size=>255
       String :time_zone, :null=>false, :size=>255
       Boolean :enabled, :null=>false, :default=>true
+      DateTime :deleted_at
       
       index [:login_id], :unique=>true, :name=>:login_id
       index [:uuid], :unique=>true, :name=>:uuid
+      index [:deleted_at]
     end
     
     create_table(:users_accounts) do

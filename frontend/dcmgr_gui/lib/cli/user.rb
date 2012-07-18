@@ -61,39 +61,56 @@ module Cli
     end
 
     desc "show [UUID] [options]", "Show one user or all users currently in the database"        
+    method_option :with_deleted, :type => :boolean, :aliases => "-d", :desc => "Show deleted users."
     def show(uuid = nil)
       if uuid
-        user = User[uuid] || UnknownUUIDError.raise(uuid)
+        ds = User.by_uuid(uuid)
+        if options[:with_deleted]
+          ds = ds.with_deleted
+        end
+        user = ds.first || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
 User UUID: <%= user.canonical_uuid %>
 Name: <%= user.name %>
 Login ID: <%= user.login_id %>
 Locale: <%= user.locale %>
 Time Zone: <%= user.time_zone %>
-Enable: <%= user.enabled %>
-Created : <%= user.created_at %>
-Updated : <%= user.updated_at %>
+Enabled: <%= user.enabled %>
+Created: <%= user.created_at %>
+Updated: <%= user.updated_at %>
+<%- if user.deleted_at -%>
+Deleted: <%= user.deleted_at %>
+<%- end -%>
 <%- if user.primary_account_id -%>
 Primary Account: <%= user.primary_account_id %>
 <%- end -%>
 <%- unless user.accounts.empty? -%>
 Associated accounts:
 <%- user.accounts.each { |row| -%>
-<%- if row.class == Account -%>
   <%= row.canonical_uuid %>\t<%= row.name %>
-<%- else -%>
-  <%= Account.uuid_prefix%>-<%= row.uuid %>\t<%= row.name %>
-<%- end -%>
 <%- } -%>
 <%- end -%>
 __END
       else
-        user = User.all
-        puts ERB.new(<<__END, nil, '-').result(binding)
-<%- user.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.name %>
-<%- } -%>
-__END
+        ds = User.dataset
+        if options[:with_deleted]
+          ds = ds.with_deleted
+        end
+        table = [['UUID', 'Name', 'Login ID', 'Created', 'Enabled']]
+        if options[:with_deleted]
+          table[0] << 'Deleted'
+        end
+        ds.each {|u|
+          row = [u.canonical_uuid, u.name, u.login_id, u.created_at.to_s, u.enabled.to_s]
+          if options[:with_deleted]
+            row << (!u.deleted_at.nil?).to_s
+          end
+          
+          table << row
+        }
+        if table.size > 1
+          shell.print_table(table)
+        end
       end
     end
 
@@ -103,6 +120,7 @@ __END
     method_option :password, :type => :string, :aliases => "-p", :desc => "The new password for the user." #Maximum size: 255
     method_option :locale, :type => :string, :desc => "The preffered display language for GUI."
     method_option :time_zone, :type => :string, :desc => "The display timezone for GUI."
+    method_option :with_deleted, :type => :boolean, :aliases => "-d", :desc => "Modify deleted user."
     def modify(uuid)
       Error.raise("User name can not be longer than 200 characters",100) if options[:name] != nil && options[:name].length > 200
       Error.raise("User login_id can not be longer than 255 characters",100) if options[:login_id] != nil && options[:login_id].length > 255
@@ -110,8 +128,7 @@ __END
       Error.raise("User primary_account_id can not be longer than 255 characters",100) if options[:primary_account_id] != nil && options[:primary_account_id].length > 255
       
       fields = options.merge({})
-      fields[:password] = User.encrypt_password(options[:password])
-      fields[:primary_account_id] = Account.trim_uuid(options[:primary_account_id]) unless options[:primary_account_id].nil?
+      fields[:password] = User.encrypt_password(options[:password]) if options[:password]
       
       super(User,uuid,fields)
     end

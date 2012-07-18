@@ -7,6 +7,7 @@ require 'tzinfo'
 class User < BaseNew
   taggable 'u'
   with_timestamps
+  plugin LogicalDelete
 
   many_to_many :accounts,:join_table => :users_accounts
 
@@ -100,7 +101,7 @@ class User < BaseNew
   # ユーザアカウント関連付けダイアログ表示用（アカウント管理）（uuidソート）
   def self.get_list(account_uuid)
     # ユーザテーブル全件と対象ユーザに紐付いたユーザレコードを外部結合
-    h = @db["SELECT a.uuid,b.flg,a.id from users a LEFT OUTER JOIN (SELECT users.uuid,1 AS flg FROM accounts,users,users_accounts WHERE accounts.id = users_accounts.account_id AND users.id = users_accounts.user_id AND accounts.uuid = ? AND accounts.is_deleted = 0) b ON a.uuid = b.uuid ORDER BY uuid",account_uuid].all
+    h = @db["SELECT a.uuid,b.flg,a.id from users a LEFT OUTER JOIN (SELECT users.uuid,1 AS flg FROM accounts,users,users_accounts WHERE accounts.id = users_accounts.account_id AND users.id = users_accounts.user_id AND accounts.uuid = ? AND accounts.deleted_at IS NULL) b ON a.uuid = b.uuid ORDER BY uuid",account_uuid].all
   end
 
   # ユーザ作成
