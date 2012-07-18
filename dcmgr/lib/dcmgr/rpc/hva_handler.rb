@@ -538,14 +538,22 @@ module Dcmgr
           raise "snapshot has not be uploaded"
         end
         
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available}) do |req|
+          req.oneshot = true
+        end
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available}) do |req|
+          req.oneshot = true
+        end
         @hva_ctx.logger.info("uploaded new backup object: #{@inst_id} #{@backupobject_id} #{@image_id}")
         
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
+          req.oneshot = true
+        end
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
+          req.oneshot = true
+        end
         @hva_ctx.logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id} #{@image_id}")
       }
 
@@ -557,7 +565,9 @@ module Dcmgr
         select_hypervisor
 
         @hv.poweroff_instance(@hva_ctx)
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:halted})
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:halted}) do |req|
+          req.oneshot = true
+        end
         logger.info("PowerOff #{@inst_id}")
       }
 
@@ -570,7 +580,9 @@ module Dcmgr
 
         # reboot instance
         @hv.poweron_instance(@hva_ctx)
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:running})
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:running}) do |req|
+          req.oneshot = true
+        end
         logger.info("PowerOn #{@inst_id}")
       }
       
