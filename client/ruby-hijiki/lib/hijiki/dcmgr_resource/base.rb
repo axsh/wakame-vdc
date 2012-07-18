@@ -38,7 +38,7 @@ module Hijiki::DcmgrResource::Common
       end
 
       def preload_resource(resource_name, compatibility_module)
-        resource         = self.const_set(resource_name, Class.new(Hijiki::DcmgrResource::Base))
+        resource         = self.const_set(resource_name, Class.new(Hijiki::DcmgrResource::Common::Base))
         resource.prefix  = self.prefix
         resource.site    = self.site
 
@@ -47,7 +47,43 @@ module Hijiki::DcmgrResource::Common
         end
       end
 
+      def initialize_user_result(class_name, result_module)
+        if result_module.class == Array
+          new_module = Module.new do
+            def user_attributes
+              @@user_attributes
+            end
+          end
+
+          new_module.class_variable_set(:@@user_attributes, result_module)
+          result_module = new_module
+        end
+
+        if class_name.nil?
+          include(result_module)
+          self.preload_resource('Result', result_module)
+        else
+          self.preload_resource(class_name, result_module)
+          self.const_get('Result').preload_resource(class_name, result_module)
+        end
+      end
+
     end
+
+    def to_hash
+      self.attributes.to_hash
+    end
+
+    def to_user_hash
+      self.attributes_to_hash(self.user_attributes)
+    end
+
+    def attributes_to_hash(use_attributes)
+      result = {}
+      use_attributes.each { |key| result[key] = attributes[key] }
+      result
+    end
+
   end
 
   module ListMethods
