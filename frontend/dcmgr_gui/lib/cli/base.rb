@@ -12,7 +12,6 @@ module Cli
     def add(model,options)
       raise ArgumentError unless options.is_a? Hash
       #TODO: Make this check a little tighter by checking that the model is either from the wakame backend or frontend
-      #UnknownModelError.raise(model) unless model < Dcmgr::Models::BaseNew
       UnknownModelError.raise(model) unless model < Sequel::Model
       
       fields = options.dup
@@ -29,14 +28,12 @@ module Cli
     end
     
     def del(model,uuid)
-      #UnknownModelError.raise(model) unless model < Dcmgr::Models::BaseNew
       UnknownModelError.raise(model) unless model < Sequel::Model
       to_delete = model[uuid] || UnknownUUIDError.raise(uuid)
       to_delete.destroy
     end
     
     def modify(model,uuid,fields)
-      #UnknownModelError.raise(model) unless model < Dcmgr::Models::BaseNew
       UnknownModelError.raise(model) unless model < Sequel::Model
       raise ArgumentError unless fields.is_a? Hash
       to_modify = model[uuid] || UnknownUUIDError.raise(uuid)

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'sequel'
-require 'yaml'
 require 'tzinfo'
 
 #TODO: Print only the first line of an exception?

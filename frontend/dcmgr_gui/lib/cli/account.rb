@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'sequel'
-require 'yaml'
-
 #TODO: Make sure :desc is filled in for every option
 module Cli
   class AccountCli < Base
