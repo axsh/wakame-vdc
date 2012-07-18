@@ -7,21 +7,10 @@ class TestVolume <  Test::Unit::TestCase
     end
   end
 
-  include TestBaseMethods
-
   def test_volume
     [:v1203].each { |api_ver|
       assert_nothing_raised() {
         object = api_class(api_ver).find(:first).results.first
-
-        if api_ver == :v1112
-          assert_raise(NoMethodError) { object.account_id }
-          assert_equal(String, object.instance_id.class)
-          assert(object.instance_id =~ /^i-[0-9]*/)
-        else
-          assert_not_nil(object.account_id)
-          assert_equal(Fixnum, object.instance_id.class)
-        end
       }
     }
   end
