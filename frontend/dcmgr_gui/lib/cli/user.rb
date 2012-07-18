@@ -130,7 +130,6 @@ __END
       Error.raise("User name can not be longer than 200 characters",100) if options[:name] != nil && options[:name].length > 200
       Error.raise("User login_id can not be longer than 255 characters",100) if options[:login_id] != nil && options[:login_id].length > 255
       Error.raise("User password can not be longer than 255 characters",100) if options[:password] != nil && options[:password].length > 255
-      Error.raise("User primary_account_id can not be longer than 255 characters",100) if options[:primary_account_id] != nil && options[:primary_account_id].length > 255
       
       fields = options.merge({})
       fields[:password] = User.encrypt_password(options[:password]) if options[:password]
