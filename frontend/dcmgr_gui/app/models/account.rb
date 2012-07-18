@@ -23,11 +23,6 @@ class Account < BaseNew
     self.enable
   end
 
-  def to_hash_document
-    h = self.values.dup
-    h[:id] = h[:uuid] = self.canonical_uuid
-    h
-  end
 
   # Each AccountQuota is unique set of account_id and quota_type
   # column.
