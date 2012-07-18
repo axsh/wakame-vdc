@@ -31,10 +31,10 @@ elif [ "$1" = "ovs-1.2.2" ]; then
     mv openvswitch-1.2.2 openvswitch
     cd openvswitch
 else
-    echo "Compiling Open vSwitch 1.4.0."
-    curl http://openvswitch.org/releases/openvswitch-1.4.0.tar.gz -o openvswitch-1.4.0.tar.gz
-    tar xzf openvswitch-1.4.0.tar.gz
-    mv openvswitch-1.4.0 openvswitch
+    echo "Compiling Open vSwitch 1.6.1."
+    curl http://openvswitch.org/releases/openvswitch-1.6.1.tar.gz -o openvswitch-1.6.1.tar.gz
+    tar xzf openvswitch-1.6.1.tar.gz
+    mv openvswitch-1.6.1 openvswitch
     cd openvswitch
 fi
 
