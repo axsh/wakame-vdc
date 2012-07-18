@@ -26,11 +26,6 @@ class User < BaseNew
     super
   end
 
-  def before_save
-    set(:last_login_at => Time.now.utc)
-    super
-  end
- 
   # Removes all relations to accounts before deleting the record
   def before_destroy
     relations = self.accounts
