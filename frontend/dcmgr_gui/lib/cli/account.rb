@@ -140,18 +140,18 @@ __END
     def associate(uuid)      
       account = Account[uuid] || UnknownUUIDError.raise(uuid)
       
-      options[:users].each { |u|        
-        if User[u].nil?
+      options[:users].each { |u|
+        user = User[u]
+        if user.nil?
           puts "Unknown user UUID: #{u}" if options[:verbose]
-        elsif !account.users.index(User[u]).nil?
+        elsif !account.users_dataset.filter(:users_accounts__user_id=>user.id).empty?
           puts "Account #{uuid} is already associated with user #{u}." if options[:verbose]
         else
-          user = User[u]
           account.add_user(user)
           if user.primary_account_id.nil?
             user.primary_account_id = account.uuid
             user.save
-          end          
+          end
           
           puts "Account #{uuid} successfully associated with user #{u}." if options[:verbose]
         end
@@ -168,7 +168,7 @@ __END
         user = User[u]
         if user.nil?
           puts "Unknown user UUID: #{u}" if options[:verbose]
-        elsif account.users.index(User[u]).nil?
+        elsif account.users_dataset.filter(:users_accounts__user_id=>user.id).empty?
           puts "Account #{uuid} is not associated with user #{u}." if options[:verbose]
         else
           account.remove_user(user)

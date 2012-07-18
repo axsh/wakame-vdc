@@ -43,6 +43,13 @@ class User < BaseNew
   def primary_account
     Account[self.primary_account_id]
   end
+
+  # Avoid multiple entry registration for same account.
+  def _add_account(account)
+    if self.accounts_dataset.filter(:account_id=>account.id).empty?
+      super
+    end
+  end
   
   # ページ指定一覧の取得
   def self.list(params)

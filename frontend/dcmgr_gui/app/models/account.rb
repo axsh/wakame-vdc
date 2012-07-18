@@ -25,24 +25,19 @@ class Account < BaseNew
     self.enable
   end
 
-
-  # Each AccountQuota is unique set of account_id and quota_type
-  # column.
-  # It allows to use "add_account_quota()" association method and
-  # rejects to add multiple rows with same quota_type.
+  # Ensure to set unique quota type for each account. Skip when the
+  # quota type which already exists is added.
   def _add_account_quota(account_quota)
-    account_quota.account_id=pk
-    if account_quota.new?
-      aq = self.account_quota_dataset.filter(:quota_type=>account_quota.quota_type).first
-      if aq.nil?
-        account_quota
-      else
-        aq.set_except(account_quota.values, :id)
-        aq
-      end
-    else
-      account_quota
-    end.save
+    if self.account_quota_dataset.filter(:quota_type=>account_quota.quota_type).empty?
+      super
+    end
+  end
+
+  # Avoid multiple entry registration for same user..
+  def _add_user(user)
+    if self.users_dataset.filter(:user_id=>user.id).empty?
+      super
+    end
   end
 
   # Delete relations before setting an account to deleted

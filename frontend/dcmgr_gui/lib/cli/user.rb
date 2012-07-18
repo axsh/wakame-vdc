@@ -157,9 +157,7 @@ __END
         acc = Account[options[:account_id]] || UnknownUUIDError.raise(options[:account_id])
         user.primary_account_id = acc.uuid
         user.save
-        user.add_account(acc) unless user.accounts.member?(acc)
-      else
-        puts Account.uuid_prefix + "-" + user.primary_account_id
+        user.add_account(acc)
       end
     end
     
@@ -169,12 +167,13 @@ __END
     def associate(uuid)      
       user = User[uuid] || UnknownUUIDError.raise(uuid)
       options[:account_ids].each { |a|
-        if Account[a].nil?
+        acc = Account[a]
+        if acc.nil?
           puts "Unknown Account UUID: #{a}" if options[:verbose]
-        elsif !user.accounts.index(Account[a]).nil?
+        elsif !user.accounts_dataset.filter(:users_accounts__account_id=>acc.id).empty?
           puts "User #{uuid} is already associated with account #{a}." if options[:verbose]
         else
-          user.add_account(Account[a])
+          user.add_account(acc)
           if user.primary_account_id.nil?
             user.primary_account_id = a
             user.save
@@ -190,16 +189,17 @@ __END
     def dissociate(uuid)
       user = User[uuid] || UnknownUUIDError.raise(uuid)
       options[:account_ids].each { |a|
-        if Account[a].nil?
+        acc = Account[a]
+        if acc.nil?
           puts "Unknown Account UUID: #{a}" if options[:verbose]
-        elsif user.accounts.index(Account[a]).nil?
+        elsif user.accounts_dataset.filter(:users_accounts__account_id=>acc.id).empty?
           puts "User #{uuid} is not associated with account #{a}." if options[:verbose]
         else
-          user.remove_account(Account[a])
+          user.remove_account(acc)
           
           puts "User #{uuid} successfully dissociated from account #{a}." if options[:verbose]
           
-          if Account[a].uuid == user.primary_account_id
+          if acc.canonical_uuid == user.primary_account_id
             user.primary_account_id = nil
             user.save
             puts "This was user #{uuid}'s primary account. Has been set to Null now." if options[:verbose]
