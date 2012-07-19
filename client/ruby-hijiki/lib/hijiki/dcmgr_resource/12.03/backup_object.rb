@@ -1,6 +1,20 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
   class BackupObject < Base
+    initialize_user_result nil, [:uuid,
+                                 :state,
+                                 :size,
+                                 :allocation_size,
+                                 :backup_storage_id,
+                                 :object_key,
+                                 :checksum,
+                                 :description,
+                                 :display_name,
+                                 :service_type,
+                                 :created_at,
+                                 :updated_at,
+                                 :deleted_at,
+                                ]
 
     module ClassMethods
       include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
@@ -22,6 +36,5 @@ module Hijiki::DcmgrResource::V1203
       end
     end
     extend ClassMethods
-    
   end
 end

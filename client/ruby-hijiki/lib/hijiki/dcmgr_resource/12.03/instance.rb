@@ -1,6 +1,22 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
   class Instance < Base
+    initialize_user_result nil, [:id,
+                                 :host_node,
+                                 :cpu_cores,
+                                 :memory_size,
+                                 :arch,
+                                 :image_id,
+                                 :created_at,
+                                 :state,
+                                 :status,
+                                 :ssh_key_pair,
+                                 :hostname,
+                                 :ha_enabled,
+                                 :hypervisor,
+                                 :display_name,
+                                ]
+
     module ClassMethods
       include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
 

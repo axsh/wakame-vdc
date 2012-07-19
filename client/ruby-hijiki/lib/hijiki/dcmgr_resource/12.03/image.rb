@@ -1,6 +1,24 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
   class Image < Base
+    initialize_user_result nil, [:uuid,
+                                 :account_id,
+                                 :boot_dev_type,
+                                 :arch,
+                                 :description,
+                                 :is_public,
+                                 :state,
+                                 :features,
+                                 :file_format,
+                                 :root_device,
+                                 :is_cacheable,
+                                 :service_type,
+                                 :display_name,
+                                 :backup_object_id,
+                                 :created_at,
+                                 :updated_at,
+                                 :deleted_at,
+                                ]
 
     module ClassMethods
       include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
@@ -14,6 +32,5 @@ module Hijiki::DcmgrResource::V1203
       end
     end
     extend ClassMethods
-    
   end
 end
