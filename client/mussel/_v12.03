@@ -69,7 +69,7 @@ host_node|storage_node|image|network|security_group|ssh_key_pair)
   ;;
 
 *)
-  echo "$0 [instance] [method]" >&2
+  echo "$0 [resource] [method]" >&2
   ;;
 
 esac
