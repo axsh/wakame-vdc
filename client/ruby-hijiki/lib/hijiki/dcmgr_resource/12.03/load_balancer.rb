@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
   class LoadBalancer < Base
-
     module ClassMethods
+      include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
+
       def create(params)
         lb = self.new
         lb.instance_spec_id = params[:instance_spec_id]
@@ -20,7 +21,7 @@ module Hijiki::DcmgrResource::V1203
       end
 
       def list(params = {})
-        data = self.find(:all, :params => params.merge({:state=>'alive_with_deleted'}))
+        super(params.merge({:state=>'alive_with_deleted'}))
       end
 
       def show(uuid)
