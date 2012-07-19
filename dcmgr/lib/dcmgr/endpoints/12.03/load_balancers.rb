@@ -59,9 +59,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
     lb_port = params[:port].to_i
 
-    raise "E::UnknownImage" unless lb_conf.config.include? :image_id
-    raise "E::UnknownHostNode" unless lb_conf.config.include? :host_node_id
-    raise "E::UnknownSshKeyPair" unless lb_conf.config.include? :ssh_key_id
     raise "E::InvalidLoadBalancerPort" unless lb_port >= 1 && lb_port <= 65535
 
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
