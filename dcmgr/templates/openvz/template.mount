@@ -8,7 +8,7 @@ DST=<%= hn_metadata_path %>
 if [ ! -e ${DST} ]; then
     mkdir -p ${DST}
 fi
-mount -n -t simfs ${SRC} ${DST} -o ${SRC}
+mount -n -t simfs METADATA ${DST} -o ${SRC},noexec,nosuid
 
 NETIFLIST=$(printf %s "$NETIF" |tr ';' '\n')
 
