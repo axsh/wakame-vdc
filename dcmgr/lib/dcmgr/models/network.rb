@@ -28,6 +28,8 @@ module Dcmgr::Models
                      :ipv4=>IPAddress::IPv4.new(ipaddr).to_i).destroy
       end
     end
+
+    one_to_many :network_vif
     one_to_many :network_vif_ip_lease, :class=>NetworkVifIpLease, :extend=>NetworkVifIpLeaseMethods
 
     many_to_one :nat_network, :key => :nat_network_id, :class => self
