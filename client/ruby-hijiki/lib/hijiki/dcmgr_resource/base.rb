@@ -47,24 +47,23 @@ module Hijiki::DcmgrResource::Common
         end
       end
 
-      def initialize_user_result(class_name, result_module)
-        if result_module.class == Array
-          new_module = Module.new do
-            def user_attributes
-              @@user_attributes
-            end
-          end
+      def initialize_user_result(class_name, arg)
+        if arg.class == Array
+          result_module = Module.new
+          user_attr = arg
+          arg = result_module
 
-          new_module.class_variable_set(:@@user_attributes, result_module)
-          result_module = new_module
+          result_module.send(:define_method, :user_attributes) do
+            user_attr
+          end
         end
 
         if class_name.nil?
-          include(result_module)
-          self.preload_resource('Result', result_module)
+          include(arg)
+          self.preload_resource('Result', arg)
         else
-          self.preload_resource(class_name, result_module)
-          self.const_get('Result').preload_resource(class_name, result_module)
+          self.preload_resource(class_name, arg)
+          self.const_get('Result').preload_resource(class_name, arg)
         end
       end
 
