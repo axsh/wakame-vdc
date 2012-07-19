@@ -59,7 +59,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
     lb_port = params[:port].to_i
 
-    raise "E::InvalidLoadBalancerPort" unless lb_port >= 1 && lb_port <= 65535
+    raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
 
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
 
