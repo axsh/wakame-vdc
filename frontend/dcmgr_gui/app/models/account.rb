@@ -18,11 +18,11 @@ class Account < BaseNew
   one_to_many :oauth_consumers
   
   def disable?
-    not self.enable
+    not self.enabled
   end
 
   def enable?
-    self.enable
+    self.enabled
   end
 
   # Ensure to set unique quota type for each account. Skip when the
