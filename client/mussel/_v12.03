@@ -3,6 +3,15 @@
 # 12.03
 #
 
+MUSSEL_RESOURCES="
+ host_node
+ image
+ instance
+ network
+ security_group
+ ssh_key_pair
+ storage_node
+"
 
 # instance
 
