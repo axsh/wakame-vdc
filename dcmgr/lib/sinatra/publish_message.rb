@@ -7,6 +7,9 @@ require 'eventmachine'
 
 module Sinatra
   module PublishMessage
+
+    MESSAGE_BOUNDARY="\n \n".freeze
+
     module HelperMethods
 
       def publish(message, params)
@@ -38,9 +41,7 @@ module Sinatra
       # > bar
       #
       def message(name, contents)
-       #[Base64.encode64(name),Base64.encode64(contents)].join(',')
-       boundary = "\n \n"
-       [Base64.encode64(name).chomp,Base64.encode64(contents).chomp].join(boundary)
+       [Base64.encode64(name).chomp,Base64.encode64(contents).chomp].join(MESSAGE_BOUNDARY)
       end
     end
 
