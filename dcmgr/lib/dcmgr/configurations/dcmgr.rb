@@ -104,7 +104,6 @@ module Dcmgr
         
         def validate(errors)
           errors << "Missing name parameter" unless @config[:name]
-          STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
         end
 
         DSL do
@@ -131,6 +130,10 @@ module Dcmgr
       end
 
       class StdServiceType < ServiceType
+        def validate(errors)
+          super
+          STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
+        end
       end
 
       class LbServiceType < ServiceType
