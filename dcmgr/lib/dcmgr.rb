@@ -172,6 +172,7 @@ module Dcmgr
     autoload :IfsStorage, 'dcmgr/drivers/ifs_storage'
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Webdav, 'dcmgr/drivers/webdav'
+    autoload :Stunnel, 'dcmgr/drivers/stunnel'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'
