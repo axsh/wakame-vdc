@@ -61,3 +61,9 @@ dc_network('null2') {
   interface 'eth0'
   bridge 'br0'
 }
+
+dc_network('management') {
+  bridge_type 'linux'
+  interface 'eth1'
+  bridge 'br1'
+}
