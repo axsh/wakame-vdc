@@ -56,8 +56,8 @@ module Hijiki::DcmgrResource::V1203
         self.put(instance_id,params).body
       end
 
-      def backup(instance_id)
-        result = self.find(instance_id).put(:backup)
+      def backup(instance_id, params)
+        result = self.find(instance_id).put(:backup,params.merge({:is_public =>false, :is_cacheable =>false}))
         result.body
       end
 

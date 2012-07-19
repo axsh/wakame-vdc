@@ -100,7 +100,9 @@ class InstancesController < ApplicationController
     instance_ids = params[:ids]
     res = []
     instance_ids.each do |instance_id|
-      res << Hijiki::DcmgrResource::Instance.backup(instance_id)
+      instance = Hijiki::DcmgrResource::Instance.show(instance_id)
+      params = {:display_name => instance["display_name"]}
+      res << Hijiki::DcmgrResource::Instance.backup(instance_id,params)
     end
     render :json => res
   end
