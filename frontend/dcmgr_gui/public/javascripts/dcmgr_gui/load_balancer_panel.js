@@ -55,9 +55,9 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     var load_balancer_port = $(this).find('#load_balancer_port').val();
     var instance_protocol = $(this).find('#instance_protocol').val();
     var instance_port = $(this).find('#instance_port').val();
-    var public_key = $(this).find('#public_key').val();
-    var private_key = $(this).find('#private_key').val();
-    var certificate_chain = $(this).find('#certificate_chain').val();
+    var public_key = encodeURIComponent($(this).find('#public_key').val());
+    var private_key = encodeURIComponent($(this).find('#private_key').val());
+    var certificate_chain = encodeURIComponent($(this).find('#certificate_chain').val());
     var cookie_name = $(this).find('#cookie_name').val();
     var data = "display_name="+display_name
                +"&load_balancer_protocol="+load_balancer_protocol
