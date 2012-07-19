@@ -6,6 +6,7 @@ require 'sinatra/base'
 require 'sinatra/dcmgr_api_setup'
 require 'sinatra/quota_evaluation'
 require 'sinatra/internal_request'
+require 'sinatra/publish_message'
 
 require 'dcmgr/endpoints/errors'
 require 'dcmgr/endpoints/12.03/quota_definitions'
@@ -16,6 +17,7 @@ module Dcmgr::Endpoints::V1203
     register Sinatra::DcmgrAPISetup
     register Sinatra::InternalRequest
     register Sinatra::QuotaEvaluation
+    register Sinatra::PublishMessage
 
     # To access constants in this namespace
     include Dcmgr::Endpoints
