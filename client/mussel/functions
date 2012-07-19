@@ -3,23 +3,31 @@
 #
 #
 
-args=
-for arg in $*; do
-  case $arg in
-    --*=*)
-      key=${arg%%=*}; key=$(echo ${key##--} | tr - _)
-      value=${arg##--*=}
-      eval "${key}=\"${value}\""
-      ;;
-    *)
-      args="${args} ${arg}"
-      ;;
-  esac
-done
+MUSSEL_PROMPT='$'
+MUSSEL_ARGS=
 
+function extract_args() {
+  MUSSEL_ARGS=
+
+  for arg in $*; do
+    case $arg in
+      --*=*)
+        key=${arg%%=*}; key=$(echo ${key##--} | tr - _)
+        value=${arg##--*=}
+        eval "${key}=\"${value}\""
+        ;;
+      *)
+        MUSSEL_ARGS="${MUSSEL_ARGS} ${arg}"
+        ;;
+    esac
+  done
+  # trim
+  MUSSEL_ARGS=${MUSSEL_ARGS%% }
+  MUSSEL_ARGS=${MUSSEL_ARGS## }
+}
 
 function shlog() {
-  echo "\$ $*"
+  echo "${MUSSEL_PROMPT} $*"
   eval $*
 }
 
