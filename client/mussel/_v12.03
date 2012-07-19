@@ -70,6 +70,7 @@ host_node|storage_node|image|network|security_group|ssh_key_pair)
 
 *)
   echo "$0 [resource] [method]" >&2
+  return 1
   ;;
 
 esac
