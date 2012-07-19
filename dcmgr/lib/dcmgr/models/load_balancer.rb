@@ -57,9 +57,25 @@ module Dcmgr::Models
          :auto_delete => true,
          :internal => false,
          :no_declare => true
-       }   
+       }
     end
-    
+
+    def accept_port
+      self.port
+    end
+
+    def connect_port
+      if self.is_secure?
+        self.port == 4433 ? 443 : 4433
+      else
+        self.port
+      end
+    end
+
+    def is_secure?
+      ['ssl', 'https'].include? self.protocol
+    end
+
     def add_target(network_vif_id)
       lbt = LoadBalancerTarget.new
       lbt.network_vif_id = network_vif_id

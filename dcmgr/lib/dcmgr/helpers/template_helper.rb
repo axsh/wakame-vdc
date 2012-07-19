@@ -14,39 +14,23 @@ module Dcmgr
         end
       end
 
-      def render_remote_template(template_file_path, params, &block)
+      def bind_template(template_file_path)
         begin
           temp = Tempfile::new(template_file_path, "/var/tmp/")
           output_file_path = temp.path
-
-          render(template(template_file_path), output_file_path) do
+          render(template(template_file_path), temp.path) do
             binding
           end
-
-          config = File.read(output_file_path)
-
-          EM.schedule do
-            conn = Dcmgr.messaging.amqp_client
-            channel = AMQP::Channel.new(conn)
-            ex = channel.topic(params[:topic_name], params[:queue_options])
-            begin
-              channel = AMQP::Channel.new(conn)
-              queue = AMQP::Queue.new(channel, params[:queue_name], :exclusive => false, :auto_delete => true)
-              queue.bind(ex)
-              queue.publish(config)
-            rescue Exception => e
-              logger.error(e.message)
-            end
-          end
-
-          logger.info("Update #{template_file_path}")
+          r = ''
+          f = File.open(output_file_path)
+          f.each {|line| r += line }
         rescue ::Exception => e
           logger.error(e)
-          raise 'Faild to bind HAProxy'
         ensure
+          f.close
           temp.close(true)
-          logger.info("Delete config file: #{output_file_path}")
         end
+        r
       end
 
       def self.included(klass)
