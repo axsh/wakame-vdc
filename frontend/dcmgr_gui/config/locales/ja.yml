@@ -386,7 +386,7 @@ ja:
   machine_images:
     header: "マシンイメージ"
     button:
-      launch_instance: "起動"
+      launch_instance: "インスタンスを起動"
       edit_machine_image: "編集"
     list:
       wmi_id: "WMI ID"
