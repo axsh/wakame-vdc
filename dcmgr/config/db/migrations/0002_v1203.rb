@@ -154,9 +154,9 @@ Sequel.migration do
       column :uuid, "varchar(255)", :null=>false
       column :account_id, "varchar(255)", :null=>false
       column :instance_id, "int(11)", :null=>false
-      column :protocol, "varchar(4)", :null=>false
+      column :protocol, "varchar(255)", :null=>false
       column :port, "int(11)", :null=>false
-      column :instance_protocol, "varchar(4)", :null=>false
+      column :instance_protocol, "varchar(255)", :null=>false
       column :instance_port, "int(11)", :null=>false
       column :balance_name, "varchar(255)", :null=>false
       column :cookie_name, "varchar(255)", :null=>true
