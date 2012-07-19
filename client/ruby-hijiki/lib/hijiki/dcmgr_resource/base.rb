@@ -47,7 +47,7 @@ module Hijiki::DcmgrResource::Common
         end
       end
 
-      def initialize_user_result(class_name, arg)
+      def initialize_user_result(class_name, arg, hash_attrs = nil, list_attrs = nil)
         if arg.class == Array
           result_module = Module.new
           user_attr = arg
@@ -55,6 +55,12 @@ module Hijiki::DcmgrResource::Common
 
           result_module.send(:define_method, :user_attributes) do
             user_attr
+          end
+          result_module.send(:define_method, :user_hash_attributes) do
+            hash_attrs
+          end
+          result_module.send(:define_method, :user_list_attributes) do
+            list_attrs
           end
         end
 
@@ -74,12 +80,15 @@ module Hijiki::DcmgrResource::Common
     end
 
     def to_user_hash
-      self.attributes_to_hash(self.user_attributes)
+      result = self.attributes_to_hash(self.user_attributes)
+      self.user_hash_attributes.each { |key| result[key] = attributes[key].to_user_hash } if self.user_hash_attributes
+      self.user_list_attributes.each { |key| result[key] = attributes[key].collect { |i| i.to_user_hash } } if self.user_list_attributes
+      result
     end
 
-    def attributes_to_hash(use_attributes)
+    def attributes_to_hash(value_attributes)
       result = {}
-      use_attributes.each { |key| result[key] = attributes[key] }
+      value_attributes.each { |key| result[key] = attributes[key] }
       result
     end
 
