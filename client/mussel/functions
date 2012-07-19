@@ -27,8 +27,25 @@ function extract_args() {
 }
 
 function shlog() {
-  echo "${MUSSEL_PROMPT} $*"
-  eval $*
+  loglevel=$(echo ${loglevel:-info} | tr A-Z a-z)
+  dry_run=$(echo ${dry_run:-} | tr A-Z a-z)
+
+  case "${loglevel}" in
+  debug)
+    echo "${MUSSEL_PROMPT} $*"
+    ;;
+  *)
+    ;;
+  esac
+
+  case "${dry_run}" in
+  y|yes|on)
+    :
+   ;;
+  *)
+    eval $*
+    ;;
+  esac
 }
 
 function call_api() {
