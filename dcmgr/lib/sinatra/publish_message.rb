@@ -3,6 +3,7 @@
 require 'sinatra/base'
 require 'amqp'
 require 'base64'
+require 'eventmachine'
 
 module Sinatra
   module PublishMessage
