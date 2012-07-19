@@ -170,6 +170,17 @@ module Dcmgr
         }
       end
 
+      def check_instance(i)
+        kvm_pid_path = File.expand_path("#{i}/kvm.pid", Dcmgr.conf.vm_data_dir)
+        unless File.exists?(kvm_pid_path)
+          raise "Unable to find the kvm.pid file: #{i}"
+        end
+        pid = File.read(kvm_pid_path).to_i
+        unless File.exists?(File.expand_path(pid.to_s, '/proc'))
+          raise "Unable to find the pid of kvm process: #{pid}"
+        end
+      end
+
       private
       # Establish telnet connection to KVM monitor console
       def connect_monitor(hc, &blk)

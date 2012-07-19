@@ -265,6 +265,13 @@ module Dcmgr
       def poweron_instance(hc)
         sh("vzctl start %s", [hc.inst_id])
       end
+      
+      def check_instance(i)
+        container_status = `vzctl status #{i}`.chomp.split(" ")[4]
+        if container_status != "running"
+          raise "Unable to find the openvz container: #{i}"
+        end
+      end
 
 
     end

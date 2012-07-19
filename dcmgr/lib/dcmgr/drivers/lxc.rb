@@ -111,6 +111,13 @@ module Dcmgr
         }
       end
 
+      def check_instance(i)
+        container_status = `lxc-info -n #{i}`.chomp.split(" ")[2]
+        if container_status != "RUNNING"
+          raise "Unable to find the lxc container: #{i}"
+        end
+      end
+
       private
       def create_config(ctx)
         # create config file i-xxxxxxxx.log

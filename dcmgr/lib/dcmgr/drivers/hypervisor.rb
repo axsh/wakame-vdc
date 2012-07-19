@@ -115,6 +115,9 @@ module Dcmgr
       def detach_volume_from_guest(hc)
       end
 
+      def check_instance(uuid)
+      end
+
       def self.select_hypervisor(hypervisor)
         case hypervisor
         when "kvm"
