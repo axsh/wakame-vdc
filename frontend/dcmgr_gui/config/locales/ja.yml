@@ -6,7 +6,7 @@ ja:
     welcome_message: "ようこそ"
     settings: "設定"
     login_name_suffix: "さん"
-    sign_out: "サインアウト"
+    logout: "ログアウト"
   button:
     refresh: "更新"
     terminate: "破棄"
@@ -277,7 +277,7 @@ ja:
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
   login:
-    sign_in: "ログイン"
+    login: "ログイン"
     user: "ユーザー"
     password: "パスワード"
   information:

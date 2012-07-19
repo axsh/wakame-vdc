@@ -6,7 +6,7 @@ en:
     welcome_message: "Welcome,"
     settings: "Settings"
     login_name_suffix: ""
-    sign_out: "Sign Out"
+    logout: "Log Out"
   button:
     refresh: "Refresh"
     terminate: "Terminate"
@@ -277,7 +277,7 @@ en:
       instance_id: "Instance ID"
       display_name: "Instance Name"
   login:
-    sign_in: "Sign In"
+    login: "Log In"
     user: "User"
     password: "Password"
   information:
