@@ -307,14 +307,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
  private
-  def haproxy_mode(protocol)
-    case protocol
-      when 'tcp', 'ssl'
-        'tcp'
-      when 'http', 'https'
-        'http'
-    end
-  end
 
   def update_ssl_proxy_config(values)
     s = Dcmgr::Drivers::Stunnel.new
