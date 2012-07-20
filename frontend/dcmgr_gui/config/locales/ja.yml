@@ -394,7 +394,7 @@ ja:
       edit_machine_image: "編集"
     list:
       wmi_id: "WMI ID"
-      description: "詳細"
+      description: "説明"
       source: "保存場所"
       owner: "オーナー"
       state: "状態"
@@ -403,7 +403,7 @@ ja:
     details:
       header: "詳細"
       wmi_id: "WMI ID"
-      description: "詳細"
+      description: "説明"
       source: "保存場所"
       owner: "オーナー"
       arch: "アーキテクチャ"
