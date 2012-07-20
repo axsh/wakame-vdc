@@ -222,6 +222,8 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
+
         # select hypervisor :kvm, :lxc, :esxi
         select_hypervisor
 
@@ -229,10 +231,6 @@ module Dcmgr
 
         lstore = Drivers::LocalStore.select_local_store(@hv.class.to_s.downcase.split('::').last)
         lstore.deploy_image(@inst,@hva_ctx)
-
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
-
-        sleep 1
 
         #setup_metadata_drive
         @hv.setup_metadata_drive(@hva_ctx,get_metadata_items)
