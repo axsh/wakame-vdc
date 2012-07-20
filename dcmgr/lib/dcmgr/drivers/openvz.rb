@@ -78,10 +78,8 @@ module Dcmgr
           # create mount directory
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
           unless image[:root_device].nil?
-            # mount loopback device
-            lodev = sh("losetup -f")[:stdout].chomp
-            sh("losetup %s %s", [lodev, hc.os_devpath])
-            new_device_file = sh("kpartx -a -s -v %s", [lodev])
+            # creating loop devices
+            new_device_file = sh("kpartx -a -s -v %s", [hc.os_devpath])
             #
             # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
             # add map loop2p2 (253:3): 0 249856 linear /dev/loop2 974848
@@ -209,25 +207,15 @@ module Dcmgr
         case hc.inst[:image][:file_format]
         when "raw"
           # umount vm image directory
-          raise "private directory does not exists #{private_dir}" unless File.directory?(private_dir)
+          raise "private directory does not exist #{private_dir}" unless File.directory?(private_dir)
           sh("umount -d %s", [private_dir])
           logger.debug("unmounted private directory #{private_dir}")
           if hc.inst[:image][:root_device]
-            # find loopback device
-            img_file_path = "#{hc.inst_data_dir}/#{inst_id}"
-            raise "image file does not exists #{img_file_path}" unless File.exists?(img_file_path)
-            fs = File::Stat.new(img_file_path)
-            logger.debug("image file inode: #{fs.ino}")
-            lodev = sh("losetup -a |grep %s |awk '{print $1}'", [fs.ino])[:stdout].chomp.split(":")[0]
-            #
-            # /dev/loop0: [0801]:151429 (/path/to/dir/i-xxxx*)
-            #
-            
             # delete device maps
-            sh("kpartx -d %s", [lodev])
+            img_file_path = "#{hc.inst_data_dir}/#{inst_id}"
+            sh("kpartx -d -s -v %s", [img_file_path])
             # wait udev queue
             sh("udevadm settle")
-            sh("losetup -d %s", [lodev])
           end
         end
         sh("umount -d %s/metadata", [hc.inst_data_dir])
