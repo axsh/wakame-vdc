@@ -41,7 +41,7 @@
 	    <th><%= t("machine_images.list.action") %></th>
 	  </tr>
 	  {{each(index,item) rows}}
-	  <tr>
+	  <tr id="row-${item.uuid}">
 	    {{if item.uuid }}
 	    <td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
 	    {{else}}
@@ -52,7 +52,7 @@
 	      ${item.description}
 	    </td>
 	    <td class="vtip" title="owner">${item.account_id}</td>
-	    <td class="vtip center" title="state">${item.state}</td>
+	    <td class="state vtip center" title="state">${item.state}</td>
 	    {{if item.uuid}}
 	    <td class="vtip center" title="action">
 	      <a href="javascript:void(0);" class="edit_machine_image" id="edit_${item.uuid}"><%= t('machine_images.button.edit_machine_image') %></a>
