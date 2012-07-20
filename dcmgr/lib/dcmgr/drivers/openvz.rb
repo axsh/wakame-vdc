@@ -53,12 +53,10 @@ module Dcmgr
         
         # generate openvz config
         hypervisor = inst[:host_node][:hypervisor]
-        template_file_path = "template.conf"
         output_file_path = "#{config.ve_config_dir}/ve-openvz.conf-sample"
         
-        render_template(template_file_path, output_file_path) do
-          binding
-        end
+        render_template('template.conf', output_file_path, binding)
+
         logger.debug("created config #{output_file_path}")
         
         # create openvz container
@@ -167,11 +165,7 @@ module Dcmgr
         logger.debug("mount #{metadata_img_path} to #{ve_metadata_path}")
         
         # generate openvz mount config
-        template_mount_file_path = "template.mount"
-        
-        render_template(template_mount_file_path, mount_file_path) do
-          binding
-        end
+        render_template('template.mount', mount_file_path, binding)
         sh("chmod +x %s", [mount_file_path])
         logger.debug("created config #{mount_file_path}")
         
