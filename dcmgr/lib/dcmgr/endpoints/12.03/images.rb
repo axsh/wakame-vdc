@@ -45,7 +45,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     end
 
     if params[:is_public]
-      ds = ds.or(:is_public=>1)
+      ds = ds.and(:is_public=>1)
     end
 
     collection_respond_with(ds) do |paging_ds|
