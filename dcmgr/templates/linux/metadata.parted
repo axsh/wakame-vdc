@@ -1,0 +1,4 @@
+mklabel msdos
+mkpart primary fat32 1 10m
+quit
+

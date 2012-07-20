@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
+require 'fileutils'
+
 module Dcmgr
   module Drivers
     # Abstract class for Linux based hypervisors.
     class LinuxHypervisor < Hypervisor
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::CliHelper
+      include Dcmgr::Helpers::TemplateHelper
 
+      template_base_dir 'linux'
+      
       def check_interface(hc)
         hc.inst[:instance_nics].each { |vnic|
           next if vnic[:network].nil?
@@ -59,11 +64,15 @@ module Dcmgr
           logger.info("Setting up metadata drive image for :#{hc.inst_id}")
           # truncate creates sparsed file.
           sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'; sync;")
-          sh("mkfs.vfat -n METADATA '#{hc.metadata_img_path}'")
-          # TODO: need to lock loop device not to use same device from
-          # another thread/process.
-          lodev=`/sbin/losetup -f`.chomp
-          sh("/sbin/losetup #{lodev} '#{hc.metadata_img_path}'")
+          sh("parted %s < %s", [hc.metadata_img_path, LinuxHypervisor.template_real_path('metadata.parted')])
+          res = sh("kpartx -av %s", [hc.metadata_img_path])
+          if res[:stdout] =~ /^add map (\w+) /
+            lodev="/dev/mapper/#{$1}"
+          else
+            raise "Unexpected result from kpartx: #{res[:stdout]}"
+          end
+          sh("udevadm settle")
+          sh("mkfs.vfat -n METADATA %s", [lodev])
           Dir.mkdir("#{hc.inst_data_dir}/tmp") unless File.exists?("#{hc.inst_data_dir}/tmp")
           sh("/bin/mount -t vfat #{lodev} '#{hc.inst_data_dir}/tmp'")
           
@@ -92,8 +101,9 @@ module Dcmgr
           }
         ensure
           # ignore any errors from cleanup work.
-          sh("/bin/umount -f '#{hc.inst_data_dir}/tmp'") rescue logger.warn($!.message)
-          sh("/sbin/losetup -d #{lodev}") rescue logger.warn($!.message)
+          sh("/bin/umount -l %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
+          sh("kpartx -d %s", [hc.metadata_img_path]) rescue logger.warn($!.message)
+          sh("udevadm settle")
         end
       end
     end
