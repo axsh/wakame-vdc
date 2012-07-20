@@ -71,11 +71,11 @@ module Dcmgr
           logger.info("Setting up metadata drive image for :#{hc.inst_id}")
           # truncate creates sparsed file.
           sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'; sync;")
+          sh("mkfs.vfat -n METADATA '#{hc.metadata_img_path}'")
           # TODO: need to lock loop device not to use same device from
           # another thread/process.
           lodev=`/sbin/losetup -f`.chomp
           sh("/sbin/losetup #{lodev} '#{hc.metadata_img_path}'")
-          sh("mkfs.vfat -n METADATA '#{hc.metadata_img_path}'")
           Dir.mkdir("#{hc.inst_data_dir}/tmp") unless File.exists?("#{hc.inst_data_dir}/tmp")
           sh("/bin/mount -t vfat #{lodev} '#{hc.inst_data_dir}/tmp'")
           
