@@ -155,14 +155,22 @@ module Dcmgr
         # VMGUARPAGES="65536"
         # 
         
-        # setup metadata drive
+        # mount metadata drive
         hn_metadata_path = "#{config.ve_root}/#{ctid}/metadata"
         ve_metadata_path = "#{inst_data_dir}/metadata"
-        metadata_img_path = hc.metadata_img_path
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
-        raise "metadata image does not exist #{metadata_img_path}" unless File.exists?(metadata_img_path)
-        sh("mount -o loop -o ro %s %s", [metadata_img_path, ve_metadata_path])
-        logger.debug("mount #{metadata_img_path} to #{ve_metadata_path}")
+        raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)
+        res = sh("kpartx -av %s", [hc.metadata_img_path])
+        if res[:stdout] =~ /^add map (\w+) /
+          lodev="/dev/mapper/#{$1}"
+        else
+          raise "Unexpected result from kpartx: #{res[:stdout]}"
+        end
+        sh("udevadm settle")
+        # save the loop device name for the metadata drive.
+        File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
+        sh("mount -o loop -o ro %s %s", [lodev, ve_metadata_path])
+        logger.debug("mount #{hc.metadata_img_path} to #{ve_metadata_path}")
         
         # generate openvz mount config
         render_template('template.mount', mount_file_path, binding)
@@ -212,8 +220,12 @@ module Dcmgr
             sh("udevadm settle")
           end
         end
-        sh("umount -d %s/metadata", [hc.inst_data_dir])
-        logger.debug("unmounted metadata directory #{hc.inst_data_dir}/metadata")
+
+        # umount metadata drive
+        sh("umount -l %s/metadata", [hc.inst_data_dir])
+        sh("kpartx -d %s", [hc.metadata_img_path])
+        sh("udevadm settle")
+        logger.info("unmounted metadata directory #{hc.inst_data_dir}/metadata")
         
         # delete container folder
         sh("vzctl destroy %s",[inst_id])
