@@ -90,6 +90,22 @@
     </tr>
     <tr>
 	    <td class="padcell"></td>
+	    <td class="title"><%= t("load_balancers.details.load_balancer_port") %>:</td>
+	    <td class="load_balancer_size">${item.port}</td>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t("load_balancers.details.load_balancer_protocol") %>:</td>
+	    <td>${item.protocol}</td>
+    </tr>
+    <tr>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t("load_balancers.details.instance_port") %>:</td>
+	    <td class="load_balancer_size">${item.instance_port}</td>
+	    <td class="padcell"></td>
+	    <td class="title"><%= t("load_balancers.details.instance_protocol") %>:</td>
+	    <td>${item.instance_protocol}</td>
+    </tr>
+    <tr>
+	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.ip") %></td>
 	    <td>${item.vif[0].ipv4.address}</td>
 	    <td class="padcell"></td>

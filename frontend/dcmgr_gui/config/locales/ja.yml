@@ -383,6 +383,10 @@ ja:
       status: "状態"
       created_at: "作成日"
       display_name: "ロードバランサ名"
+      load_balancer_protocol: "ロードバランサプロトコル"
+      load_balancer_port: "ロードバランサポート"
+      instance_protocol: "インスタンスプロトコル"
+      instance_port: "インスタンスポート"
   machine_images:
     header: "マシンイメージ"
     button:

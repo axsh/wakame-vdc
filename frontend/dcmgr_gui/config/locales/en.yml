@@ -384,6 +384,10 @@ en:
       status: "Status"
       created_at: "Creaed At"
       display_name: "Load Balancer Name"
+      load_balancer_protocol: "Load Balancer Protocol"
+      load_balancer_port: "Load Balancer Port"
+      instance_protocol: "Instance Protocol"
+      instance_port: "Instance Port"
   machine_images:
     header: "Machine Images"
     button:
