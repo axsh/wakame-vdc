@@ -162,7 +162,7 @@ module Dcmgr
         ve_metadata_path = "#{inst_data_dir}/metadata"
         metadata_img_path = hc.metadata_img_path
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
-        raise "metadata image does not exists #{metadata_img_path}" unless File.exists?(metadata_img_path)
+        raise "metadata image does not exist #{metadata_img_path}" unless File.exists?(metadata_img_path)
         sh("mount -o loop -o ro %s %s", [metadata_img_path, ve_metadata_path])
         logger.debug("mount #{metadata_img_path} to #{ve_metadata_path}")
         
@@ -228,8 +228,8 @@ module Dcmgr
         container_config = "#{config.ve_config_dir}/#{ctid}"
         config_file_path = "#{container_config}.conf.destroyed"
         mount_file_path = "#{container_config}.mount.destroyed"
-        raise "config file does not exists #{config_file_path}" unless File.exist?(config_file_path)
-        raise "mount file does not exists #{mount_file_path}" unless File.exist?(mount_file_path)
+        raise "config file does not exist #{config_file_path}" unless File.exist?(config_file_path)
+        raise "mount file does not exist #{mount_file_path}" unless File.exist?(mount_file_path)
 
         File.unlink(config_file_path, mount_file_path)
         logger.debug("delete config file #{config_file_path}")
