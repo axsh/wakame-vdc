@@ -27,7 +27,7 @@ for iface in ${NETIFLIST}; do
     done
 
     if [ -z "${bridge}" ]; then
-	echo "Error: bridge interfae does not exists" 1>&2
+	echo "Error: bridge interfae does not exist" 1>&2
 	exit 1
     fi
 
