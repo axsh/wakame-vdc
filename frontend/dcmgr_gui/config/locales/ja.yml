@@ -506,13 +506,13 @@ ja:
       edit_security_group: "編集"
     list:
       security_group_id: "セキュリティグループID"
-      descriptions: "詳細"
+      descriptions: "説明"
       action: "アクション"
       display_name: "セキュリティグループ名"
     details:
       header: "詳細"
       security_group_id: "セキュリティグループID"
-      description: "詳細"
+      description: "説明"
       created_at: "作成日"
       updated_at: "更新日"
       display_name: "セキュリティグループ名"
