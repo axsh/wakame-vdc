@@ -9,14 +9,36 @@ module Dcmgr
 
       @template_base_dir = "haproxy"
 
-      def initialize
+      def self.mode(protocol)
+        case protocol
+          when 'http','https'
+            'http'
+          when 'tcp', 'ssl'
+            'tcp'
+        end
+      end
+
+      def initialize(mode)
+        raise "Unknown mode." unless ['http', 'tcp'].include? mode
+
         @listen = {}
         @listen[:servers] = {}
         set_balance('leastconn')
         set_appsession({})
         set_name('balancer')
         set_bind('*', 80)
+        @mode = mode
+
         @listen
+      end
+
+      def template_file_path
+        case @mode
+          when 'http'
+            'haproxy_http.cfg'
+          when 'tcp'
+            'haproxy_tcp.cfg'
+        end
       end
 
       def add_server(address, port, options = {})
@@ -47,15 +69,6 @@ module Dcmgr
 
       def set_cookie_name(name)
         @listen[:appsession][:cookie] = name
-      end
-
-      def set_mode(mode)
-
-        if !['tcp', 'http', 'health'].include? mode
-          raise 'Undefined mode.'
-        end
-
-        @listen[:mode] = mode
       end
 
       def set_balance(name, param = nil)

@@ -115,6 +115,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
       :port => lb.connect_port,
+      :protocol => lb.protocol,
       :balance_name => lb.balance_name,
       :cookie_name => lb.cookie_name,
       :ipset => []
@@ -159,6 +160,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
       :port => lb.connect_port,
+      :protocol => lb.protocol,
       :balance_name => lb.balance_name,
       :cookie_name => lb.cookie_name,
       :ipset => []
@@ -241,6 +243,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :balance_name => lb.balance_name,
       :cookie_name => lb.cookie_name,
       :port => lb.connect_port,
+      :protocol => lb.protocol,
       :ipset => []
     }
 
@@ -330,8 +333,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   def update_load_balancer_config(values)
-    proxy = Dcmgr::Drivers::Haproxy.new
-    proxy.set_mode(haproxy_mode(values[:instance_protocol]))
+    proxy = Dcmgr::Drivers::Haproxy.new(Dcmgr::Drivers::Haproxy.mode(values[:protocol]))
     proxy.set_balance(values[:balance_name])
     proxy.set_cookie_name(values[:cookie_name]) unless values[:cookie_name].empty?
     proxy.set_bind('*', values[:port])
@@ -342,7 +344,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       end
     end
 
-    haproxy_config = proxy.bind_template('haproxy.cfg')
+    haproxy_config = proxy.bind_template(proxy.template_file_path)
     publish(haproxy_config, {
       :name => 'haproxy',
       :topic_name => values[:topic_name],
