@@ -152,6 +152,7 @@ module Dcmgr
     autoload :S3Storage, 'dcmgr/drivers/s3_storage'
     autoload :IIJGIOStorage, 'dcmgr/drivers/iijgio_storage'
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
+    autoload :LinuxHypervisor, 'dcmgr/drivers/linux_hypervisor'
     autoload :Kvm , 'dcmgr/drivers/kvm'
     autoload :Lxc , 'dcmgr/drivers/lxc'
     autoload :ESXi, 'dcmgr/drivers/esxi'

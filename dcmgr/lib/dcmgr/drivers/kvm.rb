@@ -4,7 +4,7 @@ require 'net/telnet'
 
 module Dcmgr
   module Drivers
-    class Kvm < Hypervisor
+    class Kvm < LinuxHypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper

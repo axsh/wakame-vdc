@@ -4,7 +4,7 @@ require 'erb'
 
 module Dcmgr
   module Drivers
-    class Lxc < Hypervisor
+    class Lxc < LinuxHypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 

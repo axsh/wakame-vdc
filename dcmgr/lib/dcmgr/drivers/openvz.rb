@@ -4,7 +4,7 @@ require File.dirname(__FILE__) + '/openvz_config.rb'
 
 module Dcmgr
   module Drivers
-    class Openvz < Hypervisor
+    class Openvz < LinuxHypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
