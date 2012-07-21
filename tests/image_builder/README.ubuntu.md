@@ -1,8 +1,31 @@
 # Machine Images
 
+## Preparing vmimages
+
+    $ s3cmd sync s3://dlc.wakame.axsh.jp/demo/vmimage/ubuntu-lucid-32.raw.gz ./.
+    $ s3cmd sync s3://dlc.wakame.axsh.jp/demo/vmimage/ubuntu-lucid-64.raw.gz ./.
+    $ gunzip ubuntu-lucid-32.raw.gz
+    $ gunzip ubuntu-lucid-64.raw.gz
+
 ## Building new vmimages
 
     $ sudo ./build.sh
+
+## Compressing raw files
+
+    $ for i in ./ubuntu-lucid-*.raw; do echo $i; time sudo bash -c "gzip -c $i > $i.gz"; done
+
+## Uploading vmimages
+
+    $ s3cmd ls s3://dlc.wakame.axsh.jp/demo/vmimage/
+    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/ --dry-run
+    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/
+    $ s3cmd ls s3://dlc.wakame.axsh.jp/demo/vmimage/
+
+
+# Building vmimages
+
+Basically no need to build new vmimages in order to keep UUID.
 
 ## Updating test image-lucidX.meta files
 
@@ -17,17 +40,6 @@
     del devmap : loop0p2
     del devmap : loop0p1
     loop deleted : /dev/loop0
-
-## Compressing raw files
-
-    $ for i in ./ubuntu-lucid-*.raw; do echo $i; time sudo bash -c "gzip -c $i > $i.gz"; done
-
-## Uploading vmimages
-
-    $ s3cmd ls s3://dlc.wakame.axsh.jp/demo/vmimage/
-    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/ --dry-run
-    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/
-    $ s3cmd ls s3://dlc.wakame.axsh.jp/demo/vmimage/
 
 ## Git Operation
 
