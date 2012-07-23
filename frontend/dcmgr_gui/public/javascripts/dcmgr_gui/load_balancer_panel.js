@@ -362,6 +362,12 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     }
   });
 
+  c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){
+    c_list.clearCheckedList();
+    $('#detail').html('');
+    bt_refresh.element.trigger('dcmgrGUI.refresh');
+  });
+
   var selectmenu = $('#load_balancer_action').selectmenu({
     width: 150,
     menuWidth: 150,
