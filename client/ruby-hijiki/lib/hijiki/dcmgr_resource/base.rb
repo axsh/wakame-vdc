@@ -38,7 +38,7 @@ module Hijiki::DcmgrResource::Common
       end
 
       def preload_resource(resource_name, compatibility_module)
-        resource         = self.const_set(resource_name, Class.new(Hijiki::DcmgrResource::Base))
+        resource         = self.const_set(resource_name, Class.new(Hijiki::DcmgrResource::Common::Base))
         resource.prefix  = self.prefix
         resource.site    = self.site
 
@@ -47,7 +47,51 @@ module Hijiki::DcmgrResource::Common
         end
       end
 
+      def initialize_user_result(class_name, arg, hash_attrs = nil, list_attrs = nil)
+        if arg.class == Array
+          result_module = Module.new
+          user_attr = arg
+          arg = result_module
+
+          result_module.send(:define_method, :user_attributes) do
+            user_attr
+          end
+          result_module.send(:define_method, :user_hash_attributes) do
+            hash_attrs
+          end
+          result_module.send(:define_method, :user_list_attributes) do
+            list_attrs
+          end
+        end
+
+        if class_name.nil?
+          include(arg)
+          self.preload_resource('Result', arg)
+        else
+          self.preload_resource(class_name, arg)
+          self.const_get('Result').preload_resource(class_name, arg)
+        end
+      end
+
     end
+
+    def to_hash
+      self.attributes.to_hash
+    end
+
+    def to_user_hash
+      result = self.attributes_to_hash(self.user_attributes)
+      self.user_hash_attributes.each { |key| result[key] = attributes[key].to_user_hash } if self.user_hash_attributes
+      self.user_list_attributes.each { |key| result[key] = attributes[key].collect { |i| i.to_user_hash } } if self.user_list_attributes
+      result
+    end
+
+    def attributes_to_hash(value_attributes)
+      result = {}
+      value_attributes.each { |key| result[key] = attributes[key] }
+      result
+    end
+
   end
 
   module ListMethods

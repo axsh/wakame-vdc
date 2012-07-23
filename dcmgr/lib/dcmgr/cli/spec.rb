@@ -15,7 +15,6 @@ module Dcmgr::Cli
     method_option :memory_size, :type => :numeric, :default => 1024, :desc => "The memory size for the new instance"
     method_option :quota_weight, :type => :numeric, :default => 1.0, :desc => "The cost weight factor for the new instance"
     def add
-      UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
       UnsupportedHypervisorError.raise(options[:hypervisor]) unless M::HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
       uuid = super(M::InstanceSpec,options)
@@ -34,7 +33,6 @@ module Dcmgr::Cli
     method_option :memory_size, :type => :numeric, :desc => "The memory size for the new instance"
     method_option :quota_weight, :type => :numeric, :desc => "The cost weight factor for the new instance"
     def modify(uuid)
-      UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
       UnsupportedArchError.raise(options[:arch]) unless options[:arch].nil? || M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
       UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || M::HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
       super(M::InstanceSpec,uuid,options)

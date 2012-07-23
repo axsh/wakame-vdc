@@ -3,7 +3,7 @@
 require 'test/unit'
 
 module TestBaseMethods
-  def test_basic_1112
+  def test_basic
     [:v1203].each { |api_ver|
       object = api_class(api_ver).find(:first,:params => {:start => 0,:limit => 1})
 

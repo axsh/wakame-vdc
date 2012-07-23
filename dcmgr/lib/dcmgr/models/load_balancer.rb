@@ -30,7 +30,7 @@ module Dcmgr::Models
 
     def validate
       validates_includes ['http','https','tcp','ssl'], :protocol
-      validates_includes ['http','https','tcp','ssl'], :instance_protocol
+      validates_includes ['http','tcp'], :instance_protocol
       validates_includes 1..65535, :port
       validates_includes 1..65535, :instance_port
     end
@@ -57,9 +57,25 @@ module Dcmgr::Models
          :auto_delete => true,
          :internal => false,
          :no_declare => true
-       }   
+       }
     end
-    
+
+    def accept_port
+      self.port
+    end
+
+    def connect_port
+      if self.is_secure?
+        self.port == 4433 ? 443 : 4433
+      else
+        self.port
+      end
+    end
+
+    def is_secure?
+      ['ssl', 'https'].include? self.protocol
+    end
+
     def add_target(network_vif_id)
       lbt = LoadBalancerTarget.new
       lbt.network_vif_id = network_vif_id
@@ -79,7 +95,15 @@ module Dcmgr::Models
     def delete
       self.deleted_at ||= Time.now
       self.save_changes
-    end      
+    end
+
+    def network_vifs(device_index=nil)
+      if device_index
+        self.instance.network_vif.select {|vif| vif if vif.device_index == device_index}[0]
+      else
+        self.instance.network_vif
+      end
+    end
 
   end
 end

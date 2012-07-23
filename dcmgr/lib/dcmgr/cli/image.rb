@@ -20,8 +20,8 @@ module Dcmgr::Cli
       method_option :state, :type => :string, :default => "available", :desc => "The state for the new machine image"
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
+      method_option :is_cacheable, :type => :boolean, :default => false, :desc =>"A flag that determines whether the new machine image is cacheable or not"
       def local(backup_object_id)
-        UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) unless M::BackupObject[backup_object_id]
         
@@ -44,7 +44,6 @@ module Dcmgr::Cli
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       def volume(backup_object_id)
-        UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) if M::BackupObject[backup_object_id].nil?
         
@@ -76,9 +75,9 @@ module Dcmgr::Cli
     method_option :service_type, :type => :string, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name of the machine image"
     method_option :backup_object_id, :type => :string, :desc => "Backup object for the machine image"
+    method_option :is_cacheable, :type => :boolean, :desc =>"A flag that determines whether the new machine image is cacheable or not"
     def modify(uuid)
       UnknownUUIDError.raise(uuid) if M::Image[uuid].nil?
-      UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
       UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
 
       fields = options.dup
@@ -98,6 +97,7 @@ module Dcmgr::Cli
         img = M::Image[uuid] || UnknownUUIDError.raise(uuid)
         print ERB.new(<<__END, nil, '-').result(binding)
 UUID: <%= img.canonical_uuid %>
+Name: <%= img.display_name %>
 Account ID: <%= img.account_id %>
 Boot Type: <%= img.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>
 Arch: <%= img.arch %>
@@ -110,6 +110,7 @@ Features:
 Description:
   <%= img.description %>
 <%- end -%>
+Is Cacheable: <%= img.is_cacheable %>
 __END
       else
         cond = {}

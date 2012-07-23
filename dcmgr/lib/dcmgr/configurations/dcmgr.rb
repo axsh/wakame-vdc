@@ -104,7 +104,6 @@ module Dcmgr
         
         def validate(errors)
           errors << "Missing name parameter" unless @config[:name]
-          STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
         end
 
         DSL do
@@ -131,6 +130,10 @@ module Dcmgr
       end
 
       class StdServiceType < ServiceType
+        def validate(errors)
+          super
+          STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
+        end
       end
 
       class LbServiceType < ServiceType
@@ -141,7 +144,23 @@ module Dcmgr
         param :amqp_server_uri
         param :instances_network
         param :management_network
-      end 
+
+        def validate(errors)
+          super
+          [:image_id,
+           :host_node_id,
+           :ssh_key_id,
+           :instances_network,
+           :management_network,
+           :host_node_scheduler,
+           :storage_node_scheduler,
+           :network_scheduler,
+           :amqp_server_uri
+          ].each do |name|
+            errors << "#{name} is undefined." unless @config[name]
+          end
+        end
+      end
 
       DSL do
         #

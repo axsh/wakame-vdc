@@ -152,6 +152,7 @@ module Dcmgr
     autoload :S3Storage, 'dcmgr/drivers/s3_storage'
     autoload :IIJGIOStorage, 'dcmgr/drivers/iijgio_storage'
     autoload :Hypervisor, 'dcmgr/drivers/hypervisor'
+    autoload :LinuxHypervisor, 'dcmgr/drivers/linux_hypervisor'
     autoload :Kvm , 'dcmgr/drivers/kvm'
     autoload :Lxc , 'dcmgr/drivers/lxc'
     autoload :ESXi, 'dcmgr/drivers/esxi'
@@ -172,6 +173,7 @@ module Dcmgr
     autoload :IfsStorage, 'dcmgr/drivers/ifs_storage'
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Webdav, 'dcmgr/drivers/webdav'
+    autoload :Stunnel, 'dcmgr/drivers/stunnel'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'
@@ -200,6 +202,7 @@ module Dcmgr
       autoload :VifTemplate, 'dcmgr/scheduler/network/vif_template'
       autoload :VifParamTemplate, 'dcmgr/scheduler/network/vif_param_template'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
+      autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
     end
 
     NAMESPACES=[HostNode, StorageNode, Network]

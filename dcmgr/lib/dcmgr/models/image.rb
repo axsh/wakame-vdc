@@ -100,6 +100,8 @@ module Dcmgr::Models
     
     def entry_clone(&blk)
       self.class.entry_new(self.account, self.arch, self.boot_dev_type, self.file_format) do |i|
+        i.display_name = self.display_name
+        i.description = "#{self.description} (copy of #{self.canonical_uuid})"
         i.features = self.features
         i.root_device = self.root_device
         i.service_type = self.service_type

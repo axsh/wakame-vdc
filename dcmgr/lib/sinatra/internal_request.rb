@@ -2,12 +2,31 @@
 
 require 'sinatra/base'
 require 'json'
+require 'rack/test'
 
 module Sinatra
   module InternalRequest
+    
     module HelperMethods
-
-      include Sinatra::JSON
+      # request_forward.get('/')
+      # request_forward.post('/instances', {:xxxx=>1})
+      # request_forward.post('/instances', {}, {:input=>'{"cpu_cores":2}', 'CONTENT_TYPE'=>'application/json'})
+      #
+      # # send DELETE with additional heder and get the response.
+      # request_forward do
+      #   header('X-VDC-Account-UUID', 'a-xxxxxxx')
+      #   delete('/instances/i-xxxxxx')
+      # end.last_response
+      def request_forward(&blk)
+        mock = Rack::Test::Session.new(Rack::MockSession.new(self.dup))
+        mock.instance_eval {
+          def block_eval(&blk)
+            blk.arity == 1 ? blk.call(self) : instance_exec(&blk)
+          end
+        }
+        mock.block_eval(&blk) if blk
+        mock
+      end
 
       def internal_request(url, request_params, options={})
 
@@ -15,7 +34,6 @@ module Sinatra
           ::Rack::MockRequest.env_for(url,
           :params => request_params)
 
-        _req.env['PATH_INFO'] = '/instances'
         _req.env['SERVER_NAME'] = env['SERVER_NAME']
         _req.env['SERVER_PORT'] = env['SERVER_PORT']
         _req.env['CONTENT_TYPE'] = 'application/json'

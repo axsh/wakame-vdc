@@ -4,7 +4,7 @@ require 'erb'
 
 module Dcmgr
   module Drivers
-    class Lxc < Hypervisor
+    class Lxc < LinuxHypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 
@@ -109,6 +109,13 @@ module Dcmgr
         File.open(config_path, 'w') { |f|
           f.write config_body
         }
+      end
+
+      def check_instance(i)
+        container_status = `lxc-info -n #{i}`.chomp.split(" ")[2]
+        if container_status != "RUNNING"
+          raise "Unable to find the lxc container: #{i}"
+        end
       end
 
       private

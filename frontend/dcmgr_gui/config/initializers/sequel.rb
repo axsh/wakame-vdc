@@ -20,6 +20,10 @@ db = Sequel.connect(database_uri, :after_connect=>proc { |conn|
                       end
                     })
 
+if ENV['DEBUG_SQL']
+  require 'logger'
+  db.loggers << Logger.new(STDERR)
+end
 case db.adapter_scheme
 when :mysql, :mysql2
   Sequel::MySQL.default_charset = 'utf8'

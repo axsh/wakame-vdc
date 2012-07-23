@@ -54,6 +54,22 @@ module TxMode
   end
 end
 
+module ExitAtError
+  def loop_eval(str)
+    begin
+      # Ensure Thor to raise exception.
+      ENV['THOR_DEBUG']='1'
+      super
+    rescue ::Exception => e
+      STDERR.puts "ERROR: #{e.message}"
+      if $options[:errexit]
+        $exitcode=1
+        throw(:ripl_exit)
+      end
+    end
+  end
+end
+
 module VdcManageShell
 
   def loop_eval(str)
@@ -105,17 +121,20 @@ end
 require 'optparse'
 
 TX_MODES=['each', 'none', 'bulk'].freeze
-options = {:tx_mode=>TX_MODES.first}
+$options = {:tx_mode=>TX_MODES.first, :errexit=>false}
 
 argv = ARGV.dup
 OptionParser.new { |o|
   o.banner += " [TASK [options]]"
   o.on('--tx TYPE', '--tx-mode=TYPE', "Set transaction mode (default: #{TX_MODES.first}): #{TX_MODES.join(', ')}") { |v|
     if TX_MODES.member?(v)
-      options[:tx_mode]=v.to_sym
+      $options[:tx_mode]=v.to_sym
     else
       abort("Unknown tx-mode value: #{v}")
     end
+  }
+  o.on('-e', "Exit interactive loop at error (default: #{$options[:errexit]})") {
+    $options[:errexit]=true
   }
   o.on_tail('-h', '--help', 'Show this message') do
     puts o.help
@@ -125,6 +144,8 @@ OptionParser.new { |o|
 }.order!(argv)
 
 if !argv.empty?
+  # Ensure to raise exception from Thor v0.15.x
+  ENV['THOR_DEBUG']='1'
   # CLI mode
   begin
     Dcmgr::Models::BaseNew.db.transaction do
@@ -146,6 +167,7 @@ else
   require 'bond'
   require 'shellwords'
   
+  $exitcode = 0
   # Auto completion
   Bond.start
   
@@ -168,11 +190,12 @@ else
   }
   
   Ripl::Shell.include VdcManageShell
-  if options[:tx_mode].to_sym == :each
+  if $options[:tx_mode].to_sym == :each
     Ripl::Shell.include TxMode::Each
   else
     Ripl::Shell.include TxMode::Bulk
   end
+  Ripl::Shell.include ExitAtError
   Ripl::Shell.include MultiLine
   Ripl::History.module_eval {
     # disable write history file. I could't find not to include Ripl::History.
@@ -184,4 +207,5 @@ else
                      :irbrc  => nil,
                      :readline=>true,
                      ).loop
+  ::Kernel.exit($exitcode)
 end

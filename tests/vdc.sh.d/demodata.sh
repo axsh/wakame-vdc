@@ -44,7 +44,7 @@ cd ${VDC_ROOT}/dcmgr/
   [ -n "${range_end}"   ] || range_end=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMax:" { print $2 }'`
 }
 
-cat <<CMDSET | grep -v '^#' | ./bin/vdc-manage
+cat <<CMDSET | grep -v '^#' | ./bin/vdc-manage -e
 # Physical network definitions
 network dc add public
 network dc add-network-mode public securitygroup
@@ -74,15 +74,16 @@ network add \
  --metadata-port ${metadata_port} \
  --service-type std \
  --description "demo" \
- --display-name "demo1"
+ --display-name "demo1" \
+ --ip-assignment "asc"
 network add \
- --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo2'"
+ --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo2'" --ip-assignment "asc"
 network add \
- --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo3'"
+ --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo3'" --ip-assignment "asc"
 network add \
- --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo4'"
+ --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo4'" --ip-assignment "asc"
 network add \
- --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo5'"
+ --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo5'" --ip-assignment "asc"
 network add \
  --uuid nw-demo6 \
  --network-mode l2overlay \
@@ -92,7 +93,8 @@ network add \
  --domain vnet6.local \
  --metric 10 \
  --service-type std \
- --display-name "demo6"
+ --display-name "demo6" \
+ --ip-assignment "asc"
 network add \
  --uuid nw-demo7 \
  --network-mode l2overlay \
@@ -102,7 +104,8 @@ network add \
  --domain vnet7.local \
  --metric 10 \
  --service-type std \
- --display-name "demo7"
+ --display-name "demo7" \
+ --ip-assignment "asc"
 network add \
  --uuid nw-demo8 \
  --ipv4-network 10.1.0.0 \
@@ -111,7 +114,8 @@ network add \
  --domain vnet8.local \
  --metric 10 \
  --service-type lb \
- --display-name "demo8"
+ --display-name "demo8" \
+ --ip-assignment "asc"
 
 # set forward interface(= physical network) from network
 network forward nw-demo1 public
@@ -164,13 +168,6 @@ CMDSET
 
 shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo --service-type std --display-name demo
 shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
-tcp:22,22,ip4:0.0.0.0
-EOF
-shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
-tcp:22,22,ip4:0.0.0.0
-tcp:80,80,ip4:0.0.0.0
-EOF
-shlog ./bin/vdc-manage securitygroup modify sg-demofgr --rule=- <<EOF
 # demo rule for demo instances
 tcp:22,22,ip4:0.0.0.0
 tcp:80,80,ip4:0.0.0.0
@@ -187,16 +184,21 @@ EOS
 # Install user/account definitions to the GUI database.
 cd ${VDC_ROOT}/frontend/dcmgr_gui/
 
-cat <<EOF | ./bin/gui-manage
+cat <<EOF | ./bin/gui-manage -e
 account add --name="wakame" --uuid=a-00000000
 user add --name="wakame" --uuid=u-00000000 --login_id=wakame --password=wakame --primary-account-id=a-00000000
 user associate u-00000000 --account-ids "a-00000000"
 account add --name="demo" --uuid=a-shpoolxx
 user add --name="demo" --uuid=u-shpoolxx --login_id=demo --password=demo --primary-account-id=a-shpoolxx
 user associate u-shpoolxx --account-ids "a-shpoolxx"
-
 account quota set a-shpoolxx instance.count 10.0
 account quota set a-shpoolxx instance.quota_weight 10.0
+
+account add --name="demo1" --uuid=a-demo1
+user add --name="demo1" --uuid=u-demo1 --login_id=demo1 --password=demo1 --primary-account-id=a-demo1 --locale="ja" --time-zone="Asia/Tokyo"
+user associate u-demo1 --account-ids "a-demo1"
+account quota set a-demo1 instance.count 10.0
+account quota set a-demo1 instance.quota_weight 10.0
 EOF
 
 exit 0

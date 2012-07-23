@@ -3,6 +3,7 @@ rootsize=500
 swapsize=128
 
 set -e
+set -x
 
 . ./build_functions.sh
 
@@ -12,8 +13,8 @@ set -e
 }
 
 # generate seed image
-run_vmbuilder "ubuntu-lucid-32.raw" "i386"
-run_vmbuilder "ubuntu-lucid-64.raw" "amd64"
+[ -f ubuntu-lucid-32.raw ] || run_vmbuilder "ubuntu-lucid-32.raw" "i386"
+[ -f ubuntu-lucid-64.raw ] || run_vmbuilder "ubuntu-lucid-64.raw" "amd64"
 
 # no metadata image (KVM)
 cp --sparse=auto "ubuntu-lucid-32.raw" "ubuntu-lucid-kvm-32.raw"

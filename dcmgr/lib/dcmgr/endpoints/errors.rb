@@ -133,5 +133,8 @@ module Dcmgr
     define_error(:InvalidBackupObjectState, 500, '157')
     define_error(:ExistsRegisteredInstance, 400, '158')
     define_error(:InvalidLoadBalancerState, 400, '159')
+    define_error(:InvalidLoadBalancerPort, 400, '160')
+    define_error(:InvalidLoadBalancerAlgorithm, 400, '161')
+
   end
 end

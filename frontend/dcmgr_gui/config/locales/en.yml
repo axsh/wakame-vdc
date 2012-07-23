@@ -6,7 +6,7 @@ en:
     welcome_message: "Welcome,"
     settings: "Settings"
     login_name_suffix: ""
-    sign_out: "Sign Out"
+    logout: "Log Out"
   button:
     refresh: "Refresh"
     terminate: "Terminate"
@@ -249,6 +249,10 @@ en:
         load_balancer_port: "Port"
         instance_protocol: "Protocol"
         instance_port: "Port"
+      algorithm:
+        header: "Balance Algorithm"
+        leastconnection: "Least Connection"
+        source: "Source"
       certificate:
         header: "Certificate"
         name: "Name"
@@ -277,7 +281,7 @@ en:
       instance_id: "Instance ID"
       display_name: "Instance Name"
   login:
-    sign_in: "Sign In"
+    login: "Log In"
     user: "User"
     password: "Password"
   information:
@@ -337,6 +341,7 @@ en:
       cpu_cores: "CPU Cores"
       memory_size: "Memory Size"
       status: "Status"
+      state: "State"
       ip: "IP"
       ssh_key_pair: "SSH Key Pair"
       created_at: "Created At"
@@ -383,6 +388,10 @@ en:
       status: "Status"
       created_at: "Creaed At"
       display_name: "Load Balancer Name"
+      load_balancer_protocol: "Load Balancer Protocol"
+      load_balancer_port: "Load Balancer Port"
+      instance_protocol: "Instance Protocol"
+      instance_port: "Instance Port"
   machine_images:
     header: "Machine Images"
     button:

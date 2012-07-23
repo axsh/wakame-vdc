@@ -357,16 +357,33 @@ DcmgrGUI.prototype.imagePanel = function(){
   });
   
   bt_launch_instance.target.bind('click',function(){
-    var id = c_list.currentChecked();
-    if( id ){
-      bt_launch_instance.open({"ids":[id]});
-      bt_launch_instance.disabledButton(1, true);
+    if(!bt_launch_instance.is_disabled()) {
+      var id = c_list.currentChecked();
+      if( id ){
+        bt_launch_instance.open({"ids":[id]});
+	bt_launch_instance.disabledButton(1, true);
+      }
     }
     return false;
   });
   
-  $(bt_launch_instance.target).button({ disabled: false });
+  var actions = {};
+  actions.changeButtonState = function() {
+      var id = c_list.currentChecked();
+      var row_id = "#row-"+id;
+      var state = $(row_id).find('.state').text();
+      if(state == 'available') {
+	  bt_launch_instance.enableDialogButton();
+      } else {
+	  bt_launch_instance.disableDialogButton();
+      }
+  }
+
+  $(bt_launch_instance.target).button({ disabled: true });
   $(bt_refresh.target).button({ disabled: false });
+
+  dcmgrGUI.notification.subscribe('checked_radio', actions, 'changeButtonState');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_launch_instance, 'disableDialogButton');
   //list
   c_list.setData(null);
   c_list.update(list_request,true);

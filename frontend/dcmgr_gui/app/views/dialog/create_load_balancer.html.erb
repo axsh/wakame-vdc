@@ -1,26 +1,6 @@
-<style type="text/css">
-  <% if I18n.locale == :ja %>
-     #create_load_balancer_dialog #certificate table {
-       padding-left:115px
-     }
-
-     #create_load_balancer_dialog #sticky_session table {
-       padding-left:170px
-     }
-  <% elsif I18n.locale == :en %>
-     #create_load_balancer_dialog #certificate table {
-       padding-left:123px
-     }
-
-     #create_load_balancer_dialog #sticky_session table {
-       padding-left:142px
-     }
-  <% end %>
-</style>
-
 <div id="create_load_balancer_dialog">
   <div id="load_balancer">
-  <table border="1">
+  <table border="1" class="setting_field">
     <tr>
       <th class="header" rowspan="2"><%= t("dialog.create_load_balancer.header.display_name") %></th>
       <th class="header" colspan="2"><%= t("dialog.create_load_balancer.header.load_balancer") %></th>
@@ -36,42 +16,54 @@
       <td><input id="display_name" type="text" size="20"></td>
       <td><select id="load_balancer_protocol" ><option>http</option><option>https</option><option>tcp</option><option>ssl</option></select></td>
       <td><input id="load_balancer_port" type="text" size="4" maxlength="5" value="80"></td>
-      <td><select id="instance_protocol"><option>http</option><option>https</option><option>tcp</option><option>ssl</option></select></td>
+      <td><select id="instance_protocol"><option>http</option><option>tcp</option></select></td>
       <td><input id="instance_port" type="text" size="4" maxlength="5" value="80"></td>
     </tr>
   </table>
   </div>
-
+  <div id="balance_algorithm">
+    <div id="balance_algorithm_header">
+      <%= t("dialog.create_load_balancer.algorithm.header") %>
+    </div>
+    <div id="balance_algorithm_selector">
+      <label><input type="radio" name="balance_algorithm" value="leastconn" checked><%= t("dialog.create_load_balancer.algorithm.leastconnection") %></label>
+      <label><input type="radio" name="balance_algorithm" value="source"><%= t("dialog.create_load_balancer.header.algorithm.source") %></label>
+    </div>
+  </div>
   <div id="certificate">
     <fieldset id="certificate_group">
       <legend><%= t("dialog.create_load_balancer.certificate.header") %></legend>
-      <table border="1">
+      <table class="setting_field" border="1">
       <tr>
-        <td class="title"><%= t("dialog.create_load_balancer.certificate.name") %></td>
-        <td><input id="certificate_name" type="text" size="38"></td>
+         <td class="setting_title"><%= t("dialog.create_load_balancer.certificate.private_key") %></td>
       </tr>
       <tr>
-        <td class="title"><%= t("dialog.create_load_balancer.certificate.private_key") %></td>
-        <td><input id="private_key" type="text" size="38"></td>
+         <td><textarea id="private_key" rows="3" cols="85"></textarea></td>
       </tr>
       <tr>
-        <td class="title"><%= t("dialog.create_load_balancer.certificate.public_key") %></td>
-        <td><input id="public_key" type="text" size="38"></td>
+        <td class="setting_title"><%= t("dialog.create_load_balancer.certificate.public_key") %></td>
       </tr>
       <tr>
-        <td class="title"><%= t("dialog.create_load_balancer.certificate.chain") %></td>
-        <td><input id="certificate_chain" type="text" size="38"></td>
+        <td><textarea id="public_key" rows="3" cols="85"></textarea></td>
+      </tr>
+      <tr>
+        <td class="setting_title"><%= t("dialog.create_load_balancer.certificate.chain") %></td>
+      </tr>
+      <tr>
+        <td><textarea id="certificate_chain" rows="3" cols="85"></textarea></td>
       </tr>
       </table>
     </fieldset>
   </div>
 
-  <div id="sticky_session"> 
+  <div id="sticky_session">
     <fieldset id="sticky_session_group">
-    <legend><%= t("dialog.create_load_balancer.sticky_session.header") %></legend>
-    <table border="1">
+    <legend><input type="checkbox"><%= t("dialog.create_load_balancer.sticky_session.header") %></legend>
+    <table border="1" class="setting_field">
       <tr>
-        <td class="title"><%= t("dialog.create_load_balancer.sticky_session.cookie_name") %></td>
+        <td class="setting_title"><%= t("dialog.create_load_balancer.sticky_session.cookie_name") %></td>
+      </tr>
+      <tr>
         <td><input id="cookie_name" type="text" size="38"></td>
       </tr>
     </table>

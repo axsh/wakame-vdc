@@ -15,6 +15,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   get do
     ds = M::Image.dataset
 
+    scope = {}
+    if params[:account_id]
+      scope[:account_id]=params[:account_id]
+    end
+
+    if params[:is_public]
+      scope[:is_public]=1
+    end
+    unless scope.empty?
+      ds = ds.filter( scope.map {|k,v| "#{k} = ?" }.join(' OR '), *scope.values )
+    end
+
+    if params[:service_type]
+      validate_service_type(params[:service_type])
+      ds = ds.filter(:service_type=>params[:service_type])
+    end
+
     if params[:state]
       ds = if IMAGE_META_STATE.member?(params[:state])
              case params[:state]
@@ -31,19 +48,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
              raise E::InvalidParameter, :state
            end
     end
-    
-    if params[:account_id]
-      ds = ds.filter(:account_id=>params[:account_id])
-    end
 
     ds = datetime_range_params_filter(:created, ds)
     ds = datetime_range_params_filter(:deleted, ds)
-    
-    if params[:service_type]
-      validate_service_type(params[:service_type])
-      ds = ds.filter(:service_type=>params[:service_type])
-    end
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::ImageCollection.new(paging_ds).generate
     end
@@ -84,10 +92,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   def find_image_by_uuid(uuid)
     item = M::Image[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
 
-    if item.is_public == 1
+    if item.is_public == true
       # return immediatly when the public flag is set.
     elsif @account && item.account_id != @account.canonical_uuid
-      raise E::UnknownUUIDResrouce, uuid.to_s
+      raise E::UnknownUUIDResoruce, uuid.to_s
     end
     if params[:service_type] && params[:service_type] != item.service_type
       raise E::UnknownUUIDResource, uuid.to_s

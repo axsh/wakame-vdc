@@ -29,8 +29,6 @@ module Dcmgr::Cli
     method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the sercurity group. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :required => true, :desc => "Display name of the security group"
     def add
-      UnknownUUIDError.raise(options[:account_id]) if M::Account[options[:account_id]].nil?
-
       fields = options.dup
       fields[:rule] = read_rule_text
       
@@ -45,16 +43,17 @@ module Dcmgr::Cli
     desc "show [UUID]", "Show security group(s)"
     def show(uuid=nil)
       if uuid
-        group = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
+        sg = M::SecurityGroup[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
-Group UUID: <%= group.canonical_uuid %>
-Account id: <%= group.account_id %>
-Service Type: <%= group.service_type %>
+UUID: <%= sg.canonical_uuid %>
+Name: <%= sg.display_name %>
+Account ID: <%= sg.account_id %>
+Service Type: <%= sg.service_type %>
 Rules:
-<%= group.rule %>
-<%- if group.description -%>
+<%= sg.rule %>
+<%- if sg.description -%>
 Description:
-  <%= group.description %>
+  <%= sg.description %>
 <%- end -%>
 __END
       else
@@ -73,8 +72,6 @@ __END
     method_option :service_type, :type => :string, :desc => "Service type of the security group. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
     method_option :display_name, :type => :string, :desc => "Display name of the security group"
     def modify(uuid)
-      UnknownUUIDError.raise(options[:account_id]) if options[:account_id] && M::Account[options[:account_id]].nil?
-
       fields = options.dup
       if options[:rule]
         fields[:rule] = read_rule_text

@@ -162,7 +162,7 @@ module Dcmgr
         end
 
         def get_instance_from_ip(src_ip)
-          ip = Models::IpLease.find(:ipv4=>src_ip)
+          ip = Models::NetworkVifIpLease.find(:ipv4=>IPAddress::IPv4.new(src_ip).to_i, :deleted_at=>nil)
           if ip.nil? || ip.network_vif.nil?
             raise UnknownSourceIpError, src_ip
           end
@@ -584,7 +584,7 @@ module Dcmgr
 
       private
       def instance
-        ip = Models::IpLease.find(:ipv4 => request.ip)
+        ip = Models::NetworkVifIpLease.find(:ipv4 => IPAddress::IPv4.new(request.ip).to_i, :deleted_at=>nil)
         if ip.nil? || ip.network_vif.nil?
           raise UnknownSourceIpError, request.ip
         end

@@ -6,10 +6,10 @@ ja:
     welcome_message: "ようこそ"
     settings: "設定"
     login_name_suffix: "さん"
-    sign_out: "サインアウト"
+    logout: "ログアウト"
   button:
     refresh: "更新"
-    terminate: "停止"
+    terminate: "破棄"
     reboot: "再起動"
     create: "作成"
     update: "更新"
@@ -44,8 +44,8 @@ ja:
     display: "{0}年{1}月{2}日 {3}時{4}分{5}秒"
   dialog:
     terminate_instances:
-      header: "インスタンスを停止"
-      message: "インスタンスを停止します。よろしいですか?"
+      header: "インスタンスを破棄"
+      message: "インスタンスを破棄します。よろしいですか?"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
     reboot_instances:
@@ -249,6 +249,10 @@ ja:
         load_balancer_port: "ポート"
         instance_protocol: "プロトコル"
         instance_port: "ポート"
+      algorithm:
+        header: "負荷分散方式"
+        leastconnection: "Least Connection"
+        source: "Source"
       certificate:
         header: "証明書"
         name: "証明書名"
@@ -277,7 +281,7 @@ ja:
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
   login:
-    sign_in: "ログイン"
+    login: "ログイン"
     user: "ユーザー"
     password: "パスワード"
   information:
@@ -312,7 +316,7 @@ ja:
     header: "インスタンス"
     instance_actions:
       header: "アクション"
-      terminate: "停止"
+      terminate: "破棄"
       reboot: "再起動"
       start: "再開"
       stop: "一時停止"
@@ -336,7 +340,8 @@ ja:
       wmi_id: "WMI ID"
       cpu_cores: "CPUコア数"
       memory_size: "メモリーサイズ"
-      status: "状態"
+      status: "ステータス"
+      state: "状態"
       ip: "IP"
       ssh_key_pair: "SSHキーペア"
       created_at: "作成日"
@@ -382,14 +387,18 @@ ja:
       status: "状態"
       created_at: "作成日"
       display_name: "ロードバランサ名"
+      load_balancer_protocol: "ロードバランサプロトコル"
+      load_balancer_port: "ロードバランサポート"
+      instance_protocol: "インスタンスプロトコル"
+      instance_port: "インスタンスポート"
   machine_images:
     header: "マシンイメージ"
     button:
-      launch_instance: "起動"
+      launch_instance: "インスタンスを起動"
       edit_machine_image: "編集"
     list:
       wmi_id: "WMI ID"
-      description: "詳細"
+      description: "説明"
       source: "保存場所"
       owner: "オーナー"
       state: "状態"
@@ -398,7 +407,7 @@ ja:
     details:
       header: "詳細"
       wmi_id: "WMI ID"
-      description: "詳細"
+      description: "説明"
       source: "保存場所"
       owner: "オーナー"
       arch: "アーキテクチャ"
@@ -501,13 +510,13 @@ ja:
       edit_security_group: "編集"
     list:
       security_group_id: "セキュリティグループID"
-      descriptions: "詳細"
+      descriptions: "説明"
       action: "アクション"
       display_name: "セキュリティグループ名"
     details:
       header: "詳細"
       security_group_id: "セキュリティグループID"
-      description: "詳細"
+      description: "説明"
       created_at: "作成日"
       updated_at: "更新日"
       display_name: "セキュリティグループ名"

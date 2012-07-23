@@ -8,6 +8,10 @@ module Dcmgr::Models
     
     many_to_one :network
 
+    def_dataset_method(:leased_ip_bound_lease) {
+        select(:ip_leases__ipv4, :prev__ipv4___prev, :follow__ipv4___follow).join_table(:left, :ip_leases___prev, :ip_leases__ipv4=>:prev__ipv4 +1).join_table(:left, :ip_leases___follow, :ip_leases__ipv4=>:follow__ipv4 - 1).filter({:prev__ipv4=>nil} | {:follow__ipv4=>nil})
+    }
+
     def validate
       # validate ipv4 syntax
       begin
@@ -23,22 +27,82 @@ module Dcmgr::Models
       end
     end
 
-
     def self.lease(network_vif, network)
       raise TypeError unless network_vif.is_a?(NetworkVif)
       raise TypeError unless network.is_a?(Network)
 
-      reserved = []
-      reserved << network.ipv4_gw_ipaddress if network.ipv4_gw
-      reserved << IPAddress::IPv4.new(network.dhcp_server) if network.dhcp_server
-      reserved = reserved.map {|i| i.to_u32 }
-      # use SELECT FOR UPDATE to lock rows within same network.
-      addrs = network.ipv4_u32_dynamic_range_array - 
-        reserved - network.network_vif_ip_lease_dataset.alives.for_update.all.map {|i| i.ipv4_i }
-      raise "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if addrs.empty?
+      latest = network.network_vif_ip_lease_dataset.alives.max(:updated_at)
+      latest_ip = network.network_vif_ip_lease_dataset.alives.filter(:updated_at =>latest).filter(:alloc_type =>NetworkVifIpLease::TYPE_AUTO).map {|i| i.ipv4}
+      if latest_ip.empty?
+        ipaddr = nil
+      else
+        ipaddr = IPAddress::IPv4.new("#{latest_ip.first}/#{network[:prefix]}").to_i
+      end
+      leaseaddr = case network[:ip_assignment]
+                  when "asc"
+                    ip = get_lease_address(network, ipaddr, nil)
+                    ip = get_lease_address(network, nil, ipaddr) if ip.nil?
+                    ip
+                  when "desc"
+                    ip = get_lease_address(network, nil, ipaddr)
+                    ip = get_lease_address(network, ipaddr, nil) if ip.nil?
+                    ip
+                  else
+                    raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
+                  end
+      raise "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if leaseaddr.nil?
 
-      leaseaddr = IPAddress::IPv4.parse_u32(addrs[rand(addrs.size).to_i])
+      leaseaddr = IPAddress::IPv4.parse_u32(leaseaddr)
       NetworkVifIpLease.create(:ipv4=>leaseaddr.to_i, :network_id=>network.id, :network_vif_id=>network_vif.id, :description=>leaseaddr.to_s)
+    end
+
+    def self.get_lease_address(network, from_ipaddr, to_ipaddr)
+      leaseaddr = nil
+      ranges = network.dhcp_range_dataset
+      ranges = case network[:ip_assignment]
+               when "asc"
+                 ranges.order(:range_begin.asc)
+               when "desc"
+                 ranges.order(:range_end.desc)
+               else
+                 raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
+               end
+      ranges.all.each {|i|
+        start_range = i.range_begin.to_i
+        end_range = i.range_end.to_i
+        unless from_ipaddr.nil?
+          next if from_ipaddr >= end_range
+          f = from_ipaddr
+          f = start_range if from_ipaddr <= start_range
+        else
+          f = start_range
+        end
+        unless to_ipaddr.nil?
+          next if to_ipaddr <= start_range
+          t = to_ipaddr
+          t = end_range if to_ipaddr >= end_range
+        else
+          t = end_range
+        end
+        begin
+          leaseaddr = i.available_ip(f, t)
+          break if leaseaddr.nil?
+          check_ip = IPAddress::IPv4.parse_u32(leaseaddr, network[:prefix])
+          if [0,255].member?(check_ip[3]) || network.reserved_ip?(check_ip)
+            network.network_vif_ip_lease_dataset.add_reserved(check_ip.to_s)
+            case network[:ip_assignment]
+            when "asc"
+              f = check_ip.to_i
+            when "desc"
+              t = check_ip.to_i
+            else
+              raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
+            end
+          end
+        end while self.find(:ipv4=>leaseaddr)
+        break unless leaseaddr.nil?
+      }
+      leaseaddr
     end
   end
 end

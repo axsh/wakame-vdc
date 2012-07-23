@@ -119,12 +119,12 @@ module Dcmgr
 
       def attach_vnic_to_port
         sh("/sbin/ip link set %s up", [@nic_id])
-        sh("/usr/sbin/brctl addif %s %s", [@bridge, @nic_id])
+        sh("#{Dcmgr.conf.brctl_path} addif %s %s", [@bridge, @nic_id])
       end
 
       def detach_vnic_from_port
         sh("/sbin/ip link set %s down", [@nic_id])
-        sh("/usr/sbin/brctl delif %s %s", [@bridge, @nic_id])
+        sh("#{Dcmgr.conf.brctl_path} delif %s %s", [@bridge, @nic_id])
       end
 
       def get_linux_dev_path
@@ -222,6 +222,8 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
+
         # select hypervisor :kvm, :lxc, :esxi
         select_hypervisor
 
@@ -229,10 +231,6 @@ module Dcmgr
 
         lstore = Drivers::LocalStore.select_local_store(@hv.class.to_s.downcase.split('::').last)
         lstore.deploy_image(@inst,@hva_ctx)
-
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
-
-        sleep 1
 
         #setup_metadata_drive
         @hv.setup_metadata_drive(@hva_ctx,get_metadata_items)
@@ -538,14 +536,22 @@ module Dcmgr
           raise "snapshot has not be uploaded"
         end
         
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available}) do |req|
+          req.oneshot = true
+        end
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available}) do |req|
+          req.oneshot = true
+        end
         @hva_ctx.logger.info("uploaded new backup object: #{@inst_id} #{@backupobject_id} #{@image_id}")
         
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
-        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
+          req.oneshot = true
+        end
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
+          req.oneshot = true
+        end
         @hva_ctx.logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id} #{@image_id}")
       }
 
@@ -557,7 +563,9 @@ module Dcmgr
         select_hypervisor
 
         @hv.poweroff_instance(@hva_ctx)
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:halted})
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:halted}) do |req|
+          req.oneshot = true
+        end
         logger.info("PowerOff #{@inst_id}")
       }
 
@@ -570,7 +578,9 @@ module Dcmgr
 
         # reboot instance
         @hv.poweron_instance(@hva_ctx)
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:running})
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:running}) do |req|
+          req.oneshot = true
+        end
         logger.info("PowerOn #{@inst_id}")
       }
       

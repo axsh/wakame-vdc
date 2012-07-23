@@ -2,17 +2,17 @@ Sequel.migration do
   up do
     create_table(:accounts, :ignore_index_errors=>true) do
       primary_key :id
-      String :uuid, :null=>false, :size=>8, :fixed=>true
+      String :uuid, :null=>false, :size=>255
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       String :name, :null=>false, :size=>255
-      String :description, :size=>255
-      TrueClass :enable, :default=>true
+      String :description, :text=>true
+      TrueClass :enabled, :default=>true
       DateTime :deleted_at
-      TrueClass :is_deleted, :default=>false
       TrueClass :is_admin, :default=>false
       
       index [:uuid], :unique=>true, :name=>:uuid
+      index [:deleted_at]
     end
     
     create_table(:information) do
@@ -38,19 +38,23 @@ Sequel.migration do
     
     create_table(:users, :ignore_index_errors=>true) do
       primary_key :id
-      String :uuid, :null=>false, :size=>8, :fixed=>true
+      String :uuid, :null=>false, :size=>255
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :last_login_at, :null=>false
       String :name, :null=>false, :size=>200, :fixed=>true
-      String :login_id, :size=>255
+      String :login_id, :null=>false, :size=>255
       String :password, :null=>false, :size=>255
       String :primary_account_id, :size=>255
       String :locale, :null=>false, :size=>255
       String :time_zone, :null=>false, :size=>255
+      Boolean :enabled, :null=>false, :default=>true
+      DateTime :deleted_at
+      String :description, :text=>true
       
       index [:login_id], :unique=>true, :name=>:login_id
       index [:uuid], :unique=>true, :name=>:uuid
+      index [:deleted_at]
     end
     
     create_table(:users_accounts) do

@@ -53,6 +53,7 @@ Requires: prelink
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 # for erlang, rabbitmq-server
 # Requires: epel-release-6-x
+Requires: parted
 
 # (base)
 %description
@@ -60,6 +61,7 @@ Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
 
 # debug-config
 %package debug-config
+BuildArch: noarch
 Summary: Configuration set for debug
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
@@ -68,6 +70,7 @@ Requires: %{oname} = %{version}-%{release}
 
 # dcmgr-vmapp-config
 %package dcmgr-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
@@ -81,6 +84,7 @@ Requires: dnsmasq
 
 # hva-common-vmapp-config
 %package hva-common-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
@@ -100,6 +104,7 @@ Requires: util-linux-ng
 
 # hypervisor:kvm
 %package hva-kvm-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva KVM VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -111,6 +116,7 @@ Requires: qemu-kvm
 
 # hypervisor:lxc
 %package hva-lxc-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva LXC VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -120,6 +126,7 @@ Requires: lxc
 
 # hypervisor:openvz
 %package hva-openvz-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -131,6 +138,7 @@ Requires: kmod-openvswitch-vzkernel
 
 # hypervisor:*
 %package hva-full-vmapp-config
+BuildArch: noarch
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -142,6 +150,7 @@ Requires: %{oname}-hva-openvz-vmapp-config = %{version}-%{release}
 
 # vdcsh
 %package vdcsh
+BuildArch: noarch
 Summary: vdcsh
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
@@ -170,6 +179,8 @@ RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules build
 %install
 # don't run "rpmbuild/rules binary"
 CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
+# clean ruby-hijiki work dir to build
+[ -d `pwd`/client/ruby-hijiki/pkg ] && rm -rf `pwd`/client/ruby-hijiki/pkg
 
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
@@ -178,6 +189,7 @@ components="
  dcmgr
  frontend
  rpmbuild
+ client
 "
 for component in ${components}; do
   rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/

@@ -10,47 +10,6 @@ namespace :db do
     Sequel.extension :migration
     Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('db/migrations', Rails.root), 0)
   end
-
-  task :sample_data => :environment do
-    User.create(:uuid => '00000000',
-                :login_id => 'wakame',
-                :password => User.encrypt_password('wakame'),
-                :primary_account_id => '00000000'
-                )
-
-    Account.create(:uuid => '00000000',
-                   :name => 'wakame',
-                   :enable => 1,
-                   :is_admin => 1
-                   )
-                   
-    User.create(:uuid => 'shpoolxx',
-               :login_id => 'demo',
-               :password => User.encrypt_password('demo'),
-               :primary_account_id => 'shpoolxx'
-               )
-
-    Account.create(:uuid => 'shpoolxx',
-                  :name => 'demo',
-                  :enable => 1,
-                  :is_admin => 0
-                  )
-
-    sql = 'insert into users_accounts(user_id,account_id) values(?,?)'
-    DB = Schema.current_connect
-    DB['users_accounts'].with_sql(sql,1,1).first
-    DB['users_accounts'].with_sql(sql,2,2).first
-
-    publish_date = '2010-11-19 9:00:00'
-    title = "News1"
-    description = "New description."
-    
-    Information.create(:title => title,
-                       :description => description,
-                       :created_at => publish_date
-                       )
-    
-  end
 end
 
 namespace :admin do

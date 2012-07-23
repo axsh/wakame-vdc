@@ -1,6 +1,22 @@
 # -*- coding: utf-8 -*-
 module Hijiki::DcmgrResource::V1203
   class Instance < Base
+    initialize_user_result nil, [:id,
+                                 :host_node,
+                                 :cpu_cores,
+                                 :memory_size,
+                                 :arch,
+                                 :image_id,
+                                 :created_at,
+                                 :state,
+                                 :status,
+                                 :ssh_key_pair,
+                                 :hostname,
+                                 :ha_enabled,
+                                 :hypervisor,
+                                 :display_name,
+                                ]
+
     module ClassMethods
       include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
 
@@ -56,8 +72,8 @@ module Hijiki::DcmgrResource::V1203
         self.put(instance_id,params).body
       end
 
-      def backup(instance_id)
-        result = self.find(instance_id).put(:backup)
+      def backup(instance_id, params)
+        result = self.find(instance_id).put(:backup,params.merge({:is_public =>false, :is_cacheable =>false}))
         result.body
       end
 

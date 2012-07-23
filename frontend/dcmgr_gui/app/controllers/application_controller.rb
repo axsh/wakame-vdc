@@ -2,6 +2,7 @@
 
 require 'authentication'
 require 'util'
+require 'i18n'
 
 class ApplicationController < ActionController::Base
   # disable reqeust forgery check since some pages are missing to set
@@ -21,6 +22,15 @@ class ApplicationController < ActionController::Base
 
   after_filter do
     Thread.current[:hijiki_request_attribute] = nil
+    true
+  end
+
+  # check if the current user is locked out.
+  before_filter do |req|
+    if current_user && !current_user.enabled
+      render :status=>403, :text=>"Forbidden"
+      return false
+    end
     true
   end
 

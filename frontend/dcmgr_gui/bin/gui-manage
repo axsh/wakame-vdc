@@ -8,15 +8,10 @@ load File.expand_path('../../config/boot.rb', __FILE__)
 require 'thor'
 require 'thor/group'
 require 'erb'
+# load model classes under app/models.
+require 'autoload'
 
-module Cli
-  require 'cli/errors'
-
-  autoload :Base, 'cli/base'
-  autoload :AccountCli, 'cli/account'
-  autoload :UserCli, 'cli/user'
-  autoload :Error, 'cli/errors'
-end
+require File.expand_path('../../config/initializers/timezone', __FILE__)
 
 class RootCli < Thor
   register(Cli::AccountCli, Cli::AccountCli.namespace, "account sub-command", "Operations for accounts")
@@ -41,6 +36,23 @@ module TxMode
   end
 end
 
+module ExitAtError
+  def loop_eval(str)
+    begin
+      # Ensure Thor to raise exception.
+      ENV['THOR_DEBUG']='1'
+      # "--debug" flag is only available in Thor 0.14.x.
+      super("--debug #{str}")
+    rescue ::Exception => e
+      STDERR.puts "ERROR: #{e.message}"
+      if $options[:errexit]
+        $exitcode=1
+        throw(:ripl_exit)
+      end
+    end
+  end
+end
+
 module GuiManageShell
 
   def loop_eval(str)
@@ -57,25 +69,25 @@ module GuiManageShell
 end
 
 require File.expand_path('../../config/initializers/secret_token', __FILE__)
-require File.expand_path('../../config/initializers/timezone', __FILE__)
 require File.expand_path('../../config/initializers/sequel', __FILE__)
-# load model classes under app/models.
-require 'autoload'
 
 require 'optparse'
 
 TX_MODES=['each', 'none', 'bulk'].freeze
-options = {:tx_mode=>TX_MODES.first}
+$options = {:tx_mode=>TX_MODES.first, :errexit=>false}
 
 argv = ARGV.dup
 OptionParser.new { |o|
   o.banner += " [TASK [options]]"
   o.on('--tx TYPE', '--tx-mode=TYPE', "Set transaction mode (default: #{TX_MODES.first}): #{TX_MODES.join(', ')}") { |v|
     if TX_MODES.member?(v)
-      options[:tx_mode]=v.to_sym
+      $options[:tx_mode]=v.to_sym
     else
       abort("Unknown tx-mode value: #{v}")
     end
+  }
+  o.on('-e', "Exit interactive loop at error (default: #{$options[:errexit]})") {
+    $options[:errexit]=true
   }
   o.on_tail('-h', '--help', 'Show this message') do
     puts o.help
@@ -85,13 +97,15 @@ OptionParser.new { |o|
 }.order!(argv)
 
 if !argv.empty?
+  # Ensure to raise exception from Thor v0.14.x.
+  argv = argv + ['--debug']
   begin
     BaseNew.db.transaction do
       RootCli.start(argv)
     end
   rescue => e
     e = Cli::Error.new(e,101) unless e.is_a?(Cli::Error)
-    STDERR.puts "ERROR: " + e.message
+    STDERR.puts "ERROR: #{e.message}"
     if e.respond_to?(:exit_code)
       exit(e.exit_code)
     else
@@ -103,12 +117,15 @@ else
   require 'ripl'
   require 'shellwords'
   
+  $exitcode = 0
+
   Ripl::Shell.include GuiManageShell
-  if options[:tx_mode].to_sym == :each
+  if $options[:tx_mode].to_sym == :each
     Ripl::Shell.include TxMode::Each
   else
     Ripl::Shell.include TxMode::Bulk
   end
+  Ripl::Shell.include ExitAtError
   Ripl::History.module_eval {
     # disable to write history file. Ripl::History is included anyway.
     def write_history; end
@@ -119,4 +136,5 @@ else
                      :irbrc  => nil,
                      :readline=>true,
                      ).loop
+  ::Kernel.exit($exitcode)
 end

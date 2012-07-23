@@ -4,7 +4,7 @@ require 'net/telnet'
 
 module Dcmgr
   module Drivers
-    class Kvm < Hypervisor
+    class Kvm < LinuxHypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
@@ -63,7 +63,7 @@ module Dcmgr
         vifs.each { |vif|
           if vif[:ipv4] and vif[:ipv4][:network]
             sh("/sbin/ip link set %s up", [vif[:uuid]])
-            sh("/usr/sbin/brctl addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
+            sh("#{Dcmgr.conf.brctl_path} addif %s %s", [bridge_if_name(vif[:ipv4][:network][:dc_network]), vif[:uuid]])
           end
         }
 
@@ -168,6 +168,17 @@ module Dcmgr
           end
           raise "Detached disk device still be attached in qemu-kvm: #{pci_devaddr.join(':')}" if pass == false
         }
+      end
+
+      def check_instance(i)
+        kvm_pid_path = File.expand_path("#{i}/kvm.pid", Dcmgr.conf.vm_data_dir)
+        unless File.exists?(kvm_pid_path)
+          raise "Unable to find the kvm.pid file: #{i}"
+        end
+        pid = File.read(kvm_pid_path).to_i
+        unless File.exists?(File.expand_path(pid.to_s, '/proc'))
+          raise "Unable to find the pid of kvm process: #{pid}"
+        end
       end
 
       private

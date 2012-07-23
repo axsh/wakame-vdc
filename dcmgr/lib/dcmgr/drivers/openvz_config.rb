@@ -5,7 +5,7 @@ class OpenvzConfig
   def initialize
     # load vz.conf
     config_file = "/etc/vz/vz.conf"
-    raise "vz.conf does not exists" unless File.exists?(config_file)
+    raise "vz.conf does not exist" unless File.exists?(config_file)
     @config = Hash.new
     File.new(config_file).read.chomp.split("\n").each do |f|
       k, v = f.split(/=/)

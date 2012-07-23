@@ -12,6 +12,7 @@ class LoadBalancersController < ApplicationController
       :load_balancer_port => params[:load_balancer_port],
       :instance_protocol => params[:instance_protocol],
       :instance_port => params[:instance_port],
+      :balance_algorithm => params[:balance_algorithm],
       :certificate_name => params[:certificate_name],
       :private_key => params[:private_key],
       :public_key => params[:public_key],

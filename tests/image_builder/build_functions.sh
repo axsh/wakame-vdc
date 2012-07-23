@@ -260,6 +260,9 @@ config.debug_iptables = false
 # Use ipset for netfilter
 config.use_ipset       = false
 
+# Path for brctl
+config.brctl_path = '/usr/sbin/brctl'
+
 # Directory used by Open vSwitch daemon for run files
 config.ovs_run_dir = '/home/wakame/work/wakame-vdc/ovs/var/run/openvswitch'
 

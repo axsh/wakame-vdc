@@ -7,40 +7,51 @@ abs_path=$(cd $(dirname $0) && pwd)
 wakame_root=$(cd ${abs_path}/../../ && pwd)
 log_dir=${abs_path}/logs
 
-# make vmapp
-# -> make vmapp{32,64}
-#    -> rpmbuild/ops/rpmbuild.sh --execscript=./execscript.d/vmapp-rhel.sh --base-distro-arch={x86_64,i686}
-#       -> build-rootfs-tree.sh ...
-#       -> ./tests/vdc.sh install::rhel
-#          -> ./tests/vdc.sh.d/rhel/install.sh
-#             -> ./tests/vdc.sh.d/rhel/3rd-party.sh download
-#             -> ./tests/vdc.sh.d/rhel/3rd-party.sh install
-#             -> yum install --disablerepo='openvz*' -y
-#             -> yum install -y
-#          -> ./tests/vdc.sh.d/rhel/setup.sh
-#       -> ./rpmbuild/rules binary-snap
-#       -> tests/image_builder/vmapp-rhel.sh --base-distro-arch=$(uname -m) --rpm-release=gi
-#           -> chroot [dir] yum install wakame-vdc-***
-
+#
+#
+#
+cd ${abs_path}
 [ -d ${log_dir} ] || mkdir -p ${log_dir}
 
+#
+git pull
+build_id=$(git log -n 1 --pretty=format:"%h")
+
+function build_yum_repo () {
+  time yes | ./syncrepo-vdc.sh backup 2>&1
+  time       ./createrepo-vdc.sh 2>&1
+  time yes | ./syncrepo-vdc.sh build 2>&1
+}
+
+# map task name
+case "$1" in
+monthly|weekly)
+  task=self-integrate
+  ;;
+daily)
+  task=full-integrate
+  ;;
+hourly)
+  task=soft-integrate
+  ;;
+*)
+  task=soft-integrate
+  ;;
+esac
+
 (
- cd ${wakame_root}/rpmbuild/ops
+BUILD_ID=${build_id} ./rules ${task}
+build_yum_repo
 
- date
- git pull
+case "$1" in
+monthly|weekly|daily)
+  # upload vmapps to s3
+  time ./build-s3-vmapp.sh 2>&1
+  ;;
+hourly)
+  ;;
+*)
+  ;;
+esac
 
- # build vmapp & rpm
- build_id=$(git log -n 1 --pretty=format:"%h")
- BUILD_ID=${build_id} ./rules full-integrate
-
- # upload rpms to s3
- time ./createrepo-vdc.sh 2>&1
- time yes | ./syncrepo-vdc.sh build 2>&1
-
- date
- # upload vmapps to s3
- time ./build-s3-vmapp.sh 2>&1
-
- date
 ) 2>&1 | tee ${log_dir}/build.log.`date +%Y%m%d-%s` 2>&1

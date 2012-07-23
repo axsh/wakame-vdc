@@ -28,6 +28,8 @@ module Dcmgr::Models
                      :ipv4=>IPAddress::IPv4.new(ipaddr).to_i).destroy
       end
     end
+
+    one_to_many :network_vif
     one_to_many :network_vif_ip_lease, :class=>NetworkVifIpLease, :extend=>NetworkVifIpLeaseMethods
 
     many_to_one :nat_network, :key => :nat_network_id, :class => self
@@ -105,6 +107,8 @@ module Dcmgr::Models
     end
 
     def add_ipv4_dynamic_range(range_begin, range_end)
+      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self[:prefix]}")
+      range_end = IPAddress::IPv4.new("#{range_end}/#{self[:prefix]}")
       test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
          case op
          when :coverbegin
@@ -117,12 +121,14 @@ module Dcmgr::Models
          range.save_changes
       }
       
-      self.add_dhcp_range(:range_begin=>range_begin.to_s, :range_end=>range_end.to_s)
+      self.add_dhcp_range(:range_begin=>range_begin, :range_end=>range_end)
       
       self
     end
 
     def del_ipv4_dynamic_range(range_begin, range_end)
+      range_begin = IPAddress::IPv4.new("#{range_begin}/#{self[:prefix]}")
+      range_end = IPAddress::IPv4.new("#{range_end}/#{self[:prefix]}")
       test_inclusion(*validate_range_args(range_begin, range_end)) { |range, op|
         case op
         when :coverbegin
@@ -140,6 +146,18 @@ module Dcmgr::Models
       }
 
       self
+    end
+
+    def reserved_ip?(ip)
+      ipaddr = ip.to_s
+      if self[:ipv4_gw] == ipaddr ||
+          self[:dns_server] == ipaddr ||
+          self[:dhcp_server] == ipaddr ||
+          self[:metadata_server] == ipaddr
+        return true
+      else
+        return false
+      end
     end
 
     #

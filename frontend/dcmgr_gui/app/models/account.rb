@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+
 class Account < BaseNew
   taggable 'a'
   with_timestamps
   plugin :single_table_inheritance, :uuid, :model_map=>{}
   plugin :subclasses
+  plugin LogicalDelete
 
   # pk has to be overwritten by the STI subclasses.
   unrestrict_primary_key
@@ -16,36 +18,26 @@ class Account < BaseNew
   one_to_many :oauth_consumers
   
   def disable?
-    not self.enable
+    not self.enabled
   end
 
   def enable?
-    self.enable
+    self.enabled
   end
 
-  def to_hash_document
-    h = self.values.dup
-    h[:id] = h[:uuid] = self.canonical_uuid
-    h
-  end
-
-  # Each AccountQuota is unique set of account_id and quota_type
-  # column.
-  # It allows to use "add_account_quota()" association method and
-  # rejects to add multiple rows with same quota_type.
+  # Ensure to set unique quota type for each account. Skip when the
+  # quota type which already exists is added.
   def _add_account_quota(account_quota)
-    account_quota.account_id=pk
-    if account_quota.new?
-      aq = self.account_quota_dataset.filter(:quota_type=>account_quota.quota_type).first
-      if aq.nil?
-        account_quota
-      else
-        aq.set_except(account_quota.values, :id)
-        aq
-      end
-    else
-      account_quota
-    end.save
+    if self.account_quota_dataset.filter(:quota_type=>account_quota.quota_type).empty?
+      super
+    end
+  end
+
+  # Avoid multiple entry registration for same user..
+  def _add_user(user)
+    if self.users_dataset.filter(:user_id=>user.id).empty?
+      super
+    end
   end
 
   # Delete relations before setting an account to deleted
@@ -58,14 +50,6 @@ class Account < BaseNew
     super
   end
   
-  # override Sequel::Model#_delete not to delete rows but to set
-  # delete flags.
-  def _delete
-    self.deleted_at ||= Time.now
-    self.is_deleted = true
-    self.save
-  end
-
   def self.all_accounts_with_prefix
       h = Hash.new
       Account._select_all.each{|row| h.store(row.name,'a-' + row.uuid) }
@@ -74,7 +58,7 @@ class Account < BaseNew
 
   # 論理削除を除く全件取得
   def self._select_all
-    ds = Account.select_all.filter(:is_deleted => false)
+    ds = Account.alives
   end
 
   # ページ指定一覧の取得
@@ -127,7 +111,7 @@ class Account < BaseNew
   # ユーザアカウント関連付けダイアログ表示用（ユーザ管理）（uuidソート、論理削除除く）
   def self.get_list(user_uuid)
     # アカウントテーブル全件と対象ユーザに紐付いたアカウントレコードを外部結合
-    h = @db["SELECT a.uuid,b.flg,a.id from accounts a LEFT OUTER JOIN (SELECT accounts.uuid,1 AS flg FROM accounts,users,users_accounts WHERE accounts.id = users_accounts.account_id AND users.id = users_accounts.user_id AND users.uuid = ? AND accounts.is_deleted = 0) b ON a.uuid = b.uuid WHERE is_deleted = 0 ORDER BY uuid",user_uuid].all
+    h = @db["SELECT a.uuid,b.flg,a.id from accounts a LEFT OUTER JOIN (SELECT accounts.uuid,1 AS flg FROM accounts,users,users_accounts WHERE accounts.id = users_accounts.account_id AND users.id = users_accounts.user_id AND users.uuid = ? AND accounts.deleted_at IS NULL) b ON a.uuid = b.uuid WHERE deleted_at IS NULL ORDER BY uuid",user_uuid].all
   end
 
   # ユーザーアカウント追加用
@@ -160,20 +144,19 @@ class Account < BaseNew
   def self.delete_account(uuid)
     u = Account.find(:uuid=>uuid)
     u.deleted_at ||= Time.now
-    u.is_deleted = true
     u.save
   end
 
   # 新規アカウント追加
   def self.insert_account(data)
     # 名称が同一で、論理削除済みのアカウントを検索
-    ds = Account.select_all.filter(:name => data[:name],:is_deleted => true)
+    ds = Account.alives.filter(:name => data[:name])
     if ds.count == 0 then
       # 存在しない場合は新規追加
       self.create(data)
     else
       # 存在する場合は同名論理削除レコードを復活
-      h = ds.update(:description => data[:description],:is_deleted => false,:deleted_at => nil)
+      h = ds.update(:description => data[:description],:deleted_at => nil)
     end
   end
 
@@ -199,7 +182,7 @@ class Account < BaseNew
     def uuid(uuid=nil)
       if uuid.is_a?(String)
         uuid = uuid.downcase
-        unless self.check_trimmed_uuid_format(uuid)
+        unless self.check_uuid_format(uuid)
           raise "Invalid syntax of uuid: #{uuid}"
         end
         default_values[:uuid] = uuid

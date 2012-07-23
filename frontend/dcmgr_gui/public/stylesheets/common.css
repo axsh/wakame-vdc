@@ -252,12 +252,12 @@ body{
 #content #signin_form {
   padding: 5px;
   height: 496px;
-  width: 220px  
+  width: 220px
 }
 
 #content #signin_form fieldset div#error_box {
-  background-color: yellow; 
-  width: 200px; 
+  background-color: yellow;
+  width: 200px;
   height: 12px;
 }
 
@@ -906,7 +906,7 @@ body{
 	border-bottom: 1px solid #cccccc;
 }
 #content #mainarea_wide table.ptn02 tr td.title{
-	width: 150px;
+	width: 280px;
 	font-weight: bold;
 }
 #content #mainarea_wide table.ptn02 tr td.padcell{

@@ -7,7 +7,7 @@
 	</ul>
 	<p>
     <span class="greeting"><%= t("header.welcome_message") %>
-	  <%= @current_user.login_id %><%= t("header.login_name_suffix") %>&nbsp;|&nbsp;<%= link_to(t("header.settings"), '/accounts') %>&nbsp;|&nbsp;<%= link_to t("header.sign_out"),'/logout'%>
+	  <%= @current_user.login_id %><%= t("header.login_name_suffix") %>&nbsp;|&nbsp;<%= link_to(t("header.settings"), '/accounts') %>&nbsp;|&nbsp;<%= link_to t("header.logout"),'/logout'%>
     </span>
   </p>
 </div>

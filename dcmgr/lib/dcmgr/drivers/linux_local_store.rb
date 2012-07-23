@@ -12,31 +12,34 @@ module Dcmgr
         FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
         img_src_uri = inst[:image][:backup_object][:uri]
         vmimg_basename = inst[:image][:backup_object][:uuid]
+        is_cacheable = inst[:image][:is_cacheable]
 
         logger.debug("Deploying image file: #{inst[:uuid]}: #{ctx.os_devpath}")
 
-        if Dcmgr.conf.local_store.enable_image_caching
+        if Dcmgr.conf.local_store.enable_image_caching && is_cacheable
           FileUtils.mkdir_p(vmimg_cache_dir) unless File.exists?(vmimg_cache_dir)
-          download_to_local_cache(img_src_uri, vmimg_basename, inst[:image][:backup_object][:checksum])
+          download_to_local_cache(img_src_uri, vmimg_basename, inst[:image][:backup_object][:checksum], is_cacheable)
         else
-          parallel_curl(img_src_uri, vmimg_cache_path(vmimg_basename))
+          parallel_curl(img_src_uri, vmimg_cache_path(vmimg_basename, is_cacheable))
         end
         
-        logger.debug("copying #{vmimg_cache_path(vmimg_basename)} to #{ctx.os_devpath}")
+        logger.debug("copying #{vmimg_cache_path(vmimg_basename, is_cacheable)} to #{ctx.os_devpath}")
 
         case inst[:image][:file_format]
         when "raw"
           # use the file command to detect if the image file is gzip commpressed.
-          if  `/usr/bin/file #{vmimg_cache_path(vmimg_basename)}` =~ /: gzip compressed data,/
-            sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path(vmimg_basename), ctx.os_devpath])
+          if  `/usr/bin/file #{vmimg_cache_path(vmimg_basename, is_cacheable)}` =~ /: gzip compressed data,/
+            sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path(vmimg_basename, is_cacheable), ctx.os_devpath])
           else
-            sh("cp -p --sparse=always %s %s",[vmimg_cache_path(vmimg_basename), ctx.os_devpath])
+            sh("cp -p --sparse=always %s %s",[vmimg_cache_path(vmimg_basename, is_cacheable), ctx.os_devpath])
           end
         end
 
       ensure
-        unless Dcmgr.conf.local_store.enable_image_caching
-          File.unlink(vmimg_cache_path(vmimg_basename)) rescue nil
+        unless Dcmgr.conf.local_store.enable_image_caching && is_cacheable
+          File.unlink(vmimg_cache_path(vmimg_basename, is_cacheable)) rescue nil
+        else
+          delete_local_cache(is_cacheable)
         end
       end
 
@@ -69,41 +72,54 @@ module Dcmgr
         ENV['TMPDIR'] || ENV['TMP'] || '/var/tmp'
       end
       
-      def vmimg_cache_path(img_id)
-        File.expand_path(img_id, (Dcmgr.conf.local_store.enable_image_caching ? vmimg_cache_dir : download_tmp_dir))
+      def vmimg_cache_path(img_id, is_cacheable)
+        File.expand_path(img_id, (Dcmgr.conf.local_store.enable_image_caching && is_cacheable ? vmimg_cache_dir : download_tmp_dir))
       end
 
-      def download_to_local_cache(img_src_uri, basename, checksum)
+      def download_to_local_cache(img_src_uri, basename, checksum, is_cacheable)
         begin
-          if File.mtime(vmimg_cache_path(basename)) <= File.mtime("#{vmimg_cache_path(basename)}.md5")
-            cached_chksum = File.read("#{vmimg_cache_path(basename)}.md5").chomp
+          if File.mtime(vmimg_cache_path(basename, is_cacheable)) <= File.mtime("#{vmimg_cache_path(basename, is_cacheable)}.md5")
+            cached_chksum = File.read("#{vmimg_cache_path(basename, is_cacheable)}.md5").chomp
             if cached_chksum == checksum
               # Here is the only case to be able to use valid cached
               # image file.
-              logger.info("Checksum verification passed: #{vmimg_cache_path(basename)}. We will use this copy.")
+              logger.info("Checksum verification passed: #{vmimg_cache_path(basename, is_cacheable)}. We will use this copy.")
               return
             else
-              logger.warn("Checksum verification failed: #{vmimg_cache_path(basename)}. #{cached_chksum} (calced) != #{checksum} (expected)")
+              logger.warn("Checksum verification failed: #{vmimg_cache_path(basename, is_cacheable)}. #{cached_chksum} (calced) != #{checksum} (expected)")
             end
           else
-            logger.warn("Checksum cache file is older than the image file: #{vmimg_cache_path(basename)}")
+            logger.warn("Checksum cache file is older than the image file: #{vmimg_cache_path(basename, is_cacheable)}")
           end
         rescue SystemCallError => e
           # come here if it got failed with
           # File.mtime()/read(). Expected to catch ENOENT, EACCESS normally.
-          logger.error("Failed to check cached image or checksum file: #{e.message}: #{vmimg_cache_path(basename)}")
+          logger.error("Failed to check cached image or checksum file: #{e.message}: #{vmimg_cache_path(basename, is_cacheable)}")
         end
 
         # Any failure cases will reach here to download image file.
         
-        File.unlink("#{vmimg_cache_path(basename)}") rescue nil
-        File.unlink("#{vmimg_cache_path(basename)}.md5") rescue nil
+        File.unlink("#{vmimg_cache_path(basename, is_cacheable)}") rescue nil
+        File.unlink("#{vmimg_cache_path(basename, is_cacheable)}.md5") rescue nil
         
-        parallel_curl(img_src_uri, vmimg_cache_path(basename))
+        parallel_curl(img_src_uri, vmimg_cache_path(basename, is_cacheable))
         
         if Dcmgr.conf.local_store.enable_cache_checksum
-          logger.debug("calculating checksum of #{vmimg_cache_path(basename)}")
-          sh("md5sum #{vmimg_cache_path(basename)} | awk '{print $1}' > #{vmimg_cache_path(basename)}.md5")
+          logger.debug("calculating checksum of #{vmimg_cache_path(basename, is_cacheable)}")
+          sh("md5sum #{vmimg_cache_path(basename, is_cacheable)} | awk '{print $1}' > #{vmimg_cache_path(basename, is_cacheable)}.md5")
+        end
+      end
+
+      def delete_local_cache(is_cacheable)
+        cached_images =  (Dir.glob(vmimg_cache_path("*", is_cacheable)) - Dir.glob(vmimg_cache_path("*.md5", is_cacheable)))
+        if cached_images.size > Dcmgr.conf.local_store.max_cached_images
+          cached_image = cached_images.sort {|a,b|
+            File.mtime(a) <=> File.mtime(b)
+          }.first
+
+          logger.debug("delete old cache image #{cached_image}")
+          File.unlink("#{cached_image}") rescue nil
+          File.unlink("#{cached_image}.md5") rescue nil
         end
       end
 

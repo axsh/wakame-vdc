@@ -90,7 +90,8 @@ for meta in $data_path/image-*.meta; do
           --root-device ${root_device} \
           --service-type ${service_type} \
           --is_public \
-	  --display-name "'${display_name}'"
+	  --display-name "'${display_name}'" \
+	  --is-cacheable
         ;;
       
       "volume")

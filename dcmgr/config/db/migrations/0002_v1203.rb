@@ -37,6 +37,7 @@ Sequel.migration do
       # Linux tc accepts floating point value as bandwidth.
       drop_column :bandwidth
       add_column :bandwidth, "float"
+      add_column :ip_assignment, "varchar(255)", :default=>"asc", :null=>false
     end
 
     create_table(:host_node_vnets) do
@@ -94,6 +95,7 @@ Sequel.migration do
 
     alter_table(:ip_leases) do
       set_column_type :ipv4, "int(11)", :unsigned=>true
+      set_column_type :description, "varchar(255)"
       drop_column :instance_nic_id
       drop_column :alloc_type
 
@@ -111,6 +113,7 @@ Sequel.migration do
     alter_table(:images) do
       add_column :file_format, "varchar(255)", :null=>false
       add_column :root_device, "varchar(255)"
+      add_column :is_cacheable, "tinyint(1)", :default=>false, :null=>false
     end
 
     rename_table(:physical_networks, :dc_networks)
@@ -151,13 +154,16 @@ Sequel.migration do
       column :uuid, "varchar(255)", :null=>false
       column :account_id, "varchar(255)", :null=>false
       column :instance_id, "int(11)", :null=>false
-      column :protocol, "varchar(4)", :null=>false
+      column :protocol, "varchar(255)", :null=>false
       column :port, "int(11)", :null=>false
-      column :instance_protocol, "varchar(4)", :null=>false
+      column :instance_protocol, "varchar(255)", :null=>false
       column :instance_port, "int(11)", :null=>false
-      column :balance_name, "varchar(255)", :null=>false
+      column :balance_algorithm, "varchar(255)", :null=>false
       column :cookie_name, "varchar(255)", :null=>true
       column :description, "text", :null=>true
+      column :private_key, "text", :null=>true
+      column :public_key, "text", :null=>true
+      column :certificate_chain, "text", :null=>true
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false  
       column :deleted_at, "datetime", :null=>true
@@ -183,13 +189,13 @@ Sequel.migration do
       column :network_vif_id, "int(11)", :null=>false
       column :ipv4, "int(11)", :null=>false, :unsigned=>true
       column :alloc_type, "int(11)", :default=>0, :null=>false
-      column :description, "text"
+      column :description, "varchar(255)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
       column :is_deleted, "int(11)", :null=>false
-      index [:network_id, :network_vif_id, :is_deleted], :unique=>true,
-             :name=>'network_vif_ip_leases_network_id_network_vif_id_index'
+      index [:network_id, :network_vif_id, :ipv4, :is_deleted], :unique=>true,
+             :name=>'network_vif_ip_leases_network_id_network_vif_id_ipv4_index'
     end
 
     # Add service_type column for service type resources
@@ -316,6 +322,12 @@ Sequel.migration do
       add_column :hypervisor, "varchar(255)", :null=>false
       drop_column  :instance_spec_id
     end
+
+    alter_table(:dhcp_ranges) do
+      set_column_type :range_begin, "int(11)", :unsigned=>true, :null=>false
+      set_column_type :range_end, "int(11)", :unsigned=>true, :null=>false
+      add_column :description, "varchar(255)"
+    end
   end
   
   down do
@@ -335,6 +347,7 @@ Sequel.migration do
     alter_table(:images) do
       drop_column :file_format
       drop_column :root_device
+      drop_column :is_cacheable
     end
 
     alter_table(:vlan_leases) do
@@ -345,6 +358,7 @@ Sequel.migration do
     
     alter_table(:networks) do
       drop_column :gateway_network_id
+      drop_column :ip_assignment
       add_column :vlan_lease_id, "int(11)", :default=>0, :null=>false
       add_column :link_interface, "varchar(255)", :null=>false
     end
@@ -441,8 +455,15 @@ Sequel.migration do
     alter_table(:ip_leases) do
       add_column :instance_nic_id, "int(11)", :null=>false
       add_column :alloc_type, "int(11)", :default=>0, :null=>false
+      set_column_type :description, "text"
 
       add_index[:instance_nic_id, :network_id]
+    end
+
+    alter_table(:dhcp_ranges) do
+      set_column_type :range_begin, "varchar(255)", :null=>false
+      set_column_type :range_end, "varchar(255)", :null=>false
+      drop_column :description
     end
   end
 end

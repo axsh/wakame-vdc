@@ -4,7 +4,7 @@ require File.dirname(__FILE__) + '/openvz_config.rb'
 
 module Dcmgr
   module Drivers
-    class Openvz < Hypervisor
+    class Openvz < LinuxHypervisor
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
@@ -53,12 +53,10 @@ module Dcmgr
         
         # generate openvz config
         hypervisor = inst[:host_node][:hypervisor]
-        template_file_path = "template.conf"
         output_file_path = "#{config.ve_config_dir}/ve-openvz.conf-sample"
         
-        render_template(template_file_path, output_file_path) do
-          binding
-        end
+        render_template('template.conf', output_file_path, binding)
+
         logger.debug("created config #{output_file_path}")
         
         # create openvz container
@@ -78,10 +76,8 @@ module Dcmgr
           # create mount directory
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
           unless image[:root_device].nil?
-            # mount loopback device
-            lodev = sh("losetup -f")[:stdout].chomp
-            sh("losetup %s %s", [lodev, hc.os_devpath])
-            new_device_file = sh("kpartx -a -s -v %s", [lodev])
+            # creating loop devices
+            new_device_file = sh("kpartx -a -s -v %s", [hc.os_devpath])
             #
             # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
             # add map loop2p2 (253:3): 0 249856 linear /dev/loop2 974848
@@ -159,21 +155,25 @@ module Dcmgr
         # VMGUARPAGES="65536"
         # 
         
-        # setup metadata drive
+        # mount metadata drive
         hn_metadata_path = "#{config.ve_root}/#{ctid}/metadata"
         ve_metadata_path = "#{inst_data_dir}/metadata"
-        metadata_img_path = hc.metadata_img_path
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
-        raise "metadata image does not exists #{metadata_img_path}" unless File.exists?(metadata_img_path)
-        sh("mount -o loop -o ro %s %s", [metadata_img_path, ve_metadata_path])
-        logger.debug("mount #{metadata_img_path} to #{ve_metadata_path}")
+        raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)
+        res = sh("kpartx -av %s", [hc.metadata_img_path])
+        if res[:stdout] =~ /^add map (\w+) /
+          lodev="/dev/mapper/#{$1}"
+        else
+          raise "Unexpected result from kpartx: #{res[:stdout]}"
+        end
+        sh("udevadm settle")
+        # save the loop device name for the metadata drive.
+        File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
+        sh("mount -o loop -o ro %s %s", [lodev, ve_metadata_path])
+        logger.debug("mount #{hc.metadata_img_path} to #{ve_metadata_path}")
         
         # generate openvz mount config
-        template_mount_file_path = "template.mount"
-        
-        render_template(template_mount_file_path, mount_file_path) do
-          binding
-        end
+        render_template('template.mount', mount_file_path, binding)
         sh("chmod +x %s", [mount_file_path])
         logger.debug("created config #{mount_file_path}")
         
@@ -209,29 +209,29 @@ module Dcmgr
         case hc.inst[:image][:file_format]
         when "raw"
           # umount vm image directory
-          raise "private directory does not exists #{private_dir}" unless File.directory?(private_dir)
+          raise "private directory does not exist #{private_dir}" unless File.directory?(private_dir)
           sh("umount -d %s", [private_dir])
           logger.debug("unmounted private directory #{private_dir}")
           if hc.inst[:image][:root_device]
-            # find loopback device
-            img_file_path = "#{hc.inst_data_dir}/#{inst_id}"
-            raise "image file does not exists #{img_file_path}" unless File.exists?(img_file_path)
-            fs = File::Stat.new(img_file_path)
-            logger.debug("image file inode: #{fs.ino}")
-            lodev = sh("losetup -a |grep %s |awk '{print $1}'", [fs.ino])[:stdout].chomp.split(":")[0]
-            #
-            # /dev/loop0: [0801]:151429 (/path/to/dir/i-xxxx*)
-            #
-            
             # delete device maps
-            sh("kpartx -d %s", [lodev])
+            img_file_path = "#{hc.inst_data_dir}/#{inst_id}"
+            sh("kpartx -d -s -v %s", [img_file_path])
             # wait udev queue
             sh("udevadm settle")
-            sh("losetup -d %s", [lodev])
           end
         end
-        sh("umount -d %s/metadata", [hc.inst_data_dir])
-        logger.debug("unmounted metadata directory #{hc.inst_data_dir}/metadata")
+
+        # umount metadata drive
+        #
+        # *** Don't use "-l" option. ***
+        # If "-l" option is added, umount command will get following messages.
+        # > device-mapper: remove ioctl failed: Device or resource busy
+        # > ioctl: LOOP_CLR_FD: Device or resource busy
+        #
+        sh("umount %s/metadata", [hc.inst_data_dir])
+        sh("kpartx -d %s", [hc.metadata_img_path])
+        sh("udevadm settle")
+        logger.info("unmounted metadata directory #{hc.inst_data_dir}/metadata")
         
         # delete container folder
         sh("vzctl destroy %s",[inst_id])
@@ -240,8 +240,8 @@ module Dcmgr
         container_config = "#{config.ve_config_dir}/#{ctid}"
         config_file_path = "#{container_config}.conf.destroyed"
         mount_file_path = "#{container_config}.mount.destroyed"
-        raise "config file does not exists #{config_file_path}" unless File.exist?(config_file_path)
-        raise "mount file does not exists #{mount_file_path}" unless File.exist?(mount_file_path)
+        raise "config file does not exist #{config_file_path}" unless File.exist?(config_file_path)
+        raise "mount file does not exist #{mount_file_path}" unless File.exist?(mount_file_path)
 
         File.unlink(config_file_path, mount_file_path)
         logger.debug("delete config file #{config_file_path}")
@@ -264,6 +264,13 @@ module Dcmgr
 
       def poweron_instance(hc)
         sh("vzctl start %s", [hc.inst_id])
+      end
+      
+      def check_instance(i)
+        container_status = `vzctl status #{i}`.chomp.split(" ")[4]
+        if container_status != "running"
+          raise "Unable to find the openvz container: #{i}"
+        end
       end
 
 
