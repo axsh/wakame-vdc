@@ -138,6 +138,12 @@ case ${mode} in
     (. $data_path/install.sh)
     (. $data_path/setup.sh)
     ;;
+  setup::openflow)
+    work_dir=${work_dir:-$( cd -P "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )}
+    (. $data_path/openflow/setup-openflow.sh)
+    (. $data_path/openflow/enable-ovs.sh)
+    cp $data_path/openflow/hva.conf $prefix_path/dcmgr/config/hva.conf
+    ;;
   init)
     init_db
     ;;

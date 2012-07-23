@@ -207,6 +207,7 @@ function retry {
 NL=`echo -ne '\015'`
 
 function screen_it {
+  sleep 1
   local title=$1
   local cmd=$2
 

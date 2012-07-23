@@ -62,7 +62,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bit-struct (>= 0.13.6)
+  bit-struct (>= 0.13.7)
   extlib (= 0.9.15)
   ipaddress (= 0.8.0)
   isono (= 0.2.12)
