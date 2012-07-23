@@ -303,6 +303,11 @@ Sequel.migration do
       add_index [:session_id]
     end
 
+    # Isono gem got new job_id column as of v0.2.13.
+    alter_table(:job_states) do
+      add_column :job_name, "text", :null=>false, :default=>''
+    end
+
     # move quota information to frontend.
     drop_table(:quotas)
 
@@ -402,6 +407,10 @@ Sequel.migration do
     alter_table(:job_states) do
       drop_column :session_id
       drop_index [:session_id]
+    end
+
+    alter_table(:job_states) do
+      drop_column :command
     end
 
     alter_table(:volumes) do
