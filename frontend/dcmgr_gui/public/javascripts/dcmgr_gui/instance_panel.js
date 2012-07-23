@@ -479,38 +479,32 @@ DcmgrGUI.prototype.instancePanel = function(){
   var actions = {};
   actions.changeButtonState = function() {
     var ids = c_list.currentMultiChecked()['ids'];
-    var is_running = false;
-    var is_shutting_down = false;
-    var is_stopped = false;
     var flag = true;
+    var is_open = false;
     $.each(ids, function(key, uuid){
       var row_id = '#row-'+uuid;
       var state = $(row_id).find('.state').text();
-      if(state == 'running') {
-        is_running = true;
-      } else if(state =='shuttingdown') {
-        is_shutting_down = true;
-      } else if(state =='stopped') {
-        is_stopped = true;
-      } else{
+      if(_.include(['running', 'stopped', 'halted'], state)) {
+        is_open = true;
+      } else {
         flag = false;
       }
     });
-    
+
     if (flag == true){
-      if(is_running || is_shutting_down || is_stopped) {
+      if(is_open) {
         selectmenu.data('selectmenu').enableButton();
-	bt_instance_backup.enableDialogButton();
+        bt_instance_backup.enableDialogButton();
       } else {
         selectmenu.data('selectmenu').disableButton();
-	bt_instance_backup.disableDialogButton();
+        bt_instance_backup.disableDialogButton();
       }
     } else{
       selectmenu.data('selectmenu').disableButton();
       bt_instance_backup.disableDialogButton();
     }
   }
-  
+
   dcmgrGUI.notification.subscribe('checked_box', actions, 'changeButtonState');
   dcmgrGUI.notification.subscribe('unchecked_box', actions, 'changeButtonState');
   dcmgrGUI.notification.subscribe('change_pagenate', selectmenu.data('selectmenu'), 'disableButton');
