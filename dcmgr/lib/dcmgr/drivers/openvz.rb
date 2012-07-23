@@ -222,7 +222,13 @@ module Dcmgr
         end
 
         # umount metadata drive
-        sh("umount -l %s/metadata", [hc.inst_data_dir])
+        #
+        # *** Don't use "-l" option. ***
+        # If "-l" option is added, umount command will get following messages.
+        # > device-mapper: remove ioctl failed: Device or resource busy
+        # > ioctl: LOOP_CLR_FD: Device or resource busy
+        #
+        sh("umount %s/metadata", [hc.inst_data_dir])
         sh("kpartx -d %s", [hc.metadata_img_path])
         sh("udevadm settle")
         logger.info("unmounted metadata directory #{hc.inst_data_dir}/metadata")
