@@ -12,6 +12,7 @@ module Hijiki::DcmgrResource::V1203
         lb.port = params[:load_balancer_port]
         lb.instance_protocol = params[:instance_protocol]
         lb.instance_port = params[:instance_port]
+        lb.balance_algorithm = params[:balance_algorithm]
         lb.private_key = params[:private_key]
         lb.public_key = params[:public_key]
         lb.certificate_chain = params[:certificate_chain]

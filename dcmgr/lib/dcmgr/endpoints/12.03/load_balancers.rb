@@ -58,7 +58,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb_conf = Dcmgr.conf.service_types['lb']
     spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
     lb_port = params[:port].to_i
-
+    raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
     raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
 
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
@@ -98,7 +98,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb = M::LoadBalancer.create(:account_id => @account.canonical_uuid,
                                 :description => params[:description],
                                 :instance_id => i.id,
-                                :balance_name => params[:balace_name] || 'leastconn',
+                                :balance_algorithm => params[:balance_algorithm] || 'leastconn',
                                 :protocol => params[:protocol] || 'http',
                                 :port => params[:port] || 80,
                                 :instance_protocol => params[:instance_protocol] || 'http',
@@ -116,7 +116,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :instance_port => lb.instance_port,
       :port => lb.connect_port,
       :protocol => lb.protocol,
-      :balance_name => lb.balance_name,
+      :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
       :ipset => []
     }
@@ -161,7 +161,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :instance_port => lb.instance_port,
       :port => lb.connect_port,
       :protocol => lb.protocol,
-      :balance_name => lb.balance_name,
+      :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
       :ipset => []
     }
@@ -240,7 +240,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     config_params = {
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
-      :balance_name => lb.balance_name,
+      :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
       :port => lb.connect_port,
       :protocol => lb.protocol,
@@ -326,7 +326,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
   def update_load_balancer_config(values)
     proxy = Dcmgr::Drivers::Haproxy.new(Dcmgr::Drivers::Haproxy.mode(values[:protocol]))
-    proxy.set_balance(values[:balance_name])
+    proxy.set_balance_algorithm(values[:balance_algorithm])
     proxy.set_cookie_name(values[:cookie_name]) unless values[:cookie_name].empty?
     proxy.set_bind('*', values[:port])
 

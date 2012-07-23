@@ -249,6 +249,10 @@ ja:
         load_balancer_port: "ポート"
         instance_protocol: "プロトコル"
         instance_port: "ポート"
+      algorithm:
+        header: "負荷分散方式"
+        leastconnection: "Least Connection"
+        source: "Source"
       certificate:
         header: "証明書"
         name: "証明書名"

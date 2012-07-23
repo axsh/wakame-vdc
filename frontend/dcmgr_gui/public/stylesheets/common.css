@@ -252,12 +252,12 @@ body{
 #content #signin_form {
   padding: 5px;
   height: 496px;
-  width: 220px  
+  width: 220px
 }
 
 #content #signin_form fieldset div#error_box {
-  background-color: yellow; 
-  width: 200px; 
+  background-color: yellow;
+  width: 200px;
   height: 12px;
 }
 

@@ -23,7 +23,7 @@ module Dcmgr
 
         @listen = {}
         @listen[:servers] = {}
-        set_balance('leastconn')
+        set_balance_algorithm('leastconn')
         set_appsession({})
         set_name('balancer')
         set_bind('*', 80)
@@ -71,17 +71,14 @@ module Dcmgr
         @listen[:appsession][:cookie] = name
       end
 
-      def set_balance(name, param = nil)
+      def set_balance_algorithm(algorithm, param = nil)
 
         if !['roundrobin', 'static-rr', 'leastconn', 'source', 'uri',
-         'url_param','hdr', 'rdp-cookie'].include? name
-          raise 'Undefined balance algorithm.'
+         'url_param','hdr', 'rdp-cookie'].include? algorithm
+          raise 'Undefined balance_algorithm algorithm.'
         end
 
-        balance = name
-        balance += " (param)" unless param.nil?
-
-        @listen[:balance] = balance
+        @listen[:balance_algorithm] = algorithm
       end
 
       def set_appsession(appsession)

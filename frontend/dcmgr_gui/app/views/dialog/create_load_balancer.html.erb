@@ -21,7 +21,15 @@
     </tr>
   </table>
   </div>
-
+  <div id="balance_algorithm">
+    <div id="balance_algorithm_header">
+      <%= t("dialog.create_load_balancer.algorithm.header") %>
+    </div>
+    <div id="balance_algorithm_selector">
+      <label><input type="radio" name="balance_algorithm" value="leastconn" checked><%= t("dialog.create_load_balancer.algorithm.leastconnection") %></label>
+      <label><input type="radio" name="balance_algorithm" value="source"><%= t("dialog.create_load_balancer.header.algorithm.source") %></label>
+    </div>
+  </div>
   <div id="certificate">
     <fieldset id="certificate_group">
       <legend><%= t("dialog.create_load_balancer.certificate.header") %></legend>

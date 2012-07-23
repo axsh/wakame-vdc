@@ -57,6 +57,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     var instance_port = $(this).find('#instance_port').val();
     var public_key = encodeURIComponent($(this).find('#public_key').val());
     var private_key = encodeURIComponent($(this).find('#private_key').val());
+    var balance_algorithm = $(this).find('input[name="balance_algorithm"]:checked').val();
     var certificate_chain = encodeURIComponent($(this).find('#certificate_chain').val());
     var cookie_name = $(this).find('#cookie_name').val();
     var data = "display_name="+display_name
@@ -64,6 +65,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
                +"&load_balancer_port="+load_balancer_port
                +"&instance_protocol="+instance_protocol
                +"&instance_port="+instance_port
+               +"&balance_algorithm="+balance_algorithm
                +"&private_key="+private_key
                +"&public_key="+public_key
                +"&certificate_chain="+certificate_chain

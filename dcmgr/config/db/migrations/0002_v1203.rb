@@ -158,7 +158,7 @@ Sequel.migration do
       column :port, "int(11)", :null=>false
       column :instance_protocol, "varchar(255)", :null=>false
       column :instance_port, "int(11)", :null=>false
-      column :balance_name, "varchar(255)", :null=>false
+      column :balance_algorithm, "varchar(255)", :null=>false
       column :cookie_name, "varchar(255)", :null=>true
       column :description, "text", :null=>true
       column :private_key, "text", :null=>true

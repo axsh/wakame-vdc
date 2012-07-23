@@ -249,6 +249,10 @@ en:
         load_balancer_port: "Port"
         instance_protocol: "Protocol"
         instance_port: "Port"
+      algorithm:
+        header: "Balance Algorithm"
+        leastconnection: "Least Connection"
+        source: "Source"
       certificate:
         header: "Certificate"
         name: "Name"
