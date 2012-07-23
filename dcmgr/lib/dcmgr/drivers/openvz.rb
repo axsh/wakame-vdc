@@ -18,9 +18,7 @@ module Dcmgr
         
         # write a openvz container id
         inst = hc.inst
-        inst_id = hc.inst_id
-        inst_data_dir = hc.inst_data_dir
-        ctid_file_path = File.expand_path('openvz.ctid', inst_data_dir)
+        ctid_file_path = File.expand_path('openvz.ctid', hc.inst_data_dir)
         ctid = inst[:id]
 
         File.open(ctid_file_path, "w") { |f|
@@ -116,7 +114,7 @@ module Dcmgr
         end
         
         # set name
-        sh("vzctl set %s --name %s --save",[ctid, inst_id])
+        sh("vzctl set %s --name %s --save",[ctid, hc.inst_id])
         #
         # Name="i-xxxx"
         #
@@ -133,31 +131,31 @@ module Dcmgr
             # host_mac become a randomly generated MAC Address.
             host_mac = nil
             bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-            sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[inst_id, ifname, mac, host_ifname, host_mac, bridge])
+            sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, host_ifname, host_mac, bridge])
             #
             # NETIF="ifname=eth0,bridge=vzbr0,mac=52:54:00:68:BB:AC,host_ifname=vif-h63jg7pp,host_mac=52:54:00:68:BB:AC"
             #
           }
         end
         # set cpus
-        sh("vzctl set %s --cpus %s --save",[inst_id, inst[:cpu_cores]])
+        sh("vzctl set %s --cpus %s --save",[hc.inst_id, inst[:cpu_cores]])
         #
         # CPUS="1"
         #
         
         # set memory size
-        sh("vzctl set %s --privvmpage %s --save",[inst_id, (inst[:memory_size] * 256)])
+        sh("vzctl set %s --privvmpage %s --save",[hc.inst_id, (inst[:memory_size] * 256)])
         #
         # PRIVVMPAGES="65536"
         #
-        sh("vzctl set %s --vmguarpages %s --save",[inst_id, (inst[:memory_size] * 256)])
+        sh("vzctl set %s --vmguarpages %s --save",[hc.inst_id, (inst[:memory_size] * 256)])
         #
         # VMGUARPAGES="65536"
         # 
         
         # mount metadata drive
         hn_metadata_path = "#{config.ve_root}/#{ctid}/metadata"
-        ve_metadata_path = "#{inst_data_dir}/metadata"
+        ve_metadata_path = "#{hc.inst_data_dir}/metadata"
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
         raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)
         res = sh("kpartx -av %s", [hc.metadata_img_path])
@@ -178,10 +176,8 @@ module Dcmgr
         logger.debug("created config #{mount_file_path}")
         
         # start openvz container
-        sh("vzctl start %s",[inst_id])
-        logger.debug("start container #{inst_id}")
-        sleep 1
-        
+        sh("vzctl start %s",[hc.inst_id])
+        logger.debug("start container #{hc.inst_id}")
       end
 
       def terminate_instance(hc)
@@ -191,30 +187,27 @@ module Dcmgr
         # openvz container id
         ctid = hc.inst[:id]
         
-        # openvz container name
-        inst_id = hc.inst_id
-        
         # container directory
         private_dir = "#{config.ve_private}/#{ctid}"
         
         # stop container
-        sh("vzctl stop %s",[inst_id])
+        sh("vzctl stop %s",[hc.inst_id])
 
         # wait stopped of container status
         tryagain do
-          sh("vzctl status %s", [inst_id])[:stdout].chomp.include?("down")
+          sh("vzctl status %s", [hc.inst_id])[:stdout].chomp.include?("down")
         end
-        logger.debug("stop container #{inst_id}")
+        logger.debug("stop container #{hc.inst_id}")
         
         case hc.inst[:image][:file_format]
         when "raw"
           # umount vm image directory
           raise "private directory does not exist #{private_dir}" unless File.directory?(private_dir)
-          sh("umount -d %s", [private_dir])
+          sh("umount -l %s", [private_dir])
           logger.debug("unmounted private directory #{private_dir}")
           if hc.inst[:image][:root_device]
             # delete device maps
-            img_file_path = "#{hc.inst_data_dir}/#{inst_id}"
+            img_file_path = "#{hc.inst_data_dir}/#{hc.inst_id}"
             sh("kpartx -d -s -v %s", [img_file_path])
             # wait udev queue
             sh("udevadm settle")
@@ -234,7 +227,7 @@ module Dcmgr
         logger.info("unmounted metadata directory #{hc.inst_data_dir}/metadata")
         
         # delete container folder
-        sh("vzctl destroy %s",[inst_id])
+        sh("vzctl destroy %s",[hc.inst_id])
         logger.debug("delete container folder #{private_dir}")
         # delete config file and mount file
         container_config = "#{config.ve_config_dir}/#{ctid}"
@@ -249,11 +242,8 @@ module Dcmgr
       end
       
       def reboot_instance(hc)
-        # openvz container name
-        inst_id = hc.inst_id
-        
         # reboot container
-        sh("vzctl restart %s", [inst_id])
+        sh("vzctl restart %s", [hc.inst_id])
         logger.debug("restart container #{inst_id}")
         
       end
