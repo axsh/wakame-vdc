@@ -10,7 +10,7 @@ set -x
 . ./build_functions-rhel.sh
 
 [[ $UID -ne 0 ]] && {
-  echo "ERROR: Run as root" >2
+  echo "ERROR: Run as root" >&2
   exit 1
 }
 
