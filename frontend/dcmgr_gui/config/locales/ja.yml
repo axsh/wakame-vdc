@@ -266,6 +266,16 @@ ja:
       message: "ロードバランサを破棄します。よろしいですか？"
       load_balancer_id: "ロードバランサID"
       display_name: "ロードバランサ名"
+    poweron_load_balancer:
+      header: "ロードバランサの電源オン"
+      message: "ロードバランサの電源をオンにします。よろしいですか？"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
+    poweroff_load_balancer:
+      header: "ロードバランサの電源オフ"
+      message: "ロードバランサの電源をオフにします。よろしいですか？"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
     register_load_balancer:
       header: "インスタンスの割り当て"
       instances: "インスタンス"
@@ -391,6 +401,9 @@ ja:
       load_balancer_port: "ロードバランサポート"
       instance_protocol: "インスタンスプロトコル"
       instance_port: "インスタンスポート"
+    load_balancer_actions:
+      poweron: "パワーオン"
+      poweroff: "パワーオフ"
   machine_images:
     header: "マシンイメージ"
     button:

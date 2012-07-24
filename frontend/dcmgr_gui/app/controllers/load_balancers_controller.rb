@@ -70,4 +70,17 @@ class LoadBalancersController < ApplicationController
      res = Hijiki::DcmgrResource::LoadBalancer.unregister(load_balancer_id, vifs)
      render :json => res
    end
+
+   def poweron
+    load_balancer_id = params[:id]
+    load_balancer = Hijiki::DcmgrResource::LoadBalancer.poweron(load_balancer_id)
+    render :json => load_balancer
+   end
+
+   def poweroff
+    load_balancer_id = params[:id]
+    load_balancer = Hijiki::DcmgrResource::LoadBalancer.poweroff(load_balancer_id)
+    render :json => load_balancer
+   end
+
 end

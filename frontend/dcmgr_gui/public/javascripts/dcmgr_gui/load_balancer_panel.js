@@ -32,6 +32,8 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var delete_button_name = $.i18n.prop('delete_button');
   var register_button_name = $.i18n.prop('register_button');
   var unregister_button_name = $.i18n.prop('unregister_button');
+  var poweron_button_name =$.i18n.prop('poweron_button');
+  var poweroff_button_name =$.i18n.prop('poweroff_button');
 
   c_list.setDetailTemplate({
     template_id:'#loadBalancersDetailTemplate',
@@ -336,6 +338,54 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     button: unregister_load_balancer_buttons
   });
 
+  var load_balancers_poweron_buttons = {};
+  load_balancers_poweron_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  load_balancers_poweron_buttons[poweron_button_name] = function() {
+    var load_balancer_id = c_list.currentChecked();
+    var request = new DcmgrGUI.Request;
+    request.put({
+      "url": "/load_balancers/poweron/" + load_balancer_id,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+
+    $(this).dialog("close");
+  }
+
+  var bt_poweron_instance = new DcmgrGUI.Dialog({
+    target:'.poweron_load_balancer',
+    width:400,
+    height:200,
+    title:$.i18n.prop('poweron_load_balancer_header'),
+    path:'/poweron_load_balancer',
+    button: load_balancers_poweron_buttons
+  });
+
+  var load_balancers_poweroff_buttons = {};
+  load_balancers_poweroff_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  load_balancers_poweroff_buttons[poweroff_button_name] = function() {
+    var load_balancer_id = c_list.currentChecked();
+    var request = new DcmgrGUI.Request;
+    request.put({
+      "url": "/load_balancers/poweroff/" + load_balancer_id,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+
+    $(this).dialog("close");
+  }
+
+  var bt_poweroff_load_balancer = new DcmgrGUI.Dialog({
+    target:'.poweroff_load_balancer',
+    width:400,
+    height:200,
+    title:$.i18n.prop('poweroff_load_balancer_header'),
+    path:'/poweroff_load_balancer',
+    button: load_balancers_poweroff_buttons
+  });
+
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/load_balancers/list/',c_list.page);
@@ -383,6 +433,12 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
         case 'unregister':
           bt_unregister_load_balancer.open({ids: [selected_id]});
           break;
+        case 'poweron':
+          bt_poweron_instance.open({ids: [selected_id]});
+          break;
+        case 'poweroff':
+          bt_poweroff_load_balancer.open({ids: [selected_id]});
+          break;
       }
     }
   });
@@ -396,16 +452,10 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var actions = {};
   actions.changeButtonState = function() {
     var uuid = c_list.currentChecked();
-    var is_running = false;
-    var is_shutting_down = false;
     var row_id = '#row-'+uuid;
     var state = $(row_id).find('.state').text();
 
-    if(state == 'running') {
-      is_running = true;
-    }
-
-    if(is_running) {
+    if(_.include(['running', 'halted'], state)) {
       selectmenu.data('selectmenu').enableButton();
     } else {
       selectmenu.data('selectmenu').disableButton();

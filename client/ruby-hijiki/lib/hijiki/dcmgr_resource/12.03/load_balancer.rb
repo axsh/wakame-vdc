@@ -53,6 +53,21 @@ module Hijiki::DcmgrResource::V1203
         result.body
       end
 
+      def poweron(load_balancer_id)
+        @collection ||= self.collection_name
+        self.collection_name = File.join(@collection, load_balancer_id)
+        result = self.put(:poweron, {:load_balancer_id => load_balancer_id})
+        self.collection_name = @collection
+        result.body
+      end
+
+      def poweroff(load_balancer_id)
+        @collection ||= self.collection_name
+        self.collection_name = File.join(@collection, load_balancer_id)
+        result = self.put(:poweroff, {:load_balancer_id => load_balancer_id})
+        self.collection_name = @collection
+        result.body
+      end
     end
     extend ClassMethods
 

@@ -283,6 +283,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     #pending
   end
 
+  put '/:id/poweron' do
+    lb = find_by_uuid(:LoadBalancer, params[:id])
+    raise E::UnknownInstance if lb.nil?
+    i = lb.instance
+
+    request_forward.put("/instances/#{i.canonical_uuid}/poweron")
+    respond_with({:load_balancer_id=>lb.canonical_uuid})
+  end
+
+  put '/:id/poweroff' do
+    lb = find_by_uuid(:LoadBalancer, params[:id])
+    raise E::UnknownInstance if lb.nil?
+    i = lb.instance
+
+    request_forward.put("/instances/#{i.canonical_uuid}/poweroff")
+    respond_with({:load_balancer_id=>lb.canonical_uuid})
+  end
+
+
   delete '/:id' do
     lb = find_by_uuid(:LoadBalancer, params[:id])
     raise E::UnknownInstance if lb.nil?
