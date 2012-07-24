@@ -274,6 +274,14 @@
 
 }
 
+#create_load_balancer_dialog #description_header {
+  padding-left:3px;
+}
+
+#create_load_balancer_dialog #description_box {
+  padding-left:10px;
+}
+
 #create_load_balancer_dialog #balance_algorithm_header {
   padding-left: 3px;
 }

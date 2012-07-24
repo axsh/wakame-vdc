@@ -8,6 +8,7 @@ class LoadBalancersController < ApplicationController
   def create
      data = {
       :display_name => params[:display_name],
+      :description => params[:description],
       :load_balancer_protocol => params[:load_balancer_protocol],
       :load_balancer_port => params[:load_balancer_port],
       :instance_protocol => params[:instance_protocol],

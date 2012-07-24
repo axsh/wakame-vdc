@@ -243,6 +243,7 @@ en:
     create_load_balancer:
       header:
         display_name: "Load Balancer Name"
+        description: "Description"
         load_balancer: "Load Balancer"
         instance: "Instance"
         load_balancer_protocol: "Protocol"

@@ -243,6 +243,7 @@ ja:
     create_load_balancer:
       header:
         display_name: "ロードバランサ名"
+        description: "説明"
         load_balancer: "ロードバランサ"
         instance: "インスタンス"
         load_balancer_protocol: "プロトコル"
