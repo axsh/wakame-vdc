@@ -2,8 +2,8 @@
 
 ## Preparing vmimages
 
-    $ s3cmd sync s3://dlc.wakame.axsh.jp/demo/vmimage/ubuntu-lucid-32.raw.gz ./.
-    $ s3cmd sync s3://dlc.wakame.axsh.jp/demo/vmimage/ubuntu-lucid-64.raw.gz ./.
+    $ curl -O https://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-32.raw.gz
+    $ curl -O https://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-64.raw.gz
     $ gunzip ubuntu-lucid-32.raw.gz
     $ gunzip ubuntu-lucid-64.raw.gz
 
