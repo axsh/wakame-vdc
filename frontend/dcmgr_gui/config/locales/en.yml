@@ -379,9 +379,6 @@ en:
       updated_at: "Updated At"
   load_balancers:
     header: "Load Balancers"
-    load_balancer_actions:
-      register_instance: "Register Instance"
-      unregister_instance: "Unregister Instance"
     button:
       create_load_balancer: "Create Load Balancer"
       delete_load_balancer: "Delete Load Balancer"
@@ -403,6 +400,8 @@ en:
       instance_protocol: "Instance Protocol"
       instance_port: "Instance Port"
     load_balancer_actions:
+      register_instance: "Register Instance"
+      unregister_instance: "Unregister Instance"
       poweron: "Power On"
       poweroff: "Power Off"
   machine_images:

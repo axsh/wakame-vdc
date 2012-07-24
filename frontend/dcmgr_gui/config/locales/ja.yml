@@ -378,9 +378,6 @@ ja:
       updated_at: "更新日"
   load_balancers:
     header: "ロードバランサ"
-    load_balancer_actions:
-      register_instance: "インスタンスの割り当て"
-      unregister_instance: "インスタンスの解除"
     button:
       create_load_balancer: "ロードバランサを起動"
       delete_load_balancer: "ロードバランサを破棄"
@@ -402,6 +399,8 @@ ja:
       instance_protocol: "インスタンスプロトコル"
       instance_port: "インスタンスポート"
     load_balancer_actions:
+      register_instance: "インスタンスの割り当て"
+      unregister_instance: "インスタンスの解除"
       poweron: "パワーオン"
       poweroff: "パワーオフ"
   machine_images:
