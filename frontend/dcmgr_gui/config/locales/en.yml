@@ -266,6 +266,16 @@ en:
       message: "Are you sure you want to delete the following Load Balancer?"
       load_balancer_id: "Load Balancer ID"
       display_name: "Load Balancer Name"
+    poweron_load_balancer:
+      header: "PowerOn Load Balancer"
+      message: "Are you sure you want to turn load balancer on?"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
+    poweroff_load_balancer:
+      header: "PowerOff Load Balancer"
+      message: "Are you sure you want to turn load balancer off?"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
     register_load_balancer:
       header: "Register Load Balancer"
       instances: "Instances"
@@ -392,6 +402,9 @@ en:
       load_balancer_port: "Load Balancer Port"
       instance_protocol: "Instance Protocol"
       instance_port: "Instance Port"
+    load_balancer_actions:
+      poweron: "Power On"
+      poweroff: "Power Off"
   machine_images:
     header: "Machine Images"
     button:
