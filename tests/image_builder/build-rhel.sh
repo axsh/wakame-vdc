@@ -16,8 +16,8 @@ set -x
 
 # generate seed image
 # no metadata image (KVM)
-run_vmbuilder "${distro_name}-${distro_ver}-kvm-32.raw" "i686"
-run_vmbuilder "${distro_name}-${distro_ver}-kvm-64.raw" "x86_64"
+[ -f "${distro_name}-${distro_ver}-kvm-32.raw" ] || run_vmbuilder "${distro_name}-${distro_ver}-kvm-32.raw" "i686"
+[ -f "${distro_name}-${distro_ver}-kvm-64.raw" ] || run_vmbuilder "${distro_name}-${distro_ver}-kvm-64.raw" "x86_64"
 
 loop_mount_image "${distro_name}-${distro_ver}-kvm-32.raw" "kvm_base_setup"
 loop_mount_image "${distro_name}-${distro_ver}-kvm-64.raw" "kvm_base_setup"
