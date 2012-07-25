@@ -31,6 +31,17 @@ Then /^we (should|should\snot) be able to show the hosts$/ do |outcome|
   }
 end
 
+Then /^we should be able to modify "([^"]*)" as "([^"]*)" for existing hosts$/ do |v, k|
+  @host_uuids.each { |uuid|
+    %x{./vdc-manage host modify #{uuid} --#{k} #{v}}
+    $?.exitstatus.should == 0
+  }
+end
+
+When /^we should be able to modify arch type as (\w+) for existing hosts$/ do |arg1|
+  pending # express the regexp above with the code you wish you had
+end
+
 When /^we delete the hosts$/ do
   @host_uuids.each { |uuid|
     %x{./vdc-manage host del #{uuid}}
