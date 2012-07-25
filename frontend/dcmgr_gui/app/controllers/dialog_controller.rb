@@ -167,6 +167,13 @@ class DialogController < ApplicationController
     @description = @machine_image["description"]
   end
   
+  def delete_backup_image
+    uuid = params[:ids][0]
+    backup_image = Hijiki::DcmgrResource::Image.show(uuid)
+    @image_id = backup_image["uuid"]
+    @display_name = backup_image["display_name"]
+  end
+
   def create_ssh_keypair
     render :create_and_edit_ssh_keypair
   end

@@ -41,7 +41,8 @@ DcmgrGUI.prototype.imagePanel = function(){
   var close_button_name = $.i18n.prop('close_button'); 
   var launch_button_name = $.i18n.prop('launch_button');
   var update_button_name = $.i18n.prop('update_button');
-  
+  var delete_button_name = $.i18n.prop('delete_button');
+
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
     total:total
@@ -356,6 +357,29 @@ DcmgrGUI.prototype.imagePanel = function(){
     button: launch_instance_buttons
   });
   
+  var delete_backup_image_buttons = {};
+  delete_backup_image_buttons[close_button_name] = function() { $(this).dialog("close"); }
+  delete_backup_image_buttons[delete_button_name] = function() {
+      var image_id = $(this).find('#image_id').val();
+      var request = new DcmgrGUI.Request;
+      request.del({
+	"url": '/machine_images/'+ image_id +'.json',
+	success: function(json,status){
+	  bt_refresh.element.trigger('dcmgrGUI.refresh');
+	}
+      });
+      $(this).dialog("close");
+  }
+
+  var bt_delete_backup_image = new DcmgrGUI.Dialog({
+    target:'.delete_backup_image',
+    width:400,
+    height:250,
+    title:$.i18n.prop('delete_backup_image_header'),
+    path:'/delete_backup_image',
+    button: delete_backup_image_buttons
+  });
+
   bt_launch_instance.target.bind('click',function(){
     if(!bt_launch_instance.is_disabled()) {
       var id = c_list.currentChecked();
@@ -366,7 +390,17 @@ DcmgrGUI.prototype.imagePanel = function(){
     }
     return false;
   });
-  
+
+  bt_delete_backup_image.target.bind('click',function(){
+    if(!bt_delete_backup_image.is_disabled()) {
+      var id = c_list.currentChecked();
+      if( id ){
+	  bt_delete_backup_image.open({"ids":[id]});
+      }
+    }
+    return false;
+  });
+
   var actions = {};
   actions.changeButtonState = function() {
       var id = c_list.currentChecked();
@@ -380,6 +414,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   }
 
   $(bt_launch_instance.target).button({ disabled: true });
+  $(bt_delete_backup_image.target).button({ disabled: false});
   $(bt_refresh.target).button({ disabled: false });
 
   dcmgrGUI.notification.subscribe('checked_radio', actions, 'changeButtonState');

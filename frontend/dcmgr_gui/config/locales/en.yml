@@ -78,6 +78,11 @@ en:
       uuid: "WMI ID"
       display_name: "Image Name"
       description: "Description"
+    delete_backup_image:
+      header: "Delete Backup Image"
+      image_id: "WMI ID"
+      display_name: "Image Name"
+      message: "Are you sure you want to delete the following backup image?"
     create_volume:
       header: "Create Volume"
       display_name: "Volume Name"
@@ -408,6 +413,7 @@ en:
     header: "Machine Images"
     button:
       launch_instance: "Launch Instance"
+      delete_backup_image: "Delete Backup Image"
       edit_machine_image: "Edit"
     list:
       wmi_id: "WMI ID"

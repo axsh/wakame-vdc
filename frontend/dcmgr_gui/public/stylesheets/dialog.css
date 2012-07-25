@@ -13,6 +13,14 @@
   padding: 5px 10px;
 }
 
+#delete_backup_image_dialog table {
+	margin: 10px;
+}
+
+#delete_backup_image_dialog table tr td {
+	padding: 3px;
+}
+
 #attach_volume_dialog table tr td {
 	padding: 3px 10px;
 }

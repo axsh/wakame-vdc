@@ -77,6 +77,11 @@ ja:
       uuid: "WMI ID"
       display_name: "イメージ名"
       description: "詳細"
+    delete_backup_image:
+      header: "バックアップイメージを削除"
+      image_id: "WMI ID"
+      display_name: "イメージ名"
+      message: "バックアップイメージを削除します。よろしいですか？"
     create_volume:
       header: "ボリュームを作成"
       display_name: "ボリューム名"
@@ -407,6 +412,7 @@ ja:
     header: "マシンイメージ"
     button:
       launch_instance: "インスタンスを起動"
+      delete_backup_image: "バックアップイメージを削除"
       edit_machine_image: "編集"
     list:
       wmi_id: "WMI ID"

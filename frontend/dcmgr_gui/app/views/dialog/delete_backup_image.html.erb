@@ -1,0 +1,16 @@
+<div id="delete_backup_image_dialog">
+  <div class="message">
+    <p><%= t('dialog.delete_backup_image.message')%></p>
+  </div>
+  <table>
+    <tr>
+      <td><%= t('dialog.delete_backup_image.image_id')%>:</td>
+      <td><%= @image_id %></td>
+      <td><input type="hidden" id="image_id" value="<%= @image_id %>"></td>
+    </tr>
+    <tr>
+      <td><%= t('dialog.delete_backup_image.display_name')%>:</td>
+      <td><%= @display_name %></td>
+    </tr>
+  </table>
+</div>

@@ -489,6 +489,15 @@ body{
 	font-size: 11px;
 	line-height: 0;
 }
+#content #mainarea_wide .controller a.delete_backup_image{
+	display: block;
+	float: left;
+	width: 200px;
+	height: 23px;
+	font-size: 11px;
+	line-height: 0;
+	margin-left: 10px;
+}
 #content #mainarea_wide .controller #instanceaction{
 	float: left;
 	margin-left: 7px;

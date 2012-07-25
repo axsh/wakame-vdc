@@ -29,6 +29,12 @@ class MachineImagesController < ApplicationController
     render :json => image
   end
 
+  def destroy
+    image_id = params[:id]
+    image = Hijiki::DcmgrResource::Image.destroy(image_id)
+    render :json => image
+  end
+
   def total
    total_resource = Hijiki::DcmgrResource::Image.total_resource
    render :json => total_resource

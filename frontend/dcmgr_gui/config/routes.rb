@@ -35,6 +35,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/delete_security_group', :to => 'dialog#delete_security_group'
   post   'dialog/edit_security_group', :to => 'dialog#edit_security_group'
   post   'dialog/launch_instance', :to => 'dialog#launch_instance'
+  post   'dialog/delete_backup_image', :to => 'dialog#delete_backup_image'
   post   'dialog/edit_machine_image', :to => 'dialog#edit_machine_image'
   get    'dialog/create_ssh_keypair', :to => 'dialog#create_ssh_keypair'
   post   'dialog/delete_ssh_keypair', :to => 'dialog#delete_ssh_keypair'
@@ -102,7 +103,8 @@ DcmgrGui::Application.routes.draw do
   get    'machine_images/list/:id' ,:to => 'machine_images#list'
   get    'machine_images/show/:id' ,:to => 'machine_images#show'
   put    'machine_images/:id' ,:to => 'machine_images#update'
-  
+  delete 'machine_images/:id' ,:to => 'machine_images#destroy'
+
   #information
   get    'information' ,:to => 'information#index'
   get    'information/rss' ,:to => 'information#rss'
