@@ -58,4 +58,18 @@ module Hijiki
     end
 
   end
+
+  module Request
+
+    module Common
+      autoload :Defaults, 'hijiki/request/base'
+      autoload :Helpers, 'hijiki/request/base'
+    end
+
+    module V1203
+      autoload :Networks, 'hijiki/request/12.03/networks'
+    end
+
+  end
+
 end
