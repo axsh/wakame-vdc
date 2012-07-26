@@ -65,6 +65,17 @@ DcmgrGUI.prototype.imagePanel = function(){
     c_pagenate.changeTotal(image.total);
     c_list.setData(image.results);
     c_list.singleCheckList(c_list.detail_template);
+    c_list.element.find(".edit_machine_image").each(function(key,value){
+      $(this).button({ disabled: false });
+      var uuid = $(value).attr('id').replace(/edit_(wmi-[a-z0-9]+)/,'$1');
+      if( uuid ){
+	$(this).bind('click',function(){
+	  bt_edit_machine_image.open({"ids":[uuid]});
+	});
+      } else {
+	  $(this).button({ disabled: true});
+      }
+    });
 
     var edit_machine_image_buttons = {};
     edit_machine_image_buttons[close_button_name] = function() { $(this).dialog("close"); };
@@ -99,16 +110,6 @@ DcmgrGUI.prototype.imagePanel = function(){
         $(this).find('#machine_image_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
-
-    bt_edit_machine_image.target.bind('click',function(event){
-      var uuid = $(this).attr('id').replace(/edit_(wmi-[a-z0-9]+)/,'$1');
-      if( uuid ){
-        bt_edit_machine_image.open({"ids":[uuid]});
-      }
-      c_list.checkRadioButton(uuid);
-    });
-
-    $(bt_edit_machine_image.target).button({ disabled: false });
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -119,17 +120,12 @@ DcmgrGUI.prototype.imagePanel = function(){
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
-    //update detail
-    $.each(c_list.checked_list,function(check_id,obj){
-     
-     //remove
-     $($('#detail').find('#'+check_id)).remove();
-     
-     //update
-     c_list.checked_list[check_id].c_detail.update({
-       url:DcmgrGUI.Util.getPagePath('/machine_images/show/',check_id)
-     },true);
-    });
+    var check_id = c_list.currentChecked();
+    //remove detail element
+    $($('#detail').find('#'+check_id)).remove();
+    //disable dialog button
+    bt_launch_instance.disableDialogButton();
+    bt_delete_backup_image.disableDialogButton();
   });
   
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){
@@ -406,19 +402,28 @@ DcmgrGUI.prototype.imagePanel = function(){
       var id = c_list.currentChecked();
       var row_id = "#row-"+id;
       var state = $(row_id).find('.state').text();
+      var owner = $('#mainarea_wide').find('#owner').val();
+      var image_owner = $(row_id).find('.owner').text();
       if(state == 'available') {
 	  bt_launch_instance.enableDialogButton();
+	  if(owner != image_owner){
+	      bt_delete_backup_image.disableDialogButton();
+	  } else {
+	      bt_delete_backup_image.enableDialogButton();
+	  }
       } else {
 	  bt_launch_instance.disableDialogButton();
+	  bt_delete_backup_image.disableDialogButton();
       }
   }
 
   $(bt_launch_instance.target).button({ disabled: true });
-  $(bt_delete_backup_image.target).button({ disabled: false});
+  $(bt_delete_backup_image.target).button({ disabled: true});
   $(bt_refresh.target).button({ disabled: false });
 
   dcmgrGUI.notification.subscribe('checked_radio', actions, 'changeButtonState');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_launch_instance, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_backup_image, 'disableDialogButton');
   //list
   c_list.setData(null);
   c_list.update(list_request,true);
