@@ -4,8 +4,9 @@ module Dcmgr
   module Drivers
     class LinuxLocalStore < LocalStore
       include Dcmgr::Logger
-      include Dcmgr::Helpers::CliHelper
-      
+      include Helpers::Cgroup::CgroupContextProvider
+      include Helpers::CliHelper
+
       def deploy_image(inst,ctx)
         # setup vm data folder
         inst_data_dir = ctx.inst_data_dir
