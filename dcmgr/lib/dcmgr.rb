@@ -145,7 +145,9 @@ module Dcmgr
     autoload :RequestLogger, 'dcmgr/rack/request_logger'
     autoload :RunInitializer, 'dcmgr/rack/run_initializer'
   end
-  
+
+  autoload :Task, 'dcmgr/task'
+
   module Drivers
     autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :LocalStorage, 'dcmgr/drivers/local_storage'
