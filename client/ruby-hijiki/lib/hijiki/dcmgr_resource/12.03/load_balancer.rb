@@ -8,8 +8,8 @@ module Hijiki::DcmgrResource::V1203
         lb = self.new
         lb.instance_spec_id = params[:instance_spec_id]
         lb.display_name = params[:display_name]
-        lb.protocol = params[:load_balancer_protocol]
-        lb.port = params[:load_balancer_port]
+        lb.protocol = params[:protocol]
+        lb.port = params[:port]
         lb.instance_protocol = params[:instance_protocol]
         lb.instance_port = params[:instance_port]
         lb.balance_algorithm = params[:balance_algorithm]
