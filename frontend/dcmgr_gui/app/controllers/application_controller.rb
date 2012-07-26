@@ -92,6 +92,13 @@ class ApplicationController < ActionController::Base
     locales
   end
 
+  # Enable DB transactios per HTTP request.
+  def dispatch(name, request)
+    BaseNew.db.transaction do
+      super
+    end
+  end
+
   private
   def extract_locale_from_accept_language_header
     if request.env['HTTP_ACCEPT_LANGUAGE'].nil?
