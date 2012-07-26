@@ -58,10 +58,9 @@ module Dcmgr
 
       def setup_metadata_drive(hc,metadata_items)
         begin
-          inst_data_dir = hc.inst_data_dir
-          FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
+          FileUtils.mkdir(hc.inst_data_dir) unless File.exists?(hc.inst_data_dir)
           
-          logger.info("Setting up metadata drive image for :#{hc.inst_id}")
+          logger.info("Setting up metadata drive image:#{hc.inst_id}")
           # truncate creates sparsed file.
           sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'; sync;")
           sh("parted %s < %s", [hc.metadata_img_path, LinuxHypervisor.template_real_path('metadata.parted')])
