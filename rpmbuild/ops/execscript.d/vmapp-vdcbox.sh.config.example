@@ -1,0 +1,10 @@
+#
+# config for vmapp-vdcbox.sh example
+#
+brname=br0
+ifname=eth0
+ip=10.0.2.19
+mask=255.255.255.0
+net=10.0.2.0
+bcast=192.0.2.255
+gw=10.0.2.1
