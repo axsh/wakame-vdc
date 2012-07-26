@@ -19,5 +19,6 @@ gem "bit-struct", ">= 0.13.7"
 gem "racket", ">= 1.0.11"
 gem 'ripl'
 gem "rack-test", "0.6.1"
+gem 'posix-spawn'
 
 gem 'isono', '0.2.12'

@@ -21,6 +21,7 @@ GEM
     mysql2 (0.3.11)
     net-dhcp (1.1.1)
     nokogiri (1.5.2)
+    posix-spawn (0.3.6)
     rack (1.4.1)
     rack-protection (1.2.0)
       rack
@@ -69,6 +70,7 @@ DEPENDENCIES
   json (>= 1.2.0)
   mysql2 (= 0.3.11)
   net-dhcp (>= 1.1.0)
+  posix-spawn
   rack (= 1.4.1)
   rack-test (= 0.6.1)
   racket (>= 1.0.11)
