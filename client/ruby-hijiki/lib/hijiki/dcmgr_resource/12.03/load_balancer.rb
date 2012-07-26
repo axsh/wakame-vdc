@@ -69,6 +69,10 @@ module Hijiki::DcmgrResource::V1203
         self.collection_name = @collection
         result.body
       end
+
+      def update(load_balancer_id,params)
+        self.put(load_balancer_id,params).body
+      end
     end
     extend ClassMethods
 
