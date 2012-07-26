@@ -389,6 +389,7 @@ en:
       display_name: "Name"
       ip: "IP"
       state: "State"
+      action: "Action"
     details:
       header: "Details"
       load_balancer_id: "Load Balancer ID"

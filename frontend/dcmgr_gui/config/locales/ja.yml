@@ -388,6 +388,7 @@ ja:
       display_name: "ロードバランサ名"
       ip: "IPアドレス"
       state: "状態"
+      action: "アクション"
     details:
       header: "詳細"
       load_balancer_id: "ロードバランサID"
