@@ -118,6 +118,7 @@ function run_standalone() {
   cd ${prefix_path}
   
   screen_open || abort "Failed to start new screen session"
+  sleep 1
   screen_it collector "cd ./dcmgr; ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
   screen_it nsa       "cd ./dcmgr; ./bin/nsa -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-nsa.log"
   screen_it hva       "cd ./dcmgr; ./bin/hva -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-hva.log"
@@ -149,6 +150,11 @@ case ${mode} in
     ;;
   cleanup)
     cleanup
+    ;;
+  start)
+    run_standalone
+    screen_attach
+    screen_close
     ;;
   *)
     # interactive mode
