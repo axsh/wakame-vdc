@@ -75,15 +75,14 @@ module Dcmgr
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
           unless image[:root_device].nil?
             # creating loop devices
-            new_device_file = sh("kpartx -a -s -v %s", [hc.os_devpath])
+            mapdevs = sh("kpartx -va %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
+            new_device_file = mapdevs[:stdout].split("\n").map {|mapdev| "/dev/mapper/#{mapdev}"}
             #
             # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
             # add map loop2p2 (253:3): 0 249856 linear /dev/loop2 974848
             #
             # wait udev queue
             sh("udevadm settle")
-            # loopback device file
-            new_device_file = new_device_file[:stdout].split(nil).grep(/p[0-9]+p[0-9]+/).collect {|w| "/dev/mapper/#{w}"} 
             # find loopback device
             k, v = image[:root_device].split(":")
             case k
@@ -96,6 +95,7 @@ module Dcmgr
             #
             # /dev/mapper/loop0p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4" 
             # /dev/mapper/loop2p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
+            # /dev/mapper/ip-192.0.2.19:3260-iscsi-iqn.2010-09.jp.wakame:vol-lzt6zx5c-lun-1p1: UUID="148bc5df-3fc5-4e93-8a16-7328907cb1c0" TYPE="ext4"
             #
             device_file_list = device_file_list[:stdout].split(":\n")
             # root device
