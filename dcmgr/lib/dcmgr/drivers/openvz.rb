@@ -244,7 +244,7 @@ module Dcmgr
       def reboot_instance(hc)
         # reboot container
         sh("vzctl restart %s", [hc.inst_id])
-        logger.debug("restart container #{inst_id}")
+        logger.debug("restart container #{hc.inst_id}")
         
       end
 
