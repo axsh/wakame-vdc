@@ -109,6 +109,7 @@ module Dcmgr
     autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
     autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
+    autoload :Cgroup, 'dcmgr/helpers/cgroup'
   end
 
   autoload :Tags, 'dcmgr/tags'
