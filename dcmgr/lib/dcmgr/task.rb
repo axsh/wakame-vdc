@@ -52,22 +52,22 @@ module Dcmgr
     # # => 2
     class Tasklet
       class << self
-        attr_reader :filter_hooks
+        attr_reader :task_hooks
         
         def reset!
-          @filter_hooks = {:before => [], :after => [], :session_begin => []}
+          @task_hooks = {:before => [], :after => [], :session_begin => []}
         end
         
         def before(&blk)
-          @filter_hooks[:before] << blk
+          @task_hooks[:before] << blk
         end
         
         def after(&blk)
-          @filter_hooks[:after] << blk
+          @task_hooks[:after] << blk
         end
 
         def session_begin(&blk)
-          @filter_hooks[:session_begin] << blk
+          @task_hooks[:session_begin] << blk
         end
 
         private
@@ -84,8 +84,8 @@ module Dcmgr
         dup.invoke!(session, method, args)
       end
 
-      def filter(type, args=[])
-        filter!(type)
+      def invoke_hook(type, args=[])
+        invoke_hook!(type)
       end
 
       module Helpers
@@ -96,6 +96,8 @@ module Dcmgr
       end
 
       include Helpers
+
+      private
       
       def invoke!(session, method, args=[])
         raise "Unknown method: #{self.class}\##{method}" unless self.respond_to?(method)
@@ -105,18 +107,17 @@ module Dcmgr
         @args = args
         
         begin
-          filter! :before
+          invoke_hook! :before
           # method must be public.
           self.send(method, *args)
         ensure
-          filter! :after
+          invoke_hook! :after
         end
       end
 
-      def filter!(type, base=self.class)
-        filter!(type, base.superclass) if base.superclass.respond_to?(:filter_hooks)
-        p base
-        base.filter_hooks[type].each { |i| self.instance_exec(&i) }
+      def invoke_hook!(type, base=self.class)
+        invoke_hook!(type, base.superclass) if base.superclass.respond_to?(:task_hooks)
+        base.task_hooks[type].each { |i| self.instance_exec(&i) }
       end
     end
 
@@ -170,7 +171,7 @@ module Dcmgr
         raise ArgumentError unless tasklet.is_a?(Tasklet)
         unless @tasklets.has_key?(tasklet)
           @tasklets[tasklet]=1
-          tasklet.filter(:session_begin)
+          tasklet.invoke_hook(:session_begin)
         end
         tasklet.invoke(self, method, args)
       end
