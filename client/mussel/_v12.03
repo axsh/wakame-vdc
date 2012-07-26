@@ -37,7 +37,7 @@ case "${1}" in
 
 instance)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy|reboot" ;;
+  help)    cmd_help    ${1} "index|show|create|destroy|reboot|stop|start" ;;
   index)
     # --state=(running|stopped|terminated|alive)
     if [ ! -z "${state}" ]; then

@@ -248,6 +248,7 @@ ja:
     create_load_balancer:
       header:
         display_name: "ロードバランサ名"
+        description: "説明"
         load_balancer: "ロードバランサ"
         instance: "インスタンス"
         load_balancer_protocol: "プロトコル"
@@ -386,11 +387,13 @@ ja:
     button:
       create_load_balancer: "ロードバランサを起動"
       delete_load_balancer: "ロードバランサを破棄"
+      edit_load_balancer: "編集"
     list:
       id: "ID"
       display_name: "ロードバランサ名"
       ip: "IPアドレス"
       state: "状態"
+      action: "アクション"
     details:
       header: "詳細"
       load_balancer_id: "ロードバランサID"

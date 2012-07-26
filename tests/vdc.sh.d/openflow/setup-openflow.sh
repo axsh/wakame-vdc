@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Ubuntu 10.04 LTS
 #
@@ -11,7 +11,12 @@ work_dir=${work_dir:?"work_dir needs to be set"}
 if [ ! -d $work_dir/trema/.git ]; then
     cd $work_dir
     git clone git://github.com/axsh/trema
-    (cd ./trema/ && bundle install && ./build.rb && mkdir ./tmp/log) > /dev/null
+    cd ./trema/ 
+    bundle install 
+    svn co svn://rubyforge.org/var/svn/rant
+    (cd rant/trunk/ && ruby ./setup.rb && rant package && gem install pkg/rant-0.5.9.gem && cp pkg/rant-0.5.9.gem ${work_dir}/dcmgr/vendor/cache/)
+    ruby ./build.rb 
+    mkdir ./tmp/log || true
 fi
 
 # Open vSwitch install.

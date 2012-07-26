@@ -8,8 +8,8 @@ module Hijiki::DcmgrResource::V1203
         lb = self.new
         lb.instance_spec_id = params[:instance_spec_id]
         lb.display_name = params[:display_name]
-        lb.protocol = params[:load_balancer_protocol]
-        lb.port = params[:load_balancer_port]
+        lb.protocol = params[:protocol]
+        lb.port = params[:port]
         lb.instance_protocol = params[:instance_protocol]
         lb.instance_port = params[:instance_port]
         lb.balance_algorithm = params[:balance_algorithm]
@@ -17,6 +17,7 @@ module Hijiki::DcmgrResource::V1203
         lb.public_key = params[:public_key]
         lb.certificate_chain = params[:certificate_chain]
         lb.cookie_name = params[:cookie_name]
+        lb.description = params[:description]
         lb.save
         lb
       end
@@ -67,6 +68,10 @@ module Hijiki::DcmgrResource::V1203
         result = self.put(:poweroff, {:load_balancer_id => load_balancer_id})
         self.collection_name = @collection
         result.body
+      end
+
+      def update(load_balancer_id,params)
+        self.put(load_balancer_id,params).body
       end
     end
     extend ClassMethods

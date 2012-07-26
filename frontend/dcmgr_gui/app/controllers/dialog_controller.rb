@@ -194,6 +194,16 @@ class DialogController < ApplicationController
 
   def create_load_balancer
     @load_balancer_ids = params[:ids]
+    @display_name = ''
+    @description = ''
+    @protocol = ''
+    @port = ''
+    @instance_protocol = ''
+    @instance_port = ''
+    @private_key = ''
+    @public_key = ''
+    @cookie_name = ''
+    render :create_and_edit_load_balancer
   end
 
   def delete_load_balancer
@@ -225,4 +235,21 @@ class DialogController < ApplicationController
     @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
     @display_name = @load_balancer["display_name"]
   end
+
+  def edit_load_balancer
+    @uuid = params[:ids][0]
+    @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@uuid)
+    @display_name = @load_balancer["display_name"]
+    @description = @load_balancer["description"]
+    @protocol = @load_balancer["protocol"]
+    @port = @load_balancer["port"]
+    @instance_protocol = @load_balancer["instance_protocol"]
+    @instance_port = @load_balancer["instance_port"]
+    @balance_algorithm = @load_balancer["balance_algorithm"]
+    @private_key = @load_balancer["private_key"]
+    @public_key = @load_balancer["public_key"]
+    @cookie_name = @load_balancer["cookie_name"]
+    render :create_and_edit_load_balancer
+  end
+
 end

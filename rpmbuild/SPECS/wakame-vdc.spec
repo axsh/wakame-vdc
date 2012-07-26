@@ -238,6 +238,8 @@ mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/volumes
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/snap
 
 %clean
 RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
@@ -321,6 +323,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %dir /etc/%{oname}/dcmgr_gui
 %dir /var/log/%{oname}/dcmgr_gui
 %dir /var/lib/%{oname}/tmp/images
+%dir /var/lib/%{oname}/tmp/volumes
+%dir /var/lib/%{oname}/tmp/snap
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)

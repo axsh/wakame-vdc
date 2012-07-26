@@ -46,6 +46,8 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/unregister_load_balancer', :to => 'dialog#unregister_load_balancer'
   post   'dialog/poweroff_load_balancer', :to => 'dialog#poweroff_load_balancer'
   post   'dialog/poweron_load_balancer', :to => 'dialog#poweron_load_balancer'
+  post   'dialog/edit_load_balancer', :to => 'dialog#edit_load_balancer'
+
 
   # user/group managment dialog
   get    'dialog/create_user', :to => 'user_management_dialog#create_user'
@@ -220,7 +222,7 @@ DcmgrGui::Application.routes.draw do
   put    'load_balancers/unregister_instances', :to => 'load_balancers#unregister_instances'
   put    'load_balancers/poweron/:id', :to => 'load_balancers#poweron'
   put    'load_balancers/poweroff/:id', :to => 'load_balancers#poweroff'
-
+  put    'load_balancers/:id', :to => 'load_balancers#update'
 
   #resorce (management)
   get    'resource' ,:to => 'resource#index'

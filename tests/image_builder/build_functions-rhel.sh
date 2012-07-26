@@ -23,7 +23,7 @@ function run_vmbuilder() {
   echo "Creating image file... $imgpath"
   ./vmbuilder/kvm/rhel/6/vmbuilder.sh \
     --distro_name=centos \
-    --distro_ver=6 \
+    --distro_ver=${distro_ver:-6} \
     --distro_arch=${arch} \
     --raw=${imgpath} \
     --rootsize=${rootsize} \
