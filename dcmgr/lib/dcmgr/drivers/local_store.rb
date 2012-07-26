@@ -2,7 +2,7 @@
 
 module Dcmgr
   module Drivers
-    class LocalStore
+    class LocalStore < Task::Tasklet
 
       # download and prepare image file to ctx.os_devpath.
       def deploy_image(inst,ctx)
@@ -27,6 +27,21 @@ module Dcmgr
           raise "Unknown hypervisor type: #{hypervisor}"
         end
         ls
+      end
+
+      def self.driver_class(hypervisor_name)
+        case hypervisor_name
+        when "kvm"
+          Dcmgr::Drivers::LinuxLocalStore
+        when "lxc"
+          Dcmgr::Drivers::LinuxLocalStore
+        when "esxi"
+          Dcmgr::Drivers::ESXiLocalStore
+        when "openvz"
+          Dcmgr::Drivers::OpenvzLocalStore
+        else
+          raise "Unknown hypervisor type: #{hypervisor_name}"
+        end
       end
       
     end
