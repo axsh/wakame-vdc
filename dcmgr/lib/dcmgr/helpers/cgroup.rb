@@ -5,7 +5,7 @@ require 'forwardable'
 module Dcmgr::Helpers
   module Cgroup
     module CgroupContextProvider
-      THREAD_CGROUP_CTX_STACK_KEY='cgroup_ctx_stack'.freeze
+      CGROUP_CTX_STACK_KEY='cgroup_ctx_stack'.freeze
       
       class CgroupContext
         attr :subsystems
@@ -32,7 +32,8 @@ module Dcmgr::Helpers
       end
       
       def cgroup_context_stack
-        Thread.current[THREAD_CGROUP_CTX_STACK_KEY] ||= []
+        # task_session() is supplied by Task::Tasklet's derivertives.
+        task_session[CGROUP_CTX_STACK_KEY] ||= []
       end
       delegate_methods << :cgroup_context_stack
       
@@ -40,6 +41,12 @@ module Dcmgr::Helpers
         cgroup_context_stack.first
       end
       delegate_methods << :current_cgroup_context
+
+      def self.included(klass)
+        unless klass < Dcmgr::Task::Tasklet
+          raise TypeError, "Can not attach to #{klass}: method from Task::Tasklet is needed for #{self}"
+        end
+      end
       
       # 
       # cgroup_context(:subsystem=>'blkio') do

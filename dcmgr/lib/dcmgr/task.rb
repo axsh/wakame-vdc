@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+require 'fiber'
+
 module Dcmgr
   module Task
     #
@@ -39,9 +43,9 @@ module Dcmgr
     # # the object. So Tasklet#initialize can be used for loading conf files etc.
     # TaskInvoker.register(TaskA.new(20))
     # 
-    # TaskInvoker.invoke(TaskA, :func2)
+    # TaskInvoker.new.invoke(TaskA, :func2)
     # # => 21
-    # TaskInvoker.invoke(TaskA, :func2)
+    # TaskInvoker.new.invoke(TaskA, :func2)
     # # => 21
     #
     # # Task session example.
@@ -70,6 +74,12 @@ module Dcmgr
           @task_hooks[:session_begin] << blk
         end
 
+        def helpers(*mods)
+          mods.each {|i|
+            include i
+          }
+        end
+
         private
         
         def inherited(klass)
@@ -95,10 +105,8 @@ module Dcmgr
         alias :session :task_session
       end
 
-      include Helpers
+      helpers Helpers
 
-      private
-      
       def invoke!(session, method, args=[])
         raise "Unknown method: #{self.class}\##{method}" unless self.respond_to?(method)
 
@@ -121,12 +129,21 @@ module Dcmgr
       end
     end
 
+    module LoggerHelper
+      def logger
+        @logger || task_session[:logger]
+      end
+    end
+
+    # TaskSession.reset!(:thread)
+    #
+    # ti = TaskInvoker.new(TaskSession.current)
+    # ti.invoke(TaskA, :method1)
+    #
+    # ti2 = TaskInvoker.new(ti.task_session)
+    # 
     class TaskInvoker
       @registry = {}
-      
-      def self.invoke(taskclass, method, args)
-        self.new.invoke(taskclass, method, args)
-      end
 
       def self.register(tasklet)
         @registry[tasklet.class] = tasklet
@@ -138,10 +155,10 @@ module Dcmgr
 
       attr_reader :task_session
       
-      def initialize(session = ThreadTaskSession.new)
+      def initialize(session = TaskSession.current)
         @task_session = session
       end
-
+      
       def invoke(taskclass, method, args)
         raise ArgumentError unless taskclass.is_a?(Class) && taskclass < Tasklet
         tasklet = self.class.registry[taskclass]
@@ -154,17 +171,32 @@ module Dcmgr
     # OS/VM context where runs tasklets. Fiber or Thread.
     # It provides the session local variable in Hash.
     class TaskSession
+
+      def self.reset!(type=:thread)
+        @task_session_class = case type
+                              when :thread
+                                ThreadTaskSession
+                              when :fiber
+                                FiberTaskSession
+                              end
+        @task_session_class.reset_holder
+      end
+
+      def self.current
+        @task_session_class.current
+      end
+      
       def initialize
         @tasklets = {}
-        reset_holder
+        @hash = {}
       end
       
       def [](key)
-        hash_holder[key]
+        @hash[key]
       end
 
       def []=(key, value)
-        hash_holder[key] = value
+        @hash[key] = value
       end
 
       def invoke(tasklet, method, args)
@@ -177,32 +209,28 @@ module Dcmgr
       end
 
       protected
-      def hash_holder
-        raise NotImplementedError
-      end
-
-      def reset_holder
+      def self.reset_holder
         raise NotImplementedError
       end
     end
 
     class ThreadTaskSession < TaskSession
-      def hash_holder
+      def self.current
         Thread.current[:task_session]
       end
 
-      def reset_holder
-        Thread.current[:task_session] = {}
+      def self.reset_holder
+        Thread.current[:task_session] = self.new
       end
     end
 
     class FiberTaskSession < TaskSession
-      def hash_holder
+      def self.current
         Fiber.current[:task_session]
       end
 
-      def reset_holder
-        Fiber.current[:task_session] = {}
+      def self.reset_holder
+        Fiber.current[:task_session] = self.new
       end
     end
 

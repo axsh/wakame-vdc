@@ -215,7 +215,12 @@ module Dcmgr
 
       # Creates TaskInvoker per request.
       def task_invoker
-        @task_invoker ||= Task::TaskInvoker.new
+        @task_invoker ||= begin
+                            Task::TaskSession.reset!(:thread)
+                            Task::TaskSession.current[:logger] = @hva_ctx.logger
+                            
+                            Task::TaskInvoker.new(Task::TaskSession.current)
+                          end
       end
 
       job :run_local_store, proc {
