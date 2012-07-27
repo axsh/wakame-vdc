@@ -647,31 +647,21 @@ module Dcmgr
       end
 
       def logger
-        CustomLogger.new(self)
+        @instance_logger = InstanceLogger.new(self)
       end
 
-      class CustomLogger
+      class InstanceLogger
         def initialize(hva_context)
           @hva_context = hva_context
+          @logger = ::Logger.new(Dcmgr::Logger.default_logdev)
+          @logger.progname = 'HvaHandler'
         end
 
         ["fatal", "error", "warn", "info", "debug"].each do |level|
           define_method(level){|msg|
-            logger.__send__(level, "#{msg} (inst_id: #{@hva_context.inst_id})")
+            @logger.__send__(level, "Instance UUID: #{@hva_context.inst_id}: #{msg}")
           }
         end
-
-        def default_logdev
-          ::Logger::LogDevice.new($>)
-        end
-
-        def logger
-          l = ::Logger.new(default_logdev)
-          l.progname = "HvaHandler"
-          l
-        end
-
-
       end
 
     end
