@@ -14,9 +14,6 @@ cd ${abs_path}
 [ -d ${log_dir} ] || mkdir -p ${log_dir}
 
 #
-git pull
-build_id=$(git log -n 1 --pretty=format:"%h")
-
 function build_yum_repo () {
   time yes | ./syncrepo-vdc.sh backup 2>&1
   time       ./createrepo-vdc.sh 2>&1
@@ -40,6 +37,10 @@ hourly)
 esac
 
 (
+git pull
+build_id=$(git log -n 1 --pretty=format:"%h")
+git show -p ${build_id}
+
 BUILD_ID=${build_id} ./rules ${task}
 build_yum_repo
 
