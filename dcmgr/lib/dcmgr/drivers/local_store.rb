@@ -3,6 +3,7 @@
 module Dcmgr
   module Drivers
     class LocalStore < Task::Tasklet
+      helpers Task::LoggerHelper
 
       # download and prepare image file to ctx.os_devpath.
       def deploy_image(inst,ctx)

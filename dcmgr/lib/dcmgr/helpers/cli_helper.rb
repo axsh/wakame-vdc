@@ -71,20 +71,7 @@ module Dcmgr
       end
 
       def sh(cmd, args=[], opts={})
-        logger.debug("Executing command: #{cmd}, #{args}")
         r = shell.run!(cmd, args, opts)
-
-        msg = ""
-        if r.success?
-          msg << "Command Result: success (exit code=0)\n"
-        else
-          msg << "Command Result: fail (exit code=#{r.status.exitstatus})\n"
-        end          
-        msg << "Command PID: #{r.status.pid}"
-        msg << "\n##STDOUT=>\n#{r.out.strip}" if r.out && r.out.strip.size > 0
-        msg << "\n##STDERR=>\n#{r.err.strip}" if r.err && r.err.strip.size > 0
-        logger.debug(msg)
-
         {:stdout => r.out, :stderr => r.err}
       end
 
@@ -100,11 +87,16 @@ module Dcmgr
       # # Raise exception at non-zero exit.
       # shell.run!("ls /dontexist")
       def shell
-        ShellRunner
+        Class.new do
+          include ShellRunner
+
+          def logger
+            Dcmgr::Task::TaskSession.current[:logger]
+          end
+        end.new
       end
 
       module ShellRunner
-        extend self
 
         class CommandError < StandardError
           def initialize(cmdline, cmdresult)
@@ -130,13 +122,28 @@ module Dcmgr
         def run(cmd, args=[], opts={})
           cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a.to_s) })
 
-          exec(cmd, opts)
+          logger.info("Executing command: #{cmd}")
+          
+          r = exec(cmd, opts)
+
+          msg = ""
+          if r.success?
+            msg << "Command Result: success (exit code=0)\n"
+          else
+            msg << "Command Result: fail (exit code=#{r.status.exitstatus})\n"
+          end          
+          msg << "Command PID: #{r.status.pid}"
+          msg << "\n##STDOUT=>\n#{r.out.strip}" if r.out && r.out.strip.size > 0
+          msg << "\n##STDERR=>\n#{r.err.strip}" if r.err && r.err.strip.size > 0
+          logger.debug(msg)
+
+          r
         end
         
         def run!(cmd, args=[], opts={})
           run(cmd, args, opts).tap { |r|
             unless r.success?
-              raise CommandError.new(r.instance_variable_get(:@argv), r)
+              raise CommandError.new(r.instance_variable_get(:@argv).last, r)
             end
           }
         end
@@ -212,6 +219,10 @@ module Dcmgr
           def initialize(subject)
             raise ArgumentError unless subject.class < Cgroup::CgroupContextProvider
             @cgprovider = subject
+          end
+
+          def logger
+            Dcmgr::Task::TaskSession.current[:logger]
           end
         end
 
