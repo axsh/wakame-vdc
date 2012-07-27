@@ -21,6 +21,7 @@ module Dcmgr::Cli
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       method_option :is_cacheable, :type => :boolean, :default => false, :desc =>"A flag that determines whether the new machine image is cacheable or not"
+      method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
       def local(backup_object_id)
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) unless M::BackupObject[backup_object_id]
@@ -43,6 +44,7 @@ module Dcmgr::Cli
       method_option :state, :type => :string, :default => "available", :desc => "The state for the new machine image"
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
+      method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
       def volume(backup_object_id)
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) if M::BackupObject[backup_object_id].nil?
@@ -76,6 +78,7 @@ module Dcmgr::Cli
     method_option :display_name, :type => :string, :desc => "Display name of the machine image"
     method_option :backup_object_id, :type => :string, :desc => "Backup object for the machine image"
     method_option :is_cacheable, :type => :boolean, :desc =>"A flag that determines whether the new machine image is cacheable or not"
+    method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
     def modify(uuid)
       UnknownUUIDError.raise(uuid) if M::Image[uuid].nil?
       UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
@@ -111,6 +114,9 @@ Description:
   <%= img.description %>
 <%- end -%>
 Is Cacheable: <%= img.is_cacheable %>
+<%- if img.instance_model_name -%>
+Instance model name: <%= img.instance_model_name %>
+<%- end -%>
 __END
       else
         cond = {}
