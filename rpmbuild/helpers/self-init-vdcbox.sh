@@ -62,15 +62,21 @@ function cleanup_vdcbox_demo() {
   force_cleanup_mysqld
 }
 function stop_vdcbox_demo() {
+  echo "Stopping vdcbox demo."
   stop_vdcbox_vdc
+  echo "Stopped vdcbox demo."
 }
 function start_vdcbox_demo() {
+  echo "Starting vdcbox demo."
   start_vdcbox_vdc
+  echo "Started vdcbox demo."
 }
 function init_vdcbox_demo() {
+  echo "Initializing vdcbox demo."
   cleanup_vdcbox_demo
   cd ${VDC_ROOT}/tests
-  hypervisor=${VDC_SELFTEST_HYPERVISOR} setarch ${VDC_VBOX_ARCH} ./vdc.sh init
+  time hypervisor=${VDC_SELFTEST_HYPERVISOR} setarch ${VDC_VBOX_ARCH} ./vdc.sh init
+  echo "Initialized vdcbox demo."
 }
 
 ##

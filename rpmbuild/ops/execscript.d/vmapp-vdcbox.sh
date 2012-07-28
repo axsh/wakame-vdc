@@ -40,12 +40,17 @@ chmod 600                   /var/lib/rabbitmq/.erlang.cookie
 
 EOS
 
-umount -l ${chroot_dir}/proc
-umount -l ${chroot_dir}/dev
-
-cat <<EOS >> ${chroot_dir}/etc/rc.local
+cat <<'EOS' >> ${chroot_dir}/etc/rc.local
+[ -f /var/log/wakame-vdc-vbox.log ] && \mv /var/log/wakame-vdc-vbox.log /var/log/wakame-vdc-vbox.log.1
 [ -x /opt/axsh/wakame-vdc/rpmbuild/helpers/self-init-vdcbox.sh ] && (
-  /opt/axsh/wakame-vdc/rpmbuild/helpers/self-init-vdcbox.sh init
-  /opt/axsh/wakame-vdc/rpmbuild/helpers/self-init-vdcbox.sh start
+  echo "### self-init-vdcbox.sh ###"
+  date; start_at=$(date +%s)
+  time /opt/axsh/wakame-vdc/rpmbuild/helpers/self-init-vdcbox.sh init
+  time /opt/axsh/wakame-vdc/rpmbuild/helpers/self-init-vdcbox.sh start
+  date; end_at=$(date +%s)
+  echo  "[total] $((${end_at} - ${start_at}))"
 ) >/var/log/wakame-vdc-vbox.log 2>&1 &
 EOS
+
+umount -l ${chroot_dir}/proc
+umount -l ${chroot_dir}/dev
