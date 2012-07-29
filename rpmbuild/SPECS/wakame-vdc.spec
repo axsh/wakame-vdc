@@ -330,6 +330,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
+%config /etc/init/vdc-hva-worker.conf
 %config /etc/sysctl.d/30-bridge-if.conf
 %dir /var/lib/%{oname}/tmp/instances
 
