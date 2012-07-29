@@ -36,7 +36,8 @@ chown rabbitmq:rabbitmq     /var/lib/rabbitmq/.erlang.cookie
 chmod 600                   /var/lib/rabbitmq/.erlang.cookie
 
 # add bridge
-/opt/axsh/wakame-vdc/rpmbuild/helpers/setup-bridge-if.sh --brname=${brname} --ifname=${ifname} --ip=${ip} --mask=${mask} --net=${net} --bcast=${bcast} --gw=${gw}
+/opt/axsh/wakame-vdc/rpmbuild/helpers/setup-bridge-if.sh --brname=${brname0} --ifname=${ifname0} --ip=${ip0} --mask=${mask0} --net=${net0} --bcast=${bcast0} --gw=${gw0}
+/opt/axsh/wakame-vdc/rpmbuild/helpers/setup-bridge-if.sh --brname=${brname1} --ifname=${ifname1} --ip=${ip1} --mask=${mask1} --net=${net1} --bcast=${bcast1} --gw=${gw1}
 
 EOS
 
