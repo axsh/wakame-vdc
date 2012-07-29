@@ -32,7 +32,7 @@ done
 
 #
 brname=${brname:-br0}
-ifname=${ifname:-eth0}
+ifname=${ifname:-}
 
 ip=${ip}
 mask=${mask:-}
@@ -70,7 +70,8 @@ cat ${ifcfg_prefix}-${brname}
 #
 # ifcfg-ethX
 #
-cat <<EOS > ${ifcfg_prefix}-${ifname}
+[ -z ${ifname} ] || {
+  cat <<EOS > ${ifcfg_prefix}-${ifname}
 DEVICE=${ifname}
 ONBOOT=yes
 BOOTPROTO=static
@@ -78,5 +79,6 @@ BOOTPROTO=static
 BRIDGE=${brname}
 TYPE=Ethernet
 EOS
-echo ">>> ${ifcfg_prefix}-${ifname}"
-cat ${ifcfg_prefix}-${ifname}
+  echo ">>> ${ifcfg_prefix}-${ifname}"
+  cat ${ifcfg_prefix}-${ifname}
+}
