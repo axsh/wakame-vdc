@@ -6,6 +6,7 @@ module Dcmgr
   module Drivers
     class Openvz < LinuxHypervisor
       include Dcmgr::Logger
+      include Dcmgr::Helpers::Cgroup::CgroupContextProvider
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::TemplateHelper

@@ -2,7 +2,7 @@
 
 module Dcmgr
   module Drivers
-    class Hypervisor
+    class Hypervisor < Task::Tasklet
 
       def run_instance(hc)
       end
@@ -35,20 +35,24 @@ module Dcmgr
       end
 
       def self.select_hypervisor(hypervisor)
+        driver_class(hypervisor).new
+      end
+
+      def self.driver_class(hypervisor)
         case hypervisor
         when "kvm"
-          hv = Dcmgr::Drivers::Kvm.new
+          Dcmgr::Drivers::Kvm
         when "lxc"
-          hv = Dcmgr::Drivers::Lxc.new
+          Dcmgr::Drivers::Lxc
         when "esxi"
-          hv = Dcmgr::Drivers::ESXi.new
+          Dcmgr::Drivers::ESXi
         when "openvz"
-          hv = Dcmgr::Drivers::Openvz.new
+          Dcmgr::Drivers::Openvz
         else
           raise "Unknown hypervisor type: #{hypervisor}"
         end
-        hv
       end
+      
     end
   end
 end
