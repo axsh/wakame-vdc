@@ -73,10 +73,9 @@ Requires: %{name}-full-vmapp-config
 
 ## rpmbuild -bp
 %prep
-[ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
+[ -d %{name}-%{version} ] && rm -rf %{name}-%{version}
+git clone %{_vdc_git_uri} %{name}-%{version}
 cd %{name}-%{version}
-git checkout master
-git pull
 [ -z "%{build_id}" ] || {
   build_id=%{build_id}
   git checkout ${build_id##*git}
