@@ -22,6 +22,12 @@ update:
 
 clean: rpm-clean vmapp-clean
 
+dump-vers:
+	@echo ARCHS="\"$(ARCHS)\""
+	@echo BUILD_ID="\"$(BUILD_ID)\""
+	@echo REPO_URI="\"$(REPO_URI)\""
+	@echo RPMBUILD_SH="\"$(RPMBUILD_SH)\""
+
 soft-integrate: rpm-clean rpm
 full-integrate: vmapp-clean vmapp
 self-integrate: soft-integrate full-integrate
