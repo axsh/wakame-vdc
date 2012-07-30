@@ -34,10 +34,31 @@ module Dcmgr
         # enable local image cache under "vm_data_dir/_base"
         param :enable_image_caching, :default=>true
         param :image_cache_dir, :default => proc {
-          File.expand_path('_base', @config[:vm_data_dir])
+          File.expand_path('_base', parent.config[:vm_data_dir])
         }
         param :enable_cache_checksum, :default=>true
         param :max_cached_images, :default=>10
+        param :work_dir, :default => proc {
+          File.expand_path('tmp', parent.config[:vm_data_dir])
+        }
+
+        def validate(errors)
+          super
+          if @config[:work_dir] && !File.directory?(@config[:work_dir])
+            errors << "Unknown directory for work_dir: #{@config[:work_dir]}"
+          end
+        end
+      end
+
+      class BackupStorage < Configuration
+        param :local_storage_dir, :default => nil
+
+        def validate(errors)
+          super
+          if @config[:local_storage_dir] && !File.directory?(@config[:local_storage_dir])
+            errors << "Unknown directory for local_storage_dir: #{@config[:local_storage_dir]}"
+          end
+        end
       end
       
       DSL do
@@ -52,11 +73,17 @@ module Dcmgr
         def local_store(&blk)
           @config[:local_store].parse_dsl(&blk)
         end
+
+        def backup_storage(&blk)
+          @config[:backup_storage].parse_dsl(&blk)
+        end
       end
 
       on_initialize_hook do
         @config[:dc_networks] = {}
-        @config[:local_store] = LocalStore.new
+        # TODO: need to add the utility method to set @parent.
+        @config[:local_store] = LocalStore.new.tap { |o| o.instance_variable_set(:@parent, self) }
+        @config[:backup_storage] = BackupStorage.new.tap { |o| o.instance_variable_set(:@parent, self) }
       end
 
       param :vm_data_dir

@@ -72,7 +72,7 @@ module Dcmgr
       end
 
       def download_tmp_dir
-        ENV['TMPDIR'] || ENV['TMP'] || '/var/tmp'
+        ENV['TMPDIR'] || ENV['TMP'] || Dcmgr.conf.local_store.work_dir || '/var/tmp'
       end
       
       def vmimg_cache_path(img_id, is_cacheable)

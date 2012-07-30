@@ -19,7 +19,7 @@ module Dcmgr::Drivers
 
     private
     def abs_path(bo)
-      @backup_object[:base_uri] + bo[:object_key]
+      (Dcmgr.conf.backup_storage.local_storage_dir || bo[:backup_storage][:base_uri]) + bo[:object_key]
     end
   end
 end
