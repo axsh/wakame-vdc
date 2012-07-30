@@ -78,6 +78,19 @@ cd ${root_dir}
 rsync -ax --delete ${base_chroot_dir}/ ${dest_chroot_dir}/
 sync
 
+# for local repository
+case ${repo_uri} in
+file:///*|/*)
+  local_path=${repo_uri##file://}
+  [ -d ${local_path} ] && {
+    [ -d ${dest_chroot_dir}/${local_path} ] || mkdir -p ${dest_chroot_dir}/${local_path}
+    rsync -avx ${local_path} ${dest_chroot_dir}/${local_path}
+  }
+  ;;
+*)
+  ;;
+esac
+
 ### after-deploy
 case "${after_deploy}" in
 use-s3snap)
