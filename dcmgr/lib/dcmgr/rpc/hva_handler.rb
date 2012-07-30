@@ -468,8 +468,10 @@ module Dcmgr
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
 
+        @hva_ctx.logger.info("Rebooting")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :reboot_instance, [@hva_ctx])
+        @hva_ctx.logger.info("Rebooted")
       }
 
       job :backup_image, proc {
@@ -478,7 +480,7 @@ module Dcmgr
         @image_id = request.args[2]
         @hva_ctx = HvaContext.new(self)
 
-        @hva_ctx.logger.info("Backing up the image file for #{@inst_id} as #{@backupobject_id}.")
+        @hva_ctx.logger.info("Taking backup up of the image: #{@image_id}, #{@backupobject_id}")
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
@@ -524,8 +526,8 @@ module Dcmgr
           @hva_ctx.logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
       
         rescue => e
-          @hva_ctx.logger.error(e)
-          raise "snapshot has not be uploaded"
+          @hva_ctx.logger.error("Failed to upload image backup object: #{@backupobject_id}}")
+          raise
         end
         
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available}) do |req|
@@ -534,7 +536,7 @@ module Dcmgr
         rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available}) do |req|
           req.oneshot = true
         end
-        @hva_ctx.logger.info("uploaded new backup object: #{@inst_id} #{@backupobject_id} #{@image_id}")
+        @hva_ctx.logger.info("Uploaded new image successfully: #{@image_id} #{@backupobject_id}")
         
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
@@ -544,7 +546,7 @@ module Dcmgr
         rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
           req.oneshot = true
         end
-        @hva_ctx.logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id} #{@image_id}")
+        @hva_ctx.logger.error("Failed to run backup_image: #{@image_id}, #{@backupobject_id}")
       }
 
       job :poweroff, proc {
@@ -552,12 +554,13 @@ module Dcmgr
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
 
+        @hva_ctx.logger.info("Turning power off")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweroff_instance, [@hva_ctx])
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:halted}) do |req|
           req.oneshot = true
         end
-        logger.info("PowerOff #{@inst_id}")
+        @hva_ctx.logger.info("Turned power off")
       }
 
       job :poweron, proc {
@@ -565,12 +568,13 @@ module Dcmgr
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
 
+        @hva_ctx.logger.info("Turning power on")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweron_instance, [@hva_ctx])
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:running}) do |req|
           req.oneshot = true
         end
-        logger.info("PowerOn #{@inst_id}")
+        @hva_ctx.logger.info("Turned power on")
       }
       
       def rpc
