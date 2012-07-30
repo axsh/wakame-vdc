@@ -6,6 +6,7 @@ set -e
 abs_path=$(cd $(dirname $0) && pwd)
 wakame_root=$(cd ${abs_path}/../../ && pwd)
 log_dir=${abs_path}/logs
+repo_uri=${repo_uri:-git://github.com/axsh/wakame-vdc.git}
 
 #
 #
@@ -31,17 +32,32 @@ daily)
 hourly)
   task=soft-integrate
   ;;
+dry-run)
+  task=dump-vers
+  ;;
 *)
   task=soft-integrate
   ;;
 esac
 
+function run_readonly_phase() {
+  build_id=$(git log -n 1 --pretty=format:"%h")
+  git show -p ${build_id}
+
+  BUILD_ID=${build_id} REPO_URI=${repo_uri} ./rules ${task}
+}
+
+case "$1" in
+dry-run)
+  run_readonly_phase
+  exit 0
+  ;;
+esac
+
 (
 git pull
-build_id=$(git log -n 1 --pretty=format:"%h")
-git show -p ${build_id}
 
-BUILD_ID=${build_id} ./rules ${task}
+run_readonly_phase
 build_yum_repo
 
 case "$1" in
