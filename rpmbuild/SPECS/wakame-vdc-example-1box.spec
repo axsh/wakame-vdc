@@ -6,9 +6,11 @@
 # * rpmbuild -bb ./wakame-vdc-example-1box.spec \
 # --define "build_id $(../helpers/gen-release-id.sh)"
 # --define "build_id $(../helpers/gen-release-id.sh [ commit-hash ])"
+# --define "repo_uri git://github.com/axsh/wakame-vdc.git"
 
 %define release_id 1.daily
 %{?build_id:%define release_id %{build_id}}
+%{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}-%{osubname}
 Version: 12.03
