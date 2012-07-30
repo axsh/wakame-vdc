@@ -47,8 +47,6 @@ module Dcmgr
       end
 
       def upload_image(inst, ctx, bo, evcb)
-        snapshot_stg = Dcmgr::Drivers::BackupStorage.snapshot_storage(bo[:backup_storage])
-        
         bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
         take_snapshot_for_backup()
         sh("cp -p --sparse=always %s /dev/stdout | gzip -f > %s", [ctx.os_devpath, bkup_tmp_path])
@@ -58,7 +56,9 @@ module Dcmgr
         evcb.setattr(res[:stdout].chomp, alloc_size)
 
         # upload image file
-        snapshot_stg.upload(bkup_tmp_path, bo)
+        Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
+        invoke_task(BackupStorage.driver_class(bo[:backup_storage][:storage_type]),
+                    :upload, [bkup_tmp_path, bo])
         evcb.progress(100)
       ensure
         clean_snapshot_for_backup()

@@ -3,6 +3,7 @@
 module Dcmgr::Drivers
   class LocalStorage < BackupStorage
     include Dcmgr::Logger
+    include Dcmgr::Helpers::Cgroup::CgroupContextProvider
     include Dcmgr::Helpers::CliHelper
 
     def download(src_bo, dst_path)
@@ -13,8 +14,8 @@ module Dcmgr::Drivers
       sh("/bin/cp -p %s %s", [src_path, abs_path(dst_bo)])
     end
 
-    def delete(filename)
-      sh("rm -f %s", abs_path(filename))
+    def delete(bo)
+      sh("rm -f %s", abs_path(bo))
     end
 
     private
