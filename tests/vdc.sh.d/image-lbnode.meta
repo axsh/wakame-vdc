@@ -1,0 +1,9 @@
+uuid=lbnode
+arch=x86_64
+localname=lbnode-centos-openvz-64.tar.gz
+uri=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/lbnode-centos-openvz-64.tar.gz
+storetype=local
+file_format=tgz
+root_device=
+service_type=std
+display_name=lbnode

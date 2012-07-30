@@ -16,10 +16,12 @@
 
 <div id="mainarea_wide">
   <h3><img src="images/icon_resource.gif" /><%= t("machine_images.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
+  <input type="hidden" id="owner" value="<%=@current_user.primary_account_id %>"/>
   <div id="list_load_mask" class="maincontent">
     <div class="controller clearfix">
       <a href="javascript:void(0);" class="launch_instance"><%= t("machine_images.button.launch_instance") %></a>
-      <a href="javascript:void(0);" class="refresh" style="margin-left:463px"><%= t("button.refresh") %></a>
+      <a href="javascript:void(0);" class="delete_backup_image"><%= t("machine_images.button.delete_backup_image") %></a>
+      <a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%= t("button.refresh") %></a>
     </div>
     <div class="controller clearfix">
       <div id="pagenate" class="r_float">
@@ -51,11 +53,15 @@
 	    <td class="vtip" title="description" style="width:300px">
 	      ${item.description}
 	    </td>
-	    <td class="vtip" title="owner">${item.account_id}</td>
+	    <td class="vtip owner" title="owner">${item.account_id}</td>
 	    <td class="state vtip center" title="state">${item.state}</td>
 	    {{if item.uuid}}
 	    <td class="vtip center" title="action">
+	      {{if item.state != "deleted" }}
 	      <a href="javascript:void(0);" class="edit_machine_image" id="edit_${item.uuid}"><%= t('machine_images.button.edit_machine_image') %></a>
+	      {{else}}
+	      <a href="javascript:void(0);" class="edit_machine_image"><%= t('machine_images.button.edit_machine_image') %></a>
+	      {{/if}}
 	    </td>
 	    {{else}}
 	    <td class="vtip center" title="action"></td>
@@ -72,7 +78,7 @@
   <div id="detail" class="maincontent">
     <% content_for :javascript_template do %>
     <script id="imagesDetailTemplate" type="text/x-jquery-tmpl">
-      <div id="${item.wmi_id}" class="display_area">
+      <div id="${item.uuid}" class="display_area">
 	<h4 class="ptn01"><%= t("machine_images.details.wmi_id") %>:<span class="instansid">${item.uuid}</span></h4>
 	<table class="ptn06" frame="void" cellpadding="0" cellspacing="0" border="0">
 	  <tr>

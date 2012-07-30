@@ -50,6 +50,17 @@ class User < BaseNew
       super
     end
   end
+
+  def update_last_login
+    self.last_login_at = Time.now
+    save_changes
+  end
+  
+  def update_settings(params)
+    self.time_zone = params[:time_zone] if params[:time_zone]
+    self.locale = params[:locale] if params[:locale]
+    save_changes
+  end
   
   # ページ指定一覧の取得
   def self.list(params)
@@ -151,32 +162,18 @@ class User < BaseNew
       Digest::SHA1.hexdigest("--#{salt}--#{password}--")
     end
 
-    def update_last_login(user_id)
-      u = User.find(:id => user_id)
-      u.last_login_at = Time.now
-      u.save
-    end
-
-    def update_settings(user_id, params)
-      u = User.find(:id => user_id)
-      p params
-      u.time_zone = params[:time_zone] || u.time_zone
-      u.locale = params[:locale] || u.locale
-      u.save
-    end
-
     def edit_user(params)
       u = User.find(:login_id => params[:login_id])
       u.name = params[:name] 
       u.time_zone = params[:time_zone] 
       u.locale = params[:locale] 
-      u.save
+      u.save_changes
     end
 
     def update_pr_user(uuid,primary_account_id)
       u = User.find(:uuid => uuid)
       u.primary_account_id = primary_account_id
-      u.save
+      u.save_changes
     end
   end
 end

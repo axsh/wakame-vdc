@@ -105,6 +105,7 @@ module Dcmgr::Models
         i.features = self.features
         i.root_device = self.root_device
         i.service_type = self.service_type
+        i.instance_model_name = self.instance_model_name unless self.instance_model_name.nil?
         blk.call(i)
       end
     end

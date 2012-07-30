@@ -6,6 +6,7 @@ set -e
 abs_path=$(cd $(dirname $0) && pwd)
 wakame_root=$(cd ${abs_path}/../../ && pwd)
 log_dir=${abs_path}/logs
+repo_uri=${repo_uri:-git://github.com/axsh/wakame-vdc.git}
 
 #
 #
@@ -14,9 +15,6 @@ cd ${abs_path}
 [ -d ${log_dir} ] || mkdir -p ${log_dir}
 
 #
-git pull
-build_id=$(git log -n 1 --pretty=format:"%h")
-
 function build_yum_repo () {
   time yes | ./syncrepo-vdc.sh backup 2>&1
   time       ./createrepo-vdc.sh 2>&1
@@ -34,13 +32,32 @@ daily)
 hourly)
   task=soft-integrate
   ;;
+dry-run)
+  task=dump-vers
+  ;;
 *)
   task=soft-integrate
   ;;
 esac
 
+function run_readonly_phase() {
+  build_id=$(git log -n 1 --pretty=format:"%h")
+  git show -p ${build_id}
+
+  BUILD_ID=${build_id} REPO_URI=${repo_uri} ./rules ${task}
+}
+
+case "$1" in
+dry-run)
+  run_readonly_phase
+  exit 0
+  ;;
+esac
+
 (
-BUILD_ID=${build_id} ./rules ${task}
+git pull
+
+run_readonly_phase
 build_yum_repo
 
 case "$1" in

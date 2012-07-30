@@ -4,11 +4,12 @@
 CURDIR ?= $(PWD)
 
 VDC_BUILD_ID  ?= master
+VDC_REPO_URI  ?= git://github.com/axsh/wakame-vdc.git
 VDC_SPEC_BASE := rpmbuild/SPECS/wakame-vdc.spec
 VDC_SPEC_SUBS := rpmbuild/SPECS/wakame-vdc-example-1box.spec
 
 RPM_BUILD_ROOT ?= $(CURDIR)/rpmbuild/wakame-vdc
-RPMBUILD_CMD  := rpmbuild
+RPMBUILD_CMD  ?= rpmbuild
 RPMBUILD_OPTS := --target=`arch`
 RPMCLEAN_SPEC := $(VDC_SPEC_BASE)
 RPMBUILD_SPEC := $(VDC_SPEC_BASE) $(VDC_SPEC_SUBS)
@@ -84,6 +85,6 @@ binary:
 	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC)
 
 binary-snap:
-	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))"
+	$(RPMBUILD_CMD) -bb $(RPMBUILD_OPTS) $(RPMBUILD_SPEC) --define "build_id $$(rpmbuild/helpers/gen-release-id.sh $(VDC_BUILD_ID))" --define "repo_uri $(VDC_REPO_URI)"
 
 .PHONY: build clean binary-indep binary-arch binary binary-snap install

@@ -32,14 +32,15 @@ shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webd
         # TODO: use HEAD and compare local cached file size
         echo "Downloading image file $localname ..."
         f=$(basename "$uri")
-        ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
+        time ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
         # check if the file name has .gz.
         [[ "$f" == "${f%.gz}" ]] || {
-          # gunzip with keeping sparse area.
-          zcat "$f" | cp --sparse=always /dev/stdin "${f%.gz}"
+          echo "gunzip $f with keeping sparse area ..."
+          time zcat "$f" | cp --sparse=always /dev/stdin "${f%.gz}"
         }
         [[ "${f%.gz}" == "$localname" ]] || {
-          cp -p --sparse=always "${f%.gz}" "$localname"
+          echo "cp $localname with keeping sparse area ..."
+          time cp -p --sparse=always "${f%.gz}" "$localname"
         }
         # do not remove .gz as they are used for gzipped file test cases.
       }
@@ -56,15 +57,16 @@ for meta in $data_path/image-*.meta; do
 
     localpath="${tmp_path}/images/${localname}"
     if [[ "$localpath" -nt "${localpath}.md5" ]]; then
-      chksum=$(md5sum "$localpath" | cut -d ' ' -f1 | tee "${localpath}.md5")
+      echo "calculating checksum of $localpath ..."
+      chksum=$(time md5sum "$localpath" | cut -d ' ' -f1 | tee "${localpath}.md5")
     else
       chksum=$(cat "${localpath}.md5")
     fi
     alloc_size=$(ls -l "$localpath" | awk '{print $5}')
     if (file $localpath | grep ': gzip compressed data,' > /dev/null)
     then
-      # get the uncompressed size embedded in the .gz file.
-      size=$(gzip -l "$localpath" | awk -v fname="${localpath%.gz}" '$4 == fname {print $2}')
+      echo "get the uncompressed size embedded in the .gz file $localpath ..."
+      size=$(time gzip -l "$localpath" | awk -v fname="${localpath%.gz}" '$4 == fname {print $2}')
     else
       size=$alloc_size
     fi

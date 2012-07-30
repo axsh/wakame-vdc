@@ -43,7 +43,7 @@ module Authentication
   
   #overwrite
   def login_from_session
-    self.current_user = User.get_user(session[:uuid]) if session[:uuid]
+    self.current_user = (User.find(:uuid=>session[:uuid]) || false) if session[:uuid]
   end
 
   def logout_killing_session!

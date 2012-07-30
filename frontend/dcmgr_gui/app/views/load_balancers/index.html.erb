@@ -1,4 +1,5 @@
 <% content_for :javascript do %>
+<%= javascript_include_tag 'underscore-min.js' %>
 <%= javascript_include_tag 'dcmgr_gui/load_balancer_panel.js' %>
 <%= javascript_include_tag 'ui.selectmenu.js' %>
 <script type="text/javascript">
@@ -27,6 +28,8 @@
         <optgroup label="Action">
           <option class="register" value="register"><%= t("load_balancers.load_balancer_actions.register_instance") %></option>
           <option class="unregister" value="unregister"><%= t("load_balancers.load_balancer_actions.unregister_instance") %></option>
+          <option class="poweron" value="poweron"><%= t("load_balancers.load_balancer_actions.poweron") %></option>
+          <option class="poweroff" value="poweroff"><%= t("load_balancers.load_balancer_actions.poweroff") %></option>
           </optgroup>
       </select>
       <a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%= t("button.refresh") %></a>
@@ -49,6 +52,7 @@
 	    <th><%= t("load_balancers.list.display_name") %></th>
 	    <th><%= t("load_balancers.list.ip") %></th>
 	    <th><%= t("load_balancers.list.state") %></th>
+      <th><%= t("load_balancers.list.action") %></th>
 	  </tr>
 	  {{each(index,item) rows}}
 	  <tr id="row-${item.uuid}">
@@ -65,6 +69,13 @@
        {{/if}}
      {{/each}}</td>
 	    <td class="state vtip center" title="state">${item.state}</td>
+     {{if item.uuid}}
+      <td class="vtip center" title="action">
+        <a href="javascript:void(0);" class="edit_load_balancer" id="edit_${item.uuid}"><%= t('load_balancers.button.edit_load_balancer') %></a>
+      </td>
+      {{else}}
+      <td class="vtip center" title="action"></td>
+      {{/if}}
 	  </tr>
 	  {{/each}}
 	</table>

@@ -100,10 +100,12 @@ function init_db() {
   done
 
   cd ${prefix_path}/dcmgr
-  bundle exec rake db:init
+  echo "executing 'rake db:init' => dcmgr ..."
+  time bundle exec rake db:init
 
   cd ${prefix_path}/frontend/dcmgr_gui
-  bundle exec rake db:init
+  echo "executing 'rake db:init' => frontend/dcmgr_gui ..."
+  time bundle exec rake db:init
 
   echo ... rake oauth:create_consumer[${account_id}]
   #local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
@@ -118,6 +120,7 @@ function run_standalone() {
   cd ${prefix_path}
   
   screen_open || abort "Failed to start new screen session"
+  sleep 1
   screen_it collector "cd ./dcmgr; ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
   screen_it nsa       "cd ./dcmgr; ./bin/nsa -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-nsa.log"
   screen_it hva       "cd ./dcmgr; ./bin/hva -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-hva.log"
@@ -138,11 +141,22 @@ case ${mode} in
     (. $data_path/install.sh)
     (. $data_path/setup.sh)
     ;;
+  setup::openflow)
+    work_dir=${work_dir:-$( cd -P "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )}
+    (. $data_path/openflow/setup-openflow.sh)
+    (. $data_path/openflow/enable-ovs.sh)
+    cp $data_path/openflow/hva.conf $prefix_path/dcmgr/config/hva.conf
+    ;;
   init)
     init_db
     ;;
   cleanup)
     cleanup
+    ;;
+  start)
+    run_standalone
+    screen_attach
+    screen_close
     ;;
   *)
     # interactive mode

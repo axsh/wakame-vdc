@@ -41,13 +41,16 @@ class Host < Base
   method_option :cpu_cores, :type => :numeric, :desc => "Number of cpu cores to be offered"
   method_option :memory_size, :type => :numeric, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
+  method_option :arch, :type => :string, :default=>'x86_64', :desc => "The CPU architecture type. [#{HostNode::SUPPORTED_ARCH.join(', ')}]"
   def modify(uuid)
+    UnsupportedArchError.raise(options[:arch]) unless HostNode::SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
     fields = {
               :name=>options[:name],
               :offering_memory_size=>options[:memory_size],
               :offering_cpu_cores=>options[:cpu_cores],
-              :hypervisor=>options[:hypervisor]
+              :hypervisor=>options[:hypervisor],
+              :arch=>options[:arch],
     }
     super(HostNode,uuid,fields)
   end

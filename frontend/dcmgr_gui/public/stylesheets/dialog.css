@@ -13,6 +13,14 @@
   padding: 5px 10px;
 }
 
+#delete_backup_image_dialog table {
+	margin: 10px;
+}
+
+#delete_backup_image_dialog table tr td {
+	padding: 3px;
+}
+
 #attach_volume_dialog table tr td {
 	padding: 3px 10px;
 }
@@ -245,13 +253,14 @@
   padding: 0 3px 0 3px;
 }
 
-#create_load_balancer_dialog div {
+#create_load_balancer_dialog .field {
   padding-top :5px;
   padding-bottom :5px;
 }
 
 #create_load_balancer_dialog .header {
-  text-align: left;
+  text-align: center;
+  padding-top: 6px;
 }
 
 #create_load_balancer_dialog .title {
@@ -271,7 +280,6 @@
   padding-left: 2px;
   padding-bottom: 2px;
   text-align: left;
-
 }
 
 #create_load_balancer_dialog #balance_algorithm_header {

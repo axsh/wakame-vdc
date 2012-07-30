@@ -2,8 +2,8 @@
 
 ## Preparing vmimages
 
-    $ s3cmd sync s3://dlc.wakame.axsh.jp/demo/vmimage/ubuntu-lucid-32.raw.gz ./.
-    $ s3cmd sync s3://dlc.wakame.axsh.jp/demo/vmimage/ubuntu-lucid-64.raw.gz ./.
+    $ curl -O https://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-32.raw.gz
+    $ curl -O https://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-lucid-64.raw.gz
     $ gunzip ubuntu-lucid-32.raw.gz
     $ gunzip ubuntu-lucid-64.raw.gz
 
@@ -18,8 +18,8 @@
 ## Uploading vmimages
 
     $ s3cmd ls s3://dlc.wakame.axsh.jp/demo/vmimage/
-    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/ --dry-run
-    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/
+    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/ --acl-public --check-md5 --dry-run
+    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/ --acl-public --check-md5
     $ s3cmd ls s3://dlc.wakame.axsh.jp/demo/vmimage/
 
 

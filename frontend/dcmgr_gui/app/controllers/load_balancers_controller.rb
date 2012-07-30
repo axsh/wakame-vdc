@@ -8,8 +8,9 @@ class LoadBalancersController < ApplicationController
   def create
      data = {
       :display_name => params[:display_name],
-      :load_balancer_protocol => params[:load_balancer_protocol],
-      :load_balancer_port => params[:load_balancer_port],
+      :description => params[:description],
+      :protocol => params[:load_balancer_protocol],
+      :port => params[:load_balancer_port],
       :instance_protocol => params[:instance_protocol],
       :instance_port => params[:instance_port],
       :balance_algorithm => params[:balance_algorithm],
@@ -70,4 +71,36 @@ class LoadBalancersController < ApplicationController
      res = Hijiki::DcmgrResource::LoadBalancer.unregister(load_balancer_id, vifs)
      render :json => res
    end
+
+   def poweron
+    load_balancer_id = params[:id]
+    load_balancer = Hijiki::DcmgrResource::LoadBalancer.poweron(load_balancer_id)
+    render :json => load_balancer
+   end
+
+   def poweroff
+    load_balancer_id = params[:id]
+    load_balancer = Hijiki::DcmgrResource::LoadBalancer.poweroff(load_balancer_id)
+    render :json => load_balancer
+   end
+
+   def update
+    load_balancer_id = params[:id]
+    data = {
+      :display_name => params[:display_name],
+      :description => params[:description],
+      :protocol => params[:load_balancer_protocol],
+      :port => params[:load_balancer_port],
+      :instance_protocol => params[:instance_protocol],
+      :instance_port => params[:instance_port],
+      :balance_algorithm => params[:balance_algorithm],
+      :certificate_name => params[:certificate_name],
+      :private_key => params[:private_key],
+      :public_key => params[:public_key],
+      :certificate_chain => params[:certificate_chain],
+      :cookie_name => params[:cookie_name]
+    }
+    load_balancer = Hijiki::DcmgrResource::LoadBalancer.update(load_balancer_id,data)
+    render :json => load_balancer
+  end
 end

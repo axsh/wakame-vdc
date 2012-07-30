@@ -32,6 +32,21 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var delete_button_name = $.i18n.prop('delete_button');
   var register_button_name = $.i18n.prop('register_button');
   var unregister_button_name = $.i18n.prop('unregister_button');
+  var poweron_button_name =$.i18n.prop('poweron_button');
+  var poweroff_button_name =$.i18n.prop('poweroff_button');
+  var update_button_name =$.i18n.prop('update_button');
+  var change_instance_protocol = function(e) {
+    var load_balancer_protocol = $(e).find('#load_balancer_protocol');
+    var instance_protocol = $(e).find('#instance_protocol');
+    load_balancer_protocol.change(function() {
+      if(_.include(['http', 'https'], load_balancer_protocol.val())) {
+        instance_protocol.html('http');
+      } else if(_.include(['ssl', 'tcp'], load_balancer_protocol.val())) {
+        instance_protocol.html('tcp');
+      }
+    });
+    load_balancer_protocol.trigger('change');
+  };
 
   c_list.setDetailTemplate({
     template_id:'#loadBalancersDetailTemplate',
@@ -43,6 +58,66 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     c_pagenate.changeTotal(load_balancer.total);
     c_list.setData(load_balancer.results);
     c_list.singleCheckList(c_list.detail_template);
+
+    var edit_load_balancer_buttons = {};
+    edit_load_balancer_buttons[close_button_name] = function() { $(this).dialog("close"); };
+    edit_load_balancer_buttons[update_button_name] = function(event) {
+      var load_balancer_id = c_list.currentChecked();
+      var display_name = $(this).find('#display_name').val();
+      var description = $(this).find('#description').val();
+      var load_balancer_protocol = $(this).find('#load_balancer_protocol').val();
+      var load_balancer_port = $(this).find('#load_balancer_port').val();
+      var instance_protocol = $(this).find('#instance_protocol').text();
+      var instance_port = $(this).find('#instance_port').val();
+      var public_key = encodeURIComponent($(this).find('#public_key').val());
+      var private_key = encodeURIComponent($(this).find('#private_key').val());
+      var balance_algorithm = $(this).find('input[name="balance_algorithm"]:checked').val();
+      var certificate_chain = encodeURIComponent($(this).find('#certificate_chain').val());
+      var cookie_name = $(this).find('#cookie_name').val();
+      var data = "display_name="+display_name
+                 +"&description="+description
+                 +"&load_balancer_protocol="+load_balancer_protocol
+                 +"&load_balancer_port="+load_balancer_port
+                 +"&instance_protocol="+instance_protocol
+                 +"&instance_port="+instance_port
+                 +"&balance_algorithm="+balance_algorithm
+                 +"&private_key="+private_key
+                 +"&public_key="+public_key
+                 +"&certificate_chain="+certificate_chain
+                 +"&cookie_name="+cookie_name;
+      var request = new DcmgrGUI.Request;
+      request.put({
+        "url": '/load_balancers/'+ load_balancer_id +'.json',
+        "data": data,
+        success: function(json, status){
+          bt_refresh.element.trigger('dcmgrGUI.refresh');
+        }
+      });
+      $(this).dialog("close");
+    }
+
+    var bt_edit_load_balancer = new DcmgrGUI.Dialog({
+      target:'.edit_load_balancer',
+      width:600,
+      height:430,
+      title:$.i18n.prop('edit_load_balancer_header'),
+      path:'/edit_load_balancer',
+      button: edit_load_balancer_buttons,
+      callback: function(){
+        change_instance_protocol(this);
+      }
+    });
+
+    bt_edit_load_balancer.target.bind('click',function(event){
+      var uuid = $(this).attr('id').replace(/edit_(lb-[a-z0-9]+)/,'$1');
+      if( uuid ){
+        bt_edit_load_balancer.open({"ids":[uuid]});
+      }
+      c_list.checkRadioButton(uuid);
+    });
+
+    $(bt_edit_load_balancer.target).button({ disabled: false });
+
   });
 
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -51,9 +126,10 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   create_load_balancer_buttons[close_button_name] = function() { $(this).dialog("close"); };
   create_load_balancer_buttons[create_button_name] = function() {
     var display_name = $(this).find('#display_name').val();
+    var description = $(this).find('#description').val();
     var load_balancer_protocol = $(this).find('#load_balancer_protocol').val();
     var load_balancer_port = $(this).find('#load_balancer_port').val();
-    var instance_protocol = $(this).find('#instance_protocol').val();
+    var instance_protocol = $(this).find('#instance_protocol').text();
     var instance_port = $(this).find('#instance_port').val();
     var public_key = encodeURIComponent($(this).find('#public_key').val());
     var private_key = encodeURIComponent($(this).find('#private_key').val());
@@ -61,6 +137,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     var certificate_chain = encodeURIComponent($(this).find('#certificate_chain').val());
     var cookie_name = $(this).find('#cookie_name').val();
     var data = "display_name="+display_name
+               +"&description="+description
                +"&load_balancer_protocol="+load_balancer_protocol
                +"&load_balancer_port="+load_balancer_port
                +"&instance_protocol="+instance_protocol
@@ -89,6 +166,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     title:$.i18n.prop('create_load_balancer_header'),
     path:'/create_load_balancer',
     callback: function(){
+      change_instance_protocol(this);
       bt_create_load_balancer.disabledButton(1, false);
    },
     button: create_load_balancer_buttons
@@ -336,6 +414,54 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     button: unregister_load_balancer_buttons
   });
 
+  var load_balancers_poweron_buttons = {};
+  load_balancers_poweron_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  load_balancers_poweron_buttons[poweron_button_name] = function() {
+    var load_balancer_id = c_list.currentChecked();
+    var request = new DcmgrGUI.Request;
+    request.put({
+      "url": "/load_balancers/poweron/" + load_balancer_id,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+
+    $(this).dialog("close");
+  }
+
+  var bt_poweron_instance = new DcmgrGUI.Dialog({
+    target:'.poweron_load_balancer',
+    width:400,
+    height:200,
+    title:$.i18n.prop('poweron_load_balancer_header'),
+    path:'/poweron_load_balancer',
+    button: load_balancers_poweron_buttons
+  });
+
+  var load_balancers_poweroff_buttons = {};
+  load_balancers_poweroff_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  load_balancers_poweroff_buttons[poweroff_button_name] = function() {
+    var load_balancer_id = c_list.currentChecked();
+    var request = new DcmgrGUI.Request;
+    request.put({
+      "url": "/load_balancers/poweroff/" + load_balancer_id,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+
+    $(this).dialog("close");
+  }
+
+  var bt_poweroff_load_balancer = new DcmgrGUI.Dialog({
+    target:'.poweroff_load_balancer',
+    width:400,
+    height:200,
+    title:$.i18n.prop('poweroff_load_balancer_header'),
+    path:'/poweroff_load_balancer',
+    button: load_balancers_poweroff_buttons
+  });
+
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/load_balancers/list/',c_list.page);
@@ -383,6 +509,12 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
         case 'unregister':
           bt_unregister_load_balancer.open({ids: [selected_id]});
           break;
+        case 'poweron':
+          bt_poweron_instance.open({ids: [selected_id]});
+          break;
+        case 'poweroff':
+          bt_poweroff_load_balancer.open({ids: [selected_id]});
+          break;
       }
     }
   });
@@ -396,16 +528,10 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var actions = {};
   actions.changeButtonState = function() {
     var uuid = c_list.currentChecked();
-    var is_running = false;
-    var is_shutting_down = false;
     var row_id = '#row-'+uuid;
     var state = $(row_id).find('.state').text();
 
-    if(state == 'running') {
-      is_running = true;
-    }
-
-    if(is_running) {
+    if(_.include(['running', 'halted'], state)) {
       selectmenu.data('selectmenu').enableButton();
     } else {
       selectmenu.data('selectmenu').disableButton();

@@ -144,7 +144,7 @@ class Account < BaseNew
   def self.delete_account(uuid)
     u = Account.find(:uuid=>uuid)
     u.deleted_at ||= Time.now
-    u.save
+    u.save_changes
   end
 
   # 新規アカウント追加
@@ -163,7 +163,7 @@ class Account < BaseNew
   def self.edit_account(params)
      u = Account.find(:name => params[:name])
      u.description = params[:description] || u.descritption
-     u.save
+     u.save_changes
   end
 
   # STI class variable setter, getter methods.

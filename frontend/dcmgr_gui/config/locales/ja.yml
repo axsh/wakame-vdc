@@ -77,6 +77,11 @@ ja:
       uuid: "WMI ID"
       display_name: "イメージ名"
       description: "詳細"
+    delete_backup_image:
+      header: "バックアップイメージを削除"
+      image_id: "WMI ID"
+      display_name: "イメージ名"
+      message: "バックアップイメージを削除します。よろしいですか？"
     create_volume:
       header: "ボリュームを作成"
       display_name: "ボリューム名"
@@ -243,6 +248,7 @@ ja:
     create_load_balancer:
       header:
         display_name: "ロードバランサ名"
+        description: "説明"
         load_balancer: "ロードバランサ"
         instance: "インスタンス"
         load_balancer_protocol: "プロトコル"
@@ -264,6 +270,16 @@ ja:
         cookie_name: "Cookie名"
     delete_load_balancer:
       message: "ロードバランサを破棄します。よろしいですか？"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
+    poweron_load_balancer:
+      header: "ロードバランサの電源オン"
+      message: "ロードバランサの電源をオンにします。よろしいですか？"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
+    poweroff_load_balancer:
+      header: "ロードバランサの電源オフ"
+      message: "ロードバランサの電源をオフにします。よろしいですか？"
       load_balancer_id: "ロードバランサID"
       display_name: "ロードバランサ名"
     register_load_balancer:
@@ -368,17 +384,16 @@ ja:
       updated_at: "更新日"
   load_balancers:
     header: "ロードバランサ"
-    load_balancer_actions:
-      register_instance: "インスタンスの割り当て"
-      unregister_instance: "インスタンスの解除"
     button:
       create_load_balancer: "ロードバランサを起動"
       delete_load_balancer: "ロードバランサを破棄"
+      edit_load_balancer: "編集"
     list:
       id: "ID"
       display_name: "ロードバランサ名"
       ip: "IPアドレス"
       state: "状態"
+      action: "アクション"
     details:
       header: "詳細"
       load_balancer_id: "ロードバランサID"
@@ -391,10 +406,16 @@ ja:
       load_balancer_port: "ロードバランサポート"
       instance_protocol: "インスタンスプロトコル"
       instance_port: "インスタンスポート"
+    load_balancer_actions:
+      register_instance: "インスタンスの割り当て"
+      unregister_instance: "インスタンスの解除"
+      poweron: "パワーオン"
+      poweroff: "パワーオフ"
   machine_images:
     header: "マシンイメージ"
     button:
       launch_instance: "インスタンスを起動"
+      delete_backup_image: "バックアップイメージを削除"
       edit_machine_image: "編集"
     list:
       wmi_id: "WMI ID"

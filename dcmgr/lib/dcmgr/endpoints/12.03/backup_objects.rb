@@ -100,7 +100,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
     raise E::InvalidBackupObjectState, params[:id] unless bo.state == "available"
     
     begin
-      bo.entry_delete
+      bo.destroy
     rescue M::BackupObject::RequestError => e
       logger.error(e)
       raise E::InvalidDeleteRequest

@@ -44,6 +44,19 @@ cd ${VDC_ROOT}/dcmgr/
   [ -n "${range_end}"   ] || range_end=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMax:" { print $2 }'`
 }
 
+# must keep the permission 600
+#
+# > @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# > @         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+# > @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# > Permissions 0644 for '/path/to/wakame-vdc/tests/vdc.sh.d/pri.pem' are too open.
+# > It is recommended that your private key files are NOT accessible by others.
+# > This private key will be ignored.
+# > bad permissions: ignore key: /path/to/wakame-vdc/tests/vdc.sh.d/pri.pem
+# > Enter passphrase:
+#
+chmod 600 ${data_path}/pri.pem
+
 cat <<CMDSET | grep -v '^#' | ./bin/vdc-manage -e
 # Physical network definitions
 network dc add public

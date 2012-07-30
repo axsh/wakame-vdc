@@ -37,7 +37,7 @@ case "${1}" in
 
 instance)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy|reboot" ;;
+  help)    cmd_help    ${1} "index|show|create|destroy|reboot|stop|start|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
     if [ ! -z "${state}" ]; then
@@ -60,7 +60,7 @@ instance)
      --data-urlencode "host_name=${host_name}" \
      ${base_uri}/${1}s.${format}
     ;;
-  reboot|stop|start)
+  reboot|stop|start|poweroff|poweron)
     call_api -s -X PUT -H ${http_header} -d "''" \
      ${base_uri}/${1}s/${3}/${2}.${format}
     ;;

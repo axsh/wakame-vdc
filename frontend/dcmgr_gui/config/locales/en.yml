@@ -78,6 +78,11 @@ en:
       uuid: "WMI ID"
       display_name: "Image Name"
       description: "Description"
+    delete_backup_image:
+      header: "Delete Backup Image"
+      image_id: "WMI ID"
+      display_name: "Image Name"
+      message: "Are you sure you want to delete the following backup image?"
     create_volume:
       header: "Create Volume"
       display_name: "Volume Name"
@@ -243,6 +248,7 @@ en:
     create_load_balancer:
       header:
         display_name: "Load Balancer Name"
+        description: "Description"
         load_balancer: "Load Balancer"
         instance: "Instance"
         load_balancer_protocol: "Protocol"
@@ -264,6 +270,16 @@ en:
         cookie_name: "Cookie Name"
     delete_load_balancer:
       message: "Are you sure you want to delete the following Load Balancer?"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
+    poweron_load_balancer:
+      header: "PowerOn Load Balancer"
+      message: "Are you sure you want to turn load balancer on?"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
+    poweroff_load_balancer:
+      header: "PowerOff Load Balancer"
+      message: "Are you sure you want to turn load balancer off?"
       load_balancer_id: "Load Balancer ID"
       display_name: "Load Balancer Name"
     register_load_balancer:
@@ -369,17 +385,16 @@ en:
       updated_at: "Updated At"
   load_balancers:
     header: "Load Balancers"
-    load_balancer_actions:
-      register_instance: "Register Instance"
-      unregister_instance: "Unregister Instance"
     button:
       create_load_balancer: "Create Load Balancer"
       delete_load_balancer: "Delete Load Balancer"
+      edit_load_balancer: "Edit"
     list:
       id: "ID"
       display_name: "Name"
       ip: "IP"
       state: "State"
+      action: "Action"
     details:
       header: "Details"
       load_balancer_id: "Load Balancer ID"
@@ -392,10 +407,16 @@ en:
       load_balancer_port: "Load Balancer Port"
       instance_protocol: "Instance Protocol"
       instance_port: "Instance Port"
+    load_balancer_actions:
+      register_instance: "Register Instance"
+      unregister_instance: "Unregister Instance"
+      poweron: "Power On"
+      poweroff: "Power Off"
   machine_images:
     header: "Machine Images"
     button:
       launch_instance: "Launch Instance"
+      delete_backup_image: "Delete Backup Image"
       edit_machine_image: "Edit"
     list:
       wmi_id: "WMI ID"
