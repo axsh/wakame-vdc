@@ -214,10 +214,11 @@ module Dcmgr
       end
     end
 
-    attr_reader :config
+    attr_reader :config, :parent
     
     def initialize
       @config = {}
+      @parent = nil
 
       hook_lst = []
       c = self.class
