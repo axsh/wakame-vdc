@@ -33,29 +33,54 @@ module Dcmgr
     #   end
     # end
     #
+    # class TaskB < Tasklet
+    #   def initialize(path)
+    #     @passwd = File.read(path)
+    #   end
+    #
+    #   def func1
+    #     invoke_task(TaskA, func1, [1, 2])
+    #     puts "TaskB#func1"
+    #   end
+    #
+    #   register(self.new('/etc/passwd'))
+    # end
+    #
+    # TaskSession.reset!(:thread)
+    #
     # # Create new TaskA object always.
-    # TaskInvoker.invoke(TaskA, :func1, ['1', '2'])
+    # TaskSession.invoke(TaskA, :func1, ['1', '2'])
     # # => 11
     # # => 1
     # # => 2
     #
     # # Create TaskA object once in earlier stage then call method of
     # # the object. So Tasklet#initialize can be used for loading conf files etc.
-    # TaskInvoker.register(TaskA.new(20))
+    # Tasklet.register(TaskA.new(20))
     # 
-    # TaskInvoker.new.invoke(TaskA, :func2)
+    # TaskSession.invoke(TaskA, :func2)
     # # => 21
-    # TaskInvoker.new.invoke(TaskA, :func2)
+    # TaskSession.invoke(TaskA, :func2)
     # # => 21
     #
     # # Task session example.
-    # invoker = TaskInvoker.new
-    # invoker.invoke(TaskA, :func3)
+    # TaskSession.invoke(TaskA, :func3)
     # # => 1
-    # invoker.invoke(TaskA, :func3)
+    # TaskSession.invoke(TaskA, :func3)
     # # => 2
     class Tasklet
+      @registry = {}
+
       class << self
+        def register(tasklet)
+          raise ArgumentError unless takslet.is_a?(Tasklet)
+          @registry[tasklet.class] = tasklet
+        end
+
+        def registry
+          @registry
+        end
+
         attr_reader :task_hooks
         
         def reset!
@@ -89,10 +114,15 @@ module Dcmgr
 
       self.reset!
       
-      def invoke(session, method, args)
-        raise ArgumentError unless session.is_a?(TaskSession)
-        dup.invoke!(session, method, args)
+      def invoke(method, args=[])
+        dup.invoke!(@task_session, method, args)
       end
+      protected :invoke
+
+      def invoke_task(taskclass, method, args=[])
+        @task_session.invoke(taskclass, method, args)
+      end
+      protected :invoke_task
 
       def invoke_hook(type, args=[])
         invoke_hook!(type)
@@ -108,6 +138,7 @@ module Dcmgr
       helpers Helpers
 
       def invoke!(session, method, args=[])
+        raise ArgumentError unless session.is_a?(TaskSession)
         raise "Unknown method: #{self.class}\##{method}" unless self.respond_to?(method)
 
         @task_session = session
@@ -135,39 +166,6 @@ module Dcmgr
       end
     end
 
-    # TaskSession.reset!(:thread)
-    #
-    # ti = TaskInvoker.new(TaskSession.current)
-    # ti.invoke(TaskA, :method1)
-    #
-    # ti2 = TaskInvoker.new(ti.task_session)
-    # 
-    class TaskInvoker
-      @registry = {}
-
-      def self.register(tasklet)
-        @registry[tasklet.class] = tasklet
-      end
-
-      def self.registry
-        @registry
-      end
-
-      attr_reader :task_session
-      
-      def initialize(session = TaskSession.current)
-        @task_session = session
-      end
-      
-      def invoke(taskclass, method, args)
-        raise ArgumentError unless taskclass.is_a?(Class) && taskclass < Tasklet
-        tasklet = self.class.registry[taskclass]
-        tasklet = tasklet.nil? ? taskclass.new : tasklet.dup
-
-        @task_session.invoke(tasklet, method, args)
-      end
-    end
-
     # OS/VM context where runs tasklets. Fiber or Thread.
     # It provides the session local variable in Hash.
     class TaskSession
@@ -185,6 +183,10 @@ module Dcmgr
       def self.current
         @task_session_class.current
       end
+
+      def self.invoke(taskclass, method, args)
+        self.current.invoke(tasklet, method, args)
+      end
       
       def initialize
         @tasklets = {}
@@ -199,13 +201,16 @@ module Dcmgr
         @hash[key] = value
       end
 
-      def invoke(tasklet, method, args)
-        raise ArgumentError unless tasklet.is_a?(Tasklet)
+      def invoke(taskclass, method, args)
+        raise ArgumentError unless taskclass.is_a?(Class) && taskclass < Tasklet
+        tasklet = Tasklet.registry[taskclass]
+        tasklet = tasklet.nil? ? taskclass.new : tasklet.dup
+
         unless @tasklets.has_key?(tasklet)
           @tasklets[tasklet]=1
           tasklet.invoke_hook(:session_begin)
         end
-        tasklet.invoke(self, method, args)
+        tasklet.invoke!(self, method, args)
       end
 
       protected

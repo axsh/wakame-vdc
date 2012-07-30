@@ -213,13 +213,13 @@ module Dcmgr
         end
       end
 
-      # Creates TaskInvoker per request.
-      def task_invoker
-        @task_invoker ||= begin
+      # Reset TaskSession per request.
+      def task_session
+        @task_session ||= begin
                             Task::TaskSession.reset!(:thread)
                             Task::TaskSession.current[:logger] = @hva_ctx.logger
                             
-                            Task::TaskInvoker.new(Task::TaskSession.current)
+                            Task::TaskSession.current
                           end
       end
 
@@ -239,7 +239,7 @@ module Dcmgr
 
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
 
-        task_invoker.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+        task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
                             :deploy_image, [@inst, @hva_ctx])
 
         #setup_metadata_drive
@@ -536,7 +536,7 @@ module Dcmgr
           }
 
           @hva_ctx.logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
-          task_invoker.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
                               :upload_image, [@inst, @hva_ctx, @bo, ev_callback])
           
           @hva_ctx.logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
