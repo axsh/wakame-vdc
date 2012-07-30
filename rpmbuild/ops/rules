@@ -8,7 +8,7 @@ ARCH_32 := i686
 ARCHS   := $(ARCH_64) $(ARCH_32)
 
 BUILD_ID   ?= $$(git log -n 1 --pretty=format:"%h")
-RMBUILD_SH := ./rpmbuild.sh
+RPMBUILD_SH := ./rpmbuild.sh
 
 
 #
@@ -37,11 +37,11 @@ rpm-clean:
 
 rpm-32: rpm-32-stamp
 rpm-32-stamp:
-	$(RMBUILD_SH) --base-distro-arch=$(ARCH_32) --build-id=$(BUILD_ID)
+	$(RPMBUILD_SH) --base-distro-arch=$(ARCH_32) --build-id=$(BUILD_ID)
 	touch $@
 rpm-64: rpm-64-stamp
 rpm-64-stamp:
-	$(RMBUILD_SH) --base-distro-arch=$(ARCH_64) --build-id=$(BUILD_ID)
+	$(RPMBUILD_SH) --base-distro-arch=$(ARCH_64) --build-id=$(BUILD_ID)
 	touch $@
 
 #
@@ -56,11 +56,11 @@ vmapp-clean:
 
 vmapp-32: vmapp-32-stamp
 vmapp-32-stamp:
-	$(RMBUILD_SH) --base-distro-arch=$(ARCH_32) --build-id=$(BUILD_ID) --execscript=./execscript.d/vmapp-rhel.sh
+	$(RPMBUILD_SH) --base-distro-arch=$(ARCH_32) --build-id=$(BUILD_ID) --execscript=./execscript.d/vmapp-rhel.sh
 	touch $@
 vmapp-64: vmapp-64-stamp
 vmapp-64-stamp:
-	$(RMBUILD_SH) --base-distro-arch=$(ARCH_64) --build-id=$(BUILD_ID) --execscript=./execscript.d/vmapp-rhel.sh
+	$(RPMBUILD_SH) --base-distro-arch=$(ARCH_64) --build-id=$(BUILD_ID) --execscript=./execscript.d/vmapp-rhel.sh
 	touch $@
 
 
