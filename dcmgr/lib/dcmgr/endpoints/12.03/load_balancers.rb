@@ -55,7 +55,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   post do
-    # copy request params
     lb_conf = Dcmgr.conf.service_types['lb']
     spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
     lb_port = params[:port].to_i
