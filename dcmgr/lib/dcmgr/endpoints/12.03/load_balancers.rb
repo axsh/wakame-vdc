@@ -340,9 +340,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.display_name = params[:display_name]
     end
 
-    if !params[:cookie_name].empty?
-      lb.cookie_name = params[:cookie_name]
-    end
+    lb.cookie_name = params[:cookie_name]
 
     if !params[:private_key].empty?
       lb.private_key = params[:private_key]
@@ -457,7 +455,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   def update_load_balancer_config(values)
     proxy = Dcmgr::Drivers::Haproxy.new(Dcmgr::Drivers::Haproxy.mode(values[:protocol]))
     proxy.set_balance_algorithm(values[:balance_algorithm])
-    proxy.set_cookie_name(values[:cookie_name]) unless values[:cookie_name].empty?
+    proxy.set_cookie_name(values[:cookie_name]) if !values[:cookie_name].empty?
     proxy.set_bind('*', values[:port])
 
     if !values[:servers].empty?
