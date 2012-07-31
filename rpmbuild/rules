@@ -3,7 +3,7 @@
 # should be in wakame-vdc
 CURDIR ?= $(PWD)
 
-VDC_BUILD_ID  ?= master
+VDC_BUILD_ID  ?= HEAD
 VDC_REPO_URI  ?= git://github.com/axsh/wakame-vdc.git
 VDC_SPEC_BASE := rpmbuild/SPECS/wakame-vdc.spec
 VDC_SPEC_SUBS := rpmbuild/SPECS/wakame-vdc-example-1box.spec
