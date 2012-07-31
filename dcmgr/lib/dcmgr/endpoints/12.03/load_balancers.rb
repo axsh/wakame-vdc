@@ -273,14 +273,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
-  put '/:id/enable' do
-    #pending
-  end
-
-  put '/:id/disable' do
-    #pending
-  end
-
   put '/:id' do
 
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
