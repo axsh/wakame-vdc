@@ -35,16 +35,31 @@ module Dcmgr::Endpoints::V1203::Responses
           h[:vif] << ent
         }
 
-        network_vif_ids = []
-        load_balancer_targets.collect {|t|
-          network_vif_ids << t[:network_vif_id].split('-')[1]
+        network_vif_ids = load_balancer_targets.collect {|t|
+          t[:network_vif_id].split('-')[1]
         }
 
-        target_instances = Dcmgr::Models::NetworkVif.where(:uuid => network_vif_ids).all.collect{|t|t.instance.canonical_uuid}
+        network_vifs = {}
+        Dcmgr::Models::NetworkVif.where(:uuid => network_vif_ids).all.each {|t|
+          network_vifs[t.canonical_uuid] = {
+           :instance_id => t.instance.canonical_uuid,
+           :display_name => t.instance.display_name,
+          }
+        }
+
+        target_vifs = load_balancer_targets.collect {|t|
+          {
+            :network_vif_id => t.network_vif_id,
+            :instance_id => network_vifs[t.network_vif_id][:instance_id],
+            :display_name => network_vifs[t.network_vif_id][:display_name],
+            :fallback_mode => t[:fallback_mode]
+          }
+        }
+
         to_hash.merge(:id=>canonical_uuid,
               :state=>state,
               :status=>status,
-              :target_instances=> target_instances,
+              :target_vifs=> target_vifs,
               :vif=>h[:vif]
         )
       }

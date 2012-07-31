@@ -177,6 +177,7 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "varchar(255)", :null=>false
       column :load_balancer_id, "int(11)", :null => false
+      column :fallback_mode, "varchar(255)", :null=>false, :default => 'off'
       column :created_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
       column :is_deleted, "int(11)", :null=>false

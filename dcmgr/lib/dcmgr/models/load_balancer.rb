@@ -80,6 +80,7 @@ module Dcmgr::Models
       lbt = LoadBalancerTarget.new
       lbt.network_vif_id = network_vif_id
       lbt.load_balancer_id = self.id
+      lbt.fallback_mode = 'off'
       lbt.save
       lbt
     end
