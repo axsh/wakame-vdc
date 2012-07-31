@@ -311,14 +311,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     if params[:target_vifs] && !params[:target_vifs].empty?
        params[:target_vifs].each {|tv|
-        lt = M::LoadBalancerTarget.where({:load_balancer_id => lb.id, :network_vif_id => tv['network_vif_id']}).first
+        lt = lb.target_network(tv['network_vif_id'])
         lt.fallback_mode = tv['fallback_mode']
         lt.save
         servers << {
-          :ipv4 => Dcmgr::Models::NetworkVif[tv['network_vif_id']].ip.first.ipv4,
-          :backup => tv['fallback_mode'] == 'on' ? true : false
+          :ipv4 => M::NetworkVif[tv['network_vif_id']].ip.first.ipv4,
+          :backup => backup(tv['fallback_mode'])
         }
       }
+    else
+      network_vif_ids = lb.load_balancer_targets.collect{|lt| lt.network_vif_id.split('-')[1]}
+      if network_vif_ids
+        M::NetworkVif.where(:uuid => network_vif_ids).all.each {|nv|
+          tv = lb.target_network(nv.canonical_uuid)
+          servers << {
+            :ipv4 => nv.ip.first.ipv4,
+            :backup => backup(tv.fallback_mode)
+          }
+        }
+      end
     end
 
     if !params[:description].empty?
@@ -422,6 +433,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
  private
+
+  def backup(fallback_mode)
+    fallback_mode == 'on' ? true : false
+  end
 
   def update_ssl_proxy_config(values)
     s = Dcmgr::Drivers::Stunnel.new

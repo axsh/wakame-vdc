@@ -106,5 +106,9 @@ module Dcmgr::Models
       end
     end
 
+    def target_network(network_vif_id)
+      LoadBalancerTarget.where({:load_balancer_id => self.id, :network_vif_id => network_vif_id}).first
+    end
+
   end
 end
