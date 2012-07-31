@@ -5,7 +5,10 @@ module Hijiki::Request::Common
 
   class Defaults
     def self.request_defaults
-      @@request_defaults ||= {}
+      @@request_defaults ||= {
+        :format => 'json',
+        :service_type => 'std',
+      }
     end
   end
 
