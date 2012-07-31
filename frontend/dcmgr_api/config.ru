@@ -3,6 +3,7 @@
 $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
 
 require 'autoload'
+require 'hijiki'
 require 'rubygems'
 require 'rack/request'
 
@@ -11,6 +12,9 @@ require 'rack/request'
 #                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
 #                 ])
 # Dcmgr.run_initializers
+
+# Hijiki::Request::Common::Defaults.request_defaults[:domain] = dcmgr_gui_config['dcmgr_site'].gsub(/\/$/, '')
+Hijiki::Request::Common::Defaults.request_defaults[:domain] = 'http://localhost:9001/'.gsub(/\/$/, '')
 
 map '/api' do
 #   use Dcmgr::Rack::RequestLogger

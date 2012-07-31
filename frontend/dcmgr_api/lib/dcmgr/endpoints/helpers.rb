@@ -16,6 +16,14 @@ module Dcmgr
       def self.included(klass)
         klass.extend ClassMethods
       end
+
+      def api_request(request)
+        # FIXME: Use returned error.
+        response = request.perform
+        raise Dcmgr::Endpoints::Errors::InvalidParameter unless response.success?
+        response.parse
+      end
+
     end
   end
 end
