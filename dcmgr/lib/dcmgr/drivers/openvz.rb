@@ -12,7 +12,34 @@ module Dcmgr
       include Dcmgr::Helpers::TemplateHelper
       
       template_base_dir "openvz"
-      
+
+      # Decorator pattern class of Rpc::HvaHandler::HvaContext.
+      class OvzContext
+        def initialize(root_ctx)
+          raise ArgumentError unless root_ctx.is_a?(Rpc::HvaHandler::HvaContext)
+          @subject = root_ctx
+        end
+        
+        def ctid
+          inst[:id]
+        end
+        
+        def cgroup_scope
+          ctid.to_s
+        end
+
+        private
+        def method_missing(meth, *args)
+          @subject.send(meth, *args)
+        end
+      end
+
+      before do
+        @args = @args.map {|i|  i.is_a?(Rpc::HvaHandler::HvaContext) ? OvzContext.new(i) : i; }
+        # First arugment is expected a HvaContext.
+        @hc = @args.first
+      end
+
       def run_instance(hc)
         # load openvz conf
         config = OpenvzConfig.new
@@ -178,7 +205,17 @@ module Dcmgr
         
         # start openvz container
         sh("vzctl start %s",[hc.inst_id])
-        logger.debug("start container #{hc.inst_id}")
+        logger.debug("started container")
+
+        # Set blkio throttling policy to vm_data_dir block device.
+        cgroup_set('blkio', hc.cgroup_scope) do
+          devid = find_devnode_id(hc.inst_data_dir)
+          
+          add('blkio.throttle.read_iops_device', "#{devid} 100")
+          add('blkio.throttle.read_bps_device', "#{devid} 100000000")
+          add('blkio.throttle.write_iops_device', "#{devid} 100")
+          add('blkio.throttle.write_bps_device', "#{devid} 100000000")
+        end
       end
 
       def terminate_instance(hc)

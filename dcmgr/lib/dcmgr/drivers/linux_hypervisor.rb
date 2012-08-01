@@ -105,6 +105,47 @@ module Dcmgr
           sh("udevadm settle")
         end
       end
+
+      protected
+
+      # cgroup_set('blkio', "0") do
+      #   add('blkio.throttle.read_iops_device', "253:0 128000")
+      # end
+      def cgroup_set(subsys, scope, &blk)
+        cgroup_mnt = `findmnt -n -t cgroup -O "#{subsys}"`.split("\n").first
+        raise "Failed to find the cgroup base path to #{subsys} controller." if cgroup_mnt.nil?
+        cgroup_base = cgroup_mnt.split(/\s+/).first
+
+        cgroup_scope = File.expand_path(scope, cgroup_base)
+        unless File.directory?(cgroup_scope)
+          raise "Unknown directory in the cgroup #{subsys}: #{cgroup_scope}"
+        end
+        CgroupBlkio.new(cgroup_scope).instance_eval(&blk)
+      end
+
+      class CgroupBlkio
+        def initialize(cgroup_scope)
+          @cgroup_scope = cgroup_scope
+        end
+        
+        def add(k, v)
+          path = File.join(@cgroup_scope, k)
+          File.open(path, 'w+') { |f|
+            f.puts(v)
+          }
+        end
+
+        private
+        def find_devnode_id(src)
+          devnode_id=`lsblk -n -r -d $(df -P '#{src}' | sed -e '1d' | awk '{print $1}') | awk '{print $3}'`
+          unless $?.success?
+            raise "Failed to find devnode ID (MAJOR:MINOR) from #{src}"
+          end
+
+          devnode_id.chomp
+        end
+      end
+      
     end
   end
 end
