@@ -10,6 +10,8 @@ module Dcmgr
 
     module V1203
       module Responses
+        autoload :Instance, 'dcmgr/endpoints/12.03/responses/instance'
+        autoload :InstanceCollection, 'dcmgr/endpoints/12.03/responses/instance'
         autoload :Network, 'dcmgr/endpoints/12.03/responses/network'
         autoload :NetworkCollection, 'dcmgr/endpoints/12.03/responses/network'
         autoload :NetworkVif, 'dcmgr/endpoints/12.03/responses/network'
