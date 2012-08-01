@@ -411,6 +411,7 @@ ja:
       unregister_instance: "インスタンスの解除"
       poweron: "パワーオン"
       poweroff: "パワーオフ"
+      active_standby: "アクティブ／スタンバイ"
   machine_images:
     header: "マシンイメージ"
     button:

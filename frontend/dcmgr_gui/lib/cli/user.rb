@@ -209,14 +209,14 @@ __END
     def enable(uuid)
       user = User[uuid] || UnknownUUIDError.raise(uuid)
       user.enabled = true
-      user.save
+      user.save_changes
     end
 
     desc "enable UUID", "Disable the user."
     def disable(uuid)
       user = User[uuid] || UnknownUUIDError.raise(uuid)
       user.enabled = false
-      user.save
+      user.save_changes
     end
     
   end

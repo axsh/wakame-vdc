@@ -57,14 +57,12 @@ Create: <%= st.created_at %>
 Update: <%= st.updated_at %>
 __END
     else
-      cond = {}
-      ds = StorageNode.filter(cond)
-      puts ERB.new(<<__END, nil, '-').result(binding)
-<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status'] %>
-<%- ds.each { |row| -%>
-<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
-<%- } -%>
-__END
+      ds = HostNode.dataset
+      table = [['UUID', 'Node ID', 'Storage', 'Status']]
+      ds.each { |r|
+        table << [r.canonical_uuid, r.node_id, r.storage_type, r.status]
+      }
+      shell.print_table(table)
     end
   end
 

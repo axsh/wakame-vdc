@@ -1,0 +1,8 @@
+<%   if I18n.locale.to_s.slice(0,2) == 'ja' then %>
+<%= javascript_include_tag 'i18n/grid.locale-ja.js' %>
+<%  else %>
+<%= javascript_include_tag 'i18n/grid.locale-en.js' %>
+<%  end  %>
+<%= javascript_include_tag 'jquery.jqGrid.min.js' %>
+  <table id="list" class="scroll" cellpadding="0" cellspacing="0" ></table>
+</div>

@@ -412,6 +412,7 @@ en:
       unregister_instance: "Unregister Instance"
       poweron: "Power On"
       poweroff: "Power Off"
+      active_standby: "Active/Standby"
   machine_images:
     header: "Machine Images"
     button:

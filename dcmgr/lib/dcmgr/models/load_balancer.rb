@@ -80,6 +80,7 @@ module Dcmgr::Models
       lbt = LoadBalancerTarget.new
       lbt.network_vif_id = network_vif_id
       lbt.load_balancer_id = self.id
+      lbt.fallback_mode = 'off'
       lbt.save
       lbt
     end
@@ -103,6 +104,10 @@ module Dcmgr::Models
       else
         self.instance.network_vif
       end
+    end
+
+    def target_network(network_vif_id)
+      LoadBalancerTarget.where({:load_balancer_id => self.id, :network_vif_id => network_vif_id}).first
     end
 
   end

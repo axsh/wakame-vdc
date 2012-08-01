@@ -100,7 +100,20 @@ class LoadBalancersController < ApplicationController
       :certificate_chain => params[:certificate_chain],
       :cookie_name => params[:cookie_name]
     }
+
+    if params[:target_vifs] && params[:target_vifs].is_a?(Array)
+     data[:target_vifs] = params[:target_vifs]
+    end
+
     load_balancer = Hijiki::DcmgrResource::LoadBalancer.update(load_balancer_id,data)
     render :json => load_balancer
   end
+
+  def target_instances
+    load_balancer_id = params[:id]
+    detail = Hijiki::DcmgrResource::LoadBalancer.show(load_balancer_id)
+    respond_with(detail,:to => [:json])
+  end
+
+
 end

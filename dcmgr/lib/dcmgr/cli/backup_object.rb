@@ -66,22 +66,22 @@ Backup Storage UUID: <%= bo.backup_storage.canonical_uuid %>
 Object Key: <%= bo.object_key %>
 Size: <%= bo.size %> (Alloc Size: <%= bo.allocation_size %>)
 Checksum: <%= bo.checksum %>
+Create: <%= bo.created_at %>
+Update: <%= bo.updated_at %>
+Delete: <%= bo.deleted_at %>
 <%- if bo.description -%>
 Description:
 <%= bo.description %>
 <%- end -%>
-Create: <%= bo.created_at %>
-Update: <%= bo.updated_at %>
-Delete: <%= bo.deleted_at %>
 __END
       else
         ds = M::BackupObject.dataset
-        puts ERB.new(<<__END, nil, '-').result(binding)
-<%= "%-15s %-15s %-20s %-20s %-10s" % ['UUID', 'Account ID', 'Name', 'Size', 'Checksum'] %>
-<%- ds.each { |row| -%>
-<%= "%-15s %-15s %-20s %-20s %-10s" % [row.canonical_uuid, row.account_id, row.display_name, row.size, row.checksum[0,10]] %>
-<%- } -%>
-__END
+        table = [['UUID', 'Account ID', 'Size', 'Checksum', 'Service Type', 'Name']]
+        ds.each { |r|
+          table << [r.canonical_uuid, r.account_id, r.size, r.checksum[0,10], r.service_type, r.display_name]
+        }
+        
+        shell.print_table(table)
       end
     end
     

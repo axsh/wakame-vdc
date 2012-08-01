@@ -107,25 +107,28 @@ Arch: <%= img.arch %>
 Is Public: <%= img.is_public %>
 State: <%= img.state %>
 Service Type: <%= img.service_type %>
+Cacheable: <%= img.is_cacheable %>
+Create: <%= bo.created_at %>
+Update: <%= bo.updated_at %>
+Delete: <%= bo.deleted_at %>
 Features:
 <%= img.features %>
 <%- if img.description -%>
 Description:
   <%= img.description %>
 <%- end -%>
-Is Cacheable: <%= img.is_cacheable %>
 <%- if img.instance_model_name -%>
-Instance model name: <%= img.instance_model_name %>
+Instance Model Name: <%= img.instance_model_name %>
 <%- end -%>
 __END
       else
-        cond = {}
-        imgs = M::Image.filter(cond).all
-        print ERB.new(<<__END, nil, '-').result(binding)
-<%- imgs.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>\t<%= row.arch %>
-<%- } -%>
-__END
+        ds = M::Image.dataset
+        table = [['UUID', 'Account ID', 'Service Type', 'Name', 'Boot Type', 'Arch']]
+        ds.each { |r|
+          table << [r.canonical_uuid, r.account_id, r.service_type, r.display_name, (r.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'), r.arch]
+        }
+        
+        shell.print_table(table)
       end
     end
 

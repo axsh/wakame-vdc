@@ -252,4 +252,7 @@ class DialogController < ApplicationController
     render :create_and_edit_load_balancer
   end
 
+  def active_standby_load_balancer
+  end
+
 end

@@ -462,6 +462,133 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     button: load_balancers_poweroff_buttons
   });
 
+  var load_balancers_active_standby_buttons = {};
+  load_balancers_active_standby_buttons[close_button_name] = function() { $(this).dialog("close"); };
+  load_balancers_active_standby_buttons[update_button_name] = function(e) {
+    var load_balancer_id = c_list.currentChecked();
+    var self = this;
+    var target_vifs = [];
+
+    $.each($(this).find('#list').find(':checked'), function(k, v) {
+      var id = '#row_' + k;
+      var network_vif_id = $($(self).find(id).children()[4]).attr('title');
+      var selected_mode = $(v).attr('class');
+      if(selected_mode == 'active') {
+        var fallback_mode = 'off';
+      } else if(selected_mode == 'standby') {
+        var fallback_mode = 'on';
+      }
+
+      target_vifs.push('target_vifs[][network_vif_id]=' + network_vif_id);
+      target_vifs.push('target_vifs[][fallback_mode]=' + fallback_mode);
+    });
+
+    var data = target_vifs.join('&');
+    var request = new DcmgrGUI.Request;
+    request.put({
+      "url": '/load_balancers/'+ load_balancer_id +'.json',
+      data: data,
+      success: function(json,status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+
+    $(this).dialog("close");
+  }
+
+  var bt_active_standby_load_balancer = new DcmgrGUI.Dialog({
+    target:'.active_standby_load_balancer',
+    width:500,
+    height:430,
+    title:$.i18n.prop('active_standy_load_balancer_header'),
+    path:'/active_standby_load_balancer',
+    callback: function(e) {
+      var load_balancer_id = c_list.currentChecked();
+      var self = this;
+
+      function radioFormatter(cellvalue, options, rowObject) {
+        var radioName = "radio" + rowObject.id;
+        var checked = '';
+        var name = 'instance_' + options.rowId;
+        var active = 2;
+        var standby = 3;
+
+        if(options.pos == active) {
+          var class_name = 'active';
+        }
+
+        if(options.pos == standby){
+          var class_name = 'standby';
+        }
+
+        if((options.pos == active || options.pos == standby) && cellvalue == 1) {
+          checked = 'checked';
+        }
+
+        return "<input class='"+ class_name +"' name='"+name+"' type='radio' name='" + radioName + "' value='" + cellvalue + "'"+checked+"/>";
+      };
+
+      $(this).find("#list").jqGrid({
+        datatype: function(postdata) {
+          var request = new DcmgrGUI.Request;
+          request.get({
+            "url": '/load_balancers/show/' + load_balancer_id + '.json',
+            success: function(json,status) {
+              tv = json.target_vifs;
+              target_vifs = [];
+              _.each(tv, function(vif){
+                if(vif.fallback_mode == 'on') {
+                  var active = 0;
+                  var standby = 1;
+                } else if (vif.fallback_mode == 'off') {
+                  var active = 1;
+                  var standby = 0;
+                }
+
+                target_vifs.push({
+                  'display_name': vif.display_name,
+                  'instance_id': vif.instance_id,
+                  'active': active,
+                  'standby': standby,
+                  'network_vif_id': vif.network_vif_id
+                });
+
+              });
+
+              $(self).find("#list").clearGridData(true);
+              for(var i=0;i<=target_vifs.length;i++){
+                var id = 'row_' + i;
+                $(self).find("#list").jqGrid('addRowData',id,target_vifs[i]);
+              }
+
+             }
+           })
+        },
+        altRows: true,
+        colNames:['InstanceID',
+                  'Name',
+                  'Active',
+                  'Standby',
+                  'NetworkVifID'
+                 ],
+        colModel:[
+          {name:'instance_id',align:'center',sortable:false,width:159},
+          {name:'display_name',align:'center',sortable:false,width:160},
+          {name:'active',align:'center',editable:true, editrules: {required:true}, edittype:'custom', formatter:radioFormatter, sortable:false,width:60},
+          {name:'standby',align:'center',editable:true, editrules: {required:true}, edittype:'custom', formatter:radioFormatter, sortable:false,width:60},
+          {name:'network_vif_id', hidden:true}
+        ],
+        rowNum:10,
+        height:'240px',
+        width:'460px',
+        pager:'#pager1',
+        autowidth: true,
+        shrinkToFit: false,
+       })
+    },
+    button: load_balancers_active_standby_buttons
+  });
+
   bt_refresh.element.bind('dcmgrGUI.refresh',function(){
     c_list.page = c_pagenate.current_page;
     list_request.url = DcmgrGUI.Util.getPagePath('/load_balancers/list/',c_list.page);
@@ -514,6 +641,9 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
           break;
         case 'poweroff':
           bt_poweroff_load_balancer.open({ids: [selected_id]});
+          break;
+        case 'active_standby':
+          bt_active_standby_load_balancer.open({ids: [selected_id]});
           break;
       }
     }
