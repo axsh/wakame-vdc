@@ -67,6 +67,7 @@ module Hijiki
     end
 
     module V1203
+      autoload :Instances, 'hijiki/request/12.03/instances'
       autoload :Networks, 'hijiki/request/12.03/networks'
     end
 
