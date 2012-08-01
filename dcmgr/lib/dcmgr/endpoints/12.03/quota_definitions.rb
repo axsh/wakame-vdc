@@ -27,8 +27,8 @@ Sinatra::QuotaEvaluation.evaluators do
   quota_key 'backup_object.count' do
     quota_value.to_i <= M::BackupObject.filter(:account_id=>@account.canonical_uuid).count
   end
-  quota_key 'backup_object.size' do
-    quota_value.to_i <= (M::BackupObject.filter(:account_id=>@account.canonical_uuid).sum(:size) || 0)
+  quota_key 'backup_object.size_mb' do
+    quota_value.to_i <= ((M::BackupObject.filter(:account_id=>@account.canonical_uuid).sum(:size) || 0) / (1024 * 1024))
   end
   quota_key 'load_balancer.count' do
     quota_value.to_i <= M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid).count

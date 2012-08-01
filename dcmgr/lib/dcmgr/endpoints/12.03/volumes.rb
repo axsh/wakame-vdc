@@ -207,7 +207,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   end
 
   # Create new backup
-  quota 'backup_object.size', 'backup_object.count'
+  quota 'backup_object.size_mb', 'backup_object.count'
   put '/:id/backup' do
     raise E::UndefinedVolumeID if params[:id].nil?
     v = find_by_uuid(:Volume, params[:id])
