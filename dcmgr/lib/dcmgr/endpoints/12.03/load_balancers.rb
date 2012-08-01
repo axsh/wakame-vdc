@@ -77,7 +77,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     # make params for internal request.
     request_params = {'image_id' => lb_conf.image_id,
                       'instance_spec_id' => spec.canonical_uuid,
-                      'host_node_id' => lb_conf.host_node_id,
                       'ssh_key_id' => lb_conf.ssh_key_id,
                       'service_type' => lb_conf.name,
                       'user_data' => user_data.join("\n"),

@@ -139,7 +139,6 @@ module Dcmgr
       class LbServiceType < ServiceType
         param :image_id
         param :instance_spec_id
-        param :host_node_id
         param :ssh_key_id
         param :amqp_server_uri
         param :instances_network
@@ -148,7 +147,6 @@ module Dcmgr
         def validate(errors)
           super
           [:image_id,
-           :host_node_id,
            :ssh_key_id,
            :instances_network,
            :management_network,
