@@ -28,8 +28,12 @@ class Account < BaseNew
   # Ensure to set unique quota type for each account. Skip when the
   # quota type which already exists is added.
   def _add_account_quota(account_quota)
-    if self.account_quota_dataset.filter(:quota_type=>account_quota.quota_type).empty?
+    ds = self.account_quota_dataset.filter(:quota_type=>account_quota.quota_type)
+    if ds.empty?
       super
+    else
+      # update exisiting row for quota_value.
+      ds.first.set(:quota_value=>account_quota.quota_value).save_changes
     end
   end
 
