@@ -4,7 +4,10 @@ ruby_ver ?= 1.9.2-p290
 CURDIR ?= $(PWD)
 RUBYDIR ?= $(CURDIR)/ruby
 
-RUBY_MIRROR_SITE ?= http://core.ring.gr.jp/archives/lang/ruby/
+RUBY_MIRROR_SITE     ?= http://core.ring.gr.jp/archives/lang/ruby/
+LIBYAML_MIRROR_SITE  ?= http://pyyaml.org/download/libyaml/
+RUBYGEMS_MIRROR_SITE ?= http://production.cf.rubygems.org/rubygems/
+RUBY_BUILD_REPO_URI  ?= https://github.com/sstephenson/ruby-build.git
 
 CFLAGS := -fno-strict-aliasing
 CXXFLAGS := -fno-strict-aliasing
@@ -31,8 +34,10 @@ build-ruby-stamp: ruby-build ruby install-core-gem bundle-install
 	touch $@
 
 ruby-build:
-	(cd $(CURDIR); git clone https://github.com/sstephenson/ruby-build.git)
+	(cd $(CURDIR); git clone $(RUBY_BUILD_REPO_URI))
 	(cd $(CURDIR)/ruby-build; sed -i s,http://ftp.ruby-lang.org/pub/ruby/,$(RUBY_MIRROR_SITE), share/ruby-build/*)
+	(cd $(CURDIR)/ruby-build; sed -i s,http://pyyaml.org/download/libyaml/,$(LIBYAML_MIRROR_SITE), share/ruby-build/*)
+	(cd $(CURDIR)/ruby-build; sed -i s,http://production.cf.rubygems.org/rubygems/,$(RUBYGEMS_MIRROR_SITE), share/ruby-build/*)
 
 ruby:
 	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(RUBYDIR))
