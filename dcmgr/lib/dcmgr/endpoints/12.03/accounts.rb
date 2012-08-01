@@ -70,7 +70,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
       Dcmgr::Helpers::ByteUnit.instance_eval { |m|
         res['backup_object.size_mb'] = m.convert_byte(ds.sum(:size), m::MB)
       }
-      
+
+      ds = common_filter.call(M::LoadBalancer)
+      res['load_balancer.count'] =ds.count
+
       respond_with(R::AccountUsage.new(@account, res).generate)
     end
 

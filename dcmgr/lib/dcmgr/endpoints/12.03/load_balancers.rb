@@ -54,6 +54,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
+  quota 'load_balancer.count'
   post do
     lb_conf = Dcmgr.conf.service_types['lb']
     spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)

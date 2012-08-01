@@ -328,6 +328,7 @@ ja:
       networks: "ネットワーク"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
+      load_balancers: "ロードバランサ"
   instances:
     header: "インスタンス"
     instance_actions:
