@@ -148,7 +148,7 @@ module Dcmgr
         begin
           invoke_hook! :before
           # method must be public.
-          self.send(method, *args)
+          self.send(method, *@args)
         ensure
           invoke_hook! :after
         end
