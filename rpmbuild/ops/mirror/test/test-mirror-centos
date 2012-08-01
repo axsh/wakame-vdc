@@ -1,0 +1,55 @@
+#!/usr/bin/make -f
+
+MAKEFILE  := ../mirror-centos
+WGET_NAME := "echo wget"
+
+all: test
+test: set-vers touch dry-run test-centos
+
+set-vers: set-wget set-touch dry-run
+	@echo $@ done
+set-wget:
+	WGET_NAME=$(WGET_NAME) $(MAKEFILE) dump-vers | grep -w WGET_NAME=\"$(WGET_NAME)\"
+	@echo $@ done
+set-touch:
+	TOUCH_CMD="echo touch" $(MAKEFILE) dump-vers | grep -w TOUCH_CMD="\"echo touch\""
+	@echo $@ done
+set-centos-baseurl:
+	CENTOS_BASE=file:///path/to/pub/Linux/centos $(MAKEFILE) dump-vers | grep CENTOS_BASE=file:///path/to/pub/Linux/centos
+
+touch:
+	echo $@
+	$(MAKEFILE) touch
+	rm $@
+	@echo $@ done
+
+dry-run: dry-centos
+	@echo $@ done
+dry-centos: dry-centos-32 dry-centos-64
+	@echo $@ done
+dry-centos-32:
+	WGET_NAME=$(WGET_NAME) TOUCH_CMD="echo touch" $(MAKEFILE) centos-32
+	@echo $@ done
+dry-centos-64:
+	WGET_NAME=$(WGET_NAME) TOUCH_CMD="echo touch" $(MAKEFILE) centos-64
+	@echo $@ done
+
+test-centos:
+	WGET_NAME=$(WGET_NAME) TOUCH_CMD="echo touch" $(MAKEFILE) centos
+	WGET_NAME=$(WGET_NAME) $(MAKEFILE) centos
+	rm centos-stamp
+	rm centos-32-stamp
+	rm centos-64-stamp
+	@echo $@ done
+test-centos-32:
+	WGET_NAME=$(WGET_NAME) TOUCH_CMD="echo touch" $(MAKEFILE) centos-32
+	WGET_NAME=$(WGET_NAME) $(MAKEFILE) centos-32
+	rm centos-32-stamp
+	@echo $@ done
+test-centos-64:
+	WGET_NAME=$(WGET_NAME) TOUCH_CMD="echo touch" $(MAKEFILE) centos-64
+	WGET_NAME=$(WGET_NAME) $(MAKEFILE) centos-64
+	rm centos-64-stamp
+	@echo $@ done
+
+.PHONY: all test touch
