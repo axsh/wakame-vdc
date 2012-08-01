@@ -328,6 +328,7 @@ en:
       networks: "Networks"
       security_groups: "Security Groups"
       key_pairs: "Key Pairs"
+      load_balancers: "Load Balancers"
   instances:
     header: "Instances"
     instance_actions:
