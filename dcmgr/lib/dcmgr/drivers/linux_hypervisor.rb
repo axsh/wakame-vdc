@@ -155,7 +155,13 @@ module Dcmgr
         unless File.directory?(cgroup_scope)
           raise "Unknown directory in the cgroup #{subsys}: #{cgroup_scope}"
         end
-        CgroupBlkio.new(cgroup_scope).instance_eval(&blk)
+
+        dsl = CgroupBlkio.new(cgroup_scope)
+        if blk.arity == 1
+          blk.call(dsl)
+        else
+          dsl.instance_eval(&blk)
+        end
       end
 
       class CgroupBlkio
@@ -170,7 +176,6 @@ module Dcmgr
           }
         end
 
-        private
         def find_devnode_id(src)
           devnode_id=`lsblk -n -r -d $(df -P '#{src}' | sed -e '1d' | awk '{print $1}') | awk '{print $3}'`
           unless $?.success?

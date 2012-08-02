@@ -210,13 +210,13 @@ module Dcmgr
         logger.debug("started container")
 
         # Set blkio throttling policy to vm_data_dir block device.
-        cgroup_set('blkio', hc.cgroup_scope) do
-          devid = find_devnode_id(hc.inst_data_dir)
-          
-          add('blkio.throttle.read_iops_device', "#{devid} 100")
-          add('blkio.throttle.read_bps_device', "#{devid} 100000000")
-          add('blkio.throttle.write_iops_device', "#{devid} 100")
-          add('blkio.throttle.write_bps_device', "#{devid} 100000000")
+        cgroup_set('blkio', hc.cgroup_scope) do |c|
+          devid = c.find_devnode_id(hc.inst_data_dir)
+
+          c.add('blkio.throttle.read_iops_device', "#{devid} #{driver_configuration.cgroup_blkio.read_iops.to_i}")
+          c.add('blkio.throttle.read_bps_device', "#{devid} #{driver_configuration.cgroup_blkio.read_bps.to_i}")
+          c.add('blkio.throttle.write_iops_device', "#{devid} #{driver_configuration.cgroup_blkio.write_iops.to_i}")
+          c.add('blkio.throttle.write_bps_device', "#{devid} #{driver_configuration.cgroup_blkio.write_bps.to_i}")
         end
       end
 
