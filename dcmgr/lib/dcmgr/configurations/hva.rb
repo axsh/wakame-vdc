@@ -81,9 +81,8 @@ module Dcmgr
 
       on_initialize_hook do
         @config[:dc_networks] = {}
-        # TODO: need to add the utility method to set @parent.
-        @config[:local_store] = LocalStore.new.tap { |o| o.instance_variable_set(:@parent, self) }
-        @config[:backup_storage] = BackupStorage.new.tap { |o| o.instance_variable_set(:@parent, self) }
+        @config[:local_store] = LocalStore.new(self)
+        @config[:backup_storage] = BackupStorage.new(self)
       end
 
       param :vm_data_dir

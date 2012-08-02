@@ -216,9 +216,9 @@ module Dcmgr
 
     attr_reader :config, :parent
     
-    def initialize
+    def initialize(parent=nil)
       @config = {}
-      @parent = nil
+      @parent = parent
 
       hook_lst = []
       c = self.class
