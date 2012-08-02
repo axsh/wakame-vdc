@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+
+WGET_NAME ?= wget
+WGET_CMD  ?= $(WGET_NAME)
+WGET_OPTS ?= -m --no-host-directories --no-parent
+TOUCH_CMD ?= touch
+
+ARCH_32       ?= i686
+ARCH_64       ?= x86_64
+ARCHS         ?= $(ARCH_32) $(ARCH_64)
+
+BASEARCH_32   ?= i386
+BASEARCH_64   ?= x86_64
+BASEARCHS     ?= $(BASEARCH_32) $(BASEARCH_64)
+
+CENTOS_BASE        ?= http://ftp.riken.go.jp/pub/Linux/centos
+CENTOS_RELEASEVER  ?= 6
+CENTOS_BASEURL     ?= $(CENTOS_BASE)/$(CENTOS_RELEASEVER)/os
+CENTOS_BASEURL_32  ?= $(CENTOS_BASEURL)/$(BASEARCH_32)
+CENTOS_BASEURL_64  ?= $(CENTOS_BASEURL)/$(BASEARCH_64)
+
+all: centos
+test:
+	cd test && make
+touch:
+	touch $@
+
+dump-vers:
+	@echo WGET_NAME="\"$(WGET_NAME)\""
+	@echo WGET_CMD="\"$(WGET_CMD)\""
+	@echo WGET_OPTS="\"$(WGET_OPTS)\""
+	@echo TOUCH_CMD="\"$(TOUCH_CMD)\""
+
+centos: centos-stamp
+centos-stamp: centos-32 centos-64
+	$(TOUCH_CMD) $@
+
+centos-32: centos-32-stamp
+centos-32-stamp:
+	$(WGET_CMD) $(WGET_OPTS) $(CENTOS_BASEURL_32)
+	$(TOUCH_CMD) $@
+centos-64: centos-64-stamp
+centos-64-stamp:
+	$(WGET_CMD) $(WGET_OPTS) $(CENTOS_BASEURL_64)
+	$(TOUCH_CMD) $@
+
+.PHONY: all test touch clean centos centos-32 centos-64
