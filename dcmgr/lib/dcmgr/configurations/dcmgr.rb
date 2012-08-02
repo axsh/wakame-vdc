@@ -26,8 +26,8 @@ module Dcmgr
               config.scheduler_class = c
             end
             
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
+            if c.const_defined?(:Configuration, false)
+              c = c.const_get(:Configuration, false)
               if c && c < conf_base_class
                 c = c.new
                 c.parse_dsl(&blk) if blk
@@ -69,8 +69,8 @@ module Dcmgr
               config.scheduler_class = c
             end
             
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
+            if c.const_defined?(:Configuration, false)
+              c = c.const_get(:Configuration, false)
               if c && c < conf_base_class
                 c = c.new
                 c.parse_dsl(&blk) if blk

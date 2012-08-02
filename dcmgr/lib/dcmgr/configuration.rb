@@ -84,7 +84,7 @@ module Dcmgr
           warn_msg = message || "WARN: Deprecated parameter: #{old_name}. Please use '#{param_name}'."
           
           alias_param old_name, param_name
-          self.const_get(:DSL).class_eval %Q{
+          self.const_get(:DSL, false).class_eval %Q{
             def #{old_name}(v)
               STDERR.puts "#{warn_msg}"
               #{param_name.to_s}(v)
@@ -99,7 +99,7 @@ module Dcmgr
           err_msg = message || "ERROR: Parameter is no longer supported: #{old_name}. Please use '#{param_name}'."
           
           alias_param old_name, param_name
-          self.const_get(:DSL).class_eval %Q{
+          self.const_get(:DSL, false).class_eval %Q{
             def #{old_name}(v)
               raise "#{err_msg}"
             end
@@ -118,7 +118,7 @@ module Dcmgr
         }
         
         # DSL setter
-        self.const_get(:DSL).class_eval %Q{
+        self.const_get(:DSL, false).class_eval %Q{
           def #{alias_name}(v)
             #{ref_name.to_s}(v)
           end
@@ -144,7 +144,7 @@ module Dcmgr
         @on_param_create_hooks.each { |blk|
           blk.call(name.to_s.to_sym, opts)
         }
-        self.const_get(:DSL).class_eval %Q{
+        self.const_get(:DSL, false).class_eval %Q{
           def #{name}(v)
             @config["#{name.to_s}".to_sym] = v
           end
@@ -180,7 +180,7 @@ module Dcmgr
       #   end
       # end
       def DSL(&blk)
-        self.const_get(:DSL).class_eval(&blk)
+        self.const_get(:DSL, false).class_eval(&blk)
         self
       end
 
@@ -196,8 +196,8 @@ module Dcmgr
 
         dsl_mods = []
         c = klass
-        while c < Configuration && c.superclass.const_defined?(:DSL)
-          parent_dsl = c.superclass.const_get(:DSL)
+        while c < Configuration && c.superclass.const_defined?(:DSL, false)
+          parent_dsl = c.superclass.const_get(:DSL, false)
           if parent_dsl && parent_dsl.class === Module
             dsl_mods << parent_dsl
           end
@@ -205,7 +205,7 @@ module Dcmgr
         end
         # including order is ancestor -> descendants
         dsl_mods.reverse.each { |i|
-          klass.const_get(:DSL).__send__(:include, i)
+          klass.const_get(:DSL, false).__send__(:include, i)
         }
       end
 
@@ -237,7 +237,7 @@ module Dcmgr
     end
 
     def parse_dsl(&blk)
-      dsl = self.class.const_get(:DSL)
+      dsl = self.class.const_get(:DSL, false)
       raise "DSL module was not found" unless dsl && dsl.is_a?(Module)
       
       cp_class = DSLProxy.dup

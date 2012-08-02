@@ -10,10 +10,10 @@ module Dcmgr
           
           c = case input
               when Symbol
-                namespace.const_get(input)
+                namespace.const_get(input, false)
               when String
-                if namespace.const_defined?(input)
-                  namespace.const_get(input)
+                if namespace.const_defined?(input, false)
+                  namespace.const_get(input, false)
                 else
                   Module.find_const(input)
                 end
