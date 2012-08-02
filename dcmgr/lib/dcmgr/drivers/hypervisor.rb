@@ -3,7 +3,19 @@
 module Dcmgr
   module Drivers
     class Hypervisor < Task::Tasklet
+      extend Configuration::ConfigurationMethods::ClassMethods
 
+      def_configuration
+
+      # Retrive configuration section for this or child class.
+      def self.driver_configuration
+        Dcmgr.conf.hypervisor_driver(self)
+      end
+
+      def driver_configuration
+        Dcmgr.conf.hypervisor_driver(self.class)
+      end
+      
       def run_instance(hc)
       end
 

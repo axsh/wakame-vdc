@@ -13,6 +13,8 @@ module Dcmgr
       
       template_base_dir "openvz"
 
+      def_configuration
+
       # Decorator pattern class of Rpc::HvaHandler::HvaContext.
       class OvzContext
         def initialize(root_ctx)

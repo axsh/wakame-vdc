@@ -8,6 +8,8 @@ module Dcmgr
       include RbVmomi
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
+
+      def_configuration
       
       def run_instance(ctx)
         vm = find_vm(ctx)

@@ -11,7 +11,42 @@ module Dcmgr
       include Dcmgr::Helpers::TemplateHelper
 
       template_base_dir 'linux'
-      
+
+      def_configuration do
+        # TODO: create helper method to 
+        # Abstract class for Cgroup parameters
+        self.const_set(:Cgroup, Class.new(Dcmgr::Configuration))
+
+        self.const_set(:CgroupBlkio, Class.new(self.const_get(:Cgroup)))
+        self.const_get(:CgroupBlkio).module_eval do
+          param :enable_throttling, :default=>false
+
+          # Modifiable throttle parameters for blkio controller.
+          # It is ignored if the value is either nil or 0.
+          
+          # blkio.throttle.read_iops_device
+          param :read_iops, :default=>nil
+          # blkio.throttle.read_bps_device
+          param :read_bps, :default=>nil
+          # blkio.throttle.write_iops_device
+          param :write_iops, :default=>nil
+          # blkio.throttle.write_bps_device
+          param :write_bps, :default=>nil
+          # blkio.weight & blkio.weight_device
+          param :weight, :default=>nil
+        end
+
+        DSL do
+          def cgroup_blkio(&blk)
+            @config[:cgroup_blkio].parse_dsl(&blk)
+          end
+        end
+
+        on_initialize_hook do
+          @config[:cgroup_blkio] = LinuxHypervisor::Configuration::CgroupBlkio.new(self)
+        end
+      end
+
       def check_interface(hc)
         hc.inst[:instance_nics].each { |vnic|
           next if vnic[:network].nil?

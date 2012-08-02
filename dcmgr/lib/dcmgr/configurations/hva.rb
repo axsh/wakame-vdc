@@ -60,6 +60,18 @@ module Dcmgr
           end
         end
       end
+
+      def hypervisor_driver(driver_class)
+        if driver_class.is_a?(Class) && driver_class < (Drivers::Hypervisor)
+          # TODO: do not create here. the configuration object needs to be attached in earlier phase.
+          @config[:hypervisor_driver][driver_class] ||= driver_class.configuration_class.new(self)
+        elsif (c = Drivers::Hypervisor.driver_class(driver_class))
+          # TODO: do not create here. the configuration object needs to be attached in earlier phase.
+          @config[:hypervisor_driver][c] ||= c.configuration_class.new(self)
+        else
+          raise ArgumentError, "Unknown hypervisor driver type: #{driver_class}"
+        end
+      end
       
       DSL do
         def dc_network(name, &blk)
@@ -77,12 +89,22 @@ module Dcmgr
         def backup_storage(&blk)
           @config[:backup_storage].parse_dsl(&blk)
         end
+
+        # hypervisor_driver configuration section.
+        def hypervisor_driver(driver_type, &blk)
+          c = Drivers::Hypervisor.driver_class(driver_type)
+          # Drivers::Hypervisor follows the configuration class hierarchy standard from ConfigrationMethods module.
+
+          conf = ::Dcmgr::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
+          @config[:hypervisor_driver][c] = conf
+        end
       end
 
       on_initialize_hook do
         @config[:dc_networks] = {}
         @config[:local_store] = LocalStore.new(self)
         @config[:backup_storage] = BackupStorage.new(self)
+        @config[:hypervisor_driver] = {}
       end
 
       param :vm_data_dir
