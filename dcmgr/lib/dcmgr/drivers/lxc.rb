@@ -8,6 +8,8 @@ module Dcmgr
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
 
+      def_configuration
+      
       def run_instance(ctx)
         # run lxc
         @os_devpath = ctx.os_devpath

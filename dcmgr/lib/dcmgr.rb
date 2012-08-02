@@ -109,6 +109,7 @@ module Dcmgr
     autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
     autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
+    autoload :Cgroup, 'dcmgr/helpers/cgroup'
   end
 
   autoload :Tags, 'dcmgr/tags'
@@ -145,7 +146,9 @@ module Dcmgr
     autoload :RequestLogger, 'dcmgr/rack/request_logger'
     autoload :RunInitializer, 'dcmgr/rack/run_initializer'
   end
-  
+
+  autoload :Task, 'dcmgr/task'
+
   module Drivers
     autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :LocalStorage, 'dcmgr/drivers/local_storage'

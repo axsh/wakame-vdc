@@ -10,10 +10,6 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
-      def select_hypervisor
-        @hv = Dcmgr::Drivers::Hypervisor.select_hypervisor(@inst[:hypervisor])
-      end
-
       def attach_volume_to_host
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
@@ -61,8 +57,9 @@ module Dcmgr
       # are also failed to be set. They need to be checked before looked
       # up.
       def terminate_instance(state_update=false)
-        if @hv && @hva_ctx
-          @hv.terminate_instance(@hva_ctx)
+        if @hva_ctx
+          task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                              :terminate_instance, [@hva_ctx])
         end
 
         if @inst && !@inst[:volume].nil?
@@ -78,7 +75,9 @@ module Dcmgr
         end
         
         # cleanup vm data folder
-        FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir)) unless @hv.is_a?(Dcmgr::Drivers::ESXi)
+        unless @hva_ctx.hypervisor_driver_class == Dcmgr::Drivers::ESXi
+          FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir))
+        end
       end
 
       def update_instance_state(opts, ev)
@@ -94,7 +93,7 @@ module Dcmgr
       
       def update_instance_state_to_terminated(opts)
         update_instance_state(opts,
-                                ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
+                              ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
 
         # Security group vnic left events for vnet netfilter
         @inst[:vif].each { |vnic|
@@ -114,7 +113,8 @@ module Dcmgr
       end
 
       def check_interface
-        @hv.check_interface(@hva_ctx)
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :check_interface, [@hva_ctx])
       end
 
       def attach_vnic_to_port
@@ -136,7 +136,8 @@ module Dcmgr
       end
 
       def setup_metadata_drive
-        @hv.setup_metadata_drive(@hva_ctx,get_metadata_items)
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :setup_metadata_drive, [@hva_ctx, get_metadata_items])
       end
 
       def get_metadata_items
@@ -213,6 +214,16 @@ module Dcmgr
         end
       end
 
+      # Reset TaskSession per request.
+      def task_session
+        @task_session ||= begin
+                            Task::TaskSession.reset!(:thread)
+                            Task::TaskSession.current[:logger] = @hva_ctx.logger
+                            
+                            Task::TaskSession.current
+                          end
+      end
+
       job :run_local_store, proc {
         # create hva context
         @hva_ctx = HvaContext.new(self)
@@ -224,19 +235,17 @@ module Dcmgr
 
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
 
-        # select hypervisor :kvm, :lxc, :esxi
-        select_hypervisor
-
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
 
-        lstore = Drivers::LocalStore.select_local_store(@hv.class.to_s.downcase.split('::').last)
-        lstore.deploy_image(@inst,@hva_ctx)
+        task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                            :deploy_image, [@inst, @hva_ctx])
 
-        #setup_metadata_drive
-        @hv.setup_metadata_drive(@hva_ctx,get_metadata_items)
+        setup_metadata_drive
         
         check_interface
-        @hv.run_instance(@hva_ctx)
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :run_instance, [@hva_ctx])
+        
         # Node specific instance_started event for netfilter and general instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])
         
@@ -264,9 +273,6 @@ module Dcmgr
         @hva_ctx.logger.info("Booting #{@inst_id}")
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
-        # select hypervisor :kvm, :lxc
-        select_hypervisor
-
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
 
         # setup vm data folder
@@ -289,7 +295,8 @@ module Dcmgr
         
         # run vm
         check_interface
-        @hv.run_instance(@hva_ctx)
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :run_instance, [@hva_ctx])
         # Node specific instance_started event for netfilter and general instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])
         
@@ -322,9 +329,6 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
 
-        # select hypervisor :kvm, :lxc
-        select_hypervisor
-
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
           ignore_error { terminate_instance(true) }
@@ -341,9 +345,6 @@ module Dcmgr
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
-
-        # select hypervisor :kvm, :lxc
-        select_hypervisor
 
         begin
           ignore_error { terminate_instance(false) }
@@ -364,8 +365,6 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
 
-        select_hypervisor
-
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:stopping})
           ignore_error { terminate_instance(false) }
@@ -385,9 +384,6 @@ module Dcmgr
         @hva_ctx.logger.info("Attaching #{@vol_id}")
         raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'available'
 
-        # select hypervisor :kvm, :lxc
-        select_hypervisor
-
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:attaching, :attached_at=>nil})
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
@@ -401,7 +397,8 @@ module Dcmgr
         # attach disk on guest os
         pci_devaddr=nil
         tryagain do
-          pci_devaddr = @hv.attach_volume_to_guest(@hva_ctx)
+          pci_devaddr = task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                                            :attach_volume_to_guest, [@hva_ctx])
         end
         raise "Can't attach #{@vol_id} on #{@inst_id}" if pci_devaddr.nil?
 
@@ -428,13 +425,11 @@ module Dcmgr
         @hva_ctx.logger.info("Detaching #{@vol_id} on #{@inst_id}")
         raise "Invalid volume state: #{@vol[:state]}" unless @vol[:state].to_s == 'attached'
 
-        # select hypervisor :kvm, :lxc
-        select_hypervisor
-
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:detaching, :detached_at=>nil})
         # detach disk on guest os
         tryagain do
-          @hv.detach_volume_from_guest(@hva_ctx)
+          task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                              :detach_volume_from_guest, [@hva_ctx])
         end
 
         # detach disk on host os
@@ -473,11 +468,10 @@ module Dcmgr
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
 
-        # select_hypervisor :kvm, :lxc
-        select_hypervisor
-
-        # reboot instance
-        @hv.reboot_instance(@hva_ctx)
+        @hva_ctx.logger.info("Rebooting")
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :reboot_instance, [@hva_ctx])
+        @hva_ctx.logger.info("Rebooted")
       }
 
       job :backup_image, proc {
@@ -486,7 +480,7 @@ module Dcmgr
         @image_id = request.args[2]
         @hva_ctx = HvaContext.new(self)
 
-        @hva_ctx.logger.info("Backing up the image file for #{@inst_id} as #{@backupobject_id}.")
+        @hva_ctx.logger.info("Taking backup up of the image: #{@image_id}, #{@backupobject_id}")
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
@@ -526,14 +520,14 @@ module Dcmgr
           }
 
           @hva_ctx.logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
-          lstore = Drivers::LocalStore.select_local_store(@inst[:host_node][:hypervisor])
-          lstore.upload_image(@inst, @hva_ctx, @bo, ev_callback)
+          task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                              :upload_image, [@inst, @hva_ctx, @bo, ev_callback])
           
           @hva_ctx.logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
       
         rescue => e
-          @hva_ctx.logger.error(e)
-          raise "snapshot has not be uploaded"
+          @hva_ctx.logger.error("Failed to upload image backup object: #{@backupobject_id}}")
+          raise
         end
         
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available}) do |req|
@@ -542,7 +536,7 @@ module Dcmgr
         rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available}) do |req|
           req.oneshot = true
         end
-        @hva_ctx.logger.info("uploaded new backup object: #{@inst_id} #{@backupobject_id} #{@image_id}")
+        @hva_ctx.logger.info("Uploaded new image successfully: #{@image_id} #{@backupobject_id}")
         
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
@@ -552,7 +546,7 @@ module Dcmgr
         rpc.request('hva-collector', 'update_image', @image_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
           req.oneshot = true
         end
-        @hva_ctx.logger.error("Failed to run backup_image: #{@inst_id} #{@backupobject_id} #{@image_id}")
+        @hva_ctx.logger.error("Failed to run backup_image: #{@image_id}, #{@backupobject_id}")
       }
 
       job :poweroff, proc {
@@ -560,13 +554,13 @@ module Dcmgr
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
 
-        select_hypervisor
-
-        @hv.poweroff_instance(@hva_ctx)
+        @hva_ctx.logger.info("Turning power off")
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :poweroff_instance, [@hva_ctx])
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:halted}) do |req|
           req.oneshot = true
         end
-        logger.info("PowerOff #{@inst_id}")
+        @hva_ctx.logger.info("Turned power off")
       }
 
       job :poweron, proc {
@@ -574,14 +568,13 @@ module Dcmgr
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
 
-        select_hypervisor
-
-        # reboot instance
-        @hv.poweron_instance(@hva_ctx)
+        @hva_ctx.logger.info("Turning power on")
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :poweron_instance, [@hva_ctx])
         rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:running}) do |req|
           req.oneshot = true
         end
-        logger.info("PowerOn #{@inst_id}")
+        @hva_ctx.logger.info("Turned power on")
       }
       
       def rpc
@@ -595,76 +588,69 @@ module Dcmgr
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end
-    end
 
-    class HvaContext
+      class HvaContext
 
-      def initialize(hvahandler)
-        raise "Invalid Class: #{hvahandler}" unless hvahandler.instance_of?(HvaHandler)
-        @hva = hvahandler
-      end
-
-      def node
-        @hva.instance_variable_get(:@node)
-      end
-
-      def inst_id
-        @hva.instance_variable_get(:@inst_id)
-      end
-
-      def inst
-        @hva.instance_variable_get(:@inst)
-      end
-
-      def os_devpath
-        @hva.instance_variable_get(:@os_devpath)
-      end
-
-      def metadata_img_path
-        File.expand_path('metadata.img', inst_data_dir)
-      end
-
-      def vol
-        @hva.instance_variable_get(:@vol)
-      end
-
-      def rpc
-        @hva.rpc
-      end
-
-      def inst_data_dir
-        File.expand_path("#{inst_id}", Dcmgr.conf.vm_data_dir)
-      end
-
-      def logger
-        CustomLogger.new(self)
-      end
-
-      class CustomLogger
-        def initialize(hva_context)
-          @hva_context = hva_context
+        def initialize(hvahandler)
+          raise "Invalid Class: #{hvahandler}" unless hvahandler.instance_of?(HvaHandler)
+          @hva = hvahandler
         end
 
-        ["fatal", "error", "warn", "info", "debug"].each do |level|
-          define_method(level){|msg|
-            logger.__send__(level, "#{msg} (inst_id: #{@hva_context.inst_id})")
-          }
+        def node
+          @hva.instance_variable_get(:@node)
         end
 
-        def default_logdev
-          ::Logger::LogDevice.new($>)
+        def inst_id
+          @hva.instance_variable_get(:@inst_id)
+        end
+
+        def inst
+          @hva.instance_variable_get(:@inst)
+        end
+
+        def os_devpath
+          @hva.instance_variable_get(:@os_devpath)
+        end
+
+        def metadata_img_path
+          File.expand_path('metadata.img', inst_data_dir)
+        end
+
+        def vol
+          @hva.instance_variable_get(:@vol)
+        end
+
+        def rpc
+          @hva.rpc
+        end
+
+        def inst_data_dir
+          File.expand_path("#{inst_id}", Dcmgr.conf.vm_data_dir)
+        end
+
+        def hypervisor_driver_class
+          Drivers::Hypervisor.driver_class(inst[:host_node][:hypervisor])
         end
 
         def logger
-          l = ::Logger.new(default_logdev)
-          l.progname = "HvaHandler"
-          l
+          @instance_logger = InstanceLogger.new(self)
         end
 
+        class InstanceLogger
+          def initialize(hva_context)
+            @hva_context = hva_context
+            @logger = ::Logger.new(Dcmgr::Logger.default_logdev)
+            @logger.progname = 'HvaHandler'
+          end
+
+          ["fatal", "error", "warn", "info", "debug"].each do |level|
+            define_method(level){|msg|
+              @logger.__send__(level, "Instance UUID: #{@hva_context.inst_id}: #{msg}")
+            }
+          end
+        end
 
       end
-
     end
-
   end
 end

@@ -58,7 +58,7 @@ module Dcmgr::Models
     plugin :subclasses
     plugin :single_table_inheritance, :type_id,
          :key_map=>proc {|v| Dcmgr::Tags::MODEL_MAP[v.to_s.split('Dcmgr::Tags::').last.to_sym] },
-         :model_map=>proc {|v| Dcmgr::Tags.const_get(Dcmgr::Tags::KEY_MAP[v]) }
+         :model_map=>proc {|v| Dcmgr::Tags.const_get(Dcmgr::Tags::KEY_MAP[v], false) }
 
     class UnacceptableTagType < StandardError
       def initialize(msg, tag, taggable)

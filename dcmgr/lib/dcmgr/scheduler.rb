@@ -81,10 +81,10 @@ module Dcmgr
       
       c = case input
           when Symbol
-            namespace.const_get(input)
+            namespace.const_get(input, false)
           when String
-            if namespace.const_defined?(input)
-              namespace.const_get(input)
+            if namespace.const_defined?(input, false)
+              namespace.const_get(input, false)
             else
               Module.find_const(input)
             end
@@ -159,10 +159,12 @@ module Dcmgr
       # end
       def self.configuration(&blk)
         # create new configuration class if not exist.
-        unless self.const_defined?(:Configuration)
+        unless self.const_defined?(:Configuration, false)
           self.const_set(:Configuration, Class.new(self.configuration_class))
         end
-        self.const_get(:Configuration).instance_eval(&blk)
+        if blk
+          self.const_get(:Configuration, false).instance_eval(&blk)
+        end
       end
 
 

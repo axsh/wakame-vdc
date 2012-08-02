@@ -82,7 +82,7 @@ __DESC
     def map(uuid, object_uuid)
       #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
       #This is so the Taggable.find method can be used to determine the Model class based on canonical uuid
-      M.constants.each {|c| M.const_get(c) }
+      M.constants(false).each {|c| M.const_get(c, false) }
       
       object = M::Taggable.find(object_uuid)
       tag    = M::Taggable.find(uuid)
@@ -107,7 +107,7 @@ __DESC
     def unmap(uuid, object_uuid)
       #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
       #This is so the Taggable.find method can be used to determine the Model class based on canonical uuid
-      M.constants.each {|c| M.const_get(c) }
+      M.constants(false).each {|c| M.const_get(c, false) }
       
       object = M::Taggable.find(object_uuid)
       tag    = M::Taggable.find(uuid)

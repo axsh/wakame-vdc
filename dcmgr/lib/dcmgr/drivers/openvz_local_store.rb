@@ -7,6 +7,13 @@ module Dcmgr
     class OpenvzLocalStore < LinuxLocalStore
       include Dcmgr::Logger
 
+      def upload_image(inst, ctx, bo, evcb)
+        cgroup_context(:subsystem=>'blkio', :scope=>ctx.inst[:id]) do
+          super
+        end
+      end
+
+      
       protected
 
       def vmimg_cache_dir

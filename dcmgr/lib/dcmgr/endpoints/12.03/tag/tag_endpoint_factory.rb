@@ -62,7 +62,7 @@ module Dcmgr::Endpoints::V1203::Tag
         end
         
         delete '/:id' do
-          Dcmgr::Tags.constants.each {|c| Dcmgr::Tags.const_get(c) }
+          Dcmgr::Tags.constants(false).each {|c| Dcmgr::Tags.const_get(c, false) }
           begin
             tag = M::Taggable.find(params[:id])
           rescue
@@ -95,7 +95,7 @@ module Dcmgr::Endpoints::V1203::Tag
             host_node_uuids = [host_node_uuids] if host_node_uuids.is_a?(String)
             
             # Check if there are any invalid uuids in the request
-            M.constants.each {|c| M.const_get(c) }
+            M.constants(false).each {|c| M.const_get(c, false) }
             host_node_uuids.each { |uuid|
               object = M::Taggable.find(uuid)
               raise UnknownUUIDResource, "Unknown or inacceptable resource: '#{uuid}'" unless g.accept_mapping?(object)

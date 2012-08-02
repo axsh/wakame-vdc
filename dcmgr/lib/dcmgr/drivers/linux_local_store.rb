@@ -4,8 +4,9 @@ module Dcmgr
   module Drivers
     class LinuxLocalStore < LocalStore
       include Dcmgr::Logger
-      include Dcmgr::Helpers::CliHelper
-      
+      include Helpers::Cgroup::CgroupContextProvider
+      include Helpers::CliHelper
+
       def deploy_image(inst,ctx)
         # setup vm data folder
         inst_data_dir = ctx.inst_data_dir
@@ -46,8 +47,6 @@ module Dcmgr
       end
 
       def upload_image(inst, ctx, bo, evcb)
-        snapshot_stg = Dcmgr::Drivers::BackupStorage.snapshot_storage(bo[:backup_storage])
-        
         bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
         take_snapshot_for_backup()
         sh("cp -p --sparse=always %s /dev/stdout | gzip -f > %s", [ctx.os_devpath, bkup_tmp_path])
@@ -57,7 +56,9 @@ module Dcmgr
         evcb.setattr(res[:stdout].chomp, alloc_size)
 
         # upload image file
-        snapshot_stg.upload(bkup_tmp_path, bo)
+        Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
+        invoke_task(BackupStorage.driver_class(bo[:backup_storage][:storage_type]),
+                    :upload, [bkup_tmp_path, bo])
         evcb.progress(100)
       ensure
         clean_snapshot_for_backup()
@@ -71,7 +72,7 @@ module Dcmgr
       end
 
       def download_tmp_dir
-        ENV['TMPDIR'] || ENV['TMP'] || '/var/tmp'
+        ENV['TMPDIR'] || ENV['TMP'] || Dcmgr.conf.local_store.work_dir || '/var/tmp'
       end
       
       def vmimg_cache_path(img_id, is_cacheable)
