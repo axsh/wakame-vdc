@@ -26,6 +26,13 @@ Installation Requirements
 + RHEL 6.x
 + Ubuntu 12.04 LTS
 
+#### Ubuntu 12.04 LTS
+
++ git
++ s3cmd
++ yum
++ createrepo
+
 ### Network Requirements
 
 + Local Area Network (LAN)
