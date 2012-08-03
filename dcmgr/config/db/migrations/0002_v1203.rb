@@ -325,6 +325,12 @@ Sequel.migration do
       set_column_type :range_end, "int(11)", :unsigned=>true, :null=>false
       add_column :description, "varchar(255)"
     end
+
+    alter_table(:accounts) do
+      add_column :deleted_at, "datetime"
+      add_column :purged_at, "datetime"
+      add_index [:deleted_at]
+    end    
   end
   
   down do
@@ -459,5 +465,10 @@ Sequel.migration do
       set_column_type :range_end, "varchar(255)", :null=>false
       drop_column :description
     end
+
+    alter_table(:accounts) do
+      drop_column :deleted_at
+      drop_column :purged_at
+    end    
   end
 end
