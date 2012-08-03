@@ -30,12 +30,15 @@ BuildRequires: gcc-c++ gcc
 BuildRequires: git
 BuildRequires: mysql-devel
 BuildRequires: chrpath
+BuildRequires: pkgconfig
 # Ruby binary build dependency
 BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
 # vmapp dependency
 BuildRequires: parted
 # build local cache
 BuildRequires: yum-utils
+# Trema/racket gem build dependency
+BuildRequires: sqlite-devel libpcap-devel
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
@@ -101,6 +104,8 @@ Requires: kpartx
 Requires: libcgroup
 # includes /sbin/losetup
 Requires: util-linux-ng
+# Trema/racket gem binary dependency
+Requires: sqlite libpcap
 %description  hva-common-vmapp-config
 <insert long description, indented with spaces>
 
