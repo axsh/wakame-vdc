@@ -252,8 +252,13 @@ module Dcmgr
           }
         end
         
+        def get_empty_vnic(vnic_id)
+          deep_clone @cache[:empty_vnics][vnic_id]
+        end
+        
         def get_vnic(vnic_id)
-          vnic = get_local_vnic(vnic_id)
+          vnic = get_empty_vnic(vnic_id)
+          vnic = get_local_vnic(vnic_id) if vnic.nil?
           vnic = get_foreign_vnic(vnic_id) if vnic.nil?
           
           deep_clone vnic
