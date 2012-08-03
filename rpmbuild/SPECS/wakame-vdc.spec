@@ -102,8 +102,6 @@ Requires: kmod-openvswitch
 Requires: openvswitch
 Requires: kpartx
 Requires: libcgroup
-# includes /sbin/losetup
-Requires: util-linux-ng
 # Trema/racket gem binary dependency
 Requires: sqlite libpcap
 %description  hva-common-vmapp-config
