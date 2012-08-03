@@ -107,7 +107,7 @@ DcmgrGUI.date.parseISO8601 = function (str) {
   timeSubParts = timeParts[0].split(':'),
   timeSecParts = timeSubParts[2].split('.'),
   timeHours = Number(timeSubParts[0]),
-  _date = new Date;
+  _date = new timezoneJS.Date();
 
   _date.setUTCFullYear(Number(dateParts[0]));
   _date.setUTCMonth(Number(dateParts[1] - 1 ));
@@ -119,6 +119,11 @@ DcmgrGUI.date.parseISO8601 = function (str) {
 
   // by using setUTC methods the date has already been converted to local time(?)
   return _date;
+};
+
+DcmgrGUI.date.setTimezone = function(date_str, timezone){
+  date_str.setTimezone(timezone);
+  return date_str;
 };
 
 DcmgrGUI.date.setTimezoneOffset = function(date_str, utc_offset){
