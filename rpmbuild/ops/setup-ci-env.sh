@@ -6,12 +6,12 @@ set -x
 LANG=C
 LC_ALL=C
 
-
+repo_uri=${repo_uri:-git://github.com/axsh/wakame-vdc.git}
 ci_dir=~/work/ci/
 [ -d ${ci_dir} ] || mkdir -p ${ci_dir}
 cd ${ci_dir}
 
-[ -d wakame-vdc ] || git clone git://github.com/axsh/wakame-vdc.git
+[ -d wakame-vdc ] || git clone ${repo_uri} wakame-vdc
 
 cd wakame-vdc
 git pull
