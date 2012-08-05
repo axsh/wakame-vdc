@@ -13,7 +13,7 @@ BASEARCH_32   ?= i386
 BASEARCH_64   ?= x86_64
 BASEARCHS     ?= $(BASEARCH_32) $(BASEARCH_64)
 
-CENTOS_BASE        ?= http://ftp.riken.go.jp/pub/Linux/centos
+CENTOS_BASE        ?= http://ftp.yz.yamagata-u.ac.jp/pub/linux/centos
 CENTOS_RELEASEVER  ?= 6
 CENTOS_BASEURL     ?= $(CENTOS_BASE)/$(CENTOS_RELEASEVER)/os
 CENTOS_BASEURL_32  ?= $(CENTOS_BASEURL)/$(BASEARCH_32)
