@@ -118,7 +118,7 @@
     <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.ip") %></td>
-	    <td>${item.vif[0].ipv4.address}</td>
+	    <td>{{if item.vif[0].ipv4}}${item.vif[0].ipv4.address}{{/if}}</td>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.status") %></td>
 	    <td>${item.status}</td>
