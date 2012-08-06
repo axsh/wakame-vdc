@@ -75,6 +75,8 @@ module Dcmgr
             group[:referencees].delete_if   { |vnic| vnic[:uuid] == vnic_id}
           }
           
+          @cache[:empty_vnics].delete(vnic_id)
+          
           nil
         end
         
