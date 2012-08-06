@@ -65,7 +65,12 @@ esac
 
 case "$METADATA_LOCATION" in
 drive)
-  already_mounted=`mount -l | grep -w METADATA`
+  if [[ -f /proc/vz/veinfo ]]; then
+    # OpenVZ mounts metadata drive from the outside script.
+    already_mounted="/metadata"
+  else
+    already_mounted=`mount -l | grep -w METADATA`
+  fi
   
   if [ -z "$already_mounted" ]; then
     # /mnt/metadata is obsolete.
