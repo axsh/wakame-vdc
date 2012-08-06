@@ -177,7 +177,7 @@ module Dcmgr
         end
 
         def find_devnode_id(src)
-          devnode_id=`lsblk -n -r -d $(df -P '#{src}' | sed -e '1d' | awk '{print $1}') | awk '{print $3}'`
+          devnode_id=`mountpoint -d '#{src}'`
           unless $?.success?
             raise "Failed to find devnode ID (MAJOR:MINOR) from #{src}"
           end
