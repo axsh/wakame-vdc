@@ -352,6 +352,10 @@ module Dcmgr
           deep_clone friends
         end
         
+        def get_all_empty_vnics()
+          deep_clone @cache[:empty_vnics].values
+        end
+        
       end
       
     end
