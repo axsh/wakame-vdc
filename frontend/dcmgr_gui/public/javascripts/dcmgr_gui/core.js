@@ -569,16 +569,19 @@ DcmgrGUI.List = DcmgrGUI.Class.create(DcmgrGUI.ContentBase, {
       
       if(data.item.created_at) {
         data.item.created_at = DcmgrGUI.date.parseISO8601(data.item.created_at);
+        data.item.created_at = DcmgrGUI.date.setTimezone(data.item.created_at, dcmgrGUI.getConfig('time_zone'));
         data.item.created_at = DcmgrGUI.date.getI18n(data.item.created_at);
       }
 
       if(data.item.updated_at) {
         data.item.updated_at = DcmgrGUI.date.parseISO8601(data.item.updated_at);
+        data.item.updated_at = DcmgrGUI.date.setTimezone(data.item.updated_at, dcmgrGUI.getConfig('time_zone'));
         data.item.updated_at = DcmgrGUI.date.getI18n(data.item.updated_at);
       }
 
       if(data.item.last_login_at) {
         data.item.last_login_at = DcmgrGUI.date.parseISO8601(data.item.last_login_at);
+        data.item.last_login_at = DcmgrGUI.date.setTimezone(data.item.last_login_at, dcmgrGUI.getConfig('time_zone'));
         data.item.last_login_at = DcmgrGUI.date.getI18n(data.item.last_login_at);
       }
 
