@@ -296,6 +296,9 @@ module Dcmgr
     attr_reader :config, :parent
     
     def initialize(parent=nil)
+      unless parent.nil?
+        raise ArgumentError, "#{parent.class}" unless parent.is_a?(Dcmgr::Configuration)
+      end
       @config = {}
       @parent = parent
 
@@ -305,11 +308,17 @@ module Dcmgr
         hook_lst << c.instance_variable_get(:@on_initialize_hooks)
         c = c.superclass
       end
+
       hook_lst.reverse.each { |l|
         l.each { |c|
           self.instance_eval(&c)
         }
       }
+
+      after_initialize
+    end
+
+    def after_initialize
     end
 
     def validate(errors)
