@@ -71,8 +71,8 @@ drive)
   else
     METADATA_DRIVE_MOUNTPOINT=`mount -l | grep -w METADATA | cut -d " " -f3`
   fi
-  
-  if mountpoint -q "${MEATADATA_DRIVE_MOUNTPOINT}"; then
+
+  if mountpoint -q "${METADATA_DRIVE_MOUNTPOINT}"; then
     echo "Metadata drive already mounted on: ${METADATA_DRIVE_MOUNTPOINT}"
   else
     if [ ! -d ${METADATA_DRIVE_MOUNTPOINT} ]; then
