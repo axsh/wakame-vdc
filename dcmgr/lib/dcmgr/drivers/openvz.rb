@@ -167,7 +167,7 @@ module Dcmgr
         sh("udevadm settle")
         # save the loop device name for the metadata drive.
         File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
-        sh("mount -o loop -o ro %s %s", [lodev, ve_metadata_path])
+        sh("mount -o ro %s %s", [lodev, ve_metadata_path])
         logger.debug("mount #{hc.metadata_img_path} to #{ve_metadata_path}")
         
         # generate openvz mount config
