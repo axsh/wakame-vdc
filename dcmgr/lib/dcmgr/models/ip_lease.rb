@@ -40,12 +40,12 @@ module Dcmgr::Models
       end
       leaseaddr = case network[:ip_assignment]
                   when "asc"
-                    ip = get_lease_address(network, ipaddr, nil)
-                    ip = get_lease_address(network, nil, ipaddr) if ip.nil?
+                    ip = get_lease_address(network, ipaddr, nil, :range_begin.asc)
+                    ip = get_lease_address(network, nil, ipaddr, :range_begin.asc) if ip.nil?
                     ip
                   when "desc"
-                    ip = get_lease_address(network, nil, ipaddr)
-                    ip = get_lease_address(network, ipaddr, nil) if ip.nil?
+                    ip = get_lease_address(network, nil, ipaddr, :range_end.desc)
+                    ip = get_lease_address(network, ipaddr, nil, :range_end.desc) if ip.nil?
                     ip
                   else
                     raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
@@ -56,18 +56,10 @@ module Dcmgr::Models
       NetworkVifIpLease.create(:ipv4=>leaseaddr.to_i, :network_id=>network.id, :network_vif_id=>network_vif.id, :description=>leaseaddr.to_s)
     end
 
-    def self.get_lease_address(network, from_ipaddr, to_ipaddr)
+    def self.get_lease_address(network, from_ipaddr, to_ipaddr, order)
       leaseaddr = nil
-      ranges = network.dhcp_range_dataset
-      ranges = case network[:ip_assignment]
-               when "asc"
-                 ranges.order(:range_begin.asc)
-               when "desc"
-                 ranges.order(:range_end.desc)
-               else
-                 raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
-               end
-      ranges.all.each {|i|
+
+      network.dhcp_range_dataset.order(order).all.each {|i|
         start_range = i.range_begin.to_i
         end_range = i.range_end.to_i
         unless from_ipaddr.nil?
