@@ -8,9 +8,6 @@ module Dcmgr::VNet::OpenFlow
     def install
       logger.info "Adding metadata server: port:#{@of_port} mac:#{@mac.to_s} ip:#{ip.to_s}/#{listen_port}."
 
-      @arp_retry.cancel if @arp_retry
-      @arp_retry = nil
-
       # Currently only add for the physical networks.
       flows = []
       flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_dst => '169.254.169.254', :tp_dst => 80}, {:resubmit => TABLE_METADATA_OUTGOING})
@@ -20,6 +17,55 @@ module Dcmgr::VNet::OpenFlow
       flows << Flow.new(TABLE_METADATA_OUTGOING, 1, {}, {:controller => nil})
 
       switch.datapath.add_flows flows
+
+      if self.ip.to_s == Isono::Util.default_gw_ipaddr.to_s
+        install_flows
+      end
+    end
+
+    def request_mac(switch, port)
+      port_number = port.port_info.number
+      local_hw = port.port_info.hw_addr
+
+      logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{ip.to_s}/#{listen_port}."
+
+      # This needs to be per-network handler.
+      network.packet_handlers <<
+        PacketHandler.new(Proc.new { |switch,port,message|
+                            port.port_info.number == port_number and
+                            network.services[:metadata].of_port.nil? and
+                            message.arp? and
+                            message.arp_oper == Racket::L3::ARP::ARPOP_REPLY and
+                            message.arp_spa.to_s == network.services[:metadata].ip.to_s and
+                            message.arp_tpa.to_s == Isono::Util.default_gw_ipaddr.to_s
+                          }, Proc.new { |switch,port,message|
+                            self.of_port = port_number
+                            self.mac = message.arp_sha
+                            self.install_flows
+                          })
+
+      flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
+                          :in_port => port_number, :arp => nil,
+                          :dl_dst => local_hw.to_s, :nw_dst => Isono::Util.default_gw_ipaddr,
+                          :nw_src => ip.to_s},
+                        {:controller => nil, :local => nil})]
+
+      switch.datapath.add_flows flows        
+      switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
+                               local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
+
+      @arp_retry = EM::PeriodicTimer.new(10) {
+        switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
+                                 local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
+      }
+    end
+
+    def install_flows
+      logger.info "Installing metadata server flows: port:#{@of_port} mac:#{@mac.to_s} ip:#{ip.to_s}/#{listen_port}."
+
+      @arp_retry.cancel if @arp_retry
+      @arp_retry = nil
+
       network.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
                             network.services[:metadata] and
@@ -46,41 +92,6 @@ module Dcmgr::VNet::OpenFlow
                             switch.datapath.send_packet_out(:packet_in => message,
                                                             :actions => Trema::ActionOutput.new(:port => OpenFlowController::OFPP_TABLE))
                           })
-    end
-
-    def request_mac(switch, port)
-      port_number = port.port_info.number
-      local_hw = port.port_info.hw_addr
-
-      logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{ip.to_s}/#{listen_port}."
-
-      # This needs to be per-network handler.
-      network.packet_handlers <<
-        PacketHandler.new(Proc.new { |switch,port,message|
-                            port.port_info.number == port_number and
-                            network.services[:metadata].of_port.nil? and
-                            message.arp? and
-                            message.arp_oper == Racket::L3::ARP::ARPOP_REPLY and
-                            message.arp_spa.to_s == network.services[:metadata].ip.to_s and
-                            message.arp_tpa.to_s == Isono::Util.default_gw_ipaddr.to_s
-                          }, Proc.new { |switch,port,message|
-                            self.install(network, port_number, message.arp_sha)
-                          })
-
-      flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
-                          :in_port => port_number, :arp => nil,
-                          :dl_dst => local_hw.to_s, :nw_dst => Isono::Util.default_gw_ipaddr,
-                          :nw_src => ip.to_s},
-                        {:controller => nil, :local => nil})]
-
-      switch.datapath.add_flows flows        
-      switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
-                               local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
-
-      @arp_retry = EM::PeriodicTimer.new(10) {
-        switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
-                                 local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
-      }
     end
 
   end

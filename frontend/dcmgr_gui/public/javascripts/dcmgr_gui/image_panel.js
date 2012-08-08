@@ -41,7 +41,8 @@ DcmgrGUI.prototype.imagePanel = function(){
   var close_button_name = $.i18n.prop('close_button'); 
   var launch_button_name = $.i18n.prop('launch_button');
   var update_button_name = $.i18n.prop('update_button');
-  
+  var delete_button_name = $.i18n.prop('delete_button');
+
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
     total:total
@@ -64,6 +65,17 @@ DcmgrGUI.prototype.imagePanel = function(){
     c_pagenate.changeTotal(image.total);
     c_list.setData(image.results);
     c_list.singleCheckList(c_list.detail_template);
+    c_list.element.find(".edit_machine_image").each(function(key,value){
+      $(this).button({ disabled: false });
+      var uuid = $(value).attr('id').replace(/edit_(wmi-[a-z0-9]+)/,'$1');
+      if( uuid ){
+	$(this).bind('click',function(){
+	  bt_edit_machine_image.open({"ids":[uuid]});
+	});
+      } else {
+	  $(this).button({ disabled: true});
+      }
+    });
 
     var edit_machine_image_buttons = {};
     edit_machine_image_buttons[close_button_name] = function() { $(this).dialog("close"); };
@@ -98,16 +110,6 @@ DcmgrGUI.prototype.imagePanel = function(){
         $(this).find('#machine_image_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
-
-    bt_edit_machine_image.target.bind('click',function(event){
-      var uuid = $(this).attr('id').replace(/edit_(wmi-[a-z0-9]+)/,'$1');
-      if( uuid ){
-        bt_edit_machine_image.open({"ids":[uuid]});
-      }
-      c_list.checkRadioButton(uuid);
-    });
-
-    $(bt_edit_machine_image.target).button({ disabled: false });
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();
@@ -118,17 +120,12 @@ DcmgrGUI.prototype.imagePanel = function(){
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
     
-    //update detail
-    $.each(c_list.checked_list,function(check_id,obj){
-     
-     //remove
-     $($('#detail').find('#'+check_id)).remove();
-     
-     //update
-     c_list.checked_list[check_id].c_detail.update({
-       url:DcmgrGUI.Util.getPagePath('/machine_images/show/',check_id)
-     },true);
-    });
+    var check_id = c_list.currentChecked();
+    //remove detail element
+    $($('#detail').find('#'+check_id)).remove();
+    //disable dialog button
+    bt_launch_instance.disableDialogButton();
+    bt_delete_backup_image.disableDialogButton();
   });
   
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){
@@ -356,6 +353,29 @@ DcmgrGUI.prototype.imagePanel = function(){
     button: launch_instance_buttons
   });
   
+  var delete_backup_image_buttons = {};
+  delete_backup_image_buttons[close_button_name] = function() { $(this).dialog("close"); }
+  delete_backup_image_buttons[delete_button_name] = function() {
+      var image_id = $(this).find('#image_id').val();
+      var request = new DcmgrGUI.Request;
+      request.del({
+	"url": '/machine_images/'+ image_id +'.json',
+	success: function(json,status){
+	  bt_refresh.element.trigger('dcmgrGUI.refresh');
+	}
+      });
+      $(this).dialog("close");
+  }
+
+  var bt_delete_backup_image = new DcmgrGUI.Dialog({
+    target:'.delete_backup_image',
+    width:400,
+    height:250,
+    title:$.i18n.prop('delete_backup_image_header'),
+    path:'/delete_backup_image',
+    button: delete_backup_image_buttons
+  });
+
   bt_launch_instance.target.bind('click',function(){
     if(!bt_launch_instance.is_disabled()) {
       var id = c_list.currentChecked();
@@ -366,24 +386,44 @@ DcmgrGUI.prototype.imagePanel = function(){
     }
     return false;
   });
-  
+
+  bt_delete_backup_image.target.bind('click',function(){
+    if(!bt_delete_backup_image.is_disabled()) {
+      var id = c_list.currentChecked();
+      if( id ){
+	  bt_delete_backup_image.open({"ids":[id]});
+      }
+    }
+    return false;
+  });
+
   var actions = {};
   actions.changeButtonState = function() {
       var id = c_list.currentChecked();
       var row_id = "#row-"+id;
       var state = $(row_id).find('.state').text();
+      var owner = $('#mainarea_wide').find('#owner').val();
+      var image_owner = $(row_id).find('.owner').text();
       if(state == 'available') {
 	  bt_launch_instance.enableDialogButton();
+	  if(owner != image_owner){
+	      bt_delete_backup_image.disableDialogButton();
+	  } else {
+	      bt_delete_backup_image.enableDialogButton();
+	  }
       } else {
 	  bt_launch_instance.disableDialogButton();
+	  bt_delete_backup_image.disableDialogButton();
       }
   }
 
   $(bt_launch_instance.target).button({ disabled: true });
+  $(bt_delete_backup_image.target).button({ disabled: true});
   $(bt_refresh.target).button({ disabled: false });
 
   dcmgrGUI.notification.subscribe('checked_radio', actions, 'changeButtonState');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_launch_instance, 'disableDialogButton');
+  dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_backup_image, 'disableDialogButton');
   //list
   c_list.setData(null);
   c_list.update(list_request,true);

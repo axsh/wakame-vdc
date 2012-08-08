@@ -1,0 +1,57 @@
+#!/usr/bin/make -f
+
+WGET_NAME ?= wget
+WGET_CMD  ?= $(WGET_NAME)
+WGET_OPTS ?= -m --no-host-directories --no-parent
+TOUCH_CMD ?= touch
+
+ARCH_32       ?= i686
+ARCH_64       ?= x86_64
+ARCHS         ?= $(ARCH_32) $(ARCH_64)
+
+BASEARCH_32   ?= i386
+BASEARCH_64   ?= x86_64
+BASEARCHS     ?= $(BASEARCH_32) $(BASEARCH_64)
+
+#VZ_BASE               ?= http://download.openvz.org
+VZ_BASE               ?= http://ftp.yz.yamagata-u.ac.jp/pub/openvz
+VZ_KERNEL_VER         ?= rhel6-2.6.32
+VZ_KERNEL_BASE        ?= $(VZ_BASE)/kernel/branches/$(VZ_KERNEL_VER)
+VZ_KERNEL_RELEASEVER  ?= 042stab055.16
+VZ_KERNEL_BASEURL     ?= $(VZ_KERNEL_BASE)/$(VZ_KERNEL_RELEASEVER)/
+VZ_UTILS_BASE         ?= $(VZ_BASE)
+VZ_UTILS_RELEASEVER   ?= current
+VZ_UTILS_BASEURL      ?= $(VZ_UTILS_BASE)/$(VZ_UTILS_RELEASEVER)/
+VZ_GPGKEY_BASE        ?= $(VZ_BASE)
+VZ_GPGKEY_BASEURL     ?= $(VZ_GPGKEY_BASE)/RPM-GPG-Key-OpenVZ
+
+all: openvz
+test:
+	cd test && make
+touch:
+	touch $@
+
+dump-vers:
+	@echo WGET_NAME="\"$(WGET_NAME)\""
+	@echo WGET_CMD="\"$(WGET_CMD)\""
+	@echo WGET_OPTS="\"$(WGET_OPTS)\""
+	@echo TOUCH_CMD="\"$(TOUCH_CMD)\""
+
+openvz: openvz-kernel openvz-utils openvz-gpgkey
+
+openvz-kernel: openvz-kernel-stamp
+openvz-kernel-stamp:
+	$(WGET_CMD) $(WGET_OPTS) $(VZ_KERNEL_BASEURL)
+	$(TOUCH_CMD) $@
+
+openvz-utils: openvz-utils-stamp
+openvz-utils-stamp:
+	$(WGET_CMD) $(WGET_OPTS) $(VZ_UTILS_BASEURL)
+	$(TOUCH_CMD) $@
+
+openvz-gpgkey: openvz-gpgkey-stamp
+openvz-gpgkey-stamp:
+	$(WGET_CMD) $(WGET_OPTS) $(VZ_GPGKEY_BASEURL)
+	$(TOUCH_CMD) $@
+
+.PHONY: all test touch clean openvz openvz-kernel openvz-utils openvz-gpgkey

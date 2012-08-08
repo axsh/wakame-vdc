@@ -26,6 +26,13 @@ Installation Requirements
 + RHEL 6.x
 + Ubuntu 12.04 LTS
 
+#### Ubuntu 12.04 LTS
+
++ git
++ s3cmd
++ yum
++ createrepo
+
 ### Network Requirements
 
 + Local Area Network (LAN)
@@ -47,7 +54,6 @@ In order to upload RPMs to Wakame-VDC yum repository.
     $ git clone git://github.com/axsh/wakame-vdc.git
     $ cd wakame-vdc/rpmbuild/ops/
     $ ./setup-ci-env.sh
-    $ cd ~/work/ci/wakame-vdc/rpmbuild/ops/
 
 
 ### Once checking to build RPMs.

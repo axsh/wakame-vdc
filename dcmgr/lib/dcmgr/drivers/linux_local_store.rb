@@ -14,8 +14,10 @@ module Dcmgr
         vmimg_basename = inst[:image][:backup_object][:uuid]
         is_cacheable = inst[:image][:is_cacheable]
 
-        logger.debug("Deploying image file: #{inst[:uuid]}: #{ctx.os_devpath}")
+        # TODO: Does not support tgz file format in the future.
+        vmimg_basename += '.tar.gz' if inst[:image][:file_format] == 'tgz'
 
+        logger.debug("Deploying image file: #{inst[:uuid]}: #{ctx.os_devpath}")
         if Dcmgr.conf.local_store.enable_image_caching && is_cacheable
           FileUtils.mkdir_p(vmimg_cache_dir) unless File.exists?(vmimg_cache_dir)
           download_to_local_cache(img_src_uri, vmimg_basename, inst[:image][:backup_object][:checksum], is_cacheable)

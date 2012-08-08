@@ -61,7 +61,7 @@ module Dcmgr::VNet::OpenFlow
       dhcp_out.xid = dhcp_in.xid
       dhcp_out.yiaddr = Trema::IP.new(port.ip).to_i
       # Verify instead that discover has the right mac address.
-      dhcp_out.chaddr = Trema::Mac.new(port.mac).to_short
+      dhcp_out.chaddr = Trema::Mac.new(port.mac).to_a
       dhcp_out.siaddr = self.ip.to_i
 
       subnet_mask = IPAddr.new(IPAddr::IN4MASK, Socket::AF_INET).mask(network.prefix)

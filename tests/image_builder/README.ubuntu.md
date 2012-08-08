@@ -18,8 +18,8 @@
 ## Uploading vmimages
 
     $ s3cmd ls s3://dlc.wakame.axsh.jp/demo/vmimage/
-    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/ --dry-run
-    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/
+    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/ --acl-public --check-md5 --dry-run
+    $ s3cmd sync ubuntu-lucid-*.raw.gz s3://dlc.wakame.axsh.jp/demo/vmimage/ --acl-public --check-md5
     $ s3cmd ls s3://dlc.wakame.axsh.jp/demo/vmimage/
 
 

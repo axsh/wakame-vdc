@@ -20,6 +20,9 @@
 <%= javascript_include_tag 'ui.selectmenu.js' %>
 <%= javascript_include_tag 'dcmgr_gui/core.js' %>
 <%= javascript_include_tag 'dcmgr_gui/application.js' %>
+<%= javascript_include_tag 'date.js' %>
+<%= javascript_include_tag 'timezone-js-jquery.js' %>
+<%= javascript_include_tag 'sprintf-0.7-beta1.js' %>
 <script type="text/javascript">
   jQuery(function($){
     $.i18n.properties({
@@ -30,6 +33,9 @@
     });
     dcmgrGUI.setConfig('time_zone', '<%= @current_user.time_zone %>');
     dcmgrGUI.setConfig('time_zone_utc_offset', <%= ActiveSupport::TimeZone[@current_user.time_zone].utc_offset %>); 
+    timezoneJS.timezone.zoneFileBasePath = '/tz';
+    timezoneJS.timezone.loadingScheme = timezoneJS.timezone.loadingSchemes.LAZY_LOAD
+    timezoneJS.timezone.init();
   });
 </script>
 <%= yield :javascript %>

@@ -35,6 +35,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/delete_security_group', :to => 'dialog#delete_security_group'
   post   'dialog/edit_security_group', :to => 'dialog#edit_security_group'
   post   'dialog/launch_instance', :to => 'dialog#launch_instance'
+  post   'dialog/delete_backup_image', :to => 'dialog#delete_backup_image'
   post   'dialog/edit_machine_image', :to => 'dialog#edit_machine_image'
   get    'dialog/create_ssh_keypair', :to => 'dialog#create_ssh_keypair'
   post   'dialog/delete_ssh_keypair', :to => 'dialog#delete_ssh_keypair'
@@ -45,6 +46,8 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/unregister_load_balancer', :to => 'dialog#unregister_load_balancer'
   post   'dialog/poweroff_load_balancer', :to => 'dialog#poweroff_load_balancer'
   post   'dialog/poweron_load_balancer', :to => 'dialog#poweron_load_balancer'
+  post   'dialog/edit_load_balancer', :to => 'dialog#edit_load_balancer'
+
 
   # user/group managment dialog
   get    'dialog/create_user', :to => 'user_management_dialog#create_user'
@@ -102,7 +105,8 @@ DcmgrGui::Application.routes.draw do
   get    'machine_images/list/:id' ,:to => 'machine_images#list'
   get    'machine_images/show/:id' ,:to => 'machine_images#show'
   put    'machine_images/:id' ,:to => 'machine_images#update'
-  
+  delete 'machine_images/:id' ,:to => 'machine_images#destroy'
+
   #information
   get    'information' ,:to => 'information#index'
   get    'information/rss' ,:to => 'information#rss'
@@ -218,7 +222,7 @@ DcmgrGui::Application.routes.draw do
   put    'load_balancers/unregister_instances', :to => 'load_balancers#unregister_instances'
   put    'load_balancers/poweron/:id', :to => 'load_balancers#poweron'
   put    'load_balancers/poweroff/:id', :to => 'load_balancers#poweroff'
-
+  put    'load_balancers/:id', :to => 'load_balancers#update'
 
   #resorce (management)
   get    'resource' ,:to => 'resource#index'

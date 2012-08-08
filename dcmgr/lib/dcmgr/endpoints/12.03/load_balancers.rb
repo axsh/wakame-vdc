@@ -280,7 +280,66 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   put '/:id' do
-    #pending
+    raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
+    raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
+
+    lb_port = params[:port].to_i
+    raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
+
+    lb = find_by_uuid(:LoadBalancer, params['id'])
+    i = lb.instance
+
+    security_group_rules = []
+    security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
+    security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
+
+    request_forward.put("/security_groups/#{lb.network_vifs(PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
+     :rule => security_group_rules.join("\n")
+    })
+
+    lb.description = params[:description]
+    lb.balance_algorithm = params[:balance_algorithm]
+    lb.protocol = params[:protocol]
+    lb.port = params[:port]
+    lb.instance_protocol = params[:instance_protocol]
+    lb.instance_port = params[:instance_port]
+    lb.display_name = params[:display_name]
+    lb.cookie_name = params[:cookie_name]
+    lb.private_key = params[:private_key]
+    lb.public_key = params[:public_key]
+    lb.certificate_chain = params[:certificate_chain]
+    lb.save
+
+    config_params = {
+      :instance_protocol => lb.instance_protocol,
+      :instance_port => lb.instance_port,
+      :port => lb.connect_port,
+      :protocol => lb.protocol,
+      :balance_algorithm => lb.balance_algorithm,
+      :cookie_name => lb.cookie_name,
+      :ipset => []
+    }
+
+    queue_params = {
+      :topic_name => lb.topic_name,
+      :queue_options => lb.queue_options,
+      :queue_name => lb.queue_name,
+    }
+
+    on_after_commit do
+      if lb.is_secure?
+        update_ssl_proxy_config({
+          :accept_port => lb.accept_port,
+          :connect_port => lb.connect_port,
+          :protocol => lb.protocol,
+          :private_key => lb.private_key,
+          :public_key => lb.public_key
+        }.merge(queue_params))
+      end
+      update_load_balancer_config(config_params.merge(queue_params))
+    end
+
+    respond_with(R::LoadBalancer.new(lb).generate)
   end
 
   put '/:id/poweron' do

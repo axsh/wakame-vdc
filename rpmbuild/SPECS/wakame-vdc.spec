@@ -5,9 +5,11 @@
 # * rpmbuild -bb ./wakame-vdc.spec \
 # --define "build_id $(../helpers/gen-release-id.sh)"
 # --define "build_id $(../helpers/gen-release-id.sh [ commit-hash ])"
+# --define "repo_uri git://github.com/axsh/wakame-vdc.git"
 
 %define release_id 1.daily
 %{?build_id:%define release_id %{build_id}}
+%{?repo_uri:%define _vdc_git_uri %{repo_uri}}
 
 Name: %{oname}
 Version: 12.03
@@ -28,12 +30,15 @@ BuildRequires: gcc-c++ gcc
 BuildRequires: git
 BuildRequires: mysql-devel
 BuildRequires: chrpath
+BuildRequires: pkgconfig
 # Ruby binary build dependency
 BuildRequires: readline-devel ncurses-devel openssl-devel libxml2-devel libxslt-devel gdbm-devel zlib-devel
 # vmapp dependency
 BuildRequires: parted
 # build local cache
 BuildRequires: yum-utils
+# Trema/racket gem build dependency
+BuildRequires: sqlite-devel libpcap-devel
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
@@ -97,8 +102,8 @@ Requires: kmod-openvswitch
 Requires: openvswitch
 Requires: kpartx
 Requires: libcgroup
-# includes /sbin/losetup
-Requires: util-linux-ng
+# Trema/racket gem binary dependency
+Requires: sqlite libpcap
 %description  hva-common-vmapp-config
 <insert long description, indented with spaces>
 
@@ -159,10 +164,9 @@ Requires: %{oname} = %{version}-%{release}
 
 ## rpmbuild -bp
 %prep
-[ -d %{name}-%{version} ] || git clone %{_vdc_git_uri} %{name}-%{version}
+[ -d %{name}-%{version} ] && rm -rf %{name}-%{version}
+git clone %{_vdc_git_uri} %{name}-%{version}
 cd %{name}-%{version}
-git checkout master
-git pull
 [ -z "%{build_id}" ] || {
   build_id=%{build_id}
   git checkout ${build_id##*git}
@@ -238,6 +242,8 @@ mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/volumes
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/snap
 
 %clean
 RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
@@ -321,11 +327,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %dir /etc/%{oname}/dcmgr_gui
 %dir /var/log/%{oname}/dcmgr_gui
 %dir /var/lib/%{oname}/tmp/images
+%dir /var/lib/%{oname}/tmp/volumes
+%dir /var/lib/%{oname}/tmp/snap
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-hva
 %config /etc/init/vdc-hva.conf
+%config /etc/init/vdc-hva-worker.conf
 %config /etc/sysctl.d/30-bridge-if.conf
 %dir /var/lib/%{oname}/tmp/instances
 

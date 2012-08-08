@@ -257,7 +257,7 @@ class BaseNew < Sequel::Model
         # delete flags.
         def _destroy_delete
           self.deleted_at ||= Time.now
-          self.save
+          self.save_changes
         end
       }
     end

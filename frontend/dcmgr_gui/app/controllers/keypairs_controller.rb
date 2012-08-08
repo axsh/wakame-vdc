@@ -5,72 +5,86 @@ class KeypairsController < ApplicationController
   end
   
   def list
-   data = {
-     :start => params[:start].to_i - 1,
-     :limit => params[:limit]
-   }
-   @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.list(data)
-   respond_with(@ssh_key_pair[0],:to => [:json])
+    catch_error do
+      data = {
+        :start => params[:start].to_i - 1,
+        :limit => params[:limit]
+      }
+      @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.list(data)
+      respond_with(@ssh_key_pair[0],:to => [:json])
+    end
   end
   
   def show
-    uuid = params[:id]
-    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.show(uuid)
-    respond_with(@ssh_key_pair,:to => [:json])
+    catch_error do
+      uuid = params[:id]
+      @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.show(uuid)
+      respond_with(@ssh_key_pair,:to => [:json])
+    end
   end
   
   def destroy
-    name = params[:id]
-    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.destroy(name)
-    render :json => @ssh_key_pair    
+    catch_error do
+      name = params[:id]
+      @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.destroy(name)
+      render :json => @ssh_key_pair
+    end
   end
   
   def create_ssh_keypair
-    data = {
-      :display_name => params[:display_name],
-      :description => params[:description],
-      :download_once => params[:download_once]
-    }
-
-    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.create(data)
-    @filename = @ssh_key_pair.uuid + ".pem"
-    
-    send_data(@ssh_key_pair.private_key,{
-              :filename => @filename,
-              :type => 'application/pgp-encrypted',
-              :status => 200
-            })
+    catch_error do
+      data = {
+        :display_name => params[:display_name],
+        :description => params[:description],
+        :download_once => params[:download_once]
+      }
+      @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.create(data)
+      @filename = @ssh_key_pair.uuid + ".pem"
+      send_data(@ssh_key_pair.private_key,{
+                  :filename => @filename,
+                  :type => 'application/pgp-encrypted',
+                  :status => 200
+                })
+    end
   end
 
   def edit_ssh_keypair
-    uuid = params[:id]
-    data = {
-      :display_name => params[:display_name],
-      :description => params[:description]
-    }
+    catch_error do
+      uuid = params[:id]
+      data = {
+        :display_name => params[:display_name],
+        :description => params[:description]
+      }
 
-    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.update(uuid,data)
-    render :json => @ssh_key_pair
+      @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.update(uuid,data)
+      render :json => @ssh_key_pair
+    end
   end
   
   def show_keypairs
-    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.list
-    respond_with(@ssh_key_pair[0],:to => [:json])
+    catch_error do
+      @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.list
+      respond_with(@ssh_key_pair[0],:to => [:json])
+    end
   end
   
   def total
-   total_resource = Hijiki::DcmgrResource::SshKeyPair.total_resource
-   render :json => total_resource
+    catch_error do
+      total_resource = Hijiki::DcmgrResource::SshKeyPair.total_resource
+      render :json => total_resource
+    end
   end
   
   def prk_download
-    uuid = params[:id]
-    @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.show(uuid)
-    @filename = @ssh_key_pair['uuid'] + ".pem"
-    send_data(@ssh_key_pair['private_key'],{
-              :filename => @filename,
-              :type => 'application/pgp-encrypted',
-              :status => 200
-            })
+    catch_error do
+      uuid = params[:id]
+      @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.show(uuid)
+      @filename = @ssh_key_pair['uuid'] + ".pem"
+      send_data(@ssh_key_pair['private_key'],{
+                  :filename => @filename,
+                  :type => 'application/pgp-encrypted',
+                  :status => 200
+                })
+    end
   end
 end

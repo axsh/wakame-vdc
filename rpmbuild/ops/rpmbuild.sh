@@ -25,6 +25,7 @@ done
 base_distro=${base_distro:-centos}
 base_distro_number=${base_distro_number:-6}
 base_distro_arch=${base_distro_arch:-$(arch)}
+repo_uri=${repo_uri:-git://github.com/axsh/wakame-vdc.git}
 
 execscript=${execscript:-}
 
@@ -77,6 +78,19 @@ cd ${root_dir}
 rsync -ax --delete ${base_chroot_dir}/ ${dest_chroot_dir}/
 sync
 
+# for local repository
+case ${repo_uri} in
+file:///*|/*)
+  local_path=${repo_uri##file://}
+  [ -d ${local_path} ] && {
+    [ -d ${dest_chroot_dir}/${local_path} ] || mkdir -p ${dest_chroot_dir}/${local_path}
+    rsync -avx ${local_path} ${dest_chroot_dir}/${local_path}
+  }
+  ;;
+*)
+  ;;
+esac
+
 ### after-deploy
 case "${after_deploy}" in
 use-s3snap)
@@ -86,7 +100,7 @@ use-s3snap)
   curl -O -R http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/snap/rhel/6/current/wakame-vdc-snap.repo
   rsync -a ./wakame-vdc-snap.repo ${dest_chroot_dir}/etc/yum.repos.d/openvz.repo
 
-  [ -d wakame-vdc ] || git clone git://github.com/axsh/wakame-vdc.git
+  [ -d wakame-vdc ] || git clone ${repo_uri} wakame-vdc
   [ -d wakame-vdc/tests/vdc.sh.d/rhel/vendor/${basearch} ] || mkdir -p wakame-vdc/tests/vdc.sh.d/rhel/vendor/${basearch}
   rsync -a ./wakame-vdc-snap.repo wakame-vdc/tests/vdc.sh.d/rhel/vendor/${basearch}/openvz.repo
   ;;
@@ -118,7 +132,7 @@ yum ${yum_opts} update -y
 yum ${yum_opts} install -y git make sudo
 
 cd /tmp
-[ -d wakame-vdc ] || git clone git://github.com/axsh/wakame-vdc.git
+[ -d wakame-vdc ] || git clone ${repo_uri} wakame-vdc
 cd wakame-vdc
 
 sleep 3
@@ -126,7 +140,7 @@ sleep 3
 sync
 
 sleep 3
-VDC_BUILD_ID=${build_id} ./rpmbuild/rules binary-snap
+VDC_BUILD_ID=${build_id} VDC_REPO_URI=${repo_uri} ./rpmbuild/rules binary-snap
 sync
 EOS
 
