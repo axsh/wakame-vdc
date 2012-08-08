@@ -30,8 +30,7 @@ jQuery(function($){
         <span><%= t("accounts.top.timezone") %></span><%= f.time_zone_select( :time_zone,
 							  nil,
 							  :model => TZInfo::Timezone,
-							  :default => @current_user.time_zone,
-	                                                  :include_blank => true) %>
+							  :default => @current_user.time_zone) %>
         </div>
         <div id="account_top_locale">
         <span><%= t("accounts.top.locale") %></span>
