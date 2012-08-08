@@ -44,8 +44,8 @@ module Dcmgr
 
         def validate(errors)
           super
-          if @config[:work_dir] && !File.directory?(@config[:work_dir])
-            errors << "Unknown directory for work_dir: #{@config[:work_dir]}"
+          if !File.directory?(self.work_dir)
+            errors << "Unknown directory for work_dir: #{self.work_dir}"
           end
         end
       end
