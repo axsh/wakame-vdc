@@ -64,18 +64,18 @@ module Dcmgr::Models
         :desc => :range_end.desc,
       }[order]
 
-      network.dhcp_range_dataset.order(order).all.each {|i|
+      network.dhcp_range_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
         start_range = i.range_begin.to_i
         end_range = i.range_end.to_i
         unless from_ipaddr.nil?
-          next if from_ipaddr >= end_range
+          raise "Got from_ipaddr >= end_range: #{from_ipaddr} >= #{end_range}" if from_ipaddr >= end_range
           f = from_ipaddr
           f = start_range if from_ipaddr <= start_range
         else
           f = start_range
         end
         unless to_ipaddr.nil?
-          next if to_ipaddr <= start_range
+          raise "Got to_ipaddr <= start_range: #{to_ipaddr} <= #{start_range}" if to_ipaddr <= start_range
           t = to_ipaddr
           t = end_range if to_ipaddr >= end_range
         else
