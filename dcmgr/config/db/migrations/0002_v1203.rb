@@ -308,6 +308,7 @@ Sequel.migration do
     # Isono gem got new session_id column as of v0.2.12. 
     alter_table(:job_states) do
       add_column :session_id, "varchar(80)", :null=>true
+      add_column :job_name, "varchar(255)", :null=>true
       add_index [:session_id]
     end
 
