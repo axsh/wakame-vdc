@@ -104,14 +104,23 @@ class ApplicationController < ActionController::Base
       blk.call
     rescue Exception =>e
       if is_dcmgr?(e)
+        message_params = ""
         if e.response.body.include?('Dcmgr::Endpoints::Errors::')
           b = JSON.parse(e.response.body)
-          message = b['message'].sub('Dcmgr::Endpoints::Errors::','')
+          message = I18n.t("error_code.code#{b['code']}")
+          error_code = b['code']
+          unless b['message'].include?('Dcmgr::Endpoints::Errors::')
+            message_params = b['message']
+          end
         else
-          message = e.response.body
+          quota_key = e.response.body.split(nil).last
+          quota = AccountQuota.find(:account_id =>@current_user.id, :quota_type => quota_key)
+          message_params = quota.quota_value
+          message = I18n.t("error_quota.#{quota_key}")
+          error_code = 100
         end
         response.header['X-VDC-Request-Id'] = e.response.header['X-VDC-Request-Id']
-        render :status => e.response.code, :json => {:code =>e.response.code, :message =>message}
+        render :status => e.response.code, :json => {:error_code =>error_code, :message =>message, :message_params => message_params}
       else
         raise
       end
