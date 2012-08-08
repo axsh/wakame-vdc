@@ -6,6 +6,10 @@ distro_ver=6.3     # [ 6 | 6.0 | 6.1 | 6.2 | 6.x... ]
 arch="x86_64"
 hypervisor=${hypervisor:-'openvz'}
 
+input_image="${distro_name}-${distro_ver}_${arch}.row"
+output_image="${distro_name}-${distro_ver}_${arch}-md.row"
+register_image="lb-${distro_name}-${hypervisor}-md-64.raw"
+
 set -e
 set -x
 
@@ -103,20 +107,12 @@ EOS
   init_openvz ${tmp_root}
 }
 
-#input_image_file="centos-6-kvm-64.raw"
-#'centos-6_x86_64'
-#output_image_file="lb-centos-openvz-64.row"
-#run_vmbuilder "${input_image_file}" "${arch}"
 [ -f "${distro_name}-${distro_ver}_${arch}.tar.gz" ] || {
   wget "http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/rootfs-tree/${distro_name}-${distro_ver}_${arch}.tar.gz"
 }
 [ -d "${distro_name}-${distro_ver}_${arch}" ] || {
   tar xvzf centos-6.3_x86_64.tar.gz
 }
-
-input_image="${distro_name}-${distro_ver}_${arch}.row"
-output_image="${distro_name}-${distro_ver}_${arch}-md.row"
-register_image="lb-${distro_name}-${hypervisor}-md-64.raw"
 
 [ -f ${input_image} ] || run_vmbuilder "${input_image}" "${arch}"
 cp --sparse=auto ${input_image} ${output_image}
