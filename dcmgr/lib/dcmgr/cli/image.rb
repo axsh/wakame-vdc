@@ -108,9 +108,9 @@ Is Public: <%= img.is_public %>
 State: <%= img.state %>
 Service Type: <%= img.service_type %>
 Cacheable: <%= img.is_cacheable %>
-Create: <%= bo.created_at %>
-Update: <%= bo.updated_at %>
-Delete: <%= bo.deleted_at %>
+Create: <%= img.created_at %>
+Update: <%= img.updated_at %>
+Delete: <%= img.deleted_at %>
 Features:
 <%= img.features %>
 <%- if img.description -%>
