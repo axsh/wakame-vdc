@@ -40,12 +40,12 @@ module Dcmgr::Models
       end
       leaseaddr = case network[:ip_assignment]
                   when "asc"
-                    ip = get_lease_address(network, ipaddr, nil, :range_begin.asc)
-                    ip = get_lease_address(network, nil, ipaddr, :range_begin.asc) if ip.nil?
+                    ip = get_lease_address(network, ipaddr, nil, :asc)
+                    ip = get_lease_address(network, nil, ipaddr, :asc) if ip.nil?
                     ip
                   when "desc"
-                    ip = get_lease_address(network, nil, ipaddr, :range_end.desc)
-                    ip = get_lease_address(network, ipaddr, nil, :range_end.desc) if ip.nil?
+                    ip = get_lease_address(network, nil, ipaddr, :desc)
+                    ip = get_lease_address(network, ipaddr, nil, :desc) if ip.nil?
                     ip
                   else
                     raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
@@ -58,6 +58,11 @@ module Dcmgr::Models
 
     def self.get_lease_address(network, from_ipaddr, to_ipaddr, order)
       leaseaddr = nil
+
+      range_order = {
+        :asc => :range_begin.asc,
+        :desc => :range_end.desc,
+      }[order]
 
       network.dhcp_range_dataset.order(order).all.each {|i|
         start_range = i.range_begin.to_i
@@ -82,13 +87,13 @@ module Dcmgr::Models
           check_ip = IPAddress::IPv4.parse_u32(leaseaddr, network[:prefix])
           if [0,255].member?(check_ip[3]) || network.reserved_ip?(check_ip)
             network.network_vif_ip_lease_dataset.add_reserved(check_ip.to_s)
-            case network[:ip_assignment]
-            when "asc"
+            case order
+            when :asc
               f = check_ip.to_i
-            when "desc"
+            when :desc
               t = check_ip.to_i
             else
-              raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
+              raise "Unsupported IP address assignment: #{order.to_s}"
             end
           end
         end while self.find({:network_id => network.id, :ipv4 => leaseaddr})
