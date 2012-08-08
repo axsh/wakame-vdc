@@ -91,7 +91,7 @@ module Dcmgr::Models
               raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
             end
           end
-        end while self.find(:ipv4=>leaseaddr)
+        end while self.find({:network_id => network.id, :ipv4 => leaseaddr})
         break unless leaseaddr.nil?
       }
       leaseaddr
