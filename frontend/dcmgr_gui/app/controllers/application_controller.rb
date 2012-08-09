@@ -99,6 +99,34 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def catch_error(&blk)
+    begin
+      blk.call
+    rescue Exception =>e
+      if is_dcmgr?(e)
+        message_params = ""
+        if e.response.body.include?('Dcmgr::Endpoints::Errors::')
+          b = JSON.parse(e.response.body)
+          message = I18n.t("error_code.code#{b['code']}")
+          error_code = b['code']
+          unless b['message'].include?('Dcmgr::Endpoints::Errors::')
+            message_params = b['message']
+          end
+        else
+          quota_key = e.response.body.split(nil).last
+          quota = AccountQuota.find(:account_id =>@current_user.id, :quota_type => quota_key)
+          message_params = quota.quota_value
+          message = I18n.t("error_quota.#{quota_key}")
+          error_code = 100
+        end
+        response.header['X-VDC-Request-Id'] = e.response.header['X-VDC-Request-Id']
+        render :status => e.response.code, :json => {:error_code =>error_code, :message =>message, :message_params => message_params}
+      else
+        raise
+      end
+    end
+  end
+
   private
   def extract_locale_from_accept_language_header
     if request.env['HTTP_ACCEPT_LANGUAGE'].nil?

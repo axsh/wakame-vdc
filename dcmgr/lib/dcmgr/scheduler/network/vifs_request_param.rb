@@ -20,7 +20,7 @@ module Dcmgr
             vnic_params = {
               :index => param['index'] ? param['index'].to_i : index,
               :bandwidth => 100000,
-              :security_groups => param['security_groups']
+              :security_groups => param['security_groups'],
             }
 
             index = [index, vnic_params[:index]].max + 1

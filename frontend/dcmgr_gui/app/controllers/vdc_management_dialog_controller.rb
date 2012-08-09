@@ -37,30 +37,32 @@ class VdcManagementDialogController < ApplicationController
 
   # ホストノード一覧取得(特定グループの全情報）
   def get_hn_list
-    # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
-    user = User.sel(@current_user.uuid)
-    save_account_uuid = "a-%s" % user[:primary_account_id]
-    account_uuid = params[:account_id]
+    catch_error do
+      # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
+      user = User.sel(@current_user.uuid)
+      save_account_uuid = "a-%s" % user[:primary_account_id]
+      account_uuid = params[:account_id]
 
-    logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
-    if save_account_uuid != account_uuid then 
+      logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
+      if save_account_uuid != account_uuid then
         ActiveResource::Connection.set_vdc_account_uuid(account_uuid)
-    end
+      end
 
-    data = {
-      :start => 0,
-      :limit => 1000
-    }
+      data = {
+        :start => 0,
+        :limit => 1000
+      }
 
-    # WebAPI経由でホストプールの一覧情報を取得
-    host_nodes = Hijiki::DcmgrResource::HostNode.list(data)
-    logger.debug(host_nodes[0])  
+      # WebAPI経由でホストプールの一覧情報を取得
+      host_nodes = Hijiki::DcmgrResource::HostNode.list(data)
+      logger.debug(host_nodes[0])
 
-    if save_account_uuid != account_uuid then 
+      if save_account_uuid != account_uuid then
         ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
+      end
+
+      render  :json => host_nodes[0]
     end
-    
-    render  :json => host_nodes[0]     
   end
 
   # ホストノード情報更新
@@ -117,30 +119,32 @@ class VdcManagementDialogController < ApplicationController
 
   # ストレージノード一覧処理(特定グループの全情報）
   def get_sn_list
-    # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
-    user = User.sel(@current_user.uuid)
-    save_account_uuid = "a-%s" % user[:primary_account_id]
-    account_uuid = params[:account_id]
+    catch_error do
+      # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
+      user = User.sel(@current_user.uuid)
+      save_account_uuid = "a-%s" % user[:primary_account_id]
+      account_uuid = params[:account_id]
 
-    logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
-    if save_account_uuid != account_uuid then 
+      logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
+      if save_account_uuid != account_uuid then
         ActiveResource::Connection.set_vdc_account_uuid(account_uuid)
-    end
+      end
 
-    data = {
-      :start => 0,
-      :limit => 1000
-    }
+      data = {
+        :start => 0,
+        :limit => 1000
+      }
 
-    # WebAPI経由でストレージプールの一覧情報を取得
-    storage_nodes = Hijiki::DcmgrResource::StorageNode.list(data)
-    logger.debug(storage_nodes[0])  
+      # WebAPI経由でストレージプールの一覧情報を取得
+      storage_nodes = Hijiki::DcmgrResource::StorageNode.list(data)
+      logger.debug(storage_nodes[0])
 
-    if save_account_uuid != account_uuid then 
+      if save_account_uuid != account_uuid then
         ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
+      end
+
+      render  :json => storage_nodes[0]
     end
-    
-    render  :json => storage_nodes[0]     
   end
 
   # ストレージノード削除処理
@@ -181,30 +185,32 @@ class VdcManagementDialogController < ApplicationController
 
   # インスタンススペック一覧処理(特定グループの全情報）
   def get_is_list
-    # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
-    user = User.sel(@current_user.uuid)
-    save_account_uuid = "a-%s" % user[:primary_account_id]
-    account_uuid = params[:account_id]
+    catch_error do
+      # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
+      user = User.sel(@current_user.uuid)
+      save_account_uuid = "a-%s" % user[:primary_account_id]
+      account_uuid = params[:account_id]
 
-    logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
-    if save_account_uuid != account_uuid then 
+      logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
+      if save_account_uuid != account_uuid then
         ActiveResource::Connection.set_vdc_account_uuid(account_uuid)
-    end
+      end
 
-    data = {
-      :start => 0,
-      :limit => 1000
-    }
+      data = {
+        :start => 0,
+        :limit => 1000
+      }
 
-    # WebAPI経由でインスタンススペックの一覧情報を取得
-    specs = Hijiki::DcmgrResource::InstanceSpec.list(data)
-    logger.debug(specs[0])  
+      # WebAPI経由でインスタンススペックの一覧情報を取得
+      specs = Hijiki::DcmgrResource::InstanceSpec.list(data)
+      logger.debug(specs[0])
 
-    if save_account_uuid != account_uuid then 
+      if save_account_uuid != account_uuid then
         ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
+      end
+
+      render  :json => specs[0]
     end
-    
-    render  :json => specs[0]     
   end
 
   # インスタンススペック更新処理
@@ -238,122 +244,126 @@ class VdcManagementDialogController < ApplicationController
 
   # ドライブ情報の一覧取得処理
   def get_is_drives_list  
-    if params[:uuid] != "" and params[:uuid] != nil then
-      # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
-      user = User.sel(@current_user.uuid)
-      save_account_uuid = "a-%s" % user[:primary_account_id]
-      account_uuid = params[:account_id]
+    catch_error do
+      if params[:uuid] != "" and params[:uuid] != nil then
+        # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
+        user = User.sel(@current_user.uuid)
+        save_account_uuid = "a-%s" % user[:primary_account_id]
+        account_uuid = params[:account_id]
 
-      logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
-      if save_account_uuid != account_uuid then 
-        ActiveResource::Connection.set_vdc_account_uuid(account_uuid)
-      end
+        logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
+        if save_account_uuid != account_uuid then
+          ActiveResource::Connection.set_vdc_account_uuid(account_uuid)
+        end
 
-      uuid = params[:uuid]
-      logger.debug(uuid)
+        uuid = params[:uuid]
+        logger.debug(uuid)
 
-      # WebAPI経由で特定インスタンススペックの詳細情報を取得
-      spec = Hijiki::DcmgrResource::InstanceSpec.show(uuid)
-      logger.debug(spec.inspect)  
-    
-      if save_account_uuid != account_uuid then 
-        ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
-      end
+        # WebAPI経由で特定インスタンススペックの詳細情報を取得
+        spec = Hijiki::DcmgrResource::InstanceSpec.show(uuid)
+        logger.debug(spec.inspect)
 
-      # 行数と取得ページを引数から取得
-      rows = params[:rows].to_i
-      page = params[:page].to_i
-      # ドライブ情報をYAMLで取り込み
-      drives = YAML.load(spec["drives"])
-      # 返却情報の最初と最後の行数を計算
-      st_row = (page - 1) * rows + 1
-      ed_row = st_row + rows
-      # 返却配列初期化
-      drive = []
-      i = 1
-      j = 0
-      # 取り込んだ全行に関してループ
-      drives.each {|k,v|
+        if save_account_uuid != account_uuid then
+          ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
+        end
+
+        # 行数と取得ページを引数から取得
+        rows = params[:rows].to_i
+        page = params[:page].to_i
+        # ドライブ情報をYAMLで取り込み
+        drives = YAML.load(spec["drives"])
+        # 返却情報の最初と最後の行数を計算
+        st_row = (page - 1) * rows + 1
+        ed_row = st_row + rows
+        # 返却配列初期化
+        drive = []
+        i = 1
+        j = 0
+        # 取り込んだ全行に関してループ
+        drives.each {|k,v|
           logger.debug(v);
           # 対象行を配列に取り込み
           if  (i >= st_row) && (i <= ed_row) then   
-              drive[j] = {:id => k,:type =>v[:type],:index => v[:index],:drive_size => v[:size]};
-              j += 1
+            drive[j] = {:id => k,:type =>v[:type],:index => v[:index],:drive_size => v[:size]};
+            j += 1
           end;
           i += 1
-      }
-      # 全レコード数をセット
-      totalrecords = i - 1
-      # 全ページ数をセット
-      totalpage = ((totalrecords - 1) / rows).to_i + 1
-      # 返却するハッシュに全情報セット
-      result = { :currpage => page,:totalpages =>totalpage,:totalrecords =>totalrecords,:drive_data => drive }       
-    else
-      # 対象のドライブ情報がない場合
-      drive = []
-      result = { :currpage => 0,:totalpages =>0,:totalrecords =>0,:drive_data => drive }
+        }
+        # 全レコード数をセット
+        totalrecords = i - 1
+        # 全ページ数をセット
+        totalpage = ((totalrecords - 1) / rows).to_i + 1
+        # 返却するハッシュに全情報セット
+        result = { :currpage => page,:totalpages =>totalpage,:totalrecords =>totalrecords,:drive_data => drive }
+      else
+        # 対象のドライブ情報がない場合
+        drive = []
+        result = { :currpage => 0,:totalpages =>0,:totalrecords =>0,:drive_data => drive }
+      end
+      render  :json => result
     end
-    render  :json => result     
   end
 
   # IF情報の一覧取得処理
   def get_is_vifs_list  
-    if params[:uuid] != "" and params[:uuid] != nil then
-      # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
-      user = User.sel(@current_user.uuid)
-      save_account_uuid = "a-%s" % user[:primary_account_id]
-      account_uuid = params[:account_id]
+    catch_error do
+      if params[:uuid] != "" and params[:uuid] != nil then
+        # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
+        user = User.sel(@current_user.uuid)
+        save_account_uuid = "a-%s" % user[:primary_account_id]
+        account_uuid = params[:account_id]
 
-      logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
-      if save_account_uuid != account_uuid then 
-        ActiveResource::Connection.set_vdc_account_uuid(account_uuid)
-      end
+        logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
+        if save_account_uuid != account_uuid then
+          ActiveResource::Connection.set_vdc_account_uuid(account_uuid)
+        end
 
-      uuid = params[:uuid]
-      logger.debug(uuid)
+        uuid = params[:uuid]
+        logger.debug(uuid)
 
-      # WebAPI経由で特定インスタンススペックの詳細情報を取得
-      spec = Hijiki::DcmgrResource::InstanceSpec.show(uuid)
-      logger.debug(spec.inspect)  
-    
-      if save_account_uuid != account_uuid then 
-        ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
-      end
-    
-      # 行数と取得ページを引数から取得
-      rows = params[:rows].to_i
-      page = params[:page].to_i
-      # VIF情報をYAMLで取り込み
-      vifs = YAML.load(spec["vifs"])
-      # 返却情報の最初と最後の行数を計算
-      st_row = (page - 1) * rows + 1
-      ed_row = st_row + rows
-      # 返却配列初期化
-      vif = []
-      i = 1
-      j = 0
-      # 取り込んだ全行に関してループ
-      vifs.each {|k,v|
+        # WebAPI経由で特定インスタンススペックの詳細情報を取得
+        spec = Hijiki::DcmgrResource::InstanceSpec.show(uuid)
+        logger.debug(spec.inspect)
+
+        if save_account_uuid != account_uuid then
+          ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
+        end
+
+        # 行数と取得ページを引数から取得
+        rows = params[:rows].to_i
+        page = params[:page].to_i
+        # VIF情報をYAMLで取り込み
+        vifs = YAML.load(spec["vifs"])
+        # 返却情報の最初と最後の行数を計算
+        st_row = (page - 1) * rows + 1
+        ed_row = st_row + rows
+        # 返却配列初期化
+        vif = []
+        i = 1
+        j = 0
+        # 取り込んだ全行に関してループ
+        vifs.each {|k,v|
           logger.debug(v);
           # 対象行を配列に取り込み
           if  (i >= st_row) && (i <= ed_row) then   
-              vif[j] = {:id => k,:bandwidth =>v[:bandwidth],:index => v[:index]};
-              j += 1
+            vif[j] = {:id => k,:bandwidth =>v[:bandwidth],:index => v[:index]};
+            j += 1
           end;
           i += 1
-      }
-      # 全レコード数をセット
-      totalrecords = i - 1
-      # 全ページ数をセット
-      totalpage = ((totalrecords - 1)/ rows).to_i + 1
-      # 返却するハッシュに全情報セット
-      result = { :currpage => page,:totalpages =>totalpage,:totalrecords =>totalrecords,:vif_data => vif }       
-    else
-      # 対象のVIF情報がない場合
-      vif = []
-      result = { :currpage => 0,:totalpages =>0,:totalrecords =>0,:vif_data => vif }
+        }
+        # 全レコード数をセット
+        totalrecords = i - 1
+        # 全ページ数をセット
+        totalpage = ((totalrecords - 1)/ rows).to_i + 1
+        # 返却するハッシュに全情報セット
+        result = { :currpage => page,:totalpages =>totalpage,:totalrecords =>totalrecords,:vif_data => vif }
+      else
+        # 対象のVIF情報がない場合
+        vif = []
+        result = { :currpage => 0,:totalpages =>0,:totalrecords =>0,:vif_data => vif }
+      end
+      render  :json => result
     end
-    render  :json => result     
   end
 
   # ドライブ情報の更新イベント（作成、編集、削除）
@@ -500,29 +510,31 @@ class VdcManagementDialogController < ApplicationController
   end
 
   def get_wmi_list
-    # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
-    user = User.sel(@current_user.uuid)
-    save_account_uuid = "a-%s" % user[:primary_account_id]
-    account_uuid = params[:account_id]
+    catch_error do
+      # カレントのグループが、指定グループでない場合、HTTPヘッダのグループを変更
+      user = User.sel(@current_user.uuid)
+      save_account_uuid = "a-%s" % user[:primary_account_id]
+      account_uuid = params[:account_id]
 
-    logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
-    if save_account_uuid != account_uuid then 
+      logger.debug("save_account_uuid:#{save_account_uuid} account_uuid:#{account_uuid}")
+      if save_account_uuid != account_uuid then
         ActiveResource::Connection.set_vdc_account_uuid(account_uuid)
-    end
+      end
 
-    data = {
-      :start => 0,
-      :limit => 1000
-    }
+      data = {
+        :start => 0,
+        :limit => 1000
+      }
 
-    machine_images = Hijiki::DcmgrResource::Image.list(data)
-    logger.debug(machine_images[0])  
+      machine_images = Hijiki::DcmgrResource::Image.list(data)
+      logger.debug(machine_images[0])
 
-    if save_account_uuid != account_uuid then 
+      if save_account_uuid != account_uuid then
         ActiveResource::Connection.set_vdc_account_uuid(save_account_uuid)
+      end
+
+      render  :json => machine_images[0]
     end
-    
-    render  :json => machine_images[0]     
   end
 
   def delete_image_exec

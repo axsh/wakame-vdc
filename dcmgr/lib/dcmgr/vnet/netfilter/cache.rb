@@ -75,6 +75,8 @@ module Dcmgr
             group[:referencees].delete_if   { |vnic| vnic[:uuid] == vnic_id}
           }
           
+          @cache[:empty_vnics].delete(vnic_id)
+          
           nil
         end
         
@@ -252,8 +254,13 @@ module Dcmgr
           }
         end
         
+        def get_empty_vnic(vnic_id)
+          deep_clone @cache[:empty_vnics][vnic_id]
+        end
+        
         def get_vnic(vnic_id)
-          vnic = get_local_vnic(vnic_id)
+          vnic = get_empty_vnic(vnic_id)
+          vnic = get_local_vnic(vnic_id) if vnic.nil?
           vnic = get_foreign_vnic(vnic_id) if vnic.nil?
           
           deep_clone vnic
@@ -343,6 +350,10 @@ module Dcmgr
           friends.delete_if {|friend| friend[:uuid] == vnic_map[:uuid]}
           
           deep_clone friends
+        end
+        
+        def get_all_empty_vnics()
+          deep_clone @cache[:empty_vnics].values
         end
         
       end
