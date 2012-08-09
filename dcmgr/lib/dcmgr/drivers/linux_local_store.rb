@@ -133,7 +133,9 @@ module Dcmgr
       private
       def parallel_curl(url, output_path)
         logger.debug("downloading #{url} as #{output_path}")
-        sh("#{Dcmgr.conf.script_root_path}/parallel-curl.sh --url=#{url} --output_path=#{output_path}")
+        # p URI.parse("/tmp/path").path # => "/tmp/path"
+        # p URI.parse("file:///tmp/path").path # => "/tmp/path"
+        sh("cp #{URI.parse(url).path} #{output_path}")
       end
     end
   end
