@@ -642,7 +642,7 @@ ja:
       backups: "バックアップ"
       storage_nodes: "ストレージプール"
     network_security:
-      header: "セキュリティー"
+      header: "セキュリティ"
       networks: "ネットワーク"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
