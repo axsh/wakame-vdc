@@ -48,9 +48,9 @@ Sinatra::QuotaEvaluation.evaluators do
       quota_value.to_i <= fetch_value
     end
   end
-  quota_type 'volume.size' do
+  quota_type 'volume.size_mb' do
     fetch do
-      (M::Volume.filter(:account_id=>@account.canonical_uuid).sum(:volume_size) || 0)
+      ((M::Volume.filter(:account_id=>@account.canonical_uuid).sum(:volume_size) || 0) / (1024 * 1024))
     end
     
     evaluate do |fetch_value|
