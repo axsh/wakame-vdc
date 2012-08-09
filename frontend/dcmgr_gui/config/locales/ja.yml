@@ -538,6 +538,7 @@ ja:
       header: "詳細"
       security_group_id: "セキュリティグループID"
       description: "説明"
+      rule: "ルール"
       created_at: "作成日"
       updated_at: "更新日"
       display_name: "セキュリティグループ名"

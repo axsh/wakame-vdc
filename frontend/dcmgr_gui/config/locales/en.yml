@@ -549,6 +549,7 @@ en:
       header: "Details"
       security_group_id: "Security Group ID"
       description: "Description"
+      rule: "Rule"
       created_at: "Created At"
       updated_at: "Updated At"
       display_name: "Security Group Name"
