@@ -68,25 +68,13 @@ class NetworksController < ApplicationController
   end
 
   def attach
-    # instance_id = params[:instance_id]
-    # network_ids = params[:network_ids]
-    # res = []
-    # network_ids.each do |network_id|
-    #   data = {
-    #     :network_id => network_id
-    #   }
-    #   res << Hijiki::DcmgrResource::Network.attach(network_id, instance_id)
-    # end
-    # render :json => res
+    detail = Hijiki::DcmgrResource::NetworkVif.find_vif(params[:network_id], params[:vif_id]).attach
+    render :json => detail
   end
 
   def detach
-    # network_ids = params[:ids]
-    # res = []
-    # network_ids.each do |network_id|
-    #   res << Hijiki::DcmgrResource::Network.detach(network_id)
-    # end
-    # render :json => res
+    detail = Hijiki::DcmgrResource::NetworkVif.find_vif(params[:network_id], params[:vif_id]).detach
+    render :json => detail
   end
   
   def show_networks
