@@ -5,24 +5,30 @@ class HostNodesController < ApplicationController
   end
   
   def list
-    data = {
-      :start => params[:start].to_i - 1,
-      :limit => params[:limit]
-    }
-    host_nodes = Hijiki::DcmgrResource::HostNode.list(data)
-    logger.debug(host_nodes.inspect)  
-    respond_with(host_nodes[0], :to => [:json])
+    catch_error do
+      data = {
+        :start => params[:start].to_i - 1,
+        :limit => params[:limit]
+      }
+      host_nodes = Hijiki::DcmgrResource::HostNode.list(data)
+      logger.debug(host_nodes.inspect)
+      respond_with(host_nodes[0], :to => [:json])
+    end
   end
   
   def show
-    host_node_id = params[:id]
-    detail = Hijiki::DcmgrResource::HostNode.show(host_node_id)
-    respond_with(detail,:to => [:json])
+    catch_error do
+      host_node_id = params[:id]
+      detail = Hijiki::DcmgrResource::HostNode.show(host_node_id)
+      respond_with(detail,:to => [:json])
+    end
   end
   
   def show_host_nodes
-    host_nodes = Hijiki::DcmgrResource::HostNode.list
-    respond_with(host_nodes[0],:to => [:json])
+    catch_error do
+      host_nodes = Hijiki::DcmgrResource::HostNode.list
+      respond_with(host_nodes[0],:to => [:json])
+    end
   end
 
   def expand_hash(h)

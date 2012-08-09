@@ -116,7 +116,7 @@ module Sinatra
                 # common error for invalid result of quota
                 # evaluation. it is recommended to raise an error
                 # with nice message from the block.
-                halt 400, "Exceeds quota limitation: #{request.request_method} #{request.path_info}"
+                halt 400, "Exceeds quota limitation: #{request.request_method} #{request.path_info} #{@current_quota_key}"
               end
             ensure
               @current_quota_key = nil

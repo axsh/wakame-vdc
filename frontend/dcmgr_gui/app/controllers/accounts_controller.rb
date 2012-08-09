@@ -51,14 +51,16 @@ class AccountsController < ApplicationController
   end
 
   def usage
-    current_usage = Hijiki::DcmgrResource::Account.find(current_account.canonical_uuid).usage
-    usage_quota = Hash[*current_account.account_quota.map{|q| [q.quota_type, q.quota_value]}.flatten]
+    catch_error do
+      current_usage = Hijiki::DcmgrResource::Account.find(current_account.canonical_uuid).usage
+      usage_quota = Hash[*current_account.account_quota.map{|q| [q.quota_type, q.quota_value]}.flatten]
 
-    res_usage = {}
-    current_usage.each { |k, v|
-      res_usage[k]={:current=>v}
-      res_usage[k][:quota]=usage_quota[k] if usage_quota[k]
-    }
-    render :json => res_usage
+      res_usage = {}
+      current_usage.each { |k, v|
+        res_usage[k]={:current=>v}
+        res_usage[k][:quota]=usage_quota[k] if usage_quota[k]
+      }
+      render :json => res_usage
+    end
   end
 end

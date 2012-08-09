@@ -113,8 +113,8 @@ jQuery(function($){
       if(is_dcmgr()) {
         try {
           var r = $.parseJSON(xhr.responseText);
-          var code = r.code;
-          var body = r.message.replace('Dcmgr::Endpoints::', '');
+          var code = xhr.status;
+	  var body = sprintf(r.message, r.message_params);
         } catch(e) {
           var code = xhr.status;
           var body = 'Request faild.'
