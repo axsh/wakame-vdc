@@ -21,43 +21,45 @@ set -x
 . ./build_functions-rhel.sh
 
 function init_openvz() {
-  typeset vz_root="$1"
+  typeset vz_root=$1
+  cat <<'EOS' | chroot $vz_root bash -c "cat | bash"
+# Replace /etc/mtab file
+# In virtual machine there is no physical devices to mount so replace mtab file with /proc/mounts/
+rm -f /etc/mtab
+ln -s /proc/mounts /etc/mtab
 
-  # Replace /etc/mtab file
-  # In virtual machine there is no physical devices to mount so replace mtab file with /proc/mounts/
-  rm -f ${vz_root}/etc/mtab
-  ln -s ${vz_root}/proc/mounts ${vz_root}/etc/mtab
-
-  # Edit /etc/fstab file
-  # Remove all entries in /etc/fstab file except ones for /dev/pts, as below
-  cat <<EOF > ${vz_root}/etc/fstab
+# Edit /etc/fstab file
+# Remove all entries in /etc/fstab file except ones for /dev/pts, as below
+cat <<EOF > /etc/fstab
 devpts  /dev/pts  devpts  gid=5,mode=620  0 0
 EOF
 
-  # Disable udev start up from /etc/rc.sysinit by commenting out next line:
-  sed -i -e "s,/sbin/start_udev,# /sbin/start_udev," ${vz_root}/etc/rc.sysinit
+# Disable udev start up from /etc/rc.sysinit by commenting out next line:
+sed -i -e "s,/sbin/start_udev,# /sbin/start_udev," /etc/rc.sysinit
 
-  # Create rpm lock folder
-#  mkdir /var/lock/rpm
+# Create rpm lock folder
+# mkdir /var/lock/rpm
 
   # Disable IPv6
-  sed -i -e "s/NETWORKING=\"yes\"/NETWORKING=\"no\"/" ${vz_root}/etc/sysconfig/network
+  sed -i -e "s/NETWORKING=\"yes\"/NETWORKING=\"no\"/" /etc/sysconfig/network
 
   # Add following lines to etc/modprobe.d/blacklist file
-  cat <<EOF > ${vz_root}/etc/modprobe.d/blacklist
+  cat <<EOF > /etc/modprobe.d/blacklist
 blacklist ipv6
 blacklist net-pf-10
 EOF
 
-  # Remove /etc/resolv.conf
-  # /etc/resolv.conf file will be added by vzctl command later
-#  rm -r ${tmp_root}/etc/resolv.conf*
+# Remove /etc/resolv.conf
+# /etc/resolv.conf file will be added by vzctl command later
+# rm -r /etc/resolv.conf*
 
-  # Clear network configurations from template
-  sed -i -e "s/ONBOOT=yes/ONBOOT=no/" ${tmp_root}/etc/sysconfig/network-scripts/ifcfg-eth*
+# Clear network configurations from template
+sed -i -e "s/ONBOOT=yes/ONBOOT=no/" /etc/sysconfig/network-scripts/ifcfg-eth*
 
-  # Otherwise when startup init script rc will enter interactive mode and wait there forever
-  sed -i -e "s/PROMPT=yes/PROMPT=no/" ${tmp_root}/etc/sysconfig/init
+# Otherwise when startup init script rc will enter interactive mode and wait there forever
+sed -i -e "s/PROMPT=yes/PROMPT=no/" /etc/sysconfig/init
+EOS
+
 }
 
 function load_balancer_setup() {
@@ -86,6 +88,7 @@ initctl start haproxy_updater
 exit 0
 EOF
 
+  init_openvz $tmp_root
   cat <<'EOS' | chroot $tmp_root bash -c "cat | bash"
 /sbin/MAKEDEV urandom
 
@@ -103,8 +106,6 @@ chkconfig haproxy off
 chkconfig stunnel off
 rm -f /etc/haproxy/haproxy.cfg
 EOS
-
-  init_openvz ${tmp_root}
 }
 
 [ -f "${distro_name}-${distro_ver}_${arch}.tar.gz" ] || {
