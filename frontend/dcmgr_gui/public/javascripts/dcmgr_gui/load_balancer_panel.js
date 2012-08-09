@@ -110,13 +110,24 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 
     bt_edit_load_balancer.target.bind('click',function(event){
       var uuid = $(this).attr('id').replace(/edit_(lb-[a-z0-9]+)/,'$1');
-      if( uuid ){
+      var row_id = '#row-'+uuid;
+      var state = $(row_id).find('.state').text();
+      if(uuid && state == 'running' ){
         bt_edit_load_balancer.open({"ids":[uuid]});
       }
       c_list.checkRadioButton(uuid);
     });
 
-    $(bt_edit_load_balancer.target).button({ disabled: false });
+    c_list.element.find(".edit_load_balancer").each(function(key, value){
+      var uuid = $(value).attr('id').replace(/edit_(lb-[a-z0-9]+)/,'$1');
+      var row_id = '#row-'+uuid;
+      var state = $(row_id).find('.state').text();
+      if(uuid && state == 'running') {
+        $(this).button({ disabled: false });
+      } else {
+        $(this).button({ disabled: true });
+      }
+    });
 
   });
 
@@ -629,21 +640,34 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     select: function(event){
       var select_action = $(this).val()
       var selected_id = c_list.currentChecked();
+      var row_id = '#row-'+selected_id;
+      var state = $(row_id).find('.state').text();
+
       switch(select_action) {
         case 'register':
-          bt_register_load_balancer.open({ids: [selected_id]});
+          if (state == 'running') {
+            bt_register_load_balancer.open({ids: [selected_id]});
+          }
           break;
         case 'unregister':
-          bt_unregister_load_balancer.open({ids: [selected_id]});
+          if (state == 'running') {
+            bt_unregister_load_balancer.open({ids: [selected_id]});
+          }
           break;
         case 'poweron':
-          bt_poweron_instance.open({ids: [selected_id]});
+          if (state == 'halted') {
+            bt_poweron_instance.open({ids: [selected_id]});
+          }
           break;
         case 'poweroff':
-          bt_poweroff_load_balancer.open({ids: [selected_id]});
+          if (state == 'running') {
+            bt_poweroff_load_balancer.open({ids: [selected_id]});
+          }
           break;
         case 'active_standby':
-          bt_active_standby_load_balancer.open({ids: [selected_id]});
+          if (state == 'running') {
+            bt_active_standby_load_balancer.open({ids: [selected_id]});
+          }
           break;
       }
     }
@@ -652,7 +676,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   selectmenu.data('selectmenu').disableButton();
 
   $(bt_create_load_balancer.target).button({ disabled: false });
-  $(bt_delete_load_balancer.target).button({ disabled: false });
+  $(bt_delete_load_balancer.target).button({ disabled: true });
   $(bt_refresh.target).button({ disabled: false });
 
   var actions = {};
@@ -660,10 +684,11 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     var uuid = c_list.currentChecked();
     var row_id = '#row-'+uuid;
     var state = $(row_id).find('.state').text();
-
     if(_.include(['running', 'halted'], state)) {
+      bt_delete_load_balancer.enableDialogButton();
       selectmenu.data('selectmenu').enableButton();
-    } else {
+    }else {
+      bt_delete_load_balancer.disableDialogButton();
       selectmenu.data('selectmenu').disableButton();
     }
   }
