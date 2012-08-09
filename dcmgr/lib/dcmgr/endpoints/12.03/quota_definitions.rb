@@ -23,7 +23,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'instance.quota_weight' do
     fetch do
-      (M::Instance.lives.filter(:account_id=>@account.canonical_uuid).sum(:quota_weight) || 0.0)
+      (M::Instance.alives.filter(:account_id=>@account.canonical_uuid).sum(:quota_weight) || 0.0)
     end
     
     evaluate do |fetch_value|
@@ -32,7 +32,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'instance.count' do
     fetch do
-      M::Instance.lives.filter(:account_id=>@account.canonical_uuid).count
+      M::Instance.alives.filter(:account_id=>@account.canonical_uuid).count
     end
     
     evaluate do |fetch_value|
@@ -41,7 +41,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'volume.count' do
     fetch do
-      M::Volume.filter(:account_id=>@account.canonical_uuid).count
+      M::Volume.alives.filter(:account_id=>@account.canonical_uuid).count
     end
     
     evaluate do |fetch_value|
@@ -50,7 +50,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'volume.size_mb' do
     fetch do
-      ((M::Volume.filter(:account_id=>@account.canonical_uuid).sum(:volume_size) || 0) / (1024 * 1024))
+      ((M::Volume.alives.filter(:account_id=>@account.canonical_uuid).sum(:volume_size) || 0) / (1024 * 1024))
     end
     
     evaluate do |fetch_value|
@@ -59,7 +59,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'image.count' do
     fetch do
-      M::Image.filter(:account_id=>@account.canonical_uuid).count
+      M::Image.alives.filter(:account_id=>@account.canonical_uuid).count
     end
     
     evaluate do |fetch_value|
@@ -68,7 +68,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'backup_object.count' do
     fetch do
-      M::BackupObject.filter(:account_id=>@account.canonical_uuid).count
+      M::BackupObject.alives.filter(:account_id=>@account.canonical_uuid).count
     end
 
     evaluate do |fetch_value|
@@ -77,7 +77,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'backup_object.size_mb' do
     fetch do
-      ((M::BackupObject.filter(:account_id=>@account.canonical_uuid).sum(:size) || 0) / (1024 * 1024))
+      ((M::BackupObject.alives.filter(:account_id=>@account.canonical_uuid).sum(:size) || 0) / (1024 * 1024))
     end
 
     evaluate do |fetch_value| 
