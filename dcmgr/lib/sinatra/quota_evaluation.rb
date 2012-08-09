@@ -129,7 +129,7 @@ module Sinatra
       def quota(*quota_keys)
         quota_keys.each { |quota_key|
           tuple = QuotaEvaluation.quota_defs[quota_key]
-          raise ArgumentError, "#{quota_key} is unknown quota key" unless tuple
+          raise ArgumentError, "#{quota_key} is unknown quota key. (Defined at around #{caller[3]})" unless tuple
         }
         
         return self if Dcmgr.conf.skip_quota_evaluation
