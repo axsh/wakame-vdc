@@ -136,5 +136,6 @@ module Dcmgr
     define_error(:InvalidLoadBalancerPort, 400, '160')
     define_error(:InvalidLoadBalancerAlgorithm, 400, '161')
 
+    define_error(:ExceedQuotaLimit, 400, '162')
   end
 end

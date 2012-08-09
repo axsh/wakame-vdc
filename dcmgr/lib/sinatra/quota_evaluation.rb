@@ -25,9 +25,14 @@ module Sinatra
   #
   # # Basic usage of this extension.
   # Sinatra::QuotaEvaluation.evaluators do
-  #   quota_key 'security_group.count' do
-  #     # quota_value == 5
-  #     quota_value <= Models::SecurityGroup.count
+  #   quota_type 'instance.count' do
+  #     fetch do
+  #       Models::Instance.dataset.count.to_i
+  #     end
+  #
+  #     evaluate do |fetch_value|
+  #       quota_value <= fetch_value
+  #     end
   #   end
   # end
   #
@@ -72,9 +77,40 @@ module Sinatra
           @tuples = {}
         end
         
-        def quota_key(key, &blk)
+        def quota_type(key, &blk)
           raise ArgumentError, "#{key} was set already." if @tuples[key]
-          @tuples[key] = [blk]
+          @tuples[key] = QuotaType.parse(&blk)
+        end
+        alias :quota_key :quota_type
+
+        # DSL for quota_type section
+        class QuotaType
+
+          def self.parse(&blk)
+            self.new.parse(&blk)
+          end
+
+          def initialize()
+            @fetch_block=nil
+            @evaluate_block=nil
+          end
+
+          def parse(&blk)
+            instance_eval(&blk)
+            raise "Need to set fetch and evaluate blocks" if @fetch_block.nil? || @evaluate_block.nil?
+            [@fetch_block, @evaluate_block]
+          end
+          
+          def fetch(&blk)
+            @fetch_block = blk
+          end
+
+          def evaluate(&blk)
+            if blk.arity != 1
+              raise ArgumentError, "Block must have one argument to pass the target value."
+            end
+            @evaluate_block = blk
+          end
         end
       end
 
@@ -93,7 +129,7 @@ module Sinatra
       def quota(*quota_keys)
         quota_keys.each { |quota_key|
           tuple = QuotaEvaluation.quota_defs[quota_key]
-          raise ArgumentError, "#{quota_key} is unknown quota key" unless tuple
+          raise ArgumentError, "#{quota_key} is unknown quota key. (Defined at around #{caller[3]})" unless tuple
         }
         
         return self if Dcmgr.conf.skip_quota_evaluation
@@ -111,15 +147,13 @@ module Sinatra
             
             tuple = QuotaEvaluation.quota_defs[quota_key]
             begin
-              @current_quota_key = quota_key
-              if self.instance_eval &tuple[0]
-                # common error for invalid result of quota
-                # evaluation. it is recommended to raise an error
-                # with nice message from the block.
-                halt 400, "Exceeds quota limitation: #{request.request_method} #{request.path_info} #{@current_quota_key}"
+              @current_quota_type = quota_key
+              
+              if self.instance_exec(self.instance_exec(&tuple[0]), &tuple[1])
+                raise Dcmgr::Endpoints::Errors::ExceedQuotaLimit, "Exceeds quota limitation: #{request.request_method} #{request.path_info} #{@current_quota_type}"
               end
             ensure
-              @current_quota_key = nil
+              @current_quota_type = nil
             end
           }
           true
@@ -130,11 +164,12 @@ module Sinatra
     end
 
     module HelperMethods
-      def quota_key
-        @current_quota_key
+      def quota_type
+        @current_quota_type
       end
+      alias :quota_key :quota_type
 
-      def quota_value(key=self.quota_key)
+      def quota_value(key=self.quota_type)
         # set in before filter.
         @quota_request[key]
       end
