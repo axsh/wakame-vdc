@@ -390,6 +390,8 @@ module Dcmgr
         attr_accessor :enable_ebtables
         # Flag that decides whether or not we output commands that are applied
         attr_accessor :verbose_commands
+        # If defined, this script will be executed every time netfilter rules are updated
+        attr_accessor :netfilter_hook_script_path
 
         def initialize
           super
@@ -506,6 +508,7 @@ module Dcmgr
         def execute_commands(cmds)
           puts cmds.join("\n") if self.verbose_commands
           system(cmds.join("\n"))
+          system(self.netfilter_hook_script_path) unless self.netfilter_hook_script_path.nil?
         end
 
         #def execute_commands_debug(cmds)
