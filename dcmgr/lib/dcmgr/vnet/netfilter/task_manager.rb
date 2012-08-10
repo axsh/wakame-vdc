@@ -390,8 +390,17 @@ module Dcmgr
         attr_accessor :enable_ebtables
         # Flag that decides whether or not we output commands that are applied
         attr_accessor :verbose_commands
+        # Path to the script that can be used to restore netfilter on host node reboot
+        attr_accessor :netfilter_start_script
+        # Paths to the files that will hold netfilter rules for the above script. By default these are in the wakame-vdc/scripts/netfilter directory
+        attr_accessor :iptables_save_file
+        attr_accessor :ebtables_save_file
 
         def initialize
+          # Create the persist scripts
+          self.iptables_save_file = "#{Dcmgr::DCMGR_ROOT}/script/netfilter/iptables_save_file" if self.iptables_save_file.nil?
+          self.ebtables_save_file = "#{Dcmgr::DCMGR_ROOT}/script/netfilter/ebtables_save_file" if self.ebtables_save_file.nil?
+
           super
         end
 
@@ -503,9 +512,33 @@ module Dcmgr
           handle_vnic_tasks(vnic,tasks,:remove)
         end
 
+        def write_persist_script
+          FileUtils.mkdir_p(self.netfilter_start_script.split("/")[0..-2].join("/"))
+          File::open(self.netfilter_start_script,'w') { |f|
+            f << <<-eos
+#!/bin/sh
+cat #{self.iptables_save_file} | iptables-restore
+ebtables --atomic-file #{self.ebtables_save_file} --atomic-commit
+eos
+          }
+          File.chmod(766,self.netfilter_start_script)
+        end
+
+        def write_persist_files
+          FileUtils.mkdir_p(self.iptables_save_file.split("/")[0..-2].join("/"))
+          FileUtils.mkdir_p(self.ebtables_save_file.split("/")[0..-2].join("/"))
+          system "iptables-save > #{self.iptables_save_file}"
+          system "ebtables --atomic-file #{self.ebtables_save_file} --atomic-save"
+        end
+
         def execute_commands(cmds)
           puts cmds.join("\n") if self.verbose_commands
           system(cmds.join("\n"))
+
+          unless self.netfilter_start_script.nil?
+            write_persist_script
+            write_persist_files
+          end
         end
 
         #def execute_commands_debug(cmds)
