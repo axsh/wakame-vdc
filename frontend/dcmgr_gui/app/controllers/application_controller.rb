@@ -102,7 +102,7 @@ class ApplicationController < ActionController::Base
   def catch_error(&blk)
     begin
       blk.call
-    rescue Exception =>e
+    rescue RuntimeError =>e
       if is_dcmgr?(e)
         message_params = ""
 
