@@ -97,14 +97,6 @@ module Dcmgr
       # * 'off'
       param :edge_networking, :default => 'netfilter'
 
-      # Decides if service_netfilter should write a script that can restore netfilter rules at any time (i.e. after a reboot)
-      # This script will be updated each time hva changes netfilter rules
-      param :netfilter_persist, :default => false
-      # Decides where the script and its data files are placed
-      param :netfilter_persist_script_path, :default => "#{DCMGR_ROOT}/script/netfilter_persist/apply_netfilter.sh"
-      param :netfilter_persist_iptables_file, :default => "#{DCMGR_ROOT}/script/netfilter_persist/iptables_save_file"
-      param :netfilter_persist_ebtables_file, :default => "#{DCMGR_ROOT}/script/netfilter_persist/ebtables_save_file"
-
       param :script_root_path, :default => proc {
         File.expand_path('script', DCMGR_ROOT)
       }
