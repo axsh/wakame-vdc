@@ -4,9 +4,9 @@
 <%= javascript_include_tag 'jquery.hoverIntent.js' %>
 
 <script type="text/javascript">
-jQuery(function($){
-	dcmgrGUI.securityGroupPanel();
-});
+  jQuery(function($){
+  dcmgrGUI.securityGroupPanel();
+  });
 </script>
 
 <% end %>
@@ -14,103 +14,107 @@ jQuery(function($){
 <% content_for :stylesheet do %>
 <%= stylesheet_link_tag 'jquery.cluetip.css' %>
 <style type="text/css">
-	.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
-	.ui-dialog .ui-dialog-content {margin:5px;}
+  .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { text-align:center; float: none;}
+  .ui-dialog .ui-dialog-content {margin:5px;}
 </style>
 <% end %>
 
 <div id="mainarea_wide">
-	<h3><img src="images/icon_resource.gif" /><%= t("security_groups.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
-	<div id="list_load_mask" class="maincontent">
-		<div class="controller clearfix">
-			<a href="javascript:void(0);" class="create_security_group"><%= t("security_groups.button.create_security_group") %></a>
-			<a href="javascript:void(0);" class="delete_security_group" ><%= t("security_groups.button.delete_security_group") %></a>
-			<a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%=  t("button.refresh") %></a>
-		</div>
-		<div class="controller clearfix">
-			<div id="pagenate" class="r_float">
-				<a href="javascript:void(0);" class="prev"></a>
-				<p id="viewPagenate"></p>
-				<a href="javascript:void(0);" class="next"></a>
-			</div>
-		</div>
-		<div id="display_security_groups" class="display_area">
-			<% content_for :javascript_template do %>
-			<script id="securityGroupsListTemplate" type="text/x-jquery-tmpl">
-			<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
-				<tr>
-					<th></th>
-					<th><%= t("security_groups.list.display_name") %></th>
-					<th><%= t("security_groups.list.descriptions") %></th>
-					<th><%= t("security_groups.list.action") %></th>
-				</tr>
-				{{each(index,item) rows}}
-				<tr>
-					{{if item.uuid }}
-						<td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
-					{{else}}
-						<td class="listradiobutton"></td>
-					{{/if}}
-					<td class="vtip" title="display_name" style="width:150px">${item.display_name}</td>
-					<td class="vtip" title="description" style="width:350px">${item.description}</td>
-					{{if item.uuid }}
-					<td class="vtip center" title="action">
-						<a href="javascript:void(0);" class="edit_security_group" id="edit_${item.uuid}"><%= t("security_groups.button.edit_security_group") %></a>
-					</td>
-					{{else}}
-						<td class="vtip center" title="action"></td>
-					{{/if}}
-					</td>
-				</tr>
-				{{/each}}
-			</table>
-			</script>
-			<% end %>
-		</div>
-	</div>
-	<div id="btm_maincontent_wide"></div>
-	<h3><img src="images/icon_ttl_detail.gif" /><%= t("security_groups.details.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
- 		<div id="detail" class="maincontent">
- 			<% content_for :javascript_template do %>
-			<script id="securityGroupsDetailTemplate" type="text/x-jquery-tmpl">
-			<div class="display_area" id="${item.uuid}">
-				<table class="ptn07" frame="void" cellpadding="0" cellspacing="0" border="0">
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t("security_groups.details.security_group_id") %>:</td>
-						<td>${item.uuid}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td class="title" style="width:150px"><%= t("security_groups.details.display_name") %>:</td>
-						<td>${item.display_name}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td class="title"><%= t("security_groups.details.description") %>:</td>
-						<td>${item.description}</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-						<td colspan="2">
-						<textarea id="security_group_rule" rows="10" cols="10" style="width:630px;height:150px" disabled>${item.rule}</textarea><br />
-						</td>
-					</tr>
-					<tr>
-						<td class="padcell"></td>
-	         	<td class="title"><%= t("security_groups.details.created_at") %>:</td>
-	         	<td colspan="7">${item.created_at}</td>
-					</tr>
-	        <tr>
-	          <td class="padcell"></td>
-	          <td class="title"><%= t("security_groups.details.updated_at") %>:</td>
-	          <td colspan="7">${item.updated_at}</td>
-					</tr>
-				</table>
-				<br />
-			</div>
-			</script>
-			<% end %>
- 		</div><!-- maincontent -->
-	<div id="btm_maincontent_wide_last"></div>
+  <h3><img src="images/icon_resource.gif" /><%= t("security_groups.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
+  <div id="list_load_mask" class="maincontent">
+    <div class="controller clearfix">
+      <a href="javascript:void(0);" class="create_security_group"><%= t("security_groups.button.create_security_group") %></a>
+      <a href="javascript:void(0);" class="delete_security_group" ><%= t("security_groups.button.delete_security_group") %></a>
+      <a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%=  t("button.refresh") %></a>
+    </div>
+    <div class="controller clearfix">
+      <div id="pagenate" class="r_float">
+	<a href="javascript:void(0);" class="prev"></a>
+	<p id="viewPagenate"></p>
+	<a href="javascript:void(0);" class="next"></a>
+      </div>
+    </div>
+    <div id="display_security_groups" class="display_area">
+      <% content_for :javascript_template do %>
+      <script id="securityGroupsListTemplate" type="text/x-jquery-tmpl">
+	<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+	  <tr>
+	    <th></th>
+	    <th><%= t("security_groups.list.display_name") %></th>
+	    <th><%= t("security_groups.list.descriptions") %></th>
+	    <th><%= t("security_groups.list.action") %></th>
+	  </tr>
+	  {{each(index,item) rows}}
+	  <tr>
+	    {{if item.uuid }}
+	    <td class="listradiobutton"><input id="${item.uuid}" type="radio" name="select" value="${item.uuid}" ></td>
+	    {{else}}
+	    <td class="listradiobutton"></td>
+	    {{/if}}
+	    <td class="vtip" title="display_name" style="width:150px">${item.display_name}</td>
+	    <td class="vtip" title="description" style="width:350px">${item.description}</td>
+	    {{if item.uuid }}
+	    <td class="vtip center" title="action">
+	      <a href="javascript:void(0);" class="edit_security_group" id="edit_${item.uuid}"><%= t("security_groups.button.edit_security_group") %></a>
+	    </td>
+	    {{else}}
+	    <td class="vtip center" title="action"></td>
+	    {{/if}}
+</td>
+</tr>
+{{/each}}
+</table>
+</script>
+<% end %>
+</div>
+</div>
+<div id="btm_maincontent_wide"></div>
+<h3><img src="images/icon_ttl_detail.gif" /><%= t("security_groups.details.header") %><a href="javascript:void(0);" class="showhide"></a></h3>
+<div id="detail" class="maincontent">
+  <% content_for :javascript_template do %>
+  <script id="securityGroupsDetailTemplate" type="text/x-jquery-tmpl">
+    <div class="display_area" id="${item.uuid}">
+      <table class="ptn07" frame="void" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+	  <td class="padcell"></td>
+	  <td class="title"><%= t("security_groups.details.security_group_id") %>:</td>
+	  <td>${item.uuid}</td>
+	</tr>
+	<tr>
+	  <td class="padcell"></td>
+	  <td class="title" style="width:150px"><%= t("security_groups.details.display_name") %>:</td>
+	  <td>${item.display_name}</td>
+	</tr>
+	<tr>
+	  <td class="padcell"></td>
+	  <td class="title"><%= t("security_groups.details.description") %>:</td>
+	  <td>${item.description}</td>
+	</tr>
+	<tr>
+	  <td class="padcell"></td>
+	  <td class="title" style="border:none;padding-bottom:0px"><%= t("security_groups.details.rule") %>:</td>
+	</tr>
+	<tr>
+	  <td class="padcell"></td>
+	  <td colspan="2">
+	    <textarea id="security_group_rule" rows="10" cols="10" style="width:630px;height:150px" disabled>${item.rule}</textarea><br />
+	  </td>
+	</tr>
+	<tr>
+	  <td class="padcell"></td>
+	  <td class="title"><%= t("security_groups.details.created_at") %>:</td>
+	  <td colspan="7">${item.created_at}</td>
+	</tr>
+	<tr>
+	  <td class="padcell"></td>
+	  <td class="title"><%= t("security_groups.details.updated_at") %>:</td>
+	  <td colspan="7">${item.updated_at}</td>
+	</tr>
+      </table>
+      <br />
+    </div>
+  </script>
+  <% end %>
+</div><!-- maincontent -->
+<div id="btm_maincontent_wide_last"></div>
 </div><!-- mainarea_wide -->

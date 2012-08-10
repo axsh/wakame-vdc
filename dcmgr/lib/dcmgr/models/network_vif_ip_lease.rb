@@ -102,5 +102,9 @@ module Dcmgr::Models
     def ipv4_i
       self[:ipv4]
     end
+
+    def ipv4_ipaddress
+      IPAddress::IPv4.new("#{self.ipv4}/#{self.network[:prefix]}")
+    end
   end
 end
