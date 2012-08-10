@@ -140,16 +140,13 @@ class DialogController < ApplicationController
   
   def backup_instances
     catch_error do
-      @instance_ids = params[:ids]
-      @instances = []
-      @instance_ids.each do |i|
-        @instances << Hijiki::DcmgrResource::Instance.show(i)
-      end
+      @instance_id = params[:ids].first
+      @instance = Hijiki::DcmgrResource::Instance.show(@instance_id)
     end
   end
 
-  alias :poweroff_instances :backup_instances
-  alias :poweron_instances :backup_instances
+  alias :poweroff_instances :reboot_instances
+  alias :poweron_instances :reboot_instances
 
   
   def edit_instance

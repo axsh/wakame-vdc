@@ -111,13 +111,12 @@ class InstancesController < ApplicationController
 
   def backup
     catch_error do
-      instance_ids = params[:ids]
-      res = []
-      instance_ids.each do |instance_id|
-        instance = Hijiki::DcmgrResource::Instance.show(instance_id)
-        params = {:display_name => instance["display_name"]}
-        res << Hijiki::DcmgrResource::Instance.backup(instance_id,params)
-      end
+      instance_id = params[:instance_id]
+      data = {
+        :display_name => params[:backup_display_name],
+        :description  => params[:backup_description]
+      }
+      res = Hijiki::DcmgrResource::Instance.backup(instance_id,data)
       render :json => res
     end
   end
