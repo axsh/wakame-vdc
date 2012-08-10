@@ -72,7 +72,6 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
       var public_key = encodeURIComponent($(this).find('#public_key').val());
       var private_key = encodeURIComponent($(this).find('#private_key').val());
       var balance_algorithm = $(this).find('input[name="balance_algorithm"]:checked').val();
-      var certificate_chain = encodeURIComponent($(this).find('#certificate_chain').val());
       var cookie_name = $(this).find('#cookie_name').val();
       var data = "display_name="+display_name
                  +"&description="+description
@@ -83,7 +82,6 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
                  +"&balance_algorithm="+balance_algorithm
                  +"&private_key="+private_key
                  +"&public_key="+public_key
-                 +"&certificate_chain="+certificate_chain
                  +"&cookie_name="+cookie_name;
       var request = new DcmgrGUI.Request;
       request.put({
@@ -145,7 +143,6 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     var public_key = encodeURIComponent($(this).find('#public_key').val());
     var private_key = encodeURIComponent($(this).find('#private_key').val());
     var balance_algorithm = $(this).find('input[name="balance_algorithm"]:checked').val();
-    var certificate_chain = encodeURIComponent($(this).find('#certificate_chain').val());
     var cookie_name = $(this).find('#cookie_name').val();
     var data = "display_name="+display_name
                +"&description="+description
@@ -156,7 +153,6 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
                +"&balance_algorithm="+balance_algorithm
                +"&private_key="+private_key
                +"&public_key="+public_key
-               +"&certificate_chain="+certificate_chain
                +"&cookie_name="+cookie_name;
     var request = new DcmgrGUI.Request;
     request.post({

@@ -18,7 +18,6 @@ class LoadBalancersController < ApplicationController
         :certificate_name => params[:certificate_name],
         :private_key => params[:private_key],
         :public_key => params[:public_key],
-        :certificate_chain => params[:certificate_chain],
         :cookie_name => params[:cookie_name]
       }
 
@@ -116,7 +115,6 @@ class LoadBalancersController < ApplicationController
          :certificate_name => params[:certificate_name],
          :private_key => params[:private_key],
          :public_key => params[:public_key],
-         :certificate_chain => params[:certificate_chain],
          :cookie_name => params[:cookie_name]
        }
        load_balancer = Hijiki::DcmgrResource::LoadBalancer.update(load_balancer_id,data)

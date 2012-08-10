@@ -15,7 +15,6 @@ module Hijiki::DcmgrResource::V1203
         lb.balance_algorithm = params[:balance_algorithm]
         lb.private_key = params[:private_key]
         lb.public_key = params[:public_key]
-        lb.certificate_chain = params[:certificate_chain]
         lb.cookie_name = params[:cookie_name]
         lb.description = params[:description]
         lb.save

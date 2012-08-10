@@ -107,7 +107,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                                 :cookie_name => params[:cookie_name],
                                 :private_key => params[:private_key],
                                 :public_key => params[:public_key],
-                                :certificate_chain => params[:certificate_chain]
                                 )
 
 
@@ -348,10 +347,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     if !params[:public_key].empty?
       lb.public_key = params[:public_key]
-    end
-
-    if !params[:certificate_chain].empty?
-      lb.certificate_chain = params[:certificate_chain]
     end
 
     lb.save
