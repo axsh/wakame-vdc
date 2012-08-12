@@ -102,4 +102,13 @@ Sinatra::QuotaEvaluation.evaluators do
       quota_value.to_i <= fetch_value
     end
   end
+  quota_type 'network.count' do
+    fetch do
+      self.instance_exec(M::Network.dataset, &COMMON_DS_FILTER).count
+    end
+
+    evaluate do |fetch_value|
+      quota_value.to_i <= fetch_value
+    end
+  end
 end
