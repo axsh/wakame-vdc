@@ -148,7 +148,7 @@ DcmgrGUI.date.getI18n = function(date_str){
 
 // Convert UTC ISO8601 time string to local TZ with I18n.
 DcmgrGUI.date.utcToLocal = function(iso8601_date_str) {
-  # TODO: cleanup white spaces in date_str.
+  // TODO: cleanup white spaces in date_str.
   try {
     return DcmgrGUI.date.getI18n(DcmgrGUI.date.setTimezone(DcacmgrGUI.date.parseISO8601(iso8601_date_str),
                                                            dcmgrGUI.getConfig('time_zone')
