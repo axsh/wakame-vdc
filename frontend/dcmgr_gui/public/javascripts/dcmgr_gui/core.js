@@ -25,7 +25,7 @@ DcmgrGUI.Class = (function() {
 
 DcmgrGUI.Request = DcmgrGUI.Class.create({
   initialize: function(){
-    
+    dcmgrGUI.setConfig('error_popup', true);
   },
   get: function(params){
     params['type'] = 'GET';
