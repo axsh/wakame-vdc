@@ -63,13 +63,12 @@ module Dcmgr
       end
 
       def upload_image(inst, ctx, bo, evcb)
+
         bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
         take_snapshot_for_backup()
-        sh("cp -p --sparse=always %s /dev/stdout | gzip -f > %s", [ctx.os_devpath, bkup_tmp_path])
-        alloc_size = File.size(bkup_tmp_path)
-        res = sh("md5sum %s | awk '{print $1}'", [bkup_tmp_path])
-        
-        evcb.setattr(res[:stdout].chomp, alloc_size)
+
+        chksum, alloc_size = archive_from_snapshot(ctx, ctx.os_devpath, bkup_tmp_path)
+        evcb.setattr(chksum, alloc_size)
 
         # upload image file
         Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
@@ -170,6 +169,43 @@ module Dcmgr
           :raw
         end
       end
+
+      def archive_from_snapshot(ctx, snapshot_path, bkup_tmp_path)
+        chksum_path = File.expand_path('md5', ctx.inst_data_dir)
+        
+        container_format = nil
+        if File.exists?(File.expand_path('container.format', ctx.inst_data_dir))
+          container_format = File.read(File.expand_path('container.format', ctx.inst_data_dir)).chomp
+        end
+
+        case container_format.to_sym
+        when :tgz
+          shell.run!("tar -cS -C %s %s | gzip | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
+                                                                            File.basename(snapshot_path),
+                                                                            chksum_path,
+                                                                            bkup_tmp_path])
+        when :tar
+          shell.run!("tar -cS -C %s %s | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
+                                                                     File.basename(snapshot_path),
+                                                                     chksum_path,
+                                                                     bkup_tmp_path])
+        when :gz
+          shell.run!("cp -p --sparse=always %s /dev/stdout | gzip | tee >( md5sum > %s) > %s", [snapshot_path, chksum_path, bkup_tmp_path])
+        else
+          shell.run!("cp -p --sparse=always %s %s", [snapshot_path, bkup_tmp_path])
+          shell.run!("md5sum %s > %s", [bkup_tmp_path, chksum_path])
+        end
+        
+        alloc_size = File.size(bkup_tmp_path)
+        chksum = File.read(chksum_path).split(/\s+/).first
+
+        [chksum, alloc_size]
+      ensure
+        if File.exists?(chksum_path)
+          File.unlink(chksum_path) rescue nil
+        end
+      end
+      
     end
   end
 end
