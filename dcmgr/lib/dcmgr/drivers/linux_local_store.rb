@@ -32,22 +32,22 @@ module Dcmgr
 
         case inst[:image][:file_format]
         when "raw"
-          # use the file command to detect if the image file is gzip commpressed.
-          file_type1=shell.run!("/usr/bin/file -b #{vmimg_cache_path(vmimg_basename, is_cacheable)}").out
-          case file_type1
-          when /^gzip compressed data,/
-            gzip_inside=shell.run!("/usr/bin/file -b -z #{vmimg_cache_path(vmimg_basename, is_cacheable)}").out
-            if gzip_inside =~ /^POSIX tar archive /
-              Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
-                # expect only one file is contained.
-                lst = shell.run!("tar -ztf #{vmimg_cache_path(vmimg_basename, is_cacheable)}").out.split("\n")
-                shell.run!("tar -zxS -C %s < %s", [tmpdir, vmimg_cache_path(vmimg_basename, is_cacheable)])
-                File.rename(File.expand_path(lst.first, tmpdir), ctx.os_devpath)
-              }
-            else
-              sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path(vmimg_basename, is_cacheable), ctx.os_devpath])
-            end
-          when /^POSIX tar archive /
+          container_type = detect_container_type(vmimg_cache_path(vmimg_basename, is_cacheable))
+          # save the container type to local file
+          File.open(File.expand_path('container.format', ctx.inst_data_dir), 'w') { |f|
+            f.write(container_type.to_s)
+          }
+          case container_type
+          when :tgz
+            Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
+              # expect only one file is contained.
+              lst = shell.run!("tar -ztf #{vmimg_cache_path(vmimg_basename, is_cacheable)}").out.split("\n")
+              shell.run!("tar -zxS -C %s < %s", [tmpdir, vmimg_cache_path(vmimg_basename, is_cacheable)])
+              File.rename(File.expand_path(lst.first, tmpdir), ctx.os_devpath)
+            }
+          when :gz
+            sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path(vmimg_basename, is_cacheable), ctx.os_devpath])
+          when :tar
             sh("tar -xS -C %s < %s", [ctx.inst_data_dir, vmimg_cache_path(vmimg_basename, is_cacheable)])
           else
             sh("cp -p --sparse=always %s %s",[vmimg_cache_path(vmimg_basename, is_cacheable), ctx.os_devpath])
@@ -151,6 +151,24 @@ module Dcmgr
       def parallel_curl(url, output_path)
         logger.debug("downloading #{url} as #{output_path}")
         sh("#{Dcmgr.conf.script_root_path}/parallel-curl.sh --url=#{url} --output_path=#{output_path}")
+      end
+
+      def detect_container_type(path)
+        # use the file command to detect if the image file is gzip commpressed.
+        file_type1=shell.run!("/usr/bin/file -b %s", [path]).out
+        case file_type1
+        when /^gzip compressed data,/
+          gzip_inside=shell.run!("/usr/bin/file -b -z %s", [path]).out
+          if gzip_inside =~ /^POSIX tar archive /
+            :tgz
+          else
+            :gz
+          end
+        when /^POSIX tar archive /
+          :tar
+        else
+          :raw
+        end
       end
     end
   end
