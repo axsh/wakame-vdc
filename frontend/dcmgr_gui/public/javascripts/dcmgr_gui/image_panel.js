@@ -219,7 +219,7 @@ DcmgrGUI.prototype.imagePanel = function(){
 
       parallel({
         //get instance_specs
-        instance_specs: 
+        instance_specs:
           request.get({
             "url": '/instance_specs/all.json',
             success: function(json,status){
@@ -241,7 +241,7 @@ DcmgrGUI.prototype.imagePanel = function(){
             }
           }),
         //get ssh key pairs
-        ssh_keypairs: 
+        ssh_keypairs:
           request.get({
             "url": '/keypairs/all.json',
             "data": "",
@@ -264,7 +264,7 @@ DcmgrGUI.prototype.imagePanel = function(){
             }
         }),
         //get security groups
-        security_groups: 
+        security_groups:
           request.get({
             "url": '/security_groups/all.json',
             "data": "",
@@ -305,6 +305,9 @@ DcmgrGUI.prototype.imagePanel = function(){
                 security_group.rightToLeft();
                 on_ready(security_group.getRightSelectionCount());
               });
+            },
+            complete: function(json,status){
+              $(self).find("#left_select_list").unmask();
             }
         }),
 
@@ -346,8 +349,6 @@ DcmgrGUI.prototype.imagePanel = function(){
             }
           })
 
-      }).next(function(results) {
-        $("#left_select_list").unmask();
       });
     },
     button: launch_instance_buttons

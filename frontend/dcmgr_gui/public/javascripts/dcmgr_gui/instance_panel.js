@@ -371,11 +371,27 @@ DcmgrGUI.prototype.instancePanel = function(){
   
   var instance_backup_buttons = {};
   instance_backup_buttons[close_button_name] = function() { $(this).dialog("close"); }
-  instance_backup_buttons[backup_button_name] = function() { instance_action_helper.call(this, 'backup'); }
+  instance_backup_buttons[backup_button_name] = function() {
+    var instance_id = $(this).find('#instance_id').val();
+    var display_name = $(this).find('#backup_display_name').val();
+    var description = $(this).find('#backup_description').val();
+    
+    var data = ['instance_id='+instance_id, 'backup_display_name=' + display_name, 'backup_description=' + description].join('&');
+
+    var request = new DcmgrGUI.Request;
+    request.post({
+      "url": '/instances/backup',
+      "data": data,
+      success: function(json, status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    $(this).dialog("close");
+  }
   var bt_instance_backup = new DcmgrGUI.Dialog({
     target:'.backup_instances',
-    width:400,
-    height:200,
+    width:600,
+    height:250,
     title: $.i18n.prop('backup_instances_header'),
     path:'/backup_instances',
     button:instance_backup_buttons

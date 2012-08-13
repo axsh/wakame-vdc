@@ -58,11 +58,11 @@ class ApplicationController < ActionController::Base
   end
 
   def is_dcmgr?(response_data)
-    if response_data.response['X-Vdc-Request-Id']
-      true
-    else
-      false
+    if response_data.respond_to?(:response)
+      return !response_data.response['X-Vdc-Request-Id'].nil?
     end
+
+    raise ArgumentError, "Unsupported input: #{response_data.class}"
   end
 
   def set_locale
@@ -102,7 +102,7 @@ class ApplicationController < ActionController::Base
   def catch_error(&blk)
     begin
       blk.call
-    rescue Exception =>e
+    rescue RuntimeError =>e
       if is_dcmgr?(e)
         message_params = ""
 
