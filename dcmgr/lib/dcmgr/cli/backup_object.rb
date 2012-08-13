@@ -69,6 +69,7 @@ Checksum: <%= bo.checksum %>
 Create: <%= bo.created_at %>
 Update: <%= bo.updated_at %>
 Delete: <%= bo.deleted_at %>
+Purge: <%= bo.purged_at %>
 <%- if bo.description -%>
 Description:
 <%= bo.description %>

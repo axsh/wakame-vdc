@@ -276,6 +276,7 @@ Sequel.migration do
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
+      column :purged_at, "datetime"
       
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
