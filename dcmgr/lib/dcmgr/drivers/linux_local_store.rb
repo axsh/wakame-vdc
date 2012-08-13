@@ -11,8 +11,7 @@ module Dcmgr
 
       def deploy_image(inst,ctx)
         # setup vm data folder
-        inst_data_dir = ctx.inst_data_dir
-        FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
+        FileUtils.mkdir(ctx.inst_data_dir) unless File.exists?(ctx.inst_data_dir)
         img_src_uri = inst[:image][:backup_object][:uri]
         vmimg_basename = inst[:image][:backup_object][:uuid]
         is_cacheable = inst[:image][:is_cacheable]
@@ -87,7 +86,7 @@ module Dcmgr
       end
 
       def download_tmp_dir
-        ENV['TMPDIR'] || ENV['TMP'] || Dcmgr.conf.local_store.work_dir || '/var/tmp'
+        Dcmgr.conf.local_store.work_dir || '/var/tmp'
       end
       
       def vmimg_cache_path(img_id, is_cacheable)
