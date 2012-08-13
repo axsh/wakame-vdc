@@ -136,6 +136,10 @@ ja:
       ipv4_gw: "IPv4 Gateway"
       prefix: "Prefix"
       network_mode: "Network Mode"
+    edit_network:
+      header: "Edit Network"
+      network_id: "Network ID"
+      display_name: "Network Name"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:
@@ -519,11 +523,16 @@ ja:
       updated_at: "更新日"
   networks:
     header: "ネットワーク"
+    button:
+      edit_network: "Edit"
+      create_network: "Create Network"
+      delete_network: "Delete Network"
     list:
       network_id: "ネットワークID"
       display_name: "ネットワーク名"
       domain_name: "ドメインネーム"
       created: ""
+      action: "アクション"
     details:
       header: "詳細"
       network_id: "ネットワークID"

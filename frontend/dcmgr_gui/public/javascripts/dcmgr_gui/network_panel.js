@@ -39,11 +39,60 @@ DcmgrGUI.prototype.networkPanel = function(){
     detail_path:'/networks/show/'
   });
   
+  var create_button_name = $.i18n.prop('create_button');
+  var close_button_name = $.i18n.prop('close_button');
+  var update_button_name = $.i18n.prop('update_button');
+
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var network = params.data.network;
     c_pagenate.changeTotal(network.total);
     c_list.setData(network.results);
     c_list.multiCheckList(c_list.detail_template);
+
+    c_list.element.find(".edit_network").each(function(key,value){
+      $(this).button({ disabled: false });
+      var uuid = $(value).attr('id').replace(/edit_(nw-[a-z0-9]+)/,'$1');
+      if( uuid ){
+        $(this).bind('click',function(){
+          bt_edit_network.open({"ids":[uuid]});
+        });
+      } else {
+        $(this).button({ disabled: true });
+      }
+    });
+
+    var edit_network_buttons = {};
+    edit_network_buttons[close_button_name] = function() { $(this).dialog("close"); };
+    edit_network_buttons[update_button_name] = function(event) {
+      var network_id = $(this).find('#network_id').val();
+      var display_name = $(this).find('#network_display_name').val();
+      var data = 'display_name=' + display_name;
+
+      var request = new DcmgrGUI.Request;
+      request.put({
+        "url": '/networks/'+ network_id +'.json',
+        "data": data,
+        success: function(json, status){
+          bt_refresh.element.trigger('dcmgrGUI.refresh');
+        }
+      });
+      $(this).dialog("close");
+    }
+
+    bt_edit_network = new DcmgrGUI.Dialog({
+      target:'.edit_network',
+      width:500,
+      height:200,
+      title:$.i18n.prop('edit_network_header'),
+      path:'/edit_network',
+      button: edit_network_buttons,
+      callback: function(){
+        var params = { 'button': bt_edit_network, 'element_id': 1 };
+        $(this).find('#network_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#network_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
+      }
+    });
+
   });
   
   c_list.filter.add(function(data){
@@ -81,11 +130,8 @@ DcmgrGUI.prototype.networkPanel = function(){
   });
 
   //
-  // Launch instance:
+  // Create Network:
   //
-
-  var close_button_name = $.i18n.prop('close_button'); 
-  var create_button_name = $.i18n.prop('create_button');
 
   var create_network_buttons = {};
   create_network_buttons[close_button_name] = function() { $(this).dialog("close"); };  

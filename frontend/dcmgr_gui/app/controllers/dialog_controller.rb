@@ -85,6 +85,14 @@ class DialogController < ApplicationController
   def create_network
   end
 
+  def edit_network
+    catch_error do
+      @network_id = params[:ids][0]
+      @network = Hijiki::DcmgrResource::Network.show(@network_id)
+      @display_name = @network["display_name"]
+    end
+  end
+
   def start_instances
     catch_error do
       @instance_ids = params[:ids]

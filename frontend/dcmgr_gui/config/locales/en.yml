@@ -137,6 +137,10 @@ en:
       ipv4_gw: "IPv4 Gateway"
       prefix: "Prefix"
       network_mode: "Network Mode"
+    edit_network:
+      header: "Edit Network"
+      network_id: "Network ID"
+      display_name: "Network Name"
     create_security_group:
       header: "Create Security Group"
     edit_security_group:
@@ -521,6 +525,7 @@ en:
   networks:
     header: "Networks"
     button:
+      edit_network: "Edit"
       create_network: "Create Network"
       delete_network: "Delete Network"
     network_actions:
@@ -533,6 +538,7 @@ en:
       domain_name: "Domain Name"
       ipv4_network: "IPv4 Network"
       created: "Created"
+      action: "Action"
     details:
       header: "Details"
       network_id: "Network ID"

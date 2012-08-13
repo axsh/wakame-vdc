@@ -22,6 +22,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/delete_backup', :to => 'dialog#delete_backup'
   post   'dialog/edit_backup', :to => 'dialog#edit_backup'
   get    'dialog/create_network', :to => 'dialog#create_network'
+  post   'dialog/edit_network', :to => 'dialog#edit_network'
   post   'dialog/start_instances', :to => 'dialog#start_instances'
   post   'dialog/stop_instances', :to => 'dialog#stop_instances'
   post   'dialog/reboot_instances', :to => 'dialog#reboot_instances'

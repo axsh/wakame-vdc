@@ -1,0 +1,13 @@
+<div id="edit_network_dialog">
+  <table>
+    <tr>
+      <td><%= t("dialog.edit_network.network_id")%>: </td>
+      <td><%= @network_id %></td>
+      <td><input type="hidden" id="network_id" value="<%= @network_id %>"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.edit_network.display_name")%>: </td>
+      <td><input id="network_display_name" type="text" size=43 value="<%= @display_name %>"></td>
+    </tr>
+  </table>
+</div>
