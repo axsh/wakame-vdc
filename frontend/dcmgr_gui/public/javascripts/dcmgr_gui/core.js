@@ -399,23 +399,26 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
   },
   update:function(params,async){
     var self = this;
-
-    $("#list_load_mask").mask($.i18n.prop('loading_parts'));
-    self.element.trigger('dcmgrGUI.beforeUpdate');
-
-    var request = new DcmgrGUI.Request;
-    request.get({
-      url: params.url,
-      data: params.data,
-      success: function(json,status,xhr){
-        self.filter.execute(json); 
-        self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
-        self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
-      },
-      complete: function(xhr, status) {
-        $("#list_load_mask").unmask();
-      }
-    });
+    try{
+      $("#list_load_mask").mask($.i18n.prop('loading_parts'));
+      self.element.trigger('dcmgrGUI.beforeUpdate');
+      var request = new DcmgrGUI.Request;
+      request.get({
+        url: params.url,
+        data: params.data,
+        success: function(json,status,xhr){
+          self.filter.execute(json);
+          self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
+          self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
+        },
+        complete: function(xhr, status) {
+          $("#list_load_mask").unmask();
+        }
+      });
+    } catch( e ) {
+      console.log(e);
+      $("#list_load_mask").unmask();
+    }
   }
 });
 
