@@ -179,17 +179,21 @@ module Dcmgr
 
         case container_format.to_sym
         when :tgz
-          shell.run!("tar -cS -C %s %s | gzip | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
-                                                                            File.basename(snapshot_path),
-                                                                            chksum_path,
-                                                                            bkup_tmp_path])
+          shell.run!("tar -cS -C %s %s | %s | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
+                                                                          File.basename(snapshot_path),
+                                                                          Dcmgr.conf.local_store.gzip_command,
+                                                                          chksum_path,
+                                                                          bkup_tmp_path])
         when :tar
           shell.run!("tar -cS -C %s %s | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
                                                                      File.basename(snapshot_path),
                                                                      chksum_path,
                                                                      bkup_tmp_path])
         when :gz
-          shell.run!("cp -p --sparse=always %s /dev/stdout | gzip | tee >( md5sum > %s) > %s", [snapshot_path, chksum_path, bkup_tmp_path])
+          shell.run!("cp -p --sparse=always %s /dev/stdout | %s | tee >( md5sum > %s) > %s", [snapshot_path,
+                                                                                              Dcmgr.conf.local_store.gzip_command,
+                                                                                              chksum_path,
+                                                                                              bkup_tmp_path])
         else
           shell.run!("cp -p --sparse=always %s %s", [snapshot_path, bkup_tmp_path])
           shell.run!("md5sum %s > %s", [bkup_tmp_path, chksum_path])
