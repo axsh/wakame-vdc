@@ -15,8 +15,6 @@ module Dcmgr::Models
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
     
-    class RequestError < RuntimeError; end
-
     def after_initialize
       super
       self[:object_key] ||= self.canonical_uuid
@@ -32,21 +30,12 @@ module Dcmgr::Models
       bo.save
     end
 
-    def entry_delete
-      if self.state.to_sym != :available
-        raise RequestError, "invalid delete request"
-      end
-      self.state = :deleting
-      self.save_changes
-      self
-    end
-
     # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
     def delete
       self.state = :deleted if self.state != :deleted
       self.deleted_at ||= Time.now
-      self.save
+      self.save_changes
     end
 
     def uri
