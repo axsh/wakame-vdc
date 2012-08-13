@@ -82,6 +82,9 @@ class DialogController < ApplicationController
     end
   end
   
+  def create_network
+  end
+
   def start_instances
     catch_error do
       @instance_ids = params[:ids]

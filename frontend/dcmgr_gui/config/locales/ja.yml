@@ -128,6 +128,14 @@ ja:
       message: "バックアップを編集します。よろしいですか？"
       backup_id: "バックアップID"
       display_name: "バックアップ名"
+    create_network:
+      header: "ネットワークを作成"
+      description: "詳細"
+      display_name: "ネットワーク名"
+      ipv4_network: "IPv4 Network"
+      ipv4_gw: "IPv4 Gateway"
+      prefix: "Prefix"
+      network_mode: "Network Mode"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:

@@ -2,8 +2,6 @@
 module Hijiki::DcmgrResource::V1203
 
   class Network < Base
-    include Hijiki::DcmgrResource::Common::ListMethods
-
     initialize_user_result nil, [:account_id,
                                  :uuid,
                                  :ipv4_network,
@@ -39,6 +37,28 @@ module Hijiki::DcmgrResource::V1203
                                               :created_at,
                                               :updated_at,
                                              ]
+
+    module ClassMethods
+      include Hijiki::DcmgrResource::Common::ListMethods::ClassMethods
+
+      def list(params = {})
+        super(params.merge({:state=>'alive_with_terminated'}))
+      end
+      
+      def create(params)
+        object = self.new
+        object.display_name = params[:display_name]
+        object.description = params[:description]
+        object.network = params[:ipv4_network]
+        object.gw = params[:ipv4_gw]
+        object.prefix = params[:prefix]
+        object.network_mode = params[:network_mode]
+        
+        object.save
+        object
+      end
+    end
+    extend ClassMethods
 
     def find_vif(vif_id)
       NetworkVif.find(vif_id, :params => { :network_id => self.id })

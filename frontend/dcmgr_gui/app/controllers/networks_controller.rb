@@ -6,45 +6,21 @@ class NetworksController < ApplicationController
   end
   
   def create
-    # snapshot_ids = params[:ids]
-    # if snapshot_ids
-    #   res = []
-    #   snapshot_ids.each do |snapshot_id|
-    #     data = {
-    #       :snapshot_id => snapshot_id
-    #     }
-    #     res << Hijiki::DcmgrResource::Network.create(data)
-    #   end
-    #   render :json => res
-    # else
-    #   # Convert to MB
-    #   size = case params[:unit]
-    #          when 'gb'
-    #            params[:size].to_i * 1024
-    #          when 'tb'
-    #            params[:size].to_i * 1024 * 1024
-    #          end
-      
-    #   storage_node_id = params[:storage_node_id] #option
-      
-    #   data = {
-    #     :network_size => size,
-    #     :storage_node_id => storage_node_id
-    #   }
-      
-    #   @network = Hijiki::DcmgrResource::Network.create(data)
-
-    #   render :json => @network
-    # end
+    catch_error do
+      data = {
+        :display_name => params[:display_name],
+        :description => params[:description],
+        :ipv4_network => params[:ipv4_network],
+        :ipv4_gw => params[:ipv4_gw],
+        :prefix => params[:prefix],
+        :network_mode => params[:network_mode],
+      }
+      @network = Hijiki::DcmgrResource::Network.create(data)
+      render :json => @network
+    end
   end
-  
+
   def destroy
-    # network_ids = params[:ids]
-    # res = []
-    # network_ids.each do |network_id|
-    #   res << Hijiki::DcmgrResource::Network.destroy(network_id)
-    # end
-    # render :json => res
   end
   
   def list

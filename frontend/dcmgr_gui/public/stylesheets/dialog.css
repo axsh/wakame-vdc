@@ -9,6 +9,10 @@
 	padding: 3px;
 }
 
+#create_network_dialog table tr td {
+	padding: 3px 10px;
+}
+
 #launch_instance_dialog table tr td {
   padding: 5px 10px;
 }

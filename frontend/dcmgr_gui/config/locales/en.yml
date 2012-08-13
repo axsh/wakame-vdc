@@ -129,6 +129,14 @@ en:
       message: "Are you sure you want to edit the following backup?"
       backup_id: "Backup ID"
       display_name: "Backup Name"
+    create_network:
+      header: "Create Network"
+      description: "Description"
+      display_name: "Network Name"
+      ipv4_network: "IPv4 Network"
+      ipv4_gw: "IPv4 Gateway"
+      prefix: "Prefix"
+      network_mode: "Network Mode"
     create_security_group:
       header: "Create Security Group"
     edit_security_group:

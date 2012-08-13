@@ -80,9 +80,65 @@ DcmgrGUI.prototype.networkPanel = function(){
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
 
+  //
+  // Launch instance:
+  //
+
+  var close_button_name = $.i18n.prop('close_button'); 
+  var create_button_name = $.i18n.prop('create_button');
+
+  var create_network_buttons = {};
+  create_network_buttons[close_button_name] = function() { $(this).dialog("close"); };  
+  create_network_buttons[create_button_name] = function() {
+    var display_name = $(this).find('#display_name').val();
+    var description = $(this).find('#description').val();
+    var ipv4_network = $(this).find('#ipv4_network').val();
+    var ipv4_gw = $(this).find('#ipv4_gw').val();
+    var prefix = $(this).find('#prefix').val();
+    var network_mode = $(this).find('#network_mode').val();
+
+    var data = "&display_name="+display_name
+          +"&description="+description
+          +"&ipv4_network="+ipv4_network
+          +"&ipv4_gw="+ipv4_gw
+          +"&prefix="+prefix
+          +"&network_mode="+network_mode;
+    
+    request = new DcmgrGUI.Request;
+    request.post({
+      "url": '/networks',
+      "data": data,
+      success: function(json,status){
+       bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+
+    $(this).dialog("close");
+  }
+
+  var bt_create_network = new DcmgrGUI.Dialog({
+    target:'.create_network',
+    width:583,
+    height:600,
+    title:$.i18n.prop('create_network_header'),
+    path:'/create_network',
+    callback: function(){
+      var self = this;
+
+      bt_create_network.disabledButton(1, false);
+    },
+    button: create_network_buttons
+  });
+
+  bt_create_network.target.bind('click',function(){
+    bt_create_network.open();
+    bt_create_network.disabledButton(1, true);
+  });
+
+  $(bt_create_network.target).button({ disabled: false });
   $(bt_refresh.target).button({ disabled: false });
-  
-  //list
+
+ //list
   c_list.setData(null);
   c_list.update(list_request,true);  
 }
