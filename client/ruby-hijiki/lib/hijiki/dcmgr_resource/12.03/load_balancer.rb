@@ -22,7 +22,7 @@ module Hijiki::DcmgrResource::V1203
       end
 
       def list(params = {})
-        super(params.merge({:state=>'alive_with_deleted'}))
+        self.find(:all,:params => params.merge({:state=>'alive_with_deleted'}))
       end
 
       def show(uuid)
