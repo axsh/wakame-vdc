@@ -130,7 +130,7 @@ module Dcmgr
             device_file_list = device_file_list[:stdout].split(":\n")
             # root device
             root_device = new_device_file & device_file_list
-            raise "root device does not exits #{image[:root_device]}" if root_device.empty?
+            raise "root device does not exist #{image[:root_device]}" if root_device.empty?
             sh("mount %s %s", [root_device[0], private_folder])
           else
             cmd = "mount %s %s"

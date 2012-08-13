@@ -145,6 +145,9 @@ module Dcmgr
       # * 'off'
       param :edge_networking, :default => 'netfilter'
 
+      # If defined, this script will be executed every time netfilter rules are updated
+      param :netfilter_hook_script_path, :default => nil
+
       param :script_root_path, :default => proc {
         File.expand_path('script', DCMGR_ROOT)
       }
