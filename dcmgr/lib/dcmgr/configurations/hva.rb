@@ -41,6 +41,7 @@ module Dcmgr
         param :work_dir, :default => proc {
           File.expand_path('tmp', parent.config[:vm_data_dir])
         }
+        param :gzip_command, :default=>'gzip'
 
         def validate(errors)
           super

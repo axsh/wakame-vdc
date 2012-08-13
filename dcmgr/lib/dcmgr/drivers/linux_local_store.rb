@@ -11,8 +11,7 @@ module Dcmgr
 
       def deploy_image(inst,ctx)
         # setup vm data folder
-        inst_data_dir = ctx.inst_data_dir
-        FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
+        FileUtils.mkdir(ctx.inst_data_dir) unless File.exists?(ctx.inst_data_dir)
         img_src_uri = inst[:image][:backup_object][:uri]
         vmimg_basename = inst[:image][:backup_object][:uuid]
         is_cacheable = inst[:image][:is_cacheable]
@@ -32,22 +31,22 @@ module Dcmgr
 
         case inst[:image][:file_format]
         when "raw"
-          # use the file command to detect if the image file is gzip commpressed.
-          file_type1=shell.run!("/usr/bin/file -b #{vmimg_cache_path(vmimg_basename, is_cacheable)}").out
-          case file_type1
-          when /^gzip compressed data,/
-            gzip_inside=shell.run!("/usr/bin/file -b -z #{vmimg_cache_path(vmimg_basename, is_cacheable)}").out
-            if gzip_inside =~ /^POSIX tar archive /
-              Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
-                # expect only one file is contained.
-                lst = shell.run!("tar -ztf #{vmimg_cache_path(vmimg_basename, is_cacheable)}").out.split("\n")
-                shell.run!("tar -zxS -C %s < %s", [tmpdir, vmimg_cache_path(vmimg_basename, is_cacheable)])
-                File.rename(File.expand_path(lst.first, tmpdir), ctx.os_devpath)
-              }
-            else
-              sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path(vmimg_basename, is_cacheable), ctx.os_devpath])
-            end
-          when /^POSIX tar archive /
+          container_type = detect_container_type(vmimg_cache_path(vmimg_basename, is_cacheable))
+          # save the container type to local file
+          File.open(File.expand_path('container.format', ctx.inst_data_dir), 'w') { |f|
+            f.write(container_type.to_s)
+          }
+          case container_type
+          when :tgz
+            Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
+              # expect only one file is contained.
+              lst = shell.run!("tar -ztf #{vmimg_cache_path(vmimg_basename, is_cacheable)}").out.split("\n")
+              shell.run!("tar -zxS -C %s < %s", [tmpdir, vmimg_cache_path(vmimg_basename, is_cacheable)])
+              File.rename(File.expand_path(lst.first, tmpdir), ctx.os_devpath)
+            }
+          when :gz
+            sh("zcat %s | cp --sparse=always /dev/stdin %s",[vmimg_cache_path(vmimg_basename, is_cacheable), ctx.os_devpath])
+          when :tar
             sh("tar -xS -C %s < %s", [ctx.inst_data_dir, vmimg_cache_path(vmimg_basename, is_cacheable)])
           else
             sh("cp -p --sparse=always %s %s",[vmimg_cache_path(vmimg_basename, is_cacheable), ctx.os_devpath])
@@ -63,13 +62,12 @@ module Dcmgr
       end
 
       def upload_image(inst, ctx, bo, evcb)
+
         bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
         take_snapshot_for_backup()
-        sh("cp -p --sparse=always %s /dev/stdout | gzip -f > %s", [ctx.os_devpath, bkup_tmp_path])
-        alloc_size = File.size(bkup_tmp_path)
-        res = sh("md5sum %s | awk '{print $1}'", [bkup_tmp_path])
-        
-        evcb.setattr(res[:stdout].chomp, alloc_size)
+
+        chksum, alloc_size = archive_from_snapshot(ctx, ctx.os_devpath, bkup_tmp_path)
+        evcb.setattr(chksum, alloc_size)
 
         # upload image file
         Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
@@ -88,7 +86,7 @@ module Dcmgr
       end
 
       def download_tmp_dir
-        ENV['TMPDIR'] || ENV['TMP'] || Dcmgr.conf.local_store.work_dir || '/var/tmp'
+        Dcmgr.conf.local_store.work_dir || '/var/tmp'
       end
       
       def vmimg_cache_path(img_id, is_cacheable)
@@ -154,6 +152,65 @@ module Dcmgr
         # p URI.parse("file:///tmp/path").path # => "/tmp/path"
         sh("cp #{URI.parse(url).path} #{output_path}")
       end
+
+      def detect_container_type(path)
+        # use the file command to detect if the image file is gzip commpressed.
+        file_type1=shell.run!("/usr/bin/file -b %s", [path]).out
+        case file_type1
+        when /^gzip compressed data,/
+          gzip_inside=shell.run!("/usr/bin/file -b -z %s", [path]).out
+          if gzip_inside =~ /^POSIX tar archive /
+            :tgz
+          else
+            :gz
+          end
+        when /^POSIX tar archive /
+          :tar
+        else
+          :raw
+        end
+      end
+
+      def archive_from_snapshot(ctx, snapshot_path, bkup_tmp_path)
+        chksum_path = File.expand_path('md5', ctx.inst_data_dir)
+        
+        container_format = nil
+        if File.exists?(File.expand_path('container.format', ctx.inst_data_dir))
+          container_format = File.read(File.expand_path('container.format', ctx.inst_data_dir)).chomp
+        end
+
+        case container_format.to_sym
+        when :tgz
+          shell.run!("tar -cS -C %s %s | %s | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
+                                                                          File.basename(snapshot_path),
+                                                                          Dcmgr.conf.local_store.gzip_command,
+                                                                          chksum_path,
+                                                                          bkup_tmp_path])
+        when :tar
+          shell.run!("tar -cS -C %s %s | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
+                                                                     File.basename(snapshot_path),
+                                                                     chksum_path,
+                                                                     bkup_tmp_path])
+        when :gz
+          shell.run!("cp -p --sparse=always %s /dev/stdout | %s | tee >( md5sum > %s) > %s", [snapshot_path,
+                                                                                              Dcmgr.conf.local_store.gzip_command,
+                                                                                              chksum_path,
+                                                                                              bkup_tmp_path])
+        else
+          shell.run!("cp -p --sparse=always %s %s", [snapshot_path, bkup_tmp_path])
+          shell.run!("md5sum %s > %s", [bkup_tmp_path, chksum_path])
+        end
+        
+        alloc_size = File.size(bkup_tmp_path)
+        chksum = File.read(chksum_path).split(/\s+/).first
+
+        [chksum, alloc_size]
+      ensure
+        if File.exists?(chksum_path)
+          File.unlink(chksum_path) rescue nil
+        end
+      end
+      
     end
   end
 end
