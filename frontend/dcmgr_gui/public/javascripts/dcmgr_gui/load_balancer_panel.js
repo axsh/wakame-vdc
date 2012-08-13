@@ -259,54 +259,63 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
         load_balancer: request.get({
           "url": '/load_balancers/show/' + load_balancer_id + '.json',
            success: function(json, status) {
-         }
+           }
         }),
         instances: request.get({
           "url": '/instances/all.json',
           success: function(json, status) {
-            var data = [];
-            var results = json.instance.results;
-            var size = results.length;
-            for (var i=0; i < size ; i++) {
-              if(results[i].result.vif.length > 0) {
-                var vif_id = results[i].result.vif[0].vif.vif_id;
-                data.push({
-                 'value' : vif_id,
-                 'name': results[i].result.id
-                });
-              }
-            }
-
-            var load_balancers = new DcmgrGUI.ItemSelector({
-               'left_select_id' : '#left_select_list',
-               'right_select_id' : '#right_select_list',
-               'data' : data,
-               'target' : self
-             });
-
-             var on_ready = function(size){
-               if(size > 0) {
-                 is_ready['vifs'] = true;
-                 ready(is_ready);
-               } else {
-                 is_ready['vifs'] = false;
-                 ready(is_ready);
-               }
-             }
-
-             $(self).find('#right_button').click(function(){
-               load_balancers.leftToRight();
-               on_ready(load_balancers.getRightSelectionCount());
-             });
-
-             $(self).find('#left_button').click(function(){
-               load_balancers.rightToLeft();
-               on_ready(load_balancers.getRightSelectionCount());
-             });
-         }
+          }
         })
-        }).next(function(results) {
-          $("#left_select_list").unmask();
+        }).next(function(json) {
+          var data = [];
+          var registered_instances = [];
+
+          $.each(json.load_balancer.target_vifs, function(k, v){
+            registered_instances.push(v.instance_id);
+          });
+
+          var registerable_instances = _.reject(json.instances.instance.results, function(i){
+            return _.include(registered_instances, i.result.id)
+          });
+
+          $.each(registerable_instances, function(idx, instance) {
+            if(instance.result.vif.length > 0) {
+              var vif_id = instance.result.vif[0].vif.vif_id;
+              data.push({
+               'value' : vif_id,
+               'name': instance.result.id
+              });
+            }
+          });
+
+          var load_balancers = new DcmgrGUI.ItemSelector({
+             'left_select_id' : '#left_select_list',
+             'right_select_id' : '#right_select_list',
+             'data' : data,
+             'target' : self
+          });
+
+          var on_ready = function(size){
+          if(size > 0) {
+            is_ready['vifs'] = true;
+            ready(is_ready);
+          } else {
+            is_ready['vifs'] = false;
+            ready(is_ready);
+            }
+          }
+
+          $(self).find('#right_button').click(function(){
+            load_balancers.leftToRight();
+            on_ready(load_balancers.getRightSelectionCount());
+          });
+
+          $(self).find('#left_button').click(function(){
+            load_balancers.rightToLeft();
+            on_ready(load_balancers.getRightSelectionCount());
+          });
+
+          $(self).find("#left_select_list").unmask();
       });
     },
     button: register_load_balancer_buttons
