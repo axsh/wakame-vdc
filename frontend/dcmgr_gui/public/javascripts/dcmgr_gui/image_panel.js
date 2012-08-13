@@ -305,6 +305,9 @@ DcmgrGUI.prototype.imagePanel = function(){
                 security_group.rightToLeft();
                 on_ready(security_group.getRightSelectionCount());
               });
+            },
+            complete: function(json,status){
+              $(self).find("#left_select_list").unmask();
             }
         }),
 
@@ -346,8 +349,6 @@ DcmgrGUI.prototype.imagePanel = function(){
             }
           })
 
-      }).next(function(results) {
-        $("#left_select_list").unmask();
       });
     },
     button: launch_instance_buttons
