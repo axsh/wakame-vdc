@@ -146,6 +146,7 @@ module Dcmgr::Models
       def to_hash()
         r = self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid})
         serialize_columns = []
+        require 'sequel/plugins/serialization'
         if self.class.plugins.member?(Sequel::Plugins::Serialization)
           self.class.deserialization_map.keys.each { |c|
             serialize_columns << c
