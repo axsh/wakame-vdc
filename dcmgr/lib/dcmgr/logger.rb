@@ -14,6 +14,10 @@ module Dcmgr
       @logdev
     end
 
+    def self.logger
+      @logger ||= Logger.create
+    end
+
     # Factory method for ::Logger
     def self.create(name=nil)
       l = ::Logger.new(default_logdev)

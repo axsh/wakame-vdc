@@ -91,7 +91,7 @@ module Dcmgr
           include ShellRunner
 
           def logger
-            Dcmgr::Task::TaskSession.current[:logger]
+            Dcmgr::Task::TaskSession.current[:logger] || Dcmgr::Logger.logger
           end
         end.new
       end
@@ -222,7 +222,7 @@ module Dcmgr
           end
 
           def logger
-            Dcmgr::Task::TaskSession.current[:logger]
+            Dcmgr::Task::TaskSession.current[:logger] || Dcmgr::Logger.logger
           end
         end
 
