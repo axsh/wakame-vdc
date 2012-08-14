@@ -185,7 +185,7 @@ module Dcmgr
       end
 
       def self.invoke(taskclass, method, args)
-        self.current.invoke(tasklet, method, args)
+        self.current.invoke(taskclass, method, args)
       end
       
       def initialize
