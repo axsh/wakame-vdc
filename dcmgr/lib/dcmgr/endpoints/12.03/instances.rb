@@ -98,22 +98,22 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     else
       raise E::InvalidParameter, :hypervisor
     end
-    
-    params[:cpu_cores] = params[:cpu_cores].to_i
-    if params[:cpu_cores].between?(1, 128)
-      
+
+    params['cpu_cores'] = params['cpu_cores'].to_i
+    if params['cpu_cores'].between?(1, 128)
+
     else
       raise E::InvalidParameter, :cpu_cores
     end
 
-    params[:memory_size] = params[:memory_size].to_i
-    if params[:memory_size].between?(128, 999999)
-      
+    params['memory_size'] = params['memory_size'].to_i
+    if params['memory_size'].between?(128, 999999)
+
     else
       raise E::InvalidParameter, :memory_size
     end
-    
-    if !M::HostNode.check_domain_capacity?(params[:cpu_cores], params[:memory_size])
+
+    if !M::HostNode.check_domain_capacity?(params['cpu_cores'], params['memory_size'])
       raise E::OutOfHostCapacity
     end
     

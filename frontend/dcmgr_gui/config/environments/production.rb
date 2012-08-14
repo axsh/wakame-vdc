@@ -37,6 +37,9 @@ DcmgrGui::Application.configure do
   config.proxy_root_user = 'root'
   config.proxy_nginx = '/opt/nginx/sbin/nginx'
 
+  # Setting Load balancer spec
+  config.load_balancer_spec_id = 'lb.small'
+
   # Setting authentication server
   config.auth_host = "127.0.0.1"
   config.auth_port = 3000

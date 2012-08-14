@@ -18,12 +18,9 @@ class LoadBalancersController < ApplicationController
         :certificate_name => params[:certificate_name],
         :private_key => params[:private_key],
         :public_key => params[:public_key],
-        :cookie_name => params[:cookie_name]
+        :cookie_name => params[:cookie_name],
+        :load_balancer_spec_id => Rails::configuration.load_balancer_spec_id
       }
-
-      # TODO: specify instance spec id
-      data[:instance_spec_id] = 'is-demospec'
-
       lb = Hijiki::DcmgrResource::LoadBalancer.create(data)
       render :json => lb
     end
