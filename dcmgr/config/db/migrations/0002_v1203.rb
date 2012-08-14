@@ -197,6 +197,7 @@ Sequel.migration do
       column :is_deleted, "int(11)", :null=>false
       index [:network_id, :network_vif_id, :ipv4, :is_deleted], :unique=>true,
              :name=>'network_vif_ip_leases_network_id_network_vif_id_ipv4_index'
+      index [:updated_at]
     end
 
     # Add service_type column for service type resources
