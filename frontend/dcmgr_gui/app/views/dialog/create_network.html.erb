@@ -18,11 +18,17 @@
     </tr>
     <tr>
       <td><%= t("dialog.create_network.prefix") %>:</td>
-      <td><input id="prefix" type="text" name="prefix"></td>
+      <td><input id="prefix" type="text" name="prefix" value="24"></td>
     </tr>
     <tr>
       <td><%= t("dialog.create_network.network_mode") %>:</td>
-      <td><input id="network_mode" type="text" name="network_mode"></td>
+      <td>
+	<select id="network_mode" type="text" name="network_mode">
+	  <option value="l2overlay">l2overlay</option>
+	  <option value="securitygroup">securitygroup</option>
+	  <option value="passthru">passthru</option>
+	</select>
+      </td>
     </tr>
   </table>
 </div>
