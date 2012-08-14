@@ -19,12 +19,17 @@ module Dcmgr
         # TODO: Does not support tgz file format in the future.
         vmimg_basename += '.tar.gz' if inst[:image][:file_format] == 'tgz'
 
-        logger.debug("Deploying image file: #{inst[:uuid]}: #{ctx.os_devpath}")
+        Task::TaskSession.current[:backup_storage] = inst[:image][:backup_object][:backup_storage]
+        @bkst_drv_class = BackupStorage.driver_class(inst[:image][:backup_object][:backup_storage][:storage_type])
+        
+        logger.info("Deploying image file: #{inst[:image][:uuid]}: #{ctx.os_devpath}")
         if Dcmgr.conf.local_store.enable_image_caching && is_cacheable
           FileUtils.mkdir_p(vmimg_cache_dir) unless File.exists?(vmimg_cache_dir)
-          download_to_local_cache(img_src_uri, vmimg_basename, inst[:image][:backup_object][:checksum], is_cacheable)
+          download_to_local_cache(inst[:image][:backup_object], vmimg_basename, is_cacheable)
         else
-          parallel_curl(img_src_uri, vmimg_cache_path(vmimg_basename, is_cacheable))
+          logger.info("Downloading image file: #{ctx.os_devpath}")
+          invoke_task(@bkst_drv_class,
+                      :download, [inst[:image][:backup_object], vmimg_cache_path(vmimg_basename, is_cacheable)])
         end
         
         logger.debug("copying #{vmimg_cache_path(vmimg_basename, is_cacheable)} to #{ctx.os_devpath}")
@@ -93,17 +98,17 @@ module Dcmgr
         File.expand_path(img_id, (Dcmgr.conf.local_store.enable_image_caching && is_cacheable ? vmimg_cache_dir : download_tmp_dir))
       end
 
-      def download_to_local_cache(img_src_uri, basename, checksum, is_cacheable)
+      def download_to_local_cache(bo, basename, is_cacheable)
         begin
           if File.mtime(vmimg_cache_path(basename, is_cacheable)) <= File.mtime("#{vmimg_cache_path(basename, is_cacheable)}.md5")
             cached_chksum = File.read("#{vmimg_cache_path(basename, is_cacheable)}.md5").chomp
-            if cached_chksum == checksum
+            if cached_chksum == bo[:checksum]
               # Here is the only case to be able to use valid cached
               # image file.
               logger.info("Checksum verification passed: #{vmimg_cache_path(basename, is_cacheable)}. We will use this copy.")
               return
             else
-              logger.warn("Checksum verification failed: #{vmimg_cache_path(basename, is_cacheable)}. #{cached_chksum} (calced) != #{checksum} (expected)")
+              logger.warn("Checksum verification failed: #{vmimg_cache_path(basename, is_cacheable)}. #{cached_chksum} (calced) != #{bo[:checksum]} (expected)")
             end
           else
             logger.warn("Checksum cache file is older than the image file: #{vmimg_cache_path(basename, is_cacheable)}")
@@ -118,8 +123,10 @@ module Dcmgr
         
         File.unlink("#{vmimg_cache_path(basename, is_cacheable)}") rescue nil
         File.unlink("#{vmimg_cache_path(basename, is_cacheable)}.md5") rescue nil
-        
-        parallel_curl(img_src_uri, vmimg_cache_path(basename, is_cacheable))
+
+        logger.info("Downloading image file: #{ctx.os_devpath}")
+        invoke_task(@bkst_drv_class,
+                    :download, [bo, vmimg_cache_path(basename, is_cacheable)])
         
         if Dcmgr.conf.local_store.enable_cache_checksum
           logger.debug("calculating checksum of #{vmimg_cache_path(basename, is_cacheable)}")
@@ -146,13 +153,6 @@ module Dcmgr
       end
 
       private
-      def parallel_curl(url, output_path)
-        logger.debug("downloading #{url} as #{output_path}")
-        # p URI.parse("/tmp/path").path # => "/tmp/path"
-        # p URI.parse("file:///tmp/path").path # => "/tmp/path"
-        sh("cp #{URI.parse(url).path} #{output_path}")
-      end
-
       def detect_container_type(path)
         # use the file command to detect if the image file is gzip commpressed.
         file_type1=shell.run!("/usr/bin/file -b %s", [path]).out
