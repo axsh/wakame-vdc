@@ -41,5 +41,9 @@ module Dcmgr::Models
     def uri
       self.backup_storage.base_uri + self.object_key
     end
+
+    def to_hash
+      super.merge(:backup_storage=> self.backup_storage.to_hash)
+    end
   end
 end
