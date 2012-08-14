@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'uri'
+
 module Dcmgr::Drivers
   class LocalStorage < BackupStorage
     include Dcmgr::Logger
@@ -15,7 +17,7 @@ module Dcmgr::Drivers
     end
 
     def delete(bo)
-      sh("rm -f %s", abs_path(bo))
+      sh("rm -f %s", [abs_path(bo)])
     end
 
     private

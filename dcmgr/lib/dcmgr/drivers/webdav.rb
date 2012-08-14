@@ -15,7 +15,7 @@ module Dcmgr::Drivers
     end
 
     def delete(bo)
-      sh("curl -q -X DELETE %s", abs_uri(bo))
+      sh("curl -s -X DELETE %s", [abs_uri(bo)])
     end
 
     private
