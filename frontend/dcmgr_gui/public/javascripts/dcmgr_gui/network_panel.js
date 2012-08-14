@@ -138,17 +138,22 @@ DcmgrGUI.prototype.networkPanel = function(){
   create_network_buttons[create_button_name] = function() {
     var display_name = $(this).find('#display_name').val();
     var description = $(this).find('#description').val();
+    var domain_name = $(this).find('#domain_name').val();
+    var network_mode = $(this).find('#network_mode').val();
     var ipv4_network = $(this).find('#ipv4_network').val();
     var ipv4_gw = $(this).find('#ipv4_gw').val();
     var prefix = $(this).find('#prefix').val();
-    var network_mode = $(this).find('#network_mode').val();
+    var ip_assignment = $(this).find('#ip_assignment').val();
 
     var data = "&display_name="+display_name
           +"&description="+description
+          +"&domain_name="+domain_name
+          +"&network_mode="+network_mode
           +"&ipv4_network="+ipv4_network
           +"&ipv4_gw="+ipv4_gw
           +"&prefix="+prefix
-          +"&network_mode="+network_mode;
+          +"&network_mode="+network_mode
+          +"&ip_assignment="+ip_assignment;
     
     request = new DcmgrGUI.Request;
     request.post({

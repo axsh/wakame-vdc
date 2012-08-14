@@ -58,13 +58,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       validate_service_type(params[:service_type])
       savedata[:service_type] = params[:service_type]
     end
-    if params[:display_name]
-      savedata[:display_name] = params[:display_name]
-    end
+    
+    savedata[:display_name] = params[:display_name] if params[:display_name]
     savedata[:description] = params[:description] if params[:description]
-    nw = M::Network.create(savedata)
+    savedata[:domain_name] = params[:domain_name] if params[:domain_name]
+    savedata[:ip_assignment] = params[:ip_assignment] if params[:ip_assignment]
 
-    respond_with(R::Network.new(nw).generate)
+    respond_with(R::Network.new(M::Network.create(savedata)).generate)
   end
 
   delete '/:id' do

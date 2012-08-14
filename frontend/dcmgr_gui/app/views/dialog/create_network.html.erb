@@ -9,6 +9,20 @@
       <td><input id="description" type="text" name="description"></td>
     </tr>
     <tr>
+      <td><%= t("dialog.create_network.domain_name") %>:</td>
+      <td><input id="domain_name" type="text" name="domain_name"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.create_network.network_mode") %>:</td>
+      <td>
+	<select id="network_mode" type="text" name="network_mode">
+	  <option value="l2overlay">l2overlay</option>
+	  <option value="securitygroup">securitygroup</option>
+	  <option value="passthru">passthru</option>
+	</select>
+      </td>
+    </tr>
+    <tr>
       <td><%= t("dialog.create_network.ipv4_network") %>:</td>
       <td><input id="ipv4_network" type="text" name="ipv4_network"></td>
     </tr>
@@ -21,12 +35,11 @@
       <td><input id="prefix" type="text" name="prefix" value="24"></td>
     </tr>
     <tr>
-      <td><%= t("dialog.create_network.network_mode") %>:</td>
+      <td><%= t("dialog.create_network.ip_assignment") %>:</td>
       <td>
-	<select id="network_mode" type="text" name="network_mode">
-	  <option value="l2overlay">l2overlay</option>
-	  <option value="securitygroup">securitygroup</option>
-	  <option value="passthru">passthru</option>
+	<select id="ip_assignment" type="text" name="ip_assignment">
+	  <option value="asc">ascend</option>
+	  <option value="descend">descend</option>
 	</select>
       </td>
     </tr>

@@ -47,12 +47,14 @@ module Hijiki::DcmgrResource::V1203
       
       def create(params)
         object = self.new
-        object.display_name = params[:display_name]
-        object.description = params[:description]
+        object.display_name = params[:display_name] if params[:display_name]
+        object.description = params[:description] if params[:description]
+        object.domain_name = params[:domain_name] if params[:domain_name]
+        object.network_mode = params[:network_mode]
         object.network = params[:ipv4_network]
         object.gw = params[:ipv4_gw]
         object.prefix = params[:prefix]
-        object.network_mode = params[:network_mode]
+        object.ip_assignment = params[:ip_assignment] if params[:ip_assignment]
         
         object.save
         object
