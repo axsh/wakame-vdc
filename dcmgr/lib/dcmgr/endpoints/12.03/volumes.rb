@@ -95,7 +95,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     end
 
     # params is a Mash object. so coverts to raw Hash object.
-    vol = M::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
+    vol = M::Volume.entry_new(@account, volume_size, @request.params) do |v|
       if bo
         v.backup_object_id = vs.canonical_uuid
       end
