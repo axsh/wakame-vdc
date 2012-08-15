@@ -301,7 +301,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       request_forward.put("/security_groups/#{lb.network_vifs(PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
        :rule => security_group_rules.join("\n")
       })
-      params[:port]
+      lb.port = params[:port]
     end
 
     if !params[:protocol].empty?
