@@ -139,6 +139,7 @@ DcmgrGUI.prototype.networkPanel = function(){
     var display_name = $(this).find('#display_name').val();
     var description = $(this).find('#description').val();
     var domain_name = $(this).find('#domain_name').val();
+    var dc_network = $(this).find('#dc_network').val();
     var network_mode = $(this).find('#network_mode').val();
     var ipv4_network = $(this).find('#ipv4_network').val();
     var ipv4_gw = $(this).find('#ipv4_gw').val();
@@ -148,6 +149,7 @@ DcmgrGUI.prototype.networkPanel = function(){
     var data = "&display_name="+display_name
           +"&description="+description
           +"&domain_name="+domain_name
+          +"&dc_network="+dc_network
           +"&network_mode="+network_mode
           +"&ipv4_network="+ipv4_network
           +"&ipv4_gw="+ipv4_gw
@@ -176,7 +178,68 @@ DcmgrGUI.prototype.networkPanel = function(){
     callback: function(){
       var self = this;
 
-      bt_create_network.disabledButton(1, false);
+      var request = new DcmgrGUI.Request;
+      var is_ready = {
+        'dc_network': false,
+        'display_name': false,
+      }      
+
+      var ready = function(data) {
+        if(data['dc_network'] == true &&
+           data['display_name'] == true) {  
+          bt_create_network.disabledButton(1, false);
+        } else {
+          bt_create_network.disabledButton(1, true);
+        }
+      }
+
+      $(this).find('#display_name').keyup(function(){
+       if( $(this).val() ) {
+         is_ready['display_name'] = true;
+         ready(is_ready);
+       } else {
+         is_ready['display_name'] = false;
+         ready(is_ready);
+       }
+      });
+
+      parallel({
+        //get dc_networks
+        dc_networks: 
+          request.get({
+            "url": '/dc_networks/allows_new_networks.json',
+            "data": "",
+            success: function(json,status){
+              var create_select_item = function(name) {
+                var select_html = '<select id="' + name + '" name="' + name + '"></select>';
+                $(self).find('#select_' + name).empty().html(select_html);
+                return $(self).find('#' + name);
+              }
+
+              var append_select_item = function(select_item, name, value) {
+                select_item.append('<option value="'+ value +'">' + name + '</option>');
+              }
+
+              var create_select = function(name, results) {
+                var select_obj = create_select_item(name);
+
+                for (var i=0; i < size ; i++) {
+                  append_select_item(select_obj, results[i].result.name, results[i].result.uuid)
+                }
+              }
+
+              var results = json.dc_network.results;
+              var size = results.length;
+
+              is_ready['dc_network'] = true;
+              ready(is_ready);
+
+              create_select('dc_network', results);
+            }
+          })
+
+      });
+
     },
     button: create_network_buttons
   });

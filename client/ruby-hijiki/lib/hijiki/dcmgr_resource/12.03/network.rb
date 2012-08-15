@@ -50,6 +50,7 @@ module Hijiki::DcmgrResource::V1203
         object.display_name = params[:display_name] if params[:display_name]
         object.description = params[:description] if params[:description]
         object.domain_name = params[:domain_name] if params[:domain_name]
+        object.dc_network = params[:dc_network] if params[:dc_network]
         object.network_mode = params[:network_mode]
         object.network = params[:ipv4_network]
         object.gw = params[:ipv4_gw]

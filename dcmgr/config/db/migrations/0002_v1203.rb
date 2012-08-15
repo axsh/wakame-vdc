@@ -129,6 +129,10 @@ Sequel.migration do
       # supported network mode list
       add_column :offering_network_modes, "text", :null=>false
 
+      # Permission flag for the creation of new networks by
+      # users.
+      add_column :allow_new_networks, "tinyint(1)", :default=>false, :null=>false
+
       add_index [:uuid], :unique=>true, :name=>:uuid
     end
 		

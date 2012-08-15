@@ -43,6 +43,7 @@ module Hijiki
       require 'hijiki/dcmgr_resource/12.03/base'
 
       autoload :Account,        'hijiki/dcmgr_resource/12.03/account'
+      autoload :DcNetwork,      'hijiki/dcmgr_resource/12.03/dc_network'
       autoload :HostNode,       'hijiki/dcmgr_resource/12.03/host_node'
       autoload :Image,          'hijiki/dcmgr_resource/12.03/image'
       autoload :Instance,       'hijiki/dcmgr_resource/12.03/instance'

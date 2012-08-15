@@ -11,6 +11,7 @@ class NetworksController < ApplicationController
         :display_name => params[:display_name],
         :description => params[:description],
         :domain_name => params[:domain_name],
+        :dc_network => params[:dc_network],
         :network_mode => params[:network_mode],
         :ipv4_network => params[:ipv4_network],
         :ipv4_gw => params[:ipv4_gw],

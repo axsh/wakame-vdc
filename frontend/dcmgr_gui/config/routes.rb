@@ -173,6 +173,9 @@ DcmgrGui::Application.routes.draw do
   put    'networks/attach', :to => 'networks#attach'
   put    'networks/detach', :to => 'networks#detach'
 
+  #dc_networks
+  get    'dc_networks/allows_new_networks' ,:to => 'dc_networks#allows_new_networks'
+
   #security_groups
   get    'security_groups' ,:to => 'security_groups#index'
   get    'security_groups/list/:id' ,:to => 'security_groups#list'

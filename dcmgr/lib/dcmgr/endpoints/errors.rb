@@ -137,5 +137,7 @@ module Dcmgr
     define_error(:InvalidLoadBalancerAlgorithm, 400, '161')
 
     define_error(:ExceedQuotaLimit, 400, '162')
+    define_error(:UnknownDcNetwork, 404, '163')
+    define_error(:DcNetworkNotPermitted, 400, '164')
   end
 end

@@ -47,6 +47,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     #               set 24 if none.
     # params :description optional description for the network
     # params :display_name optional
+
+    dc_network = M::DcNetwork.find(:uuid => M::DcNetwork.trim_uuid(params[:dc_network]))
+
+    raise E::UnknownDcNetwork,      params[:dc_network] unless dc_network
+    raise E::DcNetworkNotPermitted, params[:dc_network] unless dc_network.allow_new_networks
+    raise E::DcNetworkNotPermitted, params[:dc_network] unless dc_network.offering_network_modes.index(params[:network_mode])
+
     savedata = {
       :account_id=>@account.canonical_uuid,
       :ipv4_gw => params[:gw],
@@ -64,7 +71,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     savedata[:domain_name] = params[:domain_name] if params[:domain_name]
     savedata[:ip_assignment] = params[:ip_assignment] if params[:ip_assignment]
 
-    respond_with(R::Network.new(M::Network.create(savedata)).generate)
+    nw = M::Network.create(savedata)
+    nw.dc_network = dc_network
+    nw.save
+
+    respond_with(R::Network.new(nw).generate)
   end
 
   delete '/:id' do
