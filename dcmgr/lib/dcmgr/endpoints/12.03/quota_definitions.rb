@@ -9,6 +9,8 @@ COMMON_DS_FILTER=proc { |ds|
 }
 
 Sinatra::QuotaEvaluation.evaluators do
+  M = Dcmgr::Models
+  
   quota_type 'security_group.count' do
     fetch do
       self.instance_exec(M::SecurityGroup.dataset, &COMMON_DS_FILTER).count
