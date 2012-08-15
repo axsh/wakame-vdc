@@ -148,9 +148,15 @@ module Dcmgr
       private
       def parallel_curl(url, output_path)
         logger.debug("downloading #{url} as #{output_path}")
-        # p URI.parse("/tmp/path").path # => "/tmp/path"
-        # p URI.parse("file:///tmp/path").path # => "/tmp/path"
-        sh("cp #{URI.parse(url).path} #{output_path}")
+        uri = URI.parse(url)
+        case uri.scheme
+        when "file"
+          # p URI.parse("/tmp/path").path # => "/tmp/path"
+          # p URI.parse("file:///tmp/path").path # => "/tmp/path"
+          sh("cp #{uri.path} #{output_path}")
+        else
+          sh("#{Dcmgr.conf.script_root_path}/parallel-curl.sh --url=#{url} --output_path=#{output_path}")
+        end
       end
 
       def detect_container_type(path)

@@ -56,6 +56,7 @@ Requires: file
 Requires: prelink
 # Ruby binary dependency
 Requires: libxml2 libxslt readline openssl ncurses-libs gdbm zlib
+Requires: jemalloc
 # for erlang, rabbitmq-server
 # Requires: epel-release-6-x
 Requires: parted
