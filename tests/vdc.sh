@@ -101,11 +101,11 @@ function init_db() {
 
   cd ${prefix_path}/dcmgr
   echo "executing 'rake db:init' => dcmgr ..."
-  time bundle exec rake db:init
+  time bundle exec rake --trace db:init
 
   cd ${prefix_path}/frontend/dcmgr_gui
   echo "executing 'rake db:init' => frontend/dcmgr_gui ..."
-  time bundle exec rake db:init
+  time bundle exec rake --trace db:init
 
   echo ... rake oauth:create_consumer[${account_id}]
   #local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
