@@ -8,7 +8,7 @@ module Hijiki::DcmgrResource::V1203
     module ClassMethods
       def load_spec(path)
         # TODO: move to common function
-        @load_balancer_specs = YAML.load_file(path)
+        @load_balancer_specs = YAML.load_file(path) || {}
         @load_balancer_specs = Hash[*@load_balancer_specs.map{|k,v| [k, ActiveSupport::HashWithIndifferentAccess.new(v)] }.flatten].freeze
         # validation
         errors = false
