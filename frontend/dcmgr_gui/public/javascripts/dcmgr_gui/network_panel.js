@@ -223,18 +223,39 @@ DcmgrGUI.prototype.networkPanel = function(){
               var create_select = function(name, results) {
                 var select_obj = create_select_item(name);
 
-                for (var i=0; i < size ; i++) {
+                for (var i=0; i < results.length ; i++) {
                   append_select_item(select_obj, results[i].result.name, results[i].result.uuid)
                 }
+                return select_obj;
               }
 
               var results = json.dc_network.results;
               var size = results.length;
 
+              var select_dc_network = create_select('dc_network', results);
+
+              // Update network_mode depending on selected dc_network.
+              var dc_offering = {}
+
+              for (var i=0; i < results.length ; i++) {
+                dc_offering[results[i].result.uuid] = results[i].result.offering_network_modes
+              }
+
+              var update_network_modes = function(){
+                var select_network_mode = create_select_item('network_mode');
+                var current_dc_network = select_dc_network.val();
+
+                $.each(dc_offering[current_dc_network], function(key, value) {
+                  append_select_item(select_network_mode, value, value)
+                });
+              };
+
+              update_network_modes();
+
+              select_dc_network.change(update_network_modes);
+
               is_ready['dc_network'] = true;
               ready(is_ready);
-
-              create_select('dc_network', results);
             }
           })
 
