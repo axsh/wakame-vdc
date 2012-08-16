@@ -38,6 +38,9 @@ Sequel.migration do
       drop_column :bandwidth
       add_column :bandwidth, "float"
       add_column :ip_assignment, "varchar(255)", :default=>"asc", :null=>false
+
+      # Permission flag for modification of the networks by users.
+      add_column :editable, "tinyint(1)", :default=>false, :null=>false
     end
 
     create_table(:host_node_vnets) do

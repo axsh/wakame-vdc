@@ -52,9 +52,13 @@
 	    <td class="vtip display name" title="display-name">${item.display_name}</td>
 	    <td class="vtip ipv4 network" title="ipv4-network">${item.ipv4_network}</td>
 	    <td class="vtip domain name" title="domain-name">${item.domain_name}</td>
-	    {{if item.id}}
+	    {{if item.uuid}}
             <td class="vtip center" title="action">
-              <a href="javascript:void(0);" class="edit_network" id="edit_${item.id}"><%= t('networks.button.edit_network') %></a>
+	      {{if item.editable}}
+              <a href="javascript:void(0);" class="edit_network" id="edit_${item.uuid}"><%= t('networks.button.edit_network') %></a>
+              {{else}}
+              <a href="javascript:void(0);" class="edit_network" id="edit_${item.uuid}"><%= t('networks.button.view_network') %></a>
+              {{/if}}
             </td>
             {{else}}
             <td class="vtip center" title="action"></td>

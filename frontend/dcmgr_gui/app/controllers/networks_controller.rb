@@ -17,6 +17,7 @@ class NetworksController < ApplicationController
         :ipv4_gw => params[:ipv4_gw],
         :prefix => params[:prefix],
         :ip_assignment => params[:ip_assignment],
+        :editable => 1,
       }
       @network = Hijiki::DcmgrResource::Network.create(data)
       render :json => @network

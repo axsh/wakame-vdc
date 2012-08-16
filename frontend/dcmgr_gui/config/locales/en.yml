@@ -528,6 +528,7 @@ en:
     header: "Networks"
     button:
       edit_network: "Edit"
+      view_network: "View"
       create_network: "Create Network"
       delete_network: "Delete Network"
     network_actions:
