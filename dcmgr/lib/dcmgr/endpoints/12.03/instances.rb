@@ -98,22 +98,22 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     else
       raise E::InvalidParameter, :hypervisor
     end
-    
-    params[:cpu_cores] = params[:cpu_cores].to_i
-    if params[:cpu_cores].between?(1, 128)
-      
+
+    params['cpu_cores'] = params['cpu_cores'].to_i
+    if params['cpu_cores'].between?(1, 128)
+
     else
       raise E::InvalidParameter, :cpu_cores
     end
 
-    params[:memory_size] = params[:memory_size].to_i
-    if params[:memory_size].between?(128, 999999)
-      
+    params['memory_size'] = params['memory_size'].to_i
+    if params['memory_size'].between?(128, 999999)
+
     else
       raise E::InvalidParameter, :memory_size
     end
-    
-    if !M::HostNode.check_domain_capacity?(params[:cpu_cores], params[:memory_size])
+
+    if !M::HostNode.check_domain_capacity?(params['cpu_cores'], params['memory_size'])
       raise E::OutOfHostCapacity
     end
     
@@ -132,7 +132,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
 
     # params is a Mash object. so coverts to raw Hash object.
-    instance = M::Instance.entry_new(@account, wmi, params.to_hash) do |i|
+    instance = M::Instance.entry_new(@account, wmi, @params.dup) do |i|
       i.hypervisor = params[:hypervisor]
       i.cpu_cores = params[:cpu_cores]
       i.memory_size = params[:memory_size]

@@ -114,6 +114,11 @@ module Dcmgr
 
   autoload :Tags, 'dcmgr/tags'
 
+  module SpecConvertor
+    autoload :Base, 'dcmgr/spec_convertor'
+    autoload :LoadBalancer, 'dcmgr/spec_convertor'
+  end
+
   module Cli
     require 'dcmgr/cli/errors'
 

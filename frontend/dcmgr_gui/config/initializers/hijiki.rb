@@ -3,6 +3,7 @@
 require 'hijiki'
 
 Hijiki.load(File.expand_path('config/instance_spec.yml', ::Rails.root))
+Hijiki.load(File.expand_path('config/load_balancer_spec.yml', ::Rails.root))
 
 Hijiki::DcmgrResource.setup_aliases(:V1203)
 

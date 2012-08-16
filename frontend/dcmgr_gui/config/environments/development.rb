@@ -41,6 +41,9 @@ DcmgrGui::Application.configure do
   config.auth_port = 3000
   config.auth_root_user = 'root'
 
+  # Setting Load balancer spec
+  config.load_balancer_spec_id = 'lb.small'
+
   if config.respond_to?(:i18n)
     config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
     config.i18n.default_locale = :en

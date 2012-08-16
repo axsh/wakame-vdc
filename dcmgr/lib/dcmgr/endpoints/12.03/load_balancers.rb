@@ -57,7 +57,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   quota 'load_balancer.count'
   post do
     lb_conf = Dcmgr.conf.service_types['lb']
-    spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
     lb_port = params[:port].to_i
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
     raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
@@ -74,9 +73,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     instance_security_group = create_security_group(security_group_rules)
 
+    lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
+    lb_spec.convert(params[:engine], params[:max_connection])
+
     # make params for internal request.
     request_params = {'image_id' => lb_conf.image_id,
-                      'instance_spec_id' => spec.canonical_uuid,
                       'ssh_key_id' => lb_conf.ssh_key_id,
                       'service_type' => lb_conf.name,
                       'user_data' => user_data.join("\n"),
@@ -87,12 +88,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                                   'index' => MANAGEMENT_DEVICE_INDEX.to_s,
                                   'network' => lb_conf.management_network,
                                   'security_groups' => ''
-                      }]
+                      }],
+                      :hypervisor => lb_spec.hypervisor,
+                      :cpu_cores => lb_spec.cpu_cores,
+                      :memory_size => lb_spec.memory_size,
+                      :quota_weight => lb_spec.quota_weight
     }
 
-    http_status, headers, body = internal_request("/api/12.03/instances.json", request_params, {
-      'PATH_INFO' => '/instances',
-    })
+    account_uuid = @account.canonical_uuid
+    res = request_forward do
+      header('X-VDC-Account-UUID', account_uuid)
+      post("/instances", request_params)
+    end.last_response
+    body = JSON.parse(res.body)
 
     i = find_by_uuid(:Instance, body['id'])
     lb = M::LoadBalancer.create(:account_id => @account.canonical_uuid,
@@ -293,7 +301,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       request_forward.put("/security_groups/#{lb.network_vifs(PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
        :rule => security_group_rules.join("\n")
       })
-      params[:port]
+      lb.port = params[:port]
     end
 
     if !params[:protocol].empty?

@@ -1,0 +1,8 @@
+---
+lb.small:
+  engine: "haproxy"
+  max_connection: 1000
+
+lb.large:
+  engine: "haproxy"
+  max_connection: 5000

@@ -7,8 +7,6 @@ require 'sinatra/namespace'
 require 'sinatra/sequel_transaction'
 require 'sinatra/json'
 
-require 'extlib/hash'
-
 # common setup for Dcmgr API Sinatra App.
 module Sinatra
 
@@ -95,7 +93,7 @@ module Sinatra
                  end
                end
         
-        @params.merge!(hash.to_mash.values.first)
+        @params.merge!(hash.values.first)
       end
 
       error(Dcmgr::Models::ModelError, Sequel::DatabaseError) do |boom|

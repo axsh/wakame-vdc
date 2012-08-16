@@ -45,7 +45,7 @@ module Dcmgr::Endpoints::V1203
         raise E::DisabledAccount if @account.disable?
 
         # Force overwrite the filtering parameter.
-        params[:account_id] = @account.canonical_uuid
+        params['account_id'] = @account.canonical_uuid
       end
 
       @requester_token = request.env[HTTP_X_VDC_REQUESTER_TOKEN]
