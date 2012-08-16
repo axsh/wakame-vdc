@@ -7,6 +7,8 @@ require 'sinatra/namespace'
 require 'sinatra/sequel_transaction'
 require 'sinatra/json'
 
+require 'extlib/hash'
+
 # common setup for Dcmgr API Sinatra App.
 module Sinatra
 
@@ -92,7 +94,8 @@ module Sinatra
                    error(400, 'Invalid request body.')
                  end
                end
-        @params.merge!(indifferent_params(hash.values.first))
+        
+        @params.merge!(hash.to_mash.values.first)
       end
 
       error(Dcmgr::Models::ModelError, Sequel::DatabaseError) do |boom|

@@ -132,7 +132,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
 
     # params is a Mash object. so coverts to raw Hash object.
-    instance = M::Instance.entry_new(@account, wmi, @request.params) do |i|
+    instance = M::Instance.entry_new(@account, wmi, params.to_hash) do |i|
       i.hypervisor = params[:hypervisor]
       i.cpu_cores = params[:cpu_cores]
       i.memory_size = params[:memory_size]
