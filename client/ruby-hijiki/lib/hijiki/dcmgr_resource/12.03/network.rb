@@ -67,6 +67,10 @@ module Hijiki::DcmgrResource::V1203
     def find_vif(vif_id)
       NetworkVif.find(vif_id, :params => { :network_id => self.id })
     end
+
+    def get_dhcp_ranges
+      self.get(:dhcp_ranges)
+    end
   end
 
 end
