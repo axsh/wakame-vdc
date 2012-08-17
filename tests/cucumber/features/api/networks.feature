@@ -185,5 +185,5 @@ Feature: Network API
       Then the previous api call should be successful
       And the previous api call should have [] with a size of 1
       And the previous api call should have [[]] with a size of 2
-      # And the previous api call should have [] equal to ["10.1.2.10","10.1.2.20"]
+      And the previous api call should have [[]] equal to ["10.1.2.10","10.1.2.20"]
     
