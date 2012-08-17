@@ -135,7 +135,7 @@ ja:
     create_and_edit_security_group:
       uuid: "セキュリティグループID"
       display_name: "セキュリティグループ名"
-      description: "詳細"
+      description: "説明"
       rule: "ルール"
     delete_security_group:
       header: "セキュリティーグループを削除"
