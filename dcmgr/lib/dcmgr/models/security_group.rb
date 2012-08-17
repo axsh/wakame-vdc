@@ -12,18 +12,10 @@ module Dcmgr::Models
     many_to_many :referencers, :class => self, :join_table => :security_group_references,:right_key => :referencer_id, :left_key => :referencee_id
 
     def to_hash
-      rules = []
-      rule.to_s.each_line { |line|
-        next if line =~ /\A#/
-        next if line.length == 0
-        
-        rules << self.class.parse_rule(line.chomp)
-      }
-
       super.merge({
                     :id => self.canonical_uuid,
                     :rule => rule.to_s,
-                    :rules => rules.compact,
+                    :rules => rules_array,
                   })
     end
 
@@ -33,6 +25,18 @@ module Dcmgr::Models
     
     def after_save
       super
+    end
+
+    def rules_array
+      rules = []
+      rule.to_s.each_line { |line|
+        next if line =~ /\A#/
+        next if line.length == 0
+
+        rules << self.class.parse_rule(line.chomp)
+      }
+
+      rules.compact
     end
 
     def before_save
