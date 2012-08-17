@@ -29,22 +29,25 @@ module Dcmgr
         @bkst_drv_class = BackupStorage.driver_class(inst[:image][:backup_object][:backup_storage][:storage_type])
         
         logger.info("Deploying image file: #{inst[:image][:uuid]}: #{ctx.os_devpath}")
-        cmd_tuple = ["", []]
-        if Dcmgr.conf.local_store.enable_image_caching && inst[:image][:is_cacheable]
-          FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
-          download_to_local_cache(inst[:image][:backup_object])
-        else
-
-          if @bkst_drv_class.include?(BackupStorage::CommandAPI)
-            cmd_tuple = invoke_task(@bkst_drv_class,
-                                    :download_command,
-                                    [inst[:image][:backup_object], vmimg_cache_path()])
-          else
-            logger.info("Downloading image file: #{ctx.os_devpath}")
-            invoke_task(@bkst_drv_class,
-                        :download, [inst[:image][:backup_object], vmimg_cache_path()])
-          end
-        end
+        # cmd_tuple has ["", []] array.
+        cmd_tuple =  if Dcmgr.conf.local_store.enable_image_caching && inst[:image][:is_cacheable]
+                       FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
+                       download_to_local_cache(inst[:image][:backup_object])
+                       
+                       ["cat %s", [vmimg_cache_path()]
+                      else
+                        if @bkst_drv_class.include?(BackupStorage::CommandAPI)
+                          # download_command() returns cmd_tuple.
+                          invoke_task(@bkst_drv_class,
+                                      :download_command,
+                                      [inst[:image][:backup_object], vmimg_cache_path()])
+                        else
+                          logger.info("Downloading image file: #{ctx.os_devpath}")
+                          invoke_task(@bkst_drv_class,
+                                      :download, [inst[:image][:backup_object], vmimg_cache_path()])
+                          ["cat %s", [vmimg_cache_path()]
+                        end
+                      end
         
         logger.debug("copying #{vmimg_cache_path()} to #{ctx.os_devpath}")
 
@@ -54,11 +57,6 @@ module Dcmgr
         File.open(File.expand_path('container.format', ctx.inst_data_dir), 'w') { |f|
           f.write(container_type.to_s)
         }
-
-        if cmd_tuple[0] == ""
-          cmd_tuple[0] = "cat %s"
-          cmd_tuple[1] += [vmimg_cache_path()]
-        end
         
         case container_type
         when :tgz
