@@ -145,7 +145,7 @@ ja:
     create_and_edit_ssh_keypair:
       uuid: "キーペアID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       download_once: "1回限り"
     create_ssh_keypair:
       header: "キーペアを作成"
@@ -552,7 +552,7 @@ ja:
     list:
       access_key_id: "アクセスキーID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       secret_access_key: "シークレットキー"
       action: "アクション"
     details:
@@ -560,7 +560,7 @@ ja:
       uuid: "UUID"
       keypair_id: "キーペアID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       fingerprint: "フィンガープリント"
       created_at: "作成日"
       updated_at: "更新日"
