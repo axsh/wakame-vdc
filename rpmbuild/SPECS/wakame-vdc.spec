@@ -105,6 +105,7 @@ Requires: kpartx
 Requires: libcgroup
 # Trema/racket gem binary dependency
 Requires: sqlite libpcap
+Requires: pv
 %description  hva-common-vmapp-config
 <insert long description, indented with spaces>
 
