@@ -88,6 +88,27 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     respond_with([nw.canonical_uuid])
   end
 
+  get '/:id/dhcp_ranges' do
+    # description 'Register reserved IP address to the network'
+    # params id, string, required
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+
+    respond_with(R::DhcpRangeCollection.new(nw.dhcp_range_dataset).generate)
+  end
+  
+  put '/:id/dhcp_ranges' do
+    # description 'Register reserved IP address to the network'
+    # params id, string, required
+    # params range_begin, string, required
+    # params range_end, string, required
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+
+    nw.add_ipv4_dynamic_range(params[:range_begin], params[:range_end])
+    respond_with({})
+  end
+  
   put '/:id/dhcp/reserve' do
     # description 'Register reserved IP address to the network'
     # params id, string, required
