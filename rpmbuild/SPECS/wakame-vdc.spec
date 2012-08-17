@@ -246,6 +246,7 @@ ln -s /var/lib/%{oname}/tmp ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/volumes
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/snap
