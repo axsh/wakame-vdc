@@ -55,4 +55,27 @@ module Dcmgr::Endpoints::V1203::Responses
       }
     end
   end
+
+  class DhcpRange < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(object)
+      raise ArgumentError if !object.is_a?(Dcmgr::Models::DhcpRange)
+      @object = object
+    end
+
+    def generate()
+      [@object.range_begin.to_s, @object.range_end.to_s]
+    end
+  end
+
+  class DhcpRangeCollection < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(ds)
+      raise ArgumentError if !ds.is_a?(Sequel::Dataset)
+      @ds = ds
+    end
+
+    def generate()
+      @ds.all.map { |i| [i.range_begin.to_s, i.range_end.to_s] }
+    end
+  end
+
 end
