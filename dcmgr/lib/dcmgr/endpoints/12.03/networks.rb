@@ -70,6 +70,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     savedata[:description] = params[:description] if params[:description]
     savedata[:domain_name] = params[:domain_name] if params[:domain_name]
     savedata[:ip_assignment] = params[:ip_assignment] if params[:ip_assignment]
+    savedata[:editable] = params[:editable] if params[:editable]
 
     nw = M::Network.create(savedata)
     nw.dc_network = dc_network

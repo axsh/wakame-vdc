@@ -56,6 +56,7 @@ module Hijiki::DcmgrResource::V1203
         object.gw = params[:ipv4_gw]
         object.prefix = params[:prefix]
         object.ip_assignment = params[:ip_assignment] if params[:ip_assignment]
+        object.editable = params[:editable] if params[:editable]
         
         object.save
         object
