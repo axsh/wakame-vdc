@@ -4,6 +4,23 @@ module Dcmgr::Drivers
   # Backup storage operations.
   # upload/donwload/delete items on the backup stroage.
   class BackupStorage < Dcmgr::Task::Tasklet
+    module CommandAPI
+      # @return Array [cmd_str, cmd_args]
+      def upload_command(src_path, dst_bo)
+        raise NotImplementedError
+      end
+      
+      # Download volume file from the backup storage.
+      # @param src_bo    BackupObject hash of the download item.
+      # @param dst_path  The local path to download item.
+      #
+      # @example
+      #  download(backup_object_hash, '/home/xxxx/images/donwloaded.img')
+      # @return Array [cmd_str, cmd_args]
+      def download_command(src_bo, dst_path)
+        raise NotImplementedError
+      end
+    end
 
     before do
       @backup_storage = session[:backup_storage]

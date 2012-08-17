@@ -8,6 +8,16 @@ module Dcmgr::Drivers
     include Dcmgr::Helpers::Cgroup::CgroupContextProvider
     include Dcmgr::Helpers::CliHelper
 
+    include CommandAPI
+    
+    def download_command(src_bo, dst_path)
+      ["cat %s", [normalize_path(dst_path)]]
+    end
+
+    def upload_command(src_path, dst_bo)
+      ["> %s", [normalize_path(abs_path(dst_bo))]]
+    end
+    
     def download(src_bo, dst_path)
       sh("/bin/cp %s %s", [normalize_path(abs_path(src_bo)), normalize_path(dst_path)])
     end
