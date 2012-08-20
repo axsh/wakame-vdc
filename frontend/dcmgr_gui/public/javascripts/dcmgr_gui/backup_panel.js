@@ -104,7 +104,7 @@ DcmgrGUI.prototype.backupPanel = function(){
     var results = data.backup_object.results;
     var size = results.length;
     for(var i = 0; i < size; i++) {
-      results[i].result.size = DcmgrGUI.Converter.fromMBtoGB(results[i].result.size);
+      results[i].result.size = DcmgrGUI.Converter.fromBtoKB(results[i].result.size);
     }
     return data;
   });
@@ -121,7 +121,7 @@ DcmgrGUI.prototype.backupPanel = function(){
   });
 
   c_list.detail_filter.add(function(data){
-    data.item.size = DcmgrGUI.Converter.fromMBtoGB(data.item.size);
+    data.item.size = DcmgrGUI.Converter.fromBtoKB(data.item.size);
     return data;
   });
  
