@@ -19,7 +19,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     ds = M::LoadBalancer.dataset
 
     if params[:state]
-      ds = if LOAD_BALANCER_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *LOAD_BALANCER_META_STATE
              case params[:state]
              when 'alive'
                ds.lives
@@ -28,7 +29,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif LOAD_BALANCER_STATE.member?(params[:state])
+           when *LOAD_BALANCER_STATE
              ds.by_state(params[:state])
            else
              raise E::InvalidParameter, :state

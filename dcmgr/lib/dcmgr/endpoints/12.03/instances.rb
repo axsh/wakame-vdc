@@ -20,7 +20,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     ds = M::Instance.dataset
 
     if params[:state]
-      ds = if INSTANCE_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *INSTANCE_META_STATE
              case params[:state]
              when 'alive'
                ds.lives
@@ -29,7 +30,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif INSTANCE_STATE.member?(params[:state])
+           when *INSTANCE_STATE
              ds.filter(:state=>params[:state])
            else
              raise E::InvalidParameter, :state

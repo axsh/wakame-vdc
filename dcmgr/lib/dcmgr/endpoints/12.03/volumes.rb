@@ -13,7 +13,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   get do
     ds = M::Volume.dataset
     if params[:state]
-      ds = if VOLUME_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *VOLUME_META_STATE
              case params[:state]
              when 'alive'
                ds.lives
@@ -22,7 +23,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif VOLUME_STATE.member?(params[:state])
+           when *VOLUME_STATE
              ds.filter(:state=>params[:state])
            else
              raise E::InvalidParameter, :state
