@@ -1,0 +1,26 @@
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<!-- <script src="/assets/underscore-min.js"></script> -->
+<script src="/assets/jquery-1.7.2.min.js"></script>
+<script src="/assets/handlebars-1.0.0.beta.6.js"></script>
+<script src="/assets/ember-1.0.pre.js"></script>
+<!-- <script src="/assets/ember-data-latest.js"></script> -->
+<script src="/assets/plurals.js"></script>
+<script src="/assets/ember-i18n-latest.js"></script>
+<script src="/assets/bootstrap/bootstrap-transition.js"></script>
+<script src="/assets/bootstrap/bootstrap-alert.js"></script>
+<script src="/assets/bootstrap/bootstrap-modal.js"></script>
+<script src="/assets/bootstrap/bootstrap-dropdown.js"></script>
+<script src="/assets/bootstrap/bootstrap-scrollspy.js"></script>
+<script src="/assets/bootstrap/bootstrap-tab.js"></script>
+<!-- <script src="/assets/bootstrap/bootstrap-popover.js"></script> -->
+<script src="/assets/bootstrap/bootstrap-button.js"></script>
+<script src="/assets/bootstrap/bootstrap-collapse.js"></script>
+<script src="/assets/bootstrap/bootstrap-carousel.js"></script>
+<script src="/assets/bootstrap/bootstrap-typeahead.js"></script>
+<script src="/assets/apps/core.js"></script>
+
+<% if route.controller %>
+<%= javascript_include_tag ['controllers', 'models', 'views'].collect{|dir| "/assets/apps/#{dir}/#{route.controller.singularize}"} %>
+<% end %>
