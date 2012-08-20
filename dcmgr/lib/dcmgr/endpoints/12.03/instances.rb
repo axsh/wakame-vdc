@@ -322,7 +322,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   end
 
   # Create image backup from the alive instance.
-  quota 'backup_object.size_mb', 'backup_object.count', 'image.count'
+  quota 'backup_object.size_mb', 'backup_object.count', 'image.count', 'instance.backup_operations_per_hour'
   put '/:id/backup' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['running', 'halted'].member?(instance.state)
