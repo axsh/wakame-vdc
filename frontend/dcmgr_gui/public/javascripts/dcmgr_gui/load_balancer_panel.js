@@ -29,7 +29,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 
   var close_button_name = $.i18n.prop('close_button');
   var create_button_name = $.i18n.prop('create_button');
-  var delete_button_name = $.i18n.prop('delete_button');
+  var delete_button_name = $.i18n.prop('delete_load_balancer_button');
   var register_button_name = $.i18n.prop('register_button');
   var unregister_button_name = $.i18n.prop('unregister_button');
   var poweron_button_name =$.i18n.prop('poweron_button');
