@@ -409,6 +409,7 @@ ja:
     load_balancer_actions:
       register_instance: "インスタンスの割り当て"
       unregister_instance: "インスタンスの解除"
+      delete_load_balancer: "ロードバランサ破棄"
       poweron: "パワーオン"
       poweroff: "パワーオフ"
   machine_images:
