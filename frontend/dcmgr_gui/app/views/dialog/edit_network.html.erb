@@ -10,4 +10,22 @@
       <td><input id="network_display_name" type="text" size=43 value="<%= @display_name %>"></td>
     </tr>
   </table>
+
+  <fieldset id="dhcp_field">
+    <legend><%= t("dialog.edit_network.dhcp_group") %></legend><legend>
+    </legend><table cellspacing="5" cellpadding="5">
+      <tbody>
+	<tr><th><span id="dhcp_ranges"><%= t("dialog.edit_network.dhcp_ranges") %></span></th>
+	  <th><span id="edit_dhcp_ranges"><%= t("dialog.edit_network.edit_dhcp_ranges") %></span></th>
+	</tr><tr>
+	  <td>
+	    <select id="select_dhcp_ranges" size="5" multiple="multiple" name="select_dhcp_ranges"></select>
+	  </td>
+	  <td>
+	  </td>
+	</tr>
+      </tbody>
+    </table>
+  </fieldset>
+
 </div>

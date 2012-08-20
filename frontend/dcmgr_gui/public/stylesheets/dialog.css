@@ -53,6 +53,11 @@
 	height: 190px;
 }
 
+#select_dhcp_ranges {
+	width: 200px;
+	height: 190px;
+}
+
 #create_ssh_keypair_dialog table tr td {
 	padding: 3px;
 }

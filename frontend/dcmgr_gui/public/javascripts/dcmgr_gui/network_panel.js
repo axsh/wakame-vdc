@@ -87,9 +87,37 @@ DcmgrGUI.prototype.networkPanel = function(){
       path:'/edit_network',
       button: edit_network_buttons,
       callback: function(){
+        var self = this;
+
+        var network_id = $(this).find('#network_id').val();
+        var display_name = $(this).find('#network_display_name').val();
+
         var params = { 'button': bt_edit_network, 'element_id': 1 };
         $(this).find('#network_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#network_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
+
+        var request = new DcmgrGUI.Request;
+
+        parallel({
+          // get dhcp ranges
+          dhcp_ranges:
+          request.get({
+            "url": '/networks/'+ network_id +'/dhcp_ranges.json',
+            "data": "",
+            success: function(json,status){
+              var select_dhcp_ranges = $(self).find('#select_dhcp_ranges');
+              select_dhcp_ranges.html('');
+
+              for (var i=0; i < json.length ; i++) {
+                var value = json[i][0] + ' - ' + json[i][1];
+                var html = '<option id="'+i+'" value="'+ value +'">'+ value +'</option>';
+                select_dhcp_ranges.append(html)
+                // $(self).find('#select_dhcp_ranges').append(html)
+              }
+            }
+          }),
+
+        })
       }
     });
 
@@ -257,7 +285,7 @@ DcmgrGUI.prototype.networkPanel = function(){
               is_ready['dc_network'] = true;
               ready(is_ready);
             }
-          })
+          }),
 
       });
 
