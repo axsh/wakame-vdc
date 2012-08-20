@@ -11,6 +11,11 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 ])
 Dcmgr.run_initializers
 
+if defined?(::Unicorn)
+  require 'unicorn/oob_gc'
+  use Unicorn::OobGC
+end
+
 map '/api' do
   use Dcmgr::Rack::RequestLogger
 

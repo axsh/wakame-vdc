@@ -216,13 +216,17 @@ rsync -aHA `pwd`/contrib/etc/wakame-vdc     ${RPM_BUILD_ROOT}/etc/
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
 rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
-[ -d ${RPM_BUILD_ROOT}/etc/%{oname} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
-[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname} ]               || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui ]     || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs
 
 # rails app config
-ln -s /etc/%{oname}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
-ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
-ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+ln -s /etc/%{oname}/dcmgr_gui/database.yml           ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
+ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml          ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+ln -s /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/load_balancer_spec.yml
+#
+ln -s /etc/%{oname}/convert_specs/load_balancer.yml  ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/dcmgr/config/convert_specs/load_balancer.yml
 
 # vdcsh
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d
@@ -243,6 +247,7 @@ ln -s /var/lib/%{oname}/tmp ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/volumes
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/snap
@@ -327,6 +332,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-auth.conf
 %config /etc/wakame-vdc/unicorn-common.conf
 %dir /etc/%{oname}/dcmgr_gui
+%dir /etc/%{oname}/convert_specs
 %dir /var/log/%{oname}/dcmgr_gui
 %dir /var/lib/%{oname}/tmp/images
 %dir /var/lib/%{oname}/tmp/volumes
