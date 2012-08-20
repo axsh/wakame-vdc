@@ -55,6 +55,7 @@ module Dcmgr::Models
 
     def to_netfilter_document
       {
+        :uuid => self.canonical_uuid,
         :mac_addr => self.mac_addr,
         :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
         :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
