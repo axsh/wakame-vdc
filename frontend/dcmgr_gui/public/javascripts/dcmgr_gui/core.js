@@ -76,6 +76,10 @@ DcmgrGUI.Filter = DcmgrGUI.Class.create({
 });
 
 DcmgrGUI.Converter = {};
+DcmgrGUI.Converter.fromBtoKB = function(data){
+  return Math.ceil(data/1024) + 'KB';
+};
+
 DcmgrGUI.Converter.fromMBtoGB = function(data){
   return Math.ceil(data/1024) + 'GB';
 };
