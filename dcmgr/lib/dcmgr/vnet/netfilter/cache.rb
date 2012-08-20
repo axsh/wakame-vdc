@@ -133,6 +133,13 @@ module Dcmgr
           nil
         end
 
+        def remove_network(network_id)
+          logger.info "deleting #{network_id} from cache"
+          @cache[:networks].delete(network_id)
+
+          nil
+        end
+
         #***********************#
         # Boolean methods       #
         #***********************#
@@ -177,8 +184,10 @@ module Dcmgr
 
         def other_local_vnics_left_in_group?(vnic_id,group_id)
           group = get_group(group_id)
-          
-          not group[:local_vnics].dup.delete(vnic_id).empty?
+
+          deleted = group[:local_vnics].dup
+          deleted.delete(vnic_id)
+          not deleted.empty?
         end
 
         def local_referencers_left?(group_id)
@@ -202,13 +211,22 @@ module Dcmgr
         end
         
         def other_groups_referencing_group?(referencer_id,referencee_id)
-          other_groups = @cache[:security_groups].dup.delete(referencer_id)
+          other_groups = @cache[:security_groups].dup
+          other_groups.delete(referencer_id)
 
           other_groups.each { |group|
             return true if group[:referencees].has_key?(group_id)
           }
 
           false
+        end
+
+        def local_vnics_left_in_network?(network_id)
+          vnics = @cache[:security_groups].values.map {|g| g[:local_vnics].values }.flatten.uniq.find { |vnic|
+            vnic[:network_id] == network_id
+          }
+
+          not vnics.nil?
         end
 
         #***********************#
