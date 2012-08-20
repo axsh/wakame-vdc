@@ -59,7 +59,7 @@ module Dcmgr::Drivers
     end
 
     def self.driver_class(storage_type)
-      case storage_type
+      case storage_type.to_s
       when 'local'
         LocalStorage
       when 's3'

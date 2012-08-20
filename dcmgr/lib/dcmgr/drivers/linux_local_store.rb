@@ -19,10 +19,6 @@ module Dcmgr
         # TODO: Does not support tgz file format in the future.
         if inst[:image][:file_format] == 'tgz'
           vmimg_basename += '.tar.gz'
-        elsif suffix = Const::BackupObject::CONTAINER_EXTS.keys.map {|i| i.size > 0 && i !~ /^\./ ? ".#{i}" : i}.find { |i|
-            File.basename(img_src_uri)[-i.size, i.size] == i
-          }
-          @suffix = suffix
         end
 
         Task::TaskSession.current[:backup_storage] = inst[:image][:backup_object][:backup_storage]
@@ -51,14 +47,7 @@ module Dcmgr
         
         logger.debug("copying #{vmimg_cache_path()} to #{ctx.os_devpath}")
 
-        #container_type = detect_container_type(vmimg_cache_path())
-        container_type = detect_suffix_type(vmimg_cache_path())
-        # save the container type to local file
-        File.open(File.expand_path('container.format', ctx.inst_data_dir), 'w') { |f|
-          f.write(container_type.to_s)
-        }
-        
-        case container_type
+        case inst[:image][:backup_object][:container_format].to_sym
         when :tgz
           Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
             # expect only one file is contained.
@@ -260,12 +249,7 @@ module Dcmgr
         chksum_path = File.expand_path('md5', ctx.inst_data_dir)
         size_path = File.expand_path('size', ctx.inst_data_dir)
         
-        container_format = nil
-        if File.exists?(File.expand_path('container.format', ctx.inst_data_dir))
-          container_format = File.read(File.expand_path('container.format', ctx.inst_data_dir)).chomp
-        end
-
-        cmd_tuple = case container_format.to_sym
+        cmd_tuple = case ctx.inst[:image][:backup_object][:container_format].to_sym
                     when :tgz
                       ["tar -cS -C %s %s | %s", [File.dirname(snapshot_path),
                                                  File.basename(snapshot_path),
