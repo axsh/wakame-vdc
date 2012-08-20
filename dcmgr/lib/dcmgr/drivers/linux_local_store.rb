@@ -96,21 +96,52 @@ module Dcmgr
       end
 
       def upload_image(inst, ctx, bo, evcb)
-
-        bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
+        @ctx = ctx
         take_snapshot_for_backup()
 
-        chksum, alloc_size = archive_from_snapshot(ctx, ctx.os_devpath, bkup_tmp_path)
-        evcb.setattr(chksum, alloc_size)
-
-        # upload image file
         Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
-        invoke_task(BackupStorage.driver_class(bo[:backup_storage][:storage_type]),
-                    :upload, [bkup_tmp_path, bo])
+        @bkst_drv_class = BackupStorage.driver_class(bo[:backup_storage][:storage_type])
+        
+        # upload image file
+        if @bkst_drv_class.include?(BackupStorage::CommandAPI)
+          archive_from_snapshot(ctx, ctx.os_devpath) do |cmd_tuple, chksum_path, size_path|
+            cmd_tuple2 = invoke_task(@bkst_drv_class,
+                                     :upload_command, [nil, bo])
+
+            cmd_tuple[0] << " | " + cmd_tuple2[0]
+            cmd_tuple[1] += cmd_tuple2[1]
+            shell.run!(*cmd_tuple)
+
+            chksum = File.read(chksum_path).split(/\s+/).first
+            alloc_size = File.read(size_path).split(/\s+/).first
+            
+            evcb.setattr(chksum, alloc_size.to_i)
+          end
+        else
+          archive_from_snapshot(ctx, ctx.os_devpath) do |cmd_tuple, chksum_path, size_path|
+            begin
+              bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
+              
+              cmd_tuple[0] << "> %s"
+              cmd_tuple[1] += [bkup_tmp_path]
+              shell.run!(*cmd_tuple)
+              
+              alloc_size = File.size(bkup_tmp_path)
+              chksum = File.read(chksum_path).split(/\s+/).first
+              
+              evcb.setattr(chksum, alloc_size)
+              
+              invoke_task(@bkst_drv_class,
+                          :upload, [bkup_tmp_path, bo])
+            ensure
+              File.unlink(bkup_tmp_path) rescue nil
+            end
+          end
+        end
+        
         evcb.progress(100)
       ensure
         clean_snapshot_for_backup()
-        File.unlink(bkup_tmp_path) rescue nil
       end
 
       protected
@@ -225,44 +256,38 @@ module Dcmgr
         Const::BackupObject::CONTAINER_EXTS[suffix]
       end
 
-      def archive_from_snapshot(ctx, snapshot_path, bkup_tmp_path)
+      def archive_from_snapshot(ctx, snapshot_path, &blk)
         chksum_path = File.expand_path('md5', ctx.inst_data_dir)
+        size_path = File.expand_path('size', ctx.inst_data_dir)
         
         container_format = nil
         if File.exists?(File.expand_path('container.format', ctx.inst_data_dir))
           container_format = File.read(File.expand_path('container.format', ctx.inst_data_dir)).chomp
         end
 
-        case container_format.to_sym
-        when :tgz
-          shell.run!("tar -cS -C %s %s | %s | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
-                                                                          File.basename(snapshot_path),
-                                                                          Dcmgr.conf.local_store.gzip_command,
-                                                                          chksum_path,
-                                                                          bkup_tmp_path])
-        when :tar
-          shell.run!("tar -cS -C %s %s | tee >( md5sum > %s) > %s", [File.dirname(snapshot_path),
-                                                                     File.basename(snapshot_path),
-                                                                     chksum_path,
-                                                                     bkup_tmp_path])
-        when :gz
-          shell.run!("cp -p --sparse=always %s /dev/stdout | %s | tee >( md5sum > %s) > %s", [snapshot_path,
-                                                                                              Dcmgr.conf.local_store.gzip_command,
-                                                                                              chksum_path,
-                                                                                              bkup_tmp_path])
-        else
-          shell.run!("cp -p --sparse=always %s %s", [snapshot_path, bkup_tmp_path])
-          shell.run!("md5sum %s > %s", [bkup_tmp_path, chksum_path])
-        end
-        
-        alloc_size = File.size(bkup_tmp_path)
-        chksum = File.read(chksum_path).split(/\s+/).first
+        cmd_tuple = case container_format.to_sym
+                    when :tgz
+                      ["tar -cS -C %s %s | %s", [File.dirname(snapshot_path),
+                                                 File.basename(snapshot_path),
+                                                 Dcmgr.conf.local_store.gzip_command]]
+                    when :tar
+                      ["tar -cS -C %s %s", [File.dirname(snapshot_path),
+                                            File.basename(snapshot_path)]]
+                    when :gz
+                      ["cp -p --sparse=always %s /dev/stdout | %s", [snapshot_path,
+                                                                     Dcmgr.conf.local_store.gzip_command]]
+                    else
+                      ["cp -p --sparse=always %s /dev/stdout", [snapshot_path]]
+                    end
 
-        [chksum, alloc_size]
+        # Insert reporting part for md5sum and archived byte size.
+        cmd_tuple[0] << " | tee >(md5sum > '%s') >(wc -c > '%s')"
+        cmd_tuple[1] += [chksum_path, size_path]
+
+        blk.call(cmd_tuple, chksum_path, size_path)
       ensure
-        if File.exists?(chksum_path)
-          File.unlink(chksum_path) rescue nil
-        end
+        File.unlink(chksum_path) rescue nil
+        File.unlink(size_path) rescue nil
       end
       
     end
