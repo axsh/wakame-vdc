@@ -34,7 +34,7 @@ module Dcmgr
                        FileUtils.mkdir_p(vmimg_cache_dir) unless File.exist?(vmimg_cache_dir)
                        download_to_local_cache(inst[:image][:backup_object])
                        
-                       ["cat %s", [vmimg_cache_path()]
+                       ["cat %s", [vmimg_cache_path()]]
                       else
                         if @bkst_drv_class.include?(BackupStorage::CommandAPI)
                           # download_command() returns cmd_tuple.
@@ -45,7 +45,7 @@ module Dcmgr
                           logger.info("Downloading image file: #{ctx.os_devpath}")
                           invoke_task(@bkst_drv_class,
                                       :download, [inst[:image][:backup_object], vmimg_cache_path()])
-                          ["cat %s", [vmimg_cache_path()]
+                          ["cat %s", [vmimg_cache_path()]]
                         end
                       end
         
