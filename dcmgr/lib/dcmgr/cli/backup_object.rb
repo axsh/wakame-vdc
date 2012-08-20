@@ -17,6 +17,7 @@ module Dcmgr::Cli
     method_option :checksum, :type => :string, :required=>true, :desc => "The checksum of the backup object."
     method_option :description, :type => :string, :desc => "Description of the backup storage"
     method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the backup object. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :container_format, :type => :string, :default=>'none', :desc => "The container format of the backup object.(#{Dcmgr::Const::BackupObject::CONTAINER_FORMAT.keys.join(', ')})"
     def add
       bkst = M::BackupStorage[options[:storage_id]] || UnknownUUIDError.raise("Backup Storage UUID: #{options[:storage_id]}")
 
@@ -40,6 +41,7 @@ module Dcmgr::Cli
     method_option :checksum, :type => :string, :desc => "The checksum of the backup object."
     method_option :description, :type => :string, :desc => "Description of the backup storage"
     method_option :service_type, :type => :string, :desc => "Service type of the backup object. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :container_format, :type => :string, :desc => "The container format of the backup object.(#{Dcmgr::Const::BackupObject::CONTAINER_FORMAT.keys.join(', ')})"
     def modify(uuid)
       bo = M::BackupObject[uuid] || UnknownUUIDError.raise(uuid)
       fields = options.dup
@@ -66,6 +68,7 @@ Backup Storage UUID: <%= bo.backup_storage.canonical_uuid %>
 Object Key: <%= bo.object_key %>
 Size: <%= bo.size %> (Alloc Size: <%= bo.allocation_size %>)
 Checksum: <%= bo.checksum %>
+Container Format: <%= bo.container_format %>
 Create: <%= bo.created_at %>
 Update: <%= bo.updated_at %>
 Delete: <%= bo.deleted_at %>
