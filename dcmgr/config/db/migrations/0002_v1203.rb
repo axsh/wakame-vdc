@@ -269,6 +269,7 @@ Sequel.migration do
       column :backup_storage_id, "int(11)", :null=>false
       column :size, "bigint", :null=>false
       column :allocation_size, "bigint", :null=>false
+      column :container_format, "varchar(255)", :null=>false
       column :status, "int(11)", :default=>0, :null=>false
       column :state, "varchar(255)", :default=>"initialized", :null=>false
       column :object_key, "varchar(255)", :null=>false

@@ -2,13 +2,13 @@ Source: wakame-vdc
 Section: unknown
 Priority: extra
 Maintainer: Axsh Co. LTD <dev@axsh.net>
-Build-Depends: debhelper (>= 5), autotools-dev, autoconf, m4, bison, binutils, libgdbm-dev, libncurses5-dev, libreadline-dev, zlib1g-dev, libssl-dev (>= 0.9.8), file, devscripts, g++, gcc, libxml2-dev, libmysqlclient-dev, libxslt1-dev, git-core, chrpath, ubuntu-vm-builder, curl, screen, tmux, pkg-config,subversion,libsqlite3-dev,libpcap0.8-dev
+Build-Depends: debhelper (>= 5), autotools-dev, autoconf, m4, bison, binutils, libgdbm-dev, libncurses5-dev, libreadline-dev, zlib1g-dev, libssl-dev (>= 0.9.8), file, devscripts, g++, gcc, libxml2-dev, libmysqlclient-dev, libxslt1-dev, git-core, chrpath, ubuntu-vm-builder, curl, screen, tmux, pkg-config,subversion,libsqlite3-dev,libpcap0.8-dev, socat, libjemalloc-dev
 Standards-Version: 3.8.3
 Homepage: http://wakame.jp/
 
 Package: wakame-vdc
 Architecture: amd64
-Depends: ${shlibs:Depends},${misc:Depends},libreadline6,ethtool,wget,openssh-server,openssh-client,curl,mysql-client,libmysqlclient18,iptables,ebtables,open-iscsi,open-iscsi-utils,libxml2,libxslt1.1,flog,ipcalc,iproute,vlan,ipset,zlib1g,libncurses5,ntp,gzip,mktemp,bridge-utils,udev,sysstat,dosfstools,openssl,genisoimage,kpartx,tar,parted,libsqlite3-0,libpcap0.8
+Depends: ${shlibs:Depends},${misc:Depends},libreadline6,ethtool,wget,openssh-server,openssh-client,curl,mysql-client,libmysqlclient18,iptables,ebtables,open-iscsi,open-iscsi-utils,libxml2,libxslt1.1,flog,ipcalc,iproute,vlan,ipset,zlib1g,libncurses5,ntp,gzip,mktemp,bridge-utils,udev,sysstat,dosfstools,openssl,genisoimage,kpartx,tar,parted,libsqlite3-0,libpcap0.8,pv,libjemalloc1
 Description: The wakame virtual data center.
  <insert long description, indented with spaces>
 

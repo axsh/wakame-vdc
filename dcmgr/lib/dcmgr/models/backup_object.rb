@@ -19,6 +19,12 @@ module Dcmgr::Models
       super
       self[:object_key] ||= self.canonical_uuid
     end
+
+    def validate
+      unless Dcmgr::Const::BackupObject::CONTAINER_FORMAT.keys.member?(self.container_format.to_sym)
+        errors.add(:container_format, "Unsupported container format: #{self.container_format}")
+      end
+    end
     
     def self.entry_new(bkst, account, size, &blk)
       bo = self.new
@@ -28,6 +34,15 @@ module Dcmgr::Models
       bo.state = :creating
       blk.call(bo)
       bo.save
+    end
+
+    def entry_clone(&blk)
+      self.class.entry_new(self.backup_storage, self.account_id, self.size) do |i|
+        i.display_name = self.display_name
+        i.description = "#{self.description} (copy of #{self.canonical_uuid})"
+        i.container_format = self.container_format
+        blk.call(i) if blk
+      end
     end
 
     # override Sequel::Model#delete not to delete rows but to set

@@ -57,27 +57,33 @@ module Dcmgr
       # are also failed to be set. They need to be checked before looked
       # up.
       def terminate_instance(state_update=false)
-        if @hva_ctx
-          task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                              :terminate_instance, [@hva_ctx])
-        end
+        ignore_error {
+          if @hva_ctx
+            task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                                :terminate_instance, [@hva_ctx])
+          end
+        }
 
-        if @inst && !@inst[:volume].nil?
-          @inst[:volume].each { |volid, v|
-            @vol_id = volid
-            @vol = v
-            # force to continue detaching volumes during termination.
-            ignore_error { detach_volume_from_host }
-            if state_update
-              update_volume_state_to_available rescue @hva_ctx.logger.error($!)
-            end
-          }
-        end
+        ignore_error { 
+          if @inst && !@inst[:volume].nil?
+            @inst[:volume].each { |volid, v|
+              @vol_id = volid
+              @vol = v
+              # force to continue detaching volumes during termination.
+              ignore_error { detach_volume_from_host }
+              if state_update
+                update_volume_state_to_available rescue @hva_ctx.logger.error($!)
+              end
+            }
+          end
+        }
         
         # cleanup vm data folder
-        unless @hva_ctx.hypervisor_driver_class == Dcmgr::Drivers::ESXi
-          FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir))
-        end
+        ignore_error {
+          unless @hva_ctx.hypervisor_driver_class == Dcmgr::Drivers::ESXi
+            FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir))
+          end
+        }
       end
 
       def update_instance_state(opts, ev)

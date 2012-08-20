@@ -51,7 +51,7 @@ module Dcmgr
       end
 
       def self.driver_class(hypervisor)
-        case hypervisor
+        case hypervisor.to_s
         when "kvm"
           Dcmgr::Drivers::Kvm
         when "lxc"

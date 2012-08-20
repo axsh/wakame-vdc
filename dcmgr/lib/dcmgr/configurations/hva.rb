@@ -42,6 +42,7 @@ module Dcmgr
           File.expand_path('tmp', parent.config[:vm_data_dir])
         }
         param :gzip_command, :default=>'gzip'
+        param :gunzip_command, :default=>'gunzip'
 
         def validate(errors)
           super
