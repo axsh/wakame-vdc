@@ -22,6 +22,11 @@
 	    <select id="select_dhcp_ranges" size="5" multiple="multiple" name="select_dhcp_ranges"></select>
 	  </td>
 	  <td>
+            <table>
+              <tr><input id="begin_dhcp_range" type="text" size=18 value=""></tr>
+              <tr><input id="end_dhcp_range" type="text" size=18 value=""></tr>
+              <tr><button id="add_dhcp_range"><%= t("dialog.edit_network.add_dhcp_range") %></button></tr>
+            </table>
 	  </td>
 	</tr>
       </tbody>

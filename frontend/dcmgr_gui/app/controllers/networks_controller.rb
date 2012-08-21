@@ -72,6 +72,14 @@ class NetworksController < ApplicationController
     end
   end
 
+  def add_dhcp_range
+    catch_error do
+      network_id = params[:id]
+      detail = Hijiki::DcmgrResource::Network.find(network_id).add_dhcp_range(params[:range_begin], params[:range_end])
+      respond_with(detail,:to => [:json])
+    end
+  end
+
   def total
     catch_error do
       all_resource_count = Hijiki::DcmgrResource::Network.total_resource

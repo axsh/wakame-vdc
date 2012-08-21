@@ -71,6 +71,10 @@ module Hijiki::DcmgrResource::V1203
     def get_dhcp_ranges
       self.get(:dhcp_ranges)
     end
+
+    def add_dhcp_range(range_begin, range_end)
+      self.put(:dhcp_ranges, { :range_begin => range_begin, :range_end => range_end })
+    end
   end
 
 end

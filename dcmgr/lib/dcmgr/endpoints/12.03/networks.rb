@@ -105,6 +105,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params range_end, string, required
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
+    raise E::NetworkNotPermitted, params[:id] if !nw.editable
 
     nw.add_ipv4_dynamic_range(params[:range_begin], params[:range_end])
     respond_with({})

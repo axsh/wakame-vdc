@@ -98,9 +98,7 @@ DcmgrGUI.prototype.networkPanel = function(){
 
         var request = new DcmgrGUI.Request;
 
-        parallel({
-          // get dhcp ranges
-          dhcp_ranges:
+        var refresh_dhcp_ranges = function() {
           request.get({
             "url": '/networks/'+ network_id +'/dhcp_ranges.json',
             "data": "",
@@ -111,12 +109,32 @@ DcmgrGUI.prototype.networkPanel = function(){
               for (var i=0; i < json.length ; i++) {
                 var value = json[i][0] + ' - ' + json[i][1];
                 var html = '<option id="'+i+'" value="'+ value +'">'+ value +'</option>';
-                select_dhcp_ranges.append(html)
-                // $(self).find('#select_dhcp_ranges').append(html)
+                select_dhcp_ranges.append(html);
               }
             }
-          }),
+          });
+        };
 
+        $(self).find('#add_dhcp_range').click(function(){
+          var range_begin = $(self).find('#begin_dhcp_range').val();
+          var range_end = $(self).find('#end_dhcp_range').val();
+
+          var data = "range_begin=" + range_begin + "&range_end=" + range_end;
+
+          request.put({
+            "url": '/networks/'+ network_id +'/dhcp_ranges.json',
+            "data": data,
+            success: function(json,status) {
+              $(self).find('#begin_dhcp_range').val("");
+              $(self).find('#end_dhcp_range').val("");
+              refresh_dhcp_ranges();
+            }
+          });
+        });
+
+        parallel({
+          // get dhcp ranges
+          dhcp_ranges: refresh_dhcp_ranges()
         })
       }
     });

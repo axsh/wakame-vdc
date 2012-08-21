@@ -145,6 +145,7 @@ ja:
       dhcp_group: "DHCP"
       dhcp_ranges: "Ranges"
       edit_dhcp_ranges: "Add/Remove"
+      add_dhcp_range: "Add"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:
