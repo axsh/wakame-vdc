@@ -411,6 +411,7 @@ en:
     load_balancer_actions:
       register_instance: "Register Instance"
       unregister_instance: "Unregister Instance"
+      delete_load_balancer: "Delete Load Balancer"
       poweron: "Power On"
       poweroff: "Power Off"
       active_standby: "Active/Standby"

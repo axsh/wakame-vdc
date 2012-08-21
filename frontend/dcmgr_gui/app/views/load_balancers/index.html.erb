@@ -22,12 +22,12 @@
   <div id="list_load_mask" class="maincontent">
     <div class="controller clearfix">
       <a href="javascript:void(0);" class="create_load_balancer"><%= t("load_balancers.button.create_load_balancer") %></a>
-      <a href="javascript:void(0);" class="delete_load_balancer"><%= t("load_balancers.button.delete_load_balancer") %></a>
       <select name="load_balancer_action" id="load_balancer_action" style="height:10px">
         <option value="" selected="selected"><%= t("selectmenu.select_action") %></option>
         <optgroup label="Action">
           <option class="register" value="register"><%= t("load_balancers.load_balancer_actions.register_instance") %></option>
           <option class="unregister" value="unregister"><%= t("load_balancers.load_balancer_actions.unregister_instance") %></option>
+          <option class="delete" value="delete"><%= t("load_balancers.load_balancer_actions.delete_load_balancer") %></option>
           <option class="poweron" value="poweron"><%= t("load_balancers.load_balancer_actions.poweron") %></option>
           <option class="poweroff" value="poweroff"><%= t("load_balancers.load_balancer_actions.poweroff") %></option>
           <option class="Active/Standby" value="active_standby"><%= t("load_balancers.load_balancer_actions.active_standby") %></option>

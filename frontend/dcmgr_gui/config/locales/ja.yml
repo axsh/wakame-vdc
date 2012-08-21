@@ -135,7 +135,7 @@ ja:
     create_and_edit_security_group:
       uuid: "セキュリティグループID"
       display_name: "セキュリティグループ名"
-      description: "詳細"
+      description: "説明"
       rule: "ルール"
     delete_security_group:
       header: "セキュリティーグループを削除"
@@ -145,7 +145,7 @@ ja:
     create_and_edit_ssh_keypair:
       uuid: "キーペアID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       download_once: "1回限り"
     create_ssh_keypair:
       header: "キーペアを作成"
@@ -410,6 +410,7 @@ ja:
     load_balancer_actions:
       register_instance: "インスタンスの割り当て"
       unregister_instance: "インスタンスの解除"
+      delete_load_balancer: "ロードバランサ破棄"
       poweron: "パワーオン"
       poweroff: "パワーオフ"
       active_standby: "アクティブ／スタンバイ"
@@ -554,7 +555,7 @@ ja:
     list:
       access_key_id: "アクセスキーID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       secret_access_key: "シークレットキー"
       action: "アクション"
     details:
@@ -562,7 +563,7 @@ ja:
       uuid: "UUID"
       keypair_id: "キーペアID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       fingerprint: "フィンガープリント"
       created_at: "作成日"
       updated_at: "更新日"
