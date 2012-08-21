@@ -76,6 +76,10 @@ DcmgrGUI.Filter = DcmgrGUI.Class.create({
 });
 
 DcmgrGUI.Converter = {};
+DcmgrGUI.Converter.fromBtoKB = function(data){
+  return Math.ceil(data/1024) + 'KB';
+};
+
 DcmgrGUI.Converter.fromMBtoGB = function(data){
   return Math.ceil(data/1024) + 'GB';
 };
@@ -145,6 +149,19 @@ DcmgrGUI.date.getI18n = function(date_str){
                                    convert(date_str.getSeconds())
                                    ]);
 };
+
+// Convert UTC ISO8601 time string to local TZ with I18n.
+DcmgrGUI.date.utcToLocal = function(iso8601_date_str) {
+  // TODO: cleanup white spaces in date_str.
+  try {
+    return DcmgrGUI.date.getI18n(DcmgrGUI.date.setTimezone(DcacmgrGUI.date.parseISO8601(iso8601_date_str),
+                                                           dcmgrGUI.getConfig('time_zone')
+                                                          ));
+  } catch(a) {
+    return iso8601_date_str;
+  }
+};
+      
 
 DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   initialize: function(params) {
@@ -484,6 +501,12 @@ DcmgrGUI.Util.availableTextField = function(e){
     }
   }
   return true;
+};
+
+// Find ISO8601 UTC string in the HTML element and convert it.
+DcmgrGUI.Util.utcToLocal = function(elemid) {
+  var elem = $(elemid);
+  elem.html(DcmgrGUI.date.utcToLocal(elem.html()));
 };
 
 DcmgrGUI.Event = DcmgrGUI.Class.create({

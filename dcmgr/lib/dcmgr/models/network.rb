@@ -148,9 +148,15 @@ module Dcmgr::Models
       self
     end
 
+    # To check the IP address that can not be used.
+    # TODO add a check of network services
     def reserved_ip?(ip)
+      raise ArgumentError unless ip.is_a?(::IPAddress::IPv4)
       ipaddr = ip.to_s
-      if self[:ipv4_gw] == ipaddr ||
+
+      if self.ipv4_ipaddress.to_s == ipaddr ||
+          self.ipv4_ipaddress.broadcast.to_s == ipaddr ||
+          self[:ipv4_gw] == ipaddr ||
           self[:dns_server] == ipaddr ||
           self[:dhcp_server] == ipaddr ||
           self[:metadata_server] == ipaddr

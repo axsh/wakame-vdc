@@ -133,7 +133,9 @@ module Dcmgr
         when Proc
           # create getter method if proc is set as default value
           self.class_exec {
-            define_method(name.to_s.to_sym, &opts[:default])
+            define_method(name.to_s.to_sym) do
+              @config[name.to_s.to_sym] || self.instance_exec(&opts[:default])
+            end
           }
         else
           on_initialize_hook do |c|
