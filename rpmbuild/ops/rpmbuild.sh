@@ -128,6 +128,8 @@ esac
 cat <<EOS | setarch ${arch} chroot ${dest_chroot_dir}/  bash -ex
 uname -m
 
+sed -i "s,^keepcache=.*,keepcache=1," /etc/yum.conf
+
 yum ${yum_opts} update -y
 yum ${yum_opts} install -y git make sudo
 
