@@ -47,27 +47,29 @@ module Dcmgr
         
         logger.debug("copying #{vmimg_cache_path()} to #{ctx.os_devpath}")
 
+        pv_command = "pv -W -f -p -s #{inst[:image][:backup_object][:size]} |"
+        
         case inst[:image][:backup_object][:container_format].to_sym
         when :tgz
           Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
             # expect only one file is contained.
             lst = shell.run!("tar -ztf #{vmimg_cache_path()}").out.split("\n")
-            cmd_tuple[0] << "| tar -zxS -C %s"
+            cmd_tuple[0] << "| #{pv_command} tar -zxS -C %s"
             cmd_tuple[1] += [tmpdir]
             shell.run!(*cmd_tuple)
             File.rename(File.expand_path(lst.first, tmpdir), ctx.os_devpath)
           }
         when :gz
-          cmd_tuple[0] << "| %s | cp --sparse=always /dev/stdin %s"
+          cmd_tuple[0] << "| %s | #{pv_command} cp --sparse=always /dev/stdin %s"
           cmd_tuple[1] += [Dcmgr.conf.local_store.gunzip_command,
                            ctx.os_devpath]
           shell.run!(*cmd_tuple)
         when :tar
-          cmd_tuple[0] << "| tar -xS -C %s"
+          cmd_tuple[0] << "| #{pv_command} tar -xS -C %s"
           cmd_tuple[1] += [ctx.inst_data_dir]
           shell.run!(*cmd_tuple)
         else
-          cmd_tuple[0] << "| cp -p --sparse=always /dev/stdin %s"
+          cmd_tuple[0] << "| #{pv_command} cp -p --sparse=always /dev/stdin %s"
           cmd_tuple[1] += [ctx.os_devpath]
           shell.run!(*cmd_tuple)
         end
@@ -264,8 +266,10 @@ module Dcmgr
                       ["cp -p --sparse=always %s /dev/stdout", [snapshot_path]]
                     end
 
+        pv_command = " | pv -W -f -p -s #{ctx.inst[:image][:backup_object][:size]}"
+        
         # Insert reporting part for md5sum and archived byte size.
-        cmd_tuple[0] << " | tee >(md5sum > '%s') >(wc -c > '%s')"
+        cmd_tuple[0] << "#{pv_command} | tee >(md5sum > '%s') >(wc -c > '%s')"
         cmd_tuple[1] += [chksum_path, size_path]
 
         blk.call(cmd_tuple, chksum_path, size_path)

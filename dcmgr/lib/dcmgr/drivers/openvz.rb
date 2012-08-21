@@ -18,7 +18,7 @@ module Dcmgr
       # Decorator pattern class of Rpc::HvaHandler::HvaContext.
       class OvzContext
         def initialize(root_ctx)
-          raise ArgumentError unless root_ctx.is_a?(Rpc::HvaHandler::HvaContext)
+          raise ArgumentError unless root_ctx.is_a?(Rpc::HvaContext)
           @subject = root_ctx
         end
         
@@ -37,7 +37,7 @@ module Dcmgr
       end
 
       before do
-        @args = @args.map {|i|  i.is_a?(Rpc::HvaHandler::HvaContext) ? OvzContext.new(i) : i; }
+        @args = @args.map {|i|  i.is_a?(Rpc::HvaContext) ? OvzContext.new(i) : i; }
         # First arugment is expected a HvaContext.
         @hc = @args.first
       end
@@ -160,8 +160,10 @@ module Dcmgr
             host_ifname = vif[:uuid]
             # host_mac become a randomly generated MAC Address.
             host_mac = nil
-            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-            sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, host_ifname, host_mac, bridge])
+            if vif[:ipv4] && vif[:ipv4][:network]
+              bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+              sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, host_ifname, host_mac, bridge])
+            end
             #
             # NETIF="ifname=eth0,bridge=vzbr0,mac=52:54:00:68:BB:AC,host_ifname=vif-h63jg7pp,host_mac=52:54:00:68:BB:AC"
             #
