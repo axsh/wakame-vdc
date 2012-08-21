@@ -18,7 +18,7 @@ module Dcmgr
       # Decorator pattern class of Rpc::HvaHandler::HvaContext.
       class OvzContext
         def initialize(root_ctx)
-          raise ArgumentError unless root_ctx.is_a?(Rpc::HvaHandler::HvaContext)
+          raise ArgumentError unless root_ctx.is_a?(Rpc::HvaContext)
           @subject = root_ctx
         end
         
@@ -37,7 +37,7 @@ module Dcmgr
       end
 
       before do
-        @args = @args.map {|i|  i.is_a?(Rpc::HvaHandler::HvaContext) ? OvzContext.new(i) : i; }
+        @args = @args.map {|i|  i.is_a?(Rpc::HvaContext) ? OvzContext.new(i) : i; }
         # First arugment is expected a HvaContext.
         @hc = @args.first
       end
