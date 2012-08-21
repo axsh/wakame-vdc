@@ -229,7 +229,18 @@ module Dcmgr::Models
     end
 
     def to_api_document
-      to_hash.merge(:id=>self.canonical_uuid)
+      h = super
+      h.merge!({ :dc_network => self.dc_network ? self.dc_network.to_api_document : nil,
+                 :nat_network_id => self.nat_network ? self.nat_network.canonical_uuid : nil,
+                 :network_services => [],
+               })
+      [:dc_network_id, :gateway_network_id].each { |k| h.delete(k) }
+
+      self.network_service.each { |service|
+        h[:network_services] << service.to_api_document
+      }
+
+      h
     end
 
     def before_destroy
