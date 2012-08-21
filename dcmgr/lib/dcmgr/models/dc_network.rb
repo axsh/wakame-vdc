@@ -42,10 +42,5 @@ module Dcmgr::Models
       h
     end
 
-    def to_api_document
-      h = to_hash
-      [:id, :vlan_lease_id].each { |k| h.delete(k) }
-      h
-    end
   end
 end
