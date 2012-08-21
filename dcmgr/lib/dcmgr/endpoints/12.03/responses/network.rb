@@ -8,9 +8,7 @@ module Dcmgr::Endpoints::V1203::Responses
     end
 
     def generate()
-      @network.instance_exec {
-        to_hash.merge(:id=>canonical_uuid)
-      }
+      @network.to_api_document
     end
   end
 
@@ -52,6 +50,30 @@ module Dcmgr::Endpoints::V1203::Responses
     def generate()
       @ds.all.map { |i|
         NetworkVif.new(i).generate
+      }
+    end
+  end
+
+  class NetworkService < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(object)
+      raise ArgumentError if !object.is_a?(Dcmgr::Models::NetworkService)
+      @object = object
+    end
+
+    def generate()
+      @object.to_api_document
+    end
+  end
+
+  class NetworkServiceCollection < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(ds)
+      raise ArgumentError if !ds.is_a?(Sequel::Dataset)
+      @ds = ds
+    end
+
+    def generate()
+      @ds.all.map { |i|
+        NetworkService.new(i).generate
       }
     end
   end
