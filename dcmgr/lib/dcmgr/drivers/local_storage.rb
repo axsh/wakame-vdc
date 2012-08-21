@@ -11,7 +11,7 @@ module Dcmgr::Drivers
     include CommandAPI
     
     def download_command(src_bo, dst_path)
-      ["cat %s", [normalize_path(dst_path)]]
+      ["cat %s", [normalize_path(abs_path(src_bo))]]
     end
 
     def upload_command(src_path, dst_bo)
