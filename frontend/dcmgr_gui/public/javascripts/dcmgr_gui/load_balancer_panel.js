@@ -29,7 +29,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 
   var close_button_name = $.i18n.prop('close_button');
   var create_button_name = $.i18n.prop('create_button');
-  var delete_button_name = $.i18n.prop('delete_button');
+  var delete_button_name = $.i18n.prop('delete_load_balancer_button');
   var register_button_name = $.i18n.prop('register_button');
   var unregister_button_name = $.i18n.prop('unregister_button');
   var poweron_button_name =$.i18n.prop('poweron_button');
@@ -481,13 +481,6 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     bt_create_load_balancer.open();
   });
 
-  bt_delete_load_balancer.target.bind('click',function(){
-    var id = c_list.currentChecked();
-    if( id ){
-      bt_delete_load_balancer.open({"ids":[id]});
-    }
-  });
-
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){
     c_list.clearCheckedList();
     $('#detail').html('');
@@ -509,6 +502,9 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
         case 'unregister':
           bt_unregister_load_balancer.open({ids: [selected_id]});
           break;
+        case 'delete':
+          bt_delete_load_balancer.open({ids: [selected_id]});
+          break;
         case 'poweron':
           bt_poweron_instance.open({ids: [selected_id]});
           break;
@@ -522,7 +518,6 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   selectmenu.data('selectmenu').disableButton();
 
   $(bt_create_load_balancer.target).button({ disabled: false });
-  $(bt_delete_load_balancer.target).button({ disabled: false });
   $(bt_refresh.target).button({ disabled: false });
 
   var actions = {};

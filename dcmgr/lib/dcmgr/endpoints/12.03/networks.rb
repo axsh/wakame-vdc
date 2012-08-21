@@ -246,6 +246,37 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     respond_with(R::NetworkVif.new(vif).generate)
   end
 
+  get '/:id/services' do
+    # description 'List services on this network'
+    # params start, fixnum, optional
+    # params limit, fixnum, optional
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+    ds = nw.network_service
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::NetworkServiceCollection.new(paging_ds).generate
+    end
+  end
+
+  post '/:id/services' do
+    # description 'Register new service on the network'
+    # params id, string, required
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+
+    service_data = {
+      :name => params[:name],
+      :incoming_port => params[:incoming_port],
+      :outcoming_port => params[:outcoming_port],
+      :network_vif_id => nw.add_service_vif(params[:ipv4]).id
+    }
+
+    service = M::NetworkService.create(service_data)
+
+    respond_with(R::NetworkService.new(service).generate)
+  end
+
   # # Make GRE tunnels, currently used for testing purposes.
   # post '/:id/tunnels' do
   #   # description 'Create a tunnel on this network'

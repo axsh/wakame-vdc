@@ -58,13 +58,13 @@ DcmgrGUI.prototype.storageNodePanel = function(){
     var results = data.storage_node.results;
     var size = results.length;
     for(var i = 0; i < size; i++) {
-      results[i].result.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(results[i].result.offering_disk_space);
+      results[i].result.offering_disk_space = DcmgrGUI.Converter.fromBtoKB(results[i].result.offering_disk_space);
     }
     return data;
   });
   
   c_list.detail_filter.add(function(data){
-    data.item.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(data.item.offering_disk_space);
+    data.item.offering_disk_space = DcmgrGUI.Converter.fromBtoKB(data.item.offering_disk_space);
     return data;
   });
   
