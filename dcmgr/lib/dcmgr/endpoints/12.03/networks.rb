@@ -264,6 +264,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params id, string, required
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
+    raise E::NetworkNotPermitted, params[:id] if !nw.editable
 
     service_data = {
       :name => params[:name],
