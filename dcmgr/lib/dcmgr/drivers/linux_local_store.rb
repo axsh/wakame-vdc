@@ -89,13 +89,14 @@ module Dcmgr
       def upload_image(inst, ctx, bo, evcb)
         @ctx = ctx
         take_snapshot_for_backup()
+        snapshot_path = ctx.os_devpath
 
         Task::TaskSession.current[:backup_storage] = bo[:backup_storage]
         @bkst_drv_class = BackupStorage.driver_class(bo[:backup_storage][:storage_type])
         
         # upload image file
         if @bkst_drv_class.include?(BackupStorage::CommandAPI)
-          archive_from_snapshot(ctx, ctx.os_devpath) do |cmd_tuple, chksum_path, size_path|
+          archive_from_snapshot(ctx, snapshot_path) do |cmd_tuple, chksum_path, size_path|
             cmd_tuple2 = invoke_task(@bkst_drv_class,
                                      :upload_command, [nil, bo])
 
@@ -109,7 +110,7 @@ module Dcmgr
             evcb.setattr(chksum, alloc_size.to_i)
           end
         else
-          archive_from_snapshot(ctx, ctx.os_devpath) do |cmd_tuple, chksum_path, size_path|
+          archive_from_snapshot(ctx, snapshot_path) do |cmd_tuple, chksum_path, size_path|
             begin
               bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
               
@@ -120,7 +121,7 @@ module Dcmgr
               alloc_size = File.size(bkup_tmp_path)
               chksum = File.read(chksum_path).split(/\s+/).first
               
-              evcb.setattr(chksum, alloc_size)
+              evcb.setattr(chksum, alloc_size.to_i)
               
               invoke_task(@bkst_drv_class,
                           :upload, [bkup_tmp_path, bo])
