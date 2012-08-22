@@ -190,6 +190,7 @@ module Dcmgr
       def poweron_instance(hc)
         connect_monitor(hc) { |t|
           t.cmd("system_reset")
+          t.cmd("cont")
         }
       end
 
