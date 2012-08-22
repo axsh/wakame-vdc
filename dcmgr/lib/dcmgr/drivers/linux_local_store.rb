@@ -16,11 +16,6 @@ module Dcmgr
         img_src_uri = inst[:image][:backup_object][:uri]
         vmimg_basename = inst[:image][:backup_object][:uuid]
 
-        # TODO: Does not support tgz file format in the future.
-        if inst[:image][:file_format] == 'tgz'
-          vmimg_basename += '.tar.gz'
-        end
-
         Task::TaskSession.current[:backup_storage] = inst[:image][:backup_object][:backup_storage]
         @bkst_drv_class = BackupStorage.driver_class(inst[:image][:backup_object][:backup_storage][:storage_type])
         
@@ -65,19 +60,18 @@ module Dcmgr
                            ctx.os_devpath]
           shell.run!(*cmd_tuple)
         when :tar
-          cmd_tuple[0] << "| #{pv_command} tar -xS -C %s"
-          cmd_tuple[1] += [ctx.inst_data_dir]
-          shell.run!(*cmd_tuple)
+          Dir.mktmpdir(nil, ctx.inst_data_dir) { |tmpdir|
+            # expect only one file is contained.
+            lst = shell.run!("tar -tf #{vmimg_cache_path()}").out.split("\n")
+            cmd_tuple[0] << "| #{pv_command} tar -xS -C %s"
+            cmd_tuple[1] += [tmpdir]
+            shell.run!(*cmd_tuple)
+            File.rename(File.expand_path(lst.first, tmpdir), ctx.os_devpath)
+          }
         else
           cmd_tuple[0] << "| #{pv_command} cp -p --sparse=always /dev/stdin %s"
           cmd_tuple[1] += [ctx.os_devpath]
           shell.run!(*cmd_tuple)
-        end
-
-        case inst[:image][:file_format]
-        when "raw"
-        else
-          raise "Unsupported image file format: #{inst[:image][:file_format]}"
         end
 
       ensure

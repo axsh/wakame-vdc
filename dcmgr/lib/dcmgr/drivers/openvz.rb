@@ -92,7 +92,15 @@ module Dcmgr
         image = inst[:image]
         case image[:file_format]
         when "tgz"
-          ostemplate = File.basename(image[:backup_object][:uuid], ".tar.gz")
+          # OpenvzLocalStore driver downloads the file under /vz/template/cache. it places the file without extention.
+          # but "vzctl create" expects that the file name has the extension. so the line below creates hard link to
+          # the path name with extention of archiver type.
+
+          # remove existing 
+          File.unlink(File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)) rescue nil
+          sh("ln %s %s", [File.expand_path(image[:backup_object][:uuid], config.template_cache),
+                          File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)])
+          ostemplate = image[:backup_object][:uuid]
           # create vm and config file
           sh("vzctl create %s --ostemplate %s --config %s",[ctid, ostemplate, hypervisor])
           logger.debug("created container #{private_folder}")
