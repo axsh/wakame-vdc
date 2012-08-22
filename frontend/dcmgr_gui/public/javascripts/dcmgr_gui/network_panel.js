@@ -81,8 +81,8 @@ DcmgrGUI.prototype.networkPanel = function(){
 
     bt_edit_network = new DcmgrGUI.Dialog({
       target:'.edit_network',
-      width:500,
-      height:200,
+      width:600,
+      height:600,
       title:$.i18n.prop('edit_network_header'),
       path:'/edit_network',
       button: edit_network_buttons,

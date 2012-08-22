@@ -113,7 +113,23 @@
 	padding: 3px;
 }
 
+#dc_network_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 490px;
+}
+
 #dhcp_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 490px;
+}
+
+#network_services_field {
   border: 1px solid gray;
   padding: 10px;
   margin-top: 15px;

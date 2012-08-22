@@ -139,13 +139,18 @@ ja:
       prefix: "Prefix"
       ip_assignment: "IP Assignment"
     edit_network:
-      header: "Edit Network"
-      network_id: "Network ID"
-      display_name: "Network Name"
+      header: "ネットワークを編集"
+      network_id: "ネットワークID"
+      display_name: "ネットワーク名"
       dhcp_group: "DHCP"
       dhcp_ranges: "Ranges"
       edit_dhcp_ranges: "Add/Remove"
       add_dhcp_range: "Add"
+      dc_network: "DCネットワーク"
+      dc_network_id: "ID"
+      dc_network_name: "DCネットワーク名"
+      dc_network_description: "説明"
+      dc_network_allow_new_networks: "Allow new networks"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:
@@ -531,7 +536,7 @@ ja:
   networks:
     header: "ネットワーク"
     button:
-      edit_network: "Edit"
+      edit_network: "編集"
       view_network: "View"
       create_network: "Create Network"
       delete_network: "Delete Network"
