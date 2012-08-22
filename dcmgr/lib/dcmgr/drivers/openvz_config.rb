@@ -29,4 +29,8 @@ class OpenvzConfig
   def template
     @config["TEMPLATE"]
   end
+
+  def template_cache
+    File.join(@config["TEMPLATE"], 'cache')
+  end
 end

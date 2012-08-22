@@ -17,7 +17,7 @@ module Dcmgr
       protected
 
       def vmimg_cache_dir
-        File.expand_path("cache", OpenvzConfig.new.template)
+        OpenvzConfig.new.template_cache
       end
     end
   end
