@@ -146,11 +146,20 @@ ja:
       dhcp_ranges: "Ranges"
       edit_dhcp_ranges: "Add/Remove"
       add_dhcp_range: "Add"
-      dc_network: "DCネットワーク"
-      dc_network_id: "ID"
-      dc_network_name: "DCネットワーク名"
-      dc_network_description: "説明"
-      dc_network_allow_new_networks: "Allow new networks"
+      dc_network:
+        header: "DCネットワーク"
+        id: "ID"
+        name: "DCネットワーク名"
+        description: "説明"
+        allow_new_networks: "Allow new networks"
+      service:
+        header: "サービス"
+        name: "サービス名"
+        vif_id: "Vif ID"
+        address: "IPアドレス"
+        mac_addr: "Macアドレス"
+        incoming_port: "Incoming Port"
+        outgoing_port: "Outgoing Port"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:

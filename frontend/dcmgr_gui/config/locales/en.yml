@@ -147,11 +147,20 @@ en:
       dhcp_ranges: "Ranges"
       edit_dhcp_ranges: "Add/Remove"
       add_dhcp_range: "Add"
-      dc_network: "DC Network"
-      dc_network_id: "UUID"
-      dc_network_name: "Name"
-      dc_network_description: "Description"
-      dc_network_allow_new_networks: "Allow new networks"
+      dc_network:
+        header: "DC Network"
+        id: "ID"
+        name: "Name"
+        description: "Description"
+        allow_new_networks: "Allow new networks"
+      service:
+        header: "Service"
+        name: "Name"
+        vif_id: "Vif ID"
+        address: "IP Address"
+        mac_addr: "Mac Address"
+        incoming_port: "Incoming Port"
+        outgoing_port: "Outgoing Port"
     create_security_group:
       header: "Create Security Group"
     edit_security_group:
