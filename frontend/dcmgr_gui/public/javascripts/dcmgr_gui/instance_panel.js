@@ -452,8 +452,23 @@ DcmgrGUI.prototype.instancePanel = function(){
     handleWidth: 26,
     style:'dropdown',
     select: function(event){
-      var select_action = $(this).val()
-      var selected_ids = c_list.getCheckedInstanceIds();
+      var select_action = $(this).val();
+      var selected_ids = c_list.currentMultiChecked();
+      var ids = selected_ids['ids'];
+      var is_open_poweroff = true;
+      var is_open_poweron = true;
+      $.each(ids, function(key,uuid){
+	var row_id = '#row-'+uuid;
+	var state = $(row_id).find('.state').text();
+	switch(state){
+	  case 'running':
+	    is_open_poweron = false;
+	    break;
+	  case 'halted':
+	    is_open_poweroff = false;
+	    break;
+	}
+      });
       switch(select_action) {
       case 'terminate':
         bt_instance_terminate.open(selected_ids);
@@ -468,10 +483,14 @@ DcmgrGUI.prototype.instancePanel = function(){
         bt_instance_stop.open(selected_ids);
         break;
       case 'poweroff':
-        bt_instance_poweroff.open(selected_ids);
+	if(is_open_poweroff){
+          bt_instance_poweroff.open(selected_ids);
+	}
         break;
       case 'poweron':
-        bt_instance_poweron.open(selected_ids);
+	if(is_open_poweron){
+          bt_instance_poweron.open(selected_ids);
+	}
         break;
       }
     }
