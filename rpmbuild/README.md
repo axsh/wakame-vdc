@@ -62,9 +62,11 @@ Pre-setup Dcmgr
 
 ### webui
 
-    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/database.yml.example      /etc/wakame-vdc/dcmgr_gui/database.yml
-    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/dcmgr_gui.yml.example     /etc/wakame-vdc/dcmgr_gui/dcmgr_gui.yml
-    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/instance_spec.yml.example /etc/wakame-vdc/dcmgr_gui/instance_spec.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/database.yml.example           /etc/wakame-vdc/dcmgr_gui/database.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/dcmgr_gui.yml.example          /etc/wakame-vdc/dcmgr_gui/dcmgr_gui.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/instance_spec.yml.example      /etc/wakame-vdc/dcmgr_gui/instance_spec.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/load_balancer_spec.yml.example /etc/wakame-vdc/dcmgr_gui/load_balancer_spec.yml
+
 
 ### pre-setup proxy
 
@@ -125,15 +127,12 @@ The amqp server to use is specified in a configuration file.
 Creating Database
 -----------------
 
-    # for dbname in wakame_dcmgr wakame_dcmgr_gui; do
-      mysqladmin -uroot create ${dbname}
-    done
-
+    # for dbname in wakame_dcmgr wakame_dcmgr_gui; do mysqladmin -uroot create ${dbname}; done
     # export PATH=$PATH:/opt/axsh/wakame-vdc/ruby/bin
     # cd /opt/axsh/wakame-vdc/dcmgr
     # bundle exec rake db:init
     # cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui
-    # bundle exec rake db:init db:sample_data oauth:create_table
+    # bundle exec rake db:init
 
 
 Developer Zone
