@@ -459,8 +459,8 @@ module Dcmgr
           raise VNicNotFoundError, "VNic not found in cache: '#{vnic_id}'" if vnic_map.nil?
           friends = {}
           vnic_map[:security_groups].each {|group_id|
-            friends.merge @cache[:security_groups][group_id][:local_vnics]
-            friends.merge @cache[:security_groups][group_id][:foreign_vnics]
+            friends.merge! @cache[:security_groups][group_id][:local_vnics]
+            friends.merge! @cache[:security_groups][group_id][:foreign_vnics]
           }
 
           friends.delete vnic_map[:uuid]
