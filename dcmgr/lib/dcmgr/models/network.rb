@@ -43,6 +43,13 @@ module Dcmgr::Models
     end
 
     def add_service_vif(ipv4)
+      ip_lease = self.find_ip_lease(ipv4)
+
+      if ip_lease
+        # Verify vif is service vif.
+        return ip_lease.network_vif
+      end
+
       m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
 
       vif_data = {
@@ -226,10 +233,6 @@ module Dcmgr::Models
       }
 
       h
-    end
-
-    def to_api_document
-      to_hash.merge(:id=>self.canonical_uuid)
     end
 
     def before_destroy
