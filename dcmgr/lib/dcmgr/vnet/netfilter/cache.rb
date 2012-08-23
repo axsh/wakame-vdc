@@ -246,7 +246,7 @@ module Dcmgr
         end
         
         def is_local_vnic_in_group?(vnic_id,group_id)
-          (not @cache[:security_groups][group_id].nil?) && @cache[:security_groups][group_id].has_key?(vnic_id)
+          (not @cache[:security_groups][group_id].nil?) && @cache[:security_groups][group_id][:local_vnics].has_key?(vnic_id)
         end
 
         def is_foreign_vnic?(vnic_id)
@@ -479,6 +479,13 @@ module Dcmgr
 
         def get_network(network_id)
           deep_clone @cache[:networks][network_id]
+        end
+        
+        #################
+        # Debug methods #
+        #################
+        def dump
+          logger.debug @cache
         end
 
       end
