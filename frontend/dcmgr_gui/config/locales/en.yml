@@ -146,7 +146,7 @@ en:
       dhcp_group: "DHCP"
       dhcp_ranges: "Ranges"
       edit_dhcp_ranges: "Add/Remove"
-      add_dhcp_range: "Add"
+      add_dhcp_range: "Add Range"
       dc_network:
         header: "DC Network"
         id: "ID"
@@ -161,6 +161,7 @@ en:
         mac_addr: "Mac Address"
         incoming_port: "Incoming Port"
         outgoing_port: "Outgoing Port"
+        add: "Add Service"
     create_security_group:
       header: "Create Security Group"
     edit_security_group:

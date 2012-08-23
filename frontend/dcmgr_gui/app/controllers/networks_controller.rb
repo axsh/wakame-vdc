@@ -80,6 +80,19 @@ class NetworksController < ApplicationController
     end
   end
 
+  def create_service
+    catch_error do
+      data = {
+        :name => params[:name],
+        :ipv4 => params[:ipv4],
+        :incoming_port => params[:incoming_port],
+        :outgoing_port => params[:outgoing_port],
+      }
+      service = Hijiki::DcmgrResource::NetworkService.create(params[:id], data)
+      render :json => service
+    end
+  end
+
   def total
     catch_error do
       all_resource_count = Hijiki::DcmgrResource::Network.total_resource

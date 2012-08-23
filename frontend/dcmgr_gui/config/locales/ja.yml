@@ -160,6 +160,7 @@ ja:
         mac_addr: "Macアドレス"
         incoming_port: "Incoming Port"
         outgoing_port: "Outgoing Port"
+        add: "Add Service"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:

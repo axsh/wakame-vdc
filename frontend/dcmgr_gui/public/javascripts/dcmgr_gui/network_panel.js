@@ -132,6 +132,25 @@ DcmgrGUI.prototype.networkPanel = function(){
           });
         });
 
+        $(self).find('#service_add').click(function() {
+          var service_name = $(self).find('#service_name').val();
+          var service_address = $(self).find('#service_address').val();
+          var service_incoming_port = $(self).find('#service_incoming_port').val();
+          var service_outgoing_port = $(self).find('#service_outgoing_port').val();
+
+          var data = "name=" + service_name
+            + "&ipv4=" + service_address
+            + "&incoming_port=" + service_incoming_port
+            + "&outgoing_port=" + service_outgoing_port;
+          
+          request.post({
+            "url": '/networks/'+ network_id +'/services.json',
+            "data": data,
+            success: function(json,status) {
+            }
+          });          
+        });
+
         parallel({
           // get dhcp ranges
           dhcp_ranges: refresh_dhcp_ranges()
