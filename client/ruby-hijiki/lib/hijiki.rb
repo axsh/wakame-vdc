@@ -50,6 +50,7 @@ module Hijiki
       autoload :InstanceSpec,   'hijiki/dcmgr_resource/12.03/instance_spec'
       autoload :Network,        'hijiki/dcmgr_resource/12.03/network'
       autoload :NetworkVif,     'hijiki/dcmgr_resource/12.03/network_vif'
+      autoload :NetworkService, 'hijiki/dcmgr_resource/12.03/network_service'
       autoload :SecurityGroup,  'hijiki/dcmgr_resource/12.03/security_group'
       autoload :SshKeyPair,     'hijiki/dcmgr_resource/12.03/ssh_key_pair'
       autoload :StorageNode,    'hijiki/dcmgr_resource/12.03/storage_node'

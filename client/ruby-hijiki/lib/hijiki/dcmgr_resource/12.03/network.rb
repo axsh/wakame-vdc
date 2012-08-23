@@ -68,6 +68,14 @@ module Hijiki::DcmgrResource::V1203
       NetworkVif.find(vif_id, :params => { :network_id => self.id })
     end
 
+    def find_service(service_name)
+      NetworkService.find(service_name, :params => { :network_id => self.id })
+    end
+
+    def list_services
+      NetworkService.list(:network_id => self.id)
+    end
+
     def get_dhcp_ranges
       self.get(:dhcp_ranges)
     end
