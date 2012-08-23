@@ -120,7 +120,7 @@ module Dcmgr
             raise "VNic #{vnic_id} doesn't exist" if result.nil?
 
             @cache[:security_groups][group_id][result[:node_id] == @node.node_id ? :local_vnics : :foreign_vnics][vnic_id] = result[:vnic]
-            
+            logger.debug "#{vnic_id} is a #{result[:node_id] == @node.node_id ? "local" : "foreign"} vnic in #{group_id}"
             # Add to referencers and referencees
             @cache[:security_groups].values.each { |group|
               group[:referencees][group_id][vnic_id] = result[:vnic] if group[:referencees].has_key?(group_id)
