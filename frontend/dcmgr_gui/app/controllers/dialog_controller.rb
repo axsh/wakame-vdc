@@ -304,6 +304,11 @@ class DialogController < ApplicationController
   end
 
   def active_standby_load_balancer
+    catch_error do
+      @load_balancer_id = params[:ids][0]
+      @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+      @display_name = @load_balancer["display_name"]
+    end
   end
 
 end

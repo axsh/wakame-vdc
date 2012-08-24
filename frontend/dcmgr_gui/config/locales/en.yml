@@ -286,6 +286,14 @@ en:
       header: "Register Load Balancer"
       instances: "Instances"
       register_instances: "Register Instance"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
+    unregister_load_balancer:
+      header: "Unregister Load Balancer"
+      instances: "Instances"
+      unregister_instances: "Unregister Instance"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
     poweron_instances:
       header: "PowerOn Instances"
       message: "Are you sure you want to turn those instances on?"
@@ -296,6 +304,9 @@ en:
       message: "Are you sure you want to turn those instances off?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+    active_standby_load_balancer:
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
   login:
     login: "Log In"
     user: "User"

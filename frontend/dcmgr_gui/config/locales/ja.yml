@@ -286,6 +286,14 @@ ja:
       header: "インスタンスの割り当て"
       instances: "インスタンス"
       register_instances: "割り当て"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
+    unregister_load_balancer:
+      header: "インスタンスの解除"
+      instances: "インスタンス"
+      unregister_instances: "解除"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
     poweron_instances:
       header: "インスタンスの電源オフ"
       message: "インスタンスの電源をオンにします。よろしいですか？"
@@ -296,6 +304,9 @@ ja:
       message: "インスタンスの電源をオフにします。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+    active_standby_load_balancer:
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
   login:
     login: "ログイン"
     user: "ユーザー"
