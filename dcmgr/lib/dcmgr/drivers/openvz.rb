@@ -85,7 +85,7 @@ module Dcmgr
         logger.debug("write a openvz container id #{ctid_file_path}")
         
         # delete old config file
-        config_file_path = "#{config.ve_config_dir}/#{ctid}.conf" 
+        config_file_path = "#{config.ve_config_dir}/#{ctid}.conf"
         mount_file_path = "#{config.ve_config_dir}/#{ctid}.mount"
         if File.exists?(config_file_path)
           File.unlink(config_file_path)
@@ -141,7 +141,7 @@ module Dcmgr
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
           unless image[:root_device].nil?
             # creating loop devices
-            mapdevs = sh("kpartx -va %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
+            mapdevs = sh("kpartx -avs %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
             new_device_file = mapdevs[:stdout].split("\n").map {|mapdev| "/dev/mapper/#{mapdev}"}
             #
             # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
@@ -222,11 +222,11 @@ module Dcmgr
         # 
         
         # mount metadata drive
-        hn_metadata_path = "#{config.ve_root}/#{ctid}/metadata"
+        hn_metadata_path = "#{hc.config.ve_root}/#{ctid}/metadata"
         ve_metadata_path = "#{hc.inst_data_dir}/metadata"
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
         raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)
-        res = sh("kpartx -av %s", [hc.metadata_img_path])
+        res = sh("kpartx -avs %s", [hc.metadata_img_path])
         if res[:stdout] =~ /^add map (\w+) /
           lodev="/dev/mapper/#{$1}"
         else
@@ -260,15 +260,6 @@ module Dcmgr
       end
 
       def terminate_instance(hc)
-        # load openvz conf
-        config = OpenvzConfig.new
-        
-        # openvz container id
-        ctid = hc.inst[:id]
-        
-        # container directory
-        private_dir = "#{config.ve_private}/#{ctid}"
-        
         # stop container
         sh("vzctl stop %s",[hc.inst_id])
 
@@ -276,18 +267,17 @@ module Dcmgr
         tryagain do
           sh("vzctl status %s", [hc.inst_id])[:stdout].chomp.include?("down")
         end
-        logger.debug("stop container #{hc.inst_id}")
+        hc.logger.info("Stop container.")
         
         case hc.inst[:image][:file_format]
         when "raw"
           # umount vm image directory
-          raise "private directory does not exist #{private_dir}" unless File.directory?(private_dir)
-          sh("umount -l %s", [private_dir])
-          logger.debug("unmounted private directory #{private_dir}")
+          raise "private directory does not exist #{hc.private_dir}" unless File.directory?(hc.private_dir)
+          sh("umount -l %s", [hc.private_dir])
+          hc.logger.debug("unmounted private directory #{hc.private_dir}")
           if hc.inst[:image][:root_device]
             # delete device maps
-            img_file_path = "#{hc.inst_data_dir}/#{hc.inst_id}"
-            sh("kpartx -d -s -v %s", [img_file_path])
+            sh("kpartx -d -s -v %s", [hc.os_devpath])
             # wait udev queue
             sh("udevadm settle")
           end
@@ -301,30 +291,30 @@ module Dcmgr
         # > ioctl: LOOP_CLR_FD: Device or resource busy
         #
         sh("umount %s/metadata", [hc.inst_data_dir])
-        sh("kpartx -d %s", [hc.metadata_img_path])
+        sh("kpartx -dvs %s", [hc.metadata_img_path])
         sh("udevadm settle")
-        logger.info("unmounted metadata directory #{hc.inst_data_dir}/metadata")
+        hc.logger.info("Umounted metadata directory #{hc.inst_data_dir}/metadata")
         
         # delete container folder
         sh("vzctl destroy %s",[hc.inst_id])
-        logger.debug("delete container folder #{private_dir}")
-        # delete config file and mount file
-        container_config = "#{config.ve_config_dir}/#{ctid}"
-        config_file_path = "#{container_config}.conf.destroyed"
-        mount_file_path = "#{container_config}.mount.destroyed"
-        raise "config file does not exist #{config_file_path}" unless File.exist?(config_file_path)
-        raise "mount file does not exist #{mount_file_path}" unless File.exist?(mount_file_path)
+        hc.logger.debug("delete container folder #{hc.private_dir}")
+        # delete CT local config files
+        hc.ct_local_confs.map { |i| i + ".destroyed" }.each { |i|
+          if File.exist?(i)
+            File.unlink(i) rescue nil
+            hc.logger.info("Deleted CT config: #{File.basename(i)}")
+          else
+            hc.logger.warn("#{File.basename(i)} does not exist")
+          end
+        }
 
-        File.unlink(config_file_path, mount_file_path)
-        logger.debug("delete config file #{config_file_path}")
-        logger.debug("delete mount file #{mount_file_path}")
+        hc.logger.info("Terminated successfully.")
       end
       
       def reboot_instance(hc)
         # reboot container
         sh("vzctl restart %s", [hc.inst_id])
-        logger.debug("restart container #{hc.inst_id}")
-        
+        hc.logger.info("Restarted container.")
       end
 
       def poweroff_instance(hc)
