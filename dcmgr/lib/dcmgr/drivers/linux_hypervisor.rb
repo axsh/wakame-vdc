@@ -135,7 +135,7 @@ module Dcmgr
           }
         ensure
           # ignore any errors from cleanup work.
-          sh("/bin/umount %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
+          sh("/bin/umount -l %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
           sh("kpartx -d %s", [hc.metadata_img_path]) rescue logger.warn($!.message)
           sh("udevadm settle")
         end
