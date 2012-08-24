@@ -262,6 +262,7 @@ body{
 }
 
 #content #signin_form fieldset div#error_message {
+  font-size: 1mm;
   padding-left: 10px;
   color: red;
 }
