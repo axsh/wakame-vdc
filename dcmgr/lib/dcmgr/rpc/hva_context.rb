@@ -24,7 +24,7 @@ module Dcmgr
       end
 
       def os_devpath
-        @hva.instance_variable_get(:@os_devpath)
+        @hva.instance_variable_get(:@os_devpath) || File.expand_path(self.inst[:uuid], self.inst_data_dir)
       end
 
       def metadata_img_path

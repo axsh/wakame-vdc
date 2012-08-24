@@ -20,10 +20,34 @@ module Dcmgr
         def initialize(root_ctx)
           raise ArgumentError unless root_ctx.is_a?(Rpc::HvaContext)
           @subject = root_ctx
+          @ovz_config = OpenvzConfig.new
         end
+
+        attr_reader :ovz_config
+        alias :config :ovz_config
         
         def ctid
           inst[:id]
+        end
+
+        def private_dir
+          File.expand_path(ctid.to_s, config.ve_private)
+        end
+
+        def ct_umount_path
+          File.expand_path("#{ctid}.umount", config.ve_config_dir)
+        end
+        
+        def ct_mount_path
+          File.expand_path("#{ctid}.mount", config.ve_config_dir)
+        end
+        
+        def ct_conf_path
+          File.expand_path("#{ctid}.conf", config.ve_config_dir)
+        end
+
+        def ct_local_confs
+          [ct_conf_path, ct_mount_path, ct_umount_path]
         end
         
         def cgroup_scope
@@ -32,7 +56,11 @@ module Dcmgr
 
         private
         def method_missing(meth, *args)
-          @subject.send(meth, *args)
+          if @subject.respond_to?(meth)
+            @subject.send(meth, *args)
+          else
+            super
+          end
         end
       end
 
@@ -208,16 +236,17 @@ module Dcmgr
         # save the loop device name for the metadata drive.
         File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
         sh("mount -o ro %s %s", [lodev, ve_metadata_path])
-        logger.debug("mount #{hc.metadata_img_path} to #{ve_metadata_path}")
         
         # generate openvz mount config
-        render_template('template.mount', mount_file_path, binding)
-        sh("chmod +x %s", [mount_file_path])
-        logger.debug("created config #{mount_file_path}")
+        render_template('template.mount', hc.ct_mount_path, binding)
+        render_template('template.umount', hc.ct_umount_path, binding)
+        sh("chmod +x %s", [hc.ct_umount_path])
+        sh("chmod +x %s", [hc.ct_mount_path])
+        hc.logger.info("Created config #{mount_file_path}")
         
         # start openvz container
         sh("vzctl start %s",[hc.inst_id])
-        logger.debug("started container")
+        hc.logger.info("Started container")
 
         # Set blkio throttling policy to vm_data_dir block device.
         cgroup_set('blkio', hc.cgroup_scope) do |c|
