@@ -269,7 +269,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     service_data = {
       :name => params[:name],
       :incoming_port => params[:incoming_port],
-      :outcoming_port => params[:outgoing_port],
+      :outgoing_port => params[:outgoing_port],
       :network_vif_id => nw.add_service_vif(params[:ipv4]).id
     }
 

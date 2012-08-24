@@ -256,7 +256,7 @@ __END
         :network_vif_id => vif.id,
         :name => 'dhcp',
         :incoming_port => 67,
-        :outcoming_port => 68,
+        :outgoing_port => 68,
       }
       
       M::NetworkService.create(service_data)

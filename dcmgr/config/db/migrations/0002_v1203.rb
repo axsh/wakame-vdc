@@ -64,7 +64,7 @@ Sequel.migration do
 
       column :name, "varchar(255)", :null=>false
       column :incoming_port, "int(11)"
-      column :outcoming_port, "int(11)"
+      column :outgoing_port, "int(11)"
 
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
