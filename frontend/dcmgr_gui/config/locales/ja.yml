@@ -670,6 +670,7 @@ ja:
     code: "エラーコード"
   error_message:
     sign_in: "ユーザーは未登録です。"
+    not_entered: "ユーザーまたはパスワードが未入力です。"
     change_password1: "新規パスワードと確認用パスワードが異なります。"
     change_password2: "パスワードが異なります。"
   error_code:

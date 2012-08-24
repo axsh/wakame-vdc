@@ -11,8 +11,13 @@ class SessionsController < ApplicationController
   end
 
   def create
-    user = User.authenticate(params[:login], params[:password])
     @error_message = ''
+    if params[:login].blank? || params[:password].blank?
+      @error_message = I18n.t('error_message.not_entered')
+      @login = params[:login]
+      return render :action => 'new'
+    end
+    user = User.authenticate(params[:login], params[:password])
 
     if user
       self.current_user = user
