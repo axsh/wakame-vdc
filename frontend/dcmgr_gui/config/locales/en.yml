@@ -348,6 +348,8 @@ en:
       reboot: "Reboot"
       start: "Start"
       stop: "Stop"
+      poweron: "Power On"
+      poweroff: "Power Off"
     button:
       edit_instance: "Edit"
       backup_instance: "Backup"

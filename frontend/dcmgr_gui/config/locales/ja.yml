@@ -348,6 +348,8 @@ ja:
       reboot: "再起動"
       start: "再開"
       stop: "一時停止"
+      poweron: "パワーオン"
+      poweroff: "パワーオフ"
     button:
       edit_instance: "編集"
       backup_instance: "バックアップ"
