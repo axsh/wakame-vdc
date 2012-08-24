@@ -40,7 +40,7 @@ module Dcmgr
         
         def update_rules(group_id)
           logger.info "updating rules for group '#{group_id}'"
-          group = @cache[:security_groups].find {|g| g[:uuid] == group_id}
+          group = @cache[:security_groups][group_id]
           group[:rules] = @rpc.request('hva-collector', 'get_rules_of_security_group', group_id)
           
           nil
@@ -48,7 +48,7 @@ module Dcmgr
         
         def update_referencees(group_id)
           logger.info "updating referencees for group '#{group_id}'"
-          group = @cache[:security_groups].find {|g| g[:uuid] == group_id}
+          group = @cache[:security_groups][group_id]
           group[:referencees] = @rpc.request('hva-collector', 'get_referencees_of_security_group', group_id)
           
           nil
@@ -56,7 +56,7 @@ module Dcmgr
         
         def update_referencers(group_id)
           logger.info "updating referencers for group '#{group_id}'"
-          group = @cache[:security_groups].find {|g| g[:uuid] == group_id}
+          group = @cache[:security_groups][group_id]
           group[:referencers] = @rpc.request('hva-collector', 'get_referencers_of_security_group', group_id)
           
           nil
