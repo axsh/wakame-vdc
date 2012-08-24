@@ -11,10 +11,6 @@ module Dcmgr::Models
       hash.merge!(self.network_vif.to_hash_flat)
     end
 
-    def to_api_document
-      hash = to_hash
-    end
-
     def before_validation
       # Verify type_id.
 
