@@ -56,7 +56,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     savedata = {
       :account_id=>@account.canonical_uuid,
-      :ipv4_gw => params[:gw],
       :ipv4_network => params[:network],
       :prefix => params[:prefix].to_i,
       :network_mode => params[:network_mode],
@@ -69,6 +68,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     savedata[:display_name] = params[:display_name] if params[:display_name]
     savedata[:description] = params[:description] if params[:description]
     savedata[:domain_name] = params[:domain_name] if params[:domain_name]
+    savedata[:ipv4_gw] = params[:gw] if params[:gw]
     savedata[:ip_assignment] = params[:ip_assignment] if params[:ip_assignment]
     savedata[:editable] = params[:editable] if params[:editable]
 

@@ -14,11 +14,13 @@ class NetworksController < ApplicationController
         :dc_network => params[:dc_network],
         :network_mode => params[:network_mode],
         :ipv4_network => params[:ipv4_network],
-        :ipv4_gw => params[:ipv4_gw],
         :prefix => params[:prefix],
         :ip_assignment => params[:ip_assignment],
         :editable => 1,
       }
+
+      data[:ipv4_gw] = params[:ipv4_gw] unless params[:ipv4_gw].to_s.empty?
+
       @network = Hijiki::DcmgrResource::Network.create(data)
       render :json => @network
     end
