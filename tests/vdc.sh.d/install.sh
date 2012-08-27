@@ -18,5 +18,6 @@ distro=${distro:?"distro needs to be set"}
 (. $VDC_ROOT/tests/vdc.sh.d/install.d/tmp_dirs.sh)
 (. $VDC_ROOT/tests/vdc.sh.d/install.d/config_dcmgr.sh)
 (. $VDC_ROOT/tests/vdc.sh.d/install.d/config_frontend.sh)
+(. $VDC_ROOT/tests/vdc.sh.d/install.d/config_admin.sh)
 
 exit 0
