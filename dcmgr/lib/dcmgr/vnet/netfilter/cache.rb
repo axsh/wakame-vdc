@@ -285,6 +285,7 @@ module Dcmgr
 
         def other_local_vnics_left_in_group?(vnic_id,group_id)
           group = get_group(group_id)
+          return false if group.nil?
 
           deleted = group[:local_vnics].dup
           deleted.delete(vnic_id)
