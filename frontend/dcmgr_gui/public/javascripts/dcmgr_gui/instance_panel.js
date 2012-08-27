@@ -2,11 +2,11 @@ function attach_vif(network_id, vif_id) {
   var data = "network_id=" + network_id + "&vif_id=" + vif_id
 
   request = new DcmgrGUI.Request;
-  request.post({
-    "url": '/dialog/attach_vif',
+  request.put({
+    "url": '/networks/attach',
     "data": data,
     success: function(json,status){
-      bt_refresh.element.trigger('dcmgrGUI.refresh');
+      // bt_refresh.element.trigger('dcmgrGUI.refresh');
     }
   });
 }
@@ -15,11 +15,11 @@ function detach_vif(network_id, vif_id) {
   var data = "network_id=" + network_id + "&vif_id=" + vif_id
 
   request = new DcmgrGUI.Request;
-  request.post({
-    "url": '/dialog/detach_vif',
+  request.put({
+    "url": '/networks/detach',
     "data": data,
     success: function(json,status){
-      bt_refresh.element.trigger('dcmgrGUI.refresh');
+      // bt_refresh.element.trigger('dcmgrGUI.refresh');
     }
   });
 }

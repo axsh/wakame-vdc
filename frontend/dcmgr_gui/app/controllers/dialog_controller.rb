@@ -82,19 +82,14 @@ class DialogController < ApplicationController
     end
   end
   
-  def attach_vif
-    catch_error do
-      @vif_id = params[:vif_id]
-      @network_id = params[:network_id]
-      Hijiki::DcmgrResource::NetworkVif.find_vif(@network_id, @vif_id).attach
-    end
+  def create_network
   end
 
-  def detach_vif
+  def edit_network
     catch_error do
-      @vif_id = params[:vif_id]
-      @network_id = params[:network_id]
-      Hijiki::DcmgrResource::NetworkVif.find_vif(@network_id, @vif_id).detach
+      @network_id = params[:ids][0]
+      @network = Hijiki::DcmgrResource::Network.show(@network_id)
+      @display_name = @network["display_name"]
     end
   end
 
