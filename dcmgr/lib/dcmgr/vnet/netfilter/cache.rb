@@ -447,8 +447,8 @@ module Dcmgr
         def get_friends_in_group(vnic_id, group_id)
           friends = {}
 
-          friends.merge @cache[:security_groups][group_id][:local_vnics]
-          friends.merge @cache[:security_groups][group_id][:foreign_vnics]
+          friends.merge! @cache[:security_groups][group_id][:local_vnics]
+          friends.merge! @cache[:security_groups][group_id][:foreign_vnics]
           
           friends.delete(vnic_id)
 
