@@ -28,6 +28,7 @@ base_distro_arch=${base_distro_arch:-$(arch)}
 repo_uri=${repo_uri:-git://github.com/axsh/wakame-vdc.git}
 
 execscript=${execscript:-}
+cacheback=${cacheback:-1}
 
 root_dir="$( cd "$( dirname "$0" )" && pwd )"
 wakame_dir="${root_dir}/../.."
@@ -128,6 +129,8 @@ esac
 cat <<EOS | setarch ${arch} chroot ${dest_chroot_dir}/  bash -ex
 uname -m
 
+[[ -f /etc/yum.conf ]] && sed -i "s,^keepcache=.*,keepcache=1," /etc/yum.conf
+
 yum ${yum_opts} update -y
 yum ${yum_opts} install -y git make sudo
 
@@ -155,5 +158,9 @@ for mount_target in proc dev; do
     umount -l ${dest_chroot_dir}/${mount_target}
   }
 done
+
+[[ -z "${cacheback}" ]] || {
+  rsync -ax ${dest_chroot_dir}/var/cache/yum/ ${base_chroot_dir}/var/cache/yum/
+}
 
 echo "Complete!!"

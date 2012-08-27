@@ -135,7 +135,7 @@ ja:
     create_and_edit_security_group:
       uuid: "セキュリティグループID"
       display_name: "セキュリティグループ名"
-      description: "詳細"
+      description: "説明"
       rule: "ルール"
     delete_security_group:
       header: "セキュリティーグループを削除"
@@ -145,7 +145,7 @@ ja:
     create_and_edit_ssh_keypair:
       uuid: "キーペアID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       download_once: "1回限り"
     create_ssh_keypair:
       header: "キーペアを作成"
@@ -286,6 +286,14 @@ ja:
       header: "インスタンスの割り当て"
       instances: "インスタンス"
       register_instances: "割り当て"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
+    unregister_load_balancer:
+      header: "インスタンスの解除"
+      instances: "インスタンス"
+      unregister_instances: "解除"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
     poweron_instances:
       header: "インスタンスの電源オフ"
       message: "インスタンスの電源をオンにします。よろしいですか？"
@@ -296,6 +304,9 @@ ja:
       message: "インスタンスの電源をオフにします。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+    active_standby_load_balancer:
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
   login:
     login: "ログイン"
     user: "ユーザー"
@@ -337,6 +348,8 @@ ja:
       reboot: "再起動"
       start: "再開"
       stop: "一時停止"
+      poweron: "パワーオン"
+      poweroff: "パワーオフ"
     button:
       edit_instance: "編集"
       backup_instance: "バックアップ"
@@ -410,6 +423,7 @@ ja:
     load_balancer_actions:
       register_instance: "インスタンスの割り当て"
       unregister_instance: "インスタンスの解除"
+      delete_load_balancer: "ロードバランサ破棄"
       poweron: "パワーオン"
       poweroff: "パワーオフ"
       active_standby: "アクティブ／スタンバイ"
@@ -554,7 +568,7 @@ ja:
     list:
       access_key_id: "アクセスキーID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       secret_access_key: "シークレットキー"
       action: "アクション"
     details:
@@ -562,7 +576,7 @@ ja:
       uuid: "UUID"
       keypair_id: "キーペアID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       fingerprint: "フィンガープリント"
       created_at: "作成日"
       updated_at: "更新日"
@@ -658,6 +672,7 @@ ja:
     code: "エラーコード"
   error_message:
     sign_in: "ユーザーは未登録です。"
+    not_entered: "ユーザーまたはパスワードが未入力です。"
     change_password1: "新規パスワードと確認用パスワードが異なります。"
     change_password2: "パスワードが異なります。"
   error_code:

@@ -29,7 +29,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 
   var close_button_name = $.i18n.prop('close_button');
   var create_button_name = $.i18n.prop('create_button');
-  var delete_button_name = $.i18n.prop('delete_button');
+  var delete_button_name = $.i18n.prop('delete_load_balancer_button');
   var register_button_name = $.i18n.prop('register_button');
   var unregister_button_name = $.i18n.prop('unregister_button');
   var poweron_button_name =$.i18n.prop('poweron_button');
@@ -232,7 +232,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var bt_register_load_balancer = new DcmgrGUI.Dialog({
     target:'.register_load_balancer',
     width:583,
-    height:380,
+    height:480,
     title:$.i18n.prop('register_load_balancer_header'),
     path:'/register_load_balancer',
     callback: function(){
@@ -350,7 +350,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var bt_unregister_load_balancer = new DcmgrGUI.Dialog({
     target:'.unregister_load_balancer',
     width:583,
-    height:380,
+    height:480,
     title:$.i18n.prop('unregister_load_balancer_header'),
     path:'/unregister_load_balancer',
     callback: function(){
@@ -524,7 +524,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var bt_active_standby_load_balancer = new DcmgrGUI.Dialog({
     target:'.active_standby_load_balancer',
     width:500,
-    height:430,
+    height:480,
     title:$.i18n.prop('active_standy_load_balancer_header'),
     path:'/active_standby_load_balancer',
     callback: function(e) {
@@ -620,24 +620,13 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
 
-    //update detail
-    $.each(c_list.checked_list,function(check_id,obj){
-      $($('#detail').find('#'+check_id)).remove();
-      c_list.checked_list[check_id].c_detail.update({
-        url:DcmgrGUI.Util.getPagePath('/load_balancers/show/',check_id)
-      },true);
-    });
+    var check_id = c_list.currentChecked();
+    //remove detail element
+    $($('#detail').find('#'+check_id)).remove();
   });
 
   bt_create_load_balancer.target.bind('click',function(){
     bt_create_load_balancer.open();
-  });
-
-  bt_delete_load_balancer.target.bind('click',function(){
-    var id = c_list.currentChecked();
-    if( id ){
-      bt_delete_load_balancer.open({"ids":[id]});
-    }
   });
 
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){
@@ -667,6 +656,9 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
           if (state == 'running') {
             bt_unregister_load_balancer.open({ids: [selected_id]});
           }
+          break;
+        case 'delete':
+          bt_delete_load_balancer.open({ids: [selected_id]});
           break;
         case 'poweron':
           if (state == 'halted') {

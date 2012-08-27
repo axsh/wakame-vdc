@@ -235,14 +235,7 @@ __END
           options[:ipv4] || Error.raise("IP address is required when passing network UUID.")
 
           nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-          lease = nw.find_ip_lease(options[:ipv4])
-
-          if lease.nil?
-            nw.add_service_vif(options[:ipv4])
-            lease = nw.find_ip_lease(options[:ipv4])
-          end
-          
-          lease.network_vif
+          nw.add_service_vif(options[:ipv4])
 
         when /^vif-/
           options[:ipv4].nil? || Error.raise("Cannot pass IP address for VIF UUID.")

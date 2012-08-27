@@ -27,20 +27,20 @@ shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webd
       [[ -n "$localname" ]] || {
         localname=$(basename "$uri")
       }
+
       echo "$(basename ${meta}), ${localname} ..."
       [[ -f "$localname" ]] || {
         # TODO: use HEAD and compare local cached file size
         echo "Downloading image file $localname ..."
         f=$(basename "$uri")
-        time ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
-        # check if the file name has .gz.
-        [[ "$f" == "${f%.gz}" ]] || {
-          echo "gunzip $f with keeping sparse area ..."
-          time zcat "$f" | cp --sparse=always /dev/stdin "${f%.gz}"
+        [[ -f "$f" ]] || {
+          time ${VDC_ROOT}/dcmgr/script/parallel-curl.sh --url="$uri" --output-path="$f"
         }
-        [[ "${f%.gz}" == "$localname" ]] || {
-          echo "cp $localname with keeping sparse area ..."
-          time cp -p --sparse=always "${f%.gz}" "$localname"
+
+       # Generate raw image file from .gz compressed image file.
+        [[ "$f" != "${f%.gz}" ]] && [[ "$container_format" = "none" ]] && {
+          echo "gunzip $f with keeping sparse area ..."
+          time gunzip -c "$f" | cp --sparse=always /dev/stdin "${localname}"
         }
         # do not remove .gz as they are used for gzipped file test cases.
       }
@@ -63,13 +63,24 @@ for meta in $data_path/image-*.meta; do
       chksum=$(cat "${localpath}.md5")
     fi
     alloc_size=$(ls -l "$localpath" | awk '{print $5}')
-    if (file $localpath | grep ': gzip compressed data,' > /dev/null)
-    then
-      echo "get the uncompressed size embedded in the .gz file $localpath ..."
-      size=$(time gzip -l "$localpath" | awk -v fname="${localpath%.gz}" '$4 == fname {print $2}')
-    else
-      size=$alloc_size
-    fi
+    
+    case "$container_format" in
+      "gz")
+        echo "get the uncompressed size embedded in the .gz file $localpath ..."
+        size=$(gzip -l "$localpath" | awk -v fname="${localpath%.gz}" '$4 == fname {print $2}')
+        ;;
+      "tgz")
+        size=$(tar -ztvf "$localpath" | awk -v fname="${localname%.tar.gz}" '$6 == fname {print $3}')
+        ;;
+      "tar")
+        size=$(tar -tvf "$localpath" | awk -v fname="${localname%.tar}" '$6 == fname {print $3}')
+        ;;
+      *)
+        size=$alloc_size
+        ;;
+    esac
+
+    [[ -z "$size" ]] && { echo "Failed to get original size" 1>&2; exit 1; }
 
     shlog ./bin/vdc-manage backupobject add \
       --storage-id=bkst-demo2 \
@@ -79,6 +90,7 @@ for meta in $data_path/image-*.meta; do
       --size=$size \
       --allocation-size=$alloc_size \
       --checksum="$chksum" \
+      --container-format="$container_format" \
       --description="'kvm 32bit'"
     
     case $storetype in

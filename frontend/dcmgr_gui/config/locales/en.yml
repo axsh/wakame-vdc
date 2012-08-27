@@ -286,6 +286,14 @@ en:
       header: "Register Load Balancer"
       instances: "Instances"
       register_instances: "Register Instance"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
+    unregister_load_balancer:
+      header: "Unregister Load Balancer"
+      instances: "Instances"
+      unregister_instances: "Unregister Instance"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
     poweron_instances:
       header: "PowerOn Instances"
       message: "Are you sure you want to turn those instances on?"
@@ -296,6 +304,9 @@ en:
       message: "Are you sure you want to turn those instances off?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+    active_standby_load_balancer:
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
   login:
     login: "Log In"
     user: "User"
@@ -337,6 +348,8 @@ en:
       reboot: "Reboot"
       start: "Start"
       stop: "Stop"
+      poweron: "Power On"
+      poweroff: "Power Off"
     button:
       edit_instance: "Edit"
       backup_instance: "Backup"
@@ -411,6 +424,7 @@ en:
     load_balancer_actions:
       register_instance: "Register Instance"
       unregister_instance: "Unregister Instance"
+      delete_load_balancer: "Delete Load Balancer"
       poweron: "Power On"
       poweroff: "Power Off"
       active_standby: "Active/Standby"
@@ -668,6 +682,7 @@ en:
     code: 'ErrorCode'
   error_message:
     sign_in: "User not found."
+    not_entered: "User or Password is not entered"
     change_password1: "New password and confirm password are differenet."
     change_password2: "Password is different."
   error_code:

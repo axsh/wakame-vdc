@@ -68,7 +68,10 @@ DcmgrGUI.prototype.imagePanel = function(){
     c_list.element.find(".edit_machine_image").each(function(key,value){
       $(this).button({ disabled: false });
       var uuid = $(value).attr('id').replace(/edit_(wmi-[a-z0-9]+)/,'$1');
-      if( uuid ){
+      var row_id = '#row-'+uuid;
+      var owner = $('#mainarea_wide').find('#owner').val();
+      var image_owner = $(row_id).find('.owner').text();
+      if( uuid && owner == image_owner){
 	$(this).bind('click',function(){
 	  bt_edit_machine_image.open({"ids":[uuid]});
 	});

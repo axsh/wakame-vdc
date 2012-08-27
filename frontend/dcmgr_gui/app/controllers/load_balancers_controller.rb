@@ -112,7 +112,8 @@ class LoadBalancersController < ApplicationController
          :certificate_name => params[:certificate_name],
          :private_key => params[:private_key],
          :public_key => params[:public_key],
-         :cookie_name => params[:cookie_name]
+         :cookie_name => params[:cookie_name],
+         :target_vifs => params[:target_vifs]
        }
        load_balancer = Hijiki::DcmgrResource::LoadBalancer.update(load_balancer_id,data)
        render :json => load_balancer

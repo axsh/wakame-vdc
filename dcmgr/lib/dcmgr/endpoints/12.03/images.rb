@@ -33,7 +33,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     end
 
     if params[:state]
-      ds = if IMAGE_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *IMAGE_META_STATE
              case params[:state]
              when 'alive'
                ds.lives
@@ -42,7 +43,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif IMAGE_STATE.member?(params[:state])
+           when *IMAGE_STATE
              ds.filter(:state=>params[:state])
            else
              raise E::InvalidParameter, :state

@@ -17,4 +17,9 @@ use Dcmgr::Rack::RunInitializer, lambda {
   Dcmgr.run_initializers('sequel')
 }
 
+if defined?(::Unicorn)
+  require 'unicorn/oob_gc'
+  use Unicorn::OobGC
+end
+
 run Dcmgr::Endpoints::Ec2Metadata.new

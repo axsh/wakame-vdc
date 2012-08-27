@@ -57,27 +57,33 @@ module Dcmgr
       # are also failed to be set. They need to be checked before looked
       # up.
       def terminate_instance(state_update=false)
-        if @hva_ctx
-          task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                              :terminate_instance, [@hva_ctx])
-        end
+        ignore_error {
+          if @hva_ctx
+            task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                                :terminate_instance, [@hva_ctx])
+          end
+        }
 
-        if @inst && !@inst[:volume].nil?
-          @inst[:volume].each { |volid, v|
-            @vol_id = volid
-            @vol = v
-            # force to continue detaching volumes during termination.
-            ignore_error { detach_volume_from_host }
-            if state_update
-              update_volume_state_to_available rescue @hva_ctx.logger.error($!)
-            end
-          }
-        end
+        ignore_error { 
+          if @inst && !@inst[:volume].nil?
+            @inst[:volume].each { |volid, v|
+              @vol_id = volid
+              @vol = v
+              # force to continue detaching volumes during termination.
+              ignore_error { detach_volume_from_host }
+              if state_update
+                update_volume_state_to_available rescue @hva_ctx.logger.error($!)
+              end
+            }
+          end
+        }
         
         # cleanup vm data folder
-        unless @hva_ctx.hypervisor_driver_class == Dcmgr::Drivers::ESXi
-          FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir))
-        end
+        ignore_error {
+          unless @hva_ctx.hypervisor_driver_class == Dcmgr::Drivers::ESXi
+            FileUtils.rm_r(File.expand_path("#{@inst_id}", Dcmgr.conf.vm_data_dir))
+          end
+        }
       end
 
       def update_instance_state(opts, ev)
@@ -327,7 +333,9 @@ module Dcmgr
         @inst_id = request.args[0]
 
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
+        unless ['running', 'halted'].member?(@inst[:state].to_s)
+          raise "Invalid instance state: #{@inst[:state]}"
+        end
 
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:shuttingdown})
@@ -587,69 +595,6 @@ module Dcmgr
 
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
-      end
-
-      class HvaContext
-
-        def initialize(hvahandler)
-          raise "Invalid Class: #{hvahandler}" unless hvahandler.instance_of?(HvaHandler)
-          @hva = hvahandler
-        end
-
-        def node
-          @hva.instance_variable_get(:@node)
-        end
-
-        def inst_id
-          @hva.instance_variable_get(:@inst_id)
-        end
-
-        def inst
-          @hva.instance_variable_get(:@inst)
-        end
-
-        def os_devpath
-          @hva.instance_variable_get(:@os_devpath)
-        end
-
-        def metadata_img_path
-          File.expand_path('metadata.img', inst_data_dir)
-        end
-
-        def vol
-          @hva.instance_variable_get(:@vol)
-        end
-
-        def rpc
-          @hva.rpc
-        end
-
-        def inst_data_dir
-          File.expand_path("#{inst_id}", Dcmgr.conf.vm_data_dir)
-        end
-
-        def hypervisor_driver_class
-          Drivers::Hypervisor.driver_class(inst[:host_node][:hypervisor])
-        end
-
-        def logger
-          @instance_logger = InstanceLogger.new(self)
-        end
-
-        class InstanceLogger
-          def initialize(hva_context)
-            @hva_context = hva_context
-            @logger = ::Logger.new(Dcmgr::Logger.default_logdev)
-            @logger.progname = 'HvaHandler'
-          end
-
-          ["fatal", "error", "warn", "info", "debug"].each do |level|
-            define_method(level){|msg|
-              @logger.__send__(level, "Instance UUID: #{@hva_context.inst_id}: #{msg}")
-            }
-          end
-        end
-
       end
     end
   end

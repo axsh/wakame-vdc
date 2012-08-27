@@ -9,7 +9,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
   get do
     ds = M::BackupObject.dataset
     if params[:state]
-      ds = if BACKUP_OBJECT_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *BACKUP_OBJECT_META_STATE
              case params[:state]
              when 'alive'
                ds.alives
@@ -18,7 +19,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif BACKUP_OBJECT_STATE.member?(params[:state])
+           when *BACKUP_OBJECT_STATE
              ds.filter(:state=>params[:state])
            else
              raise E::InvalidParameter, :state

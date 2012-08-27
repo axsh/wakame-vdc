@@ -183,6 +183,19 @@ module Dcmgr
         end
       end
 
+      def poweroff_instance(hc)
+        connect_monitor(hc) { |t|
+          t.cmd("system_powerdown")
+        }
+      end
+
+      def poweron_instance(hc)
+        connect_monitor(hc) { |t|
+          t.cmd("system_reset")
+          t.cmd("cont")
+        }
+      end
+
       private
       # Establish telnet connection to KVM monitor console
       def connect_monitor(hc, &blk)

@@ -123,8 +123,12 @@ module Dcmgr
           cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a.to_s) })
 
           logger.info("Executing command: #{cmd}")
-          
-          r = exec(cmd, opts)
+          # use /bin/bash instead of /bin/sh.
+          r = if cmd =~ /[ |><]/
+                exec(['/bin/bash', '/bin/bash'], '-c', "#{cmd}")
+              else
+                exec(cmd, opts)
+              end
 
           msg = ""
           if r.success?
@@ -164,8 +168,8 @@ module Dcmgr
 
         private
 
-        def exec(cmd, opts)
-          POSIX::Spawn::Child.new(cmd, opts)
+        def exec(*args)
+          POSIX::Spawn::Child.new(*args)
         end
 
         def posix_spawn_module
@@ -189,12 +193,12 @@ module Dcmgr
             # this module is included.
             cgctx = current_cgroup_context
             if cgctx
-              if argv[0] == ["/bin/sh", "/bin/sh"] && argv[1] == "-c"
-                argv.shift
-                argv.shift
+              if argv[0].is_a?(Array)
+                h = argv.shift
+                argv.unshift(h[0])
               end
               
-              cgexec = [[File.expand_path('cgexec.sh', Dcmgr.conf.script_root_path), File.expand_path('cgexec.sh', Dcmgr.conf.script_root_path)], '-g', "#{cgctx.subsystems.join(',')}:#{cgctx.scope}", '-c']
+              cgexec = [File.expand_path('cgexec.sh', Dcmgr.conf.script_root_path), '-g', "#{cgctx.subsystems.join(',')}:#{cgctx.scope}", '-c']
               argv = cgexec + argv
             end 
             super(env, *argv, options)
@@ -228,8 +232,8 @@ module Dcmgr
 
         private
         
-        def exec(cmd, opts={})
-          Child.new(self, cmd, opts)
+        def exec(*args)
+          Child.new(self, *args)
         end
 
         def posix_spawn_module
