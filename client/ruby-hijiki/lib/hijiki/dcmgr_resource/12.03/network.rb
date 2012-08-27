@@ -57,6 +57,10 @@ module Hijiki::DcmgrResource::V1203
         object.prefix = params[:prefix]
         object.ip_assignment = params[:ip_assignment] if params[:ip_assignment]
         object.editable = params[:editable] if params[:editable]
+        
+        object.service_dhcp = params[:service_dhcp] if params[:service_dhcp]
+        object.service_dns = params[:service_dns] if params[:service_dns]
+        object.service_gateway = params[:service_gateway] if params[:service_gateway]
 
         object.save
         object

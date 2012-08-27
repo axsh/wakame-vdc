@@ -138,6 +138,12 @@ ja:
       ipv4_gw: "IPv4 ゲートウェイ"
       prefix: "Prefix"
       ip_assignment: "IP Assignment"
+      service:
+        header: "Add Services"
+        dhcp: "DHCP"
+        dns: "DNS"
+        gateway: "ゲートウェイ"
+        address: "IPアドレス"
     edit_network:
       header: "ネットワークを編集"
       network_id: "ネットワークID"

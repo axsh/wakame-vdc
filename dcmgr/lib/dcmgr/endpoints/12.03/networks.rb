@@ -76,6 +76,27 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     nw.dc_network = dc_network
     nw.save
 
+    if params[:service_dhcp]
+      M::NetworkService.create({ :name => 'dhcp',
+                                 :incoming_port => 67,
+                                 :outgoing_port => 68,
+                                 :network_vif_id => nw.add_service_vif(params[:service_dhcp]).id
+                               })
+    end    
+
+    if params[:service_dns]
+      M::NetworkService.create({ :name => 'dns',
+                                 :incoming_port => 53,
+                                 :network_vif_id => nw.add_service_vif(params[:service_dns]).id
+                               })
+    end    
+
+    if params[:service_gateway]
+      M::NetworkService.create({ :name => 'gateway',
+                                 :network_vif_id => nw.add_service_vif(params[:service_gateway]).id
+                               })
+    end    
+
     respond_with(R::Network.new(nw).generate)
   end
 

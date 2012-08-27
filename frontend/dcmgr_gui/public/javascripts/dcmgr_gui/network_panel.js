@@ -211,6 +211,8 @@ DcmgrGUI.prototype.networkPanel = function(){
     var prefix = $(this).find('#prefix').val();
     var ip_assignment = $(this).find('#ip_assignment').val();
 
+    var service_address = $(this).find('#service_address').val();
+
     var data = "&display_name="+display_name
           +"&description="+description
           +"&domain_name="+domain_name
@@ -222,6 +224,10 @@ DcmgrGUI.prototype.networkPanel = function(){
           +"&network_mode="+network_mode
           +"&ip_assignment="+ip_assignment;
     
+    $('#service_checkbox:checked').each(function() {
+      data = data + "&service_" + $(this).val() + "=" + service_address;
+    });
+
     request = new DcmgrGUI.Request;
     request.post({
       "url": '/networks',

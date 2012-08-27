@@ -21,6 +21,10 @@ class NetworksController < ApplicationController
 
       data[:ipv4_gw] = params[:ipv4_gw] unless params[:ipv4_gw].to_s.empty?
 
+      data[:service_dhcp] = params[:service_dhcp] if params[:service_dhcp]
+      data[:service_dns] = params[:service_dns] if params[:service_dns]
+      data[:service_gateway] = params[:service_gateway] if params[:service_gateway]
+
       @network = Hijiki::DcmgrResource::Network.create(data)
       render :json => @network
     end
