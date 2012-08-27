@@ -83,6 +83,7 @@
   </fieldset>
   <% end %>
 
+  <% if @network['editable'] %>
   <fieldset id="network_services_field">
     <legend><%= t("dialog.edit_network.service.header") %></legend><legend>
     </legend><table cellspacing="5" cellpadding="5">
@@ -105,5 +106,6 @@
       </tbody>
     </table>
   </fieldset>
+  <% end %>
 
 </div>
