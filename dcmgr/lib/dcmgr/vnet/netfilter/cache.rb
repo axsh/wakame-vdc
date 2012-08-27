@@ -149,7 +149,8 @@ module Dcmgr
         
         def add_vnic_to_referencers_and_referencees_for_group(vnic_id,group_id)
           vnic = @rpc.request('hva-collector', 'get_netfilter_vnic', vnic_id)
-          raise "VNic #{vnic_id} doesn't exist" if result.nil?
+          raise "VNic #{vnic_id} doesn't exist" if vnic.nil?
+
           logger.info "Adding #{vnic_id} in group #{group_id} to referencers and referencees"
           @cache[:security_groups].values.each { |group|
             group[:referencees][group_id][vnic_id] = vnic if group[:referencees].has_key?(group_id)
@@ -285,6 +286,7 @@ module Dcmgr
 
         def other_local_vnics_left_in_group?(vnic_id,group_id)
           group = get_group(group_id)
+          return false if group.nil?
 
           deleted = group[:local_vnics].dup
           deleted.delete(vnic_id)
@@ -401,7 +403,7 @@ module Dcmgr
           
           deep_clone group[:referencers][ref_id]
         end
-        
+
         def get_local_vnics_in_group(group_id)
           group = @cache[:security_groups][group_id]
           return [] if group.nil?
@@ -446,8 +448,8 @@ module Dcmgr
         def get_friends_in_group(vnic_id, group_id)
           friends = {}
 
-          friends.merge @cache[:security_groups][group_id][:local_vnics]
-          friends.merge @cache[:security_groups][group_id][:foreign_vnics]
+          friends.merge! @cache[:security_groups][group_id][:local_vnics]
+          friends.merge! @cache[:security_groups][group_id][:foreign_vnics]
           
           friends.delete(vnic_id)
 
