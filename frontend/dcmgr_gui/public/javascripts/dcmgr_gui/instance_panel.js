@@ -230,22 +230,10 @@ DcmgrGUI.prototype.instancePanel = function(){
             "url": '/networks/all.json',
             "data": "",
             success: function(json,status){
-              var create_select_item = function(name) {
-                var select_html = '<select id="' + name + '" name="' + name + '"></select>';
-                $(self).find('#select_' + name).empty().html(select_html);
-                return $(self).find('#' + name);
-              }
-
-              var append_select_item = function(select_item, uuid, selected) {
-                  select_item.append('<option value="'+ uuid +'"' + (selected ? ' selected="selected"' : '') + '>'+uuid+'</option>');
-              }
-
               var create_select_eth = function(name, results, selected) {
-                var select_eth = create_select_item(name);
-                append_select_item(select_eth, 'disconnected', !selected);
-
                 for (var i=0; i < size ; i++) {
-                  append_select_item(select_eth, results[i].result.uuid, results[i].result.uuid == selected);
+                  var uuid = results[i].result.uuid;
+                  $(self).find('#' + name).append('<option value="' + uuid +'" ' + (uuid == selected ? 'selected="selected"' : '') + '>' + uuid + '</option>');
                 }
               }
 
@@ -255,7 +243,14 @@ DcmgrGUI.prototype.instancePanel = function(){
 
                 $(self).find('#attach_eth' + index).empty().html(select_html);
               }
+              
+              var create_detach_vif = function(index, vif_id) {
+                var on_click_html = "var s_eth = document.getElementById('eth" + index + "'); detach_vif(s_eth.options[s_eth.selectedIndex].value, '" + vif_id + "');"
+                var select_html = '<button id="detach_button_eth' + index + '" name="detach_button_eth' + index + '" onClick="' + on_click_html + '")">Detach</button>'
 
+                $(self).find('#detach_eth' + index).empty().html(select_html);
+              }
+              
               var results = json.network.results;
               var size = results.length;
 
@@ -265,6 +260,7 @@ DcmgrGUI.prototype.instancePanel = function(){
               for (var i=0; i < select_current_nw.length ; i++) {
                 create_select_eth('eth' + i, results, select_current_nw[i]);
                 create_attach_vif(i, select_current_vif[i]);
+                create_detach_vif(i, select_current_vif[i]);
               }                
             }
           })
