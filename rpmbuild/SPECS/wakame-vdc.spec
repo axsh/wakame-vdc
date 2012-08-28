@@ -81,6 +81,7 @@ Summary: Configuration set for HA
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
 Requires: drbd84-utils, kmod-drbd84
+Requires: ucarp
 %description ha-common-config
 <insert long description, indented with spaces>
 
