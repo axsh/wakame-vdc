@@ -262,6 +262,7 @@ body{
 }
 
 #content #signin_form fieldset div#error_message {
+  font-size: 1mm;
   padding-left: 10px;
   color: red;
 }
@@ -1183,6 +1184,15 @@ body{
 }
 #volume_action-menu {
   font-size: 11px;
+}
+
+#content #mainarea_wide .controller a.create_network{
+	display: block;
+	float: left;
+	width: 119px;
+	height: 23px;
+	font-size: 11px;
+	line-height: 0;
 }
 
 #instance_action-button {

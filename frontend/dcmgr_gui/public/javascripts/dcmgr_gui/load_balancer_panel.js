@@ -232,7 +232,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var bt_register_load_balancer = new DcmgrGUI.Dialog({
     target:'.register_load_balancer',
     width:583,
-    height:380,
+    height:480,
     title:$.i18n.prop('register_load_balancer_header'),
     path:'/register_load_balancer',
     callback: function(){
@@ -350,7 +350,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var bt_unregister_load_balancer = new DcmgrGUI.Dialog({
     target:'.unregister_load_balancer',
     width:583,
-    height:380,
+    height:480,
     title:$.i18n.prop('unregister_load_balancer_header'),
     path:'/unregister_load_balancer',
     callback: function(){
@@ -524,7 +524,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var bt_active_standby_load_balancer = new DcmgrGUI.Dialog({
     target:'.active_standby_load_balancer',
     width:500,
-    height:430,
+    height:480,
     title:$.i18n.prop('active_standy_load_balancer_header'),
     path:'/active_standby_load_balancer',
     callback: function(e) {
