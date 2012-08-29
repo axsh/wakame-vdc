@@ -166,9 +166,11 @@ DcmgrGUI.prototype.instancePanel = function(){
         var update_eth_network_id = function(index) {
           if (select_current_nw[index]) {
             $(self).find('#eth'+index+'_network_id').empty().html(select_current_nw[index]);
+            $(self).find('#eth'+index).val(select_current_nw[index]).attr('selected',true);
             create_detach_vif(index);
           } else {
             $(self).find('#eth'+index+'_network_id').empty().html("disconnected");
+            $(self).find('#eth'+index).val('disconnected').attr('selected',true);
             create_attach_vif(index);
           }
         };
