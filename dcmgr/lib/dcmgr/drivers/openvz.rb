@@ -13,7 +13,15 @@ module Dcmgr
       
       template_base_dir "openvz"
 
-      def_configuration
+      def_configuration do
+        param :ctid_offset, :default=>100
+
+        def validate(errors)
+          if @config[:ctid_offset].to_i < 100
+            errors << "ctid_offset must be larger than or equal to 100: #{@config[:ctid_offset]}"
+          end
+        end
+      end
 
       # Decorator pattern class of Rpc::HvaHandler::HvaContext.
       class OvzContext
@@ -27,7 +35,7 @@ module Dcmgr
         alias :config :ovz_config
         
         def ctid
-          inst[:id]
+          Drivers::Openvz.driver_configuration.ctid_offset + inst[:id].to_i
         end
 
         def private_dir
@@ -77,16 +85,15 @@ module Dcmgr
         # write a openvz container id
         inst = hc.inst
         ctid_file_path = File.expand_path('openvz.ctid', hc.inst_data_dir)
-        ctid = inst[:id]
 
         File.open(ctid_file_path, "w") { |f|
-          f.write(ctid)
+          f.write(hc.ctid)
         }
         logger.debug("write a openvz container id #{ctid_file_path}")
         
         # delete old config file
-        config_file_path = "#{config.ve_config_dir}/#{ctid}.conf"
-        mount_file_path = "#{config.ve_config_dir}/#{ctid}.mount"
+        config_file_path = "#{config.ve_config_dir}/#{hc.ctid}.conf"
+        mount_file_path = "#{config.ve_config_dir}/#{hc.ctid}.mount"
         if File.exists?(config_file_path)
           File.unlink(config_file_path)
           logger.debug("old config file was deleted #{config_file_path}")
@@ -116,7 +123,7 @@ module Dcmgr
         logger.debug("created config #{output_file_path}")
         
         # create openvz container
-        private_folder = "#{config.ve_private}/#{ctid}"
+        private_folder = "#{config.ve_private}/#{hc.ctid}"
         image = inst[:image]
         case image[:file_format]
         when "tgz"
@@ -130,7 +137,7 @@ module Dcmgr
                           File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)])
           ostemplate = image[:backup_object][:uuid]
           # create vm and config file
-          sh("vzctl create %s --ostemplate %s --config %s",[ctid, ostemplate, hypervisor])
+          sh("vzctl create %s --ostemplate %s --config %s",[hc.ctid, ostemplate, hypervisor])
           logger.debug("created container #{private_folder}")
           logger.debug("created config #{config_file_path}")
         when "raw"
@@ -180,7 +187,7 @@ module Dcmgr
         end
         
         # set name
-        sh("vzctl set %s --name %s --save",[ctid, hc.inst_id])
+        sh("vzctl set %s --name %s --save",[hc.ctid, hc.inst_id])
         #
         # Name="i-xxxx"
         #
@@ -222,7 +229,7 @@ module Dcmgr
         # 
         
         # mount metadata drive
-        hn_metadata_path = "#{hc.config.ve_root}/#{ctid}/metadata"
+        hn_metadata_path = "#{hc.config.ve_root}/#{hc.ctid}/metadata"
         ve_metadata_path = "#{hc.inst_data_dir}/metadata"
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
         raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)

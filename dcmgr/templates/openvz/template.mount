@@ -1,6 +1,6 @@
 #!/bin/bash
 . /etc/vz/vz.conf
-. /etc/vz/conf/<%= ctid %>.conf
+. /etc/vz/conf/<%= hc.ctid %>.conf
 
 SRC=<%= ve_metadata_path %>
 DST=<%= hn_metadata_path %>
