@@ -98,7 +98,7 @@ DcmgrGUI.prototype.instancePanel = function(){
     var bt_edit_instance = new DcmgrGUI.Dialog({
       target:'.edit_instance',
       width:550,
-      height:450,
+      height:640,
       title:$.i18n.prop('edit_instance_header'),
       path:'/edit_instance',
       button: edit_instance_buttons,
