@@ -38,6 +38,9 @@ Sequel.migration do
       drop_column :bandwidth
       add_column :bandwidth, "float"
       add_column :ip_assignment, "varchar(255)", :default=>"asc", :null=>false
+
+      # Permission flag for modification of the networks by users.
+      add_column :editable, "tinyint(1)", :default=>false, :null=>false
     end
 
     create_table(:host_node_vnets) do
@@ -61,7 +64,7 @@ Sequel.migration do
 
       column :name, "varchar(255)", :null=>false
       column :incoming_port, "int(11)"
-      column :outcoming_port, "int(11)"
+      column :outgoing_port, "int(11)"
 
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
@@ -128,6 +131,10 @@ Sequel.migration do
       # Policy information
       # supported network mode list
       add_column :offering_network_modes, "text", :null=>false
+
+      # Permission flag for the creation of new networks by
+      # users.
+      add_column :allow_new_networks, "tinyint(1)", :default=>false, :null=>false
 
       add_index [:uuid], :unique=>true, :name=>:uuid
     end

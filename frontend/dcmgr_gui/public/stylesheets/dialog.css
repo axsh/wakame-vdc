@@ -9,6 +9,14 @@
 	padding: 3px;
 }
 
+#create_network_dialog table tr td {
+	padding: 3px 10px;
+}
+
+#edit_network_dialog table tr td {
+	padding: 3px;
+}
+
 #launch_instance_dialog table tr td {
   padding: 5px 10px;
 }
@@ -41,6 +49,11 @@
 }
 
 #right_select_list {
+	width: 200px;
+	height: 190px;
+}
+
+#select_dhcp_ranges {
 	width: 200px;
 	height: 190px;
 }
@@ -98,6 +111,30 @@
 
 #edit_instance_dialog table tr td {
 	padding: 3px;
+}
+
+#dc_network_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 490px;
+}
+
+#dhcp_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 490px;
+}
+
+#network_services_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 490px;
 }
 
 #edit_machine_image_dialog table tr td {
