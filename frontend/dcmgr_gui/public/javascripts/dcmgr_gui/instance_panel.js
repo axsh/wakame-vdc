@@ -150,7 +150,9 @@ DcmgrGUI.prototype.instancePanel = function(){
 
           $(self).find('#vif_button_eth' + index).empty().html(select_html);
           $(self).find('#attach_button_eth' + index).click(function(){
-            attach_vif($(self).find('#eth' + index).val(), select_current_vif[index], index);
+            if ($(self).find('#eth' + index).val() != 'disconnected') {
+              attach_vif($(self).find('#eth' + index).val(), select_current_vif[index], index);
+            }
           });
         }
         
