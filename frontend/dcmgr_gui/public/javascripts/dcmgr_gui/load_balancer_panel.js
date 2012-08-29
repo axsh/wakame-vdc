@@ -47,7 +47,162 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     });
     load_balancer_protocol.trigger('change');
   };
-
+  var change_button_behavior = function(e, button) {
+      var self = e;
+      var is_ready = {
+	  'display_name':false,
+	  'load_balancer_port':false,
+	  'instance_port':false,
+	  'cookie_name':true,
+	  'private_key':true,
+	  'public_key':true
+      };
+      var ready = function(data) {
+	  if(data['display_name'] == true &&
+	     data['load_balancer_port'] == true &&
+	     data['instance_port'] == true &&
+	     data['cookie_name'] == true &&
+	     data['private_key'] == true &&
+	     data['public_key'] == true) {
+	      button.disabledButton(1, false);
+	  } else {
+	      button.disabledButton(1, true);
+	  }
+      }
+      $(e).find('#display_name').keyup(function(){
+	      if( $(this).val() ) {
+		  is_ready['display_name'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['display_name'] = false;
+		  ready(is_ready);
+	      }
+	  });
+      $(e).find('#load_balancer_port').keyup(function(){
+	      if( $(this).val() ) {
+		  is_ready['load_balancer_port'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['load_balancer_port'] = false;
+		  ready(is_ready);
+	      }
+	  });
+      $(e).find('#instance_port').keyup(function(){
+	      if( $(this).val() ) {
+		  is_ready['instance_port'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['instance_port'] = false;
+		  ready(is_ready);
+	      }
+	  });
+      $(e).find('#cookie_name').keyup(function(){
+	      if( $(this).val() ) {
+		  is_ready['cookie_name'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['cookie_name'] = false;
+		  ready(is_ready);
+	      }
+	  });
+      $(e).find('#public_key').keyup(function(){
+	      if( $(this).val() ) {
+		  is_ready['public_key'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['public_key'] = false;
+		  ready(is_ready);
+	      }
+	  });
+      $(e).find('#private_key').keyup(function(){
+	      if( $(this).val() ) {
+		  is_ready['private_key'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['private_key'] = false;
+		  ready(is_ready);
+	      }
+	  });
+      $(e).find('input[name="balance_algorithm"]').bind('change', function(){
+	      if ($(this).is(':checked')) {
+		  if($(this).val() == "leastconn") {
+		      $(self).find('#use_sticky_session').attr("disabled", "disabled");
+		      $(self).find('#use_sticky_session').attr("checked", false);
+		      $(self).find('#cookie_name').attr("disabled", "disabled");
+		      $(self).find('#cookie_name').val("");
+		      is_ready['cookie_name'] = true;
+		      ready(is_ready);
+		  } else {
+		      $(self).find('#use_sticky_session').removeAttr("disabled");
+		      $(self).find('#cookie_name').removeAttr("disabled");
+		  }
+	      }
+	  }).change();
+      $(e).find('#use_sticky_session').bind('change', function(){
+	      if ($(this).is(':checked')) {
+		  if ($(self).find('#cookie_name').val()) {
+		      is_ready['cookie_name'] = true;
+		      ready(is_ready);
+		  } else {
+		      is_ready['cookie_name'] = false;
+		      ready(is_ready);
+		  }
+	      } else {
+		  $(self).find('#cookie_name').val("");
+		  is_ready['cookie_name'] = true;
+		  ready(is_ready);
+	      }
+	  }).change();
+      $(e).find('#load_balancer_protocol').bind('change', function(){
+	      if(_.include(['http','tcp'], $(this).val())) {
+		  $(self).find('#private_key').attr("disabled", "disabled");
+		  $(self).find('#public_key').attr("disabled", "disabled");
+		  $(self).find('#private_key').val("");
+		  $(self).find('#public_key').val("");
+		  is_ready['private_key'] = true;
+		  is_ready['public_key'] = true;
+		  ready(is_ready);
+	      } else {
+		  $(self).find('#private_key').removeAttr("disabled");
+		  $(self).find('#public_key').removeAttr("disabled");
+		  if ( $(self).find('#private_key').val() && $(self).find('#public_key').val()) {
+		  is_ready['private_key'] = true;
+		  is_ready['public_key'] = true;
+		  } else {
+		  is_ready['private_key'] = false;
+		  is_ready['public_key'] = false;
+		  }
+		  ready(is_ready);
+	      }
+	  }).change();
+      $(e).find('#display_name').bind('change', function(){
+	      if( $(this).val()) {
+		  is_ready['display_name'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['display_name'] = false;
+		  ready(is_ready);
+	      }
+	  }).change();
+      $(e).find('#load_balancer_port').bind('change', function(){
+	      if( $(this).val()) {
+		  is_ready['load_balancer_port'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['load_balancer_port'] = false;
+		  ready(is_ready);
+	      }
+	  }).change();
+      $(e).find('#instance_port').bind('change', function(){
+	      if( $(this).val()) {
+		  is_ready['instance_port'] = true;
+		  ready(is_ready);
+	      } else {
+		  is_ready['instance_port'] = false;
+		  ready(is_ready);
+	      }
+	  }).change();
+  };
   c_list.setDetailTemplate({
     template_id:'#loadBalancersDetailTemplate',
     detail_path:'/load_balancers/show/'
@@ -103,6 +258,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
       button: edit_load_balancer_buttons,
       callback: function(){
         change_instance_protocol(this);
+	change_button_behavior(this, bt_edit_load_balancer);
       }
     });
 
@@ -112,6 +268,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
       var state = $(row_id).find('.state').text();
       if(uuid && state == 'running' ){
         bt_edit_load_balancer.open({"ids":[uuid]});
+	bt_edit_load_balancer.disabledButton(1, true);
       }
       c_list.checkRadioButton(uuid);
     });
@@ -174,8 +331,8 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     path:'/create_load_balancer',
     callback: function(){
       change_instance_protocol(this);
-      bt_create_load_balancer.disabledButton(1, false);
-   },
+      change_button_behavior(this, bt_create_load_balancer);
+    },
     button: create_load_balancer_buttons
   });
 
@@ -627,6 +784,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 
   bt_create_load_balancer.target.bind('click',function(){
     bt_create_load_balancer.open();
+    bt_create_load_balancer.disabledButton(1, true);
   });
 
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){

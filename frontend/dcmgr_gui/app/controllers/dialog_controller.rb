@@ -234,6 +234,7 @@ class DialogController < ApplicationController
     @port = ''
     @instance_protocol = ''
     @instance_port = ''
+    @balance_algorithm = ''
     @private_key = ''
     @public_key = ''
     @cookie_name = ''
