@@ -148,16 +148,17 @@ ja:
       header: "ネットワークを編集"
       network_id: "ネットワークID"
       display_name: "ネットワーク名"
-      dhcp_group: "DHCP"
-      dhcp_ranges: "Ranges"
-      edit_dhcp_ranges: "Add/Remove"
-      add_dhcp_range: "Add"
       dc_network:
         header: "DCネットワーク"
         id: "ID"
         name: "DCネットワーク名"
         description: "説明"
         allow_new_networks: "Allow new networks"
+      dhcp_range:
+        header: "DHCP"
+        ranges: "Ranges"
+        add: "Add Range"
+        remove: "Remove Range"
       service:
         header: "サービス"
         name: "サービス名"

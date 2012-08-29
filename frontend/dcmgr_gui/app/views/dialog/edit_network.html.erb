@@ -33,7 +33,7 @@
   </fieldset>
 
   <fieldset id="dhcp_field">
-    <legend><%= t("dialog.edit_network.dhcp_group") %></legend><legend>
+    <legend><%= t("dialog.edit_network.dhcp_ranges.header") %></legend><legend>
     </legend><table cellspacing="5" cellpadding="5">
       <tbody>
 	<tr>
@@ -42,7 +42,8 @@
         </tr><tr>
           <th><input id="begin_dhcp_range" type="text" size=18 value=""></th>
           <th><input id="end_dhcp_range" type="text" size=18 value=""></th>
-          <th><button id="add_dhcp_range"><%= t("dialog.edit_network.add_dhcp_range") %></button></th>
+          <th><button id="add_dhcp_range"><%= t("dialog.edit_network.dhcp_ranges.add") %></button></th>
+          <th><button id="remove_dhcp_range"><%= t("dialog.edit_network.dhcp_ranges.remove") %></button></th>
           <% end %>
 	</tr>
       </tbody>

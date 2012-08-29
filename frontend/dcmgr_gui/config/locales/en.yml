@@ -149,16 +149,17 @@ en:
       header: "Edit Network"
       network_id: "Network ID"
       display_name: "Network Name"
-      dhcp_group: "DHCP"
-      dhcp_ranges: "Ranges"
-      edit_dhcp_ranges: "Add/Remove"
-      add_dhcp_range: "Add Range"
       dc_network:
         header: "DC Network"
         id: "ID"
         name: "Name"
         description: "Description"
         allow_new_networks: "Allow new networks"
+      dhcp_ranges:
+        header: "DHCP"
+        ranges: "Ranges"
+        add: "Add"
+        remove: "Remove"
       service:
         header: "Service"
         name: "Name"

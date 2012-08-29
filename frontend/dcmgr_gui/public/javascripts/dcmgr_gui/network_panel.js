@@ -43,6 +43,10 @@ DcmgrGUI.prototype.networkPanel = function(){
   var close_button_name = $.i18n.prop('close_button');
   var update_button_name = $.i18n.prop('update_button');
 
+  //
+  // Content Update:
+  //
+
   c_list.element.bind('dcmgrGUI.contentChange',function(event,params){
     var network = params.data.network;
     c_pagenate.changeTotal(network.total);
@@ -115,14 +119,13 @@ DcmgrGUI.prototype.networkPanel = function(){
           });
         };
 
-        $(self).find('#add_dhcp_range').click(function(){
-          var range_begin = $(self).find('#begin_dhcp_range').val();
-          var range_end = $(self).find('#end_dhcp_range').val();
-
-          var data = "range_begin=" + range_begin + "&range_end=" + range_end;
+        var change_dhcp_range = function(use_command){
+          var data =
+            "range_begin=" + $(self).find('#begin_dhcp_range').val() +
+            "&range_end=" + $(self).find('#end_dhcp_range').val();
 
           request.put({
-            "url": '/networks/'+ network_id +'/dhcp_ranges.json',
+            "url": '/networks/' + network_id + '/dhcp_ranges/' + use_command + '.json',
             "data": data,
             success: function(json,status) {
               $(self).find('#begin_dhcp_range').val("");
@@ -130,7 +133,10 @@ DcmgrGUI.prototype.networkPanel = function(){
               refresh_dhcp_ranges();
             }
           });
-        });
+        };
+        
+        $(self).find('#add_dhcp_range').click(function(){ change_dhcp_range('add'); });
+        $(self).find('#remove_dhcp_range').click(function(){ change_dhcp_range('remove'); });
 
         $(self).find('#service_add').click(function() {
           var service_name = $(self).find('#service_name').val();
