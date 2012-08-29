@@ -1,29 +1,3 @@
-function attach_vif(network_id, vif_id) {
-  var data = "network_id=" + network_id + "&vif_id=" + vif_id
-
-  request = new DcmgrGUI.Request;
-  request.put({
-    "url": '/networks/attach',
-    "data": data,
-    success: function(json,status){
-      // bt_refresh.element.trigger('dcmgrGUI.refresh');
-    }
-  });
-}
-
-function detach_vif(network_id, vif_id) {
-  var data = "network_id=" + network_id + "&vif_id=" + vif_id
-
-  request = new DcmgrGUI.Request;
-  request.put({
-    "url": '/networks/detach',
-    "data": data,
-    success: function(json,status){
-      // bt_refresh.element.trigger('dcmgrGUI.refresh');
-    }
-  });
-}
-
 DcmgrGUI.prototype.instancePanel = function(){
   var total = 0;
   var maxrow = 10;
@@ -171,6 +145,62 @@ DcmgrGUI.prototype.instancePanel = function(){
          }
         });
         
+        var create_attach_vif = function(index) {
+          var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '")">Attach</button>'
+
+          $(self).find('#vif_button_eth' + index).empty().html(select_html);
+          $(self).find('#attach_button_eth' + index).click(function(){
+            attach_vif($(self).find('#eth' + index).val(), select_current_vif[index], index);
+          });
+        }
+        
+        var create_detach_vif = function(index) {
+          var select_html = '<button id="detach_button_eth' + index + '" name="detach_button_eth' + index + '")">Detach</button>'
+
+          $(self).find('#vif_button_eth' + index).empty().html(select_html);
+          $(self).find('#detach_button_eth' + index).click(function(){
+            detach_vif(select_current_nw[index], select_current_vif[index], index);
+          });
+        }
+
+        var update_eth_network_id = function(index) {
+          if (select_current_nw[index]) {
+            $(self).find('#eth'+index+'_network_id').empty().html(select_current_nw[index]);
+            create_detach_vif(index);
+          } else {
+            $(self).find('#eth'+index+'_network_id').empty().html("disconnected");
+            create_attach_vif(index);
+          }
+        };
+
+        function attach_vif(network_id, vif_id, index) {
+          var data = "network_id=" + network_id + "&vif_id=" + vif_id
+
+          request = new DcmgrGUI.Request;
+          request.put({
+            "url": '/networks/attach',
+            "data": data,
+            success: function(json,status){
+              select_current_nw[index] = network_id;
+              update_eth_network_id(index);
+            }
+          });
+        }
+
+        function detach_vif(network_id, vif_id, index) {
+          var data = "network_id=" + network_id + "&vif_id=" + vif_id
+
+          request = new DcmgrGUI.Request;
+          request.put({
+            "url": '/networks/detach',
+            "data": data,
+            success: function(json,status){
+              select_current_nw[index] = null;
+              update_eth_network_id(index);
+            }
+          });
+        }
+
         var request = new DcmgrGUI.Request;
         
         parallel({
@@ -237,20 +267,6 @@ DcmgrGUI.prototype.instancePanel = function(){
                 }
               }
 
-              var create_attach_vif = function(index, vif_id) {
-                var on_click_html = "var s_eth = document.getElementById('eth" + index + "'); attach_vif(s_eth.options[s_eth.selectedIndex].value, '" + vif_id + "');"
-                var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '" onClick="' + on_click_html + '")">Attach</button>'
-
-                $(self).find('#attach_eth' + index).empty().html(select_html);
-              }
-              
-              var create_detach_vif = function(index, vif_id) {
-                var on_click_html = "var s_eth = document.getElementById('eth" + index + "'); detach_vif(s_eth.options[s_eth.selectedIndex].value, '" + vif_id + "');"
-                var select_html = '<button id="detach_button_eth' + index + '" name="detach_button_eth' + index + '" onClick="' + on_click_html + '")">Detach</button>'
-
-                $(self).find('#detach_eth' + index).empty().html(select_html);
-              }
-              
               var results = json.network.results;
               var size = results.length;
 
@@ -258,9 +274,8 @@ DcmgrGUI.prototype.instancePanel = function(){
               ready(is_ready);
 
               for (var i=0; i < select_current_nw.length ; i++) {
+                update_eth_network_id(i);
                 create_select_eth('eth' + i, results, select_current_nw[i]);
-                create_attach_vif(i, select_current_vif[i]);
-                create_detach_vif(i, select_current_vif[i]);
               }                
             }
           })

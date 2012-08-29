@@ -55,13 +55,9 @@
       <tr>
         <td><%= t("dialog.edit_instance.interface") %> eth<%= index %>:</td>
         <td><%= @vifs[index]["vif_id"] %></td>
-        <td>
-          <select id="eth<%= index %>" name="eth<%= index %>">
-            <option value="disconnected">disconnected</option>
-          </select>
-        </td>
-        <td id="attach_eth<%= index %>"></td>
-        <td id="detach_eth<%= index %>"></td>
+        <td id="eth<%= index %>_network_id"></td>
+        <td><select id="eth<%= index %>" name="eth<%= index %>"></select></td>
+        <td id="vif_button_eth<%= index %>"></td>
       </tr>
     <% end %>
   </table>
