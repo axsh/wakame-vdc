@@ -64,7 +64,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
 
     # Turn power off all load balancers with the Account.
     put '/load_balancers/poweroff' do
-      uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid, :state=>'running').all.map { |i|
+      uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid).by_state('running').all.map { |i|
         request_forward.put("/load_balancers/#{i.canonical_uuid}/poweroff")
         i.canonical_uuids
       }
@@ -73,7 +73,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
     
     # Turn power on all the load balancers with the Account.
     put '/load_balancers/poweron' do
-      uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid, :state=>'halted').all.map { |i|
+      uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid).by_state('halted').all.map { |i|
         request_forward.put("/load_balancers/#{i.canonical_uuid}/poweron")
         i.canonical_uuids
       }
