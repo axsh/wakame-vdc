@@ -230,45 +230,6 @@ module Dcmgr
                           end
       end
 
-      job :run_local_store, proc {
-        # create hva context
-        @hva_ctx = HvaContext.new(self)
-        @inst_id = request.args[0]
-        @hva_ctx.logger.info("Booting #{@inst_id}")
-
-        @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
-
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
-
-        @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
-
-        task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
-                            :deploy_image, [@inst, @hva_ctx])
-
-        setup_metadata_drive
-        
-        check_interface
-        task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                            :run_instance, [@hva_ctx])
-        
-        # Node specific instance_started event for netfilter and general instance_started event for openflow
-        update_instance_state({:state=>:running}, ['hva/instance_started'])
-        
-        # Security group vnic joined events for vnet netfilter
-        @inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
-          vnic[:security_groups].each { |secg|
-            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
-          }
-        }
-      }, proc {
-        ignore_error { terminate_instance(false) }
-        ignore_error {
-          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
-        }
-      }
-
       job :run_vol_store, proc {
         # create hva context
         @hva_ctx = HvaContext.new(self)
@@ -510,14 +471,6 @@ module Dcmgr
         @hva_ctx.logger.info("Turned power on")
       }
       
-      def rpc
-        @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
-      end
-
-      def jobreq
-        @jobreq ||= Isono::NodeModules::JobChannel.new(@node)
-      end
-
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end

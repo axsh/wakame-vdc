@@ -4,34 +4,49 @@ require 'fileutils'
 
 module Dcmgr
   module Rpc
-    class LocalStoreHandler < Isono::Runner::RpcServer::EndpointBuilder
+    # Inherit from HvaHandler to reuse utitlity methods in the class.
+    class LocalStoreHandler < HvaHandler
       include Dcmgr::Logger
-      include Dcmgr::Helpers::CliHelper
-      include Dcmgr::Helpers::ByteUnit
 
-      concurrency 4
-      job_thread_pool Isono::ThreadPool.new(4, "LocalStore")
+      concurrency 2
+      job_thread_pool Isono::ThreadPool.new(2, "LocalStore")
       
-      # syntax sugar to catch any errors and continue to work the code
-      # following.
-      def ignore_error(&blk)
-        begin
-          blk.call
-        rescue ::Exception => e
-          @hva_ctx.logger.error("Ignoring error: #{e.message}")
-          @hva_ctx.logger.error(e)
-        end
-      end
+      job :run_local_store, proc {
+        # create hva context
+        @hva_ctx = HvaContext.new(self)
+        @inst_id = request.args[0]
+        @hva_ctx.logger.info("Booting #{@inst_id}")
 
-      # Reset TaskSession per request.
-      def task_session
-        @task_session ||= begin
-                            Task::TaskSession.reset!(:thread)
-                            Task::TaskSession.current[:logger] = @hva_ctx.logger
-                            Task::TaskSession.current
-                          end
-      end
+        @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
+        raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
+
+        task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
+                            :deploy_image, [@inst, @hva_ctx])
+
+        setup_metadata_drive
+        
+        check_interface
+        task_session.invoke(@hva_ctx.hypervisor_driver_class,
+                            :run_instance, [@hva_ctx])
+        
+        # Node specific instance_started event for netfilter and general instance_started event for openflow
+        update_instance_state({:state=>:running}, ['hva/instance_started'])
+        
+        # Security group vnic joined events for vnet netfilter
+        @inst[:vif].each { |vnic|
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
+          vnic[:security_groups].each { |secg|
+            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
+          }
+        }
+      }, proc {
+        ignore_error { terminate_instance(false) }
+        ignore_error {
+          update_instance_state_to_terminated({:state=>:terminated, :terminated_at=>Time.now.utc})
+        }
+      }
 
       job :backup_image, proc {
         @inst_id = request.args[0]
@@ -108,15 +123,6 @@ module Dcmgr
         @hva_ctx.logger.error("Failed to run backup_image: #{@image_id}, #{@backupobject_id}")
       }
       
-
-      def rpc
-        @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
-      end
-
-      def jobreq
-        @jobreq ||= Isono::NodeModules::JobChannel.new(@node)
-      end
-
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end
