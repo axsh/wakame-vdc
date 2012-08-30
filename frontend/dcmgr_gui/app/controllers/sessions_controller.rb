@@ -1,6 +1,5 @@
 class SessionsController < ApplicationController
-  require 'base64'
-  require 'openssl'
+  require 'spoof_token_authentication'
   layout 'login'
   skip_before_filter :login_required
   before_filter :authenticate, :only => [:new]
@@ -41,7 +40,8 @@ class SessionsController < ApplicationController
   private
   def authenticate
     if params[:token]
-      if params[:token] == Base64.encode64("#{OpenSSL::HMAC.digest('sha1', params[:user_id], DcmgrGui::Application.config.authorized_token)}")
+      # Check the authentication uging token.
+      if SpoofTokenAuthentication.check_token(params[:token], params[:user_id], params[:timestamp], params[:expire])
         user = User.find(:uuid => User.trim_uuid(params[:user_id]))
         if user
           self.current_user = user
