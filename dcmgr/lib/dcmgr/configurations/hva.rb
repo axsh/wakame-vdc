@@ -43,11 +43,16 @@ module Dcmgr
         }
         param :gzip_command, :default=>'gzip'
         param :gunzip_command, :default=>'gunzip'
+        param :thread_concurrency, :default=>2
 
         def validate(errors)
           super
           if !File.directory?(self.work_dir)
             errors << "Unknown directory for work_dir: #{self.work_dir}"
+          end
+
+          unless self.thread_concurrency.to_i > 0
+            errors << "thread_concurrency needs to set positive integer (> 0): #{self.thread_concurrency}"
           end
         end
       end
