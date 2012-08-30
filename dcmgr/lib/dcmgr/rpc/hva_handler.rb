@@ -534,7 +534,7 @@ module Dcmgr
           @hva_ctx.logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
       
         rescue => e
-          @hva_ctx.logger.error("Failed to upload image backup object: #{@backupobject_id}}")
+          @hva_ctx.logger.error("Failed to upload image backup object: #{@backupobject_id}")
           raise
         end
         
