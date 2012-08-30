@@ -8,7 +8,8 @@ module Dcmgr
       include Dcmgr::Logger
 
       def upload_image(inst, ctx, bo, evcb)
-        cgroup_context(:subsystem=>'blkio', :scope=>ctx.inst[:id]) do
+        ctx = Openvz::OvzContext.new(ctx)
+        cgroup_context(:subsystem=>'blkio', :scope=>ctx.ctid) do
           super
         end
       end
