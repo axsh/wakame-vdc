@@ -326,6 +326,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %files ha-common-config
 %defattr(-,root,root)
 %{prefix}/%{oname}/rpmbuild/helpers/lodrbd.sh
+%{prefix}/%{oname}/rpmbuild/helpers/lodrbd-mounter.sh
 
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
