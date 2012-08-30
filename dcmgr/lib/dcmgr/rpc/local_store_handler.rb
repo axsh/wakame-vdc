@@ -8,8 +8,8 @@ module Dcmgr
     class LocalStoreHandler < HvaHandler
       include Dcmgr::Logger
 
-      concurrency 2
-      job_thread_pool Isono::ThreadPool.new(2, "LocalStore")
+      concurrency Dcmgr.conf.local_store.thread_concurrency.to_i
+      job_thread_pool Isono::ThreadPool.new(Dcmgr.conf.local_store.thread_concurrency.to_i, "LocalStore")
       
       job :run_local_store, proc {
         # create hva context
