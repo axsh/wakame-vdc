@@ -173,7 +173,8 @@ DcmgrGui::Application.routes.draw do
   put    'networks/attach', :to => 'networks#attach'
   put    'networks/detach', :to => 'networks#detach'
   get    'networks/:id/dhcp_ranges' ,:to => 'networks#show_dhcp_ranges'
-  put    'networks/:id/dhcp_ranges' ,:to => 'networks#add_dhcp_range'
+  put    'networks/:id/dhcp_ranges/add' ,:to => 'networks#add_dhcp_range'
+  put    'networks/:id/dhcp_ranges/remove' ,:to => 'networks#remove_dhcp_range'
   post   'networks/:id/services' ,:to => 'networks#create_service'
 
   #dc_networks

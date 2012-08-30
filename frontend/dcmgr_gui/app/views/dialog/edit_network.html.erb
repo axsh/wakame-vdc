@@ -33,22 +33,18 @@
   </fieldset>
 
   <fieldset id="dhcp_field">
-    <legend><%= t("dialog.edit_network.dhcp_group") %></legend><legend>
+    <legend><%= t("dialog.edit_network.dhcp_ranges.header") %></legend><legend>
     </legend><table cellspacing="5" cellpadding="5">
       <tbody>
-	<tr><th><span id="dhcp_ranges"><%= t("dialog.edit_network.dhcp_ranges") %></span></th>
-	  <th><span id="edit_dhcp_ranges"><%= t("dialog.edit_network.edit_dhcp_ranges") %></span></th>
-	</tr><tr>
-	  <td>
-	    <select id="select_dhcp_ranges" size="5" multiple="multiple" name="select_dhcp_ranges"></select>
-	  </td>
-	  <td>
-            <table>
-              <tr><input id="begin_dhcp_range" type="text" size=18 value=""></tr>
-              <tr><input id="end_dhcp_range" type="text" size=18 value=""></tr>
-              <tr><button id="add_dhcp_range"><%= t("dialog.edit_network.add_dhcp_range") %></button></tr>
-            </table>
-	  </td>
+	<tr>
+	  <td><select id="select_dhcp_ranges" size="5" multiple="multiple" name="select_dhcp_ranges"></select></td>
+          <% if @network['editable'] %>
+        </tr><tr>
+          <th><input id="begin_dhcp_range" type="text" size=18 value=""></th>
+          <th><input id="end_dhcp_range" type="text" size=18 value=""></th>
+          <th><button id="add_dhcp_range"><%= t("dialog.edit_network.dhcp_ranges.add") %></button></th>
+          <th><button id="remove_dhcp_range"><%= t("dialog.edit_network.dhcp_ranges.remove") %></button></th>
+          <% end %>
 	</tr>
       </tbody>
     </table>
