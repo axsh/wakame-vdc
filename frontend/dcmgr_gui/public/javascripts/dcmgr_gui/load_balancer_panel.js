@@ -681,9 +681,9 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 
   var bt_active_standby_load_balancer = new DcmgrGUI.Dialog({
     target:'.active_standby_load_balancer',
-    width:500,
+    width:600,
     height:480,
-    title:$.i18n.prop('active_standy_load_balancer_header'),
+    title:$.i18n.prop('active_standby_load_balancer_header'),
     path:'/active_standby_load_balancer',
     callback: function(e) {
       var load_balancer_id = c_list.currentChecked();
@@ -748,17 +748,17 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
            })
         },
         altRows: true,
-        colNames:['InstanceID',
-                  'Name',
-                  'Active',
-                  'Standby',
-                  'NetworkVifID'
+        colNames:[$.i18n.prop('active_standby_load_balancer_instance_id'),
+                  $.i18n.prop('active_standby_load_balancer_instance_name'),
+                  $.i18n.prop('active_standby_load_balancer_active'),
+                  $.i18n.prop('active_standby_load_balancer_standby'),
+                  $.i18n.prop('active_standby_load_balancer_network_vif_id')
                  ],
         colModel:[
-          {name:'instance_id',align:'center',sortable:false,width:159},
-          {name:'display_name',align:'center',sortable:false,width:160},
-          {name:'active',align:'center',editable:true, editrules: {required:true}, edittype:'custom', formatter:radioFormatter, sortable:false,width:60},
-          {name:'standby',align:'center',editable:true, editrules: {required:true}, edittype:'custom', formatter:radioFormatter, sortable:false,width:60},
+          {name:'instance_id',align:'center',sortable:false,width:167},
+          {name:'display_name',align:'center',sortable:false,width:167},
+          {name:'active',align:'center',editable:true, editrules: {required:true}, edittype:'custom', formatter:radioFormatter, sortable:false,width:100},
+          {name:'standby',align:'center',editable:true, editrules: {required:true}, edittype:'custom', formatter:radioFormatter, sortable:false,width:100},
           {name:'network_vif_id', hidden:true}
         ],
         rowNum:10,
