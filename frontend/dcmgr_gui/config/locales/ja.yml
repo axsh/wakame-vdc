@@ -282,9 +282,11 @@ ja:
       display_name: "インスタンス名"
     backup_instances:
       header: "インスタンスのバックアップ"
-      message: "インスタンスのバックアップを取得します。よろしいですか？"
+      message: "インスタンスのバックアップを作成します。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+      backup_display_name: "バックアップ名"
+      image_description: "説明"
     create_load_balancer:
       header:
         display_name: "ロードバランサ名"

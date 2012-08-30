@@ -285,6 +285,8 @@ en:
       message: "Are you sure you want to backup those instances?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+      backup_display_name: "Backup Display Name"
+      image_description: "Image Description"
     create_load_balancer:
       header:
         display_name: "Load Balancer Name"
