@@ -126,20 +126,20 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
       $(e).find('input[name="balance_algorithm"]').bind('change', function(){
 	      if ($(this).is(':checked')) {
 		  if($(this).val() == "leastconn") {
+		      $(self).find('#use_sticky_session').removeAttr("disabled");
+		  } else {
 		      $(self).find('#use_sticky_session').attr("disabled", "disabled");
 		      $(self).find('#use_sticky_session').attr("checked", false);
 		      $(self).find('#cookie_name').attr("disabled", "disabled");
 		      $(self).find('#cookie_name').val("");
 		      is_ready['cookie_name'] = true;
 		      ready(is_ready);
-		  } else {
-		      $(self).find('#use_sticky_session').removeAttr("disabled");
-		      $(self).find('#cookie_name').removeAttr("disabled");
 		  }
 	      }
 	  }).change();
       $(e).find('#use_sticky_session').bind('change', function(){
 	      if ($(this).is(':checked')) {
+		  $(self).find('#cookie_name').removeAttr("disabled");
 		  if ($(self).find('#cookie_name').val()) {
 		      is_ready['cookie_name'] = true;
 		      ready(is_ready);
@@ -148,6 +148,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 		      ready(is_ready);
 		  }
 	      } else {
+		  $(self).find('#cookie_name').attr("disabled", "disabled");
 		  $(self).find('#cookie_name').val("");
 		  is_ready['cookie_name'] = true;
 		  ready(is_ready);
