@@ -42,7 +42,8 @@ function dump_vers() {
   cat <<-EOS
 	CMD_ARGS="${CMD_ARGS}"
 	name="${name}"
-	devpath="${devpath}"
+	drbd_devpath="${drbd_devpath}"
+	lo_devpath="${lo_devpath}"
 	node0="${node0}"
 	port="${port}"
 	config_path="${config_path}"
@@ -67,7 +68,8 @@ function lslodev() {
 }
 
 function maplodev() {
-  [[ -n "$(lslodev)" ]] || losetup $(losetup -f) ${raw_path}
+  local lo_devpath=${1:-$(losetup -f)}
+  [[ -n "$(lslodev)" ]] || losetup ${lo_devpath} ${raw_path}
 }
 
 function unmaplodev() {
@@ -86,12 +88,15 @@ function print_node_part() {
 }
 
 function print_config() {
-  local lodev_path=${1:-UNKNOWN}
+  local lo_devpath=${1:-$(losetup -f)}
   cat <<-EOS
+	#
+	# vdc_losetup_map="${raw_path} ${lo_devpath}"
+	#
 	resource ${name} {
 	  protocol C;
-	  device ${devpath};
-	  disk   ${lodev_path};
+	  device ${drbd_devpath};
+	  disk   ${lo_devpath}; # raw_path=${raw_path}
 	  meta-disk internal;
 	EOS
 
@@ -106,7 +111,7 @@ function print_config() {
 }
 
 function gen_config() {
-  print_config $(lslodev) | tee ${config_path}
+  print_config ${lo_devpath} | tee ${config_path}
 }
 
 function setup_hosts_file() {
@@ -134,9 +139,10 @@ readonly abs_path=$(cd $(dirname $0) && pwd)
 ### global variables
 
 name=${name:-sandbox}
-devpath=${devpath:-/dev/drbd0}
+drbd_devpath=${drbd_devpath:-/dev/drbd9}
+lo_devpath=${lo_devpath:-$(losetup -f)}
 node0=${node0:-`hostname`:127.0.0.1} # [host]:[ip-addr]
-port=${port:-7801}
+port=${port:-7788}
 
 config_path=${config_path:-/etc/drbd.d/${name}.res}
 hosts_path=${hosts_path:-/etc/hosts}
@@ -157,22 +163,21 @@ dump|debug)
   ;;
 setup)
   mkraw
-  maplodev
+  maplodev ${lo_devpath}
   gen_config
   setup_hosts_file
   ;;
-unmap)
-  unmaplodev
-  ;;
-activate)
+install)
   drbdadm create-md ${name}
-  /etc/init.d/drbd start
   ;;
-primary)
+assign::primary)
   drbdadm primary --force ${name}
   ;;
-secondary)
+assign::secondary)
   drbdadm secondary ${name}
+  ;;
+clean)
+  unmaplodev
   ;;
 *)
   usage
