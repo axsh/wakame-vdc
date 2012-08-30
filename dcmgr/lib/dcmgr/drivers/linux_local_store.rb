@@ -74,6 +74,8 @@ module Dcmgr
           shell.run!(*cmd_tuple)
         end
 
+        raise "Image file is not ready: #{ctx.os_devpath}" unless File.exist?(ctx.os_devpath)
+
       ensure
         unless Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable]
           File.unlink(vmimg_cache_path()) rescue nil
