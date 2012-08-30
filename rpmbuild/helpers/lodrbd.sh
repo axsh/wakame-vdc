@@ -58,6 +58,10 @@ function mkraw() {
   [[ -f ${raw_path} ]] || truncate -s ${raw_size}${raw_unit} ${raw_path}
 }
 
+function rmraw() {
+  [[ -f ${raw_path} ]] || : && rm -f ${raw_path}
+}
+
 function inodeinfo() {
   [[ -f ${raw_path} ]] && ls -i ${raw_path} | awk '{print $1}'
 }
@@ -112,6 +116,10 @@ function print_config() {
 
 function gen_config() {
   print_config ${lo_devpath} | tee ${config_path}
+}
+
+function del_config() {
+  [[ -f ${config_path} ]] || : && rm -f ${config_path}
 }
 
 function setup_hosts_file() {
@@ -177,7 +185,9 @@ assign::secondary)
   drbdadm secondary ${name}
   ;;
 clean)
+  del_config
   unmaplodev
+  rmraw
   ;;
 *)
   usage
