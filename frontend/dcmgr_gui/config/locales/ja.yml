@@ -412,7 +412,7 @@ ja:
       wmi_id: "WMI ID"
       cpu_cores: "CPUコア数"
       memory_size: "メモリーサイズ"
-      status: "ステータス"
+      status: "VMの状態"
       state: "状態"
       ip: "IP"
       ssh_key_pair: "SSHキーペア"
@@ -462,6 +462,7 @@ ja:
       load_balancer_port: "ロードバランサポート"
       instance_protocol: "インスタンスプロトコル"
       instance_port: "インスタンスポート"
+      description: "説明"
     load_balancer_actions:
       register_instance: "インスタンスの割り当て"
       unregister_instance: "インスタンスの解除"

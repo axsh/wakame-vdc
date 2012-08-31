@@ -412,7 +412,7 @@ en:
       wmi_id: "WMI ID"
       cpu_cores: "CPU Cores"
       memory_size: "Memory Size"
-      status: "Status"
+      status: "VM Status"
       state: "State"
       ip: "IP"
       ssh_key_pair: "SSH Key Pair"
@@ -463,6 +463,7 @@ en:
       load_balancer_port: "Load Balancer Port"
       instance_protocol: "Instance Protocol"
       instance_port: "Instance Port"
+      description: "Description"
     load_balancer_actions:
       register_instance: "Register Instance"
       unregister_instance: "Unregister Instance"
