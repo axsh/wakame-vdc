@@ -336,15 +336,11 @@ DcmgrGUI.prototype.networkPanel = function(){
               }
 
               var results = json.dc_network.results;
-              var size = results.length;
-
               var select_dc_network = create_select('dc_network', results);
-
-              // Update network_mode depending on selected dc_network.
-              var dc_offering = {}
+              var dc_offering = {};
 
               for (var i=0; i < results.length ; i++) {
-                dc_offering[results[i].result.uuid] = results[i].result.offering_network_modes
+                dc_offering[results[i].result.uuid] = results[i].result.offering_network_modes;
               }
 
               var update_network_modes = function(){
@@ -352,7 +348,7 @@ DcmgrGUI.prototype.networkPanel = function(){
                 var current_dc_network = select_dc_network.val();
 
                 $.each(dc_offering[current_dc_network], function(key, value) {
-                  append_select_item(select_network_mode, value, value)
+                  append_select_item(select_network_mode, value, value);
                 });
               };
 
