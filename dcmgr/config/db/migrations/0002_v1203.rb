@@ -118,6 +118,7 @@ Sequel.migration do
       add_column :root_device, "varchar(255)"
       add_column :is_cacheable, "tinyint(1)", :default=>false, :null=>false
       add_column :instance_model_name, "varchar(255)", :null=>false
+      add_column :parent_image_id, "varchar(255)", :null=>true
     end
 
     rename_table(:physical_networks, :dc_networks)
