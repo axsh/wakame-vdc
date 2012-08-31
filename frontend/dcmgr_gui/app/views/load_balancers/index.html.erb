@@ -31,16 +31,16 @@
           <option class="poweron" value="poweron"><%= t("load_balancers.load_balancer_actions.poweron") %></option>
           <option class="poweroff" value="poweroff"><%= t("load_balancers.load_balancer_actions.poweroff") %></option>
           <option class="Active/Standby" value="active_standby"><%= t("load_balancers.load_balancer_actions.active_standby") %></option>
-          </optgroup>
+        </optgroup>
       </select>
       <a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%= t("button.refresh") %></a>
     </div>
 
     <div class="controller clearfix">
       <div id="pagenate" class="r_float">
-      <a href="javascript:void(0);" class="prev"></a>
-      <p id="viewPagenate"></p>
-      <a href="javascript:void(0);" class="next"></a>
+	<a href="javascript:void(0);" class="prev"></a>
+	<p id="viewPagenate"></p>
+	<a href="javascript:void(0);" class="next"></a>
       </div>
     </div>
 
@@ -49,11 +49,11 @@
       <script id="loadBalancersListTemplate" type="text/x-jquery-tmpl">
 	<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
 	  <tr>
-      <th></th>
+	    <th></th>
 	    <th><%= t("load_balancers.list.display_name") %></th>
 	    <th><%= t("load_balancers.list.ip") %></th>
 	    <th><%= t("load_balancers.list.state") %></th>
-      <th><%= t("load_balancers.list.action") %></th>
+	    <th><%= t("load_balancers.list.action") %></th>
 	  </tr>
 	  {{each(index,item) rows}}
 	  <tr id="row-${item.uuid}">
@@ -64,19 +64,19 @@
 	    {{/if}}
 	    <td class="vtip display_name" title="display name">${item.display_name}</td>
 	    <td class="vtip ip" title="ip">
-     {{each(index,item) vif}}
-       {{if vif.ipv4 && index == 0}}
-       ${vif.ipv4.ipv4.address}
-       {{/if}}
-     {{/each}}</td>
+	      {{each(index,item) vif}}
+	      {{if vif.ipv4 && index == 0}}
+	      ${vif.ipv4.ipv4.address}
+	      {{/if}}
+	      {{/each}}</td>
 	    <td class="state vtip center" title="state">${item.state}</td>
-     {{if item.uuid}}
-      <td class="vtip center" title="action">
-        <a href="javascript:void(0);" class="edit_load_balancer" id="edit_${item.uuid}"><%= t('load_balancers.button.edit_load_balancer') %></a>
-      </td>
-      {{else}}
-      <td class="vtip center" title="action"></td>
-      {{/if}}
+	    {{if item.uuid}}
+	    <td class="vtip center" title="action">
+              <a href="javascript:void(0);" class="edit_load_balancer" id="edit_${item.uuid}"><%= t('load_balancers.button.edit_load_balancer') %></a>
+	    </td>
+	    {{else}}
+	    <td class="vtip center" title="action"></td>
+	    {{/if}}
 	  </tr>
 	  {{/each}}
 	</table>
@@ -99,37 +99,39 @@
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.display_name") %>:</td>
 	    <td>${item.display_name}</td>
-    </tr>
-    <tr>
+	  </tr>
+	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.load_balancer_port") %>:</td>
 	    <td class="load_balancer_size">${item.port}</td>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.load_balancer_protocol") %>:</td>
 	    <td>${item.protocol}</td>
-    </tr>
-    <tr>
+	  </tr>
+	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.instance_port") %>:</td>
 	    <td class="load_balancer_size">${item.instance_port}</td>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.instance_protocol") %>:</td>
 	    <td>${item.instance_protocol}</td>
-    </tr>
-    <tr>
+	  </tr>
+	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.ip") %></td>
-	    <td>{{if item.vif[0].ipv4}}${item.vif[0].ipv4.address}{{/if}}</td>
+	    <td colspan="7">{{if item.vif[0].ipv4}}${item.vif[0].ipv4.address}{{/if}}</td>
+	  </tr>
+	  <tr>
 	    <td class="padcell"></td>
-	    <td class="title"><%= t("load_balancers.details.status") %></td>
-	    <td>${item.status}</td>
-    </tr>
-    <tr>
+	    <td class="title"><%= t("load_balancers.details.description") %></td>
+	    <td colspan="7">${item.description}</td>
+	  </tr>
+	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title" style="width:180px"><%= t("load_balancers.details.register_instances") %></td>
 	    <td colspan="7">{{each(index,vif) item.target_vifs}}${vif.instance_id}<br />{{/each}}</td>
-    </tr>
-    <tr>
+	  </tr>
+	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("load_balancers.details.status") %>:</td>
 	    <td class="state">${item.state}</td>
