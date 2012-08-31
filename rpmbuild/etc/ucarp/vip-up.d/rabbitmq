@@ -1,9 +1,1 @@
-#!/bin/bash
-#
-# requires:
-#  bash
-#
-set -e
-
-/etc/ucarp/init-up.d/vip $*
-/etc/ucarp/init-common.d/rabbitmq up
+../vip-common.d/rabbitmq
