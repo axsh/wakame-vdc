@@ -85,6 +85,25 @@ Requires: ucarp
 %description ha-common-config
 <insert long description, indented with spaces>
 
+# ha-rabbitmq-config
+%package ha-rabbitmq-config
+BuildArch: noarch
+Summary: Configuration set for HA rabbitmq
+Group: Development/Languages
+Requires: %{oname}-ha-common-config = %{version}-%{release}
+%description ha-rabbitmq-config
+<insert long description, indented with spaces>
+
+# ha-dcmgr-config
+%package ha-dcmgr-config
+BuildArch: noarch
+Summary: Configuration set for HA dcmgr
+Group: Development/Languages
+Requires: %{oname}-ha-dcmgr-config = %{version}-%{release}
+Requires: %{oname}-dcmgr-vmapp-config = %{version}-%{release}
+%description ha-dcmgr-config
+<insert long description, indented with spaces>
+
 # dcmgr-vmapp-config
 %package dcmgr-vmapp-config
 BuildArch: noarch
@@ -223,6 +242,8 @@ rsync -aHA `pwd`/contrib/etc/logrotate.d    ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/prelink.conf.d ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/wakame-vdc     ${RPM_BUILD_ROOT}/etc/
 
+rsync -aHA `pwd`/rpmbuild/etc/ucarp ${RPM_BUILD_ROOT}/etc/
+
 # /etc/sysctl.d
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
 rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
@@ -327,6 +348,27 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %{prefix}/%{oname}/rpmbuild/helpers/lodrbd.sh
 %{prefix}/%{oname}/rpmbuild/helpers/lodrbd-mounter.sh
+%dir /etc/ucarp/init-common.d
+%dir /etc/ucarp/init-down.d
+%dir /etc/ucarp/init-up.d
+%dir /etc/ucarp/vip-common.d
+%dir /etc/ucarp/vip-down.d
+%dir /etc/ucarp/vip-up.d
+/etc/ucarp/init-down.d/vip
+/etc/ucarp/init-up.d/vip
+
+%files ha-rabbitmq-config
+%defattr(-,root,root)
+/etc/ucarp/init-common.d/rabbitmq
+/etc/ucarp/vip-common.d/rabbitmq
+/etc/ucarp/vip-down.d/rabbitmq
+/etc/ucarp/vip-up.d/rabbitmq
+
+%files ha-dcmgr-config
+%defattr(-,root,root)
+/etc/ucarp/vip-common.d/vdc-collector
+/etc/ucarp/vip-down.d/vdc-collector
+/etc/ucarp/vip-up.d/vdc-collector
 
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
