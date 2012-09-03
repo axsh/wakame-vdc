@@ -485,7 +485,7 @@ body{
 #content #mainarea_wide .controller a.launch_instance{
 	display: block;
 	float: left;
-	width: 119px;
+	width: 140px;
 	height: 23px;
 	font-size: 11px;
 	line-height: 0;
@@ -667,8 +667,8 @@ body{
 	display: block;
 	float: left;
 	margin-left: 7px;
-	margin-right: 401px;
-	width: 66px;
+	margin-right: 350px;
+	width: 115px;
 	height: 23px;
   font-size: 12px;
 	line-height: 0;
