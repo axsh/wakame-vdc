@@ -22,3 +22,9 @@ gem "rack-test", "0.6.1"
 gem 'posix-spawn'
 
 gem 'isono', '0.2.14'
+
+# Trema gem requires "rant" command during build.
+ENV['PATH']="#{Bundler.bundle_path}/bin:#{ENV['PATH']}"
+
+gem 'rant', '0.5.9'
+gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame'
