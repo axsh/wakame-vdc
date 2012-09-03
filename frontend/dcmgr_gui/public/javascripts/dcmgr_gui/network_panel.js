@@ -102,6 +102,33 @@ DcmgrGUI.prototype.networkPanel = function(){
 
         var request = new DcmgrGUI.Request;
 
+        var refresh_network_services = function() {
+          request.get({
+            "url": '/networks/'+ network_id +'/services.json',
+            "data": "",
+            success: function(json,status){
+              var results = json[0].network_service.results;
+              var network_services = $(self).find('#network_services');
+              network_services.html('');
+
+              for (var i=0; i < results.length ; i++) {
+                service_html =
+                  '<fieldset id="network_services_field">' +
+                  '<legend>' + $.i18n.prop('edit_network_service_header') + '</legend><legend>' +
+                  '</legend><table cellspacing="5" cellpadding="5"><tbody>' +
+                  '<tr><td>' + $.i18n.prop('edit_network_service_name') + ': </td><td>' + results[i].result.name + '</td></tr>' +
+                  '<tr><td>' + $.i18n.prop('edit_network_service_vif_id') + ': </td><td>' + results[i].result.network_vif_id + '</td></tr>' +
+                  '<tr><td>' + $.i18n.prop('edit_network_service_address') + ': </td><td>' + results[i].result.address + '</td></tr>' +
+                  '<tr><td>' + $.i18n.prop('edit_network_service_mac_addr') + ': </td><td>' + results[i].result.mac_addr + '</td></tr>' +
+                  '<tr><td>' + $.i18n.prop('edit_network_service_incoming_port') + ': </td><td>' + results[i].result.incoming_port + '</td></tr>' +
+                  '<tr><td>' + $.i18n.prop('edit_network_service_outgoing_port') + ': </td><td>' + results[i].result.outgoing_port + '</td></tr>' +
+                  '</tbody></table></fieldset>';
+                network_services.append(service_html);
+              }
+            }
+          });
+        };
+
         var refresh_dhcp_ranges = function() {
           request.get({
             "url": '/networks/'+ network_id +'/dhcp_ranges.json',
@@ -153,13 +180,15 @@ DcmgrGUI.prototype.networkPanel = function(){
             "url": '/networks/'+ network_id +'/services.json',
             "data": data,
             success: function(json,status) {
+              refresh_network_services();
             }
           });          
         });
 
         parallel({
           // get dhcp ranges
-          dhcp_ranges: refresh_dhcp_ranges()
+          dhcp_ranges: refresh_dhcp_ranges(),
+          network_services: refresh_network_services()
         })
       }
     });
@@ -307,15 +336,11 @@ DcmgrGUI.prototype.networkPanel = function(){
               }
 
               var results = json.dc_network.results;
-              var size = results.length;
-
               var select_dc_network = create_select('dc_network', results);
-
-              // Update network_mode depending on selected dc_network.
-              var dc_offering = {}
+              var dc_offering = {};
 
               for (var i=0; i < results.length ; i++) {
-                dc_offering[results[i].result.uuid] = results[i].result.offering_network_modes
+                dc_offering[results[i].result.uuid] = results[i].result.offering_network_modes;
               }
 
               var update_network_modes = function(){
@@ -323,7 +348,7 @@ DcmgrGUI.prototype.networkPanel = function(){
                 var current_dc_network = select_dc_network.val();
 
                 $.each(dc_offering[current_dc_network], function(key, value) {
-                  append_select_item(select_network_mode, value, value)
+                  append_select_item(select_network_mode, value, value);
                 });
               };
 

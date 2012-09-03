@@ -94,6 +94,14 @@ class NetworksController < ApplicationController
     end
   end
 
+  def show_services
+    catch_error do
+      network_id = params[:id]
+      detail = Hijiki::DcmgrResource::NetworkService.list(:network_id => network_id)
+      respond_with(detail,:to => [:json])
+    end
+  end
+
   def create_service
     catch_error do
       data = {

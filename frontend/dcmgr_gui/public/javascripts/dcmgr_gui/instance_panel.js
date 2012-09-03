@@ -267,7 +267,9 @@ DcmgrGUI.prototype.instancePanel = function(){
               var create_select_eth = function(name, results, selected) {
                 for (var i=0; i < size ; i++) {
                   var uuid = results[i].result.uuid;
-                  $(self).find('#' + name).append('<option value="' + uuid +'" ' + (uuid == selected ? 'selected="selected"' : '') + '>' + uuid + '</option>');
+                  var display_name = results[i].result.display_name;
+                  $(self).find('#' + name).append('<option value="' + uuid + '" ' + (uuid == selected ? 'selected="selected"' : '') + '>' +
+                                                  uuid + ' - ' + display_name + '</option>');
                 }
               }
 

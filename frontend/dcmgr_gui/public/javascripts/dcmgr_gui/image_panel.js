@@ -326,17 +326,17 @@ DcmgrGUI.prototype.imagePanel = function(){
                 return $(self).find('#' + name);
               }
 
-              var append_select_item = function(select_item, uuid) {
-                select_item.append('<option value="'+ uuid +'">'+uuid+'</option>');
+              var append_select_item = function(select_item, uuid, name) {
+                select_item.append('<option value="'+ uuid +'">'+name+'</option>');
               }
 
               var create_select_eth = function(name, results) {
                 var select_eth = create_select_item(name);
-                append_select_item(select_eth, 'none')
-                append_select_item(select_eth, 'disconnected')
+                append_select_item(select_eth, 'none', 'none')
+                append_select_item(select_eth, 'disconnected', 'disconnected')
 
                 for (var i=0; i < size ; i++) {
-                  append_select_item(select_eth, results[i].result.uuid)
+                  append_select_item(select_eth, results[i].result.uuid, results[i].result.uuid + ' - ' + results[i].result.display_name)
                 }
               }
 
