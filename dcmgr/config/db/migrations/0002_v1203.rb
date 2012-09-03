@@ -342,7 +342,11 @@ Sequel.migration do
       add_column :deleted_at, "datetime"
       add_column :purged_at, "datetime"
       add_index [:deleted_at]
-    end    
+    end
+
+    alter_table(:tag_mappings) do
+      add_column :sort_index, "int(11)", :null=>false, :default=>0
+    end
   end
   
   down do
@@ -481,6 +485,10 @@ Sequel.migration do
     alter_table(:accounts) do
       drop_column :deleted_at
       drop_column :purged_at
-    end    
+    end
+
+    alter_table(:tag_mappings) do
+      drop_column :sort_index
+    end
   end
 end

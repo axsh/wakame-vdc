@@ -49,8 +49,8 @@ Name:
 Type:
   <%= TYPES.invert[Dcmgr::Tags::KEY_MAP[tag.type_id]] %>
 Mapped uuids:
-<%- tag.mapped_uuids.each { |tagmap| -%>
-  <%= tagmap[:uuid] %>
+<%- tag.sorted_mapped_uuids.each { |tagmap| -%>
+  <%= tagmap[:uuid] %> <%= tagmap[:sort_index] %>
 <%- } -%>
 Attributes:
   <%= tag.attributes %>
@@ -79,6 +79,7 @@ Add a resource to a group.
  UUID: Resource group canonical UUID.
  OBJECT_UUID: The canonical UUID represents the object to label this resource group.
 __DESC
+    method_option :sort_index, :type => :numeric, :default => 0, :desc => "An arbitrary number that can optionally be used to sort the resources in this group"
     def map(uuid, object_uuid)
       #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
       #This is so the Taggable.find method can be used to determine the Model class based on canonical uuid
@@ -93,10 +94,41 @@ __DESC
       
       M::TagMapping.create(
         :tag_id => tag.id,
-        :uuid   => object.canonical_uuid
+        :uuid   => object.canonical_uuid,
+        :sort_index => options[:sort_index]
       )
     end
     
+    desc "index UUID OBJECT_UUID INDEX", "Set the sort index for a resource in a group"
+    def index(uuid, object_uuid, index)
+      # Check index format
+      is_numeric = !!Integer(index) rescue false
+      if is_numeric
+        index = index.to_i
+      else
+        Error.raise("'#{index}' is not a valid index. Must be numeric.",100)
+      end
+
+      #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
+      #This is so the Taggable.find method can be used to determine the Model class based on canonical uuid
+      M.constants(false).each {|c| M.const_get(c, false) }
+
+      group    = M::Taggable.find(uuid)
+      resource = M::Taggable.find(object_uuid)
+
+      UnknownUUIDError.raise(uuid) unless group.is_a? M::Tag
+      UnknownUUIDError.raise(object_uuid) if resource.nil?
+      Error.raise("A '#{resource.class}' can not be put into #{uuid}.",100) unless group.accept_mapping?(resource)
+
+      mapping = M::TagMapping.find(
+        :tag_id => group.id,
+        :uuid   => resource.canonical_uuid
+      )
+
+      mapping.set({:sort_index => index})
+      mapping.save
+    end
+
     desc "unmap UUID OBJECT_UUID", "Remove a resource from a group"
     long_desc <<__DESC
 "Remove a resource from a group".
