@@ -283,6 +283,7 @@ Sequel.migration do
       column :object_key, "varchar(255)", :null=>false
       column :checksum, "varchar(255)", :null=>false
       column :description, "text"
+      column :progress, "double", :null=>false, :default=>0.0
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
