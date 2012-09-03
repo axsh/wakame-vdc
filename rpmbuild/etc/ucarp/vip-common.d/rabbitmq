@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# requires:
+#  bash
+#  dirname, pwd, basename
+#
+set -e
+
+## variables
+
+readonly abs_path=$(cd $(dirname $0) && pwd)
+
+### ucarp
+
+role=$(basename ${abs_path})
+role=${role##vip-}
+role=${role%%.d}
+
+## main
+
+${abs_path}/../init-${role}.d/vip $*
+${abs_path}/../init-common.d/rabbitmq ${role}

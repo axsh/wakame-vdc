@@ -352,7 +352,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     
     on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'backup_image',
+      Dcmgr.messaging.submit("local-store-handle.#{instance.host_node.node_id}", 'backup_image',
                              instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
     end
     respond_with({:instance_id=>instance.canonical_uuid,

@@ -1186,6 +1186,15 @@ body{
   font-size: 11px;
 }
 
+#content #mainarea_wide .controller a.create_network{
+	display: block;
+	float: left;
+	width: 119px;
+	height: 23px;
+	font-size: 11px;
+	line-height: 0;
+}
+
 #instance_action-button {
   display: block;
   margin-left:7px;

@@ -1,0 +1,107 @@
+<div id="edit_network_dialog">
+  <table>
+    <tr>
+      <td><%= t("dialog.edit_network.network_id")%>: </td>
+      <td><%= @network_id %></td>
+      <td><input type="hidden" id="network_id" value="<%= @network_id %>"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.edit_network.display_name")%>: </td>
+      <td><input id="network_display_name" type="text" size=43 value="<%= @display_name %>"></td>
+    </tr>
+  </table>
+
+  <fieldset id="dc_network_field">
+    <legend><%= t("dialog.edit_network.dc_network.header") %></legend><legend>
+    </legend><table cellspacing="5" cellpadding="5">
+      <tbody>
+        <tr>
+          <td><%= t("dialog.edit_network.dc_network.id")%>: </td>
+          <td><%= @network['dc_network']['uuid'] %></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.dc_network.name")%>: </td>
+          <td><%= @network['dc_network']['name'] %></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.dc_network.description")%>: </td>
+          <td><%= @network['dc_network']['description'] %></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.dc_network.allow_new_networks")%>: </td>
+          <td><%= @network['dc_network']['allow_new_networks'] %></td>
+	</tr>
+      </tbody>
+    </table>
+  </fieldset>
+
+  <fieldset id="dhcp_field">
+    <legend><%= t("dialog.edit_network.dhcp_ranges.header") %></legend><legend>
+    </legend><table cellspacing="5" cellpadding="5">
+      <tbody>
+	<tr>
+	  <td><select id="select_dhcp_ranges" size="5" multiple="multiple" name="select_dhcp_ranges"></select></td>
+          <% if @network['editable'] %>
+        </tr><tr>
+          <th><input id="begin_dhcp_range" type="text" size=18 value=""></th>
+          <th><input id="end_dhcp_range" type="text" size=18 value=""></th>
+          <th><button id="add_dhcp_range"><%= t("dialog.edit_network.dhcp_ranges.add") %></button></th>
+          <th><button id="remove_dhcp_range"><%= t("dialog.edit_network.dhcp_ranges.remove") %></button></th>
+          <% end %>
+	</tr>
+      </tbody>
+    </table>
+  </fieldset>
+
+  <% @network['network_services'].each do |service| %>
+  <fieldset id="network_services_field">
+    <legend><%= t("dialog.edit_network.service.header") %></legend><legend>
+    </legend><table cellspacing="5" cellpadding="5">
+      <tbody>
+        <tr>
+          <td><%= t("dialog.edit_network.service.name")%>: </td>
+          <td><%= service['name'] %></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.service.vif_id")%>: </td>
+          <td><%= service['network_vif_id'] %></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.service.address")%>: </td>
+          <td><%= service['address'] %></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.service.mac_addr")%>: </td>
+          <td><%= service['mac_addr'] %></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.service.incoming_port")%>: </td>
+          <td><%= service['incoming_port'] %></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.service.outgoing_port")%>: </td>
+          <td><%= service['outgoing_port'] %></td>
+	</tr>
+      </tbody>
+    </table>
+  </fieldset>
+  <% end %>
+
+  <% if @network['editable'] %>
+  <fieldset id="network_services_field">
+    <legend><%= t("dialog.edit_network.service.header") %></legend><legend>
+    </legend><table cellspacing="5" cellpadding="5">
+      <tbody>
+        <tr>
+          <td><%= t("dialog.edit_network.service.name")%>: </td>
+          <td><input id="service_name" type="text" size=18 value=""></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.service.address")%>: </td>
+          <td><input id="service_address" type="text" size=18 value=""></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.service.incoming_port")%>: </td>
+          <td><input id="service_incoming_port" type="text" size=18 value=""></td>
+	</tr><tr>
+          <td><%= t("dialog.edit_network.service.outgoing_port")%>: </td>
+          <td><input id="service_outgoing_port" type="text" size=18 value=""></td>
+	</tr><tr>
+          <td><button id="service_add"><%= t("dialog.edit_network.service.add") %></button></td>
+	</tr>
+      </tbody>
+    </table>
+  </fieldset>
+  <% end %>
+
+</div>

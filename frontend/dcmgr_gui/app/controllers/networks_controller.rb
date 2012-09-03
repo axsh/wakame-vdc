@@ -6,45 +6,31 @@ class NetworksController < ApplicationController
   end
   
   def create
-    # snapshot_ids = params[:ids]
-    # if snapshot_ids
-    #   res = []
-    #   snapshot_ids.each do |snapshot_id|
-    #     data = {
-    #       :snapshot_id => snapshot_id
-    #     }
-    #     res << Hijiki::DcmgrResource::Network.create(data)
-    #   end
-    #   render :json => res
-    # else
-    #   # Convert to MB
-    #   size = case params[:unit]
-    #          when 'gb'
-    #            params[:size].to_i * 1024
-    #          when 'tb'
-    #            params[:size].to_i * 1024 * 1024
-    #          end
-      
-    #   storage_node_id = params[:storage_node_id] #option
-      
-    #   data = {
-    #     :network_size => size,
-    #     :storage_node_id => storage_node_id
-    #   }
-      
-    #   @network = Hijiki::DcmgrResource::Network.create(data)
+    catch_error do
+      data = {
+        :display_name => params[:display_name],
+        :description => params[:description],
+        :domain_name => params[:domain_name],
+        :dc_network => params[:dc_network],
+        :network_mode => params[:network_mode],
+        :ipv4_network => params[:ipv4_network],
+        :prefix => params[:prefix],
+        :ip_assignment => params[:ip_assignment],
+        :editable => 1,
+      }
 
-    #   render :json => @network
-    # end
+      data[:ipv4_gw] = params[:ipv4_gw] unless params[:ipv4_gw].to_s.empty?
+
+      data[:service_dhcp] = params[:service_dhcp] if params[:service_dhcp]
+      data[:service_dns] = params[:service_dns] if params[:service_dns]
+      data[:service_gateway] = params[:service_gateway] if params[:service_gateway]
+
+      @network = Hijiki::DcmgrResource::Network.create(data)
+      render :json => @network
+    end
   end
-  
+
   def destroy
-    # network_ids = params[:ids]
-    # res = []
-    # network_ids.each do |network_id|
-    #   res << Hijiki::DcmgrResource::Network.destroy(network_id)
-    # end
-    # render :json => res
   end
   
   def list
@@ -68,31 +54,56 @@ class NetworksController < ApplicationController
   end
 
   def attach
-    # instance_id = params[:instance_id]
-    # network_ids = params[:network_ids]
-    # res = []
-    # network_ids.each do |network_id|
-    #   data = {
-    #     :network_id => network_id
-    #   }
-    #   res << Hijiki::DcmgrResource::Network.attach(network_id, instance_id)
-    # end
-    # render :json => res
+    detail = Hijiki::DcmgrResource::NetworkVif.find_vif(params[:network_id], params[:vif_id]).attach
+    render :json => detail
   end
 
   def detach
-    # network_ids = params[:ids]
-    # res = []
-    # network_ids.each do |network_id|
-    #   res << Hijiki::DcmgrResource::Network.detach(network_id)
-    # end
-    # render :json => res
+    detail = Hijiki::DcmgrResource::NetworkVif.find_vif(params[:network_id], params[:vif_id]).detach
+    render :json => detail
   end
   
   def show_networks
     catch_error do
       @network = Hijiki::DcmgrResource::Network.list
       respond_with(@network[0],:to => [:json])
+    end
+  end
+
+  def show_dhcp_ranges
+    catch_error do
+      network_id = params[:id]
+      detail = Hijiki::DcmgrResource::Network.find(network_id).get_dhcp_ranges
+      respond_with(detail,:to => [:json])
+    end
+  end
+
+  def add_dhcp_range
+    catch_error do
+      network_id = params[:id]
+      detail = Hijiki::DcmgrResource::Network.find(network_id).add_dhcp_range(params[:range_begin], params[:range_end])
+      respond_with(detail,:to => [:json])
+    end
+  end
+
+  def remove_dhcp_range
+    catch_error do
+      network_id = params[:id]
+      detail = Hijiki::DcmgrResource::Network.find(network_id).remove_dhcp_range(params[:range_begin], params[:range_end])
+      respond_with(detail,:to => [:json])
+    end
+  end
+
+  def create_service
+    catch_error do
+      data = {
+        :name => params[:name],
+        :ipv4 => params[:ipv4],
+        :incoming_port => params[:incoming_port],
+        :outgoing_port => params[:outgoing_port],
+      }
+      service = Hijiki::DcmgrResource::NetworkService.create(params[:id], data)
+      render :json => service
     end
   end
 

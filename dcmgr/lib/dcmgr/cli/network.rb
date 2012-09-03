@@ -256,7 +256,7 @@ __END
         :network_vif_id => vif.id,
         :name => 'dhcp',
         :incoming_port => 67,
-        :outcoming_port => 68,
+        :outgoing_port => 68,
       }
       
       M::NetworkService.create(service_data)
@@ -306,6 +306,7 @@ __END
     desc "add NAME [options]", "Add new dc network. (NAME must be unique)"
     method_option :uuid, :type => :string, :desc => "UUID of the network"
     method_option :description, :type => :string, :desc => "Description for the dc network"
+    method_option :allow_new_networks, :type => :boolean, :default => false, :desc => "Allow user to create new networks"
     def add(name)
       M::DcNetwork.find(:name=>name) && Error.raise("Duplicate dc network name: #{name}", 100)
       

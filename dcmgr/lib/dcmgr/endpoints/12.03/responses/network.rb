@@ -82,7 +82,7 @@ module Dcmgr::Endpoints::V1203::Responses
         :address => vif.direct_ip_lease.first ? vif.direct_ip_lease.first.ipv4 : nil,
         :mac_addr => vif.pretty_mac_addr,
         :incoming_port => @object.incoming_port,
-        :outgoing_port => @object.outcoming_port,
+        :outgoing_port => @object.outgoing_port,
         :created_at => @object.created_at,
         :updated_at => @object.updated_at,
       }

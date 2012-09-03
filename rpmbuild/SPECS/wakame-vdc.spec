@@ -74,6 +74,17 @@ Requires: %{oname} = %{version}-%{release}
 %description debug-config
 <insert long description, indented with spaces>
 
+# ha-common-config
+%package ha-common-config
+BuildArch: noarch
+Summary: Configuration set for HA
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: drbd84-utils, kmod-drbd84
+Requires: ucarp
+%description ha-common-config
+<insert long description, indented with spaces>
+
 # dcmgr-vmapp-config
 %package dcmgr-vmapp-config
 BuildArch: noarch
@@ -311,6 +322,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %files debug-config
 %defattr(-,root,root)
 %config /etc/sysctl.d/30-dump-core.conf
+
+%files ha-common-config
+%defattr(-,root,root)
+%{prefix}/%{oname}/rpmbuild/helpers/lodrbd.sh
+%{prefix}/%{oname}/rpmbuild/helpers/lodrbd-mounter.sh
 
 %files dcmgr-vmapp-config
 %defattr(-,root,root)

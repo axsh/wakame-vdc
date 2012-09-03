@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# requires:
+#  bash
+#  dirname, pwd, basename
+#  initctl
+#
+set -e
+
+## variables
+
+readonly abs_path=$(cd $(dirname $0) && pwd)
+
+### ucarp
+
+role=$(basename ${abs_path})
+role=${role##vip-}
+role=${role%%.d}
+
+### ha-dcmgr
+
+case "${role}" in
+up) cmd=start
+   ${abs_path}/rabbitmq $*
+   sleep 3
+   initctl ${cmd} vdc-collector RUN=yes
+   ;;
+down) cmd=stop
+   initctl ${cmd} vdc-collector RUN=yes
+   sleep 3
+   ${abs_path}/rabbitmq $*
+   ;;
+esac

@@ -6,9 +6,11 @@ module Dcmgr
   module Rpc
     class HvaContext
 
-      def initialize(hvahandler)
-        raise "Invalid Class: #{hvahandler}" unless hvahandler.instance_of?(HvaHandler)
-        @hva = hvahandler
+      def initialize(subject)
+        unless [HvaHandler, LocalStoreHandler].member?(subject.class)
+          raise "Invalid Class: #{subject.class}"
+        end
+        @hva = subject
       end
 
       def node

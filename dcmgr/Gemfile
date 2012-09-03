@@ -21,4 +21,4 @@ gem 'ripl'
 gem "rack-test", "0.6.1"
 gem 'posix-spawn'
 
-gem 'isono', '0.2.13'
+gem 'isono', '0.2.14'

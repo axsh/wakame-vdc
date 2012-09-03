@@ -128,6 +128,46 @@ ja:
       message: "バックアップを編集します。よろしいですか？"
       backup_id: "バックアップID"
       display_name: "バックアップ名"
+    create_network:
+      header: "ネットワークを作成"
+      description: "詳細"
+      display_name: "ネットワーク名"
+      domain_name: "ドメインネーム"
+      network_mode: "ネットワーク Mode"
+      ipv4_network: "IPv4 ネットワーク"
+      ipv4_gw: "IPv4 ゲートウェイ"
+      prefix: "Prefix"
+      ip_assignment: "IP Assignment"
+      service:
+        header: "Add Services"
+        dhcp: "DHCP"
+        dns: "DNS"
+        gateway: "ゲートウェイ"
+        address: "IPアドレス"
+    edit_network:
+      header: "ネットワークを編集"
+      network_id: "ネットワークID"
+      display_name: "ネットワーク名"
+      dc_network:
+        header: "DCネットワーク"
+        id: "ID"
+        name: "DCネットワーク名"
+        description: "説明"
+        allow_new_networks: "Allow new networks"
+      dhcp_range:
+        header: "DHCP"
+        ranges: "Ranges"
+        add: "Add Range"
+        remove: "Remove Range"
+      service:
+        header: "サービス"
+        name: "サービス名"
+        vif_id: "Vif ID"
+        address: "IPアドレス"
+        mac_addr: "Macアドレス"
+        incoming_port: "Incoming Port"
+        outgoing_port: "Outgoing Port"
+        add: "Add Service"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:
@@ -242,9 +282,11 @@ ja:
       display_name: "インスタンス名"
     backup_instances:
       header: "インスタンスのバックアップ"
-      message: "インスタンスのバックアップを取得します。よろしいですか？"
+      message: "インスタンスのバックアップを作成します。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+      backup_display_name: "バックアップ名"
+      image_description: "説明"
     create_load_balancer:
       header:
         display_name: "ロードバランサ名"
@@ -370,7 +412,7 @@ ja:
       wmi_id: "WMI ID"
       cpu_cores: "CPUコア数"
       memory_size: "メモリーサイズ"
-      status: "ステータス"
+      status: "VMの状態"
       state: "状態"
       ip: "IP"
       ssh_key_pair: "SSHキーペア"
@@ -420,6 +462,7 @@ ja:
       load_balancer_port: "ロードバランサポート"
       instance_protocol: "インスタンスプロトコル"
       instance_port: "インスタンスポート"
+      description: "説明"
     load_balancer_actions:
       register_instance: "インスタンスの割り当て"
       unregister_instance: "インスタンスの解除"
@@ -527,11 +570,17 @@ ja:
       updated_at: "更新日"
   networks:
     header: "ネットワーク"
+    button:
+      edit_network: "編集"
+      view_network: "View"
+      create_network: "Create Network"
+      delete_network: "Delete Network"
     list:
       network_id: "ネットワークID"
       display_name: "ネットワーク名"
       domain_name: "ドメインネーム"
       created: ""
+      action: "アクション"
     details:
       header: "詳細"
       network_id: "ネットワークID"

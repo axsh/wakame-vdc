@@ -235,10 +235,6 @@ module Dcmgr::Models
       h
     end
 
-    def to_api_document
-      to_hash.merge(:id=>self.canonical_uuid)
-    end
-    
     def to_netfilter_document
       {
         :ipv4_gw => self.ipv4_gw,
