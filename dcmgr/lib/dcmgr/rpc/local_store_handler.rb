@@ -75,9 +75,9 @@ module Dcmgr
                           })
             when :progress
               # update upload progress of backup object
-              #rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:progress=>value[0]}) do |req|
-              #  req.oneshot = true
-              #end
+              rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:progress=>value[0]}) do |req|
+                req.oneshot = true
+              end
             else
               raise "Unknown callback command: #{cmd}"
             end
