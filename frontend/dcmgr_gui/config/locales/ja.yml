@@ -613,7 +613,7 @@ ja:
     header: "キーペア"
     button:
       create_keypair: "キーペアを作成"
-      delete_keypair: "削除"
+      delete_keypair: "キーペアを削除"
       edit_keypair: "編集"
       show_secret_accesskey: "シークレットキーを取得"
     list:

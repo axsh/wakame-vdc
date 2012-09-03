@@ -621,7 +621,7 @@ en:
     header: "Key Pairs"
     button:
       create_keypair: "Create Key Pair"
-      delete_keypair: "Delete"
+      delete_keypair: "Delete Key Pair"
       edit_keypair: "Edit"
       show_secret_accesskey: "Show Secret Access Key"
     list:
