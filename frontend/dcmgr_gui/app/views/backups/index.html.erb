@@ -45,6 +45,7 @@
 	    <th><%= t("backups.list.capacity") %></th>
 	    <th><%= t("backups.list.created_at") %></th>
 	    <th><%= t("backups.list.status") %></th>
+	    <th><%= t("backups.list.progress") %></th>
 	    <th><%= t("backups.list.action") %></th>
 	  </tr>
 	  {{each(index,item) rows}}
@@ -58,6 +59,11 @@
 	    <td class="vtip center" title="capacity">${item.size}</td>
 	    <td class="vtip" title="created at">${item.created_at}</td>
 	    <td class="state vtip center" title="status">${item.state}</td>
+            {{if item.progress }}
+	    <td class="state center" title="status">${item.progress}%</td>
+            {{else}}
+	    <td class="state center" title="status"></td>
+            {{/if}}
 	    {{if item.uuid }}
 	    <td class="vtip center" title="action">
 	      {{if item.state != "deleted" }}
@@ -108,6 +114,9 @@
             <td class="padcell"></td>
             <td class="title"><%= t("backups.details.origin_volume_id") %>:</td>
             <td>${item.origin_volume_id}</td>
+            <td class="padcell"></td>
+            <td class="title"><%= t("backups.details.progress") %>:</td>
+            <td class="state" colspan="7">${item.progress}%</td>
 	  </tr>
 	  <tr>
             <td class="padcell"></td>
