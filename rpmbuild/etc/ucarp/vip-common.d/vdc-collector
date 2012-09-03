@@ -21,13 +21,11 @@ role=${role%%.d}
 
 case "${role}" in
 up) cmd=start
-   ${abs_path}/rabbitmq $*
-   sleep 3
-   initctl ${cmd} vdc-collector RUN=yes
-   ;;
+  ${abs_path}/rabbitmq $*
+  initctl ${cmd} vdc-collector RUN=yes
+  ;;
 down) cmd=stop
-   initctl ${cmd} vdc-collector RUN=yes
-   sleep 3
-   ${abs_path}/rabbitmq $*
-   ;;
+  initctl ${cmd} vdc-collector RUN=yes
+  ${abs_path}/rabbitmq $*
+  ;;
 esac
