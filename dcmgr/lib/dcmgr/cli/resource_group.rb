@@ -8,12 +8,12 @@ module Dcmgr::Cli
 
     TYPES={"network"=>:NetworkGroup, "host"=>:HostNodeGroup, "storage"=>:StorageNodeGroup}.freeze
 
-    desc "add [options]", "Create a new tag"
-    method_option :uuid, :type => :string, :desc => "The UUID for the new tag"
-    method_option :account_id, :type => :string, :desc => "The UUID of the account that this tag belongs to", :required => true
-    method_option :type, :type => :string, :desc => "The type for the new tag. Valid types are [#{TYPES.keys.join(", ")}]", :required => true
-    method_option :name, :type => :string, :desc => "The name for the new tag", :required => true
-    method_option :attributes, :type => :string, :desc => "The attributes for the new tag"
+    desc "add [options]", "Create a new resource group"
+    method_option :uuid, :type => :string, :desc => "The UUID for the new resource group"
+    method_option :account_id, :type => :string, :desc => "The UUID of the account that this resource group belongs to", :required => true
+    method_option :type, :type => :string, :desc => "The type for the new resource group. Valid types are [#{TYPES.keys.join(", ")}]", :required => true
+    method_option :name, :type => :string, :desc => "The name for the new resource group", :required => true
+    method_option :attributes, :type => :string, :desc => "The attributes for the new resource group"
     def add
       Error.raise("Invalid type: '#{options[:type]}'. Valid types are [#{TYPES.keys.join(", ")}].",100) unless TYPES.member? options[:type]
       
@@ -22,10 +22,10 @@ module Dcmgr::Cli
       puts super(eval("T::#{TYPES[options[:type]]}"),fields)
     end
     
-    desc "modify UUID [options]", "Modify an existing tag"
-    method_option :account_id, :type => :string, :desc => "The UUID of the account that this tag belongs to"
-    method_option :name, :type => :string, :desc => "The name for the new tag"
-    method_option :attributes, :type => :string, :desc => "The attributes for the new tag"
+    desc "modify UUID [options]", "Modify an existing resource group"
+    method_option :account_id, :type => :string, :desc => "The UUID of the account that this resource group belongs to"
+    method_option :name, :type => :string, :desc => "The name for the new resource group"
+    method_option :attributes, :type => :string, :desc => "The attributes for the new resource group"
     def modify(uuid)
       tag = M::Taggable.find(uuid)
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
@@ -33,14 +33,14 @@ module Dcmgr::Cli
       super(tag.class,uuid,options)
     end
     
-    desc "show [UUID]", "Show the existing tag(s)"
+    desc "show [UUID]", "Show the existing resource groups"
     def show(uuid=nil)
       if uuid
         tag = M::Taggable.find(uuid)
         UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
         
         puts ERB.new(<<__END, nil, '-').result(binding)
-Tag UUID:
+Group UUID:
   <%= tag.canonical_uuid %>
 Account id:
   <%= tag.account_id %>
@@ -64,7 +64,7 @@ __END
       end
     end
     
-    desc "del UUID", "Delete an existing tag"
+    desc "del UUID", "Delete an existing resource group"
     def del(uuid)
       tag = M::Taggable.find(uuid)
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
@@ -72,12 +72,12 @@ __END
       super(tag.class,uuid)
     end
     
-    desc "map UUID OBJECT_UUID", "Map a tag to a taggable object"
+    desc "map UUID OBJECT_UUID", "Add a resource to a group"
     long_desc <<__DESC
-Map a tag to a taggable object.
+Add a resource to a group.
 
- UUID: Tag canonical UUID. 
- OBJECT_UUID: The canonical UUID represents the object to label this tag.
+ UUID: Resource group canonical UUID.
+ OBJECT_UUID: The canonical UUID represents the object to label this resource group.
 __DESC
     def map(uuid, object_uuid)
       #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
@@ -89,7 +89,7 @@ __DESC
 
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
       UnknownUUIDError.raise(object_uuid) if object.nil?
-      Error.raise("Tag '#{uuid}' can not be mapped to a '#{object.class}'.",100) unless tag.accept_mapping?(object)
+      Error.raise("A '#{object.class}' can not be put into #{uuid}.",100) unless tag.accept_mapping?(object)
       
       M::TagMapping.create(
         :tag_id => tag.id,
@@ -97,12 +97,12 @@ __DESC
       )
     end
     
-    desc "unmap UUID OBJECT_UUID", "Unmap a tag from a taggable object"
+    desc "unmap UUID OBJECT_UUID", "Remove a resource from a group"
     long_desc <<__DESC
-Unmap a tag from a taggable object.
+"Remove a resource from a group".
 
- UUID: Tag canonical UUID. 
- OBJECT_UUID: The canonical UUID represents the object to label this tag.
+ UUID: Resource group canonical UUID.
+ OBJECT_UUID: The canonical UUID represents the object to label this resource group.
 __DESC
     def unmap(uuid, object_uuid)
       #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
@@ -114,14 +114,14 @@ __DESC
 
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
       UnknownUUIDError.raise(object_uuid) if object.nil?
-      Error.raise("Tag '#{uuid}' can not be mapped to a '#{object.class}'.",100) unless tag.accept_mapping?(object)
+      Error.raise("A '#{object.class}' can not be put into #{uuid}.",100) unless tag.accept_mapping?(object)
       
       mapping = M::TagMapping.find(
         :tag_id => tag.id,
         :uuid   => object.canonical_uuid
       )
       
-      raise "#{tag.canonical_uuid} is not mapped to #{object.canonical_uuid}" if mapping.nil?
+      raise "#{object.canonical_uuid} does not exist in #{tag.canonical_uuid}" if mapping.nil?
       mapping.destroy
     end
   end
