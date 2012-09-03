@@ -119,8 +119,12 @@ module Dcmgr
           end
         end
 
+        def format_tuple(cmd, args=[])
+          sprintf(cmd, *args.map {|a| Shellwords.shellescape(a.to_s) })
+        end
+
         def run(cmd, args=[], opts={})
-          cmd = sprintf(cmd, *args.map {|a| Shellwords.shellescape(a.to_s) })
+          cmd = format_tuple(cmd, args)
 
           logger.info("Executing command: #{cmd}")
           # use /bin/bash instead of /bin/sh.
@@ -161,6 +165,10 @@ module Dcmgr
           
           begin
             blk.call( pid, sin, sout, eout )
+            begin
+              ::Process.wait(pid)
+            rescue Errno::ECHILD
+            end
           ensure
             [sin, sout, eout].each { |fd| fd.close rescue nil }
           end
