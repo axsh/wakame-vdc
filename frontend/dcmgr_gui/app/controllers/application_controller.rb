@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
 
   before_filter do |req|
     if logged_in? && current_account
-      Thread.current[:hijiki_request_attribute] = Hijiki::RequestAttribute.new(current_account.canonical_uuid)
+      Thread.current[:hijiki_request_attribute] = Hijiki::RequestAttribute.new(current_account.canonical_uuid, current_user.login_id)
     end
     true
   end

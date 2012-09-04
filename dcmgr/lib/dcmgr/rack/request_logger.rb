@@ -9,6 +9,8 @@ module Dcmgr::Rack
     HEADER_X_VDC_REQUEST_ID='X-VDC-Request-ID'.freeze
     RACK_REQUEST_LOG_KEY='vdc.request_log'.freeze
       
+    include Dcmgr::Logger
+
     def initialize(app, with_header=true)
       @app = app
       @with_header = with_header
@@ -39,6 +41,7 @@ module Dcmgr::Rack
       ensure
         @log.class.db.transaction do
           @log.save
+          logger.info("Request recieved (request_id: #{@log.request_id}) [account_id: #{@log.account_id}] [login_id: #{@log.requester_token}]")
         end
       end
     end
