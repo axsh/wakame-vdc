@@ -41,7 +41,7 @@ module Dcmgr::Rack
       ensure
         @log.class.db.transaction do
           @log.save
-          logger.info("Request received [request_id: #{@log.request_id] [account_id: #{@log.account_id}] [login_id: #{@log.requester_token}]")
+          logger.info("Request received [request_id: #{@log.request_id}] [account_id: #{@log.account_id}] [login_id: #{@log.requester_token}]")
         end
       end
     end
