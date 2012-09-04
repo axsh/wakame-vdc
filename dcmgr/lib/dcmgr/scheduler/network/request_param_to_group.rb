@@ -3,7 +3,23 @@
 module Dcmgr
   module Scheduler
     module Network
-      # One internal address + NAT external address to single interface.
+
+      # This scheduler chooses a network group based on one of the request parameters.
+      # It will then sort networks in the group based on their sort keys and lease an IP
+      # from the first network that still has dynamic range available.
+      #
+      #
+      # Usage (in dcmgr.conf):
+      #  network_scheduler(:RequestParamToGroup) {
+      #     key 'instance_spec_name'
+      #
+      #     pair 'vz.small',  'nwg-small'
+      #     pair 'vz.large',  'nwg-large'
+      #     pair 'kvm.small', 'nwg-kvm'
+      #     pair 'kvm.large', 'nwg-kvm'
+      #
+      #     default 'nwg-shnet'
+      #  }
       class RequestParamToGroup < NetworkScheduler
         include Dcmgr::Logger
 

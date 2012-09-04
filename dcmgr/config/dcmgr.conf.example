@@ -79,6 +79,14 @@ service_type("std", "StdServiceType") {
   # * :NatOneToOne
   # * :VifTemplate
   # * :PerInstance
+  # * :RequestParamToGroup {
+  #     key 'instance_spec_name'
+  #
+  #     pair 'vz.small', 'nwg-small'
+  #     pair 'vz.large', 'nwg-large'
+  #
+  #     default 'nwg-shnet'
+  #  }
   #
   network_scheduler :PerInstance do
 
