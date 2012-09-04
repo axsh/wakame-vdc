@@ -15,15 +15,15 @@ module Dcmgr::Models
     }
 
     def_dataset_method(:by_state) do |state|
-      # SELECT * FROM `load_balancers` WHERE ('instance_id' IN (SELECT `id` FROM `instances` WHERE (`state` = 'running')))
-      r = Instance.filter(:state => state).select(:id)
-      filter(:instance_id => r)
+      # SELECT * FROM `load_balancers` INNER JOIN `instances` ON
+      # ((`load_balancers`.`instance_id` = `instances`.`id`) AND (`instances`.`state` = 'running'))
+      self.join_table(:inner, :instances, {:load_balancers__instance_id=>:instances__id, :state=>state}).qualify_to_first_source
     end
 
     def_dataset_method(:by_status) do |status|
-      # SELECT * FROM `load_balancers` WHERE ('instance_id' IN (SELECT `id` FROM `instances` WHERE (`status` = 'online')))
-      r = Instance.filter(:status => status).select(:id)
-      filter(:instance_id => r)
+      # SELECT * FROM `load_balancers` INNER JOIN `instances` ON
+      # ((`load_balancers`.`instance_id` = `instances`.`id`) AND (`instances`.`status` = 'online'))
+      self.join_table(:inner, :instances, {:load_balancers__instance_id=>:instances__id, :status=>status}).qualify_to_first_source
     end
     
     class RequestError < RuntimeError; end

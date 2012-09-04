@@ -57,7 +57,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
     delete '/instances' do
       uuids = M::Instance.alives.filter(:account_id=>@account.canonical_uuid, :state=>['running', 'halted']).all.map { |i|
         request_forward.delete("/instances/#{i.canonical_uuid}")
-        i.canonical_uuids
+        i.canonical_uuid
       }
       respond_with(uuids)
     end
@@ -66,7 +66,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
     put '/load_balancers/poweroff' do
       uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid).by_state('running').all.map { |i|
         request_forward.put("/load_balancers/#{i.canonical_uuid}/poweroff")
-        i.canonical_uuids
+        i.canonical_uuid
       }
       respond_with(uuids)
     end
@@ -75,16 +75,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
     put '/load_balancers/poweron' do
       uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid).by_state('halted').all.map { |i|
         request_forward.put("/load_balancers/#{i.canonical_uuid}/poweron")
-        i.canonical_uuids
+        i.canonical_uuid
       }
       respond_with(uuids)
     end
 
     # Terminate all load balancers with the Account.
     delete '/load_balancers' do
-      uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid).all.map { |i|
+      uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid).by_state(['running', 'halted']).all.map { |i|
         request_forward.delete("/load_balancers/#{i.canonical_uuid}")
-        i.canonical_uuids
+        i.canonical_uuid
       }
       respond_with(uuids)
     end
@@ -93,7 +93,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
     delete '/backup_objects' do
       uuids = M::BackupObject.alives.filter(:account_id=>@account.canonical_uuid, :state=>'halted').all.map { |i|
         request_forward.delete("/backup_objects/#{i.canonical_uuid}")
-        i.canonical_uuids
+        i.canonical_uuid
       }
       respond_with(uuids)
     end
@@ -102,7 +102,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
     delete '/volumes' do
       uuids = M::Volume.alives.filter(:account_id=>@account.canonical_uuid, :state=>'available').all.map { |i|
         request_forward.delete("/volumes/#{i.canonical_uuid}")
-        i.canonical_uuids
+        i.canonical_uuid
       }
       respond_with(uuids)
     end
@@ -112,7 +112,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
       #M::SecurityGroup.alives.filter(:account_id=>@account.canonical_uuid).all.map { |i|
       uuids = M::SecurityGroup.filter(:account_id=>@account.canonical_uuid).all.map { |i|
         request_forward.delete("/security_groups/#{i.canonical_uuid}")
-        i.canonical_uuids
+        i.canonical_uuid
       }
       respond_with(uuids)
     end
@@ -122,7 +122,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
       #M::SshKeyPair.alives.filter(:account_id=>@account.canonical_uuid).all.map { |i|
       uuids = M::SshKeyPair.filter(:account_id=>@account.canonical_uuid).all.map { |i|
         request_forward.delete("/ssh_key_pairs/#{i.canonical_uuid}")
-        i.canonical_uuids
+        i.canonical_uuid
       }
       respond_with(uuids)
     end
