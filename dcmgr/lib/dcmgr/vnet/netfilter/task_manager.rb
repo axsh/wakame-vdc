@@ -164,7 +164,7 @@ module Dcmgr
           end
           
           def jumps
-            [IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{@vnic[:ipv4][:address]} -j #{@name}")]
+            [IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{@vnic[:address]} -j #{@name}")]
           end
           
           def tailor!(rule)
@@ -184,7 +184,7 @@ module Dcmgr
           end
           
           def jumps
-            [IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{@vnic[:ipv4][:address]} -j #{@name}")]
+            [IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{@vnic[:address]} -j #{@name}")]
           end
           
           def tailor!(rule)

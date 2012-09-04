@@ -30,6 +30,8 @@ module Dcmgr
             network = Models::Network[param['network'].to_s]
             next if network.nil?
 
+            vnic.nat_network = Models::Network[param['nat_network'].to_s] unless param['nat_network'].nil?
+
             vnic.attach_to_network(network)
           }
         end
