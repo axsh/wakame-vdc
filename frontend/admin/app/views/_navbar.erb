@@ -1,26 +1,20 @@
-<div class="navbar navbar-fixed-top">
+<div class="navbar navbar-inverse navbar-fixed-top" id="navbar">
   <div class="navbar-inner">
     <div class="container-fluid">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
       <a class="brand" href="/">Wakame-VDC Admin</a>
-<!--       <div class="btn-group pull-right">
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          <i class="icon-user"></i> Username
-          <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-          <li><a href="#">Profile</a></li>
-          <li class="divider"></li>
-          <li><a href="#">Sign Out</a></li>
-        </ul>
-      </div>
- -->      <div class="nav-collapse">
+      <div class="nav" style="height: 0px;">
         <ul class="nav">
-          <li class="active"><a href="/">Home</a></li>
+          <li><a href="/notifications">ホーム</a></li>
+
+          <li class="dropdown">
+          <a class="dropdown-toggle" id="dLabel" data-toggle="dropdown" data-target="#" href="#">一覧</a>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="margin-left: 13px">
+            <li><a href="/notifications">お知らせ</a></li>
+            <li><a href="/instances">インスタンス</a></li>
+            <li><a href="/users">ユーザー</a></li>
+            <li><a href="/host_nodes">ホストノード</a></li>
+          </ul>
+          </li>
         </ul>
       </div><!--/.nav-collapse -->
     </div>

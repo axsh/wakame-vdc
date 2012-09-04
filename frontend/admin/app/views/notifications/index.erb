@@ -1,99 +1,168 @@
-<div class="span9">
-  <div id="notification_index_search"></div>
-  <p><b>検索条件</b></p>
-  <form class="well form-query">
-  <div class="control-group">
+<% content_for :javascript_link_tags do %>
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/bootstrap-notify.js',
+                            '/assets/backbone.paginator.js',
+                            '/assets/admin/models/item.js',
+                            '/assets/admin/collections/paginated_collection.js',
+                            '/assets/admin/views/result_view.js',
+                            '/assets/admin/views/pagination_view.js',
+                            '/assets/admin/views/list_view.js',
+                            '/assets/admin/views/notification_view.js',
+                            '/assets/admin/controllers/notifications/search_controller.js',
+]
+%>
+<% end %>
+
+<% content_for :stylesheet_link_tags do %>
+<%= stylesheet_link_tag ['/assets/bootstrap-notify.css',
+                         '/assets/smoothness/jquery-ui-1.8.23.custom.css',
+                         '/assets/jquery-ui-timepicker-addon.css'
+] %>
+<% end %>
+<div id="notify" class='notifications top-right'></div>
+<div class="span2"></div>
+  <div class="span8">
     <div class="control-group">
-      <label class="control-label">対象</label>
-      <label class="radio">
-        <input type="radio" name="optionsUsers" id="optionsUsers1" value="" placeholder="" checked>全ユーザー
-      </label>
-
-      <div class="control form-search">
-        <label class="radio">
-          <input type="radio" name="optionsUsers" id="optionsUsers2" value="" placeholder="">
-          <div class="controls">
-            指定ユーザー<input class="input-menium" id="users" type="text" name="" value="" placeholder="">
-          </div>
-        </label>
-      </div>
+      <legend>お知らせ検索</legend>
     </div>
-
-    <div class="control-group form-inline">
-      <div class="controls">
-        <label class="control-label">掲載期間</label>
+    <form class="well form-query">
+      <div class="control-group">
         <div class="controls">
-          <input type="text" name="publish_date_to" value="" placeholder="2012/01/01 00:00:00" style="text-align:right; width:120px" maxlength="19"> ~
-          <input type="text" name="publish_date_from" value="" placeholder="2012/01/01 00:00:00" style="text-align:right; width:120px" maxlength="19">
-          </div>
-      </div>
-    </div>
+          <label class="radio">
+            <input type="radio" name="option_user" id="option_user_all" value="" placeholder="" checked>全ユーザー
+          </label>
+        </div>
 
-    <div class="control-group">
+        <div class="controls" >
+          <label class="radio">
+            <input type="radio" name="option_user" id="option_users" value="" placeholder="">
+
+            <div class="controls">
+                <label class="control-label">指定ユーザー</label>
+                <div class="controls form-search" id="control_option_users">
+                  <textarea class="span8" name="users" rows="4" ></textarea>
+                </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="controls">
+          <label class="control-label">掲載期間</label>
+          <span class="input-prepend">
+            <input class="span4" type="text" id="publish_date_from" name="publish_date_from" value="" placeholder="">
+            <span class="add-on" id="icon_publish_date_from"><i class="icon-calendar"></i></span>
+          </span>
+          <span style="margin:10px;">~</span><span class="input-prepend">
+            <input class="span4" type="text" id="publish_date_to" name="publish_date_to" value="" placeholder="">
+            <span class="add-on" id="icon_publish_date_to"><i class="icon-calendar"></i></span>
+          </span>
+        </div>
+      </div>
       <div class="controls" style="text-align:right">
-        <button type="submit" class="btn" {{action "submit" on="click"}}>検索</button>
+        <button type="submit" class="btn">検索</button>
       </div>
-    </div>
-  </div>
-  </form>
+    </form>
 
-  <div id="notification_index_list">
-    <hr>
-    <p><b>検索結果</b></p>
+    <div class="controls">
+      <legend>検索結果</legend>
+    </div>
+
+    <div id="pagination"></div>
     <table id="notification-list" class="table table-striped table-bordered">
-    <thead>
-      <tr>
-        <th>ユーザーID</th>
-        <th>掲載期間</th>
-        <th>タイトル</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-      <tr>
-        <td>ABCDE</td>
-        <td>2012/01/01 ~ 2012/01/02</td>
-        <td><a href="/notifications/edit">Title<a></td>
-        <td><a href="#" class="btn" data-toggle='modal' data-target="#destroyNotification">削除</a>
-        </td>
-      </tr>
+      <thead>
+        <tr>
+          <th>タイトル</th>
+          <th>掲載期間</th>
+          <th>アカウントID</th>
+          <th></th>
+        </tr>
+      </thead>
+      <!--  The content is mapped on #resultItemTemplate -->
+      <tbody id="content"></tbody>
     </table>
-    </tbody>
+    <!--  The pagination is mapped on #tmpServerPagination -->
 
-    <div class="modal hide" id="destroyNotification">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">×</button>
-        <h3>お知らせ削除</h3>
+
+    <script type="text/template" id="resultItemTemplate">
+      {% if(state == 'active') { %}
+      <td><a href="/notifications/{{ id }}">ABCDE</a></td>
+      <td>{{ this.publish_date() }}</td>
+      <td><a href="/notifications/edit">{{ title }}<a></td>
+      <td>
+      <button class="btn delete">削除</button>
+      </td>
+      {% } else { %}
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      {% } %}
+    </script>
+      <div class="modal hide" role="dialog" id="destroyNotification">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">×</button>
+          <h3>お知らせ削除</h3>
+        </div>
+        <div class="modal-body">
+          <p>お知らせを削除します。よろしいですか？</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal">キャンセル</button>
+          <button class="btn btn-primary actionDestroy" data-dismiss="modal">削除</button>
+        </div>
       </div>
-      <div class="modal-body">
-        <p>お知らせを削除します。よろしいですか？</p>
-      </div>
-      <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-        <a id="actionDestoy" href="#" class="btn btn-primary" data-dismiss="modal">削除</a>
+
+
+    <script type="text/template" id="tmpServerPagination">
+    <div class="control-group">
+      <div class="pagination pagination-centered">
+        <ul>
+
+          {% if (currentPage != firstPage) { %}
+          <li><a class="serverprevious" href="#"><</a></li>
+          {% } else { %}
+          <li class="disabled"><a href="#{{ firstPage }}"><</a></li>
+          {% } %}
+
+          {% for(p=firstPage; p<=perPage;p++){ %}
+            {% var halfPage = Math.ceil(perPage / 2); %}
+            {% if(currentPage <= halfPage) { %}
+              {% if (currentPage == p) { %}
+                <li class="active"><a class="page selected" href="#{{ p }}">{{ p }}</a></li>
+              {% } else { %}
+                <li><a class="page" href="#{{ p }}">{{ p }}</a></li>
+              {% } %}
+            {% } else { %}
+              {% if ((currentPage + halfPage) <= lastPage) { %}
+                {% var tailPage = currentPage + halfPage %}
+                {% var middlePage = tailPage - perPage + p %}
+                {% if (currentPage == middlePage) { %}
+                  <li class="active"><a class="page selected" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+                {% } else { %}
+                  <li><a class="page" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+                {% } %}
+              {% } else { %}
+                  {% var middlePage = lastPage - perPage + p %}
+                  {% if (currentPage == middlePage) { %}
+                  <li class="active"><a class="page selected" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+                    {% } else { %}
+                  <li><a class="page" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+                  {% } %}
+              {% } %}
+            {% } %}
+          </li>
+          {% } %}
+            {% if (lastPage != currentPage) { %}
+            <li><a class="servernext" href="#">></a></li>
+            {% } else { %}
+            <li class="disabled"><a class="disabled" href="#{{ lastPage }}">></a></li>
+            {% } %}
+
+        </ul>
       </div>
     </div>
-
-    <div class="pagination pagination-centered">
-      <ul>
-        <li><a href="#">前へ</a></li>
-        <li class="active">
-          <a href="#">1</a>
-        </li>
-        <li><a href="#">2</a></li>
-        <li><a href="#">3</a></li>
-        <li><a href="#">4</a></li>
-        <li><a href="#">5</a></li>
-        <li><a href="#">6</a></li>
-        <li><a href="#">7</a></li>
-        <li><a href="#">8</a></li>
-        <li><a href="#">9</a></li>
-        <li class="disabled"><a href="#">...</a></li>
-        <li><a href="#">11</a></li>
-        <li><a href="#">次へ</a></li>
-      </ul>
-    </div>
-    <button class="btn" {{action "hoge" on="click"}}>click</button>
-  </div>
+    </script>
 </div>
+<div class="span2"></div>
