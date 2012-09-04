@@ -47,4 +47,5 @@ gem 'padrino', '0.10.7'
 #   gem 'padrino-' + g, '0.10.7'
 # end
 
+gem 'json', '1.7.5'
 
