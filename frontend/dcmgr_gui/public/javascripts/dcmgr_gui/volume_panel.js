@@ -97,6 +97,7 @@ DcmgrGUI.prototype.volumePanel = function(){
       callback: function(){
         var params = { 'button': bt_edit_volume, 'element_id': 1 };
         $(this).find('#volume_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#volume_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#volume_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
@@ -178,25 +179,15 @@ DcmgrGUI.prototype.volumePanel = function(){
         }
       }
 
-      $(this).find('#display_name').keyup(function(){
-       if( $(this).val() ) {
-         is_ready['display_name'] = true;
-         ready(is_ready);
-       } else {
-         is_ready['display_name'] = false;
-         ready(is_ready);
-       }
-      });
+      var display_name_params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#display_name').bind('keyup', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#display_name').bind('paste', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#display_name').bind('cut', display_name_params, DcmgrGUI.Util.checkTextField);
 
-      $(this).find('#volume_size').keyup(function(){
-       if( $(this).val() ) {
-         is_ready['volume_size'] = true;
-         ready(is_ready);
-       } else {
-         is_ready['volume_size'] = false;
-         ready(is_ready);
-       }
-      });
+      var volume_size_params = {'name': 'volume_size', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#volume_size').bind('keyup', volume_size_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#volume_size').bind('paste', volume_size_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#volume_size').bind('cut', volume_size_params, DcmgrGUI.Util.checkTextField);
 
       request.get({
         "url": '/storage_nodes/show_storage_nodes.json',
@@ -287,6 +278,7 @@ DcmgrGUI.prototype.volumePanel = function(){
       var self = this;
       var params = { 'button': bt_create_backup, 'element_id': 1 };
       $(self).find("#backup_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
+      $(self).find("#backup_display_name").bind('cut', params, DcmgrGUI.Util.availableTextField)
       $(self).find("#backup_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
     }
   });

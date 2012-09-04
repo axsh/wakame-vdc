@@ -105,9 +105,6 @@ DcmgrGUI.prototype.instancePanel = function(){
       callback: function(){
         var self = this;
         
-        var params = { 'button': bt_edit_instance, 'element_id': 1 };
-        $(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
-        $(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#left_select_list').mask($.i18n.prop('loading_parts'));
         $(this).find('#right_select_list').mask($.i18n.prop('loading_parts'));
         
@@ -135,15 +132,10 @@ DcmgrGUI.prototype.instancePanel = function(){
           }
         }
         
-        $(this).find('#display_name').keyup(function(){
-         if( $(this).val() ) {
-           is_ready['display_name'] = true;
-           ready(is_ready);
-         } else {
-           is_ready['display_name'] = false;
-           ready(is_ready);
-         }
-        });
+	var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
+	$(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
+	$(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
+	$(this).find('#instance_display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
         
         var create_attach_vif = function(index) {
           var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '")">Attach</button>'

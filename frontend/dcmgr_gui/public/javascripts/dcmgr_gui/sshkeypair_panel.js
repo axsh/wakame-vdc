@@ -88,6 +88,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
       callback: function(){
         var params = { 'button': bt_edit_ssh_keypair, 'element_id': 1 };
         $(this).find('#ssh_keypair_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#ssh_keypair_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#ssh_keypair_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       },
       button: edit_ssh_keypair_buttons
@@ -165,6 +166,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
 
       var params = { 'button': bt_create_ssh_keypair, 'element_id': 1 };
       $(this).find('#ssh_keypair_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+      $(this).find('#ssh_keypair_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
       $(this).find('#ssh_keypair_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
     },
     button: create_ssh_keypair_buttons

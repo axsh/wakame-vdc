@@ -485,7 +485,7 @@ DcmgrGUI.Util.availableTextField = function(e){
   var button = d.button;
   var element_id = d.element_id;
 
-  if(e.type == 'paste') {
+  if(_.include(['paste', 'cut'], e.type)) {
     var el = $(this);
     setTimeout(function() {
       var text = $(el).val();
@@ -504,6 +504,37 @@ DcmgrGUI.Util.availableTextField = function(e){
     }
   }
   return true;
+};
+
+DcmgrGUI.Util.checkTextField = function(e) {
+    var d = e.data;
+    var name = d.name;
+    var is_ready = d.is_ready;
+    var ready = d.ready;
+
+    if(_.include(['paste', 'cut'], e.type)) {
+	var el = $(this);
+	setTimeout(function(){
+		var text = $(el).val();
+		if(text) {
+		    is_ready[name] = true;
+		    ready(is_ready);
+		} else {
+		    is_ready[name] = false;
+		    ready(is_ready);
+		}
+	    }, 100);
+    } else {
+	var text = $(this).val();
+	if(text) {
+	    is_ready[name] = true;
+	    ready(is_ready);
+	} else {
+	    is_ready[name] = false;
+	    ready(is_ready);
+	}
+    }
+    return true;
 };
 
 // Find ISO8601 UTC string in the HTML element and convert it.

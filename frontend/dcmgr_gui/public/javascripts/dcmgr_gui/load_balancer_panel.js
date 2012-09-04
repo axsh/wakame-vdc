@@ -69,60 +69,35 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 	      button.disabledButton(1, true);
 	  }
       }
-      $(e).find('#display_name').keyup(function(){
-	      if( $(this).val() ) {
-		  is_ready['display_name'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['display_name'] = false;
-		  ready(is_ready);
-	      }
-	  });
-      $(e).find('#load_balancer_port').keyup(function(){
-	      if( $(this).val() ) {
-		  is_ready['load_balancer_port'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['load_balancer_port'] = false;
-		  ready(is_ready);
-	      }
-	  });
-      $(e).find('#instance_port').keyup(function(){
-	      if( $(this).val() ) {
-		  is_ready['instance_port'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['instance_port'] = false;
-		  ready(is_ready);
-	      }
-	  });
-      $(e).find('#cookie_name').keyup(function(){
-	      if( $(this).val() ) {
-		  is_ready['cookie_name'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['cookie_name'] = false;
-		  ready(is_ready);
-	      }
-	  });
-      $(e).find('#public_key').keyup(function(){
-	      if( $(this).val() ) {
-		  is_ready['public_key'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['public_key'] = false;
-		  ready(is_ready);
-	      }
-	  });
-      $(e).find('#private_key').keyup(function(){
-	      if( $(this).val() ) {
-		  is_ready['private_key'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['private_key'] = false;
-		  ready(is_ready);
-	      }
-	  });
+      var display_name_params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
+      $(e).find('#display_name').bind('keyup', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#display_name').bind('paste', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#display_name').bind('cut', display_name_params, DcmgrGUI.Util.checkTextField);
+
+      var load_balancer_port_params = {'name': 'load_balancer_port', 'is_ready': is_ready, 'ready': ready};
+      $(e).find('#load_balancer_port').bind('keyup', load_balancer_port_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#load_balancer_port').bind('paste', load_balancer_port_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#load_balancer_port').bind('cut', load_balancer_port_params, DcmgrGUI.Util.checkTextField);
+
+      var instance_port_params = {'name': 'instance_port', 'is_ready': is_ready, 'ready': ready};
+      $(e).find('#instance_port').bind('keyup', instance_port_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#instance_port').bind('paste', instance_port_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#instance_port').bind('cut', instance_port_params, DcmgrGUI.Util.checkTextField);
+
+      var cookie_name_params = {'name': 'cookie_name', 'is_ready': is_ready, 'ready': ready};
+      $(e).find('#cookie_name').bind('keyup', cookie_name_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#cookie_name').bind('paste', cookie_name_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#cookie_name').bind('cut', cookie_name_params, DcmgrGUI.Util.checkTextField);
+
+      var public_key_params = {'name': 'public_key', 'is_ready': is_ready, 'ready': ready};
+      $(e).find('#public_key').bind('keyup', public_key_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#public_key').bind('paste', public_key_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#public_key').bind('cut', public_key_params, DcmgrGUI.Util.checkTextField);
+
+      var private_key_params = {'name': 'private_key', 'is_ready': is_ready, 'ready': ready};
+      $(e).find('#private_key').bind('keyup', private_key_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#private_key').bind('paste', private_key_params, DcmgrGUI.Util.checkTextField);
+      $(e).find('#private_key').bind('cut', private_key_params, DcmgrGUI.Util.checkTextField);
       $(e).find('input[name="balance_algorithm"]').bind('change', function(){
 	      if ($(this).is(':checked')) {
 		  if($(this).val() == "leastconn") {
@@ -176,33 +151,9 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
 		  ready(is_ready);
 	      }
 	  }).change();
-      $(e).find('#display_name').bind('change', function(){
-	      if( $(this).val()) {
-		  is_ready['display_name'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['display_name'] = false;
-		  ready(is_ready);
-	      }
-	  }).change();
-      $(e).find('#load_balancer_port').bind('change', function(){
-	      if( $(this).val()) {
-		  is_ready['load_balancer_port'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['load_balancer_port'] = false;
-		  ready(is_ready);
-	      }
-	  }).change();
-      $(e).find('#instance_port').bind('change', function(){
-	      if( $(this).val()) {
-		  is_ready['instance_port'] = true;
-		  ready(is_ready);
-	      } else {
-		  is_ready['instance_port'] = false;
-		  ready(is_ready);
-	      }
-	  }).change();
+      $(e).find('#display_name').bind('change', display_name_params, DcmgrGUI.Util.checkTextField).change();
+      $(e).find('#load_balancer_port').bind('change', load_balancer_port_params, DcmgrGUI.Util.checkTextField).change();
+      $(e).find('#instance_port').bind('change', instance_port_params, DcmgrGUI.Util.checkTextField).change();
   };
   c_list.setDetailTemplate({
     template_id:'#loadBalancersDetailTemplate',

@@ -97,6 +97,7 @@ DcmgrGUI.prototype.backupPanel = function(){
       callback: function(){
         var params = { 'button': bt_edit_backup, 'element_id': 1 };
         $(this).find('#backup_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#backup_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#backup_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
@@ -161,6 +162,7 @@ DcmgrGUI.prototype.backupPanel = function(){
     callback: function(){
       var params = { 'button': bt_create_volume, 'element_id': 1 };
       $(this).find("#backup_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
+      $(this).find("#backup_display_name").bind('cut', params, DcmgrGUI.Util.availableTextField)
       $(this).find("#backup_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
     },
     button: create_volume_buttons
