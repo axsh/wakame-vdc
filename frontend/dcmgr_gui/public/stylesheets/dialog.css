@@ -82,35 +82,27 @@
   vertical-align: middle;
 }
 
-#security_group_field {
+#launch_instance_dialog fieldset.with_border {
   border: 1px solid gray;
   padding: 10px;
-  margin-top: 15px;
   margin-left: 15px;
   width: 490px;
 }
 
-#launch_instance_dialog #security_group_field legend {
+#launch_instance_dialog legend {
   padding: 0 3px 0 3px;
+}
+
+#launch_instance_dialog #security_group_field {
+  margin-top: 15px;
 }
 
 #launch_instance_dialog #security_group_field table tr th {
   text-align: center;
 }
 
-#launch_instance_dialog #user_data_field {
-  border: 1px solid gray;
-  padding: 10px;
-  margin-left: 15px;
-  width: 490px;
-}
-
-#launch_instance_dialog #user_data_field legend {
-  padding: 0 3px 0 3px;
-}
-
 #edit_instance_dialog table tr td {
-	padding: 3px;
+  padding: 3px;
 }
 
 #dc_network_field {
