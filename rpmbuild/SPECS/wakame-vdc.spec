@@ -22,6 +22,9 @@ Source: %{_vdc_git_uri}
 Prefix: /%{_prefix_path}
 License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
 
+# Disable automatic dependency analysis.
+AutoReqProv: no
+
 # * build
 BuildRequires: rpm-build
 BuildRequires: createrepo
