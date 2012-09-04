@@ -253,6 +253,9 @@ module Dcmgr::Models
     end
 
     def add_nic(vif_template)
+      # Change all hash keys to symbols (This method expects symbols but the api passes strings so this one-liner makes our life much easier)
+      vif_template = Hash[vif_template.map{ |k, v| [k.to_sym, v] }]
+
       # Choose vendor ID of mac address.
       vendor_id = if vif_template[:vendor_id]
                     vif_template[:vendor_id]

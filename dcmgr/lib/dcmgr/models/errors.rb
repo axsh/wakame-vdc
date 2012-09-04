@@ -7,5 +7,6 @@ module Dcmgr
     class UUIDPrefixDuplication < ModelError; end
 
     class InvalidSecurityGroupRuleSyntax < ModelError; end
+    class OutOfIpRange < ModelError; end
   end
 end

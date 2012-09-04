@@ -46,7 +46,7 @@ module Dcmgr::Models
                   else
                     raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
                   end
-      raise "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if leaseaddr.nil?
+      raise OutOfIpRange, "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if leaseaddr.nil?
 
       leaseaddr = IPAddress::IPv4.parse_u32(leaseaddr)
       NetworkVifIpLease.create(:ipv4=>leaseaddr.to_i, :network_id=>network.id, :network_vif_id=>network_vif.id, :description=>leaseaddr.to_s)
