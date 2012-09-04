@@ -16,6 +16,7 @@ gem 'sequel', '3.38.0'
 gem 'padrino-sprockets', :git => "https://github.com/nightsailer/padrino-sprockets.git", :require => "padrino/sprockets"
 gem 'coffee-script', '2.2.0'
 gem 'therubyracer', :require => 'v8'
+gem 'unicorn', '4.3.1'
 
 # Development requirements
 group :development do
