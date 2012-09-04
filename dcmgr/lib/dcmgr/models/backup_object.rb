@@ -18,14 +18,19 @@ module Dcmgr::Models
     def after_initialize
       super
       self[:object_key] ||= self.canonical_uuid
+      self[:progress] ||= 100.0
     end
 
     def validate
       unless Dcmgr::Const::BackupObject::CONTAINER_FORMAT.keys.member?(self.container_format.to_sym)
         errors.add(:container_format, "Unsupported container format: #{self.container_format}")
       end
+
+      unless self.progress.to_f.between?(0.0, 100.0)
+        errors.add(:progress, "Must be set between 0.0-100.0.")
+      end
     end
-    
+
     def self.entry_new(bkst, account, size, &blk)
       bo = self.new
       bo.backup_storage = (bkst.is_a?(BackupStorage) ? bkst : BackupStorage[bkst.to_s])

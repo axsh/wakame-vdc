@@ -98,7 +98,19 @@ module Dcmgr
 
             cmd_tuple[0] << " | " + cmd_tuple2[0]
             cmd_tuple[1] += cmd_tuple2[1]
-            shell.run!(*cmd_tuple)
+            shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
+              sin.close
+
+              begin
+                while l = eout.readline
+                  if l =~ /(\d+)/
+                    evcb.progress($1.to_f)
+                  end
+                end
+              rescue EOFError
+                # ignore this error
+              end
+            end
 
             chksum = File.read(chksum_path).split(/\s+/).first
             alloc_size = File.read(size_path).split(/\s+/).first
@@ -112,7 +124,19 @@ module Dcmgr
               
               cmd_tuple[0] << "> %s"
               cmd_tuple[1] += [bkup_tmp_path]
-              shell.run!(*cmd_tuple)
+              shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
+                sin.close
+                
+                begin
+                  while l = eout.readline
+                    if l =~ /(\d+)/
+                      evcb.progress($1.to_f)
+                    end
+                  end
+                rescue EOFError
+                  # ignore this error
+                end
+              end
               
               alloc_size = File.size(bkup_tmp_path)
               chksum = File.read(chksum_path).split(/\s+/).first
@@ -247,26 +271,37 @@ module Dcmgr
       def archive_from_snapshot(ctx, snapshot_path, &blk)
         chksum_path = File.expand_path('md5', ctx.inst_data_dir)
         size_path = File.expand_path('size', ctx.inst_data_dir)
+
+        fstat = File.stat(snapshot_path)
+        fstat.instance_eval do
+          def block_size
+            blocks * 512 * 1024
+          end
+        end
+        # set approx file size estimated from the block count since the target
+        # file might be sparsed.
+        pv_command = "pv -W -f -n -s %s | "
         
         cmd_tuple = case ctx.inst[:image][:backup_object][:container_format].to_sym
                     when :tgz
-                      ["tar -cS -C %s %s | %s", [File.dirname(snapshot_path),
-                                                 File.basename(snapshot_path),
-                                                 Dcmgr.conf.local_store.gzip_command]]
+                      ["tar -cS -C %s %s | #{pv_command} %s", [File.dirname(snapshot_path),
+                                                               File.basename(snapshot_path),
+                                                               fstat.block_size,
+                                                               Dcmgr.conf.local_store.gzip_command]]
                     when :tar
-                      ["tar -cS -C %s %s", [File.dirname(snapshot_path),
-                                            File.basename(snapshot_path)]]
+                      ["tar -cS -C %s %s | #{pv_command}", [File.dirname(snapshot_path),
+                                                            File.basename(snapshot_path),
+                                                            fstat.block_size]]
                     when :gz
-                      ["cp -p --sparse=always %s /dev/stdout | %s", [snapshot_path,
-                                                                     Dcmgr.conf.local_store.gzip_command]]
+                      ["cp -p --sparse=always %s /dev/stdout | #{pv_command} %s",[snapshot_path,
+                                                                                  fstat.size,
+                                                                                  Dcmgr.conf.local_store.gzip_command]]
                     else
-                      ["cp -p --sparse=always %s /dev/stdout", [snapshot_path]]
+                      ["cp -p --sparse=always %s /dev/stdout | #{pv_command}", [snapshot_path, fstat.size]]
                     end
 
-        pv_command = " | pv -W -f -p -s #{ctx.inst[:image][:backup_object][:size]}"
-        
         # Insert reporting part for md5sum and archived byte size.
-        cmd_tuple[0] << "#{pv_command} | tee >(md5sum > '%s') >(wc -c > '%s')"
+        cmd_tuple[0] << " | tee >(md5sum > '%s') >(wc -c > '%s')"
         cmd_tuple[1] += [chksum_path, size_path]
 
         blk.call(cmd_tuple, chksum_path, size_path)

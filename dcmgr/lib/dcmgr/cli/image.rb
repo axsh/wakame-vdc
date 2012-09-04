@@ -22,6 +22,7 @@ module Dcmgr::Cli
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       method_option :is_cacheable, :type => :boolean, :default => false, :desc =>"A flag that determines whether the new machine image is cacheable or not"
       method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
+      method_option :parent_image_id, :type => :string, :desc => "The parent image UUID"
       def local(backup_object_id)
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) unless M::BackupObject[backup_object_id]
@@ -45,6 +46,7 @@ module Dcmgr::Cli
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
+      method_option :parent_image_id, :type => :string, :desc => "The parent image UUID"
       def volume(backup_object_id)
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) if M::BackupObject[backup_object_id].nil?
@@ -79,6 +81,7 @@ module Dcmgr::Cli
     method_option :backup_object_id, :type => :string, :desc => "Backup object for the machine image"
     method_option :is_cacheable, :type => :boolean, :desc =>"A flag that determines whether the new machine image is cacheable or not"
     method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
+    method_option :parent_image_id, :type => :string, :desc => "The parent image UUID"
     def modify(uuid)
       UnknownUUIDError.raise(uuid) if M::Image[uuid].nil?
       UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
@@ -108,6 +111,7 @@ Is Public: <%= img.is_public %>
 State: <%= img.state %>
 Service Type: <%= img.service_type %>
 Cacheable: <%= img.is_cacheable %>
+Parent Image ID: <%= img.parent_image_id %>
 Create: <%= img.created_at %>
 Update: <%= img.updated_at %>
 Delete: <%= img.deleted_at %>

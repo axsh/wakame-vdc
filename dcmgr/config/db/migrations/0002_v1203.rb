@@ -118,6 +118,7 @@ Sequel.migration do
       add_column :root_device, "varchar(255)"
       add_column :is_cacheable, "tinyint(1)", :default=>false, :null=>false
       add_column :instance_model_name, "varchar(255)", :null=>false
+      add_column :parent_image_id, "varchar(255)", :null=>true
     end
 
     rename_table(:physical_networks, :dc_networks)
@@ -282,6 +283,7 @@ Sequel.migration do
       column :object_key, "varchar(255)", :null=>false
       column :checksum, "varchar(255)", :null=>false
       column :description, "text"
+      column :progress, "double", :null=>false, :default=>0.0
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
@@ -340,7 +342,11 @@ Sequel.migration do
       add_column :deleted_at, "datetime"
       add_column :purged_at, "datetime"
       add_index [:deleted_at]
-    end    
+    end
+
+    alter_table(:tag_mappings) do
+      add_column :sort_index, "int(11)", :null=>false, :default=>0
+    end
   end
   
   down do
@@ -479,6 +485,10 @@ Sequel.migration do
     alter_table(:accounts) do
       drop_column :deleted_at
       drop_column :purged_at
-    end    
+    end
+
+    alter_table(:tag_mappings) do
+      drop_column :sort_index
+    end
   end
 end

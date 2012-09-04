@@ -157,6 +157,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     var check_id = c_list.currentChecked();
     //remove detail element
     $($('#detail').find('#'+check_id)).remove();
+    $(bt_delete_security_group.target).button({ disabled: true });
   });
   
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){

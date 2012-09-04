@@ -102,7 +102,7 @@ module Dcmgr::Models
     end
 
     def available_ip_nums
-      self.ipv4_ipaddress.hosts.size - self.ip_lease_dataset.count
+      self.ipv4_ipaddress.hosts.size - self.network_vif_ip_lease_dataset.count
     end
 
     def ipv4_u32_dynamic_range_array

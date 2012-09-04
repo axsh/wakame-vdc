@@ -18,5 +18,13 @@ role=${role%%.d}
 
 ## main
 
-${abs_path}/../init-${role}.d/vip $*
-${abs_path}/../init-common.d/rabbitmq ${role}
+case "${role}" in
+up)
+  ${abs_path}/../init-${role}.d/vip $*
+  ${abs_path}/../init-common.d/rabbitmq ${role}
+  ;;
+down)
+  ${abs_path}/../init-common.d/rabbitmq ${role}
+  ${abs_path}/../init-${role}.d/vip $*
+  ;;
+esac

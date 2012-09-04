@@ -535,6 +535,7 @@ en:
       capacity: "Size"
       origin_volume_id: "OriginVolume ID"
       checksum: "Checksum"
+      progress: "Progress"
       created_at: "Created"
       status: "Status"
       action: "Action"
@@ -546,6 +547,7 @@ en:
       capacity: "Size"
       origin_volume_id: "OriginVolumeID"
       checksum: "Checksum"
+      progress: "Progress"
       state: "State"
       status: "Status"
       description: "Description"
@@ -619,7 +621,7 @@ en:
     header: "Key Pairs"
     button:
       create_keypair: "Create Key Pair"
-      delete_keypair: "Delete"
+      delete_keypair: "Delete Key Pair"
       edit_keypair: "Edit"
       show_secret_accesskey: "Show Secret Access Key"
     list:

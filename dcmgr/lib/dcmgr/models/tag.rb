@@ -54,6 +54,14 @@ module Dcmgr::Models
       ds
     end
 
+    def sorted_mapped_uuids_dataset
+      self.mapped_uuids_dataset.order_by(:sort_index)
+    end
+
+    def sorted_mapped_uuids
+      sorted_mapped_uuids_dataset.all
+    end
+
     # sti plugin has to be loaded at lower position.
     plugin :subclasses
     plugin :single_table_inheritance, :type_id,

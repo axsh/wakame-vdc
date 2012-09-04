@@ -50,34 +50,7 @@
     </table>
   </fieldset>
 
-  <% @network['network_services'].each do |service| %>
-  <fieldset id="network_services_field">
-    <legend><%= t("dialog.edit_network.service.header") %></legend><legend>
-    </legend><table cellspacing="5" cellpadding="5">
-      <tbody>
-        <tr>
-          <td><%= t("dialog.edit_network.service.name")%>: </td>
-          <td><%= service['name'] %></td>
-	</tr><tr>
-          <td><%= t("dialog.edit_network.service.vif_id")%>: </td>
-          <td><%= service['network_vif_id'] %></td>
-	</tr><tr>
-          <td><%= t("dialog.edit_network.service.address")%>: </td>
-          <td><%= service['address'] %></td>
-	</tr><tr>
-          <td><%= t("dialog.edit_network.service.mac_addr")%>: </td>
-          <td><%= service['mac_addr'] %></td>
-	</tr><tr>
-          <td><%= t("dialog.edit_network.service.incoming_port")%>: </td>
-          <td><%= service['incoming_port'] %></td>
-	</tr><tr>
-          <td><%= t("dialog.edit_network.service.outgoing_port")%>: </td>
-          <td><%= service['outgoing_port'] %></td>
-	</tr>
-      </tbody>
-    </table>
-  </fieldset>
-  <% end %>
+  <div id="network_services"></div>
 
   <% if @network['editable'] %>
   <fieldset id="network_services_field">
