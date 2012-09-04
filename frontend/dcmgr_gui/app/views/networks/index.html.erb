@@ -21,14 +21,6 @@
   <div id="list_load_mask" class="maincontent">
     <div class="controller clearfix">
       <a href="javascript:void(0);" class="create_network"><%= t("networks.button.create_network") %></a>
-      <a href="javascript:void(0);" class="delete_network" ><%= t("networks.button.delete_network") %></a>
-      <select name="network_action" id="network_action" style="height:10px">
-        <option value="" selected="selected"><%= t("selectmenu.select_action") %></option>
-        <optgroup label="Action">
-  	  <option class="attach_network" value="attach_network"><%= t("networks.network_actions.attach_network") %></option>
-  	  <option class="detach_network" value="detach_network"><%= t("networks.network_actions.detach_network") %></option>
-  	</optgroup>
-      </select>
       <a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%= t("button.refresh") %></a>
     </div>
     
@@ -48,6 +40,7 @@
 	    <th><%= t("networks.list.display_name") %></th>
 	    <th><%= t("networks.list.ipv4_network") %></th>
 	    <th><%= t("networks.list.domain_name") %></th>
+	    <th><%= t("networks.list.action") %></th>
 	  </tr>
 	  {{each(index,item) rows}}
 	  <tr id="row-${item.uuid}">
@@ -59,6 +52,17 @@
 	    <td class="vtip display name" title="display-name">${item.display_name}</td>
 	    <td class="vtip ipv4 network" title="ipv4-network">${item.ipv4_network}</td>
 	    <td class="vtip domain name" title="domain-name">${item.domain_name}</td>
+	    {{if item.uuid}}
+            <td class="vtip center" title="action">
+	      {{if item.editable}}
+              <a href="javascript:void(0);" class="edit_network" id="edit_${item.uuid}"><%= t('networks.button.edit_network') %></a>
+              {{else}}
+              <a href="javascript:void(0);" class="edit_network" id="edit_${item.uuid}"><%= t('networks.button.view_network') %></a>
+              {{/if}}
+            </td>
+            {{else}}
+            <td class="vtip center" title="action"></td>
+            {{/if}}
 	  </tr>
 	  {{/each}}
 	</table>

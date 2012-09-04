@@ -129,6 +129,46 @@ en:
       message: "Are you sure you want to edit the following backup?"
       backup_id: "Backup ID"
       display_name: "Backup Name"
+    create_network:
+      header: "Create Network"
+      description: "Description"
+      display_name: "Network Name"
+      domain_name: "Domain Name"
+      network_mode: "Network Mode"
+      ipv4_network: "IPv4 Network"
+      ipv4_gw: "IPv4 Gateway"
+      prefix: "Prefix"
+      ip_assignment: "IP Assignment"
+      service:
+        header: "Add Services"
+        dhcp: "DHCP"
+        dns: "DNS"
+        gateway: "Gateway"
+        address: "IP Address"
+    edit_network:
+      header: "Edit Network"
+      network_id: "Network ID"
+      display_name: "Network Name"
+      dc_network:
+        header: "DC Network"
+        id: "ID"
+        name: "Name"
+        description: "Description"
+        allow_new_networks: "Allow new networks"
+      dhcp_ranges:
+        header: "DHCP"
+        ranges: "Ranges"
+        add: "Add"
+        remove: "Remove"
+      service:
+        header: "Service"
+        name: "Name"
+        vif_id: "Vif ID"
+        address: "IP Address"
+        mac_addr: "Mac Address"
+        incoming_port: "Incoming Port"
+        outgoing_port: "Outgoing Port"
+        add: "Add Service"
     create_security_group:
       header: "Create Security Group"
     edit_security_group:
@@ -514,6 +554,8 @@ en:
   networks:
     header: "Networks"
     button:
+      edit_network: "Edit"
+      view_network: "View"
       create_network: "Create Network"
       delete_network: "Delete Network"
     network_actions:
@@ -526,6 +568,7 @@ en:
       domain_name: "Domain Name"
       ipv4_network: "IPv4 Network"
       created: "Created"
+      action: "Action"
     details:
       header: "Details"
       network_id: "Network ID"

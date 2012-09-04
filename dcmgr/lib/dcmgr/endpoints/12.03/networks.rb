@@ -47,9 +47,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     #               set 24 if none.
     # params :description optional description for the network
     # params :display_name optional
+
+    dc_network = M::DcNetwork.find(:uuid => M::DcNetwork.trim_uuid(params[:dc_network]))
+
+    raise E::UnknownDcNetwork,      params[:dc_network] unless dc_network
+    raise E::DcNetworkNotPermitted, params[:dc_network] unless dc_network.allow_new_networks
+    raise E::DcNetworkNotPermitted, params[:dc_network] unless dc_network.offering_network_modes.index(params[:network_mode])
+
     savedata = {
       :account_id=>@account.canonical_uuid,
-      :ipv4_gw => params[:gw],
       :ipv4_network => params[:network],
       :prefix => params[:prefix].to_i,
       :network_mode => params[:network_mode],
@@ -58,11 +64,38 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       validate_service_type(params[:service_type])
       savedata[:service_type] = params[:service_type]
     end
-    if params[:display_name]
-      savedata[:display_name] = params[:display_name]
-    end
+    
+    savedata[:display_name] = params[:display_name] if params[:display_name]
     savedata[:description] = params[:description] if params[:description]
+    savedata[:domain_name] = params[:domain_name] if params[:domain_name]
+    savedata[:ipv4_gw] = params[:gw] if params[:gw]
+    savedata[:ip_assignment] = params[:ip_assignment] if params[:ip_assignment]
+    savedata[:editable] = params[:editable] if params[:editable]
+
     nw = M::Network.create(savedata)
+    nw.dc_network = dc_network
+    nw.save
+
+    if params[:service_dhcp]
+      M::NetworkService.create({ :name => 'dhcp',
+                                 :incoming_port => 67,
+                                 :outgoing_port => 68,
+                                 :network_vif_id => nw.add_service_vif(params[:service_dhcp]).id
+                               })
+    end    
+
+    if params[:service_dns]
+      M::NetworkService.create({ :name => 'dns',
+                                 :incoming_port => 53,
+                                 :network_vif_id => nw.add_service_vif(params[:service_dns]).id
+                               })
+    end    
+
+    if params[:service_gateway]
+      M::NetworkService.create({ :name => 'gateway',
+                                 :network_vif_id => nw.add_service_vif(params[:service_gateway]).id
+                               })
+    end    
 
     respond_with(R::Network.new(nw).generate)
   end
@@ -86,15 +119,29 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     respond_with(R::DhcpRangeCollection.new(nw.dhcp_range_dataset).generate)
   end
   
-  put '/:id/dhcp_ranges' do
+  put '/:id/dhcp_ranges/add' do
     # description 'Register reserved IP address to the network'
     # params id, string, required
     # params range_begin, string, required
     # params range_end, string, required
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
+    raise E::NetworkNotPermitted, params[:id] if !nw.editable
 
     nw.add_ipv4_dynamic_range(params[:range_begin], params[:range_end])
+    respond_with({})
+  end
+  
+  put '/:id/dhcp_ranges/remove' do
+    # description 'Register reserved IP address to the network'
+    # params id, string, required
+    # params range_begin, string, required
+    # params range_end, string, required
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+    raise E::NetworkNotPermitted, params[:id] if !nw.editable
+
+    nw.del_ipv4_dynamic_range(params[:range_begin], params[:range_end])
     respond_with({})
   end
   
@@ -231,6 +278,38 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     end
 
     respond_with(R::NetworkVif.new(vif).generate)
+  end
+
+  get '/:id/services' do
+    # description 'List services on this network'
+    # params start, fixnum, optional
+    # params limit, fixnum, optional
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+    ds = nw.network_service
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::NetworkServiceCollection.new(paging_ds).generate
+    end
+  end
+
+  post '/:id/services' do
+    # description 'Register new service on the network'
+    # params id, string, required
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+    raise E::NetworkNotPermitted, params[:id] if !nw.editable
+
+    service_data = {
+      :name => params[:name],
+      :incoming_port => params[:incoming_port],
+      :outgoing_port => params[:outgoing_port],
+      :network_vif_id => nw.add_service_vif(params[:ipv4]).id
+    }
+
+    service = M::NetworkService.create(service_data)
+
+    respond_with(R::NetworkService.new(service).generate)
   end
 
   # # Make GRE tunnels, currently used for testing purposes.

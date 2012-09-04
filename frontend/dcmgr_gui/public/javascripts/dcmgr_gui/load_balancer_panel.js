@@ -468,13 +468,9 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
 
-    //update detail
-    $.each(c_list.checked_list,function(check_id,obj){
-      $($('#detail').find('#'+check_id)).remove();
-      c_list.checked_list[check_id].c_detail.update({
-        url:DcmgrGUI.Util.getPagePath('/load_balancers/show/',check_id)
-      },true);
-    });
+    var check_id = c_list.currentChecked();
+    //remove detail element
+    $($('#detail').find('#'+check_id)).remove();
   });
 
   bt_create_load_balancer.target.bind('click',function(){

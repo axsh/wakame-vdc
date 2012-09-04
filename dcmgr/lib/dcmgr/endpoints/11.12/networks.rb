@@ -1,6 +1,25 @@
 # -*- coding: utf-8 -*-
 
 Dcmgr::Endpoints::V1112::CoreAPI.namespace '/networks' do
+  def network_generate(nw)
+    h = nw.to_api_document
+    h.merge!({ :id => nw.canonical_uuid,
+               :dc_network => nw.dc_network ? nw.dc_network.to_hash : nil,
+               :nat_network_id => nw.nat_network ? nw.nat_network.canonical_uuid : nil,
+             })
+    [:dc_network_id, :gateway_network_id].each { |k| h.delete(k) }
+
+    h
+  end
+
+  def network_vif_generate(vif)
+    h = vif.to_api_document
+    h.delete(instance_id)
+    h.merge!({:network_id => network_id},
+             :security_groups => vif.security_groups.map {|n| n.canonical_uuid })
+    h
+  end
+
   # description "Networks for account"
   get do
     # description "List networks in account"
@@ -17,7 +36,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/networks' do
     nw = find_by_uuid(:Network, params[:id])
     examine_owner(nw) || raise(E::OperationNotPermitted)
 
-    response_to(nw.to_api_document)
+    response_to(network_generate(nw))
   end
 
   post do
@@ -38,7 +57,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/networks' do
     }
     nw = M::Network.create(savedata)
 
-    response_to(nw.to_api_document)
+    response_to(network_generate(nw))
   end
 
   delete '/:id' do
@@ -125,7 +144,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/networks' do
 
     result = []
     nw.network_vif.each { |vif|
-      result << vif.to_api_document
+      result << network_vif_generate(vif)
     }
 
     response_to(result)

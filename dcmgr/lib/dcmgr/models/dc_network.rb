@@ -41,5 +41,6 @@ module Dcmgr::Models
       h[:vlan_lease]=vlan.to_hash if self.vlan
       h
     end
+
   end
 end

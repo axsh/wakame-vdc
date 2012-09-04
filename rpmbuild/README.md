@@ -18,6 +18,9 @@ Installation Requirements
 Downloading repo file and put it to your /etc/yum.repos.d/ repository.
 
     # curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+
+If you need OpenVZ container, must add another repository.
+
     # curl -o /etc/yum.repos.d/openvz.repo     -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
 
 Installing epel-release.
@@ -26,9 +29,13 @@ Installing epel-release.
 
 ### Dcmgr Installation
 
+The role of Dcmgr is manager for all assets in data center. The data center needs a Dcmgr to manipulate other HVAs.
+
     # yum install wakame-vdc-dcmgr-vmapp-config
 
-### Hva installation
+### HVA installation
+
+HVA stands for Hyper Visor Agent. Each physical machine to be leased for users is required to install a HVA. The HVA can get hyper visor to manipulate virtual machines on the physical machine from Dcmgr.
 
     # yum install wakame-vdc-hva-full-vmapp-config
 
@@ -125,6 +132,8 @@ The amqp server to use is specified in a configuration file.
 Creating Database
 -----------------
 
+Now you can reboot your machine to wake mysql up. The followings commands will be executed.
+
     # for dbname in wakame_dcmgr wakame_dcmgr_gui; do
       mysqladmin -uroot create ${dbname}
     done
@@ -133,7 +142,13 @@ Creating Database
     # cd /opt/axsh/wakame-vdc/dcmgr
     # bundle exec rake db:init
     # cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui
-    # bundle exec rake db:init db:sample_data oauth:create_table
+    # bundle exec rake db:init
+
+If you need additional demonstration data, please type the followings.
+NOTICE: this script will erase all related database at first. We recommend to backup before doing this.
+
+    # cd /opt/axsh/wakame-vdc/tests
+    # ./vdc.sh init
 
 
 Developer Zone

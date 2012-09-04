@@ -23,16 +23,6 @@ module Dcmgr::Models
     many_to_one :instance
     many_to_one :network_service
 
-    def to_api_document
-      hash = super
-      hash.delete(instance_id)
-      hash.merge!({
-        :network_id => network_id},
-        :security_groups => self.security_groups.map {|n| n.canonical_uuid }
-      )
-      hash
-    end
-
     def to_hash
       hash = super
       hash.merge!({ :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
@@ -60,6 +50,17 @@ module Dcmgr::Models
         :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
         :network_id => self.network_id,
         :mac_addr => self.pretty_mac_addr,
+      }
+    end
+
+    def to_netfilter_document
+      {
+        :uuid => self.canonical_uuid,
+        :mac_addr => self.mac_addr,
+        :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
+        :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
+        :network_id => self.network.nil? ? nil : self.network.canonical_uuid,
+        :security_groups => self.security_groups.map {|n| n.canonical_uuid }
       }
     end
 
