@@ -5,7 +5,7 @@ module Dcmgr
     module Network
 
       # This scheduler chooses a network group based on one of the request parameters.
-      # It will then sort networks in the group based on their sort keys and lease an IP
+      # It will then sort networks in the group based on their sort indices and lease an IP
       # from the first network that still has dynamic range available.
       #
       #
