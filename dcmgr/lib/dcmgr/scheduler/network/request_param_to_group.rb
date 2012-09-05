@@ -47,7 +47,7 @@ module Dcmgr
 
             network_group = Dcmgr::Tags::NetworkGroup[tag_id]
             raise Dcmgr::Scheduler::NetworkSchedulingError, "Unknown network group: #{tag_id}" if network_group.nil?
-            logger.debug "Chose network group: '#{tag_id}'."
+            logger.info "Chose network group: '#{tag_id}'."
 
             # Create the vnic
             vnic = instance.add_nic(vif_template)
@@ -57,7 +57,7 @@ module Dcmgr
             begin
               network = networks.shift
               raise Dcmgr::Scheduler::NetworkSchedulingError, "No available ip addresses left in network group '#{tag_id}'." if network.nil?
-              logger.debug "Trying to attach vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
+              logger.info "Trying to attach vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
 
               vnic.attach_to_network(network)
             rescue Dcmgr::Models::OutOfIpRange => e
@@ -65,7 +65,7 @@ module Dcmgr
               retry
             end
 
-            logger.debug "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
+            logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
           }
         end
       end
