@@ -112,55 +112,5 @@
           <button class="btn btn-primary actionDestroy" data-dismiss="modal">削除</button>
         </div>
       </div>
-
-
-    <script type="text/template" id="tmpServerPagination">
-    <div class="control-group">
-      <div class="pagination pagination-centered">
-        <ul>
-
-          {% if (currentPage != firstPage) { %}
-          <li><a class="serverprevious" href="#"><</a></li>
-          {% } else { %}
-          <li class="disabled"><a href="#{{ firstPage }}"><</a></li>
-          {% } %}
-
-          {% for(p=firstPage; p<=perPage;p++){ %}
-            {% var halfPage = Math.ceil(perPage / 2); %}
-            {% if(currentPage <= halfPage) { %}
-              {% if (currentPage == p) { %}
-                <li class="active"><a class="page selected" href="#{{ p }}">{{ p }}</a></li>
-              {% } else { %}
-                <li><a class="page" href="#{{ p }}">{{ p }}</a></li>
-              {% } %}
-            {% } else { %}
-              {% if ((currentPage + halfPage) <= lastPage) { %}
-                {% var tailPage = currentPage + halfPage %}
-                {% var middlePage = tailPage - perPage + p %}
-                {% if (currentPage == middlePage) { %}
-                  <li class="active"><a class="page selected" href="#{{ middlePage }}">{{ middlePage }}</a></li>
-                {% } else { %}
-                  <li><a class="page" href="#{{ middlePage }}">{{ middlePage }}</a></li>
-                {% } %}
-              {% } else { %}
-                  {% var middlePage = lastPage - perPage + p %}
-                  {% if (currentPage == middlePage) { %}
-                  <li class="active"><a class="page selected" href="#{{ middlePage }}">{{ middlePage }}</a></li>
-                    {% } else { %}
-                  <li><a class="page" href="#{{ middlePage }}">{{ middlePage }}</a></li>
-                  {% } %}
-              {% } %}
-            {% } %}
-          </li>
-          {% } %}
-            {% if (lastPage != currentPage) { %}
-            <li><a class="servernext" href="#">></a></li>
-            {% } else { %}
-            <li class="disabled"><a class="disabled" href="#{{ lastPage }}">></a></li>
-            {% } %}
-
-        </ul>
-      </div>
+      <%= partial :paginate %>
     </div>
-    </script>
-</div>
