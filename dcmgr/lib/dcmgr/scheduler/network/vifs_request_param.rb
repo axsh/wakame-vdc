@@ -14,9 +14,10 @@ module Dcmgr
         def schedule(instance)
           index = 0
 
-          return unless instance.request_params['vifs'].is_a?(Array)
+          #return unless instance.request_params['vifs'].is_a?(Array)
+          Dcmgr::Scheduler::Network.check_vifs_parameter_format(instance.request_params["vifs"])
 
-          instance.request_params['vifs'].each { |param|
+          instance.request_params['vifs'].each { |name, param|
             vnic_params = {
               :index => param['index'] ? param['index'].to_i : index,
               :bandwidth => 100000,
@@ -26,9 +27,8 @@ module Dcmgr
             index = [index, vnic_params[:index]].max + 1
             vnic = instance.add_nic(vnic_params)
 
-            next if param['network'].nil? || param['network'].to_s == ""
             network = Models::Network[param['network'].to_s]
-            next if network.nil?
+            raise NetworkSchedulingError, "Network '#{param['network'].to_s}' doesn't exist." if network.nil?
 
             vnic.nat_network = Models::Network[param['nat_network'].to_s] unless param['nat_network'].nil?
 
