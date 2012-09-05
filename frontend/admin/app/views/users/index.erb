@@ -1,0 +1,67 @@
+<% content_for :javascript_link_tags do %>
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/bootstrap-notify.js',
+                            '/assets/backbone.paginator.js',
+]
+%>
+<% end %>
+
+<% content_for :stylesheet_link_tags do %>
+<%= stylesheet_link_tag ['/assets/bootstrap-notify.css',
+                         '/assets/smoothness/jquery-ui-1.8.23.custom.css',
+                         '/assets/jquery-ui-timepicker-addon.css'
+] %>
+<% end %>
+<div id="notify" class='notifications top-right'></div>
+  <div class="span8">
+    <div class="control-group">
+      <legend>ユーザー検索</legend>
+    </div>
+    <form class="well form-search">
+      <div class="control-group">
+         <div class="controls">
+         <label class="control-label" for="inputSearch">検索条件</label>
+         <input type="text" id="selectStatus" placeholder="">
+         </div>
+      </div>
+      <div class="controls" style="text-align:right">
+        <button type="submit" class="btn">検索</button>
+      </div>
+    </form>
+
+    <div class="controls">
+      <legend>検索結果</legend>
+    </div>
+
+    <div id="pagination"></div>
+    <table id="notification-list" class="table table-striped table-bordered">
+      <thead>
+        <tr>
+          <th>ユーザーID</th>
+          <th>ユーザー名</th>
+          <th>ログインID</th>
+          <th>アカウントID</th>
+          <th>最終ログイン日時</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <!--  The content is mapped on #resultItemTemplate -->
+      <tbody id="content">
+      <% 10.times do %>
+        <tr>
+        <td><a href="/host_nodes/1">hn-xxxxxxx</a></td>
+        <td>demo</td>
+        <td>DEMO</td>
+        <td>demo</td>
+        <td>a-xxxxxx</td>
+        <td>2012/01/01 00:00:00</td>
+        <td><a href="/instances?">インスタンス情報</a></td>
+        <td><a href="/users?">ユーザー画面</a></td>
+        </tr>
+       <% end %>
+      </tbody>
+    </table>
+    <!--  The pagination is mapped on #tmpServerPagination -->
+    <%= partial :paginate %>
+</div>
