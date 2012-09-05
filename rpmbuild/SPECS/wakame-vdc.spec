@@ -229,7 +229,6 @@ components="
  frontend
  rpmbuild
  client
- admin
 "
 for component in ${components}; do
   rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
