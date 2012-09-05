@@ -1,0 +1,25 @@
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<!-- <script src="/assets/underscore-min.js"></script> -->
+<script type="text/javascript" src="/assets/underscore-min.js"></script>
+<script type="text/javascript" src="/assets/underscore.string.min.js"></script>
+<script type="text/javascript" src="/assets/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="/assets/jquery-ui-1.8.23.custom.min.js"></script>
+<script type="text/javascript" src="/assets/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/assets/bootstrap.min.js"></script>
+<script type="text/javascript" src="/assets/backbone-min.js"></script>
+<script type="text/javascript" src="/assets/admin/app.js"></script>
+<script type="text/javascript">
+  window.app.info.resources = {
+    admin: '<%= "#{env['rack.url_scheme']}://#{env['HTTP_HOST']}" %>'
+  };
+</script>
+<script type="text/javascript" src="/assets/admin/router.js"></script>
+<script type="text/javascript" src="/assets/admin/helpers.js"></script>
+
+<%= yield_content :javascript_link_tags %>
+
+<% if route.controller %>
+<% #javascript_include_tag ['controllers', 'models', 'views'].collect{|dir| "/assets/apps/#{dir}/#{route.controller.singularize}"} %>
+<% end %>

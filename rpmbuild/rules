@@ -47,6 +47,7 @@ install: build
 	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/dcmgr/config/*.conf
 	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/dcmgr/config/*.yml
 	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/frontend/dcmgr_gui/config/*.yml
+	rm -f $(CURDIR)/$(TMP_INSTALL_ROOT)/$(VDC_INSTALL_ROOT)/frontend/admin/config/*.yml
 
 	# replace /usr/bin/ruby shebangs.
 	# unicorn shebang: /this/will/be/overwritten/or/wrapped/anyways/do/not/worry/ruby
