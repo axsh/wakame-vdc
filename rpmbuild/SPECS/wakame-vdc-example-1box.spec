@@ -94,6 +94,7 @@ cd %{name}-%{version}
 mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs
 mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
+mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/admin
 
 # generate /etc/%{oname}/*.conf
 config_examples="dcmgr nsa sta"
@@ -115,6 +116,13 @@ unset VDC_ROOT
 config_ymls="database instance_spec dcmgr_gui load_balancer_spec"
 for config_yml in ${config_ymls}; do
   cp -p `pwd`/frontend/dcmgr_gui/config/${config_yml}.yml.example ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui/${config_yml}.yml
+done
+unset config_ymls
+
+# /etc/%{oname}/admin/*.yml
+config_ymls="database"
+for config_yml in ${config_ymls}; do
+  cp -p `pwd`/frontend/admin/config/${config_yml}.yml.example ${RPM_BUILD_ROOT}/etc/%{oname}/admin/${config_yml}.yml
 done
 unset config_ymls
 
@@ -163,6 +171,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
 %config /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
 %config /etc/%{oname}/convert_specs/load_balancer.yml
+%config /etc/%{oname}/admin/database.yml
 
 %files hva-vmapp-config
 %config /etc/%{oname}/hva.conf

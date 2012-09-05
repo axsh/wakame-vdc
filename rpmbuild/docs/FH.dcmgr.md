@@ -12,6 +12,7 @@ Filesystem Hierarchy : wakame-vdc-dcmgr-vmapp-config-
 + /etc/default/vdc-proxy
 + /etc/default/vdc-sta
 + /etc/default/vdc-webui
++ /etc/default/vdc-admin
 
 /etc/init : Upstart system job configuration
 --------------------------------------------
@@ -24,12 +25,14 @@ Filesystem Hierarchy : wakame-vdc-dcmgr-vmapp-config-
 + /etc/init/vdc-proxy.conf
 + /etc/init/vdc-sta.conf
 + /etc/init/vdc-webui.conf
++ /etc/init/vdc-admin.conf
 
 /etc/wakame-vdc : Dcmgr configuration
 -------------------------------------
 
 + /etc/wakame-vdc/convert_specs/
 + /etc/wakame-vdc/dcmgr_gui/
++ /etc/wakame-vdc/admin/
 + /etc/wakame-vdc/unicorn-common.conf
 
 /var/lib/wakame-vdc : Variable state information (optional)
@@ -48,3 +51,4 @@ Filesystem Hierarchy : wakame-vdc-dcmgr-vmapp-config-
 + /var/log/wakame-vdc/sta.log
 + /var/log/wakame-vdc/proxy.log
 + /var/log/wakame-vdc/webui.log
++ /var/log/wakame-vdc/admin.log
