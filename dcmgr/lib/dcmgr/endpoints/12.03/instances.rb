@@ -79,6 +79,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :hostname, string, :optional
     # param :user_data, string, :optional
     # param :security_groups, array, :optional
+    # param :vifs, JSON hash, :optional, example {"eth0":{"index":"1","network":"nw-demo1","security_groups":"sg-demofgr"},"eth1":{"index":"1","network":"nw-demo2","security_groups":[]}}
     # param :ssh_key_id, string, :optional
     # param :network_id, string, :optional
     # param :ha_enabled, string, :optional
@@ -128,8 +129,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
     end
     
-    if params['vifs'].class == String
-      params['vifs'] = JSON::load(params['vifs'])
+    if params['vifs'].nil?
+      params['vifs'] = {}
+    else
+      begin
+        params['vifs'] = JSON::load(params['vifs'])
+        Dcmgr::Scheduler::Network.check_vifs_parameter_format(params['vifs'])
+      rescue Dcmgr::Scheduler::NetworkSchedulingError, JSON::ParserError
+        raise E::InvalidParameter, 'vifs'
+      end
     end
 
     # params is a Mash object. so coverts to raw Hash object.
