@@ -30,8 +30,12 @@
         padding-top: 5px;
       }
 
-      form.form-horizontal label.control-label {
+      form label.control-label {
         font-weight: bold;
+      }
+
+      form.form-horizontal .control-group {
+        margin-bottom: 0px;
       }
 
     </style>
@@ -43,11 +47,14 @@
     <body data-spy="scroll" data-twttr-rendered="true" screen_capture_injected="true">
     <%= partial :navbar %>
     <div class="container-fluid">
+
       <div class="row-fluid">
         <%= partial :navbar %>
+        <div class="span2"></div>
         <%= yield %>
+        <div class="span2"></div>
       </div><!--/row-->
-      <hr>
+
       <%= partial :footer %>
     </div><!--/.container-fluid-->
     <%= partial :load_js %>

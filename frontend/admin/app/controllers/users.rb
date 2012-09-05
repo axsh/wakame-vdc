@@ -4,4 +4,8 @@ DcmgrAdmin.controllers :users do
     erb :"users/index"
   end
 
+  get '/:id' do
+    erb :"users/show"
+  end
+
 end

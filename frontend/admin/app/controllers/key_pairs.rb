@@ -1,7 +1,7 @@
 DcmgrAdmin.controllers :key_pairs do
 
-  get :index do
-    erb :"key_pairs/index"
+  get "/:id" do
+    erb :"key_pairs/show"
   end
 
 end

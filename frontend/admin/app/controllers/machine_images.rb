@@ -1,7 +1,7 @@
 DcmgrAdmin.controllers :machine_images do
 
-  get :index do
-    erb :"machine_images/index"
+  get '/:id' do
+    erb :"machine_images/show"
   end
 
 end
