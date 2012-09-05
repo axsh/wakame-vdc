@@ -115,6 +115,17 @@ module Dcmgr
       def self.scheduler_class(input)
         Scheduler.scheduler_class(input, self)
       end
+
+      def self.check_vifs_parameter_format(vifs)
+        raise Dcmgr::Scheduler::NetworkSchedulingError, "Missing or badly formatted vifs request parameter" unless vifs.is_a?(Hash)
+
+        vifs.each { |name, vif_template|
+          raise Dcmgr::Scheduler::NetworkSchedulingError, "#{name.inspect} is not a valid vif name" unless name.is_a?(String)
+          raise Dcmgr::Scheduler::NetworkSchedulingError, "#{vif_template.inspect} is not a valid vif template" unless vif_template.is_a?(Hash)
+        }
+
+        nil
+      end
     end
 
     # Common base class for schedulers

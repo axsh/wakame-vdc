@@ -36,7 +36,7 @@ module Dcmgr
         end
 
         def schedule(instance)
-          return unless instance.request_params["vifs"].is_a?(Hash)
+          Dcmgr::Scheduler::Network.check_vifs_parameter_format(instance.request_params["vifs"])
 
           instance.request_params["vifs"].each { |name, vif_template|
             request_param = instance.request_params[options.key]
