@@ -8,10 +8,36 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
 
     ds = datetime_range_params_filter(:created, ds)
 
+    if params[:id]
+      uuid = params[:id].split("hn-")[1]
+      uuid = params[:id] if uuid.nil?
+      ds = ds.filter(:uuid.like("%#{uuid}%"))
+    end
+
     if params[:node_id]
-      ds = ds.filter(:node_id=>params[:node_id])
+      ds = ds.filter(:node_id =>params[:node_id])
     end
     
+    if params[:display_name]
+      ds = ds.filter(:name =>params[:display_name])
+    end
+
+    if params[:arch]
+      ds = ds.filter(:arch =>params[:arch])
+    end
+
+    if params[:hypervisor]
+      ds = ds.filter(:hypervisor =>params[:hypervisor])
+    end
+
+    if params[:cpu_cores]
+      ds = ds.filter(:offering_cpu_cores =>params[:cpu_cores])
+    end
+
+    if params[:memory_size]
+      ds = ds.filter(:offering_memory_size =>params[:memory_size])
+    end
+
     collection_respond_with(ds) do |paging_ds|
       R::HostNodeCollection.new(paging_ds).generate
     end
