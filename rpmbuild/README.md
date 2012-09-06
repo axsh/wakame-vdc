@@ -79,6 +79,7 @@ Pre-setup Dcmgr
 ### admin
 
     # cp -f /opt/axsh/wakame-vdc/frontend/admin/config/database.yml.example           /etc/wakame-vdc/admin/database.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/admin/config/admin.yml.example              /etc/wakame-vdc/admin/admin.yml
 
 ### pre-setup proxy
 

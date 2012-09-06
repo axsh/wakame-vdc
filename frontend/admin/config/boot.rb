@@ -1,6 +1,12 @@
+require 'yaml'
+require 'erb'
+
 # Defines our constants
 PADRINO_ENV  = ENV['PADRINO_ENV'] ||= ENV['RACK_ENV'] ||= 'development'  unless defined?(PADRINO_ENV)
 PADRINO_ROOT = File.expand_path('../..', __FILE__) unless defined?(PADRINO_ROOT)
+
+# user constans
+ADMIN = YAML::load(ERB.new(IO.read(File.join(Dir.getwd, 'config', 'admin.yml'))).result)
 
 # Load our dependencies
 require 'rubygems' unless defined?(Gem)
@@ -11,7 +17,6 @@ if Padrino.env == :development
   require 'pry'
   require 'pry-nav'
 end
-
 ##
 # ## Enable devel logging
 #
