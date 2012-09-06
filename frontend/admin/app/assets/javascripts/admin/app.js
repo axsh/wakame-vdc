@@ -8,13 +8,13 @@
     escape: /\{%-(.+?)%\}/g
   };
 
-	window.app = {};
+  window.app = {};
   app.router = {};
-	app.collections = {};
-	app.models = {};
-	app.views = {};
-	app.mixins = {};
-	app.helpers = {};
+  app.collections = {};
+  app.models = {};
+  app.views = {};
+  app.mixins = {};
+  app.helpers = {};
   app.info = {
    'resources': {
      'admin': ''
