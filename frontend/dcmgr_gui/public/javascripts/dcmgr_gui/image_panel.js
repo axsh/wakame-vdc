@@ -215,6 +215,100 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
+      
+      var MONITOR_ITEMS = {
+        'http': {
+          title: "HTTP",
+          default_port: 80,
+          ui: function (elem){
+            elem.append("HTTP");
+          }
+        },
+        'https': {
+          title: "HTTPS",
+          default_port: 443,
+          ui: function (elem){
+            elem.append("HTTPS");
+          }
+        },
+        'ftp': {
+          title: "FTP",
+          default_port: 30,
+          ui: function(elem){
+            elem.append("FTP");
+          }
+        },
+        'ssh': {
+          title: "SSH",
+          default_port: 22,
+          ui: function(elem){
+            elem.append("SSH");
+          }
+        },
+        'smtp': {
+          title: "SMTP",
+          default_port: 25,
+          ui: function(elem){
+            elem.append("");
+          }
+        },
+        'pop3': {
+          title: "POP3",
+          default_port: 26,
+          ui: function(elem){
+            elem.append("");
+          }
+        },
+        'imap': {
+          title: "IMAP",
+          default_port: 27,
+          ui: function(elem){
+            elem.append("");
+          }
+        },
+        'submission': {
+          title: "Submission",
+          default_port: 578,
+          ui: function(elem){
+            elem.append("");
+          }
+        },
+        'dns': {
+          title: "DNS",
+          default_port: 21,
+          ui: function(elem){
+            elem.append("");
+          }
+        },
+        'mysql': {
+          title: "MySQL",
+          default_port: 5673,
+          ui: function(elem){
+            elem.append("");
+          }
+        },
+        'postgresql': {
+          title: "PostgreSQL",
+          default_port: 5673,
+          ui: function(elem){
+            elem.append("PSGQL");
+          }
+        }
+      };
+
+      for(var i=0; i < 5; i++ ){
+        var select_tag = $('#monitor_selector_tmpl').tmpl({num: i,
+                                                           itemlist: MONITOR_ITEMS,
+                                                          });
+        select_tag.prependTo($('#monitor_item_list'));
+        select_tag.change(function(e){
+          //var replace_tgt = e.target;
+          var replace_tgt = $(e.currentTarget).find(".detail_input");
+          // fill input UI elements for the protocol selected by user.
+          MONITOR_ITEMS[e.target.value].ui(replace_tgt);
+          console.debug(e);
+        });
+      }
 
       parallel({
         //get instance_specs

@@ -77,4 +77,36 @@
 		</tbody>
 		</table>
 	</fieldset>
+
+        <br>
+
+	<fieldset id="network_service_monitor_field" class="with_border">
+	  <legend><%= t("dialog.launch_instance.network_service_monitor") %></legend>
+	  <table>
+            <thead>
+              <tr>
+                <th><%= t("dialog.launch_instance.network_service_monitor.protocol") %></th>
+                <th><%= t("dialog.launch_instance.network_service_monitor.parameter") %></th>
+              <tr>
+            </thead>
+              <script id="monitor_selector_tmpl" type="text/x-jquery-tmpl">
+	      <tr>
+	        <td>
+                  <select id="monitor_item[${num}][protocol]" name="monitor_item[${num}][protocol]">
+	            {{each(index,item) itemlist}}
+                    <option value="${index}">${item.title}</option>
+                    {{/each}}
+                  </select>
+                </td>
+                <td class="detail_input">
+                </td>
+	      </tr>
+              </script>
+	    <tbody id="monitor_item_list">
+	      <tr>
+	        <td colspan="2"><button name="add_monitor_item" ></td>
+	      </tr>
+	    </tbody>
+	  </table>
+	</fieldset>
 </div>
