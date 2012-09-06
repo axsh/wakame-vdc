@@ -59,11 +59,14 @@
   },
 
   parse: function (response) {
-   var tags = response.results;
-
-   _.each(tags, function(tag){
-    tag.state = 'active';
-   });
+    if( _.isEmpty(response[0]) ) {
+      var tags = _.clone(response.results);
+    } else {
+      // for Dcmgr
+      var _response = _.clone(response[0]);
+      var tags = _response.results;
+      response.count = response.total;
+    }
 
    //fill with empty data.
    if(tags.length < this.perPage) {
