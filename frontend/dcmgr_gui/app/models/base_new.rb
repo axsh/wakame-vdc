@@ -113,6 +113,10 @@ module Taggable
     def check_uuid_format(uuid)
       uuid =~ /^#{self.uuid_prefix}-/
     end
+
+    def valid_uuid_syntax?(uuid)
+      uuid =~ /^#{self.uuid_prefix}-[\w]+/
+    end
   end
 
   def self.apply(model)
