@@ -7,6 +7,11 @@ require 'rubygems' unless defined?(Gem)
 require 'bundler/setup'
 Bundler.require(:default, PADRINO_ENV)
 
+if Padrino.env == :development
+  require 'pry'
+  require 'pry-nav'
+end
+
 ##
 # ## Enable devel logging
 #

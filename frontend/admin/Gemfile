@@ -1,7 +1,6 @@
 source :rubygems
 
 # Server requirements
-gem 'thin', '1.3.1'
 # gem 'trinidad', :platform => 'jruby'
 
 # Project requirements
@@ -13,7 +12,7 @@ gem 'rack-less', '3.0.2'
 gem 'less', '2.2.1'
 gem 'mysql2', '0.3.11'
 gem 'sequel', '3.38.0'
-gem 'padrino-sprockets', :git => "https://github.com/nightsailer/padrino-sprockets.git", :require => "padrino/sprockets"
+gem 'padrino-sprockets', :git => "http://github.com/nightsailer/padrino-sprockets.git", :require => "padrino/sprockets"
 gem 'coffee-script', '2.2.0'
 gem 'therubyracer', :require => 'v8'
 gem 'unicorn', '4.3.1'
