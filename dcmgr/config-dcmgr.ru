@@ -4,6 +4,7 @@ $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
 
 require 'dcmgr/rubygems'
 require 'dcmgr'
+require 'rack/cors'
 
 Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 ['/etc/wakame-vdc/dcmgr.conf',
@@ -18,6 +19,12 @@ end
 
 map '/api' do
   use Dcmgr::Rack::RequestLogger
+  use Rack::Cors do
+    allow do
+      origins '*'
+      resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+    end
+  end
 
   map '/12.03' do
     run Dcmgr::Endpoints::V1203::CoreAPI.new
