@@ -36,7 +36,7 @@ class UserApiController < ApiController
     datetime_range_params_filter(:deleted, ds)
     datetime_range_params_filter(:last_login, ds)
 
-    respond_with(ds.all, :to=>[:json])
+    collection_respond_with(ds)
   end
 
   def show

@@ -18,7 +18,7 @@ class AccountApiController < ApiController
 
     datetime_range_params_filter(:created, ds)
 
-    respond_with(ds.all, :to=>[:json])
+    collection_respond_with(ds)
   end
 
   def show
