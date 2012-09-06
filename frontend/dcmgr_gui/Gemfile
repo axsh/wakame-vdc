@@ -9,6 +9,7 @@ gem 'rake', '0.9.2.2'
 gem 'thor'
 gem 'mysql2','0.3.11'
 gem 'ripl'
+gem 'rack-cors', :require => 'rack/cors'
 
 # we have client/ruby-hijiki directory in development environment.
 # so we use the local version of hijiki during development.
