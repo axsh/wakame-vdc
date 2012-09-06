@@ -9,6 +9,8 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      def_configuration
+
       # 0x0-2 are reserved by KVM.
       # 0=Host bridge
       # 1=ISA bridge

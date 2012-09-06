@@ -1,0 +1,109 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'dcmgr/rubygems'
+require 'dcmgr'
+require 'isono'
+
+path = ['/etc/wakame-vdc/dcmgr.conf', File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)].find { |i| File.exists?(i) }
+abort("ERROR: Failed to load dcmgr.conf") if path.nil?
+
+begin
+  Dcmgr.instance_eval {
+    @conf = Dcmgr::Configurations::Dcmgr.load(path)
+  }
+rescue NoMethodError => e
+  abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
+rescue Dcmgr::Configuration::ValidationError => e
+  abort("Validation Error: #{path}\n  " +
+        e.errors.join("\n  ")
+        )
+end
+
+Dcmgr.run_initializers
+
+require 'optparse'
+
+DEFAULT_TIME_RANGE_SECOND=60*60*24
+boot_time = Time.now
+$options = {
+  :dryrun => false,
+  :begin_time => (boot_time + -DEFAULT_TIME_RANGE_SECOND.to_i),
+  :end_time   => boot_time,
+}
+
+argv = ARGV.dup
+OptionParser.new { |o|
+  o.banner += " [TASK [options]]"
+  o.on('-n', '--dry-run', "Do not apply changes.") { |v|
+    $options[:dryrun]=true
+  }
+  o.on('--begin=[TIME]', "Start range of the logical deleted backups") { |v|
+    $options[:begin_time]=v
+  }
+  o.on('--end=[TIME]', "End range of the logical deleted backups") { |v|
+    $options[:end_time]=v
+  }
+  o.on('--range-second=SECOND', "Seconds for range from at --end time") { |v|
+    $options[:begin_time]=$options[:end_time] + -v.to_i
+  }
+  o.on_tail('-h', '--help', 'Show this message') do
+    puts o.help
+    exit
+  end
+}.order!(argv)
+
+
+require 'uri'
+
+Dcmgr::Task::TaskSession.reset!(:thread)
+
+ds = Dcmgr::Models::BackupObject.dataset.filter(:deleted_at=>($options[:begin_time] .. $options[:end_time]), :purged_at=>nil)
+summary = {
+  :sql => ds.sql,
+  :object_count => ds.count,
+  :success => 0,
+  :failure => 0,
+}
+log=[]
+
+ds.order(:deleted_at.asc).each { |bo|
+  begin
+    if !$options[:dryrun]
+      Dcmgr::Models::BackupObject.db.transaction do
+        Dcmgr::Task::TaskSession.invoke(Dcmgr::Drivers::BackupStorage.driver_class(bo.backup_storage.storage_type),
+                                        :delete, [bo.to_hash])
+
+        bo.set(:purged_at=>Time.now).save_changes
+      end
+    end
+    
+    log << "Removed: #{bo.canonical_uuid}: #{bo.uri}"
+    summary[:success] += 1
+  rescue => e
+    log << "Failed: #{bo.canonical_uuid}: #{e.message}"
+    summary[:failure] += 1
+    raise
+  end
+}
+
+puts <<_END
+Backup Object Cleaner Report
+Date: #{boot_time}
+-------------------------
+Target Period: #{$options[:begin_time]} - #{$options[:end_time]}
+
+Summary
+--------------------------
+Object Scoped: #{summary[:object_count]}
+Success:  #{summary[:success]}
+Failed:   #{summary[:failure]}
+
+Logs
+-------------------------
+#{log.join("\n")}
+_END
+
+exit 0

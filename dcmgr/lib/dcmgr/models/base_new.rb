@@ -106,7 +106,7 @@ module Dcmgr::Models
                 Tag[arg1]
               when Symbol
                 acctid = arg3 || self.respond_to?(:account_id) ? self.account_id : raise("Unknown Account ID")
-                Dcmgr::Tags.const_get(arg1).find_or_create(:account_id=>acctid, :name=>arg2)
+                Dcmgr::Tags.const_get(arg1, false).find_or_create(:account_id=>acctid, :name=>arg2)
               when Tag
                 arg1
               else
@@ -133,7 +133,7 @@ module Dcmgr::Models
                 Tag[arg1]
               when Symbol
                 acctid = arg3 || self.respond_to?(:account_id) ? self.account_id : raise("Unknown Account ID")
-                Dcmgr::Tags.const_get(arg1).find(:account_id=>acctid, :name=>arg2)
+                Dcmgr::Tags.const_get(arg1, false).find(:account_id=>acctid, :name=>arg2)
               when Tag
                 arg1
               else
@@ -146,6 +146,7 @@ module Dcmgr::Models
       def to_hash()
         r = self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid})
         serialize_columns = []
+        require 'sequel/plugins/serialization'
         if self.class.plugins.member?(Sequel::Plugins::Serialization)
           self.class.deserialization_map.keys.each { |c|
             serialize_columns << c

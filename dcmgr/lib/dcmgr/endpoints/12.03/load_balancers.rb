@@ -13,12 +13,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
   PUBLIC_DEVICE_INDEX = 0
   MANAGEMENT_DEVICE_INDEX = 1
+  SERVICE_TYPE = 'lb'
 
   get do
     ds = M::LoadBalancer.dataset
 
     if params[:state]
-      ds = if LOAD_BALANCER_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *LOAD_BALANCER_META_STATE
              case params[:state]
              when 'alive'
                ds.lives
@@ -27,7 +29,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif LOAD_BALANCER_STATE.member?(params[:state])
+           when *LOAD_BALANCER_STATE
              ds.by_state(params[:state])
            else
              raise E::InvalidParameter, :state
@@ -53,10 +55,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
+  quota 'load_balancer.count'
   post do
-    # copy request params
     lb_conf = Dcmgr.conf.service_types['lb']
-    spec = M::InstanceSpec[params[:instance_spec_id]] || raise(E::InvalidInstanceSpec)
     lb_port = params[:port].to_i
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
     raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
@@ -73,10 +74,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     instance_security_group = create_security_group(security_group_rules)
 
+    lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
+    lb_spec.convert(params[:engine], params[:max_connection])
+
     # make params for internal request.
     request_params = {'image_id' => lb_conf.image_id,
-                      'instance_spec_id' => spec.canonical_uuid,
-                      'host_node_id' => lb_conf.host_node_id,
                       'ssh_key_id' => lb_conf.ssh_key_id,
                       'service_type' => lb_conf.name,
                       'user_data' => user_data.join("\n"),
@@ -87,12 +89,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                                   'index' => MANAGEMENT_DEVICE_INDEX.to_s,
                                   'network' => lb_conf.management_network,
                                   'security_groups' => ''
-                      }]
+                      }],
+                      :hypervisor => lb_spec.hypervisor,
+                      :cpu_cores => lb_spec.cpu_cores,
+                      :memory_size => lb_spec.memory_size,
+                      :quota_weight => lb_spec.quota_weight
     }
 
-    http_status, headers, body = internal_request("/api/12.03/instances.json", request_params, {
-      'PATH_INFO' => '/instances',
-    })
+    account_uuid = @account.canonical_uuid
+    res = request_forward do
+      header('X-VDC-Account-UUID', account_uuid)
+      post("/instances", request_params)
+    end.last_response
+    body = JSON.parse(res.body)
 
     i = find_by_uuid(:Instance, body['id'])
     lb = M::LoadBalancer.create(:account_id => @account.canonical_uuid,
@@ -107,7 +116,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                                 :cookie_name => params[:cookie_name],
                                 :private_key => params[:private_key],
                                 :public_key => params[:public_key],
-                                :certificate_chain => params[:certificate_chain]
                                 )
 
 
@@ -118,7 +126,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :protocol => lb.protocol,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :ipset => []
+      :servers => []
     }
 
     queue_params = {
@@ -163,7 +171,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :protocol => lb.protocol,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :ipset => []
+      :servers => []
     }
 
     queue_params = {
@@ -176,12 +184,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
 
     targets = []
+    config_params[:servers] = []
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
       next if ip_lease.empty?
-
-      config_params[:ipset] << {
+      config_params[:servers] << {
         :ipv4 => ip_lease.first.ipv4,
       }
 
@@ -198,7 +206,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       update_security_groups(request_params)
     end
 
-    raise E::UnknownNetworkVif if config_params[:ipset].empty?
+    raise E::UnknownNetworkVif if config_params[:servers].length == 0
 
     on_after_commit do
      update_load_balancer_config(config_params.merge(queue_params))
@@ -244,7 +252,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :cookie_name => lb.cookie_name,
       :port => lb.connect_port,
       :protocol => lb.protocol,
-      :ipset => []
+      :servers => []
     }
 
     queue_params = {
@@ -255,12 +263,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     targets = []
     target_vifs = hold_vifs - request_vifs
+    config_params[:servers] = []
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
       next if ip_lease.empty?
 
-      config_params[:ipset] << {
+      config_params[:servers] << {
         :ipv4 => ip_lease.first.ipv4,
       }
     end
@@ -271,43 +280,84 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
-  put '/:id/enable' do
-    #pending
-  end
-
-  put '/:id/disable' do
-    #pending
-  end
-
   put '/:id' do
+
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
-    raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
-
-    lb_port = params[:port].to_i
-    raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
-
     lb = find_by_uuid(:LoadBalancer, params['id'])
     i = lb.instance
+    servers = []
 
-    security_group_rules = []
-    security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
-    security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
+    if !params[:balance_algorithm].empty?
+      raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
+      lb.balance_algorithm = params[:balance_algorithm]
+    end
 
-    request_forward.put("/security_groups/#{lb.network_vifs(PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
-     :rule => security_group_rules.join("\n")
-    })
+    if !params[:port].empty?
+      lb_port = params[:port].to_i
+      raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
+      security_group_rules = []
+      security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
+      security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
 
-    lb.description = params[:description]
-    lb.balance_algorithm = params[:balance_algorithm]
-    lb.protocol = params[:protocol]
-    lb.port = params[:port]
-    lb.instance_protocol = params[:instance_protocol]
-    lb.instance_port = params[:instance_port]
-    lb.display_name = params[:display_name]
+      request_forward.put("/security_groups/#{lb.network_vifs(PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
+       :rule => security_group_rules.join("\n")
+      })
+      lb.port = params[:port]
+    end
+
+    if !params[:protocol].empty?
+      lb.protocol = params[:protocol]
+    end
+
+    if !params[:instance_protocol].empty?
+      lb.instance_protocol = params[:instance_protocol]
+    end
+
+    if !params[:instance_port].empty?
+      lb.instance_port = params[:instance_port]
+    end
+
+    if params[:target_vifs] && !params[:target_vifs].empty?
+       params[:target_vifs].each {|tv|
+        lt = lb.target_network(tv['network_vif_id'])
+        lt.fallback_mode = tv['fallback_mode']
+        lt.save
+        servers << {
+          :ipv4 => M::NetworkVif[tv['network_vif_id']].ip.first.ipv4,
+          :backup => backup(tv['fallback_mode'])
+        }
+      }
+    else
+      network_vif_ids = lb.load_balancer_targets.collect{|lt| lt.network_vif_id.split('-')[1]}
+      if network_vif_ids
+        M::NetworkVif.where(:uuid => network_vif_ids).all.each {|nv|
+          tv = lb.target_network(nv.canonical_uuid)
+          servers << {
+            :ipv4 => nv.ip.first.ipv4,
+            :backup => backup(tv.fallback_mode)
+          }
+        }
+      end
+    end
+
+    if !params[:description].empty?
+      lb.description = params[:description]
+    end
+
+    if !params[:display_name].empty?
+      lb.display_name = params[:display_name]
+    end
+
     lb.cookie_name = params[:cookie_name]
-    lb.private_key = params[:private_key]
-    lb.public_key = params[:public_key]
-    lb.certificate_chain = params[:certificate_chain]
+
+    if !params[:private_key].empty?
+      lb.private_key = params[:private_key]
+    end
+
+    if !params[:public_key].empty?
+      lb.public_key = params[:public_key]
+    end
+
     lb.save
 
     config_params = {
@@ -317,7 +367,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :protocol => lb.protocol,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :ipset => []
+      :servers => servers
     }
 
     queue_params = {
@@ -386,6 +436,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
  private
 
+  def backup(fallback_mode)
+    fallback_mode == 'on' ? true : false
+  end
+
   def update_ssl_proxy_config(values)
     s = Dcmgr::Drivers::Stunnel.new
     s.accept_port = values[:accept_port]
@@ -405,12 +459,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   def update_load_balancer_config(values)
     proxy = Dcmgr::Drivers::Haproxy.new(Dcmgr::Drivers::Haproxy.mode(values[:protocol]))
     proxy.set_balance_algorithm(values[:balance_algorithm])
-    proxy.set_cookie_name(values[:cookie_name]) unless values[:cookie_name].empty?
+    proxy.set_cookie_name(values[:cookie_name]) if !values[:cookie_name].empty?
     proxy.set_bind('*', values[:port])
 
-    if !values[:ipset].empty?
-      values[:ipset].each do |t|
-        proxy.add_server(t[:ipv4], values[:instance_port])
+    if !values[:servers].empty?
+      values[:servers].each do |t|
+        options = {}
+        options = {:backup => t[:backup]} if t.include? :backup
+        proxy.add_server(t[:ipv4], values[:instance_port], options)
       end
     end
 
@@ -427,7 +483,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
    http_status, headers, body = internal_request("/api/12.03/security_groups.json",{
       'account_id' => @account.canonical_uuid,
       'rule' => rules.join("\n"),
-      'service_type' => 'lb',
+      'service_type' => SERVICE_TYPE,
       'description' => '',
       'display_name' => ''
     }, {

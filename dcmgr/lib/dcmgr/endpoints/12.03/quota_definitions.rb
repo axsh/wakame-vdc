@@ -47,6 +47,16 @@ Sinatra::QuotaEvaluation.evaluators do
       quota_value.to_i <= fetch_value
     end
   end
+  quota_type 'instance.backup_operations_per_hour' do
+    fetch do
+      ds = self.instance_exec(M::Image.alives, &COMMON_DS_FILTER)
+      ds.filter(:created_at=>(Time.now.utc - 60 * 60) .. (Time.now.utc)).count
+    end
+
+    evaluate do |fetch_value|
+      quota_value.to_i <= fetch_value
+    end
+  end
   quota_type 'volume.count' do
     fetch do
       self.instance_exec(M::Volume.alives, &COMMON_DS_FILTER).count

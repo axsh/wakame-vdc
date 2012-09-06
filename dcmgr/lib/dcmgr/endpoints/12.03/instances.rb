@@ -20,7 +20,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     ds = M::Instance.dataset
 
     if params[:state]
-      ds = if INSTANCE_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *INSTANCE_META_STATE
              case params[:state]
              when 'alive'
                ds.lives
@@ -29,7 +30,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif INSTANCE_STATE.member?(params[:state])
+           when *INSTANCE_STATE
              ds.filter(:state=>params[:state])
            else
              raise E::InvalidParameter, :state
@@ -78,6 +79,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :hostname, string, :optional
     # param :user_data, string, :optional
     # param :security_groups, array, :optional
+    # param :vifs, Ruby or JSON hash, :optional, example {"eth0":{"index":"1","network":"nw-demo1","security_groups":"sg-demofgr"},"eth1":{"index":"1","network":"nw-demo2","security_groups":[]}}
     # param :ssh_key_id, string, :optional
     # param :network_id, string, :optional
     # param :ha_enabled, string, :optional
@@ -98,22 +100,22 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     else
       raise E::InvalidParameter, :hypervisor
     end
-    
-    params[:cpu_cores] = params[:cpu_cores].to_i
-    if params[:cpu_cores].between?(1, 128)
-      
+
+    params['cpu_cores'] = params['cpu_cores'].to_i
+    if params['cpu_cores'].between?(1, 128)
+
     else
       raise E::InvalidParameter, :cpu_cores
     end
 
-    params[:memory_size] = params[:memory_size].to_i
-    if params[:memory_size].between?(128, 999999)
-      
+    params['memory_size'] = params['memory_size'].to_i
+    if params['memory_size'].between?(128, 999999)
+
     else
       raise E::InvalidParameter, :memory_size
     end
-    
-    if !M::HostNode.check_domain_capacity?(params[:cpu_cores], params[:memory_size])
+
+    if !M::HostNode.check_domain_capacity?(params['cpu_cores'], params['memory_size'])
       raise E::OutOfHostCapacity
     end
     
@@ -127,12 +129,24 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
     end
     
-    if params['vifs'].class == String
-      params['vifs'] = JSON::load(params['vifs'])
+    if params['vifs'].nil?
+      params['vifs'] = {}
+    elsif params['vifs'].is_a?(String)
+      begin
+        params['vifs'] = JSON::load(params['vifs'])
+      rescue JSON::ParserError
+        raise E::InvalidParameter, 'vifs'
+      end
+    end
+
+    begin
+      Dcmgr::Scheduler::Network.check_vifs_parameter_format(params['vifs'])
+    rescue Dcmgr::Scheduler::NetworkSchedulingError
+      raise E::InvalidParameter, 'vifs'
     end
 
     # params is a Mash object. so coverts to raw Hash object.
-    instance = M::Instance.entry_new(@account, wmi, params.to_hash) do |i|
+    instance = M::Instance.entry_new(@account, wmi, @params.dup) do |i|
       i.hypervisor = params[:hypervisor]
       i.cpu_cores = params[:cpu_cores]
       i.memory_size = params[:memory_size]
@@ -322,7 +336,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   end
 
   # Create image backup from the alive instance.
-  quota 'backup_object.size_mb', 'backup_object.count', 'image.count'
+  quota 'backup_object.size_mb', 'backup_object.count', 'image.count', 'instance.backup_operations_per_hour'
   put '/:id/backup' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['running'].member?(instance.state)
@@ -330,13 +344,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
     bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
     
-    bo = M::BackupObject.entry_new(bkst,
-                                   @account, instance.image.backup_object.values[:size]) do |i|
+    bo = instance.image.backup_object.entry_clone do |i|
       [:display_name, :description].each { |k|
         if params[k]
           i[k] = params[k]
         end
       }
+
+      i.account_id = @account.canonical_uuid
     end
     image = instance.image.entry_clone do |i|
       [:display_name, :description, :is_public, :is_cacheable].each { |k|
@@ -350,7 +365,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     
     on_after_commit do
-      Dcmgr.messaging.submit("hva-handle.#{instance.host_node.node_id}", 'backup_image',
+      Dcmgr.messaging.submit("local-store-handle.#{instance.host_node.node_id}", 'backup_image',
                              instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
     end
     respond_with({:instance_id=>instance.canonical_uuid,

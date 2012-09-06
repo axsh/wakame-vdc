@@ -15,13 +15,22 @@ module Dcmgr::Models
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
     
-    class RequestError < RuntimeError; end
-
     def after_initialize
       super
       self[:object_key] ||= self.canonical_uuid
+      self[:progress] ||= 100.0
     end
-    
+
+    def validate
+      unless Dcmgr::Const::BackupObject::CONTAINER_FORMAT.keys.member?(self.container_format.to_sym)
+        errors.add(:container_format, "Unsupported container format: #{self.container_format}")
+      end
+
+      unless self.progress.to_f.between?(0.0, 100.0)
+        errors.add(:progress, "Must be set between 0.0-100.0.")
+      end
+    end
+
     def self.entry_new(bkst, account, size, &blk)
       bo = self.new
       bo.backup_storage = (bkst.is_a?(BackupStorage) ? bkst : BackupStorage[bkst.to_s])
@@ -32,13 +41,13 @@ module Dcmgr::Models
       bo.save
     end
 
-    def entry_delete
-      if self.state.to_sym != :available
-        raise RequestError, "invalid delete request"
+    def entry_clone(&blk)
+      self.class.entry_new(self.backup_storage, self.account_id, self.size) do |i|
+        i.display_name = self.display_name
+        i.description = "#{self.description} (copy of #{self.canonical_uuid})"
+        i.container_format = self.container_format
+        blk.call(i) if blk
       end
-      self.state = :deleting
-      self.save_changes
-      self
     end
 
     # override Sequel::Model#delete not to delete rows but to set
@@ -46,11 +55,15 @@ module Dcmgr::Models
     def delete
       self.state = :deleted if self.state != :deleted
       self.deleted_at ||= Time.now
-      self.save
+      self.save_changes
     end
 
     def uri
       self.backup_storage.base_uri + self.object_key
+    end
+
+    def to_hash
+      super.merge(:backup_storage=> self.backup_storage.to_hash)
     end
   end
 end

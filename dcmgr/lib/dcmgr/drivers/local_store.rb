@@ -2,7 +2,8 @@
 
 module Dcmgr
   module Drivers
-    class LocalStore
+    class LocalStore < Task::Tasklet
+      helpers Task::LoggerHelper
 
       # download and prepare image file to ctx.os_devpath.
       def deploy_image(inst,ctx)
@@ -13,20 +14,19 @@ module Dcmgr
         raise NotImplementedError
       end
       
-      def self.select_local_store(hypervisor)
-        case hypervisor
+      def self.driver_class(hypervisor_name)
+        case hypervisor_name.to_s
         when "kvm"
-          ls = Dcmgr::Drivers::LinuxLocalStore.new
+          Dcmgr::Drivers::LinuxLocalStore
         when "lxc"
-          ls = Dcmgr::Drivers::LinuxLocalStore.new
+          Dcmgr::Drivers::LinuxLocalStore
         when "esxi"
-          ls = Dcmgr::Drivers::ESXiLocalStore.new
+          Dcmgr::Drivers::ESXiLocalStore
         when "openvz"
-          ls = Dcmgr::Drivers::OpenvzLocalStore.new
+          Dcmgr::Drivers::OpenvzLocalStore
         else
-          raise "Unknown hypervisor type: #{hypervisor}"
+          raise "Unknown hypervisor type: #{hypervisor_name}"
         end
-        ls
       end
       
     end

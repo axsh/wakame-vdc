@@ -47,7 +47,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/poweroff_load_balancer', :to => 'dialog#poweroff_load_balancer'
   post   'dialog/poweron_load_balancer', :to => 'dialog#poweron_load_balancer'
   post   'dialog/edit_load_balancer', :to => 'dialog#edit_load_balancer'
-
+  post   'dialog/active_standby_load_balancer', :to => 'dialog#active_standby_load_balancer'
 
   # user/group managment dialog
   get    'dialog/create_user', :to => 'user_management_dialog#create_user'

@@ -282,9 +282,11 @@ ja:
       display_name: "インスタンス名"
     backup_instances:
       header: "インスタンスのバックアップ"
-      message: "インスタンスのバックアップを取得します。よろしいですか？"
+      message: "インスタンスのバックアップを作成します。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+      backup_display_name: "バックアップ名"
+      image_description: "説明"
     create_load_balancer:
       header:
         display_name: "ロードバランサ名"
@@ -326,6 +328,14 @@ ja:
       header: "インスタンスの割り当て"
       instances: "インスタンス"
       register_instances: "割り当て"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
+    unregister_load_balancer:
+      header: "インスタンスの解除"
+      instances: "インスタンス"
+      unregister_instances: "解除"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
     poweron_instances:
       header: "インスタンスの電源オフ"
       message: "インスタンスの電源をオンにします。よろしいですか？"
@@ -336,6 +346,9 @@ ja:
       message: "インスタンスの電源をオフにします。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+    active_standby_load_balancer:
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
   login:
     login: "ログイン"
     user: "ユーザー"
@@ -368,6 +381,7 @@ ja:
       networks: "ネットワーク"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
+      load_balancers: "ロードバランサ"
   instances:
     header: "インスタンス"
     instance_actions:
@@ -376,6 +390,8 @@ ja:
       reboot: "再起動"
       start: "再開"
       stop: "一時停止"
+      poweron: "パワーオン"
+      poweroff: "パワーオフ"
     button:
       edit_instance: "編集"
       backup_instance: "バックアップ"
@@ -396,7 +412,7 @@ ja:
       wmi_id: "WMI ID"
       cpu_cores: "CPUコア数"
       memory_size: "メモリーサイズ"
-      status: "ステータス"
+      status: "VMの状態"
       state: "状態"
       ip: "IP"
       ssh_key_pair: "SSHキーペア"
@@ -446,12 +462,14 @@ ja:
       load_balancer_port: "ロードバランサポート"
       instance_protocol: "インスタンスプロトコル"
       instance_port: "インスタンスポート"
+      description: "説明"
     load_balancer_actions:
       register_instance: "インスタンスの割り当て"
       unregister_instance: "インスタンスの解除"
       delete_load_balancer: "ロードバランサ破棄"
       poweron: "パワーオン"
       poweroff: "パワーオフ"
+      active_standby: "アクティブ／スタンバイ"
   machine_images:
     header: "マシンイメージ"
     button:
@@ -516,6 +534,7 @@ ja:
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
       checksum: "チェックサム"
+      progress: "進捗"
       created_at: "作成日"
       status: "状態"
       action: "アクション"
@@ -527,6 +546,7 @@ ja:
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
       checksum: "チェックサム"
+      progress: "進捗"
       description: "説明"
       state: "状態"
       status: "状態"
@@ -593,7 +613,7 @@ ja:
     header: "キーペア"
     button:
       create_keypair: "キーペアを作成"
-      delete_keypair: "削除"
+      delete_keypair: "キーペアを削除"
       edit_keypair: "編集"
       show_secret_accesskey: "シークレットキーを取得"
     list:
@@ -703,6 +723,7 @@ ja:
     code: "エラーコード"
   error_message:
     sign_in: "ユーザーは未登録です。"
+    not_entered: "ユーザーまたはパスワードが未入力です。"
     change_password1: "新規パスワードと確認用パスワードが異なります。"
     change_password2: "パスワードが異なります。"
   error_code:

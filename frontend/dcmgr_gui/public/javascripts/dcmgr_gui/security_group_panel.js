@@ -52,6 +52,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     
     var params = { 'button': bt_create_security_group, 'element_id': 1 };
     $(this).find('#security_group_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+    $(this).find('#security_group_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
     $(this).find('#security_group_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
 
     $(this).find('#rule_help').hide();
@@ -125,6 +126,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
 
         var params = { 'button': bt_edit_security_group, 'element_id': 1 };
         $(this).find('#security_group_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#security_group_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#security_group_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
 
         $(this).find('#rule_help').hide();
@@ -157,6 +159,7 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     var check_id = c_list.currentChecked();
     //remove detail element
     $($('#detail').find('#'+check_id)).remove();
+    $(bt_delete_security_group.target).button({ disabled: true });
   });
   
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){

@@ -13,7 +13,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   get do
     ds = M::Volume.dataset
     if params[:state]
-      ds = if VOLUME_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *VOLUME_META_STATE
              case params[:state]
              when 'alive'
                ds.lives
@@ -22,7 +23,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif VOLUME_STATE.member?(params[:state])
+           when *VOLUME_STATE
              ds.filter(:state=>params[:state])
            else
              raise E::InvalidParameter, :state
@@ -95,7 +96,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     end
 
     # params is a Mash object. so coverts to raw Hash object.
-    vol = M::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
+    vol = M::Volume.entry_new(@account, volume_size, @params.dup) do |v|
       if bo
         v.backup_object_id = vs.canonical_uuid
       end

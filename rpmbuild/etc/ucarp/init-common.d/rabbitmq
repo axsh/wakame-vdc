@@ -1,0 +1,87 @@
+#!/bin/bash
+#
+# requires:
+#  bash
+#  awk, sed, drdbadm, mkdir, mount, umount, egrep, chown, /etc/init.d/rabbitmq
+#
+set -e
+
+## private variables
+
+rabbitmq_lib_dir=${rabbitmq_lib_dir:-/var/lib/rabbitmq}
+mnesia_dir=${mnesia_dir:-${rabbitmq_lib_dir}/mnesia}
+rabbitmq_owner=${rabbitmq_owner:-rabbitmq}
+rabbitmq_initscript=${rabbitmq_initscript:-/etc/init.d/rabbitmq-server}
+
+drbd_name=${drbd_name:-rabbitmq}
+drbd_config_path=${drbd_config_path:-/etc/drbd.d/${drbd_name}.res}
+drbd_devpath=${drbd_devpath:-/dev/drbd9}
+
+[[ -f ${drbd_config_path} ]] && {
+  drbd_devpath=$(awk '$1 == "device" {print $2}' ${drbd_config_path} | sed 's,;$,,')
+}
+
+## functions
+
+### drbd
+
+function start_drbd() {
+  drbdadm primary ${drbd_name}
+}
+
+function stop_drbd() {
+  drbdadm secondary ${drbd_name}
+  drbdadm role ${drbd_name} | egrep Unknown -q && {
+    drbdadm -- --discard-my-data connect ${drbd_name}
+  } || {
+    # no problem case
+    :
+  }
+}
+
+### mount
+
+function start_mount() {
+  [[ -d ${mnesia_dir} ]] || mkdir ${mnesia_dir}
+  mount | egrep ${mnesia_dir} || mount ${drbd_devpath} ${mnesia_dir}
+}
+
+function stop_mount() {
+  mount | egrep ${mnesia_dir} || return 0
+  umount -l ${mnesia_dir}
+}
+
+### rabbitmq
+
+function start_rabbitmq() {
+  chown ${rabbitmq_owner}:${rabbitmq_owner} ${mnesia_dir}/.
+  ${rabbitmq_initscript} status || ${rabbitmq_initscript} start
+}
+
+function stop_rabbitmq() {
+  ${rabbitmq_initscript} status || : && ${rabbitmq_initscript} stop
+}
+
+### integrate
+
+function up_cmd() {
+  start_drbd
+  start_mount
+  start_rabbitmq
+}
+
+function down_cmd() {
+  stop_rabbitmq
+  stop_mount
+  stop_drbd
+}
+
+## main
+
+task=${1}
+
+case "${task}" in
+up)   ${task}_cmd ;;
+down) ${task}_cmd ;;
+*) ;;
+esac

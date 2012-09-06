@@ -285,6 +285,8 @@ en:
       message: "Are you sure you want to backup those instances?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+      backup_display_name: "Backup Display Name"
+      image_description: "Image Description"
     create_load_balancer:
       header:
         display_name: "Load Balancer Name"
@@ -326,6 +328,14 @@ en:
       header: "Register Load Balancer"
       instances: "Instances"
       register_instances: "Register Instance"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
+    unregister_load_balancer:
+      header: "Unregister Load Balancer"
+      instances: "Instances"
+      unregister_instances: "Unregister Instance"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
     poweron_instances:
       header: "PowerOn Instances"
       message: "Are you sure you want to turn those instances on?"
@@ -336,6 +346,9 @@ en:
       message: "Are you sure you want to turn those instances off?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+    active_standby_load_balancer:
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
   login:
     login: "Log In"
     user: "User"
@@ -368,6 +381,7 @@ en:
       networks: "Networks"
       security_groups: "Security Groups"
       key_pairs: "Key Pairs"
+      load_balancers: "Load Balancers"
   instances:
     header: "Instances"
     instance_actions:
@@ -376,6 +390,8 @@ en:
       reboot: "Reboot"
       start: "Start"
       stop: "Stop"
+      poweron: "Power On"
+      poweroff: "Power Off"
     button:
       edit_instance: "Edit"
       backup_instance: "Backup"
@@ -396,7 +412,7 @@ en:
       wmi_id: "WMI ID"
       cpu_cores: "CPU Cores"
       memory_size: "Memory Size"
-      status: "Status"
+      status: "VM Status"
       state: "State"
       ip: "IP"
       ssh_key_pair: "SSH Key Pair"
@@ -447,12 +463,14 @@ en:
       load_balancer_port: "Load Balancer Port"
       instance_protocol: "Instance Protocol"
       instance_port: "Instance Port"
+      description: "Description"
     load_balancer_actions:
       register_instance: "Register Instance"
       unregister_instance: "Unregister Instance"
       delete_load_balancer: "Delete Load Balancer"
       poweron: "Power On"
       poweroff: "Power Off"
+      active_standby: "Active/Standby"
   machine_images:
     header: "Machine Images"
     button:
@@ -517,6 +535,7 @@ en:
       capacity: "Size"
       origin_volume_id: "OriginVolume ID"
       checksum: "Checksum"
+      progress: "Progress"
       created_at: "Created"
       status: "Status"
       action: "Action"
@@ -528,6 +547,7 @@ en:
       capacity: "Size"
       origin_volume_id: "OriginVolumeID"
       checksum: "Checksum"
+      progress: "Progress"
       state: "State"
       status: "Status"
       description: "Description"
@@ -601,7 +621,7 @@ en:
     header: "Key Pairs"
     button:
       create_keypair: "Create Key Pair"
-      delete_keypair: "Delete"
+      delete_keypair: "Delete Key Pair"
       edit_keypair: "Edit"
       show_secret_accesskey: "Show Secret Access Key"
     list:
@@ -710,6 +730,7 @@ en:
     code: 'ErrorCode'
   error_message:
     sign_in: "User not found."
+    not_entered: "User or Password is not entered"
     change_password1: "New password and confirm password are differenet."
     change_password2: "Password is different."
   error_code:

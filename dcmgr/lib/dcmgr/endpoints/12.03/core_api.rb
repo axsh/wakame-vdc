@@ -45,7 +45,7 @@ module Dcmgr::Endpoints::V1203
         raise E::DisabledAccount if @account.disable?
 
         # Force overwrite the filtering parameter.
-        params[:account_id] = @account.canonical_uuid
+        params['account_id'] = @account.canonical_uuid
       end
 
       @requester_token = request.env[HTTP_X_VDC_REQUESTER_TOKEN]
@@ -56,7 +56,7 @@ module Dcmgr::Endpoints::V1203
     # 
     def find_by_uuid(model_class, uuid)
       if model_class.is_a?(Symbol)
-        model_class = Dcmgr::Models.const_get(model_class)
+        model_class = Dcmgr::Models.const_get(model_class, false)
       end
       raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
       item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
@@ -72,7 +72,7 @@ module Dcmgr::Endpoints::V1203
 
     def find_by_public_uuid(model_class, uuid)
       if model_class.is_a?(Symbol)
-        model_class = Dcmgr::Models.const_get(model_class)
+        model_class = Dcmgr::Models.const_get(model_class, false)
       end
       raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
       item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)

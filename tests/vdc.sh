@@ -94,18 +94,22 @@ function cleanup {
 }
 
 function init_db() {
-  for dbname in wakame_dcmgr wakame_dcmgr_gui; do
+  for dbname in wakame_dcmgr wakame_dcmgr_gui wakame_admin; do
     yes | mysqladmin -uroot drop ${dbname} || :
     mysqladmin -uroot create ${dbname}
   done
 
   cd ${prefix_path}/dcmgr
   echo "executing 'rake db:init' => dcmgr ..."
-  time bundle exec rake db:init
+  time bundle exec rake --trace db:init
 
   cd ${prefix_path}/frontend/dcmgr_gui
   echo "executing 'rake db:init' => frontend/dcmgr_gui ..."
-  time bundle exec rake db:init
+  time bundle exec rake --trace db:init
+
+  cd ${prefix_path}/frontend/admin
+  echo "executing 'rake db:init' => frontend/admin ..."
+  time bundle exec rake --trace sq:migrate:auto
 
   echo ... rake oauth:create_consumer[${account_id}]
   #local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
@@ -130,6 +134,7 @@ function run_standalone() {
   screen_it proxy     "${abs_path}/builder/conf/hup2term.sh /usr/sbin/nginx -g \'daemon off\;\' -c ${tmp_path}/proxy.conf"
   screen_it webui     "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${webui_port} -o ${webui_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
   screen_it sta       "cd ./dcmgr; ./bin/sta -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-sta.log"
+  screen_it admin     "cd ./frontend/admin; bundle exec unicorn -p ${admin_port} -o ${admin_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-admin.log"
 }
 
 mode=$1

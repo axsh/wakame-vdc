@@ -34,10 +34,50 @@ module Dcmgr
         # enable local image cache under "vm_data_dir/_base"
         param :enable_image_caching, :default=>true
         param :image_cache_dir, :default => proc {
-          File.expand_path('_base', @config[:vm_data_dir])
+          File.expand_path('_base', parent.config[:vm_data_dir])
         }
         param :enable_cache_checksum, :default=>true
         param :max_cached_images, :default=>10
+        param :work_dir, :default => proc {
+          File.expand_path('tmp', parent.config[:vm_data_dir])
+        }
+        param :gzip_command, :default=>'gzip'
+        param :gunzip_command, :default=>'gunzip'
+        param :thread_concurrency, :default=>2
+
+        def validate(errors)
+          super
+          if !File.directory?(self.work_dir)
+            errors << "Unknown directory for work_dir: #{self.work_dir}"
+          end
+
+          unless self.thread_concurrency.to_i > 0
+            errors << "thread_concurrency needs to set positive integer (> 0): #{self.thread_concurrency}"
+          end
+        end
+      end
+
+      class BackupStorage < Configuration
+        param :local_storage_dir, :default => nil
+
+        def validate(errors)
+          super
+          if @config[:local_storage_dir] && !File.directory?(@config[:local_storage_dir])
+            errors << "Unknown directory for local_storage_dir: #{@config[:local_storage_dir]}"
+          end
+        end
+      end
+
+      def hypervisor_driver(driver_class)
+        if driver_class.is_a?(Class) && driver_class < (Drivers::Hypervisor)
+          # TODO: do not create here. the configuration object needs to be attached in earlier phase.
+          @config[:hypervisor_driver][driver_class] ||= driver_class.configuration_class.new(self)
+        elsif (c = Drivers::Hypervisor.driver_class(driver_class))
+          # TODO: do not create here. the configuration object needs to be attached in earlier phase.
+          @config[:hypervisor_driver][c] ||= c.configuration_class.new(self)
+        else
+          raise ArgumentError, "Unknown hypervisor driver type: #{driver_class}"
+        end
       end
       
       DSL do
@@ -52,11 +92,26 @@ module Dcmgr
         def local_store(&blk)
           @config[:local_store].parse_dsl(&blk)
         end
+
+        def backup_storage(&blk)
+          @config[:backup_storage].parse_dsl(&blk)
+        end
+
+        # hypervisor_driver configuration section.
+        def hypervisor_driver(driver_type, &blk)
+          c = Drivers::Hypervisor.driver_class(driver_type)
+          # Drivers::Hypervisor follows the configuration class hierarchy standard from ConfigrationMethods module.
+
+          conf = ::Dcmgr::Configuration::ConfigurationMethods.find_configuration_class(c).new(self.instance_variable_get(:@subject)).parse_dsl(&blk)
+          @config[:hypervisor_driver][c] = conf
+        end
       end
 
       on_initialize_hook do
         @config[:dc_networks] = {}
-        @config[:local_store] = LocalStore.new
+        @config[:local_store] = LocalStore.new(self)
+        @config[:backup_storage] = BackupStorage.new(self)
+        @config[:hypervisor_driver] = {}
       end
 
       param :vm_data_dir

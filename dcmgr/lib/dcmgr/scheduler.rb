@@ -81,10 +81,10 @@ module Dcmgr
       
       c = case input
           when Symbol
-            namespace.const_get(input)
+            namespace.const_get(input, false)
           when String
-            if namespace.const_defined?(input)
-              namespace.const_get(input)
+            if namespace.const_defined?(input, false)
+              namespace.const_get(input, false)
             else
               Module.find_const(input)
             end
@@ -114,6 +114,17 @@ module Dcmgr
     module Network
       def self.scheduler_class(input)
         Scheduler.scheduler_class(input, self)
+      end
+
+      def self.check_vifs_parameter_format(vifs)
+        raise Dcmgr::Scheduler::NetworkSchedulingError, "Missing or badly formatted vifs request parameter" unless vifs.is_a?(Hash)
+
+        vifs.each { |name, vif_template|
+          raise Dcmgr::Scheduler::NetworkSchedulingError, "#{name.inspect} is not a valid vif name" unless name.is_a?(String)
+          raise Dcmgr::Scheduler::NetworkSchedulingError, "#{vif_template.inspect} is not a valid vif template" unless vif_template.is_a?(Hash)
+        }
+
+        nil
       end
     end
 
@@ -159,10 +170,12 @@ module Dcmgr
       # end
       def self.configuration(&blk)
         # create new configuration class if not exist.
-        unless self.const_defined?(:Configuration)
+        unless self.const_defined?(:Configuration, false)
           self.const_set(:Configuration, Class.new(self.configuration_class))
         end
-        self.const_get(:Configuration).instance_eval(&blk)
+        if blk
+          self.const_get(:Configuration, false).instance_eval(&blk)
+        end
       end
 
 

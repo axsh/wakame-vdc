@@ -407,7 +407,9 @@ __END
 Network UUID:
   <%= nw.canonical_uuid %>
 Dynamic IP Address Range:
+<%- unless nw.ipv4_u32_dynamic_range_array.empty? -%>
   <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.shift) %> - <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.last) %>
+<%- end -%>
 __END
       else
         cond = {}

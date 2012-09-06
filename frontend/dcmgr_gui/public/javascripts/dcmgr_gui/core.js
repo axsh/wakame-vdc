@@ -25,7 +25,7 @@ DcmgrGUI.Class = (function() {
 
 DcmgrGUI.Request = DcmgrGUI.Class.create({
   initialize: function(){
-    
+    dcmgrGUI.setConfig('error_popup', true);
   },
   get: function(params){
     params['type'] = 'GET';
@@ -154,7 +154,7 @@ DcmgrGUI.date.getI18n = function(date_str){
 DcmgrGUI.date.utcToLocal = function(iso8601_date_str) {
   // TODO: cleanup white spaces in date_str.
   try {
-    return DcmgrGUI.date.getI18n(DcmgrGUI.date.setTimezone(DcacmgrGUI.date.parseISO8601(iso8601_date_str),
+    return DcmgrGUI.date.getI18n(DcmgrGUI.date.setTimezone(DcmgrGUI.date.parseISO8601(iso8601_date_str),
                                                            dcmgrGUI.getConfig('time_zone')
                                                           ));
   } catch(a) {
@@ -403,23 +403,26 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
   },
   update:function(params,async){
     var self = this;
-
-    $("#list_load_mask").mask($.i18n.prop('loading_parts'));
-    self.element.trigger('dcmgrGUI.beforeUpdate');
-
-    var request = new DcmgrGUI.Request;
-    request.get({
-      url: params.url,
-      data: params.data,
-      success: function(json,status,xhr){
-        self.filter.execute(json); 
-        self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
-        self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
-      },
-      complete: function(xhr, status) {
-        $("#list_load_mask").unmask();
-      }
-    });
+    try{
+      $("#list_load_mask").mask($.i18n.prop('loading_parts'));
+      self.element.trigger('dcmgrGUI.beforeUpdate');
+      var request = new DcmgrGUI.Request;
+      request.get({
+        url: params.url,
+        data: params.data,
+        success: function(json,status,xhr){
+          self.filter.execute(json);
+          self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
+          self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
+        },
+        complete: function(xhr, status) {
+          $("#list_load_mask").unmask();
+        }
+      });
+    } catch( e ) {
+      console.log(e);
+      $("#list_load_mask").unmask();
+    }
   }
 });
 
@@ -482,7 +485,7 @@ DcmgrGUI.Util.availableTextField = function(e){
   var button = d.button;
   var element_id = d.element_id;
 
-  if(e.type == 'paste') {
+  if(_.include(['paste', 'cut'], e.type)) {
     var el = $(this);
     setTimeout(function() {
       var text = $(el).val();
@@ -501,6 +504,37 @@ DcmgrGUI.Util.availableTextField = function(e){
     }
   }
   return true;
+};
+
+DcmgrGUI.Util.checkTextField = function(e) {
+    var d = e.data;
+    var name = d.name;
+    var is_ready = d.is_ready;
+    var ready = d.ready;
+
+    if(_.include(['paste', 'cut'], e.type)) {
+	var el = $(this);
+	setTimeout(function(){
+		var text = $(el).val();
+		if(text) {
+		    is_ready[name] = true;
+		    ready(is_ready);
+		} else {
+		    is_ready[name] = false;
+		    ready(is_ready);
+		}
+	    }, 100);
+    } else {
+	var text = $(this).val();
+	if(text) {
+	    is_ready[name] = true;
+	    ready(is_ready);
+	} else {
+	    is_ready[name] = false;
+	    ready(is_ready);
+	}
+    }
+    return true;
 };
 
 // Find ISO8601 UTC string in the HTML element and convert it.

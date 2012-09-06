@@ -1,7 +1,7 @@
 source :rubygems
 
-gem 'rails', '3.0.13'
-gem 'sequel','3.36.1'
+gem 'rails', '3.0.17'
+gem 'sequel','3.38.0'
 gem 'json'
 gem 'oauth','0.4.1'
 gem 'nokogiri', '1.4.4'

@@ -11,7 +11,42 @@ module Dcmgr
       include Dcmgr::Helpers::TemplateHelper
 
       template_base_dir 'linux'
-      
+
+      def_configuration do
+        # TODO: create helper method to 
+        # Abstract class for Cgroup parameters
+        self.const_set(:Cgroup, Class.new(Dcmgr::Configuration))
+
+        self.const_set(:CgroupBlkio, Class.new(self.const_get(:Cgroup)))
+        self.const_get(:CgroupBlkio).module_eval do
+          param :enable_throttling, :default=>false
+
+          # Modifiable throttle parameters for blkio controller.
+          # It is ignored if the value is either nil or 0.
+          
+          # blkio.throttle.read_iops_device
+          param :read_iops, :default=>nil
+          # blkio.throttle.read_bps_device
+          param :read_bps, :default=>nil
+          # blkio.throttle.write_iops_device
+          param :write_iops, :default=>nil
+          # blkio.throttle.write_bps_device
+          param :write_bps, :default=>nil
+          # blkio.weight & blkio.weight_device
+          param :weight, :default=>nil
+        end
+
+        DSL do
+          def cgroup_blkio(&blk)
+            @config[:cgroup_blkio].parse_dsl(&blk)
+          end
+        end
+
+        on_initialize_hook do
+          @config[:cgroup_blkio] = LinuxHypervisor::Configuration::CgroupBlkio.new(self)
+        end
+      end
+
       def check_interface(hc)
         hc.inst[:instance_nics].each { |vnic|
           next if vnic[:network].nil?
@@ -58,14 +93,13 @@ module Dcmgr
 
       def setup_metadata_drive(hc,metadata_items)
         begin
-          inst_data_dir = hc.inst_data_dir
-          FileUtils.mkdir(inst_data_dir) unless File.exists?(inst_data_dir)
+          FileUtils.mkdir(hc.inst_data_dir) unless File.exists?(hc.inst_data_dir)
           
-          logger.info("Setting up metadata drive image for :#{hc.inst_id}")
+          logger.info("Setting up metadata drive image:#{hc.inst_id}")
           # truncate creates sparsed file.
           sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'; sync;")
           sh("parted %s < %s", [hc.metadata_img_path, LinuxHypervisor.template_real_path('metadata.parted')])
-          res = sh("kpartx -av %s", [hc.metadata_img_path])
+          res = sh("kpartx -avs %s", [hc.metadata_img_path])
           if res[:stdout] =~ /^add map (\w+) /
             lodev="/dev/mapper/#{$1}"
           else
@@ -102,10 +136,56 @@ module Dcmgr
         ensure
           # ignore any errors from cleanup work.
           sh("/bin/umount -l %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
-          sh("kpartx -d %s", [hc.metadata_img_path]) rescue logger.warn($!.message)
+          sh("kpartx -dvs %s", [hc.metadata_img_path]) rescue logger.warn($!.message)
           sh("udevadm settle")
         end
       end
+
+      protected
+
+      # cgroup_set('blkio', "0") do
+      #   add('blkio.throttle.read_iops_device', "253:0 128000")
+      # end
+      def cgroup_set(subsys, scope, &blk)
+        cgroup_mnt = `findmnt -n -t cgroup -O "#{subsys}"`.split("\n").first
+        raise "Failed to find the cgroup base path to #{subsys} controller." if cgroup_mnt.nil?
+        cgroup_base = cgroup_mnt.split(/\s+/).first
+
+        cgroup_scope = File.expand_path(scope, cgroup_base)
+        unless File.directory?(cgroup_scope)
+          raise "Unknown directory in the cgroup #{subsys}: #{cgroup_scope}"
+        end
+
+        dsl = CgroupBlkio.new(cgroup_scope)
+        if blk.arity == 1
+          blk.call(dsl)
+        else
+          dsl.instance_eval(&blk)
+        end
+      end
+
+      class CgroupBlkio
+        def initialize(cgroup_scope)
+          @cgroup_scope = cgroup_scope
+        end
+        
+        def add(k, v)
+          path = File.join(@cgroup_scope, k)
+          File.open(path, 'w+') { |f|
+            f.puts(v)
+          }
+        end
+
+        def find_devnode_id(src)
+          devnode_id=`lsblk -n -r -d $(df -P '#{src}' | sed -e '1d' | awk '{print $1}') | awk '{print $3}'`
+          unless $?.success?
+            raise "Failed to find devnode ID (MAJOR:MINOR) from #{src}"
+          end
+
+          devnode_id.chomp
+        end
+      end
+      
     end
   end
 end

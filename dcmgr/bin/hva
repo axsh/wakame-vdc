@@ -46,4 +46,5 @@ end
 
 start(manifest) do
   endpoint "hva-handle.#{@node.node_id}", Dcmgr::Rpc::HvaHandler
+  endpoint "local-store-handle.#{@node.node_id}", Dcmgr::Rpc::LocalStoreHandler
 end

@@ -19,7 +19,7 @@ module Dcmgr::Scheduler::HostNode::Rules
     
     def reorder(array,instance)
       array.sort_by { |hn|
-        hn.instances_dataset.lives.sum(options.key)
+        hn.instances_dataset.alives.sum(options.key).to_f
       }
     end
 

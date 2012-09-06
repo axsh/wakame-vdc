@@ -79,6 +79,14 @@ service_type("std", "StdServiceType") {
   # * :NatOneToOne
   # * :VifTemplate
   # * :PerInstance
+  # * :RequestParamToGroup {
+  #     key 'instance_spec_name'
+  #
+  #     pair 'vz.small', 'nwg-small'
+  #     pair 'vz.large', 'nwg-large'
+  #
+  #     default 'nwg-shnet'
+  #  }
   #
   network_scheduler :PerInstance do
 
@@ -139,7 +147,6 @@ service_type("std", "StdServiceType") {
 
 service_type("lb", "LbServiceType") {
   image_id 'wmi-demolb'
-  host_node_id 'hn-demo1'
   ssh_key_id 'ssh-demo'
   instances_network 'nw-demo1'
   management_network 'nw-demo8'

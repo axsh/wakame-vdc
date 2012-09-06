@@ -12,30 +12,20 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
                 ])
 
+Dcmgr.run_initializers('sequel')
+
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'collector'
   node_instance_id 'master'
 
   load_module Isono::NodeModules::DataStore
-  load_module Dcmgr::NodeModules::StaCollector
   load_module Isono::NodeModules::NodeCollector
   load_module Isono::NodeModules::JobCollector
   load_module Dcmgr::NodeModules::HvaCollector
+  load_module Dcmgr::NodeModules::StaCollector
   load_module Dcmgr::NodeModules::InstanceHA
   load_module Dcmgr::NodeModules::Scheduler
-
-  config do |c|
-    c.data_store.connection_block = proc {
-      require 'sequel'
-      next if Isono::NodeModules::DataStore.disconnected? == false
-      Dcmgr.run_initializers('sequel')
-
-      # TODO; configuration in dcmgr.conf.
-      # c.node_collector.timeout_sec = (60*20).to_f
-      # c.node_collector.kill_sec    = (60*20*2).to_f
-    }
-  end
 end
 
 Isono::Runner::RpcServer.start(manifest)

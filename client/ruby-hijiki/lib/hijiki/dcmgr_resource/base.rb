@@ -9,6 +9,7 @@ module Hijiki::DcmgrResource
 end
 
 require 'active_resource'
+require 'hijiki/dcmgr_resource/errors'
 
 module Hijiki::DcmgrResource::Common
 
@@ -114,6 +115,8 @@ end
 
 ActiveResource::Connection.class_eval do
 
+  E = Hijiki::DcmgrResource::Errors
+
   alias :build_request_headers_orig :build_request_headers
   def build_request_headers(headers, http_method, uri)
     h = build_request_headers_orig(headers, http_method, uri)
@@ -139,5 +142,37 @@ ActiveResource::Connection.class_eval do
     end
     
     http
+  end
+
+  # Handles response and error codes from the remote service.
+  def handle_response(response)
+    case response.code.to_i
+    when 301,302
+      raise(Redirection.new(response))
+    when 200...400
+      response
+    when 400
+      raise(E::BadRequest.new(response))
+    when 401
+      raise(E::UnauthorizedAccess.new(response))
+    when 403
+      raise(E::ForbiddenAccess.new(response))
+    when 404
+      raise(E::ResourceNotFound.new(response))
+    when 405
+      raise(MethodNotAllowed.new(response))
+    when 409
+      raise(E::ResourceConflict.new(response))
+    when 410
+      raise(E::ResourceGone.new(response))
+    when 422
+      raise(ResourceInvalid.new(response))
+    when 401...500
+      raise(E::ClientError.new(response))
+    when 500...600
+      raise(E::ServerError.new(response))
+    else
+      raise(ConnectionError.new(response, "Unknown response code: #{response.code}"))
+    end
   end
 end

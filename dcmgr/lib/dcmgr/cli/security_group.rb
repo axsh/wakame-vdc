@@ -49,6 +49,8 @@ UUID: <%= sg.canonical_uuid %>
 Name: <%= sg.display_name %>
 Account ID: <%= sg.account_id %>
 Service Type: <%= sg.service_type %>
+Create: <%= sg.created_at %>
+Update: <%= sg.updated_at %>
 Rules:
 <%= sg.rule %>
 <%- if sg.description -%>
@@ -57,11 +59,12 @@ Description:
 <%- end -%>
 __END
       else
-        puts ERB.new(<<__END, nil, '-').result(binding)
-<%- M::SecurityGroup.all { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= row.description %>
-<%- } -%>
-__END
+        ds = M::SecurityGroup.dataset
+        table = [['UUID', 'Account ID', 'Service Type', 'Name']]
+        ds.each { |r|
+          table << [r.canonical_uuid, r.account_id, r.service_type, r.display_name]
+        }
+        shell.print_table(table)
       end
     end
     

@@ -26,6 +26,17 @@
 </style>
 
 <div id="unregister_load_balancer_dialog">
+<table>
+ <tr>
+   <td><%= t("dialog.unregister_load_balancer.load_balancer_id") %>:</td>
+   <td><%= @load_balancer_id %></td>
+ </tr>
+ <tr>
+   <td><%= t("dialog.unregister_load_balancer.display_name") %>:</td>
+   <td><%= @display_name %></td>
+ </tr>
+</table>
+<br/>
  <fieldset id="instances_field">
   <legend><%= t("dialog.unregister_load_balancer.header") %></legend><legend>
   </legend><table cellspacing="5" cellpadding="5">

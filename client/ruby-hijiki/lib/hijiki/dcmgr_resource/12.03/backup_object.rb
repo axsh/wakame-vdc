@@ -8,6 +8,7 @@ module Hijiki::DcmgrResource::V1203
                                  :backup_storage_id,
                                  :object_key,
                                  :checksum,
+                                 :progress,
                                  :description,
                                  :display_name,
                                  :service_type,

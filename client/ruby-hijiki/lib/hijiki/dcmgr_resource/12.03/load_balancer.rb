@@ -15,15 +15,17 @@ module Hijiki::DcmgrResource::V1203
         lb.balance_algorithm = params[:balance_algorithm]
         lb.private_key = params[:private_key]
         lb.public_key = params[:public_key]
-        lb.certificate_chain = params[:certificate_chain]
         lb.cookie_name = params[:cookie_name]
         lb.description = params[:description]
+        lbs = LoadBalancerSpec.show(params[:load_balancer_spec_id]) || raise("Unknown load balancer spec: #{params[load_balancer_spec_id]}")
+        lb.max_connection = lbs.max_connection
+        lb.engine = lbs.engine
         lb.save
         lb
       end
 
       def list(params = {})
-        super(params.merge({:state=>'alive_with_deleted'}))
+        self.find(:all,:params => params.merge({:state=>'alive_with_deleted'}))
       end
 
       def show(uuid)

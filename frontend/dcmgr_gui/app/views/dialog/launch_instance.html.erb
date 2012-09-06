@@ -24,7 +24,7 @@
 		</tr>
 	</table>
 
-	<fieldset id="security_group_field">
+	<fieldset id="security_group_field" class="with_border">
 		<legend><%= t("dialog.launch_instance.security_group") %></legend><legend>
 		</legend><table cellspacing="5" cellpadding="5">
 		<tbody>
@@ -50,17 +50,22 @@
 	</fieldset>
 	<br />
 		
-	<table>
-          <tr><td>eth0:</td><td id="select_eth0"></td></tr>
-	  <tr><td>eth1:</td><td id="select_eth1"></td></tr>
-	  <tr><td>eth2:</td><td id="select_eth2"></td></tr>
-	  <tr><td>eth3:</td><td id="select_eth3"></td></tr>
-	  <tr><td>eth4:</td><td id="select_eth4"></td></tr>
-        </table>
-
+	<fieldset id="vif_field" class="with_border">
+	  <legend><%= t("dialog.launch_instance.vif") %></legend>
+	  <table>
+            <tbody>
+              <tr><td>eth0:</td><td id="select_eth0"></td></tr>
+	      <tr><td>eth1:</td><td id="select_eth1"></td></tr>
+	      <tr><td>eth2:</td><td id="select_eth2"></td></tr>
+	      <tr><td>eth3:</td><td id="select_eth3"></td></tr>
+	      <tr><td>eth4:</td><td id="select_eth4"></td></tr>
+            </tbody>
+          </table>
+	</fieldset>
+        
 	<br />
 
-	<fieldset id="user_data_field">
+	<fieldset id="user_data_field" class="with_border">
 	<legend><%= t("dialog.launch_instance.user_data") %></legend>
 	<table cellspacing="5" cellpadding="5">
 		<tbody>

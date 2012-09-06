@@ -11,6 +11,8 @@ module Dcmgr::Models
     
     one_to_many  :tags, :dataset=>lambda { Tag.filter(:account_id=>self.canonical_uuid); }
 
+    subset(:alives, {:deleted_at => nil})
+    
     # sti plugin has to be loaded at lower position.
     plugin :subclasses
     plugin :single_table_inheritance, :uuid, :model_map=>{}
@@ -22,6 +24,11 @@ module Dcmgr::Models
 
     def enable?
       self.enabled == ENABLED
+    end
+    
+    def _destroy_delete
+      self.deleted_at ||= Time.now
+      self.save_changes
     end
 
     # STI class variable setter, getter methods.

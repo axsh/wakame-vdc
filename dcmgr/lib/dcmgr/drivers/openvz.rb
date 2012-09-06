@@ -6,12 +6,78 @@ module Dcmgr
   module Drivers
     class Openvz < LinuxHypervisor
       include Dcmgr::Logger
+      include Dcmgr::Helpers::Cgroup::CgroupContextProvider
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::TemplateHelper
       
       template_base_dir "openvz"
-      
+
+      def_configuration do
+        param :ctid_offset, :default=>100
+
+        def validate(errors)
+          if @config[:ctid_offset].to_i < 100
+            errors << "ctid_offset must be larger than or equal to 100: #{@config[:ctid_offset]}"
+          end
+        end
+      end
+
+      # Decorator pattern class of Rpc::HvaHandler::HvaContext.
+      class OvzContext
+        def initialize(root_ctx)
+          raise ArgumentError unless root_ctx.is_a?(Rpc::HvaContext)
+          @subject = root_ctx
+          @ovz_config = OpenvzConfig.new
+        end
+
+        attr_reader :ovz_config
+        alias :config :ovz_config
+        
+        def ctid
+          Drivers::Openvz.driver_configuration.ctid_offset + inst[:id].to_i
+        end
+
+        def private_dir
+          File.expand_path(ctid.to_s, config.ve_private)
+        end
+
+        def ct_umount_path
+          File.expand_path("#{ctid}.umount", config.ve_config_dir)
+        end
+        
+        def ct_mount_path
+          File.expand_path("#{ctid}.mount", config.ve_config_dir)
+        end
+        
+        def ct_conf_path
+          File.expand_path("#{ctid}.conf", config.ve_config_dir)
+        end
+
+        def ct_local_confs
+          [ct_conf_path, ct_mount_path, ct_umount_path]
+        end
+        
+        def cgroup_scope
+          ctid.to_s
+        end
+
+        private
+        def method_missing(meth, *args)
+          if @subject.respond_to?(meth)
+            @subject.send(meth, *args)
+          else
+            super
+          end
+        end
+      end
+
+      before do
+        @args = @args.map {|i|  i.is_a?(Rpc::HvaContext) ? OvzContext.new(i) : i; }
+        # First arugment is expected a HvaContext.
+        @hc = @args.first
+      end
+
       def run_instance(hc)
         # load openvz conf
         config = OpenvzConfig.new
@@ -19,16 +85,15 @@ module Dcmgr
         # write a openvz container id
         inst = hc.inst
         ctid_file_path = File.expand_path('openvz.ctid', hc.inst_data_dir)
-        ctid = inst[:id]
 
         File.open(ctid_file_path, "w") { |f|
-          f.write(ctid)
+          f.write(hc.ctid)
         }
         logger.debug("write a openvz container id #{ctid_file_path}")
         
         # delete old config file
-        config_file_path = "#{config.ve_config_dir}/#{ctid}.conf" 
-        mount_file_path = "#{config.ve_config_dir}/#{ctid}.mount"
+        config_file_path = "#{config.ve_config_dir}/#{hc.ctid}.conf"
+        mount_file_path = "#{config.ve_config_dir}/#{hc.ctid}.mount"
         if File.exists?(config_file_path)
           File.unlink(config_file_path)
           logger.debug("old config file was deleted #{config_file_path}")
@@ -58,13 +123,21 @@ module Dcmgr
         logger.debug("created config #{output_file_path}")
         
         # create openvz container
-        private_folder = "#{config.ve_private}/#{ctid}"
+        private_folder = "#{config.ve_private}/#{hc.ctid}"
         image = inst[:image]
         case image[:file_format]
         when "tgz"
-          ostemplate = File.basename(image[:backup_object][:uuid], ".tar.gz")
+          # OpenvzLocalStore driver downloads the file under /vz/template/cache. it places the file without extention.
+          # but "vzctl create" expects that the file name has the extension. so the line below creates hard link to
+          # the path name with extention of archiver type.
+
+          # remove existing 
+          File.unlink(File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)) rescue nil
+          sh("ln %s %s", [File.expand_path(image[:backup_object][:uuid], config.template_cache),
+                          File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)])
+          ostemplate = image[:backup_object][:uuid]
           # create vm and config file
-          sh("vzctl create %s --ostemplate %s --config %s",[ctid, ostemplate, hypervisor])
+          sh("vzctl create %s --ostemplate %s --config %s",[hc.ctid, ostemplate, hypervisor])
           logger.debug("created container #{private_folder}")
           logger.debug("created config #{config_file_path}")
         when "raw"
@@ -75,7 +148,7 @@ module Dcmgr
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
           unless image[:root_device].nil?
             # creating loop devices
-            mapdevs = sh("kpartx -va %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
+            mapdevs = sh("kpartx -avs %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
             new_device_file = mapdevs[:stdout].split("\n").map {|mapdev| "/dev/mapper/#{mapdev}"}
             #
             # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
@@ -114,7 +187,7 @@ module Dcmgr
         end
         
         # set name
-        sh("vzctl set %s --name %s --save",[ctid, hc.inst_id])
+        sh("vzctl set %s --name %s --save",[hc.ctid, hc.inst_id])
         #
         # Name="i-xxxx"
         #
@@ -130,8 +203,10 @@ module Dcmgr
             host_ifname = vif[:uuid]
             # host_mac become a randomly generated MAC Address.
             host_mac = nil
-            bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-            sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, host_ifname, host_mac, bridge])
+            if vif[:ipv4] && vif[:ipv4][:network]
+              bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
+              sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, host_ifname, host_mac, bridge])
+            end
             #
             # NETIF="ifname=eth0,bridge=vzbr0,mac=52:54:00:68:BB:AC,host_ifname=vif-h63jg7pp,host_mac=52:54:00:68:BB:AC"
             #
@@ -154,11 +229,11 @@ module Dcmgr
         # 
         
         # mount metadata drive
-        hn_metadata_path = "#{config.ve_root}/#{ctid}/metadata"
+        hn_metadata_path = "#{hc.config.ve_root}/#{hc.ctid}/metadata"
         ve_metadata_path = "#{hc.inst_data_dir}/metadata"
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
         raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)
-        res = sh("kpartx -av %s", [hc.metadata_img_path])
+        res = sh("kpartx -avs %s", [hc.metadata_img_path])
         if res[:stdout] =~ /^add map (\w+) /
           lodev="/dev/mapper/#{$1}"
         else
@@ -168,28 +243,30 @@ module Dcmgr
         # save the loop device name for the metadata drive.
         File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
         sh("mount -o ro %s %s", [lodev, ve_metadata_path])
-        logger.debug("mount #{hc.metadata_img_path} to #{ve_metadata_path}")
         
         # generate openvz mount config
-        render_template('template.mount', mount_file_path, binding)
-        sh("chmod +x %s", [mount_file_path])
-        logger.debug("created config #{mount_file_path}")
+        render_template('template.mount', hc.ct_mount_path, binding)
+        render_template('template.umount', hc.ct_umount_path, binding)
+        sh("chmod +x %s", [hc.ct_umount_path])
+        sh("chmod +x %s", [hc.ct_mount_path])
+        hc.logger.info("Created config #{mount_file_path}")
         
         # start openvz container
         sh("vzctl start %s",[hc.inst_id])
-        logger.debug("start container #{hc.inst_id}")
+        hc.logger.info("Started container")
+
+        # Set blkio throttling policy to vm_data_dir block device.
+        cgroup_set('blkio', hc.cgroup_scope) do |c|
+          devid = c.find_devnode_id(hc.inst_data_dir)
+
+          c.add('blkio.throttle.read_iops_device', "#{devid} #{driver_configuration.cgroup_blkio.read_iops.to_i}")
+          c.add('blkio.throttle.read_bps_device', "#{devid} #{driver_configuration.cgroup_blkio.read_bps.to_i}")
+          c.add('blkio.throttle.write_iops_device', "#{devid} #{driver_configuration.cgroup_blkio.write_iops.to_i}")
+          c.add('blkio.throttle.write_bps_device', "#{devid} #{driver_configuration.cgroup_blkio.write_bps.to_i}")
+        end
       end
 
       def terminate_instance(hc)
-        # load openvz conf
-        config = OpenvzConfig.new
-        
-        # openvz container id
-        ctid = hc.inst[:id]
-        
-        # container directory
-        private_dir = "#{config.ve_private}/#{ctid}"
-        
         # stop container
         sh("vzctl stop %s",[hc.inst_id])
 
@@ -197,18 +274,17 @@ module Dcmgr
         tryagain do
           sh("vzctl status %s", [hc.inst_id])[:stdout].chomp.include?("down")
         end
-        logger.debug("stop container #{hc.inst_id}")
+        hc.logger.info("Stop container.")
         
         case hc.inst[:image][:file_format]
         when "raw"
           # umount vm image directory
-          raise "private directory does not exist #{private_dir}" unless File.directory?(private_dir)
-          sh("umount -l %s", [private_dir])
-          logger.debug("unmounted private directory #{private_dir}")
+          raise "private directory does not exist #{hc.private_dir}" unless File.directory?(hc.private_dir)
+          sh("umount -l %s", [hc.private_dir])
+          hc.logger.debug("unmounted private directory #{hc.private_dir}")
           if hc.inst[:image][:root_device]
             # delete device maps
-            img_file_path = "#{hc.inst_data_dir}/#{hc.inst_id}"
-            sh("kpartx -d -s -v %s", [img_file_path])
+            sh("kpartx -d -s -v %s", [hc.os_devpath])
             # wait udev queue
             sh("udevadm settle")
           end
@@ -222,30 +298,30 @@ module Dcmgr
         # > ioctl: LOOP_CLR_FD: Device or resource busy
         #
         sh("umount %s/metadata", [hc.inst_data_dir])
-        sh("kpartx -d %s", [hc.metadata_img_path])
+        sh("kpartx -dvs %s", [hc.metadata_img_path])
         sh("udevadm settle")
-        logger.info("unmounted metadata directory #{hc.inst_data_dir}/metadata")
+        hc.logger.info("Umounted metadata directory #{hc.inst_data_dir}/metadata")
         
         # delete container folder
         sh("vzctl destroy %s",[hc.inst_id])
-        logger.debug("delete container folder #{private_dir}")
-        # delete config file and mount file
-        container_config = "#{config.ve_config_dir}/#{ctid}"
-        config_file_path = "#{container_config}.conf.destroyed"
-        mount_file_path = "#{container_config}.mount.destroyed"
-        raise "config file does not exist #{config_file_path}" unless File.exist?(config_file_path)
-        raise "mount file does not exist #{mount_file_path}" unless File.exist?(mount_file_path)
+        hc.logger.debug("delete container folder #{hc.private_dir}")
+        # delete CT local config files
+        hc.ct_local_confs.map { |i| i + ".destroyed" }.each { |i|
+          if File.exist?(i)
+            File.unlink(i) rescue nil
+            hc.logger.info("Deleted CT config: #{File.basename(i)}")
+          else
+            hc.logger.warn("#{File.basename(i)} does not exist")
+          end
+        }
 
-        File.unlink(config_file_path, mount_file_path)
-        logger.debug("delete config file #{config_file_path}")
-        logger.debug("delete mount file #{mount_file_path}")
+        hc.logger.info("Terminated successfully.")
       end
       
       def reboot_instance(hc)
         # reboot container
         sh("vzctl restart %s", [hc.inst_id])
-        logger.debug("restart container #{hc.inst_id}")
-        
+        hc.logger.info("Restarted container.")
       end
 
       def poweroff_instance(hc)

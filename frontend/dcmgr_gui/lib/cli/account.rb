@@ -109,7 +109,7 @@ __END
         puts "Account #{uuid} is already enabled." if options[:verbose]
       else
         to_enable.enabled = true
-        to_enable.save
+        to_enable.save_changes
 
         puts "Account #{uuid} has been enabled." if options[:verbose]
       end
@@ -125,7 +125,7 @@ __END
         puts "Account #{id} is already disabled." if options[:verbose]
       else
         to_disable.enabled = false
-        to_disable.save
+        to_disable.save_changes
         
         puts "Account #{uuid} has been disabled." if options[:verbose]
       end
@@ -147,7 +147,7 @@ __END
           account.add_user(user)
           if user.primary_account_id.nil?
             user.primary_account_id = account.uuid
-            user.save
+            user.save_changes
           end
           
           puts "Account #{uuid} successfully associated with user #{u}." if options[:verbose]
@@ -174,7 +174,7 @@ __END
           
           if account.uuid == user.primary_account_id
             user.primary_account_id = nil
-            user.save
+            user.save_changes
             puts "This was user #{u}'s primary account. Has been set to Null now." if options[:verbose]
           end
         end

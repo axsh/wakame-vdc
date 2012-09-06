@@ -17,7 +17,7 @@ module Dcmgr::Models
     # delete flags.
     def delete
       self.deleted_at ||= Time.now
-      self.save
+      self.save_changes
     end
   end
 end

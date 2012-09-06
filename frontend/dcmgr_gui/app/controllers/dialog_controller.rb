@@ -234,6 +234,7 @@ class DialogController < ApplicationController
     @port = ''
     @instance_protocol = ''
     @instance_port = ''
+    @balance_algorithm = ''
     @private_key = ''
     @public_key = ''
     @cookie_name = ''
@@ -295,6 +296,14 @@ class DialogController < ApplicationController
       @public_key = @load_balancer["public_key"]
       @cookie_name = @load_balancer["cookie_name"]
       render :create_and_edit_load_balancer
+    end
+  end
+
+  def active_standby_load_balancer
+    catch_error do
+      @load_balancer_id = params[:ids][0]
+      @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+      @display_name = @load_balancer["display_name"]
     end
   end
 

@@ -3,7 +3,12 @@
 module Hijiki
   # configuration file loader. Need to call this 
   def self.load(spec_yml)
-    DcmgrResource::V1203::InstanceSpec.load_spec(spec_yml)
+    case File.basename(spec_yml)
+      when 'instance_spec.yml'
+        DcmgrResource::V1203::InstanceSpec.load_spec(spec_yml)
+      when 'load_balancer_spec.yml'
+        DcmgrResource::V1203::LoadBalancerSpec.load_spec(spec_yml)
+    end
   end
   
   require 'hijiki/request_attribute'
@@ -57,6 +62,8 @@ module Hijiki
       autoload :Volume,         'hijiki/dcmgr_resource/12.03/volume'
       autoload :BackupObject,   'hijiki/dcmgr_resource/12.03/backup_object'
       autoload :LoadBalancer,   'hijiki/dcmgr_resource/12.03/load_balancer'
+      autoload :LoadBalancerSpec,   'hijiki/dcmgr_resource/12.03/load_balancer_spec'
+
     end
 
   end

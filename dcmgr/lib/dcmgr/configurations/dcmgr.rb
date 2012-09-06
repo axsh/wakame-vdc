@@ -26,8 +26,8 @@ module Dcmgr
               config.scheduler_class = c
             end
             
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
+            if c.const_defined?(:Configuration, false)
+              c = c.const_get(:Configuration, false)
               if c && c < conf_base_class
                 c = c.new
                 c.parse_dsl(&blk) if blk
@@ -69,8 +69,8 @@ module Dcmgr
               config.scheduler_class = c
             end
             
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
+            if c.const_defined?(:Configuration, false)
+              c = c.const_get(:Configuration, false)
               if c && c < conf_base_class
                 c = c.new
                 c.parse_dsl(&blk) if blk
@@ -97,8 +97,8 @@ module Dcmgr
         # service type nodes.
         param :backup_storage_id
         
-        def initialize(service_type)
-          super()
+        def initialize(service_type, parent)
+          super(parent)
           @config[:name] = service_type
         end
         
@@ -139,25 +139,24 @@ module Dcmgr
       class LbServiceType < ServiceType
         param :image_id
         param :instance_spec_id
-        param :host_node_id
         param :ssh_key_id
-        param :amqp_server_uri
+        param :amqp_server_uri, :default=>proc {
+          parent.config[:amqp_server_uri]
+        }
         param :instances_network
         param :management_network
 
         def validate(errors)
           super
           [:image_id,
-           :host_node_id,
            :ssh_key_id,
            :instances_network,
            :management_network,
            :host_node_scheduler,
            :storage_node_scheduler,
            :network_scheduler,
-           :amqp_server_uri
           ].each do |name|
-            errors << "#{name} is undefined." unless @config[name]
+            errors << "#{name} is undefined." unless self.send(name)
           end
         end
       end
@@ -172,7 +171,7 @@ module Dcmgr
         def service_type(name, class_name, &blk)
           raise ArgumentError unless Dcmgr.const_get(class_name) < ServiceType
           @config[:service_types] ||= {}
-          @config[:service_types][name] = Dcmgr.const_get(class_name).new(name).parse_dsl(&blk)
+          @config[:service_types][name] = Dcmgr.const_get(class_name).new(name, @subject).parse_dsl(&blk)
           self
         end
       end

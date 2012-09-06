@@ -21,6 +21,19 @@ module Dcmgr
       end
     }
   }
+
+  module Constants
+    module BackupObject
+      CONTAINER_FORMAT={:tgz=>['tar.gz', 'tgz'], :tar=>['tar'], :gz=>['gz'], :none=>[]}.freeze
+      CONTAINER_FORMAT_NAMES=CONTAINER_FORMAT.keys.freeze
+      CONTAINER_EXTS=Hash[*CONTAINER_FORMAT.map{|k,v|
+                            v.map { |v2|
+                              [v2, k]
+                            }
+                          }.flatten].freeze
+    end
+  end
+  Const = Constants
   
   autoload :Logger, 'dcmgr/logger'
   autoload :Configuration, 'dcmgr/configuration'
@@ -109,9 +122,15 @@ module Dcmgr
     autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
     autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
+    autoload :Cgroup, 'dcmgr/helpers/cgroup'
   end
 
   autoload :Tags, 'dcmgr/tags'
+
+  module SpecConvertor
+    autoload :Base, 'dcmgr/spec_convertor'
+    autoload :LoadBalancer, 'dcmgr/spec_convertor'
+  end
 
   module Cli
     require 'dcmgr/cli/errors'
@@ -138,6 +157,8 @@ module Dcmgr
   module Rpc
     autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
     autoload :StaHandler, 'dcmgr/rpc/sta_handler'
+    autoload :HvaContext, 'dcmgr/rpc/hva_context'
+    autoload :LocalStoreHandler, 'dcmgr/rpc/local_store_handler'
   end
 
   # namespace for custom Rack HTTP middleware.
@@ -145,7 +166,9 @@ module Dcmgr
     autoload :RequestLogger, 'dcmgr/rack/request_logger'
     autoload :RunInitializer, 'dcmgr/rack/run_initializer'
   end
-  
+
+  autoload :Task, 'dcmgr/task'
+
   module Drivers
     autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :LocalStorage, 'dcmgr/drivers/local_storage'
@@ -203,6 +226,7 @@ module Dcmgr
       autoload :VifParamTemplate, 'dcmgr/scheduler/network/vif_param_template'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
       autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
+      autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'
     end
 
     NAMESPACES=[HostNode, StorageNode, Network]

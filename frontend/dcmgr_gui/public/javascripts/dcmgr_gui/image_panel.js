@@ -110,6 +110,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       callback: function(){
         var params = { 'button': bt_edit_machine_image, 'element_id': 1 };
         $(this).find('#machine_image_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#machine_image_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#machine_image_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
@@ -210,15 +211,10 @@ DcmgrGUI.prototype.imagePanel = function(){
         }
       }
 
-      $(this).find('#display_name').keyup(function(){
-       if( $(this).val() ) {
-         is_ready['display_name'] = true;
-         ready(is_ready);
-       } else {
-         is_ready['display_name'] = false;
-         ready(is_ready);
-       }
-      });
+      var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
 
       parallel({
         //get instance_specs

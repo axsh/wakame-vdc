@@ -118,6 +118,7 @@ Sequel.migration do
       add_column :root_device, "varchar(255)"
       add_column :is_cacheable, "tinyint(1)", :default=>false, :null=>false
       add_column :instance_model_name, "varchar(255)", :null=>false
+      add_column :parent_image_id, "varchar(255)", :null=>true
     end
 
     rename_table(:physical_networks, :dc_networks)
@@ -171,7 +172,6 @@ Sequel.migration do
       column :description, "text", :null=>true
       column :private_key, "text", :null=>true
       column :public_key, "text", :null=>true
-      column :certificate_chain, "text", :null=>true
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false  
       column :deleted_at, "datetime", :null=>true
@@ -184,6 +184,7 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "varchar(255)", :null=>false
       column :load_balancer_id, "int(11)", :null => false
+      column :fallback_mode, "varchar(255)", :null=>false, :default => 'off'
       column :created_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
       column :is_deleted, "int(11)", :null=>false
@@ -204,6 +205,7 @@ Sequel.migration do
       column :is_deleted, "int(11)", :null=>false
       index [:network_id, :network_vif_id, :ipv4, :is_deleted], :unique=>true,
              :name=>'network_vif_ip_leases_network_id_network_vif_id_ipv4_index'
+      index [:updated_at]
     end
 
     # Add service_type column for service type resources
@@ -275,14 +277,17 @@ Sequel.migration do
       column :backup_storage_id, "int(11)", :null=>false
       column :size, "bigint", :null=>false
       column :allocation_size, "bigint", :null=>false
+      column :container_format, "varchar(255)", :null=>false
       column :status, "int(11)", :default=>0, :null=>false
       column :state, "varchar(255)", :default=>"initialized", :null=>false
       column :object_key, "varchar(255)", :null=>false
       column :checksum, "varchar(255)", :null=>false
       column :description, "text"
+      column :progress, "double", :null=>false, :default=>0.0
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
+      column :purged_at, "datetime"
       
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
@@ -314,6 +319,7 @@ Sequel.migration do
     # Isono gem got new session_id column as of v0.2.12. 
     alter_table(:job_states) do
       add_column :session_id, "varchar(80)", :null=>true
+      add_column :job_name, "varchar(255)", :null=>true
       add_index [:session_id]
     end
 
@@ -335,6 +341,16 @@ Sequel.migration do
       set_column_type :range_begin, "int(11)", :unsigned=>true, :null=>false
       set_column_type :range_end, "int(11)", :unsigned=>true, :null=>false
       add_column :description, "varchar(255)"
+    end
+
+    alter_table(:accounts) do
+      add_column :deleted_at, "datetime"
+      add_column :purged_at, "datetime"
+      add_index [:deleted_at]
+    end
+
+    alter_table(:tag_mappings) do
+      add_column :sort_index, "int(11)", :null=>false, :default=>0
     end
   end
   
@@ -473,6 +489,15 @@ Sequel.migration do
       set_column_type :range_begin, "varchar(255)", :null=>false
       set_column_type :range_end, "varchar(255)", :null=>false
       drop_column :description
+    end
+
+    alter_table(:accounts) do
+      drop_column :deleted_at
+      drop_column :purged_at
+    end
+
+    alter_table(:tag_mappings) do
+      drop_column :sort_index
     end
   end
 end

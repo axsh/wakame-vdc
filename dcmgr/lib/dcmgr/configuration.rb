@@ -69,6 +69,85 @@ module Dcmgr
       end
     end
 
+    module ConfigurationMethods
+      module ClassMethods
+        # Helper method to define class specific configuration class.
+        #
+        # def_configuration(&blk) is available when you include this module
+        #
+        # # Example:
+        # class Base
+        #   include Dcmgr::Configuration::ConfigurationMethods
+        #   def_configuration do
+        #     param :xxxx
+        #     param :yyyy
+        #   end
+        # end
+        #
+        # Above example does exactly same thing as below:
+        #
+        # class Base
+        #   class Configuration < Dcmgr::Configuration
+        #     param :xxxx
+        #     param :yyyy
+        #   end
+        #   @configuration_class = Configuration
+        # end
+        #
+        # # Examples for new classes of Base inheritance.
+        # class A < Base
+        #   def_configuration do
+        #     param :zzzz
+        #   end
+        #   def_configuration do
+        #     param :xyxy
+        #   end
+        #
+        #   p Configuration # => A::Configuration
+        #   p Configuration.superclass # => Base::Configuration
+        #   p @configuration_class # => A::Configuration
+        # end
+        #
+        # class B < A
+        #   p self.configuration_class # => A::Configuration
+        # end
+        def def_configuration(&blk)
+          # create new configuration class if not exist.
+          if self.const_defined?(:Configuration, false)
+            unless self.const_get(:Configuration, false) < Dcmgr::Configuration
+              raise TypeError, "#{self}::Configuration constant is defined already for another purpose."
+            end
+          else
+            self.const_set(:Configuration, Class.new(self.configuration_class || Dcmgr::Configuration))
+            @configuration_class = self.const_get(:Configuration, false)
+          end
+          if blk
+            @configuration_class.module_eval(&blk)
+          end
+        end
+        
+        def configuration_class
+          ConfigurationMethods.find_configuration_class(self)
+        end
+      end
+
+      def self.find_configuration_class(c)
+        begin
+          v = c.instance_variable_get(:@configuration_class)
+          return v if v
+          if c.const_defined?(:Configuration, false)
+            return c.const_get(:Configuration, false)
+          end
+        end while c = c.superclass
+        nil
+      end
+      
+      private
+      def self.included(klass)
+        klass.extend ClassMethods
+      end
+    end
+
     class << self
       def on_initialize_hook(&blk)
         @on_initialize_hooks << blk
@@ -84,7 +163,7 @@ module Dcmgr
           warn_msg = message || "WARN: Deprecated parameter: #{old_name}. Please use '#{param_name}'."
           
           alias_param old_name, param_name
-          self.const_get(:DSL).class_eval %Q{
+          self.const_get(:DSL, false).class_eval %Q{
             def #{old_name}(v)
               STDERR.puts "#{warn_msg}"
               #{param_name.to_s}(v)
@@ -99,7 +178,7 @@ module Dcmgr
           err_msg = message || "ERROR: Parameter is no longer supported: #{old_name}. Please use '#{param_name}'."
           
           alias_param old_name, param_name
-          self.const_get(:DSL).class_eval %Q{
+          self.const_get(:DSL, false).class_eval %Q{
             def #{old_name}(v)
               raise "#{err_msg}"
             end
@@ -118,7 +197,7 @@ module Dcmgr
         }
         
         # DSL setter
-        self.const_get(:DSL).class_eval %Q{
+        self.const_get(:DSL, false).class_eval %Q{
           def #{alias_name}(v)
             #{ref_name.to_s}(v)
           end
@@ -146,7 +225,7 @@ module Dcmgr
         @on_param_create_hooks.each { |blk|
           blk.call(name.to_s.to_sym, opts)
         }
-        self.const_get(:DSL).class_eval %Q{
+        self.const_get(:DSL, false).class_eval %Q{
           def #{name}(v)
             @config["#{name.to_s}".to_sym] = v
           end
@@ -182,7 +261,7 @@ module Dcmgr
       #   end
       # end
       def DSL(&blk)
-        self.const_get(:DSL).class_eval(&blk)
+        self.const_get(:DSL, false).class_eval(&blk)
         self
       end
 
@@ -198,8 +277,8 @@ module Dcmgr
 
         dsl_mods = []
         c = klass
-        while c < Configuration && c.superclass.const_defined?(:DSL)
-          parent_dsl = c.superclass.const_get(:DSL)
+        while c < Configuration && c.superclass.const_defined?(:DSL, false)
+          parent_dsl = c.superclass.const_get(:DSL, false)
           if parent_dsl && parent_dsl.class === Module
             dsl_mods << parent_dsl
           end
@@ -207,7 +286,7 @@ module Dcmgr
         end
         # including order is ancestor -> descendants
         dsl_mods.reverse.each { |i|
-          klass.const_get(:DSL).__send__(:include, i)
+          klass.const_get(:DSL, false).__send__(:include, i)
         }
       end
 
@@ -216,10 +295,14 @@ module Dcmgr
       end
     end
 
-    attr_reader :config
+    attr_reader :config, :parent
     
-    def initialize
+    def initialize(parent=nil)
+      unless parent.nil?
+        raise ArgumentError, "#{parent.class}" unless parent.is_a?(Dcmgr::Configuration)
+      end
       @config = {}
+      @parent = parent
 
       hook_lst = []
       c = self.class
@@ -227,18 +310,24 @@ module Dcmgr
         hook_lst << c.instance_variable_get(:@on_initialize_hooks)
         c = c.superclass
       end
+
       hook_lst.reverse.each { |l|
         l.each { |c|
           self.instance_eval(&c)
         }
       }
+
+      after_initialize
+    end
+
+    def after_initialize
     end
 
     def validate(errors)
     end
 
     def parse_dsl(&blk)
-      dsl = self.class.const_get(:DSL)
+      dsl = self.class.const_get(:DSL, false)
       raise "DSL module was not found" unless dsl && dsl.is_a?(Module)
       
       cp_class = DSLProxy.dup

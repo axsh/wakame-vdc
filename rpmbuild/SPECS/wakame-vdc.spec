@@ -22,6 +22,9 @@ Source: %{_vdc_git_uri}
 Prefix: /%{_prefix_path}
 License: see https://github.com/axsh/wakame-vdc/blob/master/README.md
 
+# Disable automatic dependency analysis.
+AutoReqProv: no
+
 # * build
 BuildRequires: rpm-build
 BuildRequires: createrepo
@@ -74,6 +77,36 @@ Requires: %{oname} = %{version}-%{release}
 %description debug-config
 <insert long description, indented with spaces>
 
+# ha-common-config
+%package ha-common-config
+BuildArch: noarch
+Summary: Configuration set for HA
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: drbd84-utils, kmod-drbd84
+Requires: ucarp
+%description ha-common-config
+<insert long description, indented with spaces>
+
+# ha-rabbitmq-config
+%package ha-rabbitmq-config
+BuildArch: noarch
+Summary: Configuration set for HA rabbitmq
+Group: Development/Languages
+Requires: %{oname}-ha-common-config = %{version}-%{release}
+%description ha-rabbitmq-config
+<insert long description, indented with spaces>
+
+# ha-dcmgr-config
+%package ha-dcmgr-config
+BuildArch: noarch
+Summary: Configuration set for HA dcmgr
+Group: Development/Languages
+Requires: %{oname}-ha-dcmgr-config = %{version}-%{release}
+Requires: %{oname}-dcmgr-vmapp-config = %{version}-%{release}
+%description ha-dcmgr-config
+<insert long description, indented with spaces>
+
 # dcmgr-vmapp-config
 %package dcmgr-vmapp-config
 BuildArch: noarch
@@ -105,6 +138,7 @@ Requires: kpartx
 Requires: libcgroup
 # Trema/racket gem binary dependency
 Requires: sqlite libpcap
+Requires: pv
 %description  hva-common-vmapp-config
 <insert long description, indented with spaces>
 
@@ -211,17 +245,25 @@ rsync -aHA `pwd`/contrib/etc/logrotate.d    ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/prelink.conf.d ${RPM_BUILD_ROOT}/etc/
 rsync -aHA `pwd`/contrib/etc/wakame-vdc     ${RPM_BUILD_ROOT}/etc/
 
+rsync -aHA `pwd`/rpmbuild/etc/ucarp ${RPM_BUILD_ROOT}/etc/
+
 # /etc/sysctl.d
 [ -d ${RPM_BUILD_ROOT}/etc/sysctl.d ] || mkdir -p ${RPM_BUILD_ROOT}/etc/sysctl.d
 rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 
-[ -d ${RPM_BUILD_ROOT}/etc/%{oname} ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
-[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname} ]               || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui ]     || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs
+[ -d ${RPM_BUILD_ROOT}/etc/%{oname}/admin ]         || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/admin
 
 # rails app config
-ln -s /etc/%{oname}/dcmgr_gui/database.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
-ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
-ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+ln -s /etc/%{oname}/dcmgr_gui/database.yml           ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
+ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
+ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml          ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/dcmgr_gui.yml
+ln -s /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/load_balancer_spec.yml
+
+# padrino app config
+ln -s /etc/%{oname}/admin/database.yml  ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/config/database.yml
 
 # vdcsh
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d
@@ -233,7 +275,9 @@ rsync -aHA `pwd`/tests/builder/functions.sh ${RPM_BUILD_ROOT}/%{prefix}/%{oname}
 # log directory
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}/dcmgr_gui
+mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}/admin
 ln -s /var/log/%{oname}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/log
+ln -s /var/log/%{oname}/admin ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/log
 
 # tmp directory
 ln -s /var/lib/%{oname}/tmp ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tmp
@@ -242,6 +286,7 @@ ln -s /var/lib/%{oname}/tmp ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/volumes
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/snap
@@ -306,6 +351,32 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %config /etc/sysctl.d/30-dump-core.conf
 
+%files ha-common-config
+%defattr(-,root,root)
+%{prefix}/%{oname}/rpmbuild/helpers/lodrbd.sh
+%{prefix}/%{oname}/rpmbuild/helpers/lodrbd-mounter.sh
+%dir /etc/ucarp/init-common.d
+%dir /etc/ucarp/init-down.d
+%dir /etc/ucarp/init-up.d
+%dir /etc/ucarp/vip-common.d
+%dir /etc/ucarp/vip-down.d
+%dir /etc/ucarp/vip-up.d
+/etc/ucarp/init-down.d/vip
+/etc/ucarp/init-up.d/vip
+
+%files ha-rabbitmq-config
+%defattr(-,root,root)
+/etc/ucarp/init-common.d/rabbitmq
+/etc/ucarp/vip-common.d/rabbitmq
+/etc/ucarp/vip-down.d/rabbitmq
+/etc/ucarp/vip-up.d/rabbitmq
+
+%files ha-dcmgr-config
+%defattr(-,root,root)
+/etc/ucarp/vip-common.d/vdc-collector
+/etc/ucarp/vip-down.d/vdc-collector
+/etc/ucarp/vip-up.d/vdc-collector
+
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-dcmgr
@@ -316,6 +387,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config(noreplace) /etc/default/vdc-webui
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
+%config(noreplace) /etc/default/vdc-admin
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-metadata.conf
@@ -324,9 +396,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-webui.conf
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
+%config /etc/init/vdc-admin.conf
 %config /etc/wakame-vdc/unicorn-common.conf
 %dir /etc/%{oname}/dcmgr_gui
+%dir /etc/%{oname}/convert_specs
+%dir /etc/%{oname}/admin
 %dir /var/log/%{oname}/dcmgr_gui
+%dir /var/log/%{oname}/admin
 %dir /var/lib/%{oname}/tmp/images
 %dir /var/lib/%{oname}/tmp/volumes
 %dir /var/lib/%{oname}/tmp/snap
