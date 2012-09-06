@@ -16,8 +16,10 @@
   app.mixins = {};
   app.helpers = {};
   app.info = {
-   'resources': {
-     'admin': ''
+    api_endpoints: {
+     admin: '',
+     dcmgr: '',
+     dcmgr_gui: ''
      }
   };
   app.utils = {};

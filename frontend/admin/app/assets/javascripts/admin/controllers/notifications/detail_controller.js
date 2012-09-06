@@ -4,7 +4,7 @@
   $(function(){
 
     app.collections.detailItems = new app.collections.DetailCollection({
-      url: app.info.resources.admin + '/api/notifications.json',
+      url: app.info.api_endpoints.admin + '/api/notifications.json',
     });
 
     app.views.detail = new app.views.DetailView({collection:app.collections.detailItems});
