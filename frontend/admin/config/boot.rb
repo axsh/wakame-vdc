@@ -24,7 +24,7 @@ end
 # Padrino::Logger::Config[:development][:log_static] = true
 Padrino::Logger::Config[:development][:stream] = :to_file
 #
-# ## Configure your I18n
+# ## Configure your I18n
 #
 # I18n.default_locale = :en
 #
