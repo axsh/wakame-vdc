@@ -19,9 +19,6 @@ gem 'unicorn', '4.3.1'
 
 # Development requirements
 group :development do
-  gem 'pry'
-  gem 'pry-nav'
-  gem 'rb-readline'
 end
 
 # Test requirements
