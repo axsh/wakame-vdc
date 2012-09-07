@@ -61,13 +61,17 @@
       <!--  The content is mapped on #resultItemTemplate -->
       <tbody id="content"></tbody>
       <script type="text/template" id="resultItemTemplate">
-        <td>i{{ id }}</td>
+        <td>{% if( id != null ){ %}{{ id }}{% } %}</td>
         <td><a href="/instances/{{ id }}">{{ display_name }}</a></td>
         <td>{{ status }}</td>
         <td>{{ host_node }}</td>
-        <td>{{ vif[0].ipv4.address }}</td>
+        <td></td>
         <td>{{ created_at }}</td>
-        <td><a href="/">ユーザー画面</a></td>
+        <td>
+        {% if( id != null ){ %}
+        <a href="/">ユーザー画面</a>
+        {% } %}
+        </td>
        </script>
     </table>
 </div>

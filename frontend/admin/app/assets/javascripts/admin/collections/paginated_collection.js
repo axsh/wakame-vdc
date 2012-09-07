@@ -59,6 +59,7 @@
   },
 
   parse: function (response) {
+
     if( _.isEmpty(response[0]) ) {
       var tags = _.clone(response.results);
     } else {
@@ -70,20 +71,20 @@
 
    //fill with empty data.
    if(tags.length < this.perPage) {
-    var empty_data = {};
-    if(_.isEmpty(tags)) {
-     return false;
-    }
+     var empty_data = {};
+     if(_.isEmpty(tags)) {
+       return false;
+     }
 
-    _.each(_.keys(_.clone(tags[0])), function(k) {
-     empty_data[k] = '';
-    });
-    var loop = this.perPage - tags.length;
-    for(var i=0; i < loop; i++) {
-     empty_data.id = tags[0].id + (i +1);
-     empty_data.state = null;
-     tags.push(_.clone(empty_data));
-    }
+     _.each(_.keys(_.clone(tags[0])), function(k) {
+       empty_data[k] = '';
+     });
+
+     var loop = this.perPage - tags.length;
+     for(var i=0; i < loop; i++) {
+      empty_data.id = null;
+      tags.push(_.clone(empty_data));
+     }
    }
 
    this.totalPages = Math.ceil(response.count / this.perPage);
