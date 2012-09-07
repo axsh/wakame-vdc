@@ -23,7 +23,7 @@
 		},
 
 		render : function() {
-			if(_.isNull(this.model.attributes.state)) {
+			if(_.isNull(this.model.attributes.id)) {
 				this.$el.addClass('empty_row');
 			}
 			this.$el.html(this.template(this.model.toJSON()));
