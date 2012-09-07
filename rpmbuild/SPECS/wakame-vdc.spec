@@ -264,6 +264,7 @@ ln -s /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml ${RPM_BUILD_ROOT}/%{prefix}
 
 # padrino app config
 ln -s /etc/%{oname}/admin/database.yml  ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/config/database.yml
+ln -s /etc/%{oname}/admin/admin.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/config/admin.yml
 
 # vdcsh
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d
