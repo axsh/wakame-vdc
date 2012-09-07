@@ -64,12 +64,6 @@ class DcmgrAdmin < Padrino::Application
     map(:path => "/", :to => DcmgrAdmin)
   end
 
-  # Debug helper
-  if Padrino.env == :development
-    require 'pry'
-    require 'pry-nav'
-  end
-  
   # Sprockets support
   require 'sprockets'
   register Padrino::Sprockets
@@ -89,5 +83,5 @@ class DcmgrAdmin < Padrino::Application
   get :index do
     redirect url(:notifications, :index)
   end
-  
+
 end
