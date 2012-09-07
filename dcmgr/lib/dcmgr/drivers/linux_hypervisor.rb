@@ -99,7 +99,7 @@ module Dcmgr
           # truncate creates sparsed file.
           sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'; sync;")
           sh("parted %s < %s", [hc.metadata_img_path, LinuxHypervisor.template_real_path('metadata.parted')])
-          res = sh("kpartx -avs %s", [hc.metadata_img_path])
+          res = sh("kpartx -av %s", [hc.metadata_img_path])
           if res[:stdout] =~ /^add map (\w+) /
             lodev="/dev/mapper/#{$1}"
           else
@@ -136,7 +136,7 @@ module Dcmgr
         ensure
           # ignore any errors from cleanup work.
           sh("/bin/umount -l %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
-          sh("kpartx -dvs %s", [hc.metadata_img_path]) rescue logger.warn($!.message)
+          sh("kpartx -dv %s", [hc.metadata_img_path]) rescue logger.warn($!.message)
           sh("udevadm settle")
         end
       end
