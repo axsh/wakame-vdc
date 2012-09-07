@@ -188,14 +188,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
 
     targets = []
-    config_params[:servers] = []
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
       next if ip_lease.empty?
-      config_params[:servers] << {
-        :ipv4 => ip_lease.first.ipv4,
-      }
 
       # register instance to load balancer.
       lb.add_target(uuid)
@@ -208,6 +204,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
         :security_groups => lb_security_groups + i_security_groups
       }
       update_security_groups(request_params)
+    end
+
+    config_vifs = (request_vifs + hold_vifs).uniq
+    config_vifs.each do |uuid|
+      ip_lease = M::NetworkVif[uuid].direct_ip_lease
+      next if ip_lease.empty?
+      config_params[:servers] << {
+        :ipv4 => ip_lease.first.ipv4,
+      }
     end
 
     raise E::UnknownNetworkVif if config_params[:servers].length == 0
