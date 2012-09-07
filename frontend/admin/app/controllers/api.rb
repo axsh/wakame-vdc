@@ -1,4 +1,5 @@
 DcmgrAdmin.controllers :api do
+  require 'spoof_token_authentication'
   disable :layout
 
   get :notifications, :provides => :json do
@@ -31,4 +32,15 @@ DcmgrAdmin.controllers :api do
     render h
   end
 
+  get :generate_token, :provides => :json do
+    timestamp = Time.now.to_s
+    token = SpoofTokenAuthentication.generate(params[:id], timestamp)
+    results = {
+      :token => token,
+      :timestamp => timestamp,
+      :user_id => params[:id]
+    }
+    h = {:results =>results}
+    render h
+  end
 end
