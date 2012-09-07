@@ -1,6 +1,0 @@
-# The endpoints is URL for the request from browser.
-# Specify dcmgr/dcmgr_gui endpoints. For example: 'example.com'
-# If endpoint is empty, it is set the window.location.hostname.
-api_endpoints:
-  dcmgr:
-  dcmgr_gui:
