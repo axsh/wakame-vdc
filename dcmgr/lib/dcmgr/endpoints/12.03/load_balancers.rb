@@ -82,14 +82,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                       'ssh_key_id' => lb_conf.ssh_key_id,
                       'service_type' => lb_conf.name,
                       'user_data' => user_data.join("\n"),
-                      'vifs' => [{'index' => PUBLIC_DEVICE_INDEX.to_s,
-                                  'network' => lb_conf.instances_network,
-                                  'security_groups' => instance_security_group
-                                 },{
-                                  'index' => MANAGEMENT_DEVICE_INDEX.to_s,
-                                  'network' => lb_conf.management_network,
-                                  'security_groups' => ''
-                      }],
+                      'vifs' => {
+                        'eth0' => {
+                          'index' => PUBLIC_DEVICE_INDEX.to_s,
+                          'network' => lb_conf.instances_network,
+                          'security_groups' => instance_security_group
+                        },
+                        'eth1' =>{
+                          'index' => MANAGEMENT_DEVICE_INDEX.to_s,
+                          'network' => lb_conf.management_network,
+                          'security_groups' => ''
+                        }
+                      },
                       :hypervisor => lb_spec.hypervisor,
                       :cpu_cores => lb_spec.cpu_cores,
                       :memory_size => lb_spec.memory_size,
