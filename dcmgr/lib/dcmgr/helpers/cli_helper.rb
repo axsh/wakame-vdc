@@ -169,6 +169,7 @@ module Dcmgr
               ::Process.wait(pid)
             rescue Errno::ECHILD
             end
+            return $?
           ensure
             [sin, sout, eout].each { |fd| fd.close rescue nil }
           end

@@ -98,7 +98,7 @@ module Dcmgr
 
             cmd_tuple[0] << " | " + cmd_tuple2[0]
             cmd_tuple[1] += cmd_tuple2[1]
-            shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
+            r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
               sin.close
 
               begin
@@ -110,6 +110,9 @@ module Dcmgr
               rescue EOFError
                 # ignore this error
               end
+            end
+            unless r.exitstatus == 0
+              raise "Failed to run archive command line: #{cmd_tuple}"
             end
 
             chksum = File.read(chksum_path).split(/\s+/).first
@@ -124,7 +127,7 @@ module Dcmgr
               
               cmd_tuple[0] << "> %s"
               cmd_tuple[1] += [bkup_tmp_path]
-              shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
+              r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
                 sin.close
                 
                 begin
@@ -136,6 +139,9 @@ module Dcmgr
                 rescue EOFError
                   # ignore this error
                 end
+              end
+              unless r.exitstatus == 0
+                raise "Failed to run archive command line: #{cmd_tuple}"
               end
               
               alloc_size = File.size(bkup_tmp_path)
