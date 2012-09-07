@@ -21,7 +21,7 @@ gem 'ripl'
 gem "rack-test", "0.6.1"
 gem 'posix-spawn'
 
-gem 'isono', '0.2.14'
+gem 'isono', '0.2.15'
 
 # Trema gem requires "rant" command during build.
 ENV['PATH']="#{Bundler.bundle_path}/bin:#{ENV['PATH']}"
