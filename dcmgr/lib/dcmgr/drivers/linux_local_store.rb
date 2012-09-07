@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'tmpdir'
+require 'tempfile'
 
 module Dcmgr
   module Drivers
@@ -122,11 +123,12 @@ module Dcmgr
           end
         else
           archive_from_snapshot(ctx, snapshot_path) do |cmd_tuple, chksum_path, size_path|
+            bkup_tmp = Tempfile.new(inst[:uuid], download_tmp_dir)
             begin
-              bkup_tmp_path = File.expand_path("#{inst[:uuid]}.tmp", download_tmp_dir)
+              bkup_tmp.close(false)
               
               cmd_tuple[0] << "> %s"
-              cmd_tuple[1] += [bkup_tmp_path]
+              cmd_tuple[1] += [bkup_tmp.path]
               r = shell.popen4(shell.format_tuple(*cmd_tuple)) do |pid, sin, sout, eout|
                 sin.close
                 
@@ -144,15 +146,15 @@ module Dcmgr
                 raise "Failed to run archive command line: #{cmd_tuple}"
               end
               
-              alloc_size = File.size(bkup_tmp_path)
+              alloc_size = File.size(bkup_tmp.path)
               chksum = File.read(chksum_path).split(/\s+/).first
               
               evcb.setattr(chksum, alloc_size.to_i)
               
               invoke_task(@bkst_drv_class,
-                          :upload, [bkup_tmp_path, bo])
+                          :upload, [bkup_tmp.path, bo])
             ensure
-              File.unlink(bkup_tmp_path) rescue nil
+              bkup_tmp.unlink rescue nil
             end
           end
         end
