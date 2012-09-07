@@ -9,30 +9,32 @@
       <li class="disabled"><a href="#{{ firstPage }}"><</a></li>
       {% } %}
 
-      {% for(p=firstPage; p<=perPage;p++){ %}
-        {% var halfPage = Math.ceil(perPage / 2); %}
-        {% if(currentPage <= halfPage) { %}
-          {% if (currentPage == p) { %}
-            <li class="active"><a class="page selected" href="#{{ p }}">{{ p }}</a></li>
-          {% } else { %}
-            <li><a class="page" href="#{{ p }}">{{ p }}</a></li>
-          {% } %}
-        {% } else { %}
-          {% if ((currentPage + halfPage) <= lastPage) { %}
-            {% var tailPage = currentPage + halfPage %}
-            {% var middlePage = tailPage - perPage + p %}
-            {% if (currentPage == middlePage) { %}
-              <li class="active"><a class="page selected" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+      {% for(p=firstPage; p<=totalPages; p++){ %}
+        {% if(p <= 10) { %}
+          {% var halfPage = Math.ceil(perPage / 2); %}
+          {% if(currentPage <= halfPage) { %}
+            {% if (currentPage == p) { %}
+              <li class="active"><a class="page selected" href="#{{ p }}">{{ p }}</a></li>
             {% } else { %}
-              <li><a class="page" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+              <li><a class="page" href="#{{ p }}">{{ p }}</a></li>
             {% } %}
           {% } else { %}
-              {% var middlePage = lastPage - perPage + p %}
+            {% if ((currentPage + halfPage) <= lastPage) { %}
+              {% var tailPage = currentPage + halfPage %}
+              {% var middlePage = tailPage - perPage + p %}
               {% if (currentPage == middlePage) { %}
-              <li class="active"><a class="page selected" href="#{{ middlePage }}">{{ middlePage }}</a></li>
-                {% } else { %}
-              <li><a class="page" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+                <li class="active"><a class="page selected" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+              {% } else { %}
+                <li><a class="page" href="#{{ middlePage }}">{{ middlePage }}</a></li>
               {% } %}
+            {% } else { %}
+                {% var middlePage = lastPage - perPage + p %}
+                {% if (currentPage == middlePage) { %}
+                <li class="active"><a class="page selected" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+                  {% } else { %}
+                <li><a class="page" href="#{{ middlePage }}">{{ middlePage }}</a></li>
+                {% } %}
+            {% } %}
           {% } %}
         {% } %}
       </li>
