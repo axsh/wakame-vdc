@@ -10,23 +10,25 @@ if [ $? == 0 ]; then instances_tmp_dir=`grep vm_data_dir $wakame_root/dcmgr/conf
 
 # This one-liner gets us a nice list of the interfaces that are currently on Open vSwitch. There is probably a shorter cleaner way to write it but it works. :P
 for vif_name in `ovs-vsctl show | grep Interface | tr -s " " | cut -d " " -f3 | sed 's/.*"\(.*\)"[^"]*$/\1/'`; do
+  # And this one-liner gives us a nice list of interfaces that exist on the system while omitting "lo"
   ifconfig -a | sed 's/[ \t].*//;/^\(lo\|\)$/d' | grep -q ${vif_name}
   if [ $? != '0' ]; then
-    #echo "deleting vif ${vif_name} from Open vSwitch"
+    # We delete every interface on Open vSwitch that doesn't show up in ifconfig -a.
+    # If we don't do this, Openvz will complain that it can't add its vnics to the bridge.
     ovs-vsctl del-port ${vif_name}
   fi
 done
 
+# Finally we bring up all of this HVA's instances
 for dirname in `ls ${instances_tmp_dir}`; do
   if [[ $dirname == i-* ]]; then
-    #echo "mounting metadata for ${dirname}"
-    #echo "loop_device = `kpartx -va $instances_tmp_dir/$dirname/metadata.img | cut -d \" \" -f3`"
+    # Mount the metadata drive images and make sure their correct loop devices
+    # are stored in Wakame's temp directory
     loop_device=`kpartx -va $instances_tmp_dir/$dirname/metadata.img | cut -d " " -f3`
     mount -o loop /dev/mapper/${loop_device} ${instances_tmp_dir}/${dirname}/metadata
     echo "/dev/mapper/${loop_device}" > ${instances_tmp_dir}/${dirname}/metadata.lodev
 
+    # Start the instance
     vzctl start ${dirname}
-  #else
-    #echo "Doing nothing for ${dirname}"
   fi
 done
