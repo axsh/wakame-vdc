@@ -12,6 +12,12 @@ module Dcmgr
 
       template_base_dir 'linux'
 
+      METADATA_DRIVE_DEFS = {
+        'ext4' => {:format=>'ext4', :label_opt=>'-L'},
+        'vfat' => {:format=>'vfat', :label_opt=>'-n'},
+      }
+      METADATA_DRIVE_FORMAT='vfat'
+      
       def_configuration do
         # TODO: create helper method to 
         # Abstract class for Cgroup parameters
@@ -106,9 +112,9 @@ module Dcmgr
             raise "Unexpected result from kpartx: #{res[:stdout]}"
           end
           sh("udevadm settle")
-          sh("mkfs.vfat -n METADATA %s", [lodev])
+          sh("mkfs -t #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:format]} #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:label_opt]} METADATA %s", [lodev])
           Dir.mkdir("#{hc.inst_data_dir}/tmp") unless File.exists?("#{hc.inst_data_dir}/tmp")
-          sh("/bin/mount -t vfat #{lodev} '#{hc.inst_data_dir}/tmp'")
+          sh("/bin/mount -t #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:format]} #{lodev} '#{hc.inst_data_dir}/tmp'")
           
           # build metadata directory tree
           metadata_base_dir = File.expand_path("meta-data", "#{hc.inst_data_dir}/tmp")
