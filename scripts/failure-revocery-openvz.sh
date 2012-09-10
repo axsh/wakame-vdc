@@ -1,6 +1,7 @@
 #!/bin/bash
 
-wakame_root="/root/wakame-vdc"
+# Determine Wakame root directory. This script needs to reside in $wakame_root/scripts
+wakame_root="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 
 # Determine Wakame's instances tmp directory
 instances_tmp_dir=`grep vm_data_dir $wakame_root/dcmgr/config/hva.conf | sed "s/.*'\(.*\)'[^']*$/\1/"`
