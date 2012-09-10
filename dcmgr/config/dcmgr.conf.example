@@ -92,7 +92,7 @@ service_type("std", "StdServiceType") {
 
     # default network scheduler
     # assign IP address from first found network to single interface.
-    default :FlatSingle
+    default :VifsRequestParam
 
     # one internal address + NAT external address to single interface.
     add(:nat, :NatOneToOne) {

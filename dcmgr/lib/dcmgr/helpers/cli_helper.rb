@@ -87,16 +87,17 @@ module Dcmgr
       # # Raise exception at non-zero exit.
       # shell.run!("ls /dontexist")
       def shell
-        Class.new do
-          include ShellRunner
-
-          def logger
-            Dcmgr::Task::TaskSession.current[:logger] || Dcmgr::Logger.logger
+        if respond_to?(:task_session) && self.task_session[:shell_runner_class].is_a?(Class)
+          unless self.task_session[:shell_runner_class] < ShellRunner
+            raise TypeError, "Invalid ShellRunner class is set: #{self.task_session[:shell_runner_class]}"
           end
-        end.new
+          self.task_session[:shell_runner_class].new(self)
+        else
+          ShellRunner.new(self)
+        end
       end
 
-      module ShellRunner
+      class ShellRunner
 
         class CommandError < StandardError
           def initialize(cmdline, cmdresult)
@@ -117,6 +118,10 @@ module Dcmgr
           def err
             @cmdresult.err
           end
+        end
+
+        def initialize(subject)
+          @subject = subject
         end
 
         def format_tuple(cmd, args=[])
@@ -169,6 +174,7 @@ module Dcmgr
               ::Process.wait(pid)
             rescue Errno::ECHILD
             end
+            return $?
           ensure
             [sin, sout, eout].each { |fd| fd.close rescue nil }
           end
@@ -183,12 +189,13 @@ module Dcmgr
         def posix_spawn_module
           POSIX::Spawn
         end
+
+        def logger
+          Dcmgr::Task::TaskSession.current[:logger] || Dcmgr::Logger.logger
+        end
       end
 
-      # This module does not provide class methods.
-      # Need to include to the class having Cgroup::CgroupContextProvider.
-      module CgexecShellRunner
-        include ShellRunner
+      class CgexecShellRunner < ShellRunner
 
         # Prepend "cgexec.sh -g $controller:$path -c" to the given
         # command line string.
@@ -224,24 +231,17 @@ module Dcmgr
           end
         end
 
-        class Delegator
-          include CgexecShellRunner
-          include Cgroup::CgroupContextProvider::Delegator
-          
-          def initialize(subject)
-            raise ArgumentError unless subject.class < Cgroup::CgroupContextProvider
-            @cgprovider = subject
-          end
-
-          def logger
-            Dcmgr::Task::TaskSession.current[:logger] || Dcmgr::Logger.logger
+        def initialize(subject)
+          super
+          unless subject.kind_of?(Cgroup::CgroupContextProvider)
+            raise ArgumentError, "#{subject} does not provide CgroupContextProvider interface"
           end
         end
 
         private
         
         def exec(*args)
-          Child.new(self, *args)
+          Child.new(@subject, *args)
         end
 
         def posix_spawn_module
@@ -251,24 +251,14 @@ module Dcmgr
             include Cgroup::CgroupContextProvider::Delegator
 
             def initialize(subject)
-              raise ArgumentError unless subject.class < Cgroup::CgroupContextProvider
+              raise ArgumentError unless subject.kind_of?(Cgroup::CgroupContextProvider)
               @cgprovider = subject
             end
-          end.new(self)
+          end.new(@subject)
         end
 
       end
 
-      def self.included(klass)
-        if klass < Cgroup::CgroupContextProvider
-          klass.class_eval {
-            def shell
-              CgexecShellRunner::Delegator.new(self)
-            end
-          }
-        end
-      end
-      
     end
   end
 end

@@ -13,10 +13,6 @@ require 'rubygems' unless defined?(Gem)
 require 'bundler/setup'
 Bundler.require(:default, PADRINO_ENV)
 
-if Padrino.env == :development
-  require 'pry'
-  require 'pry-nav'
-end
 ##
 # ## Enable devel logging
 #
@@ -51,6 +47,10 @@ end
 # Add your after (RE)load hooks here
 #
 Padrino.after_load do
+  require File.expand_path('lib/spoof_token_authentication.rb', PADRINO_ROOT)
+  sta = SpoofTokenAuthentication.config
+  sta.expire = 3600
+  sta.authentication_token = ADMIN['spoof_authentication']['token']
 end
 
 Padrino.load!

@@ -237,4 +237,10 @@ DcmgrGui::Application.routes.draw do
 
   #resorce (management)
   get    'resource' ,:to => 'resource#index'
+
+  #api
+  get    'api/users', :to => 'user_api#index'
+  get    'api/users/:id', :to => 'user_api#show'
+  get    'api/accounts', :to => 'account_api#index'
+  get    'api/accounts/:id', :to => 'account_api#show'
 end

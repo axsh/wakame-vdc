@@ -60,10 +60,13 @@ module Dcmgr::Helpers
       def cgroup_context(ctx=current_cgroup_context, &blk)
         ctx = CgroupContext.new(ctx[:subsystem], ctx[:scope]) if ctx.is_a?(Hash)
         
+        orig_shell_run = task_session[:shell_runner_class]
+        task_session[:shell_runner_class] = CliHelper::CgexecShellRunner
         cgroup_context_stack.push(ctx)
         begin
           blk.call
         ensure
+          task_session[:shell_runner_class] = orig_shell_run
           cgroup_context_stack.pop
         end
       end

@@ -11,7 +11,7 @@ gem 'sinatra-flash', :require => 'sinatra/flash'
 gem 'rack-less', '3.0.2'
 gem 'less', '2.2.1'
 gem 'mysql2', '0.3.11'
-gem 'sequel', '3.38.0'
+gem 'sequel', '3.39.0'
 gem 'padrino-sprockets', :git => "http://github.com/nightsailer/padrino-sprockets.git", :require => "padrino/sprockets"
 gem 'coffee-script', '2.2.0'
 gem 'therubyracer', :require => 'v8'
@@ -19,9 +19,6 @@ gem 'unicorn', '4.3.1'
 
 # Development requirements
 group :development do
-  gem 'pry'
-  gem 'pry-nav'
-  gem 'rb-readline'
 end
 
 # Test requirements

@@ -168,7 +168,10 @@ class InstancesController < ApplicationController
 
   def show_instances
     catch_error do
-      instances = Hijiki::DcmgrResource::Instance.list
+      options = {
+        :state => params[:state]
+      }
+      instances = Hijiki::DcmgrResource::Instance.list(options)
       respond_with(instances[0],:to => [:json])
     end
   end

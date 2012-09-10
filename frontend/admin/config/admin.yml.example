@@ -4,3 +4,7 @@
 api_endpoints:
   dcmgr:
   dcmgr_gui:
+# The same thing as spoof auth token of DcmgrGUI is used.
+# /home/wakame/work/wakame-vdc/frontend/dcmgr_gui/config/initializers/authentication_token.rb
+spoof_authentication:
+  token: 404ff8b3659da8e805e0b67581c91e950b2faccea40ce5f63562a96771f1

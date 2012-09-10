@@ -11,9 +11,21 @@
 <script type="text/javascript" src="/assets/backbone-min.js"></script>
 <script type="text/javascript" src="/assets/admin/app.js"></script>
 <script type="text/javascript">
-  window.app.info.resources = {
-    admin: '<%= "#{env['rack.url_scheme']}://#{env['HTTP_HOST']}" %>'
-  };
+  app.info.api_endpoints.dcmgr += 'http://'
+  app.info.api_endpoints.dcmgr_gui += 'http://'
+
+  <% if ADMIN['api_endpoints']['dcmgr'].nil? %>
+  app.info.api_endpoints.dcmgr += window.location.hostname + ':9001';
+  <% else %>
+  app.info.api_endpoints.dcmgr += '<%= "#{ADMIN['api_endpoints']['dcmgr']}" %>';
+  <% end %>
+
+  <% if ADMIN['api_endpoints']['dcmgr_gui'].nil? %>
+  app.info.api_endpoints.dcmgr_gui += window.location.hostname + ':9000';
+  <% else %>
+  app.info.api_endpoints.dcmgr_gui += '<%= "#{ADMIN['api_endpoints']['dcmgr_gui']}" %>';
+  <% end %>
+
 </script>
 <script type="text/javascript" src="/assets/admin/router.js"></script>
 <script type="text/javascript" src="/assets/admin/helpers.js"></script>

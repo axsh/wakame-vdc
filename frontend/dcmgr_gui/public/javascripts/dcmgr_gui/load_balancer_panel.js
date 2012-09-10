@@ -372,6 +372,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
         }),
         instances: request.get({
           "url": '/instances/all.json',
+          "data": 'state=alive',
           success: function(json, status) {
           }
         })

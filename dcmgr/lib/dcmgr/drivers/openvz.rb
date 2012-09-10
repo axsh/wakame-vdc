@@ -148,7 +148,7 @@ module Dcmgr
           FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
           unless image[:root_device].nil?
             # creating loop devices
-            mapdevs = sh("kpartx -avs %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
+            mapdevs = sh("kpartx -av %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
             new_device_file = mapdevs[:stdout].split("\n").map {|mapdev| "/dev/mapper/#{mapdev}"}
             #
             # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
@@ -233,7 +233,7 @@ module Dcmgr
         ve_metadata_path = "#{hc.inst_data_dir}/metadata"
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
         raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)
-        res = sh("kpartx -avs %s", [hc.metadata_img_path])
+        res = sh("kpartx -av %s", [hc.metadata_img_path])
         if res[:stdout] =~ /^add map (\w+) /
           lodev="/dev/mapper/#{$1}"
         else
@@ -283,10 +283,7 @@ module Dcmgr
           sh("umount -l %s", [hc.private_dir])
           hc.logger.debug("unmounted private directory #{hc.private_dir}")
           if hc.inst[:image][:root_device]
-            # delete device maps
-            sh("kpartx -d -s -v %s", [hc.os_devpath])
-            # wait udev queue
-            sh("udevadm settle")
+            detach_loop(hc.os_devpath)
           end
         end
 
@@ -298,8 +295,7 @@ module Dcmgr
         # > ioctl: LOOP_CLR_FD: Device or resource busy
         #
         sh("umount %s/metadata", [hc.inst_data_dir])
-        sh("kpartx -dvs %s", [hc.metadata_img_path])
-        sh("udevadm settle")
+        detach_loop(hc.metadata_img_path)
         hc.logger.info("Umounted metadata directory #{hc.inst_data_dir}/metadata")
         
         # delete container folder

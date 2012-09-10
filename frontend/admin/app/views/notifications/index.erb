@@ -85,19 +85,17 @@
 
 
     <script type="text/template" id="resultItemTemplate">
-      {% if(state == 'active') { %}
-      <td><a href="/notifications/{{ id }}">ABCDE</a></td>
+      <td><a href="/notifications/{{ id }}">{{ title }}</a></td>
       <td>{{ this.publish_date() }}</td>
-      <td><a href="/notifications/edit">{{ title }}<a></td>
       <td>
-      <button class="btn delete">削除</button>
-      </td>
-      {% } else { %}
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+      {% if(!_.isEmpty(title)) { %}
+       <a href="/notifications/edit">a-xxxxx<a></td>
       {% } %}
+      <td>
+      {% if(!_.isEmpty(title)) { %}
+      <button class="btn delete">削除</button>
+      {% } %}
+      </td>
     </script>
       <div class="modal hide" role="dialog" id="destroyNotification">
         <div class="modal-header">
