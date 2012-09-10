@@ -12,6 +12,12 @@ module Dcmgr
 
       template_base_dir 'linux'
 
+      METADATA_DRIVE_DEFS = {
+        'ext4' => {:format=>'ext4', :label_opt=>'-L'},
+        'vfat' => {:format=>'vfat', :label_opt=>'-n'},
+      }
+      METADATA_DRIVE_FORMAT='vfat'
+      
       def_configuration do
         # TODO: create helper method to 
         # Abstract class for Cgroup parameters
@@ -106,9 +112,9 @@ module Dcmgr
             raise "Unexpected result from kpartx: #{res[:stdout]}"
           end
           sh("udevadm settle")
-          sh("mkfs.vfat -n METADATA %s", [lodev])
+          sh("mkfs -t #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:format]} #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:label_opt]} METADATA %s", [lodev])
           Dir.mkdir("#{hc.inst_data_dir}/tmp") unless File.exists?("#{hc.inst_data_dir}/tmp")
-          sh("/bin/mount -t vfat #{lodev} '#{hc.inst_data_dir}/tmp'")
+          sh("/bin/mount -t #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:format]} #{lodev} '#{hc.inst_data_dir}/tmp'")
           
           # build metadata directory tree
           metadata_base_dir = File.expand_path("meta-data", "#{hc.inst_data_dir}/tmp")
@@ -134,14 +140,50 @@ module Dcmgr
             f.puts(hc.inst[:user_data])
           }
         ensure
-          # ignore any errors from cleanup work.
-          sh("/bin/umount -l %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
-          sh("kpartx -dv %s", [hc.metadata_img_path]) rescue logger.warn($!.message)
-          sh("udevadm settle")
+          shell.run!("/bin/umount %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
+          detach_loop(hc.metadata_img_path)
         end
       end
 
       protected
+
+      # Find first matching loop device path from the result of "losetup -a" 
+      def find_loopdev(path)
+        stat = File.stat(path)
+        `losetup -a`.split(/\n/).each {|i|
+          # /dev/loop0: [0811]:1179651 (/home/katsuo/dev/wakame-vdc/tmp/instances/i-5....)
+          if i =~ %r{^(/dev/loop\d+): \[(\d+)\]:(\d+) } && $2.hex == stat.dev && $3.to_i == stat.ino
+            return $1
+          end
+        }
+        nil
+      end
+      
+      # "kpartx -d" gets failed occasionally. so we use "dmsetup" and
+      # "losetup -d" respectively since they do almost same steps as
+      # what is done in "kpartx -d".
+      # the difference is that it waits udev event before detach loop
+      # device. this is very critical step and the root cause for
+      # irregular failure of "kpartx -d". 
+      def detach_loop(imgpath)
+        loopdev = find_loopdev(imgpath)
+        raise "Failed to find loop device from: #{imgpath}" if loopdev.nil?
+
+        Dir.glob("/dev/mapper/" + File.basename(loopdev) + "p*").each { |part_dev_path|
+          r = shell.run("dmsetup info %s", [part_dev_path])
+          if r.success? && r.out.split(/\n/).any? {|i| i =~ /^State:\s+ACTIVE/}
+            shell.run("dmsetup remove %s", [part_dev_path])
+            logger.info("Detached partition from devmapper: #{part_dev_path}")
+          end
+        }
+        # Is "dmsetup wait" better here?
+        shell.run("udevadm settle")
+
+        if File.exist?(loopdev)
+          shell.run("losetup -d %s", [loopdev])
+          logger.info("Detached from loop device: #{loopdev}")
+        end
+      end
 
       # cgroup_set('blkio', "0") do
       #   add('blkio.throttle.read_iops_device', "253:0 128000")
