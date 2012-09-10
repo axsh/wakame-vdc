@@ -283,10 +283,7 @@ module Dcmgr
           sh("umount -l %s", [hc.private_dir])
           hc.logger.debug("unmounted private directory #{hc.private_dir}")
           if hc.inst[:image][:root_device]
-            # delete device maps
-            sh("kpartx -d -v %s", [hc.os_devpath])
-            # wait udev queue
-            sh("udevadm settle")
+            detach_loop(hc.os_devpath)
           end
         end
 
@@ -298,8 +295,7 @@ module Dcmgr
         # > ioctl: LOOP_CLR_FD: Device or resource busy
         #
         sh("umount %s/metadata", [hc.inst_data_dir])
-        sh("kpartx -dv %s", [hc.metadata_img_path])
-        sh("udevadm settle")
+        detach_loop(hc.metadata_img_path)
         hc.logger.info("Umounted metadata directory #{hc.inst_data_dir}/metadata")
         
         # delete container folder
