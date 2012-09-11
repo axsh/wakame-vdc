@@ -443,6 +443,10 @@ Sequel.migration do
       drop_index [:session_id]
     end
 
+    alter_table(:job_states) do
+      drop_column :command
+    end
+
     alter_table(:volumes) do
       drop_column :backup_object_id
       add_column :snapshot_id, "varchar(255)"
