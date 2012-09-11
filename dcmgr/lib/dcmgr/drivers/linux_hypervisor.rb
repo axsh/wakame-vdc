@@ -140,7 +140,7 @@ module Dcmgr
             f.puts(hc.inst[:user_data])
           }
         ensure
-          shell.run!("/bin/umount %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
+          shell.run!("/bin/umount -l %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
           detach_loop(hc.metadata_img_path)
         end
       end
@@ -151,8 +151,8 @@ module Dcmgr
       def find_loopdev(path)
         stat = File.stat(path)
         `losetup -a`.split(/\n/).each {|i|
-          # /dev/loop0: [0811]:1179651 (/home/katsuo/dev/wakame-vdc/tmp/instances/i-5....)
-          if i =~ %r{^(/dev/loop\d+): \[(\d+)\]:(\d+) } && $2.hex == stat.dev && $3.to_i == stat.ino
+          # /dev/loop0: [0f11]:1179651 (/home/katsuo/dev/wakame-vdc/tmp/instances/i-5....)
+          if i =~ %r{^(/dev/loop\d+): \[([0-9a-f]+)\]:(\d+) } && $2.hex == stat.dev && $3.to_i == stat.ino
             return $1
           end
         }

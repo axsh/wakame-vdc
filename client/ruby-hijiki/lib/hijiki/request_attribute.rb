@@ -19,16 +19,18 @@ module Hijiki
       @configuration || raise("Configuration is not done for RequestAttibute")
     end
 
-    attr :account_id, :service_type
+    attr :account_id, :service_type, :login_id
     
-    def initialize(account_id)
+    def initialize(account_id, login_id)
       @account_id = account_id
       @service_type = self.class.configuration.service_type
+      @login_id = login_id
     end
     
     def build_http_headers
       {'X-VDC-Account-UUID' => self.account_id,
         'X-VDC-Account-Quota' => JSON.dump( self.class.configuration.generate_quota_header(self)),
+        'X-VDC-Requester-Token' => self.login_id
       }
     end
 
