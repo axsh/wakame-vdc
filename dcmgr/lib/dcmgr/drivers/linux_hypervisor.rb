@@ -140,7 +140,7 @@ module Dcmgr
             f.puts(hc.inst[:user_data])
           }
         ensure
-          shell.run!("/bin/umount %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
+          shell.run!("/bin/umount -l %s", ["#{hc.inst_data_dir}/tmp"]) rescue logger.warn($!.message)
           detach_loop(hc.metadata_img_path)
         end
       end
