@@ -124,6 +124,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
 
     config_params = {
+      :name => 'start:haproxy',
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
       :port => lb.connect_port,
@@ -142,6 +143,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     on_after_commit do
       if lb.is_secure?
         update_ssl_proxy_config({
+          :name => 'start:stunnel',
           :accept_port => lb.accept_port,
           :connect_port => lb.connect_port,
           :protocol => lb.protocol,
@@ -179,6 +181,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     }
 
     queue_params = {
+      :name => 'reload:haproxy',
       :topic_name => lb.topic_name,
       :queue_options => lb.queue_options,
       :queue_name => lb.queue_name,
@@ -265,6 +268,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     }
 
     queue_params = {
+      :name => 'reload:haproxy',
       :topic_name => lb.topic_name,
       :queue_options => lb.queue_options,
       :queue_name => lb.queue_name
@@ -370,6 +374,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.save
 
     config_params = {
+      :name=>"reload:haproxy",
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
       :port => lb.connect_port,
@@ -388,6 +393,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     on_after_commit do
       if lb.is_secure?
         update_ssl_proxy_config({
+          :name => 'reload:stunnel',
           :accept_port => lb.accept_port,
           :connect_port => lb.connect_port,
           :protocol => lb.protocol,
@@ -460,9 +466,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_options => values[:queue_options],
       :queue_name => values[:queue_name]
     }
-    publish(values[:private_key], queue_params.merge({:name => 'private_key'}))
-    publish(values[:public_key], queue_params.merge({:name => 'public_key'}))
-    publish(stunnel_config, queue_params.merge({:name => 'stunnel'}))
+    publish(values[:private_key], queue_params.merge({:name => 'write:private_key'}))
+    publish(values[:public_key], queue_params.merge({:name => 'write:public_key'}))
+    publish(stunnel_config, queue_params.merge({:name => values[:name]}))
   end
 
   def update_load_balancer_config(values)
@@ -480,12 +486,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     haproxy_config = proxy.bind_template(proxy.template_file_path)
-    publish(haproxy_config, {
-      :name => 'haproxy',
+    queue_params = {
+      :name => values[:name],
       :topic_name => values[:topic_name],
       :queue_options => values[:queue_options],
       :queue_name => values[:queue_name]
-    })
+    }
+
+    if ['http', 'tcp'].include? values[:protocol]
+      publish('', queue_params.merge({:name => 'stop:stunnel'}))
+    end
+    publish(haproxy_config, queue_params)
   end
 
   def create_security_group(rules)
