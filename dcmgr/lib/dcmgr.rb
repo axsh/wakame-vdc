@@ -82,6 +82,7 @@ module Dcmgr
     autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'    
     autoload :BackupStorage, 'dcmgr/models/backup_storage'
     autoload :BackupObject, 'dcmgr/models/backup_object'
+    autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
   end
 
   module Endpoints

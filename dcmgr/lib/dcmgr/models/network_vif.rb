@@ -22,6 +22,7 @@ module Dcmgr::Models
 
     many_to_one :instance
     many_to_one :network_service
+    one_to_many :network_vif_monitors
 
     def to_hash
       hash = super
