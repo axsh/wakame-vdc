@@ -198,7 +198,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       # register instance to load balancer.
       lb.add_target(uuid)
-      lb.save
 
       # update security groups to registered instance.
       i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
@@ -243,7 +242,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     remove_vifs = request_vifs & hold_vifs
     remove_vifs.each do |uuid|
       lb.remove_target(uuid)
-      lb.save
     end
 
     # update security groups to registered instance.
