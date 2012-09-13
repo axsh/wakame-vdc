@@ -117,7 +117,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                                 :instance_protocol => params[:instance_protocol] || 'http',
                                 :instance_port => params[:instance_port] || 80,
                                 :display_name => params[:display_name],
-                                :cookie_name => params[:cookie_name],
+                                :cookie_name => params[:cookie_name] || "",
                                 :private_key => params[:private_key],
                                 :public_key => params[:public_key],
                                 )
