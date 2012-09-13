@@ -76,12 +76,20 @@ DcmgrGUI.Filter = DcmgrGUI.Class.create({
 });
 
 DcmgrGUI.Converter = {};
-DcmgrGUI.Converter.fromBtoKB = function(data){
-  return Math.ceil(data/1024) + 'KB';
-};
 
-DcmgrGUI.Converter.fromMBtoGB = function(data){
-  return Math.ceil(data/1024) + 'GB';
+// Convert number to default display byte unit (GB).
+displayByteUnit = DcmgrGUI.Converter.toDisplayByteUnit = function(qty, unit) {
+  var q;
+  if (qty === undefined || qty == ''){
+    return "";
+  }else if(typeof qty === 'number'){
+    if (unit === undefined ){ unit = ' byte'; }
+    q = new Qty(qty + unit);
+  }else{
+    if (unit !== undefined ){ qty = qty + unit; }
+    q = new Qty(qty);
+  }
+  return q.toPrec('0.01 GB').toString('GB');
 };
 
 DcmgrGUI.Converter.unit = function(data, unit_type){
