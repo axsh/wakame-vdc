@@ -239,24 +239,27 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     hold_vifs = lb.load_balancer_targets.collect {|t| t.network_vif_id }
     raise E::UnknownNetworkVif if hold_vifs.empty?
 
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
+    # remove load balancer targets
     remove_vifs = request_vifs & hold_vifs
     remove_vifs.each do |uuid|
-     lb.remove_target(uuid)
-     lb.save
-
-     # update security groups to registered instance.
-     vif = find_by_uuid(:NetworkVif, uuid)
-     i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-     request_params = {
-       :id => vif.instance.canonical_uuid,
-       :security_groups => i_security_groups - lb_security_groups
-     }
-     update_security_groups(request_params)
-
+      lb.remove_target(uuid)
+      lb.save
     end
 
+    # update security groups to registered instance.
+    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
+    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
+    remove_vifs.each do |uuid|
+      vif = find_by_uuid(:NetworkVif, uuid)
+      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
+      request_params = {
+        :id => vif.instance.canonical_uuid,
+        :security_groups => i_security_groups - lb_security_groups
+      }
+      update_security_groups(request_params)
+    end
+
+    # update conifg in load balancer image.
     config_params = {
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
@@ -274,9 +277,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_name => lb.queue_name
     }
 
-    targets = []
     target_vifs = hold_vifs - request_vifs
-    config_params[:servers] = []
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
