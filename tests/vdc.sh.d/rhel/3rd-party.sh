@@ -103,7 +103,7 @@ function deploy_3rd_party() {
 function download_3rd_party() {
   rpm -qi curl >/dev/null || yum install -y curl
   [ -f ${vendor_dir}/openvz.repo ] || {
-    curl -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo -o ${vendor_dir}/openvz.repo
+    rsync -a ${abs_path}/../../../rpmbuild/openvz.repo -o ${vendor_dir}/openvz.repo
   }
 
   list_3rd_party | while read pkg_name pkg_uri; do

@@ -56,7 +56,7 @@
             <td class="listcheckbox"></td>
             {{/if}}
 	    <td class="vtip" title="display name">${item.display_name}</td>
-	    <td class="vtip center" title="capacity">${item.size}</td>
+	    <td class="vtip center" title="capacity">${displayByteUnit(this.size)}</td>
 	    <td class="vtip" title="created at">${item.created_at}</td>
 	    <td class="state vtip center" title="status">${item.state}</td>
             {{if item.progress }}

@@ -38,7 +38,7 @@ jQuery(function($){
 						<td class="listcheckbox"></td>
 						{{/if}}
 						<td class="vtip" title="uuid">${item.uuid}</td>
-						<td class="vtip center" title="offering_disk_space">${item.offering_disk_space}</td>
+						<td class="vtip center" title="offering_disk_space">${displayByteUnit(this.offering_disk_space_mb, 'MB')}</td>
 						<td class="vtip center" title="ipaddr">${item.ipaddr}</td>
 						<td class="vtip center state" title="status" style="width:50px">${item.status}</td>
 					</tr>	
@@ -67,7 +67,7 @@ jQuery(function($){
 					<td>${item.ipaddr}</td>
 					<td class="padcell"></td>
 					<td class="title"><%= t("storage_nodes.details.disk_space") %>:</td>
-					<td>${item.offering_disk_space}</td>
+					<td>${displayByteUnit(this.offering_disk_space_mb, 'MB')}</td>
 				</tr>
 				<tr>
 					<td class="padcell"></td>
