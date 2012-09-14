@@ -85,10 +85,12 @@ module Dcmgr::Models
       lbt
     end
 
-    def remove_target(network_vif_id)
-      lbt = LoadBalancerTarget.find(:network_vif_id => network_vif_id, :is_deleted => 0)
-      lbt.delete
-      lbt
+    def remove_targets(network_vif_uuids)
+      targets = LoadBalancerTarget.filter(:network_vif_id => network_vif_uuids, :is_deleted => 0).all
+      targets.each {|lbt|
+        lbt.delete
+      }
+      targets
     end
 
     def get_target_servers(options = {})
