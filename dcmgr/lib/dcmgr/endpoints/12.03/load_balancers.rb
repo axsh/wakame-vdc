@@ -368,7 +368,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.public_key = params[:public_key]
     end
 
-    lb.save
+    lb.save_changes
 
     config_params = {
       :name=>"reload:haproxy",
