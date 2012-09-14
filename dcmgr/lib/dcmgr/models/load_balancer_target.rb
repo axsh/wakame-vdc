@@ -20,7 +20,7 @@ module Dcmgr::Models
     end
 
     def self.get_targets(network_vif_id)
-      self.filter(:network_vif_id => network_vif_id).alives.all
+      self.filter(:network_vif_id => network_vif_id).alives.group_by(:load_balancer_id).all
     end
 
     def self.get_load_balancers(network_vif_id)
