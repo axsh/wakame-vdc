@@ -88,7 +88,7 @@ module Dcmgr::Models
     def remove_targets(network_vif_uuids)
       targets = LoadBalancerTarget.filter(:network_vif_id => network_vif_uuids, :is_deleted => 0).all
       targets.each {|lbt|
-        lbt.delete
+        lbt.destroy
       }
       targets
     end
