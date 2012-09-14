@@ -296,9 +296,14 @@ module Dcmgr
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
     end
-    
+
   end
-  
+
+  require 'dcmgr/messaging'
+  module Messaging
+    autoload :LoadBalancer, 'dcmgr/messaging/load_balancer'
+  end
+
 end
 
 module Ext
