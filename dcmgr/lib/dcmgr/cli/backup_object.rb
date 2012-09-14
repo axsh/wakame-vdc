@@ -48,8 +48,12 @@ module Dcmgr::Cli
       bo = M::BackupObject[uuid] || UnknownUUIDError.raise(uuid)
       fields = options.dup
       fields.delete(:storage_id)
+
+      bkst = M::BackupStorage[options[:storage_id]]
+      Error.raise("Backup storage '#{options[:storage_id]}' does not exist.",100) if bkst.nil?
       fields[:backup_storage_id] = bkst.id
-      puts super(M::BackupObject, bo.canonical_uuid, fields)
+
+      super(M::BackupObject, bo.canonical_uuid, fields)
     end
 
     desc "del UUID", "Deregister the backup object"
