@@ -90,7 +90,24 @@ module Dcmgr::Models
       lbt.delete
       lbt
     end
- 
+
+    def get_target_servers(options = {})
+      exclude_vifs = []
+      if !options.empty? && options.has_key?(:exclude_vifs)
+         exclude_vifs = options[:exclude_vifs]
+      end
+
+      servers = []
+      self.load_balancer_targets_dataset.exclude(:network_vif_id => exclude_vifs).all.each {|lbt|
+        network_vif = NetworkVif[lbt.network_vif_id]
+        servers << {
+          :ipv4 => network_vif.ip.first.ipv4,
+          :backup => lbt.fallback_mode
+        }
+      }
+      servers
+    end
+
     # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
     def delete
