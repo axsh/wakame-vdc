@@ -22,9 +22,9 @@ module Dcmgr::Cli
     def add
       bkst = M::BackupStorage[options[:storage_id]] || UnknownUUIDError.raise("Backup Storage UUID: #{options[:storage_id]}")
 
-      options[:allocation_size] ||= options[:size]
-      
       fields = options.dup
+      fields[:allocation_size] ||= options[:size]
+
       fields.delete(:storage_id)
       fields[:backup_storage_id] = bkst.id
       puts super(M::BackupObject, fields)
@@ -61,7 +61,6 @@ module Dcmgr::Cli
       super(M::BackupObject,uuid)
     end
 
-    
     desc "show [UUID]", "Show the backup object details"
     def show(uuid=nil)
       if uuid
