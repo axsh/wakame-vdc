@@ -29,7 +29,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     # Add new network monitor entry.
     post do
-      mclass = M::NetworkVifMonitor.monitor_class(params[:protocol]) || raise "Unsupported protocol: #{params[:protocol]}"
+      mclass = M::NetworkVifMonitor.monitor_class(params[:protocol]) || raise("Unsupported protocol: #{params[:protocol]}")
       monitor = mclass.new
 
       monitor.network_vif = @vif
