@@ -14,11 +14,12 @@ class InstancesController < ApplicationController
         :user_data => params[:user_data],
         :security_groups => params[:security_groups],
         :ssh_key => params[:ssh_key],
-        :display_name => params[:display_name]
+        :display_name => params[:display_name],
+        :vifs => {},
       }
 
       if params[:vifs]
-        vifs = {}
+        vifs = data[:vifs]
         vif_index = 0
 
         params[:vifs].each { |name|
@@ -38,8 +39,22 @@ class InstancesController < ApplicationController
 
           vif_index += 1
         }
+      end
 
-        data.merge!(:vifs => vifs) if !vifs.empty?
+      # TODO: GUI displays vif monitoring setting interface as a part
+      # of instance parameters. It assumes that monitoring parameters
+      # is set to the "eth0" device only.
+      if params[:eth0_monitors]
+        vif_mons = {}
+
+        vif_eth0 = data[:vifs]["eth0"] ||= {}
+        params[:eth0_monitors].each_with_index { |mon, idx|
+          vif_eth0[:monitors] ||= []
+          vif_eth0[:monitors] << {
+            :protocol=>mon[:protocol],
+            :params => mon[:params],
+          }
+        }
       end
       instance = Hijiki::DcmgrResource::Instance.create(data)
       render :json => instance

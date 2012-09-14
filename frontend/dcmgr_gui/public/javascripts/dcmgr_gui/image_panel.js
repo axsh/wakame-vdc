@@ -155,7 +155,11 @@ DcmgrGUI.prototype.imagePanel = function(){
     var vifs = [];
     for (var i=0; i < 5 ; i++) {
         vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
-    }      
+    }
+    var eth0_monitors = [];
+    for (var i=0; i < 1; i++) {
+      eth0_monitors.push("eth0_monitors[][protocol]=icmp");
+    }
 
     var data = "image_id="+image_id
               +"&instance_spec_id="+instance_spec_id
@@ -163,6 +167,7 @@ DcmgrGUI.prototype.imagePanel = function(){
               +"&user_data="+user_data
               +"&" + security_groups.join('&')
               +"&" + vifs.join('&')
+              +"&" + eth0_monitors.join('&')
               +"&ssh_key="+ssh_key_pair
               +"&display_name="+display_name;
     
