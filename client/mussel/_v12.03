@@ -25,7 +25,7 @@ hypervisor=${hypervisor:-openvz}
 cpu_cores=${cpu_cores:-1}
 memory_size=${memory_size:-1024}
 protocol=${protocol:-http}
-port=${port:-80}
+balancer_port=${balancer_port:-80}
 instance_port=${instance_port:-80}
 balance_algorithm=${balance_algorithm:-leastconn}
 max_connection=${max_connection:-1000}
@@ -92,7 +92,7 @@ load_balancer)
     call_api -s -X POST -H ${http_header}  \
      --data-urlencode "display_name=${display_name}" \
      --data-urlencode "protocol=${protocol}" \
-     --data-urlencode "port=${port}" \
+     --data-urlencode "port=${balancer_port}" \
      --data-urlencode "instance_port=${instance_port}" \
      --data-urlencode "balance_algorithm=${balance_algorithm}" \
      --data-urlencode "engine=haproxy" \
