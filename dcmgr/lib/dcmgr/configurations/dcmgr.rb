@@ -91,6 +91,9 @@ module Dcmgr
       class NetworkScheduler < Configuration
       end
 
+      class MacAddressScheduler < Configuration
+      end
+
       class ServiceType < Configuration
 
         # default backup storage to upload backup object from the

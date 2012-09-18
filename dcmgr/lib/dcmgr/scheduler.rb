@@ -235,5 +235,15 @@ module Dcmgr
         raise NotImplementedError
       end
     end
+
+    # Lease a mac address to a vnic
+    class MacAddressScheduler < SchedulerBase
+      @configuration_class = Dcmgr::Configurations::Dcmgr::MacAddressScheduler
+
+      # @param Models::Network_vif
+      def schedule(network_vif)
+        raise NotImplementedError
+      end
+    end
   end
 end
