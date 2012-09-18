@@ -114,6 +114,7 @@ module Dcmgr
     autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
+    autoload :EventHook, 'dcmgr/node_modules/event_hook'
   end
 
   module Helpers
