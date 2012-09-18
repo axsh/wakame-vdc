@@ -230,7 +230,6 @@ module Dcmgr
       @configuration_class = Dcmgr::Configurations::Dcmgr::NetworkScheduler
 
       # @param Models::Instance instance
-      # @return Models::Network
       def schedule(instance)
         raise NotImplementedError
       end
