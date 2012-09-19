@@ -13,7 +13,8 @@
     },
 
     render: function() {
-      $(this.el).append(this.template);
+      var html = this.template(this.collection.info());
+      this.$el.html(html);
     }
 
   });
