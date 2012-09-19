@@ -7,6 +7,7 @@
                             '/assets/admin/views/result_view.js',
                             '/assets/admin/views/pagination_view.js',
                             '/assets/admin/views/list_view.js',
+                            '/assets/admin/views/user_view.js',
                             '/assets/admin/controllers/users/search_controller.js'
 ]
 %>
@@ -19,7 +20,7 @@
 ] %>
 <% end %>
 <div id="notify" class='notifications top-right'></div>
-  <div class="span8">
+  <div class="span10">
     <div class="control-group">
       <legend>ユーザー検索</legend>
     </div>
@@ -63,7 +64,7 @@
         <td>{{ primary_account_id }}</td>
         <td>{{ last_login_at }}</td>
         <td>{% if(id !== null){ %}<a href="/instances?">インスタンス情報</a>{% } %}</td>
-        <td>{% if(id !== null){ %}<a href="/users?">ユーザー画面</a>{% } %}</td>
+        <td>{% if(id !== null){ %}<button class="btn user_login" >Login</button>{% } %}</td>
       </script>
     </table>
 </div>
