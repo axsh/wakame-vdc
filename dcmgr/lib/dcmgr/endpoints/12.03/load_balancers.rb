@@ -240,9 +240,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     # remove load balancer targets
     remove_vifs = request_vifs & hold_vifs
-    remove_vifs.each do |uuid|
-      lb.remove_target(uuid)
-    end
+    lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
     lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
@@ -370,7 +368,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.public_key = params[:public_key]
     end
 
-    lb.save
+    lb.save_changes
 
     config_params = {
       :name=>"reload:haproxy",
