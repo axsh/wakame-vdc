@@ -6,7 +6,7 @@ module Dcmgr::Models
 
     PROTOCOLS = ['http', 'tcp'].freeze
     SECURE_PROTOCOLS = ['https', 'ssl'].freeze
-    SUPPORTED_PROTOCOLS = PROTOCOLS + SECURE_PROTOCOLS
+    SUPPORTED_PROTOCOLS = (PROTOCOLS + SECURE_PROTOCOLS).freeze
     SUPPORTED_INSTANCE_PROTOCOLS = PROTOCOLS
 
     taggable 'lb'
