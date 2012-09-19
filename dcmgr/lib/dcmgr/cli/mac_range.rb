@@ -27,17 +27,9 @@ module Dcmgr::Cli
         delimited = /^([0-9a-fA-F]{1,2}#{DELIMITER}){1,2}([0-9a-fA-F]{1,2})$/
         non_delimited = /^[0-9a-fA-F]{1,6}$/
 
-        #puts "delimited: #{not (mac =~ delimited).nil?}"
-        #puts "non_delimited: #{not (mac =~ non_delimited).nil?}"
-
         Error.raise "Invalid mac address syntax #{mac}",100 if  (mac =~ delimited).nil? && (mac =~ non_delimited).nil?
       end
     }
-
-    #~ desc "k","k"
-    #~ def check(mac)
-      #~ check_mac_format(mac)
-    #~ end
 
     desc "add VENDOR_ID BEGIN END", "Create a new mac address range"
     method_option :description, :type => :string,  :desc => "Description for the mac address range"
