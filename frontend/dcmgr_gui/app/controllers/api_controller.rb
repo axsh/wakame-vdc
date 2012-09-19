@@ -79,14 +79,23 @@ class ApiController < ApplicationController
     [ds, total, start, limit]
   end
 
+  def generate(ds)
+    ds.instance_exec {
+      self.values.dup.merge(:uuid=>canonical_uuid)
+    }
+  end
+
   def collection_respond_with(ds)
     ds, total, start, limit  = paging_params_filter(ds)
 
+    ds = ds.all.map {|i|
+      generate(i)
+    }
     respond_with([{
                     :total => total,
                     :start => start,
                     :limit => limit,
-                    :results=> ds.all
+                    :results=> ds
                   }])
   end
 end
