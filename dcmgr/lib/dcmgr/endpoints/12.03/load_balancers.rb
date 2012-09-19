@@ -66,12 +66,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.account_id = @account.canonical_uuid
     lb.port = lb_port || 80
     lb.protocol = params[:protocol] || 'http'
-    lb.instance_protocol = params[:instance_protocol] || 'http'
     lb.instance_port = params[:instance_port].to_i || 80
-    lb.description = params[:description]
+    lb.instance_protocol = params[:instance_protocol] || 'http'
     lb.balance_algorithm = params[:balance_algorithm] || 'leastconn'
-    lb.display_name = params[:display_name]
-    lb.cookie_name = params[:cookie_name] || ""
+
+    if params[:description]
+      lb.description = params[:description]
+    end
+
+    if params[:display_name]
+      lb.display_name = params[:display_name]
+    end
+
+    if params[:cookie_name]
+      lb.cookie_name = params[:cookie_name]
+    end
 
     if lb.is_secure?
       raise E::InvalidLoadBalancerPublicKey if params[:public_key].nil?
