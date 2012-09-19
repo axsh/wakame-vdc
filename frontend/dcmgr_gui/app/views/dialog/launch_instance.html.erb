@@ -87,26 +87,32 @@
               <tr>
                 <th><%= t("dialog.launch_instance.network_service_monitor.protocol") %></th>
                 <th><%= t("dialog.launch_instance.network_service_monitor.parameter") %></th>
+                <th></th>
               <tr>
             </thead>
               <script id="monitor_selector_tmpl" type="text/x-jquery-tmpl">
 	      <tr>
 	        <td>
-                  <select id="monitor_item[${num}][protocol]" name="monitor_item[${num}][protocol]">
+                  <select id="monitor_item_${num}" class="select_monitor_proto" name="monitor_item[${num}][protocol]">
 	            {{each(index,item) itemlist}}
                     <option value="${index}">${item.title}</option>
                     {{/each}}
                   </select>
                 </td>
-                <td class="detail_input">
+                <td class="detail_input" style="width: 100%;">
+                </td>
+                <td style="align: right;">
+                  <button id="del_monitor_item_${num}" class="del_monitor_item" value="${num}">-</button>
                 </td>
 	      </tr>
               </script>
 	    <tbody id="monitor_item_list">
-	      <tr>
-	        <td colspan="2"><button name="add_monitor_item" ></td>
-	      </tr>
 	    </tbody>
+            <tfoot>
+              <tr>
+	        <td colspan="3"><button id="add_monitor_item">+</button></td>
+	      </tr>
+            </tfoot>
 	  </table>
 	</fieldset>
 </div>

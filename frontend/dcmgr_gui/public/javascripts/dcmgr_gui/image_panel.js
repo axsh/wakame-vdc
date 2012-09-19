@@ -181,6 +181,118 @@ DcmgrGUI.prototype.imagePanel = function(){
     });
     $(this).dialog("close");
   }
+
+  DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
+    initialize: function(elem) {
+      this.monitor_list = [];
+      this.render_target = elem;
+    },
+
+    monitors: function(){
+      return this.monitor_list;
+    },
+    
+    addItem: function(protocol){
+      if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[protocol] === undefined) {
+        throw "Unknown protocol parameter is passed: " + protocol;
+      }
+      this.monitor_list.push({"protocol":protocol});
+
+      var select_tag = $('#monitor_selector_tmpl').tmpl({num: this.monitor_list.length,
+                                                         itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS(),
+                                                        });
+      select_tag.appendTo(this.render_target);
+      select_tag.find('.del_monitor_item').bind('click', function(e){
+      });
+      
+      var idx = new Number(this.monitor_list.length);
+      select_tag.bind('change', function(e){
+        var replace_tgt = $(e.currentTarget).find(".detail_input");
+        // fill input UI elements for the protocol selected by user.
+        var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[e.target.value];
+        if(row_item === undefined){
+          throw "Unknown monitor protocol: " + e.target.value;
+        }
+        // Show the port number input form as it is a common part.
+        replace_tgt.html('Port: <input type="text" id="'+ e.target.id + '_port" name="'+ e.target.name+ '[port]" width="4"></input><br>')
+        $('#' +e.target.id + '_port').val(row_item.default_port);
+        row_item.ui(replace_tgt, e.target.id);
+      }).val(protocol);
+    },
+  });
+
+  DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
+    return {
+      'http': {
+        title: "HTTP",
+        default_port: 80,
+        ui: function (elem, idx){
+          elem.append('<br>Path: <input type="text" id="'+idx+'_check_path" name="'+idx+'[check_path]" width="40"></input>');
+        }
+      },
+      'https': {
+        title: "HTTPS",
+        default_port: 443,
+        ui: function (elem, idx){
+          elem.append('<br>Path: <input type="text" id="'+idx+'_check_path" name="'+idx+'[check_path]" width="40"></input>');
+        }
+      },
+      'ftp': {
+        title: "FTP",
+        default_port: 30,
+        ui: function (elem, idx){
+        }
+      },
+      'ssh': {
+        title: "SSH",
+        default_port: 22,
+        ui: function (elem, idx){
+        }
+      },
+      'smtp': {
+        title: "SMTP",
+        default_port: 25,
+        ui: function (elem, idx){
+        }
+      },
+      'pop3': {
+        title: "POP3",
+        default_port: 26,
+        ui: function (elem, idx){
+        }
+      },
+      'imap': {
+        title: "IMAP",
+        default_port: 27,
+        ui: function (elem, idx){
+        }
+      },
+      'submission': {
+        title: "Submission",
+        default_port: 578,
+        ui: function (elem, idx){
+        }
+      },
+      'dns': {
+        title: "DNS",
+        default_port: 21,
+        ui: function (elem, idx){
+        }
+      },
+      'mysql': {
+        title: "MySQL",
+        default_port: 5673,
+        ui: function (elem, idx){
+        }
+      },
+      'postgresql': {
+        title: "PostgreSQL",
+        default_port: 5673,
+        ui: function (elem, idx){
+        }
+      }
+    };
+  };
   
   var bt_launch_instance = new DcmgrGUI.Dialog({
     target:'.launch_instance',
@@ -214,106 +326,18 @@ DcmgrGUI.prototype.imagePanel = function(){
         } else {
           bt_launch_instance.disabledButton(1, true);
         }
-      }
+      };
 
       var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
       $(this).find('#display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
-      
-      var MONITOR_ITEMS = {
-        'http': {
-          title: "HTTP",
-          default_port: 80,
-          ui: function (elem){
-            elem.append("HTTP");
-          }
-        },
-        'https': {
-          title: "HTTPS",
-          default_port: 443,
-          ui: function (elem){
-            elem.append("HTTPS");
-          }
-        },
-        'ftp': {
-          title: "FTP",
-          default_port: 30,
-          ui: function(elem){
-            elem.append("FTP");
-          }
-        },
-        'ssh': {
-          title: "SSH",
-          default_port: 22,
-          ui: function(elem){
-            elem.append("SSH");
-          }
-        },
-        'smtp': {
-          title: "SMTP",
-          default_port: 25,
-          ui: function(elem){
-            elem.append("");
-          }
-        },
-        'pop3': {
-          title: "POP3",
-          default_port: 26,
-          ui: function(elem){
-            elem.append("");
-          }
-        },
-        'imap': {
-          title: "IMAP",
-          default_port: 27,
-          ui: function(elem){
-            elem.append("");
-          }
-        },
-        'submission': {
-          title: "Submission",
-          default_port: 578,
-          ui: function(elem){
-            elem.append("");
-          }
-        },
-        'dns': {
-          title: "DNS",
-          default_port: 21,
-          ui: function(elem){
-            elem.append("");
-          }
-        },
-        'mysql': {
-          title: "MySQL",
-          default_port: 5673,
-          ui: function(elem){
-            elem.append("");
-          }
-        },
-        'postgresql': {
-          title: "PostgreSQL",
-          default_port: 5673,
-          ui: function(elem){
-            elem.append("PSGQL");
-          }
-        }
-      };
 
-      for(var i=0; i < 5; i++ ){
-        var select_tag = $('#monitor_selector_tmpl').tmpl({num: i,
-                                                           itemlist: MONITOR_ITEMS,
-                                                          });
-        select_tag.prependTo($('#monitor_item_list'));
-        select_tag.change(function(e){
-          //var replace_tgt = e.target;
-          var replace_tgt = $(e.currentTarget).find(".detail_input");
-          // fill input UI elements for the protocol selected by user.
-          MONITOR_ITEMS[e.target.value].ui(replace_tgt);
-          console.debug(e);
-        });
-      }
+      var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
+      $(this).find('#add_monitor_item').bind('click', function(e){
+        // Append new monitoring item selection.
+        monitor_selector.addItem('http');
+      });
 
       parallel({
         //get instance_specs
