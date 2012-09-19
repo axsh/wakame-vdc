@@ -79,11 +79,13 @@ __END
     def del(vendor_id, r_begin=nil, r_end=nil)
       # Convert vendor id hex format to int
       int_vendor_id = mac_to_int vendor_id
+
       if r_begin.nil? && r_end.nil?
         ranges = M::MacRange.filter(:vendor_id => int_vendor_id).all
         Error.raise("Vendor id '#{vendor_id}' does not exist",100) if ranges.empty?
       else
-        #TODO: raise error if either r_begin or r_end is nil
+        Error.raise "Missing range begin",100 if r_begin.nil?
+        Error.raise "Missing range end",100 if r_end.nil?
 
         # Convert ranges hex format to int
         int_begin = mac_to_int r_begin
