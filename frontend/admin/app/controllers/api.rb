@@ -23,6 +23,26 @@ DcmgrAdmin.controllers :api do
     render h
   end
 
+  get '/notifications/:id', :provides => :json do
+
+    @notification = Notification.find(:id => params[:id])
+
+    result = {
+      :id => @notification.id,
+      :title => @notification.title,
+      :publish_date_from => @notification.publish_date_from,
+      :publish_date_to => @notification.publish_date_to,
+      :users => @notification.users,
+      :article => @notification.article
+    }
+
+    h = {
+      :count => 1,
+      :result => result
+    }
+    render h
+  end
+
   delete :notifications, :provides => :json do
     @notification = Notification.find({:id => params[:id]})
     @notification.destroy
