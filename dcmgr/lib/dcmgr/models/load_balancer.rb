@@ -3,6 +3,12 @@ require 'openssl'
 
 module Dcmgr::Models
   class LoadBalancer < AccountResource
+
+    PROTOCOLS = ['http', 'tcp'].freeze
+    SECURE_PROTOCOLS = ['https', 'ssl'].freeze
+    SUPPORTED_PROTOCOLS = PROTOCOLS + SECURE_PROTOCOLS
+    SUPPORTED_INSTANCE_PROTOCOLS = PROTOCOLS
+
     taggable 'lb'
     many_to_one :instance
     one_to_many :load_balancer_targets, :key => :load_balancer_id do |ds|
@@ -26,12 +32,12 @@ module Dcmgr::Models
       # ((`load_balancers`.`instance_id` = `instances`.`id`) AND (`instances`.`status` = 'online'))
       self.join_table(:inner, :instances, {:load_balancers__instance_id=>:instances__id, :status=>status}).qualify_to_first_source
     end
-    
+
     class RequestError < RuntimeError; end
 
     def validate
-      validates_includes ['http','https','tcp','ssl'], :protocol
-      validates_includes ['http','tcp'], :instance_protocol
+      validates_includes SUPPORTED_PROTOCOLS, :protocol
+      validates_includes SUPPORTED_INSTANCE_PROTOCOLS, :instance_protocol
       validates_includes 1..65535, :port
       validates_includes 1..65535, :instance_port
       validates_private_key
@@ -39,7 +45,7 @@ module Dcmgr::Models
     end
 
     def validates_private_key
-      return true if ['http', 'tcp'].include? protocol
+      return true if PROTOCOLS.include? protocol
 
       if !check_encryption_algorithm
         errors.add(:private_key, "Doesn't support Algorithm")
@@ -52,7 +58,7 @@ module Dcmgr::Models
     end
 
     def validates_public_key
-      return true if ['http', 'tcp'].include? protocol
+      return true if PROTOCOLS.include? protocol
 
       if !check_public_key
         errors.add(:public_key, "Invalid parameter")
@@ -97,7 +103,7 @@ module Dcmgr::Models
     end
 
     def is_secure?
-      ['ssl', 'https'].include? self.protocol
+      SECURE_PROTOCOLS.include? self.protocol
     end
 
     def add_target(network_vif_id)
