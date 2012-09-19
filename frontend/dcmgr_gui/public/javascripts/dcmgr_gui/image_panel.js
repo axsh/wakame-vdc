@@ -150,11 +150,11 @@ DcmgrGUI.prototype.imagePanel = function(){
     var user_data = $(this).find('#user_data').val();
     var security_groups = [];
     $.each(launch_in,function(i){
-     security_groups.push("security_groups[]="+ $(this).text());
+      security_groups.push("security_groups[]="+ $(this).text());
     });
     var vifs = [];
     for (var i=0; i < 5 ; i++) {
-        vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
+      vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
     }
     var eth0_monitors = [];
     for (var i=0; i < 1; i++) {
