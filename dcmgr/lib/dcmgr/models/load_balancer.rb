@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
+require 'openssl'
 
 module Dcmgr::Models
   class LoadBalancer < AccountResource
+
+    PROTOCOLS = ['http', 'tcp'].freeze
+    SECURE_PROTOCOLS = ['https', 'ssl'].freeze
+    SUPPORTED_PROTOCOLS = (PROTOCOLS + SECURE_PROTOCOLS).freeze
+    SUPPORTED_INSTANCE_PROTOCOLS = PROTOCOLS
+
     taggable 'lb'
     many_to_one :instance
     one_to_many :load_balancer_targets, :key => :load_balancer_id do |ds|
@@ -25,14 +32,37 @@ module Dcmgr::Models
       # ((`load_balancers`.`instance_id` = `instances`.`id`) AND (`instances`.`status` = 'online'))
       self.join_table(:inner, :instances, {:load_balancers__instance_id=>:instances__id, :status=>status}).qualify_to_first_source
     end
-    
+
     class RequestError < RuntimeError; end
 
     def validate
-      validates_includes ['http','https','tcp','ssl'], :protocol
-      validates_includes ['http','tcp'], :instance_protocol
+      validates_includes SUPPORTED_PROTOCOLS, :protocol
+      validates_includes SUPPORTED_INSTANCE_PROTOCOLS, :instance_protocol
       validates_includes 1..65535, :port
       validates_includes 1..65535, :instance_port
+      validates_private_key
+      validates_public_key
+    end
+
+    def validates_private_key
+      return true if PROTOCOLS.include? protocol
+
+      if !check_encryption_algorithm
+        errors.add(:private_key, "Doesn't support Algorithm")
+      end
+
+      if !check_private_key
+        errors.add(:private_key, "Doesn't match")
+      end
+
+    end
+
+    def validates_public_key
+      return true if PROTOCOLS.include? protocol
+
+      if !check_public_key
+        errors.add(:public_key, "Invalid parameter")
+      end
     end
 
     def state
@@ -73,7 +103,7 @@ module Dcmgr::Models
     end
 
     def is_secure?
-      ['ssl', 'https'].include? self.protocol
+      SECURE_PROTOCOLS.include? self.protocol
     end
 
     def add_target(network_vif_id)
@@ -127,6 +157,41 @@ module Dcmgr::Models
 
     def target_network(network_vif_id)
       LoadBalancerTarget.where({:load_balancer_id => self.id, :network_vif_id => network_vif_id}).first
+    end
+
+    def check_public_key
+      begin
+        c = OpenSSL::X509::Certificate.new(public_key)
+        c.is_a? OpenSSL::X509::Certificate
+      rescue => e
+        false
+      end
+    end
+
+    def check_private_key
+      begin
+        c = OpenSSL::X509::Certificate.new(public_key)
+        c.check_private_key(@checked_private_key)
+      rescue => e
+        false
+      end
+    end
+
+    def check_encryption_algorithm
+      [
+       OpenSSL::PKey::RSA,
+       OpenSSL::PKey::DSA
+      ].find do |algo|
+        return false unless defined? algo
+        begin
+          @checked_private_key = algo.new(private_key) {
+            # If you have a passphrase, It evaluate a false.
+          }
+          return true if @checked_private_key
+        rescue => e
+          false
+        end
+      end
     end
 
   end
