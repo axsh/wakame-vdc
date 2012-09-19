@@ -140,5 +140,8 @@ module Dcmgr
     define_error(:UnknownDcNetwork, 404, '163')
     define_error(:NetworkNotPermitted, 400, '164')
     define_error(:DcNetworkNotPermitted, 400, '165')
+    define_error(:InvalidLoadBalancerPrivateKey, 400, '166')
+    define_error(:InvalidLoadBalancerPublicKey, 400, '167')
+    define_error(:EncryptionAlgorithmNotSupported, 400, '168')
   end
 end
