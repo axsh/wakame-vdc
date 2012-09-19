@@ -47,6 +47,10 @@ module Dcmgr::Cli
       int_begin = mac_to_int r_begin
       int_end = mac_to_int r_end
 
+      unless M::MacRange.find(:vendor_id => int_vendor_id, :range_begin => int_begin, :range_end => int_end).nil?
+        Error.raise "This MAC address range already exists.", 100
+      end
+
       fields = {
         :vendor_id   => int_vendor_id,
         :range_begin => int_begin,
