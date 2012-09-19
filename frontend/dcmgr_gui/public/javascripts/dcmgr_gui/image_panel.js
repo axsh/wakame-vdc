@@ -184,6 +184,7 @@ DcmgrGUI.prototype.imagePanel = function(){
 
   DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     initialize: function(elem) {
+      this.index_counter = 0;
       this.monitor_list = [];
       this.render_target = elem;
     },
@@ -191,31 +192,38 @@ DcmgrGUI.prototype.imagePanel = function(){
     monitors: function(){
       return this.monitor_list;
     },
+
+    _newIndex: function() {
+      return (this.index_counter++);
+    },
     
     addItem: function(protocol){
+      var self = this;
+      var idx = this._newIndex();
       if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[protocol] === undefined) {
         throw "Unknown protocol parameter is passed: " + protocol;
       }
-      this.monitor_list.push({"protocol":protocol});
+      this.monitor_list.push({"protocol":protocol, 'idx': idx});
 
-      var select_tag = $('#monitor_selector_tmpl').tmpl({num: this.monitor_list.length,
-                                                         itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS(),
-                                                        });
-      select_tag.appendTo(this.render_target);
-      select_tag.find('.del_monitor_item').bind('click', function(e){
+      var tr_tag = $('#monitor_selector_tmpl').tmpl({idx: idx,
+                                                     itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS(),
+                                                    });
+      tr_tag.appendTo(this.render_target);
+      tr_tag.find('.del_monitor_item').first().bind('click', function(e){
+        // remove the clicked item from the list.
+        self.monitor_list.splice((idx - 1), 1);
+        $('#monitor_item_' + idx).first().remove();
       });
       
-      var idx = new Number(this.monitor_list.length);
-      select_tag.bind('change', function(e){
-        var replace_tgt = $(e.currentTarget).find(".detail_input");
+      tr_tag.find('.select_monitor_proto').first().bind('change', function(e){
+        var replace_tgt = $(e.currentTarget).parent().parent().find(".detail_input");
         // fill input UI elements for the protocol selected by user.
         var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[e.target.value];
         if(row_item === undefined){
           throw "Unknown monitor protocol: " + e.target.value;
         }
-        // Show the port number input form as it is a common part.
-        replace_tgt.html('Port: <input type="text" id="'+ e.target.id + '_port" name="'+ e.target.name+ '[port]" width="4"></input><br>')
-        $('#' +e.target.id + '_port').val(row_item.default_port);
+        // Clear current child elements.
+        replace_tgt.html('');
         row_item.ui(replace_tgt, e.target.id);
       }).val(protocol);
     },
@@ -225,70 +233,70 @@ DcmgrGUI.prototype.imagePanel = function(){
     return {
       'http': {
         title: "HTTP",
-        default_port: 80,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx+ '[port]" width="4" value="80"></input>');
           elem.append('<br>Path: <input type="text" id="'+idx+'_check_path" name="'+idx+'[check_path]" width="40"></input>');
         }
       },
       'https': {
         title: "HTTPS",
-        default_port: 443,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="443"></input>');
           elem.append('<br>Path: <input type="text" id="'+idx+'_check_path" name="'+idx+'[check_path]" width="40"></input>');
         }
       },
       'ftp': {
         title: "FTP",
-        default_port: 30,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="21"></input>');
         }
       },
       'ssh': {
         title: "SSH",
-        default_port: 22,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="22"></input>');
         }
       },
       'smtp': {
         title: "SMTP",
-        default_port: 25,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="25"></input>');
         }
       },
       'pop3': {
         title: "POP3",
-        default_port: 26,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="110"></input>');
         }
       },
       'imap': {
         title: "IMAP",
-        default_port: 27,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="143"></input>');
         }
       },
       'submission': {
         title: "Submission",
-        default_port: 578,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="587"></input>');
         }
       },
       'dns': {
         title: "DNS",
-        default_port: 21,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="53"></input>');
         }
       },
       'mysql': {
         title: "MySQL",
-        default_port: 5673,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="3306"></input>');
         }
       },
       'postgresql': {
         title: "PostgreSQL",
-        default_port: 5673,
         ui: function (elem, idx){
+          elem.append('Port: <input type="text" id="'+ idx + '_port" name="'+ idx + '[port]" width="4" value="5432"></input>');
         }
       }
     };

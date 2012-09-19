@@ -85,24 +85,28 @@
 	  <table>
             <thead>
               <tr>
-                <th><%= t("dialog.launch_instance.network_service_monitor.protocol") %></th>
-                <th><%= t("dialog.launch_instance.network_service_monitor.parameter") %></th>
-                <th></th>
+                <th style="width: 10%;"><%= t("dialog.launch_instance.network_service_monitor.protocol") %></th>
+                <th style="width: 70%;"><%= t("dialog.launch_instance.network_service_monitor.parameter") %></th>
+                <th style="width: 10%;"><%= t("dialog.launch_instance.network_service_monitor.enable") %></th>
+                <th style="width: 10%;"></th>
               <tr>
             </thead>
               <script id="monitor_selector_tmpl" type="text/x-jquery-tmpl">
-	      <tr>
+	      <tr id="monitor_item_${idx}">
 	        <td>
-                  <select id="monitor_item_${num}" class="select_monitor_proto" name="monitor_item[${num}][protocol]">
+                  <select class="select_monitor_proto" name="monitor_item[${idx}][protocol]">
 	            {{each(index,item) itemlist}}
                     <option value="${index}">${item.title}</option>
                     {{/each}}
                   </select>
                 </td>
-                <td class="detail_input" style="width: 100%;">
+                <td class="detail_input">
+                </td>
+                <td class="check_enable">
+                  <input type="checkbox" id="monitor_item_${idx}_enable" name="monitor_item[${idx}][enable]" value="true" checked></input>
                 </td>
                 <td style="align: right;">
-                  <button id="del_monitor_item_${num}" class="del_monitor_item" value="${num}">-</button>
+                  <button id="del_monitor_item_${idx}" class="del_monitor_item">-</button>
                 </td>
 	      </tr>
               </script>
@@ -110,7 +114,7 @@
 	    </tbody>
             <tfoot>
               <tr>
-	        <td colspan="3"><button id="add_monitor_item">+</button></td>
+	        <td colspan="4"><button id="add_monitor_item">+</button></td>
 	      </tr>
             </tfoot>
 	  </table>
