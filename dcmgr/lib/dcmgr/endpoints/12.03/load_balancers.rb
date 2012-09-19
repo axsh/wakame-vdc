@@ -62,6 +62,28 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
     raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
 
+    lb = M::LoadBalancer.new
+    lb.account_id = @account.canonical_uuid
+    lb.port = lb_port || 80
+    lb.protocol = params[:protocol] || 'http'
+    lb.instance_protocol = params[:instance_protocol] || 'http'
+    lb.instance_port = params[:instance_port].to_i || 80
+    lb.description = params[:description]
+    lb.balance_algorithm = params[:balance_algorithm] || 'leastconn'
+    lb.display_name = params[:display_name]
+    lb.cookie_name = params[:cookie_name] || ""
+
+    if lb.is_secure?
+      raise E::InvalidLoadBalancerPublicKey if params[:public_key].nil?
+      raise E::InvalidLoadBalancerPrivateKey if params[:private_key].nil?
+
+      lb.public_key = params[:public_key]
+      lb.private_key = params[:private_key]
+      raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
+      raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
+      raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
+    end
+
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
 
     user_data = []
@@ -108,20 +130,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     body = JSON.parse(res.body)
 
     i = find_by_uuid(:Instance, body['id'])
-    lb = M::LoadBalancer.create(:account_id => @account.canonical_uuid,
-                                :description => params[:description],
-                                :instance_id => i.id,
-                                :balance_algorithm => params[:balance_algorithm] || 'leastconn',
-                                :protocol => params[:protocol] || 'http',
-                                :port => params[:port] || 80,
-                                :instance_protocol => params[:instance_protocol] || 'http',
-                                :instance_port => params[:instance_port] || 80,
-                                :display_name => params[:display_name],
-                                :cookie_name => params[:cookie_name] || "",
-                                :private_key => params[:private_key],
-                                :public_key => params[:public_key],
-                                )
 
+    lb.instance_id = i.id
+    lb.save
 
     config_params = {
       :name => 'start:haproxy',
@@ -327,6 +338,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.instance_port = params[:instance_port]
     end
 
+    raise E::InvalidLoadBalancerPublicKey if params[:public_key].nil?
+    raise E::InvalidLoadBalancerPrivateKey if params[:private_key].nil?
+
+    if lb.is_secure?
+      lb.public_key = params[:public_key]
+      lb.private_key = params[:private_key]
+      raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
+      raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
+      raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
+    end
+
     if params[:target_vifs] && !params[:target_vifs].empty?
        params[:target_vifs].each {|tv|
         lt = lb.target_network(tv['network_vif_id'])
@@ -359,14 +381,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     lb.cookie_name = params[:cookie_name]
-
-    if !params[:private_key].empty?
-      lb.private_key = params[:private_key]
-    end
-
-    if !params[:public_key].empty?
-      lb.public_key = params[:public_key]
-    end
 
     lb.save_changes
 

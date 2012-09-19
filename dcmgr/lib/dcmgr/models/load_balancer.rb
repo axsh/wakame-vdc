@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+require 'openssl'
 
 module Dcmgr::Models
   class LoadBalancer < AccountResource
@@ -33,6 +34,29 @@ module Dcmgr::Models
       validates_includes ['http','tcp'], :instance_protocol
       validates_includes 1..65535, :port
       validates_includes 1..65535, :instance_port
+      validates_private_key
+      validates_public_key
+    end
+
+    def validates_private_key
+      return true if ['http', 'tcp'].include? protocol
+
+      if !check_encryption_algorithm
+        errors.add(:private_key, "Doesn't support Algorithm")
+      end
+
+      if !check_private_key
+        errors.add(:private_key, "Doesn't match")
+      end
+
+    end
+
+    def validates_public_key
+      return true if ['http', 'tcp'].include? protocol
+
+      if !check_public_key
+        errors.add(:public_key, "Invalid parameter")
+      end
     end
 
     def state
@@ -127,6 +151,41 @@ module Dcmgr::Models
 
     def target_network(network_vif_id)
       LoadBalancerTarget.where({:load_balancer_id => self.id, :network_vif_id => network_vif_id}).first
+    end
+
+    def check_public_key
+      begin
+        c = OpenSSL::X509::Certificate.new(public_key)
+        c.is_a? OpenSSL::X509::Certificate
+      rescue => e
+        false
+      end
+    end
+
+    def check_private_key
+      begin
+        c = OpenSSL::X509::Certificate.new(public_key)
+        c.check_private_key(@checked_private_key)
+      rescue => e
+        false
+      end
+    end
+
+    def check_encryption_algorithm
+      [
+       OpenSSL::PKey::RSA,
+       OpenSSL::PKey::DSA
+      ].find do |algo|
+        return false unless defined? algo
+        begin
+          @checked_private_key = algo.new(private_key) {
+            # If you have a passphrase, It evaluate a false.
+          }
+          return true if @checked_private_key
+        rescue => e
+          false
+        end
+      end
     end
 
   end
