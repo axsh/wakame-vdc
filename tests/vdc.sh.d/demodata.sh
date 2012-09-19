@@ -177,6 +177,8 @@ spec  addvif is-demo2 eth2
 
 keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "'demo key1'" --service-type std --display-name "'demo'"
 
+macrange add 525400 1 ffffff
+
 CMDSET
 
 shlog ./bin/vdc-manage securitygroup add --uuid  sg-demofgr --account-id ${account_id} --description demo --service-type std --display-name demo
