@@ -357,6 +357,10 @@ Sequel.migration do
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
     end
+
+    alter_table(:mac_leases) do
+      set_column_type :mac_addr, "bigint", :unsigned=>true, :null=>false
+    end
   end
   
   down do
@@ -504,6 +508,10 @@ Sequel.migration do
 
     alter_table(:tag_mappings) do
       drop_column :sort_index
+    end
+
+    alter_table(:mac_leases) do
+      set_column_type :mac_addr, "char(12)", :null=>false
     end
   end
 end

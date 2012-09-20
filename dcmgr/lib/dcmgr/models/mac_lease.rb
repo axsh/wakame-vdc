@@ -18,7 +18,12 @@ module Dcmgr::Models
       else
         raise ArgumentError, "Invalid MAC address string: 6 or 12 length of HEX value is needed."
       end
-      create(:mac_addr=>mac_addr)
+      create(:mac_addr=>mac_addr.hex)
+    end
+
+    # Creates a string representation of the hexadecimal mac address without delimiters
+    def to_str
+      mac_addr.to_s(16)
     end
 
   end

@@ -264,7 +264,7 @@ module Dcmgr::Models
                   end
       m = MacLease.lease(vendor_id)
       nic = NetworkVif.new({ :account_id => self.account_id,
-                             :mac_addr=>m.mac_addr,
+                             :mac_addr=>m.to_str,
                            })
       nic.instance = self
       nic.device_index = vif_template[:index]
