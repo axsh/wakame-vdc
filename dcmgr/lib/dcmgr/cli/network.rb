@@ -89,22 +89,6 @@ class Network < Base
     super(M::Network,uuid,fields)
   end
 
-  desc "nat UUID [options]", "Set or clear nat mapping for a network"
-  method_option :outside_network_id, :type => :string, :desc => "The network that this network will be natted to"
-  method_option :clear, :type => :boolean, :desc => "Clears a previously natted network"
-  def nat(uuid)
-    in_nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
-    ex_nw = M::Network[options[:outside_network_id]] || Error.raise("Unknown network UUID: #{uuid}", 100) unless options[:outside_network_id].nil?
-
-    if options[:clear] then
-      in_nw.set_only({:nat_network_id => nil},:nat_network_id)
-      in_nw.save_changes
-    else
-      in_nw.set_only({:nat_network_id => ex_nw.id},:nat_network_id)
-      in_nw.save_changes
-    end
-  end
-
   desc "show [UUID] [options]", "Show network(s)"
   method_option :account_id, :type => :string, :desc => "Show networks with the account"
   def show(uuid=nil)
