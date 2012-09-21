@@ -7,6 +7,10 @@ class Notification < Sequel::Model
     errors.add(:title, 'cannot be empty') if !title || title.empty?
   end
 
+  def to_hash()
+    self.values.dup
+  end
+
   def before_create
     return false if super == false
     self.created_at = Time.now
