@@ -143,6 +143,15 @@ module Dcmgr::Models
       hn_vnet
     end
 
+    # Returns the host node groups that this node is part of
+    def groups_dataset
+      Tag.filter(:mapped_uuids => TagMapping.filter(:uuid => self.canonical_uuid))
+    end
+
+    def groups
+      groups_dataset.all
+    end
+
     protected
     def instances_usage(colname)
       instances_dataset.lives.sum(colname).to_i
