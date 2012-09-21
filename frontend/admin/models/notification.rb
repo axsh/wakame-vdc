@@ -1,4 +1,7 @@
 class Notification < Sequel::Model
+
+  subset(:alives, {:deleted_at => nil})
+
   def validate
     super
     errors.add(:title, 'cannot be empty') if !title || title.empty?
