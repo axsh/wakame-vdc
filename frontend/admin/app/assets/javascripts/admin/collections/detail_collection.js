@@ -3,17 +3,9 @@
   collections.DetailCollection = Backbone.Collection.extend({
 
     initialize: function(options) {
-      if(_.has(options, 'url')) {
-        this.url = options.url;
+      if(_.has(options, 'model')) {
+	  this.model = options.model;
       }
-    },
-
-    get: function ( options ) {
-      if ( !_.isObject(options) ) {
-        options = {};
-      }
-      this.url = '/api' + location.pathname + '.json';
-      return this.fetch( options );
     },
 
     info: function() {
@@ -29,4 +21,9 @@
     }
   });
 
+  collections.UserDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
 })( app.collections);

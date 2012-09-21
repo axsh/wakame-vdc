@@ -4,12 +4,14 @@
 
     el : '#content',
 
-    template: _.template($('#detailNotification').html()),
-
-    initialize: function() {
+    initialize: function(options) {
+      if(_.has(options, 'template')) {
+        this.template = options.template;
+      }
       var tags = this.collection;
       tags.on('all', this.render, this);
-      tags.get();
+      tags.url = tags.model.prototype.url;
+      tags.fetch();
     },
 
     render: function() {
