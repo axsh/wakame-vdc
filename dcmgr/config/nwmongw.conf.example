@@ -1,0 +1,4 @@
+# Database connection string
+database_uri 'mysql2://localhost/wakame_dcmgr?user=root'
+# AMQP broker to be connected.
+amqp_server_uri 'amqp://localhost/'

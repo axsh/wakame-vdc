@@ -41,6 +41,7 @@ module Dcmgr
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
+    autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
   end
 
   require 'dcmgr/models/errors'
