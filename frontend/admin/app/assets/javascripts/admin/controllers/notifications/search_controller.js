@@ -5,7 +5,7 @@
     app.collections.paginatedItems = new app.collections.PaginatedCollection({
 
       model: app.models.Item.extend({
-        urlRoot: app.info.api_endpoints.admin + '/api/notifications.json',
+        urlRoot: app.info.api_endpoints.admin + '/api/notifications',
       }),
 
       server_api: {
