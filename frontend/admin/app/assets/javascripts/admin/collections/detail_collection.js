@@ -4,7 +4,7 @@
 
     initialize: function(options) {
       if(_.has(options, 'model')) {
-	  this.model = options.model;
+        this.model = options.model;
       }
     },
 
