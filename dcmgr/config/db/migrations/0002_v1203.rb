@@ -350,6 +350,7 @@ Sequel.migration do
 
     create_table(:mac_ranges) do
       primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false, :unique=>true
       column :vendor_id, "mediumint(8)", :unsigned=>true, :null=>false
       column :range_begin, "mediumint(8)", :unsigned=>true, :null=>false
       column :range_end, "mediumint(8)", :unsigned=>true, :null=>false
