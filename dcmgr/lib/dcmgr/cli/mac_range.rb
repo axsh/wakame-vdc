@@ -31,7 +31,8 @@ module Dcmgr::Cli
       end
     }
 
-    desc "add VENDOR_ID BEGIN END", "Create a new mac address range"
+    desc "add VENDOR_ID BEGIN END [OPTIONS]", "Create a new mac address range"
+    method_option :uuid, :type => :string, :desc => "UUID of the mac address range"
     method_option :description, :type => :string,  :desc => "Description for the mac address range"
     def add(vendor_id,r_begin,r_end)
       # Convert hex format to ints
@@ -43,79 +44,48 @@ module Dcmgr::Cli
         Error.raise "This MAC address range already exists.", 100
       end
 
-      fields = {
+      fields = options.dup
+      fields.merge!({
         :vendor_id   => int_vendor_id,
         :range_begin => int_begin,
         :range_end   => int_end,
-        :description => options[:description]
-      }
+      })
 
-      r = M::MacRange.create(fields)
-
-      print ERB.new(<<__END, nil, '-').result(binding)
-<%= int_to_mac(r.vendor_id) %><%= DELIMITER %><%= int_to_mac(r.range_begin) %> - <%= int_to_mac(r.vendor_id) %><%= DELIMITER %><%= int_to_mac(r.range_end) %> <%= r.description.nil? ? "" : ( r.description ) %>
-__END
+      puts super(M::MacRange,fields)
     end
 
-    desc "modify VENDOR_ID BEGIN END [OPTIONS]", "Modify a mac address range"
+    desc "modify UUID [OPTIONS]", "Modify a mac address range"
     method_option :description, :type => :string,  :desc => "Description for the mac address range"
-    def modify(vendor_id,r_begin,r_end)
-      # Convert hex format to ints
-      int_vendor_id = mac_to_int vendor_id
-      int_begin = mac_to_int r_begin
-      int_end = mac_to_int r_end
-
-      range = M::MacRange.find(:vendor_id => int_vendor_id, :range_begin => int_begin, :range_end => int_end)
-
-      range.description = options[:description]
-      range.save
+    def modify(uuid)
+      super(M::MacRange,uuid,options)
     end
 
-    desc "del VENDOR_ID [BEGIN] [END]", "Delete an existing mac address range"
-    def del(vendor_id, r_begin=nil, r_end=nil)
-      # Convert vendor id hex format to int
-      int_vendor_id = mac_to_int vendor_id
-
-      if r_begin.nil? && r_end.nil?
-        ranges = M::MacRange.filter(:vendor_id => int_vendor_id).all
-        Error.raise("Vendor id '#{vendor_id}' does not exist",100) if ranges.empty?
-      else
-        Error.raise "Missing range begin",100 if r_begin.nil?
-        Error.raise "Missing range end",100 if r_end.nil?
-
-        # Convert ranges hex format to int
-        int_begin = mac_to_int r_begin
-        int_end = mac_to_int r_end
-
-        ranges = M::MacRange.filter(:vendor_id => int_vendor_id, :range_begin => int_begin, :range_end => int_end).all
-        Error.raise("A mac address range from #{r_begin} to #{r_end} for vendor id '#{vendor_id}' does not exist",100) if ranges.empty?
-      end
-
-      ranges.each { |range|
-        range.destroy()
-      }
+    desc "del UUID", "Delete an existing mac address range"
+    def del(uuid)
+      super(M::MacRange,uuid)
     end
 
-    desc "show [VENDOR_ID]", "Show existing mac address range(s)"
-    def show(vendor_id=nil)
-      if vendor_id
-        # Convert vendor id hex format to int
-        int_vendor_id = mac_to_int(vendor_id)
-
-        # Show only the ranges for this vendor id
-        ranges = M::MacRange.filter(:vendor_id => int_vendor_id).all
-        Error.raise("Vendor id '#{vendor_id}' does not exist",100) if ranges.empty?
-      else
-        # Show all ranges for all vendor ids
-        ranges = M::MacRange.order(:vendor_id).all
-      end
-
-      print ERB.new(<<__END, nil, '-').result(binding)
+    desc "show [UUID]", "Show existing mac address range(s)"
+    def show(uuid=nil)
+      if uuid
+        r = M::MacRange[uuid] || UnknownUUIDError.raise(uuid)
+        print ERB.new(<<__END, nil, '-').result(binding)
+UUID: <%= r.canonical_uuid %>
+<%- unless r.description.nil? -%>
+Description:
+  <%= r.description %>
+<%- end -%>
+Vendor ID: <%= int_to_mac(r.vendor_id) %>
 Dynamic MAC Address Range:
-<%- ranges.each { |r| -%>
-  <%= int_to_mac(r.vendor_id) %><%= DELIMITER %><%= int_to_mac(r.range_begin) %> - <%= int_to_mac(r.vendor_id) %><%= DELIMITER %><%= int_to_mac(r.range_end) %> <%= r.description.nil? ? "" : ( r.description ) %>
+  <%= int_to_mac(r.vendor_id) %><%= DELIMITER %><%= int_to_mac(r.range_begin) %> - <%= int_to_mac(r.vendor_id) %><%= DELIMITER %><%= int_to_mac(r.range_end) %>
+__END
+      else
+      print ERB.new(<<__END, nil, '-').result(binding)
+<%- M::MacRange.all.each { |r| -%>
+  <%= r.canonical_uuid %> <%= int_to_mac(r.vendor_id) %><%= DELIMITER %><%= int_to_mac(r.range_begin) %> - <%= int_to_mac(r.vendor_id) %><%= DELIMITER %><%= int_to_mac(r.range_end) %>
 <%- } -%>
 __END
+      end
     end
   end
 end
