@@ -7,7 +7,7 @@
     url: app.info.api_endpoints.dcmgr + '/api/12.03' + location.pathname + '.json'
   });
 
-  models.Keypair = models.Dcmgr.extend({
+  models.SshKeyPair = models.Dcmgr.extend({
     url: app.info.api_endpoints.dcmgr + '/api/12.03' + location.pathname + '.json'
   });
 

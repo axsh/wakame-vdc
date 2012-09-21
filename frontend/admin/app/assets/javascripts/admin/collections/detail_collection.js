@@ -33,7 +33,7 @@
     }
   });
 
-  collections.KeypairDetailCollection = collections.DetailCollection.extend({
+  collections.SshKeyPairDetailCollection = collections.DetailCollection.extend({
     parse: function (response) {
       return response;
     }
