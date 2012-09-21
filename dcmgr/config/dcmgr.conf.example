@@ -68,10 +68,14 @@ service_type("std", "StdServiceType") {
 
   # Available mac address schedulers
   # mac_address_scheduler :ByHostNodeGroup do
-  #   pair 'hng-shhost', 'mr-demomacs'
+  #   default 'mr-demomacs'
+  #
+  #   pair 'hng-shhost', 'mr-range1'
   # end
   mac_address_scheduler :ByHostNodeGroup do
-    pair 'hng-shhost', 'mr-demomacs'
+    default 'mr-demomacs'
+
+    pair 'hng-shhost', 'mr-range1'
   end
 
   # Available storage node(sta) schedulers:
@@ -162,7 +166,9 @@ service_type("lb", "LbServiceType") {
   storage_node_scheduler :LeastUsage
   network_scheduler :VifsRequestParam
   mac_address_scheduler :ByHostNodeGroup do
-    pair 'hng-shhost', 'mr-demomacs'
+    default 'mr-demomacs'
+
+    pair 'hng-shhost', 'mr-range1'
   end
 
   # Please specify the addresses that can be referenced from within an instance of the load balancer.
