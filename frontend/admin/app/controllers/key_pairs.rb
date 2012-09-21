@@ -1,4 +1,4 @@
-DcmgrAdmin.controllers :key_pairs do
+DcmgrAdmin.controllers :ssh_key_pairs do
 
   get "/:id" do
     erb :"key_pairs/show"

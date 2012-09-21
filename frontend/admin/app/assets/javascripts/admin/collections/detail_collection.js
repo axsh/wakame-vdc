@@ -32,4 +32,10 @@
       return response;
     }
   });
+
+  collections.KeypairDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
 })( app.collections);
