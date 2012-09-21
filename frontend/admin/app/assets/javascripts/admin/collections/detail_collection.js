@@ -38,4 +38,10 @@
       return response;
     }
   });
+
+  collections.ImageDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
 })( app.collections);
