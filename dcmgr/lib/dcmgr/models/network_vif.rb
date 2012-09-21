@@ -104,7 +104,7 @@ module Dcmgr::Models
       if maclease
         maclease.destroy
       else
-        logger.info "Warning: Mac address lease for '#{self.mac_addr}' not found in database."
+        logger.warning "Warning: Mac address lease for '#{self.mac_addr}' not found in database."
       end
       release_ip_lease
       self.remove_all_security_groups
