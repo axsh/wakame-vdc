@@ -65,7 +65,7 @@
         <td><a href="/instances/{{ id }}">{{ display_name }}</a></td>
         <td>{{ status }}</td>
         <td>{{ host_node }}</td>
-        <td>{% if( ! _.isEmpty(vif) ){ %}{{ vif[0].ipv4.address }}{% } %}</td>
+        <td>{% if( ! _.isEmpty(vif) && ! _.isEmpty(vif[0].ipv4)){ %}{{ vif[0].ipv4.address }}{% } %}</td>
         <td>{{ created_at }}</td>
         <td>
         {% if( id != null ){ %}

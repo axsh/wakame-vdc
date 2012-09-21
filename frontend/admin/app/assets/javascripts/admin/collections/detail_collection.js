@@ -26,4 +26,10 @@
       return response;
     }
   });
+
+  collections.InstanceDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
 })( app.collections);
