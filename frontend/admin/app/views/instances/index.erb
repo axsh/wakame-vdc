@@ -55,7 +55,6 @@
           <th>ホストノードID</th>
           <th>IPアドレス</th>
           <th>作成日時</th>
-          <th></th>
         </tr>
       </thead>
       <!--  The content is mapped on #resultItemTemplate -->
@@ -67,11 +66,6 @@
         <td>{{ host_node }}</td>
         <td>{% if( ! _.isEmpty(vif) && ! _.isEmpty(vif[0].ipv4)){ %}{{ vif[0].ipv4.address }}{% } %}</td>
         <td>{{ created_at }}</td>
-        <td>
-        {% if( id != null ){ %}
-        <a href="/">ユーザー画面</a>
-        {% } %}
-        </td>
        </script>
     </table>
 </div>
