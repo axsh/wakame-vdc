@@ -22,8 +22,13 @@ module Dcmgr::Models
     end
 
     # Creates a string representation of the hexadecimal mac address without delimiters
-    def to_str
-      mac_addr.to_s(16)
+    def pretty_mac_addr(delim=':')
+      mac = mac_addr.to_s(16)
+      while mac.length < 12
+        mac.insert(0,'0')
+      end
+
+      mac.scan(/.{2}|.+/).join(delim)
     end
 
   end

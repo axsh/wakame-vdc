@@ -138,7 +138,7 @@ module Dcmgr::Models
       hn_vnet = HostNodeVnet.new
       hn_vnet.host_node = self
       hn_vnet.network = network
-      hn_vnet.broadcast_addr = m.to_str
+      hn_vnet.broadcast_addr = m.pretty_mac_addr('')
       hn_vnet.save
       hn_vnet
     end

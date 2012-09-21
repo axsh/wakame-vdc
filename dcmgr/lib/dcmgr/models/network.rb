@@ -55,7 +55,7 @@ module Dcmgr::Models
       vif_data = {
         :account_id => self.account_id,
         :network_id => self.id,
-        :mac_addr => m.to_str,
+        :mac_addr => m.pretty_mac_addr(''),
       }
 
       vif = NetworkVif.new(vif_data)
