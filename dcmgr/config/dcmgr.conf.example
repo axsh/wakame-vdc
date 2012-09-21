@@ -66,6 +66,14 @@ service_type("std", "StdServiceType") {
   #
   host_node_scheduler :LeastUsage
 
+  # Available mac address schedulers
+  # mac_address_scheduler :ByHostNodeGroup do
+  #   pair 'hng-shhost', 'mr-demomacs'
+  # end
+  mac_address_scheduler :ByHostNodeGroup do
+    pair 'hng-shhost', 'mr-demomacs'
+  end
+
   # Available storage node(sta) schedulers:
   #
   # * :FindFirst
@@ -153,6 +161,9 @@ service_type("lb", "LbServiceType") {
   host_node_scheduler :LeastUsage
   storage_node_scheduler :LeastUsage
   network_scheduler :VifsRequestParam
+  mac_address_scheduler :ByHostNodeGroup do
+    pair 'hng-shhost', 'mr-demomacs'
+  end
 
   # Please specify the addresses that can be referenced from within an instance of the load balancer.
   # amqp_server_uri is saved to userdata in instance of the load balancer.
