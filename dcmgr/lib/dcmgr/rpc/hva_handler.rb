@@ -86,6 +86,11 @@ module Dcmgr
         }
       end
 
+      def update_state_file(state)
+        # Insert state file in the tmp directory for the recovery script to use
+        File.open(File.expand_path('state', @hva_ctx.inst_data_dir), 'w') {|f| f.puts(state) }
+      end
+
       def update_instance_state(opts, ev)
         raise "Can't update instance info without setting @inst_id" if @inst_id.nil?
         rpc.request('hva-collector', 'update_instance', @inst_id, opts) do |req|
@@ -95,6 +100,8 @@ module Dcmgr
         ev.each { |e|
           event.publish(e, :args=>[@inst_id])
         }
+
+        update_state_file(opts[:state]) unless opts[:state].nil? || opts[:state] == :terminated || opts[:state] == :stopped
       end
       
       def update_instance_state_to_terminated(opts)
@@ -447,13 +454,12 @@ module Dcmgr
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+        update_state_file(:halting)
 
         @hva_ctx.logger.info("Turning power off")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweroff_instance, [@hva_ctx])
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:halted}) do |req|
-          req.oneshot = true
-        end
+        update_instance_state({:state=>:halted}, [])
         @hva_ctx.logger.info("Turned power off")
       }
 
@@ -465,9 +471,7 @@ module Dcmgr
         @hva_ctx.logger.info("Turning power on")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweron_instance, [@hva_ctx])
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:running}) do |req|
-          req.oneshot = true
-        end
+        update_instance_state({:state=>:running}, [])
         @hva_ctx.logger.info("Turned power on")
       }
       
