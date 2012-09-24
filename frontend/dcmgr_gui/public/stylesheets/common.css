@@ -1658,6 +1658,14 @@ body{
 	vertical-align: middle;
 }
 
+#notifications li {
+  padding: 10px 0px 10px 0px
+}
+
+#notification .notification_date {
+  padding-top: 5px
+}
+
 .error_message {
   color: red;
 }

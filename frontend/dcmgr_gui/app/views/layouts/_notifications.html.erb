@@ -1,0 +1,26 @@
+<% content_for :javascript do %>
+<%= javascript_include_tag 'dcmgr_gui/notification_view.js' %>
+<script type="text/javascript">
+jQuery(function($){
+  var options = {};
+  <% if DcmgrGui::Application.config.endpoints['notification'].nil? %>
+  options.notification_endpoint = 'http://' + window.location.hostname + ':9003/';
+  <% else %>
+  options.notification_endpoint = '<%= DcmgrGui::Application.config.endpoints['notification']  %>';
+  <% end %>
+  dcmgrGUI.notificationView(options);
+});
+</script>
+<% end %>
+<div id="notification">
+  <div class="title clearfix">
+    <h3><%= t("notification.header") %></h3>
+    <div class="maincontent">
+      <ul id="notifications"></ul>
+      <script id="notificationsTemplate" type="text/x-jquery-tmpl">
+      <li><b>${title}</b> <div class="notification_date">${publish_date_from} ~ ${publish_date_to}</div><hr />${article}</li>
+      </script>
+      </ul>
+    </div>
+  </div>
+</div>

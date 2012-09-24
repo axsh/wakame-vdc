@@ -110,7 +110,10 @@ DcmgrGui::Application.routes.draw do
   #information
   get    'information' ,:to => 'information#index'
   get    'information/rss' ,:to => 'information#rss'
-  
+
+  #notification
+  get    'notification', :to => 'notification#index'
+
   #instances
   get    'instances' ,:to => 'instances#index'
   get    'instances/total' ,:to => 'instances#total'

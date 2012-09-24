@@ -726,6 +726,8 @@ en:
       users:  "User Manage"
       groups: "Group Manage"
       resource: "Resource Manage"
+  notification:
+    header: "Notification"
   error_box:
     code: 'ErrorCode'
   error_message:
