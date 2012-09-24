@@ -26,4 +26,22 @@
       return response;
     }
   });
+
+  collections.InstanceDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
+
+  collections.SshKeyPairDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
+
+  collections.ImageDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
 })( app.collections);
