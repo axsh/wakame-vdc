@@ -5,9 +5,16 @@ require 'dcmgr/endpoints/12.03/responses/network'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
-  def verify_service_address(ipv4)
-    ip_address = IPAddress::IPv4.new(ipv4)
-    raise E::NetworkVifInvalidAddress if ip_address.nil? || ip_address.octets[3] == 0
+  def get_service_address(network_ipv4, prefix, service_ipv4 = nil)
+    network_address = IPAddress::IPv4.new("#{network_ipv4}/#{prefix}")
+    raise E::NetworkInvalidAddress if network_address.nil?
+
+    return network_address.first.to_s if service_ipv4.nil? || service_ipv4.empty?
+
+    service_address = IPAddress::IPv4.new(service_ipv4)
+    raise E::NetworkVifInvalidAddress if service_address.nil? || service_address.octets[3] == 0
+
+    return service_address.to_s
   end
 
   get do
@@ -83,29 +90,26 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     network_services = []
 
     if params[:service_dhcp]
-      verify_service_address(params[:service_dhcp])
       network_services << {
         :name => 'dhcp',
         :incoming_port => 67,
         :outgoing_port => 68,
-        :ipv4 => params[:service_dhcp],
+        :ipv4 => get_service_address(savedata[:ipv4_network], savedata[:prefix], params[:service_dhcp]),
       }
     end    
 
     if params[:service_dns]
-      verify_service_address(params[:service_dns])
       network_services << {
         :name => 'dns',
         :incoming_port => 53,
-        :ipv4 => params[:service_dns],
+        :ipv4 => get_service_address(savedata[:ipv4_network], savedata[:prefix], params[:service_dns]),
       }
     end    
 
     if params[:service_gateway]
-      verify_service_address(params[:service_gateway])
       network_services << {
         :name => 'gateway',
-        :ipv4 => params[:service_gateway],
+        :ipv4 => get_service_address(savedata[:ipv4_network], savedata[:prefix], params[:service_gateway]),
       }
     end    
 
