@@ -2,10 +2,14 @@ DcmgrAdmin.controllers :api do
   require 'spoof_token_authentication'
   disable :layout
 
+  SORTING = ['asc', 'desc'].freeze
+
   get :notifications, :provides => :json do
     limit = params['limit'].nil? ? 10 : params['limit'].to_i
     start = params['start'].nil? ? 0 : params['start'].to_i
-    @notifications = Notification.limit(limit, start).alives.all
+    sort  = SORTING.include?(params['sort']) ? params['sort'] : 'asc'
+
+    @notifications = Notification.order(:id.send(sort)).limit(limit, start).alives.all
     results = []
     @notifications.each {|n|
       results << n.to_hash()
