@@ -103,13 +103,27 @@ module Dcmgr
 
         update_state_file(opts[:state]) unless opts[:state].nil? || opts[:state] == :terminated || opts[:state] == :stopped
       end
-      
+
       def update_instance_state_to_terminated(opts)
         update_instance_state(opts,
                               ['hva/instance_terminated',"#{@inst[:host_node][:node_id]}/instance_terminated"])
 
         # Security group vnic left events for vnet netfilter
-        @inst[:vif].each { |vnic|
+        destroy_instance_vnics(@inst)
+      end
+
+      def create_instance_vnics(inst)
+        inst[:vif].each { |vnic|
+          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
+
+          vnic[:security_groups].each { |secg|
+            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
+          }
+        }
+      end
+
+      def destroy_instance_vnics(inst)
+        inst[:vif].each { |vnic|
           event.publish("#{@inst[:host_node][:node_id]}/vnic_destroyed", :args=>[vnic[:uuid]])
           vnic[:security_groups].each { |secg|
             event.publish("#{secg}/vnic_left", :args=>[vnic[:uuid]])
@@ -277,13 +291,7 @@ module Dcmgr
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
         
         # Security group vnic joined events for vnet netfilter
-        @inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
-          
-          vnic[:security_groups].each { |secg|
-            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
-          }
-        }
+        create_instance_vnics(@inst)
       }, proc {
         # TODO: Run detach & destroy volume
         ignore_error { terminate_instance(false) }
@@ -460,6 +468,7 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweroff_instance, [@hva_ctx])
         update_instance_state({:state=>:halted}, [])
+        destroy_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power off")
       }
 
@@ -472,6 +481,7 @@ module Dcmgr
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :poweron_instance, [@hva_ctx])
         update_instance_state({:state=>:running}, [])
+        create_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power on")
       }
       
