@@ -69,12 +69,8 @@
     }
 
    //fill with empty data.
-   if(tags.length < this.perPage) {
+   if(tags.length < this.perPage && !_.isEmpty(tags)) {
      var empty_data = {};
-     if(_.isEmpty(tags)) {
-       return false;
-     }
-
      _.each(_.keys(_.clone(tags[0])), function(k) {
        empty_data[k] = '';
      });
