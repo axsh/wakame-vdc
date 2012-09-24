@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 
+require 'ipaddress'
 require 'dcmgr/endpoints/12.03/responses/network'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
+
+  def verify_service_address(ipv4)
+    ip_address = IPAddress::IPv4.new(ipv4)
+    raise E::NetworkVifInvalidAddress if ip_address.nil? || ip_address.octets[3] == 0
+  end
+
   get do
     # description "List networks in account"
     # params start, fixnum, optional
@@ -60,6 +67,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       :prefix => params[:prefix].to_i,
       :network_mode => params[:network_mode],
     }
+
     if params[:service_type]
       validate_service_type(params[:service_type])
       savedata[:service_type] = params[:service_type]
@@ -72,30 +80,47 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     savedata[:ip_assignment] = params[:ip_assignment] if params[:ip_assignment]
     savedata[:editable] = params[:editable] if params[:editable]
 
+    network_services = []
+
+    if params[:service_dhcp]
+      verify_service_address(params[:service_dhcp])
+      network_services << {
+        :name => 'dhcp',
+        :incoming_port => 67,
+        :outgoing_port => 68,
+        :ipv4 => params[:service_dhcp],
+      }
+    end    
+
+    if params[:service_dns]
+      verify_service_address(params[:service_dns])
+      network_services << {
+        :name => 'dns',
+        :incoming_port => 53,
+        :ipv4 => params[:service_dns],
+      }
+    end    
+
+    if params[:service_gateway]
+      verify_service_address(params[:service_gateway])
+      network_services << {
+        :name => 'gateway',
+        :ipv4 => params[:service_gateway],
+      }
+    end    
+
     nw = M::Network.create(savedata)
     nw.dc_network = dc_network
     nw.save
 
-    if params[:service_dhcp]
-      M::NetworkService.create({ :name => 'dhcp',
-                                 :incoming_port => 67,
-                                 :outgoing_port => 68,
-                                 :network_vif_id => nw.add_service_vif(params[:service_dhcp]).id
-                               })
-    end    
+    network_services.each { |service|
+      if service[:ipv4]
+        service[:network_vif_id] = nw.add_service_vif(service[:ipv4]).id
+        service.delete(:ipv4)
+      end
 
-    if params[:service_dns]
-      M::NetworkService.create({ :name => 'dns',
-                                 :incoming_port => 53,
-                                 :network_vif_id => nw.add_service_vif(params[:service_dns]).id
-                               })
-    end    
-
-    if params[:service_gateway]
-      M::NetworkService.create({ :name => 'gateway',
-                                 :network_vif_id => nw.add_service_vif(params[:service_gateway]).id
-                               })
-    end    
+      M::NetworkService.create(service)
+    }
 
     respond_with(R::Network.new(nw).generate)
   end
