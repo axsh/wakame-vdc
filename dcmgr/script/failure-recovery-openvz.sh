@@ -19,9 +19,9 @@ for vif_name in `ovs-vsctl show | grep Interface | tr -s " " | cut -d " " -f3 | 
   fi
 done
 
-# Finally we bring up all of this HVA's instances
+# Finally we bring up all of this HVA's instances that have 'running' in their state file
 for dirname in `ls ${instances_tmp_dir}`; do
-  if [[ $dirname == i-* ]]; then
+  if [[ $dirname == i-* ]] && [[ `cat ${instances_tmp_dir}/${dirname}/state` == "running" ]]; then
     # Mount the metadata drive images and make sure their correct loop devices
     # are stored in Wakame's temp directory
     loop_device=`kpartx -va $instances_tmp_dir/$dirname/metadata.img | cut -d " " -f3`
