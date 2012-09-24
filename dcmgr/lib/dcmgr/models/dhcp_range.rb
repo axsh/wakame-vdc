@@ -56,7 +56,7 @@ module Dcmgr::Models
                  boundaries = IpLease.leased_ip_bound_lease(self.network_id, from, to).limit(2).all
                  ip = get_assignment_ip(boundaries, from, to)
                when :desc
-                 boundaries = leased_ip_bound_lease(self.network_id, from, to).limit(2).order(:ip_leases__ipv4.desc).all
+                 boundaries = IpLease.leased_ip_bound_lease(self.network_id, from, to).order(:ip_leases__ipv4.desc).limit(2).all
                  ip = get_assignment_ip(boundaries, to, from)
                else
                  raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
