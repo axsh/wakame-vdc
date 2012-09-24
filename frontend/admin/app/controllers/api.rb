@@ -8,14 +8,9 @@ DcmgrAdmin.controllers :api do
     @notifications = Notification.limit(limit, start).alives.all
     results = []
     @notifications.each {|n|
-      results << {
-        :id => n.id,
-        :title => n.title,
-        :publish_date_from => n.publish_date_from,
-        :publish_date_to => n.publish_date_to,
-        :users => n.users
-      }
+      results << n.to_hash()
     }
+
     h = {
       :count => Notification.count,
       :results => results
