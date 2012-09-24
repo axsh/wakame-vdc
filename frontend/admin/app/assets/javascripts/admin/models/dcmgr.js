@@ -14,4 +14,12 @@
   models.Image = models.Dcmgr.extend({
     url: app.info.api_endpoints.dcmgr + '/api/12.03' + location.pathname + '.json'
   });
+
+  models.HostNode = models.Dcmgr.extend({
+    url: app.info.api_endpoints.dcmgr + '/api/12.03' + location.pathname + '.json'
+  });
+
+  models.Statistics = models.Dcmgr.extend({
+    url: app.info.api_endpoints.dcmgr + '/api/12.03/instances.json?host_node_id=' + location.pathname.split('/')[2]
+  });
 })( app.models );

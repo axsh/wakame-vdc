@@ -11,6 +11,7 @@ module Dcmgr::Endpoints::V1203::Responses
       @instance.instance_exec {
         h = {
           :id => canonical_uuid,
+          :account_id => account_id,
           :host_node   => self.host_node && self.host_node.canonical_uuid,
           :cpu_cores   => cpu_cores,
           :memory_size => memory_size,
