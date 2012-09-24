@@ -47,15 +47,28 @@
       <tbody>
         <tr>
           <td><%= t("dialog.create_network.service.dhcp") %>:</td>
-          <td><input id="service_checkbox" type="checkbox" name="dhcp" value="dhcp" checked="checked"></td>
+          <td>
+            <%= t("dialog.create_network.enable") %>
+            <input id="service_checkbox" type="checkbox" name="dhcp" value="dhcp" checked="checked">
+          </td>
+          <td>
+            <%= t("dialog.create_network.use_default_range") %>
+            <input id="service_checkbox" type="checkbox" name="dhcp_use_default" value="dhcp_use_default" checked="checked">
+          </td>
         </tr>
         <tr>
           <td><%= t("dialog.create_network.service.dns") %>:</td>
-          <td><input id="service_checkbox" type="checkbox" name="dns" value="dns"></td>
+          <td>
+            <%= t("dialog.create_network.enabled") %>
+            <input id="service_checkbox" type="checkbox" name="dns" value="dns">
+          </td>
         </tr>
         <tr>
           <td><%= t("dialog.create_network.service.gateway") %>:</td>
-          <td><input id="service_checkbox" type="checkbox" name="gateway" value="gateway"></td>
+          <td>
+            <%= t("dialog.create_network.enabled") %>
+            <input id="service_checkbox" type="checkbox" name="gateway" value="gateway">
+          </td>
         </tr>
         <tr>
           <td><%= t("dialog.create_network.service.address") %>:</td>

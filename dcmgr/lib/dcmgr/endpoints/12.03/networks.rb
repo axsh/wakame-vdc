@@ -5,10 +5,7 @@ require 'dcmgr/endpoints/12.03/responses/network'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
-  def get_service_address(network_ipv4, prefix, service_ipv4 = nil)
-    network_address = IPAddress::IPv4.new("#{network_ipv4}/#{prefix}")
-    raise E::NetworkInvalidAddress if network_address.nil?
-
+  def get_service_address(network_address, service_ipv4 = nil)
     return network_address.first.to_s if service_ipv4.nil? || service_ipv4.empty?
 
     service_address = IPAddress::IPv4.new(service_ipv4)
@@ -87,14 +84,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     savedata[:ip_assignment] = params[:ip_assignment] if params[:ip_assignment]
     savedata[:editable] = params[:editable] if params[:editable]
 
+    network_address = IPAddress::IPv4.new("#{savedata[:ipv4_network]}/#{savedata[:prefix]}")
     network_services = []
+
+    raise E::NetworkInvalidAddress if network_address.nil?
 
     if params[:service_dhcp]
       network_services << {
         :name => 'dhcp',
         :incoming_port => 67,
         :outgoing_port => 68,
-        :ipv4 => get_service_address(savedata[:ipv4_network], savedata[:prefix], params[:service_dhcp]),
+        :ipv4 => get_service_address(network_address, params[:service_dhcp]),
       }
     end    
 
@@ -102,14 +102,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       network_services << {
         :name => 'dns',
         :incoming_port => 53,
-        :ipv4 => get_service_address(savedata[:ipv4_network], savedata[:prefix], params[:service_dns]),
+        :ipv4 => get_service_address(network_address, params[:service_dns]),
       }
     end    
 
     if params[:service_gateway]
       network_services << {
         :name => 'gateway',
-        :ipv4 => get_service_address(savedata[:ipv4_network], savedata[:prefix], params[:service_gateway]),
+        :ipv4 => get_service_address(network_address, params[:service_gateway]),
       }
     end    
 
@@ -125,6 +125,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
       M::NetworkService.create(service)
     }
+
+    if params[:dhcp_range] == "default"
+      nw.add_ipv4_dynamic_range(network_address.first, network_address.last)
+    end
 
     respond_with(R::Network.new(nw).generate)
   end
