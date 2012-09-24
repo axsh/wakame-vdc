@@ -37,7 +37,7 @@ module Dcmgr::SpecConvertor
       if engine != 'haproxy'
         raise ArgumentError, "#{engine} isn't implmented"
       end
-      load('load_balancer.yml', max_connection)
+      load('load_balancer.yml', max_connection.to_i)
     end
   end
 end

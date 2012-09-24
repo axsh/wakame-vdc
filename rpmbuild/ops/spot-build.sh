@@ -18,6 +18,8 @@ release_id=$(../helpers/gen-release-id.sh)
   exit 1
 }
 
+exec 2>${release_id}.err
+
 time REPO_URI=$(cd ../../.git && pwd) ./rules clean rpm
 
 [[ -d pool ]] && rm -rf pool || :

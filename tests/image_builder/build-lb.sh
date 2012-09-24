@@ -104,6 +104,9 @@ yum install -y ${distro_pkgs}
 
 chkconfig haproxy off
 chkconfig stunnel off
+chkconfig postfix off
+chkconfig rsyslog off
+chkconfig sshd off
 rm -f /etc/haproxy/haproxy.cfg
 EOS
 }

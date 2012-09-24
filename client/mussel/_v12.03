@@ -7,6 +7,7 @@ MUSSEL_RESOURCES="
  host_node
  image
  instance
+ load_balancer
  network
  security_group
  ssh_key_pair
@@ -23,6 +24,11 @@ ssh_key_id=${ssh_key_id:-ssh-demo}
 hypervisor=${hypervisor:-openvz}
 cpu_cores=${cpu_cores:-1}
 memory_size=${memory_size:-1024}
+protocol=${protocol:-http}
+balancer_port=${balancer_port:-80}
+instance_port=${instance_port:-80}
+balance_algorithm=${balance_algorithm:-leastconn}
+max_connection=${max_connection:-1000}
 
 ## optional
 display_name=${display_name:-}
@@ -30,7 +36,9 @@ host_name=${host_name:-}
 #host_pool_id=${host_pool_id:-}
 #quota_weight=${quota_weight:-1.0}
 #user_data=${user_data:-}
-
+cookie_name=${cookie_name:-}
+private_key=${private_key:-}
+public_key=${public_key:-}
 
 function run_cmd() {
 case "${1}" in
@@ -68,6 +76,40 @@ instance)
   esac
   ;;
 
+load_balancer)
+  case "${2}" in
+  help)    cmd_help    ${1} "index|show|create|destroy|poweroff|poweron" ;;
+  index)
+    # --state=(running|stopped|terminated|alive)
+    #if [ ! -z "${state}" ]; then
+    #  xquery="state=${state}"
+    #fi
+    cmd_index $*
+    ;;
+  show)    cmd_show    $* ;;
+  destroy) cmd_destroy $* ;;
+  create)
+    call_api -s -X POST -H ${http_header}  \
+     --data-urlencode "display_name=${display_name}" \
+     --data-urlencode "protocol=${protocol}" \
+     --data-urlencode "port=${balancer_port}" \
+     --data-urlencode "instance_port=${instance_port}" \
+     --data-urlencode "balance_algorithm=${balance_algorithm}" \
+     --data-urlencode "engine=haproxy" \
+     --data-urlencode "cookie_name=${cookie_name}" \
+     --data-urlencode "private_key=${private_key}" \
+     --data-urlencode "public_key=${public_key}" \
+     --data-urlencode "engine=haproxy" \
+     --data-urlencode "max_connection=${max_connection}" \
+     ${base_uri}/${1}s.${format}
+    ;;
+  poweroff|poweron)
+    call_api -s -X PUT -H ${http_header} -d "''" \
+     ${base_uri}/${1}s/${3}/${2}.${format}
+    ;;
+  *)       cmd_default $* ;;
+  esac
+  ;;
 host_node|storage_node|image|network|security_group|ssh_key_pair)
   case "${2}" in
   help)    cmd_help    ${1} "index|show" ;;
