@@ -1,10 +1,28 @@
 class Notification < Sequel::Model
 
+  DISTRIBUTION_TYPE = ['all', 'any'].freeze
+
   subset(:alives, {:deleted_at => nil})
+
+  def_dataset_method(:notifications) do |distribution='all', user_id=''|
+    if ['any', 'merged'].member? distribution
+      case distribution
+        when 'any'
+          dataset = self.filter("`notifications`.`id` IN ? and `notifications`.`distribution` = ?", NotificationUser.filter(:user_id => user_id).select(:notification_id), 'any')
+        when 'merged'
+          dataset = self.filter("`notifications`.`id` IN ? or `notifications`.`distribution` = ?", NotificationUser.filter(:user_id => user_id).select(:notification_id), 'all')
+      end
+    else
+      dataset = self.filter(:distribution => 'all')
+    end
+    dataset.order(:updated_at.desc)
+  end
+
 
   def validate
     super
-    errors.add(:title, 'cannot be empty') if !title || title.empty?
+    errors.add(:distribution, 'Invalided distribution type') if !DISTRIBUTION_TYPE.member? distribution
+    errors.add(:title, 'Cannot be empty') if !title || title.empty?
   end
 
   def to_hash()
