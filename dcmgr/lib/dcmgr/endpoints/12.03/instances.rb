@@ -40,7 +40,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     if params[:id]
       uuid = params[:id].split("i-")[1]
       uuid = params[:id] if uuid.nil?
-      ds = filter(:uuid.like("%#{uuid}%"))
+      ds = ds.filter(:uuid.like("%#{uuid}%"))
     end
 
     if params[:account_id]

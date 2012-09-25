@@ -26,11 +26,13 @@
       <div class="control-group">
          <div class="controls">
          <label class="control-label" for="inputSearch">検索条件</label>
-         <input type="text" id="selectStatus" placeholder="">
+         <input type="text" id="inputSearch" placeholder="" name="q">
          <span style="margin:30px">
          <label class="control-label" for="selectStatus">状態</label>
-         <select>
+         <select id="selectStatus" name="state">
            <option>running</option>
+           <option>terminated</option>
+           <option>stopped</option>
          </select>
          </span>
          </div>
