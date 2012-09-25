@@ -1,8 +1,10 @@
 <% content_for :javascript_link_tags do %>
-<%= javascript_include_tag ['/assets/admin/models/dcmgr.js',
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/admin/models/dcmgr.js',
                             '/assets/admin/collections/detail_collection.js',
                             '/assets/admin/views/detail_view.js',
                             '/assets/admin/controllers/images/detail_controller.js',
+			    '/assets/admin/helpers.js',
 ] %>
 <% end %>
 
@@ -63,13 +65,13 @@
        <div class="control-group">
         <label class="control-label">作成日時:</label>
         <div class="controls">
-          <p>{{ created_at }}</p>
+          <p>{{ app.helpers.date_ja.parse(created_at) }}</p>
         </div>
       </div>
        <div class="control-group">
         <label class="control-label">更新日時:</label>
         <div class="controls">
-          <p>{{ updated_at }}</p>
+          <p>{{ app.helpers.date_ja.parse(updated_at) }}</p>
         </div>
       </div>
 

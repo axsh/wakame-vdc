@@ -8,7 +8,8 @@
                             '/assets/admin/views/pagination_view.js',
                             '/assets/admin/views/list_view.js',
                             '/assets/admin/views/user_view.js',
-                            '/assets/admin/controllers/users/search_controller.js'
+                            '/assets/admin/controllers/users/search_controller.js',
+                            '/assets/admin/helpers.js',
 ]
 %>
 <% end %>
@@ -62,7 +63,11 @@
         <td>{{ name }}</td>
         <td>{{ login_id }}</td>
         <td>{{ primary_account_id }}</td>
-        <td>{{ last_login_at }}</td>
+        <td>
+          {% if(! _.isEmpty(last_login_at)){ %}
+	    {{ app.helpers.date_ja.parse(last_login_at) }}
+          {% } %}
+        </td>
         <td>{% if(id !== null){ %}<a href="/instances?">インスタンス情報</a>{% } %}</td>
         <td>{% if(id !== null){ %}<button class="btn user_login" >Login</button>{% } %}</td>
       </script>

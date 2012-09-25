@@ -7,7 +7,8 @@
                             '/assets/admin/views/result_view.js',
                             '/assets/admin/views/pagination_view.js',
                             '/assets/admin/views/list_view.js',
-                            '/assets/admin/controllers/instances/search_controller.js'
+                            '/assets/admin/controllers/instances/search_controller.js',
+			    '/assets/admin/helpers.js',
 ]
 %>
 <% end %>
@@ -67,7 +68,11 @@
         <td>{{ status }}</td>
         <td>{{ host_node }}</td>
         <td>{% if( ! _.isEmpty(vif) && ! _.isEmpty(vif[0].ipv4)){ %}{{ vif[0].ipv4.address }}{% } %}</td>
-        <td>{{ created_at }}</td>
+        <td>
+	{% if(! _.isEmpty(created_at)){ %}
+	  {{ app.helpers.date_ja.parse(created_at) }}
+	{% } %}
+	</td>
        </script>
     </table>
 </div>
