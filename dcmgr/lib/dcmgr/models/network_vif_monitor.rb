@@ -44,20 +44,20 @@ module Dcmgr::Models
         def validate
           super
 
-          if self.params[:port].nil?
+          if self.params['port'].nil?
             errors.add(:port, "Not found port number")
-          elsif !(0 .. 65534).include?(self.params[:port].to_i)
+          elsif !(0 .. 65534).include?(self.params['port'].to_i)
             errors.add(:port, "Out of TCP port range: #{self.port}")
           end
         end
 
         def port
-          raise "Undefined parameter: port" unless self.params.has_key?(:port)
-          self.params[:port].to_i
+          raise "Undefined parameter: port" unless self.params.has_key?('port')
+          self.params['port'].to_i
         end
 
         def port=(port)
-          self.params[:port] = port.to_i
+          self.params['port'] = port.to_i
         end
       end
 
@@ -65,19 +65,19 @@ module Dcmgr::Models
         def validate
           super
 
-          if self.params[:port].nil?
+          if self.params['port'].nil?
             errors.add(:port, "Not found port number")
-          elsif !(0 .. 65534).include?(self.params[:port].to_i)
+          elsif !(0 .. 65534).include?(self.params['port'].to_i)
             errors.add(:port, "Out of TCP port range: #{self.port}")
           end
         end
 
         def port
-          self.params[:port].to_i
+          self.params['port'].to_i
         end
 
         def port=(port)
-          self.params[:port] = port.to_i
+          self.params['port'] = port.to_i
         end
       end
 
@@ -85,13 +85,16 @@ module Dcmgr::Models
         def validate
           super
 
-          if self.params[:check_path].nil?
+          if self.params['check_path'].nil?
             errors.add(:check_path, "Not found check path")
-          elsif self.params[:check_path] !~ %r{^/.*}
-            errors.add(:check_path, "Invalid check path: #{self.params[:check_path]}")
+          elsif self.params['check_path'] !~ %r{^/.*}
+            errors.add(:check_path, "Invalid check path: #{self.params['check_path']}")
           end
         end
 
+        def check_path
+          self.params['check_path']
+        end
       end
 
       class HTTPS < HTTP
@@ -128,10 +131,6 @@ module Dcmgr::Models
 
     def to_hash
       hash = super
-    end
-
-    def params
-      deserialized_values[:params] ||= {}
     end
 
     def before_validation
