@@ -20,25 +20,13 @@ module Hijiki::DcmgrResource::V1203
                                  :security_groups,
                                 ]
 
-    self.prefix = '/api/12.03/networks/:network_id/'
-    self.element_name = 'vifs'
 
-    def attach
-      self.put(:attach)
+    def attach(network_id)
+      Network.find(network_id).attach(self.uuid)
     end
 
-    def detach
-      self.put(:detach)
-    end
-
-    class << self
-      def find_vif(network_id, vif_id)
-        find(vif_id, :params => { :network_id => network_id })
-      end
-
-      def detach_vif(network_id, vif_id)
-        find_vif(network_id, vif_id).detach
-      end
+    def detach(network_id)
+      Network.find(network_id).detach(self.uuid)
     end
 
   end

@@ -93,6 +93,14 @@ module Hijiki::DcmgrResource::V1203
     def remove_dhcp_range(range_begin, range_end)
       self.put('dhcp_ranges/remove', { :range_begin => range_begin, :range_end => range_end })
     end
+
+    def attach(vif_id)
+      self.put("vifs/#{vif_id}/attach")
+    end
+
+    def detach(vif_id)
+      self.put("vifs/#{vif_id}/detach")
+    end
   end
 
 end

@@ -23,7 +23,7 @@
   
   <br />
   
-  <fieldset id="security_group_field">
+  <fieldset id="security_group_field" class="with_border">
 		<legend><%= t("dialog.edit_instance.security_group") %></legend><legend>
 		</legend><table cellspacing="5" cellpadding="5">
 		<tbody>
@@ -50,10 +50,12 @@
   
   <br />
   
+  <fieldset id="interfaces_field" class="with_border">
+    <legend><%= t("dialog.edit_instance.interface") %></legend>
   <table>
     <% @vifs.each_index do |index| %>
       <tr>
-        <td><%= t("dialog.edit_instance.interface") %> eth<%= index %>:</td>
+        <td>eth<%= index %>:</td>
         <td><%= @vifs[index]["vif_id"] %></td>
         <td id="eth<%= index %>_network_id"></td>
         <td>
@@ -65,5 +67,47 @@
       </tr>
     <% end %>
   </table>
+  </fieldset>
 
+  <br>
+  
+  <fieldset id="network_service_monitor_field" class="with_border">
+    <legend><%= t("dialog.launch_instance.network_service_monitor") %></legend>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 10%;"><%= t("dialog.launch_instance.network_service_monitor.protocol") %></th>
+          <th style="width: 70%;"><%= t("dialog.launch_instance.network_service_monitor.parameter") %></th>
+          <th style="width: 10%;"><%= t("dialog.launch_instance.network_service_monitor.enable") %></th>
+          <th style="width: 10%;"></th>
+        <tr>
+      </thead>
+      <script id="monitor_selector_tmpl" type="text/x-jquery-tmpl">
+	<tr id="monitor_item_${idx}">
+	  <td>
+            <select class="select_monitor_proto" name="monitor_item[${idx}][protocol]">
+	      {{each(index,item) itemlist}}
+              <option value="${index}">${item.title}</option>
+              {{/each}}
+            </select>
+          </td>
+          <td class="detail_input">
+          </td>
+          <td class="check_enable">
+            <input type="checkbox" class="enabled" value="true" checked></input>
+          </td>
+          <td style="align: right;">
+            <button id="del_monitor_item_${idx}" class="del_monitor_item">-</button>
+          </td>
+	</tr>
+      </script>
+      <tbody id="monitor_item_list">
+      </tbody>
+      <tfoot>
+        <tr>
+	  <td colspan="4"><button id="add_monitor_item">+</button></td>
+	</tr>
+      </tfoot>
+    </table>
+  </fieldset>
 </div>
