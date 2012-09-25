@@ -166,7 +166,6 @@ DcmgrGUI.prototype.imagePanel = function(){
               + bt_launch_instance.monitor_selector.queryParams()
               +"&ssh_key="+ssh_key_pair
               +"&display_name="+display_name;
-    console.debug(data);
 
     request = new DcmgrGUI.Request;
     request.post({
