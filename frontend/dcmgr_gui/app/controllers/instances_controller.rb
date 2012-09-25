@@ -48,7 +48,7 @@ class InstancesController < ApplicationController
         vif_mons = {}
 
         vif_eth0 = data[:vifs]["eth0"] ||= {}
-        params[:eth0_monitors].each_with_index { |mon, idx|
+        params[:eth0_monitors].each{ |idx, mon|
           vif_eth0[:monitors] ||= []
           vif_eth0[:monitors] << {
             :protocol=>mon[:protocol],
