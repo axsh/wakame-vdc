@@ -39,7 +39,7 @@
     if(_.has(parsedSearch, word) ){
       return parsedSearch[word];
     } else{
-      return parsedSearch;
+      return "";
     }
   };
 
@@ -51,11 +51,9 @@
   _.extend(app.DatetimePicker.prototype, {
     initialize : function(config) {
 
-      var input_form_id = config.input_form_id;
-      var icon_id = config.icon_id;
       var self = this;
-      this.el = $(input_form_id);
-      this.icon = $(icon_id);
+      this.el = config.input_form;
+      this.icon = config.icon;
 
       this.el.datetimepicker({
         showSecond: true,

@@ -2,6 +2,11 @@
 
   // Defer initialization until doc ready.
   $(function(){
+
+    if (!_.isEmpty($('#system_message').html())){
+      app.notify.success($('#system_message').html());
+    }
+
     app.collections.paginatedItems = new app.collections.PaginatedCollection({
 
       model: app.models.Item.extend({

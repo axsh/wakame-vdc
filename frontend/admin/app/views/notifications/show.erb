@@ -26,10 +26,19 @@
       <div class="control-group">
         <legend>お知らせ</legend>
       </div>
+      <div class="control-group" style="text-align:right">
+        <span><a href="/notifications/{{id}}/edit">編集</a></span>
+      </div>
       <div class="control-group">
         <label class="control-label">対象:</label>
         <div class="controls">
-          <p>全ユーザー</p>
+        {% if(distribution == 'all') { %}
+        <td>全ユーザー</td>
+        {% } else if(distribution == 'any') { %}
+        <td>指定ユーザー</td>
+        {% } else {%}
+        <td></td>
+        {% } %}
         </div>
       </div>
       <div class="control-group">

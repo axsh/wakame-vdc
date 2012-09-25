@@ -1,8 +1,31 @@
+# -*- coding: utf-8 -*-
+
 DcmgrAdmin.controllers :api do
   require 'spoof_token_authentication'
   disable :layout
 
   SORTING = ['asc', 'desc'].freeze
+
+  BODY_PARSER = {
+    'application/json' => proc { |body| ::JSON.load(body) },
+    'text/json' => proc { |body| ::JSON.load(body) },
+  }
+
+  before do
+    next if request.content_type == 'application/x-www-form-urlencoded'
+    next if !(request.content_length.to_i > 0)
+    parser = BODY_PARSER[(request.content_type || request.preferred_type)]
+    hash = if parser.nil?
+             error(400, 'Invalid content type.')
+           else
+             begin
+               parser.call(request.body)
+             rescue => e
+               error(400, 'Invalid request body.')
+             end
+           end
+    @params.merge!(hash)
+  end
 
   get :notifications, :provides => :json do
     limit = params['limit'].nil? ? 10 : params['limit'].to_i
@@ -16,7 +39,7 @@ DcmgrAdmin.controllers :api do
     }
 
     h = {
-      :count => Notification.count,
+      :count => Notification.alives.count,
       :results => results
     }
     render h
@@ -54,21 +77,48 @@ DcmgrAdmin.controllers :api do
   end
 
   post :notifications, :provides => :json do
+
+    if params[:users] == ''
+      distribution = 'all'
+      users = []
+    else
+      distribution = 'any'
+      users = params[:users].split(',')
+    end
+
     @notification = Notification.new
-    @notification.users = params[:users]
+    @notification.distribution = distribution
     @notification.title = params[:title]
-    @notification.publish_date_to = Time.iso8601(params[:publish_date_to])
-    @notification.publish_date_from = Time.iso8601(params[:publish_date_from])
+
+    if !params[:publish_date_to].nil?
+      @notification.publish_date_to = Time.iso8601(params[:publish_date_to])
+    end
+
+    if !params[:publish_date_from].nil?
+      @notification.publish_date_from = Time.iso8601(params[:publish_date_from])
+    end
+
     @notification.article = params[:article]
     if @notification.valid?
-      @notification.save
+      Notification.db.transaction do
+        result = @notification.save
+        users.each do |user_id|
+          NotificationUser.create :notification_id => result.id, :user_id => user_id
+        end
+      end
       h = {
        :result => @notification.to_hash
       }
+
+      # TODO: better notification system.
+      flash[:message] = 'お知らせを作成しました。'
+
     else
       h = {
-       :result => {}
+       :result => {},
+       :errors => @notification.errors
       }
+      status 400
     end
     render h
   end
@@ -104,6 +154,9 @@ DcmgrAdmin.controllers :api do
 
     if @notification.valid?
       @notification.save_changes
+
+      # TODO: better notification system.
+      flash[:message] = 'お知らせを更新しました。'
     end
 
     h = {

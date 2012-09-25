@@ -20,7 +20,8 @@
 ] %>
 <% end %>
 <div id="notify" class='notifications top-right'></div>
-  <div class="span8">
+<span id="system_message" style="visibility: hidden"><%= @message %></span>
+  <div class="span9">
     <div class="control-group">
       <legend>お知らせ検索</legend>
     </div>
@@ -28,16 +29,16 @@
       <div class="control-group">
         <div class="controls">
           <label class="radio">
-            <input type="radio" name="option_user" id="option_user_all" value="" placeholder="" checked>全ユーザー
+            <input type="radio" name="users" id="option_user_all" value="" placeholder="" checked>全ユーザー
           </label>
         </div>
 
         <div class="controls" >
           <label class="radio">
-            <input type="radio" name="option_user" id="option_users" value="" placeholder="">
+            <input type="radio" name="users" id="option_users" value="" placeholder="">
 
             <div class="controls">
-                <label class="control-label">指定ユーザー</label>
+                指定ユーザー
                 <div class="controls form-search" id="control_option_users">
                   <textarea class="span8" name="users" rows="4" ></textarea>
                 </div>
@@ -74,7 +75,7 @@
         <tr>
           <th>タイトル</th>
           <th>掲載期間</th>
-          <th>アカウントID</th>
+          <th>対象</th>
           <th></th>
         </tr>
       </thead>
@@ -86,10 +87,17 @@
 
     <script type="text/template" id="resultItemTemplate">
       <td><a href="/notifications/{{ id }}">{{ title }}</a></td>
-      <td>{{ this.publish_date() }}</td>
-      <td>
-      {% if(!_.isEmpty(title)) { %}
-       <a href="/notifications/edit">a-xxxxx<a></td>
+      {% if(publish_date_from != '' && publish_date_to != ''){ %}
+      <td>{{ publish_date_from }} ~ {{ publish_date_to }}</td>
+      {% } else {%}
+      <td></td>
+      {% } %}
+      {% if(distribution == 'all') { %}
+      <td>全ユーザー</td>
+      {% } else if(distribution == 'any') { %}
+      <td>指定ユーザー</td>
+      {% } else {%}
+      <td></td>
       {% } %}
       <td>
       {% if(!_.isEmpty(title)) { %}
