@@ -4,7 +4,7 @@ Sequel.migration do
       primary_key :id
       column :title, "varchar(255)"
       column :article, "text"
-      column :users, "text"
+      column :distribution, "varchar(255)"
       column :publish_date_to, 'datetime'
       column :publish_date_from, 'datetime'
       column :created_at, "datetime", :null => false
