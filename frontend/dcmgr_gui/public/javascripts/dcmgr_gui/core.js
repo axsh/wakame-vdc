@@ -992,6 +992,192 @@ DcmgrGUI.Logger = DcmgrGUI.Class.create({
   }
 });
 
+
+DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
+  initialize: function(elem) {
+    this.index_counter = 0;
+    this.monitor_list = [];
+    this.render_target = elem;
+  },
+
+  monitors: function(){
+    return this.monitor_list;
+  },
+
+  _newIndex: function() {
+    return (this.index_counter++);
+  },
+  
+  addItem: function(protocol){
+    var self = this;
+    var idx = this._newIndex();
+    if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[protocol] === undefined) {
+      throw "Unknown protocol parameter is passed: " + protocol;
+    }
+
+    // place holder variable for event handlers.
+    var item_props = {"protocol":protocol,
+                      'idx': idx,
+                     };
+    this.monitor_list.push(item_props);
+
+    var tr_tag = $('#monitor_selector_tmpl').tmpl({idx: idx,
+                                                   itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS(),
+                                                  });
+    tr_tag.appendTo(this.render_target);
+    tr_tag.find('.del_monitor_item').first().bind('click', function(e){
+      // remove the clicked item from the list.
+      self.monitor_list.splice((idx - 1), 1);
+      $('#monitor_item_' + idx).first().remove();
+    });
+    
+    tr_tag.find('.select_monitor_proto').first().bind('change', function(e){
+      item_props['protocol']=$(e.currentTarget).val();
+
+      var replace_tgt = $(e.currentTarget).parent().parent().find(".detail_input");
+      // fill input UI elements for the protocol selected by user.
+      var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[e.target.value];
+      if(row_item === undefined){
+        throw "Unknown monitor protocol: " + e.target.value;
+      }
+      // Clear current child elements.
+      replace_tgt.html('');
+      row_item.ui(replace_tgt, e.target.id);
+    }).val(protocol).trigger('change');
+
+    item_props['row_elem'] = tr_tag;
+  },
+
+  queryParams: function(){
+    var res="";
+
+    for (var i=0; i < this.monitor_list.length; i++) {
+      var itm = this.monitor_list[i]
+      res += "&eth0_monitors["+i+"][protocol]=" + itm['protocol'];
+      res += "&eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked');
+      res += DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[itm['protocol']].buildQuery(itm['row_elem'], i);
+    }
+
+    return res;
+  },
+});
+
+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
+  return {
+    'icmp': {
+      title: "PING",
+      ui: function (elem){
+      },
+      buildQuery: function(row_elem, idx){
+        return "";
+      },
+    },
+    'http': {
+      title: "HTTP",
+      ui: function (elem){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="80"></input>');
+        elem.append('<br>Path: <input type="text" class="_check_path" width="40"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
+          "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
+      },
+    },
+    'https': {
+      title: "HTTPS",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="443"></input>');
+        elem.append('<br>Path: <input type="text" class="_check_path" width="40"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
+          "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
+      },
+    },
+    'ftp': {
+      title: "FTP",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="21"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'ssh': {
+      title: "SSH",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="22"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'smtp': {
+      title: "SMTP",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="25"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'pop3': {
+      title: "POP3",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="110"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'imap': {
+      title: "IMAP",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="143"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'submission': {
+      title: "Submission",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="587"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'dns': {
+      title: "DNS",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_udp_port" width="4" value="53"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._udp_port').val();
+      },
+    },
+    'mysql': {
+      title: "MySQL",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="3306"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'postgresql': {
+      title: "PostgreSQL",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="5432"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    }
+  };
+};
+
 DcmgrGUI.prototype = {
   initialize:function(){
     $.deferred.define();
