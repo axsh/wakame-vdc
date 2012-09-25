@@ -240,6 +240,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       for (var i=0; i < this.monitor_list.length; i++) {
         var itm = this.monitor_list[i]
         res += "&eth0_monitors["+i+"][protocol]=" + itm['protocol'];
+        res += "&eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked');
         res += DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[itm['protocol']].buildQuery(itm['row_elem'], i);
       }
 

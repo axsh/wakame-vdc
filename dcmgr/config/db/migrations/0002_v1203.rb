@@ -352,7 +352,7 @@ Sequel.migration do
       primary_key :id, :type=>"int(11)"
       column :uuid, "varchar(255)", :null=>false
       column :network_vif_id, "int(11)", :null=>false
-      column :timeout_sec, "int(11)", :null=>false
+      column :is_enabled, "tinyint(1)", :default=>true, :null=>false
       column :protocol, "varchar(255)", :null=>false
       column :params, "text", :null=>false
       column :deleted_at, "datetime"
