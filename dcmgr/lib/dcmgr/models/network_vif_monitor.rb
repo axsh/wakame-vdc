@@ -32,7 +32,7 @@ module Dcmgr::Models
       'pgsql' => :PostgreSQL
     }.freeze
    
-    plugin :single_table_inheritance, :protocol, :model_map=>lambda {|v| self::Monitors.const_get(MONITOR_CLASSES[v]) }, :key_map=>lambda{|klass|
+    plugin :single_table_inheritance, :protocol, :model_map=>lambda {|v| self::Monitors.const_get(MONITOR_CLASSES[v], false) }, :key_map=>lambda{|klass|
       MONITOR_CLASSES.invert[klass.name.split('::').last.to_sym]
     }
 
