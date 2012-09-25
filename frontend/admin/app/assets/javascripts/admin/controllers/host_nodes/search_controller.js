@@ -8,6 +8,8 @@
        }),
 
        server_api: {
+	 id: app.utils.parsedSearch('q'),
+	 status: app.utils.parsedSearch('status'),
        },
 
        paginator_core: {

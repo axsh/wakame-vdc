@@ -38,6 +38,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
       ds = ds.filter(:offering_memory_size =>params[:memory_size])
     end
 
+    if params[:status]
+      ds = case params[:status]
+           when 'online'
+             ds.online_nodes
+           when 'offline'
+             ds.offline_nodes
+           end
+    end
     collection_respond_with(ds) do |paging_ds|
       R::HostNodeCollection.new(paging_ds).generate
     end
