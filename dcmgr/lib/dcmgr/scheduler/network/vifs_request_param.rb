@@ -27,6 +27,8 @@ module Dcmgr
             index = [index, vnic_params[:index]].max + 1
             vnic = instance.add_nic(vnic_params)
 
+            next if param['network'].to_s.empty?
+
             network = Models::Network[param['network'].to_s]
             raise NetworkSchedulingError, "Network '#{param['network'].to_s}' doesn't exist." if network.nil?
 
