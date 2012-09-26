@@ -63,9 +63,9 @@
       <!--  The content is mapped on #resultItemTemplate -->
       <tbody id="content"></tbody>
       <script type="text/template" id="resultItemTemplate">
-        <td>{% if( id != null ){ %}{{ id }}{% } %}</td>
-        <td><a href="/instances/{{ id }}">{{ display_name }}</a></td>
-        <td>{{ status }}</td>
+        <td>{% if(! _.isEmpty(id)){ %}<a href="/instances/{{ id }}">{{ id }}</a>{% } %}</td>
+        <td>{{ display_name }}</td>
+        <td>{{ state }}</td>
         <td>{{ host_node }}</td>
         <td>{% if( ! _.isEmpty(vif) && ! _.isEmpty(vif[0].ipv4)){ %}{{ vif[0].ipv4.address }}{% } %}</td>
         <td>

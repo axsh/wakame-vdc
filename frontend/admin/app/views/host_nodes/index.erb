@@ -69,8 +69,8 @@
         <td>{{ status }}</td>
         <td>{{ hypervisor }}</td>
         <td>{{ offering_cpu_cores }}</td>
-        <td>{{ offering_memory_size }}</td>
-        <td>{% if(id !== null){ %}<a href="/instances?">インスタンス情報</a>{% } %}</td>
+        <td>{% if(! _.isEmpty(id)){ %}{{ offering_memory_size }}MB{% } %}</td>
+        <td>{% if(! _.isEmpty(id)){ %}<a href="/instances?host_node_id={{ uuid }}">インスタンス情報</a>{% } %}</td>
       </script>
     </table>
 </div>

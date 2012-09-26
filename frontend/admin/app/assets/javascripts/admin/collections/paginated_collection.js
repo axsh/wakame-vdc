@@ -4,7 +4,13 @@
   initialize: function(options) {
 
    if(_.has(options, 'server_api')) {
-    this.server_api = _.extend(options.server_api, this.server_api);
+     var server_api = _.clone(options.server_api);
+     _.each(_.keys(server_api), function(key){
+       if(_.isEmpty(server_api[key])){
+	   delete server_api[key];
+       }
+     });
+    this.server_api = _.extend(server_api, this.server_api);
    }
 
    if(_.has(options, 'paginator_core')) {

@@ -68,7 +68,7 @@
 	    {{ app.helpers.date_ja.parse(last_login_at) }}
           {% } %}
         </td>
-        <td>{% if(id !== null){ %}<a href="/instances?">インスタンス情報</a>{% } %}</td>
+        <td>{% if(id !== null){ %}<a href="/instances?account_id={{ primary_account_id }}">インスタンス情報</a>{% } %}</td>
         <td>{% if(id !== null){ %}<button class="btn user_login" >Login</button>{% } %}</td>
       </script>
     </table>
