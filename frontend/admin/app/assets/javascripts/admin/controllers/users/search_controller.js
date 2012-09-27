@@ -3,15 +3,15 @@
   $(function(){
     app.collections.paginatedItems = new app.collections.PaginatedCollection({
       model: app.models.Item.extend({
-	urlRoot: app.info.api_endpoints.dcmgr_gui + '/api/users.json',
+        urlRoot: app.info.api_endpoints.dcmgr_gui + '/api/users.json',
       }),
 
       server_api: {
-	id: app.utils.parsedSearch('q'),
+        id: app.utils.parsedSearch('q'),
       },
 
       paginator_core: {
-	url: app.info.api_endpoints.dcmgr_gui + '/api/users.json'
+        url: app.info.api_endpoints.dcmgr_gui + '/api/users.json'
       }
 
     });
