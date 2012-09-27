@@ -85,9 +85,9 @@
 
 
     <script type="text/template" id="resultItemTemplate">
-      <td><a href="/notifications/{{ id }}">{{ title }}</a></td>
+      <td><a href="/notifications/n-{{ uuid }}">{{ title }}</a></td>
       {% if(publish_date_from != '' && publish_date_to != ''){ %}
-      <td>{{ publish_date_from }} ~ {{ publish_date_to }}</td>
+      <td>{{  app.helpers.date_ja.parse(publish_date_from) }} ~ {{  app.helpers.date_ja.parse(publish_date_to) }}</td>
       {% } else {%}
       <td></td>
       {% } %}
