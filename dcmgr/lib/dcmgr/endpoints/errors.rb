@@ -143,5 +143,8 @@ module Dcmgr
     define_error(:InvalidLoadBalancerPrivateKey, 400, '166')
     define_error(:InvalidLoadBalancerPublicKey, 400, '167')
     define_error(:EncryptionAlgorithmNotSupported, 400, '168')
+
+    define_error(:NetworkInvalidAddress, 500, '169')
+    define_error(:NetworkVifInvalidAddress, 500, '170')
   end
 end
