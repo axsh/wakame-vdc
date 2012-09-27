@@ -36,6 +36,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
            end
     end
 
+    if params[:id]
+      uuid = params[:id].split("lb-")[1]
+      uuid = params[:id] if uuid.nil?
+      ds = ds.filter(:uuid.like("%#{uuid}%"))
+    end
+
     if params[:account_id]
       ds = ds.filter(:account_id=>params[:account_id])
     end
