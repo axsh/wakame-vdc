@@ -51,6 +51,12 @@
     }
   });
 
+  collections.LoadBalancerDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
+
   collections.StatisticsCollection = collections.DetailCollection.extend({
     parse: function (response) {
       var res = _.groupBy(response[0].results, function(account){
