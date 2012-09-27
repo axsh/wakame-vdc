@@ -6,6 +6,12 @@
         var d = moment.utc(date);
         d.local();
         return d.format('YYYY/MM/DD HH:mm:ss');
+      },
+
+      iso8601: function(date) {
+        if( !_.isEmpty(date) && moment(date).isValid()) {
+          return moment(date).format()
+        }
       }
     },
 
