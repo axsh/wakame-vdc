@@ -27,6 +27,12 @@
     }
   });
 
+  collections.NotificationDetailCollection = collections.DetailCollection.extend({
+    parse: function (response) {
+      return response;
+    }
+  });
+
   collections.InstanceDetailCollection = collections.DetailCollection.extend({
     parse: function (response) {
       return response;

@@ -1,5 +1,5 @@
 <% content_for :javascript_link_tags do %>
-<%= javascript_include_tag ['/assets/admin/models/admin.js',
+<%= javascript_include_tag ['/assets/admin/models/dcmgr_gui.js',
                             '/assets/admin/collections/detail_collection.js',
                             '/assets/admin/views/detail_view.js',
                             '/assets/admin/controllers/notifications/detail_controller.js'
@@ -19,7 +19,7 @@
       <ul class="breadcrumb">
         <li><a href="/">ホーム</a> <span class="divider">/</span></li>
         <li><a href="/notifications">お知らせ</a> <span class="divider">/</span></li>
-        <li class="active">ID: {{ id }}</li>
+        <li class="active">ID: {{ uuid }}</li>
       </ul>
       </div>
       <form class="form-detail form-horizontal form-horizontal-fix">
@@ -27,7 +27,7 @@
         <legend>お知らせ</legend>
       </div>
       <div class="control-group" style="text-align:right">
-        <span><a href="/notifications/{{id}}/edit">編集</a></span>
+        <span><a href="/notifications/{{uuid}}/edit">編集</a></span>
       </div>
       <div class="control-group">
         <label class="control-label">対象:</label>
