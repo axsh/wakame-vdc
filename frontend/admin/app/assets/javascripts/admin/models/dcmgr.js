@@ -24,6 +24,6 @@
   });
 
   models.Statistics = models.Dcmgr.extend({
-    url: app.info.api_endpoints.dcmgr + '/api/12.03/instances.json?host_node_id=' + location.pathname.split('/')[2]
+    url: app.info.api_endpoints.dcmgr + '/api/12.03/instances.json?host_node_id=' + location.pathname.split('/')[2] + '&state=without_terminated'
   });
 })( app.models );
