@@ -1,4 +1,9 @@
-class Notification < Sequel::Model
+# -*- coding: utf-8 -*-
+
+class Notification < BaseNew
+  taggable 'n'
+  with_timestamps
+  plugin LogicalDelete
 
   DISTRIBUTION_TYPE = ['all', 'any'].freeze
 
@@ -18,33 +23,10 @@ class Notification < Sequel::Model
     dataset.order(:updated_at.desc)
   end
 
-
   def validate
     super
     errors.add(:distribution, 'Invalided distribution type') if !DISTRIBUTION_TYPE.member? distribution
     errors.add(:title, 'Cannot be empty') if !title || title.empty?
-  end
-
-  def to_hash()
-    self.values.dup
-  end
-
-  def before_create
-    super
-    return false if super == false
-    self.created_at = Time.now
-  end
-
-  def before_save
-    super
-    return false if super == false
-    self.updated_at = Time.now
-  end
-
-  def before_destroy
-    super
-    return false if super == false
-    self.deleted_at = Time.now
   end
 
 end

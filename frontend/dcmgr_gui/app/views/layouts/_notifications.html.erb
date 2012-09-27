@@ -2,12 +2,6 @@
 <%= javascript_include_tag 'dcmgr_gui/notification_view.js' %>
 <script type="text/javascript">
 jQuery(function($){
-  var options = {};
-  <% if DcmgrGui::Application.config.endpoints['notification'].nil? %>
-  options.notification_endpoint = 'http://' + window.location.hostname + ':9003/';
-  <% else %>
-  options.notification_endpoint = '<%= DcmgrGui::Application.config.endpoints['notification']  %>';
-  <% end %>
   dcmgrGUI.notificationView(options);
 });
 </script>

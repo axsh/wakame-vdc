@@ -111,9 +111,6 @@ DcmgrGui::Application.routes.draw do
   get    'information' ,:to => 'information#index'
   get    'information/rss' ,:to => 'information#rss'
 
-  #notification
-  get    'notification', :to => 'notification#index'
-
   #instances
   get    'instances' ,:to => 'instances#index'
   get    'instances/total' ,:to => 'instances#total'
@@ -246,4 +243,10 @@ DcmgrGui::Application.routes.draw do
   get    'api/users/:id', :to => 'user_api#show'
   get    'api/accounts', :to => 'account_api#index'
   get    'api/accounts/:id', :to => 'account_api#show'
+  get    'api/notifications', :to => 'notification_api#index'
+  get    'api/notifications/:id', :to => 'notification_api#show'
+  delete 'api/notifications/:id', :to => 'notification_api#destroy'
+  post   'api/notifications', :to => 'notification_api#create'
+  put    'api/notifications/:id', :to => 'notification_api#update'
+
 end
