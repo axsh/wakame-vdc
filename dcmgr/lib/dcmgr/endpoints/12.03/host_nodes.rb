@@ -19,7 +19,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     end
     
     if params[:display_name]
-      ds = ds.filter(:name =>params[:display_name])
+      ds = ds.filter(:display_name =>params[:display_name])
     end
 
     if params[:arch]
@@ -65,7 +65,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     # param :id, :string, :required
     # param :arch, :string, :required
     # param :hypervisor, :string, :required
-    # param :name, :string, :optional
+    # param :display_name, :string, :optional
     # param :offering_cpu_cores, :int, :required
     # param :offering_memory_size, :int, :required
     params.delete(:account_id) if params[:account_id]
@@ -87,7 +87,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     # param :id, :string, :required
     # param :arch, :string, :optional
     # param :hypervisor, :string, :optional
-    # param :name, :string, :optional
+    # param :display_name, :string, :optional
     # param :offering_cpu_cores, :int, :optional
     # param :offering_memory_size, :int, :optional
     hn = find_by_public_uuid(:HostNode, params[:id])
