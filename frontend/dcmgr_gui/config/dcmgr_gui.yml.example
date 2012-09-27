@@ -1,15 +1,8 @@
-# The endpoints is URL for the request from browser.
-# Specify notification endpoints. For example: 'example.com'
-# If endpoint is empty, it is set the window.location.hostname.
-
 development:
   dcmgr_site: 'http://localhost:9001/'
-  notification:
 
 test:
   dcmgr_site: 'http://localhost:9001/'
-  notification:
 
 production:
   dcmgr_site: 'http://localhost:9001/'
-  notification:
