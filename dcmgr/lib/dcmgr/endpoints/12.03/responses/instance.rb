@@ -26,7 +26,8 @@ module Dcmgr::Endpoints::V1203::Responses
           :hostname => hostname,
           :ha_enabled => ha_enabled,
           :hypervisor => hypervisor,
-          :display_name => self.display_name
+          :display_name => self.display_name,
+          :service_type => self.service_type
         }
         if self.ssh_key_data
           h[:ssh_key_pair] = self.ssh_key_data[:uuid]

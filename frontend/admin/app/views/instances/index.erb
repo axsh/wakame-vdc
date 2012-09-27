@@ -19,7 +19,7 @@
 ] %>
 <% end %>
 <div id="notify" class='notifications top-right'></div>
-  <div class="span9">
+  <div class="span10">
     <div class="control-group">
       <legend>インスタンス検索</legend>
     </div>
@@ -57,6 +57,7 @@
           <th>状態</th>
           <th>ホストノードID</th>
           <th>IPアドレス</th>
+          <th>サービスタイプ</th>
           <th>作成日時</th>
         </tr>
       </thead>
@@ -68,6 +69,7 @@
         <td>{{ state }}</td>
         <td>{{ host_node }}</td>
         <td>{% if( ! _.isEmpty(vif) && ! _.isEmpty(vif[0].ipv4)){ %}{{ vif[0].ipv4.address }}{% } %}</td>
+        <td>{{ service_type }}</td>
         <td>
 	{% if(! _.isEmpty(created_at)){ %}
 	  {{ app.helpers.date_ja.parse(created_at) }}
