@@ -35,7 +35,8 @@
         });
 
         target.find('.actionDestroy').bind('click', function() {
-
+          var uuid = 'n-' + self.model.get('uuid');
+          self.model.url = self.model.urlRoot + '/' + uuid + '.json';
           self.model.destroy({
 
             success: function(model, response) {
