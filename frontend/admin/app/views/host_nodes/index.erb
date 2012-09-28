@@ -65,7 +65,7 @@
       <tbody id="content"></tbody>
       <script type="text/template" id="resultItemTemplate">
         <td><a href="/host_nodes/{{ uuid }}">{{ uuid }}</a></td>
-        <td>{{ display_name }}</td>
+        <td>{% if(! _.isNull(display_name)){ %}{{ display_name }}{% } %}</td>
         <td>{{ status }}</td>
         <td>{{ hypervisor }}</td>
         <td>{{ offering_cpu_cores }}</td>

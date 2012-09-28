@@ -1,6 +1,5 @@
 <% content_for :javascript_link_tags do %>
 <%= javascript_include_tag ['/assets/moment.min.js',
-                            '/assets/bootstrap-notify.js',
                             '/assets/backbone.paginator.js',
                             '/assets/admin/models/item.js',
                             '/assets/admin/collections/paginated_collection.js',
@@ -14,12 +13,10 @@
 <% end %>
 
 <% content_for :stylesheet_link_tags do %>
-<%= stylesheet_link_tag ['/assets/bootstrap-notify.css',
-                         '/assets/smoothness/jquery-ui-1.8.23.custom.css',
+<%= stylesheet_link_tag ['/assets/smoothness/jquery-ui-1.8.23.custom.css',
                          '/assets/jquery-ui-timepicker-addon.css'
 ] %>
 <% end %>
-<div id="notify" class='notifications top-right'></div>
 <span id="system_message" style="visibility: hidden"><%= @message %></span>
   <div class="span9">
     <div class="control-group">

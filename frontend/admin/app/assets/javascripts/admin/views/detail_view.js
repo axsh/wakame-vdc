@@ -15,8 +15,10 @@
     },
 
     render: function() {
-      var html = this.template(this.collection.info());
-      this.$el.html(html);
+      if(_.has(this.collection.info(), 'id')){
+        var html = this.template(this.collection.info());
+        this.$el.html(html);
+      }
     }
 
   });

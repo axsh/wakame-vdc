@@ -36,7 +36,7 @@
       <div class="control-group">
         <label class="control-label">ホストノード名:</label>
         <div class="controls">
-          <p>{{ display_name }}</p>
+          <p>{% if(! _.isNull(display_name)){ %}{{ display_name }}{% } %}</p>
         </div>
       </div>
       <div class="control-group">

@@ -117,5 +117,19 @@
   //  dropdown menu for top navigations
   $('.dropdown-toggle').dropdown();
 
+  $(document).ajaxError(function(e, xhr, settings, exception){
+    var message = '';
+
+    if( _.isEqual(xhr.status, 0)){
+      message = 'ネットワークを確認してください。';
+    } else if( _.isEqual(e, 'parsererror')) {
+      message = 'JSONリクエストのパースに失敗しました。';
+    } else if( _.isEqual(e, 'timeout')){
+      message = 'リクエスがタイムアウトしました。';
+    } else {
+      message = 'エラーが発生しました。管理者に問い合わせてください。';
+    };
+    app.notify.error(message);
+  });
 })();
 
