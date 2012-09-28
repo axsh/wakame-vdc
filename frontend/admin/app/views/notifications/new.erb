@@ -28,7 +28,11 @@
       <label class="control-label">対象</label>
 
       {% if(is_confirmed) { %}
-      全ユーザー
+        {% if(distribution == 'any') { %}
+        {{users}}
+        {% } else { %}
+        全ユーザー
+        {% } %}
       {% } else { %}
       <label class="radio">
         <input type="radio" name="users" id="option_user_all" value="all" placeholder="" {{user_all_checked}}>全ユーザー
