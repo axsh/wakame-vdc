@@ -15,8 +15,8 @@ Sequel.migration do
 
     create_table :notification_users do
       primary_key :id
-      column :notification_id, "int(11)"
-      column :user_id, "varchar(255)"
+      column :notification_id, "int(11)", :null => false
+      column :user_id, "int(11)", :null => false
       index [:notification_id, :user_id]
     end
 

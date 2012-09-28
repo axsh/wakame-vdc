@@ -29,7 +29,8 @@
         this.params = {
           is_new: true,
           user_all_checked: 'checked',
-          user_any_checked: ''
+          user_any_checked: '',
+          distribution: 'all'
         }
 
         if( notification_id != 'new' ) {
@@ -97,6 +98,7 @@
         if(distribution == 'any') {
           var users = this.$el.find('[name=input_users]').val();
           this.model.set('users', users, {silent:true});
+          this.params.distribution = 'any';
         } else {
           this.model.set('users', '', {silent:true});
         }

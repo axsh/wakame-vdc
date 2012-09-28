@@ -46,12 +46,13 @@ class NotificationApiController < ApiController
   end
 
   def create
-    if params[:users] == ''
-      distribution = 'all'
-      users = []
-    else
-      distribution = 'any'
-      users = params[:users].split(',')
+
+    users = []
+    distribution = params[:users] == '' ? 'all' : 'any'
+    if distribution == 'any'
+      uuids = User.split_uuid(params[:users])
+      users = User.get_user_ids(uuids)
+      raise "User not found #{params[:users]}" if !users
     end
 
     @notification = Notification.new

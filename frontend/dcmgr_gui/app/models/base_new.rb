@@ -292,6 +292,15 @@ class BaseNew < Sequel::Model
     install_data_hooks.each{|h| h.call }
   end
 
+  # Create a UUID from IDset separated by pattern(default commas).
+  def self.split_uuid(params, pattern = ',')
+    arr = params.split(pattern)
+    uuids = arr.collect {|u| u.split('-')[1] }
+    uuids.delete(nil)
+    uuids.delete("")
+    uuids
+  end
+
   private
   def self.inherited(klass)
     super
