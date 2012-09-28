@@ -256,6 +256,9 @@ rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 [ -d ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs
 [ -d ${RPM_BUILD_ROOT}/etc/%{oname}/admin ]         || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/admin
 
+# dcmgr
+ln -s /etc/%{oname}/convert_specs/load_balancer.yml  ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/dcmgr/config/convert_specs/load_balancer.yml
+
 # rails app config
 ln -s /etc/%{oname}/dcmgr_gui/database.yml           ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
 ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml

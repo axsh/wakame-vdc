@@ -798,6 +798,14 @@ en:
     code159: "Invalid Load Balancer State %s"
     code160: "Invalid Load Balancer Port"
     code161: "Invalid Load Balancer Algorithm"
+    code162: "Exceed Quota Limit"
+    code163: "Unknown Dc Network"
+    code164: "Network Not Permitted"
+    code165: "Dc Network Not Permitted"
+    code166: "Invalid Load Balancer Private Key"
+    code167: "Invalid Load Balancer Public Key"
+    code168: "Encryption Algorithm Not Supported"
+
   error_quota:
     security_group:
       count: "Exceeds the limit number of %s"
