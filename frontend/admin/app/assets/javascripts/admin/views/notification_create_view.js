@@ -32,7 +32,7 @@
           user_any_checked: ''
         }
 
-        if( _.isString(notification_id) ) {
+        if( notification_id != 'new' ) {
           this.model.url = app.info.api_endpoints.dcmgr_gui + '/api/notifications/' + notification_id + '.json';
           this.model.fetch({
             async: false
