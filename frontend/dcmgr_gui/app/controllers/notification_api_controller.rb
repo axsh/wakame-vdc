@@ -104,6 +104,14 @@ class NotificationApiController < ApiController
       return render h
     end
 
+    users = []
+    distribution = params[:users] == '' ? 'all' : 'any'
+    if distribution == 'any'
+      uuids = User.split_uuid(params[:users])
+      users = User.get_user_ids(uuids)
+      raise "User not found #{params[:users]}" if !users
+    end
+
     if params[:title]
       @notification.title = params[:title]
     end
@@ -121,7 +129,18 @@ class NotificationApiController < ApiController
     end
 
     if @notification.valid?
-      @notification.save_changes
+      Notification.db.transaction do
+        @notification.save_changes
+        if users
+          @notification.notification_users.each do |n|
+            n.destroy
+          end
+
+          users.each do |user_id|
+            NotificationUser.create :notification_id => @notification.id, :user_id => user_id
+          end
+        end
+      end
     end
 
     h = {
