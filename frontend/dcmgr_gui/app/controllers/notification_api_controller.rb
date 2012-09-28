@@ -4,10 +4,29 @@ class NotificationApiController < ApiController
   SORTING = ['asc', 'desc'].freeze
 
   def index
+    distribution = params['distribution']
+    users = params['users']
     limit = params['limit'].nil? ? 10 : params['limit'].to_i
     start = params['start'].nil? ? 0 : params['start'].to_i
     sort  = SORTING.include?(params['sort']) ? params['sort'] : 'asc'
-    @notifications = Notification.order(:id.send(sort)).limit(limit, start).alives
+    @notifications = Notification
+
+    if distribution
+      if users
+        uuids = User.split_uuid(params[:users])
+        users = User.get_user_ids(uuids)
+      end
+      @notifications = Notification.notifications(distribution, users)
+    else
+      @notifications = Notification
+    end
+
+    @notifications = @notifications.order(:id.send(sort)).limit(limit, start)
+
+    if params[:display_begin_at] && params[:display_end_at]
+      @notifications = @notifications.filter('display_begin_at >= ?', to_utc(params[:display_begin_at]))
+      @notifications = @notifications.filter('display_end_at <= ?', to_utc(params[:display_end_at]))
+    end
 
     results = []
     @notifications.each {|n|
@@ -67,12 +86,12 @@ class NotificationApiController < ApiController
     @notification.distribution = distribution
     @notification.title = params[:title]
 
-    if !params[:publish_date_to].nil?
-      @notification.publish_date_to = to_utc(params[:publish_date_to])
+    if !params[:display_end_at].nil?
+      @notification.display_end_at = to_utc(params[:display_end_at])
     end
 
-    if !params[:publish_date_from].nil?
-      @notification.publish_date_from = to_utc(params[:publish_date_from])
+    if !params[:display_begin_at].nil?
+      @notification.display_begin_at = to_utc(params[:display_begin_at])
     end
 
     @notification.article = params[:article]
@@ -116,12 +135,12 @@ class NotificationApiController < ApiController
       @notification.title = params[:title]
     end
 
-    if params[:publish_date_to]
-      @notification.publish_date_to = to_utc(params[:publish_date_to])
+    if params[:display_end_at]
+      @notification.display_end_at = to_utc(params[:display_end_at])
     end
 
-    if params[:publish_date_from]
-      @notification.publish_date_from = to_utc(params[:publish_date_from])
+    if params[:display_begin_at]
+      @notification.display_begin_at = to_utc(params[:display_begin_at])
     end
 
     if params[:article]

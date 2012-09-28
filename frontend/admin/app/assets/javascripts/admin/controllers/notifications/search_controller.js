@@ -13,16 +13,27 @@
       }),
 
       server_api: {
+        'distribution' : app.utils.parsedSearch('distribution'),
+        'users' : app.utils.parsedSearch('user_id'),
+        'display_end_at': function() {
+          var display_end_at = app.utils.parsedSearch('display_end_at');
+          if( !_.isEmpty(display_end_at)) {
+            var d = decodeURIComponent(display_end_at).replace('+',' ');
+            return encodeURIComponent(app.helpers.date.iso8601(d));
+          } else {
+            return '';
+          }
+        }(),
 
-        'publish_date_to': function() {
-          var d = decodeURIComponent(app.utils.parsedSearch('publish_date_to')).replace('+',' ');
-          return app.helpers.date.iso8601(d);
-        },
-
-        'publish_date_from': function() {
-          var d = decodeURIComponent(app.utils.parsedSearch('publish_date_from')).replace('+',' ');
-          return app.helpers.date.iso8601(d);
-        }
+        'display_begin_at': function() {
+          var display_begin_at = app.utils.parsedSearch('display_begin_at');
+          if( !_.isEmpty(display_begin_at) ) {
+            var d = decodeURIComponent(app.utils.parsedSearch('display_begin_at')).replace('+',' ');
+            return encodeURIComponent(app.helpers.date.iso8601(d));
+          } else {
+            return '';
+          }
+        }()
       },
 
       paginator_core: {

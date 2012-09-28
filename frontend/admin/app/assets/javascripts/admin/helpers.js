@@ -3,9 +3,13 @@
   app.helpers = {
     date: {
       parse: function(date) {
-        var d = moment.utc(date);
-        d.local();
-        return d.format('YYYY/MM/DD HH:mm:ss');
+        if( !_.isEmpty(date) ) {
+          var d = moment.utc(date);
+          d.local();
+          return d.format('YYYY/MM/DD HH:mm:ss');
+        } else {
+          return '';
+        }
       },
 
       iso8601: function(date) {

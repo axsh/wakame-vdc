@@ -10,11 +10,15 @@ class Notification < BaseNew
   subset(:alives, {:deleted_at => nil})
   one_to_many :notification_users, :class=>NotificationUser
 
-  def_dataset_method(:notifications) do |distribution='all', user_id=''|
+  def_dataset_method(:notifications) do |distribution='all', user_id=nil|
     if ['any', 'merged'].member? distribution
       case distribution
         when 'any'
-          dataset = self.filter("`notifications`.`id` IN ? and `notifications`.`distribution` = ?", NotificationUser.filter(:user_id => user_id).select(:notification_id), 'any')
+          if user_id
+            dataset = self.filter("`notifications`.`id` IN ? and `notifications`.`distribution` = ?", NotificationUser.filter(:user_id => user_id).select(:notification_id), 'any')
+          else
+            dataset = self.filter("`notifications`.`distribution` = ?", 'any')
+          end
         when 'merged'
           dataset = self.filter("`notifications`.`id` IN ? or `notifications`.`distribution` = ?", NotificationUser.filter(:user_id => user_id).select(:notification_id), 'all')
       end
