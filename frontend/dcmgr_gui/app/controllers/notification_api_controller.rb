@@ -27,7 +27,9 @@ class NotificationApiController < ApiController
       return render :json => {}
     end
 
-    respond_with(generate(@notification), :to=>[:json])
+    h = @notification.to_hash
+    h[:users] = Notification[params[:id]].notification_users.collect {|u| User[u.user_id].canonical_uuid }
+    respond_with(h, :to=>[:json])
   end
 
   def destroy

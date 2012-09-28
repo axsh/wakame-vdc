@@ -33,11 +33,14 @@
         <label class="control-label">対象:</label>
         <div class="controls">
         {% if(distribution == 'all') { %}
-        <td>全ユーザー</td>
+        <p>全ユーザー</p>
         {% } else if(distribution == 'any') { %}
-        <td>指定ユーザー</td>
-        {% } else {%}
-        <td></td>
+        <p>指定ユーザー</p>
+        <ul id="notification-users">
+          {% _.each(users, function(uuid, key){ %}
+          <li><a href="/users/{{ uuid }}">{{ uuid }}</a></li>
+          {% }) %}
+        </ul>
         {% } %}
         </div>
       </div>

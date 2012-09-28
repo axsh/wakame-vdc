@@ -8,6 +8,7 @@ class Notification < BaseNew
   DISTRIBUTION_TYPE = ['all', 'any'].freeze
 
   subset(:alives, {:deleted_at => nil})
+  one_to_many :notification_users, :class=>NotificationUser
 
   def_dataset_method(:notifications) do |distribution='all', user_id=''|
     if ['any', 'merged'].member? distribution
