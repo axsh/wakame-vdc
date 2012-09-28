@@ -53,16 +53,16 @@
         <label class="control-label">掲載期間</label>
         {% if(is_confirmed) { %}
         <div class="controls">
-        {{ publish_date_from }} ~ {{ publish_date_to }}
+        {{ display_begin_at }} ~ {{ display_end_at }}
         </div>
         {% } else { %}
         <span class="input-prepend">
-          <input class="span10" type="text" id="publish_date_from" name="publish_date_from" value="{{ app.helpers.date.parse(publish_date_from) }}" placeholder="">
-          <span class="add-on" id="icon_publish_date_from"><i class="icon-calendar"></i></span>
+          <input class="span10" type="text" id="display_begin_at" name="display_begin_at" value="{{ app.helpers.date.parse(display_begin_at) }}" placeholder="">
+          <span class="add-on" id="icon_display_begin_at"><i class="icon-calendar"></i></span>
         </span>
         <span style="margin:10px;">~</span><span class="input-prepend">
-          <input class="span10" type="text" id="publish_date_to" name="publish_date_to" value="{{ app.helpers.date.parse(publish_date_to) }}" placeholder="">
-          <span class="add-on" id="icon_publish_date_to"><i class="icon-calendar"></i></span>
+          <input class="span10" type="text" id="display_end_at" name="display_end_at" value="{{ app.helpers.date.parse(display_end_at) }}" placeholder="">
+          <span class="add-on" id="icon_display_end_at"><i class="icon-calendar"></i></span>
         </span>
         {% } %}
       </div>

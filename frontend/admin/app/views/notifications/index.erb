@@ -26,17 +26,17 @@
       <div class="control-group">
         <div class="controls">
           <label class="radio">
-            <input type="radio" name="users" id="option_user_all" value="" placeholder="" checked>全ユーザー
+            <input type="radio" name="distribution" id="option_user_all" value="all" placeholder="" checked>全ユーザー
           </label>
         </div>
 
         <div class="controls" >
           <label class="radio">
-            <input type="radio" name="users" id="option_users" value="" placeholder="" >指定ユーザー
+            <input type="radio" name="distribution" id="option_users" value="any" placeholder="" >指定ユーザー
           </label>
             <div class="controls">
                 <div class="controls form-search" id="control_option_users">
-                  <textarea class="span8" name="users" rows="4" ></textarea>
+                  <input type="text" name="user_id" value="" >
                 </div>
             </div>
           </label>
@@ -47,12 +47,12 @@
         <div class="controls">
           <label class="control-label">掲載期間</label>
           <span class="input-prepend">
-            <input class="span4" type="text" id="publish_date_from" name="publish_date_from" value="" placeholder="">
-            <span class="add-on" id="icon_publish_date_from"><i class="icon-calendar"></i></span>
+            <input class="span4" type="text" id="display_begin_at" name="display_begin_at" value="" placeholder="">
+            <span class="add-on" id="icon_display_begin_at"><i class="icon-calendar"></i></span>
           </span>
           <span style="margin:10px;">~</span><span class="input-prepend">
-            <input class="span4" type="text" id="publish_date_to" name="publish_date_to" value="" placeholder="">
-            <span class="add-on" id="icon_publish_date_to"><i class="icon-calendar"></i></span>
+            <input class="span4" type="text" id="display_end_at" name="display_end_at" value="" placeholder="">
+            <span class="add-on" id="icon_display_end_at"><i class="icon-calendar"></i></span>
           </span>
         </div>
       </div>
@@ -83,8 +83,8 @@
 
     <script type="text/template" id="resultItemTemplate">
       <td><a href="/notifications/n-{{ uuid }}">{{ title }}</a></td>
-      {% if(publish_date_from != '' && publish_date_to != ''){ %}
-      <td>{{  app.helpers.date_ja.parse(publish_date_from) }} ~ {{  app.helpers.date_ja.parse(publish_date_to) }}</td>
+      {% if(display_begin_at != '' && display_end_at != ''){ %}
+      <td>{{  app.helpers.date_ja.parse(display_begin_at) }} ~ {{  app.helpers.date_ja.parse(display_end_at) }}</td>
       {% } else {%}
       <td></td>
       {% } %}

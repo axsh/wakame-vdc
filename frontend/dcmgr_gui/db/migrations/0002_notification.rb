@@ -6,8 +6,8 @@ Sequel.migration do
       column :title, "varchar(255)"
       column :article, "text"
       column :distribution, "varchar(255)"
-      column :publish_date_to, 'datetime'
-      column :publish_date_from, 'datetime'
+      column :display_end_at, 'datetime'
+      column :display_begin_at, 'datetime'
       column :created_at, "datetime", :null => false
       column :updated_at, "datetime", :null => false
       column :deleted_at, "datetime", :null => false

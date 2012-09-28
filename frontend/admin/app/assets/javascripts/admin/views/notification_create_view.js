@@ -21,8 +21,8 @@
           distribution: 'all',
           title: '',
           article: '',
-          publish_date_from: '',
-          publish_date_to: '',
+          display_begin_at: '',
+          display_end_at: '',
           users: ''
         });
 
@@ -58,13 +58,13 @@
         }
 
         var pubishFromPicker = new app.DatetimePicker({
-          input_form: this.$el.find('#publish_date_from'),
-          icon: this.$el.find('#icon_publish_date_from')
+          input_form: this.$el.find('#display_begin_at'),
+          icon: this.$el.find('#icon_display_begin_at')
         });
 
         var pubishToPicker = new app.DatetimePicker({
-          input_form: this.$el.find('#publish_date_to'),
-          icon: this.$el.find('#icon_publish_date_to')
+          input_form: this.$el.find('#display_end_at'),
+          icon: this.$el.find('#icon_display_end_at')
         });
 
       },
@@ -87,13 +87,13 @@
         var distribution = this.$el.find('[name=users]:checked').val();
         var article = this.$el.find('[name=article]').val();
         var title = this.$el.find('[name=title]').val();
-        var publish_date_from = this.$el.find('[name=publish_date_from]').val();
-        var publish_date_to = this.$el.find('[name=publish_date_to]').val();
+        var display_begin_at = this.$el.find('[name=display_begin_at]').val();
+        var display_end_at = this.$el.find('[name=display_end_at]').val();
 
         this.model.set('title', title, {silent:true});
         this.model.set('article', article, {silent:true});
-        this.model.set('publish_date_from', publish_date_from, {silent:true});
-        this.model.set('publish_date_to', publish_date_to, {silent:true});
+        this.model.set('display_begin_at', display_begin_at, {silent:true});
+        this.model.set('display_end_at', display_end_at, {silent:true});
 
         if(distribution == 'any') {
           var users = this.$el.find('[name=input_users]').val();
@@ -118,8 +118,8 @@
         if(this.model.isValid() && this.state == 'init'){
           this.state = 'creating';
 
-          this.model.set('publish_date_from', app.helpers.date.iso8601(this.model.get('publish_date_from')));
-          this.model.set('publish_date_to', app.helpers.date.iso8601(this.model.get('publish_date_to')));
+          this.model.set('display_begin_at', app.helpers.date.iso8601(this.model.get('display_begin_at')));
+          this.model.set('display_end_at', app.helpers.date.iso8601(this.model.get('display_end_at')));
           this.model.url =  app.info.api_endpoints.dcmgr_gui + '/api/notifications';
           this.model.save(null, {
             'success': function(response, xhr) {
@@ -139,8 +139,8 @@
         this.$el.find('#update').addClass('disabled');
         if(this.model.isValid() && this.state == 'init'){
           this.state = 'updating';
-          this.model.set('publish_date_from', app.helpers.date.iso8601(this.model.get('publish_date_from')));
-          this.model.set('publish_date_to', app.helpers.date.iso8601(this.model.get('publish_date_to')));
+          this.model.set('display_begin_at', app.helpers.date.iso8601(this.model.get('display_begin_at')));
+          this.model.set('display_end_at', app.helpers.date.iso8601(this.model.get('display_end_at')));
           this.model.url = app.info.api_endpoints.dcmgr_gui + '/api/notifications/' + notification_id + '.json';
           this.model.save(null, {
             'success': function(response, xhr) {

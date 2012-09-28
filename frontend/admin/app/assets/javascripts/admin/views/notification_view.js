@@ -1,13 +1,13 @@
 (function ( views ) {
 
   var pubishFromPicker = new app.DatetimePicker({
-    input_form: $('#publish_date_from'),
-    icon: $('#icon_publish_date_from')
+    input_form: $('#display_begin_at'),
+    icon: $('#icon_display_begin_at')
   });
 
   var pubishToPicker = new app.DatetimePicker({
-    input_form: $('#publish_date_to'),
-    icon: $('#icon_publish_date_to')
+    input_form: $('#display_end_at'),
+    icon: $('#icon_display_end_at')
   });
 
   $('#control_option_users').hide();

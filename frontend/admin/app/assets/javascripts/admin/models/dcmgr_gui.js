@@ -14,7 +14,7 @@
         errors.push("タイトルが未入力です。");
       }
 
-      if(attrs.publish_date_from == '' || attrs.publish_date_to == '') {
+      if(attrs.display_begin_at == '' || attrs.display_end_at == '') {
         errors.push("掲載期間が未入力です。");
       }
 
