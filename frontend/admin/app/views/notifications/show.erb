@@ -1,5 +1,6 @@
 <% content_for :javascript_link_tags do %>
-<%= javascript_include_tag ['/assets/admin/models/dcmgr_gui.js',
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/admin/models/dcmgr_gui.js',
                             '/assets/admin/collections/detail_collection.js',
                             '/assets/admin/views/detail_view.js',
                             '/assets/admin/controllers/notifications/detail_controller.js'
@@ -47,7 +48,7 @@
       <div class="control-group">
         <label class="control-label">掲載期間:</label>
         <div class="controls">
-          <p>{{ publish_date_from }} ~ {{ publish_date_to }}</p>
+          <p>{{ app.helpers.date_ja.parse(publish_date_from) }} ~ {{ app.helpers.date_ja.parse(publish_date_to) }}</p>
         </div>
       </div>
       <div class="control-group">

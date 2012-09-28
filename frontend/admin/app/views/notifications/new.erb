@@ -57,11 +57,11 @@
         </div>
         {% } else { %}
         <span class="input-prepend">
-          <input class="span10" type="text" id="publish_date_from" name="publish_date_from" value="{{publish_date_from}}" placeholder="">
+          <input class="span10" type="text" id="publish_date_from" name="publish_date_from" value="{{ app.helpers.date.parse(publish_date_from) }}" placeholder="">
           <span class="add-on" id="icon_publish_date_from"><i class="icon-calendar"></i></span>
         </span>
         <span style="margin:10px;">~</span><span class="input-prepend">
-          <input class="span10" type="text" id="publish_date_to" name="publish_date_to" value="{{publish_date_to}}" placeholder="">
+          <input class="span10" type="text" id="publish_date_to" name="publish_date_to" value="{{ app.helpers.date.parse(publish_date_to) }}" placeholder="">
           <span class="add-on" id="icon_publish_date_to"><i class="icon-calendar"></i></span>
         </span>
         {% } %}
