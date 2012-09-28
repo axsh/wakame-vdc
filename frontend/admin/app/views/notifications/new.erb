@@ -40,7 +40,7 @@
         <input type="radio" name="users" id="option_users" value="any" placeholder="" {{user_any_checked}}>指定ユーザー
       </label>
       <div class="control form-search">
-        <div class="control-group id="control_option_users">
+        <div class="control-group" id="control_option_users">
           <textarea class="input-xlarge" id="input_users" name="input_users" rows="5">{{users}}</textarea>
           {% if( _.has(errors,'users') ){  %}
           <br /><span class="help-inline">{{ errors['users'] }}</span>
