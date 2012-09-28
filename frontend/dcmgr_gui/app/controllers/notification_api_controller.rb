@@ -131,6 +131,8 @@ class NotificationApiController < ApiController
       raise "User not found #{params[:users]}" if !users
     end
 
+    @notification.distribution = distribution
+
     if params[:title]
       @notification.title = params[:title]
     end
