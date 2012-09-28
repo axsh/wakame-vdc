@@ -12,9 +12,13 @@
         "click #option_users": 'show_users',
         "click #option_user_all": 'hide_users'
       },
-
+      addErrorClass: function(el, name) {
+        if( _.has(this.model.errors, name)) {
+          el.addClass('error');
+        }
+      },
       initialize : function() {
-
+        var self = this;
         var notification_id = location.pathname.split('/')[2];
         this.model = new this.model({
           is_confirmed: false,
@@ -41,17 +45,38 @@
           this.params.is_new = false;
         }
 
-        if( ! _.isEmpty(this.model.get('users')) ) {
-          this.params.user_all_checked = '';
-          this.params.user_any_checked = 'checked';
-        }
-
         this.model.on('error', function(model, error){
+          self.render();
+          self.addErrorClass(self.$el.find('#control_title'), 'title');
+          self.addErrorClass(self.$el.find('#control_article'), 'article');
+          self.addErrorClass(self.$el.find('#control_display_date'), 'display_date');
+          self.addErrorClass(self.$el.find('#control_option_users'), 'users');
         });
 
         this.render();
 
-        if(! _.isEmpty(this.model.get('users'))) {
+      },
+
+      render: function() {
+
+        var distribution = this.$el.find('[name=users]:checked').val();
+
+        if( _.contains([distribution, this.model.get('distribution')], 'any')) {
+          this.params.user_all_checked = '';
+          this.params.user_any_checked = 'checked';
+        } else {
+          this.params.user_all_checked = 'checked';
+          this.params.user_any_checked = '';
+        }
+
+        var view_params = {}
+        _.extend(view_params, this.model.attributes,
+                              this.params,
+                              {'errors': this.model.errors});
+
+        this.$el.html(this.template(view_params));
+
+        if( this.params.user_any_checked == 'checked') {
           this.show_users();
         } else {
           this.$el.find('#control_option_users').hide();
@@ -67,11 +92,7 @@
           icon: this.$el.find('#icon_display_end_at')
         });
 
-      },
 
-      render: function() {
-        var view_params = _.extend(this.model.attributes, this.params);
-        this.$el.html(this.template(view_params));
         return this;
       },
 
@@ -94,6 +115,7 @@
         this.model.set('article', article, {silent:true});
         this.model.set('display_begin_at', display_begin_at, {silent:true});
         this.model.set('display_end_at', display_end_at, {silent:true});
+        this.model.set('distribution', distribution, {silent:true});
 
         if(distribution == 'any') {
           var users = this.$el.find('[name=input_users]').val();
