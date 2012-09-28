@@ -38,8 +38,14 @@ class NotificationApiController < ApiController
       return render :json => h
     end
 
-    @notification.deleted_at = Time.now
-    @notification.save_changes
+
+    Notification.db.transaction do
+      @notification.deleted_at = Time.now
+      @notification.save_changes
+      @notification.notification_users.each do |n|
+        n.destroy
+      end
+    end
 
     h = {
       :result => @notification.to_hash
