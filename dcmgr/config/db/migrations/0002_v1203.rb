@@ -3,6 +3,7 @@ Sequel.migration do
     alter_table(:host_nodes) do
       # HostNode is no longer an account associated resource.
       drop_column :account_id
+      rename_column :name, :display_name
     end
 
     alter_table(:storage_nodes) do
@@ -11,6 +12,7 @@ Sequel.migration do
 
       # make unit size clear.
       rename_column :offering_disk_space, :offering_disk_space_mb
+      add_column :display_name, "varchar(255)", :null=>true
     end
     
     create_table(:security_group_references) do
@@ -357,10 +359,12 @@ Sequel.migration do
 
     alter_table(:host_nodes) do
       add_column :account_id, "varchar(255)", :null=>false
+      rename_column :display_name, :name
     end
 
     alter_table(:storage_nodes) do
       add_column :account_id, "varchar(255)", :null=>false
+      drop_column :display_name
     end
 
     alter_table(:images) do

@@ -2,6 +2,12 @@
 <%= javascript_include_tag ['/assets/moment.min.js',
                             '/assets/bootstrap-notify.js',
                             '/assets/backbone.paginator.js',
+                            '/assets/admin/models/item.js',
+                            '/assets/admin/collections/paginated_collection.js',
+                            '/assets/admin/views/result_view.js',
+                            '/assets/admin/views/pagination_view.js',
+                            '/assets/admin/views/list_view.js',
+                            '/assets/admin/controllers/host_nodes/search_controller.js'
 ]
 %>
 <% end %>
@@ -13,7 +19,7 @@
 ] %>
 <% end %>
 <div id="notify" class='notifications top-right'></div>
-  <div class="span8">
+  <div class="span9">
     <div class="control-group">
       <legend>ホストノード検索</legend>
     </div>
@@ -21,11 +27,12 @@
       <div class="control-group">
          <div class="controls">
          <label class="control-label" for="inputSearch">検索条件</label>
-         <input type="text" id="selectStatus" placeholder="">
+         <input type="text" id="inputSearch" placeholder="" name="q">
          <span style="margin:30px">
          <label class="control-label" for="selectStatus">状態</label>
-         <select>
-           <option>running</option>
+         <select id="selectStatus" name="status">
+           <option>online</option>
+           <option>offline</option>
          </select>
          </span>
          </div>
@@ -40,7 +47,9 @@
     </div>
 
     <div id="pagination"></div>
-    <table id="notification-list" class="table table-striped table-bordered">
+    <!--  The pagination is mapped on #tmpServerPagination -->
+    <%= partial :paginate %>
+    <table id="hostnode-list" class="table table-striped table-bordered">
       <thead>
         <tr>
           <th>ホストノードID</th>
@@ -49,24 +58,19 @@
           <th>ハイパーバイザ</th>
           <th>CPUコア</th>
           <th>メモリサイズ</th>
-          <th></th>
+          <th>インスタンス情報</th>
         </tr>
       </thead>
       <!--  The content is mapped on #resultItemTemplate -->
-      <tbody id="content">
-      <% 10.times do %>
-        <tr>
-        <td><a href="/host_nodes/1">hn-xxxxxxx</a></td>
-        <td>test</td>
-        <td>online</td>
-        <td>openvz</td>
-        <td>1</td>
-        <td>1024</td>
-        <td><a href="/instances?">インスタンス情報</a></td>
-        </tr>
-       <% end %>
-      </tbody>
+      <tbody id="content"></tbody>
+      <script type="text/template" id="resultItemTemplate">
+        <td><a href="/host_nodes/{{ uuid }}">{{ uuid }}</a></td>
+        <td>{% if(! _.isNull(display_name)){ %}{{ display_name }}{% } %}</td>
+        <td>{{ status }}</td>
+        <td>{{ hypervisor }}</td>
+        <td>{{ offering_cpu_cores }}</td>
+        <td>{% if(! _.isEmpty(id)){ %}{{ offering_memory_size }}MB{% } %}</td>
+        <td>{% if(! _.isEmpty(id)){ %}<a href="/instances?host_node_id={{ uuid }}">インスタンス情報</a>{% } %}</td>
+      </script>
     </table>
-    <!--  The pagination is mapped on #tmpServerPagination -->
-    <%= partial :paginate %>
 </div>

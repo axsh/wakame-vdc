@@ -1,35 +1,30 @@
+# -*- coding: utf-8 -*-
+
 DcmgrAdmin.controllers :api do
   require 'spoof_token_authentication'
   disable :layout
 
-  get :notifications, :provides => :json do
-    limit = params['limit'].nil? ? 10 : params['limit'].to_i
-    start = params['start'].nil? ? 0 : params['start'].to_i
-    @notifications = Notification.limit(limit, start).all
-    results = []
-    @notifications.each {|n|
-      results << {
-        :id => n.id,
-        :title => n.title,
-        :publish_date_from => n.publish_date_from,
-        :publish_date_to => n.publish_date_to,
-        :users => n.users
-      }
-    }
-    h = {
-      :count => Notification.count,
-      :results => results
-    }
-    render h
-  end
+  SORTING = ['asc', 'desc'].freeze
 
-  delete :notifications, :provides => :json do
-    @notification = Notification.find({:id => params[:id]})
-    @notification.destroy
-    h = {
-      :results => true
-    }
-    render h
+  BODY_PARSER = {
+    'application/json' => proc { |body| ::JSON.load(body) },
+    'text/json' => proc { |body| ::JSON.load(body) },
+  }
+
+  before do
+    next if request.content_type == 'application/x-www-form-urlencoded'
+    next if !(request.content_length.to_i > 0)
+    parser = BODY_PARSER[(request.content_type || request.preferred_type)]
+    hash = if parser.nil?
+             error(400, 'Invalid content type.')
+           else
+             begin
+               parser.call(request.body)
+             rescue => e
+               error(400, 'Invalid request body.')
+             end
+           end
+    @params.merge!(hash)
   end
 
   get :generate_token, :provides => :json do

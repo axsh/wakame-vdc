@@ -1,1 +1,84 @@
-<% content_for :javascript_link_tags do %><%= javascript_include_tag ['/assets/admin/collections/detail_collection.js',                            '/assets/admin/views/detail_view.js',] %><% end %><% content_for :stylesheet_link_tags do %><% end %>    <div class="span9">      <div id="content">      <div class="controls">        <ul class="breadcrumb">          <li><a href="/">ホーム</a> <span class="divider">/</span></li>          <li><a href="/users">ユーザー</a> <span class="divider">/</span></li>          <li class="active">ID: 1</li>        </ul>      </div><!-- controls -->      <form class="form-detail form-horizontal form-horizontal-fix">      <div class="control-group">        <legend>ユーザー詳細</legend>      </div>      <div class="control-group">        <label class="control-label">ユーザーID:</label>        <div class="controls">          <p>demo</p>        </div>      </div>      <div class="control-group">        <label class="control-label">ログインID:</label>        <div class="controls">          <p>demo</p>        </div>      </div>      <div class="control-group">        <label class="control-label">ユーザー名:</label>        <div class="controls">          <p>demo</p>        </div>      </div>      <div class="control-group">        <label class="control-label">アカウントID:</label>        <div class="controls">          <p>a-xxxxxxxxxx</p>        </div>      </div>      <div class="control-group">        <label class="control-label">ロケール:</label>        <div class="controls">          <p>en</p>        </div>      </div>      <div class="control-group">        <label class="control-label">タイムゾーン:</label>        <div class="controls">          <p>Tokyo</p>        </div>      </div>      <div class="control-group">        <label class="control-label">最終更新日時:</label>        <div class="controls">          <p>2012年06月30日 14時30分34秒</p>        </div>      </div>      <div class="control-group">        <label class="control-label">作成日時:</label>        <div class="controls">          <p>2012年06月30日 14時30分34秒</p>        </div>      </div>      <div class="control-group">        <label class="control-label">更新日時:</label>        <div class="controls">          <p>2012年06月30日 14時30分34秒</p>        </div>      </div>     </form>  </div><!-- content --></div><!-- span -->
+<% content_for :javascript_link_tags do %>
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/admin/models/dcmgr_gui.js',
+                            '/assets/admin/collections/detail_collection.js',
+                            '/assets/admin/views/detail_view.js',
+                            '/assets/admin/controllers/users/detail_controller.js',
+                            '/assets/admin/helpers.js',
+] %>
+<% end %>
+
+<% content_for :stylesheet_link_tags do %>
+<% end %>
+    <div class="span9">
+      <div id="content"></div>
+      <script type="text/template" id="detailUser">
+      <div class="controls">
+        <ul class="breadcrumb">
+          <li><a href="/">ホーム</a> <span class="divider">/</span></li>
+          <li><a href="/users">ユーザー</a> <span class="divider">/</span></li>
+          <li class="active">ID: {{ uuid }}</li>
+        </ul>
+      </div><!-- controls -->
+
+      <form class="form-detail form-horizontal form-horizontal-fix">
+      <div class="control-group">
+        <legend>ユーザー詳細</legend>
+      </div>
+      <div class="control-group">
+        <label class="control-label">ユーザーID:</label>
+        <div class="controls">
+          <p>{{ uuid }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">ログインID:</label>
+        <div class="controls">
+          <p>{{ login_id }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">ユーザー名:</label>
+        <div class="controls">
+          <p>{{ name }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">アカウントID:</label>
+        <div class="controls">
+          <p>{{ primary_account_id }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">ロケール:</label>
+        <div class="controls">
+          <p>{{ locale }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">タイムゾーン:</label>
+        <div class="controls">
+          <p>{{ time_zone }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">最終更新日時:</label>
+        <div class="controls">
+          <p>{{ _.isEmpty(last_login_at) ? "-" : app.helpers.date_ja.parse(last_login_at) }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">作成日時:</label>
+        <div class="controls">
+          <p>{{ app.helpers.date_ja.parse(created_at) }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">更新日時:</label>
+        <div class="controls">
+          <p>{{ app.helpers.date_ja.parse(updated_at) }}</p>
+        </div>
+      </div>
+     </form>
+  </script>
+</div><!-- span -->

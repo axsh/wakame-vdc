@@ -30,6 +30,12 @@ module Dcmgr::Models
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
       filter(:node_id => r)
     end
+
+    def_dataset_method(:offline_nodes) do
+      # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'offline')))
+      r = Isono::Models::NodeState.filter(:state => 'offline').select(:node_id)
+      filter(:node_id => r)
+    end
     
     def validate
       super

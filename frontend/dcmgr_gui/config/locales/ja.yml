@@ -719,6 +719,8 @@ ja:
       users:  "ユーザ管理"
       groups:  "グループ管理"
       resource: "リソース管理"
+  notification:
+    header: "お知らせ"
   error_box:
     code: "エラーコード"
   error_message:
