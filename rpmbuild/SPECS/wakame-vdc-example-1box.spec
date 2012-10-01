@@ -120,7 +120,7 @@ done
 unset config_ymls
 
 # /etc/%{oname}/admin/*.yml
-config_ymls="database"
+config_ymls="admin"
 for config_yml in ${config_ymls}; do
   cp -p `pwd`/frontend/admin/config/${config_yml}.yml.example ${RPM_BUILD_ROOT}/etc/%{oname}/admin/${config_yml}.yml
 done
