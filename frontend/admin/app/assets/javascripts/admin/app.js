@@ -114,6 +114,29 @@
 
   app.notify = new app.Notify;
 
+  app.Logger = function() {
+      this.initialize();
+  };
+  _.extend(app.Logger.prototype, {
+    initialize: function(){
+      this.stack = [];
+    },
+
+    push: function(type, item) {
+      this.stack.push({
+	'type': type,
+	'item': item
+      });
+    },
+
+    getLog: function(type){
+      return _.filter(this.stack, function(s){
+        return s.type == type
+      });
+    }
+  });
+  app.logger = new app.Logger;
+
   //  dropdown menu for top navigations
   $('.dropdown-toggle').dropdown();
 
@@ -124,12 +147,14 @@
       message = 'ネットワークを確認してください。';
     } else if( _.isEqual(e, 'parsererror')) {
       message = 'JSONリクエストのパースに失敗しました。';
-    } else if( _.isEqual(e, 'timeout')){
-      message = 'リクエスがタイムアウトしました。';
     } else {
       message = 'エラーが発生しました。管理者に問い合わせてください。';
     };
-    app.notify.error(message);
+
+    if(! _.any(app.logger.getLog(e.type), function(i){ return i.item == message})){
+      app.logger.push(e.type, message);
+      app.notify.error(message);
+    }
   });
 })();
 
