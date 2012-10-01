@@ -82,9 +82,8 @@ load_balancer)
   help)    cmd_help    ${1} "index|show|create|destroy|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
-    xquery="service_type=std"
     if [ ! -z "${state}" ]; then
-      xquery="${xquery}\&state=${state}"
+      xquery="state=${state}"
     fi
     cmd_index $*
     ;;
