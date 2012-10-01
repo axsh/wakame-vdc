@@ -1151,10 +1151,11 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
     'dns': {
       title: "DNS",
       ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_udp_port" width="4" value="53"></input>');
+        elem.append('Host Query: <input type="text" class="_query_record" value="localhost"></input>');
+        elem.append('<input type="hidden" class="_udp_port" value="53"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._udp_port').val();
+        return "&eth0_monitors["+idx+"][params][port]=53&eth0_monitors["+idx+"][params][query_record]"+$(row_elem).find('._query_record').val();
       },
     },
     'mysql': {

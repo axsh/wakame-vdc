@@ -86,7 +86,7 @@ module Dcmgr::Models
           super
 
           if self.params['check_path'].nil?
-            errors.add(:check_path, "Not found check path")
+            errors.add(:query_record, "Parameter not found")
           elsif self.params['check_path'] !~ %r{^/.*}
             errors.add(:check_path, "Invalid check path: #{self.params['check_path']}")
           end
@@ -113,6 +113,15 @@ module Dcmgr::Models
       end
 
       class DNS < UDP
+        def validate
+          super
+
+          if self.params['query_record'].nil?
+            errors.add(:query_record, "Parameter not found")
+          elsif  self.params['query_record'] !~ %r{^[a-z0-9][a-z0-9\.\-]+}i
+            errors.add(:query_record, "Invalid DNS name: #{self.params['query_record']}")
+          end
+        end
       end
 
       class SSH < TCP
