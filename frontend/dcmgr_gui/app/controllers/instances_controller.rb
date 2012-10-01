@@ -52,7 +52,7 @@ class InstancesController < ApplicationController
           vif_eth0[:monitors] ||= []
           vif_eth0[:monitors] << {
             :protocol=>mon[:protocol],
-            :is_enabled=>((mon[:enabled] && mon[:enabled] == 'true') ? true : false),
+            :enabled=>((mon[:enabled] && mon[:enabled] == 'true') ? true : false),
             :params => mon[:params],
           }
         }
