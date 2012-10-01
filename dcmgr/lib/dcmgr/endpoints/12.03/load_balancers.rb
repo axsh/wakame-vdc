@@ -43,7 +43,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     if params[:account_id]
-      ds = ds.filter(:account_id=>params[:account_id])
+      ds = ds.filter(:load_balancers__account_id=>params[:account_id])
     end
 
     ds = datetime_range_params_filter(:created, ds)

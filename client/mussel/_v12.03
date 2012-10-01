@@ -48,8 +48,9 @@ instance)
   help)    cmd_help    ${1} "index|show|create|destroy|reboot|stop|start|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
+    xquery="service_type=std"
     if [ ! -z "${state}" ]; then
-      xquery="state=${state}"
+      xquery="${xquery}\&state=${state}"
     fi
     cmd_index $*
     ;;
@@ -81,9 +82,10 @@ load_balancer)
   help)    cmd_help    ${1} "index|show|create|destroy|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
-    #if [ ! -z "${state}" ]; then
-    #  xquery="state=${state}"
-    #fi
+    xquery="service_type=std"
+    if [ ! -z "${state}" ]; then
+      xquery="${xquery}\&state=${state}"
+    fi
     cmd_index $*
     ;;
   show)    cmd_show    $* ;;
