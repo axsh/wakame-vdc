@@ -267,6 +267,31 @@ module Dcmgr
       end
 
       def terminate_instance(hc)
+        poweroff_instance(hc)
+        
+        # delete container folder
+        sh("vzctl destroy %s",[hc.inst_id])
+        hc.logger.debug("delete container folder #{hc.private_dir}")
+        # delete CT local config files
+        hc.ct_local_confs.map { |i| i + ".destroyed" }.each { |i|
+          if File.exist?(i)
+            File.unlink(i) rescue nil
+            hc.logger.info("Deleted CT config: #{File.basename(i)}")
+          else
+            hc.logger.warn("#{File.basename(i)} does not exist")
+          end
+        }
+
+        hc.logger.info("Terminated successfully.")
+      end
+      
+      def reboot_instance(hc)
+        # reboot container
+        sh("vzctl restart %s", [hc.inst_id])
+        hc.logger.info("Restarted container.")
+      end
+
+      def poweroff_instance(hc)
         # stop container
         sh("vzctl stop %s",[hc.inst_id])
 
@@ -297,35 +322,10 @@ module Dcmgr
         sh("umount %s/metadata", [hc.inst_data_dir])
         detach_loop(hc.metadata_img_path)
         hc.logger.info("Umounted metadata directory #{hc.inst_data_dir}/metadata")
-        
-        # delete container folder
-        sh("vzctl destroy %s",[hc.inst_id])
-        hc.logger.debug("delete container folder #{hc.private_dir}")
-        # delete CT local config files
-        hc.ct_local_confs.map { |i| i + ".destroyed" }.each { |i|
-          if File.exist?(i)
-            File.unlink(i) rescue nil
-            hc.logger.info("Deleted CT config: #{File.basename(i)}")
-          else
-            hc.logger.warn("#{File.basename(i)} does not exist")
-          end
-        }
-
-        hc.logger.info("Terminated successfully.")
-      end
-      
-      def reboot_instance(hc)
-        # reboot container
-        sh("vzctl restart %s", [hc.inst_id])
-        hc.logger.info("Restarted container.")
-      end
-
-      def poweroff_instance(hc)
-        sh("vzctl stop %s", [hc.inst_id])
       end
 
       def poweron_instance(hc)
-        sh("vzctl start %s", [hc.inst_id])
+        run_instance(hc)
       end
       
       def check_instance(i)

@@ -107,15 +107,6 @@ DcmgrGUI.prototype.volumePanel = function(){
     var results = data.volume.results;
     var size = results.length;
     for(var i = 0; i < size; i++) {
-      results[i].result.size = DcmgrGUI.Converter.fromBtoKB(results[i].result.size);
-    }
-    return data;
-  });
-  
-  c_list.filter.add(function(data){
-    var results = data.volume.results;
-    var size = results.length;
-    for(var i = 0; i < size; i++) {
       results[i].result.created_at = DcmgrGUI.date.parseISO8601(results[i].result.created_at);
       results[i].result.created_at = DcmgrGUI.date.setTimezone(results[i].result.created_at, dcmgrGUI.getConfig('time_zone'));
       results[i].result.created_at = DcmgrGUI.date.getI18n(results[i].result.created_at);
@@ -123,11 +114,6 @@ DcmgrGUI.prototype.volumePanel = function(){
     return data;
   });
 
-  c_list.detail_filter.add(function(data){
-    data.item.size = DcmgrGUI.Converter.fromBtoKB(data.item.size);
-    return data;
-  });
-  
   var bt_refresh  = new DcmgrGUI.Refresh();
   
   var create_volume_buttons = {};
