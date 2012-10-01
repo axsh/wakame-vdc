@@ -22,13 +22,17 @@ done
 # Finally we bring up all of this HVA's instances that have 'running' in their state file
 for dirname in `ls ${instances_tmp_dir}`; do
   if [[ $dirname == i-* ]] && [[ `cat ${instances_tmp_dir}/${dirname}/state` == "running" ]]; then
-    # Mount the metadata drive images and make sure their correct loop devices
-    # are stored in Wakame's temp directory
-    loop_device=`kpartx -va $instances_tmp_dir/$dirname/metadata.img | cut -d " " -f3`
-    mount -o loop /dev/mapper/${loop_device} ${instances_tmp_dir}/${dirname}/metadata
-    echo "/dev/mapper/${loop_device}" > ${instances_tmp_dir}/${dirname}/metadata.lodev
+    # Check if this instance is already running
+    vzlist | grep $dirname | grep -q running
+    if [ "$?" != "0" ]; then
+      # Mount the metadata drive images and make sure their correct loop devices
+      # are stored in Wakame's temp directory
+      loop_device=`kpartx -va $instances_tmp_dir/$dirname/metadata.img | cut -d " " -f3`
+      mount -o loop /dev/mapper/${loop_device} ${instances_tmp_dir}/${dirname}/metadata
+      echo "/dev/mapper/${loop_device}" > ${instances_tmp_dir}/${dirname}/metadata.lodev
 
-    # Start the instance
-    vzctl start ${dirname}
+      # Start the instance
+      vzctl start ${dirname}
+    fi
   fi
 done
