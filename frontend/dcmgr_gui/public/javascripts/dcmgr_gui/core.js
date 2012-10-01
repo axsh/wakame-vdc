@@ -1076,7 +1076,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       title: "HTTP",
       ui: function (elem){
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="80"></input>');
-        elem.append('<br>Path: <input type="text" class="_check_path" width="40"></input>');
+        elem.append('<br>Path: <input type="text" class="_check_path" width="40" value="/"></input>');
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
@@ -1087,7 +1087,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       title: "HTTPS",
       ui: function (elem, idx){
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="443"></input>');
-        elem.append('<br>Path: <input type="text" class="_check_path" width="40"></input>');
+        elem.append('<br>Path: <input type="text" class="_check_path" width="40" value="/"></input>');
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
