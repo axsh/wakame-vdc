@@ -14,8 +14,8 @@ require 'timeout'
 Given /^an instance (.+) is started in group (.+) that listens on (tcp|udp) port (\d+)$/ do |instance_name, group_name, protocol, port|
   steps %Q{
     Given an instance #{instance_name} is started with the following options
-    | image_id               | instance_spec_id | ssh_key_id | security_groups                | user_data           |
-    | wmi-secgtest           | is-demospec      | ssh-demo   | <registry:group_#{group_name}> | #{protocol}:#{port} |
+    | image_id               | ssh_key_id | user_data           | cpu_cores | service_type | account_id | display_name     | hypervisor  | memory_size | quota_weight | instance_spec_name | vifs                                                                                                         |
+    | wmi-secgtest           | ssh-demo   | #{protocol}:#{port} | 1         | std          | a-shpoolxx | #{instance_name} | openvz      | 256         | 1.0          | vz.small           | {\"eth0\":{\"index\":\"1\",\"network\":\"nw-demo1\",\"security_groups\":\"<registry:group_#{group_name}>\"}} |
   }
 end
 
