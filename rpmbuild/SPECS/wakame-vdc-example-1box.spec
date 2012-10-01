@@ -171,6 +171,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
 %config /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
 %config /etc/%{oname}/convert_specs/load_balancer.yml
+%config /etc/%{oname}/admin/admin.yml
 
 %files hva-vmapp-config
 %config /etc/%{oname}/hva.conf
