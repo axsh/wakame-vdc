@@ -28,7 +28,10 @@ module Dcmgr::Models
     def_dataset_method(:alives_and_termed) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
       filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - term_period))
     }
-    
+
+    def_dataset_method(:without_terminated) do
+      filter("state='running' OR state='stopped' OR state='halted'")
+    end
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     # Possible column data:

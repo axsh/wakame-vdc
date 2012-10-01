@@ -1,25 +1,24 @@
 <% content_for :javascript_link_tags do %>
 <%= javascript_include_tag ['/assets/moment.min.js',
-                            '/assets/bootstrap-notify.js',
                             '/assets/backbone.paginator.js',
                             '/assets/admin/models/item.js',
                             '/assets/admin/collections/paginated_collection.js',
                             '/assets/admin/views/result_view.js',
                             '/assets/admin/views/pagination_view.js',
                             '/assets/admin/views/list_view.js',
-                            '/assets/admin/controllers/users/search_controller.js'
+                            '/assets/admin/views/user_view.js',
+                            '/assets/admin/controllers/users/search_controller.js',
+                            '/assets/admin/helpers.js',
 ]
 %>
 <% end %>
 
 <% content_for :stylesheet_link_tags do %>
-<%= stylesheet_link_tag ['/assets/bootstrap-notify.css',
-                         '/assets/smoothness/jquery-ui-1.8.23.custom.css',
+<%= stylesheet_link_tag ['/assets/smoothness/jquery-ui-1.8.23.custom.css',
                          '/assets/jquery-ui-timepicker-addon.css'
 ] %>
 <% end %>
-<div id="notify" class='notifications top-right'></div>
-  <div class="span8">
+  <div class="span10">
     <div class="control-group">
       <legend>ユーザー検索</legend>
     </div>
@@ -27,7 +26,7 @@
       <div class="control-group">
          <div class="controls">
          <label class="control-label" for="inputSearch">検索条件</label>
-         <input type="text" id="selectStatus" placeholder="">
+         <input type="text" id="inputSearch" placeholder="" name="q">
          </div>
       </div>
       <div class="controls" style="text-align:right">
@@ -57,13 +56,17 @@
       <!--  The content is mapped on #resultItemTemplate -->
       <tbody id="content"></tbody>
       <script type="text/template" id="resultItemTemplate">
-        <td><a href="/host_nodes/1">{{ uuid }}</a></td>
+        <td><a href="/users/{{ uuid }}">{{ uuid }}</a></td>
         <td>{{ name }}</td>
         <td>{{ login_id }}</td>
         <td>{{ primary_account_id }}</td>
-        <td>{{ last_login_at }}</td>
-        <td>{% if(id !== null){ %}<a href="/instances?">インスタンス情報</a>{% } %}</td>
-        <td>{% if(id !== null){ %}<a href="/users?">ユーザー画面</a>{% } %}</td>
+        <td>
+          {% if(! _.isEmpty(last_login_at)){ %}
+	    {{ app.helpers.date_ja.parse(last_login_at) }}
+          {% } %}
+        </td>
+        <td>{% if(id !== null){ %}<a href="/instances?account_id={{ primary_account_id }}">インスタンス情報</a>{% } %}</td>
+        <td>{% if(id !== null){ %}<button class="btn user_login" >Login</button>{% } %}</td>
       </script>
     </table>
 </div>

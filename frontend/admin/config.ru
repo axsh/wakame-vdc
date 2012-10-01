@@ -9,6 +9,14 @@ if defined?(::Unicorn)
   use Unicorn::OobGC
 end
 
+require 'rack/cors'
+use Rack::Cors do
+  allow do
+    origins '*'
+    resource '/api/notifications', :headers => :any, :methods => [:get]
+  end
+end
+
 require File.expand_path("../config/boot.rb", __FILE__)
 
 run Padrino.application
