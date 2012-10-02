@@ -17,6 +17,7 @@ class Storage < Base
   method_option :transport_type, :type => :string, :default=>'iscsi', :desc => "Transport type [iscsi]"
   method_option :ipaddr, :type => :string, :required=>true, :desc => "IP address of transport target"
   method_option :storage_type, :type => :string, :default=>'zfs', :desc => "Storage type [#{StorageNode::SUPPORTED_BACKINGSTORE.join(', ')}]"
+  method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
   def add(node_id)
     unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
       abort("Node ID is not registered yet: #{node_id}")
@@ -29,6 +30,7 @@ class Storage < Base
               :export_path=>options[:base_path],
               :snapshot_base_path => options[:snapshot_base_path],
               :ipaddr=>options[:ipaddr],
+              :display_name=>options[:display_name],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     

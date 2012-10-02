@@ -83,6 +83,7 @@ module Dcmgr
     autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'    
     autoload :BackupStorage, 'dcmgr/models/backup_storage'
     autoload :BackupObject, 'dcmgr/models/backup_object'
+    autoload :MacRange, 'dcmgr/models/mac_range'
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
   end
 
@@ -150,6 +151,7 @@ module Dcmgr
     autoload :ResourceGroup, 'dcmgr/cli/resource_group'
     autoload :BackupStorage, 'dcmgr/cli/backup_storage'
     autoload :BackupObject, 'dcmgr/cli/backup_object'
+    autoload :MacRange, 'dcmgr/cli/mac_range'
 
     module Debug
       autoload :Base, 'dcmgr/cli/debug/base'
@@ -232,7 +234,11 @@ module Dcmgr
       autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'
     end
 
-    NAMESPACES=[HostNode, StorageNode, Network]
+    module MacAddress
+      autoload :ByHostNodeGroup, 'dcmgr/scheduler/mac_address/by_host_node_group'
+    end
+
+    NAMESPACES=[HostNode, StorageNode, Network, MacAddress]
   end
   
   require 'dcmgr/vnet'

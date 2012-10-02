@@ -30,6 +30,12 @@ module Dcmgr::Models
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
       filter(:node_id => r)
     end
+
+    def_dataset_method(:offline_nodes) do
+      # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'offline')))
+      r = Isono::Models::NodeState.filter(:state => 'offline').select(:node_id)
+      filter(:node_id => r)
+    end
     
     def validate
       super
@@ -138,9 +144,18 @@ module Dcmgr::Models
       hn_vnet = HostNodeVnet.new
       hn_vnet.host_node = self
       hn_vnet.network = network
-      hn_vnet.broadcast_addr = m.mac_addr
+      hn_vnet.broadcast_addr = m.pretty_mac_addr('')
       hn_vnet.save
       hn_vnet
+    end
+
+    # Returns the host node groups that this node is part of
+    def groups_dataset
+      Tag.filter(:mapped_uuids => TagMapping.filter(:uuid => self.canonical_uuid))
+    end
+
+    def groups
+      groups_dataset.all
     end
 
     protected

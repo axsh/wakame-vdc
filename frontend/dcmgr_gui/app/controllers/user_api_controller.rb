@@ -42,6 +42,6 @@ class UserApiController < ApiController
   def show
     ds = find_by_uuid(:User, params[:id])
     raise "UnknownInstance"if ds.nil?
-    respond_with(ds, :to=>[:json])
+    respond_with(generate(ds), :to=>[:json])
   end
 end

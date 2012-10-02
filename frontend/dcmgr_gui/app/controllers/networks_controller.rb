@@ -25,6 +25,8 @@ class NetworksController < ApplicationController
       data[:service_dns] = params[:service_dns] if params[:service_dns]
       data[:service_gateway] = params[:service_gateway] if params[:service_gateway]
 
+      data[:dhcp_range] = "default" if params[:service_dhcp_use_default]
+
       @network = Hijiki::DcmgrResource::Network.create(data)
       render :json => @network
     end

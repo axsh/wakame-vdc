@@ -28,7 +28,10 @@ module Dcmgr::Models
     def_dataset_method(:alives_and_termed) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
       filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - term_period))
     }
-    
+
+    def_dataset_method(:without_terminated) do
+      filter("state='running' OR state='stopped' OR state='halted'")
+    end
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     # Possible column data:
@@ -262,12 +265,10 @@ module Dcmgr::Models
                   else
                     Dcmgr.conf.mac_address_vendor_id
                   end
-      m = MacLease.lease(vendor_id)
-      nic = NetworkVif.new({ :account_id => self.account_id,
-                             :mac_addr=>m.mac_addr,
-                           })
+      nic = NetworkVif.new({ :account_id => self.account_id })
       nic.instance = self
       nic.device_index = vif_template[:index]
+      Dcmgr::Scheduler.service_type(self).mac_address.schedule(nic)
       nic.save
 
       if !request_params.has_key?('security_groups') && !vif_template[:security_groups].empty?

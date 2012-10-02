@@ -60,7 +60,8 @@ module Dcmgr::Endpoints::V1203::Responses
               :state=>state,
               :status=>status,
               :target_vifs=> target_vifs,
-              :vif=>h[:vif]
+              :vif=>h[:vif],
+              :instance_id=>instance.canonical_uuid
         )
       }
     end

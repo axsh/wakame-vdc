@@ -7,7 +7,7 @@ module Hijiki::DcmgrResource::V1203
                                 ]
 
     def usage
-      self.get(:usage)
+      self.get(:usage, {:service_type => 'std'})
     end
   end
 end

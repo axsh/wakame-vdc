@@ -62,6 +62,8 @@ module Hijiki::DcmgrResource::V1203
         object.service_dns = params[:service_dns] if params[:service_dns]
         object.service_gateway = params[:service_gateway] if params[:service_gateway]
 
+        object.dhcp_range = params[:dhcp_range] if params[:dhcp_range]
+
         object.save
         object
       end

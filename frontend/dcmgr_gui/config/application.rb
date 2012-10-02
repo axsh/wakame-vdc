@@ -55,5 +55,8 @@ module DcmgrGui
     config.machine_image_base_path = File.join(config.dcmgr_path, "/tmp/images")
     # リモートのマシンイメージのmd5を取得するシェル
     config.md5_rpath = File.join(config.root, '/bin/rmd5sum.sh')
+
+    # Configure endpoints
+    config.endpoints = YAML::load(IO.read(File.join(Rails.root, 'config', 'dcmgr_gui.yml')))[Rails.env]
   end
 end
