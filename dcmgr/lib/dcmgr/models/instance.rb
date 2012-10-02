@@ -265,12 +265,10 @@ module Dcmgr::Models
                   else
                     Dcmgr.conf.mac_address_vendor_id
                   end
-      m = MacLease.lease(vendor_id)
-      nic = NetworkVif.new({ :account_id => self.account_id,
-                             :mac_addr=>m.mac_addr,
-                           })
+      nic = NetworkVif.new({ :account_id => self.account_id })
       nic.instance = self
       nic.device_index = vif_template[:index]
+      Dcmgr::Scheduler.service_type(self).mac_address.schedule(nic)
       nic.save
 
       if !request_params.has_key?('security_groups') && !vif_template[:security_groups].empty?

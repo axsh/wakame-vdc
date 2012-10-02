@@ -30,6 +30,7 @@ class RootCli < Thor
   register(Dcmgr::Cli::ResourceGroup, Dcmgr::Cli::ResourceGroup.namespace, "resourcegroup sub-command", "Operations for resource groups")
   register(Dcmgr::Cli::BackupStorage, Dcmgr::Cli::BackupStorage.namespace, "backupstorage sub-command", "Operations for backup storage")
   register(Dcmgr::Cli::BackupObject, Dcmgr::Cli::BackupObject.namespace, "backupobject sub-command", "Operations for backup object")
+  register(Dcmgr::Cli::MacRange, Dcmgr::Cli::MacRange.namespace, "macrange sub-command", "Operations for mac addres range")
 
   #def self.exit_on_failure?
   #  true
