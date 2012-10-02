@@ -1,24 +1,22 @@
 <% content_for :javascript_link_tags do %>
 <%= javascript_include_tag ['/assets/moment.min.js',
-                            '/assets/bootstrap-notify.js',
                             '/assets/backbone.paginator.js',
                             '/assets/admin/models/item.js',
                             '/assets/admin/collections/paginated_collection.js',
                             '/assets/admin/views/result_view.js',
                             '/assets/admin/views/pagination_view.js',
                             '/assets/admin/views/list_view.js',
-                            '/assets/admin/controllers/instances/search_controller.js'
+                            '/assets/admin/controllers/instances/search_controller.js',
+			    '/assets/admin/helpers.js',
 ]
 %>
 <% end %>
 
 <% content_for :stylesheet_link_tags do %>
-<%= stylesheet_link_tag ['/assets/bootstrap-notify.css',
-                         '/assets/smoothness/jquery-ui-1.8.23.custom.css',
+<%= stylesheet_link_tag ['/assets/smoothness/jquery-ui-1.8.23.custom.css',
 ] %>
 <% end %>
-<div id="notify" class='notifications top-right'></div>
-  <div class="span9">
+  <div class="span10">
     <div class="control-group">
       <legend>インスタンス検索</legend>
     </div>
@@ -26,11 +24,13 @@
       <div class="control-group">
          <div class="controls">
          <label class="control-label" for="inputSearch">検索条件</label>
-         <input type="text" id="selectStatus" placeholder="">
+         <input type="text" id="inputSearch" placeholder="" name="q">
          <span style="margin:30px">
          <label class="control-label" for="selectStatus">状態</label>
-         <select>
+         <select id="selectStatus" name="state">
            <option>running</option>
+           <option>terminated</option>
+           <option>stopped</option>
          </select>
          </span>
          </div>
@@ -54,24 +54,24 @@
           <th>状態</th>
           <th>ホストノードID</th>
           <th>IPアドレス</th>
+          <th>サービスタイプ</th>
           <th>作成日時</th>
-          <th></th>
         </tr>
       </thead>
       <!--  The content is mapped on #resultItemTemplate -->
       <tbody id="content"></tbody>
       <script type="text/template" id="resultItemTemplate">
-        <td>{% if( id != null ){ %}{{ id }}{% } %}</td>
-        <td><a href="/instances/{{ id }}">{{ display_name }}</a></td>
-        <td>{{ status }}</td>
+        <td>{% if(! _.isEmpty(id)){ %}<a href="/instances/{{ id }}">{{ id }}</a>{% } %}</td>
+        <td>{{ display_name }}</td>
+        <td>{{ state }}</td>
         <td>{{ host_node }}</td>
-        <td>{% if( ! _.isEmpty(vif) ){ %}{{ vif[0].ipv4.address }}{% } %}</td>
-        <td>{{ created_at }}</td>
+        <td>{% if( ! _.isEmpty(vif) && ! _.isEmpty(vif[0].ipv4)){ %}{{ vif[0].ipv4.address }}{% } %}</td>
+        <td>{{ service_type }}</td>
         <td>
-        {% if( id != null ){ %}
-        <a href="/">ユーザー画面</a>
-        {% } %}
-        </td>
+	{% if(! _.isEmpty(created_at)){ %}
+	  {{ app.helpers.date_ja.parse(created_at) }}
+	{% } %}
+	</td>
        </script>
     </table>
 </div>

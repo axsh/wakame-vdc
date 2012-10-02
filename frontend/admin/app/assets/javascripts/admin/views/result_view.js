@@ -13,10 +13,10 @@
 
 		publish_date : function() {
 			var attr = this.model.attributes;
-			if(attr.publish_date_from && attr.publish_date_to) {
-				var publish_date_from = app.helpers.date.parse(attr.publish_date_from)
-				var publish_date_to = app.helpers.date.parse(attr.publish_date_to)
-				return publish_date_from + ' ~ ' + publish_date_to
+			if(attr.display_begin_at && attr.display_end_at) {
+				var display_begin_at = app.helpers.date.parse(attr.display_begin_at)
+				var display_end_at = app.helpers.date.parse(attr.display_end_at)
+				return display_begin_at + ' ~ ' + display_end_at
 			} else {
 				return '';
 			}

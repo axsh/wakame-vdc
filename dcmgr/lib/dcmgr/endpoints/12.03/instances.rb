@@ -3,7 +3,7 @@
 require 'dcmgr/endpoints/12.03/responses/instance'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
-  INSTANCE_META_STATE=['alive', 'alive_with_terminated'].freeze
+  INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
@@ -27,6 +27,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                ds.lives
              when 'alive_with_terminated'
                ds.alives_and_termed
+             when 'without_terminated'
+               ds.without_terminated
              else
                raise E::InvalidParameter, :state
              end
@@ -40,7 +42,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     if params[:id]
       uuid = params[:id].split("i-")[1]
       uuid = params[:id] if uuid.nil?
-      ds = filter(:uuid.like("%#{uuid}%"))
+      ds = ds.filter(:uuid.like("%#{uuid}%"))
     end
 
     if params[:account_id]
