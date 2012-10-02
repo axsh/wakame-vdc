@@ -349,11 +349,27 @@ Sequel.migration do
     alter_table(:tag_mappings) do
       add_column :sort_index, "int(11)", :null=>false, :default=>0
     end
+
+    create_table(:mac_ranges) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false, :unique=>true
+      column :vendor_id, "mediumint(8)", :unsigned=>true, :null=>false
+      column :range_begin, "mediumint(8)", :unsigned=>true, :null=>false
+      column :range_end, "mediumint(8)", :unsigned=>true, :null=>false
+      column :description, "varchar(255)"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+    end
+
+    alter_table(:mac_leases) do
+      set_column_type :mac_addr, "bigint", :unsigned=>true, :null=>false
+    end
   end
   
   down do
     drop_table(:host_node_vnets)
     drop_table(:network_services)
+    drop_table(:mac_ranges)
 
     rename_table(:network_vifs, :instance_nics)
 
@@ -497,6 +513,10 @@ Sequel.migration do
 
     alter_table(:tag_mappings) do
       drop_column :sort_index
+    end
+
+    alter_table(:mac_leases) do
+      set_column_type :mac_addr, "char(12)", :null=>false
     end
   end
 end
