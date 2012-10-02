@@ -95,7 +95,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'backup_object.size_mb' do
     fetch do
-      ('%.3f' % ((self.instance_exec(M::BackupObject.alives, &COMMON_DS_FILTER).sum(:size) || 0) / (1024 * 1024))).to_f
+      ((self.instance_exec(M::BackupObject.alives, &COMMON_DS_FILTER).sum(:size) || 0) / (1024 * 1024)).truncate
     end
 
     evaluate do |fetch_value| 
