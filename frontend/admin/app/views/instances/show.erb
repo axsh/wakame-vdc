@@ -1,1 +1,93 @@
-<% content_for :javascript_link_tags do %><%= javascript_include_tag ['/assets/admin/collections/detail_collection.js',                            '/assets/admin/views/detail_view.js',] %><% end %><% content_for :stylesheet_link_tags do %><% end %>    <div class="span8">      <div id="content"></div>      <div class="control-group">      <div class="controls">      <ul class="breadcrumb">        <li><a href="/">ホーム</a> <span class="divider">/</span></li>        <li><a href="/instances">インスタンス</a> <span class="divider">/</span></li>        <li class="active">ID: 1</li>      </ul>      </div>      <form class="form-detail form-horizontal form-horizontal-fix">      <div class="control-group">        <legend>インスタンス</legend>      </div>      <div class="control-group">        <label class="control-label">インスタンスID:</label>        <div class="controls">          <p>i-xxxxxx</p>        </div>      </div>      <div class="control-group">        <label class="control-label">インスタンス名:</label>        <div class="controls">          <p>InstanceA</p>        </div>      </div>      <div class="control-group">        <label class="control-label">WMI ID:</label>        <div class="controls">          <p><a href="/machine_images/1">wmi-lucid0</a></p>        </div>      </div>      <div class="control-group">        <label class="control-label">CPUコア数:</label>        <div class="controls">          <p>1</p>        </div>      </div>      <div class="control-group">        <label class="control-label">メモリーサイズ:</label>        <div class="controls">          <p>256MB</p>        </div>      </div>       <div class="control-group">        <label class="control-label">IPアドレス:</label>        <div class="controls">          <p>192.16.121.100</p>        </div>      </div>       <div class="control-group">        <label class="control-label">状態:</label>        <div class="controls">          <p>running</p>        </div>      </div>       <div class="control-group">        <label class="control-label">SSHキーペア:</label>        <div class="controls">          <p><a href="/key_pairs/1">ssh-demo</a></p>        </div>      </div>       <div class="control-group">        <label class="control-label">ホストノードID:</label>        <div class="controls">          <p><a href="/host_nodes/1">hn-xxxxx</a></p>        </div>      </div>       <div class="control-group">        <label class="control-label">ホストノード名:</label>        <div class="controls">          <p>node001</p>        </div>      </div>       <div class="control-group">        <label class="control-label">作成日時:</label>        <div class="controls">          <p>2012年06月30日 14時30分34秒</p>        </div>      </div>      </form>    </div></div>
+<% content_for :javascript_link_tags do %>
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/admin/models/dcmgr.js',
+                            '/assets/admin/collections/detail_collection.js',
+                            '/assets/admin/views/detail_view.js',
+                            '/assets/admin/controllers/instances/detail_controller.js',
+			    '/assets/admin/helpers.js',
+] %>
+<% end %>
+
+<% content_for :stylesheet_link_tags do %>
+<% end %>
+
+    <div class="span8">
+      <div id="content"></div>
+      <script type="text/template" id="detailInstance">
+      <div class="control-group">
+      <div class="controls">
+      <ul class="breadcrumb">
+        <li><a href="/">ホーム</a> <span class="divider">/</span></li>
+        <li><a href="/instances">インスタンス</a> <span class="divider">/</span></li>
+        <li class="active">ID:{{ id }}</li>
+      </ul>
+      </div>
+      <form class="form-detail form-horizontal form-horizontal-fix">
+      <div class="control-group">
+        <legend>インスタンス</legend>
+      </div>
+      <div class="control-group">
+        <label class="control-label">インスタンスID:</label>
+        <div class="controls">
+          <p>{{ id }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">インスタンス名:</label>
+        <div class="controls">
+          <p>{{ display_name }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">WMI ID:</label>
+        <div class="controls">
+          <p><a href="/images/{{ image_id }}">{{ image_id }}</a></p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">CPUコア数:</label>
+        <div class="controls">
+          <p>{{ cpu_cores }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">メモリーサイズ:</label>
+        <div class="controls">
+          <p>{{ memory_size }}MB</p>
+        </div>
+      </div>
+       <div class="control-group">
+        <label class="control-label">IPアドレス:</label>
+        <div class="controls">
+          <p>{% if( ! _.isEmpty(vif) && ! _.isEmpty(vif[0].ipv4)){ %}{{ vif[0].ipv4.address }}{% } %}</p>
+        </div>
+      </div>
+       <div class="control-group">
+        <label class="control-label">状態:</label>
+        <div class="controls">
+          <p>{{ state }}</p>
+        </div>
+      </div>
+       <div class="control-group">
+        <label class="control-label">SSHキーペア:</label>
+        <div class="controls">
+          <p><a href="/ssh_key_pairs/{{ ssh_key_pair }}">{{ ssh_key_pair }}</a></p>
+        </div>
+      </div>
+       <div class="control-group">
+        <label class="control-label">ホストノードID:</label>
+        <div class="controls">
+          <p><a href="/host_nodes/{{ host_node }}">{{ host_node }}</a></p>
+        </div>
+      </div>
+       <div class="control-group">
+        <label class="control-label">作成日時:</label>
+        <div class="controls">
+          <p>{{ app.helpers.date_ja.parse(created_at) }}</p>
+        </div>
+      </div>
+
+      </form>
+    </script>
+    </div>
+</div>

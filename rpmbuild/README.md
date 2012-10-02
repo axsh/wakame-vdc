@@ -76,10 +76,6 @@ Pre-setup Dcmgr
     # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/instance_spec.yml.example      /etc/wakame-vdc/dcmgr_gui/instance_spec.yml
     # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/load_balancer_spec.yml.example /etc/wakame-vdc/dcmgr_gui/load_balancer_spec.yml
 
-### admin
-
-    # cp -f /opt/axsh/wakame-vdc/frontend/admin/config/database.yml.example           /etc/wakame-vdc/admin/database.yml
-
 ### pre-setup proxy
 
     # echo "$(eval "VDC_ROOT=/var/lib/wakame-vdc; echo \"$(curl -s https://raw.github.com/axsh/wakame-vdc/master/tests/vdc.sh.d/proxy.conf.tmpl)\"")" > /etc/wakame-vdc/proxy.conf
@@ -112,17 +108,6 @@ The database to use is specified in a configuration file.
        password:
 
 + /etc/wakame-vdc/dcmgr_gui/database.yml
-
-### admin
-
-    development:
-       adapter: mysql2
-       database: wakame_admin
-       host: localhost
-       user: root
-       password:
-
-+ /etc/wakame-vdc/admin/database.yml
 
 -----------------------
 
@@ -159,8 +144,6 @@ Now you can reboot your machine to wake mysql up. The followings commands will b
     # bundle exec rake db:init
     # cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui
     # bundle exec rake db:init
-    # cd /opt/axsh/wakame-vdc/frontend/admin
-    # bundle exec rake sq:migrate:auto
 
 If you need additional demonstration data, please type the followings.
 NOTICE: this script will erase all related database at first. We recommend to backup before doing this.

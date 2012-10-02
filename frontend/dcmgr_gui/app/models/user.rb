@@ -61,7 +61,11 @@ class User < BaseNew
     self.locale = params[:locale] if params[:locale]
     save_changes
   end
-  
+
+  def self.get_user_ids(uuids)
+    User.filter(:uuid => uuids).all.collect {|u| u.id }
+  end
+
   # ページ指定一覧の取得
   def self.list(params)
      start = params[:start].to_i

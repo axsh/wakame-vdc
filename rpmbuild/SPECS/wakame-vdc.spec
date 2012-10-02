@@ -266,7 +266,6 @@ ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml          ${RPM_BUILD_ROOT}/%{prefix}
 ln -s /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/load_balancer_spec.yml
 
 # padrino app config
-ln -s /etc/%{oname}/admin/database.yml  ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/config/database.yml
 ln -s /etc/%{oname}/admin/admin.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/config/admin.yml
 
 # vdcsh

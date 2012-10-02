@@ -2,40 +2,48 @@
 
   // Defer initialization until doc ready.
   $(function(){
+    if (!_.isEmpty($('#system_message').html())){
+      app.notify.success($('#system_message').html());
+    }
+
     app.collections.paginatedItems = new app.collections.PaginatedCollection({
 
       model: app.models.Item.extend({
-        urlRoot: app.info.api_endpoints.admin + '/api/notifications.json',
+        urlRoot: app.info.api_endpoints.dcmgr_gui + '/api/notifications'
       }),
 
       server_api: {
-
-        'publish_date_to': function() {
-          var d = decodeURIComponent(app.utils.parsedSearch('publish_date_to')).replace('+',' ');
-          if( !_.isEmpty(d) && moment(d).isValid()) {
-            var publish_date_to = moment(d).format();
-            return publish_date_to;
+        'distribution' : app.utils.parsedSearch('distribution'),
+        'users' : app.utils.parsedSearch('user_id'),
+        'display_end_at': function() {
+          var display_end_at = app.utils.parsedSearch('display_end_at');
+          if( !_.isEmpty(display_end_at)) {
+            var d = decodeURIComponent(display_end_at).replace('+',' ');
+            return encodeURIComponent(app.helpers.date.iso8601(d));
+          } else {
+            return '';
           }
-        },
+        }(),
 
-        'publish_date_from': function() {
-          var d = decodeURIComponent(app.utils.parsedSearch('publish_date_from')).replace('+',' ');
-          if( !_.isEmpty(d) && moment(d).isValid()) {
-            var publish_date_from = moment(d).format();
-            return publish_date_from;
+        'display_begin_at': function() {
+          var display_begin_at = app.utils.parsedSearch('display_begin_at');
+          if( !_.isEmpty(display_begin_at) ) {
+            var d = decodeURIComponent(app.utils.parsedSearch('display_begin_at')).replace('+',' ');
+            return encodeURIComponent(app.helpers.date.iso8601(d));
+          } else {
+            return '';
           }
-        }
+        }()
       },
 
       paginator_core: {
-        url: app.info.api_endpoints.admin + '/api/notifications.json'
+        url: app.info.api_endpoints.dcmgr_gui + '/api/notifications.json'
       }
 
     });
 
     app.views.pagination = new app.views.PaginatedView({collection:app.collections.paginatedItems});
     app.views.list = new app.views.ListView({collection: app.collections.paginatedItems});
-// app.views.search = new app.views.SearchView();
 
     app.router = new app.Router;
     Backbone.history.start();
