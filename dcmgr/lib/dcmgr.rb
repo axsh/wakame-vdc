@@ -202,6 +202,8 @@ module Dcmgr
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Webdav, 'dcmgr/drivers/webdav'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
+    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
+    autoload :Zabbix, 'dcmgr/drivers/zabbix'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'

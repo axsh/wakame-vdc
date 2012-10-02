@@ -29,3 +29,5 @@ ENV['PATH']="#{Bundler.bundle_path}/bin:#{ENV['PATH']}"
 gem 'rant', '0.5.9'
 gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame'
 gem 'rack-cors', :require => 'rack/cors'
+
+gem 'multi_json'
