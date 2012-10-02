@@ -371,12 +371,14 @@ Sequel.migration do
       column :network_vif_id, "int(11)", :null=>false
       column :enabled, "tinyint(1)", :default=>true, :null=>false
       column :protocol, "varchar(255)", :null=>false
+      column :title, "varchar(255)", :null=>false
       column :params, "text", :null=>false
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
 
       index [:deleted_at]
+      index [:network_vif_id]
       index [:uuid], :unique=>true, :name=>:uuid
     end
   end

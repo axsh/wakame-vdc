@@ -137,16 +137,10 @@ module Dcmgr::Models
       end
     end
     
-
     def to_hash
       hash = super
     end
 
-    def before_validation
-      send("#{model.sti_key}=", model.sti_key_map[model]) unless self[model.sti_key]
-      super
-    end
-    
     def validate
       super
 
@@ -156,6 +150,13 @@ module Dcmgr::Models
     end
 
     private
+
+    def before_validation
+      # Set default title like "HTTP1", "HTTP2" if not assigned.
+      self.title ||= self.protocol.upcase + (self.class.alives.filter(:network_vif_id=>self.network_vif_id, :protocol=>self.protocol).count.to_i + 1).to_s
+      send("#{model.sti_key}=", model.sti_key_map[model]) unless self[model.sti_key]
+      super
+    end
 
     def _destroy_delete
       self.deleted_at ||= Time.now
