@@ -136,6 +136,13 @@ DcmgrGUI.prototype.instancePanel = function(){
 	$(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
 	$(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
 	$(this).find('#instance_display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
+
+        var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
+        $(this).find('#add_monitor_item').bind('click', function(e){
+          // Append new monitoring item selection.
+          monitor_selector.addItem('http');
+        });
+        //bt_launch_instance.monitor_selector = monitor_selector;
         
         var create_attach_vif = function(index) {
           var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '")">Attach</button>'

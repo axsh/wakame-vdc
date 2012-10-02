@@ -364,12 +364,30 @@ Sequel.migration do
     alter_table(:mac_leases) do
       set_column_type :mac_addr, "bigint", :unsigned=>true, :null=>false
     end
+
+    create_table(:network_vif_monitors) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false
+      column :network_vif_id, "int(11)", :null=>false
+      column :enabled, "tinyint(1)", :default=>true, :null=>false
+      column :protocol, "varchar(255)", :null=>false
+      column :title, "varchar(255)", :null=>false
+      column :params, "text", :null=>false
+      column :deleted_at, "datetime"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+
+      index [:deleted_at]
+      index [:network_vif_id]
+      index [:uuid], :unique=>true, :name=>:uuid
+    end
   end
   
   down do
     drop_table(:host_node_vnets)
     drop_table(:network_services)
     drop_table(:mac_ranges)
+    drop_table(:network_vif_monitors)
 
     rename_table(:network_vifs, :instance_nics)
 

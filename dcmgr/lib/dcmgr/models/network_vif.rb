@@ -23,6 +23,7 @@ module Dcmgr::Models
 
     many_to_one :instance
     many_to_one :network_service
+    one_to_many :network_vif_monitors
 
     def to_hash
       hash = super
@@ -33,6 +34,7 @@ module Dcmgr::Models
                     :network_id => self.network_id,
                     :network => self.network.nil? ? nil : self.network.to_hash,
                     :security_groups => self.security_groups.map {|n| n.canonical_uuid },
+                    :network_vif_monitors => self.network_vif_monitors_dataset.alives.map {|n| n.to_hash },
                   })
 
       if self.instance
@@ -109,6 +111,7 @@ module Dcmgr::Models
       release_ip_lease
       self.remove_all_security_groups
       self.remove_all_security_groups
+      self.network_vif_monitors.each {|i| i.destroy }
       super
     end
 
