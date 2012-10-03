@@ -175,6 +175,9 @@ module Dcmgr
             root_device = new_device_file & device_file_list
             raise "root device does not exist #{image[:root_device]}" if root_device.empty?
             sh("mount %s %s", [root_device[0], private_folder])
+
+            # Write root partition identifier to instance data dir for the failure recovery script
+            File.open(File.expand_path('root_partition', hc.inst_data_dir), 'w') {|f| f.puts(search_word) }
           else
             cmd = "mount %s %s"
             args = [hc.os_devpath, private_folder]
