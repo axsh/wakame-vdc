@@ -128,6 +128,36 @@ function run_vmbuilder() {
       --dns 8.8.8.8 $@
 }
 
+function run_vmbuilder_secgtest() {
+  typeset imgpath=$1
+  typeset arch=$2 # i386, amd64
+  shift; shift;
+
+  [[ -d ./ubuntu-kvm ]] && rm -rf ./ubuntu-kvm
+
+  [[ -f $imgpath ]] && rm -f $imgpath
+
+  echo "Creating image file... $imgpath"
+  truncate -s $(( $rootsize + $swapsize - 1))m $imgpath
+  vmbuilder kvm ubuntu --suite=lucid --mirror=http://jp.archive.ubuntu.com/ubuntu \
+      --arch=$arch --raw=$imgpath --rootsize $rootsize --swapsize $swapsize --variant minbase \
+      --addpkg ssh --addpkg curl \
+      --addpkg sudo \
+      --addpkg iproute \
+      --addpkg dhcp-client \
+      --addpkg iputils-ping \
+      --addpkg telnet \
+      --addpkg libterm-readline-perl-perl \
+      --addpkg ifmetric \
+      --addpkg vim \
+      --addpkg less \
+      --addpkg lv \
+      --addpkg gpgv \
+      --addpkg ruby \
+      --addpkg rubygems \
+      --dns 8.8.8.8 $@
+}
+
 # loop mounts the image file and calls a shell function during mounting.
 #
 # % loop_mount_image "new.raw" "shell_func_name" ["opt1" "opt2"...]
@@ -373,6 +403,20 @@ function install_wakame_init() {
 /etc/wakame-init ${metadata_type}
 exit 0
 EOF
+}
+
+function install_secg_test_scripts() {
+  typeset tmp_root="$1"
+  typeset lodev="$2"
+  typeset script_location="$3"
+
+  echo "Installing the secgtest scripts from ${script_location}"
+
+  for file in `ls $script_location`; do
+    cp -p $script_location/$file $tmp_root/opt/$file
+    chmod 755 $tmp_root/opt/$file
+    chown 0:0 $tmp_root/opt/$file
+  done
 }
 
 # Callback function for loop_mount_image().

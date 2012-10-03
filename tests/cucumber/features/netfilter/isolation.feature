@@ -62,10 +62,10 @@ Feature: VM Isolation
       """
       tcp:22,22,ip4:0.0.0.0
       """
-    And an instance instA1 is started in group A with scheduler vif3type1
-    And an instance instA2 is started in group A with scheduler vif3type1
-    And an instance instB1 is started in group B with scheduler vif3type1
-    And an instance instB2 is started in group B with scheduler vif3type1
+    And an instance instA1 is started in group A with 3 vnics
+    And an instance instA2 is started in group A with 3 vnics
+    And an instance instB1 is started in group B with 3 vnics
+    And an instance instB2 is started in group B with 3 vnics
     
     When instance instA1 pings instance instA2 on each nic
       Then the ping operation should be successful for each nic

@@ -150,12 +150,12 @@ DcmgrGUI.prototype.imagePanel = function(){
     var user_data = $(this).find('#user_data').val();
     var security_groups = [];
     $.each(launch_in,function(i){
-     security_groups.push("security_groups[]="+ $(this).text());
+      security_groups.push("security_groups[]="+ $(this).text());
     });
     var vifs = [];
     for (var i=0; i < 5 ; i++) {
-        vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
-    }      
+      vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
+    }
 
     var data = "image_id="+image_id
               +"&instance_spec_id="+instance_spec_id
@@ -163,9 +163,10 @@ DcmgrGUI.prototype.imagePanel = function(){
               +"&user_data="+user_data
               +"&" + security_groups.join('&')
               +"&" + vifs.join('&')
+              + bt_launch_instance.monitor_selector.queryParams()
               +"&ssh_key="+ssh_key_pair
               +"&display_name="+display_name;
-    
+
     request = new DcmgrGUI.Request;
     request.post({
       "url": '/instances',
@@ -176,7 +177,7 @@ DcmgrGUI.prototype.imagePanel = function(){
     });
     $(this).dialog("close");
   }
-  
+
   var bt_launch_instance = new DcmgrGUI.Dialog({
     target:'.launch_instance',
     width:583,
@@ -209,12 +210,19 @@ DcmgrGUI.prototype.imagePanel = function(){
         } else {
           bt_launch_instance.disabledButton(1, true);
         }
-      }
+      };
 
       var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
       $(this).find('#display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
+
+      var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
+      $(this).find('#add_monitor_item').bind('click', function(e){
+        // Append new monitoring item selection.
+        monitor_selector.addItem('http');
+      });
+      bt_launch_instance.monitor_selector = monitor_selector;
 
       parallel({
         //get instance_specs

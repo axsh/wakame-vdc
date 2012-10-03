@@ -82,6 +82,17 @@
   vertical-align: middle;
 }
 
+#edit_instance_dialog fieldset.with_border {
+  border: 1px solid gray;
+  padding: 10px;
+  //margin-left: 15px;
+  width: 490px;
+}
+
+#edit_instance_dialog legend {
+  padding: 0 3px 0 3px;
+}
+
 #launch_instance_dialog fieldset.with_border {
   border: 1px solid gray;
   padding: 10px;

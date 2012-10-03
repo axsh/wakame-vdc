@@ -56,12 +56,12 @@ class NetworksController < ApplicationController
   end
 
   def attach
-    detail = Hijiki::DcmgrResource::NetworkVif.find_vif(params[:network_id], params[:vif_id]).attach
+    detail = Hijiki::DcmgrResource::Network.find(params[:network_id]).attach(params[:vif_id])
     render :json => detail
   end
 
   def detach
-    detail = Hijiki::DcmgrResource::NetworkVif.find_vif(params[:network_id], params[:vif_id]).detach
+    detail = Hijiki::DcmgrResource::Network.find(params[:network_id]).detach(params[:vif_id])
     render :json => detail
   end
   
