@@ -1,0 +1,16 @@
+# Database connection string
+database_uri 'mysql2://localhost/wakame_dcmgr?user=root'
+# AMQP broker to be connected.
+amqp_server_uri 'amqp://localhost/'
+
+# Driver specific configuration
+driver('zabbix') {
+  api_uri 'http://localhost/zabbix/api_jsonrpc.php'
+  api_user 'admin'
+  api_password 'admin'
+  template_id '10000'
+}
+
+# Register instance, IP or items to backend if the VIFs are attached
+# to the Network UUID following.
+network 'nw-demo1'

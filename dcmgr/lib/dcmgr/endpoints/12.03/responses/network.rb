@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/dc_network'
+
 module Dcmgr::Endpoints::V1203::Responses
   class Network < Dcmgr::Endpoints::ResponseGenerator
     def initialize(object)
