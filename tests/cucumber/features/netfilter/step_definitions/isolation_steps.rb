@@ -7,7 +7,6 @@ end
 
 After do |scenario|
 end
-
 Given /^an instance ([^\s]+) is started with the following options$/ do |instance_name,options|
   @instances = {} if @instances.nil?
   raise "And instance already exists with that name: '#{instance_name}'" unless @instances[instance_name].nil?
@@ -22,17 +21,17 @@ Given /^an instance ([^\s]+) is started in group ([^\s]+)$/ do |instance_name,gr
     Given the volume "wmi-secgtest" exists
     And the instance_spec "is-demospec" exists for api until 11.12
     And an instance #{instance_name} is started with the following options
-      | image_id     | instance_spec_id | ssh_key_id | security_groups                |
-      | wmi-secgtest | is-demospec      | ssh-demo   | <registry:group_#{group_name}> |
+      | image_id     | ssh_key_id | cpu_cores | service_type | account_id | display_name     | hypervisor  | memory_size | quota_weight | instance_spec_name | vifs                                                                                                         |
+      | wmi-secgtest | ssh-demo   | 1         | std          | a-shpoolxx | #{instance_name} | openvz      | 256         | 1.0          | vz.small           | {\"eth0\":{\"index\":\"1\",\"network\":\"nw-demo1\",\"security_groups\":\"<registry:group_#{group_name}>\"}} |
   }
 end
 
-Given /^an instance ([^\s]+) is started in group ([^\s]+) with scheduler ([^\s]+)$/ do |instance_name, group_name, scheduler|
+Given /^an instance ([^\s]+) is started in group ([^\s]+) with 3 vnics$/ do |instance_name, group_name|
   steps %Q{
     Given the volume "wmi-secgtest" exists
     And an instance #{instance_name} is started with the following options
-      | image_id     | instance_spec_id | ssh_key_id | network_scheduler | security_groups                |
-      | wmi-secgtest | is-demo2         | ssh-demo   | #{scheduler}      | <registry:group_#{group_name}> |
+      | image_id     | ssh_key_id | cpu_cores | service_type | account_id | display_name     | hypervisor  | memory_size | quota_weight | instance_spec_name | vifs                                                                                                                                                                                                                                                    | network_scheduler |
+      | wmi-secgtest | ssh-demo   | 1         | std          | a-shpoolxx | #{instance_name} | openvz      | 256         | 1.0          | vz.small           | {\"eth0\":{\"index\":\"1\",\"security_groups\":\"<registry:group_#{group_name}>\"},\"eth1\":{\"index\":\"2\",\"security_groups\":\"<registry:group_#{group_name}>\"},\"eth2\":{\"index\":\"3\",\"security_groups\":\"<registry:group_#{group_name}>\"}} | vif3type1         |
   }
 end
 
