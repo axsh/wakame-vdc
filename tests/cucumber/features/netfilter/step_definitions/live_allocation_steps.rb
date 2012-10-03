@@ -45,8 +45,8 @@ end
 Given /^an instance ([^\s]+) is started in group ([^\s]+) That listens on (tcp|udp) port (\d+)$/ do |inst_name, group_name, protocol, port|
   steps %{
     Given an instance #{inst_name} is started with the following options
-      | image_id     | instance_spec_id | ssh_key_id | security_groups                | user_data           |
-      | wmi-secgtest | is-demospec      | ssh-demo   | <registry:group_#{group_name}> | #{protocol}:#{port} |
+      | image_id     | instance_spec_id | ssh_key_id | cpu_cores | service_type | account_id | display_name | hypervisor  | memory_size | quota_weight | instance_spec_name | user_data           | vifs                                                                                                         |
+      | wmi-secgtest | is-demospec      | ssh-demo   | 1         | std          | a-shpoolxx | #{inst_name} | openvz      | 256         | 1.0          | vz.small           | #{protocol}:#{port} | {\"eth0\":{\"index\":\"1\",\"network\":\"nw-demo1\",\"security_groups\":\"<registry:group_#{group_name}>\"}} |
   }
 end
 
