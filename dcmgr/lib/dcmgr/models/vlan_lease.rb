@@ -13,7 +13,7 @@ module Dcmgr::Models
 
     def validate
       super
-      
+
       unless 1 <= self.tag_id.to_i && self.tag_id.to_i <= 4095
         errors.add(:tag_id, "Tag ID is out of range (1-4095)")
       end
