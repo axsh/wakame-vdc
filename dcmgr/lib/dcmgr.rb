@@ -142,6 +142,7 @@ module Dcmgr
     require 'dcmgr/cli/errors'
 
     autoload :Base, 'dcmgr/cli/base'
+    autoload :Instance, 'dcmgr/cli/instance'
     autoload :Network, 'dcmgr/cli/network'
     autoload :Host, 'dcmgr/cli/host'
     autoload :Storage, 'dcmgr/cli/storage'
