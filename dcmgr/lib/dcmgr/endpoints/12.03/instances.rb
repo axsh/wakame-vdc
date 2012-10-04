@@ -359,6 +359,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       }
 
+      i.state = :pending
       i.account_id = @account.canonical_uuid
     end
     image = instance.image.entry_clone do |i|
@@ -370,6 +371,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       
       i.account_id = @account.canonical_uuid
       i.backup_object_id = bo.canonical_uuid
+      i.state = :pending
     end
     
     on_after_commit do
