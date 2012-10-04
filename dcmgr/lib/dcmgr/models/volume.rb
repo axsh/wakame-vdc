@@ -26,14 +26,14 @@ module Dcmgr::Models
 
     plugin ArchiveChangedColumn, :histories
     plugin ChangedColumnEvent, :accounting_log => [:state, :size]
-    
+
     subset(:lives, {:deleted_at => nil})
     subset(:alives, {:deleted_at => nil})
 
     def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
-    
+
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     # Possible column data:
@@ -41,7 +41,7 @@ module Dcmgr::Models
     # {:iqn=>'iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc', :lun=>0}
     plugin :serialization, :yaml, :transport_information
     plugin :serialization, :yaml, :request_params
-    
+
     class CapacityError < RuntimeError; end
     class RequestError < RuntimeError; end
 
@@ -59,7 +59,7 @@ module Dcmgr::Models
       return true if self.deleted_at
 
       errors.add(:size, "Invalid volume size.") if self.size == 0
-      
+
       super
     end
 
@@ -120,11 +120,11 @@ module Dcmgr::Models
 
     SNAPSHOT_READY_STATES = [:attached, :available].freeze
     ONDISK_STATES = [:available, :attaching, :attached, :detaching].freeze
-    
+
     def ready_to_take_snapshot?
       SNAPSHOT_READY_STATES.member?(self.state.to_sym)
     end
-    
+
     def ondisk_state?
       ONDISK_STATES.member?(self.state.to_sym)
     end
@@ -160,7 +160,7 @@ module Dcmgr::Models
     end
 
     include Dcmgr::Helpers::ByteUnit
-    
+
     def size(byte_unit=B)
       convert_byte(self[:size], byte_unit)
     end

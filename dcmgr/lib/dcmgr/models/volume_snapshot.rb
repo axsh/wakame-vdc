@@ -16,7 +16,7 @@ module Dcmgr::Models
     plugin ArchiveChangedColumn, :histories
 
     subset(:alives, {:deleted_at => nil})
-    
+
     RECENT_TERMED_PERIOD=(60 * 15)
     # lists the volumes are available and deleted within
     # RECENT_TERMED_PERIOD sec.
@@ -35,7 +35,7 @@ module Dcmgr::Models
         :size => self.size,
         :origin_volume_id => self.origin_volume_id,
         :destination_id => self.destination,
-        :destination_name => self.display_name, 
+        :destination_name => self.display_name,
         :backing_store => self.storage_node.storage_type,
         :created_at => self.created_at,
         :deleted_at => self.deleted_at,
@@ -57,11 +57,11 @@ module Dcmgr::Models
     def origin_volume
       Volume[origin_volume_id]
     end
-    
+
     def snapshot_filename
       "#{self.canonical_uuid}.snap"
     end
-    
+
     def destination
       self.destination_key.split('@')[0]
     end
@@ -82,7 +82,7 @@ module Dcmgr::Models
       self.deleted_at ||= Time.now
       self.save
     end
-    
+
     def update_destination_key(account_id, destination_key)
       self.destination_key = destination_key
       self.save_changes
@@ -90,8 +90,8 @@ module Dcmgr::Models
 
     def self.store_local?(destination)
       destination.nil?
-    end 
-    
+    end
+
     def update_snapshot_display_name(display_name)
       self.display_name = display_name
       self.save_changes
