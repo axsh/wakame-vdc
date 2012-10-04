@@ -11,6 +11,7 @@ module Dcmgr::Cli
         # Placeholder code
         show_instances_list([inst])
       end
+      private :show_single_instance
 
       def show_instances_list(inst_dataset)
         puts ERB.new(<<__END, nil, '-').result(binding)
@@ -19,6 +20,7 @@ module Dcmgr::Cli
 <%- } -%>
 __END
       end
+      private :show_single_instance
     }
 
     desc "force-state UUID STATE", "Force an instance's state to chance in the database without any other action taken by Wakame. Use only if you know what you're doing!"
