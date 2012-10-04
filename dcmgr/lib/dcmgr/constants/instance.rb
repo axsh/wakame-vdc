@@ -5,7 +5,7 @@ module Dcmgr::Constants::Instance
   STATE_PENDING = "pending".freeze
   STATE_STARTING = "starting".freeze
   STATE_RUNNING = "running".freeze
-  STATE_SHUTTING_DOWN = "shutting down".freeze
+  STATE_SHUTTING_DOWN = "shuttingdown".freeze
   STATE_TERMINATED = "terminated".freeze
   STATE_HALTING = "halting".freeze
   STATE_HALTED = "halted".freeze
