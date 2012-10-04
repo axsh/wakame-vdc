@@ -4,7 +4,7 @@ require 'fileutils'
 
 module Dcmgr
   module Rpc
-    # Inherit from HvaHandler to reuse utitlity methods in the class.
+    # Inherit from HvaHandler to reuse utility methods in the class.
     class LocalStoreHandler < HvaHandler
       include Dcmgr::Logger
 
