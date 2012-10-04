@@ -288,22 +288,22 @@ module Dcmgr
         end
         # set approx file size estimated from the block count since the target
         # file might be sparsed.
-        pv_command = "pv -W -f -n -s %s | "
+        pv_command = "pv -W -f -n -s %s"
         
         cmd_tuple = case ctx.inst[:image][:backup_object][:container_format].to_sym
                     when :tgz
-                      ["tar -cS -C %s %s | #{pv_command} %s", [File.dirname(snapshot_path),
-                                                               File.basename(snapshot_path),
-                                                               fstat.block_size,
-                                                               Dcmgr.conf.local_store.gzip_command]]
+                      ["tar -cS -C %s %s | #{pv_command} | %s", [File.dirname(snapshot_path),
+                                                                 File.basename(snapshot_path),
+                                                                 fstat.block_size,
+                                                                 Dcmgr.conf.local_store.gzip_command]]
                     when :tar
                       ["tar -cS -C %s %s | #{pv_command}", [File.dirname(snapshot_path),
                                                             File.basename(snapshot_path),
                                                             fstat.block_size]]
                     when :gz
-                      ["cp -p --sparse=always %s /dev/stdout | #{pv_command} %s",[snapshot_path,
-                                                                                  fstat.size,
-                                                                                  Dcmgr.conf.local_store.gzip_command]]
+                      ["cp -p --sparse=always %s /dev/stdout | #{pv_command} | %s",[snapshot_path,
+                                                                                    fstat.size,
+                                                                                    Dcmgr.conf.local_store.gzip_command]]
                     else
                       ["cp -p --sparse=always %s /dev/stdout | #{pv_command}", [snapshot_path, fstat.size]]
                     end
