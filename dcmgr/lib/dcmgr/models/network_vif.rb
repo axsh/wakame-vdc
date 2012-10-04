@@ -62,6 +62,7 @@ module Dcmgr::Models
         :mac_addr => self.mac_addr,
         :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
         :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
+        :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
         :network_id => self.network.nil? ? nil : self.network.canonical_uuid,
         :security_groups => self.security_groups.map {|n| n.canonical_uuid }
       }

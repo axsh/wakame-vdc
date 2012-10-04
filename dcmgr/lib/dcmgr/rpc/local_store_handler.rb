@@ -4,7 +4,7 @@ require 'fileutils'
 
 module Dcmgr
   module Rpc
-    # Inherit from HvaHandler to reuse utitlity methods in the class.
+    # Inherit from HvaHandler to reuse utility methods in the class.
     class LocalStoreHandler < HvaHandler
       include Dcmgr::Logger
 
@@ -59,8 +59,15 @@ module Dcmgr
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
 
-        raise "Invalid instance state (expected running): #{@inst[:state]}" if @inst[:state].to_s != 'running'
+        raise "Invalid instance state (expected running): #{@inst[:state]}" unless ['running', 'halted'].member?(@inst[:state].to_s)
         #raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
+
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating}) do |req|
+          req.oneshot = true
+        end
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating}) do |req|
+          req.oneshot = true
+        end
 
         begin
           snap_filename = @hva_ctx.os_devpath
