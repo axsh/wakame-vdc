@@ -28,7 +28,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :display_name => self.display_name
         }
         if self.ssh_key_data
-          h[:ssh_key_pair] = self.ssh_key_data[:uuid]
+          h[:ssh_key_pair] = self.ssh_key_data[:display_name]
         end
 
         instance_nic.each { |vif|
