@@ -41,6 +41,7 @@ module Dcmgr
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
+    autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
   end
 
   require 'dcmgr/models/errors'
@@ -82,6 +83,8 @@ module Dcmgr
     autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'    
     autoload :BackupStorage, 'dcmgr/models/backup_storage'
     autoload :BackupObject, 'dcmgr/models/backup_object'
+    autoload :MacRange, 'dcmgr/models/mac_range'
+    autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
   end
 
   module Endpoints
@@ -148,6 +151,7 @@ module Dcmgr
     autoload :ResourceGroup, 'dcmgr/cli/resource_group'
     autoload :BackupStorage, 'dcmgr/cli/backup_storage'
     autoload :BackupObject, 'dcmgr/cli/backup_object'
+    autoload :MacRange, 'dcmgr/cli/mac_range'
 
     module Debug
       autoload :Base, 'dcmgr/cli/debug/base'
@@ -198,6 +202,8 @@ module Dcmgr
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Webdav, 'dcmgr/drivers/webdav'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
+    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
+    autoload :Zabbix, 'dcmgr/drivers/zabbix'
   end
   
   autoload :StorageService, 'dcmgr/storage_service'
@@ -230,7 +236,11 @@ module Dcmgr
       autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'
     end
 
-    NAMESPACES=[HostNode, StorageNode, Network]
+    module MacAddress
+      autoload :ByHostNodeGroup, 'dcmgr/scheduler/mac_address/by_host_node_group'
+    end
+
+    NAMESPACES=[HostNode, StorageNode, Network, MacAddress]
   end
   
   require 'dcmgr/vnet'

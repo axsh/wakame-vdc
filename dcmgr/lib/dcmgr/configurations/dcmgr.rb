@@ -91,6 +91,9 @@ module Dcmgr
       class NetworkScheduler < Configuration
       end
 
+      class MacAddressScheduler < Configuration
+      end
+
       class ServiceType < Configuration
 
         # default backup storage to upload backup object from the
@@ -124,6 +127,11 @@ module Dcmgr
 
           def network_scheduler(class_name, &blk)
             @config[:network_scheduler] = Scheduler::DSL.load_section(class_name, NetworkScheduler, ::Dcmgr::Scheduler::Network, &blk)
+            self
+          end
+
+          def mac_address_scheduler(class_name, &blk)
+            @config[:mac_address_scheduler] = Scheduler::DSL.load_section(class_name, MacAddressScheduler, ::Dcmgr::Scheduler::MacAddress, &blk)
             self
           end
         end

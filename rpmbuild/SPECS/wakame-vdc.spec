@@ -197,6 +197,14 @@ Requires: %{oname} = %{version}-%{release}
 %description vdcsh
 <insert long description, indented with spaces>
 
+# tests-cucumber
+%package tests-cucumber
+Summary: tests-cucumber
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description tests-cucumber
+<insert long description, indented with spaces>
+
 ## rpmbuild -bp
 %prep
 [ -d %{name}-%{version} ] && rm -rf %{name}-%{version}
@@ -256,6 +264,9 @@ rsync -aHA `pwd`/contrib/etc/sysctl.d/*.conf ${RPM_BUILD_ROOT}/etc/sysctl.d/
 [ -d ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs ] || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs
 [ -d ${RPM_BUILD_ROOT}/etc/%{oname}/admin ]         || mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/admin
 
+# dcmgr
+ln -s /etc/%{oname}/convert_specs/load_balancer.yml  ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/dcmgr/config/convert_specs/load_balancer.yml
+
 # rails app config
 ln -s /etc/%{oname}/dcmgr_gui/database.yml           ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/database.yml
 ln -s /etc/%{oname}/dcmgr_gui/instance_spec.yml      ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/instance_spec.yml
@@ -263,15 +274,16 @@ ln -s /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml          ${RPM_BUILD_ROOT}/%{prefix}
 ln -s /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/dcmgr_gui/config/load_balancer_spec.yml
 
 # padrino app config
-ln -s /etc/%{oname}/admin/database.yml  ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/config/database.yml
 ln -s /etc/%{oname}/admin/admin.yml     ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/config/admin.yml
 
 # vdcsh
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/vdc.sh.d
 [ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder  ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder
+[ -d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/cucumber ] || mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/cucumber
 rsync -aHA `pwd`/tests/vdc.sh   ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 rsync -aHA `pwd`/tests/vdc.sh.d ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 rsync -aHA `pwd`/tests/builder/functions.sh ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/builder/functions.sh
+rsync -aHA `pwd`/tests/cucumber ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tests/
 
 # log directory
 mkdir -p ${RPM_BUILD_ROOT}/var/log/%{oname}
@@ -348,6 +360,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %dir %{prefix}/%{oname}/tests
 %attr(0600, root, root) %{prefix}/%{oname}/tests/vdc.sh.d/pri.pem
 
+%files tests-cucumber
+%defattr(-,root,root)
+%dir %{prefix}/%{oname}/tests/cucumber
+%{prefix}/%{oname}/tests/cucumber/
+
 %files debug-config
 %defattr(-,root,root)
 %config /etc/sysctl.d/30-dump-core.conf
@@ -389,6 +406,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
 %config(noreplace) /etc/default/vdc-admin
+%config(noreplace) /etc/default/vdc-nwmongw
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-metadata.conf
@@ -398,6 +416,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
 %config /etc/init/vdc-admin.conf
+%config /etc/init/vdc-nwmongw.conf
 %config /etc/wakame-vdc/unicorn-common.conf
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs

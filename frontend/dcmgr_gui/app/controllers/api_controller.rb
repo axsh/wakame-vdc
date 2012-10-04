@@ -16,20 +16,13 @@ class ApiController < ApplicationController
     since_key = "#{param}_since"
     until_key = "#{param}_until"
     if params[since_key]
-      since_time = begin
-                     Time.iso8601(params[since_key].to_s).utc
-                   rescue ArgumentError
-                     raise("Invalid Parameter #{since_key}")
-                   end
+      since_time = to_utc(params[since_key])
     end
+
     if params[until_key]
-      until_time = begin
-                     Time.iso8601(params[until_key].to_s).utc
-                   rescue ArgumentError
-                     raise("Invalid Parameter #{until_key}")
-                   end
+      until_time = to_utc(params[until_key])
     end
-    
+
     ds = if since_time && until_time
            if !(since_time < until_time)
              raise("Invalid Parameter #{since_key} is larger than #{until_key}")
@@ -79,14 +72,39 @@ class ApiController < ApplicationController
     [ds, total, start, limit]
   end
 
+  def generate(ds)
+    ds.instance_exec {
+      self.values.dup.merge(:uuid=>canonical_uuid)
+    }
+  end
+
   def collection_respond_with(ds)
     ds, total, start, limit  = paging_params_filter(ds)
 
+    ds = ds.all.map {|i|
+      generate(i)
+    }
     respond_with([{
                     :total => total,
                     :start => start,
                     :limit => limit,
-                    :results=> ds.all
+                    :results=> ds
                   }])
   end
+
+  def to_utc(time)
+    begin
+      case time
+        when String
+          Time.iso8601(time).utc
+        when Time
+          time.utc
+      else
+        raise ArgumentError
+       end
+    rescue ArgumentError
+      raise("Invalid Parameter #{time}")
+    end
+  end
+
 end

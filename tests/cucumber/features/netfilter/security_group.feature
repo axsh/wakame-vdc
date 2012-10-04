@@ -2,13 +2,12 @@ Feature: Security groups
 
   Scenario: Group rules
     Given the volume "wmi-secgtest" exists
-      And the instance_spec "is-demospec" exists for api until 11.12
+    And security group A exists with the following rules
+      """
+      icmp:-1,-1,ip4:0.0.0.0
+      """
 
-    When we make a successful api create call to security_groups with the following options
-    | description          |
-    | group rules test     |
-    And we successfully start an instance of wmi-secgtest and is-demospec with the new security group
-      And the created instance has reached the state "running"
+    And an instance testinst is started in group A
     Then we should not be able to ping the created instance for 30 seconds
     And we should not be able to make a udp connection on port 999 to the instance for 30 seconds
     And we should not be able to make a tcp connection on port 22 to the instance for 30 seconds
@@ -42,8 +41,5 @@ Feature: Security groups
     And we should not be able to make a udp connection on port 999 to the instance for 30 seconds
     And we should not be able to make a tcp connection on port 22 to the instance for 30 seconds
 
-    When we successfully delete the created instances
-    And the created instance has reached the state "terminated"
-    And we successfully delete the created security_groups
-
-  #TODO: Scenario where we test security group between instances
+    When we successfully terminate instance testinst
+    And we successfully delete security group A

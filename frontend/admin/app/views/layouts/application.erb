@@ -12,6 +12,7 @@
     <% end %>
     <!-- Le styles -->
     <link rel="stylesheet" href="/assets/bootstrap.css">
+    <link rel="stylesheet" href="/assets/bootstrap-notify.css">
     <%= yield_content :stylesheet_link_tags %>
     <style type="text/css">
       body {
@@ -55,5 +56,6 @@
       <%= partial :footer %>
     </div><!--/.container-fluid-->
     <%= partial :load_js %>
+    <div id="notify" class='notifications top-right'></div>
     </body>
 </html>

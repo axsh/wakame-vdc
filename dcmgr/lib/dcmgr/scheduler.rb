@@ -8,6 +8,7 @@ module Dcmgr
     class HostNodeSchedulingError < SchedulerError; end
     class StorageNodeSchedulingError < SchedulerError; end
     class NetworkSchedulingError < SchedulerError; end
+    class MacAddressSchedulerError < SchedulerError; end
 
     # Scheduler factory based on the service type.
     class ServiceType
@@ -45,6 +46,11 @@ module Dcmgr
         c.new(conf.network_scheduler.option)
       end
 
+      def mac_address
+        c = Scheduler.scheduler_class(conf.mac_address_scheduler.scheduler_class, ::Dcmgr::Scheduler::MacAddress)
+        c.new(conf.mac_address_scheduler.option)
+      end
+
       private
       def conf
         Dcmgr.conf.service_types[@service_type]
@@ -73,6 +79,11 @@ module Dcmgr
     # Factory method for Network scheduler
     def self.network()
       service_type(Dcmgr.conf.default_service_type).network
+    end
+
+    # Factory method for MAC Addres scheduler
+    def self.mac_address()
+      service_type(Dcmgr.conf.default_service_type).mac_address
     end
 
     # common scheduler class finder
@@ -230,8 +241,17 @@ module Dcmgr
       @configuration_class = Dcmgr::Configurations::Dcmgr::NetworkScheduler
 
       # @param Models::Instance instance
-      # @return Models::Network
       def schedule(instance)
+        raise NotImplementedError
+      end
+    end
+
+    # Lease a mac address to a vnic
+    class MacAddressScheduler < SchedulerBase
+      @configuration_class = Dcmgr::Configurations::Dcmgr::MacAddressScheduler
+
+      # @param Models::Network_vif
+      def schedule(network_vif)
         raise NotImplementedError
       end
     end

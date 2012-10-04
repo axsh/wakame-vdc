@@ -10,7 +10,7 @@ class Host < Base
   
   desc "add NODE_ID [options]", "Register a new host node"
   method_option :uuid, :type => :string, :desc => "The UUID for the new host node"
-  method_option :name, :type => :string, :size => 255, :desc => "The name for the new host node"
+  method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
   method_option :force, :type => :boolean, :default=>false, :desc => "Force new entry creation"
   method_option :cpu_cores, :type => :numeric, :default=>1, :desc => "Number of cpu cores to be offered"
   method_option :memory_size, :type => :numeric, :default=>1024, :desc => "Amount of memory to be offered (in MB)"
@@ -25,7 +25,7 @@ class Host < Base
     end
     
     fields = {
-              :name=>options[:name],
+              :display_name=>options[:display_name],
               :node_id=>node_id,
               :offering_cpu_cores=>options[:cpu_cores],
               :offering_memory_size=>options[:memory_size],
@@ -37,7 +37,7 @@ class Host < Base
   end
   
   desc "modify UUID [options]", "Modify a registered host node"
-  method_option :name, :type => :string, :size => 255, :desc => "The name for the new host node"
+  method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
   method_option :cpu_cores, :type => :numeric, :desc => "Number of cpu cores to be offered"
   method_option :memory_size, :type => :numeric, :desc => "Amount of memory to be offered (in MB)"
   method_option :hypervisor, :type => :string, :desc => "The hypervisor name. [#{HostNode::SUPPORTED_HYPERVISOR.join(', ')}]"
@@ -46,7 +46,7 @@ class Host < Base
     UnsupportedArchError.raise(options[:arch]) unless HostNode::SUPPORTED_ARCH.member?(options[:arch])
     UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
     fields = {
-              :name=>options[:name],
+              :display_name=>options[:display_name],
               :offering_memory_size=>options[:memory_size],
               :offering_cpu_cores=>options[:cpu_cores],
               :hypervisor=>options[:hypervisor],

@@ -1,8 +1,9 @@
 <script type="text/template" id="tmpServerPagination">
+
+{% if(totalPages >= 1) { %}
 <div class="control-group">
   <div class="pagination pagination-centered">
     <ul>
-
       {% if (currentPage != firstPage) { %}
       <li><a class="serverprevious" href="#"><</a></li>
       {% } else { %}
@@ -37,15 +38,15 @@
             {% } %}
           {% } %}
         {% } %}
-      </li>
       {% } %}
-        {% if (lastPage != currentPage) { %}
-        <li><a class="servernext" href="#">></a></li>
-        {% } else { %}
-        <li class="disabled"><a class="disabled" href="#{{ lastPage }}">></a></li>
-        {% } %}
 
+      {% if (lastPage != currentPage) { %}
+      <li><a class="servernext" href="#">></a></li>
+      {% } else { %}
+      <li class="disabled"><a class="disabled" href="#{{ lastPage }}">></a></li>
+      {% } %}
     </ul>
   </div>
 </div>
+{% } %}
 </script>

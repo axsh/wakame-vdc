@@ -3,6 +3,7 @@ Sequel.migration do
     alter_table(:host_nodes) do
       # HostNode is no longer an account associated resource.
       drop_column :account_id
+      rename_column :name, :display_name
     end
 
     alter_table(:storage_nodes) do
@@ -11,6 +12,7 @@ Sequel.migration do
 
       # make unit size clear.
       rename_column :offering_disk_space, :offering_disk_space_mb
+      add_column :display_name, "varchar(255)", :null=>true
     end
     
     create_table(:security_group_references) do
@@ -347,20 +349,56 @@ Sequel.migration do
     alter_table(:tag_mappings) do
       add_column :sort_index, "int(11)", :null=>false, :default=>0
     end
+
+    create_table(:mac_ranges) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false, :unique=>true
+      column :vendor_id, "mediumint(8)", :unsigned=>true, :null=>false
+      column :range_begin, "mediumint(8)", :unsigned=>true, :null=>false
+      column :range_end, "mediumint(8)", :unsigned=>true, :null=>false
+      column :description, "varchar(255)"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+    end
+
+    alter_table(:mac_leases) do
+      set_column_type :mac_addr, "bigint", :unsigned=>true, :null=>false
+    end
+
+    create_table(:network_vif_monitors) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false
+      column :network_vif_id, "int(11)", :null=>false
+      column :enabled, "tinyint(1)", :default=>true, :null=>false
+      column :protocol, "varchar(255)", :null=>false
+      column :title, "varchar(255)", :null=>false
+      column :params, "text", :null=>false
+      column :deleted_at, "datetime"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+
+      index [:deleted_at]
+      index [:network_vif_id]
+      index [:uuid], :unique=>true, :name=>:uuid
+    end
   end
   
   down do
     drop_table(:host_node_vnets)
     drop_table(:network_services)
+    drop_table(:mac_ranges)
+    drop_table(:network_vif_monitors)
 
     rename_table(:network_vifs, :instance_nics)
 
     alter_table(:host_nodes) do
       add_column :account_id, "varchar(255)", :null=>false
+      rename_column :display_name, :name
     end
 
     alter_table(:storage_nodes) do
       add_column :account_id, "varchar(255)", :null=>false
+      drop_column :display_name
     end
 
     alter_table(:images) do
@@ -493,6 +531,10 @@ Sequel.migration do
 
     alter_table(:tag_mappings) do
       drop_column :sort_index
+    end
+
+    alter_table(:mac_leases) do
+      set_column_type :mac_addr, "char(12)", :null=>false
     end
   end
 end

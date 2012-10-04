@@ -16,6 +16,7 @@ gem 'padrino-sprockets', :git => "http://github.com/nightsailer/padrino-sprocket
 gem 'coffee-script', '2.2.0'
 gem 'therubyracer', :require => 'v8'
 gem 'unicorn', '4.3.1'
+gem 'rack-cors', :require => 'rack/cors'
 
 # Development requirements
 group :development do

@@ -39,7 +39,7 @@
     if(_.has(parsedSearch, word) ){
       return parsedSearch[word];
     } else{
-      return parsedSearch;
+      return "";
     }
   };
 
@@ -51,11 +51,9 @@
   _.extend(app.DatetimePicker.prototype, {
     initialize : function(config) {
 
-      var input_form_id = config.input_form_id;
-      var icon_id = config.icon_id;
       var self = this;
-      this.el = $(input_form_id);
-      this.icon = $(icon_id);
+      this.el = config.input_form;
+      this.icon = config.icon;
 
       this.el.datetimepicker({
         showSecond: true,
@@ -116,8 +114,47 @@
 
   app.notify = new app.Notify;
 
+  app.Logger = function() {
+      this.initialize();
+  };
+  _.extend(app.Logger.prototype, {
+    initialize: function(){
+      this.stack = [];
+    },
+
+    push: function(type, item) {
+      this.stack.push({
+	'type': type,
+	'item': item
+      });
+    },
+
+    getLog: function(type){
+      return _.filter(this.stack, function(s){
+        return s.type == type
+      });
+    }
+  });
+  app.logger = new app.Logger;
+
   //  dropdown menu for top navigations
   $('.dropdown-toggle').dropdown();
 
+  $(document).ajaxError(function(e, xhr, settings, exception){
+    var message = '';
+
+    if( _.isEqual(xhr.status, 0)){
+      message = 'ネットワークを確認してください。';
+    } else if( _.isEqual(e, 'parsererror')) {
+      message = 'JSONリクエストのパースに失敗しました。';
+    } else {
+      message = 'エラーが発生しました。管理者に問い合わせてください。';
+    };
+
+    if(! _.any(app.logger.getLog(e.type), function(i){ return i.item == message})){
+      app.logger.push(e.type, message);
+      app.notify.error(message);
+    }
+  });
 })();
 

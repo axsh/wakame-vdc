@@ -3,11 +3,15 @@
   // Defer initialization until doc ready.
   $(function(){
 
-    app.collections.detailItems = new app.collections.DetailCollection({
-      url: app.info.api_endpoints.admin + '/api/notifications.json',
+    app.collections.detailItems = new app.collections.NotificationDetailCollection({
+      model: app.models.Notification,
     });
 
-    app.views.detail = new app.views.DetailView({collection:app.collections.detailItems});
+    app.views.detail = new app.views.DetailView({
+      collection: app.collections.detailItems,
+      template: _.template($('#detailNotification').html())
+    });
+
     app.router = new app.Router;
     Backbone.history.start();
 

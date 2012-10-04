@@ -94,7 +94,7 @@ function cleanup {
 }
 
 function init_db() {
-  for dbname in wakame_dcmgr wakame_dcmgr_gui wakame_admin; do
+  for dbname in wakame_dcmgr wakame_dcmgr_gui; do
     yes | mysqladmin -uroot drop ${dbname} || :
     mysqladmin -uroot create ${dbname}
   done
@@ -106,10 +106,6 @@ function init_db() {
   cd ${prefix_path}/frontend/dcmgr_gui
   echo "executing 'rake db:init' => frontend/dcmgr_gui ..."
   time bundle exec rake --trace db:init
-
-  cd ${prefix_path}/frontend/admin
-  echo "executing 'rake db:init' => frontend/admin ..."
-  time bundle exec rake --trace sq:migrate:auto
 
   echo ... rake oauth:create_consumer[${account_id}]
   #local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')

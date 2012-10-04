@@ -24,6 +24,6 @@ class AccountApiController < ApiController
   def show
     ds = find_by_uuid(:Account, params[:id])
     raise "UnknownAccount"if ds.nil?
-    respond_with(ds, :to=>[:json])
+    respond_with(generate(ds), :to=>[:json])
   end
 end

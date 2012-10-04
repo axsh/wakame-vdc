@@ -3,6 +3,7 @@
 module Dcmgr::Models
   # Network interface for running instance.
   class NetworkVif < AccountResource
+    include Dcmgr::Logger
     taggable 'vif'
 
     many_to_one :network
@@ -22,6 +23,7 @@ module Dcmgr::Models
 
     many_to_one :instance
     many_to_one :network_service
+    one_to_many :network_vif_monitors
 
     def to_hash
       hash = super
@@ -32,6 +34,7 @@ module Dcmgr::Models
                     :network_id => self.network_id,
                     :network => self.network.nil? ? nil : self.network.to_hash,
                     :security_groups => self.security_groups.map {|n| n.canonical_uuid },
+                    :network_vif_monitors => self.network_vif_monitors_dataset.alives.map {|n| n.to_hash },
                   })
 
       if self.instance
@@ -99,11 +102,16 @@ module Dcmgr::Models
     end
 
     def before_destroy
-      maclease = MacLease.find(:mac_addr=>self.mac_addr)
-      maclease.destroy if maclease
+      maclease = MacLease.find(:mac_addr=>self.mac_addr.hex)
+      if maclease
+        maclease.destroy
+      else
+        logger.warning "Warning: Mac address lease for '#{self.mac_addr}' not found in database."
+      end
       release_ip_lease
       self.remove_all_security_groups
       self.remove_all_security_groups
+      self.network_vif_monitors.each {|i| i.destroy }
       super
     end
 
@@ -116,7 +124,7 @@ module Dcmgr::Models
       unless self.mac_addr.size == 12 && self.mac_addr =~ /^[0-9a-f]{12}$/
         errors.add(:mac_addr, "Invalid mac address syntax: #{self.mac_addr}")
       end
-      if MacLease.find(:mac_addr=>self.mac_addr).nil?
+      if MacLease.find(:mac_addr=>self.mac_addr.hex).nil?
         errors.add(:mac_addr, "MAC address is not on the MAC lease database.")
       end
 
