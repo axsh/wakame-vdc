@@ -21,10 +21,12 @@ module Dcmgr
         attr_reader :switches
 
         def ports
+          return {} if switches.first[1].nil?
           switches.first[1].ports
         end
 
         def local_hw
+          return nil if switches.first[1].nil?
           switches.first[1].local_hw
         end
 
