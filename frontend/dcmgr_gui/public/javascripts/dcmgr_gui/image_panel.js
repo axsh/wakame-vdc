@@ -145,12 +145,12 @@ DcmgrGUI.prototype.imagePanel = function(){
     var display_name = $(this).find('#display_name').val();
     var host_name = $(this).find('#host_name').val();
     var instance_spec_id = $(this).find('#instance_specs').val();
-    var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').text();
+    var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').val();
     var launch_in = $(this).find('#right_select_list').find('option');
     var user_data = $(this).find('#user_data').val();
     var security_groups = [];
     $.each(launch_in,function(i){
-      security_groups.push("security_groups[]="+ $(this).text());
+      security_groups.push("security_groups[]="+ $(this).val());
     });
     var vifs = [];
     for (var i=0; i < 5 ; i++) {
@@ -265,7 +265,8 @@ DcmgrGUI.prototype.imagePanel = function(){
 
               for (var i=0; i < size ; i++) {
                 var ssh_keypair_id = results[i].result.id;
-                var html = '<option id="'+ ssh_keypair_id +'" value="'+ ssh_keypair_id +'">'+ssh_keypair_id+'</option>'
+                var ssh_keypair_name = results[i].result.display_name;
+                var html = '<option id="'+ ssh_keypair_id +'" value="'+ ssh_keypair_id +'">'+ssh_keypair_name+' ('+ssh_keypair_id+')</option>'
                 select_keypair.append(html);
               }
             }
@@ -282,7 +283,8 @@ DcmgrGUI.prototype.imagePanel = function(){
               for (var i=0; i < size ; i++) {
                 data.push({
                   "value" : results[i].result.uuid,
-                  "name" : results[i].result.uuid,
+                  "id"    : results[i].result.uuid,
+                  "name"  : results[i].result.display_name,
                 });
               }
 

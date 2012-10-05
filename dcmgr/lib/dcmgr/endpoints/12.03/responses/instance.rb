@@ -30,7 +30,10 @@ module Dcmgr::Endpoints::V1203::Responses
           :service_type => self.service_type
         }
         if self.ssh_key_data
-          h[:ssh_key_pair] = self.ssh_key_data[:uuid]
+          h[:ssh_key_pair] = {
+            :ssh_key_id => self.ssh_key_data[:uuid],
+            :ssh_key_name => self.ssh_key_data[:display_name]
+          }
         end
 
         instance_nic.each { |vif|
