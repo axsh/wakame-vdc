@@ -231,7 +231,8 @@ DcmgrGUI.prototype.instancePanel = function(){
                 for (var i=0; i < size ; i++) {
                   data.push({
                     "value" : results[i].result.uuid,
-                    "name" : results[i].result.display_name,
+                    "id"    : results[i].result.uuid,
+                    "name"  : results[i].result.display_name,
                     "selected" : !($.inArray(results[i].result.uuid, selected_groups) == -1)
                   });
                 }

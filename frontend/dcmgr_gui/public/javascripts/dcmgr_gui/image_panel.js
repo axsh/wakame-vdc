@@ -266,7 +266,7 @@ DcmgrGUI.prototype.imagePanel = function(){
               for (var i=0; i < size ; i++) {
                 var ssh_keypair_id = results[i].result.id;
                 var ssh_keypair_name = results[i].result.display_name;
-                var html = '<option id="'+ ssh_keypair_id +'" value="'+ ssh_keypair_id +'">'+ssh_keypair_name+'</option>'
+                var html = '<option id="'+ ssh_keypair_id +'" value="'+ ssh_keypair_id +'">'+ssh_keypair_name+' ('+ssh_keypair_id+')</option>'
                 select_keypair.append(html);
               }
             }
@@ -283,7 +283,8 @@ DcmgrGUI.prototype.imagePanel = function(){
               for (var i=0; i < size ; i++) {
                 data.push({
                   "value" : results[i].result.uuid,
-                  "name" : results[i].result.display_name,
+                  "id"    : results[i].result.uuid,
+                  "name"  : results[i].result.display_name,
                 });
               }
 
