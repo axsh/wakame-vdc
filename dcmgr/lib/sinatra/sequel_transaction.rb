@@ -53,7 +53,20 @@ module Sinatra
         db = Sequel::DATABASES.first
         begin
           db.transaction do
-             super(&block)
+            begin
+              super(&block)
+            ensure
+              db.synchronize do |conn|
+                c = Sequel::DATABASES.first.instance_variable_get(:@transactions)[conn]
+                if !c.nil? && c.member?(:after_commit)
+                  begin
+                    Dcmgr.syncronized_message_ready
+                  rescue => e
+                    raise Dcmgr::Endpoints::Errors::ConnectionFailed
+                  end
+                end
+              end
+            end
           end
         rescue Sequel::DatabaseError, Sequel::DatabaseConnectionError => e
           db.disconnect
