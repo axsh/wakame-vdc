@@ -324,8 +324,6 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       rabbitmq-server on
 
 %post hva-common-vmapp-config
-/sbin/chkconfig --del iptables
-/sbin/chkconfig --del ebtables
 /sbin/chkconfig --add iscsi
 /sbin/chkconfig       iscsi  on
 /sbin/chkconfig --add iscsid
@@ -334,7 +332,6 @@ rm -rf ${RPM_BUILD_ROOT}
 /sbin/chkconfig       tgtd on
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
 %{prefix}/%{oname}/rpmbuild/helpers/add-loopdev.sh
-%{prefix}/%{oname}/rpmbuild/helpers/set-openvswitch-conf.sh
 
 %post hva-openvz-vmapp-config
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
