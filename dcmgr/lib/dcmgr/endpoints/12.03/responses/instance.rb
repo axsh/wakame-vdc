@@ -31,8 +31,8 @@ module Dcmgr::Endpoints::V1203::Responses
         }
         if self.ssh_key_data
           h[:ssh_key_pair] = {
-            :ssh_key_id => self.ssh_key_data[:uuid],
-            :ssh_key_name => self.ssh_key_data[:display_name]
+            :uuid => self.ssh_key_data[:uuid],
+            :display_name => self.ssh_key_data[:display_name],
           }
         end
 

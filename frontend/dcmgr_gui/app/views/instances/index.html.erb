@@ -140,7 +140,7 @@ jQuery(function($){
 	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title"><%= t("instances.details.ssh_key_pair") %>:</td>
-	    <td colspan="7">${item.ssh_key_pair['ssh_key_name']} (${item.ssh_key_pair['ssh_key_id']})</td>
+	    <td colspan="7">${item.ssh_key_pair['display_name']} (${item.ssh_key_pair['uuid']})</td>
 	  </tr>
           {{if item.security_groups != null }}
 	  <tr>
