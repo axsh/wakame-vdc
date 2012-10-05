@@ -57,7 +57,7 @@ module Sinatra
               super(&block)
             ensure
               db.synchronize do |conn|
-                c = Sequel::DATABASES.first.instance_variable_get(:@transactions)[conn]
+                c = db.instance_variable_get(:@transactions)[conn]
                 if !c.nil? && c.member?(:after_commit)
                   begin
                     Dcmgr.syncronized_message_ready
