@@ -172,7 +172,6 @@ Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 Requires: vzkernel
 Requires: vzctl
-Requires: kmod-openvswitch-vzkernel
 %description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
