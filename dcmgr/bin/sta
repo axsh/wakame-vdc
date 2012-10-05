@@ -33,6 +33,10 @@ manifest.instance_eval do
   load_module Isono::NodeModules::NodeHeartbeat
 end
 
+Isono.at_disconnected do
+  EM.stop { exit }
+end
+
 start(manifest) do
   endpoint "sta-handle.#{@node.node_id}", Dcmgr::Rpc::StaHandler
 end
