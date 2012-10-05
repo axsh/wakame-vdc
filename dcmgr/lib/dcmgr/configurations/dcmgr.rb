@@ -141,6 +141,14 @@ module Dcmgr
         def validate(errors)
           super
           STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
+
+          begin
+            self.send(:mac_address_scheduler)
+          rescue
+            parse_dsl {
+              mac_address_scheduler :Default
+            }
+          end
         end
       end
 
@@ -171,9 +179,7 @@ module Dcmgr
             self.send(:mac_address_scheduler)
           rescue
             parse_dsl {
-              mac_address_scheduler :ByHostNodeGroup do
-                default 'mr-demomacs'
-              end
+              mac_address_scheduler :Default
             }
           end
         end
