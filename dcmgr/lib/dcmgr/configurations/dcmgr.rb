@@ -166,6 +166,16 @@ module Dcmgr
           ].each do |name|
             errors << "#{name} is undefined." unless self.send(name)
           end
+
+          begin
+            self.send(:mac_address_scheduler)
+          rescue
+            parse_dsl {
+              mac_address_scheduler :ByHostNodeGroup do
+                default 'mr-demomacs'
+              end
+            }
+          end
         end
       end
 
