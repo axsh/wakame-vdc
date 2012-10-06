@@ -126,7 +126,15 @@ for config_yml in ${config_ymls}; do
 done
 unset config_ymls
 
+%post common-vmapp-config
+/sbin/chkconfig       ntpd on
+/sbin/chkconfig       ntpdate on
+
 %post dcmgr-vmapp-config
+/sbin/chkconfig --add mysqld
+/sbin/chkconfig       mysqld on
+/sbin/chkconfig --add rabbitmq-server
+/sbin/chkconfig       rabbitmq-server on
 # activate upstart system job
 sys_default_confs="auth collector dcmgr metadata nsa proxy sta webui"
 for sys_default_conf in ${sys_default_confs}; do
@@ -138,6 +146,12 @@ for sys_default_conf in /etc/default/vdc-*; do sed -i s,^#NODE_ID=.*,NODE_ID=dem
 [ -f /etc/wakame-vdc/unicorn-common.conf ] && sed -i "s,^worker_processes .*,worker_processes 1," /etc/wakame-vdc/unicorn-common.conf
 
 %post hva-vmapp-config
+/sbin/chkconfig --add iscsi
+/sbin/chkconfig       iscsi  on
+/sbin/chkconfig --add iscsid
+/sbin/chkconfig       iscsid on
+/sbin/chkconfig --add tgtd
+/sbin/chkconfig       tgtd on
 # activate upstart system job
 sys_default_confs="hva"
 for sys_default_conf in ${sys_default_confs}; do

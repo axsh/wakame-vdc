@@ -309,26 +309,14 @@ rm -rf %{prefix}/%{oname}/ruby
 rm -rf ${RPM_BUILD_ROOT}
 
 %post
-/sbin/chkconfig       ntpd on
-/sbin/chkconfig       ntpdate on
 /sbin/chkconfig --add vdc-net-event
 
 %post debug-config
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
 
 %post dcmgr-vmapp-config
-/sbin/chkconfig --add mysqld
-/sbin/chkconfig       mysqld on
-/sbin/chkconfig --add rabbitmq-server
-/sbin/chkconfig       rabbitmq-server on
 
 %post hva-common-vmapp-config
-/sbin/chkconfig --add iscsi
-/sbin/chkconfig       iscsi  on
-/sbin/chkconfig --add iscsid
-/sbin/chkconfig       iscsid on
-/sbin/chkconfig --add tgtd
-/sbin/chkconfig       tgtd on
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
 %{prefix}/%{oname}/rpmbuild/helpers/add-loopdev.sh
 
