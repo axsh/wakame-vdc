@@ -107,12 +107,22 @@ Requires: %{oname}-dcmgr-vmapp-config = %{version}-%{release}
 %description ha-dcmgr-config
 <insert long description, indented with spaces>
 
+# rack-config
+%package rack-config
+BuildArch: noarch
+Summary: Configuration set for rack
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description rack-config
+<insert long description, indented with spaces>
+
 # dcmgr-vmapp-config
 %package dcmgr-vmapp-config
 BuildArch: noarch
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
+Requires: %{oname}-rack-config = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
@@ -127,6 +137,7 @@ BuildArch: noarch
 Summary: Configuration set for admin VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
+Requires: %{oname}-rack-config = %{version}-%{release}
 %description admin-vmapp-config
 <insert long description, indented with spaces>
 
@@ -388,6 +399,10 @@ rm -rf ${RPM_BUILD_ROOT}
 /etc/ucarp/vip-down.d/vdc-collector
 /etc/ucarp/vip-up.d/vdc-collector
 
+%files rack-config
+%defattr(-,root,root)
+%config /etc/wakame-vdc/unicorn-common.conf
+
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-dcmgr
@@ -408,7 +423,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
 %config /etc/init/vdc-nwmongw.conf
-%config /etc/wakame-vdc/unicorn-common.conf
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
 %dir /var/log/%{oname}/dcmgr_gui
