@@ -44,6 +44,15 @@ Requires: %{name}-common-vmapp-config
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
+# example:admin
+%package admin-vmapp-config
+Summary: Configuration set for admin %{osubname}
+Group: Development/Languages
+Requires: %{oname}-admin-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description admin-vmapp-config
+<insert long description, indented with spaces>
+
 # example:hva
 %package hva-vmapp-config
 Summary: Configuration set for hva %{osubname}
@@ -59,6 +68,7 @@ Summary: Configuration set for full %{osubname}
 Group: Development/Languages
 Requires: %{name}-dcmgr-vmapp-config
 Requires: %{name}-hva-vmapp-config
+Requires: %{name}-admin-vmapp-config
 %description full-vmapp-config
 <insert long description, indented with spaces>
 
@@ -185,6 +195,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
 %config /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
 %config /etc/%{oname}/convert_specs/load_balancer.yml
+
+%files admin-vmapp-config
 %config /etc/%{oname}/admin/admin.yml
 
 %files hva-vmapp-config

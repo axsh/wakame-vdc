@@ -121,6 +121,15 @@ Requires: dnsmasq
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
+# admin-vmapp-config
+%package admin-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for admin VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description admin-vmapp-config
+<insert long description, indented with spaces>
+
 # hva-common-vmapp-config
 %package hva-common-vmapp-config
 BuildArch: noarch
@@ -389,7 +398,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %config(noreplace) /etc/default/vdc-webui
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
-%config(noreplace) /etc/default/vdc-admin
 %config(noreplace) /etc/default/vdc-nwmongw
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
@@ -399,17 +407,21 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-webui.conf
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
-%config /etc/init/vdc-admin.conf
 %config /etc/init/vdc-nwmongw.conf
 %config /etc/wakame-vdc/unicorn-common.conf
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
-%dir /etc/%{oname}/admin
 %dir /var/log/%{oname}/dcmgr_gui
-%dir /var/log/%{oname}/admin
 %dir /var/lib/%{oname}/tmp/images
 %dir /var/lib/%{oname}/tmp/volumes
 %dir /var/lib/%{oname}/tmp/snap
+
+%files admin-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-admin
+%config /etc/init/vdc-admin.conf
+%dir /etc/%{oname}/admin
+%dir /var/log/%{oname}/admin
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
