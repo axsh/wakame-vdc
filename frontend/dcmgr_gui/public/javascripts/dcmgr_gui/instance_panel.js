@@ -269,7 +269,7 @@ DcmgrGUI.prototype.instancePanel = function(){
                   var uuid = results[i].result.uuid;
                   var display_name = results[i].result.display_name;
                   $(self).find('#' + name).append('<option value="' + uuid + '" ' + (uuid == selected ? 'selected="selected"' : '') + '>' +
-                                                  uuid + ' - ' + display_name + '</option>');
+                                                  '[' + uuid + '] ' + display_name + '</option>');
                 }
               }
 
