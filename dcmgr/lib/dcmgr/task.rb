@@ -181,6 +181,7 @@ module Dcmgr
       end
 
       def self.current
+	reset! if @task_session_class.nil?
         @task_session_class.current
       end
 

@@ -113,6 +113,12 @@ function init_db() {
 
   # Install demo data.
   (. $data_path/demodata.sh)
+
+  cd ${prefix_path}/dcmgr/bin
+  ./vdc-manage backupstorage modify bkst-demo2 --display-name ifs-storage --storage-type ifs --description ifsdemo
+/usr/bin/mysql -u root wakame_dcmgr << eof
+update storage_nodes set export_path="010465df7b8da04be09759a1a060be2854490000013a3e23aa4100000000/volumes",ipaddr="192.168.64.3",snapshot_base_path="010465df7b8da04be09759a1a060be2854490000013a3e23aa4100000000/snapshots";
+eof
 }
 
 function run_standalone() {

@@ -29,6 +29,8 @@ module Dcmgr
           bs = Dcmgr::Drivers::SunIscsi.new
         when "comstar"
           bs = Dcmgr::Drivers::Comstar.new
+	when "ifs_iscsi"
+	  bs = Dcmgr::Drivers::IfsIscsi.new
         else
           raise "Unknown iscsi_target type: #{iscsi_target}"
         end

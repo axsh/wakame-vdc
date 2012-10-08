@@ -1,0 +1,8 @@
+development:
+  dcmgr_site: 'http://localhost:9001/'
+
+test:
+  dcmgr_site: 'http://localhost:9001/'
+
+production:
+  dcmgr_site: 'http://localhost:9001/'

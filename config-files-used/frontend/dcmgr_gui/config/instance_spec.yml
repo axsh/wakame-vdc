@@ -1,0 +1,10 @@
+kvm.small:
+  cpu_cores: 1
+  memory_size: 256
+  hypervisor: 'kvm'
+  quota_weight: 1.0
+kvm.large:
+  cpu_cores: 2
+  memory_size: 256
+  hypervisor: 'kvm'
+  quota_weight: 2.0

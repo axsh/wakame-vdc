@@ -83,6 +83,7 @@ displayByteUnit = DcmgrGUI.Converter.toDisplayByteUnit = function(qty, unit) {
   if (qty === undefined || qty == ''){
     return "";
   }else if(typeof qty === 'number'){
+    qty=qty/1024/1024/1024;
     if (unit === undefined ){ unit = ' byte'; }
     q = new Qty(qty + unit);
   }else{

@@ -75,4 +75,4 @@ cd $work_dir
 ./ovs/sbin/ovsdb-server --pidfile --detach --remote=punix:$work_dir/ovs/var/run/openvswitch/db.sock $work_dir/ovs/etc/openvswitch/conf.db
 ./ovs/bin/ovs-vsctl --no-wait init
 
-[ "$1" != "ovs-wakame" ] && [ -d $ovs_build_dir ] && rm -rf $ovs_build_dir
+#[ "$1" != "ovs-wakame" ] && [ -d $ovs_build_dir ] && rm -rf $ovs_build_dir

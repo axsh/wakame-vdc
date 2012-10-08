@@ -44,6 +44,9 @@ cd ${VDC_ROOT}/dcmgr/
   [ -n "${range_end}"   ] || range_end=`ipcalc ${ipv4_gw}/${prefix_len} | awk '$1 == "HostMax:" { print $2 }'`
 }
 
+range_begin=192.168.64.100
+range_end=192.168.64.200
+
 # must keep the permission 600
 #
 # > @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -63,20 +66,20 @@ network dc add public
 network dc add-network-mode public securitygroup
 network dc del-network-mode public passthru
 # bridge only closed network
-network dc add null1
-network dc add-network-mode null1 l2overlay
-network dc add null2
-network dc add-network-mode null2 l2overlay
+# network dc add vnet --allow-new-networks=true
+network dc add vnet
+network dc add-network-mode vnet l2overlay
+network dc del-network-mode vnet passthru
 network dc add management
 network dc add-network-mode management securitygroup
 network dc del-network-mode management passthru
 
 # vlan
 #vlan    add --tag-idb 1      --uuid vlan-demo1    --account-id ${account_id}
-#network add           --uuid   nw-demo1    --ipv4-gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata-port ${metadata_port} --vlan-id 1 --description demo
+#network add           --uuid   nw-physical    --ipv4-gw ${ipv4_gw} --prefix ${prefix_len} --domain vdc.local --dns ${dns_server} --dhcp ${dhcp_server} --metadata ${metadata_server} --metadata-port ${metadata_port} --vlan-id 1 --description demo
 # non vlan
 network add \
- --uuid nw-demo1 \
+ --uuid nw-physical \
  --ipv4-network ${ipv4_gw} \
  --ipv4_gw ${ipv4_gw} \
  --prefix ${prefix_len} \
@@ -86,85 +89,40 @@ network add \
  --metadata ${metadata_server} \
  --metadata-port ${metadata_port} \
  --service-type std \
- --description "demo" \
- --display-name "demo1" \
+ --description "physical" \
+ --display-name "physical" \
  --ip-assignment "asc"
 network add \
- --uuid nw-demo2 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo2'" --ip-assignment "asc"
-network add \
- --uuid nw-demo3 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo3'" --ip-assignment "asc"
-network add \
- --uuid nw-demo4 --ipv4-network 10.100.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo4'" --ip-assignment "asc"
-network add \
- --uuid nw-demo5 --ipv4-network 10.101.0.0 --prefix 24 --domain vdc.local --metric 10 --service-type std --display-name "'demo5'" --ip-assignment "asc"
-network add \
- --uuid nw-demo6 \
- --network-mode l2overlay \
- --ipv4-network 10.102.0.0 \
- --ipv4_gw 10.102.0.1 \
+ --uuid nw-vnet1 \
+ --ipv4-network 10.1.1.0 \
  --prefix 24 \
- --domain vnet6.local \
- --metric 10 \
+ --domain vnet1.local \
  --service-type std \
- --display-name "demo6" \
+ --description "virtual network 1" \
+ --display-name "vnet1" \
  --ip-assignment "asc"
 network add \
- --uuid nw-demo7 \
- --network-mode l2overlay \
- --ipv4-network 10.103.0.0 \
- --ipv4_gw 10.103.0.1 \
+ --uuid nw-vnet2 \
+ --ipv4-network 10.1.1.0 \
  --prefix 24 \
- --domain vnet7.local \
- --metric 10 \
+ --domain vnet2.local \
  --service-type std \
- --display-name "demo7" \
- --ip-assignment "asc"
-network add \
- --uuid nw-demo8 \
- --ipv4-network 10.1.0.0 \
- --ipv4_gw 10.1.0.1 \
- --prefix 24 \
- --domain vnet8.local \
- --metric 10 \
- --service-type lb \
- --display-name "demo8" \
+ --description "virtual network 2" \
+ --display-name "vnet2" \
  --ip-assignment "asc"
 
 # set forward interface(= physical network) from network
-network forward nw-demo1 public
-network forward nw-demo2 public
-network forward nw-demo3 public
-network forward nw-demo4 null1
-network forward nw-demo5 null2
-network forward nw-demo6 null1
-network forward nw-demo7 null1
-network forward nw-demo8 management
+network forward nw-physical public
+network forward nw-vnet1 vnet
+network forward nw-vnet2 vnet
 
-network service dhcp nw-demo6 --ipv4=10.102.0.2
-network service dhcp nw-demo7 --ipv4=10.103.0.2
-network service dns nw-demo7 --ipv4=10.103.0.2
-
-network dhcp addrange nw-demo1 $range_begin $range_end
-network dhcp addrange nw-demo2 10.100.0.61 10.100.0.65
-network dhcp addrange nw-demo2 10.100.0.70 10.100.0.75
-# range prepend
-network dhcp addrange nw-demo2 10.100.0.68 10.100.0.75
-# range append
-network dhcp addrange nw-demo2 10.100.0.72 10.100.0.80
-# range merge
-network dhcp addrange nw-demo2 10.100.0.60 10.100.0.80
-network dhcp addrange nw-demo3 10.101.0.60 10.101.0.80
-network dhcp addrange nw-demo4 10.100.0.100 10.100.0.130
-network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
-network dhcp addrange nw-demo6 10.102.0.10 10.102.0.240
-network dhcp addrange nw-demo7 10.103.0.10 10.103.0.240
-network dhcp addrange nw-demo8 10.1.0.10 10.1.0.240
+network dhcp addrange nw-physical $range_begin $range_end
 
 resourcegroup map hng-shhost hn-${node_id}
 resourcegroup map sng-shstor sn-${node_id}
-resourcegroup map nwg-shnet  nw-demo1
+resourcegroup map nwg-shnet  nw-physical
 
-network reserve nw-demo1 --ipv4=${ipaddr}
+network reserve nw-physical --ipv4=${ipaddr}
 
 spec  add --uuid is-demospec --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --quota-weight 1
 spec  add --uuid is-demo2    --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --quota-weight 1

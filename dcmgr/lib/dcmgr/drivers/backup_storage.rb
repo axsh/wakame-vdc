@@ -55,7 +55,9 @@ module Dcmgr::Drivers
     end
 
     def self.snapshot_storage(backup_storage, opts={})
-      driver_class(backup_storage[:storage_type]).new(backup_storage, opts)
+      p "#{backup_storage[:storage_type].inspect}"
+      p "#{driver_class(backup_storage[:storage_type]).inspect}"
+      driver_class(backup_storage[:storage_type]).new#(backup_storage, opts)
     end
 
     def self.driver_class(storage_type)

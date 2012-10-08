@@ -60,7 +60,8 @@ module Dcmgr
             args << vif[:uuid]
           }
         end
-        sh(cmd.join(' '), args)
+#        sh(cmd.join(' '), args)
+        system("#{cmd.join(' ')}" % args)
 
         vifs.each { |vif|
           if vif[:ipv4] and vif[:ipv4][:network]

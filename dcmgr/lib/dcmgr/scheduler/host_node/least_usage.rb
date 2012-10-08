@@ -21,12 +21,14 @@ module Dcmgr
         end
 
         def schedule(instance)
-          ds = Models::HostNode.online_nodes.filter(:arch=>instance.image.arch,
-                                                    :hypervisor=>instance.hypervisor)
+          # ds = Models::HostNode.online_nodes.filter(:arch=>instance.image.arch,
+          #                                           :hypervisor=>instance.hypervisor)
+          ds = Models::HostNode.online_nodes.filter()
 
           host_node = ds.all.find_all { |hn|
-            hn.available_cpu_cores >= instance.cpu_cores && \
-              hn.available_memory_size >= instance.memory_size
+#            hn.available_cpu_cores >= instance.cpu_cores && \
+#              hn.available_memory_size >= instance.memory_size
+            true
           }.sort_by { |hn|
             case options.sort_priority
             when :cpu

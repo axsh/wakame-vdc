@@ -39,7 +39,7 @@ module Dcmgr
           errors << "iscsi_target is not set"
         end
 
-        unless %w(comstart sun_iscsi linux_iscsi).member?(@config[:iscsi_target])
+        unless %w(comstart sun_iscsi linux_iscsi ifs_iscsi).member?(@config[:iscsi_target])
           errors << "Unknown value for iscsi_target: #{@config[:iscsi_target]}"
         end
         unless %w(raw zfs ifs).member?(@config[:backing_store])

@@ -17,22 +17,24 @@ module Dcmgr
       def create_volume(ctx, snap_file = nil)
         @volume_id   = ctx.volume_id
         @volume      = ctx.volume
-        @snapshot    = ctx.snapshot
+        @snapshot    = ctx.backup_object
         @ip = @volume[:storage_node][:ipaddr]
         @vol_path = @volume[:storage_node][:export_path]
+	@snap_path = @volume[:storage_node][:snapshot_base_path]
 
         #@temp_path = generate_temp_path
 
         ##TODO: Check if the directory exists first
+        p "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}?mkdir"
         sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}?mkdir"
 
         if @snapshot
           #raise NotImplementedError
 
           #sh "curl -X PUT -d @#{snap_file} http://#{@ip}:#{@port}/ifsutils/#{@fsid}/volumes/#{@volume_id}"
-          snap_path = @snapshot[:destination_key].split(":").last
+          #snap_path = @snapshot[:object_key].split(":").last
           new_vol_path = @vol_path.split("/",2).last
-          sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{snap_path}?duplicate=#{new_vol_path}/#{@volume_id}"
+          sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@snap_path}/#{@snapshot[:object_key]}?duplicate=#{new_vol_path}/#{@volume_id}"
         else
           #TODO: Check if file was created successfully
           sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?allocate=#{@volume[:size]}"

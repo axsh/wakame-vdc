@@ -13,7 +13,7 @@ kvm -device ? 2>&1 | egrep 'name "lsi' -q || {
 }
 
 shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo1 --display-name="'local storage'" --base-uri="'file://${VDC_ROOT}/tmp/images/'" --storage-type=local --description="'local backup storage under ${VDC_ROOT}/tmp/images/'"
-shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webdav storage'" --base-uri="'http://localhost:8080/images/'" --storage-type=webdav --description="'nginx based webdav storage'"
+shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webdav storage'" --base-uri="'http://${sta_server}:8080/images/'" --storage-type=webdav --description="'nginx based webdav storage'"
 
 # download demo image files.
 (
