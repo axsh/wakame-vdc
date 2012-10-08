@@ -1,0 +1,56 @@
+#------------------------
+# Configuration file for hva.
+#------------------------
+
+# directory to store VM local data.
+config.vm_data_dir = '/usr/share/axsh/wakame-vdc/tmp/instances'
+
+# Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
+config.edge_networking = 'openflow'
+
+# netfilter and openflow
+config.enable_subnet = false
+config.enable_gre = true
+
+# display netfitler commands
+config.verbose_openflow  = false
+
+# Directory used by Open vSwitch daemon for run files
+config.ovs_run_dir = '/usr/share/axsh/wakame-vdc/ovs/var/run/openvswitch'
+
+# Path for ovs-ofctl
+config.ovs_ofctl_path = '/usr/share/axsh/wakame-vdc/ovs/bin/ovs-ofctl'
+
+# Trema base directory
+config.trema_dir = '/usr/share/axsh/wakame-vdc/trema'
+config.trema_tmp = '/usr/share/axsh/wakame-vdc/tmp/trema'
+
+dc_network('public') {
+  bridge_type 'ovs'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('null1') {
+  bridge_type 'ovs'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('null2') {
+  bridge_type 'ovs'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('vnet') {
+  bridge_type 'ovs'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('management') {
+  bridge_type 'ovs'
+  interface 'eth0'
+  bridge 'br0'
+}

@@ -18,8 +18,8 @@ module Dcmgr
         tryagain do
           next true if File.exist?(@os_devpath)
 
-          sh("iscsiadm -m discovery -t sendtargets -p %s", [@vol[:storage_node][:ipaddr]])
-          sh("iscsiadm -m node -l -T '%s' --portal '%s'",
+          sh("iscsiadm -m discovery -t sendtargets -p %s:3270", [@vol[:storage_node][:ipaddr]])
+          sh("iscsiadm -m node -l -T '%s' --portal '%s:3270'",
              [@vol[:transport_information][:iqn], @vol[:storage_node][:ipaddr]])
           # wait udev queue
           sh("/sbin/udevadm settle")
@@ -157,7 +157,7 @@ module Dcmgr
       def get_linux_dev_path
         # check under until the dev file is created.
         # /dev/disk/by-path/ip-192.168.1.21:3260-iscsi-iqn.1986-03.com.sun:02:a1024afa-775b-65cf-b5b0-aa17f3476bfc-lun-0
-        @os_devpath = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_node][:ipaddr]}:3260",
+        @os_devpath = "/dev/disk/by-path/ip-%s-iscsi-%s-lun-%d" % ["#{@vol[:storage_node][:ipaddr]}:3270",
                                                                       @vol[:transport_information][:iqn],
                                                                       @vol[:transport_information][:lun]]
       end

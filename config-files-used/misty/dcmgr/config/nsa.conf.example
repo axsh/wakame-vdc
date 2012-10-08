@@ -1,0 +1,9 @@
+#------------------------
+# Configuration file for nsa.
+#------------------------
+
+# path for dnsmaq binary
+config.dnsmasq_bin_path='/usr/sbin/dnsmasq'
+
+# UUID of Network or NetworkGroup to be delivered DHCP.
+config.network_name='nwg-shnet'

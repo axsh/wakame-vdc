@@ -1,0 +1,78 @@
+#------------------------
+# Configuration file for hva.
+#------------------------
+
+# directory to store VM local data.
+config.vm_data_dir = '/var/lib/wakame-vdc/tmp/instances'
+
+# Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
+# * 'netfilter'
+# * 'legacy_netfilter' #no longer supported, has issues with multiple vnic vm isolation
+# * 'openflow' #experimental, requires additional setup
+# * 'off'
+config.edge_networking = 'netfilter'
+
+# netfilter and openflow
+config.enable_ebtables = true
+config.enable_iptables = true
+config.enable_subnet = false
+config.enable_gre = true
+
+# display netfitler commands
+config.verbose_netfilter = false
+config.verbose_openflow  = false
+
+# netfilter log output flag
+config.packet_drop_log = false
+
+# debug netfilter
+config.debug_iptables = false
+
+# Use ipset for netfilter
+config.use_ipset       = false
+
+# Path for brctl
+config.brctl_path = '/usr/sbin/brctl'
+
+# Directory used by Open vSwitch daemon for run files
+config.ovs_run_dir = '/var/lib/wakame-vdc/ovs/var/run/openvswitch'
+
+# Path for ovs-ofctl
+config.ovs_ofctl_path = '/var/lib/wakame-vdc/ovs/bin/ovs-ofctl'
+
+# Trema base directory
+config.trema_dir = '/var/lib/wakame-vdc/trema'
+config.trema_tmp = '/var/lib/wakame-vdc/tmp/trema'
+
+dc_network('public') {
+  bridge_type 'linux'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('null1') {
+  bridge_type 'linux'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('null2') {
+  bridge_type 'linux'
+  interface 'eth0'
+  bridge 'br0'
+}
+
+dc_network('management') {
+  bridge_type 'linux'
+  interface 'eth1'
+  bridge 'br1'
+}
+
+# Hypervisor driver specific section.
+#hypervisor_driver('openvz') {
+#  cgroup_blkio {
+#    enable_throttling true
+#    read_iops 200
+#    write_iops 200
+#  }
+#}

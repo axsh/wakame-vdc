@@ -1,0 +1,8 @@
+## vdc
+VDC_ROOT=/usr/share/axsh/wakame-vdc
+
+## PATH
+PATH=${VDC_ROOT}/ruby/bin:${PATH}
+
+## for debug
+#DAEMON_COREFILE_LIMIT=unlimited
