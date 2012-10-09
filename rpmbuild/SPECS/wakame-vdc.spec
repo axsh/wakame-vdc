@@ -319,7 +319,6 @@ ln -s /var/lib/%{oname}/snap ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/snap
 
 # lib directory
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/instances
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/instances/tmp
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/images
