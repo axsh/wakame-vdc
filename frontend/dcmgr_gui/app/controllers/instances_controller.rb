@@ -16,6 +16,8 @@ class InstancesController < ApplicationController
         :ssh_key => params[:ssh_key],
         :display_name => params[:display_name],
         :vifs => {},
+        :monitoring_enabled => params[:monitoring_enabled],
+        :monitoring_mailaddr => params[:mailaddr],
       }
 
       if params[:vifs]

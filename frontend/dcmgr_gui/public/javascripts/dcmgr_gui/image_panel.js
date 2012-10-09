@@ -148,6 +148,8 @@ DcmgrGUI.prototype.imagePanel = function(){
     var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').val();
     var launch_in = $(this).find('#right_select_list').find('option');
     var user_data = $(this).find('#user_data').val();
+    var monitoring_enabled = $(this).find('#monitoring_enabled').is(':checked');
+    var mailaddr = $(this).find('#mailaddr').val();
     var security_groups = [];
     $.each(launch_in,function(i){
       security_groups.push("security_groups[]="+ $(this).val());
@@ -165,7 +167,9 @@ DcmgrGUI.prototype.imagePanel = function(){
               +"&" + vifs.join('&')
               + bt_launch_instance.monitor_selector.queryParams()
               +"&ssh_key="+ssh_key_pair
-              +"&display_name="+display_name;
+              +"&display_name="+display_name
+              +"&monitoring_enabled="+monitoring_enabled
+              +"&mailaddr="+mailaddr;
 
     request = new DcmgrGUI.Request;
     request.post({

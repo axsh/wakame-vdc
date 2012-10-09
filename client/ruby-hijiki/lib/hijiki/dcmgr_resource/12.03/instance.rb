@@ -15,6 +15,8 @@ module Hijiki::DcmgrResource::V1203
                                  :ha_enabled,
                                  :hypervisor,
                                  :display_name,
+                                 :monitoring_enabled,
+                                 :monitoring_mailaddr,
                                 ]
 
     module ClassMethods
@@ -48,6 +50,9 @@ module Hijiki::DcmgrResource::V1203
 
         # rename the key to instance_spec_name.
         instance.instance_spec_name = params[:instance_spec_id]
+
+        instance.monitoring_enabled = params[:monitoring_enabled]
+        instance.monitoring_mailaddr = params[:monitoring_mailaddr]
         
         instance.save
         instance
