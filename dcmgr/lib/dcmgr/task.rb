@@ -57,7 +57,7 @@ module Dcmgr
     # # Create TaskA object once in earlier stage then call method of
     # # the object. So Tasklet#initialize can be used for loading conf files etc.
     # Tasklet.register(TaskA.new(20))
-    # 
+    #
     # TaskSession.invoke(TaskA, :func2)
     # # => 21
     # TaskSession.invoke(TaskA, :func2)
@@ -82,15 +82,15 @@ module Dcmgr
         end
 
         attr_reader :task_hooks
-        
+
         def reset!
           @task_hooks = {:before => [], :after => [], :session_begin => []}
         end
-        
+
         def before(&blk)
           @task_hooks[:before] << blk
         end
-        
+
         def after(&blk)
           @task_hooks[:after] << blk
         end
@@ -106,14 +106,14 @@ module Dcmgr
         end
 
         private
-        
+
         def inherited(klass)
           klass.reset!
         end
       end
 
       self.reset!
-      
+
       def invoke(method, args=[])
         dup.invoke!(@task_session, method, args)
       end
@@ -144,7 +144,7 @@ module Dcmgr
         @task_session = session
         @method = method
         @args = args
-        
+
         begin
           invoke_hook! :before
           # method must be public.
@@ -181,18 +181,19 @@ module Dcmgr
       end
 
       def self.current
+        reset! if @task_session_class.nil?
         @task_session_class.current
       end
 
       def self.invoke(taskclass, method, args)
         self.current.invoke(taskclass, method, args)
       end
-      
+
       def initialize
         @tasklets = {}
         @hash = {}
       end
-      
+
       def [](key)
         @hash[key]
       end

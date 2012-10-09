@@ -9,7 +9,7 @@ module Dcmgr::Drivers
       def upload_command(src_path, dst_bo)
         raise NotImplementedError
       end
-      
+
       # Download volume file from the backup storage.
       # @param src_bo    BackupObject hash of the download item.
       # @param dst_path  The local path to download item.
@@ -55,7 +55,7 @@ module Dcmgr::Drivers
     end
 
     def self.snapshot_storage(backup_storage, opts={})
-      driver_class(backup_storage[:storage_type]).new(backup_storage, opts)
+      driver_class(backup_storage[:storage_type]).new#(backup_storage, opts)
     end
 
     def self.driver_class(storage_type)
