@@ -445,6 +445,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-hva-worker.conf
 %config /etc/sysctl.d/30-bridge-if.conf
 %dir /var/lib/%{oname}/instances
+%dir /var/lib/%{oname}/instances/tmp
 
 %files hva-kvm-vmapp-config
 
