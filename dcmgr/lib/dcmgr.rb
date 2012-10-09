@@ -85,6 +85,7 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :MacRange, 'dcmgr/models/mac_range'
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
+    autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
   end
 
   module Endpoints

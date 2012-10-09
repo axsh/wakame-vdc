@@ -14,6 +14,7 @@ module Dcmgr::Models
     alias :nic :network_vif
     # TODO: remove ssh_key_pair_id column
     many_to_one :ssh_key_pair
+    one_to_one :instance_monitor_attr
 
     plugin ArchiveChangedColumn, :histories
     plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size] 
@@ -110,6 +111,16 @@ module Dcmgr::Models
       end
 
       super
+    end
+
+    def after_save
+      super
+
+      # force to create one to one association for the monitoring
+      # attributes table.
+      unless self.instance_monitor_attr
+        self.instance_monitor_attr = InstanceMonitorAttr.create
+      end
     end
 
     def before_destroy

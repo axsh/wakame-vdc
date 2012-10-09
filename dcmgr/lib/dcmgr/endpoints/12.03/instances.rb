@@ -196,6 +196,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
     instance.save
+
+    # instance_monitor_attr row is created at after_save hook in Instance model.
+    if params[:monitoring_enabled] == 'true'
+      instance.instance_monitor_attr.enabled = true
+    end
+    
+    if params[:monitoring_mailaddr]
+      instance.instance_monitor_attr.mailaddr = params[:monitoring_mailaddr]
+    end
+    instance.instance_monitor_attr.save_changes
     
     instance.state = :scheduling
     instance.save
