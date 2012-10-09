@@ -312,16 +312,19 @@ ln -s /var/log/%{oname}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/
 ln -s /var/log/%{oname}/admin ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/log
 
 # tmp directory
-ln -s /var/lib/%{oname}/tmp ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tmp
+ln -s /var/lib/%{oname}/instances ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/instances
+ln -s /var/lib/%{oname}/images ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/images
+ln -s /var/lib/%{oname}/volumes ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/volumes
+ln -s /var/lib/%{oname}/snap ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/snap
 
 # lib directory
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances/tmp
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/volumes
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/snap
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/instances
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/instances/tmp
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/images
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/volumes
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/snap
 
 %clean
 RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
@@ -353,7 +356,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %dir /etc/%{oname}/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
-%dir /var/lib/%{oname}/tmp
 %exclude %{prefix}/%{oname}/tests/
 
 %files vdcsh
@@ -426,9 +428,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
 %dir /var/log/%{oname}/dcmgr_gui
-%dir /var/lib/%{oname}/tmp/images
-%dir /var/lib/%{oname}/tmp/volumes
-%dir /var/lib/%{oname}/tmp/snap
+%dir /var/lib/%{oname}/images
+%dir /var/lib/%{oname}/volumes
+%dir /var/lib/%{oname}/snap
 
 %files admin-vmapp-config
 %defattr(-,root,root)
@@ -443,7 +445,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-hva.conf
 %config /etc/init/vdc-hva-worker.conf
 %config /etc/sysctl.d/30-bridge-if.conf
-%dir /var/lib/%{oname}/tmp/instances
+%dir /var/lib/%{oname}/instances
 
 %files hva-kvm-vmapp-config
 
