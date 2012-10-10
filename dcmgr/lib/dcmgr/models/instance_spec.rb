@@ -8,7 +8,7 @@ module Dcmgr::Models
     # method calls.
     plugin :serialization
     serialize_attributes :yaml, :config
-    # initial attached virtual interface definition: 
+    # initial attached virtual interface definition:
     # {
     #   'vif1' => {
     #     :index => 0,     # (>=0) required and unique
@@ -102,7 +102,7 @@ module Dcmgr::Models
       self.changed_columns << :vifs
       self
     end
-    
+
     def add_local_drive(name, index, size)
       raise "Duplicate drive name: #{name}" if self.drives.has_key?(name)
       self.drives[name] = {
@@ -135,7 +135,7 @@ module Dcmgr::Models
       self.changed_columns << :drives
       self
     end
-    
+
     def update_drive_index(name, new_index)
       raise "Unknown drive name: #{name}" if !self.drives.has_key?(name)
       drive = self.drives[name]
@@ -169,6 +169,6 @@ module Dcmgr::Models
       self.changed_columns << :drives
       self
     end
-    
+
   end
 end

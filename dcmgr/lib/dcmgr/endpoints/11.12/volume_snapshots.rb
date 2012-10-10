@@ -54,10 +54,10 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/volume_snapshots' do
 
     res = vs.to_api_document
     repository_address = Dcmgr::StorageService.repository_address(destination_key)
-    
+
     commit_transaction
     Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'create_snapshot', vs.canonical_uuid, repository_address)
-    
+
     response_to(res)
   end
 
@@ -87,7 +87,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/volume_snapshots' do
 
     commit_transaction
     Dcmgr.messaging.submit("sta-handle.#{sp.node_id}", 'delete_snapshot', vs.canonical_uuid, repository_address)
-    
+
     response_to([vs.canonical_uuid])
   end
 

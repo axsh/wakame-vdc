@@ -1,11 +1,11 @@
 @api_from_v11.12
-Feature: Report API 
-  Scenario: GET index of reports 
+Feature: Report API
+  Scenario: GET index of reports
     Given a new instance with its uuid in <instance:uuid>
     When we make an api get call to reports with no options
     Then the previos report api call should be successful with resource_type "Instance"
     And the following values exists:
-      |     value| 
+      |     value|
       |      init|
       |scheduling|
       |   pending|
@@ -17,12 +17,12 @@ Feature: Report API
 #    And the JSON response at "event_type" should be "state"
 #    And the JSON response at "value" should be "<value>"
 #    And the JSON response at "time" should match format "ISO8601"
-    
+
     Given a new volume with its uuid in <volume:uuid>
     When we make an api get call to reports with no options
     Then the previos report api call should be successful with resource_type "Volume"
     And the following values exists:
-      |      value| 
+      |      value|
       |initialized|
       |    pending|
       |   creating|

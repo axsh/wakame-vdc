@@ -12,7 +12,7 @@ module Dcmgr::Models
     taggable 'lb'
     many_to_one :instance
     one_to_many :load_balancer_targets, :key => :load_balancer_id do |ds|
-      ds.filter(:is_deleted => 0) 
+      ds.filter(:is_deleted => 0)
     end
 
     subset(:alives, {:deleted_at => nil})
@@ -72,17 +72,17 @@ module Dcmgr::Models
     def status
       @status = self.instance.status
     end
-    
+
     def queue_name
       "loadbalancer.#{self.instance.canonical_uuid}"
     end
-    
+
     def topic_name
       'amq.topic'
     end
-    
+
     def queue_options
-       { 
+       {
          :durable => false,
          :auto_delete => true,
          :internal => false,

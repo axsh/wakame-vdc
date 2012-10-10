@@ -22,7 +22,7 @@ module Dcmgr::Models
     def to_api_document
       self.to_hash
     end
-    
+
     def to_netfilter_document(host_node_id)
       nd = {
         :uuid  => self.canonical_uuid,
@@ -55,10 +55,10 @@ module Dcmgr::Models
           nd[:referencers][ref.canonical_uuid][vnic.canonical_uuid] = vnic.to_netfilter_document
         }
       }
-      
+
       nd
     end
-    
+
     def after_save
       super
     end
@@ -101,7 +101,7 @@ module Dcmgr::Models
           self.remove_referencee(referencee)
         end
       } unless self.referencees.empty?
-      
+
       super
     end
 
@@ -112,32 +112,32 @@ module Dcmgr::Models
       super
     end
     alias :destroy_group :destroy
-    
+
     def self.parse_rule(rule)
       rule = rule.strip.gsub(/[\s\t]+/, '')
       from_group = false
-      
+
       # ex.
       # "tcp:22,22,ip4:0.0.0.0"
       # "udp:53,53,ip4:0.0.0.0"
       # "icmp:-1,-1,ip4:0.0.0.0"
-      
+
       # 1st phase
       # ip_tport    : tcp,udp? 1 - 16bit, icmp: -1
       # id_port has been separeted in first phase.
       from_pair, ip_tport, source_pair = rule.split(',')
-      
+
       return nil if from_pair.nil? || ip_tport.nil? || source_pair.nil?
-      
+
       # 2nd phase
       # ip_protocol : [ tcp | udp | icmp ]
       # ip_fport    : tcp,udp? 1 - 16bit, icmp: -1
       ip_protocol, ip_fport = from_pair.split(':')
-      
+
       # protocol    : [ ip4 | ip6 | security_group_uuid ]
       # ip_source   : ip4? xxx.xxx.xxx.xxx./[0-32], ip6? (not yet supprted)
       protocol, ip_source = source_pair.split(':')
-      
+
       s = StringScanner.new(protocol)
       until s.eos?
         case
@@ -156,7 +156,7 @@ module Dcmgr::Models
           raise InvalidSecurityGroupRuleSyntax, "Unexpected protocol '#{s.peep(20)}'"
         end
       end
-      
+
       if from_group == false
         #p "from_group:(#{from_group}) ip_source -> #{ip_source}"
         ip = IPAddress(ip_source)
@@ -170,21 +170,21 @@ module Dcmgr::Models
         ip_source = protocol
         protocol = nil
       end
-      
+
       case ip_protocol
       when 'tcp', 'udp'
         ip_fport = ip_fport.to_i
         ip_tport = ip_tport.to_i
-        
+
         # validate port range
         [ ip_fport, ip_tport ].each do |port|
           raise InvalidSecurityGroupRuleSyntax, "Out of range port number: #{port}" unless port >= 1 && port <= 65535
         end
-        
+
         if !(ip_fport <= ip_tport)
           raise InvalidSecurityGroupRuleSyntax, "Invalid IP port range: #{ip_fport} <= #{ip_tport}"
         end
-        
+
         {
           :ip_protocol => ip_protocol,
           :ip_fport    => ip_fport,
@@ -198,10 +198,10 @@ module Dcmgr::Models
         # For the ICMP protocol, the ICMP type and code must be specified.
         # This must be specified in the format type:code where both are integers.
         # Type, code, or both can be specified as -1, which is a wildcard.
-        
+
         icmp_type = ip_fport.to_i
         icmp_code = ip_tport.to_i
-        
+
         # icmp_type
         case icmp_type
         when -1
@@ -209,7 +209,7 @@ module Dcmgr::Models
         else
           raise InvalidSecurityGroupRuleSyntax, "Unsupported ICMP type number: #{icmp_type}"
         end
-        
+
         # icmp_code
         case icmp_code
         when -1
@@ -219,7 +219,7 @@ module Dcmgr::Models
         else
           raise InvalidSecurityGroupRuleSyntax, "Unsupported ICMP code number: #{icmp_code}"
         end
-        
+
         {
           :ip_protocol => ip_protocol,
           :icmp_type   => ip_tport.to_i, # ip_tport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18

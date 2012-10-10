@@ -5,6 +5,6 @@ module Dcmgr::Models
   class History < BaseNew
 
     plugin :timestamps
-    
+
   end
 end

@@ -98,7 +98,7 @@ module Dcmgr::Models
         max_idx = self.class.alives.filter(:instance_id=>self.instance_id).max(:device_index)
         self.device_index = max_idx.nil? ? 0 : (max_idx + 1)
       end
-      
+
       super
     end
 

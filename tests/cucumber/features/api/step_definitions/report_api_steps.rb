@@ -24,7 +24,7 @@ When "I get the JSON" do
 end
 
 Then /^the previos report api call should be successful with resource_type "([^"]*)"$/ do |resource_type|
-  uuid = @managed_resources[resource_type.downcase][0] 
+  uuid = @managed_resources[resource_type.downcase][0]
   rows = []
   case resource_type
     when "Instance"
@@ -45,13 +45,13 @@ Then /^the following values exists:$/ do |table|
     @api_results.each do |row|
       if row['value'] == value['value']
         @last_json = row.to_json
-        
+
         steps %Q{
           Then the JSON should be a hash
           Then the JSON response at "uuid" should match "#{@uuid_match_pattern}"
           Then the JSON response at "resource_type" should be "#{@resource_type}"
           Then the JSON response at "event_type" should be "state"
-          Then the JSON response at "value" should be "#{value['value']}" 
+          Then the JSON response at "value" should be "#{value['value']}"
           Then the JSON response at "time" should match format "ISO8601"
         }
 

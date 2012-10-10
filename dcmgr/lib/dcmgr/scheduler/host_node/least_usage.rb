@@ -10,7 +10,7 @@ module Dcmgr
 
         configuration do
           SORT_PRIORITY_KEYS=[:cpu, :memory].freeze
-          
+
           param :sort_priority, :default=>:memory
 
           def validate(errors)

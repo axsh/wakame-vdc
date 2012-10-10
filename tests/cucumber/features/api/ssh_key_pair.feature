@@ -37,7 +37,7 @@ Feature: SshKeyPair API
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to ssh_key_pairs/<registry:uuid> with the following options
-      | description   | display_name | 
+      | description   | display_name |
       | test key key1 | sshkey2      |
     Then the previous api call should be successful
 

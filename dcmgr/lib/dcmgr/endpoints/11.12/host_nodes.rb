@@ -9,7 +9,7 @@
                            :limit => params[:limit]})
       response_to(res)
     end
-    
+
     get '/:id' do
       # description 'Show status of the host'
       #param :account_id, :string, :optional

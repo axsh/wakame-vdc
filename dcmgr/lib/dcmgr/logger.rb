@@ -24,7 +24,7 @@ module Dcmgr
       l.progname = name
       l
     end
-    
+
     def self.included(klass)
       klass.class_eval {
 
@@ -47,6 +47,6 @@ module Dcmgr
         end
       }
     end
-    
+
   end
 end

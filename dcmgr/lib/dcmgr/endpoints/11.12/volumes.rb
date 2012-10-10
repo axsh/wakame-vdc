@@ -132,7 +132,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/volumes' do
     v.save
 
     res = v.to_api_document
-    
+
     commit_transaction
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'attach', i.canonical_uuid, v.canonical_uuid)
 

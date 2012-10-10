@@ -1,6 +1,6 @@
 @api_from_v11.12
 Feature: Snapshot Volume API
-  
+
   Scenario: Create and delete new snapshot volume
 
     When we make a successful api create call to volumes with the following options
@@ -13,7 +13,7 @@ Feature: Snapshot Volume API
 
     When we successfully delete the created volumes
     Then the created volumes should reach state deleted in 60 seconds or less
-      
+
     When we successfully delete the created volume_snapshots
     Then the created volume_snapshots should reach state deleted in 60 seconds or less
 
