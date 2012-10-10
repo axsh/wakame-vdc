@@ -52,12 +52,12 @@ service_type("std", "StdServiceType") {
   #
   #     through(:RequestParamToGroup) {
   #       default 'hng-shhost'
-  #    
+  #
   #       key 'instance_spec_id'
   #       pair 'is-demo1', 'hng-hosts1'
   #       pair 'is-demo2', 'hng-hosts2'
   #     }
-  #  
+  #
   #     through(:LeastUsageBy) {
   #       key 'account_id'
   #     }
@@ -122,7 +122,7 @@ service_type("std", "StdServiceType") {
         'eth2' => 'nw-demo3',
       })
     }
-    
+
     # multiple vnic: type2
     add(:vif3type2, :VifTemplate) {
       template({
@@ -139,7 +139,7 @@ service_type("std", "StdServiceType") {
         'eth1' => 'nw-demo6',
       })
     }
-    
+
     # vnet: physical and nw-demo7
     add(:vnet_1_7, :VifTemplate) {
       template({

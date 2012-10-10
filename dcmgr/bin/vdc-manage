@@ -45,7 +45,7 @@ module TxMode
       end
     end
   end
-  
+
   module Each
     def loop_eval(str)
       Dcmgr::Models::BaseNew.db.transaction do
@@ -83,7 +83,7 @@ module VdcManageShell
   def print_result(result)
     # do nothing from ripl.
   end
-  
+
 end
 
 module MultiLine
@@ -167,29 +167,29 @@ else
   require 'ripl'
   require 'bond'
   require 'shellwords'
-  
+
   $exitcode = 0
   # Auto completion
   Bond.start
-  
+
   # Override Bond auto completions to include vdc-manage tasks instead of Ruby methods/keywords
   class Bond::DefaultMission
     def self.completions(input=nil)
       Bond::Mission.current_eval("[]") | RootCli.tasks.keys
     end
   end
-  
+
   # Get the classes of subcommands so we can add their arguments to Bond auto completion
   subcommand_classes = Dcmgr::Cli.constants.map { |c|
     Dcmgr::Cli.const_get(c)
   }.delete_if {|c|
     (not c.respond_to?(:namespace)) || c == Dcmgr::Cli::Base
   }
-  
+
   subcommand_classes.each { |sc|
     Bond.complete(:method=>sc.namespace) { sc.tasks.keys }
   }
-  
+
   Ripl::Shell.include VdcManageShell
   if $options[:tx_mode].to_sym == :each
     Ripl::Shell.include TxMode::Each
