@@ -175,9 +175,7 @@ module Dcmgr
             errors << "#{name} is undefined." unless self.send(name)
           end
 
-          begin
-            self.send(:mac_address_scheduler)
-          rescue
+          if @config[:mac_address_scheduler].nil?
             parse_dsl {
               mac_address_scheduler :Default
             }
