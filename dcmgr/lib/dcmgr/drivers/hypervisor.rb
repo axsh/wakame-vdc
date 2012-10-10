@@ -15,7 +15,7 @@ module Dcmgr
       def driver_configuration
         Dcmgr.conf.hypervisor_driver(self.class)
       end
-      
+
       def run_instance(hc)
       end
 
@@ -24,7 +24,7 @@ module Dcmgr
 
       def reboot_instance(hc)
       end
-      
+
       def poweroff_instance(hc)
       end
 
@@ -64,7 +64,7 @@ module Dcmgr
           raise "Unknown hypervisor type: #{hypervisor}"
         end
       end
-      
+
     end
   end
 end

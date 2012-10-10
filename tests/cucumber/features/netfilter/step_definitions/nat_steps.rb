@@ -1,5 +1,5 @@
 # encoding: utf-8
-begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end
 require 'cucumber/formatter/unicode'
 
 Before do
@@ -11,17 +11,17 @@ end
 Given /^(inside|outside) network (.+) exists$/ do |inout, cidr|
   new_network = cidr.split("/")[0]
   new_prefix  = cidr.split("/")[1]
-  
+
   # Check if the network exists already
   steps %Q{
     When we make a successful api get call to networks with no options
   }
-  
+
   @network = {} if @network.nil?
   @network[inout] = @api_last_result.first["results"].find { |nw|
     nw["prefix"] == new_prefix.to_i && nw["ipv4_network"] == new_network
   }
-  
+
   # Create the network if it doesn't exist yet
   if @network[inout].nil?
     puts "#{cidr} doesn't exist, creating it"
@@ -30,7 +30,7 @@ Given /^(inside|outside) network (.+) exists$/ do |inout, cidr|
       | network        | prefix        | description                |
       | #{new_network} | #{new_prefix} | nat test #{inout} network  |
     }
-    
+
     @network[inout] = @api_last_result
   else
     puts "#{cidr} exists, using it"
@@ -39,7 +39,7 @@ end
 
 Given /^security group (.+) exists with the following rules$/ do |group_name, rules|
   @security_groups = {} if @security_groups.nil?
-  
+
   steps %Q{
     When we make a successful api create call to security_groups with the following options
     | description                            |
@@ -47,13 +47,13 @@ Given /^security group (.+) exists with the following rules$/ do |group_name, ru
     Then the previous api call should be successful
     And from the previous api call take {"id":} and save it to <registry:group_#{group_name}>
   }
-  
+
   # Fill in the proper uuid if another group is referenced
-  parsed_rules = rules.gsub(/<Group (.+)>/) { |group| 
+  parsed_rules = rules.gsub(/<Group (.+)>/) { |group|
     grp_name = group.split(" ").last
     variable_get_value "<registry:group_#{grp_name}"
   }
-  
+
   steps %Q{
     When we successfully set the following rules for the security group
       """
@@ -128,11 +128,11 @@ When /^instance (.+) sends a (tcp|udp) packet to ([^']+)'s (inside|outside) addr
       @instances[instance_name] = @api_last_result
     end
   }
-  
+
   which_address = inout == "inside" ? "address" : "nat_address"
   sender_address = @instances[sender]["vif"].first["ipv4"]["address"]
   receiver_address = @instances[receiver]["vif"].first["ipv4"][which_address]
-  
+
   begin
     @used_ip = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/tcp.rb #{receiver_address} #{port} #{TIMEOUT_PACKET_SENDING} 2> /dev/null", TIMEOUT_PACKET_SENDING+10).chomp
   rescue RuntimeError => e

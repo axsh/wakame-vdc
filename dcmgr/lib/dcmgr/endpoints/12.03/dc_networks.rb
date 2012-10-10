@@ -14,7 +14,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
     end
 
     ds = datetime_range_params_filter(:created, ds)
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::DcNetworkCollection.new(paging_ds).generate
     end
@@ -46,7 +46,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
 
   put '/:id' do
     dcn = find_by_public_uuid(:DcNetwork, params[:id])
-    
+
     changed = {}
     (M::DcNetwork.columns - [:id]).each { |c|
       if params.has_key?(c.to_s)
@@ -62,7 +62,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
     dcn = find_by_public_uuid(:DcNetwork, params[:id])
     respond_with(dcn.offering_network_modes || [])
   end
-  
+
   # modify offering network mode list
   put '/:id/offering_modes/add' do
     dcn = find_by_public_uuid(:DcNetwork, params[:id])
@@ -72,7 +72,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
               when Array
                 params[:mode]
               end
-    
+
     modelst.each { |i|
       dcn.offering_network_modes << i
     }
@@ -89,7 +89,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/dc_networks' do
               when Array
                 params[:mode]
               end
-    
+
     modelst.each { |i|
       dcn.offering_network_modes.delete(i)
     }

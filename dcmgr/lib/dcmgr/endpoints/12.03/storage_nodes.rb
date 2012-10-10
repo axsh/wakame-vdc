@@ -8,7 +8,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
     ds = M::StorageNode.dataset
 
     ds = datetime_range_params_filter(:created, ds)
-    
+
     if params[:node_id]
       ds = ds.filter(:node_id=>params[:node_id])
     end
@@ -17,7 +17,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
       R::StorageNodeCollection.new(paging_ds).generate
     end
   end
-  
+
   get '/:id' do
     # description 'Show the storage_pool status'
     # param :id, :string, :required
@@ -27,7 +27,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
     raise E::UnknownStorageNode if sn.nil?
     respond_with(R::StorageNode.new(sn).generate)
   end
-  
+
   post do
     # description 'Create a new storage node'
     # param :id, :string, :required
@@ -41,7 +41,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/storage_nodes' do
     sn = M::StorageNode.create(params)
     respond_with(R::StorageNode.new(sn).generate)
   end
-  
+
   delete '/:id' do
     # description 'Delete storage node'
     # param :id, :string, :required

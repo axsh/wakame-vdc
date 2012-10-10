@@ -33,7 +33,7 @@ fi
 if [ -d ./ubuntu-kvm ]; then
   echo "Error: ubuntu-kvm folder already exists"
   exit 1
-fi 
+fi
 
 #Check if there is a startup script
 if [ ! -f $init_script_location ]; then

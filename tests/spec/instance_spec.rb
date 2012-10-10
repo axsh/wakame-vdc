@@ -80,9 +80,9 @@ if is_enabled? :instance_spec
     it "Should have properly set the assigned parameters. (ssh_key_id, security_groups, hostname)" do
       res = APITest.create("/instances", cfg)
       res.success?.should be_true
-      
+
       retry_until_running(res["id"])
-      
+
       res["ssh_key_pair"].should == cfg[:ssh_key_id]
       res["security_groups"].eql?(cfg[:security_groups]).should be_true
       res["hostname"].should == cfg[:hostname]
@@ -98,13 +98,13 @@ if is_enabled? :instance_spec
         #res = APITest.create("/instances", {:image_id=>'wmi-lucid1', :instance_spec_id=>'is-demospec'})
         #res.success?.should be_true
         #@instance_id = res["id"]
-        
+
         #retry_until_running(@instance_id)
       #end
 
       #after do
         ## Always try terminate
-        
+
         #APITest.delete("/instances/#{@instance_id}").success?.should be_true
         #retry_until_terminated(@instance_id)
         ## check volume state
@@ -126,7 +126,7 @@ if is_enabled? :instance_spec
           ##end
         ##end
       ##end
-      
+
       #it 'running -> stop -> terminate' do
         #APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
         #retry_until_stopped(@instance_id)
@@ -137,7 +137,7 @@ if is_enabled? :instance_spec
         #}
         #instance['ips'].nil?.should be_true
       #end
-      
+
       #it 'running -> stop -> running -> terminate' do
         #instance = APITest.get("/instances/#{@instance_id}")
         #APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
@@ -149,7 +149,7 @@ if is_enabled? :instance_spec
         #instance['vif'].first['vif_id'].should == new_instance['vif'].first['vif_id']
         #instance['vif'].first['ipv4']['address'].should_not == new_instance['vif'].first['ipv4']['address']
       #end
-      
+
       #it 'running -> stop -> running -> stop -> terminate' do
         #APITest.update("/instances/#{@instance_id}/stop", []).success?.should be_true
         #retry_until_stopped(@instance_id)

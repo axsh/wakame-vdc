@@ -10,10 +10,10 @@ module Dcmgr
         @errors = errors
       end
     end
-    
+
     def self.walk_tree(conf, &blk)
       raise ArgumentError unless conf.is_a?(Configuration)
-      
+
       blk.call(conf)
       conf.config.values.each { |c|
         case c
@@ -125,7 +125,7 @@ module Dcmgr
             @configuration_class.module_eval(&blk)
           end
         end
-        
+
         def configuration_class
           ConfigurationMethods.find_configuration_class(self)
         end
@@ -141,7 +141,7 @@ module Dcmgr
         end while c = c.superclass
         nil
       end
-      
+
       private
       def self.included(klass)
         klass.extend ClassMethods
@@ -161,7 +161,7 @@ module Dcmgr
       def deprecated_warn_param(old_name, message=nil, &blk)
         on_param_create_hook do |param_name, opts|
           warn_msg = message || "WARN: Deprecated parameter: #{old_name}. Please use '#{param_name}'."
-          
+
           alias_param old_name, param_name
           self.const_get(:DSL, false).class_eval %Q{
             def #{old_name}(v)
@@ -176,7 +176,7 @@ module Dcmgr
       def deprecated_error_param(old_name, message=nil)
         on_param_create_hook do |param_name, opts|
           err_msg = message || "ERROR: Parameter is no longer supported: #{old_name}. Please use '#{param_name}'."
-          
+
           alias_param old_name, param_name
           self.const_get(:DSL, false).class_eval %Q{
             def #{old_name}(v)
@@ -195,7 +195,7 @@ module Dcmgr
             #{ref_name}()
           end
         }
-        
+
         # DSL setter
         self.const_get(:DSL, false).class_eval %Q{
           def #{alias_name}(v)
@@ -207,7 +207,7 @@ module Dcmgr
 
       def param(name, opts={})
         opts = opts.merge(@opts)
-        
+
         case opts[:default]
         when Proc
           # create getter method if proc is set as default value
@@ -245,7 +245,7 @@ module Dcmgr
           l.load(path)
         }
         l.validate
-        
+
         c
       end
 
@@ -296,7 +296,7 @@ module Dcmgr
     end
 
     attr_reader :config, :parent
-    
+
     def initialize(parent=nil)
       unless parent.nil?
         raise ArgumentError, "#{parent.class}" unless parent.is_a?(Dcmgr::Configuration)
@@ -329,13 +329,13 @@ module Dcmgr
     def parse_dsl(&blk)
       dsl = self.class.const_get(:DSL, false)
       raise "DSL module was not found" unless dsl && dsl.is_a?(Module)
-      
+
       cp_class = DSLProxy.dup
       cp_class.__send__(:include, dsl)
       cp = cp_class.new(self)
 
       cp.instance_eval(&blk)
-      
+
       self
     end
 

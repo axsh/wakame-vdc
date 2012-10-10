@@ -41,16 +41,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       hn = M::StorageNode[params[:storage_node_id]] rescue raise(E::InvalidParameter, :storage_node_id)
       ds = ds.filter(:storage_node_id=>hn.id)
     end
-    
+
     if params[:service_type]
       validate_service_type(params[:service_type])
       ds = ds.filter(:service_type=>params[:service_type])
     end
-    
+
     if params[:display_name]
       ds = ds.filter(:display_name=>params[:display_name])
     end
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::VolumeCollection.new(paging_ds).generate
     end
@@ -217,7 +217,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[v.service_type].backup_storage_id
     bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
-    
+
     bo = v.entry_new_backup_object(bkst,
                                    @account.canonical_uuid) do |i|
       [:display_name, :description].each { |k|

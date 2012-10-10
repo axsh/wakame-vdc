@@ -9,7 +9,7 @@ module Dcmgr::Models
 
     def before_validation
       self[:broadcast_addr] = normalize_mac_addr(self[:broadcast_addr])
-      
+
       super
     end
 
@@ -24,7 +24,7 @@ module Dcmgr::Models
 
       super
     end
-    
+
     def validate
       super
 
@@ -57,6 +57,6 @@ module Dcmgr::Models
       #       i.e. single 0 to double 00
       str
     end
-    
+
   end
 end

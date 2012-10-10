@@ -6,7 +6,7 @@ require 'rack/test'
 
 module Sinatra
   module InternalRequest
-    
+
     module HelperMethods
       # request_forward.get('/')
       # request_forward.post('/instances', {:xxxx=>1})

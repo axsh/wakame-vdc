@@ -109,7 +109,7 @@ for s in ${storage_nodes}; do
             ln -fs ${vmimage_path}      ${vmimage_snap_path}
             ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
             ;;
-        *)  
+        *)
             shlog ./bin/vdc-manage storage add sta.${staname} --uuid sn-${staname} --force --account-id ${account_id} --base-path xpool --disk-space $((1024 * 1024)) --ipaddr ${s} --storage-type zfs --snapshot-base-path /export/home/wakame/vdc/sta/snap
             ;;
     esac
