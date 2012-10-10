@@ -65,7 +65,7 @@ module Dcmgr::Cli
       super(M::SshKeyPair,uuid)
     end
 
-    desc "show [UUID] [options]", "Show network(s)"
+    desc "show [UUID] [options]", "Show keypair(s)"
     def show(uuid=nil)
       if uuid
         keypair = M::SshKeyPair[uuid] || UnknownUUIDError.raise(uuid)
