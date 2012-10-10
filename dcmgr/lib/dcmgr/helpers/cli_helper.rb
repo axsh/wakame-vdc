@@ -99,7 +99,7 @@ module Dcmgr
       # Delegate ShellRunner instance.
       #
       # puts shell.run("ls /home").out
-      # 
+      #
       # shell.run("ls /home").tap { |o|
       #    puts "STDOUT: " + o.out
       #    puts "STDERR: " + o.err
@@ -127,7 +127,7 @@ module Dcmgr
             msg << "Command PID: #{r.status.pid}"
             msg << "\n##STDOUT=>\n#{r.out.strip}" if r.out && r.out.strip.size > 0
             msg << "\n##STDERR=>\n#{r.err.strip}" if r.err && r.err.strip.size > 0
-            
+
             super(msg)
             @cmdresult = cmdresult
           end
@@ -165,7 +165,7 @@ module Dcmgr
             msg << "Command Result: success (exit code=0)\n"
           else
             msg << "Command Result: fail (exit code=#{r.status.exitstatus})\n"
-          end          
+          end
           msg << "Command PID: #{r.status.pid}"
           msg << "\n##STDOUT=>\n#{r.out.strip}" if r.out && r.out.strip.size > 0
           msg << "\n##STDERR=>\n#{r.err.strip}" if r.err && r.err.strip.size > 0
@@ -173,7 +173,7 @@ module Dcmgr
 
           r
         end
-        
+
         def run!(cmd, args=[], opts={})
           run(cmd, args, opts).tap { |r|
             unless r.success?
@@ -188,7 +188,7 @@ module Dcmgr
           [sin, sout, eout].each { |fd| fd.close_on_exec = true }
 
           return pid, sin, sout, eout unless blk
-          
+
           begin
             blk.call( pid, sin, sout, eout )
             begin
@@ -224,7 +224,7 @@ module Dcmgr
           # spawn() in POSIX::Spawn is the root method used from everywhere.
           def spawn(*args)
             env, argv, options = extract_process_spawn_arguments(*args)
-            
+
             # CgroupProvider#current_cgroup_context is available when
             # this module is included.
             cgctx = current_cgroup_context
@@ -233,10 +233,10 @@ module Dcmgr
                 h = argv.shift
                 argv.unshift(h[0])
               end
-              
+
               cgexec = [File.expand_path('cgexec.sh', Dcmgr.conf.script_root_path), '-g', "#{cgctx.subsystems.join(',')}:#{cgctx.scope}", '-c']
               argv = cgexec + argv
-            end 
+            end
             super(env, *argv, options)
           end
         end
@@ -245,7 +245,7 @@ module Dcmgr
           # override spawn() method comes from POSIX::Spawn module.
           include CgexecArgument
           include Cgroup::CgroupContextProvider::Delegator
-          
+
           def initialize(*args)
             @cgprovider = args.shift
             super(*args)
@@ -260,7 +260,7 @@ module Dcmgr
         end
 
         private
-        
+
         def exec(*args)
           Child.new(@subject, *args)
         end

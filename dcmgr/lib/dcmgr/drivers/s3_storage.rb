@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 module Dcmgr::Drivers
-  
+
   class S3Storage < BackupStorage
     include Dcmgr::Logger
     include Dcmgr::Helpers::SnapshotStorageHelper
 
     def download(src_key, dst_path)
-      cmd = "get %s %s %s" 
+      cmd = "get %s %s %s"
       args = [bucket_name(@backup_storage[:base_uri]), src_key, dst_path]
       execute(cmd, args)
     end

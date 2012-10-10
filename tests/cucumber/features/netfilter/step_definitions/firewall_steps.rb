@@ -1,5 +1,5 @@
 # encoding: utf-8
-begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end
 require 'cucumber/formatter/unicode'
 
 Before do
@@ -49,7 +49,7 @@ Then /^we (should|should\snot) be able to make a (tcp|udp) connection on port (\
       Then the previous api call should be successful
     }
   end
-  
+
   if outcome == "should"
     retry_until(seconds.to_f) do
       is_port_open?(@api_call_results["get"]["instances/#{inst_id}"]["vif"].first["ipv4"]["address"],port.to_i,protocol.to_sym)
@@ -88,6 +88,6 @@ When /^we successfully start an instance of (.+) and (.+) with the new security 
   steps %Q{
     When we make a successful api create call to instances with the following options
       | image_id | instance_spec_id | ssh_key_id | security_groups                                         |
-      | #{image} | #{spec}          | ssh-demo   | #{@api_call_results["create"]["security_groups"]["id"]} | 
+      | #{image} | #{spec}          | ssh-demo   | #{@api_call_results["create"]["security_groups"]["id"]} |
   }
 end

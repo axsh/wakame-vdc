@@ -7,7 +7,7 @@ module Dcmgr
       module Rules
         def self.rule_class(input)
           namespace = self
-          
+
           c = case input
               when Symbol
                 namespace.const_get(input, false)
@@ -24,19 +24,19 @@ module Dcmgr
               end
           c
         end
-        
+
         # Inherit scheduler base to get the configuration ability
         class Rule < Dcmgr::Scheduler::SchedulerBase
           @configuration_class = ::Dcmgr::Configurations::Dcmgr::HostNodeSchedulerRule
-          
+
           def filter(dataset)
             dataset
           end
-          
+
           def reorder(array)
             array
           end
-          
+
         end
 
         # Basic filter rule which is normally set.
@@ -45,7 +45,7 @@ module Dcmgr
             dataset.online_nodes.filter(:hypervisor=>instance.hypervisor)
                                         #:arch=>instance.image.arch)
           end
-          
+
           def reorder(array,instance)
             array.select { |hn|
               hn.check_capacity(instance)
@@ -69,7 +69,7 @@ module Dcmgr
 
             def through(rule_name, &blk)
               c = ::Dcmgr::Scheduler::HostNode::Rules.rule_class(rule_name)
-              
+
               unless c < ::Dcmgr::Scheduler::HostNode::Rules::Rule
                 raise "Invalid rule class is set: #{c.to_s}"
               end
@@ -81,7 +81,7 @@ module Dcmgr
 
               self
             end
-            
+
           end
         end
 
@@ -93,18 +93,18 @@ module Dcmgr
           }
 p          @rules.unshift(Rules::Common.new(nil))
         end
-        
+
         def schedule(instance)
           # set filter needed commonly.
           hn_ds = ::Dcmgr::Models::HostNode.dataset
-          
+
 p          rules = @rules.map { |rule| rule.dup }
 
           # First pass:
           # Build the dataset filters.
           hn_ds = rules.inject(hn_ds) {|ds, r|
             logger.debug("Filtering through #{r}")
-            
+
             r.filter(ds, instance).tap { |i|
               unless i.is_a?(Sequel::Dataset)
                 raise TypeError, "Invalid return type (#{i.class}) from #{r}#filter. Expected Sequel::Dataset."
@@ -123,9 +123,9 @@ p          rules = @rules.map { |rule| rule.dup }
               end
             }
           }
-          
+
           raise HostNodeSchedulingError, "No suitable host node found after piping through all rules." if hn_ary.empty?
-          
+
           instance.host_node = hn_ary.first
         end
       end

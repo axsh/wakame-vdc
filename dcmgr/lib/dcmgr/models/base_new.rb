@@ -15,11 +15,11 @@ module Dcmgr::Models
   module Taggable
     UUID_TABLE='abcdefghijklmnopqrstuvwxyz0123456789'.split('').freeze
     UUID_REGEX=%r/^(\w+)-([#{UUID_TABLE.join}]+)/
-    
+
     def self.uuid_prefix_collection
       @uuid_prefix_collection ||= {}
     end
-    
+
     # Find a taggable model object from the
     # given canonical uuid.
     #
@@ -69,7 +69,7 @@ module Dcmgr::Models
         end
         super
       end
-      
+
       def after_initialize
         super
         # set random generated uuid value
@@ -94,7 +94,7 @@ module Dcmgr::Models
       # @params [Models::Tag,String,Symbol] arg1
       # @params [String,NilClass] arg2
       # @params [String,NilClass] arg3
-      # 
+      #
       # @example
       # lable_tag('tag-xxxxx')
       # t = Tag['tag-xxxx']
@@ -179,13 +179,13 @@ module Dcmgr::Models
       #     plugin Taggable
       #     uuid_prefix('m')
       #   end
-      #   
+      #
       #   Model1.uuid_prefix # == 'm'
       #   Model1.new.canonical_uuid # == 'm-abcd1234'
       def uuid_prefix(prefix=nil)
         if prefix
           raise UUIDPrefixDuplication, "Found collision for uuid_prefix key: #{prefix}" if Taggable.uuid_prefix_collection.has_key?(prefix)
-          
+
           Taggable.uuid_prefix_collection[prefix]={:class=>self}
           @uuid_prefix = prefix
         end
@@ -234,7 +234,7 @@ module Dcmgr::Models
         uuid =~ /^#{self.uuid_prefix}-[\w]+/
       end
     end
-    
+
   end
 
   # Sequel::Model plugin extends :schema plugin to merge the column
@@ -255,7 +255,7 @@ module Dcmgr::Models
   # end
   #
   # Model2.create_table!
-  # 
+  #
   # Then the schema for Model2 becomes as follows:
   #   primary_key :id, :type=>Integer, :unsigned=>true
   #   String :col1
@@ -303,7 +303,7 @@ module Dcmgr::Models
         begin
           builders << c.schema_builders if c.respond_to?(:schema_builders)
         end while((c = c.superclass) && c != Sequel::Model)
-        
+
         builders = builders.reverse.flatten
         builders.delete(nil)
 
@@ -314,25 +314,25 @@ module Dcmgr::Models
           schema.instance_eval(&blk)
         }
         set_primary_key(schema.primary_key_name) if schema.primary_key_name
-        
+
         schema
       end
-      
+
       def schema_builders
         @schema_builders ||= []
       end
-      
+
       def inheritable_schema(name=nil, &blk)
         set_dataset(db[name || implicit_table_name])
         self.schema_builders << blk
       end
     end
-    
+
   end
 
   # This plugin is to archive the changes on each column of the model
   # to a history table.
-  # 
+  #
   # plugin ArchiveChangedColumn, :your_history_table
   #  or
   # plugin ArchiveChangedColumn
@@ -365,12 +365,12 @@ module Dcmgr::Models
                                 raise "Unknown type"
                               end
     end
-    
+
     module ClassMethods
       def history_dataset=(ds)
         @history_ds = ds
       end
-      
+
       def history_dataset
         @history_ds
       end
@@ -383,7 +383,7 @@ module Dcmgr::Models
         if self.created_at > at || (!self.terminated_at.nil? && self.terminated_at < at)
           raise "#{at} is not in the range of the object's life span."
         end
-        
+
         ss = self.dup
         #  SELECT * FROM (SELECT * FROM `instance_histories` WHERE
         #  (`uuid` = 'i-ezsrs132') AND created_at <= '2010-11-30 23:08:05'
@@ -399,7 +399,7 @@ module Dcmgr::Models
         }
         # take care for serialized columns by serialization plugin.
         ss.deserialized_values.clear if ss.respond_to?(:deserialized_values)
-        
+
         ss
       end
 
@@ -414,7 +414,7 @@ module Dcmgr::Models
         store_changes(self.changed_columns)
         true
       end
-      
+
       private
       def store_changes(cols_stored)
         return if cols_stored.nil? || cols_stored.empty?
@@ -422,11 +422,11 @@ module Dcmgr::Models
           :uuid=>self.canonical_uuid,
           :created_at => Time.now,
         }
-        
+
         cols_stored.each { |c|
           hist_rec = common_rec.dup
           hist_rec[:attr] = c.to_s
-          
+
           coldef = self.class.db_schema[c]
           case coldef[:type]
           when :text,:blob
@@ -442,14 +442,14 @@ module Dcmgr::Models
 
   module ChangedColumnEvent
     # This plugin is to call any method when each columns of model was changed.
-    # 
+    #
     # Usage:
-    #   
+    #
     #   plugin ChangedColumnEvent, :function_name => [:track_columns]
     #
     #   * :function_name - specify name that called by :track_columns event. Please create a function that added with a on_changed_ prefix. ( eg: on_changed_accounting_log)
     #   * :track_columns - specify columns that can call :function_name when the table has been changed.
-    
+
     def self.configure(model, track_columns)
       raise "Invalid type" if !track_columns.is_a?(Hash)
       track_columns.keys.each { |event_name|
@@ -464,20 +464,20 @@ module Dcmgr::Models
         @track_columns[event_name] = columns
       end
     end
-    
+
     module InstanceMethods
       def before_create
         return false if super == false
         apply_changed_event(self.columns)
-        true        
+        true
       end
-      
+
       def before_update
         return false if super == false
         apply_changed_event(self.changed_columns)
-        true        
+        true
       end
-      
+
       private
       def apply_changed_event(changed_columns)
         model.track_columns.keys.each do |event_name|
@@ -487,7 +487,7 @@ module Dcmgr::Models
           model.track_columns[event_name].values.find_all { |c|
             match_column = c - (c - changed_columns)
             self.__send__(call_method, match_column[0])  if !match_column.empty?
-          } 
+          }
         end
       end
     end
@@ -500,14 +500,14 @@ module Dcmgr::Models
     def to_hash()
       self.values.dup
     end
-    
+
     LOCK_TABLES_KEY='__locked_tables'
 
     def self.default_row_lock_mode=(mode)
       raise ArgumentError unless [nil, :share, :update].member?(mode)
       @default_row_lock_mode = mode
     end
-    
+
     def self.lock!(mode=nil)
       raise ArgumentError unless [nil, :share, :update].member?(mode)
       mode ||= @default_row_lock_mode
@@ -516,14 +516,14 @@ module Dcmgr::Models
         locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s]=mode
       end
     end
-    
+
     def self.unlock!
       locktbls = Thread.current[LOCK_TABLES_KEY]
       if locktbls
         locktbls.delete(self.db.uri.to_s + @dataset.first_source_alias.to_s)
       end
     end
-    
+
     def self.dataset
       locktbls = Thread.current[LOCK_TABLES_KEY]
       if locktbls && (mode = locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s])
@@ -534,9 +534,9 @@ module Dcmgr::Models
       end
       @dataset
     end
-    
-    
-    
+
+
+
     def self.Proxy(klass)
       colnames = klass.schema.columns.map {|i| i[:name] }
       colnames.delete_if(klass.primary_key) if klass.restrict_primary_key?
@@ -564,7 +564,7 @@ module Dcmgr::Models
 
     # Add callbacks to setup the initial data. The hooks will be
     # called when Model1.install_data() is called.
-    # 
+    #
     # class Model1 < Base
     #   install_data_hooks do
     #     Model1.create({:col1=>1, :col2=>2})
@@ -603,12 +603,12 @@ module Dcmgr::Models
               column(:updated_at, Time, :null=>false)
             end
           }
-          
+
           self.plugin :timestamps, :update_on_create=>true
         end
 
         # Install Taggable module as Sequel plugin and set uuid_prefix.
-        # 
+        #
         # class Model1 < Base
         #   taggable 'm'
         # end
@@ -619,8 +619,8 @@ module Dcmgr::Models
         end
 
       }
-      
+
     end
-    
+
   end
 end

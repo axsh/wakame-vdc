@@ -12,7 +12,7 @@ module Dcmgr
         configuration do
           param :template, :default=>{}
         end
-        
+
         def schedule(instance)
           index = 0
 

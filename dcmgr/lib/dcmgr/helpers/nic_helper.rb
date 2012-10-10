@@ -20,7 +20,7 @@ module Dcmgr
           File.readlines(operstate_path).first.strip
         end
       end
-      
+
       # This method cleans up ugly mac addressed stored in the dcmgr database.
       # Mac addresses in the database are stored as alphanumeric strings without
       # the : inbetween them. This method properly puts those in there.
@@ -51,7 +51,7 @@ module Dcmgr
           local_conf.bridge
         end
       end
-      
+
     end
   end
 end

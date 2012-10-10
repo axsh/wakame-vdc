@@ -27,7 +27,7 @@ namespace :db do
   desc 'Drop all database tables'
   task :drop => [ :environment ] do
     Dcmgr.run_initializers(:sequel)
-    
+
     Sequel.extension :migration
     Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 0)
   end
@@ -65,8 +65,8 @@ task :gem do
     s.required_ruby_version = '>= 1.8.7'
 
     s.files = Dir['config/**/*.rb', 'lib/**/*.rb', 'web/api/public/**/*.*',
-                  'web/metadata/public/**/*.*'] + 
-      %w(Rakefile LICENSE NOTICE 
+                  'web/metadata/public/**/*.*'] +
+      %w(Rakefile LICENSE NOTICE
          web/api/config.ru web/metadata/config.ru config/dcmgr.conf.example)
 
     s.bindir='bin'
@@ -124,7 +124,7 @@ task :gem do
     s.add_development_dependency 'bacon'
     s.add_development_dependency 'rake'
   end
-  
+
   File.open("#{spec.name}.gemspec", 'w'){|f| f.write(spec.to_ruby) }
   sh "gem build #{spec.name}.gemspec"
 end

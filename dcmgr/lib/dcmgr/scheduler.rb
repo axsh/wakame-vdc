@@ -40,7 +40,7 @@ module Dcmgr
         c = Scheduler.scheduler_class(conf.storage_node_scheduler.scheduler_class, ::Dcmgr::Scheduler::StorageNode)
         c.new(conf.storage_node_scheduler.option)
       end
-      
+
       def network
         c = Scheduler.scheduler_class(conf.network_scheduler.scheduler_class, ::Dcmgr::Scheduler::Network)
         c.new(conf.network_scheduler.option)
@@ -89,7 +89,7 @@ module Dcmgr
     # common scheduler class finder
     def self.scheduler_class(input, namespace)
       raise ArgumentError unless namespace.class == Module
-      
+
       c = case input
           when Symbol
             namespace.const_get(input, false)
@@ -115,13 +115,13 @@ module Dcmgr
         Scheduler.scheduler_class(input, self)
       end
     end
-    
+
     module StorageNode
       def self.scheduler_class(input)
         Scheduler.scheduler_class(input, self)
       end
     end
-    
+
     module Network
       def self.scheduler_class(input)
         Scheduler.scheduler_class(input, self)
@@ -142,7 +142,7 @@ module Dcmgr
     # Common base class for schedulers
     class SchedulerBase
       attr_reader :options
-      
+
       def initialize(options=nil)
         @options = options
       end
@@ -160,10 +160,10 @@ module Dcmgr
       #     param :yyyy
       #   end
       # end
-      # 
+      #
       # The configuration loader retrieves the Configuration class
       # when the option section is loaded in dcmgr.conf.
-      # 
+      #
       # service_type("std") {
       #   network_scheduler(:Scheduler1) {
       #     # Here is the option section for Scheduler1 class.
@@ -202,7 +202,7 @@ module Dcmgr
     # Allocate HostNode to Instance object.
     class HostNodeScheduler < SchedulerBase
       @configuration_class = Dcmgr::Configurations::Dcmgr::HostNodeScheduler
-      
+
       # @param Models::Instance instance
       # @return Models::HostNode
       def schedule(instance)

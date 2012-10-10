@@ -3,7 +3,7 @@
 module Dcmgr
   module VNet
     module OpenFlow
-      
+
       class Flow
         attr_accessor :table
         attr_accessor :priority
@@ -83,7 +83,7 @@ module Dcmgr
 
           str
         end
-        
+
         def match_tags
           {
             :ip => 'ip',

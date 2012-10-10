@@ -23,7 +23,7 @@ module Dcmgr::Cli
       adddrive(uuid, 'local', 'ephemeral1')
       puts uuid
     end
-    
+
     desc "modify UUID [options]", "Modify an existing machine spec"
     method_option :account_id, :type => :string, :desc => "The UUID of the account that this machine spec belongs to"
     method_option :arch, :type => :string, :desc => "The architecture for the new machine image. [#{M::HostNode::SUPPORTED_ARCH.join(', ')}]"
@@ -37,7 +37,7 @@ module Dcmgr::Cli
       UnsupportedHypervisorError.raise(options[:hypervisor]) unless options[:hypervisor].nil? || M::HostNode::SUPPORTED_HYPERVISOR.member?(options[:hypervisor])
       super(M::InstanceSpec,uuid,options)
     end
-    
+
     desc "del UUID", "Delete registered machine spec"
     def del(uuid)
       UnknownUUIDError.raise(uuid) if M::InstanceSpec[uuid].nil?
@@ -90,7 +90,7 @@ __END
 __END
       end
     end
-    
+
     desc "addvif UUID name", "Add interfance"
     method_option :index, :type => :numeric, :desc => "The index value for the interface. (>=0)"
     method_option :bandwidth, :type => :numeric, :default=>100000, :desc => "The bandwidth (kbps) of the interface"
@@ -104,18 +104,18 @@ __END
               else
                 options[:index].to_i
               end
-      
+
       spec.add_vif(name, index.to_i, options[:bandwidth].to_i)
       spec.save
     end
-    
+
     desc "delvif UUID name", "Delete interfance"
     def delvif(uuid, name)
       spec = M::InstanceSpec[uuid] || UnknownUUIDError.raise(uuid)
       spec.remove_vif(name)
       spec.save
     end
-    
+
     desc "modifyvif UUID name [options]", "Modify interfance parameters"
     method_option :index, :type => :numeric, :desc => "The index value for the interface"
     method_option :bandwidth, :type => :numeric, :desc => "The bandwidth (kbps) of the interface"
@@ -152,7 +152,7 @@ __END
       else
         raise "Unknown drive type: #{type}"
       end
-      
+
       spec.save
     end
 
@@ -162,7 +162,7 @@ __END
       spec.remove_drive(name)
       spec.save
     end
-    
+
     desc "modifydrive UUID name [options]", "Modify drive parameters"
     method_option :index, :type => :numeric, :desc => "The index value for the interface"
     method_option :size, :type => :numeric, :desc => "Size of the drive. (MB)"

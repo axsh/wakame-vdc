@@ -1,4 +1,4 @@
-begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end
 require 'cucumber/formatter/unicode'
 
 Before do
@@ -24,7 +24,7 @@ Given /^the #{api_type_match} (.+) exists$/ do |api_type,arg_1|
       ENV["dcmgr_dbname"]="wakame_dcmgr"
       ENV["dcmgr_dbuser"]="root"
       ENV["image_arch"]="x86"
-      
+
       case uuid
       when 'wmi-secgtest'
         ENV["vmimage_s3"] = "http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/ubuntu-10.04_secgtest_kvm_i386.raw.gz"

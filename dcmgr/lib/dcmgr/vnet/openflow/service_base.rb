@@ -13,7 +13,7 @@ module Dcmgr::VNet::OpenFlow
     attr_accessor :mac
     attr_accessor :ip
     attr_accessor :listen_port
-    
+
     def initialize(args = {})
       @switch = args[:switch]
       @network = args[:network]

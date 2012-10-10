@@ -29,7 +29,7 @@ module Dcmgr::Endpoints::V1203::Responses
       @usage_hash
     end
   end
-  
+
   class AccountCollection < Dcmgr::Endpoints::ResponseGenerator
     def initialize(ds)
       raise ArgumentError if !ds.is_a?(Sequel::Dataset)

@@ -78,7 +78,7 @@ module Ext
                 :completed_at => nil,
                 :complete_status => nil,
               })
-        
+
         @success_cb = nil
         @state = :init
       end
@@ -122,7 +122,7 @@ module Ext
         def wait(expected)
           raise "response was received already." if state == :done
           raise "wait() has to be called at outside of the EventMachine's main loop." if EventMachine.reactor_thread?
-          
+
           results = {}
           non_blocking = false
 
@@ -143,7 +143,7 @@ module Ext
           results
         end
       end
-      
+
     end
   end
 

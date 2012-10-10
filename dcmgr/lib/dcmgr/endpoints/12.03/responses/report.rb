@@ -22,7 +22,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :time => self.created_at
         }
         h
-      } 
+      }
 
     end
   end

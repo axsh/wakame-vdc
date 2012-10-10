@@ -1,6 +1,6 @@
 @api_from_v12.03
 Feature: Backup Object API
-  
+
   Scenario: Register manually and delete new backup object
 
     When we make a successful api create call to backup_objects with the following options
@@ -17,7 +17,7 @@ Feature: Backup Object API
       And the previous api call should have {"object_key":} equal to "stor/object1"
       And the previous api call should have {"checksum":} equal to "123434495"
       And the previous api call should have {"backup_storage_id":} equal to "bkst-demo2"
-    
+
     When we make an api delete call to backup_objects/<registry:id> with no options
       Then the previous api call should be successful
 

@@ -11,7 +11,7 @@ module Dcmgr
       include Dcmgr::Helpers::ByteUnit
 
       def select_backing_store
-        backing_store = Dcmgr.conf.backing_store 
+        backing_store = Dcmgr.conf.backing_store
         @backing_store = Dcmgr::Drivers::BackingStore.select_backing_store(backing_store)
       end
 
@@ -25,16 +25,16 @@ module Dcmgr
       def setup_and_export_volume
         select_backing_store
         @sta_ctx = StaContext.new(self)
-        
+
         rpc.request('sta-collector', 'update_volume', @volume_id, {:state=>:creating, :export_path=>@volume[:uuid]})
-        
+
         if @volume[:backup_object_id]
           begin
             snap_tmp_path = File.expand_path("#{@volume[:uuid]}.tmp", Dcmgr.conf.tmp_dir)
-            
+
             @backup_object = @snapshot = rpc.request('sta-collector', 'get_backup_object', @volume[:backup_object_id])
             raise "Invalid backup_object state: #{@backup_object[:state]}" unless @backup_object[:state].to_s == 'available'
-            
+
             begin
               # download backup object to the tmporary place.
               snapshot_storage = Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
@@ -46,18 +46,18 @@ module Dcmgr
               raise "snapshot not downloaded"
             end
             logger.info("Creating new volume #{@volume_id} from #{@backup_object[:uuid]} (#{convert_byte(@volume[:size], MB)} MB)")
-            
+
             @backing_store.create_volume(@sta_ctx, snap_tmp_path)
           ensure
             File.unlink(snap_tmp_path) rescue nil
           end
-          
+
         else
           logger.info("Creating new empty volume #{@volume_id} (#{convert_byte(@volume[:size], MB)} MB)")
           @backing_store.create_volume(@sta_ctx, nil)
         end
         logger.info("Finished creating new volume #{@volume_id}.")
-        
+
         logger.info("Registering to iscsi target: #{@volume_id}")
         select_iscsi_target
         opt = @iscsi_target.create(@sta_ctx)
@@ -95,7 +95,7 @@ module Dcmgr
         rpc.request('hva-collector', 'update_instance', @instance_id, {:state=>:terminated, :terminated_at=>Time.now.utc})
         logger.error("Failed to run create_volume_and_run_instance: #{@instance_id}, #{@volume_id}")
       }
-      
+
       job :delete_volume do
         @volume_id = request.args[0]
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
@@ -142,11 +142,11 @@ module Dcmgr
         @backup_object = rpc.request('sta-collector', 'get_backup_object', @backup_object_id) unless @backup_object_id.nil?
         @volume = rpc.request('sta-collector', 'get_volume', @volume_id)
         @sta_ctx = StaContext.new(self)
-        
+
         logger.info("create new snapshot: #{@backup_object_id}")
         raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
-        
-        begin 
+
+        begin
           snapshot_storage = Dcmgr::Drivers::BackupStorage.snapshot_storage(@backup_object[:backup_storage])
           select_backing_store
 
@@ -162,7 +162,7 @@ module Dcmgr
         ensure
           @backing_store.delete_snapshot(@sta_ctx)
         end
-        
+
         rpc.request('sta-collector', 'update_backup_object', @backup_object_id, {:state=>:available}) do |req|
           req.oneshot = true
         end
@@ -179,14 +179,14 @@ module Dcmgr
         @volume = rpc.request('sta-collector', 'get_volume', @snapshot[:origin_volume_id])
         logger.info("deleting snapshot: #{@snapshot_id}")
         raise "Invalid snapshot state: #{@snapshot[:state]}" unless @snapshot[:state].to_s == 'deleting'
-        begin 
+        begin
           snapshot_storage = storage_service.snapshot_storage(@destination[:bucket], @destination[:path])
           snapshot_storage.delete(@destination[:filename])
         rescue => e
            logger.error(e)
            raise "snapshot has not be deleted"
         end
- 
+
         rpc.request('sta-collector', 'update_snapshot', @snapshot_id, {:state=>:deleted, :deleted_at=>Time.now.utc})
         logger.info("deleted snapshot: #{@snapshot_id}")
       end
@@ -230,7 +230,7 @@ module Dcmgr
       def backup_object
         @sta.instance_variable_get(:@backup_object)
       end
-      
+
       def node
         @sta.instance_variable_get(:@node)
       end

@@ -13,13 +13,13 @@ if is_enabled? :netfilter_group_api_apec
         @@res[i].success?.should be_true
       end
     }
-    
+
     cfg[:groups_to_create].each_with_index { |group,i|
       it "Should update data of group #{group[:name]}" do
         APITest.update("/security_groups/#{@@res[i]["uuid"]}", {:description=>"#{group[:description]}(new)", :rule => cfg[:update_rule]}).success?.should be_true
       end
     }
-    
+
     cfg[:groups_to_create].each_with_index { |group,i|
       it "Should delete group #{group[:name]}" do
         APITest.delete("/security_groups/#{@@res[i]["uuid"]}").success?.should be_true

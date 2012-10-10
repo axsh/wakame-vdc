@@ -26,7 +26,7 @@ module Dcmgr
       # Generate a snapshot path using seed info.
       # It has to reproduce same result when the same parameters are given.
       # @param StaContext ctx
-      # @return String absolute path to the snapshot 
+      # @return String absolute path to the snapshot
       def snapshot_path(ctx)
         raise NotImplemented
       end

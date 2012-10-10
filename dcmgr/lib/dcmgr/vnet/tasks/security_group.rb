@@ -3,24 +3,24 @@
 module Dcmgr
   module VNet
     module Tasks
-    
+
       class SecurityGroup < Task
         include Dcmgr::VNet::Netfilter
         def initialize(group_map)
           super()
-          
+
           # Parse the rules in case they are referencing other security groups
           parsed_rules = group_map[:rules].map { |rule|
             ref_group_id = rule[:ip_source].scan(/sg-\w+/).first
             if ref_group_id
               referencees = group_map[:referencees][ref_group_id]
               next if referencees.nil?
-              
+
               new_rules = referencees.values.map { |vnic|
                 new_rule = rule.dup
                 new_rule[:protocol] = "ip4"
                 new_rule[:ip_source] = "#{vnic[:address]}/32"
-                
+
                 new_rule
               }
               new_rules
@@ -28,7 +28,7 @@ module Dcmgr
               rule
             end
           }.flatten.uniq.compact
-          
+
           parsed_rules.each { |rule|
             case rule[:ip_protocol]
             when 'tcp', 'udp'
