@@ -7,7 +7,7 @@ module Dcmgr
       # Find storage node which has the largest available disk space.
       class LeastUsage < StorageNodeScheduler
         include Dcmgr::Logger
-        
+
         def schedule(volume)
           storage_node = Models::StorageNode.online_nodes.all.find_all { |s|
             s.free_disk_space >= volume.size

@@ -16,8 +16,8 @@ module Dcmgr::Models
     many_to_one :ssh_key_pair
 
     plugin ArchiveChangedColumn, :histories
-    plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size] 
-    
+    plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size]
+
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => 'running'})
@@ -68,7 +68,7 @@ module Dcmgr::Models
             errors.add(:hostname, "Duplicated hostname: #{self.hostname}")
           end
         }
-        
+
         if new?
           proc_test.call
         else
@@ -99,7 +99,7 @@ module Dcmgr::Models
           orig = self.dup.refresh
           # do nothing if orig.hostname == self.hostname
           if orig.hostname != self.hostname
-            
+
             orig_name = HostnameLease.filter(:account_id=>self.account_id,
                                              :hostname=>orig.hostname).first
             orig_name.hostname = self.hostname
@@ -131,7 +131,7 @@ module Dcmgr::Models
       self.status = :offline if self.status != :offline
       self.save
     end
-    
+
     # dump column data as hash with details of associated models.
     # this is for internal use.
     def to_hash
@@ -240,7 +240,7 @@ module Dcmgr::Models
             :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
           }
         end
-        
+
         h[:vif] << ent
       }
 

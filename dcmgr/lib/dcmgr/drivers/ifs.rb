@@ -7,13 +7,13 @@ module Dcmgr
     class Ifs < BackingStore
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
-      
+
       def initialize()
         super
         # Hard coded for now
         @port = "8090"
       end
-      
+
       def create_volume(ctx, snap_file = nil)
         @volume_id   = ctx.volume_id
         @volume      = ctx.volume
@@ -40,17 +40,17 @@ module Dcmgr
 
         logger.info("created new volume: #{@volume_id}")
       end
-      
+
       def delete_volume(ctx)
         @volume_id = ctx.volume_id
         @volume    = ctx.volume
         @ip        = @volume[:storage_node][:ipaddr]
         @vol_path  = @volume[:storage_node][:export_path]
-        
+
         logger.info("Deleting volume: #{@volume_id}")
         sh "curl -s http://#{@ip}:#{@port}/ifsutils/#{@vol_path}/#{@volume_id}?delete"
       end
-      
+
       def create_snapshot(ctx)
         @volume      = ctx.volume
         @vol_path  = @volume[:storage_node][:export_path]
@@ -69,7 +69,7 @@ module Dcmgr
       def snapshot_path(ctx)
         ctx.backup_object[:object_key]
       end
-      
+
     end
   end
 end

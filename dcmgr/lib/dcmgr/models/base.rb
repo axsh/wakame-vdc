@@ -15,7 +15,7 @@ module Dcmgr
             super(*args)
           end
         end
-        
+
         def trim_uuid(p_uuid)
           if p_uuid and p_uuid.length == self.prefix_uuid.length + 9
             return p_uuid[(self.prefix_uuid.length+1), p_uuid.length]
@@ -29,7 +29,7 @@ module Dcmgr
 
         attr_reader :prefix_uuid
       end
-      
+
       def generate_uuid
         "%08x" % rand(16 ** 8)
       end

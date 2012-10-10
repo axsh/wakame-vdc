@@ -11,14 +11,14 @@ module Dcmgr::Helpers
     EB = EXABYTE  = PETABYTE * 1024
     ZB = ZETTABYTE  = EXABYTE * 1024
     YB = YOTTABYTE  = ZETTABYTE * 1024
-    
+
     def byte_unit_convert(v, base_unit, get_unit)
       return v if v.to_i == 0
-      
+
       ((base_unit.to_i <=> get_unit.to_i) == 0) ? v : v * (base_unit / get_unit.to_f)
     end
     module_function :byte_unit_convert
-    
+
     def convert_byte(v, get_unit)
       byte_unit_convert(v, B, get_unit).to_i
     end

@@ -7,14 +7,14 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
 
       IQN_PREFIX="iqn.2010-09.jp.wakame".freeze
-      
+
       def create(ctx)
         @volume    = ctx.volume
         @volume_id = ctx.volume_id
         @node      = ctx.node
 
-        vol_path = File.join(@volume[:storage_node][:export_path], @volume[:uuid]) 
-        
+        vol_path = File.join(@volume[:storage_node][:export_path], @volume[:uuid])
+
         @volume[:transport_information] = iscsi = {}
         iscsi[:iqn] = "#{IQN_PREFIX}:#{@volume[:uuid]}"
         iscsi[:tid] = pick_next_tid
@@ -22,7 +22,7 @@ module Dcmgr
         iscsi[:backing_store] = vol_path
 
         register(@volume)
-        
+
         opt = { :iqn => iscsi[:iqn], :lun => iscsi[:lun], :tid => iscsi[:tid], :backing_store => iscsi[:backing_store] }
       end
 
@@ -43,7 +43,7 @@ module Dcmgr
         sh("/usr/sbin/tgtadm --lld iscsi --op bind --mode=target --tid=%s --initiator-address=%s",
            [tinfo[:tid], Dcmgr.conf.initiator_address])
       end
-      
+
       private
       def pick_next_tid
         # $ sudo /usr/sbin/tgtadm --lld iscsi --op show --mode target | grep '^Target '

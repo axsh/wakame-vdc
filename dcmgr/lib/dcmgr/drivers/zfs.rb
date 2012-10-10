@@ -46,7 +46,7 @@ module Dcmgr
             raise "volume already exists: #{@volume_id}"
           end
         end
-        
+
         sh("/usr/sbin/zfs list %s", [vol_path])
         if $?.exitstatus != 0
           raise "volume has not be created: #{@volume_id}"

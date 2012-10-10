@@ -3,7 +3,7 @@
 module Dcmgr
   module VNet
     module Tasks
-    
+
       # via http://backreference.org/2010/06/11/iptables-debugging/
       # To debug ipv4 packets.
       # $ sudo tail -F /var/log/kern.log | grep TRACE:
@@ -15,7 +15,7 @@ module Dcmgr
           self.rules << IptablesRule.new(:raw,:prerouting,:icmp,:incoming,"-p icmp -j TRACE")
         end
       end
-    
+
     end
   end
 end

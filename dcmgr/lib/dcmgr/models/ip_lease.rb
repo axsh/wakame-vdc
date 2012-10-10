@@ -5,7 +5,7 @@ require 'ipaddress'
 module Dcmgr::Models
   # IP address lease information
   class IpLease < BaseNew
-    
+
     many_to_one :network
 
     def_dataset_method(:leased_ip_bound_lease) { |network_id, from, to|

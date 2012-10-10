@@ -7,7 +7,7 @@ module Dcmgr::Cli
 class Storage < Base
   namespace :storage
   include Dcmgr::Models
-  
+
   desc "add NODE_ID [options]", "Register a new storage node"
   method_option :uuid, :type => :string, :desc => "The uuid for the new storage node"
   method_option :base_path, :type => :string, :required => true, :desc => "Base path to store volume files"
@@ -33,7 +33,7 @@ class Storage < Base
               :display_name=>options[:display_name],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
-    
+
     puts super(StorageNode,fields)
   end
 

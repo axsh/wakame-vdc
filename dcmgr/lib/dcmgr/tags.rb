@@ -15,7 +15,7 @@ module Dcmgr::Tags
 
     MODEL_MAP[k] || raise("Unknown key to get type_id: #{class_or_sym}")
   end
-  
+
   class NetworkGroup < Models::Tag
     taggable 'nwg'
     def accept_mapping?(to)
@@ -30,7 +30,7 @@ module Dcmgr::Tags
       }.reverse.first
     end
   end
-  
+
   class HostNodeGroup < Models::Tag
     taggable 'hng'
     def accept_mapping?(to)
@@ -45,9 +45,9 @@ module Dcmgr::Tags
       }.sort_by { |h|
         h.instances.count
       }.reverse.first
-    end    
+    end
   end
-  
+
   class StorageNodeGroup < Models::Tag
     taggable 'sng'
     def accept_mapping?(to)
