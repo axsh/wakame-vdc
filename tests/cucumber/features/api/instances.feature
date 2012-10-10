@@ -9,9 +9,9 @@ Feature: Instance API
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
-    
+
     When we make an api delete call to instances/<registry:id> with no options
-      Then the previous api call should be successful  
+      Then the previous api call should be successful
 
   Scenario: Create and delete new instance (local store)
     # Security groups is an array?...
@@ -21,9 +21,9 @@ Feature: Instance API
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
-    
+
     When we make an api delete call to instances/<registry:id> with no options
-      Then the previous api call should be successful  
+      Then the previous api call should be successful
 
   @api_from_12.03
   Scenario: Update new instance information
@@ -50,7 +50,7 @@ Feature: Instance API
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
-    
+
     When we make an api get call to instances with no options
     Then the previous api call should be successful
     And the previous api call should not have [{"results":}] with a size of 0
@@ -88,7 +88,7 @@ Feature: Instance API
     Then from the previous api call take {"id":} and save it to <registry:id>
 
     When the created instance has reached the state "running"
-    
+
     When we make an api put call to instances/<registry:id>/backup with no options
       Then the previous api call should be successful
       Then from the previous api call take {"backup_object_id":} and save it to <registry:backup_object_id>

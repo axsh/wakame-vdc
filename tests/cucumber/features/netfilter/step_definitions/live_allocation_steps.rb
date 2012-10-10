@@ -1,5 +1,5 @@
 # encoding: utf-8
-begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end
 require 'cucumber/formatter/unicode'
 
 Before do
@@ -12,9 +12,9 @@ When /^instance ([^\s]+) is assigned to the following groups$/ do |inst_name, gr
   groups = group_options.hashes.map { |grp_hash|
     variable_get_value "<registry:group_#{grp_hash[:group_name]}>"
   }
-  
+
   inst_id = variable_get_value "<#{inst_name}:uuid>"
-  
+
   #step "we make a successful api put call to #{"instances/#{@instances[inst_name]["id"]}"} with the following options", {:security_groups => groups}
   # Just being lazy and using curl for now
   # TODO: Change to a proper api call
@@ -23,7 +23,7 @@ When /^instance ([^\s]+) is assigned to the following groups$/ do |inst_name, gr
     cmd = cmd + "--data-urlencode \"security_groups[]=#{group_id}\" "
   }
   cmd = cmd + "http://localhost:9001/api/12.03/instances/#{inst_id} >> /dev/null"
-  
+
   system(cmd)
 end
 
@@ -52,7 +52,7 @@ end
 
 Then /^we (should|should\snot) be able to ping instance ([^\s]+)$/ do |outcome, inst_name|
   inst_id = variable_get_value "<#{inst_name}:uuid>"
-  
+
   retry_while_not(TIMEOUT_PACKET_SENDING.to_f) do
     if outcome == "should"
       ping(inst_id).exitstatus != 0
@@ -71,7 +71,7 @@ Then /^we (should|should\snot) be able to make a (tcp|udp) connection on port (\
       Then the previous api call should be successful
     }
   end
-  
+
   if outcome == "should"
     retry_until(TIMEOUT_PACKET_SENDING.to_f) do
       is_port_open?(@api_call_results["get"]["instances/#{inst_id}"]["vif"].first["ipv4"]["address"],port.to_i,protocol.to_sym)
