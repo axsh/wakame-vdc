@@ -9,7 +9,7 @@ gpgkey=http://download.openvz.org/RPM-GPG-Key-OpenVZ
 
 [openvz-kernel-rhel6]
 name=OpenVZ RHEL6-based kernel
-baseurl=http://dlc.wakame.axsh.jp/mirror/openvz/kernel/branches/rhel6-2.6.32/042stab061.2/
+baseurl=http://dlc.wakame.axsh.jp/mirror/openvz/kernel/branches/rhel6-2.6.32/042stab055.16/
 enabled=1
 gpgcheck=1
 gpgkey=http://download.openvz.org/RPM-GPG-Key-OpenVZ
