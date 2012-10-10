@@ -3,10 +3,10 @@
 module Dcmgr::Models
   # Tag is a label which groups arbitrary resource(s) having canonical
   # uuid. A tag object consists of three items: Account ID, Type, Name
-  # 
+  #
   # Account ID is top level scope that represents the owner of the
   # tag. Each tag instance is created in the scope of the account.
-  # 
+  #
   # Type field is second level scope to filter the object out to be
   # labeled. If the tag is only for grouping resource A, it will fail
   # at labling the tag other than resource A.
@@ -18,10 +18,10 @@ module Dcmgr::Models
   # TypeA, name1 # can not create
   # TypeB, name2 # ok
   # TypeB, name1 # nop
-  # 
+  #
   # The resource can be labeled is called "Taggable" resource. The
   # model framework is provided to declare simply.
-  # 
+  #
   # class A < Dcmgr::Models::Base
   #   taggable 'xxx'
   # end
@@ -34,7 +34,7 @@ module Dcmgr::Models
   # t = Tag.declare(account_id, :NetworkGroup, 'nwgroup1')
   # t.lable('nw-xxxxx')
   # t.lable('nw-yyyyy')
-  # 
+  #
   # @example Label a tag from resource
   # t = Tag.declare(account_id, :NetworkGroup, 'nwgroup1')
   # nw = Network['nw-44444']
@@ -44,7 +44,7 @@ module Dcmgr::Models
     taggable('tag')
 
     many_to_one :account
-    
+
     one_to_many :mapped_uuids, :class=>TagMapping do |ds|
       ds.instance_eval {
         def exists?(canonical_uuid)
@@ -84,7 +84,7 @@ module Dcmgr::Models
 
     def labeled?(canonical_uuid)
       # TODO: check if the uuid exists
-      
+
       !TagMapping.filter(:tag_id=>self.pk, :uuid=>canonical_uuid).empty?
     end
 
@@ -100,7 +100,7 @@ module Dcmgr::Models
             else
               raise TypeError
             end
-      
+
       raise(UnacceptableTagType.new("", self, tgt)) unless accept_mapping?(tgt)
       raise(TagAlreadyLabeled) if labeled?(tgt.canonical_uuid)
       TagMapping.create(:uuid=>tgt.canonical_uuid, :tag_id=>self.pk)
@@ -116,7 +116,7 @@ module Dcmgr::Models
     end
 
     # Disassociate the tag from the taggable object.
-    # 
+    #
     # @params [Models::Taggable,String] taggable_or_uuid
     def unlabel(taggable_or_uuid)
       tgt = case taggable_or_uuid
@@ -131,7 +131,7 @@ module Dcmgr::Models
       t.destroy
       self
     end
-    
+
     def self.find_tag_class(name)
       self.subclasses.find { |m|
         m == name || m.split('::').last == name
@@ -142,7 +142,7 @@ module Dcmgr::Models
     # Child class must implement this method.
     # @param taggable_obj any object kind_of?(Model::Taggable)
     def accept_mapping?(taggable_obj)
-      raise NotImplementedError 
+      raise NotImplementedError
     end
 
     # model hook

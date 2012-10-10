@@ -4,13 +4,13 @@ require 'fileutils'
 
 module Dcmgr
   module Rpc
-    # Inherit from HvaHandler to reuse utitlity methods in the class.
+    # Inherit from HvaHandler to reuse utility methods in the class.
     class LocalStoreHandler < HvaHandler
       include Dcmgr::Logger
 
       concurrency Dcmgr.conf.local_store.thread_concurrency.to_i
       job_thread_pool Isono::ThreadPool.new(Dcmgr.conf.local_store.thread_concurrency.to_i, "LocalStore")
-      
+
       job :run_local_store, proc {
         # create hva context
         @hva_ctx = HvaContext.new(self)
@@ -26,14 +26,14 @@ module Dcmgr
                             :deploy_image, [@inst, @hva_ctx])
 
         setup_metadata_drive
-        
+
         check_interface
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :run_instance, [@hva_ctx])
-        
+
         # Node specific instance_started event for netfilter and general instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])
-        
+
         # Security group vnic joined events for vnet netfilter
         @inst[:vif].each { |vnic|
           event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
@@ -59,8 +59,15 @@ module Dcmgr
         @bo = rpc.request('sta-collector', 'get_backup_object', @backupobject_id)
         @os_devpath = File.expand_path("#{@hva_ctx.inst[:uuid]}", @hva_ctx.inst_data_dir)
 
-        raise "Invalid instance state (expected running): #{@inst[:state]}" if @inst[:state].to_s != 'running'
+        raise "Invalid instance state (expected running): #{@inst[:state]}" unless ['running', 'halted'].member?(@inst[:state].to_s)
         #raise "Invalid volume state: #{@volume[:state]}" unless %w(available attached).member?(@volume[:state].to_s)
+
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating}) do |req|
+          req.oneshot = true
+        end
+        rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating}) do |req|
+          req.oneshot = true
+        end
 
         begin
           snap_filename = @hva_ctx.os_devpath
@@ -96,14 +103,14 @@ module Dcmgr
           @hva_ctx.logger.info("Uploading #{snap_filename} (#{@backupobject_id})")
           task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
                               :upload_image, [@inst, @hva_ctx, @bo, ev_callback])
-          
+
           @hva_ctx.logger.info("Uploaded #{snap_filename} (#{@backupobject_id}) successfully")
-      
+
         rescue => e
           @hva_ctx.logger.error("Failed to upload image backup object: #{@backupobject_id}")
           raise
         end
-        
+
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available}) do |req|
           req.oneshot = true
         end
@@ -111,7 +118,7 @@ module Dcmgr
           req.oneshot = true
         end
         @hva_ctx.logger.info("Uploaded new image successfully: #{@image_id} #{@backupobject_id}")
-        
+
       }, proc {
         # TODO: need to clear generated temp files or remote files in remote snapshot repository.
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:deleted, :deleted_at=>Time.now.utc}) do |req|
@@ -122,7 +129,7 @@ module Dcmgr
         end
         @hva_ctx.logger.error("Failed to run backup_image: #{@image_id}, #{@backupobject_id}")
       }
-      
+
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end

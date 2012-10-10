@@ -14,7 +14,7 @@ Sequel.migration do
       rename_column :offering_disk_space, :offering_disk_space_mb
       add_column :display_name, "varchar(255)", :null=>true
     end
-    
+
     create_table(:security_group_references) do
       primary_key :id, :type=>"int(11)"
       column :referencer_id, "int(11)", :null=>false
@@ -74,7 +74,7 @@ Sequel.migration do
       index [:network_vif_id]
       index [:network_vif_id,:name], :unique=>true
     end
-    
+
     create_table(:network_vif_security_groups) do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "int(11)", :null=>false
@@ -106,7 +106,7 @@ Sequel.migration do
 
       drop_index [:instance_nic_id, :network_id]
     end
-    
+
     alter_table(:vlan_leases) do
       # The network underlaying this VLAN entry.
       add_column :dc_network_id, "int(11)", :null=>false
@@ -124,7 +124,7 @@ Sequel.migration do
     end
 
     rename_table(:physical_networks, :dc_networks)
-    
+
     # DC network goes through customer traffic.
     alter_table(:dc_networks) do
       # physical interface name is described in hva.conf.
@@ -141,7 +141,7 @@ Sequel.migration do
 
       add_index [:uuid], :unique=>true, :name=>:uuid
     end
-		
+
     create_table(:accounting_logs) do
       primary_key :id, :type=>"int(11)"
 			column :uuid, "varchar(255)", :null=>false
@@ -175,13 +175,13 @@ Sequel.migration do
       column :private_key, "text", :null=>true
       column :public_key, "text", :null=>true
       column :created_at, "datetime", :null=>false
-      column :updated_at, "datetime", :null=>false  
+      column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
       column :display_name, "varchar(255)", :null=>true
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
     end
-    
+
     create_table(:load_balancer_targets) do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "varchar(255)", :null=>false
@@ -255,9 +255,9 @@ Sequel.migration do
     alter_table(:ssh_key_pairs) do
       add_column :display_name, "varchar(255)", :null=>false
     end
-    
+
     # # it is changed to represent the attributes for the bootable
-    # # backup object. Any machine images have to be 
+    # # backup object. Any machine images have to be
     # # saved as backup object at first and then register nessecary
     # # additional information here.
     alter_table(:images) do
@@ -269,7 +269,7 @@ Sequel.migration do
       # Add missing deleted time column.
       add_column :deleted_at, "datetime"
     end
-    
+
     create_table(:backup_objects) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -290,7 +290,7 @@ Sequel.migration do
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :purged_at, "datetime"
-      
+
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
       index [:deleted_at]
@@ -298,7 +298,7 @@ Sequel.migration do
     end
 
     # rename_table(:volume_snapshots, :backup_objects)
-    
+
     # Object storage stores backup objects.
     create_table(:backup_storages) do
       primary_key :id, :type=>"int(11)"
@@ -318,7 +318,7 @@ Sequel.migration do
       set_column_type :size, "bigint"
     end
 
-    # Isono gem got new session_id column as of v0.2.12. 
+    # Isono gem got new session_id column as of v0.2.12.
     alter_table(:job_states) do
       add_column :session_id, "varchar(80)", :null=>true
       add_column :job_name, "varchar(255)", :null=>true
@@ -382,7 +382,7 @@ Sequel.migration do
       index [:uuid], :unique=>true, :name=>:uuid
     end
   end
-  
+
   down do
     drop_table(:host_node_vnets)
     drop_table(:network_services)
@@ -413,7 +413,7 @@ Sequel.migration do
       drop_index :tag_id
       add_index [:tag_id], :unique=>true
     end
-    
+
     alter_table(:networks) do
       drop_column :gateway_network_id
       drop_column :ip_assignment
@@ -498,10 +498,10 @@ Sequel.migration do
       column :volume_total_size, "int(11)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id], :unique=>true
     end
-    
+
     # remove instance_specs from dcmgr.
     alter_table(:instances) do
       drop_column :hypervisor

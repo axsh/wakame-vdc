@@ -1,5 +1,5 @@
 # encoding: utf-8
-begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end
 require 'cucumber/formatter/unicode'
 
 Before do
@@ -45,13 +45,13 @@ end
 When /^we update security group (.+) with the following rules$/ do |group_name,rules|
   rules_with_line_breaks = rules.inspect.slice(1,rules.inspect.length-2)
   group_uuid = variable_get_value "<registry:group_#{group_name}>"
-  
+
   # Fill in the proper uuid if another group is referenced
-  parsed_rules = rules_with_line_breaks.gsub(/<Group (.+)>/) { |group| 
+  parsed_rules = rules_with_line_breaks.gsub(/<Group (.+)>/) { |group|
     grp_name = group.split(" ").last
     variable_get_value "<registry:group_#{grp_name}"
   }
-  
+
   steps %Q{
     When we make a successful api update call to security_groups/#{group_uuid} with the following options
     | rule                      |

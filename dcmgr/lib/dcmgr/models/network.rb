@@ -127,9 +127,9 @@ module Dcmgr::Models
          end
          range.save_changes
       }
-      
+
       self.add_dhcp_range(:range_begin=>range_begin, :range_end=>range_end)
-      
+
       self
     end
 
@@ -179,7 +179,7 @@ module Dcmgr::Models
 
     def validate
       super
-      
+
       unless (1..31).include?(self.prefix.to_i)
         errors.add(:prefix, "prefix must be 1-31: #{self.prefix}")
       end
@@ -199,7 +199,7 @@ module Dcmgr::Models
           errors.add(:ipv4_gw, "Invalid IP address syntax: #{self.ipv4_gw}")
         end
       end
-      
+
       if self.dhcp_server
         begin
           if !network_addr.include?(IPAddress::IPv4.new("#{self.dhcp_server}"))
@@ -227,7 +227,7 @@ module Dcmgr::Models
       if self.dc_network
         h[:dc_network] = self.dc_network.to_hash
       end
-     
+
       self.network_service.each { |service|
         h[:network_services] << service.to_hash
       }
@@ -252,12 +252,12 @@ module Dcmgr::Models
         n.nat_network_id = nil
         n.save
       }
-      
+
       #Delete all reserved ipleases in this network
       self.network_vif_ip_lease_dataset.filter(:alloc_type => NetworkVifIpLease::TYPE_RESERVED).each { |i|
         i.destroy
       }
-      
+
       super
     end
 

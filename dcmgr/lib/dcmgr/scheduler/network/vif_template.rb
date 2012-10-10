@@ -8,7 +8,7 @@ module Dcmgr
         configuration do
           param :template, :default=>{}
         end
-        
+
         def schedule(instance)
           Dcmgr::Scheduler::Network.check_vifs_parameter_format(instance.request_params["vifs"])
           instance.request_params["vifs"].each { |name, vif|

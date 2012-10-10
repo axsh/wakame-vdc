@@ -3,7 +3,7 @@
 Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
   get do
     # description 'Show list of instances'
-    # params start, fixnum, optional 
+    # params start, fixnum, optional
     # params limit, fixnum, optional
     res = select_index(:Instance, {:start => params[:start],
                          :limit => params[:limit]})
@@ -29,7 +29,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
     if !M::HostNode.check_domain_capacity?(spec.cpu_cores, spec.memory_size)
       raise E::OutOfHostCapacity
     end
-    
+
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -70,7 +70,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
       end
     end
     instance.save
-    
+
     instance.state = :scheduling
     instance.save
 
@@ -83,7 +83,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
       if !M::StorageNode.check_domain_capacity?(vs.size)
         raise E::OutOfDiskSpace
       end
-      
+
       vol = M::Volume.entry_new(@account, vs.size, params.to_hash) do |v|
         if vs
           v.snapshot_id = vs.canonical_uuid
@@ -99,9 +99,9 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
     else
       raise "Unknown boot type"
     end
-    
+
     res = instance.to_api_document
-    
+
     commit_transaction
     Dcmgr.messaging.submit("scheduler",
                            'schedule_instance', instance.canonical_uuid)
@@ -153,7 +153,7 @@ Dcmgr::Endpoints::V1112::CoreAPI.namespace '/instances' do
     i.nic.each { |nic|
       nic.release_ip_lease
     }
-    
+
     Dcmgr.messaging.submit("hva-handle.#{i.host_node.node_id}", 'stop', i.canonical_uuid)
     response_to([i.canonical_uuid])
   end

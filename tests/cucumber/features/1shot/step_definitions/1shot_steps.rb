@@ -1,5 +1,5 @@
 # encoding: utf-8
-begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end
 require 'cucumber/formatter/unicode'
 
 require 'rubygems'
@@ -43,7 +43,7 @@ end
 When /^we successfully (attach|detach) the created volume$/ do |operation|
   steps %Q{
     When we #{operation} the created volume
-    
+
     Then the update call to the volumes/#{@api_call_results["create"]["volumes"]["id"]}/#{operation} api should be successful
   }
 end
@@ -59,7 +59,7 @@ end
 When /^we successfully create a snapshot from the created volume$/ do
   steps %Q{
     When we create a snapshot from the created volume
-    
+
     Then the create call to the volume_snapshots api should be successful
   }
 end
@@ -67,14 +67,14 @@ end
 When /^we delete the created (.+)$/ do |suffix|
   steps %Q{
     When we make an api delete call to #{suffix}/#{@api_call_results["create"][suffix]["id"]} with no options
-    
+
   }
 end
 
 When /^we successfully delete the created (.+)$/ do |suffix|
   steps %Q{
     When we delete the created #{suffix}
-    
+
     Then the delete call to the #{suffix}/#{@api_call_results["create"][suffix]["id"]} api should be successful
   }
 end
@@ -90,7 +90,7 @@ end
 When /^we successfully create a volume from the created snapshot$/ do
   steps %Q{
     When we create a volume from the created snapshot
-    
+
     Then the create call to the volumes api should be successful
   }
 end
@@ -104,7 +104,7 @@ end
 When /^we successfully (reboot|stop|start) the created instance$/ do |operation|
   steps %Q{
     When we #{operation} the created instance
-    
+
     Then the update call to the instances/#{@api_call_results["create"]["instances"]["id"]}/#{operation} api should be successful
   }
 end

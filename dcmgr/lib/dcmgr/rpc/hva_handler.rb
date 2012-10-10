@@ -64,7 +64,7 @@ module Dcmgr
           end
         }
 
-        ignore_error { 
+        ignore_error {
           if @inst && !@inst[:volume].nil?
             @inst[:volume].each { |volid, v|
               @vol_id = volid
@@ -77,7 +77,7 @@ module Dcmgr
             }
           end
         }
-        
+
         # cleanup vm data folder
         ignore_error {
           unless @hva_ctx.hypervisor_driver_class == Dcmgr::Drivers::ESXi
@@ -246,7 +246,7 @@ module Dcmgr
         @task_session ||= begin
                             Task::TaskSession.reset!(:thread)
                             Task::TaskSession.current[:logger] = @hva_ctx.logger
-                            
+
                             Task::TaskSession.current
                           end
       end
@@ -269,7 +269,7 @@ module Dcmgr
 
         # reload volume info
         @vol = rpc.request('sta-collector', 'get_volume', @vol_id)
-        
+
         rpc.request('sta-collector', 'update_volume', @vol_id, {:state=>:attaching, :attached_at=>nil})
         @hva_ctx.logger.info("Attaching #{@vol_id} on #{@inst_id}")
         # check under until the dev file is created.
@@ -278,18 +278,18 @@ module Dcmgr
 
         # attach disk
         attach_volume_to_host
-        
+
         setup_metadata_drive
-        
+
         # run vm
         check_interface
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
                             :run_instance, [@hva_ctx])
         # Node specific instance_started event for netfilter and general instance_started event for openflow
         update_instance_state({:state=>:running}, ['hva/instance_started'])
-        
+
         update_volume_state({:state=>:attached, :attached_at=>Time.now.utc}, 'hva/volume_attached')
-        
+
         # Security group vnic joined events for vnet netfilter
         create_instance_vnics(@inst)
       }, proc {
@@ -353,7 +353,7 @@ module Dcmgr
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:stopping})
           ignore_error { terminate_instance(false) }
         ensure
-          # 
+          #
           update_instance_state_to_terminated({:state=>:stopped, :host_node_id=>nil})
         end
       end
@@ -426,7 +426,7 @@ module Dcmgr
         raise "Unknown DC network: #{dc_network_name}" if dcn.nil?
         dcn.bridge
       end
-      
+
       job :attach_nic do
         @dc_network_name = request.args[0]
         @nic_id = request.args[1]
@@ -476,6 +476,7 @@ module Dcmgr
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+        update_instance_state({:state=>:starting}, [])
 
         @hva_ctx.logger.info("Turning power on")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -484,7 +485,7 @@ module Dcmgr
         create_instance_vnics(@inst)
         @hva_ctx.logger.info("Turned power on")
       }
-      
+
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end

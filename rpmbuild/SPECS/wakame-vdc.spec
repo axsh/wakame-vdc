@@ -107,18 +107,38 @@ Requires: %{oname}-dcmgr-vmapp-config = %{version}-%{release}
 %description ha-dcmgr-config
 <insert long description, indented with spaces>
 
+# rack-config
+%package rack-config
+BuildArch: noarch
+Summary: Configuration set for rack
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+%description rack-config
+<insert long description, indented with spaces>
+
 # dcmgr-vmapp-config
 %package dcmgr-vmapp-config
 BuildArch: noarch
 Summary: Configuration set for dcmgr VM appliance
 Group: Development/Languages
 Requires: %{oname} = %{version}-%{release}
+Requires: %{oname}-rack-config = %{version}-%{release}
 Requires: mysql-server
 Requires: erlang
 Requires: rabbitmq-server
 Requires: nginx
 Requires: dnsmasq
 %description dcmgr-vmapp-config
+<insert long description, indented with spaces>
+
+# admin-vmapp-config
+%package admin-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for admin VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: %{oname}-rack-config = %{version}-%{release}
+%description admin-vmapp-config
 <insert long description, indented with spaces>
 
 # hva-common-vmapp-config
@@ -172,7 +192,6 @@ Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 Requires: vzkernel
 Requires: vzctl
-Requires: kmod-openvswitch-vzkernel
 %description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
@@ -293,16 +312,18 @@ ln -s /var/log/%{oname}/dcmgr_gui ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/
 ln -s /var/log/%{oname}/admin ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/frontend/admin/log
 
 # tmp directory
-ln -s /var/lib/%{oname}/tmp ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/tmp
+ln -s /var/lib/%{oname}/instances ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/instances
+ln -s /var/lib/%{oname}/images ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/images
+ln -s /var/lib/%{oname}/volumes ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/volumes
+ln -s /var/lib/%{oname}/snap ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/snap
 
 # lib directory
 mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/instances/tmp
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/images
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/volumes
-mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/tmp/snap
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/instances
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/instances/tmp
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/images
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/volumes
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/%{oname}/snap
 
 %clean
 RUBYDIR=%{prefix}/%{oname}/ruby rpmbuild/rules clean
@@ -310,31 +331,16 @@ rm -rf %{prefix}/%{oname}/ruby
 rm -rf ${RPM_BUILD_ROOT}
 
 %post
-/sbin/chkconfig       ntpd on
-/sbin/chkconfig       ntpdate on
 /sbin/chkconfig --add vdc-net-event
 
 %post debug-config
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
 
 %post dcmgr-vmapp-config
-/sbin/chkconfig --add mysqld
-/sbin/chkconfig       mysqld on
-/sbin/chkconfig --add rabbitmq-server
-/sbin/chkconfig       rabbitmq-server on
 
 %post hva-common-vmapp-config
-/sbin/chkconfig --del iptables
-/sbin/chkconfig --del ebtables
-/sbin/chkconfig --add iscsi
-/sbin/chkconfig       iscsi  on
-/sbin/chkconfig --add iscsid
-/sbin/chkconfig       iscsid on
-/sbin/chkconfig --add tgtd
-/sbin/chkconfig       tgtd on
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-bridge-if.conf
 %{prefix}/%{oname}/rpmbuild/helpers/add-loopdev.sh
-%{prefix}/%{oname}/rpmbuild/helpers/set-openvswitch-conf.sh
 
 %post hva-openvz-vmapp-config
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
@@ -349,7 +355,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %dir /etc/%{oname}/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
-%dir /var/lib/%{oname}/tmp
 %exclude %{prefix}/%{oname}/tests/
 
 %files vdcsh
@@ -395,6 +400,10 @@ rm -rf ${RPM_BUILD_ROOT}
 /etc/ucarp/vip-down.d/vdc-collector
 /etc/ucarp/vip-up.d/vdc-collector
 
+%files rack-config
+%defattr(-,root,root)
+%config /etc/wakame-vdc/unicorn-common.conf
+
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
 %config(noreplace) /etc/default/vdc-dcmgr
@@ -405,7 +414,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %config(noreplace) /etc/default/vdc-webui
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
-%config(noreplace) /etc/default/vdc-admin
 %config(noreplace) /etc/default/vdc-nwmongw
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
@@ -415,17 +423,20 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-webui.conf
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
-%config /etc/init/vdc-admin.conf
 %config /etc/init/vdc-nwmongw.conf
-%config /etc/wakame-vdc/unicorn-common.conf
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
-%dir /etc/%{oname}/admin
 %dir /var/log/%{oname}/dcmgr_gui
+%dir /var/lib/%{oname}/images
+%dir /var/lib/%{oname}/volumes
+%dir /var/lib/%{oname}/snap
+
+%files admin-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-admin
+%config /etc/init/vdc-admin.conf
+%dir /etc/%{oname}/admin
 %dir /var/log/%{oname}/admin
-%dir /var/lib/%{oname}/tmp/images
-%dir /var/lib/%{oname}/tmp/volumes
-%dir /var/lib/%{oname}/tmp/snap
 
 %files hva-common-vmapp-config
 %defattr(-,root,root)
@@ -433,7 +444,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-hva.conf
 %config /etc/init/vdc-hva-worker.conf
 %config /etc/sysctl.d/30-bridge-if.conf
-%dir /var/lib/%{oname}/tmp/instances
+%dir /var/lib/%{oname}/instances
+%dir /var/lib/%{oname}/instances/tmp
 
 %files hva-kvm-vmapp-config
 

@@ -4,7 +4,7 @@ Feature: Static Nat
     Given the security group we use allows pinging and ssh
       And the volume "wmi-secgtest" exists
       And the instance_spec "is-demospec" exists for api until 11.12
-    
+
     When we successfully start instance inst1 of wmi-secgtest and is-demospec with the nat scheduler
     Then we should be able to ping its inside ip in 60 seconds or less
     And we should be able to ping its outside ip in 60 seconds or less
@@ -12,7 +12,7 @@ Feature: Static Nat
     When we successfully delete the created instances
     And the created instance has reached the state "terminated"
     And we successfully delete the created security_groups
-    
+
   Scenario: Nat isolation
     Given the volume "wmi-secgtest" exists
     And security group A exists with the following rules
@@ -39,7 +39,7 @@ Feature: Static Nat
       Then it should fail to send the packet
     When instance inst1 sends a tcp packet to inst3's outside address on port 999
       Then it should use its outside ip
-    
+
     When instance inst2 sends a tcp packet to inst1's outside address on port 999
       Then it should use its outside ip
     When instance inst2 sends a tcp packet to inst1's inside address on port 999
@@ -57,7 +57,7 @@ Feature: Static Nat
       Then it should fail to send the packet
     When instance inst3 sends a tcp packet to inst2's outside address on port 999
       Then it should use its outside ip
-    
+
     When we successfully terminate instance inst1
     And we successfully terminate instance inst2
     And we successfully terminate instance inst3

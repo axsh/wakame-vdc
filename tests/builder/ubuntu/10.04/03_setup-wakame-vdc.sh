@@ -67,7 +67,7 @@ chown wakame:wakame ${gem_path}/wakame-vdc-dcmgr-${wakame_vdc_version}/config/dc
 }
 chown wakame:wakame ${gem_path}/wakame-vdc-dcmgr-${wakame_vdc_version}/dcmgr.conf
 
-[ -L ${gem_path}/wakame-vdc-dcmgr-${wakame_vdc_version}/conf ] || { 
+[ -L ${gem_path}/wakame-vdc-dcmgr-${wakame_vdc_version}/conf ] || {
   ln -s ${gem_path}/wakame-vdc-dcmgr-${wakame_vdc_version}/config ${gem_path}/wakame-vdc-dcmgr-${wakame_vdc_version}/conf
 }
 

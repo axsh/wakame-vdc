@@ -1,5 +1,5 @@
 # encoding: utf-8
-begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end
 require 'cucumber/formatter/unicode'
 
 Before do
@@ -83,7 +83,7 @@ def variable_apply_template registry, template, operator
   when /^\{\.\.\.,.+,\.\.\.\}$/
     match = /^\{\.\.\.,(.+),\.\.\.\}$/.match(template)
     (registry.kind_of?(Hash)).should be_true
-    
+
     key = /^\{\.\.\.,\{\"(.+)\":\},\.\.\.\}$/.match(template)[1]
     if registry.has_key?(key)
       r = Hash.new
@@ -159,13 +159,13 @@ end
 Then /^the previous api call [ ]*(should|should\snot) have (.+) #{match_operator} (.+)$/ do |outcome,template,operator,value|
   steps %Q{
     Then <api:latest> #{outcome} have #{template} #{operator} #{value}
-  }  
+  }
 end
 
 Then /^from the previous api call [ ]*take (.+) and save it to <([^>]+)>$/ do |template,dest|
   steps %Q{
     Then from <api:latest> take #{template} and save it to <#{dest}>
-  }  
+  }
 end
 
 Then /^from the previous api call [ ]*take (.+) and save it to <([^>]+)> [ ]*for (.+) #{match_operator} (.+)$/ do |root_template,dest,match_template,operator,arg_value|

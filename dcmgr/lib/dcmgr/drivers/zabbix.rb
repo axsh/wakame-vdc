@@ -9,7 +9,7 @@ module Dcmgr::Drivers
   class Zabbix < NetworkMonitoring
     include Dcmgr::Logger
     include Dcmgr::Configuration::ConfigurationMethods
-    
+
     def_configuration do
       param :api_uri
       param :api_user
@@ -22,7 +22,7 @@ module Dcmgr::Drivers
         end
       end
     end
-    
+
     # Net::HTTP based JSON-RPC 2.0 + Zabbix Authentication Utility.
     class Connection
 
@@ -68,7 +68,7 @@ module Dcmgr::Drivers
             "No details available."
           end
         end
-        
+
         def json_body
           @json ||= parse
         end
@@ -81,11 +81,11 @@ module Dcmgr::Drivers
         def first
           result.first
         end
-        
+
         private
         def parse
           return if self.code != 200
-          
+
           begin
             return MultiJson.load(@res.body)
           rescue MultiJson::DecodeError => e
@@ -98,7 +98,7 @@ module Dcmgr::Drivers
         login if @auth_token.nil?
 
         http_res = send_request(method, params)
-        
+
         RpcResponse.new(http_res)
       end
 
@@ -117,7 +117,7 @@ module Dcmgr::Drivers
 
       def logout
         raise "Connection is unauthorized." if @auth_token.nil?
-        
+
         http_res = tryagain do
           send_request('user.logout', nil)
         end
@@ -155,7 +155,7 @@ module Dcmgr::Drivers
         }
         rpc_message[:params]=params if params
         rpc_message[:auth]=@auth_token if @auth_token
-        
+
         @http.request(Net::HTTP::Post.new(@uri.path).tap do |req|
                         req['Content-Type'] = 'application/json-rpc'
                         req.body = MultiJson.dump(rpc_message)
@@ -165,7 +165,7 @@ module Dcmgr::Drivers
 
     def initialize()
     end
-    
+
     def configuration
       Dcmgr.conf.driver || raise("driver(:Zabbix) section is undefined")
     end

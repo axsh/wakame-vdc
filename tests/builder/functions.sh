@@ -253,7 +253,7 @@ function screen_open {
             /bin/cat <<EOS > "${tmp_path}/screenrc"
 escape ^z^z
 hardstatus on
-hardstatus alwayslastline "[%m/%d %02c] %-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<" 
+hardstatus alwayslastline "[%m/%d %02c] %-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
 defscrollback 10000
 logfile ${tmp_path}/screenlog.%t
 logfile flush 1
@@ -720,7 +720,7 @@ EOF
   node_num=2
   for i in ${host_nodes}; do node_num=`expr ${node_num} + 1`; done
   for i in ${storage_nodes}; do node_num=`expr ${node_num} + 1`; done
-  
+
   retry 10 <<'EOF' || abort "Offline nodes still exist."
 sleep 5
 [ ${node_num} -eq "`echo "select state from node_states where state='online'" | mysql -uroot wakame_dcmgr | wc -l`" ]
@@ -742,10 +742,10 @@ function run_virtual_hva {
     #TODO: try downloading the base image first
     rootsize=10240
     swapsize=512
-    
+
     run_vmbuilder_hva ${image_dir}/${base_image_name} "amd64"
   fi
-  
+
   #TODO:improve the mac generation
   host_macs=54
   for vhva_ip in ${host_nodes}; do
@@ -753,10 +753,10 @@ function run_virtual_hva {
     vhva_id=demo${vhva_number}
     image_name=ubuntu-lucid-64-${vhva_id}.raw
     vhva_mac="52:54:00:51:90:${host_macs}"
-  
+
     cd $image_dir
     shlog "cp --sparse=auto $base_image_name $image_name"
-    
+
     #loop_mount_image $image_name "kvm_base_setup"
     loop_mount_image $image_name setup_hva $vhva_id $vhva_ip $vhva_netmask $vhva_gateway $vhva_dns
 
@@ -767,7 +767,7 @@ function run_virtual_hva {
     shlog "tunctl -b -u root -t $vhva_id"
     shlog "kvm -smp 1 -cpu host -enable-nesting -enable-kvm -drive file=${image_dir}/${image_name} -name hva.${vhva_id} -m $vhva_memory_size -net nic,macaddr=${vhva_mac} -net tap,ifname=$vhva_id -enable-kvm -vnc :${vhva_number} &"
     shlog "echo $! > $process_id_path/$vhva_id"
-    
+
     host_macs=$(($host_macs+1))
   done
 }
@@ -783,7 +783,7 @@ function screen_virtual_hva {
   demo_resource="92_generate-demo-resource.sh"
   init_db
   sleep 1
-  
+
   cd ${prefix_path}
 
   [ -z "${without_screen}" ] && {
@@ -823,7 +823,7 @@ function terminate_virtual_hva {
     local vhva_number=`echo ${vhva_ip} | cut -d '.' -f4`
     local vhva_id=demo${vhva_number}
     local image_name=ubuntu-lucid-64-${vhva_id}.raw
-    
+
     shlog "kill `cat $process_id_path/${vhva_id}`"
     shlog "rm ${process_id_path}/${vhva_id}"
     sleep 2

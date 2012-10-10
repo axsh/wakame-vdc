@@ -11,7 +11,7 @@ Feature: Security groups
     Then we should not be able to ping the created instance for 30 seconds
     And we should not be able to make a udp connection on port 999 to the instance for 30 seconds
     And we should not be able to make a tcp connection on port 22 to the instance for 30 seconds
-    
+
     When we successfully set the following rules for the security group
       """
       icmp:-1,-1,ip4:0.0.0.0
@@ -27,7 +27,7 @@ Feature: Security groups
     Then we should be able to make a tcp connection on port 22 to the instance for 30 seconds
     But we should not be able to ping the created instance for 30 seconds
     And we should not be able to make a udp connection on port 999 to the instance for 30 seconds
-    
+
     When we successfully set the following rules for the security group
       """
       udp:999,999,ip4:0.0.0.0

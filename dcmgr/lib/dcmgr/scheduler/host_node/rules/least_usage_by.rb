@@ -16,7 +16,7 @@ module Dcmgr::Scheduler::HostNode::Rules
     def filter(dataset,instance)
       dataset
     end
-    
+
     def reorder(array,instance)
       array.sort_by { |hn|
         hn.instances_dataset.alives.sum(options.key).to_f

@@ -50,7 +50,7 @@ module Dcmgr::VNet::OpenFlow
                           :nw_src => ip.to_s},
                         {:controller => nil, :local => nil})]
 
-      switch.datapath.add_flows flows        
+      switch.datapath.add_flows flows
       switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
                                local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
 

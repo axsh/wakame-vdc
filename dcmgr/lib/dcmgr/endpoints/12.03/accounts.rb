@@ -16,7 +16,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
         end
       end
     end
-    
+
     before do
       @account = M::Account[params[:id]] || raise(E::UnknownUUIDResource, params[:id])
     end
@@ -24,7 +24,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
     get do
       respond_with(R::Account.new(@account).generate)
     end
-    
+
     # resource usage summary (active/available only) for the account
     get '/usage' do
 
@@ -43,7 +43,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
       }
       respond_with(uuids)
     end
-    
+
     # Turn power on all instances with the Account.
     put '/instances/poweron' do
       uuids = M::Instance.alives.filter(:account_id=>@account.canonical_uuid, :state=>'halted').all.map { |i|
@@ -70,7 +70,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
       }
       respond_with(uuids)
     end
-    
+
     # Turn power on all the load balancers with the Account.
     put '/load_balancers/poweron' do
       uuids = M::LoadBalancer.alives.filter(:account_id=>@account.canonical_uuid).by_state('halted').all.map { |i|
@@ -106,7 +106,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
       }
       respond_with(uuids)
     end
-    
+
     # Delete all security groups with the Account.
     delete '/security_groups' do
       #M::SecurityGroup.alives.filter(:account_id=>@account.canonical_uuid).all.map { |i|
@@ -126,13 +126,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/accounts' do
       }
       respond_with(uuids)
     end
-    
+
     # Logically delete account. Associating resources will be
     # destroyed later by separate batch job.
     delete do
       @account.destroy
       respond_with([@account.canonical_uuid])
     end
-    
+
   end
 end

@@ -25,7 +25,7 @@ module Dcmgr::VNet::OpenFlow
         flows = []
         flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :udp => nil, :dl_dst => self.mac, :nw_dst => self.ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
         flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
-        
+
         network.datapath.add_flows(flows)
       end
     end
@@ -76,7 +76,7 @@ module Dcmgr::VNet::OpenFlow
 
       dhcp_out.options << DHCP::SubnetMaskOption.new(:payload => subnet_mask.to_short)
 
-      if nw_services[:dns] 
+      if nw_services[:dns]
         dhcp_out.options << DHCP::DomainNameOption.new(:payload => nw_services[:dns].domain_name.unpack('C*')) if nw_services[:dns].domain_name
         dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns].ip
       end
@@ -89,5 +89,5 @@ module Dcmgr::VNet::OpenFlow
     end
 
   end
-  
+
 end

@@ -1,5 +1,5 @@
 Feature: Live security group allocation
-  
+
   Scenario: Isolation
     Given security group A exists with the following rules
       """
@@ -17,12 +17,12 @@ Feature: Live security group allocation
       """
       tcp:22,22,ip4:0.0.0.0
       """
-    
+
     And an instance inst1 is started in group C
     And an instance inst2 is started in group C
     And an instance inst3 is started in group C
     And an instance inst4 is started in group C
-    
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | A          |
@@ -36,7 +36,7 @@ Feature: Live security group allocation
     And instance inst2 should be able to ping instance inst1
     But instance inst1 should not be able to ping instance inst3
     And instance inst2 should not be able to ping instance inst4
-    
+
     When instance inst3 is assigned to the following groups
     | group_name |
     | B          |
@@ -48,7 +48,7 @@ Feature: Live security group allocation
     And instance inst1 should not be able to ping instance inst4
     And instance inst2 should not be able to ping instance inst4
     And instance inst3 should not be able to ping instance inst4
-    
+
     When instance inst3 is assigned to the following groups
     | group_name |
     | A          |
@@ -63,7 +63,7 @@ Feature: Live security group allocation
     And instance inst1 should not be able to ping instance inst3
     And instance inst2 should not be able to ping instance inst1
     And instance inst3 should not be able to ping instance inst1
-    
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | C          |
@@ -83,19 +83,19 @@ Feature: Live security group allocation
     Then instance inst1 should be able to ping instance inst2
     And instance inst1 should be able to ping instance inst3
     And instance inst1 should be able to ping instance inst4
-    
+
     And instance inst2 should be able to ping instance inst1
     And instance inst2 should be able to ping instance inst3
     And instance inst2 should be able to ping instance inst4
-    
+
     And instance inst3 should be able to ping instance inst1
     And instance inst3 should be able to ping instance inst2
     And instance inst3 should be able to ping instance inst4
-    
+
     And instance inst4 should be able to ping instance inst1
     And instance inst4 should be able to ping instance inst2
     And instance inst4 should be able to ping instance inst3
-    
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | A          |
@@ -115,19 +115,19 @@ Feature: Live security group allocation
     Then instance inst1 should not be able to ping instance inst2
     And instance inst1 should not be able to ping instance inst3
     And instance inst1 should not be able to ping instance inst4
-    
+
     And instance inst2 should not be able to ping instance inst1
     And instance inst2 should not be able to ping instance inst3
     And instance inst2 should not be able to ping instance inst4
-    
+
     And instance inst3 should not be able to ping instance inst1
     And instance inst3 should not be able to ping instance inst2
     And instance inst3 should not be able to ping instance inst4
-    
+
     And instance inst4 should not be able to ping instance inst1
     And instance inst4 should not be able to ping instance inst2
     And instance inst4 should not be able to ping instance inst3
-    
+
     When we successfully terminate instance inst1
     And we successfully terminate instance inst2
     And we successfully terminate instance inst3
@@ -152,24 +152,24 @@ Feature: Live security group allocation
       tcp:345,345,ip4:0.0.0.0
       """
     And an instance inst1 is started in group C That listens on tcp port 345
-    
+
     Then we should not be able to ping instance inst1
     And we should not be able to make a tcp connection on port 345 to instance inst1
-    
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | B          |
     And we wait 3 seconds
     Then we should not be able to ping instance inst1
     But we should be able to make a tcp connection on port 345 to instance inst1
-    
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | A          |
     And we wait 3 seconds
     Then we should be able to ping instance inst1
     But we should not be able to make a tcp connection on port 345 to instance inst1
-    
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | A          |
@@ -177,14 +177,14 @@ Feature: Live security group allocation
     And we wait 3 seconds
     Then we should be able to ping instance inst1
     And we should be able to make a tcp connection on port 345 to instance inst1
-      
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | C          |
     And we wait 3 seconds
     Then we should not be able to ping instance inst1
     And we should not be able to make a tcp connection on port 345 to instance inst1
-    
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | B          |
@@ -192,7 +192,7 @@ Feature: Live security group allocation
     And we wait 3 seconds
     Then we should not be able to ping instance inst1
     But we should be able to make a tcp connection on port 345 to instance inst1
-    
+
     When instance inst1 is assigned to the following groups
     | group_name |
     | B          |

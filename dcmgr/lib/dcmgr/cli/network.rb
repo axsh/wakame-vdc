@@ -74,7 +74,7 @@ class Network < Base
   method_option :dns, :type => :string, :desc => "IP address for DNS server of the network"
   method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
   method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
-  method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network" 
+  method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
   method_option :bandwidth, :type => :numeric, :desc => "The maximum bandwidth for the network in Mbit/s"
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :desc => "The account ID to own this"

@@ -32,7 +32,7 @@ case "${head}" in
     if [ "`service stunnel status`" = 'stunnel is stopped' ]; then
       service stunnel start
     else
-      service stunnel reload
+      service stunnel restart
     fi
     chkconfig stunnel on
   ;;

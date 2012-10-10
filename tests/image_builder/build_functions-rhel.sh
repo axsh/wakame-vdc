@@ -32,7 +32,7 @@ function run_vmbuilder() {
 }
 
 # Callback function for loop_mount_image().
-# 
+#
 function kvm_base_setup() {
   typeset tmp_root="$1"
   typeset lodev="$2"
@@ -40,7 +40,7 @@ function kvm_base_setup() {
   #Remove SSH host keys
   echo "Removing ssh host keys"
   rm -f $tmp_root/etc/ssh/ssh_host*
-  
+
   echo "Disabling sshd PasswordAuthentication"
   pwd
   sed -e '/^PasswordAuthentication.*yes/ c\

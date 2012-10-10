@@ -85,7 +85,7 @@ function cleanup {
   /etc/init.d/rabbitmq-server status && /etc/init.d/rabbitmq-server stop
   [[ -f /var/lib/rabbitmq/mnesia/ ]] && rm -rf /var/lib/rabbitmq/mnesia/
   /etc/init.d/rabbitmq-server start
-  
+
   (initctl status tgt | grep stop) && initctl start tgt
 
   set -e
@@ -142,7 +142,7 @@ function run_multiple() {
 
   # screen
   cd ${prefix_path}
-  
+
   screen_open || abort "Failed to start new screen session"
   sleep 1
   screen_it collector "cd ./dcmgr; ./bin/collector 2>&1 | tee ${tmp_path}/vdc-collector.log"
@@ -215,7 +215,7 @@ case ${mode} in
 
     init_db
     sleep 1
-  
+
     run_multiple
     screen_attach
     screen_close
