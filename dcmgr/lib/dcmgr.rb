@@ -9,11 +9,11 @@ module Dcmgr
 
   include Dcmgr::Initializer
 
-  # Add conf/initializers/*.rb loader 
+  # Add conf/initializers/*.rb loader
   initializer_hooks {
-    initializers_root = File.expand_path('config/initializers', DCMGR_ROOT) 
+    initializers_root = File.expand_path('config/initializers', DCMGR_ROOT)
 
-    @files.each { |file|  
+    @files.each { |file|
       if File.directory?(initializers_root)
         Dir.glob("#{initializers_root}/#{file}.rb") { |f|
           ::Kernel.load(f)
@@ -32,9 +32,11 @@ module Dcmgr
                             }
                           }.flatten].freeze
     end
+
+    autoload :Instance, 'dcmgr/constants/instance'
   end
   Const = Constants
-  
+
   autoload :Logger, 'dcmgr/logger'
   autoload :Configuration, 'dcmgr/configuration'
   module Configurations
@@ -80,7 +82,7 @@ module Dcmgr
     autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
     autoload :LoadBalancer, 'dcmgr/models/load_balancer'
-    autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'    
+    autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'
     autoload :BackupStorage, 'dcmgr/models/backup_storage'
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :MacRange, 'dcmgr/models/mac_range'
@@ -93,7 +95,7 @@ module Dcmgr
     HTTP_X_VDC_ACCOUNT_UUID='HTTP_X_VDC_ACCOUNT_UUID'.freeze
 
     RACK_FRONTEND_SYSTEM_ID='dcmgr.frotend_system.id'.freeze
-    
+
     autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
     autoload :Helpers, 'dcmgr/endpoints/helpers'
     autoload :ResponseGenerator, 'dcmgr/endpoints/response_generator'
@@ -140,6 +142,7 @@ module Dcmgr
     require 'dcmgr/cli/errors'
 
     autoload :Base, 'dcmgr/cli/base'
+    autoload :Instance, 'dcmgr/cli/instance'
     autoload :Network, 'dcmgr/cli/network'
     autoload :Host, 'dcmgr/cli/host'
     autoload :Storage, 'dcmgr/cli/storage'
@@ -205,7 +208,7 @@ module Dcmgr
     autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
   end
-  
+
   autoload :StorageService, 'dcmgr/storage_service'
 
   require 'dcmgr/scheduler'
@@ -242,12 +245,12 @@ module Dcmgr
 
     NAMESPACES=[HostNode, StorageNode, Network, MacAddress]
   end
-  
+
   require 'dcmgr/vnet'
   module VNet
     autoload :TaskFactory, 'dcmgr/vnet/factories'
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
-    
+
     module Netfilter
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
       autoload :Chain, 'dcmgr/vnet/netfilter/chain'

@@ -11,11 +11,11 @@ module Dcmgr
       def conf
         @conf
       end
-      
+
       def load_conf(conf_class, files)
         path = files.find { |i| File.exists?(i) }
         abort("ERROR: Failed to load #{path}.") if path.nil?
-        
+
         begin
           ::Dcmgr.instance_eval {
             @conf = conf_class.load(path)
@@ -28,22 +28,22 @@ module Dcmgr
                 )
         end
       end
-      
+
       def run_initializers(*files)
         raise "Complete the configuration prior to run_initializers()." if @conf.nil?
-        
+
         @files ||= []
         if files.length == 0
           @files << "*"
         else
           @files = files
         end
-        
+
         initializer_hooks.each { |n|
           n.call
         }
       end
-      
+
       def initializer_hooks(&blk)
         @initializer_hooks ||= []
         if blk

@@ -190,8 +190,8 @@ BuildArch: noarch
 Summary: Configuration set for hva OpenVZ VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
-Requires: vzkernel
-Requires: vzctl
+Requires: vzkernel = 2.6.32-042stab055.16
+Requires: vzctl = 3.3-1
 %description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
@@ -445,6 +445,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/init/vdc-hva-worker.conf
 %config /etc/sysctl.d/30-bridge-if.conf
 %dir /var/lib/%{oname}/instances
+%dir /var/lib/%{oname}/instances/tmp
 
 %files hva-kvm-vmapp-config
 

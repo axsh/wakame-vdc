@@ -14,7 +14,7 @@ module Dcmgr
         end
       end
 
-      
+
       protected
 
       def vmimg_cache_dir

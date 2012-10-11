@@ -4,7 +4,7 @@
 
 * To run a single test case, use the following command:
     cucumber -r features /path/to/testcase.feature
-  
+
 * To run a single scenario, add the line number at the end. For example:
     cucumber -r features features/gui-manage/account.feature:11
 

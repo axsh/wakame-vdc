@@ -10,7 +10,7 @@ COMMON_DS_FILTER=proc { |ds|
 
 Sinatra::QuotaEvaluation.evaluators do
   M = Dcmgr::Models
-  
+
   quota_type 'security_group.count' do
     fetch do
       self.instance_exec(M::SecurityGroup.dataset, &COMMON_DS_FILTER).count
@@ -24,7 +24,7 @@ Sinatra::QuotaEvaluation.evaluators do
     fetch do
       self.instance_exec(M::SshKeyPair.dataset, &COMMON_DS_FILTER).count
     end
-    
+
     evaluate do |fetch_value|
       quota_value.to_i <= fetch_value
     end
@@ -33,7 +33,7 @@ Sinatra::QuotaEvaluation.evaluators do
     fetch do
       (self.instance_exec(M::Instance.alives, &COMMON_DS_FILTER).sum(:quota_weight) || 0.0)
     end
-    
+
     evaluate do |fetch_value|
       quota_value.to_f <= fetch_value
     end
@@ -42,7 +42,7 @@ Sinatra::QuotaEvaluation.evaluators do
     fetch do
       self.instance_exec(M::Instance.alives, &COMMON_DS_FILTER).count
     end
-    
+
     evaluate do |fetch_value|
       quota_value.to_i <= fetch_value
     end
@@ -61,7 +61,7 @@ Sinatra::QuotaEvaluation.evaluators do
     fetch do
       self.instance_exec(M::Volume.alives, &COMMON_DS_FILTER).count
     end
-    
+
     evaluate do |fetch_value|
       quota_value.to_i <= fetch_value
     end
@@ -70,7 +70,7 @@ Sinatra::QuotaEvaluation.evaluators do
     fetch do
       ((self.instance_exec(M::Volume.alives, &COMMON_DS_FILTER).sum(:size) || 0) / (1024 * 1024))
     end
-    
+
     evaluate do |fetch_value|
       quota_value.to_i <= fetch_value
     end
@@ -79,7 +79,7 @@ Sinatra::QuotaEvaluation.evaluators do
     fetch do
       self.instance_exec(M::Image.alives, &COMMON_DS_FILTER).count
     end
-    
+
     evaluate do |fetch_value|
       quota_value.to_i <= fetch_value
     end
@@ -98,7 +98,7 @@ Sinatra::QuotaEvaluation.evaluators do
       ((self.instance_exec(M::BackupObject.alives, &COMMON_DS_FILTER).sum(:size) || 0) / (1024 * 1024)).truncate
     end
 
-    evaluate do |fetch_value| 
+    evaluate do |fetch_value|
       quota_value.to_i <= fetch_value
     end
   end
@@ -110,7 +110,7 @@ Sinatra::QuotaEvaluation.evaluators do
       M::LoadBalancer.alives.filter(cond).count
     end
 
-    evaluate do |fetch_value| 
+    evaluate do |fetch_value|
       quota_value.to_i <= fetch_value
     end
   end

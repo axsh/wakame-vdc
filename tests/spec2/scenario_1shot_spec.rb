@@ -91,7 +91,7 @@ describe "1shot" do
     res = del_rules(@sg_res[:sg2]["id"], ["icmp:-1,-1,ip4:0.0.0.0"])
     res.success?.should be_true
   end
-  
+
   it "should not security group comfirmed" do
     retry_until_network_stopped(@inst_res[:inst2]["id"])
   end

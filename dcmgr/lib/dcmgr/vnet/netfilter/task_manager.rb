@@ -3,30 +3,30 @@
 module Dcmgr
   module VNet
     module Netfilter
-    
+
       # Abstract class for task managers that apply netfilter to extend.
       # These have extra methods to create custom chains depending on vnic.
       # Tasks can then be applied to these custom chains.
-      class NetfilterTaskManager < TaskManager        
-        
+      class NetfilterTaskManager < TaskManager
+
         def apply_vnic_chains(vnic_map)
           raise NotImplementedError
         end
-        
+
         def apply_vnic_tasks(vnic_map,tasks)
           raise NotImplementedError
         end
-        
+
         # Should remove _tasks_ for this specific vnic if they are applied
         def remove_vnic_tasks(vnic_map,tasks = nil)
           raise NotImplementedError
         end
-        
+
         def remove_vnic_chains(vnic_map)
           raise NotImplementedError
         end
       end
-      
+
       module CustomChains
         #************************
         #Iptables part
@@ -36,167 +36,167 @@ module Dcmgr
             @vnic = vnic
             super(:filter, "d_#{@vnic[:uuid]}")
           end
-        
+
           def jumps
             [IptablesRule.new(:filter,:forward,nil,nil,"-m physdev --physdev-is-bridged --physdev-out #{@vnic[:uuid]} -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             return rule
           end
         end
-        
+
         class SVnicIpChain < IptablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:filter, "s_#{@vnic[:uuid]}")
           end
-        
+
           def jumps
             [IptablesRule.new(:filter,:forward,nil,nil,"-m physdev --physdev-is-bridged --physdev-in #{@vnic[:uuid]} -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             return rule
           end
         end
-        
+
         class VnicIpChainTCP < IptablesChain
           BOUNDS = {:incoming => "d", :outgoing => "s"}
-          
+
           def initialize(bound,vnic)
             raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound) unless BOUNDS.keys.member?(bound)
             @bound = bound
             @vnic = vnic
             super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_tcp")
           end
-          
+
           def jumps
             jumps = []
-            
+
             if @bound == :incoming
               jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:tcp,:outgoing,"-m state --state NEW,ESTABLISHED -p tcp -j #{@name}")
             elsif @bound == :outgoing
               jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:tcp,:incoming,"-p tcp -j #{@name}")
             end
-            
+
             jumps
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(IptablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.protocol == :tcp && rule.bound == @bound
               rule.chain = @name
             end
-            
+
             rule
           end
-          
+
         end
-        
+
         class VnicIpChainUDP < IptablesChain
           BOUNDS = {:incoming => "d", :outgoing => "s"}
-          
+
           def initialize(bound,vnic)
             raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound)
             @bound = bound
             @vnic = vnic
             super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_udp")
           end
-          
+
           def jumps
             jumps = []
-            
+
             if @bound == :incoming
               jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:udp,:outgoing,"-m state --state NEW,ESTABLISHED -p udp -j #{@name}")
             elsif @bound == :outgoing
               jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:udp,:incoming,"-p udp -j #{@name}")
             end
-            
+
             jumps
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(IptablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.protocol == :udp && rule.bound == @bound
               rule.chain = @name
             end
-            
+
             rule
           end
-          
+
         end
-        
+
         class VnicIpChainICMP < IptablesChain
           BOUNDS = {:incoming => "d", :outgoing => "s"}
-          
+
           def initialize(bound,vnic)
             raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound)
             @bound = bound
             @vnic = vnic
             super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_icmp")
           end
-          
+
           def jumps
             jumps = []
-            
+
             if @bound == :incoming
               jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:udp,:outgoing,"-m state --state NEW,ESTABLISHED,RELATED -p icmp -j #{@name}")
             elsif @bound == :outgoing
               jumps << IptablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",:udp,:incoming,"-p icmp -j #{@name}")
             end
-            
+
             jumps
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(IptablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.protocol == :icmp && rule.bound == @bound
               rule.chain = @name
             end
-            
+
             rule
           end
-          
+
         end
-        
+
         class VnicIpSnatExceptions < IptablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:nat,"#{@vnic[:uuid]}_snat_exceptions")
           end
-          
+
           def jumps
             [IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{@vnic[:address]} -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             # Very hackish but should work for now
             if rule.table == :nat && rule.chain == "POSTROUTING" && (not (rule.rule.include? "-j SNAT"))
               rule.chain = @name
             end
-            
+
             rule
           end
         end
-        
+
         class VnicIpSnat < IptablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:nat,"#{@vnic[:uuid]}_snat")
           end
-          
+
           def jumps
             [IptablesRule.new(:nat,:postrouting,nil,nil,"-s #{@vnic[:address]} -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             # Very hackish but should work for now
             if rule.table == :nat && rule.chain == "POSTROUTING" && rule.rule.include?("-j SNAT")
               rule.chain = @name
             end
-            
+
             rule
           end
         end
-        
+
         #************************
         #Ebtables part
         #************************
@@ -205,45 +205,45 @@ module Dcmgr
             @vnic = vnic
             super(:filter, "s_#{@vnic[:uuid]}")
           end
-        
+
           def jumps
             [EbtablesRule.new(:filter,:forward,nil,nil,"-i #{@vnic[:uuid]} -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             return rule
           end
         end
-        
+
         class DVnicEbChain < EbtablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:filter, "d_#{@vnic[:uuid]}")
           end
-        
+
           def jumps
             [EbtablesRule.new(:filter,:forward,nil,nil,"-o #{@vnic[:uuid]} -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             return rule
           end
         end
-        
+
         class VnicEbChainARP < EbtablesChain
           BOUNDS = {:incoming => "d", :outgoing => "s"}
-          
+
           def initialize(bound,vnic)
             raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound)
             @bound = bound
             @vnic = vnic
             super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_arp")
           end
-          
+
           def jumps
             [EbtablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",nil,:outgoing,"-p arp -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.bound == @bound && rule.protocol == :arp
             rule.chain = @name
@@ -251,137 +251,137 @@ module Dcmgr
             rule
           end
         end
-        
+
         class VnicEbChainIPV4 < EbtablesChain
           BOUNDS = {:incoming => "d", :outgoing => "s"}
-          
+
           def initialize(bound,vnic)
             raise ArgumentError, "Invalid bound: #{bound}. Valid bounds are #{BOUNDS.keys.join(",")}" unless BOUNDS.keys.member?(bound)
             @bound = bound
             @vnic = vnic
             super(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}_ipv4")
           end
-          
+
           def jumps
             [EbtablesRule.new(:filter,"#{BOUNDS[@bound]}_#{@vnic[:uuid]}",nil,:outgoing,"-p IPv4 -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "FORWARD" && rule.bound == @bound && rule.protocol == :ip4
               rule.chain = @name
             end
-            
+
             rule
           end
         end
-        
+
         class VnicEbChainToHost < EbtablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:filter,"s_#{@vnic[:uuid]}_d_host")
           end
-          
+
           def jumps
             [EbtablesRule.new(:filter,:input,nil,:outgoing,"-i #{@vnic[:uuid]} -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             rule
           end
         end
-        
+
         class VnicEbChainFromHost < EbtablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:filter,"d_#{@vnic[:uuid]}_s_host")
           end
-          
+
           def jumps
             [EbtablesRule.new(:filter,:output,nil,:outgoing,"-o #{@vnic[:uuid]} -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             rule
           end
         end
-        
+
         class VnicEbChainToHostARP < EbtablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:filter,"s_#{@vnic[:uuid]}_d_host_arp")
           end
-          
+
           def jumps
               [EbtablesRule.new(:filter,"s_#{@vnic[:uuid]}_d_host",nil,:outgoing,"-p arp -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT" && rule.protocol == :arp
               rule.chain = @name
             end
-            
+
             rule
           end
         end
-        
+
         class VnicEbChainFromHostARP < EbtablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:filter,"d_#{@vnic[:uuid]}_s_host_arp")
           end
-          
+
           def jumps
               [EbtablesRule.new(:filter,"d_#{@vnic[:uuid]}_s_host",nil,:incoming,"-p arp -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "OUTPUT" && rule.protocol == :arp
               rule.chain = @name
             end
-            
+
             rule
           end
         end
-        
+
         class VnicEbChainToHostIPV4 < EbtablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:filter,"s_#{@vnic[:uuid]}_d_host_ipv4")
           end
-          
+
           def jumps
               [EbtablesRule.new(:filter,"s_#{@vnic[:uuid]}_d_host",nil,:outgoing,"-p IPv4 -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT" && rule.protocol == :ip4
               rule.chain = @name
             end
-            
+
             rule
           end
         end
-        
+
         class VnicEbChainFromHostIPV4 < EbtablesChain
           def initialize(vnic)
             @vnic = vnic
             super(:filter,"d_#{@vnic[:uuid]}_s_host_ipv4")
           end
-          
+
           def jumps
               [EbtablesRule.new(:filter,"d_#{@vnic[:uuid]}_s_host",nil,:incoming,"-p IPv4 -j #{@name}")]
           end
-          
+
           def tailor!(rule)
             if rule.is_a?(EbtablesRule) && rule.table == :filter && rule.chain == "INPUT" && rule.protocol == :ip4
               rule.chain = @name
             end
-            
+
             rule
           end
         end
       end
-      
+
       class VNicProtocolTaskManager < NetfilterTaskManager
         include CustomChains
 
@@ -432,7 +432,7 @@ module Dcmgr
                 commands << get_rule_command(jump,:remove)
               }
             }
-            
+
             # Remove this vnic's chains
             ip_chains.each { |chain|
               commands << "iptables -t #{chain.table} -F #{chain.name}"
@@ -448,7 +448,7 @@ module Dcmgr
                 commands << get_rule_command(jump,:remove)
               }
             }
-            
+
             # Remove this vnic's chains
             eb_chains.each { |chain|
               commands << "ebtables -t #{chain.table} -F #{chain.name}"
@@ -493,7 +493,7 @@ module Dcmgr
               end
             }
           }
-          
+
           execute_commands(commands.flatten.uniq)
         end
 
@@ -520,7 +520,7 @@ module Dcmgr
         #alias :execute_commands :execute_commands_debug
 
         # Translates _rule_ into a command that can be directly passed on to the OS
-        # _action_ determines if the command must _:apply_ or _:remove_ a rule. 
+        # _action_ determines if the command must _:apply_ or _:remove_ a rule.
         def get_rule_command(rule,action)
           actions = {:apply => "I", :remove => "D"}
           raise ArgumentError, "#{rule} is not a valic rule" unless rule.is_a?(IptablesRule) || rule.is_a?(EbtablesRule)
@@ -563,7 +563,7 @@ module Dcmgr
             chains << VnicEbChainIPV4.new(bound,vnic_map)
           }
           chains << VnicEbChainFromHost.new(vnic_map)
-          chains << VnicEbChainFromHostARP.new(vnic_map)          
+          chains << VnicEbChainFromHostARP.new(vnic_map)
           chains << VnicEbChainFromHostIPV4.new(vnic_map)
 
           chains << VnicEbChainToHost.new(vnic_map)
@@ -572,7 +572,7 @@ module Dcmgr
 
           chains
         end
-        
+
         def apply_tasks(tasks)
           commands = []
 
@@ -582,26 +582,26 @@ module Dcmgr
               get_rule_command(rule,:apply)
             }
           }
-          
+
           final_commands = commands.flatten.uniq.compact
           puts final_commands.join("\n") if self.verbose_commands
-          
+
           system(final_commands.join("\n"))
         end
-        
+
         def remove_tasks(tasks)
           commands = []
-          
+
           commands = tasks.map { |task|
             next unless task.is_a? Task
             task.rules.map { |rule|
               get_rule_command(rule,:remove)
             }
           }
-          
+
           final_commands = commands.flatten.uniq.compact
           puts final_commands.join("\n") if self.verbose_commands
-          
+
           system(final_commands.join("\n"))
         end
       end

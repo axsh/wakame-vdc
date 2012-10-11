@@ -14,7 +14,7 @@ module Dcmgr::Models
     def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
       filter("deleted_at IS NULL OR deleted_at >= ?", (Time.now.utc - term_period))
     }
-    
+
     def after_initialize
       super
       self[:object_key] ||= self.canonical_uuid

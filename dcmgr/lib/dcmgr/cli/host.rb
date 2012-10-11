@@ -7,7 +7,7 @@ module Dcmgr::Cli
 class Host < Base
   namespace :host
   include Dcmgr::Models
-  
+
   desc "add NODE_ID [options]", "Register a new host node"
   method_option :uuid, :type => :string, :desc => "The UUID for the new host node"
   method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
@@ -23,7 +23,7 @@ class Host < Base
     unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
       abort("Node ID is not registered yet: #{node_id}")
     end
-    
+
     fields = {
               :display_name=>options[:display_name],
               :node_id=>node_id,
@@ -35,7 +35,7 @@ class Host < Base
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
     puts super(HostNode,fields)
   end
-  
+
   desc "modify UUID [options]", "Modify a registered host node"
   method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new host node"
   method_option :cpu_cores, :type => :numeric, :desc => "Number of cpu cores to be offered"
@@ -84,11 +84,11 @@ __END
       shell.print_table(table)
     end
   end
-  
+
   desc "shownodes", "Show node (agents)"
   def shownodes
     nodes = Isono::Models::NodeState.filter.all
-    
+
     puts ERB.new(<<__END, nil, '-').result(binding)
 Node ID              State
 <%- nodes.each { |row| -%>

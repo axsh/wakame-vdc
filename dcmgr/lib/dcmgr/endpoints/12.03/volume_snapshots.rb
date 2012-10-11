@@ -36,7 +36,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volume_snapshots' do
     if params[:storage_node_id]
       sn = find_by_uuid(M::StorageNode, params[:storage_node_id])
       raise UnknownStorageNode, params[:storage_node_id] if sn.nil?
-      
+
       ds = ds.filter(:storage_node_id=>sn.id)
     end
 

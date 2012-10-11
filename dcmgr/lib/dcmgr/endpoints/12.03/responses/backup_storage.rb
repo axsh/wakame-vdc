@@ -17,7 +17,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :description => description,
           :base_uri => base_uri,
           :created_at => created_at,
-          :updated_at => updated_at, 
+          :updated_at => updated_at,
           :deleted_at => deleted_at,
         }
       }

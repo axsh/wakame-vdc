@@ -4,14 +4,14 @@ module Dcmgr::Models
   # Datacenter network definition
   class DcNetwork < BaseNew
     taggable('dcn')
-    
+
     one_to_many :networks
     one_to_many :vlan_leases
     one_to_one :vlan, :class=>VlanLease
 
     plugin :serialization
     serialize_attributes :yaml, :offering_network_modes
-    
+
     def vlan_network?
       !self.vlan_lease_id.nil?
     end
@@ -32,7 +32,7 @@ module Dcmgr::Models
       unless unknown_list.empty?
         errors.add(:offering_network_modes, "Unknown network modes: #{unknown_list.join(', ')}")
       end
-      
+
       super
     end
 

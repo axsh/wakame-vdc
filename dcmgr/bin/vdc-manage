@@ -19,9 +19,10 @@ Dcmgr.run_initializers('sequel')
 
 
 class RootCli < Thor
+  register(Dcmgr::Cli::Instance, Dcmgr::Cli::Instance.namespace, "instance sub-command", "Operations for instances")
   register(Dcmgr::Cli::Network,  Dcmgr::Cli::Network.namespace, "network sub-command", "Operations for network information")
   register(Dcmgr::Cli::Host, Dcmgr::Cli::Host.namespace, "host sub-command", "Operations for host node")
-  register(Dcmgr::Cli::Storage, Dcmgr::Cli::Storage.namespace, "storage sub-command", "Operations for storage node")
+  register(Dcmgr::Cli::Storage, Dcmgr::Cli::Storage.namespace, "storage sub-command", "Operations for storage nodes")
   register(Dcmgr::Cli::Vlan, Dcmgr::Cli::Vlan.namespace, "vlan sub-command", "Operations for vlan leases")
   register(Dcmgr::Cli::Image, Dcmgr::Cli::Image.namespace, "image sub-command", "Operations for machine images")
   register(Dcmgr::Cli::KeyPair, Dcmgr::Cli::KeyPair.namespace, "keypair sub-command", "Operations for key pairs")
@@ -29,7 +30,7 @@ class RootCli < Thor
   register(Dcmgr::Cli::Spec, Dcmgr::Cli::Spec.namespace, "spec sub-command", "Operations for instance specifications")
   register(Dcmgr::Cli::ResourceGroup, Dcmgr::Cli::ResourceGroup.namespace, "resourcegroup sub-command", "Operations for resource groups")
   register(Dcmgr::Cli::BackupStorage, Dcmgr::Cli::BackupStorage.namespace, "backupstorage sub-command", "Operations for backup storage")
-  register(Dcmgr::Cli::BackupObject, Dcmgr::Cli::BackupObject.namespace, "backupobject sub-command", "Operations for backup object")
+  register(Dcmgr::Cli::BackupObject, Dcmgr::Cli::BackupObject.namespace, "backupobject sub-command", "Operations for backup objects")
   register(Dcmgr::Cli::MacRange, Dcmgr::Cli::MacRange.namespace, "macrange sub-command", "Operations for mac addres range")
 
   #def self.exit_on_failure?
@@ -45,7 +46,7 @@ module TxMode
       end
     end
   end
-  
+
   module Each
     def loop_eval(str)
       Dcmgr::Models::BaseNew.db.transaction do
@@ -83,7 +84,7 @@ module VdcManageShell
   def print_result(result)
     # do nothing from ripl.
   end
-  
+
 end
 
 module MultiLine
@@ -167,29 +168,29 @@ else
   require 'ripl'
   require 'bond'
   require 'shellwords'
-  
+
   $exitcode = 0
   # Auto completion
   Bond.start
-  
+
   # Override Bond auto completions to include vdc-manage tasks instead of Ruby methods/keywords
   class Bond::DefaultMission
     def self.completions(input=nil)
       Bond::Mission.current_eval("[]") | RootCli.tasks.keys
     end
   end
-  
+
   # Get the classes of subcommands so we can add their arguments to Bond auto completion
   subcommand_classes = Dcmgr::Cli.constants.map { |c|
     Dcmgr::Cli.const_get(c)
   }.delete_if {|c|
     (not c.respond_to?(:namespace)) || c == Dcmgr::Cli::Base
   }
-  
+
   subcommand_classes.each { |sc|
     Bond.complete(:method=>sc.namespace) { sc.tasks.keys }
   }
-  
+
   Ripl::Shell.include VdcManageShell
   if $options[:tx_mode].to_sym == :each
     Ripl::Shell.include TxMode::Each

@@ -6,9 +6,9 @@ set -e
 function run_vmbuilder_hva() {
   typeset imgpath=$1
   typeset arch=$2 # i386, amd64
-  
+
   local tmp_script_path=/${tmp_path}/hva_script.sh
-  
+
   [[ -d ./ubuntu-kvm ]] && rm -rf ./ubuntu-kvm
 
   [[ -f $imgpath ]] && rm -f $imgpath
@@ -96,7 +96,7 @@ EOF
       --addpkg rsync \
       --dns 8.8.8.8 --arch=$arch \
       --firstboot $tmp_script_path"
-      
+
   rm $tmp_script_path
 }
 
@@ -175,7 +175,7 @@ function loop_mount_image() {
   typeset tmp_root=./loop
   [[ -d $tmp_root ]] || mkdir $tmp_root
   mount "/dev/mapper/${lodev_name}p1" $tmp_root
-  
+
   eval "${eval_cb} $tmp_root $lodev $@"
 
   umount -f $tmp_root
@@ -194,14 +194,14 @@ function setup_hva() {
   #typeset hva_netmask="$5"
   #typeset hva_gateway="$6"
   #typeset hva_dns="$7"
-  
+
   #TODO: get a better directory for this
   custom_pkg_dir=${tmp_path}/custom_pkg_dir
-  
+
   #TODO:calculate broadcast and network
   #hva_network="192.168.2.0"
   #hva_broadcast="192.168.2.255"
-  
+
   # Set up the network
   cat <<EOF > $tmp_root/etc/network/interfaces
 # This file describes the network interfaces available on your system
@@ -234,7 +234,7 @@ EOF
   if [ ! -d $custom_pkg_dir ]; then
     mkdir -p $custom_pkg_dir
     cd $custom_pkg_dir
-    
+
     #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq-base_2.57-1ubuntu1_amd64.deb
     #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq-utils_2.57-1ubuntu1_amd64.deb
     #wget http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/ubuntu/wakame-vdc/archive/dnsmasq_2.57-1ubuntu1_all.deb
@@ -250,7 +250,7 @@ EOF
   fi
   shlog "mkdir -p $tmp_root/root/custom_pkgs"
   shlog "cp $custom_pkg_dir/*.deb $tmp_root/root/custom_pkgs"
-  
+
   shlog "mkdir -p ${tmp_root}/root/wakame-vdc/tmp/instances"
   shlog "cp -r ${prefix_path}/dcmgr ${tmp_root}/root/wakame-vdc"
   cat <<EOF > ${tmp_root}/root/wakame-vdc/dcmgr/config/hva.conf
@@ -379,7 +379,7 @@ function install_wakame_init() {
 
   #Install the startup script
   echo "Installing the startup script: `basename ${wakame_init_path}`"
-  # The script name may vary by the metadata source type. 
+  # The script name may vary by the metadata source type.
   # I keep the script name.
   typeset wakame_init_name=`basename $wakame_init_path`
   cp -p $wakame_init_path $tmp_root/etc/
@@ -420,7 +420,7 @@ function install_secg_test_scripts() {
 }
 
 # Callback function for loop_mount_image().
-# 
+#
 function kvm_base_setup() {
   typeset tmp_root="$1"
   typeset lodev="$2"
@@ -434,13 +434,13 @@ function kvm_base_setup() {
   #Remove SSH host keys
   echo "Removing ssh host keys"
   rm -f $tmp_root/etc/ssh/ssh_host*
-  
+
   #Update fstab to use UUID.
   sed -e "s/^\/dev\/sda1/UUID=${p1uuid}/" \
     -e "s/^\/dev\/sda2/UUID=${p2uuid}/" \
     $tmp_root/etc/fstab > ./fstab
   mv ./fstab $tmp_root/etc/fstab
-  
+
   # disable mac address caching
   echo "Unsetting udev 70-persistent-net.rules"
   rm -f $tmp_root/etc/udev/rules.d/70-persistent-net.rules
@@ -458,7 +458,7 @@ ENV{MATCHADDR}=="00:15:5d:*",          ENV{MATCHADDR}=""\
 ENV{MATCHADDR}=="52:54:00:*|54:52:00:*", ENV{MATCHADDR}=""\
 ' < $tmp_root/lib/udev/rules.d/75-persistent-net-generator.rules > 75-persistent-net-generator.rules
   mv 75-persistent-net-generator.rules $tmp_root/lib/udev/rules.d/75-persistent-net-generator.rules
-  
+
   #Load acpiphp.ko at boot
   echo "Adding acpiphp to kernel modules to load at boot"
   echo "acpiphp" >> $tmp_root/etc/modules
@@ -479,7 +479,7 @@ PasswordAuthentication no' ./sshd_config.tmp > ./sshd_config
 }
 
 # Callback function for loop_mount_image().
-# 
+#
 function lxc_base_setup() {
   typeset tmp_root="$1"
   typeset lodev="$2"

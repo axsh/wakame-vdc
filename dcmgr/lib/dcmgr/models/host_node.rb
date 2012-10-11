@@ -36,7 +36,7 @@ module Dcmgr::Models
       r = Isono::Models::NodeState.filter(:state => 'offline').select(:node_id)
       filter(:node_id => r)
     end
-    
+
     def validate
       super
       # for compatibility: hva.xxx or hva-xxxx
@@ -44,12 +44,12 @@ module Dcmgr::Models
         unless self.node_id =~ /^hva[-.]/
           errors.add(:node_id, "is invalid ID: #{self.node_id}")
         end
-        
+
         if (h = self.class.filter(:node_id=>self.node_id).first) && h.id != self.id
           errors.add(:node_id, "#{self.node_id} is already been associated to #{h.canonical_uuid} ")
         end
       end
-      
+
       unless SUPPORTED_ARCH.member?(self.arch)
         errors.add(:arch, "unknown architecture type: #{self.arch}")
       end
@@ -67,11 +67,11 @@ module Dcmgr::Models
     end
 
     # Check if the resources exist depending on the HostNode.
-    # @return [boolean] 
+    # @return [boolean]
     def depend_resources?
       !self.instances_dataset.runnings.empty?
     end
-    
+
     def status
       node.nil? ? :offline : node.state
     end
@@ -87,7 +87,7 @@ module Dcmgr::Models
       (self.offering_cpu_cores >= using_cpu_cores + instance.cpu_cores) &&
         (self.offering_memory_size >= using_memory_size + instance.memory_size)
     end
-    
+
     def to_api_document
       h = super()
       h.merge!(:status=>self.status)
@@ -123,7 +123,7 @@ module Dcmgr::Models
       # instance releases the resources during stopped state normally. however admins may
       # want to manage the reserved resource ratio for stopped
       # instances. "stopped_instance_usage_factor" conf parameter allows its control.
-      # 
+      #
       # * stopped_instance_usage_factor == 1.0 means that 100% of
       # resources are reserved for stopped instances. all of them will
       # success to start up but utilization of host notes will be dropped.
@@ -135,7 +135,7 @@ module Dcmgr::Models
       offer_cpu, offer_mem = self.online_nodes.select { [sum(:offering_cpu_cores), sum(:offering_memory_size)] }.naked.first.values.map {|i| i || 0 }
       avail_mem_size = offer_mem - ((alives_mem_size - stopped_mem_size) + (stopped_mem_size * usage_factor).floor)
       avail_cpu_cores = offer_cpu - ((alives_cpu_cores - stopped_cpu_cores) + (stopped_cpu_cores * usage_factor).floor)
-      
+
       (avail_mem_size >= memory_size * num.to_i) && (avail_cpu_cores >= cpu_cores * num.to_i)
     end
 

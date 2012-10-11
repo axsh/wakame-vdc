@@ -5,14 +5,14 @@ module Dcmgr::VNet::OpenFlow
   class OpenFlowSwitch
     include Dcmgr::Logger
     include OpenFlowConstants
-    
+
     attr_reader :datapath
     attr_reader :ports
     attr_reader :networks
     attr_reader :switch_name
     attr_reader :local_hw
     attr_reader :eth_port
-    
+
     attr_accessor :packet_handlers
 
     def initialize dp, name
@@ -24,7 +24,7 @@ module Dcmgr::VNet::OpenFlow
 
       @packet_handlers = []
     end
-    
+
     def switch_ready
       logger.info "switch_ready: name:#{switch_name} datapath_id:%#x." % datapath.datapath_id
 
@@ -125,7 +125,7 @@ module Dcmgr::VNet::OpenFlow
       # spoof the mac of an instance?
       flows << Flow.new(TABLE_ARP_ROUTE, 1, {:arp => nil, :dl_dst => local_hw.to_s}, {:local => nil})
 
-      datapath.add_flows flows        
+      datapath.add_flows flows
     end
 
     def port_status message

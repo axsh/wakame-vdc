@@ -16,21 +16,21 @@ module Dcmgr::Cli
     def add
       private_key_path = File.expand_path(options[:private_key]) if options[:private_key]
       public_key_path = File.expand_path(options[:public_key])
-      
+
       # Check if the files exist
       Error.raise "Private key file doesn't exist",100 if options[:private_key] && (not File.exists?(private_key_path))
       Error.raise "Public key file doesn't exist",100 unless File.exists?(public_key_path)
-      
+
       # Check if the public key file really is a public key
       system "ssh-keygen -l -f #{options[:public_key]} > /dev/null"
       Error.raise "#{options[:public_key]} is not a public key file.",100 unless $? == 0
-      
+
       fields = options.dup
-      
+
       #Get the keys from their respective files.
       fields[:public_key] = File.open(public_key_path) {|f| f.readline}
       fields[:private_key] = File.open(private_key_path) {|f| f.readlines.join('') } if options[:private_key]
-      
+
       # If a private key is supplied, verify that it matches the supplied public key
       if options[:private_key]
         begin
@@ -38,19 +38,19 @@ module Dcmgr::Cli
         rescue => e
           Error.raise "Could not generate the public key from the private key. Are you sure it is a private key with proper permissions?", 100
         end
-        
+
         unless fields[:public_key].split(' ')[0] == generated_public_key.split(' ')[0] && fields[:public_key].split(' ')[1] == generated_public_key.split(' ')[1]
           Error.raise "The public key doesn't match the private key", 100
         end
       end
-      
+
       #Generate the fingerprint from the public key file
       res = `ssh-keygen -lf #{options[:public_key]}`
       fields[:finger_print] = res.split(' ')[1]
-      
+
       puts super(M::SshKeyPair,fields)
     end
-    
+
     desc "modify UUID [options]", "Modify an existing key pair"
     method_option :account_id, :type => :string, :desc => "The UUID of the account this key pair belongs to"
     method_option :description, :type => :string, :desc => "Description for this key pair"
@@ -59,13 +59,13 @@ module Dcmgr::Cli
     def modify(uuid)
       super(M::SshKeyPair,uuid,options)
     end
-    
+
     desc "del UUID", "Delete an existing keypair"
     def del(uuid)
       super(M::SshKeyPair,uuid)
     end
-    
-    desc "show [UUID] [options]", "Show network(s)"
+
+    desc "show [UUID] [options]", "Show keypair(s)"
     def show(uuid=nil)
       if uuid
         keypair = M::SshKeyPair[uuid] || UnknownUUIDError.raise(uuid)
@@ -89,6 +89,6 @@ __END
 __END
       end
     end
-    
+
   end
 end
