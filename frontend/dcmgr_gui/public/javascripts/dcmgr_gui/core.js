@@ -428,7 +428,6 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
         }
       });
     } catch( e ) {
-      console.log(e);
       $("#list_load_mask").unmask();
     }
   }
@@ -1001,8 +1000,6 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     this.index_counter = 0;
     this.item_list = [];
     this.render_target = elem;
-    console.debug(elem);
-    console.debug($(this.render_target).parent().find('#add_monitor_item'));
     this._findItemAddButton().bind('click', function(e){
       // Append new monitoring item selection.
      self.addItem();
@@ -1069,7 +1066,6 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
         // enable the plus button again.
         self._findItemAddButton().removeAttr("disabled");
       }
-      console.debug(self.item_list);
     });
 
     var select_tag = tr_tag.find('.select_monitor_proto').first().bind('change', function(e){
@@ -1093,7 +1089,6 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
       row_item.ui(replace_tgt, e.target.id);
 
       self._refreshSelectItem();
-      console.debug(self.item_list);
     });
 
     if( protocol != null || protocol !== undefined){
