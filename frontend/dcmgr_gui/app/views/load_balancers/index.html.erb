@@ -129,7 +129,7 @@
 	  <tr>
 	    <td class="padcell"></td>
 	    <td class="title" style="width:180px"><%= t("load_balancers.details.register_instances") %></td>
-	    <td colspan="7">{{each(index,vif) item.target_vifs}}${vif.instance_id}<br />{{/each}}</td>
+	    <td colspan="7">{{each(index,vif) item.target_vifs}}${vif.display_name} (${vif.instance_id})<br />{{/each}}</td>
 	  </tr>
 	  <tr>
 	    <td class="padcell"></td>
