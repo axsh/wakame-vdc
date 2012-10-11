@@ -222,10 +222,6 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
 
       var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
-      $(this).find('#add_monitor_item').bind('click', function(e){
-        // Append new monitoring item selection.
-        monitor_selector.addItem('http');
-      });
       bt_launch_instance.monitor_selector = monitor_selector;
 
       parallel({

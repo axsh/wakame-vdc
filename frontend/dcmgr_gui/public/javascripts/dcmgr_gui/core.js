@@ -995,74 +995,152 @@ DcmgrGUI.Logger = DcmgrGUI.Class.create({
 
 DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
   initialize: function(elem) {
+    var self = this;
+    this.enabled = false;
+    this.mailaddr = "";
     this.index_counter = 0;
-    this.monitor_list = [];
+    this.item_list = [];
     this.render_target = elem;
+    console.debug(elem);
+    console.debug($(this.render_target).parent().find('#add_monitor_item'));
+    this._findItemAddButton().bind('click', function(e){
+      // Append new monitoring item selection.
+     self.addItem();
+    });
   },
 
   monitors: function(){
-    return this.monitor_list;
+    return this.item_list;
   },
 
   _newIndex: function() {
     return (this.index_counter++);
   },
-  
+
   addItem: function(protocol){
     var self = this;
+    
     var idx = this._newIndex();
-    if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[protocol] === undefined) {
+
+    var find_unselected = function(){
+      for(var i in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS){
+        var contains = false
+        for( var j in self.item_list){
+          if(self.item_list[j].protocol == i){ 
+            contains = true;
+            break;
+          }
+        }
+        if(contains == false) return i;
+      }
+      return undefined;
+    };
+
+    if( typeof protocol != "string"){
+      protocol = find_unselected();
+    }else if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[protocol] === undefined) {
       throw "Unknown protocol parameter is passed: " + protocol;
     }
+
 
     // place holder variable for event handlers.
     var item_props = {"protocol":protocol,
                       'idx': idx,
                      };
-    this.monitor_list.push(item_props);
+    this.item_list.push(item_props);
 
     var tr_tag = $('#monitor_selector_tmpl').tmpl({idx: idx,
-                                                   itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS(),
+                                                   itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS,
                                                   });
+
+    item_props['row_elem'] = tr_tag;
     tr_tag.appendTo(this.render_target);
     tr_tag.find('.del_monitor_item').first().bind('click', function(e){
       // remove the clicked item from the list.
-      self.monitor_list.splice((idx - 1), 1);
+      for(var i in self.item_list) {
+        if(item_props.protocol == self.item_list[i].protocol){
+          self.item_list.splice(i, 1);
+        }
+      }
       $('#monitor_item_' + idx).first().remove();
+      self._refreshSelectItem();
+
+      if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM > self.item_list.length){
+        // enable the plus button again.
+        self._findItemAddButton().removeAttr("disabled");
+      }
+      console.debug(self.item_list);
     });
-    
-    tr_tag.find('.select_monitor_proto').first().bind('change', function(e){
+
+    var select_tag = tr_tag.find('.select_monitor_proto').first().bind('change', function(e){
       item_props['protocol']=$(e.currentTarget).val();
+
+      if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM <= self.item_list.length){
+        // disable the plus button
+        self._findItemAddButton().attr("disabled", "disabled");
+        return;
+      }
 
       var replace_tgt = $(e.currentTarget).parent().parent().find(".detail_input");
       // fill input UI elements for the protocol selected by user.
-      var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[e.target.value];
+      var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[e.target.value];
       if(row_item === undefined){
         throw "Unknown monitor protocol: " + e.target.value;
       }
       // Clear current child elements.
       replace_tgt.html('');
+      // Render option forms for the protocol.
       row_item.ui(replace_tgt, e.target.id);
-    }).val(protocol).trigger('change');
 
-    item_props['row_elem'] = tr_tag;
+      self._refreshSelectItem();
+      console.debug(self.item_list);
+    });
+
+    if( protocol != null || protocol !== undefined){
+      select_tag.val(protocol).trigger('change');
+    }
+  },
+
+  _refreshSelectItem: function(){
+    var self = this;
+    var check_selected_item = function(n){
+      for(var s in self.item_list){
+        if(n == self.item_list[s].protocol) return true;
+      }
+      return false;
+    };
+
+    for( var i in this.item_list) {
+      var select_tag = this.item_list[i].row_elem.find('.select_monitor_proto').first();
+      select_tag.empty();
+      for( var j in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS ){
+        if( j != this.item_list[i].protocol && check_selected_item(j)) continue;
+        select_tag.append("<option value=\""+j+"\">"+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[j].title+"</option>");
+      }
+      select_tag.val(this.item_list[i].protocol);
+    }
   },
 
   queryParams: function(){
     var res="";
 
-    for (var i=0; i < this.monitor_list.length; i++) {
-      var itm = this.monitor_list[i]
+    for (var i=0; i < this.item_list.length; i++) {
+      var itm = this.item_list[i]
       res += "&eth0_monitors["+i+"][protocol]=" + itm['protocol'];
       res += "&eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked');
-      res += DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[itm['protocol']].buildQuery(itm['row_elem'], i);
+      res += DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[itm['protocol']].buildQuery(itm['row_elem'], i);
     }
 
     return res;
   },
+
+  _findItemAddButton: function(){
+    return $(this.render_target).parent().find('#add_monitor_item');
+  },
 });
 
-DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
+// constantize the JSON list.
+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
   return {
     'icmp': {
       title: "PING",
@@ -1177,7 +1255,14 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
     }
   };
-};
+}());
+
+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM = (function(){
+  var c=0;
+  for( var i in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS) c++;
+  return c;
+}());
+
 
 DcmgrGUI.prototype = {
   initialize:function(){
