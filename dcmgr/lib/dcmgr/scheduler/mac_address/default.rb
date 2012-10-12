@@ -9,7 +9,6 @@ module Dcmgr::Scheduler::MacAddress
     M = Dcmgr::Models
 
     def schedule(network_vif)
-      p "coming here"
       range = M::MacRange.first
       raise MacAddressSchedulerError, "No mac address ranges found in the database." if range.nil?
 
