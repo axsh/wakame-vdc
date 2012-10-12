@@ -96,9 +96,6 @@ module Dcmgr::Models
       }
 
       # Destroy relations with groups that are no longer referenced
-        p self.referencees
-        p action
-        p current_ref_group_ids
       self.referencees_dataset.each { |referencee|
         unless current_ref_group_ids.member?(referencee.canonical_uuid)
           self.remove_referencee(referencee)
