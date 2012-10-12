@@ -142,9 +142,7 @@ module Dcmgr
           super
           STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
 
-          begin
-            self.send(:mac_address_scheduler)
-          rescue
+          if @config[:mac_address_scheduler].nil?
             parse_dsl {
               mac_address_scheduler :Default
             }
