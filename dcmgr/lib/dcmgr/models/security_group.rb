@@ -75,7 +75,7 @@ module Dcmgr::Models
       rules.compact
     end
 
-    def before_save
+    def after_save
       current_ref_group_ids = []
 
       # Establish relations with referenced groups
@@ -93,7 +93,7 @@ module Dcmgr::Models
         if self.referencees.find {|ref| ref.canonical_uuid == ref_group_id}.nil? && (not SecurityGroup[ref_group_id].nil?)
           self.add_referencee(SecurityGroup[ref_group_id])
         end
-      } #TODO: Fix crash when adding reference rules on create
+      }
 
       # Destroy relations with groups that are no longer referenced
       self.referencees_dataset.each { |referencee|
