@@ -80,7 +80,7 @@ DcmgrGUI.prototype.instancePanel = function(){
       var display_name = $(this).find('#instance_display_name').val();
       var security_groups = [];
       $.each($(this).find('#right_select_list').find('option'),function(i){
-       security_groups.push("security_groups[]="+ $(this).text());
+       security_groups.push("security_groups[]="+ $(this).val());
       });
       var data = 'display_name=' + display_name + '&' + security_groups.join('&');
 

@@ -393,7 +393,8 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
               var vif_id = instance.result.vif[0].vif.vif_id;
               data.push({
                'value' : vif_id,
-               'name': instance.result.id
+               'id'  : instance.result.id,
+               'name': instance.result.display_name
               });
             }
           });
@@ -511,7 +512,8 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
             var vif_id = instance.result.vif[0].vif.vif_id;
               data.push({
                'value' : vif_id,
-               'name': instance.result.id
+               'id'  : instance.result.id,
+               'name': instance.result.display_name
               });
             }
           });
