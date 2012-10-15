@@ -241,6 +241,7 @@ module Dcmgr
 
     module MacAddress
       autoload :ByHostNodeGroup, 'dcmgr/scheduler/mac_address/by_host_node_group'
+      autoload :Default, 'dcmgr/scheduler/mac_address/default'
     end
 
     NAMESPACES=[HostNode, StorageNode, Network, MacAddress]

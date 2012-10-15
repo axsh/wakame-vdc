@@ -141,6 +141,12 @@ module Dcmgr
         def validate(errors)
           super
           STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
+
+          if @config[:mac_address_scheduler].nil?
+            parse_dsl {
+              mac_address_scheduler :Default
+            }
+          end
         end
       end
 
@@ -165,6 +171,12 @@ module Dcmgr
            :network_scheduler,
           ].each do |name|
             errors << "#{name} is undefined." unless self.send(name)
+          end
+
+          if @config[:mac_address_scheduler].nil?
+            parse_dsl {
+              mac_address_scheduler :Default
+            }
           end
         end
       end
