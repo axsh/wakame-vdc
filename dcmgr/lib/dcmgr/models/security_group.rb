@@ -75,7 +75,7 @@ module Dcmgr::Models
       rules.compact
     end
 
-    def before_save
+    def handle_refs(action = :create)
       current_ref_group_ids = []
 
       # Establish relations with referenced groups
@@ -90,18 +90,26 @@ module Dcmgr::Models
         next if ref_group_id.nil?
 
         current_ref_group_ids << ref_group_id
-        if self.referencees.find {|ref| ref.canonical_uuid == ref_group_id}.nil? && (not SecurityGroup[ref_group_id].nil?)
+        if self.referencees.find {|ref| ref.canonical_uuid == ref_group_id}.nil? && (not SecurityGroup[ref_group_id].nil?) && action == :create
           self.add_referencee(SecurityGroup[ref_group_id])
         end
-      } #TODO: Fix crash when adding reference rules on create
+      }
 
       # Destroy relations with groups that are no longer referenced
       self.referencees_dataset.each { |referencee|
         unless current_ref_group_ids.member?(referencee.canonical_uuid)
           self.remove_referencee(referencee)
         end
-      } unless self.referencees.empty?
+      } unless self.referencees.empty? || action != :delete
+    end
 
+    def before_save
+      handle_refs(:delete)
+      super
+    end
+
+    def after_save
+      handle_refs(:create)
       super
     end
 
@@ -109,6 +117,7 @@ module Dcmgr::Models
       return false if self.network_vif.size > 0
       return false if self.referencers.size > 0
 
+      self.remove_all_referencees
       super
     end
     alias :destroy_group :destroy
