@@ -135,13 +135,13 @@ The amqp server to use is specified in a configuration file.
 Creating Database
 -----------------
 
-Before create database, you should start mysql-server. 
+Before create database, you should start mysql-server.
 
     # service mysql start
 
 TODO description
 
-    # chkconfig mysql on 
+    # chkconfig mysql on
 
 If you need additional demonstration data, please type the followings.
 NOTICE: this script will erase all related database at first. We recommend to backup before doing this.
