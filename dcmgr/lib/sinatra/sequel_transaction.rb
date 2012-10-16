@@ -37,17 +37,17 @@ module Sinatra
     module Helpers
       # TODO: abstract database connection. it means that do not use
       # Sequel::DATABASE.first where to get the connection.
-      
+
       public
       # commit manually before return from the request block
       def commit_transaction
         STDERR.puts "Deprecated method. Use on_after_commit() instead."
       end
-      
+
       def on_after_commit(&blk)
         Sequel::DATABASES.first.after_commit &blk
       end
-      
+
       private
       def route_eval(&block)
         db = Sequel::DATABASES.first

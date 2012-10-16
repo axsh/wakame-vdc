@@ -58,9 +58,9 @@ end
 
 module RetryHelper
   #include Config
-  
+
   DEFAULT_WAIT_PERIOD=60*5
-  
+
   def retry_while_not(wait_sec=DEFAULT_WAIT_PERIOD, &blk)
     start_at = Time.now
     lcount=0
@@ -74,7 +74,7 @@ module RetryHelper
       break if (Time.now - start_at) > wait_sec
     }
   end
-  
+
   def retry_until(wait_sec=DEFAULT_WAIT_PERIOD, &blk)
     start_at = Time.now
     lcount=0
@@ -155,7 +155,7 @@ module InstanceHelper
     end
 
     FileUtils.rm(private_key_path)
-    
+
     if $?.exitstatus == 0
       output
     else

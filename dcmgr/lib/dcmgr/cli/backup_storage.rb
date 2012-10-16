@@ -16,7 +16,7 @@ module Dcmgr::Cli
       fields = options.dup
       puts super(M::BackupStorage, fields)
     end
-    
+
     desc "modify UUID [options]", "Modify the backup storage"
     method_option :uuid, :type => :string, :desc => "The UUID for the backup storage."
     method_option :display_name, :type => :string, :desc => "The display name for the backup storage."
@@ -33,7 +33,7 @@ module Dcmgr::Cli
     def del(uuid)
       super(M::BackupStorage,uuid)
     end
-    
+
     desc "show [UUID]", "Show the backup storage details"
     def show(uuid=nil)
       if uuid
@@ -60,6 +60,6 @@ __END
 __END
       end
     end
-    
+
   end
 end

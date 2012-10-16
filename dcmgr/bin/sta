@@ -29,7 +29,7 @@ manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'sta'
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
-  
+
   load_module Isono::NodeModules::NodeHeartbeat
 end
 

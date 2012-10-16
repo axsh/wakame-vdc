@@ -9,7 +9,7 @@ last_if_name=""
 
 while true; do
     if_name=`brctl show | grep '^br0' | sed -e 's:[\t][\t]*:\t:g' | cut -f 4`
-    
+
     if [ -z "$if_name" ] || [ "$last_if_name" == "$if_name" ]; then break; fi
 
     echo brctl delif br0 \"$if_name\"

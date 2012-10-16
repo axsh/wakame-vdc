@@ -17,9 +17,9 @@ module Dcmgr
         'vfat' => {:format=>'vfat', :label_opt=>'-n'},
       }
       METADATA_DRIVE_FORMAT='vfat'
-      
+
       def_configuration do
-        # TODO: create helper method to 
+        # TODO: create helper method to
         # Abstract class for Cgroup parameters
         self.const_set(:Cgroup, Class.new(Dcmgr::Configuration))
 
@@ -29,7 +29,7 @@ module Dcmgr
 
           # Modifiable throttle parameters for blkio controller.
           # It is ignored if the value is either nil or 0.
-          
+
           # blkio.throttle.read_iops_device
           param :read_iops, :default=>nil
           # blkio.throttle.read_bps_device
@@ -58,7 +58,7 @@ module Dcmgr
           next if vnic[:network].nil?
 
           network = hc.rpc.request('hva-collector', 'get_network', vnic[:network_id])
-          
+
           network_name = network[:dc_network][:name]
           dcn = Dcmgr.conf.dc_networks[network_name]
           if dcn.nil?
@@ -70,7 +70,7 @@ module Dcmgr
           unless valid_nic?(dcn.bridge)
             raise "Bridge not found for the network #{network_name}: #{dcn.bridge}"
           end
-          
+
           fwd_if = dcn.interface
           bridge_if = dcn.bridge
 
@@ -100,7 +100,7 @@ module Dcmgr
       def setup_metadata_drive(hc,metadata_items)
         begin
           FileUtils.mkdir(hc.inst_data_dir) unless File.exists?(hc.inst_data_dir)
-          
+
           logger.info("Setting up metadata drive image:#{hc.inst_id}")
           # truncate creates sparsed file.
           sh("/usr/bin/truncate -s 10m '#{hc.metadata_img_path}'; sync;")
@@ -115,18 +115,18 @@ module Dcmgr
           sh("mkfs -t #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:format]} #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:label_opt]} METADATA %s", [lodev])
           Dir.mkdir("#{hc.inst_data_dir}/tmp") unless File.exists?("#{hc.inst_data_dir}/tmp")
           sh("/bin/mount -t #{METADATA_DRIVE_DEFS[METADATA_DRIVE_FORMAT][:format]} #{lodev} '#{hc.inst_data_dir}/tmp'")
-          
+
           # build metadata directory tree
           metadata_base_dir = File.expand_path("meta-data", "#{hc.inst_data_dir}/tmp")
           FileUtils.mkdir_p(metadata_base_dir)
-          
+
           metadata_items.each { |k, v|
             if k[-1,1] == '/' && v.nil?
               # just create empty folder
               FileUtils.mkdir_p(File.expand_path(k, metadata_base_dir))
               next
             end
-            
+
             dir = File.dirname(k)
             if dir != '.'
               FileUtils.mkdir_p(File.expand_path(dir, metadata_base_dir))
@@ -147,7 +147,7 @@ module Dcmgr
 
       protected
 
-      # Find first matching loop device path from the result of "losetup -a" 
+      # Find first matching loop device path from the result of "losetup -a"
       def find_loopdev(path)
         stat = File.stat(path)
         `losetup -a`.split(/\n/).each {|i|
@@ -158,13 +158,13 @@ module Dcmgr
         }
         nil
       end
-      
+
       # "kpartx -d" gets failed occasionally. so we use "dmsetup" and
       # "losetup -d" respectively since they do almost same steps as
       # what is done in "kpartx -d".
       # the difference is that it waits udev event before detach loop
       # device. this is very critical step and the root cause for
-      # irregular failure of "kpartx -d". 
+      # irregular failure of "kpartx -d".
       def detach_loop(imgpath)
         loopdev = find_loopdev(imgpath)
         raise "Failed to find loop device from: #{imgpath}" if loopdev.nil?
@@ -210,7 +210,7 @@ module Dcmgr
         def initialize(cgroup_scope)
           @cgroup_scope = cgroup_scope
         end
-        
+
         def add(k, v)
           path = File.join(@cgroup_scope, k)
           File.open(path, 'w+') { |f|
@@ -227,7 +227,7 @@ module Dcmgr
           devnode_id.chomp
         end
       end
-      
+
     end
   end
 end

@@ -18,7 +18,7 @@ module Dcmgr::Scheduler::HostNode::Rules
     def filter(dataset,instance)
       dataset
     end
-    
+
     def reorder(array,instance)
       array.sort_by { |hn|
         hn.instances_dataset.lives.filter(options.column.to_sym => instance[options.column.to_sym]).count

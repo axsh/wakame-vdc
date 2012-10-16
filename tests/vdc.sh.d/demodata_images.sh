@@ -63,7 +63,7 @@ for meta in $data_path/image-*.meta; do
       chksum=$(cat "${localpath}.md5")
     fi
     alloc_size=$(ls -l "$localpath" | awk '{print $5}')
-    
+
     case "$container_format" in
       "gz")
         echo "get the uncompressed size embedded in the .gz file $localpath ..."
@@ -92,7 +92,7 @@ for meta in $data_path/image-*.meta; do
       --checksum="$chksum" \
       --container-format="$container_format" \
       --description="'kvm 32bit'"
-    
+
     case $storetype in
       "local")
         shlog ./bin/vdc-manage image add local "bo-${uuid}" \
@@ -107,7 +107,7 @@ for meta in $data_path/image-*.meta; do
 	  --display-name "'${display_name}'" \
 	  --is-cacheable
         ;;
-      
+
       "volume")
         shlog ./bin/vdc-manage image add volume "bo-${uuid}" \
           --account-id ${account_id} \

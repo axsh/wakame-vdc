@@ -8,15 +8,15 @@ module Dcmgr::Models
 
     DISABLED=0
     ENABLED=1
-    
+
     one_to_many  :tags, :dataset=>lambda { Tag.filter(:account_id=>self.canonical_uuid); }
 
     subset(:alives, {:deleted_at => nil})
-    
+
     # sti plugin has to be loaded at lower position.
     plugin :subclasses
     plugin :single_table_inheritance, :uuid, :model_map=>{}
-    
+
 
     def disable?
       self.enabled == DISABLED
@@ -25,7 +25,7 @@ module Dcmgr::Models
     def enable?
       self.enabled == ENABLED
     end
-    
+
     def _destroy_delete
       self.deleted_at ||= Time.now
       self.save_changes
@@ -43,7 +43,7 @@ module Dcmgr::Models
         end
         default_values[:id]
       end
-      
+
       def uuid(uuid=nil)
         if uuid.is_a?(String)
           uuid = uuid.downcase
@@ -94,7 +94,7 @@ module Dcmgr::Models
                                       :uuid=>'shstor',
                                       :name=>"default_shared_storages")
     end
-    
+
     SystemAccount.define_account(:DatacenterAccount) do
       pk 100
       uuid '00000000'
@@ -118,7 +118,7 @@ module Dcmgr::Models
         self.enabled = Account::ENABLED
       end
     end
-    
+
   end
 end
 

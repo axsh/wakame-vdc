@@ -96,10 +96,10 @@ mkdir -p ${tmp_dir} || :
 #Make the debian package
 (
   cd ${wakame_dir}
-  
+
   # skip building package if all debs exist already.
   for i in ${wakame_debs}; do
-    [[ -f "../${i}" ]] 
+    [[ -f "../${i}" ]]
   done && exit 0
 
   if [[ -n "$FLAG_WITHOUT_GPG_SIGN" ]]; then
@@ -110,10 +110,10 @@ mkdir -p ${tmp_dir} || :
     if [ "$?" -ne "0" ]; then
       abort "Couldn't find Axsh Co. LTD's private gpg key on the keyring. This script needs it to sign the CD."
     fi
-    
+
     debuild --no-lintian
   fi
-  
+
   for i in ${wakame_debs}; do
     [[ -e "../${i}" ]] || abort "Couldn't find deb package: ${i}"
     cp -p "../${i}" "${cd_mod_dir}/pool/extras"
@@ -121,13 +121,13 @@ mkdir -p ${tmp_dir} || :
 )
 
 #Extract guts
-function download_package() { 
-  local download_path=$1 
-  local download_file=$2 
-  local seed=`cat "${download_file}"` 
- 
-  cd ${download_path} 
-  for package in ${seed[@]}; do 
+function download_package() {
+  local download_path=$1
+  local download_file=$2
+  local seed=`cat "${download_file}"`
+
+  cd ${download_path}
+  for package in ${seed[@]}; do
 
     local package_name=`basename "${package}"`
     case ${package_location} in
@@ -137,13 +137,13 @@ function download_package() {
       ;;
     esac
 
-    if [ ! -e ${download_path}${package_name} ]; then 
+    if [ ! -e ${download_path}${package_name} ]; then
       # url escape
       url=`echo ${url}${path} | sed -e s/+/%2B/g`
-      wget ${url} 
+      wget ${url}
     fi
-  done  
-} 
+  done
+}
 
 echo "Copying guts contents"
 rsync -a ${root_dir}/guts ${tmp_dir}

@@ -1,5 +1,5 @@
 # encoding: utf-8
-begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end 
+begin require 'rspec/expectations'; rescue LoadError; require 'spec/expectations'; end
 require 'cucumber/formatter/unicode'
 
 Before do
@@ -10,9 +10,9 @@ end
 Given /^an instance ([^\s]+) is started with the following options$/ do |instance_name,options|
   @instances = {} if @instances.nil?
   raise "And instance already exists with that name: '#{instance_name}'" unless @instances[instance_name].nil?
-  
+
   step "a new instance with its uuid in <#{instance_name}:uuid> and the following options", options
-  
+
   @instances[instance_name] = @api_last_result
 end
 
@@ -38,7 +38,7 @@ end
 When /^instance ([^\s]+) pings ip (([^\s]+))$/ do |sender,username, ip|
   @ping_result = {} if @ping_result.nil?
   @ping_result[sender] = {} if @ping_result[sender].nil?
-  
+
   raise "Unknown instance name: #{sender}" if @instances.nil? || @instances[sender].nil?
   if @instances[sender]["vif"].empty?
     steps %Q{
@@ -46,7 +46,7 @@ When /^instance ([^\s]+) pings ip (([^\s]+))$/ do |sender,username, ip|
     }
     @instances[sender] = @api_last_result
   end
-  
+
   @ping_result[sender][ip] = ssh_command(@instances[sender]["id"], "ubuntu", "/opt/ping.rb #{ip} #{TIMEOUT_PACKET_SENDING}", TIMEOUT_PACKET_SENDING).chomp
   @last_sender_name = sender
   @last_pinged_ip = ip
@@ -62,7 +62,7 @@ When /^instance ([^\s]+) pings instance ([^\s]+)$/ do |sender, receiver|
   end
 
   receiver_address = @instances[receiver]["vif"].first["ipv4"]["address"]
-  
+
   steps %Q{
     When instance #{sender} pings ip #{receiver_address}
   }
@@ -82,7 +82,7 @@ When /^instance ([^\s]+) pings instance ([^\s]+) on each nic$/ do |sender,receiv
   @instances[receiver]["vif"].each { |vnic|
     receiver_address = vnic["ipv4"]["address"]
     receiver_vnic = vnic["vif_id"]
-    
+
     puts "pinging: #{receiver_address}"
     steps %Q{
       When instance #{sender} pings ip #{receiver_address}

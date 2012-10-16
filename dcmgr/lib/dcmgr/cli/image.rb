@@ -26,11 +26,11 @@ module Dcmgr::Cli
       def local(backup_object_id)
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) unless M::BackupObject[backup_object_id]
-        
+
         fields = options.dup
         fields[:backup_object_id]=backup_object_id
         fields[:boot_dev_type]=M::Image::BOOT_DEV_LOCAL
-        
+
         puts add(M::Image, fields)
       end
 
@@ -50,15 +50,15 @@ module Dcmgr::Cli
       def volume(backup_object_id)
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) if M::BackupObject[backup_object_id].nil?
-        
+
         #TODO: Check if :state is a valid state
         fields = options.dup
         fields[:boot_dev_type]=M::Image::BOOT_DEV_SAN
         fields[:backup_object_id]=backup_object_id
-        
+
         puts add(M::Image, fields)
       end
-      
+
       protected
       def self.basename
         "vdc-manage #{Image.namespace} #{self.namespace}"
@@ -131,7 +131,7 @@ __END
         ds.each { |r|
           table << [r.canonical_uuid, r.account_id, r.service_type, r.display_name, (r.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'), r.arch]
         }
-        
+
         shell.print_table(table)
       end
     end
@@ -146,6 +146,6 @@ __END
       end
       img.save_changes
     end
-    
+
   end
 end

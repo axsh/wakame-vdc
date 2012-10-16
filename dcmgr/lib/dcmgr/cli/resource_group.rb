@@ -16,12 +16,12 @@ module Dcmgr::Cli
     method_option :attributes, :type => :string, :desc => "The attributes for the new resource group"
     def add
       Error.raise("Invalid type: '#{options[:type]}'. Valid types are [#{TYPES.keys.join(", ")}].",100) unless TYPES.member? options[:type]
-      
+
       fields = options.dup.tap {|h| h.delete(:type)}
-      
+
       puts super(eval("T::#{TYPES[options[:type]]}"),fields)
     end
-    
+
     desc "modify UUID [options]", "Modify an existing resource group"
     method_option :account_id, :type => :string, :desc => "The UUID of the account that this resource group belongs to"
     method_option :name, :type => :string, :desc => "The name for the new resource group"
@@ -29,16 +29,16 @@ module Dcmgr::Cli
     def modify(uuid)
       tag = M::Taggable.find(uuid)
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
-      
+
       super(tag.class,uuid,options)
     end
-    
+
     desc "show [UUID]", "Show the existing resource groups"
     def show(uuid=nil)
       if uuid
         tag = M::Taggable.find(uuid)
         UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
-        
+
         puts ERB.new(<<__END, nil, '-').result(binding)
 Group UUID:
   <%= tag.canonical_uuid %>
@@ -63,7 +63,7 @@ __END
 __END
       end
     end
-    
+
     desc "del UUID", "Delete an existing resource group"
     def del(uuid)
       tag = M::Taggable.find(uuid)
@@ -71,7 +71,7 @@ __END
       tag.remove_all_mapped_uuids
       super(tag.class,uuid)
     end
-    
+
     desc "map UUID OBJECT_UUID", "Add a resource to a group"
     long_desc <<__DESC
 Add a resource to a group.
@@ -84,21 +84,21 @@ __DESC
       #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
       #This is so the Taggable.find method can be used to determine the Model class based on canonical uuid
       M.constants(false).each {|c| M.const_get(c, false) }
-      
+
       object = M::Taggable.find(object_uuid)
       tag    = M::Taggable.find(uuid)
 
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
       UnknownUUIDError.raise(object_uuid) if object.nil?
       Error.raise("A '#{object.class}' can not be put into #{uuid}.",100) unless tag.accept_mapping?(object)
-      
+
       M::TagMapping.create(
         :tag_id => tag.id,
         :uuid   => object.canonical_uuid,
         :sort_index => options[:sort_index]
       )
     end
-    
+
     desc "index UUID OBJECT_UUID INDEX", "Set the sort index for a resource in a group"
     def index(uuid, object_uuid, index)
       # Check index format
@@ -140,19 +140,19 @@ __DESC
       #Quick hack to get all models in Dcmgr::Models loaded in Taggable.uuid_prefix_collection
       #This is so the Taggable.find method can be used to determine the Model class based on canonical uuid
       M.constants(false).each {|c| M.const_get(c, false) }
-      
+
       object = M::Taggable.find(object_uuid)
       tag    = M::Taggable.find(uuid)
 
       UnknownUUIDError.raise(uuid) unless tag.is_a? M::Tag
       UnknownUUIDError.raise(object_uuid) if object.nil?
       Error.raise("A '#{object.class}' can not be put into #{uuid}.",100) unless tag.accept_mapping?(object)
-      
+
       mapping = M::TagMapping.find(
         :tag_id => tag.id,
         :uuid   => object.canonical_uuid
       )
-      
+
       raise "#{object.canonical_uuid} does not exist in #{tag.canonical_uuid}" if mapping.nil?
       mapping.destroy
     end

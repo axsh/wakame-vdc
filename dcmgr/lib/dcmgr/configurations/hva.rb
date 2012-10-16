@@ -3,7 +3,7 @@
 module Dcmgr
   module Configurations
     class Hva < Configuration
-      
+
       class DcNetwork < Configuration
         param :interface
         param :bridge
@@ -13,7 +13,7 @@ module Dcmgr
           super()
           @config[:name] = network_name
         end
-        
+
         def validate(errors)
           errors << "Missing interface parameter for the network #{@config[:name]}" unless @config[:interface]
           errors << "Missing bridge_type parameter for the network #{@config[:name]}" unless @config[:bridge_type]
@@ -79,11 +79,11 @@ module Dcmgr
           raise ArgumentError, "Unknown hypervisor driver type: #{driver_class}"
         end
       end
-      
+
       DSL do
         def dc_network(name, &blk)
           abort "" unless blk
-          
+
           conf = DcNetwork.new(name)
           @config[:dc_networks][name] = conf.parse_dsl(&blk)
         end
@@ -136,7 +136,7 @@ module Dcmgr
       param :trema_tmp, :default=> proc {
         @config[:trema_tmp] || (@config[:trema_dir] + '/tmp')
       }
-      
+
       param :esxi_ipaddress
       param :esxi_datacenter, :default => "ha-datacenter"
       param :esxi_datastore, :default => "datastore1"
@@ -158,7 +158,7 @@ module Dcmgr
       param :script_root_path, :default => proc {
         File.expand_path('script', DCMGR_ROOT)
       }
-      
+
       def validate(errors)
         if @config[:vm_data_dir].nil?
           errors << "vm_data_dir not set"

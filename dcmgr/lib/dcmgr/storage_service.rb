@@ -4,7 +4,7 @@ module Dcmgr
   class StorageService
 
     @snapshot_repository_config = nil
-    
+
     def initialize(driver, options = {})
       @driver = driver
       @account = {}
@@ -12,7 +12,7 @@ module Dcmgr
       @account[:access_key] = options[:access_key]
       @account[:secret_key] = options[:secret_key]
     end
-    
+
     def self.snapshot_repository_config
       if @snapshot_repository_config.nil?
         config_file = YAML.load_file(File.join(File.expand_path('../../../', __FILE__), 'config', 'snapshot_repository.yml'))
@@ -44,7 +44,7 @@ module Dcmgr
 
     def self.repository(repository_address)
       if repository_address.nil?
-        return {} 
+        return {}
       end
       tmp = repository_address.split(',')
       destination_key = tmp[0]
@@ -69,13 +69,13 @@ module Dcmgr
       format = '%s,%s,%s'
       config_data = self.snapshot_repository_config
       destination = destination_key.split('@')[0]
-      
+
       config = if destination == 'local'
                  {'access_key' => '', 'secret_key' => ''}
                else
                  config_data[destination]
                end
-      
+
       sprintf(format, *[destination_key, config["access_key"], config["secret_key"]])
     end
 

@@ -17,7 +17,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     if params[:node_id]
       ds = ds.filter(:node_id =>params[:node_id])
     end
-    
+
     if params[:display_name]
       ds = ds.filter(:display_name =>params[:display_name])
     end
@@ -50,16 +50,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
       R::HostNodeCollection.new(paging_ds).generate
     end
   end
-  
+
   get '/:id' do
     # description 'Show status of the host'
     # param :account_id, :string, :optional
     hn = find_by_public_uuid(:HostNode, params[:id])
     raise E::UnknownHostNode, params[:id] if hn.nil?
-    
+
     respond_with(R::HostNode.new(hn).generate)
   end
-  
+
   post do
     # description 'Create a new host node'
     # param :id, :string, :required

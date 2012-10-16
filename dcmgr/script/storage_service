@@ -6,8 +6,8 @@
 #initialize
 unalias -a
 shopt -s expand_aliases
- 
-# read platform enveiroment. 
+
+# read platform enveiroment.
 if [ -f $(dirname $0)/platform.sh ]; then
   . $(dirname $0)/platform.sh
 fi
@@ -28,7 +28,7 @@ set_service() {
   case ${SERVICE} in
     "s3") SERVICE_HOST="s3.amazonaws.com" SERVICE_NAME="AWS";;
     "iijgio") SERVICE_HOST="gss.iijgio.com" SERVICE_NAME="IIJGIO";;
-  esac 
+  esac
 }
 
 # check to see if we have all the needed S3 variables defined.
@@ -125,7 +125,7 @@ s3_curl() {
  # $2 = remote bucket.
  # $3 = remote name
  # $4 = local name.
- local bucket bucket_host remote date sig md5 arg inout 
+ local bucket bucket_host remote date sig md5 arg inout
  # header handling is kinda fugly, but it works.
  bucket_host="${2}"
  bucket="${2:+/${2}}/" # slashify the bucket
@@ -143,7 +143,7 @@ s3_curl() {
          if [[ ${3} = '' ]]; then
            content_length=0
          else
-           content_length=`ls -l ${4} | awk '{print $5}'` 
+           content_length=`ls -l ${4} | awk '{print $5}'`
          fi
          headers[${#headers[@]}]="Content-Length: ${content_length}"
        elif [[ -f ${4} ]]; then
@@ -170,8 +170,8 @@ s3_curl() {
  else
    url="http://${SERVICE_HOST}/${remote}"
  fi
- curl ${arg} "${inout}" ${stdopts} -K <(curl_headers "${headers[@]}") $url 
- 
+ curl ${arg} "${inout}" ${stdopts} -K <(curl_headers "${headers[@]}") $url
+
  return $?
 }
 

@@ -3,7 +3,7 @@
 module Dcmgr
   module VNet
     module Tasks
-    
+
       class AcceptAllDNS < Task
         include Dcmgr::VNet::Netfilter
         def initialize()
@@ -13,7 +13,7 @@ module Dcmgr
           self.rules << IptablesRule.new(:filter,:forward,:udp,:incoming,"-p udp --dport 53 -j ACCEPT")
         end
       end
-    
+
     end
   end
 end

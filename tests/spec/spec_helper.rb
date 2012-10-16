@@ -14,13 +14,13 @@ module Config
   def get_config
     ConfigFactory.create_config
   end
-  
+
   # Determines whether or not the tests are
   # suppposed to be run or not.
   def is_enabled?(test)
     not get_config[test].nil?
   end
-  
+
   class ConfigFactory
     def self.create_config(*args)
       # Check if a config file was specified
@@ -36,7 +36,7 @@ module Config
         default_config
       end
     end
-    
+
     private
     # Returns a hard coded configuration for testing a standard vdc.sh environment
     def self.default_config
@@ -46,7 +46,7 @@ module Config
           :account => "a-shpoolxx",
           :api => "http://localhost:9001/api"
         },
-        
+
         # Spec that tests machine images
         # Tests if instances start from them and if we can SSH into them
         # Also tests start and stop operations
@@ -62,8 +62,8 @@ module Config
           # The name of the ssh key to use with these images
           :ssh_key_id => ["ssh-demo"],
          },
-        
-        # Spec that tests if instances run properly with arguments 
+
+        # Spec that tests if instances run properly with arguments
         :instance_spec => {
           # arguments to test spec with
           :image_id => "wmi-lucid0",
@@ -73,7 +73,7 @@ module Config
           :security_groups => ["sg-demofgr"],
           :username => "ubuntu"
         },
-        
+
         # Spec that tests the images api and cli
         :images_api_spec => {
           # The image to test with
@@ -81,33 +81,33 @@ module Config
           :local_image_ids    => ["wmi-lucid0", "wmi-lucid5"],
           :snapshot_image_ids => ["wmi-lucid1", "wmi-lucid6"]
         },
-        
+
         # Spec that tests the host pools api
         :host_nodes_api_spec => {
           # The host pool to test with
           :host_node_ids => ["hn-demo1"]
         },
-        
+
         # Spec that tests the instance specs api
         :instance_specs_api_spec => {
           :instance_spec_ids => ["is-demospec"]
         },
-        
+
         # Spec that tests the networks web api
         :network_api_spec => {
           :network_ids => ["nw-demo1","nw-demo2","nw-demo3","nw-demo4","nw-demo5"]
         },
-        
+
         # Spec that tests the ssh keys web api
         :ssh_key_pairs_api_spec => {
           :name => "testkey"
         },
-        
+
         # Spec that tests the host pools web api
         :storage_nodes_api_spec => {
           :storage_ids => ["sn-demo1"]
         },
-        
+
         # Spec that tests the volume snapshots web api
         :volume_api_spec => {
           :minimum_volume_size => 10,
@@ -116,7 +116,7 @@ module Config
           # Snapshot id to try and create a volume from
           :snapshot_id => "snap-lucid1"
         },
-        
+
         # Spec that tests the netfilter CRUD api
         :netfilter_group_api_apec => {
           :groups_to_create => [
@@ -126,7 +126,7 @@ module Config
           ],
           :update_rule => "icmp:-1,-1,ip4:0.0.0.0"
         },
-        
+
         # Spec that tests instances with multiple vnics
         :multiple_vnic_spec => {
           :images     => ['wmi-lucid0'],
@@ -144,10 +144,10 @@ module Config
         }
       }
     end
-    
+
     # Returns a configuration read from an yaml file
     def config_from_yaml_file(path)
-      
+
     end
   end
 end
@@ -156,7 +156,7 @@ class APITest
   include HTTParty
   include Config
   cfg = Config::ConfigFactory.create_config
-  
+
   base_uri cfg[:global][:api]
   #format :json
 #  headers 'X-VDC-ACCOUNT-UUID' => 'a-00000000'
@@ -174,9 +174,9 @@ end
 
 module RetryHelper
   include Config
-  
+
   DEFAULT_WAIT_PERIOD=60*Config::ConfigFactory.create_config[:global][:retry_time]
-  
+
   def retry_until(wait_sec=DEFAULT_WAIT_PERIOD, &blk)
     start_at = Time.now
     lcount=0
@@ -213,7 +213,7 @@ module InstanceHelper
       end
     end
   end
-  
+
   def retry_until_stopped(instance_id)
       retry_until do
         case APITest.get("/instances/#{instance_id}")["state"]
@@ -364,7 +364,7 @@ module VolumeHelper
       APITest.get("/volumes/#{volume_id}")["state"] == "attached"
     end
   end
-  
+
   def detach_volume_from_instance(instance_id,volume_id)
     res = APITest.update("/volumes/#{volume_id}/detach", {:instance_id=>instance_id, :volume_id=>volume_id})
     res.success?.should be_true
@@ -373,7 +373,7 @@ module VolumeHelper
       APITest.get("/volumes/#{volume_id}")["state"] == "available"
     end
   end
-  
+
   def delete_volume(volume_id)
     APITest.delete("/volumes/#{volume_id}").success?.should be_true
     # "available" -> "deregistering" -> "deleted"

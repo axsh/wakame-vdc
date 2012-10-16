@@ -4,7 +4,7 @@ module Dcmgr::Models
   # Network service monitor entry for vifs.
   class NetworkVifMonitor < BaseNew
     taggable 'vifm'
-    
+
     many_to_one :network_vif
 
     subset(:alives, {:deleted_at => nil})
@@ -31,7 +31,7 @@ module Dcmgr::Models
       'mysql' => :MySQL,
       'pgsql' => :PostgreSQL
     }.freeze
-   
+
     plugin :single_table_inheritance, :protocol, :model_map=>lambda {|v| self::Monitors.const_get(MONITOR_CLASSES[v], false) }, :key_map=>lambda{|klass|
       MONITOR_CLASSES.invert[klass.name.split('::').last.to_sym]
     }
@@ -136,7 +136,7 @@ module Dcmgr::Models
       class PostgreSQL < TCP
       end
     end
-    
+
     def to_hash
       hash = super
     end

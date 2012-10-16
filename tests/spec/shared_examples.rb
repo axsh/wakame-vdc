@@ -15,7 +15,7 @@ end
 
 shared_examples_for "instances with custom network scheduler" do |images,specs,schedulers|
   include InstanceHelper
-  
+
   images.each { |image|
     specs.each { |spec|
       schedulers.each { |scheduler|
@@ -24,7 +24,7 @@ shared_examples_for "instances with custom network scheduler" do |images,specs,s
           res = APITest.create("/instances", {:image_id => image, :instance_spec_id => spec, :network_scheduler => scheduler})
           res.success?.should be_true
           @instance_id = res["id"]
-          
+
           retry_until_running(@instance_id)
 
           APITest.delete("/instances/#{@instance_id}").success?.should be_true
@@ -45,7 +45,7 @@ shared_examples_for "image_delete_and_register" do |image_ids, image_type|
     init_env
     cd_dcmgr_dir
   end
-  
+
   image_ids.each { |image_id|
     it "should delete machine image (#{image_id}) and then register with CLI." do
       res = APITest.get("/images/#{image_id}")

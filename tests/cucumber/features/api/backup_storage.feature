@@ -17,7 +17,7 @@ Feature: Backup Storage API
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api update call to backup_storages/<registry:uuid> with the following options
-      | description   | display_name    | 
+      | description   | display_name    |
       | test storage1 | backup storage2 |
     Then the previous api call should be successful
 
@@ -48,7 +48,7 @@ Feature: Backup Storage API
   Scenario: Fail to create backup stroage with no options
     When we make an api create call to backup_storages/ with no options
     Then the previous api call should not be successful
-    
+
 
   Scenario: List backup storages with filter options
     Given a managed backup_storage with the following options

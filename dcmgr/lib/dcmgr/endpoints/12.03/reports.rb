@@ -6,10 +6,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/reports' do
 
   # Show list of reports
   # Filter Parameters:
-  # uuid: 
+  # uuid:
   # account_id:
-  # resource_type: 
-  # event_type: 
+  # resource_type:
+  # event_type:
   # created_since, created_until:
 
   get do
@@ -30,7 +30,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/reports' do
     if params[:event_type]
       ds = ds.filter(:event_type=>params[:event_type])
     end
-    
+
     ds = datetime_range_params_filter(:created, ds)
 
     collection_respond_with(ds) do |paging_ds|
