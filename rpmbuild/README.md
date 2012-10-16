@@ -145,6 +145,7 @@ check the following lines are described.
 Creating Database
 -----------------
 
+
 Before create database, you need to launch mysql-server. 
 
     # service mysql start
