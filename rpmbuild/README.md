@@ -27,7 +27,7 @@ Install epel-release.
 
     # yum install -y http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-7.noarch.rpm
 
-### Dcmgr Installation
+### Dcmgr installation
 
 Install Dcmgr. The Dcmgr manages all assets in data centers.
 
@@ -145,7 +145,7 @@ Creating Database
 -----------------
 
 
-Before create database, you need to launch mysql-server. 
+Before create database, you need to launch mysql-server.
 
     # service mysql start
 
