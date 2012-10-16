@@ -85,8 +85,7 @@ Set the appropriate VDC_ROOT environment variable.
 
 ### pre-setup proxy
 
-    # echo "$(eval "VDC_ROOT=/var/lib/wakame-vdc; echo \"$(cat /opt/axsh/wakame-vdc/tests/vdc.sh.d/proxy.conf.tmpl)\"")" > /etc/wakame-vdc/proxy.conf
-
+    # echo "$(eval "VDC_ROOT=/var/lib/wakame-vdc; echo \"$(curl -s https://raw.github.com/axsh/wakame-vdc/master/tests/vdc.sh.d/proxy.conf.tmpl)\"")" > /etc/wakame-vdc/proxy.conf
 
 Pre-setup Hva
 --------------
@@ -157,7 +156,7 @@ To automatically launch mysql-server, execute the following command.
 If you need additional demonstration data, please type the following commands.
 NOTICE: this script will erase all related database at first. We recommend to backup before doing this.
 
-    # /opt/axsh/wakame-vdc/tests/vdc.sh install::rhel
+    # yum install -y wakame-vdc-vdcsh
     # /opt/axsh/wakame-vdc/tests/vdc.sh init
 
 Developer Zone
