@@ -11,16 +11,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
 
     ds = datetime_range_params_filter(:created, ds)
     ds = datetime_range_params_filter(:deleted, ds)
-    
+
     if params[:service_type]
       validate_service_type(params[:service_type])
       ds = ds.filter(:service_type=>params[:service_type])
     end
-    
+
     if params[:display_name]
       ds = ds.filter(:display_name=>params[:display_name])
     end
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::SshKeyPairCollection.new(paging_ds).generate
     end

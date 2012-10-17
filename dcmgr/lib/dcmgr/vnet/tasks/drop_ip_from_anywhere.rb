@@ -3,7 +3,7 @@
 module Dcmgr
   module VNet
     module Tasks
-    
+
       # Drop all incoming IP layer traffic
       class DropIpFromAnywhere < Task
         include Dcmgr::VNet::Netfilter
@@ -12,7 +12,7 @@ module Dcmgr
           self.rules << IptablesRule.new(:filter,:forward,nil,:incoming,"-j DROP")
         end
       end
-    
+
     end
   end
 end

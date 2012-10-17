@@ -113,6 +113,10 @@ module Taggable
     def check_uuid_format(uuid)
       uuid =~ /^#{self.uuid_prefix}-/
     end
+
+    def valid_uuid_syntax?(uuid)
+      uuid =~ /^#{self.uuid_prefix}-[\w]+/
+    end
   end
 
   def self.apply(model)
@@ -286,6 +290,15 @@ class BaseNew < Sequel::Model
   # Callback when the initial data is setup to the database.
   def self.install_data
     install_data_hooks.each{|h| h.call }
+  end
+
+  # Create a UUID from IDset separated by pattern(default commas).
+  def self.split_uuid(params, pattern = ',')
+    arr = params.split(pattern)
+    uuids = arr.collect {|u| u.split('-')[1] }
+    uuids.delete(nil)
+    uuids.delete("")
+    uuids
   end
 
   private

@@ -21,8 +21,8 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/create_backup', :to => 'dialog#create_backup'
   post   'dialog/delete_backup', :to => 'dialog#delete_backup'
   post   'dialog/edit_backup', :to => 'dialog#edit_backup'
-  post   'dialog/attach_vif', :to => 'dialog#attach_vif'
-  post   'dialog/detach_vif', :to => 'dialog#detach_vif'
+  get    'dialog/create_network', :to => 'dialog#create_network'
+  post   'dialog/edit_network', :to => 'dialog#edit_network'
   post   'dialog/start_instances', :to => 'dialog#start_instances'
   post   'dialog/stop_instances', :to => 'dialog#stop_instances'
   post   'dialog/reboot_instances', :to => 'dialog#reboot_instances'
@@ -47,7 +47,7 @@ DcmgrGui::Application.routes.draw do
   post   'dialog/poweroff_load_balancer', :to => 'dialog#poweroff_load_balancer'
   post   'dialog/poweron_load_balancer', :to => 'dialog#poweron_load_balancer'
   post   'dialog/edit_load_balancer', :to => 'dialog#edit_load_balancer'
-
+  post   'dialog/active_standby_load_balancer', :to => 'dialog#active_standby_load_balancer'
 
   # user/group managment dialog
   get    'dialog/create_user', :to => 'user_management_dialog#create_user'
@@ -110,7 +110,7 @@ DcmgrGui::Application.routes.draw do
   #information
   get    'information' ,:to => 'information#index'
   get    'information/rss' ,:to => 'information#rss'
-  
+
   #instances
   get    'instances' ,:to => 'instances#index'
   get    'instances/total' ,:to => 'instances#total'
@@ -165,10 +165,21 @@ DcmgrGui::Application.routes.draw do
   
   #networks
   get    'networks' ,:to => 'networks#index'
+  post   'networks' ,:to => 'networks#create'
   get    'networks/list/:id' ,:to => 'networks#list'
   get    'networks/all' ,:to => 'networks#show_networks'
   get    'networks/total' ,:to => 'networks#total'
   get    'networks/show/:id' ,:to => 'networks#show'
+  put    'networks/attach', :to => 'networks#attach'
+  put    'networks/detach', :to => 'networks#detach'
+  get    'networks/:id/dhcp_ranges' ,:to => 'networks#show_dhcp_ranges'
+  put    'networks/:id/dhcp_ranges/add' ,:to => 'networks#add_dhcp_range'
+  put    'networks/:id/dhcp_ranges/remove' ,:to => 'networks#remove_dhcp_range'
+  get    'networks/:id/services' ,:to => 'networks#show_services'
+  post   'networks/:id/services' ,:to => 'networks#create_service'
+
+  #dc_networks
+  get    'dc_networks/allows_new_networks' ,:to => 'dc_networks#allows_new_networks'
 
   #security_groups
   get    'security_groups' ,:to => 'security_groups#index'
@@ -226,4 +237,16 @@ DcmgrGui::Application.routes.draw do
 
   #resorce (management)
   get    'resource' ,:to => 'resource#index'
+
+  #api
+  get    'api/users', :to => 'user_api#index'
+  get    'api/users/:id', :to => 'user_api#show'
+  get    'api/accounts', :to => 'account_api#index'
+  get    'api/accounts/:id', :to => 'account_api#show'
+  get    'api/notifications', :to => 'notification_api#index'
+  get    'api/notifications/:id', :to => 'notification_api#show'
+  delete 'api/notifications/:id', :to => 'notification_api#destroy'
+  post   'api/notifications', :to => 'notification_api#create'
+  put    'api/notifications/:id', :to => 'notification_api#update'
+
 end

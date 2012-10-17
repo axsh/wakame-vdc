@@ -13,7 +13,7 @@ module Sinatra
   # condition using custom DSL syntax.
   #
   # Typical HTTP request becomes like below:
-  # 
+  #
   # POST /xxxxx HTTP/1.1
   # X-VDC-Account-ID: a-shpoolxx
   # X-VDC-Account-Quota: ["security_groups.count": 5,
@@ -25,9 +25,14 @@ module Sinatra
   #
   # # Basic usage of this extension.
   # Sinatra::QuotaEvaluation.evaluators do
-  #   quota_key 'security_group.count' do
-  #     # quota_value == 5
-  #     quota_value <= Models::SecurityGroup.count
+  #   quota_type 'instance.count' do
+  #     fetch do
+  #       Models::Instance.dataset.count.to_i
+  #     end
+  #
+  #     evaluate do |fetch_value|
+  #       quota_value <= fetch_value
+  #     end
   #   end
   # end
   #
@@ -57,7 +62,7 @@ module Sinatra
   #     end
   #   end
   # end
-  # 
+  #
   module QuotaEvaluation
     class << self
 
@@ -67,14 +72,45 @@ module Sinatra
         def self.parse(&blk)
           self.new.tap { |i| i.instance_eval(&blk) }
         end
-        
+
         def initialize
           @tuples = {}
         end
-        
-        def quota_key(key, &blk)
+
+        def quota_type(key, &blk)
           raise ArgumentError, "#{key} was set already." if @tuples[key]
-          @tuples[key] = [blk]
+          @tuples[key] = QuotaType.parse(&blk)
+        end
+        alias :quota_key :quota_type
+
+        # DSL for quota_type section
+        class QuotaType
+
+          def self.parse(&blk)
+            self.new.parse(&blk)
+          end
+
+          def initialize()
+            @fetch_block=nil
+            @evaluate_block=nil
+          end
+
+          def parse(&blk)
+            instance_eval(&blk)
+            raise "Need to set fetch and evaluate blocks" if @fetch_block.nil? || @evaluate_block.nil?
+            [@fetch_block, @evaluate_block]
+          end
+
+          def fetch(&blk)
+            @fetch_block = blk
+          end
+
+          def evaluate(&blk)
+            if blk.arity != 1
+              raise ArgumentError, "Block must have one argument to pass the target value."
+            end
+            @evaluate_block = blk
+          end
         end
       end
 
@@ -93,9 +129,9 @@ module Sinatra
       def quota(*quota_keys)
         quota_keys.each { |quota_key|
           tuple = QuotaEvaluation.quota_defs[quota_key]
-          raise ArgumentError, "#{quota_key} is unknown quota key" unless tuple
+          raise ArgumentError, "#{quota_key} is unknown quota key. (Defined at around #{caller[3]})" unless tuple
         }
-        
+
         return self if Dcmgr.conf.skip_quota_evaluation
 
         self.condition {
@@ -105,41 +141,40 @@ module Sinatra
           # JSON document. Missing X-VDC-Account-ID header also
           # results in skipping evaluation.
           return true if @quota_request.nil? || @quota_request.empty?
-          
+
           quota_keys.each { |quota_key|
             next unless @quota_request.has_key?(quota_key)
-            
+
             tuple = QuotaEvaluation.quota_defs[quota_key]
             begin
-              @current_quota_key = quota_key
-              if self.instance_eval &tuple[0]
-                # common error for invalid result of quota
-                # evaluation. it is recommended to raise an error
-                # with nice message from the block.
-                halt 400, "Exceeds quota limitation: #{request.request_method} #{request.path_info} #{@current_quota_key}"
+              @current_quota_type = quota_key
+
+              if self.instance_exec(self.instance_exec(&tuple[0]), &tuple[1])
+                raise Dcmgr::Endpoints::Errors::ExceedQuotaLimit, "Exceeds quota limitation: #{request.request_method} #{request.path_info} #{@current_quota_type}"
               end
             ensure
-              @current_quota_key = nil
+              @current_quota_type = nil
             end
           }
           true
         }
-        
+
         self
       end
     end
 
     module HelperMethods
-      def quota_key
-        @current_quota_key
+      def quota_type
+        @current_quota_type
       end
+      alias :quota_key :quota_type
 
-      def quota_value(key=self.quota_key)
+      def quota_value(key=self.quota_type)
         # set in before filter.
         @quota_request[key]
       end
     end
-    
+
     module NamespacedMethods
       include ClassMethods
     end
@@ -155,7 +190,7 @@ module Sinatra
         # Account quota is the specific values for the account set
         # by X-VDC-Account-ID. The JSON document in
         # X-VDC-Account-Quota should be ignored if the
-        # X-VDC-Account-ID header did not come along with. 
+        # X-VDC-Account-ID header did not come along with.
         if quota_json && request.env.has_key?('HTTP_X_VDC_ACCOUNT_UUID')
           # JSON parse error is expected to raise error and halts
           # further request processing.

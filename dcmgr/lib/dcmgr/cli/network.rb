@@ -34,7 +34,7 @@ class Network < Base
     end
     private :map_network_params
   }
-  
+
   desc "add [options]", "Register a new network entry"
   method_option :uuid, :type => :string, :desc => "UUID of the network"
   method_option :ipv4_network, :type => :string, :required=>true, :desc => "IPv4 network address"
@@ -74,7 +74,7 @@ class Network < Base
   method_option :dns, :type => :string, :desc => "IP address for DNS server of the network"
   method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
   method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
-  method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network" 
+  method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
   method_option :bandwidth, :type => :numeric, :desc => "The maximum bandwidth for the network in Mbit/s"
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :desc => "The account ID to own this"
@@ -85,24 +85,8 @@ class Network < Base
     validate_ipv4_range
 
     fields = map_network_params
-    
+
     super(M::Network,uuid,fields)
-  end
-
-  desc "nat UUID [options]", "Set or clear nat mapping for a network"
-  method_option :outside_network_id, :type => :string, :desc => "The network that this network will be natted to"
-  method_option :clear, :type => :boolean, :desc => "Clears a previously natted network"
-  def nat(uuid)
-    in_nw = M::Network[uuid] || Error.raise("Unknown network UUID: #{uuid}", 100)
-    ex_nw = M::Network[options[:outside_network_id]] || Error.raise("Unknown network UUID: #{uuid}", 100) unless options[:outside_network_id].nil?
-
-    if options[:clear] then
-      in_nw.set_only({:nat_network_id => nil},:nat_network_id)
-      in_nw.save_changes
-    else
-      in_nw.set_only({:nat_network_id => ex_nw.id},:nat_network_id)
-      in_nw.save_changes
-    end
   end
 
   desc "show [UUID] [options]", "Show network(s)"
@@ -235,14 +219,7 @@ __END
           options[:ipv4] || Error.raise("IP address is required when passing network UUID.")
 
           nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-          lease = nw.find_ip_lease(options[:ipv4])
-
-          if lease.nil?
-            nw.add_service_vif(options[:ipv4])
-            lease = nw.find_ip_lease(options[:ipv4])
-          end
-          
-          lease.network_vif
+          nw.add_service_vif(options[:ipv4])
 
         when /^vif-/
           options[:ipv4].nil? || Error.raise("Cannot pass IP address for VIF UUID.")
@@ -263,9 +240,9 @@ __END
         :network_vif_id => vif.id,
         :name => 'dhcp',
         :incoming_port => 67,
-        :outcoming_port => 68,
+        :outgoing_port => 68,
       }
-      
+
       M::NetworkService.create(service_data)
     end
 
@@ -280,7 +257,7 @@ __END
         :name => 'dns',
         :incoming_port => 53,
       }
-      
+
       M::NetworkService.create(service_data)
     end
 
@@ -295,7 +272,7 @@ __END
         :network_vif_id => vif.id,
         :name => 'gateway',
       }
-      
+
       M::NetworkService.create(service_data)
     end
 
@@ -309,13 +286,14 @@ __END
   class DcOps < Base
     namespace :dc
     M=Dcmgr::Models
-    
+
     desc "add NAME [options]", "Add new dc network. (NAME must be unique)"
     method_option :uuid, :type => :string, :desc => "UUID of the network"
     method_option :description, :type => :string, :desc => "Description for the dc network"
+    method_option :allow_new_networks, :type => :boolean, :default => false, :desc => "Allow user to create new networks"
     def add(name)
       M::DcNetwork.find(:name=>name) && Error.raise("Duplicate dc network name: #{name}", 100)
-      
+
       fields=options.dup
       fields[:name]=name
       puts super(M::DcNetwork, fields)
@@ -349,7 +327,7 @@ __END
       dc = find_by_name_or_uuid(name)
       dc.destroy
     end
-    
+
     desc "show [UUID/NAME]", "Show/List dc network"
     def show(name=nil)
       if name
@@ -371,7 +349,7 @@ __END
 __END
       end
     end
-    
+
     protected
     def self.basename
       "vdc-manage #{Network.namespace} #{self.namespace}"
@@ -392,7 +370,7 @@ __END
   class DhcpOps < Base
     namespace :dhcp
     M=Dcmgr::Models
-    
+
     desc "addrange UUID ADDRESS_BEGIN ADDRESS_END", "Add dynamic IP address range to the network"
     def addrange(uuid, range_begin, range_end)
       nw = M::Network[uuid] || UnknownUUIDEntry.raise
@@ -404,7 +382,7 @@ __END
       nw = M::Network[uuid] || UnknownUUIDEntry.raise
       nw.del_ipv4_dynamic_range(range_begin, range_end)
     end
-    
+
     desc "show [UUID]", "Show dynamic IP address range"
     def show(uuid=nil)
       if uuid
@@ -413,7 +391,9 @@ __END
 Network UUID:
   <%= nw.canonical_uuid %>
 Dynamic IP Address Range:
+<%- unless nw.ipv4_u32_dynamic_range_array.empty? -%>
   <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.shift) %> - <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.last) %>
+<%- end -%>
 __END
       else
         cond = {}
@@ -432,6 +412,6 @@ __END
     end
   end
   register DhcpOps, 'dhcp', "dhcp [options]", "Maintain dhcp parameters"
-  
+
 end
 end

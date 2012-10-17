@@ -13,7 +13,8 @@ DcmgrGUI.prototype.backupPanel = function(){
       "size":'',
       "origin_volume_id":'',
       "created_at":'',
-      "state":''
+      "state":'',
+      "progress":''
     }]
   }
   
@@ -24,7 +25,8 @@ DcmgrGUI.prototype.backupPanel = function(){
       "origin_volume_id" : "-",
       "created_at" : "-",
       "updated_at" : "-",
-      "state" : ""
+      "state" : "",
+      "progress" : ""
     }
   }
   
@@ -95,20 +97,12 @@ DcmgrGUI.prototype.backupPanel = function(){
       callback: function(){
         var params = { 'button': bt_edit_backup, 'element_id': 1 };
         $(this).find('#backup_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#backup_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#backup_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
   });
 
-  c_list.filter.add(function(data){
-    var results = data.backup_object.results;
-    var size = results.length;
-    for(var i = 0; i < size; i++) {
-      results[i].result.size = DcmgrGUI.Converter.fromMBtoGB(results[i].result.size);
-    }
-    return data;
-  });
-  
   c_list.filter.add(function(data){
     var results = data.backup_object.results;
     var size = results.length;
@@ -120,11 +114,6 @@ DcmgrGUI.prototype.backupPanel = function(){
     return data;
   });
 
-  c_list.detail_filter.add(function(data){
-    data.item.size = DcmgrGUI.Converter.fromMBtoGB(data.item.size);
-    return data;
-  });
- 
   var bt_refresh  = new DcmgrGUI.Refresh();
   
   var create_volume_buttons = {};
@@ -159,6 +148,7 @@ DcmgrGUI.prototype.backupPanel = function(){
     callback: function(){
       var params = { 'button': bt_create_volume, 'element_id': 1 };
       $(this).find("#backup_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
+      $(this).find("#backup_display_name").bind('cut', params, DcmgrGUI.Util.availableTextField)
       $(this).find("#backup_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
     },
     button: create_volume_buttons

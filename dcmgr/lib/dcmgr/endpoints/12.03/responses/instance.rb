@@ -11,6 +11,7 @@ module Dcmgr::Endpoints::V1203::Responses
       @instance.instance_exec {
         h = {
           :id => canonical_uuid,
+          :account_id => account_id,
           :host_node   => self.host_node && self.host_node.canonical_uuid,
           :cpu_cores   => cpu_cores,
           :memory_size => memory_size,
@@ -25,10 +26,14 @@ module Dcmgr::Endpoints::V1203::Responses
           :hostname => hostname,
           :ha_enabled => ha_enabled,
           :hypervisor => hypervisor,
-          :display_name => self.display_name
+          :display_name => self.display_name,
+          :service_type => self.service_type
         }
         if self.ssh_key_data
-          h[:ssh_key_pair] = self.ssh_key_data[:uuid]
+          h[:ssh_key_pair] = {
+            :uuid => self.ssh_key_data[:uuid],
+            :display_name => self.ssh_key_data[:display_name],
+          }
         end
 
         instance_nic.each { |vif|
@@ -49,9 +54,9 @@ module Dcmgr::Endpoints::V1203::Responses
               :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
             }
           end
-          
+
           ent[:security_groups] = vif.security_groups.map {|sg| sg.canonical_uuid}
-          
+
           h[:vif] << ent
         }
 

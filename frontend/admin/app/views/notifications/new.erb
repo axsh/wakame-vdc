@@ -1,0 +1,129 @@
+<% content_for :javascript_link_tags do %>
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/bootstrap-notify.js',
+                            '/assets/admin/models/dcmgr_gui.js',
+                            '/assets/admin/views/notification_create_view.js',
+                            '/assets/admin/controllers/notifications/create_controller.js',
+]
+%>
+<% end %>
+
+<% content_for :stylesheet_link_tags do %>
+<%= stylesheet_link_tag ['/assets/bootstrap-notify.css',
+                         '/assets/smoothness/jquery-ui-1.8.23.custom.css',
+                         '/assets/jquery-ui-timepicker-addon.css'
+] %>
+<% end %>
+<div id="notification_new" class="span9">
+<div id="content"></div>
+<script type="text/template" id="createNotification">
+  <div id="notify" class='notifications top-right'></div>
+  <form action="#" method="POST" class="well form-query">
+  <div class="control-group">
+    <legend>お知らせ新規登録</legend>
+  </div>
+  <div class="control-group">
+    <div class="control-group">
+      <label class="control-label">対象</label>
+
+      {% if(is_confirmed) { %}
+        {% if(distribution == 'any') { %}
+        {{users}}
+        {% } else { %}
+        全ユーザー
+        {% } %}
+      {% } else { %}
+      <label class="radio">
+        <input type="radio" name="users" id="option_user_all" value="all" placeholder="" {{user_all_checked}}>全ユーザー
+      </label>
+      <label class="radio">
+        <input type="radio" name="users" id="option_users" value="any" placeholder="" {{user_any_checked}}>指定ユーザー
+      </label>
+      <div class="control form-search">
+        <div class="control-group" id="control_option_users">
+          <textarea class="input-xlarge" id="input_users" name="input_users" rows="5">{{users}}</textarea>
+          {% if( _.has(errors,'users') ){  %}
+          <br /><span class="help-inline">{{ errors['users'] }}</span>
+          {% } %}
+        </div>
+      </div>
+      {% } %}
+    </div>
+
+    <div id="control_display_date" class="control-group form-inline">
+      <div class="controls">
+        <label class="control-label">掲載期間</label>
+        {% if(is_confirmed) { %}
+        <div class="controls">
+        {{ display_begin_at }} ~ {{ display_end_at }}
+        </div>
+        {% } else { %}
+        <span class="input-prepend">
+          <input class="span10" type="text" id="display_begin_at" name="display_begin_at" value="{{ app.helpers.date.parse(display_begin_at) }}" placeholder="">
+          <span class="add-on" id="icon_display_begin_at"><i class="icon-calendar"></i></span>
+        </span>
+        <span style="margin:10px;">~</span><span class="input-prepend">
+          <input class="span10" type="text" id="display_end_at" name="display_end_at" value="{{ app.helpers.date.parse(display_end_at) }}" placeholder="">
+          <span class="add-on" id="icon_display_end_at"><i class="icon-calendar"></i></span>
+        </span>
+        {% if( _.has(errors,'display_date') ){  %}
+        <br /><span class="help-inline">{{ errors['display_date'] }}</span>
+        {% } %}
+        {% } %}
+      </div>
+    </div>
+
+    <div id="control_title" class="control-group">
+      <div class="controls">
+        <div class="controls">
+        <label class="control-label">タイトル</label>
+        {% if(is_confirmed) { %}
+        <div id="controls">{{title}}</div>
+        {% } else { %}
+        <div id="controls">
+          <input class="span7" type="text" id="title" name="title" value="{{title}}">
+          {% if( _.has(errors,'title') ){  %}
+          <br /><span class="help-inline">{{ errors['title'] }}</span>
+          {% } %}
+        </div>
+        {% } %}
+        </div>
+
+      </div>
+
+    </div>
+
+    <div id="control_article" class="control-group">
+      <div class="controls">
+        <div class="controls">
+          <label class="control-label" for="textarea">記事</label>
+          {% if(is_confirmed) { %}
+          <div id="controles">{{article}}</div>
+          {% } else { %}
+          <textarea class="span7 input-xlarge" id="article" name='article' rows="5">{{article}}</textarea>
+          {% if( _.has(errors,'article') ){  %}
+          <br /><span class="help-inline">{{ errors['article'] }}</span>
+          {% } %}
+          {% } %}
+        </div>
+      </div>
+    </div>
+
+
+    <div class="control-group">
+      <div class="controls" style="text-align:right">
+        {% if(is_confirmed) { %}
+          {% if(is_new) { %}
+          <button id="create" class="btn">登録</button>
+          {% } else { %}
+          <button id="update" class="btn">更新</button>
+          {% } %}
+        {% } else { %}
+        <button id="confirm" class="btn">確認</button>
+        {% } %}
+      </div>
+    </div>
+  </div>
+</form>
+</script>
+</div>

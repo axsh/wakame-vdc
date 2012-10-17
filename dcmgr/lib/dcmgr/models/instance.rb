@@ -16,8 +16,8 @@ module Dcmgr::Models
     many_to_one :ssh_key_pair
 
     plugin ArchiveChangedColumn, :histories
-    plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size] 
-    
+    plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size]
+
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => 'running'})
@@ -28,7 +28,10 @@ module Dcmgr::Models
     def_dataset_method(:alives_and_termed) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
       filter("terminated_at IS NULL OR terminated_at >= ?", (Time.now.utc - term_period))
     }
-    
+
+    def_dataset_method(:without_terminated) do
+      filter("state='running' OR state='stopped' OR state='halted'")
+    end
     # serialization plugin must be defined at the bottom of all class
     # method calls.
     # Possible column data:
@@ -65,7 +68,7 @@ module Dcmgr::Models
             errors.add(:hostname, "Duplicated hostname: #{self.hostname}")
           end
         }
-        
+
         if new?
           proc_test.call
         else
@@ -96,7 +99,7 @@ module Dcmgr::Models
           orig = self.dup.refresh
           # do nothing if orig.hostname == self.hostname
           if orig.hostname != self.hostname
-            
+
             orig_name = HostnameLease.filter(:account_id=>self.account_id,
                                              :hostname=>orig.hostname).first
             orig_name.hostname = self.hostname
@@ -128,7 +131,7 @@ module Dcmgr::Models
       self.status = :offline if self.status != :offline
       self.save
     end
-    
+
     # dump column data as hash with details of associated models.
     # this is for internal use.
     def to_hash
@@ -237,7 +240,7 @@ module Dcmgr::Models
             :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
           }
         end
-        
+
         h[:vif] << ent
       }
 
@@ -253,18 +256,19 @@ module Dcmgr::Models
     end
 
     def add_nic(vif_template)
+      # Change all hash keys to symbols (This method expects symbols but the api passes strings so this one-liner makes our life much easier)
+      vif_template = Hash[vif_template.map{ |k, v| [k.to_sym, v] }]
+
       # Choose vendor ID of mac address.
       vendor_id = if vif_template[:vendor_id]
                     vif_template[:vendor_id]
                   else
                     Dcmgr.conf.mac_address_vendor_id
                   end
-      m = MacLease.lease(vendor_id)
-      nic = NetworkVif.new({ :account_id => self.account_id,
-                             :mac_addr=>m.mac_addr,
-                           })
+      nic = NetworkVif.new({ :account_id => self.account_id })
       nic.instance = self
       nic.device_index = vif_template[:index]
+      Dcmgr::Scheduler.service_type(self).mac_address.schedule(nic)
       nic.save
 
       if !request_params.has_key?('security_groups') && !vif_template[:security_groups].empty?

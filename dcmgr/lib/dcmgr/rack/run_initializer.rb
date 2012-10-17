@@ -19,7 +19,7 @@ module Dcmgr
         @run_once_block = run_once
         @run_every_block = run_every
       end
-      
+
       def call(env)
         def call(env)
           if @run_every_block

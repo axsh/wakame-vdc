@@ -2,23 +2,29 @@
 
 module Dcmgr::Models
   class HostNodeVnet < BaseNew
+    include Dcmgr::Logger
 
     many_to_one :host_node
     many_to_one :network
 
     def before_validation
       self[:broadcast_addr] = normalize_mac_addr(self[:broadcast_addr])
-      
+
       super
     end
 
     def before_destroy
-      maclease = MacLease.find(:broadcast_addr=>self.broadcast_addr)
-      maclease.destroy if maclease
+      maclease = MacLease.find(:mac_addr=>self.broadcast_addr.hex)
+
+      if maclease
+        maclease.destroy
+      else
+        logger.info "Warning: Mac address lease for '#{broadcast_addr}' not found in database."
+      end
 
       super
     end
-    
+
     def validate
       super
 
@@ -28,7 +34,7 @@ module Dcmgr::Models
       unless self.broadcast_addr.size == 12 && self.broadcast_addr =~ /^[0-9a-f]{12}$/
         errors.add(:broadcast_addr, "Invalid mac address syntax: #{self.broadcast_addr}")
       end
-      if MacLease.find(:mac_addr=>self.broadcast_addr).nil?
+      if MacLease.find(:mac_addr=>self.broadcast_addr.hex).nil?
         errors.add(:mac_addr, "MAC address is not on the MAC lease database.")
       end
     end
@@ -51,6 +57,6 @@ module Dcmgr::Models
       #       i.e. single 0 to double 00
       str
     end
-    
+
   end
 end

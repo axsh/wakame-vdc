@@ -2,7 +2,19 @@
 
 module Dcmgr
   module Drivers
-    class Hypervisor
+    class Hypervisor < Task::Tasklet
+      extend Configuration::ConfigurationMethods::ClassMethods
+
+      def_configuration
+
+      # Retrive configuration section for this or child class.
+      def self.driver_configuration
+        Dcmgr.conf.hypervisor_driver(self)
+      end
+
+      def driver_configuration
+        Dcmgr.conf.hypervisor_driver(self.class)
+      end
 
       def run_instance(hc)
       end
@@ -12,7 +24,7 @@ module Dcmgr
 
       def reboot_instance(hc)
       end
-      
+
       def poweroff_instance(hc)
       end
 
@@ -35,20 +47,24 @@ module Dcmgr
       end
 
       def self.select_hypervisor(hypervisor)
-        case hypervisor
+        driver_class(hypervisor).new
+      end
+
+      def self.driver_class(hypervisor)
+        case hypervisor.to_s
         when "kvm"
-          hv = Dcmgr::Drivers::Kvm.new
+          Dcmgr::Drivers::Kvm
         when "lxc"
-          hv = Dcmgr::Drivers::Lxc.new
+          Dcmgr::Drivers::Lxc
         when "esxi"
-          hv = Dcmgr::Drivers::ESXi.new
+          Dcmgr::Drivers::ESXi
         when "openvz"
-          hv = Dcmgr::Drivers::Openvz.new
+          Dcmgr::Drivers::Openvz
         else
           raise "Unknown hypervisor type: #{hypervisor}"
         end
-        hv
       end
+
     end
   end
 end

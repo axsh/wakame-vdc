@@ -205,6 +205,9 @@ manifest.instance_eval do
   load_config File.expand_path('config/nsa.conf', app_root)
 end
 
+Isono.at_disconnected do
+  EM.stop { exit }
+end
 
 start(manifest) do
 end

@@ -13,7 +13,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   get do
     ds = M::Volume.dataset
     if params[:state]
-      ds = if VOLUME_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *VOLUME_META_STATE
              case params[:state]
              when 'alive'
                ds.lives
@@ -22,7 +23,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif VOLUME_STATE.member?(params[:state])
+           when *VOLUME_STATE
              ds.filter(:state=>params[:state])
            else
              raise E::InvalidParameter, :state
@@ -40,16 +41,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
       hn = M::StorageNode[params[:storage_node_id]] rescue raise(E::InvalidParameter, :storage_node_id)
       ds = ds.filter(:storage_node_id=>hn.id)
     end
-    
+
     if params[:service_type]
       validate_service_type(params[:service_type])
       ds = ds.filter(:service_type=>params[:service_type])
     end
-    
+
     if params[:display_name]
       ds = ds.filter(:display_name=>params[:display_name])
     end
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::VolumeCollection.new(paging_ds).generate
     end
@@ -65,7 +66,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     respond_with(R::Volume.new(v).generate)
   end
 
-  quota 'volume.size', 'volume.count'
+  quota 'volume.size_mb', 'volume.count'
   post do
     sp = vs = vol = nil
     # input parameter validation
@@ -95,7 +96,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     end
 
     # params is a Mash object. so coverts to raw Hash object.
-    vol = M::Volume.entry_new(@account, volume_size, params.to_hash) do |v|
+    vol = M::Volume.entry_new(@account, volume_size, @params.dup) do |v|
       if bo
         v.backup_object_id = vs.canonical_uuid
       end
@@ -207,7 +208,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   end
 
   # Create new backup
-  quota 'backup_object.size', 'backup_object.count'
+  quota 'backup_object.size_mb', 'backup_object.count'
   put '/:id/backup' do
     raise E::UndefinedVolumeID if params[:id].nil?
     v = find_by_uuid(:Volume, params[:id])
@@ -216,7 +217,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
 
     bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[v.service_type].backup_storage_id
     bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
-    
+
     bo = v.entry_new_backup_object(bkst,
                                    @account.canonical_uuid) do |i|
       [:display_name, :description].each { |k|

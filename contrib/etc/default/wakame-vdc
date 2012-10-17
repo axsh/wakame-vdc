@@ -6,3 +6,9 @@ PATH=${VDC_ROOT}/ruby/bin:${PATH}
 
 ## for debug
 #DAEMON_COREFILE_LIMIT=unlimited
+
+libjem=$(ldconfig -p | awk '$1=="libjemalloc.so.1" {print $4}')
+[ -n "$libjem" ] && {
+  LD_PRELOAD="$libjem $LD_PRELOAD"
+  export LD_PRELOAD
+}

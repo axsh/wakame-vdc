@@ -14,11 +14,12 @@ class InstancesController < ApplicationController
         :user_data => params[:user_data],
         :security_groups => params[:security_groups],
         :ssh_key => params[:ssh_key],
-        :display_name => params[:display_name]
+        :display_name => params[:display_name],
+        :vifs => {},
       }
 
       if params[:vifs]
-        vifs = {}
+        vifs = data[:vifs]
         vif_index = 0
 
         params[:vifs].each { |name|
@@ -38,8 +39,23 @@ class InstancesController < ApplicationController
 
           vif_index += 1
         }
+      end
 
-        data.merge!(:vifs => vifs) if !vifs.empty?
+      # TODO: GUI displays vif monitoring setting interface as a part
+      # of instance parameters. It assumes that monitoring parameters
+      # is set to the "eth0" device only.
+      if params[:eth0_monitors]
+        vif_mons = {}
+
+        vif_eth0 = data[:vifs]["eth0"] ||= {}
+        params[:eth0_monitors].each{ |idx, mon|
+          vif_eth0[:monitors] ||= []
+          vif_eth0[:monitors] << {
+            :protocol=>mon[:protocol],
+            :enabled=>((mon[:enabled] && mon[:enabled] == 'true') ? true : false),
+            :params => mon[:params],
+          }
+        }
       end
       instance = Hijiki::DcmgrResource::Instance.create(data)
       render :json => instance
@@ -111,13 +127,12 @@ class InstancesController < ApplicationController
 
   def backup
     catch_error do
-      instance_ids = params[:ids]
-      res = []
-      instance_ids.each do |instance_id|
-        instance = Hijiki::DcmgrResource::Instance.show(instance_id)
-        params = {:display_name => instance["display_name"]}
-        res << Hijiki::DcmgrResource::Instance.backup(instance_id,params)
-      end
+      instance_id = params[:instance_id]
+      data = {
+        :display_name => params[:backup_display_name],
+        :description  => params[:backup_description]
+      }
+      res = Hijiki::DcmgrResource::Instance.backup(instance_id,data)
       render :json => res
     end
   end
@@ -169,7 +184,10 @@ class InstancesController < ApplicationController
 
   def show_instances
     catch_error do
-      instances = Hijiki::DcmgrResource::Instance.list
+      options = {
+        :state => params[:state]
+      }
+      instances = Hijiki::DcmgrResource::Instance.list(options)
       respond_with(instances[0],:to => [:json])
     end
   end

@@ -4,7 +4,7 @@ include Config
 
 if is_enabled? :volume_api_spec
   cfg = get_config[:volume_api_spec]
-  
+
   describe "/api/volume_snapshots" do
     include RetryHelper
 

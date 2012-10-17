@@ -17,6 +17,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :backup_storage_id => backup_storage.canonical_uuid,
           :object_key => object_key,
           :checksum => checksum,
+          :progress => progress,
           :backup_storage => {
             :id => backup_storage.canonical_uuid,
           },

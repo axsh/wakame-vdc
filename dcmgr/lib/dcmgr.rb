@@ -9,11 +9,11 @@ module Dcmgr
 
   include Dcmgr::Initializer
 
-  # Add conf/initializers/*.rb loader 
+  # Add conf/initializers/*.rb loader
   initializer_hooks {
-    initializers_root = File.expand_path('config/initializers', DCMGR_ROOT) 
+    initializers_root = File.expand_path('config/initializers', DCMGR_ROOT)
 
-    @files.each { |file|  
+    @files.each { |file|
       if File.directory?(initializers_root)
         Dir.glob("#{initializers_root}/#{file}.rb") { |f|
           ::Kernel.load(f)
@@ -21,13 +21,29 @@ module Dcmgr
       end
     }
   }
-  
+
+  module Constants
+    module BackupObject
+      CONTAINER_FORMAT={:tgz=>['tar.gz', 'tgz'], :tar=>['tar'], :gz=>['gz'], :none=>[]}.freeze
+      CONTAINER_FORMAT_NAMES=CONTAINER_FORMAT.keys.freeze
+      CONTAINER_EXTS=Hash[*CONTAINER_FORMAT.map{|k,v|
+                            v.map { |v2|
+                              [v2, k]
+                            }
+                          }.flatten].freeze
+    end
+
+    autoload :Instance, 'dcmgr/constants/instance'
+  end
+  Const = Constants
+
   autoload :Logger, 'dcmgr/logger'
   autoload :Configuration, 'dcmgr/configuration'
   module Configurations
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
+    autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
   end
 
   require 'dcmgr/models/errors'
@@ -66,9 +82,11 @@ module Dcmgr
     autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
     autoload :LoadBalancer, 'dcmgr/models/load_balancer'
-    autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'    
+    autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'
     autoload :BackupStorage, 'dcmgr/models/backup_storage'
     autoload :BackupObject, 'dcmgr/models/backup_object'
+    autoload :MacRange, 'dcmgr/models/mac_range'
+    autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
   end
 
   module Endpoints
@@ -77,7 +95,7 @@ module Dcmgr
     HTTP_X_VDC_ACCOUNT_UUID='HTTP_X_VDC_ACCOUNT_UUID'.freeze
 
     RACK_FRONTEND_SYSTEM_ID='dcmgr.frotend_system.id'.freeze
-    
+
     autoload :Ec2Metadata, 'dcmgr/endpoints/metadata'
     autoload :Helpers, 'dcmgr/endpoints/helpers'
     autoload :ResponseGenerator, 'dcmgr/endpoints/response_generator'
@@ -101,6 +119,7 @@ module Dcmgr
     autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
+    autoload :EventHook, 'dcmgr/node_modules/event_hook'
   end
 
   module Helpers
@@ -109,14 +128,21 @@ module Dcmgr
     autoload :TemplateHelper, 'dcmgr/helpers/template_helper'
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
     autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
+    autoload :Cgroup, 'dcmgr/helpers/cgroup'
   end
 
   autoload :Tags, 'dcmgr/tags'
+
+  module SpecConvertor
+    autoload :Base, 'dcmgr/spec_convertor'
+    autoload :LoadBalancer, 'dcmgr/spec_convertor'
+  end
 
   module Cli
     require 'dcmgr/cli/errors'
 
     autoload :Base, 'dcmgr/cli/base'
+    autoload :Instance, 'dcmgr/cli/instance'
     autoload :Network, 'dcmgr/cli/network'
     autoload :Host, 'dcmgr/cli/host'
     autoload :Storage, 'dcmgr/cli/storage'
@@ -128,6 +154,7 @@ module Dcmgr
     autoload :ResourceGroup, 'dcmgr/cli/resource_group'
     autoload :BackupStorage, 'dcmgr/cli/backup_storage'
     autoload :BackupObject, 'dcmgr/cli/backup_object'
+    autoload :MacRange, 'dcmgr/cli/mac_range'
 
     module Debug
       autoload :Base, 'dcmgr/cli/debug/base'
@@ -138,6 +165,8 @@ module Dcmgr
   module Rpc
     autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
     autoload :StaHandler, 'dcmgr/rpc/sta_handler'
+    autoload :HvaContext, 'dcmgr/rpc/hva_context'
+    autoload :LocalStoreHandler, 'dcmgr/rpc/local_store_handler'
   end
 
   # namespace for custom Rack HTTP middleware.
@@ -145,7 +174,9 @@ module Dcmgr
     autoload :RequestLogger, 'dcmgr/rack/request_logger'
     autoload :RunInitializer, 'dcmgr/rack/run_initializer'
   end
-  
+
+  autoload :Task, 'dcmgr/task'
+
   module Drivers
     autoload :BackupStorage, 'dcmgr/drivers/backup_storage'
     autoload :LocalStorage, 'dcmgr/drivers/local_storage'
@@ -174,8 +205,10 @@ module Dcmgr
     autoload :Haproxy, 'dcmgr/drivers/haproxy'
     autoload :Webdav, 'dcmgr/drivers/webdav'
     autoload :Stunnel, 'dcmgr/drivers/stunnel'
+    autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
+    autoload :Zabbix, 'dcmgr/drivers/zabbix'
   end
-  
+
   autoload :StorageService, 'dcmgr/storage_service'
 
   require 'dcmgr/scheduler'
@@ -203,16 +236,22 @@ module Dcmgr
       autoload :VifParamTemplate, 'dcmgr/scheduler/network/vif_param_template'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
       autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
+      autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'
     end
 
-    NAMESPACES=[HostNode, StorageNode, Network]
+    module MacAddress
+      autoload :ByHostNodeGroup, 'dcmgr/scheduler/mac_address/by_host_node_group'
+      autoload :Default, 'dcmgr/scheduler/mac_address/default'
+    end
+
+    NAMESPACES=[HostNode, StorageNode, Network, MacAddress]
   end
-  
+
   require 'dcmgr/vnet'
   module VNet
     autoload :TaskFactory, 'dcmgr/vnet/factories'
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
-    
+
     module Netfilter
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
       autoload :Chain, 'dcmgr/vnet/netfilter/chain'
@@ -272,9 +311,14 @@ module Dcmgr
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
     end
-    
+
   end
-  
+
+  require 'dcmgr/messaging'
+  module Messaging
+    autoload :LoadBalancer, 'dcmgr/messaging/load_balancer'
+  end
+
 end
 
 module Ext

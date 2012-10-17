@@ -21,10 +21,12 @@ module Dcmgr
         attr_reader :switches
 
         def ports
+          return {} if switches.first[1].nil?
           switches.first[1].ports
         end
 
         def local_hw
+          return nil if switches.first[1].nil?
           switches.first[1].local_hw
         end
 
@@ -64,7 +66,7 @@ module Dcmgr
         def features_reply datapath_id, message
           raise "No switch found." unless switches.has_key? datapath_id
           switches[datapath_id].features_reply message
-          
+
           @service_openflow.networks.each { |network| network[1].update }
         end
 
@@ -123,7 +125,7 @@ module Dcmgr
           raw_out.l2 = Racket::L2::Ethernet.new
           raw_out.l2.src_mac = src_hw
           raw_out.l2.dst_mac = dst_hw
-          
+
           raw_out.l3 = Racket::L3::IPv4.new
           raw_out.l3.src_ip = src_ip
           raw_out.l3.dst_ip = dst_ip
@@ -150,7 +152,7 @@ module Dcmgr
           raw_out.l2.ethertype = Racket::L2::Ethernet::ETHERTYPE_ARP
           raw_out.l2.src_mac = src_hw.nil? ? '00:00:00:00:00:00' : src_hw
           raw_out.l2.dst_mac = dst_hw.nil? ? 'FF:FF:FF:FF:FF:FF' : dst_hw
-          
+
           raw_out.l3 = Racket::L3::ARP.new
           raw_out.l3.opcode = op_code
           raw_out.l3.sha = src_hw.nil? ? '00:00:00:00:00:00' : src_hw
@@ -170,7 +172,7 @@ module Dcmgr
           raw_out.l2 = Racket::L2::Ethernet.new
           raw_out.l2.src_mac = options[:src_hw]
           raw_out.l2.dst_mac = options[:dst_hw]
-          
+
           raw_out.l3 = Racket::L3::IPv4.new
           raw_out.l3.src_ip = options[:src_ip]
           raw_out.l3.dst_ip = options[:dst_ip]
@@ -214,7 +216,7 @@ module Dcmgr
           @port_no = port_no
         end
       end
-      
+
       class OpenFlowForwardingDatabase
         def initialize
           @db = {}

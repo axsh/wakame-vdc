@@ -4,7 +4,7 @@ include Config
 
 if is_enabled? :ssh_key_pairs_api_spec
   cfg = get_config[:ssh_key_pairs_api_spec]
-  
+
   describe "/api/ssh_key_pair" do
 
     it "should show key pair list" do
@@ -21,7 +21,7 @@ if is_enabled? :ssh_key_pairs_api_spec
     it "should show the new key: #{cfg[:name]}" do
       APITest.get("/ssh_key_pairs/#{@@created_key["id"]}").success?.should be_true
     end
-    
+
     it_should_behave_like "show_api", "/ssh_key_pairs", nil
 
     it "should set the description field: #{cfg[:name]}" do

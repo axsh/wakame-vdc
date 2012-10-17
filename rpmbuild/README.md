@@ -1,4 +1,4 @@
-Installation and Preliminary Operations
+Preliminary Operations and Installation
 =======================================
 
 Installation Requirements
@@ -13,32 +13,39 @@ Installation Requirements
 + Local Area Network (LAN)
 + Internet connection
 
-### yum pre-estup
+### yum pre-setup
 
-Downloading repo file and put it to your /etc/yum.repos.d/ repository.
+Download wakame-vdc.repo file and put it to your /etc/yum.repos.d/ repository.
 
     # curl -o /etc/yum.repos.d/wakame-vdc.repo -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/wakame-vdc.repo
+
+If you need OpenVZ container, add another repository.
+
     # curl -o /etc/yum.repos.d/openvz.repo     -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo
 
-Installing epel-release.
+Install epel-release.
 
-    # yum install http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-7.noarch.rpm
+    # yum install -y http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-7.noarch.rpm
 
-### Dcmgr Installation
+### Dcmgr installation
 
-    # yum install wakame-vdc-dcmgr-vmapp-config
+Install Dcmgr. The Dcmgr manages all assets in data centers.
 
-### Hva installation
+    # yum install -y wakame-vdc-dcmgr-vmapp-config
 
-    # yum install wakame-vdc-hva-full-vmapp-config
+### HVA installation
+
+HVA stands for Hyper Visor Agent. It is internally used by the Dcmgr in order to manipulate the virtual machines.
+
+    # yum install -y wakame-vdc-hva-full-vmapp-config
 
 
 Configuring upstart system job
 -------------------------------
 
-Comment out to run upstart system jobs in /etc/default/vdc-*.
+Comment out the following line in /etc/default/vdc-*.
 
-    #RUN=yes
+    RUN=yes
 
 + dcmgr node
   + /etc/default/vdc-collector
@@ -49,12 +56,18 @@ Comment out to run upstart system jobs in /etc/default/vdc-*.
   + /etc/default/vdc-metadata
   + /etc/default/vdc-nsa
   + /etc/default/vdc-sta
+
 + hva node
   + /etc/default/vdc-hva
 
+Or simply execute the following command.
+
+    # sed -i.bak -e 's/^#\(RUN=yes\)/\1/' /etc/default/vdc-*
 
 Pre-setup Dcmgr
 ----------------
+
+Copy all the necessary files.
 
 ### dcmgr(endpoints)
 
@@ -62,14 +75,17 @@ Pre-setup Dcmgr
 
 ### webui
 
-    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/database.yml.example      /etc/wakame-vdc/dcmgr_gui/database.yml
-    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/dcmgr_gui.yml.example     /etc/wakame-vdc/dcmgr_gui/dcmgr_gui.yml
-    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/instance_spec.yml.example /etc/wakame-vdc/dcmgr_gui/instance_spec.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/database.yml.example           /etc/wakame-vdc/dcmgr_gui/database.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/dcmgr_gui.yml.example          /etc/wakame-vdc/dcmgr_gui/dcmgr_gui.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/instance_spec.yml.example      /etc/wakame-vdc/dcmgr_gui/instance_spec.yml
+    # cp -f /opt/axsh/wakame-vdc/frontend/dcmgr_gui/config/load_balancer_spec.yml.example /etc/wakame-vdc/dcmgr_gui/load_balancer_spec.yml
+
+
+Set the appropriate VDC_ROOT environment variable.
 
 ### pre-setup proxy
 
     # echo "$(eval "VDC_ROOT=/var/lib/wakame-vdc; echo \"$(curl -s https://raw.github.com/axsh/wakame-vdc/master/tests/vdc.sh.d/proxy.conf.tmpl)\"")" > /etc/wakame-vdc/proxy.conf
-
 
 Pre-setup Hva
 --------------
@@ -80,13 +96,15 @@ Pre-setup Hva
 Configuring Database
 --------------------
 
-The database to use is specified in a configuration file.
+Check if the database is specified in /etc/wakame-vdc/dcmgr.conf
+
 
 ### dcmgr(endpoints)
 
     database_uri 'mysql2://localhost/wakame_dcmgr?user=root'
 
-+ /etc/wakame-vdc/dcmgr.conf
+
+Check if the following section is described in /etc/wakame-vdc/dcmgr_gui/database.yml
 
 ### webui
 
@@ -97,44 +115,49 @@ The database to use is specified in a configuration file.
        user: root
        password:
 
-+ /etc/wakame-vdc/dcmgr_gui/database.yml
 
 
-Configuring AMQP Server
 -----------------------
-
-The amqp server to use is specified in a configuration file.
 
 ### dcmgr(endpoints)
 
-    amqp_server_uri 'amqp://localhost/'
+Check if the amqp server is specified in /etc/wakame-vdc/dcmgr.conf
 
-+ /etc/wakame-vdc/dcmgr.conf
+    amqp_server_uri 'amqp://localhost/'
 
 ### agents (collector, hva, etc.)
 
-    #AMQP_ADDR=127.0.0.1
-    #AMQP_PORT=5672
+In the following 4 files,
 
 + /etc/default/vdc-collector
 + /etc/default/vdc-hva
 + /etc/default/vdc-nsa
 + /etc/default/vdc-sta
 
+check if the following lines are described.
+
+    #AMQP_ADDR=127.0.0.1
+    #AMQP_PORT=5672
+
+
 
 Creating Database
 -----------------
 
-    # for dbname in wakame_dcmgr wakame_dcmgr_gui; do
-      mysqladmin -uroot create ${dbname}
-    done
 
-    # export PATH=$PATH:/opt/axsh/wakame-vdc/ruby/bin
-    # cd /opt/axsh/wakame-vdc/dcmgr
-    # bundle exec rake db:init
-    # cd /opt/axsh/wakame-vdc/frontend/dcmgr_gui
-    # bundle exec rake db:init db:sample_data oauth:create_table
+Before creating the database, you need to launch mysql-server.
 
+    # service mysql start
+
+To automatically launch mysql-server, execute the following command.
+
+    # chkconfig mysql on
+
+If you need additional demonstration data, please type the following commands.
+NOTICE: this script will erase all related database at first. We recommend to backup before doing this.
+
+    # yum install -y wakame-vdc-vdcsh
+    # /opt/axsh/wakame-vdc/tests/vdc.sh init
 
 Developer Zone
 ==============

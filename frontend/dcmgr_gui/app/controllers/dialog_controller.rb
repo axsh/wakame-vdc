@@ -82,19 +82,14 @@ class DialogController < ApplicationController
     end
   end
   
-  def attach_vif
-    catch_error do
-      @vif_id = params[:vif_id]
-      @network_id = params[:network_id]
-      Hijiki::DcmgrResource::NetworkVif.find_vif(@network_id, @vif_id).attach
-    end
+  def create_network
   end
 
-  def detach_vif
+  def edit_network
     catch_error do
-      @vif_id = params[:vif_id]
-      @network_id = params[:network_id]
-      Hijiki::DcmgrResource::NetworkVif.find_vif(@network_id, @vif_id).detach
+      @network_id = params[:ids][0]
+      @network = Hijiki::DcmgrResource::Network.show(@network_id)
+      @display_name = @network["display_name"]
     end
   end
 
@@ -140,16 +135,13 @@ class DialogController < ApplicationController
   
   def backup_instances
     catch_error do
-      @instance_ids = params[:ids]
-      @instances = []
-      @instance_ids.each do |i|
-        @instances << Hijiki::DcmgrResource::Instance.show(i)
-      end
+      @instance_id = params[:ids].first
+      @instance = Hijiki::DcmgrResource::Instance.show(@instance_id)
     end
   end
 
-  alias :poweroff_instances :backup_instances
-  alias :poweron_instances :backup_instances
+  alias :poweroff_instances :reboot_instances
+  alias :poweron_instances :reboot_instances
 
   
   def edit_instance
@@ -242,6 +234,7 @@ class DialogController < ApplicationController
     @port = ''
     @instance_protocol = ''
     @instance_port = ''
+    @balance_algorithm = ''
     @private_key = ''
     @public_key = ''
     @cookie_name = ''
@@ -303,6 +296,14 @@ class DialogController < ApplicationController
       @public_key = @load_balancer["public_key"]
       @cookie_name = @load_balancer["cookie_name"]
       render :create_and_edit_load_balancer
+    end
+  end
+
+  def active_standby_load_balancer
+    catch_error do
+      @load_balancer_id = params[:ids][0]
+      @load_balancer = Hijiki::DcmgrResource::LoadBalancer.show(@load_balancer_id)
+      @display_name = @load_balancer["display_name"]
     end
   end
 

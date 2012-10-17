@@ -14,9 +14,9 @@ module Dcmgr
             end
 
             def add(name, sched_class_name, &blk)
-              @config[:schedulers] ||= {}              
+              @config[:schedulers] ||= {}
               c = ::Dcmgr::Scheduler::Network.scheduler_class(sched_class_name)
-              
+
               unless c < ::Dcmgr::Scheduler::NetworkScheduler
                 raise "Invalid scheduler class is set: #{c.to_s}"
               end
@@ -28,37 +28,25 @@ module Dcmgr
             end
           end
         end
-        
-        def schedule(instance)
-          if instance.request_params['vifs']
-            if instance.request_params['vifs'].class == Hash
-              sched_name = 'VifParamTemplate'
-              sched_class = VifParamTemplate
-            else
-              sched_name = 'VifsRequestParam'
-              sched_class = VifsRequestParam
-            end
 
-            sched = sched_class.new
-          else
-            sched_name = instance.request_params['network_scheduler']
-            if sched_name.nil? || sched_name == ''
-              if options.schedulers[:default]
-                sched_conf = options.schedulers[:default]
-              else
-                raise "Unable to find any network schedulers"
-              end
+        def schedule(instance)
+          sched_name = instance.request_params['network_scheduler']
+          if sched_name.nil? || sched_name == ''
+            if options.schedulers[:default]
+              sched_conf = options.schedulers[:default]
             else
-              if options.schedulers[sched_name.to_sym]
-                sched_conf = options.schedulers[sched_name.to_sym]
-              else
-                raise "Unknown scheduler definition: #{sched_name} for the instance #{instance.canonical_uuid}"
-              end
+              raise "Unable to find any network schedulers"
             end
-          
-            sched_class = sched_conf.scheduler_class
-            sched = sched_class.new(sched_conf.option)
+          else
+            if options.schedulers[sched_name.to_sym]
+              sched_conf = options.schedulers[sched_name.to_sym]
+            else
+              raise "Unknown scheduler definition: #{sched_name} for the instance #{instance.canonical_uuid}"
+            end
           end
+
+          sched_class = sched_conf.scheduler_class
+          sched = sched_class.new(sched_conf.option)
 
           logger.info("Selected network scheduler: #{sched_name} #{sched_class} for the instance #{instance.canonical_uuid}")
           sched.schedule(instance)

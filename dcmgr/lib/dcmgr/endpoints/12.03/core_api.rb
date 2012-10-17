@@ -6,7 +6,6 @@ require 'sinatra/base'
 require 'sinatra/dcmgr_api_setup'
 require 'sinatra/quota_evaluation'
 require 'sinatra/internal_request'
-require 'sinatra/publish_message'
 
 require 'dcmgr/endpoints/errors'
 require 'dcmgr/endpoints/12.03/quota_definitions'
@@ -17,7 +16,6 @@ module Dcmgr::Endpoints::V1203
     register Sinatra::DcmgrAPISetup
     register Sinatra::InternalRequest
     register Sinatra::QuotaEvaluation
-    register Sinatra::PublishMessage
 
     # To access constants in this namespace
     include Dcmgr::Endpoints
@@ -41,11 +39,11 @@ module Dcmgr::Endpoints::V1203
           logger.error(e)
           raise E::InvalidRequestCredentials, "#{e.message}"
         end
-        
+
         raise E::DisabledAccount if @account.disable?
 
         # Force overwrite the filtering parameter.
-        params[:account_id] = @account.canonical_uuid
+        params['account_id'] = @account.canonical_uuid
       end
 
       @requester_token = request.env[HTTP_X_VDC_REQUESTER_TOKEN]
@@ -53,10 +51,10 @@ module Dcmgr::Endpoints::V1203
 
     # Common method to fetch single resource for PUT,DELETE
     # /resource/uuid request.
-    # 
+    #
     def find_by_uuid(model_class, uuid)
       if model_class.is_a?(Symbol)
-        model_class = Dcmgr::Models.const_get(model_class)
+        model_class = Dcmgr::Models.const_get(model_class, false)
       end
       raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
       item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
@@ -72,7 +70,7 @@ module Dcmgr::Endpoints::V1203
 
     def find_by_public_uuid(model_class, uuid)
       if model_class.is_a?(Symbol)
-        model_class = Dcmgr::Models.const_get(model_class)
+        model_class = Dcmgr::Models.const_get(model_class, false)
       end
       raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
       item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
@@ -95,7 +93,7 @@ module Dcmgr::Endpoints::V1203
       def paging_params_filter(ds)
 
         total = ds.count
-        
+
         start = if params[:start]
                   if params[:start] =~ /^\d+$/
                     params[:start].to_i
@@ -115,7 +113,7 @@ module Dcmgr::Endpoints::V1203
                   0
                 end
         limit = limit < 1 ? 250 : limit
-        
+
         ds = if params[:sort_by]
                params[:sort_by] =~ /^(\w+)(\.desc|\.asc)?$/
                ds.order(params[:sort_by])
@@ -146,7 +144,7 @@ module Dcmgr::Endpoints::V1203
                          raise E::InvalidParameter, until_key
                        end
         end
-        
+
         ds = if since_time && until_time
                if !(since_time < until_time)
                  raise E::InvalidParameter, "#{since_key} is larger than #{until_key}"
@@ -161,10 +159,10 @@ module Dcmgr::Endpoints::V1203
              end
         ds
       end
-      
+
       def collection_respond_with(ds, &blk)
         ds, total, start, limit  = paging_params_filter(ds)
-        
+
         respond_with([{
                         :total => total,
                         :start => start,
@@ -173,7 +171,7 @@ module Dcmgr::Endpoints::V1203
                       }])
       end
     end
-    
+
     # default output format.
     respond_to :json, :yml
 

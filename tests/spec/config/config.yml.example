@@ -1,32 +1,32 @@
---- 
-:instance_specs_api_spec: 
-  :instance_spec_ids: 
+---
+:instance_specs_api_spec:
+  :instance_spec_ids:
   - is-demospec
-:instance_spec: 
+:instance_spec:
   :image_id: wmi-lucid0
   :instance_spec_id: is-demospec
   :hostname: jefke
-  :security_groups: 
+  :security_groups:
   - sg-demofgr
   :ssh_key_id: ssh-demo
   :username: ubuntu
-:multiple_vnic_spec: 
-  :images: 
+:multiple_vnic_spec:
+  :images:
   - wmi-lucid0
-  :schedulers: 
+  :schedulers:
   - vif3type1
   - vif3type2
-  :specs: 
+  :specs:
   - is-demo2
-:images_api_spec: 
-  :local_image_ids: 
+:images_api_spec:
+  :local_image_ids:
   - wmi-lucid0
   - wmi-lucid5
-  :snapshot_image_ids: 
+  :snapshot_image_ids:
   - wmi-lucid1
   - wmi-lucid6
-:netfilter_group_api_apec: 
-  :groups_to_create: 
+:netfilter_group_api_apec:
+  :groups_to_create:
   - :description: g1
     :rule: tcp:22,22,ip4:0.0.0.0
   - :description: g2
@@ -39,41 +39,41 @@
       icmp:-1,-1,sg-demofgr
       tcp:22,22,sg-demofgr
   :update_rule: icmp:-1,-1,ip4:0.0.0.0
-:global: 
+:global:
   :retry_time: 5
   :account: a-shpoolxx
   :api: http://localhost:9001/api
-:volume_api_spec: 
+:volume_api_spec:
   :snapshot_id: snap-lucid1
   :minimum_volume_size: 10
   :maximum_volume_size: 3000
   :test_volume_size: 99
-:network_api_spec: 
-  :network_ids: 
+:network_api_spec:
+  :network_ids:
   - nw-demo1
   - nw-demo2
   - nw-demo3
   - nw-demo4
   - nw-demo5
-:oneshot: 
+:oneshot:
   :spec_id: is-demospec
   :volume_size: 10
   :image_id: wmi-lucid6
   :user_name: ubuntu
   :sg_rule: tcp:22,22,ip4:0.0.0.0/24
-  :new_sg_rules: 
+  :new_sg_rules:
   - tcp:80,80,ip4:0.0.0.0
   - icmp:-1,-1,ip4:0.0.0.0
-:host_nodes_api_spec: 
-  :host_node_ids: 
+:host_nodes_api_spec:
+  :host_node_ids:
   - hn-demo1
-:ssh_key_pairs_api_spec: 
+:ssh_key_pairs_api_spec:
   :name: testkey
-:storage_nodes_api_spec: 
-  :storage_ids: 
+:storage_nodes_api_spec:
+  :storage_ids:
   - sn-demo1
-:images_spec: 
-  :images: 
+:images_spec:
+  :images:
   - :user: ubuntu
     :uses_metadata: false
     :id: wmi-lucid0
@@ -86,6 +86,6 @@
   - :user: ubuntu
     :uses_metadata: true
     :id: wmi-lucid6
-  :specs: 
+  :specs:
   - is-demospec
   :ssh_key_id: ssh-demo

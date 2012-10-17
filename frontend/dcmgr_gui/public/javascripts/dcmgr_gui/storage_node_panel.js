@@ -13,6 +13,7 @@ DcmgrGUI.prototype.storageNodePanel = function(){
       "id":'',
       "uuid":'',
       "node_id":'',
+      "offering_disk_space_mb":'',
       "storage_node_id":'',
       "status":''
     }]
@@ -24,6 +25,7 @@ DcmgrGUI.prototype.storageNodePanel = function(){
       "uuid":'-',
       "node_id":'-',
       "storage_node_id":'-',
+      "offering_disk_space_mb":'',
       "status":'-',
       "created_at":'-',
       "updated_at":'-'
@@ -52,20 +54,6 @@ DcmgrGUI.prototype.storageNodePanel = function(){
     c_pagenate.changeTotal(storage_node.total);
     c_list.setData(storage_node.results);
     c_list.multiCheckList(c_list.detail_template);
-  });
-  
-  c_list.filter.add(function(data){
-    var results = data.storage_node.results;
-    var size = results.length;
-    for(var i = 0; i < size; i++) {
-      results[i].result.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(results[i].result.offering_disk_space);
-    }
-    return data;
-  });
-  
-  c_list.detail_filter.add(function(data){
-    data.item.offering_disk_space = DcmgrGUI.Converter.fromMBtoGB(data.item.offering_disk_space);
-    return data;
   });
   
   var bt_refresh  = new DcmgrGUI.Refresh();

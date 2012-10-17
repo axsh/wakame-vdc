@@ -12,30 +12,70 @@ module Dcmgr::Models
     many_to_many :referencers, :class => self, :join_table => :security_group_references,:right_key => :referencer_id, :left_key => :referencee_id
 
     def to_hash
-      rules = []
-      rule.to_s.each_line { |line|
-        next if line =~ /\A#/
-        next if line.length == 0
-        
-        rules << self.class.parse_rule(line.chomp)
-      }
-
       super.merge({
                     :id => self.canonical_uuid,
                     :rule => rule.to_s,
-                    :rules => rules.compact,
+                    :rules => rules_array,
                   })
     end
 
     def to_api_document
       self.to_hash
     end
-    
+
+    def to_netfilter_document(host_node_id)
+      nd = {
+        :uuid  => self.canonical_uuid,
+        :rules => self.rules_array
+      }
+
+      nd[:local_vnics] = {}
+      local_vnics_dataset = self.network_vif_dataset.filter(:instance => Instance.runnings.filter(:host_node => HostNode.filter(:node_id => host_node_id)))
+      local_vnics_dataset.all.each { |vnic|
+        nd[:local_vnics][vnic.canonical_uuid] = vnic.to_netfilter_document
+      }
+      # Save all the vnics on other host nodes
+      nd[:foreign_vnics] = {}
+      self.network_vif_dataset.exclude(:uuid => local_vnics_dataset.select(:uuid)).all.each { |vnic|
+        nd[:foreign_vnics][vnic.canonical_uuid] = vnic.to_netfilter_document
+      }
+      # Save all vnics in security groups that are referenced by this group
+      nd[:referencees] = {}
+      self.referencees.each { |ref|
+        nd[:referencees][ref.canonical_uuid] = {}
+        ref.network_vif_dataset.all.each { |vnic|
+          nd[:referencees][ref.canonical_uuid][vnic.canonical_uuid] = vnic.to_netfilter_document
+        }
+      }
+      # Save all vnics in security groups that are referencing this group
+      nd[:referencers] = {}
+      self.referencers.each { |ref|
+        nd[:referencers][ref.canonical_uuid] = {}
+        ref.network_vif_dataset.all.each { |vnic|
+          nd[:referencers][ref.canonical_uuid][vnic.canonical_uuid] = vnic.to_netfilter_document
+        }
+      }
+
+      nd
+    end
+
     def after_save
       super
     end
 
-    def before_save
+    def rules_array
+      rules = []
+      rule.to_s.each_line { |line|
+        next if line =~ /\A#/
+        next if line.length == 0
+
+        rules << self.class.parse_rule(line.chomp)
+      }
+
+      rules.compact
+    end
+
+    def handle_refs(action = :create)
       current_ref_group_ids = []
 
       # Establish relations with referenced groups
@@ -50,18 +90,26 @@ module Dcmgr::Models
         next if ref_group_id.nil?
 
         current_ref_group_ids << ref_group_id
-        if self.referencees.find {|ref| ref.canonical_uuid == ref_group_id}.nil? && (not SecurityGroup[ref_group_id].nil?)
+        if self.referencees.find {|ref| ref.canonical_uuid == ref_group_id}.nil? && (not SecurityGroup[ref_group_id].nil?) && action == :create
           self.add_referencee(SecurityGroup[ref_group_id])
         end
-      } #TODO: Fix crash when adding reference rules on create
+      }
 
       # Destroy relations with groups that are no longer referenced
       self.referencees_dataset.each { |referencee|
         unless current_ref_group_ids.member?(referencee.canonical_uuid)
           self.remove_referencee(referencee)
         end
-      } unless self.referencees.empty?
-      
+      } unless self.referencees.empty? || action != :delete
+    end
+
+    def before_save
+      handle_refs(:delete)
+      super
+    end
+
+    def after_save
+      handle_refs(:create)
       super
     end
 
@@ -69,35 +117,36 @@ module Dcmgr::Models
       return false if self.network_vif.size > 0
       return false if self.referencers.size > 0
 
+      self.remove_all_referencees
       super
     end
     alias :destroy_group :destroy
-    
+
     def self.parse_rule(rule)
       rule = rule.strip.gsub(/[\s\t]+/, '')
       from_group = false
-      
+
       # ex.
       # "tcp:22,22,ip4:0.0.0.0"
       # "udp:53,53,ip4:0.0.0.0"
       # "icmp:-1,-1,ip4:0.0.0.0"
-      
+
       # 1st phase
       # ip_tport    : tcp,udp? 1 - 16bit, icmp: -1
       # id_port has been separeted in first phase.
       from_pair, ip_tport, source_pair = rule.split(',')
-      
+
       return nil if from_pair.nil? || ip_tport.nil? || source_pair.nil?
-      
+
       # 2nd phase
       # ip_protocol : [ tcp | udp | icmp ]
       # ip_fport    : tcp,udp? 1 - 16bit, icmp: -1
       ip_protocol, ip_fport = from_pair.split(':')
-      
+
       # protocol    : [ ip4 | ip6 | security_group_uuid ]
       # ip_source   : ip4? xxx.xxx.xxx.xxx./[0-32], ip6? (not yet supprted)
       protocol, ip_source = source_pair.split(':')
-      
+
       s = StringScanner.new(protocol)
       until s.eos?
         case
@@ -116,7 +165,7 @@ module Dcmgr::Models
           raise InvalidSecurityGroupRuleSyntax, "Unexpected protocol '#{s.peep(20)}'"
         end
       end
-      
+
       if from_group == false
         #p "from_group:(#{from_group}) ip_source -> #{ip_source}"
         ip = IPAddress(ip_source)
@@ -130,21 +179,21 @@ module Dcmgr::Models
         ip_source = protocol
         protocol = nil
       end
-      
+
       case ip_protocol
       when 'tcp', 'udp'
         ip_fport = ip_fport.to_i
         ip_tport = ip_tport.to_i
-        
+
         # validate port range
         [ ip_fport, ip_tport ].each do |port|
           raise InvalidSecurityGroupRuleSyntax, "Out of range port number: #{port}" unless port >= 1 && port <= 65535
         end
-        
+
         if !(ip_fport <= ip_tport)
           raise InvalidSecurityGroupRuleSyntax, "Invalid IP port range: #{ip_fport} <= #{ip_tport}"
         end
-        
+
         {
           :ip_protocol => ip_protocol,
           :ip_fport    => ip_fport,
@@ -158,10 +207,10 @@ module Dcmgr::Models
         # For the ICMP protocol, the ICMP type and code must be specified.
         # This must be specified in the format type:code where both are integers.
         # Type, code, or both can be specified as -1, which is a wildcard.
-        
+
         icmp_type = ip_fport.to_i
         icmp_code = ip_tport.to_i
-        
+
         # icmp_type
         case icmp_type
         when -1
@@ -169,7 +218,7 @@ module Dcmgr::Models
         else
           raise InvalidSecurityGroupRuleSyntax, "Unsupported ICMP type number: #{icmp_type}"
         end
-        
+
         # icmp_code
         case icmp_code
         when -1
@@ -179,7 +228,7 @@ module Dcmgr::Models
         else
           raise InvalidSecurityGroupRuleSyntax, "Unsupported ICMP code number: #{icmp_code}"
         end
-        
+
         {
           :ip_protocol => ip_protocol,
           :icmp_type   => ip_tport.to_i, # ip_tport.to_i, # -1 or 0,       3,    5,       8,        11, 12, 13, 14, 15, 16, 17, 18

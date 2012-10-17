@@ -88,6 +88,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
       callback: function(){
         var params = { 'button': bt_edit_ssh_keypair, 'element_id': 1 };
         $(this).find('#ssh_keypair_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#ssh_keypair_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#ssh_keypair_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       },
       button: edit_ssh_keypair_buttons
@@ -116,6 +117,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     var check_id = c_list.currentChecked();
     //remove detail element
     $($('#detail').find('#'+check_id)).remove();
+    $(bt_delete_ssh_keypair.target).button({ disabled: true });
   });
   
   c_pagenate.element.bind('dcmgrGUI.updatePagenate', function(){
@@ -164,6 +166,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
 
       var params = { 'button': bt_create_ssh_keypair, 'element_id': 1 };
       $(this).find('#ssh_keypair_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+      $(this).find('#ssh_keypair_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
       $(this).find('#ssh_keypair_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
     },
     button: create_ssh_keypair_buttons

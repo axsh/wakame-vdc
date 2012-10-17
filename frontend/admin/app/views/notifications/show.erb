@@ -1,0 +1,69 @@
+<% content_for :javascript_link_tags do %>
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/admin/models/dcmgr_gui.js',
+                            '/assets/admin/collections/detail_collection.js',
+                            '/assets/admin/views/detail_view.js',
+                            '/assets/admin/controllers/notifications/detail_controller.js'
+] %>
+<% end %>
+
+<% content_for :stylesheet_link_tags do %>
+<% end %>
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span2"></div>
+    <div class="span8">
+      <div id="content"></div>
+      <script type="text/template" id="detailNotification">
+      <div class="control-group">
+      <div class="controls">
+      <ul class="breadcrumb">
+        <li><a href="/">ホーム</a> <span class="divider">/</span></li>
+        <li><a href="/notifications">お知らせ</a> <span class="divider">/</span></li>
+        <li class="active">ID: {{ uuid }}</li>
+      </ul>
+      </div>
+      <form class="form-detail form-horizontal form-horizontal-fix">
+      <div class="control-group">
+        <legend>お知らせ</legend>
+      </div>
+      <div class="control-group" style="text-align:right">
+        <span><a href="/notifications/n-{{uuid}}/edit">編集</a></span>
+      </div>
+      <div class="control-group">
+        <label class="control-label">対象:</label>
+        <div class="controls">
+        {% if(distribution == 'all') { %}
+        <p>全ユーザー</p>
+        {% } else if(distribution == 'any') { %}
+        <p>指定ユーザー</p>
+        <ul id="notification-users">
+          {% _.each(users, function(uuid, key){ %}
+          <li><a href="/users/{{ uuid }}">{{ uuid }}</a></li>
+          {% }) %}
+        </ul>
+        {% } %}
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">掲載期間:</label>
+        <div class="controls">
+          <p>{{ app.helpers.date_ja.parse(display_begin_at) }} ~ {{ app.helpers.date_ja.parse(display_end_at) }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">タイトル:</label>
+        <div class="controls">
+          <p>{{ title }}</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">記事:</label>
+        <div class="controls"><p>{{ article }}</p>
+        </div>
+      </div>
+      </form>
+    </div>
+    </script>
+    <div class="span2"></div>
+</div><!-- row-fluid -->

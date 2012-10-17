@@ -3,7 +3,12 @@
 module Hijiki
   # configuration file loader. Need to call this 
   def self.load(spec_yml)
-    DcmgrResource::V1203::InstanceSpec.load_spec(spec_yml)
+    case File.basename(spec_yml)
+      when 'instance_spec.yml'
+        DcmgrResource::V1203::InstanceSpec.load_spec(spec_yml)
+      when 'load_balancer_spec.yml'
+        DcmgrResource::V1203::LoadBalancerSpec.load_spec(spec_yml)
+    end
   end
   
   require 'hijiki/request_attribute'
@@ -43,18 +48,22 @@ module Hijiki
       require 'hijiki/dcmgr_resource/12.03/base'
 
       autoload :Account,        'hijiki/dcmgr_resource/12.03/account'
+      autoload :DcNetwork,      'hijiki/dcmgr_resource/12.03/dc_network'
       autoload :HostNode,       'hijiki/dcmgr_resource/12.03/host_node'
       autoload :Image,          'hijiki/dcmgr_resource/12.03/image'
       autoload :Instance,       'hijiki/dcmgr_resource/12.03/instance'
       autoload :InstanceSpec,   'hijiki/dcmgr_resource/12.03/instance_spec'
       autoload :Network,        'hijiki/dcmgr_resource/12.03/network'
       autoload :NetworkVif,     'hijiki/dcmgr_resource/12.03/network_vif'
+      autoload :NetworkService, 'hijiki/dcmgr_resource/12.03/network_service'
       autoload :SecurityGroup,  'hijiki/dcmgr_resource/12.03/security_group'
       autoload :SshKeyPair,     'hijiki/dcmgr_resource/12.03/ssh_key_pair'
       autoload :StorageNode,    'hijiki/dcmgr_resource/12.03/storage_node'
       autoload :Volume,         'hijiki/dcmgr_resource/12.03/volume'
       autoload :BackupObject,   'hijiki/dcmgr_resource/12.03/backup_object'
       autoload :LoadBalancer,   'hijiki/dcmgr_resource/12.03/load_balancer'
+      autoload :LoadBalancerSpec,   'hijiki/dcmgr_resource/12.03/load_balancer_spec'
+
     end
 
   end

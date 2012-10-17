@@ -55,7 +55,7 @@
       <%= t("dialog.create_load_balancer.algorithm.header") %>
     </div>
     <div id="balance_algorithm_selector">
-      <% @checked_leastonn = 'checked' if @balance_algorithm == 'leastconn' %>
+      <% @checked_leastonn = 'checked' if @balance_algorithm == 'leastconn' || @balance_algorithm.blank? %>
       <% @checked_source = 'checked' if @balance_algorithm == 'source' %>
       <label><input type="radio" name="balance_algorithm" value="leastconn" <%= @checked_leastonn  %>><%= t("dialog.create_load_balancer.algorithm.leastconnection") %></label>
       <label><input type="radio" name="balance_algorithm" value="source" <%= @checked_source %>><%= t("dialog.create_load_balancer.header.algorithm.source") %></label>
@@ -78,19 +78,13 @@
       <tr>
         <td><textarea id="public_key" rows="3" cols="85"><%= @public_key %></textarea></td>
       </tr>
-      <tr>
-        <td class="setting_title"><%= t("dialog.create_load_balancer.certificate.chain") %></td>
-      </tr>
-      <tr>
-        <td><textarea id="certificate_chain" rows="3" cols="85"></textarea></td>
-      </tr>
       </table>
     </fieldset>
   </div>
 
   <div id="sticky_session" class="field">
     <fieldset id="sticky_session_group">
-    <legend><input type="checkbox" <% if !@cookie_name.empty? %> checked <% end %>><%= t("dialog.create_load_balancer.sticky_session.header") %></legend>
+    <legend><input type="checkbox" id="use_sticky_session" <% if !@cookie_name.empty? %> checked <% end %>><%= t("dialog.create_load_balancer.sticky_session.header") %></legend>
     <table border="1" class="setting_field">
       <tr>
         <td class="setting_title"><%= t("dialog.create_load_balancer.sticky_session.cookie_name") %></td>

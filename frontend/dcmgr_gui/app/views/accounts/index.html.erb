@@ -2,7 +2,8 @@
 <%= javascript_include_tag 'dcmgr_gui/account_panel.js' %>
 <script type="text/javascript">
 jQuery(function($){
-	dcmgrGUI.accountPanel();
+  dcmgrGUI.accountPanel();
+  DcmgrGUI.Util.utcToLocal('#last_login_at');
 });
 </script>
 <% end %>
@@ -18,7 +19,7 @@ jQuery(function($){
         <blockquote>
           <h4><%= t("accounts.top.information") %></h4>
           <hr />
-          <p><%= t("accounts.top.last_login") %>: <span id="last_login_at"><%= user_last_login_at %></span></p>
+          <p><%= t("accounts.top.last_login") %>: <span id="last_login_at"><%= ((@current_user.nil? || @current_user.last_login_at.nil?) ? '-' : @current_user.last_login_at.utc.iso8601) %></span></p>
         </blockquote>
       </div><!-- account_information -->
       <div id="account_settings">

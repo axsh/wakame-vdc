@@ -3,7 +3,7 @@
 #------------------------
 
 # directory to store VM local data.
-config.vm_data_dir = '/var/lib/wakame-vdc/tmp/instances'
+config.vm_data_dir = '/var/lib/wakame-vdc/instances'
 
 # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
 # * 'netfilter'
@@ -67,3 +67,12 @@ dc_network('management') {
   interface 'eth1'
   bridge 'br1'
 }
+
+# Hypervisor driver specific section.
+#hypervisor_driver('openvz') {
+#  cgroup_blkio {
+#    enable_throttling true
+#    read_iops 200
+#    write_iops 200
+#  }
+#}

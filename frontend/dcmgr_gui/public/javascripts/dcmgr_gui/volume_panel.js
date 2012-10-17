@@ -97,18 +97,10 @@ DcmgrGUI.prototype.volumePanel = function(){
       callback: function(){
         var params = { 'button': bt_edit_volume, 'element_id': 1 };
         $(this).find('#volume_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#volume_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#volume_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
-  });
-  
-  c_list.filter.add(function(data){
-    var results = data.volume.results;
-    var size = results.length;
-    for(var i = 0; i < size; i++) {
-      results[i].result.size = DcmgrGUI.Converter.fromMBtoGB(results[i].result.size);
-    }
-    return data;
   });
   
   c_list.filter.add(function(data){
@@ -122,11 +114,6 @@ DcmgrGUI.prototype.volumePanel = function(){
     return data;
   });
 
-  c_list.detail_filter.add(function(data){
-    data.item.size = DcmgrGUI.Converter.fromMBtoGB(data.item.size);
-    return data;
-  });
-  
   var bt_refresh  = new DcmgrGUI.Refresh();
   
   var create_volume_buttons = {};
@@ -178,25 +165,15 @@ DcmgrGUI.prototype.volumePanel = function(){
         }
       }
 
-      $(this).find('#display_name').keyup(function(){
-       if( $(this).val() ) {
-         is_ready['display_name'] = true;
-         ready(is_ready);
-       } else {
-         is_ready['display_name'] = false;
-         ready(is_ready);
-       }
-      });
+      var display_name_params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#display_name').bind('keyup', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#display_name').bind('paste', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#display_name').bind('cut', display_name_params, DcmgrGUI.Util.checkTextField);
 
-      $(this).find('#volume_size').keyup(function(){
-       if( $(this).val() ) {
-         is_ready['volume_size'] = true;
-         ready(is_ready);
-       } else {
-         is_ready['volume_size'] = false;
-         ready(is_ready);
-       }
-      });
+      var volume_size_params = {'name': 'volume_size', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#volume_size').bind('keyup', volume_size_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#volume_size').bind('paste', volume_size_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#volume_size').bind('cut', volume_size_params, DcmgrGUI.Util.checkTextField);
 
       request.get({
         "url": '/storage_nodes/show_storage_nodes.json',
@@ -287,6 +264,7 @@ DcmgrGUI.prototype.volumePanel = function(){
       var self = this;
       var params = { 'button': bt_create_backup, 'element_id': 1 };
       $(self).find("#backup_display_name").bind('paste', params, DcmgrGUI.Util.availableTextField)
+      $(self).find("#backup_display_name").bind('cut', params, DcmgrGUI.Util.availableTextField)
       $(self).find("#backup_display_name").bind('keyup', params, DcmgrGUI.Util.availableTextField)
     }
   });

@@ -7,7 +7,7 @@ Sequel.migration do
       column :enabled, "int(11)", :default=>1, :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:uuid], :unique=>true, :name=>:uuid
     end
 
@@ -16,10 +16,10 @@ Sequel.migration do
       column :kind, "varchar(255)", :null=>false
       column :key, "varchar(255)", :null=>false
       column :credential, "varchar(255)"
-      
+
       index [:key], :unique=>true, :name=>:key
     end
-    
+
     create_table(:histories) do
       primary_key :id, :type=>"int(11)"
       column :uuid, "varchar(255)", :null=>false
@@ -27,11 +27,11 @@ Sequel.migration do
       column :vchar_value, "varchar(255)"
       column :blob_value, "text"
       column :created_at, "datetime", :null=>false
-      
+
       index [:uuid, :attr]
       index [:uuid, :created_at]
     end
-    
+
     create_table(:host_nodes) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -44,22 +44,22 @@ Sequel.migration do
       column :name, "varchar(255)", :null => true
       column :offering_cpu_cores, "int(11)", :null=>false
       column :offering_memory_size, "int(11)", :null=>false
-      
+
       index [:account_id]
       index [:node_id]
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:hostname_leases) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
       column :hostname, "varchar(32)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id, :hostname], :unique=>true
     end
-    
+
     create_table(:images) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -74,12 +74,12 @@ Sequel.migration do
       column :is_public, "tinyint(1)", :null=>false, :default=>false
       column :state, "varchar(255)", :default=>"init", :null=>false
       column :features, "text"
-      
+
       index [:account_id]
       index [:is_public]
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:instance_security_groups) do
       primary_key :id, :type=>"int(11)"
       column :instance_id, "int(11)", :null=>false
@@ -88,7 +88,7 @@ Sequel.migration do
       index [:instance_id]
       index [:security_group_id]
     end
-    
+
     create_table(:instance_nics) do
       primary_key :id, :type=>"int(11)"
       column :uuid, "varchar(255)", :null=>false
@@ -100,13 +100,13 @@ Sequel.migration do
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:deleted_at]
       index [:instance_id]
       index [:mac_addr]
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:instance_specs) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -121,11 +121,11 @@ Sequel.migration do
       column :config, "text", :null=>false, :default=>''
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id]
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:instances) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -148,14 +148,14 @@ Sequel.migration do
       column :terminated_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id]
       index [:host_node_id]
       index [:state]
       index [:terminated_at]
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:ip_leases) do
       primary_key :id, :type=>"int(11)"
       column :instance_nic_id, "int(11)"
@@ -165,11 +165,11 @@ Sequel.migration do
       column :description, "text"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:instance_nic_id, :network_id]
       index [:network_id, :ipv4], :unique=>true
     end
-    
+
     create_table(:job_states) do
       primary_key :id, :type=>"int(11)"
       column :job_id, "varchar(80)", :null=>false
@@ -181,19 +181,19 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
       column :started_at, "datetime"
       column :finished_at, "datetime"
-      
+
       index [:job_id], :unique=>true
     end
-    
+
     create_table(:mac_leases) do
       primary_key :id, :type=>"int(11)"
       column :mac_addr, "char(12)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:mac_addr], :unique=>true
     end
-    
+
     create_table(:security_groups) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -202,11 +202,11 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
       column :description, "varchar(255)"
       column :rule, "text"
-      
+
       index [:account_id]
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:security_group_rules) do
       primary_key :id, :type=>"int(11)"
       column :created_at, "datetime", :null=>false
@@ -216,7 +216,7 @@ Sequel.migration do
 
       index [:security_group_id]
     end
-    
+
     create_table(:networks) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -238,7 +238,7 @@ Sequel.migration do
       column :description, "text"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id]
       index [:nat_network_id]
       index [:uuid], :unique=>true, :name=>:uuid
@@ -263,7 +263,7 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
       index [:name], :unique=>true
     end
-    
+
     create_table(:node_states) do
       primary_key :id, :type=>"int(11)"
       column :node_id, "varchar(80)", :null=>false
@@ -272,10 +272,10 @@ Sequel.migration do
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :last_ping_at, "datetime", :null=>false
-      
+
       index [:node_id], :unique=>true
     end
-    
+
     create_table(:quotas) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "int(11)", :null=>false
@@ -283,10 +283,10 @@ Sequel.migration do
       column :volume_total_size, "int(11)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id], :unique=>true
     end
-    
+
     create_table(:request_logs) do
       primary_key :id, :type=>"int(11)"
       column :request_id, "varchar(40)", :null=>false
@@ -302,10 +302,10 @@ Sequel.migration do
       column :requested_at_usec, "int(11)", :null=>false
       column :responded_at, "datetime", :null=>false
       column :responded_at_usec, "int(11)", :null=>false
-      
+
       index [:request_id], :unique=>true, :name=>:request_id
     end
-    
+
     create_table(:ssh_key_pairs) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -316,11 +316,11 @@ Sequel.migration do
       column :description, "text"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id]
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:storage_nodes) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -334,21 +334,21 @@ Sequel.migration do
       column :snapshot_base_path, "varchar(255)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id]
       index [:node_id]
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:tag_mappings) do
       primary_key :id, :type=>"int(11)"
       column :tag_id, "int(11)", :null=>false
       column :uuid, "varchar(255)", :null=>false
-      
+
       index [:tag_id]
       index [:uuid]
     end
-    
+
     create_table(:tags) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -358,12 +358,12 @@ Sequel.migration do
       column :attributes, "varchar(255)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id]
       index [:account_id, :type_id, :name], :unique=>true
       index [:uuid], :unique=>true, :name=>:uuid
     end
-    
+
     create_table(:vlan_leases) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -371,12 +371,12 @@ Sequel.migration do
       column :tag_id, "int(11)", :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
       index [:tag_id], :unique=>true
     end
-    
+
     create_table(:volume_snapshots) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -390,13 +390,13 @@ Sequel.migration do
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
       index [:deleted_at]
       index [:storage_node_id]
     end
-    
+
     create_table(:volumes) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -418,7 +418,7 @@ Sequel.migration do
       column :detached_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
       index [:deleted_at]
@@ -439,7 +439,7 @@ Sequel.migration do
     self[:tags].insert(:id=>2, :uuid=>'shnet', :account_id=>'a-shpoolxx', :type_id=>10,:name=>"default_shared_networks", :updated_at=>Time.now, :created_at=>Time.now)
     self[:tags].insert(:id=>3, :uuid=>'shstor', :account_id=>'a-shpoolxx', :type_id=>12, :name=>"default_shared_storage", :updated_at=>Time.now, :created_at=>Time.now)
   end
-  
+
   down do
     drop_table(:accounts, :frontend_systems, :histories, :host_nodes, :hostname_leases, :images, :instance_security_groups, :instance_nics, :instance_specs, :instances, :ip_leases, :job_states, :mac_leases, :security_groups, :security_group_rules, :networks, :node_states, :quotas, :request_logs, :ssh_key_pairs, :storage_nodes, :tag_mappings, :tags, :vlan_leases, :volume_snapshots, :volumes, :dhcp_ranges, :physical_networks)
   end

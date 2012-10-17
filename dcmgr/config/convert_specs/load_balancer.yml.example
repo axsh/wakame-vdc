@@ -1,0 +1,13 @@
+---
+1000:
+  hypervisor: 'openvz'
+  cpu_cores: 1
+  memory_size: 256
+  quota_weight: 1.0
+
+5000:
+  hypervisor: 'openvz'
+  cpu_cores: 2
+  memory_size: 1024
+  quota_weight: 1.0
+

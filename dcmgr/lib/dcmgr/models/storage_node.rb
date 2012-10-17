@@ -14,7 +14,7 @@ module Dcmgr::Models
 
     one_to_many :volumes
     one_to_many :volume_snapshots
-    
+
     many_to_one :node, :class=>Isono::Models::NodeState, :key=>:node_id, :primary_key=>:node_id
 
     def_dataset_method(:online_nodes) do
@@ -22,7 +22,7 @@ module Dcmgr::Models
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
       filter(:node_id => r)
     end
-    
+
     def validate
       super
       # for compatibility: sta.xxx or sta-xxxx
@@ -30,12 +30,12 @@ module Dcmgr::Models
         unless self.node_id =~ /^sta[-.]/
           errors.add(:node_id, "is invalid ID: #{self.node_id}")
         end
-        
+
         if (h = self.class.filter(:node_id=>self.node_id).first) && h.id != self.id
           errors.add(:node_id, "#{self.node_id} is already been associated to #{h.canonical_uuid} ")
         end
       end
-      
+
       unless SUPPORTED_BACKINGSTORE.member?(self.storage_type)
         errors.add(:storage_type, "unknown storage type: #{self.storage_type}")
       end
@@ -62,7 +62,7 @@ module Dcmgr::Models
     end
 
     include Dcmgr::Helpers::ByteUnit
-    
+
     # Returns total disk usage of associated volumes.
     def disk_usage(byte_unit=B)
       convert_byte(volumes_dataset.lives.sum(:size).to_i, byte_unit)
@@ -81,6 +81,6 @@ module Dcmgr::Models
 
       (offer_size - alives_size >= size * num.to_i)
     end
-    
+
   end
 end

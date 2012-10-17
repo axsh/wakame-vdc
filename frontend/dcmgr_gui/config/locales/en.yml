@@ -129,6 +129,46 @@ en:
       message: "Are you sure you want to edit the following backup?"
       backup_id: "Backup ID"
       display_name: "Backup Name"
+    create_network:
+      header: "Create Network"
+      description: "Description"
+      display_name: "Network Name"
+      domain_name: "Domain Name"
+      network_mode: "Network Mode"
+      ipv4_network: "IPv4 Network"
+      ipv4_gw: "IPv4 Gateway"
+      prefix: "Prefix"
+      ip_assignment: "IP Assignment"
+      service:
+        header: "Add Services"
+        dhcp: "DHCP"
+        dns: "DNS"
+        gateway: "Gateway"
+        address: "IP Address"
+    edit_network:
+      header: "Edit Network"
+      network_id: "Network ID"
+      display_name: "Network Name"
+      dc_network:
+        header: "DC Network"
+        id: "ID"
+        name: "Name"
+        description: "Description"
+        allow_new_networks: "Allow new networks"
+      dhcp_ranges:
+        header: "DHCP"
+        ranges: "Ranges"
+        add: "Add"
+        remove: "Remove"
+      service:
+        header: "Service"
+        name: "Name"
+        vif_id: "Vif ID"
+        address: "IP Address"
+        mac_addr: "Mac Address"
+        incoming_port: "Incoming Port"
+        outgoing_port: "Outgoing Port"
+        add: "Add Service"
     create_security_group:
       header: "Create Security Group"
     edit_security_group:
@@ -245,6 +285,8 @@ en:
       message: "Are you sure you want to backup those instances?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+      backup_display_name: "Backup Display Name"
+      image_description: "Image Description"
     create_load_balancer:
       header:
         display_name: "Load Balancer Name"
@@ -286,6 +328,14 @@ en:
       header: "Register Load Balancer"
       instances: "Instances"
       register_instances: "Register Instance"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
+    unregister_load_balancer:
+      header: "Unregister Load Balancer"
+      instances: "Instances"
+      unregister_instances: "Unregister Instance"
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
     poweron_instances:
       header: "PowerOn Instances"
       message: "Are you sure you want to turn those instances on?"
@@ -296,6 +346,9 @@ en:
       message: "Are you sure you want to turn those instances off?"
       instance_id: "Instance ID"
       display_name: "Instance Name"
+    active_standby_load_balancer:
+      load_balancer_id: "Load Balancer ID"
+      display_name: "Load Balancer Name"
   login:
     login: "Log In"
     user: "User"
@@ -328,6 +381,7 @@ en:
       networks: "Networks"
       security_groups: "Security Groups"
       key_pairs: "Key Pairs"
+      load_balancers: "Load Balancers"
   instances:
     header: "Instances"
     instance_actions:
@@ -336,6 +390,8 @@ en:
       reboot: "Reboot"
       start: "Start"
       stop: "Stop"
+      poweron: "Power On"
+      poweroff: "Power Off"
     button:
       edit_instance: "Edit"
       backup_instance: "Backup"
@@ -356,7 +412,7 @@ en:
       wmi_id: "WMI ID"
       cpu_cores: "CPU Cores"
       memory_size: "Memory Size"
-      status: "Status"
+      status: "VM Status"
       state: "State"
       ip: "IP"
       ssh_key_pair: "SSH Key Pair"
@@ -407,11 +463,14 @@ en:
       load_balancer_port: "Load Balancer Port"
       instance_protocol: "Instance Protocol"
       instance_port: "Instance Port"
+      description: "Description"
     load_balancer_actions:
       register_instance: "Register Instance"
       unregister_instance: "Unregister Instance"
+      delete_load_balancer: "Delete Load Balancer"
       poweron: "Power On"
       poweroff: "Power Off"
+      active_standby: "Active/Standby"
   machine_images:
     header: "Machine Images"
     button:
@@ -476,6 +535,7 @@ en:
       capacity: "Size"
       origin_volume_id: "OriginVolume ID"
       checksum: "Checksum"
+      progress: "Progress"
       created_at: "Created"
       status: "Status"
       action: "Action"
@@ -487,6 +547,7 @@ en:
       capacity: "Size"
       origin_volume_id: "OriginVolumeID"
       checksum: "Checksum"
+      progress: "Progress"
       state: "State"
       status: "Status"
       description: "Description"
@@ -513,6 +574,8 @@ en:
   networks:
     header: "Networks"
     button:
+      edit_network: "Edit"
+      view_network: "View"
       create_network: "Create Network"
       delete_network: "Delete Network"
     network_actions:
@@ -525,6 +588,7 @@ en:
       domain_name: "Domain Name"
       ipv4_network: "IPv4 Network"
       created: "Created"
+      action: "Action"
     details:
       header: "Details"
       network_id: "Network ID"
@@ -549,6 +613,7 @@ en:
       header: "Details"
       security_group_id: "Security Group ID"
       description: "Description"
+      rule: "Rule"
       created_at: "Created At"
       updated_at: "Updated At"
       display_name: "Security Group Name"
@@ -556,7 +621,7 @@ en:
     header: "Key Pairs"
     button:
       create_keypair: "Create Key Pair"
-      delete_keypair: "Delete"
+      delete_keypair: "Delete Key Pair"
       edit_keypair: "Edit"
       show_secret_accesskey: "Show Secret Access Key"
     list:
@@ -661,10 +726,13 @@ en:
       users:  "User Manage"
       groups: "Group Manage"
       resource: "Resource Manage"
+  notification:
+    header: "Notification"
   error_box:
     code: 'ErrorCode'
   error_message:
     sign_in: "User not found."
+    not_entered: "User or Password is not entered"
     change_password1: "New password and confirm password are differenet."
     change_password2: "Password is different."
   error_code:
@@ -730,6 +798,15 @@ en:
     code159: "Invalid Load Balancer State %s"
     code160: "Invalid Load Balancer Port"
     code161: "Invalid Load Balancer Algorithm"
+    code162: "Exceed Quota Limit"
+    code163: "Unknown Dc Network"
+    code164: "Network Not Permitted"
+    code165: "Dc Network Not Permitted"
+    code166: "Invalid Load Balancer Private Key"
+    code167: "Invalid Load Balancer Public Key"
+    code168: "Encryption Algorithm Not Supported"
+    code171: "MessagingFailed"
+
   error_quota:
     security_group:
       count: "Exceeds the limit number of %s"

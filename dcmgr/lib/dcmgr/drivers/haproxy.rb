@@ -24,7 +24,6 @@ module Dcmgr
         @listen = {}
         @listen[:servers] = {}
         set_balance_algorithm('leastconn')
-        set_appsession({})
         set_name('balancer')
         set_bind('*', 80)
         @mode = mode
@@ -68,7 +67,9 @@ module Dcmgr
       end
 
       def set_cookie_name(name)
-        @listen[:appsession][:cookie] = name
+        if @mode == 'http' && !name.empty?
+          set_appsession({:cookie => name })
+        end
       end
 
       def set_balance_algorithm(algorithm, param = nil)

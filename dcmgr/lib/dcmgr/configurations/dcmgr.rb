@@ -20,14 +20,14 @@ module Dcmgr
           def self.load_section(class_name, conf_base_class, sched_namespace, &blk)
             raise ArgumentError unless conf_base_class < ::Dcmgr::Configuration
             raise ArgumentError unless ::Dcmgr::Scheduler::NAMESPACES.member?(sched_namespace)
-            
+
             c = ::Dcmgr::Scheduler.scheduler_class(class_name, sched_namespace)
             s = Scheduler.new.parse_dsl do
               config.scheduler_class = c
             end
-            
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
+
+            if c.const_defined?(:Configuration, false)
+              c = c.const_get(:Configuration, false)
               if c && c < conf_base_class
                 c = c.new
                 c.parse_dsl(&blk) if blk
@@ -54,7 +54,7 @@ module Dcmgr
       # end
       class HostNodeScheduler < Configuration
       end
-      
+
       class HostNodeSchedulerRule < Configuration
 
         DSL do
@@ -63,14 +63,14 @@ module Dcmgr
             #p ::Dcmgr::Scheduler.constants
             #raise ArgumentError unless ::Dcmgr::Scheduler::NAMESPACES.member?(rule_namespace)
             #rule_namespace = ::Dcmgr::Scheduler::HostNode::Rules
-            
+
             c = ::Dcmgr::Scheduler::HostNode::Rules.rule_class(class_name)
             s = Scheduler.new.parse_dsl do
               config.scheduler_class = c
             end
-            
-            if c.const_defined?(:Configuration)
-              c = c.const_get(:Configuration)
+
+            if c.const_defined?(:Configuration, false)
+              c = c.const_get(:Configuration, false)
               if c && c < conf_base_class
                 c = c.new
                 c.parse_dsl(&blk) if blk
@@ -91,17 +91,20 @@ module Dcmgr
       class NetworkScheduler < Configuration
       end
 
+      class MacAddressScheduler < Configuration
+      end
+
       class ServiceType < Configuration
 
         # default backup storage to upload backup object from the
         # service type nodes.
         param :backup_storage_id
-        
-        def initialize(service_type)
-          super()
+
+        def initialize(service_type, parent)
+          super(parent)
           @config[:name] = service_type
         end
-        
+
         def validate(errors)
           errors << "Missing name parameter" unless @config[:name]
         end
@@ -116,7 +119,7 @@ module Dcmgr
             @config[:host_node_ha_scheduler] = Scheduler::DSL.load_section(class_name, HostNodeScheduler, ::Dcmgr::Scheduler::HostNode, &blk)
             self
           end
-          
+
           def storage_node_scheduler(class_name, &blk)
             @config[:storage_node_scheduler] = Scheduler::DSL.load_section(class_name, StorageNodeScheduler, ::Dcmgr::Scheduler::StorageNode, &blk)
             self
@@ -126,6 +129,11 @@ module Dcmgr
             @config[:network_scheduler] = Scheduler::DSL.load_section(class_name, NetworkScheduler, ::Dcmgr::Scheduler::Network, &blk)
             self
           end
+
+          def mac_address_scheduler(class_name, &blk)
+            @config[:mac_address_scheduler] = Scheduler::DSL.load_section(class_name, MacAddressScheduler, ::Dcmgr::Scheduler::MacAddress, &blk)
+            self
+          end
         end
       end
 
@@ -133,31 +141,42 @@ module Dcmgr
         def validate(errors)
           super
           STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
+
+          if @config[:mac_address_scheduler].nil?
+            parse_dsl {
+              mac_address_scheduler :Default
+            }
+          end
         end
       end
 
       class LbServiceType < ServiceType
         param :image_id
         param :instance_spec_id
-        param :host_node_id
         param :ssh_key_id
-        param :amqp_server_uri
+        param :amqp_server_uri, :default=>proc {
+          parent.config[:amqp_server_uri]
+        }
         param :instances_network
         param :management_network
 
         def validate(errors)
           super
           [:image_id,
-           :host_node_id,
            :ssh_key_id,
            :instances_network,
            :management_network,
            :host_node_scheduler,
            :storage_node_scheduler,
            :network_scheduler,
-           :amqp_server_uri
           ].each do |name|
-            errors << "#{name} is undefined." unless @config[name]
+            errors << "#{name} is undefined." unless self.send(name)
+          end
+
+          if @config[:mac_address_scheduler].nil?
+            parse_dsl {
+              mac_address_scheduler :Default
+            }
           end
         end
       end
@@ -172,17 +191,17 @@ module Dcmgr
         def service_type(name, class_name, &blk)
           raise ArgumentError unless Dcmgr.const_get(class_name) < ServiceType
           @config[:service_types] ||= {}
-          @config[:service_types][name] = Dcmgr.const_get(class_name).new(name).parse_dsl(&blk)
+          @config[:service_types][name] = Dcmgr.const_get(class_name).new(name, @subject).parse_dsl(&blk)
           self
         end
       end
-      
+
       # Database connection string
       deprecated_warn_param :database_url
       param :database_uri
       # AMQP broker to be connected.
       param :amqp_server_uri
-      
+
       # UUID for shared host pool or group.
       param :default_shared_host_pool, :default=> 'hng-shhost'
 
@@ -211,7 +230,7 @@ module Dcmgr
       # Skip quota check even if frontend sends X-VDC-Account-Quota
       # header.
       param :skip_quota_evaluation, :default=>false
-      
+
       def validate(errors)
         errors << "database_uri is undefined." unless @config[:database_uri]
         errors << "amqp_server_uri is undefined." unless @config[:amqp_server_uri]

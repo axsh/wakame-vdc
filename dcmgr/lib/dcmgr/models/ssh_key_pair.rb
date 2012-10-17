@@ -8,19 +8,14 @@ module Dcmgr::Models
     taggable 'ssh'
     accept_service_type
 
-    def before_destroy
-      # TODO: check running instances which are associated to ssh key
-      # pairs. reject deletion if exist.
-      super
-    end
-
     #
     # @return [Hash] {:private_key=>'pkey string',
     #                 :public_key=>'pubkey string'}
     def self.generate_key_pair(name)
-      pkey = File.expand_path(randstr, Dir.tmpdir)
-      pubkey = pkey + '.pub'
-      begin
+      Dir.mktmpdir('sshkey') { |dir|
+        pkey = File.expand_path('sshkey', dir)
+        pubkey = pkey + '.pub'
+
         system("ssh-keygen -q -t rsa -C '%s' -N '' -f %s >/dev/null" % [name, pkey])
         unless $?.exitstatus == 0
           raise "Failed to run ssh-keygen: exitcode=#{$?.exitstatus}"
@@ -33,15 +28,11 @@ module Dcmgr::Models
         end
         fp = fp.split(/\s+/)[1]
 
-        {:private_key=>IO.read(pkey),
-          :public_key=>IO.read(pubkey),
-          :finger_print => fp}
-      rescue
-        # clean up tmp key files
-        [pkey, pubkey].each { |i|
-          File.unlink(i) if File.exist?(i)
-        }
-      end
+        return {:private_key=>IO.read(pkey),
+                :public_key=>IO.read(pubkey),
+                :finger_print => fp
+               }
+      }
     end
 
     def to_api_document
@@ -56,11 +47,5 @@ module Dcmgr::Models
 
       ssh
     end
-
-    private
-    def self.randstr
-      Array.new(10) {  (('a'..'z').to_a + (0..9).to_a)[rand(36)] }.join
-    end
-
   end
 end

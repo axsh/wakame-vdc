@@ -25,7 +25,7 @@ DcmgrGUI.Class = (function() {
 
 DcmgrGUI.Request = DcmgrGUI.Class.create({
   initialize: function(){
-    
+    dcmgrGUI.setConfig('error_popup', true);
   },
   get: function(params){
     params['type'] = 'GET';
@@ -76,8 +76,20 @@ DcmgrGUI.Filter = DcmgrGUI.Class.create({
 });
 
 DcmgrGUI.Converter = {};
-DcmgrGUI.Converter.fromMBtoGB = function(data){
-  return Math.ceil(data/1024) + 'GB';
+
+// Convert number to default display byte unit (GB).
+displayByteUnit = DcmgrGUI.Converter.toDisplayByteUnit = function(qty, unit) {
+  var q;
+  if (qty === undefined || qty == ''){
+    return "";
+  }else if(typeof qty === 'number'){
+    if (unit === undefined ){ unit = ' byte'; }
+    q = new Qty(qty + unit);
+  }else{
+    if (unit !== undefined ){ qty = qty + unit; }
+    q = new Qty(qty);
+  }
+  return q.toPrec('0.01 GB').toString('GB');
 };
 
 DcmgrGUI.Converter.unit = function(data, unit_type){
@@ -145,6 +157,19 @@ DcmgrGUI.date.getI18n = function(date_str){
                                    convert(date_str.getSeconds())
                                    ]);
 };
+
+// Convert UTC ISO8601 time string to local TZ with I18n.
+DcmgrGUI.date.utcToLocal = function(iso8601_date_str) {
+  // TODO: cleanup white spaces in date_str.
+  try {
+    return DcmgrGUI.date.getI18n(DcmgrGUI.date.setTimezone(DcmgrGUI.date.parseISO8601(iso8601_date_str),
+                                                           dcmgrGUI.getConfig('time_zone')
+                                                          ));
+  } catch(a) {
+    return iso8601_date_str;
+  }
+};
+      
 
 DcmgrGUI.Pagenate = DcmgrGUI.Class.create({
   initialize: function(params) {
@@ -386,23 +411,26 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
   },
   update:function(params,async){
     var self = this;
-
-    $("#list_load_mask").mask($.i18n.prop('loading_parts'));
-    self.element.trigger('dcmgrGUI.beforeUpdate');
-
-    var request = new DcmgrGUI.Request;
-    request.get({
-      url: params.url,
-      data: params.data,
-      success: function(json,status,xhr){
-        self.filter.execute(json); 
-        self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
-        self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
-      },
-      complete: function(xhr, status) {
-        $("#list_load_mask").unmask();
-      }
-    });
+    try{
+      $("#list_load_mask").mask($.i18n.prop('loading_parts'));
+      self.element.trigger('dcmgrGUI.beforeUpdate');
+      var request = new DcmgrGUI.Request;
+      request.get({
+        url: params.url,
+        data: params.data,
+        success: function(json,status,xhr){
+          self.filter.execute(json);
+          self.element.trigger('dcmgrGUI.contentChange',[{"data":json,"self":self}]);
+          self.element.trigger('dcmgrGUI.afterUpdate',[{"data":json,"self":self}]);
+        },
+        complete: function(xhr, status) {
+          $("#list_load_mask").unmask();
+        }
+      });
+    } catch( e ) {
+      console.log(e);
+      $("#list_load_mask").unmask();
+    }
   }
 });
 
@@ -465,7 +493,7 @@ DcmgrGUI.Util.availableTextField = function(e){
   var button = d.button;
   var element_id = d.element_id;
 
-  if(e.type == 'paste') {
+  if(_.include(['paste', 'cut'], e.type)) {
     var el = $(this);
     setTimeout(function() {
       var text = $(el).val();
@@ -484,6 +512,43 @@ DcmgrGUI.Util.availableTextField = function(e){
     }
   }
   return true;
+};
+
+DcmgrGUI.Util.checkTextField = function(e) {
+    var d = e.data;
+    var name = d.name;
+    var is_ready = d.is_ready;
+    var ready = d.ready;
+
+    if(_.include(['paste', 'cut'], e.type)) {
+	var el = $(this);
+	setTimeout(function(){
+		var text = $(el).val();
+		if(text) {
+		    is_ready[name] = true;
+		    ready(is_ready);
+		} else {
+		    is_ready[name] = false;
+		    ready(is_ready);
+		}
+	    }, 100);
+    } else {
+	var text = $(this).val();
+	if(text) {
+	    is_ready[name] = true;
+	    ready(is_ready);
+	} else {
+	    is_ready[name] = false;
+	    ready(is_ready);
+	}
+    }
+    return true;
+};
+
+// Find ISO8601 UTC string in the HTML element and convert it.
+DcmgrGUI.Util.utcToLocal = function(elemid) {
+  var elem = $(elemid);
+  elem.html(DcmgrGUI.date.utcToLocal(elem.html()));
 };
 
 DcmgrGUI.Event = DcmgrGUI.Class.create({
@@ -818,14 +883,14 @@ DcmgrGUI.ItemSelector = DcmgrGUI.Class.create({
     var dataSize = this.data.length;
     for(var i = 0;i < dataSize ;i++) {
       if (!this.data[i]['selected']) {
-        var html = '<option id="'+i+'" value="'+ this.data[i]['value'] +'">'+ this.data[i]['name'] +'</option>';
+        var html = '<option id="'+i+'" value="'+ this.data[i]['value'] +'">'+ this.data[i]['name'] +' ('+ this.data[i]['id'] +')</option>';
         this.leftSelectionsArray[i] = $(html);
       }
     }
     this.rightSelectionsArray = this.emptyArray(this.data.length);
     for(var i = 0;i < dataSize ;i++) {
       if (this.data[i]['selected']) {
-        var html = '<option id="'+i+'" value="'+ this.data[i]['value'] +'">'+ this.data[i]['name'] +'</option>';
+        var html = '<option id="'+i+'" value="'+ this.data[i]['value'] +'">'+ this.data[i]['name'] +' (' + this.data[i]['id'] +')</option>';
         this.rightSelectionsArray[i] = $(html);
       }
     }
@@ -926,6 +991,193 @@ DcmgrGUI.Logger = DcmgrGUI.Class.create({
     return results;
   }
 });
+
+
+DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
+  initialize: function(elem) {
+    this.index_counter = 0;
+    this.monitor_list = [];
+    this.render_target = elem;
+  },
+
+  monitors: function(){
+    return this.monitor_list;
+  },
+
+  _newIndex: function() {
+    return (this.index_counter++);
+  },
+  
+  addItem: function(protocol){
+    var self = this;
+    var idx = this._newIndex();
+    if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[protocol] === undefined) {
+      throw "Unknown protocol parameter is passed: " + protocol;
+    }
+
+    // place holder variable for event handlers.
+    var item_props = {"protocol":protocol,
+                      'idx': idx,
+                     };
+    this.monitor_list.push(item_props);
+
+    var tr_tag = $('#monitor_selector_tmpl').tmpl({idx: idx,
+                                                   itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS(),
+                                                  });
+    tr_tag.appendTo(this.render_target);
+    tr_tag.find('.del_monitor_item').first().bind('click', function(e){
+      // remove the clicked item from the list.
+      self.monitor_list.splice((idx - 1), 1);
+      $('#monitor_item_' + idx).first().remove();
+    });
+    
+    tr_tag.find('.select_monitor_proto').first().bind('change', function(e){
+      item_props['protocol']=$(e.currentTarget).val();
+
+      var replace_tgt = $(e.currentTarget).parent().parent().find(".detail_input");
+      // fill input UI elements for the protocol selected by user.
+      var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[e.target.value];
+      if(row_item === undefined){
+        throw "Unknown monitor protocol: " + e.target.value;
+      }
+      // Clear current child elements.
+      replace_tgt.html('');
+      row_item.ui(replace_tgt, e.target.id);
+    }).val(protocol).trigger('change');
+
+    item_props['row_elem'] = tr_tag;
+  },
+
+  queryParams: function(){
+    var res="";
+
+    for (var i=0; i < this.monitor_list.length; i++) {
+      var itm = this.monitor_list[i]
+      res += "&eth0_monitors["+i+"][protocol]=" + itm['protocol'];
+      res += "&eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked');
+      res += DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[itm['protocol']].buildQuery(itm['row_elem'], i);
+    }
+
+    return res;
+  },
+});
+
+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
+  return {
+    'icmp': {
+      title: "PING",
+      ui: function (elem){
+      },
+      buildQuery: function(row_elem, idx){
+        return "";
+      },
+    },
+    'http': {
+      title: "HTTP",
+      ui: function (elem){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="80"></input>');
+        elem.append('<br>Path: <input type="text" class="_check_path" width="40" value="/"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
+          "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
+      },
+    },
+    'https': {
+      title: "HTTPS",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="443"></input>');
+        elem.append('<br>Path: <input type="text" class="_check_path" width="40" value="/"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
+          "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
+      },
+    },
+    'ftp': {
+      title: "FTP",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="21"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'ssh': {
+      title: "SSH",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="22"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'smtp': {
+      title: "SMTP",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="25"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'pop3': {
+      title: "POP3",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="110"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'imap': {
+      title: "IMAP",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="143"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'submission': {
+      title: "Submission",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="587"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'dns': {
+      title: "DNS",
+      ui: function (elem, idx){
+        elem.append('Host Query: <input type="text" class="_query_record" value="localhost"></input>');
+        elem.append('<input type="hidden" class="_udp_port" value="53"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]=53&eth0_monitors["+idx+"][params][query_record]"+$(row_elem).find('._query_record').val();
+      },
+    },
+    'mysql': {
+      title: "MySQL",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="3306"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    },
+    'postgresql': {
+      title: "PostgreSQL",
+      ui: function (elem, idx){
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="5432"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      },
+    }
+  };
+};
 
 DcmgrGUI.prototype = {
   initialize:function(){

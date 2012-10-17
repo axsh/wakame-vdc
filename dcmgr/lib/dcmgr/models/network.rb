@@ -43,12 +43,19 @@ module Dcmgr::Models
     end
 
     def add_service_vif(ipv4)
+      ip_lease = self.find_ip_lease(ipv4)
+
+      if ip_lease
+        # Verify vif is service vif.
+        return ip_lease.network_vif
+      end
+
       m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
 
       vif_data = {
         :account_id => self.account_id,
         :network_id => self.id,
-        :mac_addr => m.mac_addr,
+        :mac_addr => m.pretty_mac_addr(''),
       }
 
       vif = NetworkVif.new(vif_data)
@@ -95,7 +102,7 @@ module Dcmgr::Models
     end
 
     def available_ip_nums
-      self.ipv4_ipaddress.hosts.size - self.ip_lease_dataset.count
+      self.ipv4_ipaddress.hosts.size - self.network_vif_ip_lease_dataset.count
     end
 
     def ipv4_u32_dynamic_range_array
@@ -120,9 +127,9 @@ module Dcmgr::Models
          end
          range.save_changes
       }
-      
+
       self.add_dhcp_range(:range_begin=>range_begin, :range_end=>range_end)
-      
+
       self
     end
 
@@ -148,9 +155,15 @@ module Dcmgr::Models
       self
     end
 
+    # To check the IP address that can not be used.
+    # TODO add a check of network services
     def reserved_ip?(ip)
+      raise ArgumentError unless ip.is_a?(::IPAddress::IPv4)
       ipaddr = ip.to_s
-      if self[:ipv4_gw] == ipaddr ||
+
+      if self.ipv4_ipaddress.to_s == ipaddr ||
+          self.ipv4_ipaddress.broadcast.to_s == ipaddr ||
+          self[:ipv4_gw] == ipaddr ||
           self[:dns_server] == ipaddr ||
           self[:dhcp_server] == ipaddr ||
           self[:metadata_server] == ipaddr
@@ -166,7 +179,7 @@ module Dcmgr::Models
 
     def validate
       super
-      
+
       unless (1..31).include?(self.prefix.to_i)
         errors.add(:prefix, "prefix must be 1-31: #{self.prefix}")
       end
@@ -186,7 +199,7 @@ module Dcmgr::Models
           errors.add(:ipv4_gw, "Invalid IP address syntax: #{self.ipv4_gw}")
         end
       end
-      
+
       if self.dhcp_server
         begin
           if !network_addr.include?(IPAddress::IPv4.new("#{self.dhcp_server}"))
@@ -214,7 +227,7 @@ module Dcmgr::Models
       if self.dc_network
         h[:dc_network] = self.dc_network.to_hash
       end
-     
+
       self.network_service.each { |service|
         h[:network_services] << service.to_hash
       }
@@ -222,8 +235,15 @@ module Dcmgr::Models
       h
     end
 
-    def to_api_document
-      to_hash.merge(:id=>self.canonical_uuid)
+    def to_netfilter_document
+      {
+        :ipv4_gw => self.ipv4_gw,
+        :prefix => self.prefix,
+        :dns_server => self.dns_server,
+        :dhcp_server => self.dhcp_server,
+        :metadata_server => self.metadata_server,
+        :metadata_server_port => self.metadata_server_port
+      }
     end
 
     def before_destroy
@@ -232,12 +252,12 @@ module Dcmgr::Models
         n.nat_network_id = nil
         n.save
       }
-      
+
       #Delete all reserved ipleases in this network
       self.network_vif_ip_lease_dataset.filter(:alloc_type => NetworkVifIpLease::TYPE_RESERVED).each { |i|
         i.destroy
       }
-      
+
       super
     end
 

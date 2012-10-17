@@ -1,0 +1,48 @@
+source :rubygems
+
+# Server requirements
+# gem 'trinidad', :platform => 'jruby'
+
+# Project requirements
+gem 'rake', '0.9.2.2'
+gem 'sinatra-flash', :require => 'sinatra/flash'
+
+# Component requirements
+gem 'rack-less', '3.0.2'
+gem 'less', '2.2.1'
+gem 'mysql2', '0.3.11'
+gem 'sequel', '3.39.0'
+gem 'padrino-sprockets', :git => "http://github.com/nightsailer/padrino-sprockets.git", :require => "padrino/sprockets"
+gem 'coffee-script', '2.2.0'
+gem 'therubyracer', :require => 'v8'
+gem 'unicorn', '4.3.1'
+gem 'rack-cors', :require => 'rack/cors'
+
+# Development requirements
+group :development do
+end
+
+# Test requirements
+group :test do
+  gem 'rspec', :group => "test"
+  gem 'rack-test', :require => "rack/test"
+end
+
+# Produdction requirements
+group :production do
+  gem 'jsmin'
+end
+
+# Padrino Stable Gem
+gem 'padrino', '0.10.7'
+
+# Or Padrino Edge
+# gem 'padrino', :git => 'git://github.com/padrino/padrino-framework.git'
+
+# Or Individual Gems
+# %w(core gen helpers cache mailer admin).each do |g|
+#   gem 'padrino-' + g, '0.10.7'
+# end
+
+gem 'json', '1.7.5'
+

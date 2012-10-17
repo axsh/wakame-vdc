@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Wakame-VDC Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <% if route.controller %>
+    <%= stylesheet_link_tag "/assets/#{route.controller.singularize}" %>
+    <% end %>
+    <!-- Le styles -->
+    <link rel="stylesheet" href="/assets/bootstrap.css">
+    <link rel="stylesheet" href="/assets/bootstrap-notify.css">
+    <%= yield_content :stylesheet_link_tags %>
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+      .ui-timepicker-div {
+        top: 440px;
+      }
+
+      .empty_row {
+        height: 44px;
+      }
+
+      form.form-horizontal-fix p {
+        padding-top: 5px;
+      }
+
+      form label.control-label {
+        font-weight: bold;
+      }
+
+      form.form-horizontal .control-group {
+        margin-bottom: 0px;
+      }
+    </style>
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    </head>
+    <body data-spy="scroll" data-twttr-rendered="true" screen_capture_injected="true">
+    <%= partial :navbar %>
+    <div class="container-fluid">
+
+      <div class="row-fluid">
+        <%= partial :navbar %>
+        <%= yield %>
+      </div><!--/row-->
+
+      <%= partial :footer %>
+    </div><!--/.container-fluid-->
+    <%= partial :load_js %>
+    <div id="notify" class='notifications top-right'></div>
+    </body>
+</html>

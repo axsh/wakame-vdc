@@ -59,8 +59,8 @@ ja:
       host_name: "ホスト名"
       instance_spec: "スペック"
       ssh_key_pair: "SSHキーペア"
-      security_group: "セキュリティーグループ設定"
-      available_groups: "セキュリティーグループ"
+      security_group: "セキュリティグループ設定"
+      available_groups: "セキュリティグループ"
       launch_in: "選択済み"
       user_data: "ユーザデータ"
       display_name: "インスタンス名"
@@ -128,6 +128,46 @@ ja:
       message: "バックアップを編集します。よろしいですか？"
       backup_id: "バックアップID"
       display_name: "バックアップ名"
+    create_network:
+      header: "ネットワークを作成"
+      description: "詳細"
+      display_name: "ネットワーク名"
+      domain_name: "ドメインネーム"
+      network_mode: "ネットワーク Mode"
+      ipv4_network: "IPv4 ネットワーク"
+      ipv4_gw: "IPv4 ゲートウェイ"
+      prefix: "Prefix"
+      ip_assignment: "IP Assignment"
+      service:
+        header: "Add Services"
+        dhcp: "DHCP"
+        dns: "DNS"
+        gateway: "ゲートウェイ"
+        address: "IPアドレス"
+    edit_network:
+      header: "ネットワークを編集"
+      network_id: "ネットワークID"
+      display_name: "ネットワーク名"
+      dc_network:
+        header: "DCネットワーク"
+        id: "ID"
+        name: "DCネットワーク名"
+        description: "説明"
+        allow_new_networks: "Allow new networks"
+      dhcp_range:
+        header: "DHCP"
+        ranges: "Ranges"
+        add: "Add Range"
+        remove: "Remove Range"
+      service:
+        header: "サービス"
+        name: "サービス名"
+        vif_id: "Vif ID"
+        address: "IPアドレス"
+        mac_addr: "Macアドレス"
+        incoming_port: "Incoming Port"
+        outgoing_port: "Outgoing Port"
+        add: "Add Service"
     create_security_group:
       header: "セキュリティグループを作成"
     edit_security_group:
@@ -135,7 +175,7 @@ ja:
     create_and_edit_security_group:
       uuid: "セキュリティグループID"
       display_name: "セキュリティグループ名"
-      description: "詳細"
+      description: "説明"
       rule: "ルール"
     delete_security_group:
       header: "セキュリティーグループを削除"
@@ -145,7 +185,7 @@ ja:
     create_and_edit_ssh_keypair:
       uuid: "キーペアID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       download_once: "1回限り"
     create_ssh_keypair:
       header: "キーペアを作成"
@@ -242,9 +282,11 @@ ja:
       display_name: "インスタンス名"
     backup_instances:
       header: "インスタンスのバックアップ"
-      message: "インスタンスのバックアップを取得します。よろしいですか？"
+      message: "インスタンスのバックアップを作成します。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+      backup_display_name: "バックアップ名"
+      image_description: "説明"
     create_load_balancer:
       header:
         display_name: "ロードバランサ名"
@@ -286,6 +328,14 @@ ja:
       header: "インスタンスの割り当て"
       instances: "インスタンス"
       register_instances: "割り当て"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
+    unregister_load_balancer:
+      header: "インスタンスの解除"
+      instances: "インスタンス"
+      unregister_instances: "解除"
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
     poweron_instances:
       header: "インスタンスの電源オフ"
       message: "インスタンスの電源をオンにします。よろしいですか？"
@@ -296,6 +346,9 @@ ja:
       message: "インスタンスの電源をオフにします。よろしいですか？"
       instance_id: "インスタンスID"
       display_name: "インスタンス名"
+    active_standby_load_balancer:
+      load_balancer_id: "ロードバランサID"
+      display_name: "ロードバランサ名"
   login:
     login: "ログイン"
     user: "ユーザー"
@@ -328,6 +381,7 @@ ja:
       networks: "ネットワーク"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
+      load_balancers: "ロードバランサ"
   instances:
     header: "インスタンス"
     instance_actions:
@@ -336,6 +390,8 @@ ja:
       reboot: "再起動"
       start: "再開"
       stop: "一時停止"
+      poweron: "パワーオン"
+      poweroff: "パワーオフ"
     button:
       edit_instance: "編集"
       backup_instance: "バックアップ"
@@ -356,7 +412,7 @@ ja:
       wmi_id: "WMI ID"
       cpu_cores: "CPUコア数"
       memory_size: "メモリーサイズ"
-      status: "ステータス"
+      status: "VMの状態"
       state: "状態"
       ip: "IP"
       ssh_key_pair: "SSHキーペア"
@@ -406,11 +462,14 @@ ja:
       load_balancer_port: "ロードバランサポート"
       instance_protocol: "インスタンスプロトコル"
       instance_port: "インスタンスポート"
+      description: "説明"
     load_balancer_actions:
       register_instance: "インスタンスの割り当て"
       unregister_instance: "インスタンスの解除"
+      delete_load_balancer: "ロードバランサ破棄"
       poweron: "パワーオン"
       poweroff: "パワーオフ"
+      active_standby: "アクティブ／スタンバイ"
   machine_images:
     header: "マシンイメージ"
     button:
@@ -475,6 +534,7 @@ ja:
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
       checksum: "チェックサム"
+      progress: "進捗"
       created_at: "作成日"
       status: "状態"
       action: "アクション"
@@ -486,6 +546,7 @@ ja:
       capacity: "容量"
       origin_volume_id: "ボリューム元ID"
       checksum: "チェックサム"
+      progress: "進捗"
       description: "説明"
       state: "状態"
       status: "状態"
@@ -511,11 +572,17 @@ ja:
       updated_at: "更新日"
   networks:
     header: "ネットワーク"
+    button:
+      edit_network: "編集"
+      view_network: "View"
+      create_network: "Create Network"
+      delete_network: "Delete Network"
     list:
       network_id: "ネットワークID"
       display_name: "ネットワーク名"
       domain_name: "ドメインネーム"
       created: ""
+      action: "アクション"
     details:
       header: "詳細"
       network_id: "ネットワークID"
@@ -538,6 +605,7 @@ ja:
       header: "詳細"
       security_group_id: "セキュリティグループID"
       description: "説明"
+      rule: "ルール"
       created_at: "作成日"
       updated_at: "更新日"
       display_name: "セキュリティグループ名"
@@ -545,13 +613,13 @@ ja:
     header: "キーペア"
     button:
       create_keypair: "キーペアを作成"
-      delete_keypair: "削除"
+      delete_keypair: "キーペアを削除"
       edit_keypair: "編集"
       show_secret_accesskey: "シークレットキーを取得"
     list:
       access_key_id: "アクセスキーID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       secret_access_key: "シークレットキー"
       action: "アクション"
     details:
@@ -559,7 +627,7 @@ ja:
       uuid: "UUID"
       keypair_id: "キーペアID"
       display_name: "キーペア名"
-      description: "詳細"
+      description: "説明"
       fingerprint: "フィンガープリント"
       created_at: "作成日"
       updated_at: "更新日"
@@ -642,7 +710,7 @@ ja:
       backups: "バックアップ"
       storage_nodes: "ストレージプール"
     network_security:
-      header: "セキュリティー"
+      header: "セキュリティ"
       networks: "ネットワーク"
       security_groups: "セキュリティグループ"
       key_pairs: "キーペア"
@@ -651,10 +719,13 @@ ja:
       users:  "ユーザ管理"
       groups:  "グループ管理"
       resource: "リソース管理"
+  notification:
+    header: "お知らせ"
   error_box:
     code: "エラーコード"
   error_message:
     sign_in: "ユーザーは未登録です。"
+    not_entered: "ユーザーまたはパスワードが未入力です。"
     change_password1: "新規パスワードと確認用パスワードが異なります。"
     change_password2: "パスワードが異なります。"
   error_code:
@@ -720,6 +791,15 @@ ja:
     code159: "無効なロードバランサの状態です。%s"
     code160: "無効なロードバランサのポートです。"
     code161: "無効なロードバランサのアルゴリズムです。"
+    code162: "クオータの制限を越えました。"
+    code163: "DCネットワークが見つかりません。"
+    code164: "ネットワークが許可されていません。"
+    code165: "DCネットワークが許可されていません。"
+    code166: "無効なプライベートキーです。"
+    code167: "無効なパプリックキーです。"
+    code168: "サポートしていない暗号化アルゴリズムです。"
+    code171: "メッセージ通信に失敗しました。"
+
   error_quota:
     security_group:
       count: "作成上限数 %s を超えています。"

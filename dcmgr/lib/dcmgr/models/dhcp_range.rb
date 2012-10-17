@@ -21,7 +21,7 @@ module Dcmgr::Models
       if !self.network.ipv4_ipaddress.include?(self.range_begin)
         errors.add(:range_begin, "Out of subnet range: #{self.range_begin}")
       end
-      
+
       if !self.network.ipv4_ipaddress.include?(self.range_end)
         errors.add(:range_end, "Out of subnet range: #{self.range_end}")
       end
@@ -50,13 +50,13 @@ module Dcmgr::Models
       IpLease.where(:ip_leases__network_id=>self.network_id).filter(:ip_leases__ipv4=>from..to)
     end
 
-    def available_ip(from, to)
-      ipaddr = case self.network[:ip_assignment]
-               when "asc"
-                 boundaries = leased_ips(from, to).leased_ip_bound_lease.limit(2).all
+    def available_ip(from, to, order)
+      ipaddr = case order
+               when :asc
+                 boundaries = IpLease.leased_ip_bound_lease(self.network_id, from, to).limit(2).all
                  ip = get_assignment_ip(boundaries, from, to)
-               when "desc"
-                 boundaries = leased_ips(from, to).leased_ip_bound_lease.limit(2).order(:ip_leases__ipv4.desc).all
+               when :desc
+                 boundaries = IpLease.leased_ip_bound_lease(self.network_id, from, to).order(:ip_leases__ipv4.desc).limit(2).all
                  ip = get_assignment_ip(boundaries, to, from)
                else
                  raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
@@ -65,27 +65,28 @@ module Dcmgr::Models
 
     def get_assignment_ip(boundaries, from, to)
       if from <= to
-        turn = [:prev,:follow]
+        prev = :prev
+        follow = :follow
         inequality_sign = :<
         number = :+
       else
-        turn = [:follow, :prev]
+        prev = :follow
+        follow = :prev
         inequality_sign = :>
         number = :-
       end
       return from if boundaries.size == 0
+      return from if boundaries[0][prev].nil? && boundaries[0][:ipv4] != from
 
-      boundary = boundaries.first
-      return from if boundary[turn[0]].nil? && boundary[:ipv4] != from
-      
-      ipaddr = nil
-      boundaries.each do |b|
-        next unless b[turn[1]].nil?
-        
-        ipaddr = b[:ipv4].method(number).call(1) if b[:ipv4].method(inequality_sign).call(to)
-        break unless ipaddr.nil?
+      start_range = nil
+
+      if boundaries[0][follow].nil?
+        start_range = boundaries[0][:ipv4] if boundaries[0][:ipv4] != to
+      elsif boundaries.size == 2 && boundaries[1][follow].nil?
+        start_range = boundaries[1][:ipv4] if boundaries[1][:ipv4] != to
       end
-      ipaddr
+
+      return start_range ? start_range.method(number).call(1) : nil
     end
 
     def leased_ranges

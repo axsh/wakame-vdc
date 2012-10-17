@@ -68,7 +68,10 @@ DcmgrGUI.prototype.imagePanel = function(){
     c_list.element.find(".edit_machine_image").each(function(key,value){
       $(this).button({ disabled: false });
       var uuid = $(value).attr('id').replace(/edit_(wmi-[a-z0-9]+)/,'$1');
-      if( uuid ){
+      var row_id = '#row-'+uuid;
+      var owner = $('#mainarea_wide').find('#owner').val();
+      var image_owner = $(row_id).find('.owner').text();
+      if( uuid && owner == image_owner){
 	$(this).bind('click',function(){
 	  bt_edit_machine_image.open({"ids":[uuid]});
 	});
@@ -107,6 +110,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       callback: function(){
         var params = { 'button': bt_edit_machine_image, 'element_id': 1 };
         $(this).find('#machine_image_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
+        $(this).find('#machine_image_display_name').bind('cut', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#machine_image_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
       }
     });
@@ -141,17 +145,17 @@ DcmgrGUI.prototype.imagePanel = function(){
     var display_name = $(this).find('#display_name').val();
     var host_name = $(this).find('#host_name').val();
     var instance_spec_id = $(this).find('#instance_specs').val();
-    var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').text();
+    var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').val();
     var launch_in = $(this).find('#right_select_list').find('option');
     var user_data = $(this).find('#user_data').val();
     var security_groups = [];
     $.each(launch_in,function(i){
-     security_groups.push("security_groups[]="+ $(this).text());
+      security_groups.push("security_groups[]="+ $(this).val());
     });
     var vifs = [];
     for (var i=0; i < 5 ; i++) {
-        vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
-    }      
+      vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
+    }
 
     var data = "image_id="+image_id
               +"&instance_spec_id="+instance_spec_id
@@ -159,9 +163,10 @@ DcmgrGUI.prototype.imagePanel = function(){
               +"&user_data="+user_data
               +"&" + security_groups.join('&')
               +"&" + vifs.join('&')
+              + bt_launch_instance.monitor_selector.queryParams()
               +"&ssh_key="+ssh_key_pair
               +"&display_name="+display_name;
-    
+
     request = new DcmgrGUI.Request;
     request.post({
       "url": '/instances',
@@ -172,7 +177,7 @@ DcmgrGUI.prototype.imagePanel = function(){
     });
     $(this).dialog("close");
   }
-  
+
   var bt_launch_instance = new DcmgrGUI.Dialog({
     target:'.launch_instance',
     width:583,
@@ -205,21 +210,23 @@ DcmgrGUI.prototype.imagePanel = function(){
         } else {
           bt_launch_instance.disabledButton(1, true);
         }
-      }
+      };
 
-      $(this).find('#display_name').keyup(function(){
-       if( $(this).val() ) {
-         is_ready['display_name'] = true;
-         ready(is_ready);
-       } else {
-         is_ready['display_name'] = false;
-         ready(is_ready);
-       }
+      var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
+
+      var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
+      $(this).find('#add_monitor_item').bind('click', function(e){
+        // Append new monitoring item selection.
+        monitor_selector.addItem('http');
       });
+      bt_launch_instance.monitor_selector = monitor_selector;
 
       parallel({
         //get instance_specs
-        instance_specs: 
+        instance_specs:
           request.get({
             "url": '/instance_specs/all.json',
             success: function(json,status){
@@ -241,7 +248,7 @@ DcmgrGUI.prototype.imagePanel = function(){
             }
           }),
         //get ssh key pairs
-        ssh_keypairs: 
+        ssh_keypairs:
           request.get({
             "url": '/keypairs/all.json',
             "data": "",
@@ -258,13 +265,14 @@ DcmgrGUI.prototype.imagePanel = function(){
 
               for (var i=0; i < size ; i++) {
                 var ssh_keypair_id = results[i].result.id;
-                var html = '<option id="'+ ssh_keypair_id +'" value="'+ ssh_keypair_id +'">'+ssh_keypair_id+'</option>'
+                var ssh_keypair_name = results[i].result.display_name;
+                var html = '<option id="'+ ssh_keypair_id +'" value="'+ ssh_keypair_id +'">'+ssh_keypair_name+' ('+ssh_keypair_id+')</option>'
                 select_keypair.append(html);
               }
             }
         }),
         //get security groups
-        security_groups: 
+        security_groups:
           request.get({
             "url": '/security_groups/all.json',
             "data": "",
@@ -275,7 +283,8 @@ DcmgrGUI.prototype.imagePanel = function(){
               for (var i=0; i < size ; i++) {
                 data.push({
                   "value" : results[i].result.uuid,
-                  "name" : results[i].result.uuid,
+                  "id"    : results[i].result.uuid,
+                  "name"  : results[i].result.display_name,
                 });
               }
 
@@ -305,6 +314,9 @@ DcmgrGUI.prototype.imagePanel = function(){
                 security_group.rightToLeft();
                 on_ready(security_group.getRightSelectionCount());
               });
+            },
+            complete: function(json,status){
+              $(self).find("#left_select_list").unmask();
             }
         }),
 
@@ -320,17 +332,17 @@ DcmgrGUI.prototype.imagePanel = function(){
                 return $(self).find('#' + name);
               }
 
-              var append_select_item = function(select_item, uuid) {
-                select_item.append('<option value="'+ uuid +'">'+uuid+'</option>');
+              var append_select_item = function(select_item, uuid, name) {
+                select_item.append('<option value="'+ uuid +'">'+name+'</option>');
               }
 
               var create_select_eth = function(name, results) {
                 var select_eth = create_select_item(name);
-                append_select_item(select_eth, 'none')
-                append_select_item(select_eth, 'disconnected')
+                append_select_item(select_eth, 'none', 'none')
+                append_select_item(select_eth, 'disconnected', 'disconnected')
 
                 for (var i=0; i < size ; i++) {
-                  append_select_item(select_eth, results[i].result.uuid)
+                  append_select_item(select_eth, results[i].result.uuid, '[' + results[i].result.uuid + '] ' + results[i].result.display_name)
                 }
               }
 
@@ -346,8 +358,6 @@ DcmgrGUI.prototype.imagePanel = function(){
             }
           })
 
-      }).next(function(results) {
-        $("#left_select_list").unmask();
       });
     },
     button: launch_instance_buttons

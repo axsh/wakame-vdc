@@ -115,10 +115,10 @@ module Dcmgr::Endpoints::V1112
              }]
     end
 
-    
+
     # default output format.
     respond_to :json, :yml
-    
+
     load_namespace('instances')
     load_namespace('images')
     load_namespace('host_nodes')

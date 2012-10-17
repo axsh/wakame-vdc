@@ -9,7 +9,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
   get do
     ds = M::BackupObject.dataset
     if params[:state]
-      ds = if BACKUP_OBJECT_META_STATE.member?(params[:state])
+      ds = case params[:state]
+           when *BACKUP_OBJECT_META_STATE
              case params[:state]
              when 'alive'
                ds.alives
@@ -18,7 +19,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
              else
                raise E::InvalidParameter, :state
              end
-           elsif BACKUP_OBJECT_STATE.member?(params[:state])
+           when *BACKUP_OBJECT_STATE
              ds.filter(:state=>params[:state])
            else
              raise E::InvalidParameter, :state
@@ -39,7 +40,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
     if params[:backup_storage_id]
       bs = find_by_uuid(M::BackupStorage, params[:backup_storage_id])
       raise UnknownBackupStorage, params[:backup_storage_id] if bs.nil?
-      
+
       ds = ds.filter(:backup_storage_id=>bs.id)
     end
 
@@ -60,7 +61,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
     respond_with(R::BackupObject.new(bo).generate)
   end
 
-  quota 'backup_object.size', 'backup_object.count'
+  quota 'backup_object.size_mb', 'backup_object.count'
   post do
     bkst = M::BackupStorage[params[:backup_storage_id]] || raise(E::UnknownBackupStorage, params[:backup_storage_id])
     bo = M::BackupObject.create(:backup_storage_id=>bkst.id,
@@ -76,7 +77,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
         end
       }
     end
-    
+
     respond_with(R::BackupObject.new(bo).generate)
   end
 
@@ -88,7 +89,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
       end
     }
     bo.save_changes
-    
+
     respond_with(R::BackupObject.new(bo).generate)
   end
 
@@ -98,7 +99,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
     bo = find_by_uuid(:BackupObject, params[:id])
     raise E::UnknownBackupObject, params[:id] if bo.nil?
     raise E::InvalidBackupObjectState, params[:id] unless bo.state == "available"
-    
+
     begin
       bo.destroy
     rescue M::BackupObject::RequestError => e

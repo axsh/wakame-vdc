@@ -38,7 +38,6 @@ function list_3rd_party_builder() {
 flog                   git://github.com/hansode/env-builder.git                                                   flog-1.8-3.${basearch}.rpm
 openvswitch            git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.6.1-1.el6.${arch}.rpm
 openvswitch            git://github.com/hansode/env-builder.git                                                   openvswitch-1.6.1-1.${arch}.rpm
-kmod-openvswitch-vzkernel git://github.com/hansode/env-builder.git                                                kmod-openvswitch-vzkernel-1.6.1-1.el6.${arch}.rpm
 lxc                    git://github.com/hansode/env-builder.git                                                   lxc-0.7.5-1.${arch}.rpm
 EOS
 }
@@ -47,13 +46,12 @@ function list_3rd_party() {
   vdc_current_base_url=http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/rhel/6/current/${basearch}
   cat <<EOS | egrep -v ^#
 # pkg_name                pkg_uri
-epel-release-6-7          http://ftp.riken.go.jp/pub/Linux/fedora/epel/6/i386/epel-release-6-7.noarch.rpm
+epel-release-6-7          http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-7.noarch.rpm
 elrepo-release            http://elrepo.org/elrepo-release-6-4.el6.elrepo.noarch.rpm
-rabbitmq-server-2.6.1     http://www.rabbitmq.com/releases/rabbitmq-server/v2.6.1/rabbitmq-server-2.6.1-1.noarch.rpm
+rabbitmq-server-2.7.1     http://www.rabbitmq.com/releases/rabbitmq-server/v2.7.1/rabbitmq-server-2.7.1-1.noarch.rpm
 flog                      ${vdc_current_base_url}/flog-1.8-3.${basearch}.rpm
 openvswitch               ${vdc_current_base_url}/kmod-openvswitch-1.6.1-1.el6.${arch}.rpm
 openvswitch               ${vdc_current_base_url}/openvswitch-1.6.1-1.${arch}.rpm
-kmod-openvswitch-vzkernel ${vdc_current_base_url}/kmod-openvswitch-vzkernel-1.6.1-1.el6.${arch}.rpm
 lxc                       ${vdc_current_base_url}/lxc-0.7.5-1.${arch}.rpm
 EOS
 }
@@ -103,7 +101,7 @@ function deploy_3rd_party() {
 function download_3rd_party() {
   rpm -qi curl >/dev/null || yum install -y curl
   [ -f ${vendor_dir}/openvz.repo ] || {
-    curl -R https://raw.github.com/axsh/wakame-vdc/master/rpmbuild/openvz.repo -o ${vendor_dir}/openvz.repo
+    rsync -a ${abs_path}/../../../rpmbuild/openvz.repo -o ${vendor_dir}/openvz.repo
   }
 
   list_3rd_party | while read pkg_name pkg_uri; do

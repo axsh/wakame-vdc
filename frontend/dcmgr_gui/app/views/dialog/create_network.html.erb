@@ -1,0 +1,81 @@
+<div id="create_network_dialog">
+  <table>
+    <tr>
+      <td><%= t("dialog.create_network.display_name") %>:</td>
+      <td><input id="display_name" type="text" name="display_name"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.create_network.description") %>:</td>
+      <td><input id="description" type="text" name="description"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.create_network.domain_name") %>:</td>
+      <td><input id="domain_name" type="text" name="domain_name"></td>
+    </tr>
+    <tr><td><%= t("dialog.create_network.dc_network") %>:</td>
+      <td id="select_dc_network"></td>
+    </tr>
+    <tr><td><%= t("dialog.create_network.network_mode") %>:</td>
+      <td id="select_network_mode"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.create_network.ipv4_network") %>:</td>
+      <td><input id="ipv4_network" type="text" name="ipv4_network"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.create_network.ipv4_gw") %>:</td>
+      <td><input id="ipv4_gw" type="text" name="ipv4_gw"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.create_network.prefix") %>:</td>
+      <td><input id="prefix" type="text" name="prefix" value="24"></td>
+    </tr>
+    <tr>
+      <td><%= t("dialog.create_network.ip_assignment") %>:</td>
+      <td>
+	<select id="ip_assignment" type="text" name="ip_assignment">
+	  <option value="asc">ascend</option>
+	  <option value="desc">descend</option>
+	</select>
+      </td>
+    </tr>
+  </table>
+
+  <fieldset id="network_services_field">
+    <legend><%= t("dialog.create_network.service.header") %></legend><legend>
+    </legend><table cellspacing="5" cellpadding="5">
+      <tbody>
+        <tr>
+          <td><%= t("dialog.create_network.service.dhcp") %>:</td>
+          <td>
+            <%= t("dialog.create_network.enable") %>
+            <input id="service_checkbox" type="checkbox" name="dhcp" value="dhcp" checked="checked">
+          </td>
+          <td>
+            <%= t("dialog.create_network.use_default_range") %>
+            <input id="service_checkbox" type="checkbox" name="dhcp_use_default" value="dhcp_use_default" checked="checked">
+          </td>
+        </tr>
+        <tr>
+          <td><%= t("dialog.create_network.service.dns") %>:</td>
+          <td>
+            <%= t("dialog.create_network.enabled") %>
+            <input id="service_checkbox" type="checkbox" name="dns" value="dns">
+          </td>
+        </tr>
+        <tr>
+          <td><%= t("dialog.create_network.service.gateway") %>:</td>
+          <td>
+            <%= t("dialog.create_network.enabled") %>
+            <input id="service_checkbox" type="checkbox" name="gateway" value="gateway">
+          </td>
+        </tr>
+        <tr>
+          <td><%= t("dialog.create_network.service.address") %>:</td>
+          <td><input id="service_address" type="text" name="address"></td>
+        </tr>
+      </tbody>
+    </table>
+  </fieldset>
+
+</div>

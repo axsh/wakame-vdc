@@ -12,7 +12,8 @@ DcmgrGUI.prototype.dashboardPanel = function(){
     $("#total_network").empty().html(loading_image);
     $("#total_security_group").empty().html(loading_image);
     $("#total_keypair").empty().html(loading_image);
-    
+    $("#total_load_balancer").empty().html(loading_image);
+
     var request = new DcmgrGUI.Request;
     request.get({
       "url": '/accounts/usage.json',
@@ -33,6 +34,7 @@ DcmgrGUI.prototype.dashboardPanel = function(){
         fill_usage('#total_network', 'network.count');
         fill_usage('#total_security_group', 'security_group.count');
         fill_usage('#total_keypair', 'ssh_key_pair.count');
+        fill_usage('#total_load_balancer', 'load_balancer.count');
       }
     });
   });

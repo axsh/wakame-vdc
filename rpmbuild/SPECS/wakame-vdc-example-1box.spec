@@ -44,6 +44,15 @@ Requires: %{name}-common-vmapp-config
 %description dcmgr-vmapp-config
 <insert long description, indented with spaces>
 
+# example:admin
+%package admin-vmapp-config
+Summary: Configuration set for admin %{osubname}
+Group: Development/Languages
+Requires: %{oname}-admin-vmapp-config
+Requires: %{name}-common-vmapp-config
+%description admin-vmapp-config
+<insert long description, indented with spaces>
+
 # example:hva
 %package hva-vmapp-config
 Summary: Configuration set for hva %{osubname}
@@ -59,6 +68,7 @@ Summary: Configuration set for full %{osubname}
 Group: Development/Languages
 Requires: %{name}-dcmgr-vmapp-config
 Requires: %{name}-hva-vmapp-config
+Requires: %{name}-admin-vmapp-config
 %description full-vmapp-config
 <insert long description, indented with spaces>
 
@@ -92,7 +102,9 @@ cd %{name}-%{version}
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
 
 mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}
+mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs
 mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui
+mkdir -p ${RPM_BUILD_ROOT}/etc/%{oname}/admin
 
 # generate /etc/%{oname}/*.conf
 config_examples="dcmgr nsa sta"
@@ -100,6 +112,7 @@ for config_example in ${config_examples}; do
   cp -p `pwd`/dcmgr/config/${config_example}.conf.example ${RPM_BUILD_ROOT}/etc/%{oname}/${config_example}.conf
 done
 unset config_examples
+cp -p `pwd`/dcmgr/config/convert_specs/load_balancer.yml.example ${RPM_BUILD_ROOT}/etc/%{oname}/convert_specs/load_balancer.yml
 
 VDC_ROOT=/var/lib/%{oname}
 config_templates="proxy hva"
@@ -110,13 +123,28 @@ unset config_templates
 unset VDC_ROOT
 
 # /etc/%{oname}/dcmgr_gui/*.yml
-config_ymls="database instance_spec dcmgr_gui"
+config_ymls="database instance_spec dcmgr_gui load_balancer_spec"
 for config_yml in ${config_ymls}; do
   cp -p `pwd`/frontend/dcmgr_gui/config/${config_yml}.yml.example ${RPM_BUILD_ROOT}/etc/%{oname}/dcmgr_gui/${config_yml}.yml
 done
 unset config_ymls
 
+# /etc/%{oname}/admin/*.yml
+config_ymls="admin"
+for config_yml in ${config_ymls}; do
+  cp -p `pwd`/frontend/admin/config/${config_yml}.yml.example ${RPM_BUILD_ROOT}/etc/%{oname}/admin/${config_yml}.yml
+done
+unset config_ymls
+
+%post common-vmapp-config
+/sbin/chkconfig       ntpd on
+/sbin/chkconfig       ntpdate on
+
 %post dcmgr-vmapp-config
+/sbin/chkconfig --add mysqld
+/sbin/chkconfig       mysqld on
+/sbin/chkconfig --add rabbitmq-server
+/sbin/chkconfig       rabbitmq-server on
 # activate upstart system job
 sys_default_confs="auth collector dcmgr metadata nsa proxy sta webui"
 for sys_default_conf in ${sys_default_confs}; do
@@ -128,6 +156,12 @@ for sys_default_conf in /etc/default/vdc-*; do sed -i s,^#NODE_ID=.*,NODE_ID=dem
 [ -f /etc/wakame-vdc/unicorn-common.conf ] && sed -i "s,^worker_processes .*,worker_processes 1," /etc/wakame-vdc/unicorn-common.conf
 
 %post hva-vmapp-config
+/sbin/chkconfig --add iscsi
+/sbin/chkconfig       iscsi  on
+/sbin/chkconfig --add iscsid
+/sbin/chkconfig       iscsid on
+/sbin/chkconfig --add tgtd
+/sbin/chkconfig       tgtd on
 # activate upstart system job
 sys_default_confs="hva"
 for sys_default_conf in ${sys_default_confs}; do
@@ -159,6 +193,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %config /etc/%{oname}/dcmgr_gui/database.yml
 %config /etc/%{oname}/dcmgr_gui/instance_spec.yml
 %config /etc/%{oname}/dcmgr_gui/dcmgr_gui.yml
+%config /etc/%{oname}/dcmgr_gui/load_balancer_spec.yml
+%config /etc/%{oname}/convert_specs/load_balancer.yml
+
+%files admin-vmapp-config
+%config /etc/%{oname}/admin/admin.yml
 
 %files hva-vmapp-config
 %config /etc/%{oname}/hva.conf

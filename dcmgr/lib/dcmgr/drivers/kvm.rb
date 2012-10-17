@@ -9,6 +9,8 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
+      def_configuration
+
       # 0x0-2 are reserved by KVM.
       # 0=Host bridge
       # 1=ISA bridge
@@ -26,7 +28,7 @@ module Dcmgr
         File.open(File.expand_path('vnc.port', hc.inst_data_dir), "w") { |f|
           f.write(vnc_port)
         }
-        
+
         # run vm
         inst = hc.inst
         cmd = ["kvm -m %d -smp %d -name vdc-%s -vnc :%d",
@@ -181,6 +183,19 @@ module Dcmgr
         end
       end
 
+      def poweroff_instance(hc)
+        connect_monitor(hc) { |t|
+          t.cmd("system_powerdown")
+        }
+      end
+
+      def poweron_instance(hc)
+        connect_monitor(hc) { |t|
+          t.cmd("system_reset")
+          t.cmd("cont")
+        }
+      end
+
       private
       # Establish telnet connection to KVM monitor console
       def connect_monitor(hc, &blk)
@@ -200,7 +215,7 @@ module Dcmgr
               hit = false
               self.cmd(cmdstr).split("\n(qemu) ").each { |i|
                 i.split("\n").each { |i2|
-                  
+
                   if i2 =~ /#{cmdstr}/
                     hit = true
                     next
@@ -211,7 +226,7 @@ module Dcmgr
               ret.sub(/^\n/, '')
             end
           }
-          
+
           blk.call(telnet)
         ensure
           telnet.close
@@ -229,7 +244,7 @@ module Dcmgr
         l.shift
 
         listen_ports = {}
-        
+
         l.each { |n|
           m = n.split(/\s+/)
           if m[0] == 'tcp'
@@ -256,7 +271,7 @@ module Dcmgr
       def nic_model(hc)
         hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
       end
-      
+
     end
   end
 end

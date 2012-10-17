@@ -21,12 +21,8 @@ module ApplicationHelper
     text.gsub(/(<.*?>)/, '').gsub(/\n/, '<br />').html_safe
   end
 
-  def user_last_login_at
-    @current_user.last_login_at.utc.iso8601
-  end
-
   def system_manager?
-    @current_user.is_system_manager?
+    @current_user && @current_user.is_system_manager?
   end
 
   def accounts_with_prefix

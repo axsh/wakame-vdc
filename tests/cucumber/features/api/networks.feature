@@ -102,7 +102,7 @@ Feature: Network API
 
   Scenario: Reserve IP addresses
     Given a new network with its uuid in <registry:uuid>
-    
+
     # When we make an api put call to networks/<registry:uuid>/reserve with the following options
     #   |    ipaddr |
     #   | 10.1.2.10 |
@@ -116,7 +116,7 @@ Feature: Network API
   @api_until_v11.12
   Scenario: Pool lifecycle for a network
     Given a new network with its uuid in <registry:uuid>
-    
+
     When we make an api get call to networks/<registry:uuid>/get_pool with no options
       Then the previous api call should be successful
       And the previous api call should have [] with a size of 0
@@ -138,7 +138,7 @@ Feature: Network API
       | name             |
       | poll lifecycle 1 |
       Then the previous api call should be successful
-    
+
     When we make an api get call to networks/<registry:uuid>/get_pool with no options
       Then the previous api call should be successful
       And the previous api call should have [] with a size of 0
@@ -166,3 +166,24 @@ Feature: Network API
       |display_name             |
       |network1                 |
     Then the previous api call should be successful
+
+
+  Scenario: Add dhcp ranges to network
+    Given a managed network with the following options
+      |  network |       gw | prefix | description | network_mode | display_name |
+      | 10.1.2.0 | 10.1.2.1 |     24 | test dhcp   | passthru     | network_dhcp |
+      Then from the previous api call take {"uuid":} and save it to <registry:uuid>
+    When we make an api get call to networks/<registry:uuid>/dhcp_ranges with no options
+      Then the previous api call should be successful
+      And the previous api call should have [] with a size of 0
+    When we make an api put call to networks/<registry:uuid>/dhcp_ranges with the following options
+      | range_begin | range_end |
+      |   10.1.2.10 | 10.1.2.20 |
+      Then the previous api call should be successful
+      And the previous api call should have {} with a size of 0
+    When we make an api get call to networks/<registry:uuid>/dhcp_ranges with no options
+      Then the previous api call should be successful
+      And the previous api call should have [] with a size of 1
+      And the previous api call should have [[]] with a size of 2
+      And the previous api call should have [[]] equal to ["10.1.2.10","10.1.2.20"]
+

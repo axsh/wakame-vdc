@@ -8,6 +8,7 @@ module Dcmgr
     class HostNodeSchedulingError < SchedulerError; end
     class StorageNodeSchedulingError < SchedulerError; end
     class NetworkSchedulingError < SchedulerError; end
+    class MacAddressSchedulerError < SchedulerError; end
 
     # Scheduler factory based on the service type.
     class ServiceType
@@ -39,10 +40,15 @@ module Dcmgr
         c = Scheduler.scheduler_class(conf.storage_node_scheduler.scheduler_class, ::Dcmgr::Scheduler::StorageNode)
         c.new(conf.storage_node_scheduler.option)
       end
-      
+
       def network
         c = Scheduler.scheduler_class(conf.network_scheduler.scheduler_class, ::Dcmgr::Scheduler::Network)
         c.new(conf.network_scheduler.option)
+      end
+
+      def mac_address
+        c = Scheduler.scheduler_class(conf.mac_address_scheduler.scheduler_class, ::Dcmgr::Scheduler::MacAddress)
+        c.new(conf.mac_address_scheduler.option)
       end
 
       private
@@ -75,16 +81,21 @@ module Dcmgr
       service_type(Dcmgr.conf.default_service_type).network
     end
 
+    # Factory method for MAC Addres scheduler
+    def self.mac_address()
+      service_type(Dcmgr.conf.default_service_type).mac_address
+    end
+
     # common scheduler class finder
     def self.scheduler_class(input, namespace)
       raise ArgumentError unless namespace.class == Module
-      
+
       c = case input
           when Symbol
-            namespace.const_get(input)
+            namespace.const_get(input, false)
           when String
-            if namespace.const_defined?(input)
-              namespace.const_get(input)
+            if namespace.const_defined?(input, false)
+              namespace.const_get(input, false)
             else
               Module.find_const(input)
             end
@@ -104,23 +115,34 @@ module Dcmgr
         Scheduler.scheduler_class(input, self)
       end
     end
-    
+
     module StorageNode
       def self.scheduler_class(input)
         Scheduler.scheduler_class(input, self)
       end
     end
-    
+
     module Network
       def self.scheduler_class(input)
         Scheduler.scheduler_class(input, self)
+      end
+
+      def self.check_vifs_parameter_format(vifs)
+        raise Dcmgr::Scheduler::NetworkSchedulingError, "Missing or badly formatted vifs request parameter" unless vifs.is_a?(Hash)
+
+        vifs.each { |name, vif_template|
+          raise Dcmgr::Scheduler::NetworkSchedulingError, "#{name.inspect} is not a valid vif name" unless name.is_a?(String)
+          raise Dcmgr::Scheduler::NetworkSchedulingError, "#{vif_template.inspect} is not a valid vif template" unless vif_template.is_a?(Hash)
+        }
+
+        nil
       end
     end
 
     # Common base class for schedulers
     class SchedulerBase
       attr_reader :options
-      
+
       def initialize(options=nil)
         @options = options
       end
@@ -138,10 +160,10 @@ module Dcmgr
       #     param :yyyy
       #   end
       # end
-      # 
+      #
       # The configuration loader retrieves the Configuration class
       # when the option section is loaded in dcmgr.conf.
-      # 
+      #
       # service_type("std") {
       #   network_scheduler(:Scheduler1) {
       #     # Here is the option section for Scheduler1 class.
@@ -159,10 +181,12 @@ module Dcmgr
       # end
       def self.configuration(&blk)
         # create new configuration class if not exist.
-        unless self.const_defined?(:Configuration)
+        unless self.const_defined?(:Configuration, false)
           self.const_set(:Configuration, Class.new(self.configuration_class))
         end
-        self.const_get(:Configuration).instance_eval(&blk)
+        if blk
+          self.const_get(:Configuration, false).instance_eval(&blk)
+        end
       end
 
 
@@ -178,7 +202,7 @@ module Dcmgr
     # Allocate HostNode to Instance object.
     class HostNodeScheduler < SchedulerBase
       @configuration_class = Dcmgr::Configurations::Dcmgr::HostNodeScheduler
-      
+
       # @param Models::Instance instance
       # @return Models::HostNode
       def schedule(instance)
@@ -217,8 +241,17 @@ module Dcmgr
       @configuration_class = Dcmgr::Configurations::Dcmgr::NetworkScheduler
 
       # @param Models::Instance instance
-      # @return Models::Network
       def schedule(instance)
+        raise NotImplementedError
+      end
+    end
+
+    # Lease a mac address to a vnic
+    class MacAddressScheduler < SchedulerBase
+      @configuration_class = Dcmgr::Configurations::Dcmgr::MacAddressScheduler
+
+      # @param Models::Network_vif
+      def schedule(network_vif)
         raise NotImplementedError
       end
     end

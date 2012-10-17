@@ -9,7 +9,7 @@ LANG=C
 
 build_id=${1:-HEAD}
 git_version=$(git log ${build_id} -n 1 --pretty=format:"%h")
-git_datetime=$(date --date="$(git log -n 1 --pretty=format:"%cd" --date=iso)" +%Y%m%d%H%M%S)
+git_datetime=$(date --date="$(git log ${git_version} -n 1 --pretty=format:"%cd" --date=iso)" +%Y%m%d%H%M%S)
 
 # * ${git_date}git${git_version}
 # - geoclue

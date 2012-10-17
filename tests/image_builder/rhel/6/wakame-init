@@ -65,15 +65,16 @@ esac
 
 case "$METADATA_LOCATION" in
 drive)
-  already_mounted=`mount -l | grep -w METADATA`
-  
-  if [ -z "$already_mounted" ]; then
-    # /mnt/metadata is obsolete.
-    for metadata_drive_location in ${METADATA_DRIVE_MOUNTPOINT} /metadata /mnt/metadata; do
-      mountpoint -q ${metadata_drive_location} || continue
-      METADATA_DRIVE_MOUNTPOINT=${metadata_drive_location}
-    done
+  if [[ -f /proc/vz/veinfo ]]; then
+    # OpenVZ mounts metadata drive from the outside script.
+    METADATA_DRIVE_MOUNTPOINT="/metadata"
+  else
+    METADATA_DRIVE_MOUNTPOINT=`mount -l | grep -w METADATA | cut -d " " -f3`
+  fi
 
+  if mountpoint -q "${METADATA_DRIVE_MOUNTPOINT}"; then
+    echo "Metadata drive already mounted on: ${METADATA_DRIVE_MOUNTPOINT}"
+  else
     if [ ! -d ${METADATA_DRIVE_MOUNTPOINT} ]; then
       echo "Creating directory: ${METADATA_DRIVE_MOUNTPOINT}"
       mkdir ${METADATA_DRIVE_MOUNTPOINT}
@@ -83,9 +84,7 @@ drive)
       echo no such labeled device: METADATA | logger
       exit 1
     }
-  else
-    METADATA_DRIVE_MOUNTPOINT=`echo "$already_mounted" | cut -d " " -f3`
-    echo "Metadata drive already mounted on: ${METADATA_DRIVE_MOUNTPOINT}"
+    echo "Mounted metadata drive successfully on: ${METADATA_DRIVE_MOUNTPOINT}"
   fi
   ;;
 server)
@@ -142,20 +141,22 @@ fi
 
 # Set up network configuration
 case "$METADATA_LOCATION" in
-#drive|server)
 drive)
-  echo "Detecting default gateway."
-  gateway=$(
+  echo "Detecting default gateway device."
+  gw_if_mac=$(
     for macaddr in $(get_metadata network/interfaces/macs/); do
       mac_path=network/interfaces/macs/${macaddr%%/}
-      gateway=`get_metadata ${mac_path}/x-gateway`
       metric=`get_metadata ${mac_path}/x-metric`
-      echo ${metric} ${gateway}
-    done | sort -n -k 1 | head -1 | while read metric gateway; do
-      echo ${gateway}
+      echo ${metric} ${macaddr}
+    done | sort -n -k 1 | head -1 | while read metric macaddr; do
+      echo ${macaddr}
     done
   )
-  echo "Detected gateway is ${gateway}"
+  if [[ -n "$gw_if_mac" ]]; then
+    echo "Detected gateway device is ${gw_if_mac}"
+  else
+    echo "None of gateway device is detected"
+  fi
 
   for macaddr in $(get_metadata network/interfaces/macs/); do
     mac_path=network/interfaces/macs/${macaddr%%/}
@@ -172,14 +173,27 @@ drive)
     netmask=`get_metadata ${mac_path}/x-netmask`
     network=`get_metadata ${mac_path}/x-network`
 
-    shlog ifconfig $nic 0.0.0.0 down
-    shlog which ifmetric && shlog ifmetric $nic $metric
-    shlog ifconfig $nic $ip netmask $netmask broadcast $broadcast up
-    #shlog route add -net $network netmask $netmask dev $nic
+    cat <<_IFCFG > "/etc/sysconfig/network-scripts/ifcfg-${nic}"
+DEVICE="${nic}"
+BOOTPROTO="static"
+HWADDR="${mac}"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
+NM_CONTROLLED="yes"
+ONBOOT="yes"
+TYPE="Ethernet"
+IPADDR="${ip}"
+NETMASK="${netmask}"
+_IFCFG
+
+    [ -n "$gw_if_mac" -a "$macaddr" = "$gw_if_mac" -a -n "$gateway" ] && {
+      cat <<_IFCFG >> "/etc/sysconfig/network-scripts/ifcfg-${nic}"
+GATEWAY="${gateway}"
+_IFCFG
+    }
+
+    service network restart
   done
-
-
-  [ -z ${gateway} ] || shlog route add default gw ${gateway}
   ;;
 *)
   ;;

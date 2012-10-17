@@ -14,13 +14,17 @@ module Dcmgr
       @logdev
     end
 
+    def self.logger
+      @logger ||= Logger.create
+    end
+
     # Factory method for ::Logger
     def self.create(name=nil)
       l = ::Logger.new(default_logdev)
       l.progname = name
       l
     end
-    
+
     def self.included(klass)
       klass.class_eval {
 
@@ -43,6 +47,6 @@ module Dcmgr
         end
       }
     end
-    
+
   end
 end

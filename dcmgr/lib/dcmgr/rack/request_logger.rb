@@ -8,7 +8,9 @@ module Dcmgr::Rack
     HTTP_X_VDC_REQUEST_ID='HTTP_X_VDC_REQUEST_ID'.freeze
     HEADER_X_VDC_REQUEST_ID='X-VDC-Request-ID'.freeze
     RACK_REQUEST_LOG_KEY='vdc.request_log'.freeze
-      
+
+    include Dcmgr::Logger
+
     def initialize(app, with_header=true)
       @app = app
       @with_header = with_header
@@ -17,7 +19,7 @@ module Dcmgr::Rack
     def call(env)
       dup._call(env)
     end
-    
+
     def _call(env)
       request = ::Rack::Request.new(env)
       env[RACK_REQUEST_LOG_KEY] = @log = Dcmgr::Models::RequestLog.new
@@ -39,6 +41,7 @@ module Dcmgr::Rack
       ensure
         @log.class.db.transaction do
           @log.save
+          logger.info("Request received [request_id: #{@log.request_id}] [account_id: #{@log.account_id}] [login_id: #{@log.requester_token}]")
         end
       end
     end

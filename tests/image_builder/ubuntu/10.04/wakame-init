@@ -25,6 +25,10 @@ function get_metadata_from_server() {
   curl -s --retry 3 http://169.254.169.254/latest/meta-data/${param}
 }
 
+function get_userdata_from_server() {
+  curl -s --retry 3 http://169.254.169.254/latest/user-data
+}
+
 function get_metadata_from_drive() {
   local param=$1
   local param_path=${METADATA_DRIVE_MOUNTPOINT}/meta-data/${param}
@@ -38,10 +42,22 @@ function get_metadata_from_drive() {
   fi
 }
 
+function get_userdata_from_drive() {
+  cat ${METADATA_DRIVE_MOUNTPOINT}/user-data
+}
+
 function get_metadata() {
   local param=$1
   for i in {1..10}; do
     get_metadata_from_${METADATA_LOCATION} ${param} && exit 0
+    sleep 3
+  done
+  exit 1
+}
+
+function get_userdata() {
+  for i in {1..10}; do
+    get_userdata_from_${METADATA_LOCATION} ${param} && exit 0
     sleep 3
   done
   exit 1
@@ -77,27 +93,27 @@ esac
 
 case "$METADATA_LOCATION" in
 drive)
-  already_mounted=`mount -l | grep -w METADATA`
-  
-  if [ -z "$already_mounted" ]; then
-    # /mnt/metadata is obsolete.
-    for metadata_drive_location in ${METADATA_DRIVE_MOUNTPOINT} /metadata /mnt/metadata; do
-      mountpoint -q ${metadata_drive_location} || continue
-      METADATA_DRIVE_MOUNTPOINT=${metadata_drive_location}
-    done
-
-    if [ ! -d ${METADATA_DRIVE_MOUNTPOINT} ]; then
-      echo "Creating directory: ${METADATA_DRIVE_MOUNTPOINT}"
-      mkdir ${METADATA_DRIVE_MOUNTPOINT}
-    fi
-    echo "Mounting metadata drive on: ${METADATA_DRIVE_MOUNTPOINT}"
-    mount LABEL=METADATA ${METADATA_DRIVE_MOUNTPOINT} || {
-      echo no such labeled device: METADATA | logger
-      exit 1
-    }
+  if [[ -f /proc/vz/veinfo ]]; then
+    # OpenVZ mounts metadata drive from the outside script.
+    METADATA_DRIVE_MOUNTPOINT="/metadata"
   else
-    METADATA_DRIVE_MOUNTPOINT=`echo "$already_mounted" | cut -d " " -f3`
-    echo "Metadata drive already mounted on: ${METADATA_DRIVE_MOUNTPOINT}"
+    METADATA_DRIVE_MOUNTPOINT=`mount -l | grep -w METADATA | cut -d " " -f3`
+
+
+    if mountpoint -q "${MEATADATA_DRIVE_MOUNTPOINT}"; then
+      echo "Metadata drive already mounted on: ${METADATA_DRIVE_MOUNTPOINT}"
+    else
+      if [ ! -d ${METADATA_DRIVE_MOUNTPOINT} ]; then
+	echo "Creating directory: ${METADATA_DRIVE_MOUNTPOINT}"
+	mkdir ${METADATA_DRIVE_MOUNTPOINT}
+      fi
+      echo "Mounting metadata drive on: ${METADATA_DRIVE_MOUNTPOINT}"
+      mount LABEL=METADATA ${METADATA_DRIVE_MOUNTPOINT} || {
+	echo no such labeled device: METADATA | logger
+	exit 1
+      }
+      echo "Mounted metadata drive successfully on: ${METADATA_DRIVE_MOUNTPOINT}"
+    fi
   fi
   ;;
 server)

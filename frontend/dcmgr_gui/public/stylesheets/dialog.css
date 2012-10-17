@@ -9,6 +9,14 @@
 	padding: 3px;
 }
 
+#create_network_dialog table tr td {
+	padding: 3px 10px;
+}
+
+#edit_network_dialog table tr td {
+	padding: 3px;
+}
+
 #launch_instance_dialog table tr td {
   padding: 5px 10px;
 }
@@ -45,6 +53,11 @@
 	height: 190px;
 }
 
+#select_dhcp_ranges {
+	width: 200px;
+	height: 190px;
+}
+
 #create_ssh_keypair_dialog table tr td {
 	padding: 3px;
 }
@@ -69,7 +82,41 @@
   vertical-align: middle;
 }
 
-#security_group_field {
+#edit_instance_dialog fieldset.with_border {
+  border: 1px solid gray;
+  padding: 10px;
+  //margin-left: 15px;
+  width: 490px;
+}
+
+#edit_instance_dialog legend {
+  padding: 0 3px 0 3px;
+}
+
+#launch_instance_dialog fieldset.with_border {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-left: 15px;
+  width: 490px;
+}
+
+#launch_instance_dialog legend {
+  padding: 0 3px 0 3px;
+}
+
+#launch_instance_dialog #security_group_field {
+  margin-top: 15px;
+}
+
+#launch_instance_dialog #security_group_field table tr th {
+  text-align: center;
+}
+
+#edit_instance_dialog table tr td {
+  padding: 3px;
+}
+
+#dc_network_field {
   border: 1px solid gray;
   padding: 10px;
   margin-top: 15px;
@@ -77,27 +124,20 @@
   width: 490px;
 }
 
-#launch_instance_dialog #security_group_field legend {
-  padding: 0 3px 0 3px;
-}
-
-#launch_instance_dialog #security_group_field table tr th {
-  text-align: center;
-}
-
-#launch_instance_dialog #user_data_field {
+#dhcp_field {
   border: 1px solid gray;
   padding: 10px;
+  margin-top: 15px;
   margin-left: 15px;
   width: 490px;
 }
 
-#launch_instance_dialog #user_data_field legend {
-  padding: 0 3px 0 3px;
-}
-
-#edit_instance_dialog table tr td {
-	padding: 3px;
+#network_services_field {
+  border: 1px solid gray;
+  padding: 10px;
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 490px;
 }
 
 #edit_machine_image_dialog table tr td {

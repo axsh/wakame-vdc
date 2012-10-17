@@ -52,12 +52,12 @@ service_type("std", "StdServiceType") {
   #
   #     through(:RequestParamToGroup) {
   #       default 'hng-shhost'
-  #    
+  #
   #       key 'instance_spec_id'
   #       pair 'is-demo1', 'hng-hosts1'
   #       pair 'is-demo2', 'hng-hosts2'
   #     }
-  #  
+  #
   #     through(:LeastUsageBy) {
   #       key 'account_id'
   #     }
@@ -65,6 +65,18 @@ service_type("std", "StdServiceType") {
   #   end
   #
   host_node_scheduler :LeastUsage
+
+  # Available mac address schedulers
+  # mac_address_scheduler :ByHostNodeGroup do
+  #   default 'mr-demomacs'
+  #
+  #   pair 'hng-shhost', 'mr-range1'
+  # end
+  mac_address_scheduler :ByHostNodeGroup do
+    default 'mr-demomacs'
+
+    pair 'hng-shhost', 'mr-range1'
+  end
 
   # Available storage node(sta) schedulers:
   #
@@ -79,12 +91,20 @@ service_type("std", "StdServiceType") {
   # * :NatOneToOne
   # * :VifTemplate
   # * :PerInstance
+  # * :RequestParamToGroup {
+  #     key 'instance_spec_name'
+  #
+  #     pair 'vz.small', 'nwg-small'
+  #     pair 'vz.large', 'nwg-large'
+  #
+  #     default 'nwg-shnet'
+  #  }
   #
   network_scheduler :PerInstance do
 
     # default network scheduler
     # assign IP address from first found network to single interface.
-    default :FlatSingle
+    default :VifsRequestParam
 
     # one internal address + NAT external address to single interface.
     add(:nat, :NatOneToOne) {
@@ -102,7 +122,7 @@ service_type("std", "StdServiceType") {
         'eth2' => 'nw-demo3',
       })
     }
-    
+
     # multiple vnic: type2
     add(:vif3type2, :VifTemplate) {
       template({
@@ -119,7 +139,7 @@ service_type("std", "StdServiceType") {
         'eth1' => 'nw-demo6',
       })
     }
-    
+
     # vnet: physical and nw-demo7
     add(:vnet_1_7, :VifTemplate) {
       template({
@@ -139,13 +159,17 @@ service_type("std", "StdServiceType") {
 
 service_type("lb", "LbServiceType") {
   image_id 'wmi-demolb'
-  host_node_id 'hn-demo1'
   ssh_key_id 'ssh-demo'
   instances_network 'nw-demo1'
   management_network 'nw-demo8'
   host_node_scheduler :LeastUsage
   storage_node_scheduler :LeastUsage
   network_scheduler :VifsRequestParam
+  mac_address_scheduler :ByHostNodeGroup do
+    default 'mr-demomacs'
+
+    pair 'hng-shhost', 'mr-range1'
+  end
 
   # Please specify the addresses that can be referenced from within an instance of the load balancer.
   # amqp_server_uri is saved to userdata in instance of the load balancer.

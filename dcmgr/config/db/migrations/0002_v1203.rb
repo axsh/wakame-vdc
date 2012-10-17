@@ -3,6 +3,7 @@ Sequel.migration do
     alter_table(:host_nodes) do
       # HostNode is no longer an account associated resource.
       drop_column :account_id
+      rename_column :name, :display_name
     end
 
     alter_table(:storage_nodes) do
@@ -11,8 +12,9 @@ Sequel.migration do
 
       # make unit size clear.
       rename_column :offering_disk_space, :offering_disk_space_mb
+      add_column :display_name, "varchar(255)", :null=>true
     end
-    
+
     create_table(:security_group_references) do
       primary_key :id, :type=>"int(11)"
       column :referencer_id, "int(11)", :null=>false
@@ -38,6 +40,9 @@ Sequel.migration do
       drop_column :bandwidth
       add_column :bandwidth, "float"
       add_column :ip_assignment, "varchar(255)", :default=>"asc", :null=>false
+
+      # Permission flag for modification of the networks by users.
+      add_column :editable, "tinyint(1)", :default=>false, :null=>false
     end
 
     create_table(:host_node_vnets) do
@@ -61,7 +66,7 @@ Sequel.migration do
 
       column :name, "varchar(255)", :null=>false
       column :incoming_port, "int(11)"
-      column :outcoming_port, "int(11)"
+      column :outgoing_port, "int(11)"
 
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
@@ -69,7 +74,7 @@ Sequel.migration do
       index [:network_vif_id]
       index [:network_vif_id,:name], :unique=>true
     end
-    
+
     create_table(:network_vif_security_groups) do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "int(11)", :null=>false
@@ -101,7 +106,7 @@ Sequel.migration do
 
       drop_index [:instance_nic_id, :network_id]
     end
-    
+
     alter_table(:vlan_leases) do
       # The network underlaying this VLAN entry.
       add_column :dc_network_id, "int(11)", :null=>false
@@ -115,10 +120,11 @@ Sequel.migration do
       add_column :root_device, "varchar(255)"
       add_column :is_cacheable, "tinyint(1)", :default=>false, :null=>false
       add_column :instance_model_name, "varchar(255)", :null=>false
+      add_column :parent_image_id, "varchar(255)", :null=>true
     end
 
     rename_table(:physical_networks, :dc_networks)
-    
+
     # DC network goes through customer traffic.
     alter_table(:dc_networks) do
       # physical interface name is described in hva.conf.
@@ -129,9 +135,13 @@ Sequel.migration do
       # supported network mode list
       add_column :offering_network_modes, "text", :null=>false
 
+      # Permission flag for the creation of new networks by
+      # users.
+      add_column :allow_new_networks, "tinyint(1)", :default=>false, :null=>false
+
       add_index [:uuid], :unique=>true, :name=>:uuid
     end
-		
+
     create_table(:accounting_logs) do
       primary_key :id, :type=>"int(11)"
 			column :uuid, "varchar(255)", :null=>false
@@ -164,19 +174,19 @@ Sequel.migration do
       column :description, "text", :null=>true
       column :private_key, "text", :null=>true
       column :public_key, "text", :null=>true
-      column :certificate_chain, "text", :null=>true
       column :created_at, "datetime", :null=>false
-      column :updated_at, "datetime", :null=>false  
+      column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
       column :display_name, "varchar(255)", :null=>true
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
     end
-    
+
     create_table(:load_balancer_targets) do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "varchar(255)", :null=>false
       column :load_balancer_id, "int(11)", :null => false
+      column :fallback_mode, "varchar(255)", :null=>false, :default => 'off'
       column :created_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
       column :is_deleted, "int(11)", :null=>false
@@ -197,6 +207,7 @@ Sequel.migration do
       column :is_deleted, "int(11)", :null=>false
       index [:network_id, :network_vif_id, :ipv4, :is_deleted], :unique=>true,
              :name=>'network_vif_ip_leases_network_id_network_vif_id_ipv4_index'
+      index [:updated_at]
     end
 
     # Add service_type column for service type resources
@@ -244,9 +255,9 @@ Sequel.migration do
     alter_table(:ssh_key_pairs) do
       add_column :display_name, "varchar(255)", :null=>false
     end
-    
+
     # # it is changed to represent the attributes for the bootable
-    # # backup object. Any machine images have to be 
+    # # backup object. Any machine images have to be
     # # saved as backup object at first and then register nessecary
     # # additional information here.
     alter_table(:images) do
@@ -258,7 +269,7 @@ Sequel.migration do
       # Add missing deleted time column.
       add_column :deleted_at, "datetime"
     end
-    
+
     create_table(:backup_objects) do
       primary_key :id, :type=>"int(11)"
       column :account_id, "varchar(255)", :null=>false
@@ -268,15 +279,18 @@ Sequel.migration do
       column :backup_storage_id, "int(11)", :null=>false
       column :size, "bigint", :null=>false
       column :allocation_size, "bigint", :null=>false
+      column :container_format, "varchar(255)", :null=>false
       column :status, "int(11)", :default=>0, :null=>false
       column :state, "varchar(255)", :default=>"initialized", :null=>false
       column :object_key, "varchar(255)", :null=>false
       column :checksum, "varchar(255)", :null=>false
       column :description, "text"
+      column :progress, "double", :null=>false, :default=>0.0
       column :deleted_at, "datetime"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+      column :purged_at, "datetime"
+
       index [:uuid], :unique=>true, :name=>:uuid
       index [:account_id]
       index [:deleted_at]
@@ -284,7 +298,7 @@ Sequel.migration do
     end
 
     # rename_table(:volume_snapshots, :backup_objects)
-    
+
     # Object storage stores backup objects.
     create_table(:backup_storages) do
       primary_key :id, :type=>"int(11)"
@@ -304,9 +318,10 @@ Sequel.migration do
       set_column_type :size, "bigint"
     end
 
-    # Isono gem got new session_id column as of v0.2.12. 
+    # Isono gem got new session_id column as of v0.2.12.
     alter_table(:job_states) do
       add_column :session_id, "varchar(80)", :null=>true
+      add_column :job_name, "varchar(255)", :null=>true
       add_index [:session_id]
     end
 
@@ -324,20 +339,66 @@ Sequel.migration do
       set_column_type :range_end, "int(11)", :unsigned=>true, :null=>false
       add_column :description, "varchar(255)"
     end
+
+    alter_table(:accounts) do
+      add_column :deleted_at, "datetime"
+      add_column :purged_at, "datetime"
+      add_index [:deleted_at]
+    end
+
+    alter_table(:tag_mappings) do
+      add_column :sort_index, "int(11)", :null=>false, :default=>0
+    end
+
+    create_table(:mac_ranges) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false, :unique=>true
+      column :vendor_id, "mediumint(8)", :unsigned=>true, :null=>false
+      column :range_begin, "mediumint(8)", :unsigned=>true, :null=>false
+      column :range_end, "mediumint(8)", :unsigned=>true, :null=>false
+      column :description, "varchar(255)"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+    end
+
+    alter_table(:mac_leases) do
+      set_column_type :mac_addr, "bigint", :unsigned=>true, :null=>false
+    end
+
+    create_table(:network_vif_monitors) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false
+      column :network_vif_id, "int(11)", :null=>false
+      column :enabled, "tinyint(1)", :default=>true, :null=>false
+      column :protocol, "varchar(255)", :null=>false
+      column :title, "varchar(255)", :null=>false
+      column :params, "text", :null=>false
+      column :deleted_at, "datetime"
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+
+      index [:deleted_at]
+      index [:network_vif_id]
+      index [:uuid], :unique=>true, :name=>:uuid
+    end
   end
-  
+
   down do
     drop_table(:host_node_vnets)
     drop_table(:network_services)
+    drop_table(:mac_ranges)
+    drop_table(:network_vif_monitors)
 
     rename_table(:network_vifs, :instance_nics)
 
     alter_table(:host_nodes) do
       add_column :account_id, "varchar(255)", :null=>false
+      rename_column :display_name, :name
     end
 
     alter_table(:storage_nodes) do
       add_column :account_id, "varchar(255)", :null=>false
+      drop_column :display_name
     end
 
     alter_table(:images) do
@@ -352,7 +413,7 @@ Sequel.migration do
       drop_index :tag_id
       add_index [:tag_id], :unique=>true
     end
-    
+
     alter_table(:networks) do
       drop_column :gateway_network_id
       drop_column :ip_assignment
@@ -420,6 +481,10 @@ Sequel.migration do
       drop_index [:session_id]
     end
 
+    alter_table(:job_states) do
+      drop_column :command
+    end
+
     alter_table(:volumes) do
       drop_column :backup_object_id
       add_column :snapshot_id, "varchar(255)"
@@ -433,10 +498,10 @@ Sequel.migration do
       column :volume_total_size, "int(11)"
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
-      
+
       index [:account_id], :unique=>true
     end
-    
+
     # remove instance_specs from dcmgr.
     alter_table(:instances) do
       drop_column :hypervisor
@@ -457,6 +522,19 @@ Sequel.migration do
       set_column_type :range_begin, "varchar(255)", :null=>false
       set_column_type :range_end, "varchar(255)", :null=>false
       drop_column :description
+    end
+
+    alter_table(:accounts) do
+      drop_column :deleted_at
+      drop_column :purged_at
+    end
+
+    alter_table(:tag_mappings) do
+      drop_column :sort_index
+    end
+
+    alter_table(:mac_leases) do
+      set_column_type :mac_addr, "char(12)", :null=>false
     end
   end
 end

@@ -1,0 +1,26 @@
+<style type="text/css">
+#active_standby_load_balancer_dialog table#load_balancer_field tr td {
+  padding: 5px 10px;
+}
+</style>
+<%   if I18n.locale.to_s.slice(0,2) == 'ja' then %>
+<%= javascript_include_tag 'i18n/grid.locale-ja.js' %>
+<%  else %>
+<%= javascript_include_tag 'i18n/grid.locale-en.js' %>
+<%  end  %>
+<%= javascript_include_tag 'jquery.jqGrid.min.js' %>
+<div id="active_standby_load_balancer_dialog">
+<table id="load_balancer_field">
+ <tr>
+   <td><%= t("dialog.active_standby_load_balancer.load_balancer_id") %>:</td>
+   <td><%= @load_balancer_id %></td>
+ </tr>
+ <tr>
+   <td><%= t("dialog.active_standby_load_balancer.display_name") %>:</td>
+   <td><%= @display_name %></td>
+ </tr>
+</table>
+<br/>
+
+  <table id="list" class="scroll" cellpadding="0" cellspacing="0" ></table>
+</div>

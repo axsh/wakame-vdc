@@ -4,7 +4,7 @@ module Dcmgr
   module Endpoints
     module Errors
       class APIError < StandardError
-        
+
         # HTTP status code of the error.
         def self.status_code(code=nil)
           if code
@@ -36,7 +36,7 @@ module Dcmgr
       class DeprecatedAPIError < APIError
       end
     end
-    
+
     def self.define_error(class_name, status_code, error_code, &blk)
       c = Class.new(Errors::APIError)
       c.status_code(status_code)
@@ -125,7 +125,7 @@ module Dcmgr
     define_error(:UnknowLoadBalancerID, 404, '150')
     define_error(:DuplicateNetworkVif, 400, '151')
     define_error(:UndefinedImageID, 404, '152')
-    
+
     define_error(:UnknownBackupStorage, 404, '153')
     define_error(:DestroyedUUIDResource, 404, '154')
     define_error(:UndefinedBackupObject, 404, '155')
@@ -136,5 +136,16 @@ module Dcmgr
     define_error(:InvalidLoadBalancerPort, 400, '160')
     define_error(:InvalidLoadBalancerAlgorithm, 400, '161')
 
+    define_error(:ExceedQuotaLimit, 400, '162')
+    define_error(:UnknownDcNetwork, 404, '163')
+    define_error(:NetworkNotPermitted, 400, '164')
+    define_error(:DcNetworkNotPermitted, 400, '165')
+    define_error(:InvalidLoadBalancerPrivateKey, 400, '166')
+    define_error(:InvalidLoadBalancerPublicKey, 400, '167')
+    define_error(:EncryptionAlgorithmNotSupported, 400, '168')
+
+    define_error(:NetworkInvalidAddress, 500, '169')
+    define_error(:NetworkVifInvalidAddress, 500, '170')
+    define_error(:MessagingFailed, 500, '171')
   end
 end

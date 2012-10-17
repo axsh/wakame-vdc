@@ -5,6 +5,7 @@ arch=x86
 localname=ubuntu-lucid-kvm-md-32.raw
 storetype=local
 file_format=raw
+container_format=none
 root_device=uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0
 service_type=std
 display_name=lucid5d

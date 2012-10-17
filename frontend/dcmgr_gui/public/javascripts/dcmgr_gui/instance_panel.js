@@ -1,29 +1,3 @@
-function attach_vif(network_id, vif_id) {
-  var data = "network_id=" + network_id + "&vif_id=" + vif_id
-
-  request = new DcmgrGUI.Request;
-  request.post({
-    "url": '/dialog/attach_vif',
-    "data": data,
-    success: function(json,status){
-      bt_refresh.element.trigger('dcmgrGUI.refresh');
-    }
-  });
-}
-
-function detach_vif(network_id, vif_id) {
-  var data = "network_id=" + network_id + "&vif_id=" + vif_id
-
-  request = new DcmgrGUI.Request;
-  request.post({
-    "url": '/dialog/detach_vif',
-    "data": data,
-    success: function(json,status){
-      bt_refresh.element.trigger('dcmgrGUI.refresh');
-    }
-  });
-}
-
 DcmgrGUI.prototype.instancePanel = function(){
   var total = 0;
   var maxrow = 10;
@@ -106,7 +80,7 @@ DcmgrGUI.prototype.instancePanel = function(){
       var display_name = $(this).find('#instance_display_name').val();
       var security_groups = [];
       $.each($(this).find('#right_select_list').find('option'),function(i){
-       security_groups.push("security_groups[]="+ $(this).text());
+       security_groups.push("security_groups[]="+ $(this).val());
       });
       var data = 'display_name=' + display_name + '&' + security_groups.join('&');
 
@@ -124,16 +98,13 @@ DcmgrGUI.prototype.instancePanel = function(){
     var bt_edit_instance = new DcmgrGUI.Dialog({
       target:'.edit_instance',
       width:550,
-      height:450,
+      height:640,
       title:$.i18n.prop('edit_instance_header'),
       path:'/edit_instance',
       button: edit_instance_buttons,
       callback: function(){
         var self = this;
         
-        var params = { 'button': bt_edit_instance, 'element_id': 1 };
-        $(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.availableTextField);
-        $(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.availableTextField);
         $(this).find('#left_select_list').mask($.i18n.prop('loading_parts'));
         $(this).find('#right_select_list').mask($.i18n.prop('loading_parts'));
         
@@ -161,16 +132,78 @@ DcmgrGUI.prototype.instancePanel = function(){
           }
         }
         
-        $(this).find('#display_name').keyup(function(){
-         if( $(this).val() ) {
-           is_ready['display_name'] = true;
-           ready(is_ready);
-         } else {
-           is_ready['display_name'] = false;
-           ready(is_ready);
-         }
+	var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
+	$(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
+	$(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
+	$(this).find('#instance_display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
+
+        var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
+        $(this).find('#add_monitor_item').bind('click', function(e){
+          // Append new monitoring item selection.
+          monitor_selector.addItem('http');
         });
+        //bt_launch_instance.monitor_selector = monitor_selector;
         
+        var create_attach_vif = function(index) {
+          var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '")">Attach</button>'
+
+          $(self).find('#vif_button_eth' + index).empty().html(select_html);
+          $(self).find('#attach_button_eth' + index).click(function(){
+            if ($(self).find('#eth' + index).val() != 'disconnected') {
+              attach_vif($(self).find('#eth' + index).val(), select_current_vif[index], index);
+            }
+          });
+        }
+        
+        var create_detach_vif = function(index) {
+          var select_html = '<button id="detach_button_eth' + index + '" name="detach_button_eth' + index + '")">Detach</button>'
+
+          $(self).find('#vif_button_eth' + index).empty().html(select_html);
+          $(self).find('#detach_button_eth' + index).click(function(){
+            detach_vif(select_current_nw[index], select_current_vif[index], index);
+          });
+        }
+
+        var update_eth_network_id = function(index) {
+          if (select_current_nw[index]) {
+            $(self).find('#eth'+index+'_network_id').empty().html(select_current_nw[index]);
+            $(self).find('#eth'+index).val(select_current_nw[index]).attr('selected',true);
+            create_detach_vif(index);
+          } else {
+            $(self).find('#eth'+index+'_network_id').empty().html("disconnected");
+            $(self).find('#eth'+index).val('disconnected').attr('selected',true);
+            create_attach_vif(index);
+          }
+        };
+
+        function attach_vif(network_id, vif_id, index) {
+          var data = "network_id=" + network_id + "&vif_id=" + vif_id
+
+          request = new DcmgrGUI.Request;
+          request.put({
+            "url": '/networks/attach',
+            "data": data,
+            success: function(json,status){
+              select_current_nw[index] = network_id;
+              update_eth_network_id(index);
+            }
+          });
+        }
+
+        function detach_vif(network_id, vif_id, index) {
+          var data = "network_id=" + network_id + "&vif_id=" + vif_id
+
+          request = new DcmgrGUI.Request;
+          request.put({
+            "url": '/networks/detach',
+            "data": data,
+            success: function(json,status){
+              select_current_nw[index] = null;
+              update_eth_network_id(index);
+            }
+          });
+        }
+
         var request = new DcmgrGUI.Request;
         
         parallel({
@@ -198,7 +231,8 @@ DcmgrGUI.prototype.instancePanel = function(){
                 for (var i=0; i < size ; i++) {
                   data.push({
                     "value" : results[i].result.uuid,
-                    "name" : results[i].result.uuid,
+                    "id"    : results[i].result.uuid,
+                    "name"  : results[i].result.display_name,
                     "selected" : !($.inArray(results[i].result.uuid, selected_groups) == -1)
                   });
                 }
@@ -230,30 +264,13 @@ DcmgrGUI.prototype.instancePanel = function(){
             "url": '/networks/all.json',
             "data": "",
             success: function(json,status){
-              var create_select_item = function(name) {
-                var select_html = '<select id="' + name + '" name="' + name + '"></select>';
-                $(self).find('#select_' + name).empty().html(select_html);
-                return $(self).find('#' + name);
-              }
-
-              var append_select_item = function(select_item, uuid, selected) {
-                  select_item.append('<option value="'+ uuid +'"' + (selected ? ' selected="selected"' : '') + '>'+uuid+'</option>');
-              }
-
               var create_select_eth = function(name, results, selected) {
-                var select_eth = create_select_item(name);
-                append_select_item(select_eth, 'disconnected', !selected);
-
                 for (var i=0; i < size ; i++) {
-                  append_select_item(select_eth, results[i].result.uuid, results[i].result.uuid == selected);
+                  var uuid = results[i].result.uuid;
+                  var display_name = results[i].result.display_name;
+                  $(self).find('#' + name).append('<option value="' + uuid + '" ' + (uuid == selected ? 'selected="selected"' : '') + '>' +
+                                                  '[' + uuid + '] ' + display_name + '</option>');
                 }
-              }
-
-              var create_attach_vif = function(index, vif_id) {
-                var on_click_html = "var s_eth = document.getElementById('eth" + index + "'); attach_vif(s_eth.options[s_eth.selectedIndex].value, '" + vif_id + "');"
-                var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '" onClick="' + on_click_html + '")">Attach</button>'
-
-                $(self).find('#attach_eth' + index).empty().html(select_html);
               }
 
               var results = json.network.results;
@@ -263,8 +280,8 @@ DcmgrGUI.prototype.instancePanel = function(){
               ready(is_ready);
 
               for (var i=0; i < select_current_nw.length ; i++) {
+                update_eth_network_id(i);
                 create_select_eth('eth' + i, results, select_current_nw[i]);
-                create_attach_vif(i, select_current_vif[i]);
               }                
             }
           })
@@ -371,11 +388,27 @@ DcmgrGUI.prototype.instancePanel = function(){
   
   var instance_backup_buttons = {};
   instance_backup_buttons[close_button_name] = function() { $(this).dialog("close"); }
-  instance_backup_buttons[backup_button_name] = function() { instance_action_helper.call(this, 'backup'); }
+  instance_backup_buttons[backup_button_name] = function() {
+    var instance_id = $(this).find('#instance_id').val();
+    var display_name = $(this).find('#backup_display_name').val();
+    var description = $(this).find('#backup_description').val();
+    
+    var data = ['instance_id='+instance_id, 'backup_display_name=' + display_name, 'backup_description=' + description].join('&');
+
+    var request = new DcmgrGUI.Request;
+    request.post({
+      "url": '/instances/backup',
+      "data": data,
+      success: function(json, status){
+        bt_refresh.element.trigger('dcmgrGUI.refresh');
+      }
+    });
+    $(this).dialog("close");
+  }
   var bt_instance_backup = new DcmgrGUI.Dialog({
     target:'.backup_instances',
-    width:400,
-    height:200,
+    width:600,
+    height:250,
     title: $.i18n.prop('backup_instances_header'),
     path:'/backup_instances',
     button:instance_backup_buttons
@@ -436,8 +469,23 @@ DcmgrGUI.prototype.instancePanel = function(){
     handleWidth: 26,
     style:'dropdown',
     select: function(event){
-      var select_action = $(this).val()
-      var selected_ids = c_list.getCheckedInstanceIds();
+      var select_action = $(this).val();
+      var selected_ids = c_list.currentMultiChecked();
+      var ids = selected_ids['ids'];
+      var is_open_poweroff = true;
+      var is_open_poweron = true;
+      $.each(ids, function(key,uuid){
+	var row_id = '#row-'+uuid;
+	var state = $(row_id).find('.state').text();
+	switch(state){
+	  case 'running':
+	    is_open_poweron = false;
+	    break;
+	  case 'halted':
+	    is_open_poweroff = false;
+	    break;
+	}
+      });
       switch(select_action) {
       case 'terminate':
         bt_instance_terminate.open(selected_ids);
@@ -452,10 +500,14 @@ DcmgrGUI.prototype.instancePanel = function(){
         bt_instance_stop.open(selected_ids);
         break;
       case 'poweroff':
-        bt_instance_poweroff.open(selected_ids);
+	if(is_open_poweroff){
+          bt_instance_poweroff.open(selected_ids);
+	}
         break;
       case 'poweron':
-        bt_instance_poweron.open(selected_ids);
+	if(is_open_poweron){
+          bt_instance_poweron.open(selected_ids);
+	}
         break;
       }
     }

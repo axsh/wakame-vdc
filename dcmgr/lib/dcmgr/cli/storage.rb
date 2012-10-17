@@ -7,7 +7,7 @@ module Dcmgr::Cli
 class Storage < Base
   namespace :storage
   include Dcmgr::Models
-  
+
   desc "add NODE_ID [options]", "Register a new storage node"
   method_option :uuid, :type => :string, :desc => "The uuid for the new storage node"
   method_option :base_path, :type => :string, :required => true, :desc => "Base path to store volume files"
@@ -17,6 +17,7 @@ class Storage < Base
   method_option :transport_type, :type => :string, :default=>'iscsi', :desc => "Transport type [iscsi]"
   method_option :ipaddr, :type => :string, :required=>true, :desc => "IP address of transport target"
   method_option :storage_type, :type => :string, :default=>'zfs', :desc => "Storage type [#{StorageNode::SUPPORTED_BACKINGSTORE.join(', ')}]"
+  method_option :display_name, :type => :string, :size => 255, :desc => "The name for the new storage node"
   def add(node_id)
     unless (options[:force] || Isono::Models::NodeState.find(:node_id=>node_id))
       abort("Node ID is not registered yet: #{node_id}")
@@ -29,9 +30,10 @@ class Storage < Base
               :export_path=>options[:base_path],
               :snapshot_base_path => options[:snapshot_base_path],
               :ipaddr=>options[:ipaddr],
+              :display_name=>options[:display_name],
     }
     fields.merge!({:uuid => options[:uuid]}) unless options[:uuid].nil?
-    
+
     puts super(StorageNode,fields)
   end
 
@@ -57,14 +59,12 @@ Create: <%= st.created_at %>
 Update: <%= st.updated_at %>
 __END
     else
-      cond = {}
-      ds = StorageNode.filter(cond)
-      puts ERB.new(<<__END, nil, '-').result(binding)
-<%= "%-15s %-20s %-10s %-10s" % ['UUID', 'Node ID', 'Status'] %>
-<%- ds.each { |row| -%>
-<%= "%-15s %-20s %-10s %-10s" % [row.canonical_uuid, row.node_id, row.status] %>
-<%- } -%>
-__END
+      ds = HostNode.dataset
+      table = [['UUID', 'Node ID', 'Storage', 'Status']]
+      ds.each { |r|
+        table << [r.canonical_uuid, r.node_id, r.storage_type, r.status]
+      }
+      shell.print_table(table)
     end
   end
 

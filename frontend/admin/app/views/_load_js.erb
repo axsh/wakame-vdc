@@ -1,0 +1,38 @@
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<!-- <script src="/assets/underscore-min.js"></script> -->
+<script type="text/javascript" src="/assets/underscore-min.js"></script>
+<script type="text/javascript" src="/assets/underscore.string.min.js"></script>
+<script type="text/javascript" src="/assets/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="/assets/jquery-ui-1.8.23.custom.min.js"></script>
+<script type="text/javascript" src="/assets/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/assets/bootstrap.min.js"></script>
+<script type="text/javascript" src="/assets/bootstrap-notify.js"></script>
+<script type="text/javascript" src="/assets/backbone-min.js"></script>
+<script type="text/javascript" src="/assets/admin/app.js"></script>
+<script type="text/javascript">
+  app.info.api_endpoints.dcmgr += 'http://'
+  app.info.api_endpoints.dcmgr_gui += 'http://'
+
+  <% if ADMIN['api_endpoints']['dcmgr'].nil? %>
+  app.info.api_endpoints.dcmgr += window.location.hostname + ':9001';
+  <% else %>
+  app.info.api_endpoints.dcmgr += '<%= "#{ADMIN['api_endpoints']['dcmgr']}" %>';
+  <% end %>
+
+  <% if ADMIN['api_endpoints']['dcmgr_gui'].nil? %>
+  app.info.api_endpoints.dcmgr_gui += window.location.hostname + ':9000';
+  <% else %>
+  app.info.api_endpoints.dcmgr_gui += '<%= "#{ADMIN['api_endpoints']['dcmgr_gui']}" %>';
+  <% end %>
+
+</script>
+<script type="text/javascript" src="/assets/admin/router.js"></script>
+<script type="text/javascript" src="/assets/admin/helpers.js"></script>
+
+<%= yield_content :javascript_link_tags %>
+
+<% if route.controller %>
+<% #javascript_include_tag ['controllers', 'models', 'views'].collect{|dir| "/assets/apps/#{dir}/#{route.controller.singularize}"} %>
+<% end %>

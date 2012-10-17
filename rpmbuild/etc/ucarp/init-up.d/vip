@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# requires:
+#  bash
+#  /usr/libexec/ucarp/vip-up
+#
+set -e
+
+/usr/libexec/ucarp/vip-up $*

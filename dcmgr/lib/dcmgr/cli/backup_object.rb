@@ -17,17 +17,19 @@ module Dcmgr::Cli
     method_option :checksum, :type => :string, :required=>true, :desc => "The checksum of the backup object."
     method_option :description, :type => :string, :desc => "Description of the backup storage"
     method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the backup object. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :container_format, :type => :string, :default=>'none', :desc => "The container format of the backup object.(#{Dcmgr::Const::BackupObject::CONTAINER_FORMAT.keys.join(', ')})"
+    method_option :progress, :type => :numeric, :desc => "Progress of the backup object. (0.0 - 100.0)"
     def add
       bkst = M::BackupStorage[options[:storage_id]] || UnknownUUIDError.raise("Backup Storage UUID: #{options[:storage_id]}")
 
-      options[:allocation_size] ||= options[:size]
-      
       fields = options.dup
+      fields[:allocation_size] ||= options[:size]
+
       fields.delete(:storage_id)
       fields[:backup_storage_id] = bkst.id
       puts super(M::BackupObject, fields)
     end
-    
+
     desc "modify UUID [options]", "Modify the backup object"
     method_option :uuid, :type => :string, :desc => "The UUID for the backup storage."
     method_option :account_id, :type => :string, :default=>'a-shpoolxx', :desc => "The account ID for the backup object."
@@ -40,12 +42,18 @@ module Dcmgr::Cli
     method_option :checksum, :type => :string, :desc => "The checksum of the backup object."
     method_option :description, :type => :string, :desc => "Description of the backup storage"
     method_option :service_type, :type => :string, :desc => "Service type of the backup object. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
+    method_option :container_format, :type => :string, :desc => "The container format of the backup object.(#{Dcmgr::Const::BackupObject::CONTAINER_FORMAT.keys.join(', ')})"
+    method_option :progress, :type => :numeric, :desc => "Progress of the backup object. (0.0 - 100.0)"
     def modify(uuid)
       bo = M::BackupObject[uuid] || UnknownUUIDError.raise(uuid)
       fields = options.dup
       fields.delete(:storage_id)
+
+      bkst = M::BackupStorage[options[:storage_id]]
+      Error.raise("Backup storage '#{options[:storage_id]}' does not exist.",100) if bkst.nil?
       fields[:backup_storage_id] = bkst.id
-      puts super(M::BackupObject, bo.canonical_uuid, fields)
+
+      super(M::BackupObject, bo.canonical_uuid, fields)
     end
 
     desc "del UUID", "Deregister the backup object"
@@ -53,7 +61,6 @@ module Dcmgr::Cli
       super(M::BackupObject,uuid)
     end
 
-    
     desc "show [UUID]", "Show the backup object details"
     def show(uuid=nil)
       if uuid
@@ -66,24 +73,27 @@ Backup Storage UUID: <%= bo.backup_storage.canonical_uuid %>
 Object Key: <%= bo.object_key %>
 Size: <%= bo.size %> (Alloc Size: <%= bo.allocation_size %>)
 Checksum: <%= bo.checksum %>
+Progress: <%= bo.progress %>
+Container Format: <%= bo.container_format %>
+Create: <%= bo.created_at %>
+Update: <%= bo.updated_at %>
+Delete: <%= bo.deleted_at %>
+Purge: <%= bo.purged_at %>
 <%- if bo.description -%>
 Description:
 <%= bo.description %>
 <%- end -%>
-Create: <%= bo.created_at %>
-Update: <%= bo.updated_at %>
-Delete: <%= bo.deleted_at %>
 __END
       else
         ds = M::BackupObject.dataset
-        puts ERB.new(<<__END, nil, '-').result(binding)
-<%= "%-15s %-15s %-20s %-20s %-10s" % ['UUID', 'Account ID', 'Name', 'Size', 'Checksum'] %>
-<%- ds.each { |row| -%>
-<%= "%-15s %-15s %-20s %-20s %-10s" % [row.canonical_uuid, row.account_id, row.display_name, row.size, row.checksum[0,10]] %>
-<%- } -%>
-__END
+        table = [['UUID', 'Account ID', 'Size', 'Checksum', 'Service Type', 'Name']]
+        ds.each { |r|
+          table << [r.canonical_uuid, r.account_id, r.size, r.checksum[0,10], r.service_type, r.display_name]
+        }
+
+        shell.print_table(table)
       end
     end
-    
+
   end
 end

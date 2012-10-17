@@ -22,14 +22,15 @@ module Dcmgr::Cli
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       method_option :is_cacheable, :type => :boolean, :default => false, :desc =>"A flag that determines whether the new machine image is cacheable or not"
       method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
+      method_option :parent_image_id, :type => :string, :desc => "The parent image UUID"
       def local(backup_object_id)
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) unless M::BackupObject[backup_object_id]
-        
+
         fields = options.dup
         fields[:backup_object_id]=backup_object_id
         fields[:boot_dev_type]=M::Image::BOOT_DEV_LOCAL
-        
+
         puts add(M::Image, fields)
       end
 
@@ -45,18 +46,19 @@ module Dcmgr::Cli
       method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the machine image. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
       method_option :display_name, :type => :string, :required => true, :desc => "Display name of the machine image"
       method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
+      method_option :parent_image_id, :type => :string, :desc => "The parent image UUID"
       def volume(backup_object_id)
         UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
         UnknownUUIDError.raise(backup_object_id) if M::BackupObject[backup_object_id].nil?
-        
+
         #TODO: Check if :state is a valid state
         fields = options.dup
         fields[:boot_dev_type]=M::Image::BOOT_DEV_SAN
         fields[:backup_object_id]=backup_object_id
-        
+
         puts add(M::Image, fields)
       end
-      
+
       protected
       def self.basename
         "vdc-manage #{Image.namespace} #{self.namespace}"
@@ -79,6 +81,7 @@ module Dcmgr::Cli
     method_option :backup_object_id, :type => :string, :desc => "Backup object for the machine image"
     method_option :is_cacheable, :type => :boolean, :desc =>"A flag that determines whether the new machine image is cacheable or not"
     method_option :instance_model_name, :type => :string, :desc => "The model name of the new instance"
+    method_option :parent_image_id, :type => :string, :desc => "The parent image UUID"
     def modify(uuid)
       UnknownUUIDError.raise(uuid) if M::Image[uuid].nil?
       UnsupportedArchError.raise(options[:arch]) unless M::HostNode::SUPPORTED_ARCH.member?(options[:arch])
@@ -107,25 +110,29 @@ Arch: <%= img.arch %>
 Is Public: <%= img.is_public %>
 State: <%= img.state %>
 Service Type: <%= img.service_type %>
+Cacheable: <%= img.is_cacheable %>
+Parent Image ID: <%= img.parent_image_id %>
+Create: <%= img.created_at %>
+Update: <%= img.updated_at %>
+Delete: <%= img.deleted_at %>
 Features:
 <%= img.features %>
 <%- if img.description -%>
 Description:
   <%= img.description %>
 <%- end -%>
-Is Cacheable: <%= img.is_cacheable %>
 <%- if img.instance_model_name -%>
-Instance model name: <%= img.instance_model_name %>
+Instance Model Name: <%= img.instance_model_name %>
 <%- end -%>
 __END
       else
-        cond = {}
-        imgs = M::Image.filter(cond).all
-        print ERB.new(<<__END, nil, '-').result(binding)
-<%- imgs.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'%>\t<%= row.arch %>
-<%- } -%>
-__END
+        ds = M::Image.dataset
+        table = [['UUID', 'Account ID', 'Service Type', 'Name', 'Boot Type', 'Arch']]
+        ds.each { |r|
+          table << [r.canonical_uuid, r.account_id, r.service_type, r.display_name, (r.boot_dev_type == M::Image::BOOT_DEV_LOCAL ? 'local' : 'volume'), r.arch]
+        }
+
+        shell.print_table(table)
       end
     end
 
@@ -139,6 +146,6 @@ __END
       end
       img.save_changes
     end
-    
+
   end
 end

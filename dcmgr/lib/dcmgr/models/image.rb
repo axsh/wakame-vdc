@@ -19,12 +19,12 @@ module Dcmgr::Models
 
     plugin :serialization
     serialize_attributes :yaml, :features
-    
+
     plugin ArchiveChangedColumn, :histories
-    
+
     def after_initialize
       super
-      unless self.features.is_a?(Hash) 
+      unless self.features.is_a?(Hash)
         self.features = {}
       end
     end
@@ -33,17 +33,17 @@ module Dcmgr::Models
       if !Instance.lives.filter(:image_id=>self.canonical_uuid).empty?
         raise "There are one or more running instances refers this record."
       end
-      
+
       super
     end
 
     def validate
       super
-      
+
       unless [BOOT_DEV_SAN, BOOT_DEV_LOCAL].member?(self.boot_dev_type)
         errors.add(:boot_dev_type, "Invalid boot dev type: #{self.boot_dev_type}")
       end
-      
+
       unless HostNode::SUPPORTED_ARCH.member?(self.arch)
         errors.add(:arch, "Unsupported arch type: #{self.arch}")
       end
@@ -97,7 +97,7 @@ module Dcmgr::Models
       blk.call(img)
       img.save
     end
-    
+
     def entry_clone(&blk)
       self.class.entry_new(self.account, self.arch, self.boot_dev_type, self.file_format) do |i|
         i.display_name = self.display_name
@@ -106,9 +106,10 @@ module Dcmgr::Models
         i.root_device = self.root_device
         i.service_type = self.service_type
         i.instance_model_name = self.instance_model_name unless self.instance_model_name.nil?
-        blk.call(i)
+        i.parent_image_id = self.canonical_uuid
+        blk.call(i) if blk
       end
     end
-    
+
   end
 end
