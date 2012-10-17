@@ -96,7 +96,7 @@ Pre-setup Hva
 Configuring Database
 --------------------
 
-Check the database is specified in /etc/wakame-vdc/dcmgr.conf
+Check if the database is specified in /etc/wakame-vdc/dcmgr.conf
 
 
 ### dcmgr(endpoints)
@@ -104,7 +104,7 @@ Check the database is specified in /etc/wakame-vdc/dcmgr.conf
     database_uri 'mysql2://localhost/wakame_dcmgr?user=root'
 
 
-Check the following section is described in /etc/wakame-vdc/dcmgr_gui/database.yml
+Check if the following section is described in /etc/wakame-vdc/dcmgr_gui/database.yml
 
 ### webui
 
@@ -121,7 +121,7 @@ Check the following section is described in /etc/wakame-vdc/dcmgr_gui/database.y
 
 ### dcmgr(endpoints)
 
-Check the amqp server is specified in /etc/wakame-vdc/dcmgr.conf
+Check if the amqp server is specified in /etc/wakame-vdc/dcmgr.conf
 
     amqp_server_uri 'amqp://localhost/'
 
@@ -134,7 +134,7 @@ In the following 4 files,
 + /etc/default/vdc-nsa
 + /etc/default/vdc-sta
 
-check the following lines are described.
+check if the following lines are described.
 
     #AMQP_ADDR=127.0.0.1
     #AMQP_PORT=5672
@@ -145,13 +145,13 @@ Creating Database
 -----------------
 
 
-Before create database, you need to launch mysql-server.
+Before creating the database, you need to launch mysql-server.
 
-    # service mysql start
+    # service mysqld start
 
 To automatically launch mysql-server, execute the following command.
 
-    # chkconfig mysql on
+    # chkconfig mysqld on
 
 If you need additional demonstration data, please type the following commands.
 NOTICE: this script will erase all related database at first. We recommend to backup before doing this.
