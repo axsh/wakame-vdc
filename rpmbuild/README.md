@@ -147,11 +147,11 @@ Creating Database
 
 Before creating the database, you need to launch mysql-server.
 
-    # service mysql start
+    # service mysqld start
 
 To automatically launch mysql-server, execute the following command.
 
-    # chkconfig mysql on
+    # chkconfig mysqld on
 
 If you need additional demonstration data, please type the following commands.
 NOTICE: this script will erase all related database at first. We recommend to backup before doing this.
