@@ -43,9 +43,9 @@ HVA stands for Hyper Visor Agent. It is internally used by the Dcmgr in order to
 Configuring upstart system job
 -------------------------------
 
-Comment out the following line in /etc/default/vdc-*.
+Uncomment the following line in /etc/default/vdc-*.
 
-    RUN=yes
+    #RUN=yes
 
 + dcmgr node
   + /etc/default/vdc-collector
@@ -62,7 +62,7 @@ Comment out the following line in /etc/default/vdc-*.
 
 Or simply execute the following command.
 
-    # sed -i.bak -e 's/^#\(RUN=yes\)/\1/' /etc/default/vdc-*
+    # sed -i -e 's/^#\(RUN=yes\)/\1/' /etc/default/vdc-*
 
 Pre-setup Dcmgr
 ----------------
