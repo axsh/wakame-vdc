@@ -44,6 +44,10 @@ manifest.instance_eval do
   end
 end
 
+Isono.at_disconnected do
+  EM.stop { exit }
+end
+
 start(manifest) do
   endpoint "hva-handle.#{@node.node_id}", Dcmgr::Rpc::HvaHandler
   endpoint "local-store-handle.#{@node.node_id}", Dcmgr::Rpc::LocalStoreHandler
