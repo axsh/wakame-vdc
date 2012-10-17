@@ -29,4 +29,8 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::EventHook
 end
 
+Isono.at_disconnected do
+  EM.stop { exit }
+end
+
 Isono::Runner::RpcServer.start(manifest)

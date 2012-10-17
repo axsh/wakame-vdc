@@ -146,5 +146,6 @@ module Dcmgr
 
     define_error(:NetworkInvalidAddress, 500, '169')
     define_error(:NetworkVifInvalidAddress, 500, '170')
+    define_error(:MessagingFailed, 500, '171')
   end
 end
