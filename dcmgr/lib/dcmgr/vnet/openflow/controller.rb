@@ -60,6 +60,7 @@ module Dcmgr
           # disconnected for a short period, as Open vSwitch has the
           # ability to keep flows between sessions.
           switches[datapath_id] = OpenFlowSwitch.new(OpenFlowDatapath.new(self, datapath_id, ofctl), bridge_name)
+          switches[datapath_id].update_bridge_ipv4
           switches[datapath_id].switch_ready
         end
 

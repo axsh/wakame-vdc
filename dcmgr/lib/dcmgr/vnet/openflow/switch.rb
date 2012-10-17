@@ -12,6 +12,7 @@ module Dcmgr::VNet::OpenFlow
     attr_reader :switch_name
     attr_reader :local_hw
     attr_reader :eth_port
+    attr_reader :bridge_ipv4
 
     attr_accessor :packet_handlers
 
@@ -25,8 +26,28 @@ module Dcmgr::VNet::OpenFlow
       @packet_handlers = []
     end
 
+    def update_bridge_ipv4
+      ip = case `/bin/uname -s`.rstrip
+           when 'Linux'
+             `/sbin/ip addr show #{self.switch_name} | awk '$1 == "inet" { print $2 }'`.split('/')[0]
+           when 'SunOS'
+             `/sbin/ifconfig #{self.switch_name} | awk '$1 == "inet" { print $2 }'`
+           else
+             raise "Unsupported platform to detect bridge IP address: #{`/bin/uname`}"
+           end
+      logger.info "Failed to run command to get inet address of bridge '#{self.switch_name}'." if $?.exitstatus != 0
+      return if ip.nil?
+
+      ip = ip.rstrip
+      @bridge_ipv4 = ip unless ip.empty?
+    end
+
+    #
+    # Event handlers:
+    #
+
     def switch_ready
-      logger.info "switch_ready: name:#{switch_name} datapath_id:%#x." % datapath.datapath_id
+      logger.info "switch_ready: name:#{self.switch_name} datapath_id:%#x ipv4:#{self.bridge_ipv4}." % datapath.datapath_id
 
       # There's a short period of time between the switch being
       # activated and features_reply installing flow.
@@ -109,7 +130,7 @@ module Dcmgr::VNet::OpenFlow
       # with the local mac and ip address, so drop those.
       flows << Flow.new(TABLE_LOAD_SRC, 6, {:in_port => OpenFlowController::OFPP_LOCAL}, {:output_reg0 => nil})
       flows << Flow.new(TABLE_LOAD_SRC, 5, {:dl_src => local_hw.to_s}, {:drop => nil})
-      flows << Flow.new(TABLE_LOAD_SRC, 5, {:ip => nil, :nw_src => Isono::Util.default_gw_ipaddr}, {:drop =>nil})
+      flows << Flow.new(TABLE_LOAD_SRC, 5, {:ip => nil, :nw_src => self.bridge_ipv4}, {:drop =>nil})
 
       #
       # ARP routing table
