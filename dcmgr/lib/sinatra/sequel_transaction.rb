@@ -62,7 +62,7 @@ module Sinatra
                   begin
                     Dcmgr.syncronized_message_ready
                   rescue => e
-                    raise Dcmgr::Endpoints::Errors::ConnectionFailed
+                    raise Dcmgr::Endpoints::Errors::MessagingFailed
                   end
                 end
               end

@@ -805,7 +805,7 @@ en:
     code166: "Invalid Load Balancer Private Key"
     code167: "Invalid Load Balancer Public Key"
     code168: "Encryption Algorithm Not Supported"
-    code171: "ConnectionFailed"
+    code171: "MessagingFailed"
 
   error_quota:
     security_group:
