@@ -49,12 +49,15 @@ for dirname in `ls ${instances_tmp_dir}`; do
       # Check if this is a tar.gz based instance and mount its root partition if it's not
       file ${instances_tmp_dir}/${dirname}/${dirname} | grep -q "POSIX tar archive (GNU)"
       if [ "$?" != "0" ]; then
+        # Create loop devices for the partitions in the image
         kpartx -va $instances_tmp_dir/$dirname/$dirname | cut -d " " -f3 | while read line; do
-          export root_device="/dev/mapper/$line"
+          # Determine which of these loop devices is the root partition
+          root_device="/dev/mapper/$line"
           device_uuid=`blkid $root_device | cut -d '"' -f2`
           search_uuid=`cat $instances_tmp_dir/$dirname/root_partition | cut -d "=" -f2`
 
           if [ "$device_uuid" == "$search_uuid" ]; then
+            # We found the root partition. Now mount it.
             cid=`cat $instances_tmp_dir/$dirname/openvz.ctid`
             mount $root_device /vz/private/${cid}
             break
