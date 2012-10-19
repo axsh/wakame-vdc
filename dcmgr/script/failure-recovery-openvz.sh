@@ -19,7 +19,7 @@ fi
 echo "using config file: ${HVA_CONF}"
 
 # Determine Wakame's instances tmp directory
-instances_tmp_dir=`grep vm_data_dir $dcmgr_root/config/hva.conf | sed "s/.*'\(.*\)'[^']*$/\1/"`
+instances_tmp_dir=`grep vm_data_dir $HVA_CONF | sed "s/.*'\(.*\)'[^']*$/\1/"`
 echo $instances_tmp_dir | grep -q vm_data_dir
 if [ $? == 0 ]; then instances_tmp_dir=`grep vm_data_dir $HVA_CONF | sed 's/.*"\(.*\)"[^"]*$/\1/'`; fi
 
