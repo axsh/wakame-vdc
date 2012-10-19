@@ -49,15 +49,17 @@ for dirname in `ls ${instances_tmp_dir}`; do
       # Check if this is a tar.gz based instance and mount its root partition if it's not
       file ${instances_tmp_dir}/${dirname}/${dirname} | grep -q "POSIX tar archive (GNU)"
       if [ "$?" != "0" ]; then
-        kpartx -va $instances_tmp_dir/$dirname/$dirname > /dev/null
-        cid=`cat $instances_tmp_dir/$dirname/openvz.ctid`
+        kpartx -va $instances_tmp_dir/$dirname/$dirname | cut -d " " -f3 | while read line; do
+          export root_device="/dev/mapper/$line"
+          device_uuid=`blkid $root_device | cut -d '"' -f2`
+          search_uuid=`cat $instances_tmp_dir/$dirname/root_partition | cut -d "=" -f2`
 
-        # Find the instance's root device
-        search_word=`cat $instances_tmp_dir/$dirname/root_partition`
-        devices=( `blkid -t $search_word | awk '{print $1}' | tr ":" "\n"` )
-        echo ${devices[0]}
-
-        mount ${devices[0]} /vz/private/${cid}
+          if [ "$device_uuid" == "$search_uuid" ]; then
+            cid=`cat $instances_tmp_dir/$dirname/openvz.ctid`
+            mount $root_device /vz/private/${cid}
+            break
+          fi
+        done
       fi
 
       # Mount the metadata drive images and make sure their correct loop devices
