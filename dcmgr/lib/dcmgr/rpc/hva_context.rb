@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'logger'
+require 'isono'
 
 module Dcmgr
   module Rpc
@@ -53,7 +54,7 @@ module Dcmgr
         @instance_logger = InstanceLogger.new(self)
       end
 
-      class InstanceLogger
+      class InstanceLogger < EndpointBuilder
         def initialize(hva_context)
           @hva_context = hva_context
           @logger = ::Logger.new(Dcmgr::Logger.default_logdev)
@@ -62,7 +63,7 @@ module Dcmgr
 
         ["fatal", "error", "warn", "info", "debug"].each do |level|
           define_method(level){|msg|
-            @logger.__send__(level, "Instance UUID: #{@hva_context.inst_id}: #{msg}")
+            @logger.__send__(level, "Session ID: #{session_id}: Instance UUID: #{@hva_context.inst_id}: #{msg}")
           }
         end
       end
