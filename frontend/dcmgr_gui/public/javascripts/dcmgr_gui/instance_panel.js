@@ -286,8 +286,8 @@ DcmgrGUI.prototype.instancePanel = function(){
             }
           })
         }).next(function(results) {
-          $("#left_select_list").unmask();
-          $("#right_select_list").unmask();
+          $(self).find("#left_select_list").unmask();
+          $(self).find("#right_select_list").unmask();
         });
       }
     });
