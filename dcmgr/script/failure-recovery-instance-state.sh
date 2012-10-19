@@ -31,7 +31,7 @@ function get_commands {
       uuid=${inst[0]}
       destination_state=${states[${inst[2]}]}
     }
-    
+
     [ -n "$destination_state" ] && {
       echo "instance force-state $uuid $destination_state"
     }

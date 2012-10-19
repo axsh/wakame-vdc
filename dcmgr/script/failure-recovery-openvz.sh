@@ -3,10 +3,25 @@
 # Determine Wakame root directory. This script needs to reside in $dcmgr_root/script
 dcmgr_root="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 
+# Determine where hva.conf is
+if [ -z "$HVA_CONF" ]; then
+  if [ -f /etc/wakame-vdc/hva.conf ]; then
+    HVA_CONF=/etc/wakame-vdc/hva.conf
+  else
+    HVA_CONF=$dcmgr_root/config/hva.conf
+  fi
+fi
+
+if [ ! -f $HVA_CONF ]; then
+  echo "Couldn't find hva.conf file. Please place it in either /etc/wakame-vdc/ or in $dcmgr_root/config/"
+  exit 1
+fi
+echo "using config file: ${HVA_CONF}"
+
 # Determine Wakame's instances tmp directory
-instances_tmp_dir=`grep vm_data_dir $dcmgr_root/config/hva.conf | sed "s/.*'\(.*\)'[^']*$/\1/"`
+instances_tmp_dir=`grep vm_data_dir $HVA_CONF | sed "s/.*'\(.*\)'[^']*$/\1/"`
 echo $instances_tmp_dir | grep -q vm_data_dir
-if [ $? == 0 ]; then instances_tmp_dir=`grep vm_data_dir $dcmgr_root/config/hva.conf | sed 's/.*"\(.*\)"[^"]*$/\1/'`; fi
+if [ $? == 0 ]; then instances_tmp_dir=`grep vm_data_dir $HVA_CONF | sed 's/.*"\(.*\)"[^"]*$/\1/'`; fi
 
 # If we are using openvswitch, we will need to remove the instances' vnics from the switch
 lsmod | grep -q openvswitch_mod
