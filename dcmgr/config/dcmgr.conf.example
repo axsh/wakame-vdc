@@ -100,7 +100,7 @@ service_type("std", "StdServiceType") {
   #     default 'nwg-shnet'
   #  }
   #
-  # * :LeastUsage do
+  # * :NetworkGroup do
   #     network_group_id 'nwg-shnet'
   #   end
   network_scheduler :PerInstance do

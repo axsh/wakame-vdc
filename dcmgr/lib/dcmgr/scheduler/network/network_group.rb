@@ -2,7 +2,7 @@
 module Dcmgr
   module Scheduler
     module Network
-      class LeastUsage < NetworkScheduler
+      class NetworkGroup < NetworkScheduler
 
         include Dcmgr::Logger
 
