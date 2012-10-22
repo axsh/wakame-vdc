@@ -34,7 +34,7 @@ end
 # XX.XX part represents the version number. ''@api_from_vXX.XX'' is
 # applied to the feature/scenario that examine APIs for the version or
 # later. In contrast, ''@api_until_vXX.XX'' is used to the
-# feature/scenario they are obsolete from the version. 
+# feature/scenario they are obsolete from the version.
 #
 # Example:
 # @api_from_11.12
@@ -57,7 +57,7 @@ end
 #   - Scenario: xxxxx2
 #
 # If you set the version number for next release, it should work as below.
-# 
+#
 #   % API_VER=12.03 cucumber test.feature
 #
 # It runs following scenarios:
@@ -83,10 +83,10 @@ Around do |scenario, blk|
 
       when /^@multiple$/
         online_nodes = HOST_NODES.count { |key,node| node }
-        
-        throw :skip_scenario if HOST_NODES.size < 2 
-        throw :skip_scenario if online_nodes < 2 
-        # raise("Not enough host nodes are online for testing '@multiple'.") if online_nodes < 2 
+
+        throw :skip_scenario if HOST_NODES.size < 2
+        throw :skip_scenario if online_nodes < 2
+        # raise("Not enough host nodes are online for testing '@multiple'.") if online_nodes < 2
 
       else
         raise("Unknown precondition: '#{tag}'.")

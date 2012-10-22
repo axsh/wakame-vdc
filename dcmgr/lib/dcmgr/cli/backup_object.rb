@@ -29,7 +29,7 @@ module Dcmgr::Cli
       fields[:backup_storage_id] = bkst.id
       puts super(M::BackupObject, fields)
     end
-    
+
     desc "modify UUID [options]", "Modify the backup object"
     method_option :uuid, :type => :string, :desc => "The UUID for the backup storage."
     method_option :account_id, :type => :string, :default=>'a-shpoolxx', :desc => "The account ID for the backup object."
@@ -90,10 +90,10 @@ __END
         ds.each { |r|
           table << [r.canonical_uuid, r.account_id, r.size, r.checksum[0,10], r.service_type, r.display_name]
         }
-        
+
         shell.print_table(table)
       end
     end
-    
+
   end
 end

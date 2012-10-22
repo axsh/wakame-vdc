@@ -31,11 +31,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       validate_service_type(params[:service_type])
       ds = ds.filter(:service_type=>params[:service_type])
     end
-    
+
     if params[:display_name]
       ds = ds.filter(:display_name=>params[:display_name])
     end
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::NetworkCollection.new(paging_ds).generate
     end
@@ -76,7 +76,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
       validate_service_type(params[:service_type])
       savedata[:service_type] = params[:service_type]
     end
-    
+
     savedata[:display_name] = params[:display_name] if params[:display_name]
     savedata[:description] = params[:description] if params[:description]
     savedata[:domain_name] = params[:domain_name] if params[:domain_name]
@@ -96,7 +96,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
         :outgoing_port => 68,
         :ipv4 => get_service_address(network_address, params[:service_dhcp]),
       }
-    end    
+    end
 
     if params[:service_dns]
       network_services << {
@@ -104,14 +104,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
         :incoming_port => 53,
         :ipv4 => get_service_address(network_address, params[:service_dns]),
       }
-    end    
+    end
 
     if params[:service_gateway]
       network_services << {
         :name => 'gateway',
         :ipv4 => get_service_address(network_address, params[:service_gateway]),
       }
-    end    
+    end
 
     nw = M::Network.create(savedata)
     nw.dc_network = dc_network
@@ -151,7 +151,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     respond_with(R::DhcpRangeCollection.new(nw.dhcp_range_dataset).generate)
   end
-  
+
   put '/:id/dhcp_ranges/add' do
     # description 'Register reserved IP address to the network'
     # params id, string, required
@@ -164,7 +164,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     nw.add_ipv4_dynamic_range(params[:range_begin], params[:range_end])
     respond_with({})
   end
-  
+
   put '/:id/dhcp_ranges/remove' do
     # description 'Register reserved IP address to the network'
     # params id, string, required
@@ -177,7 +177,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     nw.del_ipv4_dynamic_range(params[:range_begin], params[:range_end])
     respond_with({})
   end
-  
+
   put '/:id/dhcp/reserve' do
     # description 'Register reserved IP address to the network'
     # params id, string, required
@@ -190,14 +190,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     }
     respond_with({})
   end
-  
+
   put '/:id/dhcp/release' do
     # description 'Unregister reserved IP address from the network'
     # params id, string, required
     # params ipaddr, [String,Array], required
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
-    
+
     (params[:ipaddr].is_a?(Array) ? params[:ipaddr] : Array(params[:ipaddr])).each { |ip|
       nw.network_vif_ip_lease_dataset.delete_reserved(ip)
     }
@@ -211,7 +211,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
     ds = nw.network_vif_dataset
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::NetworkVifCollection.new(paging_ds).generate
     end
@@ -227,7 +227,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     raise E::UnknownNetwork, params[:id] if nw.nil?
     vif = find_by_uuid(M::NetworkVif, params[:vif_id])
     raise E::UnknownNetworkVif, params[:vif_id] if vif.nil?
-    
+
     # Compare nw.id and vif.network_id.
 
     respond_with(R::NetworkVif.new(vif).generate)
@@ -320,7 +320,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork, params[:id] if nw.nil?
     ds = nw.network_service
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::NetworkServiceCollection.new(paging_ds).generate
     end
@@ -380,10 +380,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     raise E::UndefinedNetworkID if params[:id].nil?
     nw = find_by_uuid(M::Network, params[:id])
     raise E::UnknownNetwork if nw.nil?
-    
+
     nw.display_name = params[:display_name] if params[:display_name]
     nw.save_changes
-    
+
     respond_with(R::Network.new(nw).generate)
   end
 end

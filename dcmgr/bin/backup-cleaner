@@ -79,7 +79,7 @@ ds.order(:deleted_at.asc).each { |bo|
         bo.set(:purged_at=>Time.now).save_changes
       end
     end
-    
+
     log << "Removed: #{bo.canonical_uuid}: #{bo.uri}"
     summary[:success] += 1
   rescue => e

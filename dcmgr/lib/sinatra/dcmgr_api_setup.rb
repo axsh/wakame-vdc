@@ -34,7 +34,7 @@ module Sinatra
       end
     end
   end
-  
+
   module DcmgrAPISetup
     # Returns deserialized hash from HTTP body. Serialization fromat
     # is guessed from content type header. The query string params
@@ -42,7 +42,7 @@ module Sinatra
     # This method is called only when the request method is POST.
 
     DEFAULT_OUTPUT_CONTENT_TYPE='application/json'
-    
+
     BODY_PARSER = {
       'application/json' => proc { |body| ::JSON.load(body) },
       'text/json' => proc { |body| ::JSON.load(body) },
@@ -61,7 +61,7 @@ module Sinatra
 
       # avoid using Sinatra::JSON builtin encoder.
       set :json_encoder, ::JSON
-      
+
       # remove trailing extension from URI and add mapped mime types to
       # http accept header. This helps to use file extension in URI with Sinatra::Namespace.
       before do
@@ -92,7 +92,7 @@ module Sinatra
                    error(400, 'Invalid request body.')
                  end
                end
-        
+
         @params.merge!(hash.values.first)
       end
 
@@ -110,7 +110,7 @@ module Sinatra
         respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code})
       end
     }
-    
+
     def self.registered(app)
       app.class_eval &DO
 

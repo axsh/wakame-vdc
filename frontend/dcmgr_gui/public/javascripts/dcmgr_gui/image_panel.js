@@ -342,7 +342,7 @@ DcmgrGUI.prototype.imagePanel = function(){
                 append_select_item(select_eth, 'disconnected', 'disconnected')
 
                 for (var i=0; i < size ; i++) {
-                  append_select_item(select_eth, results[i].result.uuid, results[i].result.uuid + ' - ' + results[i].result.display_name)
+                  append_select_item(select_eth, results[i].result.uuid, '[' + results[i].result.uuid + '] ' + results[i].result.display_name)
                 }
               }
 

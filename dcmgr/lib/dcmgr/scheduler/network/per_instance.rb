@@ -14,7 +14,7 @@ module Dcmgr
             end
 
             def add(name, sched_class_name, &blk)
-              @config[:schedulers] ||= {}              
+              @config[:schedulers] ||= {}
               c = ::Dcmgr::Scheduler::Network.scheduler_class(sched_class_name)
 
               unless c < ::Dcmgr::Scheduler::NetworkScheduler

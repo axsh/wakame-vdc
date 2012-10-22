@@ -24,9 +24,9 @@ module Dcmgr
           }
         end
       end
-      
+
       param :tmp_dir, :default=>'/var/tmp'
-      
+
       # iSCSI Target Driver
       # comstar, sun_iscsi, linux_iscsi
       param :iscsi_target, :default=>'linux_iscsi'

@@ -7,10 +7,10 @@ Feature: SecurityGroup API
   Scenario: Create and delete security group
     Given a managed security_group with the following options
       | account_id | rule                      | description    | display_name |
-      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle | group1       | 
+      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle | group1       |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       And the previous api call should have {"description":} equal to "test lifecycle"
-      
+
     When we make an api delete call to security_groups/<registry:uuid> with no options
     Then the previous api call should be successful
 
@@ -43,7 +43,7 @@ Feature: SecurityGroup API
   Scenario: Update security group
     Given a managed security_group with the following options
       | account_id | rule                      | description    | display_name |
-      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle | group1       | 
+      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle | group1       |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
 
     When we make an api get call to security_groups with no options
@@ -58,12 +58,12 @@ Feature: SecurityGroup API
       Then the previous api call should be successful
       And the previous api call should have {"description":} equal to "test lifecycle2"
       And the previous api call should have {"display_name":} equal to "group2"
-    
+
   @api_from_v12.03
   Scenario: Verify security group value after creation
     Given a managed security_group with the following options
       | account_id | rule                      | description    | display_name |
-      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle | group1       | 
+      | a-shpoolxx | tcp:22,22,ip4:192.168.0.1 | test lifecycle | group1       |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       And the previous api call should have {"uuid":} equal to <registry:uuid>
       And the previous api call should have {"rule":} equal to "tcp:22,22,ip4:192.168.0.1"

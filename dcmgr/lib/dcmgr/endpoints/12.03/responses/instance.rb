@@ -54,9 +54,9 @@ module Dcmgr::Endpoints::V1203::Responses
               :nat_address => outside_lease.nil? ? nil : outside_lease.ipv4,
             }
           end
-          
+
           ent[:security_groups] = vif.security_groups.map {|sg| sg.canonical_uuid}
-          
+
           h[:vif] << ent
         }
 

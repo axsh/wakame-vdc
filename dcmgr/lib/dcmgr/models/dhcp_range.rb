@@ -21,7 +21,7 @@ module Dcmgr::Models
       if !self.network.ipv4_ipaddress.include?(self.range_begin)
         errors.add(:range_begin, "Out of subnet range: #{self.range_begin}")
       end
-      
+
       if !self.network.ipv4_ipaddress.include?(self.range_end)
         errors.add(:range_end, "Out of subnet range: #{self.range_end}")
       end

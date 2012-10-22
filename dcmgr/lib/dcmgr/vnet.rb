@@ -2,21 +2,21 @@
 
 module Dcmgr
   module VNet
-    
+
     class Task
       #Must be an array of rules
       attr_accessor :rules
-      
+
       def initialize
         @rules = []
       end
-      
+
     end
-  
+
     # Abstract class for task managers to extend
     # A task manager should be able to understand certain rules in a task and be able to apply those
     class TaskManager
-      
+
       def apply_task(task)
         raise NotImplementedError
       end
@@ -42,6 +42,6 @@ module Dcmgr
         }
       end
     end
-    
+
   end
 end

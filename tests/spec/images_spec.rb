@@ -18,10 +18,10 @@ if is_enabled? :images_spec
         it "should run an instance of (#{img[:id]}, #{spec}) -> reboot -> terminate" do
           run_instance_then_reboot_then_terminate({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key_id=>ssh_key_id},img[:user],img[:uses_metadata])
         end
-        
+
         it "should run an instance of (#{img[:id]}, #{spec}) -> stop -> terminate" do
           instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key_id=>ssh_key_id})
-          
+
           #p "retry until running"
           retry_until_running(instance_id)
 
@@ -35,49 +35,49 @@ if is_enabled? :images_spec
             v['state'].should == 'attached'
           }
           instance['ips'].nil?.should be_true
-          
+
           terminate_instance(instance_id)
         end
-        
+
         it "should run an instance of (#{img[:id]}, #{spec}) -> stop -> running -> terminate" do
           instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key_id=>ssh_key_id})
           retry_until_running(instance_id)
           instance = APITest.get("/instances/#{instance_id}")
-          
+
           APITest.update("/instances/#{instance_id}/stop", []).success?.should be_true
           retry_until_stopped(instance_id)
-          
+
           APITest.update("/instances/#{instance_id}/start", []).success?.should be_true
           retry_until_running(instance_id)
-          
+
           # compare differences of parameters to the old one.
           new_instance = APITest.get("/instances/#{instance_id}")
-          
+
           #p "instance"
           #p instance
-          
+
           #p "new_instance"
           #p new_instance
-          
+
           instance['vif'].first['vif_id'].should == new_instance['vif'].first['vif_id']
           instance['vif'].first['ipv4']['address'].should_not == new_instance['vif'].first['ipv4']['address']
-          
+
           terminate_instance(instance_id)
         end
-        
+
         it "should run an instance of (#{img[:id]}, #{spec}) -> stop -> running -> stop -> terminate" do
           instance_id = run_instance({:image_id=>img[:id], :instance_spec_id=>spec, :ssh_key_id=>ssh_key_id})
           retry_until_running(instance_id)
-          
+
           APITest.update("/instances/#{instance_id}/stop", []).success?.should be_true
           retry_until_stopped(instance_id)
-          
+
           APITest.update("/instances/#{instance_id}/start", []).success?.should be_true
           retry_until_running(instance_id)
-          
+
           APITest.update("/instances/#{instance_id}/stop", []).success?.should be_true
           retry_until_stopped(instance_id)
-          
+
           terminate_instance(instance_id)
         end
       }
@@ -90,7 +90,7 @@ if is_enabled? :images_spec
       res.success?.should be_true
       res["id"]
     end
-    
+
     def terminate_instance(id)
       APITest.delete("/instances/#{id}").success?.should be_true
       retry_until_terminated(id)
@@ -100,7 +100,7 @@ if is_enabled? :images_spec
         v['state'].should == 'available'
       }
     end
-    
+
     def run_instance_then_reboot_then_terminate(params,username,uses_metadata = true)
       res = APITest.create("/instances", params)
       res.success?.should be_true

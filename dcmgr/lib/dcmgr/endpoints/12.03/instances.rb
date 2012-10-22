@@ -9,7 +9,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   # Show list of instances
   # Filter Paramters:
-  # start: fixnum, optional 
+  # start: fixnum, optional
   # limit: fixnum, optional
   # account_id:
   # state: (running|stopped|terminated|alive)
@@ -61,11 +61,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       Dcmgr.conf.service_types[params[:service_type]] || raise(E::InvalidParameter, :service_type)
       ds = ds.filter(:service_type=>params[:service_type])
     end
-    
+
     if params[:display_name]
       ds = ds.filter(:display_name=>params[:display_name])
     end
-    
+
     collection_respond_with(ds) do |paging_ds|
       R::InstanceCollection.new(paging_ds).generate
     end
@@ -74,7 +74,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   get '/:id' do
     i = find_by_uuid(:Instance, params[:id])
     raise E::UnknownInstance, params[:id] if i.nil?
-    
+
     respond_with(R::Instance.new(i).generate)
   end
 
@@ -126,7 +126,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     if !M::HostNode.check_domain_capacity?(params['cpu_cores'], params['memory_size'])
       raise E::OutOfHostCapacity
     end
-    
+
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -136,7 +136,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::UnknownHostNode, "#{host_node_id}" if host_node.nil?
       raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
     end
-    
+
     if params['vifs'].nil?
       params['vifs'] = {}
     elsif params['vifs'].is_a?(String)
@@ -159,7 +159,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       i.cpu_cores = params[:cpu_cores]
       i.memory_size = params[:memory_size]
       i.quota_weight = params[:quota_weight] || 0.0
-      
+
       # Set common parameters from user's request.
       i.user_data = params[:user_data] || ''
       # set only when not nil as the table column has not null
@@ -172,10 +172,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           raise E::DuplicateHostname
         end
       end
-      
+
       if params[:ssh_key_id]
         ssh_key_pair = M::SshKeyPair[params[:ssh_key_id]]
-        
+
         if ssh_key_pair.nil?
           raise E::UnknownSshKeyPair, "#{params[:ssh_key_id]}"
         else
@@ -190,7 +190,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       if params[:service_type]
         i.service_type = params[:service_type]
       end
-      
+
       if params[:display_name]
         i.display_name = params[:display_name]
       end
@@ -206,12 +206,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       instance.instance_monitor_attr.mailaddr = params[:monitoring_mailaddr]
     end
     instance.instance_monitor_attr.save_changes
-    
+
     instance.state = :scheduling
     instance.save
 
     bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
-    
+
     case wmi.boot_dev_type
     when M::Image::BOOT_DEV_SAN
       # create new volume from backup object.
@@ -219,7 +219,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       if !M::StorageNode.check_domain_capacity?(bo.size)
         raise E::OutOfDiskSpace
       end
-      
+
       vol = M::Volume.entry_new(@account, bo.size, params.to_hash) do |v|
         v.backup_object_id = bo.canonical_uuid
         v.boot_dev = 1
@@ -303,17 +303,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     respond_with([instance.canonical_uuid])
   end
-  
+
   put '/:id' do
     # description 'Updates the security groups an instance is in'
     # param :id, string, :required
     # param :security_groups, array, :optional
     # param :display_name, :string, :optional
     raise E::UndefinedInstanceID if params[:id].nil?
-    
+
     instance = find_by_uuid(:Instance, params[:id])
     raise E::UnknownInstance if instance.nil?
-    
+
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
       security_group_uuids = params[:security_groups]
       security_group_uuids = [security_group_uuids] if security_group_uuids.is_a?(String)
@@ -331,7 +331,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           end
         }
       }
-      
+
       # Add new security groups
       current_group_ids = instance.nic.first.security_groups_dataset.map {|g| g.canonical_uuid}
       groups.each { |group|
@@ -346,7 +346,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
       }
     end
-    
+
     instance.display_name = params[:display_name ] if params[:display_name]
     instance.save_changes
 
@@ -361,7 +361,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
     bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
-    
+
     bo = instance.image.backup_object.entry_clone do |i|
       [:display_name, :description].each { |k|
         if params[k]
@@ -378,12 +378,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           i[k] = params[k]
         end
       }
-      
+
       i.account_id = @account.canonical_uuid
       i.backup_object_id = bo.canonical_uuid
       i.state = :pending
     end
-    
+
     on_after_commit do
       Dcmgr.messaging.submit("local-store-handle.#{instance.host_node.node_id}", 'backup_image',
                              instance.canonical_uuid, bo.canonical_uuid, image.canonical_uuid)
@@ -408,7 +408,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     respond_with({:instance_id=>instance.canonical_uuid,
                  })
-  end  
+  end
 
   # Restart the instance from halted state.
   put '/:id/poweron' do
@@ -424,5 +424,5 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     respond_with({:instance_id=>instance.canonical_uuid,
                  })
-  end  
+  end
 end

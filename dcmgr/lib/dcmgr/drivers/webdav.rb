@@ -7,7 +7,7 @@ module Dcmgr::Drivers
     include Dcmgr::Helpers::CliHelper
 
     # Note on CommandAPI (shell onliner) support.
-    # 
+    #
     # For PUT operation, most of DAV servers check the Content-Length
     # header and expect to be sent from the client. The content will
     # be rejected if the header has wrong value.
@@ -16,7 +16,7 @@ module Dcmgr::Drivers
     # data is transformed to different format, i.e. gzip,  then the
     # generated data size is vary while goes through the shell pipeline.
     # Therefore, this driver no longer supports shell onliner API.
-    
+
     def upload(src_path, dst_bo)
       sh("curl -T %s %s", [src_path, abs_uri(dst_bo)])
     end
@@ -35,4 +35,4 @@ module Dcmgr::Drivers
     end
   end
 end
-  
+

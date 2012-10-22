@@ -43,7 +43,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_storages' do
       if params[:display_name]
         i.display_name = params[:display_name]
       end
-      
+
       if params[:uuid]
         i.uuid = params[:uuid]
       end
@@ -60,14 +60,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_storages' do
     bkst.storage_type = params[:storage_type] if params[:storage_type]
     bkst.base_uri = params[:base_uri] if params[:base_uri]
     bkst.save_changes
-    
+
     respond_with([bkst.canonical_uuid])
   end
-  
+
   delete '/:id' do
     bkst = find_by_uuid(:BackupStorage, params[:id])
     bkst.destroy
-    
+
     respond_with([bkst.canonical_uuid])
   end
 end

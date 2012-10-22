@@ -3,7 +3,7 @@
 #------------------------
 
 # directory to store VM local data.
-config.vm_data_dir = '/var/lib/wakame-vdc/tmp/instances'
+config.vm_data_dir = '/var/lib/wakame-vdc/instances'
 
 # Decides what kind of edge networking will be used. If omitted, the default 'netfilter' option will be used
 # * 'netfilter'

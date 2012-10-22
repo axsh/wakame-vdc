@@ -7,7 +7,7 @@ module Dcmgr
     module TemplateHelper
 
       TEMPLATE_ROOT_DIR = File.expand_path("../../../../templates", __FILE__).freeze
-      
+
       def render_template(template_file_name, output_file_path, bindscope=Kernel.binding)
         unless File.exists?(output_file_path)
           File.open(output_file_path, 'w+') do |f|
@@ -23,7 +23,7 @@ module Dcmgr
       def template_real_path(template_file_name)
         self.class.template_real_path(template_file_name)
       end
-      
+
       def self.included(klass)
         klass.extend(ClassMethods)
       end
@@ -33,7 +33,7 @@ module Dcmgr
         raise ArgumentError unless bindscope.is_a?(Binding)
         template_file_path = template_real_path(template_file_name)
         raise "template file does not exist: #{template_file_path}" unless File.exists?(template_file_path)
-        
+
         ERB.new(File.read(template_file_path), nil, '-').result(bindscope)
       end
 

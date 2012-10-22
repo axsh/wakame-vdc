@@ -15,12 +15,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     before do
       @vif = find_by_uuid(:NetworkVif, params[:vif_id])
     end
-    
+
     # List network monitor entries.
     get do
       respond_with(R::NetworkVifMonitorCollection.new(@vif.network_vif_monitors_dataset).generate)
     end
-    
+
     # Show a network monitor entry.
     get '/:monitor_id' do
       monitor = find_by_uuid(M::NetworkVifMonitor, params[:monitor_id])
@@ -35,7 +35,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       monitor.network_vif = @vif
       respond_with(R::NetworkVifMonitor.new(monitor.save).generate)
     end
-    
+
     # Delete a network monitor entry.
     delete '/:monitor_id' do
       monitor = find_by_uuid(M::NetworkVifMonitor, params[:monitor_id])

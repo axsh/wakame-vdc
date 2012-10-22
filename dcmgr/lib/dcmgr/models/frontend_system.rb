@@ -2,9 +2,9 @@
 
 module Dcmgr::Models
   class FrontendSystem < BaseNew
-    
+
     plugin :single_table_inheritance, :kind
-    
+
     def authenticate
       raise NotImplementedError
     end
@@ -16,7 +16,7 @@ module Dcmgr::Models
     end
 
     class HttpBasic < FrontendSystem
-      
+
       def authenticate(env)
       end
     end
@@ -27,6 +27,6 @@ module Dcmgr::Models
         self.key == env['HTTP_REMOTE_ADDR']
       end
     end
-    
+
   end
 end

@@ -10,7 +10,7 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::TemplateHelper
-      
+
       template_base_dir "openvz"
 
       def_configuration do
@@ -33,7 +33,7 @@ module Dcmgr
 
         attr_reader :ovz_config
         alias :config :ovz_config
-        
+
         def ctid
           Drivers::Openvz.driver_configuration.ctid_offset + inst[:id].to_i
         end
@@ -45,11 +45,11 @@ module Dcmgr
         def ct_umount_path
           File.expand_path("#{ctid}.umount", config.ve_config_dir)
         end
-        
+
         def ct_mount_path
           File.expand_path("#{ctid}.mount", config.ve_config_dir)
         end
-        
+
         def ct_conf_path
           File.expand_path("#{ctid}.conf", config.ve_config_dir)
         end
@@ -57,7 +57,7 @@ module Dcmgr
         def ct_local_confs
           [ct_conf_path, ct_mount_path, ct_umount_path]
         end
-        
+
         def cgroup_scope
           ctid.to_s
         end
@@ -81,7 +81,7 @@ module Dcmgr
       def run_instance(hc)
         # load openvz conf
         config = OpenvzConfig.new
-        
+
         # write a openvz container id
         inst = hc.inst
         ctid_file_path = File.expand_path('openvz.ctid', hc.inst_data_dir)
@@ -90,7 +90,7 @@ module Dcmgr
           f.write(hc.ctid)
         }
         logger.debug("write a openvz container id #{ctid_file_path}")
-        
+
         # delete old config file
         config_file_path = "#{config.ve_config_dir}/#{hc.ctid}.conf"
         mount_file_path = "#{config.ve_config_dir}/#{hc.ctid}.mount"
@@ -102,7 +102,7 @@ module Dcmgr
           File.unlink(mount_file_path)
           logger.debug("old mount file was deleted #{mount_file_path}")
         end
-        
+
         destroy_config_file_path = "#{config_file_path}.destroyed"
         destroy_mount_file_path = "#{mount_file_path}.destroyed"
         if File.exists?(destroy_config_file_path)
@@ -113,15 +113,15 @@ module Dcmgr
           File.unlink(destroy_mount_file_path)
           logger.debug("old mount file was deleted #{destroy_config_file_path}")
         end
-        
+
         # generate openvz config
         hypervisor = inst[:host_node][:hypervisor]
         output_file_path = "#{config.ve_config_dir}/ve-openvz.conf-sample"
-        
+
         render_template('template.conf', output_file_path, binding)
 
         logger.debug("created config #{output_file_path}")
-        
+
         # create openvz container
         private_folder = "#{config.ve_private}/#{hc.ctid}"
         image = inst[:image]
@@ -131,7 +131,7 @@ module Dcmgr
           # but "vzctl create" expects that the file name has the extension. so the line below creates hard link to
           # the path name with extention of archiver type.
 
-          # remove existing 
+          # remove existing
           File.unlink(File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)) rescue nil
           sh("ln %s %s", [File.expand_path(image[:backup_object][:uuid], config.template_cache),
                           File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)])
@@ -166,7 +166,7 @@ module Dcmgr
             search_word = "#{k.upcase}=#{v}"
             device_file_list = sh("blkid -t %s |awk '{print $1}'", [search_word])
             #
-            # /dev/mapper/loop0p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4" 
+            # /dev/mapper/loop0p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
             # /dev/mapper/loop2p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
             # /dev/mapper/ip-192.0.2.19:3260-iscsi-iqn.2010-09.jp.wakame:vol-lzt6zx5c-lun-1p1: UUID="148bc5df-3fc5-4e93-8a16-7328907cb1c0" TYPE="ext4"
             #
@@ -175,6 +175,9 @@ module Dcmgr
             root_device = new_device_file & device_file_list
             raise "root device does not exist #{image[:root_device]}" if root_device.empty?
             sh("mount %s %s", [root_device[0], private_folder])
+
+            # Write root partition identifier to instance data dir for the failure recovery script
+            File.open(File.expand_path('root_partition', hc.inst_data_dir), 'w') {|f| f.puts(search_word) }
           else
             cmd = "mount %s %s"
             args = [hc.os_devpath, private_folder]
@@ -185,16 +188,16 @@ module Dcmgr
             sh(cmd, args)
           end
         end
-        
+
         # set name
         sh("vzctl set %s --name %s --save",[hc.ctid, hc.inst_id])
         #
         # Name="i-xxxx"
         #
-        
+
         # setup openvz config file
         vifs = inst[:vif]
-        
+
         # set virtual interface
         if !vifs.empty?
           vifs.sort {|a, b| a[:device_index] <=> b[:device_index]}.each {|vif|
@@ -217,7 +220,7 @@ module Dcmgr
         #
         # CPUS="1"
         #
-        
+
         # set memory size
         sh("vzctl set %s --privvmpage %s --save",[hc.inst_id, (inst[:memory_size] * 256)])
         #
@@ -226,8 +229,8 @@ module Dcmgr
         sh("vzctl set %s --vmguarpages %s --save",[hc.inst_id, (inst[:memory_size] * 256)])
         #
         # VMGUARPAGES="65536"
-        # 
-        
+        #
+
         # mount metadata drive
         hn_metadata_path = "#{hc.config.ve_root}/#{hc.ctid}/metadata"
         ve_metadata_path = "#{hc.inst_data_dir}/metadata"
@@ -243,14 +246,14 @@ module Dcmgr
         # save the loop device name for the metadata drive.
         File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
         sh("mount -o ro %s %s", [lodev, ve_metadata_path])
-        
+
         # generate openvz mount config
         render_template('template.mount', hc.ct_mount_path, binding)
         render_template('template.umount', hc.ct_umount_path, binding)
         sh("chmod +x %s", [hc.ct_umount_path])
         sh("chmod +x %s", [hc.ct_mount_path])
         hc.logger.info("Created config #{mount_file_path}")
-        
+
         # start openvz container
         sh("vzctl start %s",[hc.inst_id])
         hc.logger.info("Started container")
@@ -268,7 +271,7 @@ module Dcmgr
 
       def terminate_instance(hc)
         poweroff_instance(hc)
-        
+
         # delete container folder
         sh("vzctl destroy %s",[hc.inst_id])
         hc.logger.debug("delete container folder #{hc.private_dir}")
@@ -284,7 +287,7 @@ module Dcmgr
 
         hc.logger.info("Terminated successfully.")
       end
-      
+
       def reboot_instance(hc)
         # reboot container
         sh("vzctl restart %s", [hc.inst_id])
@@ -300,7 +303,7 @@ module Dcmgr
           sh("vzctl status %s", [hc.inst_id])[:stdout].chomp.include?("down")
         end
         hc.logger.info("Stop container.")
-        
+
         case hc.inst[:image][:file_format]
         when "raw"
           # umount vm image directory
@@ -327,7 +330,7 @@ module Dcmgr
       def poweron_instance(hc)
         run_instance(hc)
       end
-      
+
       def check_instance(i)
         container_status = `vzctl status #{i}`.chomp.split(" ")[4]
         if container_status != "running"

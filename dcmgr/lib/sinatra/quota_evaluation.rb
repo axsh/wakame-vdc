@@ -13,7 +13,7 @@ module Sinatra
   # condition using custom DSL syntax.
   #
   # Typical HTTP request becomes like below:
-  # 
+  #
   # POST /xxxxx HTTP/1.1
   # X-VDC-Account-ID: a-shpoolxx
   # X-VDC-Account-Quota: ["security_groups.count": 5,
@@ -62,7 +62,7 @@ module Sinatra
   #     end
   #   end
   # end
-  # 
+  #
   module QuotaEvaluation
     class << self
 
@@ -72,11 +72,11 @@ module Sinatra
         def self.parse(&blk)
           self.new.tap { |i| i.instance_eval(&blk) }
         end
-        
+
         def initialize
           @tuples = {}
         end
-        
+
         def quota_type(key, &blk)
           raise ArgumentError, "#{key} was set already." if @tuples[key]
           @tuples[key] = QuotaType.parse(&blk)
@@ -100,7 +100,7 @@ module Sinatra
             raise "Need to set fetch and evaluate blocks" if @fetch_block.nil? || @evaluate_block.nil?
             [@fetch_block, @evaluate_block]
           end
-          
+
           def fetch(&blk)
             @fetch_block = blk
           end
@@ -131,7 +131,7 @@ module Sinatra
           tuple = QuotaEvaluation.quota_defs[quota_key]
           raise ArgumentError, "#{quota_key} is unknown quota key. (Defined at around #{caller[3]})" unless tuple
         }
-        
+
         return self if Dcmgr.conf.skip_quota_evaluation
 
         self.condition {
@@ -141,14 +141,14 @@ module Sinatra
           # JSON document. Missing X-VDC-Account-ID header also
           # results in skipping evaluation.
           return true if @quota_request.nil? || @quota_request.empty?
-          
+
           quota_keys.each { |quota_key|
             next unless @quota_request.has_key?(quota_key)
-            
+
             tuple = QuotaEvaluation.quota_defs[quota_key]
             begin
               @current_quota_type = quota_key
-              
+
               if self.instance_exec(self.instance_exec(&tuple[0]), &tuple[1])
                 raise Dcmgr::Endpoints::Errors::ExceedQuotaLimit, "Exceeds quota limitation: #{request.request_method} #{request.path_info} #{@current_quota_type}"
               end
@@ -158,7 +158,7 @@ module Sinatra
           }
           true
         }
-        
+
         self
       end
     end
@@ -174,7 +174,7 @@ module Sinatra
         @quota_request[key]
       end
     end
-    
+
     module NamespacedMethods
       include ClassMethods
     end
@@ -190,7 +190,7 @@ module Sinatra
         # Account quota is the specific values for the account set
         # by X-VDC-Account-ID. The JSON document in
         # X-VDC-Account-Quota should be ignored if the
-        # X-VDC-Account-ID header did not come along with. 
+        # X-VDC-Account-ID header did not come along with.
         if quota_json && request.env.has_key?('HTTP_X_VDC_ACCOUNT_UUID')
           # JSON parse error is expected to raise error and halts
           # further request processing.

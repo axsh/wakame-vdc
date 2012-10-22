@@ -24,7 +24,7 @@ module Dcmgr::Models
         end
       end
     end
-    
+
     def account
       Account[self.account_id]
     end

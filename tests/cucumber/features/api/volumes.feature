@@ -7,11 +7,11 @@ Feature: Volume API
       |          10 | volume1      |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       And the created volumes should reach state available in 60 seconds or less
-    
-    When we make an api delete call to volumes/<registry:uuid> with no options
-    Then the previous api call should be successful  
 
-  @api_from_v12.03  
+    When we make an api delete call to volumes/<registry:uuid> with no options
+    Then the previous api call should be successful
+
+  @api_from_v12.03
   Scenario: Update volume information
     Given a managed volume with the following options
       | volume_size | display_name |
@@ -56,17 +56,17 @@ Feature: Volume API
       | volume_size | display_name |
       |        3001 | volume1      |
     Then the previous api call should not be successful
-  
+
   Scenario: Create maximum size blank volume
     Given a managed volume with the following options
       | volume_size | display_name |
       |        3000 | volume1      |
     Then the previous api call should be successful
-  
+
   Scenario: Attach and Detach volume to Instance
     Given the volume "wmi-lucid6" exists
       And the instance_spec "is-demospec" exists for api until 11.12
-   
+
     When we save to <rule:1shot> the following options
       """
       tcp:22,22,ip4:0.0.0.0/24
@@ -80,17 +80,17 @@ Feature: Volume API
       | download_once | display_name |
       |             0 | group1       |
 
-    When we successfully start an instance of wmi-lucid6 and is-demospec with the new security group and key pair  
+    When we successfully start an instance of wmi-lucid6 and is-demospec with the new security group and key pair
       And the created instance has reached the state "running"
-    
+
     When we make a successful api create call to volumes with the following options
       | volume_size | display_name |
       |          10 | volume1      |
     Then the created volumes should reach state available in 60 seconds or less
-    
+
     When we successfully attach the created volume
     Then the created volumes should reach state attached in 60 seconds or less
-    
+
     When we successfully detach the created volume
     Then the created volumes should reach state available in 60 seconds or less
 
@@ -100,7 +100,7 @@ Feature: Volume API
       |          10 | volume1      |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       And the created volumes should reach state available in 60 seconds or less
- 
+
     When we make an api put call to volumes/<registry:uuid>/backup with no options
     Then from the previous api call take {"uuid":} and save it to <registry:backup_uuid>
     And the backup_objects with id <registry:backup_uuid> should reach state "available" in 60 seconds or less
@@ -111,7 +111,7 @@ Feature: Volume API
       | bo-lucid7        | volume1      |
     Then from the previous api call take {"uuid":} and save it to <registry:uuid>
       And the created volumes should reach state available in 60 seconds or less
- 
+
   @api_from_12.03
   Scenario: List volumes with filter options
     Given a managed volume with the following options

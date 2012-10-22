@@ -48,7 +48,7 @@ module Dcmgr::Models
                        :ipv4 => self.ipv4_i,
                        :description => self.ipv4)
       end
-      
+
       super
     end
 

@@ -13,7 +13,7 @@ module Dcmgr
       def upload_image(inst, ctx, bo, ev_callback)
         raise NotImplementedError
       end
-      
+
       def self.driver_class(hypervisor_name)
         case hypervisor_name.to_s
         when "kvm"
@@ -28,7 +28,7 @@ module Dcmgr
           raise "Unknown hypervisor type: #{hypervisor_name}"
         end
       end
-      
+
     end
   end
 end

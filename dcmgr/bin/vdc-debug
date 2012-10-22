@@ -27,7 +27,7 @@ class ServiceDebug < Isono::NodeModules::Base
 
   config_section do
   end
-  
+
   initialize_hook do
     Dcmgr::Cli::Debug::Base.set_rpc Isono::NodeModules::RpcChannel.new(node)
     Dcmgr::Cli::Debug::Base.set_broadcast Ext::BroadcastChannel.new(node)

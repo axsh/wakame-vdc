@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 class OpenvzConfig
-  
+
   def initialize
     # load vz.conf
     config_file = "/etc/vz/vz.conf"
@@ -13,19 +13,19 @@ class OpenvzConfig
     end
     @config["VE_CONFIG_DIR"] = File.dirname(config_file) + "/conf"
   end
-  
+
   def ve_config_dir
     @config["VE_CONFIG_DIR"]
   end
-  
+
   def ve_root
     File.dirname(@config["VE_ROOT"])
   end
-  
+
   def ve_private
     File.dirname(@config["VE_PRIVATE"])
   end
-  
+
   def template
     @config["TEMPLATE"]
   end
