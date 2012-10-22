@@ -25,13 +25,13 @@
   // model: model,
   paginator_core: {
    type: 'GET',
-   dataType: 'json',
+   dataType: 'json'
   },
 
   paginator_ui: {
    firstPage: 1,
    currentPage: 1,
-   perPage: 10,
+   perPage: 10
    // totalPages: 30
   },
 
@@ -46,7 +46,7 @@
    // },
    'limit': function() { return this.perPage },
 
-   'start': function() { return (this.currentPage * this.perPage) - this.perPage },
+   'start': function() { return (this.currentPage * this.perPage) - this.perPage }
 
    // field to sort by
    // 'orderby': function() {
