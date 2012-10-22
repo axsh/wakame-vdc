@@ -720,7 +720,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
         width:'460px',
         pager:'#pager1',
         autowidth: true,
-        shrinkToFit: false,
+        shrinkToFit: false
        })
     },
     button: load_balancers_active_standby_buttons
