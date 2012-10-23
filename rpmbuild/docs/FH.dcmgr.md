@@ -38,9 +38,9 @@ Filesystem Hierarchy : wakame-vdc-dcmgr-vmapp-config-
 /var/lib/wakame-vdc : Variable state information (optional)
 -----------------------------------------------------------
 
-+ /var/lib/wakame-vdc/tmp/images/
-+ /var/lib/wakame-vdc/tmp/snap/
-+ /var/lib/wakame-vdc/tmp/volumes/
++ /var/lib/wakame-vdc/images/
++ /var/lib/wakame-vdc/snap/
++ /var/lib/wakame-vdc/volumes/
 
 /var/log/wakame-vdc : Log file
 ------------------------------
