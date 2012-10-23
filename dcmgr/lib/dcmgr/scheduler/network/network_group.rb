@@ -6,6 +6,10 @@ module Dcmgr
 
         include Dcmgr::Logger
 
+        ALGORITHMS = [
+          :least_allcation
+        ].freeze
+
         configuration do
           param :network_group_id
           param :algorithm
@@ -13,7 +17,7 @@ module Dcmgr
           on_initialize_hook do
             def validate(errors)
                @config[:algorithm] = :least_allcation if @config[:algorithm].nil?
-               unless [:least_allcation].member? @config[:algorithm]
+               unless ALGORITHMS.member? @config[:algorithm]
                  errors << "Unknown algorithm: #{@config[:algorithm]}"
                end
             end
