@@ -2,6 +2,8 @@
 
 ( function () {
 
+  jQuery.support.cors = true;
+
   _.templateSettings = {
     interpolate: /\{\{(.+?)\}\}/g,
     evaluate: /\{%(.+?)%\}/g,
