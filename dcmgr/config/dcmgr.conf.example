@@ -102,6 +102,7 @@ service_type("std", "StdServiceType") {
   #
   # * :NetworkGroup do
   #     network_group_id 'nwg-shnet'
+  #     algorithm :least_allcation
   #   end
   network_scheduler :PerInstance do
 

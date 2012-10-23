@@ -8,6 +8,16 @@ module Dcmgr
 
         configuration do
           param :network_group_id
+          param :algorithm
+
+          on_initialize_hook do
+            def validate(errors)
+               @config[:algorithm] = :least_allcation if @config[:algorithm].nil?
+               unless [:least_allcation].member? @config[:algorithm]
+                 errors << "Unknown algorithm: #{@config[:algorithm]}"
+               end
+            end
+          end
         end
 
         def schedule(instance)
@@ -32,7 +42,8 @@ module Dcmgr
             logger.info "Candidate networks #{network_candidates}"
 
             # Select the network with the least number of allocated IP.
-            selected_network = network_candidates.min_by {|uuid, ip_nums| ip_nums}
+            selected_network = []
+            selected_network = Algorithm.__send__(options.algorithm, network_candidates)
             network_uuid = selected_network[0]
             logger.info "Select network #{network_uuid}"
 
@@ -52,6 +63,12 @@ module Dcmgr
             retry
           end
 
+        end
+
+        class Algorithm
+          def self.least_allcation(networks)
+            networks.min_by {|uuid, ip_nums| ip_nums}
+          end
         end
       end
     end
