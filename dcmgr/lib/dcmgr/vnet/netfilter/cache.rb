@@ -334,6 +334,10 @@ module Dcmgr
           not vnics.nil?
         end
 
+        def empty_vnics_left_in_network?(network_id)
+          not @cache[:empty_vnics].values.find {|vnic| vnic[:network_id] == network_id }.nil?
+        end
+
         def network_exists?(network_id)
           @cache[:networks].has_key?(network_id)
         end
