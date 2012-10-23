@@ -2,6 +2,7 @@
 
 require 'tmpdir'
 require 'tempfile'
+require 'uri'
 
 module Dcmgr
   module Drivers
@@ -178,8 +179,12 @@ module Dcmgr
         basename ||= begin
                        @ctx.inst[:image][:backup_object][:uuid] + (@suffix ? @suffix : "")
                      end
-
-        File.expand_path(basename, (Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable] ? vmimg_cache_dir : download_tmp_dir))
+        if @bkst_drv_class.include?(BackupStorage::CommandAPI)
+          URI.parse(@ctx.inst[:image][:backup_object][:uri]).path
+        else
+          File.expand_path(basename, (Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable] ? vmimg_cache_dir : download_tmp_dir))
+          dir = Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable] ? vmimg_cache_dir : download_tmp_dir
+        end
       end
 
       def download_to_local_cache(bo)
