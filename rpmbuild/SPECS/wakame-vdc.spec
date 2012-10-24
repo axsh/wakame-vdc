@@ -164,7 +164,6 @@ Requires: pv
 
 # hypervisor:kvm
 %package hva-kvm-vmapp-config
-BuildArch: noarch
 Summary: Configuration set for hva KVM VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
