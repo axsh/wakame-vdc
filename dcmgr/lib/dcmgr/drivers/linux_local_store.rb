@@ -79,7 +79,7 @@ module Dcmgr
         raise "Image file is not ready: #{ctx.os_devpath}" unless File.exist?(ctx.os_devpath)
 
       ensure
-        unless Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable]
+        unless Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable] || @bkst_drv_class.include?(BackupStorage::CommandAPI)
           File.unlink(vmimg_cache_path()) rescue nil
         end
       end
@@ -179,11 +179,10 @@ module Dcmgr
         basename ||= begin
                        @ctx.inst[:image][:backup_object][:uuid] + (@suffix ? @suffix : "")
                      end
-        if @bkst_drv_class.include?(BackupStorage::CommandAPI)
-          URI.parse(@ctx.inst[:image][:backup_object][:uri]).path
-        else
+        if (Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable]) || !@bkst_drv_class.include?(BackupStorage::CommandAPI)
           File.expand_path(basename, (Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable] ? vmimg_cache_dir : download_tmp_dir))
-          dir = Dcmgr.conf.local_store.enable_image_caching && @ctx.inst[:image][:is_cacheable] ? vmimg_cache_dir : download_tmp_dir
+        else
+          URI.parse(@ctx.inst[:image][:backup_object][:uri]).path
         end
       end
 
