@@ -551,6 +551,10 @@ DcmgrGUI.Util.utcToLocal = function(elemid) {
   elem.html(DcmgrGUI.date.utcToLocal(elem.html()));
 };
 
+DcmgrGUI.Util.nl2br = function(value){
+  return value.replace(/(\r\n|\n\r|\r|\n)/g,"<br />");
+};
+
 DcmgrGUI.Event = DcmgrGUI.Class.create({
 
   initialize: function(){
