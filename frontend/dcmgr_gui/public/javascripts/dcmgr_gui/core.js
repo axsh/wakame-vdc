@@ -555,6 +555,10 @@ DcmgrGUI.Util.nl2br = function(value){
   return value.replace(/(\r\n|\n\r|\r|\n)/g,"<br />");
 };
 
+DcmgrGUI.Util.slice = function(length, value){
+  return value.slice(0, length) + '...'
+};
+
 DcmgrGUI.Event = DcmgrGUI.Class.create({
 
   initialize: function(){
