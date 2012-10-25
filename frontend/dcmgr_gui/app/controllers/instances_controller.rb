@@ -46,13 +46,14 @@ class InstancesController < ApplicationController
       # TODO: GUI displays vif monitoring setting interface as a part
       # of instance parameters. It assumes that monitoring parameters
       # is set to the "eth0" device only.
+      p params[:eth0_monitors]
       if params[:eth0_monitors]
         vif_mons = {}
 
         vif_eth0 = data[:vifs]["eth0"] ||= {}
         params[:eth0_monitors].each{ |idx, mon|
-          vif_eth0[:monitors] ||= []
-          vif_eth0[:monitors] << {
+          vif_eth0[:monitors] ||= {}
+          vif_eth0[:monitors][idx] = {
             :protocol=>mon[:protocol],
             :enabled=>((mon[:enabled] && mon[:enabled] == 'true') ? true : false),
             :params => mon[:params],
@@ -166,8 +167,13 @@ class InstancesController < ApplicationController
       instance_id = params[:id]
       data = {
         :display_name => params[:display_name],
-        :security_groups => params[:security_groups]
+        :security_groups => params[:security_groups],
+        :monitoring => {},
       }
+      if params[:monitoring]
+        data[:monitoring][:enabled] = (params[:monitoring][:enabled] == 'true')
+        data[:monitoring][:mail_address] = params[:monitoring][:mail_address]
+      end
       instance = Hijiki::DcmgrResource::Instance.update(instance_id,data)
       render :json => instance
     end

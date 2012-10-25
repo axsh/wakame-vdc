@@ -29,5 +29,20 @@ module Hijiki::DcmgrResource::V1203
       Network.find(network_id).detach(self.uuid)
     end
 
+    def add_monitor(params)
+      self.post("monitors", params).body
+    end
+
+    def delete_monitor(monitor_id)
+      self.delete("monitors/#{monitor_id}").body
+    end
+    
+    def update_monitor(monitor_id, params)
+      self.put("monitors/#{monitor_id}", params).body
+    end
+
+    def list_monitors()
+      self.get("monitors")
+    end
   end
 end

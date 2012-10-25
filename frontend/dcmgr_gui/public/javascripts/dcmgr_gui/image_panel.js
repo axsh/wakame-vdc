@@ -159,17 +159,18 @@ DcmgrGUI.prototype.imagePanel = function(){
       vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
     }
 
-    var data = "image_id="+image_id
-              +"&instance_spec_id="+instance_spec_id
-              +"&host_name="+host_name
-              +"&user_data="+user_data
-              +"&" + security_groups.join('&')
-              +"&" + vifs.join('&')
-              + bt_launch_instance.monitor_selector.queryParams()
-              +"&ssh_key="+ssh_key_pair
-              +"&display_name="+display_name
-              +"&monitoring_enabled="+monitoring_enabled
-              +"&mailaddr="+mailaddr;
+    var data = ["image_id="+image_id,
+                "instance_spec_id="+instance_spec_id,
+                "host_name="+host_name,
+                "user_data="+user_data,
+                security_groups.join('&'),
+                vifs.join('&'),
+                bt_launch_instance.monitor_selector.queryParams(),
+                "ssh_key="+ssh_key_pair,
+                "display_name="+display_name,
+                "monitoring[enabled]="+monitoring_enabled,
+                "monitoring[mail_address]="+mailaddr
+               ].join('&');
 
     request = new DcmgrGUI.Request;
     request.post({
@@ -221,8 +222,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
 
-      var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
-      bt_launch_instance.monitor_selector = monitor_selector;
+      bt_launch_instance.monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
 
       parallel({
         //get instance_specs

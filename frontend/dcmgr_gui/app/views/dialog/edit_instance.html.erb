@@ -77,11 +77,11 @@
       <tbody>
         <tr>
           <td><%= t("dialog.launch_instance.network_service_monitor.monitoring_enabled")%>:</td>
-          <td><input type="checkbox" id="monitoring_enabled"></input></td>
+          <td><input type="checkbox" id="monitoring_enabled" <%= @monitoring['enabled'] == true ? "checked" : "" %>></input></td>
         </tr>
         <tr>
           <td><%= t("dialog.launch_instance.network_service_monitor.mailaddr")%>:</td>
-          <td><input type="text" id="mailaddr"></input></td>
+          <td><input type="text" id="mailaddr", value="<%= @monitoring['mail_address'] %>"></input></td>
         </tr>
       </tbody>
     </table>
