@@ -315,8 +315,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance if instance.nil?
 
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
-      security_group_uuids = params[:security_groups]
-      security_group_uuids = [security_group_uuids] if security_group_uuids.is_a?(String)
+      security_group_uuids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
 
       groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
       # Remove old security groups
