@@ -16,10 +16,8 @@ module Hijiki::DcmgrResource::V1203
                                  :address,
                                  :nat_ip_lease,
                                  :instance_uuid,
-                                 :host_node_id,
                                  :security_groups,
                                 ]
-
 
     def attach(network_id)
       Network.find(network_id).attach(self.uuid)
