@@ -34,7 +34,7 @@ module Dcmgr
           raise Dcmgr::Scheduler::NetworkSchedulingError, "Unknown network group: #{tag_id}" if network_group.nil?
           logger.info "Select network group: '#{tag_id}'."
 
-          networks = network_group.sorted_mapped_uuids.map {|mapped| Dcmgr::Models::Network[mapped.uuid]}
+          networks = network_group.sorted_mapped_uuids.map {|mapped| Dcmgr::Models::Network[mapped.uuid]}.compact
 
           network_candidates = {}
           networks.each {|n|
