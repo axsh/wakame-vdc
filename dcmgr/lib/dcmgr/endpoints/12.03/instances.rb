@@ -198,12 +198,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance.save
 
     # instance_monitor_attr row is created at after_save hook in Instance model.
-    if params[:monitoring_enabled] == 'true'
-      instance.instance_monitor_attr.enabled = true
-    end
-    
-    if params[:monitoring_mailaddr]
-      instance.instance_monitor_attr.mailaddr = params[:monitoring_mailaddr]
+    if params[:monitoring].is_a?(Hash)
+      instance.instance_monitor_attr.enabled = (params[:monitoring][:enabled] == 'true')
+      if params[:monitoring][:mail_address]
+        instance.instance_monitor_attr.mailaddr = params[:monitoring][:mail_address]
+      end
+      instance.instance_monitor_attr.save_changes
     end
     instance.instance_monitor_attr.save_changes
 
@@ -347,7 +347,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       }
     end
 
-    instance.display_name = params[:display_name ] if params[:display_name]
+    if params[:monitoring].is_a?(Hash)
+      if params[:monitoring][:enabled]
+        instance.instance_monitor_attr.enabled = (params[:monitoring][:enabled] == 'true')
+      end
+      if params[:monitoring][:mail_address]
+        instance.instance_monitor_attr.mailaddr = params[:monitoring][:mail_address]
+      end
+      instance.instance_monitor_attr.save_changes
+    end
+
+    instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
     respond_with(R::Instance.new(instance).generate)

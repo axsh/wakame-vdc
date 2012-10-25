@@ -46,6 +46,8 @@ module Dcmgr::Models
 
           if self.params['port'].nil?
             errors.add(:port, "Not found port number")
+          elsif params['port'] !~ /^\d+$/
+            errors.add(:port, "Invalid port number: #{params['port']}")
           elsif !(0 .. 65534).include?(self.params['port'].to_i)
             errors.add(:port, "Out of TCP port range: #{self.port}")
           end
@@ -67,6 +69,8 @@ module Dcmgr::Models
 
           if self.params['port'].nil?
             errors.add(:port, "Not found port number")
+          elsif params['port'] !~ /^\d+$/
+            errors.add(:port, "Invalid port number: #{params['port']}")
           elsif !(0 .. 65534).include?(self.params['port'].to_i)
             errors.add(:port, "Out of TCP port range: #{self.port}")
           end
@@ -153,7 +157,9 @@ module Dcmgr::Models
 
     def before_validation
       # Set default title like "HTTP1", "HTTP2" if not assigned.
-      self.title ||= self.protocol.upcase + (self.class.alives.filter(:network_vif_id=>self.network_vif_id, :protocol=>self.protocol).count.to_i + 1).to_s
+      if self.title.nil? || self.title == ""
+        self.title = self.protocol.upcase + (self.class.alives.filter(:network_vif_id=>self.network_vif_id, :protocol=>self.protocol).count.to_i + 1).to_s
+      end
       send("#{model.sti_key}=", model.sti_key_map[model]) unless self[model.sti_key]
       super
     end

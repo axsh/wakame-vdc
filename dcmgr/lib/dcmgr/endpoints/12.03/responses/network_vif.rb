@@ -11,15 +11,18 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @network_vif.instance_exec {
-        to_hash.merge({:id=>canonical_uuid,
-                        :network_id => self.network.nil? ? nil : self.network.canonical_uuid,
-                        :instance_id => self.instance.nil? ? nil : self.instance.canonical_uuid,
-                        :security_groups => self.security_groups.map{|sg| sg.canonical_uuid },
-                        :mac_addr => self.pretty_mac_addr,
-                        :network_monitors => network_vif_monitors.map {|m|
-                          NetworkVifMonitor.new(m).generate
-                        }
-                      })
+        {:id=>canonical_uuid,
+          :uuid=>canonical_uuid,
+          :ipv4_address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
+          :nat_ipv4_address => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
+          :network_id => self.network.nil? ? nil : self.network.canonical_uuid,
+          :instance_id => self.instance.nil? ? nil : self.instance.canonical_uuid,
+          :security_groups => self.security_groups.map{|sg| sg.canonical_uuid },
+          :mac_addr => self.pretty_mac_addr,
+          :network_monitors => network_vif_monitors_dataset.alives.all.map {|m|
+            NetworkVifMonitor.new(m).generate
+          }
+        }
       }
     end
   end
