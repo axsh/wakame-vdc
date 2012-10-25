@@ -67,7 +67,7 @@ class Network < Base
   end
 
   desc "modify UUID [options]", "Update network information"
-  method_option :ipv4_network, :type => :string, :required=>true, :desc => "IPv4 network address"
+  method_option :ipv4_network, :type => :string, :desc => "IPv4 network address"
   method_option :ipv4_gw, :type => :string, :desc => "Gateway address for IPv4 network"
   method_option :prefix, :type => :numeric, :desc => "IP network mask size (1 < prefix < 32)"
   method_option :domain, :type => :string, :desc => "DNS domain name of the network"
@@ -82,7 +82,7 @@ class Network < Base
   method_option :service_type, :type => :string, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :desc => "Display name of the network"
   def modify(uuid)
-    validate_ipv4_range
+    validate_ipv4_range if options[:ipv4_network]
 
     fields = map_network_params
 
