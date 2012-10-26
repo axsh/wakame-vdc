@@ -4,12 +4,12 @@
      app.collections.paginatedItems = new app.collections.PaginatedCollection({
 
        model: app.models.Item.extend({
-         urlRoot: app.info.api_endpoints.dcmgr + '/api/12.03/host_nodes.json',
+         urlRoot: app.info.api_endpoints.dcmgr + '/api/12.03/host_nodes.json'
        }),
 
        server_api: {
-	 id: app.utils.parsedSearch('q'),
-	 status: app.utils.parsedSearch('status'),
+         id: app.utils.parsedSearch('q'),
+         status: app.utils.parsedSearch('status')
        },
 
        paginator_core: {

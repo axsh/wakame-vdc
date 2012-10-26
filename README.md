@@ -31,6 +31,11 @@ Features:
 * Management
  * Per Account Quota
 
+Install
+-------
+
+* RPM (RHEL6/CentOS6)
+ * https://github.com/axsh/wakame-vdc/tree/master/rpmbuild
 
 Required Components
 --------------------
