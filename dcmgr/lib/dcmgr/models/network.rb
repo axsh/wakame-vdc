@@ -237,6 +237,7 @@ module Dcmgr::Models
 
     def to_netfilter_document
       {
+        :uuid => self.canonical_uuid,
         :ipv4_gw => self.ipv4_gw,
         :prefix => self.prefix,
         :dns_server => self.dns_server,
