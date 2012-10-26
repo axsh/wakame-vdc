@@ -120,7 +120,7 @@ DcmgrGUI.prototype.instancePanel = function(){
         var is_ready = {
           'display_name' : true,
           'security_groups' : true,
-          'networks' : true,
+          'networks' : true
         }
         var on_ready = function(size){
           if(size > 0) {
@@ -217,7 +217,7 @@ DcmgrGUI.prototype.instancePanel = function(){
                 if (json.vif.length > 0) {
                   selected_groups = json.vif[0]['security_groups']
                 }
-              },
+              }
             })
             
             request.get({
@@ -338,7 +338,7 @@ DcmgrGUI.prototype.instancePanel = function(){
     height:200,
     title:$.i18n.prop('start_instances_header'),
     path:'/start_instances',
-    button:{},
+    button:{}
   });
   bt_instance_start.button[$.i18n.prop('close_button')]=function() { $(this).dialog("close"); };
   bt_instance_start.button[$.i18n.prop('start_button')]=function() {

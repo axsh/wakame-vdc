@@ -1659,11 +1659,18 @@ body{
 }
 
 #notifications li {
-  padding: 10px 0px 10px 0px
+  padding: 10px 0px 5px 0px
 }
 
 #notification .notification_date {
   padding-top: 5px
+}
+
+#notifications h4 {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 5px;
+  border-bottom: solid 2px darkGray;
 }
 
 .error_message {

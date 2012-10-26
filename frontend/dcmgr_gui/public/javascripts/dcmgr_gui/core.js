@@ -149,11 +149,11 @@ DcmgrGUI.date.getI18n = function(date_str){
     return ("0" + value).slice(-2);
   }
 
-  return $.i18n.prop('display_date', [date_str.getUTCFullYear(), 
-                                   convert(date_str.getMonth() + 1), 
-                                   convert(date_str.getDate()), 
-                                   convert(date_str.getHours()), 
-                                   convert(date_str.getMinutes()), 
+  return $.i18n.prop('display_date', [date_str.getUTCFullYear(),
+                                   convert(date_str.getMonth() + 1),
+                                   convert(date_str.getDate()),
+                                   convert(date_str.getHours()),
+                                   convert(date_str.getMinutes()),
                                    convert(date_str.getSeconds())
                                    ]);
 };
@@ -549,6 +549,14 @@ DcmgrGUI.Util.checkTextField = function(e) {
 DcmgrGUI.Util.utcToLocal = function(elemid) {
   var elem = $(elemid);
   elem.html(DcmgrGUI.date.utcToLocal(elem.html()));
+};
+
+DcmgrGUI.Util.nl2br = function(value){
+  return value.replace(/(\r\n|\n\r|\r|\n)/g,"<br />");
+};
+
+DcmgrGUI.Util.slice = function(length, value){
+  return value.slice(0, length) + '...'
 };
 
 DcmgrGUI.Event = DcmgrGUI.Class.create({
@@ -1017,12 +1025,12 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
 
     // place holder variable for event handlers.
     var item_props = {"protocol":protocol,
-                      'idx': idx,
+                      'idx': idx
                      };
     this.monitor_list.push(item_props);
 
     var tr_tag = $('#monitor_selector_tmpl').tmpl({idx: idx,
-                                                   itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS(),
+                                                   itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()
                                                   });
     tr_tag.appendTo(this.render_target);
     tr_tag.find('.del_monitor_item').first().bind('click', function(e){
@@ -1059,7 +1067,7 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     }
 
     return res;
-  },
+  }
 });
 
 DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
@@ -1070,7 +1078,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "";
-      },
+      }
     },
     'http': {
       title: "HTTP",
@@ -1081,7 +1089,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
           "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
-      },
+      }
     },
     'https': {
       title: "HTTPS",
@@ -1092,7 +1100,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
           "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
-      },
+      }
     },
     'ftp': {
       title: "FTP",
@@ -1101,7 +1109,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      },
+      }
     },
     'ssh': {
       title: "SSH",
@@ -1110,7 +1118,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      },
+      }
     },
     'smtp': {
       title: "SMTP",
@@ -1119,7 +1127,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      },
+      }
     },
     'pop3': {
       title: "POP3",
@@ -1128,7 +1136,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      },
+      }
     },
     'imap': {
       title: "IMAP",
@@ -1137,7 +1145,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      },
+      }
     },
     'submission': {
       title: "Submission",
@@ -1146,7 +1154,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      },
+      }
     },
     'dns': {
       title: "DNS",
@@ -1156,7 +1164,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]=53&eth0_monitors["+idx+"][params][query_record]"+$(row_elem).find('._query_record').val();
-      },
+      }
     },
     'mysql': {
       title: "MySQL",
@@ -1165,7 +1173,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      },
+      }
     },
     'postgresql': {
       title: "PostgreSQL",
@@ -1174,7 +1182,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      },
+      }
     }
   };
 };
