@@ -2,6 +2,8 @@
 
 ( function () {
 
+  jQuery.support.cors = true;
+
   _.templateSettings = {
     interpolate: /\{\{(.+?)\}\}/g,
     evaluate: /\{%(.+?)%\}/g,
@@ -61,7 +63,7 @@
         dateFormat: 'yy/mm/dd',
         stepHour: 2,
         stepMinute: 10,
-        stepSecond: 10,
+        stepSecond: 10
       });
 
       this.el.unbind('focus');
