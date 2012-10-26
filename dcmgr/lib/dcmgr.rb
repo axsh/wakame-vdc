@@ -249,7 +249,6 @@ module Dcmgr
 
   require 'dcmgr/vnet'
   module VNet
-    autoload :TaskFactory, 'dcmgr/vnet/factories'
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
 
     module NetworkModes
