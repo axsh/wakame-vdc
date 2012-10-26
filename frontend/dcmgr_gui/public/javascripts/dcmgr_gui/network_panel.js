@@ -10,7 +10,7 @@ DcmgrGUI.prototype.networkPanel = function(){
   DcmgrGUI.List.prototype.getEmptyData = function(){
     return [{
       "uuid":'',
-      "created_at":'',
+      "created_at":''
     }]
   }
   
@@ -18,7 +18,7 @@ DcmgrGUI.prototype.networkPanel = function(){
     return {
       "uuid" : "-",
       "created_at" : "-",
-      "updated_at" : "-",
+      "updated_at" : "-"
     }
   }
 
@@ -287,8 +287,8 @@ DcmgrGUI.prototype.networkPanel = function(){
       var request = new DcmgrGUI.Request;
       var is_ready = {
         'dc_network': false,
-        'display_name': false,
-      }      
+        'display_name': false
+      }
 
       var ready = function(data) {
         if(data['dc_network'] == true &&
@@ -359,7 +359,7 @@ DcmgrGUI.prototype.networkPanel = function(){
               is_ready['dc_network'] = true;
               ready(is_ready);
             }
-          }),
+          })
 
       });
 

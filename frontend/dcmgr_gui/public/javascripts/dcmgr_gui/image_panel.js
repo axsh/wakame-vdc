@@ -284,7 +284,7 @@ DcmgrGUI.prototype.imagePanel = function(){
                 data.push({
                   "value" : results[i].result.uuid,
                   "id"    : results[i].result.uuid,
-                  "name"  : results[i].result.display_name,
+                  "name"  : results[i].result.display_name
                 });
               }
 
