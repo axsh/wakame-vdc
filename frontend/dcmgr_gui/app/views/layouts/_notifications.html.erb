@@ -4,7 +4,7 @@
     <div class="maincontent">
       <ul id="notifications">
       <% @notifications.each do |notification| %>
-      <li><b><%= notification.title %></b> <div class="notification_date"><%= notification.display_begin_at %> ~ <%= notification.display_end_at %></div><hr /><%= notification.article %></li>
+      <li><b><%= notification.title %></b><hr /><%= notification.article %></li>
       <% end %>
       </ul>
     </div>
