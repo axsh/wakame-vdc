@@ -99,7 +99,7 @@
         <div class="controls">
           <label class="control-label" for="textarea">記事</label>
           {% if(is_confirmed) { %}
-          <div id="controles">{{article}}</div>
+          <div id="controles">{{ app.helpers.nl2br(article) }}</div>
           {% } else { %}
           <textarea class="span7 input-xlarge" id="article" name='article' rows="5">{{article}}</textarea>
           {% if( _.has(errors,'article') ){  %}
