@@ -252,6 +252,11 @@ module Dcmgr
     autoload :TaskFactory, 'dcmgr/vnet/factories'
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
 
+    module NetworkModes
+      autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
+      autoload :PassThrough, 'dcmgr/vnet/network_modes/passthrough'
+    end
+
     module Netfilter
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'
       autoload :Chain, 'dcmgr/vnet/netfilter/chain'

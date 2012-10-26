@@ -43,5 +43,31 @@ module Dcmgr
       end
     end
 
+    module NetworkModes
+      include Dcmgr::Logger
+
+      class ServiceTypeNotFoundError < StandardError
+      end
+
+      def get_type(mode_name)
+        #TODO: Use constants for these names
+        case type_name
+        when "securitygroup"
+          logger.debug "Selecting SecurityGroup network mode"
+          SecurityGroup.new
+        #TODO: change to passthrough
+        when "passthru"
+          logger.debug "Selecting passthrough network mode"
+          Passthrough.new
+        when "e2overlay"
+          logger.warning "e2overlay network mode is not yet implemented. Falling back to securitygroup."
+          SecurityGroup.new
+        else
+          #TODO: Load constants to show valid types
+          raise NetworkModeNotFoundError, "Network mode #{mode_name} doesn't exist."
+        end
+      end
+    end
+
   end
 end
