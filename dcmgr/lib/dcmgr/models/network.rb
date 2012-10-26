@@ -242,7 +242,8 @@ module Dcmgr::Models
         :dns_server => self.dns_server,
         :dhcp_server => self.dhcp_server,
         :metadata_server => self.metadata_server,
-        :metadata_server_port => self.metadata_server_port
+        :metadata_server_port => self.metadata_server_port,
+        :network_mode => self.network_mode
       }
     end
 
