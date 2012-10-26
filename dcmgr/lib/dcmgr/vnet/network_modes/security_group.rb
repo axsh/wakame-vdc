@@ -3,10 +3,12 @@
 module Dcmgr::VNet::NetworkModes
 
   class SecurityGroup
-    extend Dcmgr::Helpers::NicHelper
-    include V::Tasks
+    include Dcmgr::Helpers::NicHelper
+    include Dcmgr::VNet::Tasks
 
-    def netfilter_tasks(vnic,network,friends,security_groups,node)
+    def netfilter_all_tasks(vnic,network,friends,security_groups,node)
+      tasks = []
+
       host_addr = Isono::Util.default_gw_ipaddr
       enable_logging = Dcmgr.conf.packet_drop_log
       ipset_enabled = Dcmgr.conf.use_ipset
@@ -45,9 +47,11 @@ module Dcmgr::VNet::NetworkModes
         ref_vnics = secgroup[:referencers].values.map {|rg| rg.values}.flatten.uniq
         tasks += self.netfilter_arp_isolation_tasks(vnic,ref_vnics,node)
       }
+
+      tasks
     end
 
-    def netfilter_nat_tasks(vnic,network_node)
+    def netfilter_nat_tasks(vnic,network,node)
       tasks = []
 
       # Nat tasks
@@ -88,7 +92,7 @@ module Dcmgr::VNet::NetworkModes
     end
 
     def netfilter_secgroup_tasks(secgroup)
-      [SecurityGroup.new(secgroup)]
+      [Dcmgr::VNet::Tasks::SecurityGroup.new(secgroup)]
     end
 
     def netfilter_drop_tasks(vnic,node)
