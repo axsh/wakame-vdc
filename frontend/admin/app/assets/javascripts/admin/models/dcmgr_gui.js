@@ -23,6 +23,10 @@
         this.errors['display_date'] = "掲載期間が未入力です。";
       }
 
+      if(Date.parse(attrs.display_begin_at) > Date.parse(attrs.display_end_at)) {
+        this.errors['display_date'] = "無効な掲載期間です。";
+      }
+
       if(attrs.article == '') {
         this.errors['article'] = "記事が未入力です。";
       }
