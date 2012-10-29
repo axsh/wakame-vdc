@@ -6,6 +6,7 @@ module Dcmgr::Cli
 class Network < Base
   namespace :network
   M=Dcmgr::Models
+  NConst=Dcmgr::Constants::Network
 
   no_tasks {
     def validate_ipv4_range
@@ -49,7 +50,7 @@ class Network < Base
   method_option :description, :type => :string,  :desc => "Description for the network"
   method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
   method_option :metric, :type => :numeric, :default=>100, :desc => "Routing priority order of this network segment"
-  method_option :network_mode, :type => :string, :default=>'securitygroup', :desc => "Network mode: #{M::Network::NETWORK_MODES.join(', ')}"
+  method_option :network_mode, :type => :string, :default=>'securitygroup', :desc => "Network mode: #{NConst::NETWORK_MODES.join(', ')}"
   method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :required => true, :desc => "Display name of the network"
   method_option :ip_assignment, :type => :string, :default=>'asc', :desc => "How to assign the IP address of the network"
@@ -78,7 +79,7 @@ class Network < Base
   method_option :bandwidth, :type => :numeric, :desc => "The maximum bandwidth for the network in Mbit/s"
   method_option :description, :type => :string, :desc => "Description for the network"
   method_option :account_id, :type => :string, :desc => "The account ID to own this"
-  method_option :network_mode, :type => :string, :desc => "Network mode: #{M::Network::NETWORK_MODES.join(', ')}"
+  method_option :network_mode, :type => :string, :desc => "Network mode: #{NConst::NETWORK_MODES.join(', ')}"
   method_option :service_type, :type => :string, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :desc => "Display name of the network"
   def modify(uuid)
@@ -308,14 +309,14 @@ __END
       super(M::DcNetwork, dc.canonical_uuid, options.dup)
     end
 
-    desc "add-network-mode UUID/NAME MODENAME", "Add network mode (#{M::Network::NETWORK_MODES.join(', ')})"
+    desc "add-network-mode UUID/NAME MODENAME", "Add network mode (#{NConst::NETWORK_MODES.join(', ')})"
     def add_network_mode(uuid, modename)
       dc = find_by_name_or_uuid(uuid)
       dc.offering_network_modes.push(modename)
       dc.save
     end
 
-    desc "del-network-mode UUID/NAME MODENAME", "Delete network mode (#{M::Network::NETWORK_MODES.join(', ')})"
+    desc "del-network-mode UUID/NAME MODENAME", "Delete network mode (#{NConst::NETWORK_MODES.join(', ')})"
     def del_network_mode(uuid, modename)
       dc = find_by_name_or_uuid(uuid)
       dc.offering_network_modes.delete(modename)

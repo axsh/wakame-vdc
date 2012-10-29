@@ -34,6 +34,7 @@ module Dcmgr
     end
 
     autoload :Instance, 'dcmgr/constants/instance'
+    autoload :Network, 'dcmgr/constants/network'
   end
   Const = Constants
 

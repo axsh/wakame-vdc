@@ -45,26 +45,24 @@ module Dcmgr
 
     module NetworkModes
       include Dcmgr::Logger
+      include Dcmgr::Constants::Network
 
       class NetworkModeNotFoundError < StandardError
       end
 
       def self.get_mode(mode_name)
-        #TODO: Use constants for these names
         case mode_name
-        when "securitygroup"
+        when NM_SECURITYGROUP
           logger.debug "Selecting SecurityGroup network mode"
           SecurityGroup.new
-        #TODO: change to passthrough
-        when "passthru"
+        when NM_PASSTHROUGH
           logger.debug "Selecting passthrough network mode"
           PassThrough.new
-        when "l2overlay"
-          logger.info "Warning: e2overlay network mode is not yet implemented. Falling back to SecurityGroup."
+        when NM_L2OVERLAY
+          logger.info "Warning: #{NM_L2OVERLAY} network mode is not yet implemented. Falling back to #{NM_SECURITYGROUP}."
           SecurityGroup.new
         else
-          #TODO: Load constants to show valid types
-          raise NetworkModeNotFoundError, "Network mode #{mode_name} doesn't exist."
+          raise NetworkModeNotFoundError, "Network mode #{mode_name} doesn't exist. Valid network modes: #{NETWORK_MODES.join(',')}"
         end
       end
     end

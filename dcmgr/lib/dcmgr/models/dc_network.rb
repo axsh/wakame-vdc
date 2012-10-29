@@ -3,6 +3,7 @@
 module Dcmgr::Models
   # Datacenter network definition
   class DcNetwork < BaseNew
+    include Dcmgr::Constants::Network
     taggable('dcn')
 
     one_to_many :networks
@@ -28,7 +29,7 @@ module Dcmgr::Models
       end
 
       # Array#& operator conflicts with Sequel Query DSL....
-      unknown_list = self.offering_network_modes.find_all{ |i| !Network::NETWORK_MODES.member?(i.to_sym) }
+      unknown_list = self.offering_network_modes.find_all{ |i| !NETWORK_MODES.member?(i) }
       unless unknown_list.empty?
         errors.add(:offering_network_modes, "Unknown network modes: #{unknown_list.join(', ')}")
       end
