@@ -256,6 +256,7 @@ module Dcmgr
     module NetworkModes
       autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
       autoload :PassThrough, 'dcmgr/vnet/network_modes/passthrough'
+      autoload :L2Overlay, 'dcmgr/vnet/network_modes/l2overlay'
     end
 
     module Netfilter

@@ -53,14 +53,14 @@ module Dcmgr
       def self.get_mode(mode_name)
         case mode_name
         when NM_SECURITYGROUP
-          logger.debug "Selecting SecurityGroup network mode"
+          logger.debug "Selecting #{NM_SECURITYGROUP} network mode"
           SecurityGroup.new
         when NM_PASSTHROUGH
-          logger.debug "Selecting passthrough network mode"
+          logger.debug "Selecting #{NM_PASSTHROUGH} network mode"
           PassThrough.new
         when NM_L2OVERLAY
-          logger.info "Warning: #{NM_L2OVERLAY} network mode is not yet implemented. Falling back to #{NM_SECURITYGROUP}."
-          SecurityGroup.new
+          logger.debug "Selecting #{NM_L2OVERLAY} network mode"
+          L2Overlay.new
         else
           raise NetworkModeNotFoundError, "Network mode #{mode_name} doesn't exist. Valid network modes: #{NETWORK_MODES.join(',')}"
         end
