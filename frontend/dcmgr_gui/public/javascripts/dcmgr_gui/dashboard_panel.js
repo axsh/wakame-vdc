@@ -1,10 +1,12 @@
 DcmgrGUI.prototype.dashboardPanel = function(){
-  
+
   var bt_refresh  = new DcmgrGUI.Refresh();
   var loading_image = DcmgrGUI.Util.getLoadingImage('ball');
-  
+  var notification_title_length = 28;
+  var title_set = {};
+
   bt_refresh.element.bind('dcmgrGUI.refresh', function(){
-    
+
     $("#total_instance").empty().html(loading_image);
     $("#total_image").empty().html(loading_image);
     $("#total_volume").empty().html(loading_image);
@@ -37,6 +39,28 @@ DcmgrGUI.prototype.dashboardPanel = function(){
         fill_usage('#total_load_balancer', 'load_balancer.count');
       }
     });
+  });
+
+  $('.article').hide();
+  $('.notification_title').click(function(){
+    var current_id = $(this).attr('for');
+    var article_id = '#article-' + current_id;
+    var title = title_set[current_id];
+    if ($(article_id).is(':hidden')) {
+      $(this).html(title);
+    } else {
+      $(this).html(DcmgrGUI.Util.slice(notification_title_length, title));
+    }
+    $(article_id).slideToggle();
+  });
+
+  $('.notification_title').each(function(){
+    var title = $(this).html();
+    var current_id = $(this).attr('for');
+    title_set[current_id] = title;
+    if(title.length >= notification_title_length) {
+      $(this).html(DcmgrGUI.Util.slice(notification_title_length, title));
+    }
   });
 
   $(bt_refresh.target).button({ disabled: false });

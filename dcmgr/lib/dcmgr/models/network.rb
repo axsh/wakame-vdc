@@ -105,6 +105,10 @@ module Dcmgr::Models
       self.ipv4_ipaddress.hosts.size - self.network_vif_ip_lease_dataset.count
     end
 
+    def allocated_ip_nums
+      self.network_vif_ip_lease_dataset.exclude(:alloc_type=>NetworkVifIpLease::TYPE_RESERVED).alives.count
+    end
+
     def ipv4_u32_dynamic_range_array
       ary=[]
       dhcp_range_dataset.each { |r|

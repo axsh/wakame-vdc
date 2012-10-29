@@ -15,7 +15,7 @@ module Dcmgr::Drivers
     end
 
     def upload_command(src_path, dst_bo)
-      ["> %s", [normalize_path(abs_path(dst_bo))]]
+      ["cat > %s", [normalize_path(abs_path(dst_bo))]]
     end
 
     def download(src_bo, dst_path)
@@ -32,7 +32,8 @@ module Dcmgr::Drivers
 
     private
     def abs_path(bo)
-      (Dcmgr.conf.backup_storage.local_storage_dir || bo[:backup_storage][:base_uri]) + bo[:object_key]
+      path = Dcmgr.conf.backup_storage.local_storage_dir if Dcmgr.conf.respond_to?(:backup_storage)
+      path || bo[:backup_storage][:base_uri] + bo[:object_key]
     end
 
     def normalize_path(path)

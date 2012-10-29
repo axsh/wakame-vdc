@@ -36,7 +36,6 @@ Ruby binaries
 -----------------------------------------------------------
 
 + /var/lib/wakame-vdc/
-+ /var/lib/wakame-vdc/tmp/
 
 /var/log : Log directory
 ------------------------

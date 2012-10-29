@@ -20,7 +20,8 @@ Filesystem Hierarchy : wakame-vdc-hva-*-vmapp-config
 /var/lib/wakame-vdc : Variable state information (optional)
 -----------------------------------------------------------
 
-+ /var/lib/wakame-vdc/tmp/instances
++ /var/lib/wakame-vdc/instances
++ /var/lib/wakame-vdc/instances/tmp
 
 /var/log/wakame-vdc : Log file
 ------------------------------

@@ -108,7 +108,7 @@ module Dcmgr
       # # Raise exception at non-zero exit.
       # shell.run!("ls /dontexist")
       def shell
-        if respond_to?(:task_session) && self.task_session[:shell_runner_class].is_a?(Class)
+        if respond_to?(:task_session) && self.task_session && self.task_session[:shell_runner_class].is_a?(Class)
           unless self.task_session[:shell_runner_class] < ShellRunner
             raise TypeError, "Invalid ShellRunner class is set: #{self.task_session[:shell_runner_class]}"
           end
