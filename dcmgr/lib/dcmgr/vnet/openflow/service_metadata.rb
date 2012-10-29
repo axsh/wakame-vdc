@@ -27,7 +27,7 @@ module Dcmgr::VNet::OpenFlow
       port_number = port.port_info.number
       local_hw = port.port_info.hw_addr
 
-      logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{ip.to_s}/#{listen_port}."
+      logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{self.ip.to_s}/#{listen_port}."
 
       # This needs to be per-network handler.
       network.packet_handlers <<
