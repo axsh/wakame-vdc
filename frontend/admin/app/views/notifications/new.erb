@@ -20,7 +20,11 @@
   <div id="notify" class='notifications top-right'></div>
   <form action="#" method="POST" class="well form-query">
   <div class="control-group">
+    {% if(is_new) { %}
     <legend>お知らせ新規登録</legend>
+    {% } else { %}
+    <legend>お知らせ編集</legend>
+    {% } %}
   </div>
   <div class="control-group">
     <div class="control-group">

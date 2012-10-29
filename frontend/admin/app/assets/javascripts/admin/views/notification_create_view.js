@@ -22,6 +22,7 @@
         var notification_id = location.pathname.split('/')[2];
         this.model = new this.model({
           is_confirmed: false,
+          is_new: true,
           distribution: 'all',
           title: '',
           article: '',
