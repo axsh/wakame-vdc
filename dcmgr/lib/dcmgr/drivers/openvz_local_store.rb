@@ -9,8 +9,15 @@ module Dcmgr
 
       def upload_image(inst, ctx, bo, evcb)
         ctx = Openvz::OvzContext.new(ctx)
-        cgroup_context(:subsystem=>'blkio', :scope=>ctx.ctid) do
-          super
+        case inst[:state]
+          when 'running'
+            cgroup_context(:subsystem=>'blkio', :scope=>ctx.ctid) do
+              super
+            end
+          when 'halted'
+            super
+          else
+            raise "Unsupported instance state: #{inst[:state]}"
         end
       end
 
