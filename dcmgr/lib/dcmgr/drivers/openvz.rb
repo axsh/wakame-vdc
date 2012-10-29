@@ -174,6 +174,8 @@ module Dcmgr
             # root device
             root_device = new_device_file & device_file_list
             raise "root device does not exist #{image[:root_device]}" if root_device.empty?
+
+            check_fs(root_device[0])
             sh("mount %s %s", [root_device[0], private_folder])
 
             # Write root partition identifier to instance data dir for the failure recovery script
@@ -243,8 +245,10 @@ module Dcmgr
           raise "Unexpected result from kpartx: #{res[:stdout]}"
         end
         sh("udevadm settle")
+
         # save the loop device name for the metadata drive.
         File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
+        check_fs(lodev)
         sh("mount -o ro %s %s", [lodev, ve_metadata_path])
 
         # generate openvz mount config
