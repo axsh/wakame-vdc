@@ -25,7 +25,8 @@ class Notification < BaseNew
     else
       dataset = self.filter(:distribution => 'all')
     end
-    dataset.order(:updated_at.desc)
+    timenow = Time.now.utc
+    dataset.filter("`notifications`.`display_begin_at` <= ?", timenow).filter("`notifications`.`display_end_at` >= ?", timenow).order(:updated_at.desc)
   end
 
   def validate
