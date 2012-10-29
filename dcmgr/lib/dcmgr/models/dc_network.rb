@@ -18,7 +18,7 @@ module Dcmgr::Models
     end
 
     def before_validation
-      self.offering_network_modes ||= ['passthru']
+      self.offering_network_modes ||= [NM_PASSTHROUGH]
       self.offering_network_modes.uniq!
       super
     end

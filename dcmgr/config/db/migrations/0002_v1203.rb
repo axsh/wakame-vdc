@@ -32,7 +32,7 @@ Sequel.migration do
       # this is a physical device attribute associated to the host OS.
       drop_column :link_interface
       # mode name of network isolation/usage model:
-      #    securitygroup, l2overlay, passthru
+      #    securitygroup, l2overlay, passthrough
       add_column :network_mode, 'varchar(255)', :null=>false
       # physical_networks table has been renamed to dc_networks.
       rename_column :physical_network_id, :dc_network_id
