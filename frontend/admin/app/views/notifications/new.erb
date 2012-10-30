@@ -45,7 +45,8 @@
       </label>
       <div class="control form-search">
         <div class="control-group" id="control_option_users">
-          <textarea class="input-xlarge" id="input_users" name="input_users" rows="5">{{users}}</textarea>
+          <br /><span class="help-inline" id="inputWarning">サンプル)u-xxxxxxxx,u-yyyyyyyy</span>
+          <br /><textarea class="input-xlarge" id="input_users" name="input_users" rows="5">{{users}}</textarea>
           {% if( _.has(errors,'users') ){  %}
           <br /><span class="help-inline">{{ errors['users'] }}</span>
           {% } %}
