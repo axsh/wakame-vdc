@@ -70,7 +70,6 @@ module Dcmgr
         def features_reply datapath_id, message
           raise "No switch found." unless switches.has_key? datapath_id
           switches[datapath_id].features_reply message
-          switches[datapath_id].networks.each { |network| network[1].update }
         end
 
         def insert_port switch, port
