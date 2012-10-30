@@ -4,7 +4,11 @@
     <div class="maincontent">
       <ul id="notifications">
       <% @notifications.each do |notification| %>
-      <li><b><%= notification.title %></b> <div class="notification_date"><%= notification.display_begin_at %> ~ <%= notification.display_end_at %></div><hr /><%= notification.article %></li>
+      <li><h4><a href="#<%= notification.id %>"><label class="notification_title" for="<%= notification.id %>"><%= notification.title %></label></a></h4>
+      <div id="article-<%= notification.id %>" class="article">
+      <%= nl2br(notification.article) %>
+      </div>
+      </li>
       <% end %>
       </ul>
     </div>

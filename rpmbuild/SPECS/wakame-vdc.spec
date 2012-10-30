@@ -164,7 +164,6 @@ Requires: pv
 
 # hypervisor:kvm
 %package hva-kvm-vmapp-config
-BuildArch: noarch
 Summary: Configuration set for hva KVM VM appliance
 Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
@@ -192,6 +191,10 @@ Group: Development/Languages
 Requires: %{oname}-hva-common-vmapp-config = %{version}-%{release}
 Requires: vzkernel = 2.6.32-042stab055.16
 Requires: vzctl = 3.3-1
+Requires: vzctl-lib = 3.3-1
+Requires: vzquota = 3.1-1
+Requires: ploop = 1.4-1
+Requires: ploop-lib = 1.4-1
 %description  hva-openvz-vmapp-config
 <insert long description, indented with spaces>
 
