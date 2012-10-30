@@ -23,9 +23,20 @@ module Dcmgr
           @rpc ||= Isono::NodeModules::RpcChannel.new(@node)
         end
 
+        #****************#
+        # Helper methods #
+        #****************#
+
         def deep_clone(something)
           Marshal.load(Marshal.dump(something))
         end
+        private :deep_clone
+
+        def add_network_mode(network)
+          logger.debug "Setting network mode for '#{network[:uuid]}'"
+          network[:network_mode_class] = Dcmgr::VNet::NetworkModes.get_mode(network[:network_mode])
+        end
+        private :add_network_mode
 
         #***********************#
         # Update methods        #
@@ -36,7 +47,9 @@ module Dcmgr
         def update
           logger.info "updating cache from database"
           @cache = @rpc.request('hva-collector', 'get_netfilter_data', @node.node_id)
-          #logger.debug @cache
+
+          @cache[:networks].each {|k,v| add_network_mode(v) }
+
           nil
         end
 
@@ -84,6 +97,7 @@ module Dcmgr
           unless @cache[:networks].has_key?(network_id)
             nw = @rpc.request('hva-collector', 'get_netfilter_network', network_id)
             raise NetworkNotFoundError, "Network #{network_id} doesn't exit" if nw.nil?
+            add_network_mode(nw)
             @cache[:networks][network_id] = nw
           end
         end
@@ -487,6 +501,11 @@ module Dcmgr
 
         def get_network(network_id)
           deep_clone @cache[:networks][network_id]
+        end
+
+        def get_vnic_network_mode(vnic_id)
+          network_id = get_vnic(vnic_id)[:network_id]
+          @cache[:networks][network_id][:network_mode_class]
         end
 
         #################
