@@ -8,11 +8,7 @@ module Dcmgr::Models
     taggable 'nw'
     accept_service_type
 
-    # Network Usage Mode. (Isolation/Firewall)
-    #   securitygroup: security grouped network.
-    #   l2overlay: L2 overlay private network. (L2 over IP)
-    #   passthru: do not apply any modifications to the packets from VM.
-    NETWORK_MODES=[:securitygroup, :l2overlay, :passthru].freeze
+    include Dcmgr::Constants::Network
 
     module NetworkVifIpLeaseMethods
       def add_reserved(ipaddr)
@@ -103,6 +99,10 @@ module Dcmgr::Models
 
     def available_ip_nums
       self.ipv4_ipaddress.hosts.size - self.network_vif_ip_lease_dataset.count
+    end
+
+    def allocated_ip_nums
+      self.network_vif_ip_lease_dataset.exclude(:alloc_type=>NetworkVifIpLease::TYPE_RESERVED).alives.count
     end
 
     def ipv4_u32_dynamic_range_array
@@ -212,7 +212,7 @@ module Dcmgr::Models
 
       if self.network_mode.nil?
         errors.add(:network_mode, "Unset network mode")
-      elsif !NETWORK_MODES.member?(self.network_mode.to_sym)
+      elsif !NETWORK_MODES.member?(self.network_mode)
         errors.add(:network_mode, "Unknown network mode: #{self.network_mode}")
       end
     end
@@ -237,12 +237,14 @@ module Dcmgr::Models
 
     def to_netfilter_document
       {
+        :uuid => self.canonical_uuid,
         :ipv4_gw => self.ipv4_gw,
         :prefix => self.prefix,
         :dns_server => self.dns_server,
         :dhcp_server => self.dhcp_server,
         :metadata_server => self.metadata_server,
-        :metadata_server_port => self.metadata_server_port
+        :metadata_server_port => self.metadata_server_port,
+        :network_mode => self.network_mode
       }
     end
 

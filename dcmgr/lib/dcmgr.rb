@@ -34,6 +34,7 @@ module Dcmgr
     end
 
     autoload :Instance, 'dcmgr/constants/instance'
+    autoload :Network, 'dcmgr/constants/network'
   end
   Const = Constants
 
@@ -237,6 +238,7 @@ module Dcmgr
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
       autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
       autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'
+      autoload :NetworkGroup, 'dcmgr/scheduler/network/network_group'
     end
 
     module MacAddress
@@ -249,8 +251,13 @@ module Dcmgr
 
   require 'dcmgr/vnet'
   module VNet
-    autoload :TaskFactory, 'dcmgr/vnet/factories'
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
+
+    module NetworkModes
+      autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
+      autoload :PassThrough, 'dcmgr/vnet/network_modes/passthrough'
+      autoload :L2Overlay, 'dcmgr/vnet/network_modes/l2overlay'
+    end
 
     module Netfilter
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'

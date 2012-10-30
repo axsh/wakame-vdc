@@ -13,8 +13,9 @@ mount -n -t simfs METADATA ${DST} -o ${SRC},noexec,nosuid
 NETIFLIST=$(printf %s "$NETIF" |tr ';' '\n')
 
 if [ -z "${NETIFLIST}" ]; then
-    echo "Error: CT$VEID has no veth interface configured" 1>&2
-    exit 1
+    # should be able to run CT without vifs
+    echo "Warning: CT$VEID has no veth interface configured" 1>&2
+    exit 0
 fi
 
 for iface in ${NETIFLIST}; do

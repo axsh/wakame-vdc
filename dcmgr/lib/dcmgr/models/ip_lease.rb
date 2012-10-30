@@ -63,8 +63,8 @@ module Dcmgr::Models
     def self.get_lease_address(network, from_ipaddr, to_ipaddr, order)
       from_ipaddr = 0 if from_ipaddr.nil?
       to_ipaddr = 0xFFFFFFFF if to_ipaddr.nil?
-      raise ArgumentError unless from_ipaddr.is_a?(Fixnum)
-      raise ArgumentError unless to_ipaddr.is_a?(Fixnum)
+      raise ArgumentError unless from_ipaddr.is_a?(Integer)
+      raise ArgumentError unless to_ipaddr.is_a?(Integer)
 
       leaseaddr = nil
 

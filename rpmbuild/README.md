@@ -43,9 +43,9 @@ HVA stands for Hyper Visor Agent. It is internally used by the Dcmgr in order to
 Configuring upstart system job
 -------------------------------
 
-Comment out the following line in /etc/default/vdc-*.
+Uncomment the following line in /etc/default/vdc-*.
 
-    RUN=yes
+    #RUN=yes
 
 + dcmgr node
   + /etc/default/vdc-collector
@@ -62,7 +62,7 @@ Comment out the following line in /etc/default/vdc-*.
 
 Or simply execute the following command.
 
-    # sed -i.bak -e 's/^#\(RUN=yes\)/\1/' /etc/default/vdc-*
+    # sed -i -e 's/^#\(RUN=yes\)/\1/' /etc/default/vdc-*
 
 Pre-setup Dcmgr
 ----------------
@@ -147,11 +147,11 @@ Creating Database
 
 Before creating the database, you need to launch mysql-server.
 
-    # service mysql start
+    # service mysqld start
 
 To automatically launch mysql-server, execute the following command.
 
-    # chkconfig mysql on
+    # chkconfig mysqld on
 
 If you need additional demonstration data, please type the following commands.
 NOTICE: this script will erase all related database at first. We recommend to backup before doing this.
