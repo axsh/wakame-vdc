@@ -50,6 +50,9 @@ module Dcmgr
           bridge_name = @default_ofctl.get_bridge_name(datapath_id)
           raise "No bridge found matching: datapath_id:%016x" % datapath_id if bridge_name.nil?
 
+          # Sometimes ovs changes the datapath ID and reconnects.
+          switches.delete_if { |dpid,switch| switch.switch_name == bridge_name }
+
           ofctl = @default_ofctl.dup
           ofctl.switch_name = bridge_name
 
