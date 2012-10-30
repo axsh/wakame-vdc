@@ -20,11 +20,13 @@
       }
 
       if(attrs.distribution == 'any' && !attrs.users == '') {
-        var arr = _.map(attrs.users.split(','), function(user){
-          return _.isNull(user.match(/^u-[a-z0-9]{8}$/));
-        });
-        if(_.any(arr)) {
-          this.errors['users'] = '指定ユーザーの書式が違います。';
+        if(!_.isObject(attrs.users)) {
+          var arr = _.map(attrs.users.split(','), function(user){
+            return _.isNull(user.match(/^u-[a-z0-9]{8}$/));
+          });
+          if(_.any(arr)) {
+            this.errors['users'] = '指定ユーザーの書式が違います。';
+          }
         }
       }
 
