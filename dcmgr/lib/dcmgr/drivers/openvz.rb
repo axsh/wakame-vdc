@@ -149,33 +149,38 @@ module Dcmgr
           unless image[:root_device].nil?
             # creating loop devices
             mapdevs = sh("kpartx -av %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
-            new_device_file = mapdevs[:stdout].split("\n").map {|mapdev| "/dev/mapper/#{mapdev}"}
-            #
-            # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
-            # add map loop2p2 (253:3): 0 249856 linear /dev/loop2 974848
-            #
-            # wait udev queue
-            sh("udevadm settle")
-            # find loopback device
-            k, v = image[:root_device].split(":")
-            case k
-            when "uuid","label"
-            else
-              raise "unknown root device mapping key #{k}"
-            end
-            search_word = "#{k.upcase}=#{v}"
-            device_file_list = sh("blkid -t %s |awk '{print $1}'", [search_word])
-            #
-            # /dev/mapper/loop0p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
-            # /dev/mapper/loop2p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
-            # /dev/mapper/ip-192.0.2.19:3260-iscsi-iqn.2010-09.jp.wakame:vol-lzt6zx5c-lun-1p1: UUID="148bc5df-3fc5-4e93-8a16-7328907cb1c0" TYPE="ext4"
-            #
-            device_file_list = device_file_list[:stdout].split(":\n")
-            # root device
-            root_device = new_device_file & device_file_list
-            raise "root device does not exist #{image[:root_device]}" if root_device.empty?
+            begin
+              new_device_file = mapdevs[:stdout].split("\n").map {|mapdev| "/dev/mapper/#{mapdev}"}
+              #
+              # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
+              # add map loop2p2 (253:3): 0 249856 linear /dev/loop2 974848
+              #
+              # wait udev queue
+              sh("udevadm settle")
+              # find loopback device
+              k, v = image[:root_device].split(":")
+              case k
+              when "uuid","label"
+              else
+                raise "unknown root device mapping key #{k}"
+              end
+              search_word = "#{k.upcase}=#{v}"
+              device_file_list = sh("blkid -t %s |awk '{print $1}'", [search_word])
+              #
+              # /dev/mapper/loop0p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
+              # /dev/mapper/loop2p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
+              # /dev/mapper/ip-192.0.2.19:3260-iscsi-iqn.2010-09.jp.wakame:vol-lzt6zx5c-lun-1p1: UUID="148bc5df-3fc5-4e93-8a16-7328907cb1c0" TYPE="ext4"
+              #
+              device_file_list = device_file_list[:stdout].split(":\n")
+              # root device
+              root_device = new_device_file & device_file_list
+              raise "root device does not exist #{image[:root_device]}" if root_device.empty?
 
-            check_fs(root_device[0])
+              check_fs(root_device[0])
+            rescue Exception => e
+              detach_loop(hc.os_devpath)
+              raise e
+            end
             sh("mount %s %s", [root_device[0], private_folder])
 
             # Write root partition identifier to instance data dir for the failure recovery script
@@ -239,16 +244,21 @@ module Dcmgr
         FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
         raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)
         res = sh("kpartx -av %s", [hc.metadata_img_path])
-        if res[:stdout] =~ /^add map (\w+) /
-          lodev="/dev/mapper/#{$1}"
-        else
-          raise "Unexpected result from kpartx: #{res[:stdout]}"
-        end
-        sh("udevadm settle")
+        begin
+          if res[:stdout] =~ /^add map (\w+) /
+            lodev="/dev/mapper/#{$1}"
+          else
+            raise "Unexpected result from kpartx: #{res[:stdout]}"
+          end
+          sh("udevadm settle")
 
-        # save the loop device name for the metadata drive.
-        File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
-        check_fs(lodev)
+          # save the loop device name for the metadata drive.
+          File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
+          check_fs(lodev)
+        rescue Exception => e
+          detach_loop(hc.metadata_img_path)
+          raise e
+        end
         sh("mount -o ro %s %s", [lodev, ve_metadata_path])
 
         # generate openvz mount config
