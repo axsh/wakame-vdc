@@ -54,8 +54,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
           m.enabled = (input['enabled'] == 'true')
         end
         m.title = input['title'] if !input['title'].nil? && input['title'] != ""
+ 
         m.params = input['params'] if input['params']
-        m.protocol = input['protocol'] if input['protocol'] && m.protocol != input['protocol']
+        m.protocol = input['protocol'] if input['protocol']
         m.save_changes
       }
       new_items.each { |input|

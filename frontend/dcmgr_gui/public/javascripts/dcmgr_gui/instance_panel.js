@@ -225,7 +225,7 @@ DcmgrGUI.prototype.instancePanel = function(){
               "data": "",
               success: function(json,status) {
                 for(var i in json) {
-                  bt_edit_instance.monitor_selector.addItem(json[i].protocol, json[i]);
+                  bt_edit_instance.monitor_selector.addItem(json[i].title, json[i]);
                 }
               },
             });

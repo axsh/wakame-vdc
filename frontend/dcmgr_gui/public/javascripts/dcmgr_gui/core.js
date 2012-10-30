@@ -996,7 +996,6 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
   initialize: function(elem) {
     var self = this;
     this.enabled = false;
-    this.mailaddr = "";
     this.index_counter = 0;
     this.item_list = [];
     this.render_target = elem;
@@ -1014,35 +1013,37 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     return (this.index_counter++);
   },
 
-  addItem: function(protocol, json){
+  addItem: function(title, json){
     var self = this;
     var idx = this._newIndex();
 
     var find_unselected = function(){
-      for(var i in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS){
+      for(var t in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS){
         var contains = false
         for( var j in self.item_list){
-          if(self.item_list[j].protocol == i){ 
+          if(self.item_list[j].title == t){ 
             contains = true;
             break;
           }
         }
-        if(contains == false) return i;
+        if(contains == false) return t;
       }
       return undefined;
     };
 
-    if( typeof protocol != "string"){
-      protocol = find_unselected();
-    }else if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[protocol] === undefined) {
-      throw "Unknown protocol parameter is passed: " + protocol;
+    if( typeof title != "string"){
+      title = find_unselected();
+    }else if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[title] === undefined) {
+      throw "Unknown title is passed: " + title;
     }
 
 
     // place holder variable for event handlers.
-    var item_props = {"protocol":protocol,
+    var item_props = {"protocol": DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[title].protocol,
+                      'title': title,
                       'idx': idx,
                       'json': json,
+                      'row_elem': null
                      };
     this.item_list.push(item_props);
 
@@ -1060,7 +1061,7 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
           self.item_list.splice(i, 1);
         }
       }
-      $('#monitor_item_' + idx).first().remove();
+      item_props.row_elem.remove();
       self._refreshSelectItem();
 
       if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM > self.item_list.length){
@@ -1070,7 +1071,8 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     });
 
     var select_tag = tr_tag.find('.select_monitor_proto').first().bind('change', function(e,json){
-      item_props['protocol']=$(e.currentTarget).val();
+      item_props['title']=$(e.currentTarget).val();
+      item_props['protocol'] = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[e.target.value].protocol;
 
       if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM <= self.item_list.length){
         // disable the plus button
@@ -1081,7 +1083,7 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
       // fill input UI elements for the protocol selected by user.
       var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[e.target.value];
       if(row_item === undefined){
-        throw "Unknown monitor protocol: " + e.target.value;
+        throw "Unknown monitor item: " + e.target.value;
       }
       // Clear current child elements.
       replace_tgt.html('');
@@ -1102,16 +1104,16 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
       self._refreshSelectItem();
     });
 
-    if( protocol != null || protocol !== undefined){
-      select_tag.val(protocol).trigger('change', json);
+    if( !(title === null || title === undefined) ){
+      select_tag.val(title).trigger('change', json);
     }
   },
 
   _refreshSelectItem: function(){
     var self = this;
-    var check_selected_item = function(n){
+    var check_selected_item = function(t){
       for(var s in self.item_list){
-        if(n == self.item_list[s].protocol) return true;
+        if(t == self.item_list[s].title) return true;
       }
       return false;
     };
@@ -1120,10 +1122,10 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
       var select_tag = this.item_list[i].row_elem.find('.select_monitor_proto').first();
       select_tag.empty();
       for( var j in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS ){
-        if( j != this.item_list[i].protocol && check_selected_item(j)) continue;
-        select_tag.append("<option value=\""+j+"\">"+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[j].title+"</option>");
+        if( j != this.item_list[i].title && check_selected_item(j)) continue;
+        select_tag.append("<option value=\""+j+"\">"+j+"</option>");
       }
-      select_tag.val(this.item_list[i].protocol);
+      select_tag.val(this.item_list[i].title);
     }
   },
 
@@ -1133,13 +1135,14 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     for (var i=0; i < this.item_list.length; i++) {
       var itm = this.item_list[i];
       var a = ["eth0_monitors["+i+"][protocol]=" + itm['protocol'],
+               "eth0_monitors["+i+"][title]=" + itm['title'],
                "eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked')];
       if( itm['json'] !== undefined ){
         a.push("eth0_monitors["+i+"][uuid]=" + itm['json'].uuid);
       }
       if( i > 0 ){ res += '&'; }
       res += a.join('&');
-      var params_query = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[itm['protocol']].buildQuery(itm['row_elem'], i);
+      var params_query = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[itm.title].buildQuery(itm['row_elem'], i);
       if(!(params_query === undefined || params_query === null)) {
         res += "&" + params_query;
       }
@@ -1155,16 +1158,16 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
 // constantize the JSON list.
 DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
   return {
-    'icmp': {
-      title: "PING",
+    'PING': {
+      protocol: 'icmp',
       ui: function (elem, params){
       },
       buildQuery: function(row_elem, idx){
         return null;
       },
     },
-    'http': {
-      title: "HTTP",
+    'HTTP1': {
+      protocol: 'http',
       ui: function (elem, params){
         if(params === undefined) params={port: 80, check_path:"/"};
 
@@ -1176,8 +1179,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
           "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
       },
     },
-    'https': {
-      title: "HTTPS",
+    'HTTPS1': {
+      protocol: 'https',
       ui: function (elem, params){
         if(params === undefined) params={port: 443, check_path:"/"};
 
@@ -1189,8 +1192,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
           "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
       },
     },
-    'ftp': {
-      title: "FTP",
+    'FTP': {
+      protocol: 'ftp',
       ui: function (elem, params){
         if(params === undefined) params={port: 21};
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
@@ -1199,8 +1202,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
     },
-    'ssh': {
-      title: "SSH",
+    'SSH': {
+      protocol: 'ssh',
       ui: function (elem, params){
         if(params === undefined) params={port: 22};
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
@@ -1209,8 +1212,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
     },
-    'smtp': {
-      title: "SMTP",
+    'SMTP': {
+      protocol: 'smtp',
       ui: function (elem, params){
         if(params === undefined) params={port: 25};
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
@@ -1219,8 +1222,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
     },
-    'pop3': {
-      title: "POP3",
+    'POP3': {
+      protocol: 'pop3',
       ui: function (elem, params){
         if(params === undefined) params={port: 110};
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
@@ -1229,8 +1232,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
     },
-    'imap': {
-      title: "IMAP",
+    'IMAP': {
+      protocol: 'imap',
       ui: function (elem, params){
         if(params === undefined) params={port: 143};
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
@@ -1239,8 +1242,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
     },
-    'submission': {
-      title: "Submission",
+    'Submission': {
+      protocol: 'submission',
       ui: function (elem, params){
         if(params === undefined) params={port: 587};
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
@@ -1249,8 +1252,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
     },
-    'dns': {
-      title: "DNS",
+    'DNS': {
+      protocol: 'dns',
       ui: function (elem, params){
         if(params === undefined) params={port: 53, query_record: "localhost"};
         elem.append('Host Query: <input type="text" class="_query_record" value="'+params['query_record']+'"></input>');
@@ -1260,8 +1263,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]=53&eth0_monitors["+idx+"][params][query_record]="+$(row_elem).find('._query_record').val();
       },
     },
-    'mysql': {
-      title: "MySQL",
+    'MySQL': {
+      protocol: 'mysql',
       ui: function (elem, params){
         if(params === undefined) params={port: 3306};
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
@@ -1270,8 +1273,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
     },
-    'postgresql': {
-      title: "PostgreSQL",
+    'PostgreSQL': {
+      protocol: 'postgresql',
       ui: function (elem, params){
         if(params === undefined) params={port: 5432};
         elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');

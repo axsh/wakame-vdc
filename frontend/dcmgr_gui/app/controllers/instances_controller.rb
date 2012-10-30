@@ -16,8 +16,7 @@ class InstancesController < ApplicationController
         :ssh_key => params[:ssh_key],
         :display_name => params[:display_name],
         :vifs => {},
-        :monitoring_enabled => params[:monitoring_enabled],
-        :monitoring_mailaddr => params[:mailaddr],
+        :monitoring => params[:monitoring],
       }
 
       if params[:vifs]
@@ -46,7 +45,6 @@ class InstancesController < ApplicationController
       # TODO: GUI displays vif monitoring setting interface as a part
       # of instance parameters. It assumes that monitoring parameters
       # is set to the "eth0" device only.
-      p params[:eth0_monitors]
       if params[:eth0_monitors]
         vif_mons = {}
 
@@ -55,6 +53,7 @@ class InstancesController < ApplicationController
           vif_eth0[:monitors] ||= {}
           vif_eth0[:monitors][idx] = {
             :protocol=>mon[:protocol],
+            :title=>mon[:title],
             :enabled=>((mon[:enabled] && mon[:enabled] == 'true') ? true : false),
             :params => mon[:params],
           }

@@ -51,8 +51,10 @@ module Hijiki::DcmgrResource::V1203
         # rename the key to instance_spec_name.
         instance.instance_spec_name = params[:instance_spec_id]
 
-        instance.monitoring_enabled = params[:monitoring_enabled]
-        instance.monitoring_mailaddr = params[:monitoring_mailaddr]
+        instance.monitoring = {
+          :enabled => params[:monitoring][:enabled],
+          :mail_address => params[:monitoring][:mail_address],
+        }
         
         instance.save
         instance
