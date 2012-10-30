@@ -10,10 +10,6 @@ module Dcmgr
       def upload_image(inst, ctx, bo, evcb)
         ctx = Openvz::OvzContext.new(ctx)
         case inst[:state]
-          when 'running'
-            cgroup_context(:subsystem=>'blkio', :scope=>ctx.ctid) do
-              super
-            end
           when 'halted'
             super
           else

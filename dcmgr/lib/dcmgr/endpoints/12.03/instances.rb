@@ -347,7 +347,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   quota 'backup_object.size_mb', 'backup_object.count', 'image.count', 'instance.backup_operations_per_hour'
   put '/:id/backup' do
     instance = find_by_uuid(:Instance, params[:id])
-    raise E::InvalidInstanceState, instance.state unless ['running', 'halted'].member?(instance.state)
+    raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)
 
     bkst_uuid = params[:backup_storage_id] || Dcmgr.conf.service_types[instance.service_type].backup_storage_id
     bkst = M::BackupStorage[bkst_uuid] || raise(E::UnknownBackupStorage, bkst_uuid)
