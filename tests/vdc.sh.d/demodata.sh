@@ -2,7 +2,7 @@
 
 set -e
 
-tmp_path="$VDC_ROOT/tmp"
+vdc_data=${vdc_data:?"vdc_data needs to be set"}
 account_id=${account_id:?"account_id needs to be set"}
 
 hypervisor=${hypervisor:?"hypervisor needs to be set"}
@@ -34,8 +34,8 @@ cd ${VDC_ROOT}/dcmgr/
 
 [ -f /etc/redhat-release ] && {
   # rhel
-  gw_dev=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $5}')
-  ipaddr=$(/sbin/ip addr show ${gw_dev} | grep -w inet | awk '{print $2}')
+  [ -n "${gw_dev}" ]      || gw_dev=$(/sbin/ip route get 8.8.8.8 | head -1 | awk '{print $5}')
+  [ -n "${ipaddr}" ]      || ipaddr=$(/sbin/ip addr show ${gw_dev} | grep -w inet | awk '{print $2}')
   [ -n "${range_begin}" ] || range_begin=`ipcalc -n ${ipaddr}/${prefix_len} | sed 's,.*=,,'`
   [ -n "${range_end}"   ] || range_end=`ipcalc -b ${ipaddr}/${prefix_len} | sed 's,.*=,,'`
 } || {
@@ -192,8 +192,8 @@ EOF
 
 cat <<EOS | mysql -uroot ${dcmgr_dbname}
 INSERT INTO volume_snapshots values
- (1, '${account_id}', 'lucid1', 1, 'vol-lucid1', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-32.raw', NULL, now(), now(), 'std', 'lucid1'),
- (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${VDC_ROOT}/tmp/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now(), 'std', 'lucid6');
+ (1, '${account_id}', 'lucid1', 1, 'vol-lucid1', 1024, 0, 'available', 'local@local:none:${vdc_data}/images/ubuntu-lucid-kvm-32.raw', NULL, now(), now(), 'std', 'lucid1'),
+ (2, '${account_id}', 'lucid6', 1, 'vol-lucid6', 1024, 0, 'available', 'local@local:none:${vdc_data}/images/ubuntu-lucid-kvm-ms-32.raw', NULL, now(), now(), 'std', 'lucid6');
 EOS
 
 # Install user/account definitions to the GUI database.
