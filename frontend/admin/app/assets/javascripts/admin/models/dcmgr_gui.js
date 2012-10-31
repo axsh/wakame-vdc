@@ -36,16 +36,20 @@
 
       if(!attrs.display_begin_at == '') {
         if(_.isNull(attrs.display_begin_at.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/))){
-          if(_.isNull(attrs.display_begin_at.match(/^\d{4}\/\d{2}\/\d{2}\s\d{2}:\d{2}:\d{2}$/))) {
-            this.errors['display_date'] = "掲載期間の書式が違います。";
+          if(_.isNull(attrs.display_begin_at.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}$/))){
+            if(_.isNull(attrs.display_begin_at.match(/^\d{4}\/\d{2}\/\d{2}\s\d{2}:\d{2}:\d{2}$/))) {
+              this.errors['display_date'] = "掲載期間の書式が違います。";
+            }
           }
         }
       }
 
       if(!attrs.display_end_at == '') {
         if(_.isNull(attrs.display_end_at.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/))){
-          if(_.isNull(attrs.display_end_at.match(/^\d{4}\/\d{2}\/\d{2}\s\d{2}:\d{2}:\d{2}$/))) {
-            this.errors['display_date'] = "掲載期間の書式が違います。";
+          if(_.isNull(attrs.display_end_at.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}$/))){
+            if(_.isNull(attrs.display_end_at.match(/^\d{4}\/\d{2}\/\d{2}\s\d{2}:\d{2}:\d{2}$/))) {
+              this.errors['display_date'] = "掲載期間の書式が違います。";
+	    }
           }
         }
       }
