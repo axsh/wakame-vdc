@@ -117,7 +117,7 @@ module Dcmgr::Models
 
     # Check the free resource capacity across entire local VDC domain.
     def self.check_domain_capacity?(cpu_cores, memory_size, num=1)
-      ds = Instance.dataset.lives
+      ds = Instance.dataset.lives.filter(:host_node => HostNode.online_nodes)
       alives_cpu_cores, alives_mem_size = ds.select{[sum(:cpu_cores), sum(:memory_size)]}.naked.first.values.map { |i| i || 0 }
       stopped_cpu_cores, stopped_mem_size = ds.filter(:state=>'stopped').select{ [sum(:cpu_cores), sum(:memory_size)] }.naked.first.values.map { |i| i || 0 }
       # instance releases the resources during stopped state normally. however admins may
