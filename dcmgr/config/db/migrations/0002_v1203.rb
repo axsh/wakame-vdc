@@ -32,7 +32,7 @@ Sequel.migration do
       # this is a physical device attribute associated to the host OS.
       drop_column :link_interface
       # mode name of network isolation/usage model:
-      #    securitygroup, l2overlay, passthru
+      #    securitygroup, l2overlay, passthrough
       add_column :network_mode, 'varchar(255)', :null=>false
       # physical_networks table has been renamed to dc_networks.
       rename_column :physical_network_id, :dc_network_id
@@ -381,6 +381,18 @@ Sequel.migration do
       index [:network_vif_id]
       index [:uuid], :unique=>true, :name=>:uuid
     end
+
+    # one to one association table for instances.
+    create_table(:instance_monitor_attrs) do
+      primary_key :id, :type=>"int(11)"
+      column :instance_id, "int(11)", :null=>false
+      column :mailaddr, "varchar(255)", :null=>false
+      column :enabled, "tinyint(1)", :default=>false, :null=>false
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+
+      index [:instance_id]
+    end
   end
 
   down do
@@ -388,6 +400,7 @@ Sequel.migration do
     drop_table(:network_services)
     drop_table(:mac_ranges)
     drop_table(:network_vif_monitors)
+    drop_table(:instance_monitor_attrs)
 
     rename_table(:network_vifs, :instance_nics)
 

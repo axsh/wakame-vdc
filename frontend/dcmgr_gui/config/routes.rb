@@ -178,6 +178,15 @@ DcmgrGui::Application.routes.draw do
   get    'networks/:id/services' ,:to => 'networks#show_services'
   post   'networks/:id/services' ,:to => 'networks#create_service'
 
+  #network_vifs
+  get    'network_vifs/:id' ,:to => 'network_vifs#show'
+  put    'network_vifs/:id/attach', :to => 'network_vifs#attach'
+  put    'network_vifs/:id/detach', :to => 'network_vifs#detach'
+  get    'network_vifs/:id/monitors' ,:to => 'network_vifs#list_monitors'
+  post   'network_vifs/:id/monitors' ,:to => 'network_vifs#add_monitor'
+  put    'network_vifs/:id/monitors/:monitor_id' ,:to => 'network_vifs#update_monitor'
+  delete 'network_vifs/:id/monitors/:monitor_id' ,:to => 'network_vifs#delete_monitor'
+
   #dc_networks
   get    'dc_networks/allows_new_networks' ,:to => 'dc_networks#allows_new_networks'
 

@@ -65,6 +65,14 @@ en:
       launch_in: "Launch in"
       user_data: "User Data"
       display_name: "Instance Name"
+      network_service_monitor:
+        title: "Network Monitoring"
+        monitoring_enabled: "Enable"
+        mailaddr: "Mail Address"
+        list_headers:
+          protocol: "Protocol"
+          parameters: "Parameters"
+          enabled: "Enable"
     edit_instance:
       header: "Edit Instance"
       instance_id: "Instance ID"
@@ -73,6 +81,14 @@ en:
       available_groups: "Avaiable groups"
       groups_to_assign: "Groups to assign"
       interface: "Interface"
+      network_service_monitor:
+        title: "Network Monitoring"
+        monitoring_enabled: "Enable"
+        mailaddr: "Mail Address"
+        list_headers:
+          protocol: "Protocol"
+          parameters: "Parameters"
+          enabled: "Enable"
     edit_machine_image:
       header: "Edit Machine Image"
       uuid: "WMI ID"

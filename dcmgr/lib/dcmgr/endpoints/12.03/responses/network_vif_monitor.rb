@@ -9,7 +9,9 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @vifmon.instance_exec {
-        to_hash.merge(:id=>canonical_uuid)
+        to_hash.merge({:id=>canonical_uuid,
+                        :params=>(self.params.is_a?(Hash) ? self.params : {})
+                      })
       }
     end
   end

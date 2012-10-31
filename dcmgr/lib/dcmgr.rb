@@ -34,6 +34,7 @@ module Dcmgr
     end
 
     autoload :Instance, 'dcmgr/constants/instance'
+    autoload :Network, 'dcmgr/constants/network'
   end
   Const = Constants
 
@@ -87,6 +88,7 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :MacRange, 'dcmgr/models/mac_range'
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
+    autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
   end
 
   module Endpoints
@@ -250,8 +252,13 @@ module Dcmgr
 
   require 'dcmgr/vnet'
   module VNet
-    autoload :TaskFactory, 'dcmgr/vnet/factories'
     autoload :TaskManagerFactory, 'dcmgr/vnet/factories'
+
+    module NetworkModes
+      autoload :SecurityGroup, 'dcmgr/vnet/network_modes/security_group'
+      autoload :PassThrough, 'dcmgr/vnet/network_modes/passthrough'
+      autoload :L2Overlay, 'dcmgr/vnet/network_modes/l2overlay'
+    end
 
     module Netfilter
       autoload :NetfilterCache, 'dcmgr/vnet/netfilter/cache'

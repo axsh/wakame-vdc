@@ -428,7 +428,6 @@ DcmgrGUI.ContentBase = DcmgrGUI.Class.create({
         }
       });
     } catch( e ) {
-      console.log(e);
       $("#list_load_mask").unmask();
     }
   }
@@ -1003,189 +1002,304 @@ DcmgrGUI.Logger = DcmgrGUI.Class.create({
 
 DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
   initialize: function(elem) {
+    var self = this;
+    this.enabled = false;
     this.index_counter = 0;
-    this.monitor_list = [];
+    this.item_list = [];
     this.render_target = elem;
+    this._findItemAddButton().bind('click', function(e){
+      // Append new monitoring item selection.
+     self.addItem();
+    });
   },
 
   monitors: function(){
-    return this.monitor_list;
+    return this.item_list;
   },
 
   _newIndex: function() {
     return (this.index_counter++);
   },
-  
-  addItem: function(protocol){
+
+  addItem: function(title, json){
     var self = this;
     var idx = this._newIndex();
-    if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[protocol] === undefined) {
-      throw "Unknown protocol parameter is passed: " + protocol;
+
+    var find_unselected = function(){
+      for(var t in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS){
+        var contains = false
+        for( var j in self.item_list){
+          if(self.item_list[j].title == t){ 
+            contains = true;
+            break;
+          }
+        }
+        if(contains == false) return t;
+      }
+      return undefined;
+    };
+
+    if( typeof title != "string"){
+      title = find_unselected();
+    }else if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[title] === undefined) {
+      throw "Unknown title is passed: " + title;
     }
 
-    // place holder variable for event handlers.
-    var item_props = {"protocol":protocol,
-                      'idx': idx
-                     };
-    this.monitor_list.push(item_props);
 
-    var tr_tag = $('#monitor_selector_tmpl').tmpl({idx: idx,
-                                                   itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()
-                                                  });
+    // place holder variable for event handlers.
+    var item_props = {"protocol": DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[title].protocol,
+                      'title': title,
+                      'idx': idx,
+                      'json': json,
+                      'row_elem': null
+                     };
+    this.item_list.push(item_props);
+
+    var tr_tag = $('#monitor_selector_tmpl').tmpl({
+      idx: idx,
+      itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS
+    });
+
+    item_props['row_elem'] = tr_tag;
     tr_tag.appendTo(this.render_target);
     tr_tag.find('.del_monitor_item').first().bind('click', function(e){
       // remove the clicked item from the list.
-      self.monitor_list.splice((idx - 1), 1);
-      $('#monitor_item_' + idx).first().remove();
+      for(var i in self.item_list) {
+        if(idx == self.item_list[i].idx){
+          self.item_list.splice(i, 1);
+        }
+      }
+      item_props.row_elem.remove();
+      self._refreshSelectItem();
+
+      if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM > self.item_list.length){
+        // enable the plus button again.
+        self._findItemAddButton().removeAttr("disabled");
+      }
     });
-    
-    tr_tag.find('.select_monitor_proto').first().bind('change', function(e){
-      item_props['protocol']=$(e.currentTarget).val();
+
+    var select_tag = tr_tag.find('.select_monitor_proto').first().bind('change', function(e,json){
+      item_props['title']=$(e.currentTarget).val();
+      item_props['protocol'] = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[e.target.value].protocol;
+
+      if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM <= self.item_list.length){
+        // disable the plus button
+        self._findItemAddButton().attr("disabled", "disabled");
+      }
 
       var replace_tgt = $(e.currentTarget).parent().parent().find(".detail_input");
       // fill input UI elements for the protocol selected by user.
-      var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[e.target.value];
+      var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[e.target.value];
       if(row_item === undefined){
-        throw "Unknown monitor protocol: " + e.target.value;
+        throw "Unknown monitor item: " + e.target.value;
       }
       // Clear current child elements.
       replace_tgt.html('');
-      row_item.ui(replace_tgt, e.target.id);
-    }).val(protocol).trigger('change');
+      if( json !== undefined ){
+        if(json.enabled == true){
+          $(tr_tag).find('.enabled').attr("checked", "checked");
+        }else{
+          $(tr_tag).find('.enabled').removeAttr("checked");
+        }
 
-    item_props['row_elem'] = tr_tag;
+        // Render option forms for the protocol.
+        row_item.ui(replace_tgt, json.params);
+      }else{
+        // Render option forms for the protocol.
+        row_item.ui(replace_tgt);
+      }
+
+      self._refreshSelectItem();
+    });
+
+    if( !(title === null || title === undefined) ){
+      select_tag.val(title).trigger('change', json);
+    }
+  },
+
+  _refreshSelectItem: function(){
+    var self = this;
+    var check_selected_item = function(t){
+      for(var s in self.item_list){
+        if(t == self.item_list[s].title) return true;
+      }
+      return false;
+    };
+
+    for( var i in this.item_list) {
+      var select_tag = this.item_list[i].row_elem.find('.select_monitor_proto').first();
+      select_tag.empty();
+      for( var j in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS ){
+        if( j != this.item_list[i].title && check_selected_item(j)) continue;
+        select_tag.append("<option value=\""+j+"\">"+j+"</option>");
+      }
+      select_tag.val(this.item_list[i].title);
+    }
   },
 
   queryParams: function(){
     var res="";
 
-    for (var i=0; i < this.monitor_list.length; i++) {
-      var itm = this.monitor_list[i]
-      res += "&eth0_monitors["+i+"][protocol]=" + itm['protocol'];
-      res += "&eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked');
-      res += DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS()[itm['protocol']].buildQuery(itm['row_elem'], i);
+    for (var i=0; i < this.item_list.length; i++) {
+      var itm = this.item_list[i];
+      var a = ["eth0_monitors["+i+"][protocol]=" + itm['protocol'],
+               "eth0_monitors["+i+"][title]=" + itm['title'],
+               "eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked')];
+      if( itm['json'] !== undefined ){
+        a.push("eth0_monitors["+i+"][uuid]=" + itm['json'].uuid);
+      }
+      if( i > 0 ){ res += '&'; }
+      res += a.join('&');
+      var params_query = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[itm.title].buildQuery(itm['row_elem'], i);
+      if(!(params_query === undefined || params_query === null)) {
+        res += "&" + params_query;
+      }
     }
-
     return res;
+  },
+
+  _findItemAddButton: function(){
+    return $(this.render_target).parent().find('#add_monitor_item');
   }
 });
 
-DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = function(){
+// constantize the JSON list.
+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
   return {
-    'icmp': {
-      title: "PING",
-      ui: function (elem){
+    'PING': {
+      protocol: 'icmp',
+      ui: function (elem, params){
       },
       buildQuery: function(row_elem, idx){
-        return "";
+        return null;
       }
     },
-    'http': {
-      title: "HTTP",
-      ui: function (elem){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="80"></input>');
-        elem.append('<br>Path: <input type="text" class="_check_path" width="40" value="/"></input>');
+    'HTTP1': {
+      protocol: 'http',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 80, check_path:"/"};
+
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
+        elem.append('<br>Path: <input type="text" class="_check_path" width="40" value="'+params['check_path']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
           "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
       }
     },
-    'https': {
-      title: "HTTPS",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="443"></input>');
-        elem.append('<br>Path: <input type="text" class="_check_path" width="40" value="/"></input>');
+    'HTTPS1': {
+      protocol: 'https',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 443, check_path:"/"};
+
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
+        elem.append('<br>Path: <input type="text" class="_check_path" width="40" value="'+params['check_path']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val() +
           "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
       }
     },
-    'ftp': {
-      title: "FTP",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="21"></input>');
+    'FTP': {
+      protocol: 'ftp',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 21};
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
+      },
+      buildQuery: function(row_elem, idx){
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+      }
+    },
+    'SSH': {
+      protocol: 'ssh',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 22};
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       }
     },
-    'ssh': {
-      title: "SSH",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="22"></input>');
+    'SMTP': {
+      protocol: 'smtp',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 25};
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       }
     },
-    'smtp': {
-      title: "SMTP",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="25"></input>');
+    'POP3': {
+      protocol: 'pop3',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 110};
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       }
     },
-    'pop3': {
-      title: "POP3",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="110"></input>');
+    'IMAP': {
+      protocol: 'imap',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 143};
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       }
     },
-    'imap': {
-      title: "IMAP",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="143"></input>');
+    'Submission': {
+      protocol: 'smtp',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 587};
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       }
     },
-    'submission': {
-      title: "Submission",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="587"></input>');
+    'DNS': {
+      protocol: 'dns',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 53, query_record: "localhost"};
+        elem.append('Domain Name: <input type="text" class="_query_record" value="'+params['query_record']+'"></input>');
+        elem.append('<input type="hidden" class="_udp_port" value="'+params['udp_port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+        return "eth0_monitors["+idx+"][params][port]=53&eth0_monitors["+idx+"][params][query_record]="+$(row_elem).find('._query_record').val();
       }
     },
-    'dns': {
-      title: "DNS",
-      ui: function (elem, idx){
-        elem.append('Host Query: <input type="text" class="_query_record" value="localhost"></input>');
-        elem.append('<input type="hidden" class="_udp_port" value="53"></input>');
+    'MySQL': {
+      protocol: 'mysql',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 3306};
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]=53&eth0_monitors["+idx+"][params][query_record]"+$(row_elem).find('._query_record').val();
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       }
     },
-    'mysql': {
-      title: "MySQL",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="3306"></input>');
+    'PostgreSQL': {
+      protocol: 'postgresql',
+      ui: function (elem, params){
+        if(params === undefined) params={port: 5432};
+        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="'+params['port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
-      }
-    },
-    'postgresql': {
-      title: "PostgreSQL",
-      ui: function (elem, idx){
-        elem.append('Port: <input type="text" class="_tcp_port" width="4" value="5432"></input>');
-      },
-      buildQuery: function(row_elem, idx){
-        return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
+        return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       }
     }
   };
-};
+}());
+
+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM = (function(){
+  var c=0;
+  for( var i in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS) c++;
+  return c;
+}());
+
 
 DcmgrGUI.prototype = {
   initialize:function(){

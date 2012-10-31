@@ -76,21 +76,38 @@ DcmgrGUI.prototype.instancePanel = function(){
     var edit_instance_buttons = {};
     edit_instance_buttons[close_button_name] = function() { $(this).dialog("close"); };
     edit_instance_buttons[update_button_name] = function(event) {
+      var self = this;
       var instance_id = $(this).find('#instance_id').val();
       var display_name = $(this).find('#instance_display_name').val();
-      var security_groups = [];
-      $.each($(this).find('#right_select_list').find('option'),function(i){
-       security_groups.push("security_groups[]="+ $(this).val());
+
+      var data = ['display_name=' + display_name,
+                  'monitoring[enabled]=' + $(this).find('#monitoring_enabled').is(':checked'),
+                  'monitoring[mail_address]=' + $(this).find('#mailaddr').val()
+                 ].join('&');
+      $.each($(this).find('#right_select_list').find('option'), function(i){
+        data = data + "&security_groups[]="+ $(this).val();
       });
-      var data = 'display_name=' + display_name + '&' + security_groups.join('&');
+      
 
       var request = new DcmgrGUI.Request;
-      request.put({
-        "url": '/instances/'+ instance_id +'.json',
-        "data": data,
-        success: function(json, status){
-          bt_refresh.element.trigger('dcmgrGUI.refresh');
-        }
+      parallel({
+        instance: function(){
+          request.put({
+            "url": '/instances/'+ instance_id +'.json',
+            "data": data,
+            success: function(json, status){
+              bt_refresh.element.trigger('dcmgrGUI.refresh');
+            }
+          });
+        },
+        monitoring: function(){
+          request.post({
+            "url": '/network_vifs/'+ select_current_vif[0] +'/monitors.json',
+            "data": bt_edit_instance.monitor_selector.queryParams(),
+            success: function(json, status){
+            }
+          });
+        },
       });
       $(this).dialog("close");
     }
@@ -137,12 +154,7 @@ DcmgrGUI.prototype.instancePanel = function(){
 	$(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
 	$(this).find('#instance_display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
 
-        var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
-        $(this).find('#add_monitor_item').bind('click', function(e){
-          // Append new monitoring item selection.
-          monitor_selector.addItem('http');
-        });
-        //bt_launch_instance.monitor_selector = monitor_selector;
+        bt_edit_instance.monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
         
         var create_attach_vif = function(index) {
           var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '")">Attach</button>'
@@ -205,7 +217,20 @@ DcmgrGUI.prototype.instancePanel = function(){
         }
 
         var request = new DcmgrGUI.Request;
-        
+        var instance_id = $('#instance_id').val();
+        parallel({
+          monitoring: function(){
+            request.get({
+              "url": '/network_vifs/'+select_current_vif[0]+'/monitors.json',
+              "data": "",
+              success: function(json,status) {
+                for(var i in json) {
+                  bt_edit_instance.monitor_selector.addItem(json[i].title, json[i]);
+                }
+              }
+            });
+          }
+        });
         parallel({
           security_groups:function(){
             var instance_id = document.getElementById('instance_id').value
@@ -218,7 +243,7 @@ DcmgrGUI.prototype.instancePanel = function(){
                   selected_groups = json.vif[0]['security_groups']
                 }
               }
-            })
+            });
             
             request.get({
               "url": '/security_groups/all.json',
@@ -255,7 +280,7 @@ DcmgrGUI.prototype.instancePanel = function(){
                 });
                 
               }
-            })
+            });
           },
 
         //get networks
@@ -393,7 +418,10 @@ DcmgrGUI.prototype.instancePanel = function(){
     var display_name = $(this).find('#backup_display_name').val();
     var description = $(this).find('#backup_description').val();
     
-    var data = ['instance_id='+instance_id, 'backup_display_name=' + display_name, 'backup_description=' + description].join('&');
+    var data = ['instance_id='+instance_id,
+                'backup_display_name=' + display_name,
+                'backup_description=' + description
+               ].join('&');
 
     var request = new DcmgrGUI.Request;
     request.post({
@@ -532,25 +560,29 @@ DcmgrGUI.prototype.instancePanel = function(){
   actions.changeButtonState = function() {
     var ids = c_list.currentMultiChecked()['ids'];
     var flag = true;
-    var is_open = false;
+    var is_selectmenu = false;
+    var is_instance_backup = false;
     $.each(ids, function(key, uuid){
       var row_id = '#row-'+uuid;
       var state = $(row_id).find('.state').text();
-      if(_.include(['running', 'stopped', 'halted'], state)) {
-        is_open = true;
-      } else {
-        flag = false;
-      }
+      is_selectmenu = _.include(['running', 'stopped', 'halted'], state)
+      is_instance_backup = _.include(['halted'], state)
+      flag = _.contains([is_selectmenu, is_instance_backup], true)
     });
 
-    if (flag == true){
-      if(is_open) {
+    if (flag){
+      if(is_selectmenu) {
         selectmenu.data('selectmenu').enableButton();
-        bt_instance_backup.enableDialogButton();
       } else {
         selectmenu.data('selectmenu').disableButton();
+      }
+
+      if(is_instance_backup) {
+        bt_instance_backup.enableDialogButton();
+      } else {
         bt_instance_backup.disableDialogButton();
       }
+
     } else{
       selectmenu.data('selectmenu').disableButton();
       bt_instance_backup.disableDialogButton();

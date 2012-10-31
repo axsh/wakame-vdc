@@ -59,11 +59,13 @@ module Dcmgr::Endpoints::V1203
       raise E::InvalidParameter, "Invalid UUID Syntax: #{uuid}" if !model_class.valid_uuid_syntax?(uuid)
       item = model_class[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
 
-      if @account && item.account_id != @account.canonical_uuid
-        raise E::UnknownUUIDResource, uuid.to_s
-      end
-      if params[:service_type] && params[:service_type] != item.service_type
-        raise E::UnknownUUIDResource, uuid.to_s
+      if item.class < M::AccountResource
+        if @account && item.account_id != @account.canonical_uuid
+          raise E::UnknownUUIDResource, uuid.to_s
+        end
+        if params[:service_type] && params[:service_type] != item.service_type
+          raise E::UnknownUUIDResource, uuid.to_s
+        end
       end
       item
     end

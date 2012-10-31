@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-require 'dcmgr/endpoints/12.03/responses/network'
+require 'dcmgr/endpoints/12.03/responses/network_vif'
+require 'dcmgr/endpoints/12.03/responses/network_vif_monitor'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
@@ -8,7 +9,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     # description "Retrieve details about a vif"
     # params id, string, required
     # params vif_id, string, required
-    respond_with(R::NetworkVif.new(find_by_uuid(params[:vif_id])).generate)
+    respond_with(R::NetworkVif.new(find_by_uuid(:NetworkVif, params[:vif_id])).generate)
   end
 
   namespace '/:vif_id/monitors' do
@@ -18,30 +19,134 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     # List network monitor entries.
     get do
-      respond_with(R::NetworkVifMonitorCollection.new(@vif.network_vif_monitors_dataset).generate)
+      respond_with(R::NetworkVifMonitorCollection.new(@vif.network_vif_monitors_dataset.alives).generate)
+    end
+
+    # Bulk update interface for monitor items.
+    def bulk_update
+      input_uuids = []
+      new_items = []
+      params['monitors'].each {|idx, m|
+        if m['uuid']
+          input_uuids << m['uuid']
+        else
+          new_items << m
+        end
+      }
+      stored_uuids = @vif.network_vif_monitors.map {|m| m.canonical_uuid }
+      deletes = stored_uuids - input_uuids
+      updates = stored_uuids - deletes
+
+      deletes.each { |uuid|
+        m = M::NetworkVifMonitor[uuid]
+        next if m.nil?
+        puts "delete #{uuid}"
+        m.destroy
+      }
+      updates.each { |uuid|
+        input = params['monitors'].find{|idx, i| i['uuid'] == uuid }
+        next if input.nil?
+        input = input[1]
+        
+        m = M::NetworkVifMonitor[uuid]
+        next if m.nil?
+        if input['enabled']
+          m.enabled = (input['enabled'] == 'true')
+        end
+        m.title = input['title'] if !input['title'].nil? && input['title'] != ""
+ 
+        m.params = input['params'] if input['params']
+        m.protocol = input['protocol'] if input['protocol']
+        m.save_changes
+      }
+      new_items.each { |input|
+        mclass = M::NetworkVifMonitor.monitor_class(input['protocol']) || raise("Unsupported protocol: #{input['protocol']}")
+        monitor = mclass.new do |m|
+          m.network_vif = @vif
+          if input['enabled']
+            m.enabled = (input['enabled'] == 'true')
+          end
+          m.protocol = input['protocol']
+          m.title = input['title'] if !input['title'].nil? && input['title'] != ""
+          m.params = input['params'] if input['params']
+        end
+        monitor.save
+      }
+      
+      respond_with({:deleted=>deletes,
+                     :updated=>updates,
+                     :created=>new_items.map {|m| m['uuid']}
+                   })
+    end
+
+    # Add new network monitor entry.
+    def single_insert
+      mclass = M::NetworkVifMonitor.monitor_class(params[:protocol]) || raise("Unsupported protocol: #{params[:protocol]}")
+      monitor = mclass.new do |m|
+        m.network_vif = @vif
+        if params[:enabled]
+          m.enabled = (params[:enabled] == 'true')
+        end
+
+        m.title = params[:title] if params[:title] && params[:title] != ""
+        m.params = params[:params] if params[:params]
+      end
+      monitor.save
+      
+      respond_with(R::NetworkVifMonitor.new(monitor).generate)
+    end
+
+    post do
+      res = if params[:monitors].is_a?(Hash)
+              bulk_update
+            else
+              single_insert
+            end
+
+      on_after_commit do
+        # Dcmgr.messaging.event_publish("monitoring.created",
+        # {:vif_id=>@vif.canonical_uuid, :monitor_id=>params[:monitor_id]})
+      end
+
+      res
     end
 
     # Show a network monitor entry.
     get '/:monitor_id' do
-      monitor = find_by_uuid(M::NetworkVifMonitor, params[:monitor_id])
+      monitor = M::NetworkVifMonitor[params[:monitor_id]] || raise(UnknownUUIDResource, params[:monitor_id])
       respond_with(R::NetworkVifMonitor.new(monitor).generate)
-    end
-
-    # Add new network monitor entry.
-    post do
-      mclass = M::NetworkVifMonitor.monitor_class(params[:protocol]) || raise("Unsupported protocol: #{params[:protocol]}")
-      monitor = mclass.new
-
-      monitor.network_vif = @vif
-      respond_with(R::NetworkVifMonitor.new(monitor.save).generate)
     end
 
     # Delete a network monitor entry.
     delete '/:monitor_id' do
-      monitor = find_by_uuid(M::NetworkVifMonitor, params[:monitor_id])
+      monitor = M::NetworkVifMonitor[params[:monitor_id]] || raise(UnknownUUIDResource, params[:monitor_id])
       monitor.destroy
 
+      on_after_commit do
+        # Dcmgr.messaging.event_publish("monitoring.deleted",
+        # {:vif_id=>@vif.canonical_uuid, :monitor_id=>params[:monitor_id]})
+      end
+
       respond_with([monitor.canonical_uuid])
+    end
+
+    # Update a network monitor parameters.
+    put '/:monitor_id' do
+      monitor = M::NetworkVifMonitor[params[:monitor_id]] || raise(UnknownUUIDResource, params[:monitor_id])
+      if params[:enabled]
+        monitor.enabled = (params[:enabled] == 'true')
+      end
+
+      monitor.title = params[:title] if params[:title]
+      monitor.params = params[:params] if params[:params]
+      monitor.save_changes
+
+      on_after_commit do
+        # Dcmgr.messaging.event_publish("monitoring.updated",
+        # {:vif_id=>@vif.canonical_uuid, :monitor_id=>params[:monitor_id]})
+      end
+
+      respond_with(R::NetworkVifMonitor.new(monitor).generate)
     end
   end
 end
