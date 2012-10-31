@@ -82,10 +82,6 @@ module Dcmgr::VNet::OpenFlow
           ports[each.number] = port
 
           datapath.controller.insert_port self, port
-
-          # Wait for eth to be instantiated to avoid having the
-          # network die.
-          sleep(1) until port.lock.synchronize { port.is_inserted == true }
         end
       end
 
