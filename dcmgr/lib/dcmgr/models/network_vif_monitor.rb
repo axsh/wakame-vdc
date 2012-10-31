@@ -3,7 +3,7 @@
 module Dcmgr::Models
   # Network service monitor entry for vifs.
   class NetworkVifMonitor < BaseNew
-    taggable 'nwmon'
+    taggable 'nwm'
 
     many_to_one :network_vif
 
