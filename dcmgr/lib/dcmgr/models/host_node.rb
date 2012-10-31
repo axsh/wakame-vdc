@@ -32,9 +32,8 @@ module Dcmgr::Models
     end
 
     def_dataset_method(:offline_nodes) do
-      # SELECT * FROM `host_nodes` WHERE ('node_id' IN (SELECT `node_id` FROM `node_states` WHERE (`state` = 'offline')))
-      r = Isono::Models::NodeState.filter(:state => 'offline').select(:node_id)
-      filter(:node_id => r)
+      # SELECT `host_nodes`.* FROM `host_nodes` LEFT JOIN `node_states` ON (`host_nodes`.`node_id` = `node_states`.`node_id`) WHERE ((`node_states`.`state` IS NULL) OR (`node_states`.`state` = 'offline'))
+      select_all(:host_nodes).join_table(:left, :node_states, {:host_nodes__node_id => :node_states__node_id}).filter({:node_states__state => nil} | {:node_states__state => 'offline'})
     end
 
     def validate
