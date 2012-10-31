@@ -227,7 +227,7 @@ DcmgrGUI.prototype.instancePanel = function(){
                 for(var i in json) {
                   bt_edit_instance.monitor_selector.addItem(json[i].title, json[i]);
                 }
-              },
+              }
             });
           }
         });

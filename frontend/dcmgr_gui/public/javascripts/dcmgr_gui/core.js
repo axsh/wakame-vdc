@@ -1057,7 +1057,7 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
 
     var tr_tag = $('#monitor_selector_tmpl').tmpl({
       idx: idx,
-      itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS,
+      itemlist: DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS
     });
 
     item_props['row_elem'] = tr_tag;
