@@ -16,6 +16,7 @@ class InstancesController < ApplicationController
         :ssh_key => params[:ssh_key],
         :display_name => params[:display_name],
         :vifs => {},
+        :monitoring => params[:monitoring],
       }
 
       if params[:vifs]
@@ -49,9 +50,10 @@ class InstancesController < ApplicationController
 
         vif_eth0 = data[:vifs]["eth0"] ||= {}
         params[:eth0_monitors].each{ |idx, mon|
-          vif_eth0[:monitors] ||= []
-          vif_eth0[:monitors] << {
+          vif_eth0[:monitors] ||= {}
+          vif_eth0[:monitors][idx] = {
             :protocol=>mon[:protocol],
+            :title=>mon[:title],
             :enabled=>((mon[:enabled] && mon[:enabled] == 'true') ? true : false),
             :params => mon[:params],
           }
@@ -164,8 +166,13 @@ class InstancesController < ApplicationController
       instance_id = params[:id]
       data = {
         :display_name => params[:display_name],
-        :security_groups => params[:security_groups]
+        :security_groups => params[:security_groups],
+        :monitoring => {},
       }
+      if params[:monitoring]
+        data[:monitoring][:enabled] = (params[:monitoring][:enabled] == 'true')
+        data[:monitoring][:mail_address] = params[:monitoring][:mail_address]
+      end
       instance = Hijiki::DcmgrResource::Instance.update(instance_id,data)
       render :json => instance
     end
