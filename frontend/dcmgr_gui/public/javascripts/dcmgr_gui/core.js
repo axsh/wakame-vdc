@@ -1264,7 +1264,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       protocol: 'dns',
       ui: function (elem, params){
         if(params === undefined) params={port: 53, query_record: "localhost"};
-        elem.append('Host Query: <input type="text" class="_query_record" value="'+params['query_record']+'"></input>');
+        elem.append('Domain Name: <input type="text" class="_query_record" value="'+params['query_record']+'"></input>');
         elem.append('<input type="hidden" class="_udp_port" value="'+params['udp_port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
