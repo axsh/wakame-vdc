@@ -20,16 +20,6 @@ module Dcmgr
         attr_reader :default_ofctl
         attr_reader :switches
 
-        def ports
-          return {} if switches.first[1].nil?
-          switches.first[1].ports
-        end
-
-        def local_hw
-          return nil if switches.first[1].nil?
-          switches.first[1].local_hw
-        end
-
         def initialize service_openflow
           @service_openflow = service_openflow
           @default_ofctl = OvsOfctl.new
@@ -85,7 +75,7 @@ module Dcmgr
           end
         end
 
-        def delete_port port
+        def delete_port switch, port
           port.lock.synchronize {
             return unless port.is_active
             port.is_active = false
@@ -98,7 +88,7 @@ module Dcmgr
             port.datapath.del_flows port.active_flows
             port.active_flows.clear
             port.queued_flows.clear
-            ports.delete port.port_info.number
+            switch.ports.delete port.port_info.number
           }
         end
 

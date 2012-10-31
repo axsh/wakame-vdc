@@ -162,7 +162,7 @@ module Dcmgr::VNet::OpenFlow
         logger.info "Adding port: port:#{message.phy_port.number} name:#{message.phy_port.name}."
         raise "OpenFlowPort" if ports.has_key? message.phy_port.number
 
-        datapath.controller.delete_port ports[message.phy_port.number] if ports.has_key? message.phy_port.number
+        datapath.controller.delete_port(self, ports[message.phy_port.number]) if ports.has_key? message.phy_port.number
 
         port = OpenFlowPort.new(datapath, message.phy_port)
         port.is_active = true
@@ -174,7 +174,7 @@ module Dcmgr::VNet::OpenFlow
         logger.info "Deleting instance port: port:#{message.phy_port.number}."
         raise "UnknownOpenflowPort" if not ports.has_key? message.phy_port.number
 
-        datapath.controller.delete_port ports[message.phy_port.number] if ports.has_key? message.phy_port.number
+        datapath.controller.delete_port(self, ports[message.phy_port.number]) if ports.has_key? message.phy_port.number
 
       when Trema::PortStatus::OFPPR_MODIFY
         logger.info "Ignoring port modify..."
