@@ -64,6 +64,14 @@ ja:
       launch_in: "選択済み"
       user_data: "ユーザデータ"
       display_name: "インスタンス名"
+      network_service_monitor:
+        title: "ネットワーク監視項目"
+        monitoring_enabled: "有効"
+        mailaddr: "メールアドレス"
+        list_headers:
+          protocol: "プロトコル"
+          parameters: "詳細パラメータ"
+          enabled: "有効"
     edit_instance:
       header: "インスタンスを編集"
       instance_id: "インスタンスID"
@@ -72,6 +80,14 @@ ja:
       available_groups: "セキュリティーグループ"
       groups_to_assign: "選択済み"
       interface: "インタフェース"
+      network_service_monitor:
+        title: "ネットワーク監視項目"
+        monitoring_enabled: "有効"
+        mailaddr: "メールアドレス"
+        list_headers:
+          protocol: "プロトコル"
+          parameters: "詳細パラメータ"
+          enabled: "有効"
     edit_machine_image:
       header: "マシンイメージ編集"
       uuid: "WMI ID"
