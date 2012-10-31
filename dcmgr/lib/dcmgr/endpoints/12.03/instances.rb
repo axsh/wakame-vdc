@@ -197,6 +197,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     instance.save
 
+    # instance_monitor_attr row is created at after_save hook in Instance model.
+    if params[:monitoring].is_a?(Hash)
+      instance.instance_monitor_attr.enabled = (params[:monitoring][:enabled] == 'true')
+      if params[:monitoring][:mail_address]
+        instance.instance_monitor_attr.mailaddr = params[:monitoring][:mail_address]
+      end
+      instance.instance_monitor_attr.save_changes
+    end
+    instance.instance_monitor_attr.save_changes
+
     instance.state = :scheduling
     instance.save
 
@@ -305,8 +315,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance if instance.nil?
 
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
-      security_group_uuids = params[:security_groups]
-      security_group_uuids = [security_group_uuids] if security_group_uuids.is_a?(String)
+      security_group_uuids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
 
       groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
       # Remove old security groups
@@ -337,7 +346,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       }
     end
 
-    instance.display_name = params[:display_name ] if params[:display_name]
+    if params[:monitoring].is_a?(Hash)
+      if params[:monitoring][:enabled]
+        instance.instance_monitor_attr.enabled = (params[:monitoring][:enabled] == 'true')
+      end
+      if params[:monitoring][:mail_address]
+        instance.instance_monitor_attr.mailaddr = params[:monitoring][:mail_address]
+      end
+      instance.instance_monitor_attr.save_changes
+    end
+
+    instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
     respond_with(R::Instance.new(instance).generate)
