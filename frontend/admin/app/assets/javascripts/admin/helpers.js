@@ -4,7 +4,7 @@
     date: {
       parse: function(date) {
         if( !_.isEmpty(date) ) {
-          var d = moment.utc(date);
+          var d = moment(date);
           d.local();
           return d.format('YYYY/MM/DD HH:mm:ss');
         } else {
@@ -21,7 +21,7 @@
 
     date_ja: {
       parse: function(date) {
-        var d = moment.utc(date);
+        var d = moment(date);
         d.local();
         return d.format('YYYY年MM月DD日 HH:mm:ss');
       }

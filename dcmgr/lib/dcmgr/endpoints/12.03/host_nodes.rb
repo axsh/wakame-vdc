@@ -11,7 +11,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace('/host_nodes') do
     if params[:id]
       uuid = params[:id].split("hn-")[1]
       uuid = params[:id] if uuid.nil?
-      ds = ds.filter(:uuid.like("%#{uuid}%"))
+      ds = ds.filter(:uuid.like("#{uuid}%"))
     end
 
     if params[:node_id]

@@ -22,6 +22,7 @@
         var notification_id = location.pathname.split('/')[2];
         this.model = new this.model({
           is_confirmed: false,
+          is_new: true,
           distribution: 'all',
           title: '',
           article: '',
@@ -139,9 +140,8 @@
         this.$el.find('#create').addClass('disabled');
         if(this.model.isValid() && this.state == 'init'){
           this.state = 'creating';
-
-          this.model.set('display_begin_at', app.helpers.date.iso8601(this.model.get('display_begin_at')));
-          this.model.set('display_end_at', app.helpers.date.iso8601(this.model.get('display_end_at')));
+          this.model.set('display_begin_at', app.helpers.date.iso8601(this.model.get('display_begin_at')), {silent:true});
+          this.model.set('display_end_at', app.helpers.date.iso8601(this.model.get('display_end_at')), {silent:true});
           this.model.url =  app.info.api_endpoints.dcmgr_gui + '/api/notifications';
           this.model.save(null, {
             'success': function(response, xhr) {
