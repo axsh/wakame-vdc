@@ -29,6 +29,8 @@ balancer_port=${balancer_port:-80}
 instance_port=${instance_port:-80}
 balance_algorithm=${balance_algorithm:-leastconn}
 max_connection=${max_connection:-1000}
+is_public=${is_public:-false}
+is_cacheable=${is_cacheable:-false}
 
 ## optional
 display_name=${display_name:-}
@@ -39,6 +41,7 @@ host_name=${host_name:-}
 cookie_name=${cookie_name:-}
 private_key=${private_key:-}
 public_key=${public_key:-}
+description=${description:-}
 
 function run_cmd() {
 case "${1}" in
@@ -68,6 +71,14 @@ instance)
      --data-urlencode "display_name=${display_name}" \
      --data-urlencode "host_name=${host_name}" \
      ${base_uri}/${1}s.${format}
+    ;;
+  backup)
+    call_api -s -X PUT -H ${http_header} \
+     -d "description=${description}" \
+     -d "display_name=${display_name}" \
+     -d "is_public=${is_public}" \
+     -d "is_cacheable=${is_cacheable}" \
+     ${base_uri}/${1}s/${3}/${2}.${format}
     ;;
   reboot|stop|start|poweroff|poweron)
     call_api -s -X PUT -H ${http_header} -d "''" \
@@ -111,7 +122,16 @@ load_balancer)
   *)       cmd_default $* ;;
   esac
   ;;
-host_node|storage_node|image|network|security_group|ssh_key_pair)
+image|backup_object)
+  case "${2}" in
+  help)    cmd_help    ${1} "index|show|destroy" ;;
+  index)   cmd_index   $* ;;
+  show)    cmd_show    $* ;;
+  destroy) cmd_destroy $* ;;
+  *)       cmd_default $* ;;
+  esac
+  ;;
+host_node|storage_node|network|security_group|ssh_key_pair)
   case "${2}" in
   help)    cmd_help    ${1} "index|show" ;;
   index)   cmd_index   $* ;;
