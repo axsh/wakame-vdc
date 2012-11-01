@@ -147,6 +147,11 @@ module Dcmgr
 
       protected
 
+      def check_fs(device)
+        # Displays the problem in the stdout file system without fixing it.
+        sh("fsck -n -M -v %s", [device])
+      end
+
       # Find first matching loop device path from the result of "losetup -a"
       def find_loopdev(path)
         stat = File.stat(path)

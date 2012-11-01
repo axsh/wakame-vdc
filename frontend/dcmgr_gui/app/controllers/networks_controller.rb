@@ -46,7 +46,7 @@ class NetworksController < ApplicationController
     end
   end
   
-  # GET networks/vol-24f1af4d.json
+  # GET networks/nw-24f1af4d.json
   def show
     catch_error do
       network_id = params[:id]

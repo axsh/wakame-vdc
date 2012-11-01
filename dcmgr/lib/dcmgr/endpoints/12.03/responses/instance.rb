@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'dcmgr/endpoints/12.03/responses/network_vif'
+
 module Dcmgr::Endpoints::V1203::Responses
   class Instance < Dcmgr::Endpoints::ResponseGenerator
     def initialize(instance)
@@ -27,7 +29,11 @@ module Dcmgr::Endpoints::V1203::Responses
           :ha_enabled => ha_enabled,
           :hypervisor => hypervisor,
           :display_name => self.display_name,
-          :service_type => self.service_type
+          :service_type => self.service_type,
+          :monitoring => {
+            :enabled => self.instance_monitor_attr.enabled,
+            :mail_address => self.instance_monitor_attr.mailaddr,
+          },
         }
         if self.ssh_key_data
           h[:ssh_key_pair] = {

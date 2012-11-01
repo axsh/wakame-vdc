@@ -20,16 +20,6 @@ module Dcmgr
         attr_reader :default_ofctl
         attr_reader :switches
 
-        def ports
-          return {} if switches.first[1].nil?
-          switches.first[1].ports
-        end
-
-        def local_hw
-          return nil if switches.first[1].nil?
-          switches.first[1].local_hw
-        end
-
         def initialize service_openflow
           @service_openflow = service_openflow
           @default_ofctl = OvsOfctl.new
@@ -50,6 +40,9 @@ module Dcmgr
           bridge_name = @default_ofctl.get_bridge_name(datapath_id)
           raise "No bridge found matching: datapath_id:%016x" % datapath_id if bridge_name.nil?
 
+          # Sometimes ovs changes the datapath ID and reconnects.
+          switches.delete_if { |dpid,switch| switch.switch_name == bridge_name }
+
           ofctl = @default_ofctl.dup
           ofctl.switch_name = bridge_name
 
@@ -60,14 +53,13 @@ module Dcmgr
           # disconnected for a short period, as Open vSwitch has the
           # ability to keep flows between sessions.
           switches[datapath_id] = OpenFlowSwitch.new(OpenFlowDatapath.new(self, datapath_id, ofctl), bridge_name)
+          switches[datapath_id].update_bridge_ipv4
           switches[datapath_id].switch_ready
         end
 
         def features_reply datapath_id, message
           raise "No switch found." unless switches.has_key? datapath_id
           switches[datapath_id].features_reply message
-
-          @service_openflow.networks.each { |network| network[1].update }
         end
 
         def insert_port switch, port
@@ -83,7 +75,7 @@ module Dcmgr
           end
         end
 
-        def delete_port port
+        def delete_port switch, port
           port.lock.synchronize {
             return unless port.is_active
             port.is_active = false
@@ -96,7 +88,7 @@ module Dcmgr
             port.datapath.del_flows port.active_flows
             port.active_flows.clear
             port.queued_flows.clear
-            ports.delete port.port_info.number
+            switch.ports.delete port.port_info.number
           }
         end
 
@@ -143,7 +135,9 @@ module Dcmgr
             logger.debug "send udp: layer:#{l.pretty}."
           }
 
-          send_packet_out(datapath_id, :data => raw_out.pack.ljust(64, "\0"), :actions => Trema::ActionOutput.new( :port => out_port ) )
+          send_packet_out(datapath_id,
+                          :data => raw_out.pack.ljust(64, "\0"),
+                          :actions => Trema::ActionOutput.new( :port => out_port ) )
         end
 
         def send_arp datapath_id, out_port, op_code, src_hw, src_ip, dst_hw, dst_ip
@@ -164,7 +158,9 @@ module Dcmgr
             logger.debug "ARP packet: layer:#{l.pretty}."
           }
 
-          send_packet_out(datapath_id, :data => raw_out.pack.ljust(64, "\0"), :actions => Trema::ActionOutput.new( :port => out_port ) )
+          send_packet_out(datapath_id,
+                          :data => raw_out.pack.ljust(64, "\0"),
+                          :actions => Trema::ActionOutput.new( :port => out_port ) )
         end
 
         def send_icmp datapath_id, out_port, options

@@ -148,6 +148,8 @@ DcmgrGUI.prototype.imagePanel = function(){
     var ssh_key_pair = $(this).find('#ssh_key_pair').find('option:selected').val();
     var launch_in = $(this).find('#right_select_list').find('option');
     var user_data = $(this).find('#user_data').val();
+    var monitoring_enabled = $(this).find('#monitoring_enabled').is(':checked');
+    var mailaddr = $(this).find('#mailaddr').val();
     var security_groups = [];
     $.each(launch_in,function(i){
       security_groups.push("security_groups[]="+ $(this).val());
@@ -157,15 +159,18 @@ DcmgrGUI.prototype.imagePanel = function(){
       vifs.push("vifs[]="+ $(this).find('#eth' + i).val());
     }
 
-    var data = "image_id="+image_id
-              +"&instance_spec_id="+instance_spec_id
-              +"&host_name="+host_name
-              +"&user_data="+user_data
-              +"&" + security_groups.join('&')
-              +"&" + vifs.join('&')
-              + bt_launch_instance.monitor_selector.queryParams()
-              +"&ssh_key="+ssh_key_pair
-              +"&display_name="+display_name;
+    var data = ["image_id="+image_id,
+                "instance_spec_id="+instance_spec_id,
+                "host_name="+host_name,
+                "user_data="+user_data,
+                security_groups.join('&'),
+                vifs.join('&'),
+                bt_launch_instance.monitor_selector.queryParams(),
+                "ssh_key="+ssh_key_pair,
+                "display_name="+display_name,
+                "monitoring[enabled]="+monitoring_enabled,
+                "monitoring[mail_address]="+mailaddr
+               ].join('&');
 
     request = new DcmgrGUI.Request;
     request.post({
@@ -217,12 +222,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
 
-      var monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
-      $(this).find('#add_monitor_item').bind('click', function(e){
-        // Append new monitoring item selection.
-        monitor_selector.addItem('http');
-      });
-      bt_launch_instance.monitor_selector = monitor_selector;
+      bt_launch_instance.monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
 
       parallel({
         //get instance_specs
@@ -284,7 +284,7 @@ DcmgrGUI.prototype.imagePanel = function(){
                 data.push({
                   "value" : results[i].result.uuid,
                   "id"    : results[i].result.uuid,
-                  "name"  : results[i].result.display_name,
+                  "name"  : results[i].result.display_name
                 });
               }
 

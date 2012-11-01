@@ -25,6 +25,10 @@
         d.local();
         return d.format('YYYY年MM月DD日 HH:mm:ss');
       }
+    },
+
+    nl2br: function(value){
+      return value.replace(/(\r\n|\n\r|\r|\n)/g,"<br />");
     }
   };
 
