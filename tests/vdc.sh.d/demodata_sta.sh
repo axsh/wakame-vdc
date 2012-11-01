@@ -2,8 +2,7 @@
 
 set -e
 
-tmp_path="$VDC_ROOT/tmp"
-
+vdc_data=${vdc_data:?"vdc_data needs to be set"}
 sta_id=${sta_id:?"sta_id needs to be set"}
 sta_server=${sta_server:-${ipaddr}}
 
@@ -16,11 +15,11 @@ case ${sta_server} in
   shlog ./bin/vdc-manage storage add sta.${sta_id} \
     --force \
     --uuid sn-${sta_id} \
-    --base-path ${tmp_path}/volumes \
+    --base-path ${vdc_data}/volumes \
     --disk-space $((1024 * 1024)) \
     --ipaddr ${sta_server} \
     --storage-type raw \
-    --snapshot-base-path ${tmp_path}/snap
+    --snapshot-base-path ${vdc_data}/snap
 
   #ln -fs ${vmimage_path}      ${vmimage_snap_path}
   #ln -fs ${vmimage_meta_path} ${vmimage_meta_snap_path}
