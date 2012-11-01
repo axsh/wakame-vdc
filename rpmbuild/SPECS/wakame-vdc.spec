@@ -336,6 +336,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %post
 /sbin/chkconfig --add vdc-net-event
 
+# fix trema path
+[[ -L /var/lib/%{oname}/trema ]] && rm -f /var/lib/%{oname}/trema
+trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/bundle show trema`
+[[ -z "${trema_home_realpath}" ]] || ln -fs ${trema_home_realpath} /var/lib/%{oname}/trema
+
 %post debug-config
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-dump-core.conf
 
