@@ -58,7 +58,7 @@ http {
     }
 
     location /images/ {
-      root ${VDC_ROOT}/tmp/;
+      root ${vdc_data}/;
       dav_methods PUT DELETE MKCOL COPY MOVE;
       dav_access  group:rw  all:r;
     }
