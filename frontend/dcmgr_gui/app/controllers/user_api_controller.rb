@@ -5,7 +5,7 @@ class UserApiController < ApiController
     if params[:id]
       uuid = params[:id].split("u-")[1]
       uuid = params[:id] if uuid.nil?
-      ds = ds.filter(:uuid.like("%#{uuid}%"))
+      ds = ds.filter(:uuid.like("#{uuid}%"))
     end
 
     if params[:account_id]
