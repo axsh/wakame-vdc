@@ -40,7 +40,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       deletes.each { |uuid|
         m = M::NetworkVifMonitor[uuid]
         next if m.nil?
-        puts "delete #{uuid}"
         m.destroy
       }
       updates.each { |uuid|
@@ -72,11 +71,26 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         end
         monitor.save
       }
-      
-      respond_with({:deleted=>deletes,
-                     :updated=>updates,
-                     :created=>new_items.map {|m| m['uuid']}
-                   })
+
+      on_after_commit do
+        deletes.each { |uuid|
+          Dcmgr.messaging.event_publish("vif.monitoring.deleted",
+                                        :args=>[{:vif_id=>@vif.canonical_uuid, :monitor_id=>uuid}])
+        }
+        updates.each {|uuid|
+          Dcmgr.messaging.event_publish("vif.monitoring.updated",
+                                        :args=>[{:vif_id=>@vif.canonical_uuid, :monitor_id=>uuid}])
+        }
+        new_items.map {|m| m['uuid'] }.each {|uuid|
+          Dcmgr.messaging.event_publish("vif.monitoring.created",
+                                        :args=>[{:vif_id=>@vif.canonical_uuid, :monitor_id=>uuid}])
+        }
+      end
+
+      {:deleted=>deletes,
+        :updated=>updates,
+        :created=>new_items.map {|m| m['uuid']}
+      }
     end
 
     # Add new network monitor entry.
@@ -92,8 +106,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         m.params = params[:params] if params[:params]
       end
       monitor.save
+
+      on_after_commit do
+        Dcmgr.messaging.event_publish("vif.monitoring.created",
+                                      :args=>[{:vif_id=>@vif.canonical_uuid, :monitor_id=>monitor.canonical_uuid}])
+      end
       
-      respond_with(R::NetworkVifMonitor.new(monitor).generate)
+      R::NetworkVifMonitor.new(monitor).generate
     end
 
     post do
@@ -104,11 +123,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
             end
 
       on_after_commit do
-        # Dcmgr.messaging.event_publish("monitoring.created",
-        # {:vif_id=>@vif.canonical_uuid, :monitor_id=>params[:monitor_id]})
+        if @vif.instance
+          Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                        :args=>[{:instance_id=>@vif.instance.canonical_uuid}])
+        end
       end
 
-      res
+      respond_with(res)
     end
 
     # Show a network monitor entry.
@@ -123,8 +144,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       monitor.destroy
 
       on_after_commit do
-        # Dcmgr.messaging.event_publish("monitoring.deleted",
-        # {:vif_id=>@vif.canonical_uuid, :monitor_id=>params[:monitor_id]})
+        Dcmgr.messaging.event_publish("vif.monitoring.deleted",
+                                      :args=>[{:vif_id=>@vif.canonical_uuid, :monitor_id=>params[:monitor_id]}])
+        if @vif.instance
+          Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                        :args=>[{:instance_id=>@vif.instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
+        end
       end
 
       respond_with([monitor.canonical_uuid])
@@ -142,8 +167,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       monitor.save_changes
 
       on_after_commit do
-        # Dcmgr.messaging.event_publish("monitoring.updated",
-        # {:vif_id=>@vif.canonical_uuid, :monitor_id=>params[:monitor_id]})
+        Dcmgr.messaging.event_publish("vif.monitoring.updated",
+                                      :args=>[{:vif_id=>@vif.canonical_uuid, :monitor_id=>params[:monitor_id]}])
+        if @vif.instance
+          Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                        :args=>[{:instance_id=>@vif.instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
+        end
       end
 
       respond_with(R::NetworkVifMonitor.new(monitor).generate)
