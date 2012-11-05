@@ -56,9 +56,11 @@ class NetworkVifsController < ApplicationController
       send_params = {
         :monitors=>{}
       }
-      params[:eth0_monitors].each { |idx, m|
-        send_params[:monitors][idx] = m
-      }
+      if params[:eth0_monitors].is_a?(Hash)
+        params[:eth0_monitors].each { |idx, m|
+          send_params[:monitors][idx] = m
+        }
+      end
       detail = Hijiki::DcmgrResource::NetworkVif.find(params[:id]).add_monitor(send_params)
       render :json => detail
     end
