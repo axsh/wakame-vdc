@@ -6,9 +6,13 @@ module Dcmgr::VNet::OpenFlow
     include Dcmgr::Logger
 
     def initialize dp, id
-      super(dp, id, false)
+      super(dp, id)
 
       self.class.eth_ports[datapath.datapath_id] ||= []
+    end
+
+    def virtual
+      false
     end
 
     def self.eth_ports
