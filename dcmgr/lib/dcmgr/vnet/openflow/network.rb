@@ -43,36 +43,14 @@ module Dcmgr::VNet::OpenFlow
       @icmp_handler = IcmpHandler.new
       arp_handler.install(self)
       icmp_handler.install(self)
-
-      self.class.eth_ports[datapath.datapath_id] ||= []
-    end
-
-    def self.eth_ports
-      @eth_ports ||= {}
-    end
-
-    def self.add_eth_port(datapath_id, port)
-      switch_ports = (self.eth_ports[datapath_id] ||= [])
-      switch_ports.count(port) == 0 ? switch_ports << port : nil
     end
 
     def flood_flows
       @flood_flows ||= Array.new
     end
 
-    def self.physical_flood_flows(datapath_id)
-      @physical_flood_flows ||= {}
-      @physical_flood_flows[datapath_id] ||=
-        [ Flow.new(TABLE_MAC_ROUTE,      1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [self.eth_ports[datapath_id], {:output => :placeholder}]),
-          Flow.new(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [self.eth_ports[datapath_id], {:output => :placeholder}]),
-          Flow.new(TABLE_LOAD_DST,       1, {:dl_dst => 'FF:FF:FF:FF:FF:FF'}, :for_each => [self.eth_ports[datapath_id], {:load_reg0 => :placeholder, :resubmit => TABLE_LOAD_SRC}]),
-          Flow.new(TABLE_ARP_ROUTE,      1, {:arp => nil, :dl_dst => 'FF:FF:FF:FF:FF:FF', :arp_tha => '00:00:00:00:00:00'}, :for_each => [self.eth_ports[datapath_id], {:output => :placeholder}]),
-        ]
-    end
-
     def update
       self.datapath.add_flows(self.flood_flows)
-      self.datapath.add_flows(self.class.physical_flood_flows(self.datapath.datapath_id)) if !self.virtual
     end
 
     def add_port port, is_local
@@ -83,7 +61,6 @@ module Dcmgr::VNet::OpenFlow
     def remove_port port
       ports.delete port
       local_ports.delete port
-      self.eth_ports[datapath.datapath_id].delete port
     end
 
     def install_virtual_network(eth_port)
