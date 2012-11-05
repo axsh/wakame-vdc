@@ -32,7 +32,6 @@ class MonitoringGateway < Isono::NodeModules::Base
 
     event.subscribe('instance.monitoring.refreshed', '#') do |args|
       @worker.pass {
-        p args
         myinstance.refresh_monitoring(args[0][:instance_id])
       }
     end
