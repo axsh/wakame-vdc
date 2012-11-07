@@ -49,7 +49,7 @@ module Dcmgr::VNet::OpenFlow
       return if entry.nil?
 
       network.datapath.send_icmp(message.in_port, {
-                                   :op_code => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
+                                   :op_code => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REPLY,
                                    :src_hw => entry[:mac], :src_ip => message.ipv4_daddr.to_s,
                                    :dst_hw => message.macsa.to_s, :dst_ip => message.ipv4_saddr.to_s,
                                    :id => message.icmpv4_id,

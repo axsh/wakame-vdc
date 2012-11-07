@@ -176,7 +176,7 @@ module Dcmgr
           raw_out.l3.ttl = 128
 
           case options[:op_code]
-          when Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST
+          when Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REPLY
             raw_out.l4 = Racket::L4::ICMPEchoReply.new
             raw_out.l4.id = options[:id]
             raw_out.l4.sequence = options[:sequence]
@@ -184,7 +184,7 @@ module Dcmgr
             raise "Unsupported ICMP type."
           end
 
-          # raw_out.l4.payload = payload
+          raw_out.l4.payload = options[:payload] if options[:payload]
           raw_out.l4.fix!
 
           raw_out.layers.compact.each { |l|
