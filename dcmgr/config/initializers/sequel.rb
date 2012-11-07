@@ -1,18 +1,11 @@
 # -*- coding: utf-8 -*-
 
 require 'sequel'
-if Sequel::DATABASES.first.nil?
-  db = Sequel.connect(Dcmgr.conf.database_uri, :after_connect=>proc { |conn|
-                        case conn.class.to_s
-                        when 'Mysql2::Client', 'Mysql'
-                          # send AUTOCOMMIT=0 for every new connections.
-                          conn.query "SET AUTOCOMMIT=0;"
-                          conn.query "COMMIT;"
-                        end
-                      })
-else
-  db = Sequel::DATABASES.first
-end
+db = Sequel.connect(Dcmgr.conf.database_uri)
+
+# Force to set "READ COMMITTED" isolation level.
+# This mode is supported by both InnoDB and MySQL Cluster backends.
+db.transaction_isolation_level = :committed
 
 if ENV['DEBUG_SQL']
   require 'logger'
