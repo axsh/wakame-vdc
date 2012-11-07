@@ -15,7 +15,7 @@ module Dcmgr
         # create hva context
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
-        @hva_ctx.logger.info("Booting #{@inst_id}")
+        @hva_ctx.logger.info("Booting #{@inst_id}: phase 1")
 
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
@@ -25,22 +25,7 @@ module Dcmgr
         task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
                             :deploy_image, [@inst, @hva_ctx])
 
-        setup_metadata_drive
-
-        check_interface
-        task_session.invoke(@hva_ctx.hypervisor_driver_class,
-                            :run_instance, [@hva_ctx])
-
-        # Node specific instance_started event for netfilter and general instance_started event for openflow
-        update_instance_state({:state=>:running}, ['hva/instance_started'])
-
-        # Security group vnic joined events for vnet netfilter
-        @inst[:vif].each { |vnic|
-          event.publish("#{@inst[:host_node][:node_id]}/vnic_created", :args=>[vnic[:uuid]])
-          vnic[:security_groups].each { |secg|
-            event.publish("#{secg}/vnic_joined", :args=>[vnic[:uuid]])
-          }
-        }
+        job.submit("hva-handle.#{@node.node_id}", 'run_local_store', @inst_id)
       }, proc {
         ignore_error { terminate_instance(false) }
         ignore_error {
