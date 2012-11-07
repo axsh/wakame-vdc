@@ -1,5 +1,11 @@
-if [ "$1" = "sparse" ]; then
-   sudo ../ovs/bin/ovs-ofctl dump-flows br0 | \
+if [[ $1 =~ ^br* ]]; then
+  use_bridge="$1"
+else
+  use_bridge="br0"
+fi
+
+if [ "$2" = "sparse" ]; then
+   sudo ovs-ofctl dump-flows ${use_bridge} | \
    sed -e 's/NXST_FLOW reply (xid=0x4)://' -e 's/cookie=0x[0-9a-f]*, duration=[0-9]*.[0-9]*s, table=\([0-9]*\), n_packets=\([0-9]*\), n_bytes=[0-9]*, priority=\([0-9]*\)[, ]/\1-\3\t 0\t => /' | \
    sed -e 's/NXST_FLOW reply (xid=0x4)://' -e 's/cookie=0x[0-9a-f]*, duration=[0-9]*.[0-9]*s, table=\([0-9]*\), n_packets=\([0-9]*\), n_bytes=[0-9]*, idle_age=[0-9]*,priority=\([0-9]*\)[, ]/\1-\3\t 0\t => /' | \
    sed -e 's/NXST_FLOW reply (xid=0x4)://' -e 's/cookie=0x[0-9a-f]*, duration=[0-9]*.[0-9]*s, table=\([0-9]*\), n_packets=\([0-9]*\), n_bytes=[0-9]*, idle_age=[0-9]*,idle_timeout=\([0-9]*\),priority=\([0-9]*\)[, ]/\1-\4\t \3\t => /' | \
@@ -8,7 +14,7 @@ if [ "$1" = "sparse" ]; then
    sed -e 's/NXST_FLOW reply (xid=0x4)://' -e 's/cookie=0x[0-9a-f]*, duration=[0-9]*.[0-9]*s, table=\([0-9]*\), n_packets=\([0-9]*\), n_bytes=[0-9]*, idle_timeout=\([0-9]*\),idle_age=[0-9]*,hard_age=[0-9]*,priority=\([0-9]*\)[, ]/\1-\4\t \3\t => /' | \
    sort -n
 else
-   sudo ../ovs/bin/ovs-ofctl dump-flows br0 | \
+   sudo ovs-ofctl dump-flows ${use_bridge} | \
    sed -e 's/NXST_FLOW reply (xid=0x4)://' -e 's/cookie=0x[0-9a-f]*, duration=[0-9]*.[0-9]*s, table=\([0-9]*\), n_packets=\([0-9]*\), n_bytes=[0-9]*, priority=\([0-9]*\)[, ]/\1-\3\t \2\t 0\t => /' | \
    sed -e 's/NXST_FLOW reply (xid=0x4)://' -e 's/cookie=0x[0-9a-f]*, duration=[0-9]*.[0-9]*s, table=\([0-9]*\), n_packets=\([0-9]*\), n_bytes=[0-9]*, idle_age=[0-9]*,priority=\([0-9]*\)[, ]/\1-\3\t \2\t 0\t => /' | \
    sed -e 's/NXST_FLOW reply (xid=0x4)://' -e 's/cookie=0x[0-9a-f]*, duration=[0-9]*.[0-9]*s, table=\([0-9]*\), n_packets=\([0-9]*\), n_bytes=[0-9]*, idle_age=[0-9]*,idle_timeout=\([0-9]*\),priority=\([0-9]*\)[, ]/\1-\4\t \2\t \3\t => /' | \

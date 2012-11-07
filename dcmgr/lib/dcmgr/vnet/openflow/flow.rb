@@ -87,6 +87,8 @@ module Dcmgr
         def match_tags
           {
             :ip => 'ip',
+            :ipv4 => 'ip',
+            :ipv6 => 'ipv6',
             :arp => 'arp',
             :icmp => 'icmp',
             :icmp_type => 'icmp_type=%i',

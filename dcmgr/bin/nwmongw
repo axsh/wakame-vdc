@@ -29,6 +29,12 @@ class MonitoringGateway < Isono::NodeModules::Base
         myinstance.unregister_monitoring(args[0])
       }
     end
+
+    event.subscribe('instance.monitoring.refreshed', '#') do |args|
+      @worker.pass {
+        myinstance.refresh_monitoring(args[0][:instance_id])
+      }
+    end
   end
 
   def register_monitoring(instance_uuid)
@@ -36,6 +42,13 @@ class MonitoringGateway < Isono::NodeModules::Base
 
     logger.info("Registering monitoring configuration for #{instance.canonical_uuid}");
     @driver.register_instance(instance)
+  end
+
+  def refresh_monitoring(instance_uuid)
+    instance = Dcmgr::Models::Instance[instance_uuid] || raise("Unknown instance: #{instance_uuid}")
+
+    logger.info("Refreshing monitoring configuration for #{instance.canonical_uuid}");
+    @driver.update_instance(instance)
   end
 
   def unregister_monitoring(instance_uuid)

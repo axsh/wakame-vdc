@@ -18,7 +18,7 @@ module Dcmgr::VNet::OpenFlow
 
       switch.datapath.add_flows flows
 
-      if self.ip.to_s == Isono::Util.default_gw_ipaddr.to_s
+      if self.ip.to_s == switch.bridge_ipv4
         install_flows
       end
     end
@@ -27,7 +27,7 @@ module Dcmgr::VNet::OpenFlow
       port_number = port.port_info.number
       local_hw = port.port_info.hw_addr
 
-      logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{ip.to_s}/#{listen_port}."
+      logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{self.ip.to_s}/#{listen_port}."
 
       # This needs to be per-network handler.
       network.packet_handlers <<
@@ -37,7 +37,7 @@ module Dcmgr::VNet::OpenFlow
                             message.arp? and
                             message.arp_oper == Racket::L3::ARP::ARPOP_REPLY and
                             message.arp_spa.to_s == network.services[:metadata].ip.to_s and
-                            message.arp_tpa.to_s == Isono::Util.default_gw_ipaddr.to_s
+                            message.arp_tpa.to_s == switch.bridge_ipv4
                           }, Proc.new { |switch,port,message|
                             self.of_port = port_number
                             self.mac = message.arp_sha
@@ -46,17 +46,17 @@ module Dcmgr::VNet::OpenFlow
 
       flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
                           :in_port => port_number, :arp => nil,
-                          :dl_dst => local_hw.to_s, :nw_dst => Isono::Util.default_gw_ipaddr,
+                          :dl_dst => local_hw.to_s, :nw_dst => switch.bridge_ipv4,
                           :nw_src => ip.to_s},
                         {:controller => nil, :local => nil})]
 
       switch.datapath.add_flows flows
       switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
-                               local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
+                               local_hw.to_s, switch.bridge_ipv4.to_s, nil, ip.to_s)
 
       @arp_retry = EM::PeriodicTimer.new(10) {
         switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
-                                 local_hw.to_s, Isono::Util.default_gw_ipaddr.to_s, nil, ip.to_s)
+                                 local_hw.to_s, switch.bridge_ipv4.to_s, nil, ip.to_s)
       }
     end
 
@@ -75,7 +75,7 @@ module Dcmgr::VNet::OpenFlow
                           }, Proc.new { |switch,port,message|
                             metadata_server = network.services[:metadata]
 
-                            if metadata_server.ip.to_s == Isono::Util.default_gw_ipaddr.to_s
+                            if metadata_server.ip.to_s == switch.bridge_ipv4.to_s
                               switch.install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
                                                         metadata_server.of_port,
                                                         network.local_hw,
