@@ -48,12 +48,16 @@ module Dcmgr::VNet::OpenFlow
       logger.debug "icmp_handler: tpa:'#{message.ipv4_daddr.to_s}' entry:#{entry[:mac].inspect}."
       return if entry.nil?
 
+      payload = message.ipv4_payload
+      payload = payload.byteslice(8, payload.bytesize - 8) if payload
+
       network.datapath.send_icmp(message.in_port, {
                                    :op_code => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REPLY,
                                    :src_hw => entry[:mac], :src_ip => message.ipv4_daddr.to_s,
                                    :dst_hw => message.macsa.to_s, :dst_ip => message.ipv4_saddr.to_s,
                                    :id => message.icmpv4_id,
                                    :sequence => message.icmpv4_seq,
+                                   :payload => payload,
                                  })
     end
 
