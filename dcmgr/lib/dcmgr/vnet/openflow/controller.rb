@@ -41,7 +41,12 @@ module Dcmgr
           raise "No bridge found matching: datapath_id:%016x" % datapath_id if bridge_name.nil?
 
           # Sometimes ovs changes the datapath ID and reconnects.
-          switches.delete_if { |dpid,switch| switch.switch_name == bridge_name }
+          old_switch = switches.find { |dpid,switch| switch.switch_name == bridge_name }
+          
+          if old_switch
+            switches.delete(old_switch[0])
+            old_switch[1].each { |network_id,network| @service_openflow.destroy_network(network, false) }
+          end
 
           ofctl = @default_ofctl.dup
           ofctl.switch_name = bridge_name
