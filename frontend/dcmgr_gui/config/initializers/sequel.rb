@@ -10,15 +10,11 @@ else
   config = YAML::load(IO.read(File.expand_path("../../database.yml", __FILE__)))[ENV['RAILS_ENV'] || ENV['RACK_ENV'] || 'development']
 end
 database_uri = "#{config['adapter']}://#{config['host']}/#{config['database']}?user=#{config['user']}&password=#{config['password']}"
-db = Sequel.connect(database_uri, :after_connect=>proc { |conn|
-                      case conn.class.to_s
-                      when 'Mysql2::Client', 'Mysql'
-                        # send AUTOCOMMIT=0 for
-                        # every new connections.
-                        conn.query "SET AUTOCOMMIT=0;"
-                        conn.query "COMMIT;"
-                      end
-                    })
+db = Sequel.connect(database_uri)
+
+# Force to set "READ COMMITTED" isolation level.
+# This mode is supported by both InnoDB and MySQL Cluster backends.
+db.transaction_isolation_level = :committed
 
 if ENV['DEBUG_SQL']
   require 'logger'
