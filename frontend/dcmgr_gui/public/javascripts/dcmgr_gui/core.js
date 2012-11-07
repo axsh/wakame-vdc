@@ -77,8 +77,10 @@ DcmgrGUI.Filter = DcmgrGUI.Class.create({
 
 DcmgrGUI.Converter = {};
 
-// Convert number to default display byte unit (GB).
-displayByteUnit = DcmgrGUI.Converter.toDisplayByteUnit = function(qty, unit) {
+// Convert number to display disk size (large byte) unit in GB.
+// <= 10GB is displayed in: 1.01 GB, 0.66GB
+// > 10GB is displayed in: 10 GB, 101GB
+displayDiskSize = DcmgrGUI.Converter.toDisplayDiskSize = function(qty, unit) {
   var q;
   if (qty === undefined || qty == ''){
     return "";
@@ -89,7 +91,11 @@ displayByteUnit = DcmgrGUI.Converter.toDisplayByteUnit = function(qty, unit) {
     if (unit !== undefined ){ qty = qty + unit; }
     q = new Qty(qty);
   }
-  return q.toPrec('0.01 GB').toString('GB');
+  if( q.to('GB').scalar > 10.0 ) {
+    return q.toPrec('GB').toString('GB');
+  }else{
+    return q.toPrec('0.01 GB').toString('GB');
+  }
 };
 
 DcmgrGUI.Converter.unit = function(data, unit_type){
