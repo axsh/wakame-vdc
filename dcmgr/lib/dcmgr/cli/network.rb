@@ -202,6 +202,23 @@ __END
       puts nw.add_service_vif(options[:ipv4]).canonical_uuid
     end
 
+    desc "show NW", "Show network vifs on network"
+    def show(nw_uuid)
+      nw = M::Network[nw_uuid] || UnknownUUIDError.raise(nw_uuid)
+      ds = M::NetworkVif.where(:network_id => nw.id)
+
+      table = [['Vif', 'Network', 'Instance', 'IPv4', 'NAT IPv4']]
+      ds.each { |r|
+        table << [r.canonical_uuid,
+                  r.network.canonical_uuid,
+                  r.instance ? r.instance.canonical_uuid : nil,
+                  r.direct_ip_lease.first ? r.direct_ip_lease.first.ipv4 : nil,
+                  r.nat_ip_lease.first ? r.nat_ip_lease.first.ipv4 : nil,
+                 ]
+      }
+      shell.print_table(table)
+    end
+
     protected
     def self.basename
       "vdc-manage #{Network.namespace} #{self.namespace}"
