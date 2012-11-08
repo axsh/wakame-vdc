@@ -155,7 +155,8 @@ module Dcmgr::Models
     end
 
     def attach_to_network(network)
-      # Verify no network is previously set.
+      detach_from_network if self.network
+
       self.network = network
       self.save_changes
       lease_ip_lease
