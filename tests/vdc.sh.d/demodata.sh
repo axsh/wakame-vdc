@@ -16,6 +16,7 @@ dhcp_server=${dhcp_server:-${ipaddr}}
 metadata_server=${metadata_server:-${ipaddr}}
 
 node_id=${node_id:-"demo1"}
+extra_node_ids=${extra_node_ids:-""}
 
 hva_arch=$(uname -m)
 case ${hva_arch} in
@@ -26,6 +27,10 @@ esac
 
 (hva_id=${node_id} hva_arch=${hva_arch} . $data_path/demodata_hva.sh)
 (sta_id=${node_id} sta_server=${sta_server:-${ipaddr}} . $data_path/demodata_sta.sh)
+
+for itr in $extra_node_ids; do
+  (hva_id=${itr} hva_arch=${hva_arch} . $data_path/demodata_hva.sh)
+done
 
 cd ${VDC_ROOT}/dcmgr/
 
