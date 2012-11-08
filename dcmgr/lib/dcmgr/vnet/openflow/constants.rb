@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-$LOAD_PATH.unshift File.expand_path('../../../../../../trema/ruby', __FILE__)
 
 require 'trema'
 
@@ -60,6 +59,9 @@ module Dcmgr
         PORT_TYPE_TUNNEL = 2
         PORT_TYPE_INSTANCE_NET = 3
         PORT_TYPE_INSTANCE_VNET = 4
+
+        PORT_NUMBER_LOCAL = 65534
+        PORT_NUMBER_CONTROLLER = 65535
       end
 
     end
