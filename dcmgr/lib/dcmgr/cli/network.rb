@@ -313,9 +313,16 @@ __END
     def show(uuid)
       ds = get_services(uuid, options)
 
-      table = [['Vif', 'Name', 'Incoming Port', 'Outgoing Port']]
+      table = [['Vif', 'Name', 'IPv4', 'NAT IPv4', 'Incoming Port', 'Outgoing Port']]
       ds.each { |r|
-        table << [r.network_vif.canonical_uuid, r.name, r.incoming_port, r.outgoing_port]
+        vif = r.network_vif
+
+        table << [vif.canonical_uuid,
+                  r.name,
+                  vif.direct_ip_lease.first ? vif.direct_ip_lease.first.ipv4 : nil,
+                  vif.nat_ip_lease.first ? vif.nat_ip_lease.first.ipv4 : nil,
+                  r.incoming_port,
+                  r.outgoing_port]
       }
       shell.print_table(table)
     end
