@@ -303,6 +303,19 @@ __END
       shell.print_table(table)
     end
 
+    desc "remove NW", "Remove services on network"
+    method_option :service, :type => :string, :required => true, :desc => "The service name"
+    def remove(uuid)
+      ds = get_services(uuid, options)
+
+      table = []
+      ds.each { |r|
+        table << [r.network_vif.canonical_uuid, r.name]
+        r.destroy
+      }
+      shell.print_table(table)
+    end
+
     protected
     def self.basename
       "vdc-manage #{Network.namespace} #{self.namespace}"
