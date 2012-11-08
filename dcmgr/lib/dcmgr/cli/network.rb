@@ -214,6 +214,20 @@ __END
     M=Dcmgr::Models
 
     no_tasks {
+      def get_services(uuid, options)
+        case uuid
+        when /^nw-/
+          filter = {}
+          filter[:name] = options[:service] if options[:service]
+
+          nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+          nw.network_service(filter)
+
+        else
+          InvalidUUIDError.raise(uuid)
+        end
+      end
+
       def prepare_vif(uuid, options)
         case uuid
         when /^nw-/
@@ -275,6 +289,18 @@ __END
       }
 
       M::NetworkService.create(service_data)
+    end
+
+    desc "show NW", "Show services on network"
+    method_option :service, :type => :string, :required => false, :desc => "The service name"
+    def show(uuid)
+      ds = get_services(uuid, options)
+
+      table = [['Vif', 'Name', 'Incoming Port', 'Outgoing Port']]
+      ds.each { |r|
+        table << [r.network_vif.canonical_uuid, r.name, r.incoming_port, r.outgoing_port]
+      }
+      shell.print_table(table)
     end
 
     protected
