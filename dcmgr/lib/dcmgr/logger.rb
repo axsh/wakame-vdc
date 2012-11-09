@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'logger'
+require 'isono'
 
 module Dcmgr
   module Logger
@@ -14,21 +15,33 @@ module Dcmgr
       @logdev
     end
 
-    def self.logger
-      @logger ||= Logger.create
-    end
+    class CustomLogger < Isono::Runner::RpcServer::EndpointBuilder
+      def initialize(progname)
+        @progname = progname
+      end
+      
+      ["fatal", "error", "warn", "info", "debug"].each do |level|
+        define_method(level){|msg|
+          if job_context
+            logger.__send__(level, "Session ID: #{session_id}: #{msg}")
+          else
+            logger.__send__(level, "#{msg}")
+          end
+        }
+      end
 
-    # Factory method for ::Logger
-    def self.create(name=nil)
-      l = ::Logger.new(default_logdev)
-      l.progname = name
-      l
+      # Factory method for ::Logger
+      def logger
+        l = ::Logger.new(Dcmgr::Logger.default_logdev)
+        l.progname = @progname
+        l
+      end
     end
 
     def self.included(klass)
       klass.class_eval {
 
-        @class_logger = Logger.create(self.to_s.split('::').last)
+        @class_logger = CustomLogger.new(self.to_s.split('::').last)
 
         def self.logger
           @class_logger
