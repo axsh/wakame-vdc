@@ -24,7 +24,7 @@ case db.adapter_scheme
 when :mysql, :mysql2
   Sequel::MySQL.default_charset = 'utf8'
   Sequel::MySQL.default_collate = 'utf8_general_ci'
-  Sequel::MySQL.default_engine = 'InnoDB'
+  Sequel::MySQL.default_engine = ENV['MYSQL_DB_ENGINE'] || 'InnoDB'
 end
 # Set timezone to UTC
 Sequel.default_timezone = :utc
