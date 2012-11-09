@@ -201,8 +201,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # Note that the keys should use string for sub hash.
     if params['monitoring'].is_a?(Hash)
       instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
-      p params['monitoring']
-      p params['monitoring']['mail_address']
       if params['monitoring']['mail_address']
         instance.instance_monitor_attr.mailaddr = params['monitoring']['mail_address']
       end
