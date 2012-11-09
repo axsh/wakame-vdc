@@ -41,7 +41,12 @@ module Dcmgr
           raise "No bridge found matching: datapath_id:%016x" % datapath_id if bridge_name.nil?
 
           # Sometimes ovs changes the datapath ID and reconnects.
-          switches.delete_if { |dpid,switch| switch.switch_name == bridge_name }
+          old_switch = switches.find { |dpid,switch| switch.switch_name == bridge_name }
+          
+          if old_switch
+            switches.delete(old_switch[0])
+            old_switch[1].each { |network_id,network| @service_openflow.destroy_network(network, false) }
+          end
 
           ofctl = @default_ofctl.dup
           ofctl.switch_name = bridge_name
@@ -176,7 +181,7 @@ module Dcmgr
           raw_out.l3.ttl = 128
 
           case options[:op_code]
-          when Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST
+          when Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REPLY
             raw_out.l4 = Racket::L4::ICMPEchoReply.new
             raw_out.l4.id = options[:id]
             raw_out.l4.sequence = options[:sequence]
@@ -184,7 +189,7 @@ module Dcmgr
             raise "Unsupported ICMP type."
           end
 
-          # raw_out.l4.payload = payload
+          raw_out.l4.payload = options[:payload] if options[:payload]
           raw_out.l4.fix!
 
           raw_out.layers.compact.each { |l|
