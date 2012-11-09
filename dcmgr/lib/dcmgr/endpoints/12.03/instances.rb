@@ -208,10 +208,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
       instance.instance_monitor_attr.save_changes
     end
-    instance.instance_monitor_attr.save_changes
 
     instance.state = :scheduling
-    instance.save
+    instance.save_changes
 
     bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
 
