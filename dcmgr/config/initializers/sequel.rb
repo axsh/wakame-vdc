@@ -15,7 +15,7 @@ case db.adapter_scheme
 when :mysql, :mysql2
   Sequel::MySQL.default_charset = 'utf8'
   Sequel::MySQL.default_collate = 'utf8_general_ci'
-  Sequel::MySQL.default_engine = 'InnoDB'
+  Sequel::MySQL.default_engine = ENV['MYSQL_DB_ENGINE'] || 'InnoDB'
 
   # this is the mysql adapter specific constants. won't work with mysql2.
   if db.adapter_scheme == :mysql
