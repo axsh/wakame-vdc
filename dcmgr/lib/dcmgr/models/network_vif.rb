@@ -46,13 +46,16 @@ module Dcmgr::Models
       hash
     end
 
+    # Hash used for including with e.g. network service hash without
+    # including excessive or namespace colliding keys.
     def to_hash_flat
       hash = {
+        :network_vif_uuid => self.canonical_uuid,
+        :network_id => self.network_id,
         :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
         :nat_ip_lease => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
-        :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
-        :network_id => self.network_id,
         :mac_addr => self.pretty_mac_addr,
+        :instance_uuid => self.instance.nil? ? nil : self.instance.canonical_uuid,
       }
     end
 
