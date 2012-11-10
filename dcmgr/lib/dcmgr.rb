@@ -285,6 +285,8 @@ module Dcmgr
       autoload :OpenFlowSwitch, 'dcmgr/vnet/openflow/switch'
       autoload :OvsOfctl, 'dcmgr/vnet/openflow/ovs_ofctl'
       autoload :PacketHandler, 'dcmgr/vnet/openflow/packet_handler'
+      autoload :PortPhysical, 'dcmgr/vnet/openflow/port_physical'
+      autoload :PortVirtual, 'dcmgr/vnet/openflow/port_virtual'
       autoload :ServiceBase, 'dcmgr/vnet/openflow/service_base'
       autoload :ServiceDhcp, 'dcmgr/vnet/openflow/service_dhcp'
       autoload :ServiceDns, 'dcmgr/vnet/openflow/service_dns'
