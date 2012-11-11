@@ -16,8 +16,8 @@ DcmgrGUI.prototype.instancePanel = function(){
       "state":'',
       "private_ip":'',
       "type":''
-    }]
-  }
+    }];
+  };
 
   DcmgrGUI.Detail.prototype.getEmptyData = function(){
     return {
@@ -28,8 +28,8 @@ DcmgrGUI.prototype.instancePanel = function(){
       "type":'-',
       "status":'-',
       "owner":'-'
-    }
-  }
+    };
+  };
 
   var close_button_name = $.i18n.prop('close_button');
   var terminate_button_name = $.i18n.prop('terminate_button');
@@ -88,8 +88,7 @@ DcmgrGUI.prototype.instancePanel = function(){
         data = data + "&security_groups[]="+ $(this).val();
       });
 
-
-      var request = new DcmgrGUI.Request;
+      var request = new DcmgrGUI.Request();
       parallel({
         instance: function(){
           request.put({
@@ -107,10 +106,10 @@ DcmgrGUI.prototype.instancePanel = function(){
             success: function(json, status){
             }
           });
-        },
+        }
       });
       $(this).dialog("close");
-    }
+    };
 
     var bt_edit_instance = new DcmgrGUI.Dialog({
       target:'.edit_instance',
@@ -132,13 +131,14 @@ DcmgrGUI.prototype.instancePanel = function(){
           } else {
             bt_edit_instance.disabledButton(1, true);
           }
-        }
+        };
 
         var is_ready = {
           'display_name' : true,
           'security_groups' : true,
           'networks' : true
-        }
+        };
+
         var on_ready = function(size){
           if(size > 0) {
             is_ready['security_groups'] = true;
@@ -147,7 +147,7 @@ DcmgrGUI.prototype.instancePanel = function(){
             is_ready['security_groups'] = false;
             ready(is_ready);
           }
-        }
+        };
 
         var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
         $(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
@@ -157,7 +157,7 @@ DcmgrGUI.prototype.instancePanel = function(){
         bt_edit_instance.monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
 
         var create_attach_vif = function(index) {
-          var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '")">Attach</button>'
+          var select_html = '<button id="attach_button_eth' + index + '" name="attach_button_eth' + index + '")">Attach</button>';
 
           $(self).find('#vif_button_eth' + index).empty().html(select_html);
           $(self).find('#attach_button_eth' + index).click(function(){
@@ -165,16 +165,16 @@ DcmgrGUI.prototype.instancePanel = function(){
               attach_vif($(self).find('#eth' + index).val(), select_current_vif[index], index);
             }
           });
-        }
+        };
 
         var create_detach_vif = function(index) {
-          var select_html = '<button id="detach_button_eth' + index + '" name="detach_button_eth' + index + '")">Detach</button>'
+          var select_html = '<button id="detach_button_eth' + index + '" name="detach_button_eth' + index + '")">Detach</button>';
 
           $(self).find('#vif_button_eth' + index).empty().html(select_html);
           $(self).find('#detach_button_eth' + index).click(function(){
             detach_vif(select_current_nw[index], select_current_vif[index], index);
           });
-        }
+        };
 
         var update_eth_network_id = function(index) {
           if (select_current_nw[index]) {
@@ -189,9 +189,9 @@ DcmgrGUI.prototype.instancePanel = function(){
         };
 
         function attach_vif(network_id, vif_id, index) {
-          var data = "network_id=" + network_id + "&vif_id=" + vif_id
+          var data = "network_id=" + network_id + "&vif_id=" + vif_id;
 
-          request = new DcmgrGUI.Request;
+          request = new DcmgrGUI.Request();
           request.put({
             "url": '/networks/attach',
             "data": data,
@@ -203,9 +203,9 @@ DcmgrGUI.prototype.instancePanel = function(){
         }
 
         function detach_vif(network_id, vif_id, index) {
-          var data = "network_id=" + network_id + "&vif_id=" + vif_id
+          var data = "network_id=" + network_id + "&vif_id=" + vif_id;
 
-          request = new DcmgrGUI.Request;
+          request = new DcmgrGUI.Request();
           request.put({
             "url": '/networks/detach',
             "data": data,
@@ -388,6 +388,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   instance_reboot_buttons[reboot_button_name] = function() {
     instance_action_helper.call(this,'reboot');
   }
+
   var bt_instance_reboot = new DcmgrGUI.Dialog({
      target:'.reboot_instances',
      width:400,
@@ -402,6 +403,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   instance_terminate_buttons[terminate_button_name] = function() {
     instance_action_helper.call(this,'terminate');
   }
+
   var bt_instance_terminate = new DcmgrGUI.Dialog({
     target:'.terminate_instances',
     width:400,
@@ -433,6 +435,7 @@ DcmgrGUI.prototype.instancePanel = function(){
     });
     $(this).dialog("close");
   }
+
   var bt_instance_backup = new DcmgrGUI.Dialog({
     target:'.backup_instances',
     width:600,
@@ -447,6 +450,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   instance_poweroff_buttons[poweroff_button_name] = function() {
     instance_action_helper.call(this,'poweroff');
   }
+
   var bt_instance_poweroff = new DcmgrGUI.Dialog({
     target:'.poweroff_instances',
     width:400,
@@ -461,6 +465,7 @@ DcmgrGUI.prototype.instancePanel = function(){
   instance_poweron_buttons[poweron_button_name] = function() {
     instance_action_helper.call(this,'poweron');
   }
+
   var bt_instance_poweron = new DcmgrGUI.Dialog({
     target:'.poweron_instances',
     width:400,
@@ -514,32 +519,34 @@ DcmgrGUI.prototype.instancePanel = function(){
             break;
         }
       });
+
       switch(select_action) {
-      case 'terminate':
-        bt_instance_terminate.open(selected_ids);
-        break;
-      case 'reboot':
-        bt_instance_reboot.open(selected_ids);
-        break;
-      case 'start':
-        bt_instance_start.open(selected_ids);
-        break;
-      case 'stop':
-        bt_instance_stop.open(selected_ids);
-        break;
-      case 'poweroff':
-        if(is_open_poweroff){
-          bt_instance_poweroff.open(selected_ids);
-        }
-        break;
-      case 'poweron':
-        if(is_open_poweron){
-          bt_instance_poweron.open(selected_ids);
-        }
-        break;
+        case 'terminate':
+          bt_instance_terminate.open(selected_ids);
+          break;
+        case 'reboot':
+          bt_instance_reboot.open(selected_ids);
+          break;
+        case 'start':
+          bt_instance_start.open(selected_ids);
+          break;
+        case 'stop':
+          bt_instance_stop.open(selected_ids);
+          break;
+        case 'poweroff':
+          if(is_open_poweroff){
+            bt_instance_poweroff.open(selected_ids);
+          }
+          break;
+        case 'poweron':
+          if(is_open_poweron){
+            bt_instance_poweron.open(selected_ids);
+          }
+          break;
       }
     }
   });
+
   $(bt_refresh.target).button({ disabled: false });
   selectmenu.data('selectmenu').disableButton();
   $(bt_instance_backup.target).button({ disabled: true });
@@ -554,7 +561,6 @@ DcmgrGUI.prototype.instancePanel = function(){
     }
     return false;
   });
-
 
   var actions = {};
   actions.changeButtonState = function() {
