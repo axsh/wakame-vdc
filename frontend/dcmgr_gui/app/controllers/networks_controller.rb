@@ -117,6 +117,13 @@ class NetworksController < ApplicationController
     end
   end
 
+  def delete_service
+    catch_error do
+      service = Hijiki::DcmgrResource::Network.find(params[:id]).delete_service(params[:vif_id], params[:name])
+      render :json => service
+    end
+  end
+
   def total
     catch_error do
       all_resource_count = Hijiki::DcmgrResource::Network.total_resource
