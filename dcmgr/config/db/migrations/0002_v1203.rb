@@ -334,6 +334,12 @@ Sequel.migration do
       drop_column  :instance_spec_id
     end
 
+    alter_table(:instances) do
+      set_column_type :ssh_key_pair_id, "int(11)"
+      set_column_allow_null :ssh_key_pair_id, false
+      drop_column :ssh_key_data
+    end
+
     alter_table(:dhcp_ranges) do
       set_column_type :range_begin, "int(11)", :unsigned=>true, :null=>false
       set_column_type :range_end, "int(11)", :unsigned=>true, :null=>false
