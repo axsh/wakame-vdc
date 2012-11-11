@@ -35,10 +35,11 @@ module Dcmgr::Endpoints::V1203::Responses
             :mail_address => self.instance_monitor_attr.mailaddr,
           },
         }
-        if self.ssh_key_data
+
+        if self.ssh_key_pair
           h[:ssh_key_pair] = {
-            :uuid => self.ssh_key_data[:uuid],
-            :display_name => self.ssh_key_data[:display_name],
+            :uuid => self.ssh_key_pair.canonical_uuid,
+            :display_name => self.ssh_key_pair.display_name,
           }
         end
 

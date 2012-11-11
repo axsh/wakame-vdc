@@ -179,7 +179,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         if ssh_key_pair.nil?
           raise E::UnknownSshKeyPair, "#{params[:ssh_key_id]}"
         else
-          i.set_ssh_key_pair(ssh_key_pair)
+          i.ssh_key_pair_id = ssh_key_pair.id
         end
       end
 
