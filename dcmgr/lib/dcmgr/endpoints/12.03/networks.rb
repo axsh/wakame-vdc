@@ -345,6 +345,24 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     respond_with(R::NetworkService.new(service).generate)
   end
 
+  delete '/:id/services' do
+    # description 'Delete a vif on this network'
+    # params id, string, required
+    # params vif_id, string, required
+    # params name, string, required
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+    raise E::NetworkNotPermitted, params[:id] if !nw.editable
+
+    service = nw.network_service(:name => params[:name]).detect { |itr| itr.network_vif.canonical_uuid == params[:vif_id] }
+    raise(UnknownNetworkService) if service.nil?
+
+    # Clean up...
+
+    service.destroy
+    respond_with({})
+  end
+
   # # Make GRE tunnels, currently used for testing purposes.
   # post '/:id/tunnels' do
   #   # description 'Create a tunnel on this network'
