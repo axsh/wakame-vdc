@@ -34,6 +34,7 @@ module Dcmgr::Cli
     end
 
     desc "show [UUID]", "Show the existing resource groups"
+    method_option :type, :type => :string, :desc => "Show only the groups of a single type. Valid types are [#{TYPES.keys.join(", ")}]"
     def show(uuid=nil)
       if uuid
         tag = M::Taggable.find(uuid)
@@ -56,8 +57,15 @@ Attributes:
   <%= tag.attributes %>
 __END
       else
+        tags = if options[:type]
+          Error.raise("Invalid type: '#{options[:type]}'. Valid types are [#{TYPES.keys.join(", ")}].",100) unless TYPES.member? options[:type]
+          Dcmgr::Tags.const_get(TYPES[options[:type]])
+        else
+          M::Tag
+        end
+
         puts ERB.new(<<__END, nil, '-').result(binding)
-<%- M::Tag.each { |row| -%>
+<%- tags.each { |row| -%>
 <%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= TYPES.invert[Dcmgr::Tags::KEY_MAP[row.type_id]] %>\t<%= row.name%>
 <%- } -%>
 __END
