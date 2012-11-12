@@ -77,9 +77,9 @@ Update: <%= host.updated_at %>
 __END
     else
       ds = HostNode.dataset
-      table = [['UUID', 'Node ID', 'Hypervisor', 'Status']]
+      table = [['UUID', 'Node ID', 'Hypervisor', 'Architecture', 'Status']]
       ds.each { |r|
-        table << [r.canonical_uuid, r.node_id, r.hypervisor, r.status]
+        table << [r.canonical_uuid, r.node_id, r.hypervisor, r.arch, r.status]
       }
       shell.print_table(table)
     end
