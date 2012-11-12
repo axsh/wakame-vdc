@@ -118,8 +118,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     post do
       res = if params[:monitors].is_a?(Hash)
               bulk_update
-            else
+            elsif params[:protocol] && params[:enabled]
               single_insert
+            else
+              # delete all items.
+              params['monitors'] = {}
+              bulk_update
             end
 
       on_after_commit do
