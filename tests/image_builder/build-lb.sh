@@ -68,11 +68,13 @@ function load_balancer_setup() {
   typeset wakame_vdc_dir="$( cd ../../ && pwd )"
   typeset load_balancer_dir="${wakame_vdc_dir}/vmapp/load_balancer"
   typeset wakame_init_path="${wakame_vdc_dir}/tests/image_builder/rhel/6/wakame-init"
-  typeset axsh_dir="${tmp_root}/opt/axsh"
+  typeset axsh_path="/opt/axsh"
+  typeset axsh_dir="${tmp_root}${axsh_path}"
   typeset target_dir="${axsh_dir}/wakame-vdc"
+  typeset tmp_dir="${wakame_vdc_dir}/tmp"
 
-  mkdir -p ${tmp_root}/opt/axsh/wakame-vdc/scripts
-  mkdir -p ${tmp_root}/opt/axsh/wakame-vdc/amqptools/bin
+  mkdir -p ${axsh_dir}/wakame-vdc/scripts
+  mkdir -p ${axsh_dir}/wakame-vdc/amqptools/bin
 
   cp ${load_balancer_dir}/etc/init/haproxy_updater.conf ${tmp_root}/etc/init/haproxy_updater.conf
   cp ${load_balancer_dir}/etc/init.d/stunnel ${tmp_root}/etc/init.d/stunnel
@@ -81,6 +83,37 @@ function load_balancer_setup() {
   cp ${wakame_init_path} ${tmp_root}/etc/wakame-init
   chmod 755 $tmp_root/etc/wakame-init
   chown 0:0 $tmp_root/etc/wakame-init
+
+  # Make OpenSSL
+  (
+  cd ${tmp_dir}
+  [ -f "${tmp_dir}/openssl-1.0.1c" ]|| {
+    curl -L -O http://www.openssl.org/source/openssl-1.0.1c.tar.gz
+    tar xvzf ./openssl-1.0.1c.tar.gz
+  }
+  cd openssl-1.0.1c
+  ./Configure no-share --openssldir=${tmp_dir}/openssl linux-x86_64
+  make clean
+  make
+  make install
+  )
+
+  # Make Stunnel with OpenSSL
+  (
+  cd ${tmp_dir}
+  [ -f "${tmp_dir}/stunnel-4.54" ]|| {
+    curl -L -O http://mirrors.zerg.biz/stunnel/stunnel-4.54.tar.gz
+    tar xvzf stunnel-4.54.tar.gz
+  }
+  cd stunnel-4.54
+  ./configure --prefix=${tmp_dir}/stunnel with_ssl=${tmp_dir}/openssl
+  make clean
+  make
+  make install-exec
+  )
+
+  mkdir -p ${tmp_root}/etc/stunnel
+  mv ${tmp_dir}/stunnel/bin/stunnel ${target_dir}
 
   cat <<EOF > $tmp_root/etc/rc.local
 /etc/wakame-init md
@@ -98,10 +131,12 @@ rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-7.noarch.r
 # instlall package
 distro_pkgs="
  haproxy
- stunnel
 "
 yum install -y ${distro_pkgs}
 
+ln -s /opt/axsh/wakame-vdc/stunnel /usr/bin/stunnel
+
+# setup chkconfig
 chkconfig haproxy off
 chkconfig stunnel off
 chkconfig postfix off
@@ -109,6 +144,9 @@ chkconfig rsyslog off
 chkconfig sshd off
 rm -f /etc/haproxy/haproxy.cfg
 EOS
+
+  rm -rf ${tmp_dir}/openssl
+  rm -rf ${tmp_dir}/stunnel
 }
 
 [ -f "${distro_name}-${distro_ver}_${arch}.tar.gz" ] || {
