@@ -87,10 +87,15 @@
   padding: 10px;
   //margin-left: 15px;
   width: 490px;
+  margin-top: 8px;
 }
 
 #edit_instance_dialog legend {
   padding: 0 3px 0 3px;
+}
+
+#edit_instance_dialog table tr td {
+  padding: 5px 10px;
 }
 
 #launch_instance_dialog fieldset.with_border {
@@ -110,10 +115,6 @@
 
 #launch_instance_dialog #security_group_field table tr th {
   text-align: center;
-}
-
-#edit_instance_dialog table tr td {
-  padding: 3px;
 }
 
 #dc_network_field {

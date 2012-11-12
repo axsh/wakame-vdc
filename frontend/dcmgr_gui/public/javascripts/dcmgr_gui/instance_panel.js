@@ -82,7 +82,8 @@ DcmgrGUI.prototype.instancePanel = function(){
 
       var data = ['display_name=' + display_name,
                   'monitoring[enabled]=' + $(this).find('#monitoring_enabled').is(':checked'),
-                  'monitoring[mail_address]=' + $(this).find('#mailaddr').val()
+                  'monitoring[mail_address]=' + $(this).find('#mailaddr').val(),
+                  'ssh_key_id=' + $(this).find("#ssh_key_pair").val()
                  ].join('&');
       $.each($(this).find('#right_select_list').find('option'), function(i){
         data = data + "&security_groups[]="+ $(this).val();
@@ -231,19 +232,23 @@ DcmgrGUI.prototype.instancePanel = function(){
             });
           }
         });
+
+        var instance = {};
+        request.get({
+          "url": '/instances/show/'+instance_id+'.json',
+          "data": "",
+          "async": false,
+          success: function(json,status) {
+            instance = json;
+          }
+        });
+
         parallel({
           security_groups:function(){
-            var instance_id = document.getElementById('instance_id').value
             var selected_groups = []
-            request.get({
-              "url": '/instances/show/'+instance_id+'.json',
-              "data": "",
-              success: function(json,status) {
-                if (json.vif.length > 0) {
-                  selected_groups = json.vif[0]['security_groups']
-                }
-              }
-            });
+            if (instance.vif.length > 0) {
+              selected_groups = instance.vif[0]['security_groups']
+            }
 
             request.get({
               "url": '/security_groups/all.json',
@@ -282,7 +287,45 @@ DcmgrGUI.prototype.instancePanel = function(){
               }
             });
           },
+        ssh_keypairs: function(){
 
+          request.get({
+            "url": '/keypairs/all.json',
+            "data": "",
+            success: function(json,status){
+              var select_html = '<select id="ssh_key_pair" name="ssh_key_pair"></select>';
+              $(self).find('#select_ssh_key_pair').empty().html(select_html);
+
+              var results = json.ssh_key_pair.results;
+              var size = results.length;
+              var select_keypair = $(self).find('#ssh_key_pair');
+              if(size > 0) {
+                is_ready['ssh_keypair'] = true;
+              }
+
+              for (var i=0; i < size ; i++) {
+                var ssh_keypair_id = results[i].result.id;
+                var ssh_keypair_name = results[i].result.display_name;
+                var html = '<option id="'+ ssh_keypair_id +'" value="'+ ssh_keypair_id +'">'+ssh_keypair_name+' ('+ssh_keypair_id+')</option>'
+                select_keypair.append(html);
+              }
+
+              select_keypair.change(function(){
+                var selected_key_pair_id = select_keypair.val();
+                var current_key_pair_id = instance.ssh_key_pair.uuid;
+
+                if(selected_key_pair_id !== current_key_pair_id) {
+                  $(self).find('#change_key_pair_message').html($.i18n.prop('change_key_pair_message'));
+                } else {
+                  $(self).find('#change_key_pair_message').html('');
+                }
+              });
+
+              // current selected key pair
+              $(self).find('#ssh_key_pair').val(instance.ssh_key_pair.uuid)
+            }
+          })
+        },
         //get networks
         networks:
           request.get({

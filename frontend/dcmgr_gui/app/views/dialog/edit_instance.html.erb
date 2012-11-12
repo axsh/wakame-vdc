@@ -19,10 +19,14 @@
       <td><%= t("dialog.edit_instance.display_name")%>: </td>
       <td><input id="instance_display_name" type="text" size=43 value="<%= @display_name %>"></td>
     </tr>
+    <tr>
+      <td><%= t("dialog.launch_instance.ssh_key_pair") %>:</td>
+      <td id="select_ssh_key_pair"></td>
+    </tr>
   </table>
-  
+  <span id="change_key_pair_message"></span>
   <br />
-  
+
   <fieldset id="security_group_field" class="with_border">
 		<legend><%= t("dialog.edit_instance.security_group") %></legend><legend>
 		</legend><table cellspacing="5" cellpadding="5">
