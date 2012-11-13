@@ -73,7 +73,7 @@ module Dcmgr::VNet::OpenFlow
 
     def add_service(switch, service_map)
       # Need to search using constant.
-      if self.services.has_key? service_map[:name]
+      if self.services.has_key?(service_map[:name].to_sym)
         logger.info "Duplicate service: name:'#{service_map[:name]}'."
       end
 
@@ -113,6 +113,15 @@ module Dcmgr::VNet::OpenFlow
         arp_handler.add(service.mac, service.ip, service)
         icmp_handler.add(service.mac, service.ip, service)
       end
+    end
+    
+    def delete_service(switch, service_map)
+      # Need to search using constant.
+      if !self.services.has_key?(service_map[:name].to_sym)
+        logger.info "No such service: name:'#{service_map[:name]}'."
+      end
+
+      logger.info "Deleting service: name:'#{service_map[:name]}'."
     end
 
   end

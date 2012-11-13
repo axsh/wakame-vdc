@@ -342,6 +342,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     service = M::NetworkService.create(service_data)
 
+    Dcmgr.messaging.event_publish("vnet/network_service/#{nw.id}",
+                                  :args => {
+                                    :status => :add,
+                                    :service => service.to_hash,
+                                  })
+
     respond_with(R::NetworkService.new(service).generate)
   end
 
@@ -357,7 +363,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     service = nw.network_service(:name => params[:name]).detect { |itr| itr.network_vif.canonical_uuid == params[:vif_id] }
     raise(UnknownNetworkService) if service.nil?
 
-    # Clean up...
+    Dcmgr.messaging.event_publish("vnet/network_service/#{nw.id}",
+                                  :args => {
+                                    :status => :delete,
+                                    :service => service.to_hash,
+                                  })
 
     service.destroy
     respond_with({})
