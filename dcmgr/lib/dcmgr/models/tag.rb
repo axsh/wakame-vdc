@@ -55,9 +55,7 @@ module Dcmgr::Models
     end
 
     def self.mappable(resource=nil)
-      if resource.is_a? Dcmgr::Models::Taggable
-        @mappable = resource
-      end
+      resource && @mappable = resource
 
       @mappable
     end
