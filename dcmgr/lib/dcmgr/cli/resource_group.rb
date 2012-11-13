@@ -47,7 +47,7 @@ Account id:
 Name:
   <%= tag.name %>
 Type:
-  <%= TYPES.invert[Dcmgr::Tags::KEY_MAP[tag.type_id]] %>
+  <%= TYPES.invert[Dcmgr::Constants::Tag::KEY_MAP[tag.type_id]] %>
 Mapped uuids:
 <%- tag.sorted_mapped_uuids.each { |tagmap| -%>
   <%= tagmap[:uuid] %> <%= tagmap[:sort_index] %>
@@ -58,7 +58,7 @@ __END
       else
         puts ERB.new(<<__END, nil, '-').result(binding)
 <%- M::Tag.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= TYPES.invert[Dcmgr::Tags::KEY_MAP[row.type_id]] %>\t<%= row.name%>
+<%= row.canonical_uuid %>\t<%= row.account_id %>\t<%= TYPES.invert[Dcmgr::Constants::Tag::KEY_MAP[row.type_id]] %>\t<%= row.name%>
 <%- } -%>
 __END
       end

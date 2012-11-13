@@ -2,8 +2,7 @@
 
 module Dcmgr::Tags
   include Dcmgr
-  KEY_MAP={10=>:NetworkGroup, 11=>:HostNodeGroup, 12=>:StorageNodeGroup}.freeze
-  MODEL_MAP=KEY_MAP.invert.freeze
+  include Dcmgr::Constants::Tag
 
   def self.type_id(class_or_sym)
     k = case class_or_sym
