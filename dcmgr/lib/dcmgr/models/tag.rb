@@ -74,6 +74,17 @@ module Dcmgr::Models
       sorted_mapped_uuids_dataset.all
     end
 
+    def mapped_resources_dataset
+      resource = self.class.mappable
+
+      trimmed_uuids = self.mapped_uuids.map {|id| resource.trim_uuid(id) }
+      resource.dataset.filter(:uuid => trimmed_uuids)
+    end
+
+    def mapped_resources
+      mapped_resources_dataset.all
+    end
+
     # sti plugin has to be loaded at lower position.
     plugin :subclasses
     plugin :single_table_inheritance, :type_id,
