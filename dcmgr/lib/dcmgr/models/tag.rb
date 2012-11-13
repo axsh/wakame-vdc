@@ -54,6 +54,18 @@ module Dcmgr::Models
       ds
     end
 
+    def self.mappable(resource=nil)
+      if resource.is_a? Dcmgr::Models::Taggable
+        @mappable = resource
+      end
+
+      @mappable
+    end
+
+    def accept_mapping?(to)
+      to.is_a?(self.class.mappable)
+    end
+
     def sorted_mapped_uuids_dataset
       self.mapped_uuids_dataset.order_by(:sort_index)
     end
@@ -136,13 +148,6 @@ module Dcmgr::Models
       self.subclasses.find { |m|
         m == name || m.split('::').last == name
       }
-    end
-
-    # Check the object class type before associating to the Tag.
-    # Child class must implement this method.
-    # @param taggable_obj any object kind_of?(Model::Taggable)
-    def accept_mapping?(taggable_obj)
-      raise NotImplementedError
     end
 
     # model hook
