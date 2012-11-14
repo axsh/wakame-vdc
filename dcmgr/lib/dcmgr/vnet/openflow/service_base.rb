@@ -29,6 +29,10 @@ module Dcmgr::VNet::OpenFlow
       network.datapath
     end
 
+    def uninstall
+      remove_flows
+    end
+
   end
 
 end
