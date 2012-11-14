@@ -75,7 +75,7 @@ module Dcmgr::Models
     def mapped_resources_dataset
       resource = self.class.mappable
 
-      trimmed_uuids = self.mapped_uuids.map {|id| resource.trim_uuid(id) }
+      trimmed_uuids = self.mapped_uuids.map {|mapping| resource.trim_uuid(mapping.uuid) }
       resource.dataset.filter(:uuid => trimmed_uuids)
     end
 
