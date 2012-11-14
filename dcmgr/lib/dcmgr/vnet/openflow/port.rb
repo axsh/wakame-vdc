@@ -4,6 +4,7 @@ module Dcmgr::VNet::OpenFlow
 
   class OpenFlowPort
     include OpenFlowConstants
+    include FlowGroup
 
     attr_reader :datapath
     attr_reader :port_info
@@ -66,21 +67,6 @@ module Dcmgr::VNet::OpenFlow
 
     def init_instance_subnet(network, eth_port, hw, ip)
       queue_flow Flow.new(TABLE_CLASSIFIER, 8, {:in_port => eth_port, :dl_dst => hw}, {:load_reg1 => network.id, :load_reg2 => eth_port, :resubmit => TABLE_VIRTUAL_SRC})
-    end
-
-    # Install flows:
-
-    def active_flows
-      @active_flows ||= Array.new
-    end
-
-    def queued_flows
-      @queued_flows ||= Array.new
-    end
-
-    def queue_flow flow
-      active_flows << flow
-      queued_flows << flow
     end
 
   end

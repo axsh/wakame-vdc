@@ -275,6 +275,7 @@ module Dcmgr
       autoload :ArpHandler, 'dcmgr/vnet/openflow/arp_handler'
       autoload :IcmpHandler, 'dcmgr/vnet/openflow/icmp_handler'
       autoload :Flow, 'dcmgr/vnet/openflow/flow'
+      autoload :FlowGroup, 'dcmgr/vnet/openflow/flow_group'
       autoload :NetworkPhysical, 'dcmgr/vnet/openflow/network_physical'
       autoload :NetworkVirtual, 'dcmgr/vnet/openflow/network_virtual'
       autoload :OpenFlowConstants, 'dcmgr/vnet/openflow/constants'
