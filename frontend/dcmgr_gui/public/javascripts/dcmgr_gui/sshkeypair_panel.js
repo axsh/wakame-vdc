@@ -82,7 +82,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     var bt_edit_ssh_keypair = new DcmgrGUI.Dialog({
       target:'.edit_ssh_keypair',
       width:500,
-      height:250,
+      height:230,
       title:$.i18n.prop('edit_ssh_keypair_header'),
       path:'/edit_ssh_keypair',
       callback: function(){
@@ -155,7 +155,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   var bt_create_ssh_keypair = new DcmgrGUI.Dialog({
     target:'.create_ssh_keypair',
     width:500,
-    height:250,
+    height:200,
     title:$.i18n.prop('create_ssh_keypair_header'),
     path:'/create_ssh_keypair',
     callback: function(){
@@ -194,7 +194,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   var bt_delete_ssh_keypair = new DcmgrGUI.Dialog({
     target: '.delete_ssh_keypair',
     width: 400,
-    height: 250,
+    height: 230,
     title: $.i18n.prop('delete_ssh_keypair_header'),
     path: '/delete_ssh_keypair',
     button: delete_ssh_keypair_buttons
