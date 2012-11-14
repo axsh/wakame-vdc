@@ -7,7 +7,7 @@ module Dcmgr::Models
   class SshKeyPair < AccountResource
     taggable 'ssh'
     accept_service_type
-
+    attr_accessor :private_key
     #
     # @return [Hash] {:private_key=>'pkey string',
     #                 :public_key=>'pubkey string'}

@@ -399,6 +399,10 @@ Sequel.migration do
 
       index [:instance_id]
     end
+
+    alter_table(:ssh_key_pairs) do
+      drop_column :private_key
+    end
   end
 
   down do
