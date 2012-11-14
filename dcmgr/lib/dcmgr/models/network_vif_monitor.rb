@@ -82,7 +82,7 @@ module Dcmgr::Models
       'mysql' => lambda {
         self.instance_exec(&CUSTOM_VALIDATOR['tcp'])
       },
-      'pgsql' => lambda {
+      'postgresql' => lambda {
         self.instance_exec(&CUSTOM_VALIDATOR['tcp'])
       }
     }.freeze

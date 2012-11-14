@@ -198,17 +198,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance.save
 
     # instance_monitor_attr row is created at after_save hook in Instance model.
-    if params[:monitoring].is_a?(Hash)
-      instance.instance_monitor_attr.enabled = (params[:monitoring][:enabled] == 'true')
-      if params[:monitoring][:mail_address]
-        instance.instance_monitor_attr.mailaddr = params[:monitoring][:mail_address]
+    # Note that the keys should use string for sub hash.
+    if params['monitoring'].is_a?(Hash)
+      instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
+      if params['monitoring']['mail_address']
+        instance.instance_monitor_attr.mailaddr = params['monitoring']['mail_address']
       end
       instance.instance_monitor_attr.save_changes
     end
-    instance.instance_monitor_attr.save_changes
 
     instance.state = :scheduling
-    instance.save
+    instance.save_changes
 
     bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
 
