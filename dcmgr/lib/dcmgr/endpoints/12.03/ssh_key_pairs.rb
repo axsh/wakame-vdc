@@ -39,8 +39,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
   quota 'ssh_key_pair.count'
   post do
     # description "Create ssh key pair information"
-    # params :download_once optional set true if you do not want
-    #        to save private key info on database.
     # params :display_name optional
     keydata = nil
 
@@ -48,10 +46,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       keydata = M::SshKeyPair.generate_key_pair(s.uuid)
       s.public_key = keydata[:public_key]
       s.finger_print = keydata[:finger_print]
-
-      if params[:download_once] != 'true'
-        s.private_key = keydata[:private_key]
-      end
 
       if params[:description]
         s.description = params[:description]

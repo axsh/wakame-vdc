@@ -128,13 +128,11 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   
   var create_ssh_keypair_buttons = {};
   create_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
-  create_ssh_keypair_buttons[create_button_name] = function() { 
-    var download_once = $(this).find('#ssh_keypair_download_once').attr('checked');
+  create_ssh_keypair_buttons[create_button_name] = function() {
     var display_name = $(this).find('#ssh_keypair_display_name').val();
     var description = $(this).find('#ssh_keypair_description').val();
     var iframe = $(this).find('iframe:first').contents();
     var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
-              +'<input type="hidden" name="download_once" value="'+download_once+ '">'
               +'<input type="hidden" name="display_name" value="'+display_name+ '">'
               +'<input type="hidden" name="description" value="'+description+ '">'
               +'</form>'

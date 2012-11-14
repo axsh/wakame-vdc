@@ -15,13 +15,5 @@
       <td><%= t("dialog.create_and_edit_ssh_keypair.description")%>: </td>
       <td><input id="ssh_keypair_description" type="text" size= 43 value="<%= @description %>"></td>
     </tr>
-    <%- if @uuid.nil? -%>
-    <tr>
-      <td><%= t("dialog.create_and_edit_ssh_keypair.download_once")%>: </td>
-      <td>
-	<input id="ssh_keypair_download_once" type="checkbox" name="download_once" checked>
-      </td>
-    </tr>
-    <%- end -%>
   </table>
 </div>
