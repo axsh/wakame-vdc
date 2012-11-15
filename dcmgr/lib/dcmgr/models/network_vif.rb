@@ -22,7 +22,7 @@ module Dcmgr::Models
     subset(:alives, {:deleted_at => nil})
 
     many_to_one :instance
-    many_to_one :network_service
+    one_to_many :network_services
     one_to_many :network_vif_monitors
 
     def to_hash
@@ -115,7 +115,7 @@ module Dcmgr::Models
       release_ip_lease
       self.remove_all_security_groups
       self.remove_all_security_groups
-      self.network_service.each {|i| i.destroy }
+      self.network_services.each {|i| i.destroy }
       self.network_vif_monitors.each {|i| i.destroy }
       super
     end
