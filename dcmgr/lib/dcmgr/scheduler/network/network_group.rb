@@ -7,7 +7,7 @@ module Dcmgr
         include Dcmgr::Logger
 
         ALGORITHMS = [
-          :least_allcation
+          :least_allocation
         ].freeze
 
         configuration do
@@ -16,7 +16,7 @@ module Dcmgr
 
           on_initialize_hook do
             def validate(errors)
-               @config[:algorithm] = :least_allcation if @config[:algorithm].nil?
+               @config[:algorithm] = :least_allocation if @config[:algorithm].nil?
                unless ALGORITHMS.member? @config[:algorithm]
                  errors << "Unknown algorithm: #{@config[:algorithm]}"
                end
@@ -73,7 +73,7 @@ module Dcmgr
 
         class Algorithm
           #TODO: fix this typo and maybe include an alias for deprecation
-          def self.least_allcation(networks)
+          def self.least_allocation(networks)
             networks.min_by {|uuid, ip_nums| ip_nums}
           end
         end
