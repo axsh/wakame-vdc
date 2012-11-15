@@ -63,8 +63,7 @@ module Dcmgr
               vnic.attach_to_network(network)
               logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
             rescue Dcmgr::Models::OutOfIpRange => e
-              #TODO: This should be a warning
-              logger.error "No more dynamic ip addresses available in network '#{network.canonical_uuid}'"
+              logger.warning "No more dynamic ip addresses available in network '#{network.canonical_uuid}'"
               network_candidates.delete(network_uuid)
               retry
             end
