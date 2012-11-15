@@ -1182,6 +1182,15 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
   }
 });
 
+DcmgrGUI.VifMonitorSelector.Validator = {
+  ip_port: function(val){
+    return /^[0-9]+$/.test(val) && parseInt(val) > 0 && parseInt(val) <= 65535;
+  },
+  http_check_path: function(val){
+    return !/[\\>< ;\"\']/.test(val);
+  },
+};
+
 // constantize the JSON list.
 DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
   return {
@@ -1211,11 +1220,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
           "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
       },
       validate: function(row_elem){
-        if( /^[0-9]+$/.test($(row_elem).find('._tcp_port').val()) ){
-        }
-        if( /[\\>< ;"']/.test($(row_elem).find('._tcp_port').val()) ){
-        }
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val()) &&
+          DcmgrGUI.VifMonitorSelector.Validator.http_check_path($(row_elem).find('._check_path').val());
       }
     },
     'HTTPS1': {
@@ -1232,7 +1238,8 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
           "&eth0_monitors["+idx+"][params][check_path]="+$(row_elem).find('._check_path').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val()) &&
+          DcmgrGUI.VifMonitorSelector.Validator.http_check_path($(row_elem).find('._check_path').val());
       }
     },
     'FTP': {
@@ -1246,7 +1253,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     },
     'SSH': {
@@ -1260,7 +1267,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "&eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     },
     'SMTP': {
@@ -1274,7 +1281,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     },
     'POP3': {
@@ -1288,7 +1295,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     },
     'IMAP': {
@@ -1302,7 +1309,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     },
     'SUBMISSION': {
@@ -1316,7 +1323,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     },
     'DNS': {
@@ -1331,7 +1338,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]=53&eth0_monitors["+idx+"][params][query_record]="+$(row_elem).find('._query_record').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     },
     'MYSQL': {
@@ -1345,7 +1352,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     },
     'POSTGRESQL': {
@@ -1359,7 +1366,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
         return "eth0_monitors["+idx+"][params][port]="+$(row_elem).find('._tcp_port').val();
       },
       validate: function(row_elem){
-        return true;
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
       }
     }
   };
