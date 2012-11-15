@@ -59,7 +59,7 @@ Create: <%= st.created_at %>
 Update: <%= st.updated_at %>
 __END
     else
-      ds = HostNode.dataset
+      ds = StorageNode.dataset
       table = [['UUID', 'Node ID', 'Storage', 'Status']]
       ds.each { |r|
         table << [r.canonical_uuid, r.node_id, r.storage_type, r.status]
