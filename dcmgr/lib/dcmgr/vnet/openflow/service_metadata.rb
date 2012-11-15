@@ -8,15 +8,16 @@ module Dcmgr::VNet::OpenFlow
     def install
       logger.info "Adding metadata server: port:#{@of_port} mac:#{@mac.to_s} ip:#{ip.to_s}/#{listen_port}."
 
+      remove_flows
+
       # Currently only add for the physical networks.
-      flows = []
-      flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_dst => '169.254.169.254', :tp_dst => 80}, {:resubmit => TABLE_METADATA_OUTGOING})
-      flows << Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_src => ip.to_s, :tp_src => listen_port}, {:resubmit => TABLE_METADATA_INCOMING})
+      queue_flow Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_dst => '169.254.169.254', :tp_dst => 80}, {:resubmit => TABLE_METADATA_OUTGOING})
+      queue_flow Flow.new(TABLE_CLASSIFIER, 5, {:tcp => nil, :nw_src => ip.to_s, :tp_src => listen_port}, {:resubmit => TABLE_METADATA_INCOMING})
 
       # Replace with dnat entries instead of custom tables.
-      flows << Flow.new(TABLE_METADATA_OUTGOING, 1, {}, {:controller => nil})
+      queue_flow Flow.new(TABLE_METADATA_OUTGOING, 1, {}, {:controller => nil})
 
-      switch.datapath.add_flows flows
+      flush_flows
 
       if self.ip.to_s == switch.bridge_ipv4
         install_flows
@@ -44,13 +45,13 @@ module Dcmgr::VNet::OpenFlow
                             self.install_flows
                           })
 
-      flows = [Flow.new(TABLE_ARP_ROUTE, 3, {
-                          :in_port => port_number, :arp => nil,
-                          :dl_dst => local_hw.to_s, :nw_dst => switch.bridge_ipv4,
-                          :nw_src => ip.to_s},
-                        {:controller => nil, :local => nil})]
+      queue_flows Flow.new(TABLE_ARP_ROUTE, 3, {
+                             :in_port => port_number, :arp => nil,
+                             :dl_dst => local_hw.to_s, :nw_dst => switch.bridge_ipv4,
+                             :nw_src => ip.to_s},
+                           {:controller => nil, :local => nil})
+      flush_flows
 
-      switch.datapath.add_flows flows
       switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
                                local_hw.to_s, switch.bridge_ipv4.to_s, nil, ip.to_s)
 
