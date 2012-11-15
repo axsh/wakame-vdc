@@ -74,7 +74,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     # description "Remove ssh key pair information"
     # params :id required
     ssh = find_by_uuid(:SshKeyPair, params[:id])
-    ssh.destroy
+    raise E::UnknownSshKeyPair, params[:id] if ssh.nil?
+
+    begin
+      ssh.delete
+    rescue => e
+      raise E::ExistsRegisteredInstance, e.message
+    end
 
     respond_with([ssh.canonical_uuid])
   end

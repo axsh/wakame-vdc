@@ -401,6 +401,7 @@ Sequel.migration do
     end
 
     alter_table(:ssh_key_pairs) do
+      add_column :deleted_at, "datetime", :null=>true
       drop_column :private_key
     end
   end

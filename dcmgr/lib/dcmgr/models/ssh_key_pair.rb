@@ -7,6 +7,8 @@ module Dcmgr::Models
   class SshKeyPair < AccountResource
     taggable 'ssh'
     accept_service_type
+    one_to_many :instances
+
     attr_accessor :private_key
     #
     # @return [Hash] {:private_key=>'pkey string',
@@ -47,5 +49,16 @@ module Dcmgr::Models
 
       ssh
     end
+
+    def delete(force=false)
+      instance_count = instances_dataset.count
+      if(!force && instance_count > 0)
+        raise "#{instance_count} instance references."
+      end
+      self.deleted_at ||= Time.now
+      self.save_changes
+      self
+    end
+
   end
 end
