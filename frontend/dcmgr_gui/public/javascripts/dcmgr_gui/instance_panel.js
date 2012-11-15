@@ -88,6 +88,9 @@ DcmgrGUI.prototype.instancePanel = function(){
         data = data + "&security_groups[]="+ $(this).val();
       });
       
+      if( !bt_edit_instance.monitor_selector.validate() ){
+        return false;
+      }
 
       var request = new DcmgrGUI.Request;
       parallel({
@@ -126,18 +129,34 @@ DcmgrGUI.prototype.instancePanel = function(){
         $(this).find('#right_select_list').mask($.i18n.prop('loading_parts'));
         
         var ready = function(data) {
+          if($(self).find('#monitoring_enabled').is(':checked')){
+            var v = $(self).find('#mailaddr').val();
+            data['monitoring'] = (v.length > 0);
+          }else{
+            data['monitoring'] = true;
+          }
+          
+          if( data.monitoring && bt_edit_instance.monitor_selector.validate() ){
+            data.monitoring = true;
+          }
+
           if(data['security_groups'] == true &&
-            data['display_name'] == true) {  
+             data['display_name'] == true &&
+             data['networks'] == true &&
+             data['monitoring'] == true &&
+             data['monitoring_form'] == true) {  
             bt_edit_instance.disabledButton(1, false);
           } else {
             bt_edit_instance.disabledButton(1, true);
           }
-        }
+        };
         
         var is_ready = {
           'display_name' : true,
           'security_groups' : true,
-          'networks' : true
+          'networks' : false,
+          'monitoring' : true,
+          'monitoring_form' : false
         }
         var on_ready = function(size){
           if(size > 0) {
@@ -150,9 +169,13 @@ DcmgrGUI.prototype.instancePanel = function(){
         }
         
 	var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
-	$(this).find('#instance_display_name').bind('keyup', params, DcmgrGUI.Util.checkTextField);
-	$(this).find('#instance_display_name').bind('paste', params, DcmgrGUI.Util.checkTextField);
-	$(this).find('#instance_display_name').bind('cut', params, DcmgrGUI.Util.checkTextField);
+	$(this).find('#instance_display_name').bind('keyup paste cut', params, DcmgrGUI.Util.checkTextField);
+	$(this).find('#monitoring_enabled').bind('click',
+                                                 {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                                 DcmgrGUI.Util.checkTextField);
+	$(this).find('#mailaddr').bind('keyup paste cut',
+                                       {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                       DcmgrGUI.Util.checkTextField);
 
         bt_edit_instance.monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
         
@@ -227,6 +250,9 @@ DcmgrGUI.prototype.instancePanel = function(){
                 for(var i in json) {
                   bt_edit_instance.monitor_selector.addItem(json[i].title, json[i]);
                 }
+                
+                is_ready['monitoring_form'] = true;
+                ready(is_ready);
               }
             });
           }
