@@ -45,7 +45,7 @@ module Dcmgr
           
           if old_switch
             switches.delete(old_switch[0])
-            old_switch[1].each { |network_id,network| @service_openflow.destroy_network(network, false) }
+            old_switch[1].networks.each { |network_id,network| @service_openflow.destroy_network(network, false) }
           end
 
           ofctl = @default_ofctl.dup

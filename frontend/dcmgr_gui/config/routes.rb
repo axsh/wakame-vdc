@@ -177,6 +177,7 @@ DcmgrGui::Application.routes.draw do
   put    'networks/:id/dhcp_ranges/remove' ,:to => 'networks#remove_dhcp_range'
   get    'networks/:id/services' ,:to => 'networks#show_services'
   post   'networks/:id/services' ,:to => 'networks#create_service'
+  delete 'networks/:id/services' ,:to => 'networks#delete_service'
 
   #network_vifs
   get    'network_vifs/:id' ,:to => 'network_vifs#show'

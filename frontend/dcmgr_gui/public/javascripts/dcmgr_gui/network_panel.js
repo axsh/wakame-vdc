@@ -111,19 +111,34 @@ DcmgrGUI.prototype.networkPanel = function(){
               var network_services = $(self).find('#network_services');
               network_services.html('');
 
+              var delete_service_wrapper = (function(network_id, vif_id, name) {
+                var _network_id = network_id;
+                var _vif_id = vif_id;
+                var _name = name;
+                return {
+                  call:function() { delete_service(_network_id, _vif_id, _name); }
+                };
+              });
+
               for (var i=0; i < results.length ; i++) {
+                result_name = results[i].result.name;
+                result_vif_id = results[i].result.network_vif_id;
+
                 service_html =
                   '<fieldset id="network_services_field">' +
                   '<legend>' + $.i18n.prop('edit_network_service_header') + '</legend><legend>' +
                   '</legend><table cellspacing="5" cellpadding="5"><tbody>' +
-                  '<tr><td>' + $.i18n.prop('edit_network_service_name') + ': </td><td>' + results[i].result.name + '</td></tr>' +
-                  '<tr><td>' + $.i18n.prop('edit_network_service_vif_id') + ': </td><td>' + results[i].result.network_vif_id + '</td></tr>' +
+                  '<tr><td>' + $.i18n.prop('edit_network_service_name') + ': </td><td>' + result_name + '</td></tr>' +
+                  '<tr><td>' + $.i18n.prop('edit_network_service_vif_id') + ': </td><td>' + result_vif_id + '</td></tr>' +
                   '<tr><td>' + $.i18n.prop('edit_network_service_address') + ': </td><td>' + results[i].result.address + '</td></tr>' +
                   '<tr><td>' + $.i18n.prop('edit_network_service_mac_addr') + ': </td><td>' + results[i].result.mac_addr + '</td></tr>' +
                   '<tr><td>' + $.i18n.prop('edit_network_service_incoming_port') + ': </td><td>' + results[i].result.incoming_port + '</td></tr>' +
                   '<tr><td>' + $.i18n.prop('edit_network_service_outgoing_port') + ': </td><td>' + results[i].result.outgoing_port + '</td></tr>' +
+                  '<tr><td><button id="service_delete_' + result_name + '" name="service_delete_' + result_name + '">' + $.i18n.prop('edit_network_service_delete') + '</button></td></tr>' +
                   '</tbody></table></fieldset>';
+
                 network_services.append(service_html);
+                network_services.find('#service_delete_' + result_name).click(delete_service_wrapper(network_id, result_vif_id, result_name).call);
               }
             }
           });
@@ -162,6 +177,19 @@ DcmgrGUI.prototype.networkPanel = function(){
           });
         };
         
+        function delete_service(network_id, vif_id, name) {
+          var data = "vif_id=" + vif_id + "&name=" + name;
+
+          request = new DcmgrGUI.Request;
+          request.del({
+            "url": '/networks/' + network_id + '/services',
+            "data": data,
+            success: function(json,status){
+              refresh_network_services();
+            }
+          });
+        }
+
         $(self).find('#add_dhcp_range').click(function(){ change_dhcp_range('add'); });
         $(self).find('#remove_dhcp_range').click(function(){ change_dhcp_range('remove'); });
 

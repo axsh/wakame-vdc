@@ -34,8 +34,9 @@ module Dcmgr::Models
     one_to_many :dhcp_range
     many_to_one :dc_network
 
-    def network_service
-      NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(:network_id => self.id).select_all(:network_services)
+    def network_service(params = {})
+      params[:network_id] = self.id
+      NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(params).select_all(:network_services)
     end
 
     def add_service_vif(ipv4)
