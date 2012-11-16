@@ -67,8 +67,8 @@ class Host < Base
       puts ERB.new(<<__END, nil, '-').result(binding)
 Host UUID: <%= host.canonical_uuid %>
 Node ID: <%= host.node_id %>
-CPU Cores (offering): <%= host.offering_cpu_cores %>
-Memory (offering): <%= host.offering_memory_size %>MB
+CPU Cores (usage / offering): <%= host.cpu_core_usage %> / <%= host.offering_cpu_cores %>
+Memory (usage / offering): <%= host.memory_size_usage%>MB / <%= host.offering_memory_size %>MB
 Hypervisor: <%= host.hypervisor %>
 Architecture: <%= host.arch %>
 Status: <%= host.status %>
@@ -77,9 +77,9 @@ Update: <%= host.updated_at %>
 __END
     else
       ds = HostNode.dataset
-      table = [['UUID', 'Node ID', 'Hypervisor', 'Architecture', 'Status']]
+      table = [['UUID', 'Node ID', 'Hypervisor', 'Architecture', 'Usage', 'Status']]
       ds.each { |r|
-        table << [r.canonical_uuid, r.node_id, r.hypervisor, r.arch, r.status]
+        table << [r.canonical_uuid, r.node_id, r.hypervisor, r.arch, "#{r.usage_percent}%", r.status]
       }
       shell.print_table(table)
     end
