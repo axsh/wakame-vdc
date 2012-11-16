@@ -36,7 +36,6 @@ class KeypairsController < ApplicationController
       data = {
         :display_name => params[:display_name],
         :description => params[:description],
-        :download_once => params[:download_once],
         :public_key => params[:public_key]
       }
       @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.create(data)
