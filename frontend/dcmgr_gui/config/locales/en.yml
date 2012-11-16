@@ -204,6 +204,7 @@ en:
       display_name: "Keypair Name"
       description: "Description"
       download_once: "Download Once"
+      public_key: "Public Key"
     create_ssh_keypair:
       header: "Create SSH Key Pair"
       uuid: "Keypair ID"
