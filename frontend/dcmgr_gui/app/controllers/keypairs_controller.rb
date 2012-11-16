@@ -30,13 +30,14 @@ class KeypairsController < ApplicationController
       render :json => @ssh_key_pair
     end
   end
-  
+
   def create_ssh_keypair
     catch_error do
       data = {
         :display_name => params[:display_name],
         :description => params[:description],
-        :download_once => params[:download_once]
+        :download_once => params[:download_once],
+        :public_key => params[:public_key]
       }
       @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.create(data)
       @filename = @ssh_key_pair.uuid + ".pem"

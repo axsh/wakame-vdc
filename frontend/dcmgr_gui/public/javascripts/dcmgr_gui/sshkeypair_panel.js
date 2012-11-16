@@ -131,10 +131,12 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   create_ssh_keypair_buttons[create_button_name] = function() {
     var display_name = $(this).find('#ssh_keypair_display_name').val();
     var description = $(this).find('#ssh_keypair_description').val();
+    var public_key = $(this).find('#ssh_public_key').val();
     var iframe = $(this).find('iframe:first').contents();
     var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
               +'<input type="hidden" name="display_name" value="'+display_name+ '">'
               +'<input type="hidden" name="description" value="'+description+ '">'
+              +'<input type="hidden" name="public_key" value="'+encodeURIComponent(public_key)+ '">'
               +'</form>'
 
     iframe.find('body').append(html);
@@ -155,7 +157,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   var bt_create_ssh_keypair = new DcmgrGUI.Dialog({
     target:'.create_ssh_keypair',
     width:500,
-    height:200,
+    height:420,
     title:$.i18n.prop('create_ssh_keypair_header'),
     path:'/create_ssh_keypair',
     callback: function(){
