@@ -32,3 +32,4 @@ gem 'rack-cors', :require => 'rack/cors'
 
 gem 'multi_json'
 gem 'rack-protection', :git=>'http://github.com/rkh/rack-protection.git', :ref => '4a771b640d70dc1acc54b93e654537a5efec0491'
+gem 'sshkey', '1.3.1'
