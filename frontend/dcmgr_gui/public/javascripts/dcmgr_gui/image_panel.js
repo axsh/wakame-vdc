@@ -216,9 +216,9 @@ DcmgrGUI.prototype.imagePanel = function(){
         }else{
           data['monitoring'] = true;
         }
-
-        if( data.monitoring && bt_launch_instance.monitor_selector.validate() ){
-          data.monitoring = true;
+        
+        if( data.monitoring ){
+          data.monitoring = bt_launch_instance.monitor_selector.validate();
         }
 
         if(data['instance_spec'] == true &&
@@ -241,6 +241,10 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#mailaddr').bind('keyup paste cut',
                                      {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
                                      DcmgrGUI.Util.checkTextField);
+      // All new input forms will get realtime validation.
+      $(this).find('#monitor_item_list input[type=text]').live('keyup paste cut',
+                                                               {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                                               DcmgrGUI.Util.checkTextField);
 
       bt_launch_instance.monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
 
