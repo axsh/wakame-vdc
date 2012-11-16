@@ -76,8 +76,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     ssh = find_by_uuid(:SshKeyPair, params[:id])
     raise E::UnknownSshKeyPair, params[:id] if ssh.nil?
 
+    force = false
+    if params[:force] == 'true'
+      force = true
+    end
+
     begin
-      ssh.delete
+      # binding.pry
+      ssh.delete(force)
     rescue => e
       raise E::ExistsRegisteredInstance, e.message
     end
