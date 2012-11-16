@@ -21,6 +21,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       ds = ds.filter(:display_name=>params[:display_name])
     end
 
+    ds = ds.alives
+
     collection_respond_with(ds) do |paging_ds|
       R::SshKeyPairCollection.new(paging_ds).generate
     end

@@ -9,6 +9,8 @@ module Dcmgr::Models
     accept_service_type
     one_to_many :instances
 
+    subset(:alives, {:deleted_at => nil})
+
     attr_accessor :private_key
     #
     # @return [Hash] {:private_key=>'pkey string',
