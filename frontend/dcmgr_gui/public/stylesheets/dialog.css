@@ -66,6 +66,27 @@
 	padding: 3px;
 }
 
+#create_and_edit_ssh_keypair_dialog #display_name{
+  float: right;
+  height: 10px;
+}
+
+#create_and_edit_ssh_keypair_dialog #description{
+  float: right;
+  height: 11px;
+}
+
+#create_and_edit_ssh_keypair_dialog #public_key{
+  float: right;
+  height: 200px;
+}
+
+#create_and_edit_ssh_keypair_dialog #ssh_public_key {
+  width: 335px;
+  height: 200px;
+  margin: 2px;
+}
+
 #delete_ssh_keypair_dialog table {
 	margin: 10px;
 }
