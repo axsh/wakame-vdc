@@ -129,6 +129,7 @@ module Dcmgr
             :mod_nw_src => 'mod_nw_src:%s',
             :mod_tp_dst => 'mod_tp_dst:%i',
             :mod_tp_src => 'mod_tp_src:%i',
+            :normal => 'normal',
             :output => 'output:%i',
             :output_reg0 => 'output:NXM_NX_REG0[]',
             :output_reg1 => 'output:NXM_NX_REG1[]',

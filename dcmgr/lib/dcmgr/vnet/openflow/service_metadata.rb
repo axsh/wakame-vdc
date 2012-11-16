@@ -45,11 +45,11 @@ module Dcmgr::VNet::OpenFlow
                             self.install_flows
                           })
 
-      queue_flows Flow.new(TABLE_ARP_ROUTE, 3, {
-                             :in_port => port_number, :arp => nil,
-                             :dl_dst => local_hw.to_s, :nw_dst => switch.bridge_ipv4,
-                             :nw_src => ip.to_s},
-                           {:controller => nil, :local => nil})
+      queue_flow Flow.new(TABLE_ARP_ROUTE, 3, {
+                            :in_port => port_number, :arp => nil,
+                            :dl_dst => local_hw.to_s, :nw_dst => switch.bridge_ipv4,
+                            :nw_src => ip.to_s},
+                          {:controller => nil, :local => nil})
       flush_flows
 
       switch.datapath.send_arp(port_number, Racket::L3::ARP::ARPOP_REQUEST,
