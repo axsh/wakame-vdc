@@ -7,6 +7,22 @@ module Dcmgr::Models
   class SshKeyPair < AccountResource
     taggable 'ssh'
     accept_service_type
+    one_to_many :instances
+
+    subset(:alives, {:deleted_at => nil})
+
+
+    def before_destroy
+
+      instance_count = instances_dataset.count
+      if(!force && instance_count > 0)
+        raise "#{instance_count} instance references."
+      end
+      super
+    end
+
+    attr_accessor :private_key
+    attr_accessor :force
 
     #
     # @return [Hash] {:private_key=>'pkey string',
@@ -46,6 +62,11 @@ module Dcmgr::Models
       ssh.account_id = account.canonical_uuid
 
       ssh
+    end
+
+    def _destroy_delete
+      self.deleted_at ||= Time.now
+      self.save_changes
     end
   end
 end

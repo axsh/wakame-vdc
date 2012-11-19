@@ -10,6 +10,7 @@ module Hijiki::DcmgrResource::V1203
         ssh_key_pair.display_name = params[:display_name]
         ssh_key_pair.description = params[:description]
         ssh_key_pair.download_once = params[:download_once]
+        ssh_key_pair.public_key = params[:public_key]
         ssh_key_pair.save
         ssh_key_pair
       end

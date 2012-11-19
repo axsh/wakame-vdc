@@ -204,6 +204,7 @@ en:
       display_name: "Keypair Name"
       description: "Description"
       download_once: "Download Once"
+      public_key: "Public Key"
     create_ssh_keypair:
       header: "Create SSH Key Pair"
       uuid: "Keypair ID"
@@ -822,6 +823,7 @@ en:
     code167: "Invalid Load Balancer Public Key"
     code168: "Encryption Algorithm Not Supported"
     code171: "MessagingFailed"
+    code172: "Invalid SSH Public Key"
 
   error_quota:
     security_group:

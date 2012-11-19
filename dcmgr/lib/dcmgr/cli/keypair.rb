@@ -60,9 +60,14 @@ module Dcmgr::Cli
       super(M::SshKeyPair,uuid,options)
     end
 
-    desc "del UUID", "Delete an existing keypair"
+    desc "del UUID [options]", "Delete an existing keypair"
+    method_option :force, :type => :boolean, :desc => "Force delete for this key pair.", :required => false
     def del(uuid)
-      super(M::SshKeyPair,uuid)
+      if uuid
+        keypair = M::SshKeyPair[uuid] || UnknownUUIDError.raise(uuid)
+        keypair.force = options[:force]
+        keypair.destroy
+      end
     end
 
     desc "show [UUID] [options]", "Show keypair(s)"
