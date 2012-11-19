@@ -132,13 +132,13 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     var display_name = $(this).find('#ssh_keypair_display_name').val();
     var description = $(this).find('#ssh_keypair_description').val();
     var public_key = $(this).find('#ssh_public_key').val();
-    var iframe = $(this).find('iframe:first').contents();
 
     if(_.isEmpty(public_key)){
       var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
           +'<input type="hidden" name="display_name" value="'+display_name+ '">'
           +'<input type="hidden" name="description" value="'+description+ '">'
           +'</form>'
+      var iframe = $(this).find('iframe:first').contents();
       iframe.find('body').append(html);
       iframe.find("#prk_download").submit();
     } else {
