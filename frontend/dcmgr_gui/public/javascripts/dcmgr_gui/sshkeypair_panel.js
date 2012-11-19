@@ -46,18 +46,6 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     c_pagenate.changeTotal(ssh_key_pair.total);
     c_list.setData(ssh_key_pair.results);
     c_list.singleCheckList(c_list.detail_template);
-    c_list.element.find(".show_key").each(function(key,value){
-      $(this).button({ disabled: false });
-      var uuid = $(value).attr('id').replace(/button_(ssh-[a-z0-9]+)/,'$1');
-      if(uuid) {
-        $(this).bind('click',function(){
-          c_list.checkRadioButton(uuid);
-          location.href = '/keypairs/prk_download/'+uuid
-        });
-      }else {
-        $(this).button({ disabled: true });
-      }
-    });
 
     var edit_ssh_keypair_buttons = {};
     edit_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
