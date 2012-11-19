@@ -98,7 +98,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     end
 
     begin
-      # binding.pry
       ssh.delete(force)
     rescue => e
       raise E::ExistsRegisteredInstance, e.message
