@@ -82,6 +82,10 @@ module Hijiki::DcmgrResource::V1203
       NetworkService.list(:network_id => self.id)
     end
 
+    def delete_service(vif_id, name)
+      self.delete('services', {:vif_id => vif_id, :name => name})
+    end
+
     def get_dhcp_ranges
       self.get(:dhcp_ranges)
     end

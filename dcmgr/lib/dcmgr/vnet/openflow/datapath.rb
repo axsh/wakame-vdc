@@ -26,11 +26,11 @@ module Dcmgr
         end
 
         def add_flows flows
-          ovs_ofctl.add_flows_from_list flows
+          ovs_ofctl.add_flows_from_list flows unless flows.empty?
         end
 
         def del_flows flows
-          ovs_ofctl.del_flows_from_list flows
+          ovs_ofctl.del_flows_from_list flows unless flows.empty?
         end
 
         def send_message message
