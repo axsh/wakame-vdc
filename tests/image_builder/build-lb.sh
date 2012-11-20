@@ -6,6 +6,8 @@ distro_ver=6.3     # [ 6 | 6.0 | 6.1 | 6.2 | 6.x... ]
 arch="x86_64"
 hypervisor=${hypervisor:-'openvz'}
 
+ssl_wrapper=${ssl_wrapper:-'stud'}
+
 input_image="${distro_name}-${distro_ver}_${arch}.row"
 output_image="${distro_name}-${distro_ver}_${arch}-md.row"
 register_image="lb-${distro_name}-${hypervisor}-md-64.raw"
@@ -62,31 +64,11 @@ EOS
 
 }
 
-function load_balancer_setup() {
-  typeset tmp_root="$1"
-  typeset lodev="$2"
-  typeset wakame_vdc_dir="$( cd ../../ && pwd )"
-  typeset load_balancer_dir="${wakame_vdc_dir}/vmapp/load_balancer"
-  typeset wakame_init_path="${wakame_vdc_dir}/tests/image_builder/rhel/6/wakame-init"
-  typeset axsh_path="/opt/axsh"
-  typeset axsh_dir="${tmp_root}${axsh_path}"
-  typeset target_dir="${axsh_dir}/wakame-vdc"
-  typeset tmp_dir="${wakame_vdc_dir}/tmp"
-
-  mkdir -p ${axsh_dir}/wakame-vdc/scripts
-  mkdir -p ${axsh_dir}/wakame-vdc/amqptools/bin
-
-  cp ${load_balancer_dir}/etc/init/haproxy_updater.conf ${tmp_root}/etc/init/haproxy_updater.conf
-  cp ${load_balancer_dir}/etc/init.d/stunnel ${tmp_root}/etc/init.d/stunnel
-  cp ${load_balancer_dir}/scripts/update_haproxy.sh ${target_dir}/scripts/update_haproxy.sh
-  cp ${load_balancer_dir}/amqptools/bin/amqpspawn ${target_dir}/amqptools/bin/amqpspawn
-  cp ${wakame_init_path} ${tmp_root}/etc/wakame-init
-  chmod 755 $tmp_root/etc/wakame-init
-  chown 0:0 $tmp_root/etc/wakame-init
-
+## Will delete stunnel if we decide to use stud in the future
+function build_wrapper_stunnel() {
   # Make OpenSSL
   (
-  cd ${tmp_dir}
+    cd ${tmp_dir}
   [ -f "${tmp_dir}/openssl-1.0.1c" ]|| {
     curl -L -O http://www.openssl.org/source/openssl-1.0.1c.tar.gz
     tar xvzf ./openssl-1.0.1c.tar.gz
@@ -115,6 +97,82 @@ function load_balancer_setup() {
   mkdir -p ${tmp_root}/etc/stunnel
   mv ${tmp_dir}/stunnel/bin/stunnel ${target_dir}
 
+  rm -rf ${tmp_dir}/openssl
+  rm -rf ${tmp_dir}/stunnel
+}
+
+function build_wrapper_stud() {
+  (
+  libev_name="libev-4.11"
+  libev_tarball="${libev_name}.tar.gz"
+
+  ## Make libev
+  cd ${tmp_dir}
+  [ -f ${libev_tarball}  ] || wget http://dist.schmorp.de/libev/${libev_tarball}
+  tar xvzf ${libev_tarball}
+  cd ${libev_name}
+  ./configure
+  make
+
+  cp ${tmp_dir}/${libev_name}/.libs/libev.so.4 ${tmp_root}/lib64/
+  # Clean up the temp directory
+  rm -rf ${tmp_dir}/${libev_tarball} ${tmp_dir}/${libev_name}
+
+  ## Make stud
+  stud_name="stud-master"
+  stud_tarball="stud.tar.gz"
+  stud_location="https://github.com/axsh/stud/archive/master.tar.gz"
+  cd ${tmp_dir}
+
+  wget -O ${stud_tarball} ${stud_location}
+  tar zxf ${stud_tarball}
+  cd ${stud_name}
+  make
+
+  cp ${tmp_dir}/${stud_name}/stud ${tmp_root}/usr/bin/
+  cp ${tmp_dir}/${stud_name}/upstart/stud.conf ${tmp_root}/etc/init
+
+  # Clean up the temp directory
+  rm -rf ${tmp_dir}/${stud_tarball} ${tmp_dir}/${stud_name}
+  )
+}
+
+function setup_wrapper_stunnel() {
+  cp ${load_balancer_dir}/etc/init.d/stunnel ${tmp_root}/etc/init.d/stunnel
+  cat <<'EOS' | chroot $tmp_root bash -c "cat | bash"
+chkconfig stunnel off
+ln -s /opt/axsh/wakame-vdc/stunnel /usr/bin/stunnel
+EOS
+}
+
+function setup_wrapper_stud() {
+  # Place any stud setup in here if neccessary
+  echo "nuthin'" > /dev/null # Just a useless command to get around the empty function thing
+}
+
+function load_balancer_setup() {
+  typeset tmp_root="$(cd $1 && pwd)"
+  typeset lodev="$2"
+  typeset wakame_vdc_dir="$( cd ../../ && pwd )"
+  typeset load_balancer_dir="${wakame_vdc_dir}/vmapp/load_balancer"
+  typeset wakame_init_path="${wakame_vdc_dir}/tests/image_builder/rhel/6/wakame-init"
+  typeset axsh_path="/opt/axsh"
+  typeset axsh_dir="${tmp_root}${axsh_path}"
+  typeset target_dir="${axsh_dir}/wakame-vdc"
+  typeset tmp_dir="${wakame_vdc_dir}/tmp"
+
+  mkdir -p ${axsh_dir}/wakame-vdc/scripts
+  mkdir -p ${axsh_dir}/wakame-vdc/amqptools/bin
+
+  cp ${load_balancer_dir}/etc/init/haproxy_updater.conf ${tmp_root}/etc/init/haproxy_updater.conf
+  cp ${load_balancer_dir}/scripts/update_haproxy.sh ${target_dir}/scripts/update_haproxy.sh
+  cp ${load_balancer_dir}/amqptools/bin/amqpspawn ${target_dir}/amqptools/bin/amqpspawn
+  cp ${wakame_init_path} ${tmp_root}/etc/wakame-init
+  chmod 755 $tmp_root/etc/wakame-init
+  chown 0:0 $tmp_root/etc/wakame-init
+
+  build_wrapper_${ssl_wrapper}
+
   cat <<EOF > $tmp_root/etc/rc.local
 /etc/wakame-init md
 initctl start haproxy_updater
@@ -134,19 +192,15 @@ distro_pkgs="
 "
 yum install -y ${distro_pkgs}
 
-ln -s /opt/axsh/wakame-vdc/stunnel /usr/bin/stunnel
-
 # setup chkconfig
 chkconfig haproxy off
-chkconfig stunnel off
 chkconfig postfix off
 chkconfig rsyslog off
 chkconfig sshd off
 rm -f /etc/haproxy/haproxy.cfg
 EOS
 
-  rm -rf ${tmp_dir}/openssl
-  rm -rf ${tmp_dir}/stunnel
+  setup_wrapper_${ssl_wrapper}
 }
 
 [ -f "${distro_name}-${distro_ver}_${arch}.tar.gz" ] || {
@@ -160,6 +214,6 @@ EOS
 cp --sparse=auto ${input_image} ${output_image}
 loop_mount_image "${output_image}" "load_balancer_setup"
 mv ${output_image} ${register_image}
-for i in ./${register_image} ; do echo $i; time sudo bash -c "gzip -c $i > $i.gz"; done
+for i in ./${register_image} ; do echo $i; time bash -c "gzip -c $i > $i.gz"; done
 rm -f ${output_image}
 rm -f ${register_image}
