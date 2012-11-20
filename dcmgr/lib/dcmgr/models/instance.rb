@@ -12,7 +12,6 @@ module Dcmgr::Models
     one_to_many :network_vif
     alias :instance_nic :network_vif
     alias :nic :network_vif
-    # TODO: remove ssh_key_pair_id column
     many_to_one :ssh_key_pair
     one_to_one :instance_monitor_attr
 
@@ -42,7 +41,6 @@ module Dcmgr::Models
 
     serialize_attributes :yaml, :runtime_config
     # equal to SshKeyPair#to_hash
-    serialize_attributes :yaml, :ssh_key_data
     serialize_attributes :yaml, :request_params
 
     module ValidationMethods
@@ -153,6 +151,7 @@ module Dcmgr::Models
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :vif=>[],
+                 :ssh_key_data => self.ssh_key_pair.to_hash,
               })
       h[:volume]={}
       if self.volume
@@ -217,8 +216,9 @@ module Dcmgr::Models
         :ha_enabled => ha_enabled,
         :instance_spec_id => nil,
       }
-      if self.ssh_key_data
-        h[:ssh_key_pair] = self.ssh_key_data[:uuid]
+
+      if self.ssh_key_pair
+        h[:ssh_key_pair] = self.ssh_key_pair.canonical_uuid
       end
 
       instance_nic.each { |vif|
@@ -336,15 +336,6 @@ module Dcmgr::Models
 
     def live?
       self.terminated_at.nil?
-    end
-
-    def set_ssh_key_pair(ssh_key_pair)
-      raise ArgumentError unless ssh_key_pair.is_a?(SshKeyPair)
-      self.ssh_key_data = ssh_key_pair.to_hash
-      # Do not copy private key.
-      self.ssh_key_data.delete(:private_key)
-      # TODO: remove ssh_key_pair_id column
-      self.ssh_key_pair_id = ssh_key_pair.canonical_uuid
     end
 
 

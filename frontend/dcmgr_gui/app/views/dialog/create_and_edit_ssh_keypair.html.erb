@@ -8,20 +8,18 @@
     </tr>
     <%- end -%>
     <tr>
-      <td><%= t("dialog.create_and_edit_ssh_keypair.display_name")%>: </td>
+      <td id="display_name"><%= t("dialog.create_and_edit_ssh_keypair.display_name")%>: </td>
       <td><input id="ssh_keypair_display_name" type="text" size=43 value="<%= @display_name %>"></td>
     </tr>
     <tr>
-      <td><%= t("dialog.create_and_edit_ssh_keypair.description")%>: </td>
+      <td id="description"><%= t("dialog.create_and_edit_ssh_keypair.description")%>: </td>
       <td><input id="ssh_keypair_description" type="text" size= 43 value="<%= @description %>"></td>
     </tr>
-    <%- if @uuid.nil? -%>
+    <% if(action_name == 'create_ssh_keypair') %>
     <tr>
-      <td><%= t("dialog.create_and_edit_ssh_keypair.download_once")%>: </td>
-      <td>
-	<input id="ssh_keypair_download_once" type="checkbox" name="download_once" checked>
-      </td>
+      <td id="public_key"><%= t("dialog.create_and_edit_ssh_keypair.public_key")%>: </td>
+      <td><textarea id="ssh_public_key"></textarea></td>
     </tr>
-    <%- end -%>
+    <% end %>
   </table>
 </div>

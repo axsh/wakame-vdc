@@ -43,7 +43,6 @@
 	    <th class="icon"></th>
 	    <th><%= t('keypairs.list.display_name') %></th>
 	    <th><%= t('keypairs.list.description') %></th>
-	    <th class="header_show_key"><%= t('keypairs.list.secret_access_key') %></th>
 	    <th><%= t('keypairs.list.action') %></th>
 	  </tr>
 	  {{each(index,item) rows}}
@@ -55,15 +54,6 @@
 	    {{/if}}
 	    <td>${item.display_name}</td>
 	    <td>${item.description}</td>
-	    <td>
-	      {{if item.uuid }}
-	      {{if item.private_key}}
-	      <a id="button_${item.uuid}" href="javascript:void(0);" class="show_key"><%= t('keypairs.button.show_secret_accesskey') %></a>
-	      {{else}}
-	      <a href="javascript:void(0);" class="show_key"><%= t('keypairs.button.show_secret_accesskey') %></a>
-	      {{/if}}
-	      {{/if}}
-	    </td>
 	    {{if item.uuid }}
 	    <td class="vtip center" title="action">
 	      <a href="javascript:void(0);" class="edit_ssh_keypair" id="edit_${item.uuid}"><%= t('keypairs.button.edit_keypair') %></a>

@@ -1204,6 +1204,11 @@ body{
 #instance_action-menu {
   font-size: 11px;
 }
+#change_key_pair_message {
+	font-size: 13px;
+	color: #F89406;
+	margin-left: 10px;
+}
 
 #content #mainarea_wide .controller a.delete_volume{
 	display: block;
