@@ -104,6 +104,14 @@ module Dcmgr::Models
       instances_usage(:memory_size)
     end
 
+    # Returns a usage percentage to show admins in quick overviews
+    def usage_percent
+      cpu_percent = (cpu_core_usage.to_f / offering_cpu_cores.to_f) * 100
+      mem_percent = (memory_size_usage.to_f / offering_memory_size.to_f) * 100
+
+      ((cpu_percent + mem_percent) / 2).to_i
+    end
+
     # Returns available CPU cores.
     def available_cpu_cores
       self.offering_cpu_cores - self.cpu_core_usage
