@@ -8,9 +8,6 @@ hypervisor=${hypervisor:-'openvz'}
 
 ssl_wrapper=${ssl_wrapper:-'stud'}
 
-#TODO: change to real location
-stud_location="file:///root/stud.tar.gz"
-
 input_image="${distro_name}-${distro_ver}_${arch}.row"
 output_image="${distro_name}-${distro_ver}_${arch}-md.row"
 register_image="lb-${distro_name}-${hypervisor}-md-64.raw"
@@ -122,13 +119,12 @@ function build_wrapper_stud() {
   rm -rf ${tmp_dir}/${libev_tarball} ${tmp_dir}/${libev_name}
 
   ## Make stud
-  stud_name="stud"
-  stud_tarball="${stud_name}.tar.gz"
+  stud_name="stud-master"
+  stud_tarball="stud.tar.gz"
+  stud_location="https://github.com/axsh/stud/archive/master.tar.gz"
   cd ${tmp_dir}
-  # wget https://github.com/bumptech/stud/archive/master.tar.gz
-  # tar xzf master
-  # cd stud-master
-  curl -s ${stud_location} > ${stud_tarball}
+
+  wget -O ${stud_tarball} ${stud_location}
   tar zxf ${stud_tarball}
   cd ${stud_name}
   make
