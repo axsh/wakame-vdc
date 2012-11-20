@@ -392,7 +392,7 @@ Sequel.migration do
     create_table(:instance_monitor_attrs) do
       primary_key :id, :type=>"int(11)"
       column :instance_id, "int(11)", :null=>false
-      column :mailaddr, "varchar(255)", :null=>false
+      column :recipients, "text", :null=>false
       column :enabled, "tinyint(1)", :default=>false, :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
