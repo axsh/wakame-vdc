@@ -179,7 +179,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         if ssh_key_pair.nil?
           raise E::UnknownSshKeyPair, "#{params[:ssh_key_id]}"
         else
-          i.set_ssh_key_pair(ssh_key_pair)
+          i.ssh_key_pair_id = ssh_key_pair.id
         end
       end
 
@@ -307,6 +307,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   put '/:id' do
     # description 'Updates the security groups an instance is in'
     # param :id, string, :required
+    # param :ssh_key_id, string, :optional
     # param :security_groups, array, :optional
     # param :display_name, :string, :optional
     raise E::UndefinedInstanceID if params[:id].nil?
@@ -344,6 +345,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           }
         end
       }
+    end
+
+    if params[:ssh_key_id]
+      ssh_key_pair = M::SshKeyPair[params[:ssh_key_id]]
+
+      if ssh_key_pair.nil?
+        raise E::UnknownSshKeyPair, "#{params[:ssh_key_id]}"
+      else
+        instance.ssh_key_pair_id = ssh_key_pair.id
+      end
     end
 
     if params[:monitoring].is_a?(Hash)

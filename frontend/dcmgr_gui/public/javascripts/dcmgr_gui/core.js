@@ -45,7 +45,9 @@ DcmgrGUI.Request = DcmgrGUI.Class.create({
   },
 
   _request: function(params){
-    params['async'] = params['async'] || true;
+    if (params['async'] == undefined) {
+      params['async'] = true;
+    }
     params['dataType'] = 'json';
     params['cache'] = false;
     return $.ajax(params);

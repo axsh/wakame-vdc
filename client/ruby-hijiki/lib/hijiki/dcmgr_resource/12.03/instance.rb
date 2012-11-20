@@ -29,7 +29,7 @@ module Hijiki::DcmgrResource::V1203
         end
         super(params.merge({:state=>state}))
       end
-      
+
       def create(params)
         instance = self.new
         instance.image_id = params[:image_id]
@@ -52,20 +52,20 @@ module Hijiki::DcmgrResource::V1203
         instance.instance_spec_name = params[:instance_spec_id]
 
         validate_monitoring_params(params)
-        
+
         instance.monitoring = {
           :enabled => params[:monitoring][:enabled],
           :mail_address => params[:monitoring][:mail_address],
         }
-        
+
         instance.save
         instance
       end
-      
+
       def destroy(instance_id)
         self.delete(instance_id).body
       end
-      
+
       def reboot(instance_id)
         result = self.find(instance_id).put(:reboot)
         result.body
@@ -82,7 +82,7 @@ module Hijiki::DcmgrResource::V1203
       end
 
       def update(instance_id,params)
-        validate_monitoring_params(params)        
+        validate_monitoring_params(params)
         self.put(instance_id,params).body
       end
 

@@ -219,11 +219,10 @@ module Dcmgr
             "network/interfaces/macs/#{mac}/x-metric" => vnic[:ipv4][:network][:metric],
           })
         }
-
-        if @inst[:ssh_key_data]
+        if @inst[:ssh_key_pair]
           metadata_items.merge!({
-            "public-keys/0=#{@inst[:ssh_key_data][:name]}" => @inst[:ssh_key_data][:public_key],
-            'public-keys/0/openssh-key'=> @inst[:ssh_key_data][:public_key],
+            "public-keys/0=#{@inst[:ssh_key_pair][:uuid]}" => @inst[:ssh_key_pair][:public_key],
+            'public-keys/0/openssh-key'=> @inst[:ssh_key_pair][:public_key],
           })
         else
           metadata_items.merge!({'public-keys/'=>nil})
