@@ -34,6 +34,7 @@ module Dcmgr::Models
                     :network_id => self.network_id,
                     :network => self.network.nil? ? nil : self.network.to_hash,
                     :security_groups => self.security_groups.map {|n| n.canonical_uuid },
+                    :network_services => [],
                     :network_vif_monitors => self.network_vif_monitors_dataset.alives.map {|n| n.to_hash },
                   })
 
@@ -42,6 +43,10 @@ module Dcmgr::Models
                       :host_node_id => self.instance.host_node.nil? ? nil : self.instance.host_node.node_id,
                     })
       end
+
+      self.network_services.each { |service|
+        hash[:network_services] << service.to_hash
+      }
 
       hash
     end
