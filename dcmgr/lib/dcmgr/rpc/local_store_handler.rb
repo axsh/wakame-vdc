@@ -20,7 +20,7 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless %w(pending failingover).member?(@inst[:state].to_s)
 
-        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:starting})
+        rpc.request('hva-collector', 'update_instance', @inst_id, {:state=>:initializing})
 
         task_session.invoke(Drivers::LocalStore.driver_class(@inst[:host_node][:hypervisor]),
                             :deploy_image, [@inst, @hva_ctx])

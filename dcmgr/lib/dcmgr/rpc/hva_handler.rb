@@ -257,7 +257,7 @@ module Dcmgr
 
         @hva_ctx.logger.info("Booting #{@inst_id}: phase 2")
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless %w(starting).member?(@inst[:state].to_s)
+        raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
 
         setup_metadata_drive
 
