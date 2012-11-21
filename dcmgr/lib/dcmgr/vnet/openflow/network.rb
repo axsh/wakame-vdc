@@ -72,35 +72,35 @@ module Dcmgr::VNet::OpenFlow
     end
 
     def add_service(switch, service_map)
-      # Need to search using constant.
-      if self.services.has_key?(service_map[:name].to_sym)
-        logger.info "Duplicate service: name:'#{service_map[:name]}'."
+      name = service_map[:name].to_sym
+
+      if self.services.has_key?(name)
+        logger.info "Duplicate service: name:'#{name}'."
         return
       end
+
+      port = switch.find_vif_id(service_map[:network_vif_uuid])
 
       args = {
         :switch => switch,
         :network => self,
         :mac => service_map[:mac_addr],
         :ip => IPAddr.new(service_map[:address]),
+        :of_port => port ? port.port_info.number : nil,
       }
 
-      case service_map[:name]
-      when 'dhcp'
+      case name
+      when :dhcp
         logger.info "Adding DHCP service."
-        name = :dhcp
         service = ServiceDhcp.new(args)
-      when 'dns'
+      when :dns
         logger.info "Adding DNS service."
-        name = :dns
         service = ServiceDns.new(args)
-      when 'gateway'
+      when :gateway
         logger.info "Adding GATEWAY service."
-        name = :gateway
         service = ServiceGateway.new(args)
-      when 'metadata'
+      when :metadata
         logger.info "Adding METADATA service."
-        name = :metadata
         service = ServiceMetadata.new(args.merge!({:of_port => service_map[:port], :listen_port => service_map[:incoming_port]}))
       else
         logger.info "Unknown service name, not creating: '#{service_map[:name]}'."
@@ -116,6 +116,15 @@ module Dcmgr::VNet::OpenFlow
       end
     end
     
+    def update_service_port(switch, service_map, port)
+      service = self.services[service_map[:name].to_sym]
+
+      return unless service and service.of_port != port.port_info.number
+
+      service.of_port = port.port_info.number
+      service.install
+    end
+
     def delete_service(switch, service_map)
       service = self.services.delete(service_map[:name].to_sym)
 

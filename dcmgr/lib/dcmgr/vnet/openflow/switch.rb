@@ -26,6 +26,11 @@ module Dcmgr::VNet::OpenFlow
       @packet_handlers = []
     end
 
+    def find_vif_id(vif_id)
+      port = ports.detect { |port_number,port| vif_id == port.port_info.name }
+      port[1] unless port.nil?
+    end
+
     def update_bridge_ipv4
       @bridge_ipv4 = nil
 
