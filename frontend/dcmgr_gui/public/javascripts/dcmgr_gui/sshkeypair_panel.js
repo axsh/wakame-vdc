@@ -46,18 +46,6 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     c_pagenate.changeTotal(ssh_key_pair.total);
     c_list.setData(ssh_key_pair.results);
     c_list.singleCheckList(c_list.detail_template);
-    c_list.element.find(".show_key").each(function(key,value){
-      $(this).button({ disabled: false });
-      var uuid = $(value).attr('id').replace(/button_(ssh-[a-z0-9]+)/,'$1');
-      if(uuid) {
-        $(this).bind('click',function(){
-          c_list.checkRadioButton(uuid);
-          location.href = '/keypairs/prk_download/'+uuid
-        });
-      }else {
-        $(this).button({ disabled: true });
-      }
-    });
 
     var edit_ssh_keypair_buttons = {};
     edit_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
@@ -132,15 +120,29 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     var display_name = $(this).find('#ssh_keypair_display_name').val();
     var description = $(this).find('#ssh_keypair_description').val();
     var public_key = $(this).find('#ssh_public_key').val();
-    var iframe = $(this).find('iframe:first').contents();
-    var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
-              +'<input type="hidden" name="display_name" value="'+display_name+ '">'
-              +'<input type="hidden" name="description" value="'+description+ '">'
-              +'<input type="hidden" name="public_key" value="'+encodeURIComponent(public_key)+ '">'
-              +'</form>'
 
-    iframe.find('body').append(html);
-    iframe.find("#prk_download").submit();
+    if(_.isEmpty(public_key)){
+      var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
+          +'<input type="hidden" name="display_name" value="'+display_name+ '">'
+          +'<input type="hidden" name="description" value="'+description+ '">'
+          +'</form>'
+      var iframe = $(this).find('iframe:first').contents();
+      iframe.find('body').append(html);
+      iframe.find("#prk_download").submit();
+    } else {
+      var request = new DcmgrGUI.Request
+      var data = "display_name=" + display_name +
+                 "&description=" + description +
+                 "&public_key=" + encodeURIComponent(public_key);
+
+      request.get({
+        "url": '/keypairs/create_ssh_keypair.json',
+        "data": data,
+        success: function(json,status){
+          //nop
+        }
+      });
+    }
 
     var request = new DcmgrGUI.Request
     request.get({
