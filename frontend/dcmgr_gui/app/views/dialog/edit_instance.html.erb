@@ -85,7 +85,15 @@
         </tr>
         <tr>
           <td><%= t("dialog.launch_instance.network_service_monitor.mailaddr")%>:</td>
-          <td><input type="text" id="mailaddr", value="<%= @monitoring['mail_address'] %>"></input></td>
+          <td><input type="text" id="mailaddr_0" class="mailaddr_form" value="<%= @monitoring['mail_address'][0] %>"></input></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><input type="text" id="mailaddr_1" class="mailaddr_form" value="<%= @monitoring['mail_address'][1] %>"></input></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><input type="text" id="mailaddr_2" class="mailaddr_form" value="<%= @monitoring['mail_address'][2] %>"></input></td>
         </tr>
       </tbody>
     </table>

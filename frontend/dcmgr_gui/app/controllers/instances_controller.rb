@@ -170,9 +170,11 @@ class InstancesController < ApplicationController
         :monitoring => {},
         :ssh_key_id => params[:ssh_key_id],
       }
-      if params[:monitoring]
-        data[:monitoring][:enabled] = (params[:monitoring][:enabled] == 'true')
-        data[:monitoring][:mail_address] = params[:monitoring][:mail_address]
+      if params['monitoring']
+        data[:monitoring][:enabled] = (params['monitoring']['enabled'] == 'true')
+        if params['monitoring']['mail_address']
+          data[:monitoring][:mail_address] = params['monitoring']['mail_address']
+        end
       end
       instance = Hijiki::DcmgrResource::Instance.update(instance_id,data)
       render :json => instance

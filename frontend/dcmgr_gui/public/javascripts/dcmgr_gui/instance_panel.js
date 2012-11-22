@@ -80,13 +80,18 @@ DcmgrGUI.prototype.instancePanel = function(){
       var instance_id = $(this).find('#instance_id').val();
       var display_name = $(this).find('#instance_display_name').val();
 
-      var data = ['display_name=' + display_name,
-                  'monitoring[enabled]=' + $(this).find('#monitoring_enabled').is(':checked'),
-                  'monitoring[mail_address]=' + $(this).find('#mailaddr').val(),
-                  'ssh_key_id=' + $(this).find("#ssh_key_pair").val()
-                 ].join('&');
+      var query = ['display_name=' + display_name,
+                   'monitoring[enabled]=' + $(this).find('#monitoring_enabled').is(':checked'),
+                   'ssh_key_id=' + $(this).find("#ssh_key_pair").val()
+                  ];
       $.each($(this).find('#right_select_list').find('option'), function(i){
-        data = data + "&security_groups[]="+ $(this).val();
+        query.push("security_groups[]="+ $(this).val());
+      });
+
+      _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+        if( _.isString($(self).find(id).val()) && $(self).find(id).val() != ""){
+          query.push("monitoring[mail_address][]="+$(self).find(id).val());
+        }
       });
 
       if( !bt_edit_instance.monitor_selector.validate() ){
@@ -98,7 +103,7 @@ DcmgrGUI.prototype.instancePanel = function(){
         instance: function(){
           request.put({
             "url": '/instances/'+ instance_id +'.json',
-            "data": data,
+            "data": query.join('&'),
             success: function(json, status){
               bt_refresh.element.trigger('dcmgrGUI.refresh');
             }
@@ -131,8 +136,14 @@ DcmgrGUI.prototype.instancePanel = function(){
 
         var ready = function(data) {
           if($(self).find('#monitoring_enabled').is(':checked')){
-            var v = $(self).find('#mailaddr').val();
-            data['monitoring'] = (v.length > 0);
+            data['monitoring'] = _.all(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+              var v = $(self).find(id).val();
+              if(v.length > 0) {
+                return /@/.test(v);
+              }else{
+                return true;
+              }
+            });
           }else{
             data['monitoring'] = true;
           }
@@ -173,9 +184,9 @@ DcmgrGUI.prototype.instancePanel = function(){
         var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
         $(this).find('#instance_display_name').bind('keyup paste cut', params, DcmgrGUI.Util.checkTextField);
         $(this).find('#monitoring_enabled').bind('click', {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready}, DcmgrGUI.Util.checkTextField);
-        $(this).find('#mailaddr').bind('keyup paste cut',
-                                       {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
-                                       DcmgrGUI.Util.checkTextField);
+        $(this).find('.mailaddr_form').bind('keyup paste cut',
+                                            {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                            DcmgrGUI.Util.checkTextField);
         // All new input forms will get realtime validation.
 	$(this).find('#monitor_item_list input[type=text]').live('keyup paste cut',
                                                                  {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
