@@ -43,6 +43,7 @@ shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webd
           time gunzip -c "$f" | cp --sparse=always /dev/stdin "${localname}"
         }
         # do not remove .gz as they are used for gzipped file test cases.
+        : # this line ensure the subshell exit with status code 0
       }
     )
   done

@@ -219,11 +219,10 @@ module Dcmgr
             "network/interfaces/macs/#{mac}/x-metric" => vnic[:ipv4][:network][:metric],
           })
         }
-
-        if @inst[:ssh_key_data]
+        if @inst[:ssh_key_pair]
           metadata_items.merge!({
-            "public-keys/0=#{@inst[:ssh_key_data][:name]}" => @inst[:ssh_key_data][:public_key],
-            'public-keys/0/openssh-key'=> @inst[:ssh_key_data][:public_key],
+            "public-keys/0=#{@inst[:ssh_key_pair][:uuid]}" => @inst[:ssh_key_pair][:public_key],
+            'public-keys/0/openssh-key'=> @inst[:ssh_key_pair][:public_key],
           })
         else
           metadata_items.merge!({'public-keys/'=>nil})
@@ -258,7 +257,7 @@ module Dcmgr
 
         @hva_ctx.logger.info("Booting #{@inst_id}: phase 2")
         @inst = rpc.request('hva-collector', 'get_instance',  @inst_id)
-        raise "Invalid instance state: #{@inst[:state]}" unless %w(starting).member?(@inst[:state].to_s)
+        raise "Invalid instance state: #{@inst[:state]}" unless %w(initializing).member?(@inst[:state].to_s)
 
         setup_metadata_drive
 

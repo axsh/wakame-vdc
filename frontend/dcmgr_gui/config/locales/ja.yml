@@ -203,6 +203,7 @@ ja:
       display_name: "キーペア名"
       description: "説明"
       download_once: "1回限り"
+      public_key: "公開鍵"
     create_ssh_keypair:
       header: "キーペアを作成"
       uuid: "キーペアID"
@@ -815,6 +816,7 @@ ja:
     code167: "無効なパプリックキーです。"
     code168: "サポートしていない暗号化アルゴリズムです。"
     code171: "メッセージ通信に失敗しました。"
+    code173: "無効なSSH公開鍵です。"
 
   error_quota:
     security_group:

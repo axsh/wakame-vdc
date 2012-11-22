@@ -47,18 +47,6 @@ Feature: SshKeyPair API
     And the previous api call should have {"display_name":} equal to "sshkey2"
     And the previous api call should have {} with the key "finger_print"
 
-  Scenario: Create new ssh key pair and fail to duplicate delete
-    Given a managed ssh_key_pair with no options
-    And from the previous api call take {"uuid":} and save it to <registry:uuid>
-
-    # First deletion
-    When we make an api delete call to ssh_key_pairs/<registry:uuid> with no options
-    Then the previous api call should be successful
-
-    # Second deletion
-    When we make an api delete call to ssh_key_pairs/<registry:uuid> with no options
-    Then the previous api call should not be successful
-
   Scenario: List ssh key pairs
     Given a managed ssh_key_pair with the following options
       | description | display_name |

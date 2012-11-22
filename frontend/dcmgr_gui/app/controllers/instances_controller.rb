@@ -168,6 +168,7 @@ class InstancesController < ApplicationController
         :display_name => params[:display_name],
         :security_groups => params[:security_groups],
         :monitoring => {},
+        :ssh_key_id => params[:ssh_key_id],
       }
       if params[:monitoring]
         data[:monitoring][:enabled] = (params[:monitoring][:enabled] == 'true')

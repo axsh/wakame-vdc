@@ -137,7 +137,6 @@ DcmgrGui::Application.routes.draw do
   put    'keypairs/edit_ssh_keypair/:id' ,:to => 'keypairs#edit_ssh_keypair'
   get    'keypairs/all' ,:to => 'keypairs#show_keypairs'
   get    'keypairs/total' ,:to => 'keypairs#total'
-  get    'keypairs/prk_download/:id' ,:to => 'keypairs#prk_download'
   get    'keypairs/show/:id' ,:to => 'keypairs#show'
   delete 'keypairs/:id' ,:to => 'keypairs#destroy'
 
@@ -177,6 +176,7 @@ DcmgrGui::Application.routes.draw do
   put    'networks/:id/dhcp_ranges/remove' ,:to => 'networks#remove_dhcp_range'
   get    'networks/:id/services' ,:to => 'networks#show_services'
   post   'networks/:id/services' ,:to => 'networks#create_service'
+  delete 'networks/:id/services' ,:to => 'networks#delete_service'
 
   #network_vifs
   get    'network_vifs/:id' ,:to => 'network_vifs#show'

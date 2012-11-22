@@ -30,21 +30,27 @@ class KeypairsController < ApplicationController
       render :json => @ssh_key_pair
     end
   end
-  
+
   def create_ssh_keypair
     catch_error do
       data = {
         :display_name => params[:display_name],
         :description => params[:description],
-        :download_once => params[:download_once]
+        :public_key => params[:public_key] || ''
       }
+
       @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.create(data)
+
       @filename = @ssh_key_pair.uuid + ".pem"
-      send_data(@ssh_key_pair.private_key,{
-                  :filename => @filename,
-                  :type => 'application/pgp-encrypted',
-                  :status => 200
-                })
+      if data[:public_key].empty?
+        send_data(@ssh_key_pair.private_key,{
+                    :filename => @filename,
+                    :type => 'application/pgp-encrypted',
+                    :status => 200
+                  })
+      else
+        render :json => @ssh_key_pair
+      end
     end
   end
 
@@ -74,17 +80,5 @@ class KeypairsController < ApplicationController
       render :json => total_resource
     end
   end
-  
-  def prk_download
-    catch_error do
-      uuid = params[:id]
-      @ssh_key_pair = Hijiki::DcmgrResource::SshKeyPair.show(uuid)
-      @filename = @ssh_key_pair['uuid'] + ".pem"
-      send_data(@ssh_key_pair['private_key'],{
-                  :filename => @filename,
-                  :type => 'application/pgp-encrypted',
-                  :status => 200
-                })
-    end
-  end
+
 end

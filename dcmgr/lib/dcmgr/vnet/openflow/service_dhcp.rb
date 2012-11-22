@@ -19,14 +19,14 @@ module Dcmgr::VNet::OpenFlow
                           }, Proc.new { |switch,port,message|
                             self.handle(switch, port, message)
                           })
+      remove_flows
 
       if network.virtual
         # Catch DHCP requests.
-        flows = []
-        flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :udp => nil, :dl_dst => self.mac, :nw_dst => self.ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
-        flows << Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
+        queue_flow Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :udp => nil, :dl_dst => self.mac, :nw_dst => self.ip.to_s, :tp_src => 68, :tp_dst => 67}, {:controller => nil})
+        queue_flow Flow.new(TABLE_VIRTUAL_DST, 3, {:reg1 => network.id, :udp => nil, :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67}, {:controller => nil})
 
-        network.datapath.add_flows(flows)
+        flush_flows
       end
     end
 

@@ -5,6 +5,7 @@ module Dcmgr::VNet::OpenFlow
   class ServiceBase
     include Dcmgr::Logger
     include OpenFlowConstants
+    include FlowGroup
 
     attr_reader :switch
     attr_reader :network
@@ -24,5 +25,14 @@ module Dcmgr::VNet::OpenFlow
       @listen_port = args[:listen_port]
     end
 
+    def datapath
+      network.datapath
+    end
+
+    def uninstall
+      remove_flows
+    end
+
   end
+
 end

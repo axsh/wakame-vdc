@@ -27,6 +27,15 @@ module Dcmgr
           @switches = {}
         end
 
+        def find_network_id(network_id)
+          switches.each { |dpid,switch|
+            network = switch.networks[network_id]
+            return switch, network if network
+          }
+
+          return nil, nil
+        end
+
         def start
           logger.info "starting OpenFlow controller."
         end
@@ -40,16 +49,18 @@ module Dcmgr
           bridge_name = @default_ofctl.get_bridge_name(datapath_id)
           raise "No bridge found matching: datapath_id:%016x" % datapath_id if bridge_name.nil?
 
+          ofctl = @default_ofctl.dup
+          ofctl.switch_name = bridge_name
+
           # Sometimes ovs changes the datapath ID and reconnects.
           old_switch = switches.find { |dpid,switch| switch.switch_name == bridge_name }
           
           if old_switch
-            switches.delete(old_switch[0])
-            old_switch[1].each { |network_id,network| @service_openflow.destroy_network(network, false) }
-          end
+            logger.info "found old bridge: name:#{old_switch[1].switch_name} datapath_id:%016x" % old_switch[1].datapath.datapath_id
 
-          ofctl = @default_ofctl.dup
-          ofctl.switch_name = bridge_name
+            switches.delete(old_switch[0])
+            old_switch[1].networks.each { |network_id,network| @service_openflow.destroy_network(network, false) }
+          end
 
           # There is no need to clean up the old switch, as all the
           # previous flows are removed. Just let it rebuild everything.

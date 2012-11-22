@@ -202,6 +202,23 @@ __END
       puts nw.add_service_vif(options[:ipv4]).canonical_uuid
     end
 
+    desc "show NW", "Show network vifs on network"
+    def show(nw_uuid)
+      nw = M::Network[nw_uuid] || UnknownUUIDError.raise(nw_uuid)
+      ds = M::NetworkVif.where(:network_id => nw.id)
+
+      table = [['Vif', 'Network', 'Instance', 'IPv4', 'NAT IPv4']]
+      ds.each { |r|
+        table << [r.canonical_uuid,
+                  r.network.canonical_uuid,
+                  r.instance ? r.instance.canonical_uuid : nil,
+                  r.direct_ip_lease.first ? r.direct_ip_lease.first.ipv4 : nil,
+                  r.nat_ip_lease.first ? r.nat_ip_lease.first.ipv4 : nil,
+                 ]
+      }
+      shell.print_table(table)
+    end
+
     protected
     def self.basename
       "vdc-manage #{Network.namespace} #{self.namespace}"
@@ -214,6 +231,20 @@ __END
     M=Dcmgr::Models
 
     no_tasks {
+      def get_services(uuid, options)
+        case uuid
+        when /^nw-/
+          filter = {}
+          filter[:name] = options[:service] if options[:service]
+
+          nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+          nw.network_service(filter)
+
+        else
+          InvalidUUIDError.raise(uuid)
+        end
+      end
+
       def prepare_vif(uuid, options)
         case uuid
         when /^nw-/
@@ -275,6 +306,38 @@ __END
       }
 
       M::NetworkService.create(service_data)
+    end
+
+    desc "show NW", "Show services on network"
+    method_option :service, :type => :string, :required => false, :desc => "The service name"
+    def show(uuid)
+      ds = get_services(uuid, options)
+
+      table = [['Vif', 'Name', 'IPv4', 'NAT IPv4', 'Incoming Port', 'Outgoing Port']]
+      ds.each { |r|
+        vif = r.network_vif
+
+        table << [vif.canonical_uuid,
+                  r.name,
+                  vif.direct_ip_lease.first ? vif.direct_ip_lease.first.ipv4 : nil,
+                  vif.nat_ip_lease.first ? vif.nat_ip_lease.first.ipv4 : nil,
+                  r.incoming_port,
+                  r.outgoing_port]
+      }
+      shell.print_table(table)
+    end
+
+    desc "remove NW", "Remove services on network"
+    method_option :service, :type => :string, :required => true, :desc => "The service name"
+    def remove(uuid)
+      ds = get_services(uuid, options)
+
+      table = []
+      ds.each { |r|
+        table << [r.network_vif.canonical_uuid, r.name]
+        r.destroy
+      }
+      shell.print_table(table)
     end
 
     protected

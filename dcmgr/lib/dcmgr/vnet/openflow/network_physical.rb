@@ -48,8 +48,8 @@ module Dcmgr::VNet::OpenFlow
     end
 
     def remove_port port
-      super.remove_port(port)
-      self.eth_ports[datapath.datapath_id].delete(port)
+      super(port)
+      self.class.eth_ports[datapath.datapath_id].delete(port)
     end
 
   end

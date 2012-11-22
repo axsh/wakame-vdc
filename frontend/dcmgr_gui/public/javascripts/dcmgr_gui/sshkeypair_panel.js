@@ -2,62 +2,50 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
   var total = 0;
   var maxrow = 10;
   var page = 1;
-  var list_request = { 
+  var list_request = {
     "url" : DcmgrGUI.Util.getPagePath('/keypairs/list/',page),
     "data" : DcmgrGUI.Util.getPagenateData(page,maxrow)
   };
-  
+
   DcmgrGUI.List.prototype.getEmptyData = function(){
     return [{
     }]
   }
-  
+
   DcmgrGUI.Detail.prototype.getEmptyData = function(){
     return {
       "create_at" : "-",
       "update_at":''
     }
   }
-  
+
   var create_button_name = $.i18n.prop('create_button');
   var delete_button_name = $.i18n.prop('delete_button');
   var update_button_name = $.i18n.prop('update_button');
   var close_button_name = $.i18n.prop('close_button');
- 
+
   var c_pagenate = new DcmgrGUI.Pagenate({
     row:maxrow,
     total:total
   });
-  
+
   var c_list = new DcmgrGUI.List({
     element_id:'#display_ssh_keypairs',
     template_id:'#sshKeyPairsListTemplate',
     maxrow:maxrow,
     page:page
   });
-  
+
   c_list.setDetailTemplate({
     template_id:'#sshKeypairsDetailTemplate',
     detail_path:'/keypairs/show/'
   });
-    
+
   c_list.element.bind('dcmgrGUI.contentChange', function(event,params){
     var ssh_key_pair = params.data.ssh_key_pair;
     c_pagenate.changeTotal(ssh_key_pair.total);
     c_list.setData(ssh_key_pair.results);
     c_list.singleCheckList(c_list.detail_template);
-    c_list.element.find(".show_key").each(function(key,value){
-      $(this).button({ disabled: false });
-      var uuid = $(value).attr('id').replace(/button_(ssh-[a-z0-9]+)/,'$1');
-      if(uuid) {
-        $(this).bind('click',function(){
-          c_list.checkRadioButton(uuid);
-          location.href = '/keypairs/prk_download/'+uuid
-        });
-      }else {
-        $(this).button({ disabled: true });
-      }
-    });
 
     var edit_ssh_keypair_buttons = {};
     edit_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
@@ -82,7 +70,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     var bt_edit_ssh_keypair = new DcmgrGUI.Dialog({
       target:'.edit_ssh_keypair',
       width:500,
-      height:250,
+      height:230,
       title:$.i18n.prop('edit_ssh_keypair_header'),
       path:'/edit_ssh_keypair',
       callback: function(){
@@ -104,9 +92,9 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
 
     $(bt_edit_ssh_keypair.target).button({ disabled: false });
   });
-  
+
   var bt_refresh  = new DcmgrGUI.Refresh();
-  
+
   bt_refresh.element.bind('dcmgrGUI.refresh', function(){
     //Update list element
     c_list.page = c_pagenate.current_page;
@@ -119,28 +107,42 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     $($('#detail').find('#'+check_id)).remove();
     $(bt_delete_ssh_keypair.target).button({ disabled: true });
   });
-  
+
   c_pagenate.element.bind('dcmgrGUI.updatePagenate', function(){
     c_list.clearCheckedList();
     $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
-  
+
   var create_ssh_keypair_buttons = {};
   create_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
-  create_ssh_keypair_buttons[create_button_name] = function() { 
-    var download_once = $(this).find('#ssh_keypair_download_once').attr('checked');
+  create_ssh_keypair_buttons[create_button_name] = function() {
     var display_name = $(this).find('#ssh_keypair_display_name').val();
     var description = $(this).find('#ssh_keypair_description').val();
-    var iframe = $(this).find('iframe:first').contents();
-    var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
-              +'<input type="hidden" name="download_once" value="'+download_once+ '">'
-              +'<input type="hidden" name="display_name" value="'+display_name+ '">'
-              +'<input type="hidden" name="description" value="'+description+ '">'
-              +'</form>'
+    var public_key = $(this).find('#ssh_public_key').val();
 
-    iframe.find('body').append(html);
-    iframe.find("#prk_download").submit();
+    if(_.isEmpty(public_key)){
+      var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
+          +'<input type="hidden" name="display_name" value="'+display_name+ '">'
+          +'<input type="hidden" name="description" value="'+description+ '">'
+          +'</form>'
+      var iframe = $(this).find('iframe:first').contents();
+      iframe.find('body').append(html);
+      iframe.find("#prk_download").submit();
+    } else {
+      var request = new DcmgrGUI.Request
+      var data = "display_name=" + display_name +
+                 "&description=" + description +
+                 "&public_key=" + encodeURIComponent(public_key);
+
+      request.get({
+        "url": '/keypairs/create_ssh_keypair.json',
+        "data": data,
+        success: function(json,status){
+          //nop
+        }
+      });
+    }
 
     var request = new DcmgrGUI.Request
     request.get({
@@ -153,11 +155,11 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
 
     $(this).dialog("close");
   }
-  
+
   var bt_create_ssh_keypair = new DcmgrGUI.Dialog({
     target:'.create_ssh_keypair',
     width:500,
-    height:250,
+    height:420,
     title:$.i18n.prop('create_ssh_keypair_header'),
     path:'/create_ssh_keypair',
     callback: function(){
@@ -171,15 +173,15 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     },
     button: create_ssh_keypair_buttons
   });
-  
+
   bt_create_ssh_keypair.target.bind('click', function(){
     bt_create_ssh_keypair.open();
     bt_create_ssh_keypair.disabledButton(1,true);
   });
-  
+
   var delete_ssh_keypair_buttons = {};
   delete_ssh_keypair_buttons[close_button_name] = function() { $(this).dialog("close"); };
-  delete_ssh_keypair_buttons[delete_button_name] = function() { 
+  delete_ssh_keypair_buttons[delete_button_name] = function() {
     var ssh_keypair_id = $(this).find('#ssh_keypair_id').val();
 
     var request = new DcmgrGUI.Request;
@@ -189,26 +191,26 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
     });
-    
+
     $(this).dialog("close");
   }
-  
+
   var bt_delete_ssh_keypair = new DcmgrGUI.Dialog({
     target: '.delete_ssh_keypair',
     width: 400,
-    height: 250,
+    height: 230,
     title: $.i18n.prop('delete_ssh_keypair_header'),
     path: '/delete_ssh_keypair',
     button: delete_ssh_keypair_buttons
   });
-  
+
   dcmgrGUI.notification.subscribe('checked_radio', bt_delete_ssh_keypair, 'enableDialogButton');
   dcmgrGUI.notification.subscribe('change_pagenate', bt_delete_ssh_keypair, 'disableDialogButton');
-  
+
   $(bt_create_ssh_keypair.target).button({ disabled: false });
   $(bt_delete_ssh_keypair.target).button({ disabled: true });
   $(bt_refresh.target).button({ disabled: false });
-  
+
   bt_delete_ssh_keypair.target.bind('click', function() {
     var id = c_list.currentChecked();
     if( id ){
