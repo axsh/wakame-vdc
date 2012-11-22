@@ -205,7 +205,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#select_ssh_key_pair').empty().html(loading_image);
       $(this).find("#left_select_list").mask($.i18n.prop('loading_parts'));
 
-      var request = new DcmgrGUI.Request;
+      var request = new DcmgrGUI.Request();
       var is_ready = {
         'instance_spec': false,
         'ssh_keypair': false,

@@ -287,7 +287,7 @@ DcmgrGUI.prototype.instancePanel = function(){
           security_groups:function(){
             var selected_groups = []
             if (instance.vif.length > 0) {
-              selected_groups = instance.vif[0]['security_groups']
+              selected_groups = instance.vif[0]['security_groups'];
             }
 
             request.get({
