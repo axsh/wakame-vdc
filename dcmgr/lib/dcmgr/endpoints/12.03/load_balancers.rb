@@ -169,7 +169,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     on_after_commit do
       if lb.is_secure?
         Dcmgr::Messaging::LoadBalancer.update_ssl_proxy_config({
-          :name => 'start:stunnel',
+          :name => 'start:stud',
           :accept_port => lb.accept_port,
           :connect_port => lb.connect_port,
           :protocol => lb.protocol,
@@ -419,7 +419,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     on_after_commit do
       if lb.is_secure?
         Dcmgr::Messaging::LoadBalancer.update_ssl_proxy_config({
-          :name => 'reload:stunnel',
+          :name => 'reload:stud',
           :accept_port => lb.accept_port,
           :connect_port => lb.connect_port,
           :protocol => lb.protocol,
