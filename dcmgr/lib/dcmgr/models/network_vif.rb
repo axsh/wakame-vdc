@@ -121,6 +121,7 @@ module Dcmgr::Models
       release_ip_lease
       self.remove_all_security_groups
       self.remove_all_security_groups
+      self.network_routes.each {|i| i.destroy }
       self.network_services.each {|i| i.destroy }
       self.network_vif_monitors.each {|i| i.destroy }
       super
