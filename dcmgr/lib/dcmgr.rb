@@ -68,11 +68,13 @@ module Dcmgr
     autoload :SecurityGroup, 'dcmgr/models/security_group'
     autoload :SecurityGroupReference, 'dcmgr/models/security_group_reference'
     autoload :InstanceSpec, 'dcmgr/models/instance_spec'
+    autoload :IpLease, 'dcmgr/models/ip_lease'
+    autoload :Network, 'dcmgr/models/network'
+    autoload :NetworkRoute, 'dcmgr/models/network_route'
     autoload :NetworkService, 'dcmgr/models/network_service'
     autoload :NetworkVif, 'dcmgr/models/network_vif'
-    autoload :Network, 'dcmgr/models/network'
-    autoload :IpLease, 'dcmgr/models/ip_lease'
     autoload :NetworkVifIpLease, 'dcmgr/models/network_vif_ip_lease'
+    autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :NetworkVifSecurityGroup, 'dcmgr/models/network_vif_security_group'
     autoload :SshKeyPair, 'dcmgr/models/ssh_key_pair'
     autoload :History, 'dcmgr/models/history'
@@ -87,7 +89,6 @@ module Dcmgr
     autoload :BackupStorage, 'dcmgr/models/backup_storage'
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :MacRange, 'dcmgr/models/mac_range'
-    autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
   end
 

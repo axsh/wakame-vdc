@@ -39,6 +39,13 @@ module Dcmgr::Models
       NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(params).select_all(:network_services)
     end
 
+    def network_routes(params = {})
+      params[:network_id] = self.id
+      NetworkRoute.dataset.join_table(:left, :network_vifs,
+                                      {:network_vifs__id => :network_routes__inner_vif_id} |
+                                      {:network_vifs__id => :network_routes__outer_vif_id}).where(params).select_all(:network_routes)
+    end
+
     def add_service_vif(ipv4)
       ip_lease = self.find_ip_lease(ipv4)
 

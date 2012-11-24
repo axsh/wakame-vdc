@@ -25,6 +25,10 @@ module Dcmgr::Models
     one_to_many :network_services
     one_to_many :network_vif_monitors
 
+    def network_routes
+      NetworkRoute.dataset.where({:inner_vif_id => self.id} | {:outer_vif_id => self.id}).all
+    end
+
     def to_hash
       hash = super
       hash.merge!({ :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
@@ -34,7 +38,8 @@ module Dcmgr::Models
                     :network_id => self.network_id,
                     :network => self.network.nil? ? nil : self.network.to_hash,
                     :security_groups => self.security_groups.map {|n| n.canonical_uuid },
-                    :network_services => [],
+                    :network_routes => self.network_routes.map { |route| route.to_hash },
+                    :network_services => self.network_services.map { |service| service.to_hash },
                     :network_vif_monitors => self.network_vif_monitors_dataset.alives.map {|n| n.to_hash },
                   })
 
@@ -43,10 +48,6 @@ module Dcmgr::Models
                       :host_node_id => self.instance.host_node.nil? ? nil : self.instance.host_node.node_id,
                     })
       end
-
-      self.network_services.each { |service|
-        hash[:network_services] << service.to_hash
-      }
 
       hash
     end

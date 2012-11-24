@@ -226,6 +226,61 @@ __END
   end
   register VifOps, 'vif', "vif [options]", "Maintain virtual interfaces"
 
+  class RouteOps < Base
+    namespace :route
+    M=Dcmgr::Models
+
+    no_tasks {
+      def get_routes(uuid, options)
+        case uuid
+        when /^nw-/
+          filter = {}
+
+          nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+          nw.network_routes(filter)
+
+        else
+          InvalidUUIDError.raise(uuid)
+        end
+      end
+    }
+
+    desc "add INNER_VIF OUTER_VIF", "Add route between two networks"
+    def add(inner_uuid, outer_uuid)
+      inner_vif = M::NetworkVif[inner_uuid] || UnknownUUIDError.raise(inner_uuid)
+      outer_vif = M::NetworkVif[outer_uuid] || UnknownUUIDError.raise(outer_uuid)
+
+      # Check for collisions.
+
+      route_data = {
+        :inner_vif_id => inner_vif.id,
+        :outer_vif_id => outer_vif.id,
+      }
+
+      M::NetworkRoute.create(route_data)
+    end
+
+    desc "show NW", "Show routes on network"
+    def show(uuid)
+      ds = get_routes(uuid, options)
+
+      table = [['Inner NW', 'Inner Vif', 'Outer NW', 'Outer Vif']]
+      ds.each { |r|
+        inner_vif = r.inner_vif
+        outer_vif = r.outer_vif
+
+        table << [inner_vif.network.canonical_uuid,
+                  inner_vif.canonical_uuid,
+                  outer_vif.network.canonical_uuid,
+                  outer_vif.canonical_uuid,
+                 ]
+      }
+      shell.print_table(table)
+    end
+
+  end
+  register RouteOps, 'route', "route [options]", "Maintain routing information"
+
   class ServiceOps < Base
     namespace :service
     M=Dcmgr::Models

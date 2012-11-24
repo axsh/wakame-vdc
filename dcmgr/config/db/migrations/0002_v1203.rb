@@ -60,6 +60,16 @@ Sequel.migration do
       index [:broadcast_addr]
     end
 
+    create_table(:network_routes) do
+      primary_key :id, :type=>"int(11)"
+      column :inner_vif_id, "int(11)", :null=>false
+      column :outer_vif_id, "int(11)", :null=>false
+
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      column :deleted_at, "datetime"
+    end
+
     create_table(:network_services) do
       primary_key :id, :type=>"int(11)"
       column :network_vif_id, "int(11)"
@@ -408,6 +418,7 @@ Sequel.migration do
 
   down do
     drop_table(:host_node_vnets)
+    drop_table(:network_routes)
     drop_table(:network_services)
     drop_table(:mac_ranges)
     drop_table(:network_vif_monitors)

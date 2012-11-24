@@ -119,7 +119,7 @@ module Dcmgr::VNet::OpenFlow
     def update_service_port(switch, service_map, port)
       service = self.services[service_map[:name].to_sym]
 
-      return unless service and service.of_port != port.port_info.number
+      return unless service
 
       service.of_port = port.port_info.number
       service.install
@@ -138,6 +138,26 @@ module Dcmgr::VNet::OpenFlow
       service.uninstall
 
       # Remove arp/icmp handlers if required.
+    end
+
+    def update_route_port(switch, route_map, port)
+      service = self.services[:gateway]
+
+      return unless service
+      return unless route_map[:inner_nw] and route_map[:outer_nw]
+
+      if route_map[:inner_vif][:network_vif_uuid] == port.port_info.name
+        service.route_ipv4 = route_map[:outer_nw][:ipv4]
+        service.route_prefix = route_map[:outer_nw][:prefix]
+      elsif route_map[:outer_vif][:network_vif_uuid] == port.port_info.name
+        service.route_ipv4 = route_map[:inner_nw][:ipv4]
+        service.route_prefix = route_map[:inner_nw][:prefix]
+      else
+        return
+      end
+
+      service.of_port = port.port_info.number
+      service.install
     end
 
   end
