@@ -21,7 +21,7 @@ module Dcmgr::Models
       create(:mac_addr=>mac_addr.hex)
     end
 
-    # Creates a string representation of the hexadecimal mac address without delimiters
+    # Creates a string representation of the hexadecimal mac address
     def pretty_mac_addr(delim=':')
       mac = mac_addr.to_s(16)
       while mac.length < 12
