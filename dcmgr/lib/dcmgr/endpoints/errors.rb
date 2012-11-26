@@ -149,5 +149,11 @@ module Dcmgr
     define_error(:MessagingFailed, 500, '171')
     define_error(:UnknownNetworkService, 404, '172')
     define_error(:InvalidSshPublicKey, 400, '173')
+
+    define_error(:InvalidMacAddress, 400, '174')
+    define_error(:DuplicateMacAddress, 400, '175')
+    define_error(:InvalidIPAddress, 400, '176')
+    define_error(:DuplicateIPAddress, 400, '177')
+    define_error(:IPAddressNotPartOfSegment, 400, '178')
   end
 end
