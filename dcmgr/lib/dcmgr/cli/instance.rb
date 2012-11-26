@@ -16,7 +16,7 @@ module Dcmgr::Cli
       def show_instances_list(inst_dataset)
         puts ERB.new(<<__END, nil, '-').result(binding)
 <%- inst_dataset.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= row.host_node.canonical_uuid %>\t<%= row.state %>
+<%= row.canonical_uuid %>\t<%= row.host_node.nil? ? "unassigned" : row.host_node.canonical_uuid %>\t<%= row.state %>
 <%- } -%>
 __END
       end
