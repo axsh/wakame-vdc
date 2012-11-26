@@ -3,42 +3,34 @@
 routing_key=$2
 message=$3
 
-stunnel_private_key="/etc/stunnel/key.pem"
-stunnel_public_key="/etc/stunnel/cert.pem"
-stunnel_conf="/etc/stunnel/stunnel.conf"
+stud_keys="/etc/stud/certs.pem"
+stud_conf="/etc/stud/stud.cfg"
 haproxy_conf="/etc/haproxy/haproxy.cfg"
 
 head=`cat ${message} | sed -n '1,/^ $/p'| openssl enc -d -base64`
 body=`cat ${message} | sed '1,/^ $/d'| openssl enc -d -base64`
 
 case "${head}" in
-  "write:private_key")
-    echo "$body" > ${stunnel_private_key}
-    chmod 600 ${stunnel_private_key}
+  "write:keys")
+    echo "$body" > ${stud_keys}
+    chmod 600 ${stud_keys}
   ;;
-  "write:public_key")
-    echo "$body" > ${stunnel_public_key}
-    chmod 600 ${stunnel_public_key}
-  ;;
-  "start:stunnel")
-    [ -f ${stunnel_private_key} ] && [ -f ${stunnel_public_key} ] && {
-      echo "$body" > ${stunnel_conf}
-      service stunnel start
-      chkconfig stunnel on
+  "start:stud")
+    [ -f ${stud_keys} ] && {
+      echo "$body" > ${stud_conf}
+      start stud
     }
   ;;
-  "reload:stunnel")
-    echo "$body" > ${stunnel_conf}
-    if [ "`service stunnel status`" = 'stunnel is stopped' ]; then
-      service stunnel start
+  "reload:stud")
+    echo "$body" > ${stud_conf}
+    if [ "`status stud`" = 'stud stop/waiting' ]; then
+      start stud
     else
-      service stunnel restart
+      restart stud
     fi
-    chkconfig stunnel on
   ;;
-  "stop:stunnel")
-    service stunnel stop
-    chkconfig stunnel off
+  "stop:stud")
+    stop stud
   ;;
   "start:haproxy")
     echo "$body" > ${haproxy_conf}
