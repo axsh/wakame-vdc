@@ -8,3 +8,4 @@
 RACK_ENV=development
 #BIND_ADDR=127.0.0.1
 #PORT=3000
+#UNICORN_CONF=/etc/wakame-vdc/unicorn-common.conf
