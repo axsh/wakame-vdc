@@ -247,7 +247,11 @@ module Dcmgr
       autoload :Default, 'dcmgr/scheduler/mac_address/default'
     end
 
-    NAMESPACES=[HostNode, StorageNode, Network, MacAddress]
+    module IPAddress
+      autoload :Incremental, 'dcmgr/scheduler/ip_address/incremental'
+    end
+
+    NAMESPACES=[HostNode, StorageNode, Network, MacAddress, IPAddress]
   end
 
   require 'dcmgr/vnet'
