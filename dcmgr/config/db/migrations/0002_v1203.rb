@@ -40,6 +40,8 @@ Sequel.migration do
       drop_column :bandwidth
       add_column :bandwidth, "float"
       add_column :ip_assignment, "varchar(255)", :default=>"asc", :null=>false
+      # Retention period in second to avoid re-assigning dynamic IP address.
+      add_column :retention_period, "int(11)", :default=>0, :null=>false, :unsigned=>true
 
       # Permission flag for modification of the networks by users.
       add_column :editable, "tinyint(1)", :default=>false, :null=>false

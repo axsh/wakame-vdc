@@ -54,6 +54,7 @@ class Network < Base
   method_option :service_type, :type => :string, :default=>Dcmgr.conf.default_service_type, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :required => true, :desc => "Display name of the network"
   method_option :ip_assignment, :type => :string, :default=>'asc', :desc => "How to assign the IP address of the network"
+  method_option :retention_period, :type => :numeric, :default=>0, :desc => "Retention period in second to avoid re-assigning dynamic IP address."
   def add
     validate_ipv4_range
 
@@ -82,6 +83,7 @@ class Network < Base
   method_option :network_mode, :type => :string, :desc => "Network mode: #{NConst::NETWORK_MODES.join(', ')}"
   method_option :service_type, :type => :string, :desc => "Service type of the network. (#{Dcmgr.conf.service_types.keys.sort.join(', ')})"
   method_option :display_name, :type => :string, :desc => "Display name of the network"
+  method_option :retention_period, :type => :numeric, :default=>0, :desc => "Retention period in second to avoid re-assigning dynamic IP address."
   def modify(uuid)
     validate_ipv4_range if options[:ipv4_network]
 
@@ -112,12 +114,9 @@ DHCP Information:
 <%- if nw.metadata_server -%>
   Metadata Server: <%= nw.metadata_server %>
 <%- end -%>
-Bandwidth:
-<%- if nw.bandwidth.nil? -%>
-  unlimited
-<%- else -%>
-  <%= nw.bandwidth %> Mbit/s
-<%- end -%>
+  Address Assignment Strategy: <%= nw.ip_assignment.to_s %>
+  Retention Period: <%= nw.retention_period %> sec
+Bandwidth: <%= nw.bandwidth.nil? ? 'unlimited' : (nw.bandwidth + ' Mbit/s') -%>
 <%- if nw.description -%>
 Description:
   <%= nw.description %>
