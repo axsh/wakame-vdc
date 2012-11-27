@@ -2,7 +2,7 @@
 
 To create a custom instance api call, add the following parameter to the standard instances api.
 
-* "custom"="true"
+* "custom_instance"="true"
 
 The request will go through all of the standard error checks that are usually there when starting an instance. Then it will bypass the schedulers if certain other parameters are present.
 
@@ -24,7 +24,7 @@ POST http://<ip address>:9001/api/12.03/instances
 
 ### Custom flag
 
-* custom
+* custom_instance
 
 This flag must be set to "true" for a custom instance to be run
 
