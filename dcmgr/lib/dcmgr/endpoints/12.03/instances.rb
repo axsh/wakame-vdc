@@ -145,7 +145,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     params["custom_instance"] = case params["custom_instance"]
     when "true"
       true
-    when "false"
+    when "false", nil
       false
     else
       raise E::InvalidParameter, "custom_instance must be either \"true\" or \"false\""
@@ -251,6 +251,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         instance.instance_monitor_attr.mailaddr = params['monitoring']['mail_address']
       end
       instance.instance_monitor_attr.save_changes
+    end
+
+    if params["custom_instance"]
+      ## Assign the custom host node and vifs
+      Dcmgr::Scheduler::HostNode::SpecifyNode.schedule(instance) if params["host_node_id"]
     end
 
     instance.state = :scheduling
