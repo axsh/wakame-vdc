@@ -154,6 +154,7 @@ module Dcmgr
     define_error(:DuplicateMacAddress, 400, '175')
     define_error(:InvalidIPAddress, 400, '176')
     define_error(:DuplicateIPAddress, 400, '177')
-    define_error(:IPAddressNotPartOfSegment, 400, '178')
+    define_error(:IPAddressNotInSegment, 400, '178')
+    define_error(:IncompatibleHostNode, 400, '179')
   end
 end

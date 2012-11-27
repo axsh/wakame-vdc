@@ -2,6 +2,21 @@
 
 require 'dcmgr/endpoints/12.03/responses/instance'
 
+# To validate ip address syntax in the vifs parameter
+require 'ipaddress'
+
+def check_network_ip_combo(network_id,ip_addr)
+  nw = M::Network[network_id]
+  raise E::UnknownNetwork, network_id if nw.nil?
+
+  if ip_addr
+    raise E::InvalidIPAddress, ip_addr unless IPAddress.valid?(ip_addr)
+
+    segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
+    raise E::IPAddressNotInSegment, ip_addr unless segment.include?(IPAddress(ip_addr))
+  end
+end
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
@@ -127,6 +142,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::OutOfHostCapacity
     end
 
+    params["custom_instance"] = case params["custom_instance"]
+    when "true"
+      true
+    when "false"
+      false
+    else
+      raise E::InvalidParameter, "custom_instance must be either \"true\" or \"false\""
+      nil
+    end
+
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -135,6 +160,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       host_node = M::HostNode[host_node_id]
       raise E::UnknownHostNode, "#{host_node_id}" if host_node.nil?
       raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
+      if params["custom_instance"]
+        compat_hype  = (host_node.hypervisor == instance.hypervisor)
+        compat_arch = host_node.compatible_arch(instance.arch)
+        raise E::IncompatibleHostNode, "#{host_node_id} can only handle instances of type #{host_node.arch} #{host_node.hypervisor}" unless compat_arch && compat_hype
+
+        raise E::OutOfHostCapacity, "#{host_node_id}" if instance.cpu_cores > host_node.available_cpu_cores || instance.memory_size > host_node.available_memory_size
+      end
     end
 
     if params['vifs'].nil?
@@ -152,6 +184,20 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     rescue Dcmgr::Scheduler::NetworkSchedulingError
       raise E::InvalidParameter, 'vifs'
     end
+
+    # Check vifs parameter values
+    params["vifs"].each { |name,temp|
+      mac_addr = temp["mac_addr"]
+      raise E::InvalidMacAddress, mac_addr if mac_addr && !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
+
+      if temp["network"]
+        check_network_ip_combo(temp["network"],temp["ip_addr"])
+      end
+
+      if temp["nat_network"]
+        check_network_ip_combo(temp["nat_network"],temp["nat_addr"])
+      end
+    }
 
     # params is a Mash object. so coverts to raw Hash object.
     instance = M::Instance.entry_new(@account, wmi, @params.dup) do |i|
