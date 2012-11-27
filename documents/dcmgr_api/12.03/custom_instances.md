@@ -34,7 +34,7 @@ This flag must be set to "true" for a custom instance to be run
 
 The vifs parameter requires a few extra fields now. Example:
 
-    { eth0 => {"index" => "0", "network_id"=>"nw-demo1", "ip_addr" => "192.168.2.11", "nat_network_id" => "nw-demo2", "nat_ip_addr" => "192.168.3.64", "mac_addr" => "52540028A533" } }
+    { eth0 => {"index" => "0", "network_id"=>"nw-demo1", "ipv4_addr" => "192.168.2.11", "nat_network_id" => "nw-demo2", "nat_ipv4_addr" => "192.168.3.64", "mac_addr" => "52540028A533" } }
 
 #### Behavior
 
