@@ -14,7 +14,6 @@ module Dcmgr
         def schedule(instance)
           index = 0
 
-          #return unless instance.request_params['vifs'].is_a?(Array)
           Dcmgr::Scheduler::Network.check_vifs_parameter_format(instance.request_params["vifs"])
 
           instance.request_params['vifs'].each { |name, param|
