@@ -4,19 +4,19 @@
 module Dcmgr::Messaging
   module LoadBalancer
     def self.update_ssl_proxy_config(values)
-      s = Dcmgr::Drivers::Stunnel.new
+      s = Dcmgr::Drivers::Stud.new
       s.accept_port = values[:accept_port]
       s.connect_port = values[:connect_port]
       s.protocol = values[:protocol]
-      stunnel_config = s.bind_template('stunnel.cnf')
+      stud_config = s.bind_template('stud.cfg')
       queue_params = {
         :topic_name => values[:topic_name],
         :queue_options => values[:queue_options],
         :queue_name => values[:queue_name]
       }
-      Dcmgr::Messaging.publish(values[:private_key], queue_params.merge({:name => 'write:private_key'}))
-      Dcmgr::Messaging.publish(values[:public_key], queue_params.merge({:name => 'write:public_key'}))
-      Dcmgr::Messaging.publish(stunnel_config, queue_params.merge({:name => values[:name]}))
+
+      Dcmgr::Messaging.publish("#{values[:private_key]}\n#{values[:public_key]}", queue_params.merge({:name => 'write:keys'}))
+      Dcmgr::Messaging.publish(stud_config, queue_params.merge({:name => values[:name]}))
     end
 
     def self.update_load_balancer_config(values)
@@ -42,7 +42,7 @@ module Dcmgr::Messaging
       }
 
       if ['http', 'tcp'].include? values[:protocol]
-        Dcmgr::Messaging.publish('', queue_params.merge({:name => 'stop:stunnel'}))
+        Dcmgr::Messaging.publish('', queue_params.merge({:name => 'stop:stud'}))
       end
       Dcmgr::Messaging.publish(haproxy_config, queue_params)
     end
