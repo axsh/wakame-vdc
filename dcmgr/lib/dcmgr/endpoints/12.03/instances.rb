@@ -23,6 +23,19 @@ def check_network_ip_combo(network_id,ip_addr)
   end
 end
 
+# Transforms a string with either "true" or "false" into a boolean
+def transform_flag(flag)
+  case flag
+    when "true"
+      true
+    when "false", nil
+      false
+    else
+      raise E::InvalidParameter, "a flag must be either \"true\" or \"false\""
+      nil
+  end
+end
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
@@ -148,15 +161,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::OutOfHostCapacity
     end
 
-    params["custom_instance"] = case params["custom_instance"]
-    when "true"
-      true
-    when "false", nil
-      false
-    else
-      raise E::InvalidParameter, "custom_instance must be either \"true\" or \"false\""
-      nil
-    end
+    params["custom_host"] = transform_flag(params["custom_host"])
+    params["custom_vifs"] = transform_flag(params["custom_vifs"])
 
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
@@ -166,13 +172,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       host_node = M::HostNode[host_node_id]
       raise E::UnknownHostNode, "#{host_node_id}" if host_node.nil?
       raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
-      if params["custom_instance"]
-        compat_hype  = (host_node.hypervisor == instance.hypervisor)
-        compat_arch = host_node.compatible_arch(instance.arch)
-        raise E::IncompatibleHostNode, "#{host_node_id} can only handle instances of type #{host_node.arch} #{host_node.hypervisor}" unless compat_arch && compat_hype
-
-        raise E::OutOfHostCapacity, "#{host_node_id}" if instance.cpu_cores > host_node.available_cpu_cores || instance.memory_size > host_node.available_memory_size
-      end
     end
 
     if params['vifs'].nil?
@@ -270,20 +269,29 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance.save_changes
 
     #TODO: Terminate instance in case of error
-    if params["custom_instance"]
+    if params["custom_host"]
       ## Assign the custom host node
       Dcmgr::Scheduler::HostNode::SpecifyNode.new.schedule(instance) if params["host_node_id"]
+    end
 
+    if params["custom_vifs"]
       ## Assign the custom vifs
-      #TODO: split custom instance flag into custom host and custom vifs
       Dcmgr::Scheduler::Network::SpecifyNetwork.new.schedule(instance)
       instance.network_vif.each { |vif|
-        # Calling this scheduler from instance#add_nic method as a workaround
-        # for that dirty method that needs to be removed
+        # Calling this scheduler from instance#add_nic method instead
+        # as a workaround for that dirty method that needs to be removed
         # Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
 
         Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
       }
+    end
+
+    if params["custom_host"] && params["host_node_id"]
+      compat_hype  = (host_node.hypervisor == instance.hypervisor)
+      compat_arch = (host_node.arch == instance.image.arch)
+      raise E::IncompatibleHostNode, "#{host_node_id} can only handle instances of type #{host_node.arch} #{host_node.hypervisor}" unless compat_arch && compat_hype
+
+      raise E::OutOfHostCapacity, "#{host_node_id}" if instance.cpu_cores > host_node.available_cpu_cores || instance.memory_size > host_node.available_memory_size
     end
 
     bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
