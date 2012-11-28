@@ -26,6 +26,21 @@ module Dcmgr::Models
       !filter(:mac_addr=>mac_addr.hex).empty?
     end
 
+    # Converts a mac address in string format
+    # to an interger vendor id and address
+    #TODO: move to helper
+    def self.string_to_ints(addr_str)
+      case addr_str.size
+      when 6
+        [Dcmgr.conf.mac_address_vendor_id.hex, addr_str.hex]
+      when 12
+        [
+          addr_str[0,6].hex,
+          addr_str[6,12].hex
+        ]
+      end
+    end
+
     # Creates a string representation of the hexadecimal mac address
     def pretty_mac_addr(delim=':')
       mac = mac_addr.to_s(16)

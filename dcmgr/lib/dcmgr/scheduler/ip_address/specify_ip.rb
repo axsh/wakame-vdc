@@ -20,7 +20,7 @@ module Dcmgr::Scheduler::IPAddress
       assign_ip(network_vif,network_vif.network,ip_addr)
 
       if template["nat_ipv4_addr"] && network_vif.nat_network
-        nat_addr = perform_checks(network_vif.network,template["nat_ipv4_addr"])
+        nat_addr = perform_checks(network_vif.nat_network,template["nat_ipv4_addr"])
         assign_ip(network_vif,network_vif.nat_network,nat_addr)
       end
     end
@@ -33,8 +33,9 @@ module Dcmgr::Scheduler::IPAddress
     def perform_checks(nw,ip)
       raise S::IPAddressSchedulerError, "Invalid ipv4 address: #{ip}." unless IPAddress.valid_ipv4?(ip)
       leaseaddr = IPAddress::IPv4.new(ip)
-      #TODO: Check if the dhcp ranges include this ip
-      raise S::IPAddressSchedulerError, "Address #{ip} not in segment #{nw.network}/#{nw.prefix}" unless IPAddress("#{nw.ipv4_network}/#{nw.prefix}").include?(leaseaddr)
+      raise S::IPAddressSchedulerError, "Address #{ip} not in segment #{nw.ipv4_network}/#{nw.prefix}" unless IPAddress("#{nw.ipv4_network}/#{nw.prefix}").include?(leaseaddr)
+      #TODO: Perform a working check here
+      # raise S::IPAddressSchedulerError, "Address #{ip} not in dhcp ranges" unless nw.include?(ip)
       raise S::IPAddressSchedulerError, "IP Address is already leased: #{leaseaddr.to_s}" unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
 
       leaseaddr

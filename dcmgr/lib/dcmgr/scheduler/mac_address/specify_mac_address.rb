@@ -17,27 +17,19 @@ module Dcmgr::Scheduler::MacAddress
       addr_len = addr_str.length
       raise S::MacAddressSchedulerError, "Invalid mac address: #{mac_addr}" unless (addr_len == 6 || addr_len == 12) && addr_str =~ /^[0-9a-fA-F]{1,#{addr_len}}$/
 
-      vendor_id, addr = case addr_len
-      when 6
-        [Dcmgr.conf.mac_address_vendor_id.hex, addr_str.hex]
-      when 12
-        [
-          addr_str[0,6].hex,
-          addr_str[6,12].hex
-        ]
-      end
+      vendor_id, addr = M::MacLease.string_to_ints(addr_str)
       # Because some db tables split the mac address and others don't.
       full_addr = (vendor_id * 0x1000000) + addr
+      full_addr_str = full_addr.to_s(16)
 
       # Check if this address is available
       raise S::MacAddressSchedulerError, "Mac address #{addr_str} is already leased." unless M::MacLease.filter(:mac_addr => full_addr).empty?
 
       # Check if this mac address exists in any of the ranges
-      possible_ranges = M::MacRange.filter(vendor_id => vendor_id).where{range_begin < addr && range_end > addr}
-      raise S::MacAddressSchedulerError, "There is no mac address range defined that includes #{full_addr.to_s(16)}" if possible_ranges.empty?
+      raise S::MacAddressSchedulerError, "There is no mac address range defined that includes #{full_addr.to_s(16)}" unless M::MacRange.exists_in_any_range?(vendor_id,addr)
 
-      M::MacLease.lease(addr_str)
-      network_vif.mac_addr = full_addr
+      M::MacLease.lease(full_addr_str)
+      network_vif.mac_addr = full_addr_str
     end
 
   end

@@ -10,10 +10,16 @@ def check_network_ip_combo(network_id,ip_addr)
   raise E::UnknownNetwork, network_id if nw.nil?
 
   if ip_addr
-    raise E::InvalidIPAddress, ip_addr unless IPAddress.valid?(ip_addr)
+    raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
+
+    leaseaddr = IPAddress(ip_addr)
+    raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
 
     segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
-    raise E::IPAddressNotInSegment, ip_addr unless segment.include?(IPAddress(ip_addr))
+    raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
+
+    #TODO: Perform a working check here
+    # raise E::IpNotInDhcpRange, ip_addr unless nw.include?(leaseaddr)
   end
 end
 
@@ -188,8 +194,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # Check vifs parameter values
     params["vifs"].each { |name,temp|
       mac_addr = temp["mac_addr"]
-      raise E::InvalidMacAddress, mac_addr if mac_addr && !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
-      raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
+      if mac_addr
+        raise E::InvalidMacAddress, mac_addr if !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
+        raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
+
+        # Check if this mac address exists in a defined range
+        m_vid, m_a = M::MacLease.string_to_ints(mac_addr)
+        raise E::MacNotInRange, mac_addr unless M::MacRange.exists_in_any_range?(m_vid,m_a)
+      end
 
       if temp["network"]
         check_network_ip_combo(temp["network"],temp["ipv4_addr"])
@@ -266,7 +278,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       #TODO: split custom instance flag into custom host and custom vifs
       Dcmgr::Scheduler::Network::SpecifyNetwork.new.schedule(instance)
       instance.network_vif.each { |vif|
-        Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
+        # Calling this scheduler from instance#add_nic method as a workaround
+        # for that dirty method that needs to be removed
+        # Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
+
         Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
       }
     end
