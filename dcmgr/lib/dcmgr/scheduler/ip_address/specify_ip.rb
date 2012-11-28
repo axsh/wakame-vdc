@@ -16,11 +16,11 @@ module Dcmgr::Scheduler::IPAddress
       raise S::IPAddressSchedulerError, "No entry found in the vifs parameter for index #{network_vif.device_index}" if template.nil?
       raise S::IPAddressSchedulerError, "No network assigned to this vnic yet" if network_vif.network.nil?
 
-      ip_addr = perform_checks(network_vif.network,template["ip_addr"])
+      ip_addr = perform_checks(network_vif.network,template["ipv4_addr"])
       assign_ip(network_vif,network_vif.network,ip_addr)
 
-      if template["nat_addr"] && network_vif.nat_network
-        nat_addr = perform_checks(network_vif.network,template["nat_addr"])
+      if template["nat_ipv4_addr"] && network_vif.nat_network
+        nat_addr = perform_checks(network_vif.network,template["nat_ipv4_addr"])
         assign_ip(network_vif,network_vif.nat_network,nat_addr)
       end
     end

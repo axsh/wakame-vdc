@@ -192,11 +192,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
 
       if temp["network"]
-        check_network_ip_combo(temp["network"],temp["ip_addr"])
+        check_network_ip_combo(temp["network"],temp["ipv4_addr"])
       end
 
       if temp["nat_network"]
-        check_network_ip_combo(temp["nat_network"],temp["nat_addr"])
+        check_network_ip_combo(temp["nat_network"],temp["nat_ipv4_addr"])
       end
     }
 
