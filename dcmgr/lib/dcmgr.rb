@@ -219,6 +219,7 @@ module Dcmgr
       autoload :FindFirst, 'dcmgr/scheduler/storage_node/find_first'
       autoload :LeastUsage, 'dcmgr/scheduler/storage_node/least_usage'
     end
+
     module HostNode
       autoload :FindFirst, 'dcmgr/scheduler/host_node/find_first'
       autoload :LeastUsage, 'dcmgr/scheduler/host_node/least_usage'
@@ -231,6 +232,7 @@ module Dcmgr
         autoload :ScatterBy, 'dcmgr/scheduler/host_node/rules/scatter_by'
       end
     end
+
     module Network
       autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'
       autoload :NatOneToOne, 'dcmgr/scheduler/network/nat_one_to_one'
@@ -240,15 +242,18 @@ module Dcmgr
       autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
       autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'
       autoload :NetworkGroup, 'dcmgr/scheduler/network/network_group'
+      autoload :SpecifyNetwork, 'dcmgr/scheduler/network/specify_network'
     end
 
     module MacAddress
       autoload :ByHostNodeGroup, 'dcmgr/scheduler/mac_address/by_host_node_group'
       autoload :Default, 'dcmgr/scheduler/mac_address/default'
+      autoload :SpecifyMacAddress, 'dcmgr/scheduler/mac_address/specify_mac_address'
     end
 
     module IPAddress
       autoload :Incremental, 'dcmgr/scheduler/ip_address/incremental'
+      autoload :SpecifyIP, 'dcmgr/scheduler/ip_address/specify_ip'
     end
 
     NAMESPACES=[HostNode, StorageNode, Network, MacAddress, IPAddress]

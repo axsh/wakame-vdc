@@ -189,6 +189,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     params["vifs"].each { |name,temp|
       mac_addr = temp["mac_addr"]
       raise E::InvalidMacAddress, mac_addr if mac_addr && !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
+      raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
 
       if temp["network"]
         check_network_ip_combo(temp["network"],temp["ip_addr"])
@@ -253,13 +254,22 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       instance.instance_monitor_attr.save_changes
     end
 
-    if params["custom_instance"]
-      ## Assign the custom host node and vifs
-      Dcmgr::Scheduler::HostNode::SpecifyNode.schedule(instance) if params["host_node_id"]
-    end
-
     instance.state = :scheduling
     instance.save_changes
+
+    #TODO: Terminate instance in case of error
+    if params["custom_instance"]
+      ## Assign the custom host node
+      Dcmgr::Scheduler::HostNode::SpecifyNode.new.schedule(instance) if params["host_node_id"]
+
+      ## Assign the custom vifs
+      #TODO: split custom instance flag into custom host and custom vifs
+      Dcmgr::Scheduler::Network::SpecifyNetwork.new.schedule(instance)
+      instance.network_vif.each { |vif|
+        Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
+        Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
+      }
+    end
 
     bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
 
