@@ -1,0 +1,11 @@
+/var/log/wakame-vdc/*.log {
+    daily
+    rotate 90
+    compress
+    missingok
+   #sharedscripts
+   #create 0644 root root
+    copytruncate
+   #dateext
+    delaycompress
+}

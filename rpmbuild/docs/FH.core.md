@@ -29,7 +29,7 @@ Ruby binaries
 /etc : Host-specific system configuration
 -----------------------------------------
 
-+ /etc/logrotate.d/flog-vdc
++ /etc/logrotate.d/wakame-vdc
 + /etc/prelink.conf.d/wakame-vdc.conf
 
 /var/lib/wakame-vdc : Variable state information (optional)
