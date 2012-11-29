@@ -423,6 +423,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
 %config(noreplace) /etc/default/vdc-nwmongw
+%config /etc/init/rabbitmq-server.conf
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-metadata.conf
