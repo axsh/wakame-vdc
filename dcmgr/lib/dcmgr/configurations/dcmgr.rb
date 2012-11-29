@@ -18,8 +18,8 @@ module Dcmgr
 
         DSL do
           def self.load_section(class_name, conf_base_class, sched_namespace, &blk)
-            raise ArgumentError unless conf_base_class < ::Dcmgr::Configuration
-            raise ArgumentError unless ::Dcmgr::Scheduler::NAMESPACES.member?(sched_namespace)
+            raise ArgumentError, "conf_base_class must be a Configuration (sub)class" unless conf_base_class < ::Dcmgr::Configuration
+            raise ArgumentError, "Unknown namespace: #{sched_namespace}" unless ::Dcmgr::Scheduler::NAMESPACES.member?(sched_namespace)
 
             c = ::Dcmgr::Scheduler.scheduler_class(class_name, sched_namespace)
             s = Scheduler.new.parse_dsl do
@@ -94,6 +94,9 @@ module Dcmgr
       class MacAddressScheduler < Configuration
       end
 
+      class IPAddressScheduler < Configuration
+      end
+
       class ServiceType < Configuration
 
         # default backup storage to upload backup object from the
@@ -134,6 +137,11 @@ module Dcmgr
             @config[:mac_address_scheduler] = Scheduler::DSL.load_section(class_name, MacAddressScheduler, ::Dcmgr::Scheduler::MacAddress, &blk)
             self
           end
+
+          def ip_address_scheduler(class_name, &blk)
+            @config[:ip_address_scheduler] = Scheduler::DSL.load_section(class_name, IPAddressScheduler, ::Dcmgr::Scheduler::IPAddress, &blk)
+            self
+          end
         end
       end
 
@@ -142,11 +150,20 @@ module Dcmgr
           super
           STDERR.puts "WARN: service type #{@config[:name]} does not set backup_storage_id parameter" if @config[:backup_storage_id].nil?
 
+          # Set the default mac address scheduler for regular instances
           if @config[:mac_address_scheduler].nil?
             parse_dsl {
               mac_address_scheduler :Default
             }
           end
+
+          # Set the default ip address scheduler for regular instances
+          if @config[:ip_address_scheduler].nil?
+            parse_dsl {
+              ip_address_scheduler :Incremental
+            }
+          end
+
         end
       end
 
@@ -173,11 +190,20 @@ module Dcmgr
             errors << "#{name} is undefined." unless self.send(name)
           end
 
+          # Set the default mac address scheduler for load balancers
           if @config[:mac_address_scheduler].nil?
             parse_dsl {
               mac_address_scheduler :Default
             }
           end
+
+          # Set the default ip address scheduler for load balancers
+          if @config[:ip_address_scheduler].nil?
+            parse_dsl {
+              ip_address_scheduler :Incremental
+            }
+          end
+
         end
       end
 
