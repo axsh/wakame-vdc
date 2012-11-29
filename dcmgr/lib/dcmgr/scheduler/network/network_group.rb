@@ -30,7 +30,7 @@ module Dcmgr
           # Create the vnics
           vif_templates = instance.request_params["vifs"] || { "eth0" => {"index"=>"0"} }
           vif_templates.each { |vif_name,vif_temp|
-            tag_id = vif_temp[:network] || options.network_group_id
+            tag_id = vif_temp["network"] || options.network_group_id
             raise Dcmgr::Scheduler::NetworkSchedulingError, "No default network group set" if tag_id.nil?
 
             network_group = Dcmgr::Tags::NetworkGroup[tag_id]

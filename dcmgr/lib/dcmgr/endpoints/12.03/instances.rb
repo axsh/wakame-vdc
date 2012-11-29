@@ -201,12 +201,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         raise E::MacNotInRange, mac_addr unless M::MacRange.exists_in_any_range?(m_vid,m_a)
       end
 
-      if temp["network"]
-        check_network_ip_combo(temp["network"],temp["ipv4_addr"])
-      end
+      if params["custom_vifs"]
+        if temp["network"]
+          check_network_ip_combo(temp["network"],temp["ipv4_addr"])
+        end
 
-      if temp["nat_network"]
-        check_network_ip_combo(temp["nat_network"],temp["nat_ipv4_addr"])
+        if temp["nat_network"]
+          check_network_ip_combo(temp["nat_network"],temp["nat_ipv4_addr"])
+        end
       end
     }
 
