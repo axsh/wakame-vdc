@@ -34,8 +34,8 @@ module Dcmgr::Scheduler::IPAddress
       raise S::IPAddressSchedulerError, "Invalid ipv4 address: #{ip}." unless IPAddress.valid_ipv4?(ip)
       leaseaddr = IPAddress::IPv4.new(ip)
       raise S::IPAddressSchedulerError, "Address #{ip} not in segment #{nw.ipv4_network}/#{nw.prefix}" unless IPAddress("#{nw.ipv4_network}/#{nw.prefix}").include?(leaseaddr)
-      #TODO: Perform a working check here
-      # raise S::IPAddressSchedulerError, "Address #{ip} not in dhcp ranges" unless nw.include?(ip)
+
+      raise S::IPAddressSchedulerError, "Address #{ip} not in dhcp ranges" unless nw.exists_in_dhcp_range?(leaseaddr)
       raise S::IPAddressSchedulerError, "IP Address is already leased: #{leaseaddr.to_s}" unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
 
       leaseaddr
