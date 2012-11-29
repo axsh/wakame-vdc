@@ -277,6 +277,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         params['monitoring']['mail_address'].each { |k, v|
           instance.instance_monitor_attr.recipients << {:mail_address=>v}
         }
+      when nil
+        # do nothing
       else
         raise "Invalid mail address"
       end
