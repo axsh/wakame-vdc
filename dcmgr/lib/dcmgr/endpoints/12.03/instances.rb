@@ -2,6 +2,39 @@
 
 require 'dcmgr/endpoints/12.03/responses/instance'
 
+# To validate ip address syntax in the vifs parameter
+require 'ipaddress'
+
+def check_network_ip_combo(network_id,ip_addr)
+  nw = M::Network[network_id]
+  raise E::UnknownNetwork, network_id if nw.nil?
+
+  if ip_addr
+    raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
+
+    leaseaddr = IPAddress(ip_addr)
+    raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
+
+    segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
+    raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
+
+    raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
+  end
+end
+
+# Transforms a string with either "true" or "false" into a boolean
+def transform_flag(flag)
+  case flag
+    when "true"
+      true
+    when "false", nil
+      false
+    else
+      raise E::InvalidParameter, "a flag must be either \"true\" or \"false\""
+      nil
+  end
+end
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
@@ -127,6 +160,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::OutOfHostCapacity
     end
 
+    params["custom_host"] = transform_flag(params["custom_host"])
+    params["custom_vifs"] = transform_flag(params["custom_vifs"])
+
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -152,6 +188,27 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     rescue Dcmgr::Scheduler::NetworkSchedulingError
       raise E::InvalidParameter, 'vifs'
     end
+
+    # Check vifs parameter values
+    params["vifs"].each { |name,temp|
+      mac_addr = temp["mac_addr"]
+      if mac_addr
+        raise E::InvalidMacAddress, mac_addr if !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
+        raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
+
+        # Check if this mac address exists in a defined range
+        m_vid, m_a = M::MacLease.string_to_ints(mac_addr)
+        raise E::MacNotInRange, mac_addr unless M::MacRange.exists_in_any_range?(m_vid,m_a)
+      end
+
+      if temp["network"]
+        check_network_ip_combo(temp["network"],temp["ipv4_addr"])
+      end
+
+      if temp["nat_network"]
+        check_network_ip_combo(temp["nat_network"],temp["nat_ipv4_addr"])
+      end
+    }
 
     # params is a Mash object. so coverts to raw Hash object.
     instance = M::Instance.entry_new(@account, wmi, @params.dup) do |i|
@@ -221,6 +278,32 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     instance.state = :scheduling
     instance.save_changes
+
+    #TODO: Terminate instance in case of error
+    if params["custom_host"]
+      ## Assign the custom host node
+      Dcmgr::Scheduler::HostNode::SpecifyNode.new.schedule(instance) if params["host_node_id"]
+    end
+
+    if params["custom_vifs"]
+      ## Assign the custom vifs
+      Dcmgr::Scheduler::Network::SpecifyNetwork.new.schedule(instance)
+      instance.network_vif.each { |vif|
+        # Calling this scheduler from instance#add_nic method instead
+        # as a workaround for that dirty method that needs to be removed
+        # Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
+
+        Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
+      }
+    end
+
+    if params["custom_host"] && params["host_node_id"]
+      compat_hype  = (host_node.hypervisor == instance.hypervisor)
+      compat_arch = (host_node.arch == instance.image.arch)
+      raise E::IncompatibleHostNode, "#{host_node_id} can only handle instances of type #{host_node.arch} #{host_node.hypervisor}" unless compat_arch && compat_hype
+
+      raise E::OutOfHostCapacity, "#{host_node_id}" if instance.cpu_cores > host_node.available_cpu_cores || instance.memory_size > host_node.available_memory_size
+    end
 
     bo = M::BackupObject[wmi.backup_object_id] || raise("Unknown backup object: #{wmi.backup_object_id}")
 

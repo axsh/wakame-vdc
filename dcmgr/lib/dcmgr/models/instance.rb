@@ -279,7 +279,13 @@ module Dcmgr::Models
       nic = NetworkVif.new({ :account_id => self.account_id })
       nic.instance = self
       nic.device_index = vif_template[:index]
-      Dcmgr::Scheduler.service_type(self).mac_address.schedule(nic)
+      sched = if request_params["custom_vifs"]
+        Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new
+      else
+        Dcmgr::Scheduler.service_type(self).mac_address
+      end
+
+      sched.schedule(nic)
       nic.save
 
       if !request_params.has_key?('security_groups') && !vif_template[:security_groups].empty?

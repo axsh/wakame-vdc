@@ -34,5 +34,9 @@ module Dcmgr::Models
       (vendor_id * 0x1000000) + range_end
     end
 
+    def self.exists_in_any_range?(vendor_id, addr)
+      !self.filter(:vendor_id => vendor_id).where{"range_begin <= #{addr} && range_end >= #{addr}"}.empty?
+    end
+
   end
 end

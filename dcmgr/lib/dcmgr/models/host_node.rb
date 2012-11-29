@@ -94,6 +94,17 @@ module Dcmgr::Models
       h
     end
 
+    def compatible_arch?(a)
+      comp_archs = case self.arch
+      when ARCH_X86_64
+        [ARCH_X86,ARCH_X86_64]
+      when ARCH_X86
+        [ARCH_X86]
+      end
+
+      comp_archs.member?(a)
+    end
+
     # Returns reserved CPU cores used by running/scheduled instances.
     def cpu_core_usage
       instances_usage(:cpu_cores)
