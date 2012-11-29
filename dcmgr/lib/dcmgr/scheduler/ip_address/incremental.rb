@@ -58,6 +58,8 @@ module Dcmgr::Scheduler::IPAddress
         t = (to_ipaddr < end_range) ? to_ipaddr : end_range
 
         begin
+          is_loop = false
+
           leaseaddr = i.available_ip(f, t, order)
           break if leaseaddr.nil?
           check_ip = IPAddress::IPv4.parse_u32(leaseaddr, network[:prefix])
@@ -65,6 +67,7 @@ module Dcmgr::Scheduler::IPAddress
           # TODO No longer needed in the future.
           if network.reserved_ip?(check_ip)
             network.network_vif_ip_lease_dataset.add_reserved(check_ip.to_s)
+            is_loop = true
           end
           case order
           when :asc
@@ -74,7 +77,7 @@ module Dcmgr::Scheduler::IPAddress
           else
             raise "Unsupported IP address assignment: #{order.to_s}"
           end
-        end while IpLease.find({:network_id => network.id, :ipv4 => leaseaddr})
+        end while is_loop
         break unless leaseaddr.nil?
       }
       leaseaddr
