@@ -2,8 +2,7 @@
 
 module Dcmgr::Tags
   include Dcmgr
-  KEY_MAP={10=>:NetworkGroup, 11=>:HostNodeGroup, 12=>:StorageNodeGroup}.freeze
-  MODEL_MAP=KEY_MAP.invert.freeze
+  include Dcmgr::Constants::Tag
 
   def self.type_id(class_or_sym)
     k = case class_or_sym
@@ -17,10 +16,8 @@ module Dcmgr::Tags
   end
 
   class NetworkGroup < Models::Tag
+    mappable Dcmgr::Models::Network
     taggable 'nwg'
-    def accept_mapping?(to)
-      to.is_a?(Dcmgr::Models::Network)
-    end
 
     def pick()
       lst = mapped_uuids.map { |t|
@@ -32,10 +29,8 @@ module Dcmgr::Tags
   end
 
   class HostNodeGroup < Models::Tag
+    mappable Dcmgr::Models::HostNode
     taggable 'hng'
-    def accept_mapping?(to)
-      to.is_a?(Dcmgr::Models::HostNode)
-    end
 
     def pick(instance)
       mapped_uuids.map { |t|
@@ -49,9 +44,7 @@ module Dcmgr::Tags
   end
 
   class StorageNodeGroup < Models::Tag
+    mappable Dcmgr::Models::StorageNode
     taggable 'sng'
-    def accept_mapping?(to)
-      to.is_a?(Dcmgr::Models::StorageNode)
-    end
   end
 end

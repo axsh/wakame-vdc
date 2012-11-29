@@ -54,6 +54,16 @@ module Dcmgr::Models
       ds
     end
 
+    def self.mappable(resource=nil)
+      resource && @mappable = resource
+
+      @mappable
+    end
+
+    def accept_mapping?(to)
+      to.is_a?(self.class.mappable)
+    end
+
     def sorted_mapped_uuids_dataset
       self.mapped_uuids_dataset.order_by(:sort_index)
     end
@@ -62,11 +72,22 @@ module Dcmgr::Models
       sorted_mapped_uuids_dataset.all
     end
 
+    def mapped_resources_dataset
+      resource = self.class.mappable
+
+      trimmed_uuids = self.mapped_uuids.map {|mapping| resource.trim_uuid(mapping.uuid) }
+      resource.dataset.filter(:uuid => trimmed_uuids)
+    end
+
+    def mapped_resources
+      mapped_resources_dataset.all
+    end
+
     # sti plugin has to be loaded at lower position.
     plugin :subclasses
     plugin :single_table_inheritance, :type_id,
-         :key_map=>proc {|v| Dcmgr::Tags::MODEL_MAP[v.to_s.split('Dcmgr::Tags::').last.to_sym] },
-         :model_map=>proc {|v| Dcmgr::Tags.const_get(Dcmgr::Tags::KEY_MAP[v], false) }
+         :key_map=>proc {|v| Dcmgr::Constants::Tag::MODEL_MAP[v.to_s.split('Dcmgr::Tags::').last.to_sym] },
+         :model_map=>proc {|v| Dcmgr::Tags.const_get(Dcmgr::Constants::Tag::KEY_MAP[v], false) }
 
     class UnacceptableTagType < StandardError
       def initialize(msg, tag, taggable)
@@ -136,13 +157,6 @@ module Dcmgr::Models
       self.subclasses.find { |m|
         m == name || m.split('::').last == name
       }
-    end
-
-    # Check the object class type before associating to the Tag.
-    # Child class must implement this method.
-    # @param taggable_obj any object kind_of?(Model::Taggable)
-    def accept_mapping?(taggable_obj)
-      raise NotImplementedError
     end
 
     # model hook

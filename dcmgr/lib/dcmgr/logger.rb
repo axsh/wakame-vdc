@@ -19,7 +19,7 @@ module Dcmgr
       def initialize(progname)
         @progname = progname
       end
-      
+
       ["fatal", "error", "warn", "info", "debug"].each do |level|
         define_method(level){|msg|
           if job_context
@@ -29,6 +29,7 @@ module Dcmgr
           end
         }
       end
+      alias :warning :warn
 
       # Factory method for ::Logger
       def logger
