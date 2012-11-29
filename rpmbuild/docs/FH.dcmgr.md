@@ -12,6 +12,7 @@ Filesystem Hierarchy : wakame-vdc-dcmgr-vmapp-config
 + /etc/default/vdc-proxy
 + /etc/default/vdc-sta
 + /etc/default/vdc-webui
++ /etc/default/rabbitmq-server
 
 /etc/init : Upstart system job configuration
 --------------------------------------------

@@ -414,6 +414,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
+%config(noreplace) /etc/default/rabbitmq-server
 %config(noreplace) /etc/default/vdc-dcmgr
 %config(noreplace) /etc/default/vdc-collector
 %config(noreplace) /etc/default/vdc-metadata
