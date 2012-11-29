@@ -1,0 +1,5 @@
+# source common params
+[ -f /etc/default/wakame-vdc ] && . /etc/default/wakame-vdc
+
+# Comment out to run the vdc init script
+#RUN=yes
