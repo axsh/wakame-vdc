@@ -32,7 +32,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :service_type => self.service_type,
           :monitoring => {
             :enabled => self.instance_monitor_attr.enabled,
-            :mail_address => self.instance_monitor_attr.mailaddr,
+            :mail_address => self.instance_monitor_attr.recipients.select{|i| i.has_key?(:mail_address) }.map{|i| i[:mail_address] },
           },
         }
 
