@@ -26,6 +26,11 @@ module Dcmgr
           /^"(.*)"/.match(`#{command}`)[1]
         end
 
+        def del_port port_name
+          command = "#{@ovs_vsctl} del-port #{port_name}"
+          logger.debug "'#{command}' => #{system(command)}."
+        end
+
         def add_flow flow
           command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow.match_to_s},actions=#{flow.actions_to_s}"
           logger.debug "'#{command}' => #{system(command)}."
