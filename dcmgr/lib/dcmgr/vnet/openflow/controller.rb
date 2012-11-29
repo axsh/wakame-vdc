@@ -77,15 +77,17 @@ module Dcmgr::VNet::OpenFlow
     end
 
     def insert_port switch, port
-      if port.port_info.number >= OFPP_MAX
-        # Do nothing...
-      elsif port.port_info.name =~ /^eth/
-        @service_openflow.add_eth switch, port
-      elsif port.port_info.name =~ /^vif-/
-        @service_openflow.add_instance switch, port
-      elsif port.port_info.name =~ /^t-/
-        @service_openflow.add_tunnel switch, port
-      else
+      return if port.port_info.number >= OFPP_MAX
+
+      case port.port_info.name
+      when /^eth/
+        @service_openflow.add_eth(switch, port)
+      when /^vif-/
+        @service_openflow.add_instance(switch, port)
+      when /^t-/
+        @service_openflow.add_tunnel(switch, port)
+      when /^patch-[^-]*-[^-]*$/
+        @service_openflow.add_patch(switch, port)
       end
     end
 
