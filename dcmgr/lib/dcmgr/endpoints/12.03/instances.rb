@@ -18,8 +18,7 @@ def check_network_ip_combo(network_id,ip_addr)
     segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
     raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
 
-    #TODO: Perform a working check here
-    # raise E::IpNotInDhcpRange, ip_addr unless nw.include?(leaseaddr)
+    raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
   end
 end
 
