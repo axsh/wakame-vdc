@@ -5,41 +5,28 @@ require 'dcmgr/endpoints/12.03/responses/instance'
 # To validate ip address syntax in the vifs parameter
 require 'ipaddress'
 
-def check_network_ip_combo(network_id,ip_addr)
-  nw = M::Network[network_id]
-  raise E::UnknownNetwork, network_id if nw.nil?
-
-  if ip_addr
-    raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
-
-    leaseaddr = IPAddress(ip_addr)
-    raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
-
-    segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
-    raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
-
-    raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
-  end
-end
-
-# Transforms a string with either "true" or "false" into a boolean
-def transform_flag(flag)
-  case flag
-    when "true"
-      true
-    when "false", nil
-      false
-    else
-      raise E::InvalidParameter, "a flag must be either \"true\" or \"false\""
-      nil
-  end
-end
-
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
+  def check_network_ip_combo(network_id,ip_addr)
+    nw = M::Network[network_id]
+    raise E::UnknownNetwork, network_id if nw.nil?
+    
+    if ip_addr
+      raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
+      
+      leaseaddr = IPAddress(ip_addr)
+      raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
+      
+      segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
+      raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
+      
+      raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
+    end
+  end
+  
   # Show list of instances
   # Filter Paramters:
   # start: fixnum, optional
@@ -159,9 +146,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     if !M::HostNode.check_domain_capacity?(params['cpu_cores'], params['memory_size'])
       raise E::OutOfHostCapacity
     end
-
-    params["custom_host"] = transform_flag(params["custom_host"])
-    params["custom_vifs"] = transform_flag(params["custom_vifs"])
 
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
