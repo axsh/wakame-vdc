@@ -213,10 +213,14 @@ module Dcmgr
             host_ifname = vif[:uuid]
             # host_mac become a randomly generated MAC Address.
             host_mac = nil
+            bridge = nil
+
             if vif[:ipv4] && vif[:ipv4][:network]
               bridge = bridge_if_name(vif[:ipv4][:network][:dc_network])
-              sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, host_ifname, host_mac, bridge])
             end
+
+            sh("vzctl set %s --netif_add %s,%s,%s,%s,%s --save",[hc.inst_id, ifname, mac, host_ifname, host_mac, bridge])
+
             #
             # NETIF="ifname=eth0,bridge=vzbr0,mac=52:54:00:68:BB:AC,host_ifname=vif-h63jg7pp,host_mac=52:54:00:68:BB:AC"
             #
