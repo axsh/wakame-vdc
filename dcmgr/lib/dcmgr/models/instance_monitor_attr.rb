@@ -4,21 +4,29 @@ module Dcmgr::Models
   class InstanceMonitorAttr < BaseNew
 
     many_to_one :instance
-    
+    plugin :serialization, :yaml, :recipients
+
     def validate
       if self.enabled
-        if (self.mailaddr.nil? || self.mailaddr == "")
-          errors.add(:mailaddr, "Need to set mail address to send alert")
-        elsif self.mailaddr.split('@').size != 2 # check if it has only one '@' symbol 
-          errors.add(:mailaddr, "Invalid mail address: #{self.mailaddr}")
-        end
+        self.recipients.each { |i|
+          if i.has_key?(:mail_address)
+            unless i[:mail_address] =~ /^[^@]+@[a-z0-9][a-z0-9\.\-]+$/i
+              errors.add(:recipients, "contains invalid mail address: #{i[:mail_address]}")
+            end
+          end
+        }
       end
     end
 
+    def after_initialize
+      super
+      self.recipients ||= []
+    end
+
     private
+    
     def before_validation
       self.enabled ||= false
-      self.mailaddr ||= ""
       super
     end
   end

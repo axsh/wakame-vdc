@@ -103,9 +103,20 @@ module Hijiki::DcmgrResource::V1203
 
       private
       def validate_monitoring_params(params)
-        if params[:monitoring].is_a?(Hash) && params[:monitoring][:enabled] == 'true'
-          unless params[:monitoring][:mail_address].to_s =~ /^[^@]+@[A-Za-z0-9][A-Za-z0-9\-\.]+$/
+        validate_mailaddress = lambda { |addr|
+          unless addr.to_s =~ /^[^@]+@[A-Za-z0-9][A-Za-z0-9\-\.]+$/
             raise "Mail address validation error: #{params[:monitoring][:mail_address]}"
+          end
+        }
+        
+        if params[:monitoring].is_a?(Hash) && params[:monitoring][:enabled] == 'true'
+          case params[:monitoring][:mail_address]
+          when String
+            validate_mailaddress.call(params[:monitoring][:mail_address])
+          when Array, Hash
+            params[:monitoring][:mail_address].each { |v|
+              validate_mailaddress.call(v)
+            }
           end
         end
       end
