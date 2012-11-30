@@ -150,7 +150,6 @@ DcmgrGUI.prototype.imagePanel = function(){
     var launch_in = $(this).find('#right_select_list').find('option');
     var user_data = $(this).find('#user_data').val();
     var monitoring_enabled = $(this).find('#monitoring_enabled').is(':checked');
-    var mailaddr = $(this).find('#mailaddr_0').val();
     var security_groups = [];
     $.each(launch_in,function(i){
       security_groups.push("security_groups[]="+ $(this).val());
