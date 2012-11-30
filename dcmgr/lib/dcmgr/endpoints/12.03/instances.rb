@@ -13,20 +13,20 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   def check_network_ip_combo(network_id,ip_addr)
     nw = M::Network[network_id]
     raise E::UnknownNetwork, network_id if nw.nil?
-    
+
     if ip_addr
       raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
-      
+
       leaseaddr = IPAddress(ip_addr)
       raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
-      
+
       segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
       raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
-      
+
       raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
     end
   end
-  
+
   # Show list of instances
   # Filter Paramters:
   # start: fixnum, optional
@@ -180,7 +180,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         check_network_ip_combo(temp["network"], temp["ipv4_addr"])
         is_manual_ip_set = true
       end
-      
+
       if temp["nat_ipv4_addr"]
         check_network_ip_combo(temp["nat_network"], temp["nat_ipv4_addr"])
         is_manual_ip_set = true
