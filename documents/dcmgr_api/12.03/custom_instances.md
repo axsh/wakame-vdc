@@ -1,10 +1,14 @@
 # Custom instances api
 
-To create a custom instance api call, add the following parameter to the standard instances api.
+To specify a host node for an api simply add the following parameter to the api call.
 
-* "custom_instance"="true"
+* host_node_id=<hostnode_id?
 
-The request will go through all of the standard error checks that are usually there when starting an instance. Then it will bypass the schedulers if certain other parameters are present.
+To specify an ip address, add the key to the "vifs" parameter
+
+* { eth0 => {"ipv4_addr" => "192.168.2.11", mac_addr="52540028A533" } }
+
+The request will go through all of the standard error checks that are usually there when starting an instance. Then it will call specific schedulers to handle these assignments.
 
 ## url
 
@@ -22,12 +26,6 @@ POST http://<ip address>:9001/api/12.03/instances
 * display_name
 * memory_size
 
-### Custom flag
-
-* custom_instance
-
-This flag must be set to "true" for a custom instance to be run
-
 ### Vifs parameter
 
 * vifs
@@ -36,13 +34,9 @@ The vifs parameter requires a few extra fields now. Example:
 
     { eth0 => {"index" => "0", "network_id"=>"nw-demo1", "ipv4_addr" => "192.168.2.11", "nat_network_id" => "nw-demo2", "nat_ipv4_addr" => "192.168.3.64", "mac_addr" => "52540028A533" } }
 
-#### Behavior
+It is currently not possible to specify the ip for one nic and not specify it for another. When you specify an ip for one nic, you have to specify both ip and mac address for them all.
 
-If the ip_addr field is present, the network scheduler will be bypassed and the ip provided will be assigned to the vnic.
-
-If the mac_addr field is present, the mac address scheduler will be bypassed and the mac address provided will be assigned to the vnic.
-
-If any of the above fields are missing, the respective schedulers defined in dcmgr.conf will be called.
+The keys "nat_network_id" and "nat_ipv4_addr" are optional.
 
 #### Errors
 
@@ -69,6 +63,14 @@ Raise when the ip address provided is not a valid ip address.
 * 400 IPAddressNotPartOfSegment
 
 Raise when the ip address provided is not part of the network segment described by network_id.
+
+* 400 MacNotInRange
+
+Raise when the specified mac address does not exist in any range defined in the database.
+
+* 400 IpNotInDhcpRange
+
+Raise when the specified ip does not exist in the dhcp range specify for its network.
 
 ### Host node parameter
 
