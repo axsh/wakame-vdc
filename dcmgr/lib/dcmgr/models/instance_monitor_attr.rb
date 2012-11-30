@@ -7,15 +7,14 @@ module Dcmgr::Models
     plugin :serialization, :yaml, :recipients
 
     def validate
-      if self.enabled
-        self.recipients.each { |i|
-          if i.has_key?(:mail_address)
-            unless i[:mail_address] =~ /^[^@]+@[a-z0-9][a-z0-9\.\-]+$/i
-              errors.add(:recipients, "contains invalid mail address: #{i[:mail_address]}")
-            end
+      super
+      self.recipients.each { |i|
+        if i.has_key?(:mail_address)
+          unless i[:mail_address] =~ /^[^@]+@[a-z0-9][a-z0-9\.\-]+$/i
+            errors.add(:recipients, "contains invalid mail address: #{i[:mail_address]}")
           end
-        }
-      end
+        end
+      }
     end
 
     def after_initialize
