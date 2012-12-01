@@ -172,9 +172,14 @@ class InstancesController < ApplicationController
       }
       if params['monitoring']
         data[:monitoring][:enabled] = (params['monitoring']['enabled'] == 'true')
-        if params['monitoring']['mail_address']
-          data[:monitoring][:mail_address] = params['monitoring']['mail_address']
-        end
+        # Indicates Hijiki to clear mail address list when the
+        # mail_address parameter does not exist.
+        data[:monitoring][:mail_address] = if params['monitoring']['mail_address'].is_a?(Array)
+                                             params['monitoring']['mail_address']
+                                           else
+                                             ""
+                                           end
+          
       end
       instance = Hijiki::DcmgrResource::Instance.update(instance_id,data)
       render :json => instance

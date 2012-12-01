@@ -266,23 +266,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # Note that the keys should use string for sub hash.
     if params['monitoring'].is_a?(Hash)
       instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
-      case params['monitoring']['mail_address']
-      when String
-        instance.instance_monitor_attr.recipients << {:mail_address=>params['monitoring']['mail_address']}
-      when Array
-        params['monitoring']['mail_address'].each { |v|
-          instance.instance_monitor_attr.recipients << {:mail_address=>v}
-        }
-      when Hash
-        params['monitoring']['mail_address'].each { |k, v|
-          instance.instance_monitor_attr.recipients << {:mail_address=>v}
-        }
-      when nil
-        # do nothing
-      else
-        raise "Invalid mail address"
+      if params['monitoring'].has_key?('mail_address')
+        case params['monitoring']['mail_address']
+        when ""
+          instance.instance_monitor_attr.recipients = []
+        when Array
+          params['monitoring']['mail_address'].each { |v|
+            instance.instance_monitor_attr.recipients << {:mail_address=>v}
+          }
+        when Hash
+          params['monitoring']['mail_address'].each { |k, v|
+            instance.instance_monitor_attr.recipients << {:mail_address=>v}
+          }
+        else
+          raise "Invalid mail address"
+        end
+        instance.instance_monitor_attr.changed_columns << :recipients
       end
-      instance.instance_monitor_attr.changed_columns << :recipients
       instance.instance_monitor_attr.save_changes
     end
 
@@ -440,27 +440,28 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       if params['monitoring']['enabled']
         instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
       end
-      case params['monitoring']['mail_address']
-      when String
-        instance.instance_monitor_attr.tap { |o|
-          o.recipients.clear
-          o.recipients << {:mail_address=>params['monitoring']['mail_address']}
-        }
-      when Array
-        instance.instance_monitor_attr.tap { |o|
-          o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
-        }
-      when Hash
-        instance.instance_monitor_attr.tap { |o|
-          o.recipients = params['monitoring']['mail_address'].map {|k,v| {:mail_address=>v}}
-        }
-      else
-        raise "Invalid monitoring recipient: #{params['monitoring']['mail_address']}"
+      if params['monitoring'].has_key?('mail_address')
+        case params['monitoring']['mail_address']
+        when ""
+          # empty string indicates to clear the recipients list.
+          instance.instance_monitor_attr.recipients.clear
+        when Array
+          instance.instance_monitor_attr.tap { |o|
+            o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
+          }
+        when Hash
+          instance.instance_monitor_attr.tap { |o|
+            o.recipients = params['monitoring']['mail_address'].map {|k,v| {:mail_address=>v}}
+          }
+        else
+          raise "Invalid monitoring recipient: #{params['monitoring']['mail_address']}"
+        end
+        instance.instance_monitor_attr.changed_columns << :recipients
       end
-      instance.instance_monitor_attr.changed_columns << :recipients
+      
       instance.instance_monitor_attr.save_changes
     end
-
+    
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
