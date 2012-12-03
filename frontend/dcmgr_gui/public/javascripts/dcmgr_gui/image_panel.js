@@ -216,13 +216,25 @@ DcmgrGUI.prototype.imagePanel = function(){
 
       var ready = function(data) {
         if($(self).find('#monitoring_enabled').is(':checked')){
-          data['monitoring'] = _.all(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+          _.chain(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2']).map(function(id){
             var v = $(self).find(id).val();
-            if(v.length > 0) {
-              return /@/.test(v);
+            if(v.length > 0){
+              return [(v.length > 0), /^[^@]+@[a-z0-9A-Z][a-z0-9A-Z\.\-]+$/.test(v)];
             }else{
-              return true;
+              return [false, false];
             }
+          }).tap(function(tuple_lst){
+              if(_.all(tuple_lst, function(i){
+                return (i[0] == false && i[1] == false);
+              })){
+                // Can not submit when none of address fields is filled.
+                data['monitoring'] = false;
+              }else{
+                // Can submit when empty and validation passed address fields exist.
+                data['monitoring'] = _.all(tuple_lst, function(i){
+                  return (i[0] == true && i[1] == true) || (i[0] == false && i[1] == false);
+                });
+              }
           });
         }else{
           data['monitoring'] = true;
@@ -248,7 +260,15 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#display_name').bind('keyup cut paste', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#monitoring_enabled').bind('click',
                                                {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
-                                               DcmgrGUI.Util.checkTextField);
+                                               DcmgrGUI.Util.checkTextField).bind('click', function(e){
+                                                 _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+                                                   if( $(e.target).is(":checked") ){
+                                                     $(self).find(id).removeAttr("disabled");
+                                                   }else{
+                                                     $(self).find(id).attr("disabled", "disabled");
+                                                   }
+                                                 });
+                                               });
       $(this).find('.mailaddr_form').bind('keyup paste cut',
                                           {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
                                           DcmgrGUI.Util.checkTextField);
