@@ -180,7 +180,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       }
     });
     
-    request = new DcmgrGUI.Request;
+    request = new DcmgrGUI.Request();
     request.post({
       "url": '/instances',
       "data": data.join('&'),
