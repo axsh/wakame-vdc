@@ -88,11 +88,16 @@ DcmgrGUI.prototype.instancePanel = function(){
         query.push("security_groups[]="+ $(this).val());
       });
 
+      orig_len = query.length;
       _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
         if( _.isString($(self).find(id).val()) && $(self).find(id).val() != ""){
           query.push("monitoring[mail_address][]="+$(self).find(id).val());
         }
       });
+      if(query.length == orig_len){
+        // Clear recipient list
+        query.push("monitoring[mail_address]=");
+      }
 
       if( !bt_edit_instance.monitor_selector.validate() ){
         return false;

@@ -268,7 +268,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
       if params['monitoring'].has_key?('mail_address')
         case params['monitoring']['mail_address']
-        when ""
+        when "", nil
+          # Indicates to clear the recipients.
           instance.instance_monitor_attr.recipients = []
         when Array
           params['monitoring']['mail_address'].each { |v|
@@ -440,10 +441,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       if params['monitoring']['enabled']
         instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
       end
+      # Do not add mail_address key when you don't want to change
+      # existing recipient list.
       if params['monitoring'].has_key?('mail_address')
         case params['monitoring']['mail_address']
-        when ""
-          # empty string indicates to clear the recipients list.
+        when "", nil
+          # Indicates to clear the recipients.
           instance.instance_monitor_attr.recipients.clear
         when Array
           instance.instance_monitor_attr.tap { |o|
