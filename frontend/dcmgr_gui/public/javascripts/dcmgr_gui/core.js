@@ -1334,13 +1334,14 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       ui: function (elem, params){
         if(params === undefined) params={port: 53, query_record: "localhost"};
         elem.append('Domain Name: <input type="text" class="_query_record" value="'+params['query_record']+'"></input>');
-        elem.append('<input type="hidden" class="_udp_port" value="'+params['udp_port']+'"></input>');
+        elem.append('<input type="hidden" class="_udp_port" value="'+params['port']+'"></input>');
       },
       buildQuery: function(row_elem, idx){
         return "eth0_monitors["+idx+"][params][port]=53&eth0_monitors["+idx+"][params][query_record]="+$(row_elem).find('._query_record').val();
       },
       validate: function(row_elem){
-        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._tcp_port').val());
+        return DcmgrGUI.VifMonitorSelector.Validator.ip_port($(row_elem).find('._udp_port').val()) &&
+          /^[a-zA-z0-9][a-zA-Z0-9\.\-]*$/.test($(row_elem).find('._query_record').val());
       }
     },
     'MYSQL': {
