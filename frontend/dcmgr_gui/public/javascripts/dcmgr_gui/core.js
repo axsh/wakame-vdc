@@ -1,4 +1,4 @@
-var DcmgrGUI = function(){};
+window.DcmgrGUI = function(){};
 
 //Refarence:http://wp.serpere.info/archives/1091
 DcmgrGUI.Class = (function() {
@@ -79,24 +79,37 @@ DcmgrGUI.Filter = DcmgrGUI.Class.create({
 
 DcmgrGUI.Converter = {};
 
-// Convert number to display disk size (large byte) unit in GB.
-// <= 10GB is displayed in: 1.01 GB, 0.66GB
-// > 10GB is displayed in: 10 GB, 101GB
-displayDiskSize = DcmgrGUI.Converter.toDisplayDiskSize = function(qty, unit) {
-  var q;
+// Convert byte size to display byte unit in
+// appropriate byte unit (MB, GB, TB, PB...).
+// < 1GB is displayed: 100MB
+// > 1GB is displayed: 10 GB, 101GB, 1TB
+displayDiskSize = DcmgrGUI.Converter.toDisplayDiskSize = function(qty, in_unit) {
   if (qty === undefined || qty == ''){
     return "";
-  }else if(typeof qty === 'number'){
-    if (unit === undefined ){ unit = ' byte'; }
-    q = new Qty(qty + unit);
-  }else{
-    if (unit !== undefined ){ qty = qty + unit; }
-    q = new Qty(qty);
   }
-  if( q.to('GB').scalar > 10.0 ) {
-    return q.toPrec('GB').toString('GB');
-  }else{
-    return q.toPrec('0.01 GB').toString('GB');
+  if (in_unit === undefined ){ in_unit = 'B'; }
+
+  var BYTEUNITS= {
+    'B' : 1,
+    'KB': 1024,
+    'MB': Math.pow(1024, 2),
+    'GB': Math.pow(1024, 3),
+    'TB': Math.pow(1024, 4),
+    'PB': Math.pow(1024, 5),
+    'EB': Math.pow(1024, 6),
+    'EB': Math.pow(1024, 7),
+    'ZB': Math.pow(1024, 8),
+    'YB': Math.pow(1024, 9)
+  };
+
+  qty = qty * BYTEUNITS[in_unit.toUpperCase()];
+  if( qty < BYTEUNITS['GB'] ){
+    return (qty / BYTEUNITS['MB']) + 'MB';
+  }else {
+    var u = _.find(_.keys(BYTEUNITS), function(i){
+      return qty < BYTEUNITS[i];
+    });
+    return (qty / BYTEUNITS[u]) + u;
   }
 };
 
@@ -1135,7 +1148,7 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     };
 
     for( var i in this.item_list) {
-      var select_tag = this.item_list[i].row_elem.find('.select_monitor_proto').first();
+      var select_tag = $(this.item_list[i].row_elem).find('.select_monitor_proto').first();
       select_tag.empty();
       for( var j in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS ){
         if( j != this.item_list[i].title && check_selected_item(j)) continue;
@@ -1190,7 +1203,7 @@ DcmgrGUI.VifMonitorSelector.Validator = {
   },
   http_check_path: function(val){
     return !/[\\>< ;\"\']/.test(val);
-  },
+  }
 };
 
 // constantize the JSON list.
@@ -1398,4 +1411,4 @@ DcmgrGUI.prototype = {
   setConfig: function(key, value) {
     this.config[key] = value;
   }
-}
+};
