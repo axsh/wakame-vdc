@@ -306,6 +306,14 @@ DcmgrGUI.prototype.instancePanel = function(){
           "async": false,
           success: function(json,status) {
             instance = json;
+
+            _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+              if( instance.monitoring.enabled ){
+                $(self).find(id).removeAttr("disabled");
+              }else{
+                $(self).find(id).attr("disabled", "disabled");
+              }
+            });
           }
         });
 
