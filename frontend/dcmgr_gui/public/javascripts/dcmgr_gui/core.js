@@ -79,9 +79,10 @@ DcmgrGUI.Filter = DcmgrGUI.Class.create({
 
 DcmgrGUI.Converter = {};
 
-// Convert number to display disk size (large byte) unit in GB.
-// <= 10GB is displayed in: 1.01 GB, 0.66GB
-// > 10GB is displayed in: 10 GB, 101GB
+// Convert byte size to display byte unit in
+// appropriate byte unit (MB, GB, TB, PB...).
+// < 1GB is displayed: 100MB
+// > 1GB is displayed: 10 GB, 101GB, 1TB
 displayDiskSize = DcmgrGUI.Converter.toDisplayDiskSize = function(qty, in_unit) {
   if (qty === undefined || qty == ''){
     return "";
