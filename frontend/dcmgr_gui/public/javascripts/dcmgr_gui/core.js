@@ -1,4 +1,4 @@
-var DcmgrGUI = function(){};
+window.DcmgrGUI = function(){};
 
 //Refarence:http://wp.serpere.info/archives/1091
 DcmgrGUI.Class = (function() {
@@ -83,7 +83,6 @@ DcmgrGUI.Converter = {};
 // <= 10GB is displayed in: 1.01 GB, 0.66GB
 // > 10GB is displayed in: 10 GB, 101GB
 displayDiskSize = DcmgrGUI.Converter.toDisplayDiskSize = function(qty, in_unit) {
-  var q;
   if (qty === undefined || qty == ''){
     return "";
   }
@@ -1148,7 +1147,7 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     };
 
     for( var i in this.item_list) {
-      var select_tag = this.item_list[i].row_elem.find('.select_monitor_proto').first();
+      var select_tag = $(this.item_list[i].row_elem).find('.select_monitor_proto').first();
       select_tag.empty();
       for( var j in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS ){
         if( j != this.item_list[i].title && check_selected_item(j)) continue;
@@ -1203,7 +1202,7 @@ DcmgrGUI.VifMonitorSelector.Validator = {
   },
   http_check_path: function(val){
     return !/[\\>< ;\"\']/.test(val);
-  },
+  }
 };
 
 // constantize the JSON list.
@@ -1410,4 +1409,4 @@ DcmgrGUI.prototype = {
   setConfig: function(key, value) {
     this.config[key] = value;
   }
-}
+};

@@ -15,8 +15,8 @@ DcmgrGUI.prototype.backupPanel = function(){
       "created_at":'',
       "state":'',
       "progress":''
-    }]
-  }
+    }];
+  };
   
   DcmgrGUI.Detail.prototype.getEmptyData = function(){
     return {
@@ -27,8 +27,8 @@ DcmgrGUI.prototype.backupPanel = function(){
       "updated_at" : "-",
       "state" : "",
       "progress" : ""
-    }
-  }
+    };
+  };
   
   var create_button_name = $.i18n.prop('create_button');
   var delete_button_name = $.i18n.prop('delete_button');
@@ -85,7 +85,7 @@ DcmgrGUI.prototype.backupPanel = function(){
         }
       });
       $(this).dialog("close");
-    }
+    };
 
     bt_edit_backup = new DcmgrGUI.Dialog({
       target:'.edit_backup',
@@ -264,4 +264,4 @@ DcmgrGUI.prototype.backupPanel = function(){
   c_list.setData(null);
   c_list.update(list_request,true);
   
-}
+};
