@@ -42,6 +42,7 @@ BuildRequires: parted
 BuildRequires: yum-utils
 # Trema/racket gem build dependency
 BuildRequires: sqlite-devel libpcap-devel
+BuildRequires: v8 v8-devel
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
