@@ -75,6 +75,7 @@ class Network < Base
   method_option :dns, :type => :string, :desc => "IP address for DNS server of the network"
   method_option :dhcp, :type => :string, :desc => "IP address for DHCP server of the network"
   method_option :metadata, :type => :string, :desc => "IP address for metadata server of the network"
+  method_option :metric, :type => :numeric, :desc => "Routing priority order of this network segment"
   method_option :metadata_port, :type => :string, :desc => "Port for the metadata server of the network"
   method_option :bandwidth, :type => :numeric, :desc => "The maximum bandwidth for the network in Mbit/s"
   method_option :description, :type => :string, :desc => "Description for the network"
@@ -100,6 +101,7 @@ UUID: <%= nw.canonical_uuid %>
 Name: <%= nw.display_name %>
 Network Mode: <%= nw.network_mode %>
 Service Type: <%= nw.service_type %>
+Metric: <%= nw.metric %>
 IPv4:
   Network address: <%= nw.ipv4_ipaddress %>/<%= nw.prefix %>
   Gateway address: <%= nw.ipv4_gw %>
