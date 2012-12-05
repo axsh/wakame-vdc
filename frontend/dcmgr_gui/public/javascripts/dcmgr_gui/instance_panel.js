@@ -281,7 +281,7 @@ DcmgrGUI.prototype.instancePanel = function(){
         }
 
         var request = new DcmgrGUI.Request;
-        var instance_id = $('#instance_id').val();
+        var instance_id = $(self).find('#instance_id').val();
         parallel({
           monitoring: function(){
             request.get({
