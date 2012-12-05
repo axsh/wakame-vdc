@@ -15,13 +15,27 @@ kvm -device ? 2>&1 | egrep 'name "lsi' -q || {
 shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo1 --display-name="'local storage'" --base-uri="'file://${vdc_data}/images/'" --storage-type=local --description="'local backup storage under ${vdc_data}/images/'"
 shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webdav storage'" --base-uri="'http://localhost:8080/images/'" --storage-type=webdav --description="'nginx based webdav storage'"
 
+metalst=$(ls $data_path/image.enabled/image-*.meta || :)
+
+if [[ -z "$metalst" ]]; then
+  # Load all meta info from available/. backward compatibility.
+  metalst=$(ls $data_path/image.available/image-*.meta)
+fi
+
+cat <<EOF
+Image meta files to be registered:
+>---------------------------------------<
+$metalst
+>---------------------------------------<
+EOF
+
 # download demo image files.
 (
   cd ${vdc_data}/images
   # remove md5sum cache files.
   rm -f *.md5
 
-  for meta in $(ls $data_path/image-*.meta); do
+  for meta in $metalst; do
     (
       . $meta
       [[ -n "$localname" ]] || {
@@ -49,7 +63,7 @@ shlog ./bin/vdc-manage backupstorage add --uuid bkst-demo2 --display-name="'webd
   done
 )
 
-for meta in $data_path/image-*.meta; do
+for meta in $metalst; do
   (
     . $meta
     [[ -n "$localname" ]] || {

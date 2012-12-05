@@ -1,0 +1,11 @@
+# local / with metadata server script / gzip
+uuid=centos1d
+uri=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/centos-6.3-openvz-md-x86_64-40G.raw.tar.gz
+arch=x86_64
+localname=centos-6.3-openvz-md-x86_64-40G.raw.tar.gz
+storetype=local
+file_format=raw
+container_format=tgz
+root_device=uuid:148bc5df-3fc5-4e93-8a16-7328907cb1c0
+service_type=std
+display_name="40GB CentOS 6.3 OpenVZ MetadataDrive"
