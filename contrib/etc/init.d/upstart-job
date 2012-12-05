@@ -1,0 +1,73 @@
+#!/bin/sh -e
+# upstart-job
+#
+# Symlink target for initscripts that have been converted to Upstart.
+
+set -e
+
+INITSCRIPT="$(basename "$0")"
+JOB="${INITSCRIPT%.sh}"
+
+if [ "$JOB" = "upstart-job" ]; then
+    if [ -z "$1" ]; then
+        echo "Usage: upstart-job JOB COMMAND" 1>&2
+	exit 1
+    fi
+
+    JOB="$1"
+    INITSCRIPT="$1"
+    shift
+else
+    if [ -z "$1" ]; then
+        echo "Usage: $0 COMMAND" 1>&2
+	exit 1
+    fi
+fi
+
+COMMAND="$1"
+shift
+
+
+if [ -z "$DPKG_MAINTSCRIPT_PACKAGE" ]; then
+	ECHO=echo
+else
+	ECHO=:
+fi
+
+$ECHO "Rather than invoking init scripts through /etc/init.d, use the service(8)"
+$ECHO "utility, e.g. service $INITSCRIPT $COMMAND"
+
+case $COMMAND in
+status)
+    $ECHO
+    $ECHO "Since the script you are attempting to invoke has been converted to an"
+    $ECHO "Upstart job, you may also use the $COMMAND(8) utility, e.g. $COMMAND $JOB"
+    $COMMAND "$JOB"
+    ;;
+start|stop|restart)
+    $ECHO
+    $ECHO "Since the script you are attempting to invoke has been converted to an"
+    $ECHO "Upstart job, you may also use the $COMMAND(8) utility, e.g. $COMMAND $JOB"
+    PID=$(status "$JOB" 2>/dev/null | awk '/[0-9]$/ { print $NF }')
+    if [ -z "$PID" ] && [ "$COMMAND" = "stop" ]; then
+        exit 0
+    elif [ -n "$PID" ] && [ "$COMMAND" = "start" ]; then
+        exit 0
+    elif [ -z "$PID" ] && [ "$COMMAND" = "restart" ]; then
+        start "$JOB"
+        exit 0
+    fi
+    $COMMAND "$JOB"
+    ;;
+reload|force-reload)
+    $ECHO
+    $ECHO "Since the script you are attempting to invoke has been converted to an"
+    $ECHO "Upstart job, you may also use the $COMMAND(8) utility, e.g. $COMMAND $JOB"
+    reload "$JOB"
+    ;;
+*)
+    $ECHO
+    $ECHO "The script you are attempting to invoke has been converted to an Upstart" 1>&2
+    $ECHO "job, but $COMMAND is not supported for Upstart jobs." 1>&2
+    exit 1
+esac

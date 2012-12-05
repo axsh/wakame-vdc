@@ -357,6 +357,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %{prefix}/%{oname}/
 %config /etc/logrotate.d/wakame-vdc
 %config /etc/init.d/vdc-net-event
+%config /etc/init.d/upstart-job
 %config(noreplace) /etc/default/wakame-vdc
 %config /etc/prelink.conf.d/wakame-vdc.conf
 %dir /etc/%{oname}/
@@ -413,6 +414,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 
 %files dcmgr-vmapp-config
 %defattr(-,root,root)
+%config(noreplace) /etc/default/rabbitmq-server
 %config(noreplace) /etc/default/vdc-dcmgr
 %config(noreplace) /etc/default/vdc-collector
 %config(noreplace) /etc/default/vdc-metadata
@@ -422,6 +424,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
 %config(noreplace) /etc/default/vdc-nwmongw
+%config /etc/init/rabbitmq-server.conf
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-metadata.conf
