@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Hijiki
-  # configuration file loader. Need to call this 
+  # configuration file loader. Need to call this
   def self.load(spec_yml)
     case File.basename(spec_yml)
       when 'instance_spec.yml'
@@ -10,15 +10,15 @@ module Hijiki
         DcmgrResource::V1203::LoadBalancerSpec.load_spec(spec_yml)
     end
   end
-  
+
   require 'hijiki/request_attribute'
-    
+
   module DcmgrResource
 
     # Helps to create alias module names for the specified version of
     # active resource classes.
     # setup_aliases(:V1203) does the similar things with following:
-    # 
+    #
     # module Hijiki::DcmgrResource
     #   Account  = V1203::Account
     #   Image    = V1203::Image
