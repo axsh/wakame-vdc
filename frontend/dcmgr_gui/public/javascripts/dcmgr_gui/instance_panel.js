@@ -140,30 +140,27 @@ DcmgrGUI.prototype.instancePanel = function(){
         $(this).find('#right_select_list').mask($.i18n.prop('loading_parts'));
 
         var ready = function(data) {
-          if($(self).find('#monitoring_enabled').is(':checked')){
-            _.chain(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2']).map(function(id){
-              var v = $(self).find(id).val();
-              if(v.length > 0){
-                return [(v.length > 0), /^[^@]+@[a-z0-9A-Z][a-z0-9A-Z\.\-]+$/.test(v)];
-              }else{
-                return [false, false];
-              }
-            }).tap(function(tuple_lst){
-              if(_.all(tuple_lst, function(i){
-                return (i[0] == false && i[1] == false);
-              })){
-                // Can not submit when none of address fields is filled.
-                data['monitoring'] = false;
-              }else{
-                // Can submit when empty and validation passed address fields exist.
-                data['monitoring'] = _.all(tuple_lst, function(i){
-                  return (i[0] == true && i[1] == true) || (i[0] == false && i[1] == false);
-                });
-              }
-            });
-          }else{
-            data['monitoring'] = true;
-          }
+          _.chain(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2']).map(function(id){
+            var v = $(self).find(id).val();
+            if(v.length > 0){
+              return [true, /^[^@]+@[a-z0-9A-Z][a-z0-9A-Z\.\-]+$/.test(v)];
+            }else{
+              return [false, false];
+            }
+          }).tap(function(tuple_lst){
+            if(_.all(tuple_lst, function(i){
+              return i[1] == false;
+            }) && $(self).find('#monitoring_enabled').is(':checked') ){
+              // Can not submit when none of address fields is
+              // filled or valid.
+              data['monitoring'] = false;
+            }else{
+              // Can submit when empty and validation passed address fields exist.
+              data['monitoring'] = _.all(tuple_lst, function(i){
+                return (i[0] == true && i[1] == true) || (i[0] == false);
+              });
+            }
+          });
           
           if( data.monitoring ){
             data.monitoring = bt_edit_instance.monitor_selector.validate();
