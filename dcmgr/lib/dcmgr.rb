@@ -153,7 +153,6 @@ module Dcmgr
     autoload :Image, 'dcmgr/cli/image'
     autoload :KeyPair, 'dcmgr/cli/keypair'
     autoload :SecurityGroup, 'dcmgr/cli/security_group'
-    autoload :Spec, 'dcmgr/cli/spec'
     autoload :ResourceGroup, 'dcmgr/cli/resource_group'
     autoload :BackupStorage, 'dcmgr/cli/backup_storage'
     autoload :BackupObject, 'dcmgr/cli/backup_object'

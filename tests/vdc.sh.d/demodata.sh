@@ -166,15 +166,6 @@ resourcegroup map nwg-shnet  nw-demo1
 
 network reserve nw-demo1 --ipv4=${ipaddr}
 
-spec  add --uuid is-demospec --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --quota-weight 1
-spec  add --uuid is-demo2    --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 2 --memory-size 256 --quota-weight 1
-# BEGIN: Temporary add below two lines during instance spec migration.
-spec  add --uuid is-small --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --quota-weight 1
-spec  add --uuid is-large --account-id ${account_id} --arch ${hva_arch} --hypervisor ${hypervisor} --cpu-cores 1 --memory-size 256 --quota-weight 2
-# END: Temporary add below two lines during instance spec migration.
-spec  addvif is-demo2 eth1
-spec  addvif is-demo2 eth2
-
 keypair add --account-id ${account_id} --uuid ssh-demo --private-key=$data_path/pri.pem --public-key=$data_path/pub.pem --description "'demo key1'" --service-type std --display-name "'demo'"
 
 macrange add 525400 1 ffffff --uuid mr-demomacs
