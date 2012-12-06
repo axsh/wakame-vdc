@@ -20,6 +20,7 @@ module Dcmgr::Endpoints::V1203::Responses
           network = vif.network
           ent = {
             :vif_id => vif.canonical_uuid,
+            :vif_index => vif.device_index,
             :network_id => network.nil? ? nil : network.canonical_uuid,
           }
 
