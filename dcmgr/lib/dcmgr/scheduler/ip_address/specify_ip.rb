@@ -12,7 +12,7 @@ module Dcmgr::Scheduler::IPAddress
     S = Dcmgr::Scheduler
 
     def schedule(network_vif)
-      template = network_vif.instance.request_params["vifs"].values.find { |temp| temp["index"] = network_vif.device_index }
+      template = network_vif.instance.request_params["vifs"].values.find { |temp| temp["index"].to_i == network_vif.device_index }
       raise S::IPAddressSchedulerError, "No entry found in the vifs parameter for index #{network_vif.device_index}" if template.nil?
       raise S::IPAddressSchedulerError, "No network assigned to this vnic yet" if network_vif.network.nil?
 
