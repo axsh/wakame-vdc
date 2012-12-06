@@ -26,7 +26,7 @@ module Hijiki::DcmgrResource::V1203
       def list(params = {})
         super({:state=>'alive_with_deleted', :is_public=>true}.merge(params))
       end
-      
+
       def update(uuid,params)
         self.put(uuid,params).body
       end

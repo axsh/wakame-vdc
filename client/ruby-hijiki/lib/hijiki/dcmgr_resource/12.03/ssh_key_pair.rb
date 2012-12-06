@@ -14,11 +14,11 @@ module Hijiki::DcmgrResource::V1203
         ssh_key_pair.save
         ssh_key_pair
       end
-      
+
       def update(uuid,params)
         self.put(uuid,params).body
       end
-      
+
       def destroy(uuid)
         self.delete(uuid).body
       end

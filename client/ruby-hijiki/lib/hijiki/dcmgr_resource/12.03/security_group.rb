@@ -17,10 +17,10 @@ module Hijiki::DcmgrResource::V1203
       def update(uuid,params)
         self.put(uuid,params).body
       end
-      
+
       def destroy(uuid)
         self.delete(uuid).body
-      end      
+      end
     end
     extend ClassMethods
 

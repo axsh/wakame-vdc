@@ -17,14 +17,14 @@ end
 
 Thread.current[:hijiki_request_attribute] = Hijiki::RequestAttribute.new('a-shpoolxx')
 
-ActiveResource::Base.class_eval do 
+ActiveResource::Base.class_eval do
   begin
     @dcmgr_gui_config = YAML::load(IO.read(File.join(File.dirname(__FILE__), '..', '..', '..', 'frontend', 'dcmgr_gui', 'config', 'dcmgr_gui.yml')))['development']
   rescue Errno::ENOENT => e
     p e.message
     exit 1
   end
-  self.site = @dcmgr_gui_config['dcmgr_site'] 
+  self.site = @dcmgr_gui_config['dcmgr_site']
 end
 
 require File.join(File.dirname(__FILE__) + '/api/ts_base.rb')

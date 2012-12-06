@@ -23,7 +23,7 @@ module Hijiki::DcmgrResource::V1203
         service.ipv4 = params[:ipv4]
         service.incoming_port = params[:incoming_port]
         service.outgoing_port = params[:outgoing_port]
-        
+
         service.save
         service
       end
