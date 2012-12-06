@@ -108,7 +108,7 @@ module Hijiki::DcmgrResource::V1203
             raise "Mail address validation error: #{addr}"
           end
         }
-        
+
         if params[:monitoring].is_a?(Hash)
           case params[:monitoring][:mail_address]
           when String

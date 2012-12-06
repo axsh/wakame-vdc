@@ -5,7 +5,7 @@ module Hijiki::DcmgrResource
   class << self
     attr_accessor :debug
   end
-  
+
 end
 
 require 'active_resource'
@@ -18,9 +18,9 @@ module Hijiki::DcmgrResource::Common
     # self.site = 'http://your.dcmgr.api.server'
     self.timeout = 30
     self.format = :json
-    
+
     class << self
-      
+
       def total_resource
         result = self.find(:first,:params => {:start => 0,:limit => 1})
         result.total
@@ -28,7 +28,7 @@ module Hijiki::DcmgrResource::Common
 
       def get_resource_state_count(resources, state)
         resource_count = 0
-        unless resources.empty?   
+        unless resources.empty?
           resources.each do |item|
             if item.state == state
               resource_count += 1;
@@ -99,12 +99,12 @@ module Hijiki::DcmgrResource::Common
     def self.included(base)
       base.extend(ClassMethods)
     end
-    
+
     module ClassMethods
       def list(params = {})
         self.find(:all,:params => params.merge({:service_type=>'std'}))
       end
-      
+
       def show(uuid)
         self.get(uuid)
       end
@@ -128,19 +128,19 @@ ActiveResource::Connection.class_eval do
       h
     end
   end
-  
+
   def configure_http(http)
     http = apply_ssl_options(http)
-    
-    #add debug 
+
+    #add debug
     http.set_debug_output($stderr) if Hijiki::DcmgrResource.debug
-    
+
     # Net::HTTP timeouts default to 60 seconds.
     if @timeout
       http.open_timeout = @timeout
       http.read_timeout = @timeout
     end
-    
+
     http
   end
 

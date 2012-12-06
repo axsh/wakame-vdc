@@ -23,11 +23,11 @@ module Hijiki::DcmgrResource::V1203
       def list(params = {})
         super(params.merge({:state=>'alive_with_deleted'}))
       end
-      
+
       def destroy(backup_object_id)
         self.delete(backup_object_id).body
       end
-      
+
       def update(backup_object_id,params)
         self.put(backup_object_id,params).body
       end

@@ -21,7 +21,7 @@ module Hijiki::DcmgrResource::V1203
       def destroy(volume_id)
         self.delete(volume_id).body
       end
-      
+
       def update(volume_id, params)
 	self.put(volume_id,params).body
       end
@@ -30,7 +30,7 @@ module Hijiki::DcmgrResource::V1203
         result = self.find(volume_id).put(:attach, {:instance_id => instance_id})
         result.body
       end
-      
+
       def detach(volume_id)
         result = self.find(volume_id).put(:detach)
         result.body
@@ -48,6 +48,6 @@ module Hijiki::DcmgrResource::V1203
       end
     end
     extend ClassMethods
-    
+
   end
 end
