@@ -11,7 +11,7 @@ module Dcmgr
           param :template, :default=>{}
         end
 
-        # Placeholder code. Identical to vifsrequestparam with attach_to_network removed
+        # Placeholder code. Identical to vifsrequestparam with attach_to_network removed and mac_addr added
         # We can remove this class when we get rid of the instance#add_nic method
         def schedule(instance)
           index = 0
@@ -23,6 +23,7 @@ module Dcmgr
               :index => param['index'] ? param['index'].to_i : index,
               :bandwidth => 100000,
               :security_groups => param['security_groups'],
+              :mac_addr => param['mac_addr']
             }
 
             index = [index, vnic_params[:index]].max + 1
