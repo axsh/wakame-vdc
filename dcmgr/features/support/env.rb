@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
 $LOAD_PATH.unshift File.expand_path('../../../lib', __FILE__)
@@ -14,3 +13,4 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
 
 Dcmgr.run_initializers()
 
+DEFAULT_ACCOUNT="a-shpoolxx"
