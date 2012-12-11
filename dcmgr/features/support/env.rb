@@ -7,9 +7,7 @@ require 'dcmgr'
 
 
 Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
-                ['/etc/wakame-vdc/dcmgr.conf',
-                 File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
-                ])
+                [File.expand_path('../dcmgr.conf', __FILE__)])
 
 Dcmgr.run_initializers()
 
