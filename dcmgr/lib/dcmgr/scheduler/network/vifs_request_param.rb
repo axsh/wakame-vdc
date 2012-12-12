@@ -24,9 +24,14 @@ module Dcmgr
             #TODO: Check for index
             vnic = Dcmgr::Models::NetworkVif.new({"account_id" => instance.account_id, "device_index" => param["index"]})
             instance.add_network_vif(vnic)
+
             # Schedule mac address for the vnic
-            svc_type = Dcmgr::Scheduler.service_type(instance)
-            svc_type.mac_address.schedule(vnic)
+            mac_sched = if param["mac_addr"]
+              Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new
+            else
+              Dcmgr::Scheduler.service_type(instance).mac_address
+            end
+            mac_sched.schedule(vnic)
             vnic.save
 
             network = Models::Network[param['network']]

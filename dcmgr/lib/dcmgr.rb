@@ -241,7 +241,6 @@ module Dcmgr
       autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
       autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'
       autoload :NetworkGroup, 'dcmgr/scheduler/network/network_group'
-      autoload :SpecifyNetwork, 'dcmgr/scheduler/network/specify_network'
     end
 
     module MacAddress

@@ -231,7 +231,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     instance.save
 
-    # 
+    #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -252,12 +252,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     if is_manual_ip_set
       ## Assign the custom vifs
-      Dcmgr::Scheduler::Network::SpecifyNetwork.new.schedule(instance)
+      Dcmgr::Scheduler::Network::VifsRequestParam.new.schedule(instance)
       instance.network_vif.each { |vif|
-        # Calling this scheduler from instance#add_nic method instead
-        # as a workaround for that dirty method that needs to be removed
-        # Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
-
         Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
       }
     end
