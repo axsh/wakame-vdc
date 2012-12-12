@@ -107,6 +107,10 @@ service_type("std", "StdServiceType") {
     # assign IP address from first found network to single interface.
     default :VifsRequestParam
 
+    add(:nwg, :NetworkGroup) {
+      network_group_id "nwg-shnet"
+    }
+
   end
 }
 
