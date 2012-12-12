@@ -236,7 +236,6 @@ module Dcmgr
     end
 
     module Network
-      autoload :FlatSingle, 'dcmgr/scheduler/network/flat_single'
       autoload :PerInstance, 'dcmgr/scheduler/network/per_instance'
       autoload :VifsRequestParam, 'dcmgr/scheduler/network/vifs_request_param'
       autoload :RequestParamToGroup, 'dcmgr/scheduler/network/request_param_to_group'

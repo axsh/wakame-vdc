@@ -87,7 +87,6 @@ service_type("std", "StdServiceType") {
 
   # Available network schedulers:
   #
-  # * :FlatSingle
   # * :PerInstance
   # * :RequestParamToGroup {
   #     key 'instance_spec_name'
