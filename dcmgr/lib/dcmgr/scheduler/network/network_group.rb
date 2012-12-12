@@ -48,19 +48,30 @@ module Dcmgr
               raise "No available network left in network group" if network_candidates.empty?
               logger.info "Candidate networks #{network_candidates}"
 
-
               # Select the network with the least number of allocated IP.
               selected_network = Algorithm.__send__(options.algorithm, network_candidates)
               network_uuid = selected_network[0]
               logger.info "Selected network #{network_uuid}"
 
-              vnic = instance.add_nic(vif_temp)
-
               network = Dcmgr::Models::Network[network_uuid]
               raise Dcmgr::Scheduler::NetworkSchedulingError, "No available ip addresses left in network group '#{tag_id}'." if network.nil?
-              logger.info "Trying to attach vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
 
-              vnic.attach_to_network(network)
+              # Now that we have a network for it, create the vnic
+              vnic = Dcmgr::Models::NetworkVif.new({"account_id" => instance.account_id, "device_index" => vif_temp["index"]})
+              instance.add_network_vif(vnic)
+
+              # Schedule mac address for the vnic
+              svc_type = Dcmgr::Scheduler.service_type(instance)
+              svc_type.mac_address.schedule(vnic)
+
+              # Assign the network to the vnic and save it
+              vnic.network = network
+              vnic.save
+
+              # Add security groups. This needs to be done after saving the vnic
+              # because the db record needs to have a primary key first.
+              vnic.add_security_groups_by_id(vif_temp["security_groups"])
+
               logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
             rescue Dcmgr::Models::OutOfIpRange => e
               logger.warning "No more dynamic ip addresses available in network '#{network.canonical_uuid}'"
