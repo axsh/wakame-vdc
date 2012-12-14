@@ -22,13 +22,17 @@ module Dcmgr
           File.expand_path('lxc.conf', @subject.inst_data_dir)
         end
 
+        def root_mount_path
+          File.expand_path('rootfs', @subject.inst_data_dir)
+        end
+
+        def metadata_drive_mount_path
+          File.expand_path('metadata', @subject.inst_data_dir)
+        end
+
         private
         def method_missing(meth, *args)
-          if @subject.respond_to?(meth)
-            @subject.send(meth, *args)
-          else
-            super
-          end
+          @subject.send(meth, *args)
         end
       end
 
@@ -104,10 +108,11 @@ module Dcmgr
       end
 
       def terminate_instance(ctx)
-        sh("lxc-stop -n #{ctx.inst_id}")
-        sh("lxc-destroy -n #{ctx.inst_id}")
-        sh("umount #{ctx.inst_data_dir}/rootfs/metadata")
-        sh("umount #{ctx.inst_data_dir}/rootfs")
+        shell.run("lxc-stop -n #{ctx.inst_id}")
+        shell.run("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
+        shell.run("lxc-destroy -n #{ctx.inst_id}")
+        umount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
+        umount_root_image(ctx, ctx.root_mount_path)
       end
 
       def reboot_instance(ctx)
