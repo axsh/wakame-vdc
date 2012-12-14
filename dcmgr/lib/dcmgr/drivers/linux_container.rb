@@ -34,6 +34,32 @@ module Dcmgr
         end
         sh("mount -o ro %s %s", [lodev, ve_metadata_path])
       end
+
+      def umount_metadata_drive(ctx, mount_path)
+        # umount metadata drive
+        #
+        # *** Don't use "-l" option. ***
+        # If "-l" option is added, umount command will get following messages.
+        # > device-mapper: remove ioctl failed: Device or resource busy
+        # > ioctl: LOOP_CLR_FD: Device or resource busy
+        #
+        sh("umount %s", [mount_path])
+        detach_loop(ctx.metadata_img_path)
+        ctx.logger.info("Umounted metadata directory #{mount_path}")
+      end
+
+      def umount_root_image(ctx, mount_path)
+        case ctx.inst[:image][:file_format]
+        when "raw"
+          # umount vm image directory
+          raise "root mount point does not exist #{mount_path}" unless File.directory?(mount_path)
+          sh("umount -l %s", [mount_path])
+          if ctx.inst[:image][:root_device]
+            detach_loop(ctx.os_devpath)
+          end
+          ctx.logger.debug("unmounted root mount directory #{mount_path}")
+        end
+      end
       
       def mount_root_image(ctx, mount_path)
         # check mount directory
@@ -84,7 +110,7 @@ module Dcmgr
 
               check_fs(root_device[0])
             rescue => e
-              detach_loop(hc.os_devpath)
+              detach_loop(ctx.os_devpath)
               raise
             end
             sh("mount %s %s", [root_device[0], mount_path])
