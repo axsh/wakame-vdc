@@ -206,8 +206,8 @@ $.widget("ui.selectmenu", {
 					}
 				}
 			}
-		}	
-		
+		});
+
 		//add corners to top and bottom menu items
 		this.list.find('li:last').addClass("ui-corner-bottom");
 		if(o.style == 'popup'){ this.list.find('li:first').addClass("ui-corner-top"); }
