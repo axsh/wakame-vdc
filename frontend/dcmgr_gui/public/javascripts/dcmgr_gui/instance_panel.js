@@ -594,6 +594,8 @@ DcmgrGUI.prototype.instancePanel = function(){
     list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
+    c_list.clearCheckedList();
+    $('#detail').html('');
 
     //update detail
     $.each(c_list.checked_list,function(check_id,obj){
@@ -605,8 +607,6 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
 
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){
-    c_list.clearCheckedList();
-    $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
 
