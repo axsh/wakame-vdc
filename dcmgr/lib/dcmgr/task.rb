@@ -73,7 +73,7 @@ module Dcmgr
 
       class << self
         def register(tasklet)
-          raise ArgumentError unless takslet.is_a?(Tasklet)
+          raise ArgumentError unless tasklet.is_a?(Tasklet)
           @registry[tasklet.class] = tasklet
         end
 
@@ -204,8 +204,7 @@ module Dcmgr
 
       def invoke(taskclass, method, args)
         raise ArgumentError unless taskclass.is_a?(Class) && taskclass < Tasklet
-        tasklet = Tasklet.registry[taskclass]
-        tasklet = tasklet.nil? ? taskclass.new : tasklet.dup
+        tasklet = Tasklet.registry[taskclass] || taskclass.new
 
         unless @tasklets.has_key?(tasklet)
           @tasklets[tasklet]=1
