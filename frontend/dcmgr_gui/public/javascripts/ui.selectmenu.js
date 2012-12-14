@@ -143,7 +143,8 @@ $.widget("ui.selectmenu", {
 		var activeClass = (self.options.style == "popup") ? " ui-state-active" : "";
 		
 		//write li's
-		for(var i in selectOptionData){
+		var self = this;
+		$.each(selectOptionData, function(i){
 			var thisLi = $('<li role="presentation"><a href="#" tabindex="-1" role="option" aria-selected="false">'+ selectOptionData[i].text +'</a></li>')
 				.data('index',i)
 				.addClass(selectOptionData[i].classes)
@@ -174,23 +175,23 @@ $.widget("ui.selectmenu", {
 			//optgroup or not...
 			if(selectOptionData[i].parentOptGroup){
 				var optGroupName = self.widgetBaseClass + '-group-' + selectOptionData[i].parentOptGroup;
-				if(this.list.find('li.' + optGroupName).size()){
-					this.list.find('li.' + optGroupName + ':last ul').append(thisLi);
+				if(self.list.find('li.' + optGroupName).size()){
+					self.list.find('li.' + optGroupName + ':last ul').append(thisLi);
 				}
 				else{
 					$('<li role="presentation" class="'+self.widgetBaseClass+'-group '+optGroupName+'"><span class="'+self.widgetBaseClass+'-group-label">'+selectOptionData[i].parentOptGroup+'</span><ul></ul></li>')
-						.appendTo(this.list)
+						.appendTo(self.list)
 						.find('ul')
 						.append(thisLi);
 				}
 			}
 			else{
-				thisLi.appendTo(this.list);
+				thisLi.appendTo(self.list);
 			}
-			
-			//this allows for using the scrollbar in an overflowed list
-			this.list.bind('mousedown mouseup', function(){return false;});
-			
+
+			//self.allows for using the scrollbar in an overflowed list
+			self.list.bind('mousedown mouseup', function(){return false;});
+
 			//append icon if option is specified
 			if(o.icons){
 				for(var j in o.icons){
