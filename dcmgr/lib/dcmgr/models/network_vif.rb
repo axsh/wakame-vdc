@@ -29,7 +29,7 @@ module Dcmgr::Models
       group_ids = [group_ids] unless group_ids.respond_to?(:each)
       group_ids.each { |group_id|
         group = Dcmgr::Models::SecurityGroup[group_id]
-        raise NetworkSchedulingError, "Security group: #{group_id} doesn't exit" if group.nil?
+        raise "Security group: #{group_id} doesn't exit" if group.nil?
         self.add_security_group(group)
       }
     end
