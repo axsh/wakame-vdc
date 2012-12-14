@@ -679,33 +679,40 @@ DcmgrGUI.prototype.instancePanel = function(){
   var actions = {};
   actions.changeButtonState = function() {
     var ids = c_list.currentMultiChecked()['ids'];
-    var flag = true;
-    var is_selectmenu = false;
-    var is_instance_backup = false;
-    $.each(ids, function(key, uuid){
-      var row_id = '#row-'+uuid;
-      var state = $(row_id).find('.state').text();
-      is_selectmenu = _.include(['running', 'stopped', 'halted'], state)
-      is_instance_backup = _.include(['halted'], state)
-      flag = _.contains([is_selectmenu, is_instance_backup], true)
-    });
+    var is_select_menus = [];
+    var is_instance_backups = [];
 
-    if (flag){
-      if(is_selectmenu) {
+    if(ids.length === 0) {
+      selectmenu.data('selectmenu').disableButton();
+      bt_instance_backup.disableDialogButton();
+    } else {
+      $.each(ids, function(key, uuid){
+        var row_id = '#row-'+uuid;
+        var state = $(row_id).find('.state').text();
+        if(_.include(['running', 'stopped', 'halted'], state)) {
+          is_select_menus.push(true);
+        } else {
+          is_select_menus.push(false);
+        }
+
+        if(_.include(['halted'], state)) {
+          is_instance_backups.push(true);
+        } else {
+          is_instance_backups.push(false);
+        }
+      });
+
+      if(!_.contains(is_select_menus, false)){
         selectmenu.data('selectmenu').enableButton();
       } else {
         selectmenu.data('selectmenu').disableButton();
       }
 
-      if(is_instance_backup) {
+      if(!_.contains(is_instance_backups, false)){
         bt_instance_backup.enableDialogButton();
       } else {
         bt_instance_backup.disableDialogButton();
       }
-
-    } else{
-      selectmenu.data('selectmenu').disableButton();
-      bt_instance_backup.disableDialogButton();
     }
   }
 
