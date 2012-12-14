@@ -58,7 +58,6 @@ module Dcmgr
 
               # Now that we have a network for it, create the vnic
               vnic = Dcmgr::Models::NetworkVif.new({"account_id" => instance.account_id, "device_index" => vif_temp["index"]})
-              instance.add_network_vif(vnic)
 
               # Schedule mac address for the vnic
               svc_type = Dcmgr::Scheduler.service_type(instance)
@@ -67,6 +66,7 @@ module Dcmgr
               # Assign the network to the vnic and save it
               vnic.network = network
               vnic.save
+              instance.add_network_vif(vnic)
 
               # Add security groups. This needs to be done after saving the vnic
               # because the db record needs to have a primary key first.

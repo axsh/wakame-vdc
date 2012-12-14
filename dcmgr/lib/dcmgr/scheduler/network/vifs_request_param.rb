@@ -23,7 +23,6 @@ module Dcmgr
 
             #TODO: Check for index
             vnic = Dcmgr::Models::NetworkVif.new({"account_id" => instance.account_id, "device_index" => param["index"]})
-            instance.add_network_vif(vnic)
 
             # Schedule mac address for the vnic
             mac_sched = if param["mac_addr"]
@@ -33,6 +32,7 @@ module Dcmgr
             end
             mac_sched.schedule(vnic)
             vnic.save
+            instance.add_network_vif(vnic)
 
             network = Models::Network[param['network']]
             raise NetworkSchedulingError, "Network '#{param['network']}' doesn't exist." if network.nil?
@@ -45,7 +45,7 @@ module Dcmgr
 
             vnic.add_security_groups_by_id(param["security_groups"] || [])
 
-            vnic.attach_to_network(network)
+            vnic.network = network
           }
         end
       end
