@@ -4,12 +4,49 @@ require 'erb'
 
 module Dcmgr
   module Drivers
-    class Lxc < LinuxHypervisor
+    class Lxc < LinuxContainer
       include Dcmgr::Logger
-      include Dcmgr::Helpers::CliHelper
 
+      template_base_dir 'lxc'
+      
       def_configuration
 
+      # Decorator pattern class of Rpc::HvaHandler::HvaContext.
+      class LxcContext
+        def initialize(root_ctx)
+          raise ArgumentError unless root_ctx.is_a?(Rpc::HvaContext)
+          @subject = root_ctx
+        end
+
+        def lxc_conf_path
+          File.expand_path('lxc.conf', @subject.inst_data_dir)
+        end
+
+        private
+        def method_missing(meth, *args)
+          if @subject.respond_to?(meth)
+            @subject.send(meth, *args)
+          else
+            super
+          end
+        end
+      end
+
+      before do
+        @args = @args.map {|i|  i.is_a?(Rpc::HvaContext) ? LxcContext.new(i) : i; }
+        # First arugment is expected a HvaContext.
+        @hc = @args.first
+      end
+      
+      def initialize
+        @lxc_version = `lxc-version`.chomp.split(': ').last
+        logger.info("lxc-version: #{@lxc_version}")
+
+        unless check_cgroup_mount
+          raise "cgroup filesystem is not mounted."
+        end
+      end
+      
       def run_instance(ctx)
         # run lxc
         @os_devpath = ctx.os_devpath
@@ -22,26 +59,19 @@ module Dcmgr
             @os_devpath = "#{ctx.inst_data_dir}/#{ctx.inst_id}"
           end
         end
+
+        generate_config(ctx)
+
         # check mount point
         mount_point = "#{ctx.inst_data_dir}/rootfs"
         Dir.mkdir(mount_point) unless File.exists?(mount_point)
 
-        cmd = "mount %s %s"
-        args = [@os_devpath, mount_point]
-        if ctx.inst[:image][:boot_dev_type] == 2
-          cmd += " -o loop"
-        end
-        sh(cmd, args)
+        mount_root_image(ctx, mount_point)
 
         # metadata drive
         metadata_path = "#{ctx.inst_data_dir}/rootfs/metadata"
         Dir.mkdir(metadata_path) unless File.exists?(metadata_path)
-        sh("mount -o loop -o ro #{ctx.metadata_img_path} #{metadata_path}")
-
-        config_path = create_config(ctx)
-        create_fstab(ctx)
-        setup_container(ctx)
-        mount_cgroup
+        mount_metadata_drive(ctx, metadata_path)
 
         # Ubuntu 10.04.3 LTS
         # Linux ubuntu 2.6.38-10-generic #46~lucid1-Ubuntu SMP Wed Jul 6 18:40:11 UTC 2011 i686 GNU/Linux
@@ -57,11 +87,20 @@ module Dcmgr
         #
         # http://comments.gmane.org/gmane.linux.kernel.containers.lxc.general/912
         # http://comments.gmane.org/gmane.linux.kernel.containers.lxc.general/1400
-        lxc_version = `lxc-version`.chomp.split(': ').last
-        logger.debug("lxc-version: #{lxc_version}")
 
-        sh("lxc-create -f %s -n %s", [config_path, ctx.inst[:uuid]])
-        sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log 3<&- 4<&- 6<&-", [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst[:uuid]])
+        sh("lxc-create -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
+        #sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log 3<&- 4<&- 6<&-", [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst[:uuid]])
+        sh("lxc-start -d -n %s", [ctx.inst[:uuid], ctx.inst_data_dir])
+
+        tryagain do
+          begin
+            check_instance(ctx.inst[:uuid])
+            true
+          rescue
+            sleep 5
+            false
+          end
+        end
       end
 
       def terminate_instance(ctx)
@@ -73,7 +112,8 @@ module Dcmgr
 
       def reboot_instance(ctx)
         sh("lxc-stop -n #{ctx.inst[:uuid]}")
-        sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log 3<&- 4<&- 6<&-", [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst[:uuid]])
+        #sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log 3<&- 4<&- 6<&-", [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst[:uuid]])
+        sh("lxc-start -n %s -d -c %s/console.log", [ctx.inst[:uuid], ctx.inst_data_dir])
       end
 
       def attach_volume_to_guest(ctx)
@@ -87,8 +127,7 @@ module Dcmgr
         logger.debug("Makinging new block device: #{ctx.inst_data_dir}/rootfs#{sddev}")
         sh("mknod #{ctx.inst_data_dir}/rootfs#{sddev} -m 660 b #{stat.rdev_major} #{stat.rdev_minor}")
 
-        config_path = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
-        File.open(config_path, 'a+') { |f|
+        File.open(ctx.lxc_conf_path, 'a+') { |f|
           f.puts "lxc.cgroup.devices.allow = b #{devnum} rwm"
         }
 
@@ -104,11 +143,10 @@ module Dcmgr
         logger.debug("Deleting block device: #{ctx.inst_data_dir}/rootfs#{sddev}")
         sh("rm #{ctx.inst_data_dir}/rootfs#{sddev}")
 
-        config_path = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
-        config_body = File.open(config_path, 'r') { |f|
+        config_body = File.open(ctx.lxc_conf_path, 'r') { |f|
           f.readlines.select {|line| line != "lxc.cgroup.devices.allow = b #{devnum} rwm\n" }
         }
-        File.open(config_path, 'w') { |f|
+        File.open(ctx.lxc_conf_path, 'w') { |f|
           f.write config_body
         }
       end
@@ -121,98 +159,13 @@ module Dcmgr
       end
 
       private
-      def create_config(ctx)
-        # create config file i-xxxxxxxx.log
-
-        config_path = "#{ctx.inst_data_dir}/config.#{ctx.inst_id}"
-        # check config file
-        if File.exist?(config_path)
-          sh("rm #{config_path}")
-        end
-
+      def generate_config(ctx)
         vifs = ctx.inst[:vif]
 
-        File.open(config_path, 'w') { |f|
-          f.puts "lxc.utsname = #{ctx.inst_id}"
-          f.puts ""
-          if !vifs.empty?
-            vifs.sort {|a, b|  a[:device_index] <=> b[:device_index] }.each { |vif|
-              f.puts "lxc.network.type = veth"
-              if vif[:ipv4]
-                f.puts "lxc.network.link = #{bridge_if_name(vif[:ipv4][:network][:dc_network])}"
-              end
-              f.puts "lxc.network.veth.pair = #{vif[:uuid]}"
-              f.puts "lxc.network.hwaddr = #{vif[:mac_addr].unpack('A2'*6).join(':')}"
-              f.puts "lxc.network.flags = up"
-            }
-          end
-          f.puts ""
-          f.puts "lxc.tty = 4"
-          f.puts "lxc.pts = 1024"
-          f.puts "lxc.rootfs = #{ctx.inst_data_dir}/rootfs"
-          f.puts "lxc.mount = #{ctx.inst_data_dir}/fstab"
-          f.puts ""
-          f.puts "lxc.cgroup.devices.deny = a"
-          f.puts "# /dev/null and zero"
-          f.puts "lxc.cgroup.devices.allow = c 1:3 rwm"
-          f.puts "lxc.cgroup.devices.allow = c 1:5 rwm"
-          f.puts "# consoles"
-          f.puts "lxc.cgroup.devices.allow = c 5:1 rwm"
-          f.puts "lxc.cgroup.devices.allow = c 5:0 rwm"
-          f.puts "lxc.cgroup.devices.allow = c 4:0 rwm"
-          f.puts "lxc.cgroup.devices.allow = c 4:1 rwm"
-          f.puts "# /dev/{,u}random"
-          f.puts "lxc.cgroup.devices.allow = c 1:9 rwm"
-          f.puts "lxc.cgroup.devices.allow = c 1:8 rwm"
-          f.puts "lxc.cgroup.devices.allow = c 136:* rwm"
-          f.puts "lxc.cgroup.devices.allow = c 5:2 rwm"
-          f.puts "#rtc"
-          f.puts "lxc.cgroup.devices.allow = c 254:0 rwm"
-          f.puts "#kvm"
-          f.puts "#lxc.cgroup.devices.allow = c 10:232 rwm"
-          f.puts "#lxc.cgroup.devices.allow = c 10:200 rwm"
-
-          unless ctx.inst[:volume].nil?
-            ctx.inst[:volume].each { |vol_id, vol|
-              unless vol[:guest_device_name].nil?
-                f.puts "lxc.cgroup.devices.allow = b #{vol[:guest_device_name]} rwm"
-              else
-                @os_devpath = vol[:host_device_name] unless vol[:host_device_name].nil?
-                sddev = File.expand_path(File.readlink(@os_devpath), '/dev/disk/by-path')
-                # find major number and minor number to device file
-                stat = File.stat(sddev)
-                f.puts "lxc.cgroup.devices.allow = b #{stat.rdev_major}:#{stat.rdev_minor} rwm"
-              end
-            }
-          end
-        }
-
-        config_path
+        render_template('lxc.conf', ctx.lxc_conf_path, binding)
       end
-
-      def create_fstab(ctx)
-        config_path = "#{ctx.inst_data_dir}/fstab"
-        File.open(config_path, "w") { |f|
-          f.puts "proc   #{ctx.inst_data_dir}/rootfs/proc proc nodev,noexec,nosuid 0 0"
-          f.puts "devpts #{ctx.inst_data_dir}/rootfs/dev/pts devpts defaults 0 0"
-          f.puts "sysfs  #{ctx.inst_data_dir}/rootfs/sys sysfs defaults 0 0"
-        }
-      end
-
-      def setup_container(ctx)
-        sh("echo \"127.0.0.1 localhost #{ctx.inst_id}\" > #{ctx.inst_data_dir}/rootfs/etc/hosts")
-        sh("echo \"#{ctx.inst_id}\" > #{ctx.inst_data_dir}/rootfs/etc/hostname")
-      end
-
-      def mount_cgroup
-        `mount -t cgroup | egrep -q cgroup`
-        if $?.exitstatus != 0
-          mount_point = "/cgroup"
-          Dir.mkdir(mount_point) unless File.exists?(mount_point)
-          sh("mount none -t cgroup #{mount_point}")
-        end
-      end
-
+      
+      Task::Tasklet.register(self.new)
     end
   end
 end
