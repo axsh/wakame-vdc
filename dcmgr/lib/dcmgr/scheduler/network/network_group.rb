@@ -59,10 +59,6 @@ module Dcmgr
               # Now that we have a network for it, create the vnic
               vnic = Dcmgr::Models::NetworkVif.new({"account_id" => instance.account_id, "device_index" => vif_temp["index"]})
 
-              # Schedule mac address for the vnic
-              svc_type = Dcmgr::Scheduler.service_type(instance)
-              svc_type.mac_address.schedule(vnic)
-
               # Assign the network to the vnic and save it
               vnic.network = network
               vnic.save

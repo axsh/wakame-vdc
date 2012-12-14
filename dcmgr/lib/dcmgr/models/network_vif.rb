@@ -135,7 +135,7 @@ module Dcmgr::Models
       # do not run validation if the row is marked as deleted.
       return true if self.deleted_at
 
-      if self.mac_addr
+      unless self.mac_addr.nil? || self.mac_addr.empty?
         unless self.mac_addr.size == 12 && self.mac_addr =~ /^[0-9a-f]{12}$/
           errors.add(:mac_addr, "Invalid mac address syntax: #{self.mac_addr}")
         end

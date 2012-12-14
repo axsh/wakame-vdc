@@ -254,6 +254,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       ## Assign the custom vifs
       Dcmgr::Scheduler::Network::VifsRequestParam.new.schedule(instance)
       instance.network_vif.each { |vif|
+        Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
         Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
       }
     end
