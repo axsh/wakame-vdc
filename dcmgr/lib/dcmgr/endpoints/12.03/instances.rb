@@ -185,6 +185,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         check_network_ip_combo(temp["nat_network"], temp["nat_ipv4_addr"])
         is_manual_ip_set = true
       end
+
+      # Deprecated code. Will be removed when we update the GUI to handle security groups
+      # on the vifs leven instead of the instances level.
+      temp["security_groups"] = params["security_groups"] || [] unless temp["security_groups"]
     }
 
     # params is a Mash object. so coverts to raw Hash object.
