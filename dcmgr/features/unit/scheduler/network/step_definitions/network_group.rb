@@ -11,16 +11,8 @@ When /^an instance (#{CAPTURE_A_STRING}) is scheduled with no vifs parameter$/ d
 end
 
 When /^an instance (#{CAPTURE_A_STRING}) is scheduled with the following vifs parameter$/ do |inst_name, request_params|
+  request_params = transform_models_in_string(request_params)
   vifs_param = { "vifs" => eval(request_params) }
-
-  # Translate the test names into actual uuids
-  vifs_param["vifs"].each {|k,v|
-    if v.has_key?("network")
-      real_mod = @test_models[v["network"]] || raise("Unknown network: #{v["network"]}")
-
-      v["network"] = real_mod.canonical_uuid
-    end
-  }
 
   create_test_model(Dcmgr::Models::Instance,{:test_name=>inst_name,:account_id=>DEFAULT_ACCOUNT,:request_params=>vifs_param})
   @scheduled_instance = @test_models[inst_name]

@@ -45,7 +45,7 @@ Feature: Network group scheduler
 
     When an instance inst1 is scheduled with the following vifs parameter
     """
-    { "eth0" => {"index" => 0, "network"=>"group1", "security_groups"=>[]}, "eth1" => {"index" => 1,"network" => "group2", "security_groups"=>[]} }
+    { "eth0" => {"index" => 0, "network"=>"<group1.canonical_uuid>", "security_groups"=>[]}, "eth1" => {"index" => 1,"network" => "<group2.canonical_uuid>", "security_groups"=>[]} }
     """
 
     Then instance inst1 should have 2 vnics in total

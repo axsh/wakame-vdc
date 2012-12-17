@@ -28,7 +28,7 @@ Feature: Vifs request param scheduler
 
     When an instance inst1 is scheduled with the following vifs parameter
     """
-    { "eth0" => {"index" => 0, "network"=>"test-network1", "security_groups"=>[]}, "eth1" => {"index" => 1,"network" => "test-network2", "security_groups"=>[]} }
+    { "eth0" => {"index" => 0, "network"=>"<test-network1.canonical_uuid>", "security_groups"=>[]}, "eth1" => {"index" => 1,"network" => "<test-network2.canonical_uuid>", "security_groups"=>[]} }
     """
 
     Then instance inst1 should have 2 vnics in total
@@ -37,7 +37,7 @@ Feature: Vifs request param scheduler
 
     When an instance inst2 is scheduled with the following vifs parameter
     """
-    { "eth0" => {"index" => 0, "network"=>"test-network3", "security_groups"=>[]}, "eth1" => {"index" => 1, "security_groups"=>[]} }
+    { "eth0" => {"index" => 0, "network"=>"<test-network3.canonical_uuid>", "security_groups"=>[]}, "eth1" => {"index" => 1, "security_groups"=>[]} }
     """
 
     Then instance inst2 should have 2 vnic in total
