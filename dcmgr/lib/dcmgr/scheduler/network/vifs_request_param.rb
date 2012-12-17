@@ -15,16 +15,17 @@ module Dcmgr
           Dcmgr::Scheduler::Network.check_vifs_parameter_format(instance.request_params["vifs"])
 
           instance.request_params['vifs'].each { |name, param|
-            if param['network'].to_s.empty?
-              logger.warn "No network specified for vif #{name} on instance #{instance.canonical_uuid}. Not scheduling this vif."
-              next
-            end
             #TODO: Check for index
             vnic = Dcmgr::Models::NetworkVif.new({"account_id" => instance.account_id, "device_index" => param["index"]})
 
             vnic.save
             logger.info "Scheduling vnic #{vnic.canonical_uuid} in network #{param["network"]} for instance #{instance.canonical_uuid}"
             instance.add_network_vif(vnic)
+
+            if param['network'].to_s.empty?
+              logger.warn "No network specified for vnic #{vnic.canonical_uuid} on instance #{instance.canonical_uuid}."
+              next
+            end
 
             network = Models::Network[param['network']]
             raise NetworkSchedulingError, "Network '#{param['network']}' doesn't exist." if network.nil?
@@ -38,6 +39,7 @@ module Dcmgr
             vnic.add_security_groups_by_id(param["security_groups"] || [])
 
             vnic.network = network
+            vnic.save
           }
         end
       end
