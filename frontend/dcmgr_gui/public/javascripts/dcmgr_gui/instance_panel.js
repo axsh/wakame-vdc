@@ -64,7 +64,9 @@ DcmgrGUI.prototype.instancePanel = function(){
     c_list.element.find(".edit_instance").each(function(key,value){
       $(this).button({ disabled: false });
       var uuid = $(value).attr('id').replace(/edit_(i-[a-z0-9]+)/,'$1');
-      if( uuid ){
+      var row_id = '#row-'+uuid;
+      var state = $(row_id).find('.state').text();
+      if( uuid && _.include(['running', 'stopped', 'halted'], state)){
         $(this).bind('click',function(){
           bt_edit_instance.open({"ids":[uuid]});
         });
