@@ -19,7 +19,7 @@ After do
   }
 end
 
-Given /^the following (.+) exists? in the database$/ do |model_name, attributes|
+Given /^the following (#{CAPTURE_A_STRING}) exists? in the database$/ do |model_name, attributes|
   mod = Dcmgr::Models.const_get(model_name)
 
   attributes.hashes.each { |att|

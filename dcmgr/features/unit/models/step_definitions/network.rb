@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Given /^Network (.+) has the following dhcp range$/ do |test_name,ranges|
+Given /^Network (#{CAPTURE_A_STRING}) has the following dhcp range$/ do |test_name,ranges|
   network = @test_models[test_name]
   raise "#{test_name} is not a Network" unless network.is_a?(Dcmgr::Models::Network)
 
