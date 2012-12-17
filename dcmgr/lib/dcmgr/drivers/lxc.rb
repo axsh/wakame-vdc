@@ -27,7 +27,7 @@ module Dcmgr
         end
 
         def metadata_drive_mount_path
-          File.expand_path('metadata', @subject.inst_data_dir)
+          File.expand_path('rootfs/metadata', @subject.inst_data_dir)
         end
 
         private
@@ -65,35 +65,31 @@ module Dcmgr
         end
 
         generate_config(ctx)
+        sh("lxc-create -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
 
+        poweron_instance(ctx)
+      end
+
+      def terminate_instance(ctx)
+        poweroff_instance(ctx)
+        shell.run("lxc-destroy -n #{ctx.inst_id}")
+      end
+
+      def reboot_instance(ctx)
+        sh("lxc-stop -n #{ctx.inst[:uuid]}")
+        sh("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
+        sh("lxc-start -n %s -d -c %s/console.log", [ctx.inst[:uuid], ctx.inst_data_dir])
+      end
+
+      def poweron_instance(ctx)
         # check mount point
-        mount_point = "#{ctx.inst_data_dir}/rootfs"
-        Dir.mkdir(mount_point) unless File.exists?(mount_point)
-
-        mount_root_image(ctx, mount_point)
+        Dir.mkdir(ctx.root_mount_path) unless File.directory?(ctx.root_mount_path)
+        mount_root_image(ctx, ctx.root_mount_path)
 
         # metadata drive
-        metadata_path = "#{ctx.inst_data_dir}/rootfs/metadata"
-        Dir.mkdir(metadata_path) unless File.exists?(metadata_path)
-        mount_metadata_drive(ctx, metadata_path)
+        Dir.mkdir(ctx.metadata_drive_mount_path) unless File.directory?(ctx.metadata_drive_mount_path)
+        mount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
 
-        # Ubuntu 10.04.3 LTS
-        # Linux ubuntu 2.6.38-10-generic #46~lucid1-Ubuntu SMP Wed Jul 6 18:40:11 UTC 2011 i686 GNU/Linux
-        # Linux ubuntu 2.6.38-8-server #42-Ubuntu SMP Mon Apr 11 03:49:04 UTC 2011 x86_64 GNU/Linux
-        # lxc 0.7.4-0ubuntu7
-        #
-        # Ubuntu-10.04.3 on Virtualbox-4.0.12 r72916 on Windows-7
-        # Ubuntu-10.10
-        #
-        # > lxc-start 1311803515.629 ERROR    lxc_start - inherited fd 3 on pipe:[58281]
-        # > lxc-start 1311803515.629 ERROR    lxc_start - inherited fd 4 on pipe:[58281]
-        # > lxc-start 1311803515.629 ERROR    lxc_start - inherited fd 6 on socket:[58286]
-        #
-        # http://comments.gmane.org/gmane.linux.kernel.containers.lxc.general/912
-        # http://comments.gmane.org/gmane.linux.kernel.containers.lxc.general/1400
-
-        sh("lxc-create -f %s -n %s", [ctx.lxc_conf_path, ctx.inst[:uuid]])
-        #sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log 3<&- 4<&- 6<&-", [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst[:uuid]])
         sh("lxc-start -d -n %s", [ctx.inst[:uuid], ctx.inst_data_dir])
 
         tryagain do
@@ -107,20 +103,13 @@ module Dcmgr
         end
       end
 
-      def terminate_instance(ctx)
+      def poweroff_instance(ctx)
         shell.run("lxc-stop -n #{ctx.inst_id}")
         shell.run("lxc-wait -n %s -s STOPPED", [ctx.inst_id])
-        shell.run("lxc-destroy -n #{ctx.inst_id}")
         umount_metadata_drive(ctx, ctx.metadata_drive_mount_path)
         umount_root_image(ctx, ctx.root_mount_path)
       end
-
-      def reboot_instance(ctx)
-        sh("lxc-stop -n #{ctx.inst[:uuid]}")
-        #sh("lxc-start -n %s -d -l DEBUG -o %s/%s.log 3<&- 4<&- 6<&-", [ctx.inst[:uuid], ctx.inst_data_dir, ctx.inst[:uuid]])
-        sh("lxc-start -n %s -d -c %s/console.log", [ctx.inst[:uuid], ctx.inst_data_dir])
-      end
-
+      
       def attach_volume_to_guest(ctx)
         sddev = File.expand_path(File.readlink(ctx.os_devpath), '/dev/disk/by-path')
 
