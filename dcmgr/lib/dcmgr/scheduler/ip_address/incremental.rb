@@ -13,6 +13,12 @@ module Dcmgr::Scheduler::IPAddress
       raise ArgumentError unless network_vif.is_a?(NetworkVif)
       raise ArgumentError unless network.is_a?(Network)
 
+      create_latest_lease_in_network(network_vif,network)
+      create_latest_lease_in_network(network_vif,network_vif.nat_network) if network_vif.nat_network
+    end
+
+    private
+    def create_latest_lease_in_network(network_vif,network)
       # find latest ip
       latest_ip = network.network_vif_ip_lease_dataset.alives.filter(:alloc_type =>NetworkVifIpLease::TYPE_AUTO).order(:updated_at.desc).first
       ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_i
@@ -34,7 +40,6 @@ module Dcmgr::Scheduler::IPAddress
       NetworkVifIpLease.create(:ipv4=>leaseaddr.to_i, :network_id=>network.id, :network_vif_id=>network_vif.id, :description=>leaseaddr.to_s)
     end
 
-    private
     def get_lease_address(network, from_ipaddr, to_ipaddr, order)
       from_ipaddr = 0 if from_ipaddr.nil?
       to_ipaddr = 0xFFFFFFFF if to_ipaddr.nil?

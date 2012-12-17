@@ -19,12 +19,11 @@ module Dcmgr
               logger.warn "No network specified for vif #{name} on instance #{instance.canonical_uuid}. Not scheduling this vif."
               next
             end
-            logger.info "Scheduling vnic #{name} in network #{param["network"]} for instance #{instance.canonical_uuid}"
-
             #TODO: Check for index
             vnic = Dcmgr::Models::NetworkVif.new({"account_id" => instance.account_id, "device_index" => param["index"]})
 
             vnic.save
+            logger.info "Scheduling vnic #{vnic.canonical_uuid} in network #{param["network"]} for instance #{instance.canonical_uuid}"
             instance.add_network_vif(vnic)
 
             network = Models::Network[param['network']]
