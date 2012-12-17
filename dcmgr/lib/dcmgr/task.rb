@@ -115,7 +115,7 @@ module Dcmgr
       self.reset!
 
       def invoke(method, args=[])
-        dup.invoke!(@task_session, method, args)
+        dup.invoke!((@task_session || TaskSession.current), method, args)
       end
       protected :invoke
 
