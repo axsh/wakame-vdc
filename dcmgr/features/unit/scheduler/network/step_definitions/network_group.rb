@@ -48,3 +48,25 @@ Then /^instance (.+) should have (\d+) vnics? in a network from group (.+)$/ do 
   raise "Instance #{instance_name} has #{vnic_counter} vnics in a network from #{nw_group} but should have #{vnics_amount}" unless vnic_counter == vnics_amount.to_i
 end
 
+Then /^instance (.+) should have (\d+) vnic in network (.+)$/ do |instance_name, vnics_amount, nw_name|
+  inst = @test_models[instance_name]
+  nw = @test_models[nw_name]
+
+  vnic_counter = 0
+  inst.network_vif.each { |vnic|
+    vnic_counter += 1 if vnic.network == nw
+  }
+
+  raise "Instance #{instance_name} has #{vnic_counter} vnics in network #{nw_name} but should have #{vnics_amount}" unless vnic_counter == vnics_amount.to_i
+end
+
+Then /^instance (.+) should have (\d+) vnic not in any network$/ do |instance_name, vnics_amount|
+  inst = @test_models[instance_name]
+
+  vnic_counter = 0
+  inst.network_vif.each { |vnic|
+    vnic_counter += 1 if vnic.network.nil?
+  }
+
+  raise "Instance #{instance_name} has #{vnic_counter} vnics not in any network but should have #{vnics_amount}" unless vnic_counter == vnics_amount.to_i
+end
