@@ -287,9 +287,9 @@ DcmgrGUI.prototype.instancePanel = function(){
               "url": '/network_vifs/'+select_current_vif[0]+'/monitors.json',
               "data": "",
               success: function(json,status) {
-                for(var i in json) {
+                $.each(json, function(i){
                   bt_edit_instance.monitor_selector.addItem(json[i].title, json[i]);
-                }
+                });
 
                 is_ready['monitoring_form'] = true;
                 ready(is_ready);
