@@ -214,7 +214,6 @@ module Dcmgr::Models
         :vif => [],
         :hostname => hostname,
         :ha_enabled => ha_enabled,
-        :instance_spec_id => nil,
       }
 
       if self.ssh_key_pair

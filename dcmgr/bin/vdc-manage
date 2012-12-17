@@ -27,7 +27,6 @@ class RootCli < Thor
   register(Dcmgr::Cli::Image, Dcmgr::Cli::Image.namespace, "image sub-command", "Operations for machine images")
   register(Dcmgr::Cli::KeyPair, Dcmgr::Cli::KeyPair.namespace, "keypair sub-command", "Operations for key pairs")
   register(Dcmgr::Cli::SecurityGroup, Dcmgr::Cli::SecurityGroup.namespace, "securitygroup sub-command", "Operations for security groups")
-  register(Dcmgr::Cli::Spec, Dcmgr::Cli::Spec.namespace, "spec sub-command", "Operations for instance specifications")
   register(Dcmgr::Cli::ResourceGroup, Dcmgr::Cli::ResourceGroup.namespace, "resourcegroup sub-command", "Operations for resource groups")
   register(Dcmgr::Cli::BackupStorage, Dcmgr::Cli::BackupStorage.namespace, "backupstorage sub-command", "Operations for backup storage")
   register(Dcmgr::Cli::BackupObject, Dcmgr::Cli::BackupObject.namespace, "backupobject sub-command", "Operations for backup objects")
