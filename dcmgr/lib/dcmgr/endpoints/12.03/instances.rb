@@ -102,7 +102,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   post do
     # description 'Runs a new VM instance'
     # param :image_id, string, :required
-    # param :instance_spec_id, string, :required
     # param :host_node_id, string, :optional
     # param :hostname, string, :optional
     # param :user_data, string, :optional
@@ -113,13 +112,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :ha_enabled, string, :optional
     # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
-    spec = M::InstanceSpec[params[:instance_spec_id]]
-    if spec
-      params[:hypervisor]   = spec.hypervisor
-      params[:cpu_cores]    = spec.cpu_cores
-      params[:memory_size]  = spec.memory_size
-      params[:quota_weight] = spec.quota_weight
-    end
 
     if params[:hypervisor]
       if M::HostNode.online_nodes.filter(:hypervisor=>params[:hypervisor]).empty?

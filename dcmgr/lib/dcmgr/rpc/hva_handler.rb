@@ -181,7 +181,7 @@ module Dcmgr
           'hostname' => @inst[:hostname],
           'instance-action' => @inst[:state],
           'instance-id' => @inst[:uuid],
-          'instance-type' => @inst[:request_params][:instance_spec_id],
+          'instance-type' => @inst[:request_params][:instance_spec_id] || @inst[:image][:instance_model_name],
           'kernel-id' => nil,
           'local-hostname' => @inst[:hostname],
           'local-ipv4' => @inst[:ips].first,
