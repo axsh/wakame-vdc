@@ -457,8 +457,10 @@ __END
 Network UUID:
   <%= nw.canonical_uuid %>
 Dynamic IP Address Range:
-<%- unless nw.ipv4_u32_dynamic_range_array.empty? -%>
-  <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.shift) %> - <%= IPAddress::IPv4::parse_u32(nw.ipv4_u32_dynamic_range_array.last) %>
+<%- unless nw.dhcp_range_dataset.empty? -%>
+  <%- nw.dhcp_range.each { |r|-%>
+  <%= r.range_begin %> - <%= r.range_end %>
+  <%-}-%>
 <%- end -%>
 __END
       else
@@ -466,7 +468,7 @@ __END
         nw = M::Network.filter(cond).all
         print ERB.new(<<__END, nil, '-').result(binding)
 <%- nw.each { |row| -%>
-<%= row.canonical_uuid %>\t<%= IPAddress::IPv4::parse_u32(row.ipv4_u32_dynamic_range_array.shift) %>\t<%= IPAddress::IPv4::parse_u32(row.ipv4_u32_dynamic_range_array.last) %>
+<%= row.canonical_uuid %>\t<%= row.dhcp_range.first && row.dhcp_range.first.range_begin %>\t<%= row.dhcp_range.last && row.dhcp_range.last.range_end %>
 <%- } -%>
 __END
       end
