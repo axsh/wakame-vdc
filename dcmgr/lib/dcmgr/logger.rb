@@ -14,6 +14,12 @@ module Dcmgr
       @logdev
     end
 
+    def self.logger
+      @logger ||= begin
+                    ::Logger.new(default_logdev)
+                  end
+    end
+
     class CustomLogger
       def initialize(progname)
         @progname = progname
