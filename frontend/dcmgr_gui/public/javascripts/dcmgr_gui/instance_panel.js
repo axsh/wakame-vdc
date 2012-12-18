@@ -82,7 +82,7 @@ DcmgrGUI.prototype.instancePanel = function(){
       var instance_id = $(this).find('#instance_id').val();
       var display_name = $(this).find('#instance_display_name').val();
 
-      var query = ['display_name=' + display_name,
+      var query = ['display_name=' + encodeURIComponent(display_name),
                    'monitoring[enabled]=' + $(this).find('#monitoring_enabled').is(':checked'),
                    'ssh_key_id=' + $(this).find("#ssh_key_pair").val()
                   ];
@@ -163,7 +163,7 @@ DcmgrGUI.prototype.instancePanel = function(){
               });
             }
           });
-          
+
           if( data.monitoring ){
             data.monitoring = bt_edit_instance.monitor_selector.validate();
           }
@@ -537,8 +537,8 @@ DcmgrGUI.prototype.instancePanel = function(){
     var description = $(this).find('#backup_description').val();
 
     var data = ['instance_id='+instance_id,
-                'backup_display_name=' + display_name,
-                'backup_description=' + description
+                'backup_display_name=' + encodeURIComponent(display_name),
+                'backup_description=' + encodeURIComponent(description)
                ].join('&');
 
     var request = new DcmgrGUI.Request;

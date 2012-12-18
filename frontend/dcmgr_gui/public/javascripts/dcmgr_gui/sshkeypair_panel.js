@@ -53,8 +53,8 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
       var uuid = $(this).find('#ssh_keypair_id').val();
       var display_name = $(this).find('#ssh_keypair_display_name').val();
       var description = $(this).find('#ssh_keypair_description').val();
-      var data = 'display_name=' + display_name
-               + '&description=' + description
+      var data = 'display_name=' + encodeURIComponent(display_name)
+               + '&description=' + encodeURIComponent(description)
       var request = new DcmgrGUI.Request
       request.put({
 	"url": '/keypairs/edit_ssh_keypair/'+uuid+'.json',
@@ -136,8 +136,8 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
       iframe.find("#prk_download").submit();
     } else {
       var request = new DcmgrGUI.Request
-      var data = "display_name=" + display_name +
-                 "&description=" + description +
+      var data = "display_name=" + encodeURIComponent(display_name) +
+                 "&description=" + encodeURIComponent(description) +
                  "&public_key=" + encodeURIComponent(public_key);
 
       request.post({
