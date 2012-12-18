@@ -121,8 +121,13 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     var description = $(this).find('#ssh_keypair_description').val();
     var public_key = $(this).find('#ssh_public_key').val();
 
+    if(jQuery.browser.version == '8.0' && $.browser.msie) {
+      display_name = encodeURIComponent(display_name);
+      description = encodeURIComponent(description)
+    }
+
     if(_.isEmpty(public_key)){
-      var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
+      var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="post">'
           +'<input type="hidden" name="display_name" value="'+display_name+ '">'
           +'<input type="hidden" name="description" value="'+description+ '">'
           +'</form>'
@@ -135,7 +140,7 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
                  "&description=" + description +
                  "&public_key=" + encodeURIComponent(public_key);
 
-      request.get({
+      request.post({
         "url": '/keypairs/create_ssh_keypair.json',
         "data": data,
         success: function(json,status){

@@ -34,8 +34,10 @@ class KeypairsController < ApplicationController
   def create_ssh_keypair
     catch_error do
       data = {
-        :display_name => params[:display_name],
-        :description => params[:description],
+        # display_name and description doesn't correct encoding on iframe in ie8.
+        # this parameter is sent using encodeURIComponent from browser.
+        :display_name => URI.decode(params[:display_name]),
+        :description => URI.decode(params[:description]),
         :public_key => params[:public_key] || ''
       }
 
