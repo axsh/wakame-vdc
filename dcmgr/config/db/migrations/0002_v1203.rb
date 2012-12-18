@@ -336,7 +336,7 @@ Sequel.migration do
 
     alter_table(:instances) do
       set_column_type :ssh_key_pair_id, "int(11)"
-      set_column_allow_null :ssh_key_pair_id, false
+      set_column_allow_null :ssh_key_pair_id, true
       drop_column :ssh_key_data
     end
 
