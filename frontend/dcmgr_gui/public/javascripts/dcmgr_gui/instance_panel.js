@@ -558,6 +558,25 @@ DcmgrGUI.prototype.instancePanel = function(){
     height:250,
     title: $.i18n.prop('backup_instances_header'),
     path:'/backup_instances',
+    callback: function(){
+      var is_ready = {
+        'backup_display_name': false,
+      }
+
+      var ready = function(data) {
+        if(data['backup_display_name'] == true) {
+          bt_instance_backup.disabledButton(1, false);
+        } else {
+          bt_instance_backup.disabledButton(1, true);
+        }
+      }
+
+      var display_name_params = {'name': 'backup_display_name', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#backup_display_name').bind('keyup', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#backup_display_name').bind('paste', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#backup_display_name').bind('cut', display_name_params, DcmgrGUI.Util.checkTextField);
+
+    },
     button:instance_backup_buttons
   });
 
@@ -671,6 +690,7 @@ DcmgrGUI.prototype.instancePanel = function(){
       var selected_ids = c_list.getCheckedInstanceIds();
       if( selected_ids ){
         bt_instance_backup.open(selected_ids);
+        bt_instance_backup.disabledButton(1, true);
       } else {
         $(this).button({ disabled: true });
       }
