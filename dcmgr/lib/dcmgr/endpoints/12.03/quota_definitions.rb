@@ -34,8 +34,8 @@ Sinatra::QuotaEvaluation.evaluators do
       (self.instance_exec(M::Instance.alives, &COMMON_DS_FILTER).sum(:quota_weight) || 0.0)
     end
 
-    evaluate do |fetch_value|
-      quota_value.to_f <= fetch_value
+    evaluate do |fetch_value, req_value|
+      quota_value.to_f < (fetch_value + req_value)
     end
   end
   quota_type 'instance.count' do
@@ -44,7 +44,7 @@ Sinatra::QuotaEvaluation.evaluators do
     end
 
     evaluate do |fetch_value|
-      quota_value.to_i <= fetch_value
+      quota_value.to_i <= fetch_value 
     end
   end
   quota_type 'instance.backup_operations_per_hour' do
@@ -71,8 +71,8 @@ Sinatra::QuotaEvaluation.evaluators do
       ((self.instance_exec(M::Volume.alives, &COMMON_DS_FILTER).sum(:size) || 0) / (1024 * 1024))
     end
 
-    evaluate do |fetch_value|
-      quota_value.to_i <= fetch_value
+    evaluate do |fetch_value, req_value|
+      quota_value.to_i < (fetch_value + req_value)
     end
   end
   quota_type 'image.count' do
@@ -98,8 +98,8 @@ Sinatra::QuotaEvaluation.evaluators do
       ((self.instance_exec(M::BackupObject.alives, &COMMON_DS_FILTER).sum(:size) || 0) / (1024 * 1024)).truncate
     end
 
-    evaluate do |fetch_value|
-      quota_value.to_i <= fetch_value
+    evaluate do |fetch_value, req_value|
+      quota_value.to_i < (fetch_value + req_value)
     end
   end
   quota_type 'load_balancer.count' do

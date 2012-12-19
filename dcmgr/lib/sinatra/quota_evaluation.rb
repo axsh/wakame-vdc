@@ -106,8 +106,8 @@ module Sinatra
           end
 
           def evaluate(&blk)
-            if blk.arity != 1
-              raise ArgumentError, "Block must have one argument to pass the target value."
+            if !(1..2).include?(blk.arity)
+              raise ArgumentError, "Block can have one or two arguments to pass."
             end
             @evaluate_block = blk
           end
@@ -125,14 +125,50 @@ module Sinatra
     end
 
     module ClassMethods
+      class EndpointCondition
+        attr_reader :request_amount_block
+        
+        def initialize
+          # return 0 as default for *.count quota keys.
+          @request_amount_block = lambda { 0 }
+        end
+
+        def self.parse(&blk)
+          new_obj = self.new
+
+          DSL.new(new_obj).instance_eval(&blk)
+
+          new_obj
+        end
+
+        class DSL
+          def initialize(subject)
+            @subject = subject
+          end
+          
+          def request_amount(&blk)
+            @subject.instance_variable_set(:@request_amount_block, blk)
+          end
+        end
+      end
+      
       # Set sinatra condition for this quota key to the endpoint.
-      def quota(*quota_keys)
-        quota_keys.each { |quota_key|
-          tuple = QuotaEvaluation.quota_defs[quota_key]
-          raise ArgumentError, "#{quota_key} is unknown quota key. (Defined at around #{caller[3]})" unless tuple
-        }
+      # quota('xxx.count')
+      # quota('yyy.count') do
+      #   request_amount do
+      #     # Here runs in Sinatra context.
+      #     params[:count].to_i
+      #   end
+      # end
+      # get '/endpoint1' do
+      # end
+      def quota(quota_key, &blk)
+        tuple = QuotaEvaluation.quota_defs[quota_key]
+        raise ArgumentError, "#{quota_key} is unknown quota key. (Defined at around #{caller[3]})" unless tuple
 
         return self if Dcmgr.conf.skip_quota_evaluation
+
+        condparam = blk ? EndpointCondition.parse(&blk) : EndpointCondition.new
 
         self.condition {
           # Skip quota evaluation if the quota document is not
@@ -140,22 +176,20 @@ module Sinatra
           # For example, missing X-VDC-Account-Quota header or empty
           # JSON document. Missing X-VDC-Account-ID header also
           # results in skipping evaluation.
-          return true if @quota_request.nil? || @quota_request.empty?
+          return true unless @quota_request.is_a?(Hash) && @quota_request.has_key?(quota_key)
+          
+          begin
+            @current_quota_type = quota_key
 
-          quota_keys.each { |quota_key|
-            next unless @quota_request.has_key?(quota_key)
-
-            tuple = QuotaEvaluation.quota_defs[quota_key]
-            begin
-              @current_quota_type = quota_key
-
-              if self.instance_exec(self.instance_exec(&tuple[0]), &tuple[1])
-                raise Dcmgr::Endpoints::Errors::ExceedQuotaLimit, "Exceeds quota limitation: #{request.request_method} #{request.path_info} #{@current_quota_type}"
-              end
-            ensure
-              @current_quota_type = nil
+            if self.instance_exec(self.instance_exec(&tuple[0]),
+                                  self.instance_exec(&condparam.request_amount_block),
+                                  &tuple[1])
+              raise Dcmgr::Endpoints::Errors::ExceedQuotaLimit, "Exceeds quota limitation: #{request.request_method} #{request.path_info} #{@current_quota_type}"
             end
-          }
+          ensure
+            @current_quota_type = nil
+          end
+          
           true
         }
 
