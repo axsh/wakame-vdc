@@ -6,6 +6,7 @@ module Dcmgr::Scheduler::IPAddress
     configuration do
     end
 
+    include Dcmgr::Logger
     include Dcmgr::Models
 
     def schedule(network_vif)
@@ -18,12 +19,12 @@ module Dcmgr::Scheduler::IPAddress
       ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_i
       leaseaddr = case network[:ip_assignment]
                   when "asc"
-                    ip = get_lease_address(network, ipaddr, nil, :asc)
-                    ip = get_lease_address(network, nil, ipaddr, :asc) if ip.nil?
+                    ip = get_lease_address(network, ipaddr, nil, :asc, network_vif)
+                    ip = get_lease_address(network, nil, ipaddr, :asc, network_vif) if ip.nil?
                     ip
                   when "desc"
-                    ip = get_lease_address(network, nil, ipaddr, :desc)
-                    ip = get_lease_address(network, ipaddr, nil, :desc) if ip.nil?
+                    ip = get_lease_address(network, nil, ipaddr, :desc, network_vif)
+                    ip = get_lease_address(network, ipaddr, nil, :desc, network_vif) if ip.nil?
                     ip
                   else
                     raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
@@ -35,7 +36,7 @@ module Dcmgr::Scheduler::IPAddress
     end
 
     private
-    def get_lease_address(network, from_ipaddr, to_ipaddr, order)
+    def get_lease_address(network, from_ipaddr, to_ipaddr, order,network_vif)
       from_ipaddr = 0 if from_ipaddr.nil?
       to_ipaddr = 0xFFFFFFFF if to_ipaddr.nil?
       raise ArgumentError unless from_ipaddr.is_a?(Integer)
@@ -59,6 +60,7 @@ module Dcmgr::Scheduler::IPAddress
 
         begin
           is_loop = false
+          is_retention = false
 
           leaseaddr = i.available_ip(f, t, order)
           break if leaseaddr.nil?
@@ -68,12 +70,30 @@ module Dcmgr::Scheduler::IPAddress
           if network.reserved_ip?(check_ip)
             network.network_vif_ip_lease_dataset.add_reserved(check_ip.to_s)
             is_loop = true
+          else
+            vif_lease = NetworkVifIpLease.filter(:ipv4 => check_ip.to_i, :deleted_at => !nil).order_by(:deleted_at).last
+            unless vif_lease.nil?
+              logger.debug "#{check_ip} has been leased before"
+              release_time = Time.at(vif_lease.deleted_at.to_i + vif_lease.network.retention_seconds)
+
+              # If this ip's retention period has passed, we can use it
+              retention_passed = Time.now > release_time
+              logger.debug "Has #{check_ip}'s retention period passed? #{retention_passed}"
+
+              # If this ip address belonged to us last time it was leased, we can ignore the retention period
+              was_ours = vif_lease.network_vif.account_id == network_vif.account_id
+              logger.debug "Was this ip ours last time? #{was_ours}"
+              is_retention = is_loop = !(retention_passed || was_ours)
+            end
           end
+
           case order
           when :asc
             f = check_ip.to_i
+            f += 1 if is_retention
           when :desc
             t = check_ip.to_i
+            t -= 1 if is_retention
           else
             raise "Unsupported IP address assignment: #{order.to_s}"
           end
