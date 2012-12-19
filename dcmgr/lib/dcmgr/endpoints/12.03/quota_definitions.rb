@@ -72,7 +72,7 @@ Sinatra::QuotaEvaluation.evaluators do
     end
 
     evaluate do |fetch_value, req_value|
-      quota_value.to_i <= (fetch_value + req_value)
+      quota_value.to_i < (fetch_value + req_value)
     end
   end
   quota_type 'image.count' do
@@ -99,7 +99,7 @@ Sinatra::QuotaEvaluation.evaluators do
     end
 
     evaluate do |fetch_value, req_value|
-      quota_value.to_i <= (fetch_value + req_value)
+      quota_value.to_i < (fetch_value + req_value)
     end
   end
   quota_type 'load_balancer.count' do
