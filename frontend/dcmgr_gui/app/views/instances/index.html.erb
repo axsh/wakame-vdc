@@ -3,7 +3,7 @@
 <%= javascript_include_tag 'dcmgr_gui/instance_panel.js' %>
 <script type="text/javascript">
 jQuery(function($){
-	dcmgrGUI.instancePanel();
+  dcmgrGUI.instancePanel();
 });
 </script>
 <% end %>
@@ -20,74 +20,74 @@ jQuery(function($){
       <select name="instance_action" id="instance_action" style="height:10px">
         <option value="" selected="selected"><%= t("selectmenu.select_action") %></option>
         <optgroup label="Action">
-  	  <option class="terminate" value="terminate"><%= t("instances.instance_actions.terminate") %></option>
-  	  <option class="reboot" value="reboot"><%= t("instances.instance_actions.reboot") %></option>
-  	  <option class="start" value="start"><%= t("instances.instance_actions.start") %></option>
-  	  <option class="stop" value="stop"><%= t("instances.instance_actions.stop") %></option>
-  	  <option class="poweron" value="poweron"><%= t("instances.instance_actions.poweron") %></option>
-  	  <option class="poweroff" value="poweroff"><%= t("instances.instance_actions.poweroff") %></option>
-  	</optgroup>
+          <option class="terminate" value="terminate"><%= t("instances.instance_actions.terminate") %></option>
+          <option class="reboot" value="reboot"><%= t("instances.instance_actions.reboot") %></option>
+          <option class="start" value="start"><%= t("instances.instance_actions.start") %></option>
+          <option class="stop" value="stop"><%= t("instances.instance_actions.stop") %></option>
+          <option class="poweron" value="poweron"><%= t("instances.instance_actions.poweron") %></option>
+          <option class="poweroff" value="poweroff"><%= t("instances.instance_actions.poweroff") %></option>
+        </optgroup>
       </select>
       <a href="javascript:void(0);" id="backup_instances" class="backup_instances"><%= t("instances.button.backup_instance") %></a>
       <a href="javascript:void(0);" class="refresh" style="margin-left:585px"><%= t("button.refresh") %></a>
     </div>
     <div class="controller clearfix">
       <div id="pagenate" class="r_float">
-	<a href="javascript:void(0);" class="prev"></a>
-	<p id="viewPagenate"></p>
-	<a href="javascript:void(0);" class="next"></a>
+        <a href="javascript:void(0);" class="prev"></a>
+        <p id="viewPagenate"></p>
+        <a href="javascript:void(0);" class="next"></a>
       </div>
     </div>
     <div id="display_instances" class="display_area">
-      <% content_for :javascript_template do %>
-      <script id="instancesListTemplate" type="text/x-jquery-tmpl">
-	<table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
-	  <tr>
-	    <th></th>
-	    <th><%= t("instances.list.display_name") %></th>
-	    <th><%= t("instances.list.wmi_id") %></th>
-	    <th><%= t("instances.list.cpu_cores") %></th>
-	    <th><%= t("instances.list.memory_size") %></th>
-	    <th><%= t("instances.list.ip") %></th>
-	    <th><%= t("instances.list.state") %></th>
-	    <th><%= t("instances.list.action") %></th>
-	  </tr>
-	  {{each(index,item) rows}}
-	  <tr id="row-${item.id}">
-	    {{if item.id }}
-	    <td class="center listcheckbox"><input type="checkbox" value="${item.id}" > </td>
-	    {{else}}
-	    <td class="listcheckbox"></td>
-	    {{/if}}
-	    <td class="display_name" title="${item.display_name}">${item.display_name}</td>
-	    <td class="wmi_id" title="">${item.image_id}</td>
-	    <td class="vtip center" title="${item.cpu_cores}">${item.cpu_cores}</td>
-	    <td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
-	    <td class="vtip center" title="ip" style="width:60px">
-              {{each(index,network) item.vif}}
-	      {{if network.vif.ipv4 !=null}}
-              {{if network.vif.ipv4.ipv4.nat_address === null}}
-              ${network.vif.ipv4.ipv4.address}
-              {{else}}
-              ${network.vif.ipv4.ipv4.nat_address}
-              {{/if}}
-	      {{/if}}
-              {{/each}}</td>
-	    <td class="state vtip center" title="status">${item.state}</td>
-	    {{if item.id}}
-            <td class="vtip center" title="action">
-	      {{if item.state != "terminated" }}
-              <a href="javascript:void(0);" class="edit_instance" id="edit_${item.id}"><%= t('instances.button.edit_instance') %></a>
-	      {{else}}
-              <a href="javascript:void(0);" class="edit_instance"><%= t('instances.button.edit_instance') %></a>
-	      {{/if}}
-            </td>
-            {{else}}
-            <td class="vtip center" title="action"></td>
+    <% content_for :javascript_template do %>
+    <script id="instancesListTemplate" type="text/x-jquery-tmpl">
+      <table class="ptn01" frame="void" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <th></th>
+          <th><%= t("instances.list.display_name") %></th>
+          <th><%= t("instances.list.wmi_id") %></th>
+          <th><%= t("instances.list.cpu_cores") %></th>
+          <th><%= t("instances.list.memory_size") %></th>
+          <th><%= t("instances.list.ip") %></th>
+          <th><%= t("instances.list.state") %></th>
+          <th><%= t("instances.list.action") %></th>
+        </tr>
+        {{each(index,item) rows}}
+        <tr id="row-${item.id}">
+          {{if item.id }}
+          <td class="center listcheckbox"><input type="checkbox" value="${item.id}" > </td>
+          {{else}}
+          <td class="listcheckbox"></td>
+          {{/if}}
+          <td class="display_name" title="${item.display_name}">${item.display_name}</td>
+          <td class="wmi_id" title="">${item.image_id}</td>
+          <td class="vtip center" title="${item.cpu_cores}">${item.cpu_cores}</td>
+          <td class="vtip center" title="${item.memory_size}">${item.memory_size}</td>
+          <td class="vtip center" title="ip" style="width:60px">
+                  {{each(index,network) item.vif}}
+            {{if network.vif.ipv4 !=null}}
+                  {{if network.vif.ipv4.ipv4.nat_address === null}}
+                  ${network.vif.ipv4.ipv4.address}
+                  {{else}}
+                  ${network.vif.ipv4.ipv4.nat_address}
+                  {{/if}}
             {{/if}}
-          </tr>
-	  {{/each}}
-	</table>
+                  {{/each}}</td>
+          <td class="state vtip center" title="status">${item.state}</td>
+          {{if item.id}}
+                <td class="vtip center" title="action">
+            {{if item.state != "terminated" }}
+                  <a href="javascript:void(0);" class="edit_instance" id="edit_${item.id}"><%= t('instances.button.edit_instance') %></a>
+            {{else}}
+                  <a href="javascript:void(0);" class="edit_instance"><%= t('instances.button.edit_instance') %></a>
+            {{/if}}
+                </td>
+                {{else}}
+                <td class="vtip center" title="action"></td>
+                {{/if}}
+              </tr>
+        {{/each}}
+      </table>
       </script>
       <% end %>
     </div>
@@ -98,73 +98,69 @@ jQuery(function($){
     <% content_for :javascript_template do %>
     <script id="instancesDetailTemplate" type="text/x-jquery-tmpl">
       <div id="${item.id}" class="display_area">
-	<h4 class="ptn01"><%= t("instances.details.instance") %>:<span class="instansid">${item.id}</span></h4>
-	<table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
-	  <tr>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.instance_id") %>:</td>
-	    <td>${item.id}</td>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.display_name") %>:</td>
-	    <td>${item.display_name}</td>
-          </tr>
-          <tr>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.wmi_id") %>:</td>
-	    <td colspan="7">${item.image_id}</td>
-	  </tr>
-	  <tr>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.cpu_cores") %>:</td>
-	    <td>${item.cpu_cores}</td>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.memory_size") %>:</td>
-	    <td>${item.memory_size}</td>
-	  </tr>
-	  <tr>
-	    <td class="padcell"></td>
-	    <td class="title">Global IP:</td>
-	    <td>{{each(index,network) item.vif}}{{if network.ipv4 != null }}${network.ipv4.nat_address}{{/if}}{{/each}}</td>
-            <td class="padcell"></td>
-	    <td class="title">Local IP:</td>
-	    <td>{{each(index,network) item.vif}}{{if network.ipv4 != null }}${network.ipv4.address} {{/if}}{{/each}}</td>
-	  </tr>
-	  <tr>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.state") %>:</td>
-	    <td class="state">${item.state}</td>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.status") %>:</td>
-	    <td class="status">${item.status}</td>
-	  </tr>
-	  <tr>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.ssh_key_pair") %>:</td>
-	    <td colspan="7">${item.ssh_key_pair['display_name']} (${item.ssh_key_pair['uuid']})</td>
-	  </tr>
-          {{if item.security_groups != null }}
-	  <tr>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.security_groups") %>:</td>
-	    <td colspan="7">{{each(index,nf) item.security_groups}}${nf}<br />{{/each}}</td>
-	  </tr>
-          {{/if}}
-          <tr>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.created_at") %>:</td>
-	    <td colspan="7">${item.created_at}</td>
-          </tr>
-          {{each(index,vif) item.vif}}
-	  <tr>
-	    <td class="padcell"></td>
-	    <td class="title"><%= t("instances.details.interface") %>:</td>
-	    <td class="state">${vif.vif_id}</td>
-	    <td class="padcell"></td>
-	    <td class="state">${vif.network_id}</td>
-	    <td class="state">{{if vif.ipv4 != null }}${vif.ipv4.address} ${vif.ipv4.nat_address}{{/if}}</td>
-	  </tr>
-          {{/each}}
-	</table>
+      <h4 class="ptn01"><%= t("instances.details.instance") %>:<span class="instansid">${item.id}</span></h4>
+      <table class="ptn02" frame="void" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.instance_id") %>:</td>
+          <td>${item.id}</td>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.display_name") %>:</td>
+          <td>${item.display_name}</td>
+        </tr>
+        <tr>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.wmi_id") %>:</td>
+          <td>${item.image_id}</td>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.cpu_cores") %>:</td>
+          <td>${item.cpu_cores}</td>
+        </tr>
+        <tr>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.memory_size") %>:</td>
+          <td>${item.memory_size}</td>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.ssh_key_pair") %>:</td>
+          <td>${item.ssh_key_pair['display_name']} (${item.ssh_key_pair['uuid']})</td>
+        </tr>
+        <tr>
+          <td class="padcell"></td>
+          <td class="title">Global IP:</td>
+          <td>{{each(index,network) item.vif}}{{if network.ipv4 != null }}${network.ipv4.nat_address}{{/if}}{{/each}}</td>
+          <td class="padcell"></td>
+          <td class="title">Local IP:</td>
+          <td>{{each(index,network) item.vif}}{{if network.ipv4 != null }}${network.ipv4.address} {{/if}}{{/each}}</td>
+        </tr>
+        <tr>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.state") %>:</td>
+          <td class="state">${item.state}</td>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.status") %>:</td>
+          <td class="status">${item.status}</td>
+        </tr>
+        <tr>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.security_groups") %>:</td>
+          <td >{{if item.vif.length > 0  && item.vif[0].security_groups != null }}${item.vif[0].security_groups}{{/if}}</td>
+        </tr>
+        <tr>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.created_at") %>:</td>
+          <td colspan="7">${item.created_at}</td>
+        </tr>
+        {{each(index,vif) item.vif}}
+        <tr>
+          <td class="padcell"></td>
+          <td class="title"><%= t("instances.details.interface") %>:</td>
+          <td class="state">${vif.vif_id}</td>
+          <td class="padcell"></td>
+          <td class="state">${vif.network_id}</td>
+          <td class="state">{{if vif.ipv4 != null }}${vif.ipv4.address} ${vif.ipv4.nat_address}{{/if}}</td>
+        </tr>
+        {{/each}}
+      </table>
       </div>
     </script>
     <% end %>

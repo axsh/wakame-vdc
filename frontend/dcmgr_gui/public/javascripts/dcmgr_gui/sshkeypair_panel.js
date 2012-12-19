@@ -53,8 +53,8 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
       var uuid = $(this).find('#ssh_keypair_id').val();
       var display_name = $(this).find('#ssh_keypair_display_name').val();
       var description = $(this).find('#ssh_keypair_description').val();
-      var data = 'display_name=' + display_name
-               + '&description=' + description
+      var data = 'display_name=' + encodeURIComponent(display_name)
+               + '&description=' + encodeURIComponent(description)
       var request = new DcmgrGUI.Request
       request.put({
 	"url": '/keypairs/edit_ssh_keypair/'+uuid+'.json',
@@ -121,8 +121,13 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
     var description = $(this).find('#ssh_keypair_description').val();
     var public_key = $(this).find('#ssh_public_key').val();
 
+    if(jQuery.browser.version == '8.0' && $.browser.msie) {
+      display_name = encodeURIComponent(display_name);
+      description = encodeURIComponent(description)
+    }
+
     if(_.isEmpty(public_key)){
-      var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="get">'
+      var html = '<form accept-charset="UTF-8" id="prk_download" action="/keypairs/create_ssh_keypair" method="post">'
           +'<input type="hidden" name="display_name" value="'+display_name+ '">'
           +'<input type="hidden" name="description" value="'+description+ '">'
           +'</form>'
@@ -131,11 +136,11 @@ DcmgrGUI.prototype.sshKeyPairPanel = function(){
       iframe.find("#prk_download").submit();
     } else {
       var request = new DcmgrGUI.Request
-      var data = "display_name=" + display_name +
-                 "&description=" + description +
+      var data = "display_name=" + encodeURIComponent(display_name) +
+                 "&description=" + encodeURIComponent(description) +
                  "&public_key=" + encodeURIComponent(public_key);
 
-      request.get({
+      request.post({
         "url": '/keypairs/create_ssh_keypair.json',
         "data": data,
         success: function(json,status){

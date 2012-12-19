@@ -138,6 +138,7 @@ module Dcmgr::Models
       self.terminated_at ||= Time.now
       self.state = :terminated if self.state != :terminated
       self.status = :offline if self.status != :offline
+      self.ssh_key_pair_id = nil
       self.save
     end
 
