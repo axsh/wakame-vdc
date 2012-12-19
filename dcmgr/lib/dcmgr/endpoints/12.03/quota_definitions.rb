@@ -22,7 +22,7 @@ Sinatra::QuotaEvaluation.evaluators do
   end
   quota_type 'ssh_key_pair.count' do
     fetch do
-      self.instance_exec(M::SshKeyPair.dataset, &COMMON_DS_FILTER).count
+      self.instance_exec(M::SshKeyPair.alives, &COMMON_DS_FILTER).count
     end
 
     evaluate do |fetch_value|

@@ -1042,34 +1042,30 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     return (this.index_counter++);
   },
 
-  addItem: function(title, json){
+  addItem: function(item_key, json){
     var self = this;
     var idx = this._newIndex();
 
-    var find_unselected = function(){
-      for(var t in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS){
-        var contains = false
-        for( var j in self.item_list){
-          if(self.item_list[j].title == t){ 
-            contains = true;
-            break;
-          }
-        }
-        if(contains == false) return t;
-      }
-      return undefined;
+    var find_unselected_item_key = function(){
+      var last_key = null;
+      return _.chain(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS).keys().find(function(t){
+        return !_.some(self.item_list, function(j){
+          return j.item_key === t;
+        });
+      }).value();
     };
 
-    if( typeof title != "string"){
-      title = find_unselected();
-    }else if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[title] === undefined) {
-      throw "Unknown title is passed: " + title;
+    if(item_key === undefined || item_key === null){
+      item_key = find_unselected_item_key();
     }
 
+    var new_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[item_key];
+    if(new_item === undefined){ throw "Unknown item key: " + item_key; }
 
     // place holder variable for event handlers.
-    var item_props = {"protocol": DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[title].protocol,
-                      'title': title,
+    var item_props = {"protocol": new_item.protocol,
+                      'title': new_item.title,
+                      'item_key': item_key,
                       'idx': idx,
                       'json': json,
                       'row_elem': null
@@ -1100,8 +1096,14 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     });
 
     var select_tag = tr_tag.find('.select_monitor_proto').first().bind('change', function(e,json){
-      item_props['title']=$(e.currentTarget).val();
-      item_props['protocol'] = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[e.target.value].protocol;
+      var item_key = $(e.currentTarget).val();
+      var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[item_key];
+      if(row_item === undefined){
+        throw "Unknown monitor item: " + item_key;
+      }
+      item_props['title']=row_item.title;
+      item_props['item_key']=item_key;
+      item_props['protocol'] = row_item.protocol;
 
       if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM <= self.item_list.length){
         // disable the plus button
@@ -1110,10 +1112,6 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
 
       var replace_tgt = $(e.currentTarget).parent().parent().find(".detail_input");
       // fill input UI elements for the protocol selected by user.
-      var row_item = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[e.target.value];
-      if(row_item === undefined){
-        throw "Unknown monitor item: " + e.target.value;
-      }
       // Clear current child elements.
       replace_tgt.html('');
       if( json !== undefined ){
@@ -1133,29 +1131,31 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
       self._refreshSelectItem();
     });
 
-    if( !(title === null || title === undefined) ){
-      select_tag.val(title).trigger('change', json);
+    if( _.isObject(new_item) ){
+      select_tag.val(item_key).trigger('change', json);
     }
   },
 
   _refreshSelectItem: function(){
     var self = this;
     var check_selected_item = function(t){
-      for(var s in self.item_list){
-        if(t == self.item_list[s].title) return true;
-      }
-      return false;
+      return _.some(self.item_list, function(i){
+        return t === i.item_key;
+      });
     };
 
-    for( var i in this.item_list) {
-      var select_tag = $(this.item_list[i].row_elem).find('.select_monitor_proto').first();
+    _.each(this.item_list, function(i) {
+      var select_tag = $(i.row_elem).find('.select_monitor_proto').first();
       select_tag.empty();
-      for( var j in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS ){
-        if( j != this.item_list[i].title && check_selected_item(j)) continue;
-        select_tag.append("<option value=\""+j+"\">"+DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[j].title+"</option>");
-      }
-      select_tag.val(this.item_list[i].title);
-    }
+      _.each(_.keys(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS), function(k){
+        var j = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[k];
+        if( k != i.item_key && check_selected_item(k)) {
+        }else{
+          select_tag.append("<option value=\""+k+"\">"+j.title+"</option>");
+        }
+      });
+      select_tag.val(i.item_key);
+    });
   },
 
   queryParams: function(){
@@ -1164,14 +1164,14 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     for (var i=0; i < this.item_list.length; i++) {
       var itm = this.item_list[i];
       var a = ["eth0_monitors["+i+"][protocol]=" + itm['protocol'],
-               "eth0_monitors["+i+"][title]=" + itm['title'],
+               "eth0_monitors["+i+"][title]=" + itm['item_key'],
                "eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked')];
       if( itm['json'] !== undefined ){
         a.push("eth0_monitors["+i+"][uuid]=" + itm['json'].uuid);
       }
       if( i > 0 ){ res += '&'; }
       res += a.join('&');
-      var params_query = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[itm.title].buildQuery(itm['row_elem'], i);
+      var params_query = DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[itm.item_key].buildQuery(itm['row_elem'], i);
       if(!(params_query === undefined || params_query === null)) {
         res += "&" + params_query;
       }
@@ -1182,12 +1182,11 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
   validate: function(){
     var err_items = [];
 
-    for (var i=0; i < this.item_list.length; i++) {
-      var itm = this.item_list[i];
-      if(!DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[itm.title].validate(itm['row_elem'])){
+    _.each(this.item_list, function(itm){
+      if(!DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS[itm.item_key].validate(itm['row_elem'])){
         err_items.push(itm);
       }
-    }
+    });
 
     return (err_items.length == 0);
   },
@@ -1389,9 +1388,7 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
 }());
 
 DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM = (function(){
-  var c=0;
-  for( var i in DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS) c++;
-  return c;
+  return _.size(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS);
 }());
 
 

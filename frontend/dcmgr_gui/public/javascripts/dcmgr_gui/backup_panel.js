@@ -74,7 +74,7 @@ DcmgrGUI.prototype.backupPanel = function(){
     edit_backup_buttons[update_button_name] = function(event) {
       var backup_id = $(this).find('#backup_object_id').val();
       var display_name = $(this).find('#backup_display_name').val();
-      var data = 'display_name=' + display_name;
+      var data = 'display_name=' + encodeURIComponent(display_name);
 
       var request = new DcmgrGUI.Request;
       request.put({
