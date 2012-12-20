@@ -14,19 +14,19 @@ module Hijiki
     def self.configure(&blk)
       @configuration = Configuration.parse(&blk)
     end
-    
+
     def self.configuration
       @configuration || raise("Configuration is not done for RequestAttibute")
     end
 
     attr :account_id, :service_type, :login_id
-    
+
     def initialize(account_id, login_id)
       @account_id = account_id
       @service_type = self.class.configuration.service_type
       @login_id = login_id
     end
-    
+
     def build_http_headers
       {'X-VDC-Account-UUID' => self.account_id,
         'X-VDC-Account-Quota' => JSON.dump( self.class.configuration.generate_quota_header(self)),
@@ -50,10 +50,10 @@ module Hijiki
       def generate_quota_header(request_attribute)
         @config[:quota_header].call(request_attribute)
       end
-      
+
       class DSL
         attr_reader :conf
-        
+
         def initialize
           @conf = {}
         end

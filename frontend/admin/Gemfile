@@ -11,11 +11,11 @@ gem 'sinatra-flash', :require => 'sinatra/flash'
 gem 'rack-less', '3.0.2'
 gem 'less', '2.2.1'
 gem 'mysql2', '0.3.11'
-gem 'sequel', '3.39.0'
+gem 'sequel', '3.41.0'
 gem 'padrino-sprockets', :git => "http://github.com/nightsailer/padrino-sprockets.git", :require => "padrino/sprockets"
 gem 'coffee-script', '2.2.0'
-gem 'therubyracer', :require => 'v8'
-gem 'unicorn', '4.3.1'
+gem 'therubyracer', '0.10.2', :require => 'v8'
+gem 'unicorn', '4.4.0'
 gem 'rack-cors', :require => 'rack/cors'
 
 # Development requirements

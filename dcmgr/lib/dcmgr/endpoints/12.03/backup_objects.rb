@@ -61,7 +61,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
     respond_with(R::BackupObject.new(bo).generate)
   end
 
-  quota 'backup_object.size_mb', 'backup_object.count'
+  quota 'backup_object.size_mb' do
+    request_amount do
+      params[:size].to_i / (1024 * 1024)
+    end
+  end
+  quota 'backup_object.count'
   post do
     bkst = M::BackupStorage[params[:backup_storage_id]] || raise(E::UnknownBackupStorage, params[:backup_storage_id])
     bo = M::BackupObject.create(:backup_storage_id=>bkst.id,

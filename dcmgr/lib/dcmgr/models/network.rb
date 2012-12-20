@@ -74,6 +74,12 @@ module Dcmgr::Models
       Network.find(:id => self.nat_network_id)
     end
 
+    def exists_in_dhcp_range?(ipaddr)
+      ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
+
+      !self.dhcp_range_dataset.where{"range_begin <= #{ipaddr.to_i} && range_end >= #{ipaddr.to_i}"}.empty?
+    end
+
     def ipv4_ipaddress
       IPAddress::IPv4.new("#{self.ipv4_network}/#{self.prefix}").network
     end

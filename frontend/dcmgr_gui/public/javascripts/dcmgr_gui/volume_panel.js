@@ -74,7 +74,7 @@ DcmgrGUI.prototype.volumePanel = function(){
     edit_volume_buttons[update_button_name] = function(event) {
       var volume_id = $(this).find('#volume_id').val();
       var display_name = $(this).find('#volume_display_name').val();
-      var data = 'display_name=' + display_name;
+      var data = 'display_name=' + encodeURIComponent(display_name);
 
       var request = new DcmgrGUI.Request;
       request.put({
@@ -126,8 +126,8 @@ DcmgrGUI.prototype.volumePanel = function(){
      $('#volume_size').focus();
      return false;
     }
-    var data = "size="+volume_size+"&unit="+unit+"&display_name="+display_name;
-    
+    var data = "size="+volume_size+"&unit="+unit+"&display_name="+encodeURIComponent(display_name);
+
     var request = new DcmgrGUI.Request;
     request.post({
       "url": '/volumes',

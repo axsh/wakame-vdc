@@ -2,10 +2,30 @@
 
 require 'dcmgr/endpoints/12.03/responses/instance'
 
+# To validate ip address syntax in the vifs parameter
+require 'ipaddress'
+
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_META_STATE=['alive', 'alive_with_terminated', 'without_terminated'].freeze
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
+
+  def check_network_ip_combo(network_id,ip_addr)
+    nw = M::Network[network_id]
+    raise E::UnknownNetwork, network_id if nw.nil?
+
+    if ip_addr
+      raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
+
+      leaseaddr = IPAddress(ip_addr)
+      raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
+
+      segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
+      raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
+
+      raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
+    end
+  end
 
   # Show list of instances
   # Filter Paramters:
@@ -78,11 +98,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::Instance.new(i).generate)
   end
 
-  quota 'instance.quota_weight', 'instance.count'
+  quota('instance.quota_weight') do
+    request_amount do
+      params[:quota_weight].to_f
+    end
+  end
+  quota 'instance.count'
   post do
     # description 'Runs a new VM instance'
     # param :image_id, string, :required
-    # param :instance_spec_id, string, :required
     # param :host_node_id, string, :optional
     # param :hostname, string, :optional
     # param :user_data, string, :optional
@@ -93,13 +117,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :ha_enabled, string, :optional
     # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
-    spec = M::InstanceSpec[params[:instance_spec_id]]
-    if spec
-      params[:hypervisor]   = spec.hypervisor
-      params[:cpu_cores]    = spec.cpu_cores
-      params[:memory_size]  = spec.memory_size
-      params[:quota_weight] = spec.quota_weight
-    end
 
     if params[:hypervisor]
       if M::HostNode.online_nodes.filter(:hypervisor=>params[:hypervisor]).empty?
@@ -127,16 +144,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::OutOfHostCapacity
     end
 
-    # TODO:
-    #  "host_id" and "host_pool_id" will be obsolete.
-    #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
-    if params[:host_id] || params[:host_pool_id] || params[:host_node_id]
-      host_node_id = params[:host_id] || params[:host_pool_id] || params[:host_node_id]
-      host_node = M::HostNode[host_node_id]
-      raise E::UnknownHostNode, "#{host_node_id}" if host_node.nil?
-      raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
-    end
-
     if params['vifs'].nil?
       params['vifs'] = {}
     elsif params['vifs'].is_a?(String)
@@ -152,6 +159,30 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     rescue Dcmgr::Scheduler::NetworkSchedulingError
       raise E::InvalidParameter, 'vifs'
     end
+
+    # Check vifs parameter values
+    is_manual_ip_set=false
+    params["vifs"].each { |name,temp|
+      mac_addr = temp["mac_addr"]
+      if mac_addr
+        raise E::InvalidMacAddress, mac_addr if !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
+        raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
+
+        # Check if this mac address exists in a defined range
+        m_vid, m_a = M::MacLease.string_to_ints(mac_addr)
+        raise E::MacNotInRange, mac_addr unless M::MacRange.exists_in_any_range?(m_vid,m_a)
+      end
+
+      if temp["ipv4_addr"]
+        check_network_ip_combo(temp["network"], temp["ipv4_addr"])
+        is_manual_ip_set = true
+      end
+
+      if temp["nat_ipv4_addr"]
+        check_network_ip_combo(temp["nat_network"], temp["nat_ipv4_addr"])
+        is_manual_ip_set = true
+      end
+    }
 
     # params is a Mash object. so coverts to raw Hash object.
     instance = M::Instance.entry_new(@account, wmi, @params.dup) do |i|
@@ -197,12 +228,58 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     instance.save
 
+    # 
+    # TODO:
+    #  "host_id" and "host_pool_id" will be obsolete.
+    #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
+    if params[:host_id] || params[:host_pool_id] || params[:host_node_id]
+      host_node_id = params[:host_id] || params[:host_pool_id] || params[:host_node_id]
+      host_node = M::HostNode[host_node_id]
+      raise E::UnknownHostNode, "#{host_node_id}" if host_node.nil?
+      raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
+
+      compat_hype  = (host_node.hypervisor == instance.hypervisor)
+      compat_arch = (host_node.arch == instance.image.arch)
+      raise E::IncompatibleHostNode, "#{host_node_id} can only handle instances of type #{host_node.arch} #{host_node.hypervisor}" unless compat_arch && compat_hype
+      raise E::OutOfHostCapacity, "#{host_node_id}" if instance.cpu_cores > host_node.available_cpu_cores || instance.memory_size > host_node.available_memory_size
+
+      ## Assign the custom host node
+      instance.host_node = host_node
+    end
+
+    if is_manual_ip_set
+      ## Assign the custom vifs
+      Dcmgr::Scheduler::Network::SpecifyNetwork.new.schedule(instance)
+      instance.network_vif.each { |vif|
+        # Calling this scheduler from instance#add_nic method instead
+        # as a workaround for that dirty method that needs to be removed
+        # Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
+
+        Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
+      }
+    end
+
     # instance_monitor_attr row is created at after_save hook in Instance model.
     # Note that the keys should use string for sub hash.
     if params['monitoring'].is_a?(Hash)
       instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
-      if params['monitoring']['mail_address']
-        instance.instance_monitor_attr.mailaddr = params['monitoring']['mail_address']
+      if params['monitoring'].has_key?('mail_address')
+        case params['monitoring']['mail_address']
+        when "", nil
+          # Indicates to clear the recipients.
+          instance.instance_monitor_attr.recipients = []
+        when Array
+          params['monitoring']['mail_address'].each { |v|
+            instance.instance_monitor_attr.recipients << {:mail_address=>v}
+          }
+        when Hash
+          params['monitoring']['mail_address'].each { |k, v|
+            instance.instance_monitor_attr.recipients << {:mail_address=>v}
+          }
+        else
+          raise "Invalid mail address"
+        end
+        instance.instance_monitor_attr.changed_columns << :recipients
       end
       instance.instance_monitor_attr.save_changes
     end
@@ -357,16 +434,34 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
 
-    if params[:monitoring].is_a?(Hash)
-      if params[:monitoring][:enabled]
-        instance.instance_monitor_attr.enabled = (params[:monitoring][:enabled] == 'true')
+    if params['monitoring'].is_a?(Hash)
+      if params['monitoring']['enabled']
+        instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
       end
-      if params[:monitoring][:mail_address]
-        instance.instance_monitor_attr.mailaddr = params[:monitoring][:mail_address]
+      # Do not add mail_address key when you don't want to change
+      # existing recipient list.
+      if params['monitoring'].has_key?('mail_address')
+        case params['monitoring']['mail_address']
+        when "", nil
+          # Indicates to clear the recipients.
+          instance.instance_monitor_attr.recipients.clear
+        when Array
+          instance.instance_monitor_attr.tap { |o|
+            o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
+          }
+        when Hash
+          instance.instance_monitor_attr.tap { |o|
+            o.recipients = params['monitoring']['mail_address'].map {|k,v| {:mail_address=>v}}
+          }
+        else
+          raise "Invalid monitoring recipient: #{params['monitoring']['mail_address']}"
+        end
+        instance.instance_monitor_attr.changed_columns << :recipients
       end
+      
       instance.instance_monitor_attr.save_changes
     end
-
+    
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
@@ -374,7 +469,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   end
 
   # Create image backup from the alive instance.
-  quota 'backup_object.size_mb', 'backup_object.count', 'image.count', 'instance.backup_operations_per_hour'
+  quota 'backup_object.count'
+  quota 'image.count'
+  quota 'instance.backup_operations_per_hour'
+  quota('backup_object.size_mb') do
+    request_amount do
+      instance = find_by_uuid(:Instance, params[:id])
+      return (instance.image.backup_object.size / (1024 * 1024)).to_i
+    end
+  end
   put '/:id/backup' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)

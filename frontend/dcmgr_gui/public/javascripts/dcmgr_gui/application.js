@@ -5,9 +5,9 @@
 jQuery(function($){
 
   //global
-  dcmgrGUI = new DcmgrGUI;
-  dcmgrGUI.initialize();
-  dcmgrGUI.notification = new DcmgrGUI.Notification;
+  window.dcmgrGUI = new DcmgrGUI();
+  window.dcmgrGUI.initialize();
+  window.dcmgrGUI.notification = new DcmgrGUI.Notification;
 
 	//Toggle side menus.
 	var regionpos = 0;
@@ -87,11 +87,11 @@ jQuery(function($){
   $('#accounts_account_uuid').live('change',function() {
     $(this).parent('form').submit();
     return false;
-	});
+  });
 
   $('#select_language_locale').bind('change', function(){
     $('#select_language')[0].submit();
-	})
+  });
   
   $(document).ajaxError(function(e, xhr, settings, exception) {
     var message = '';
@@ -158,7 +158,7 @@ jQuery(function($){
                          .css('height', '25px');
 
   $('a[id^="ui-selectmenu-item"]').css('font-size', '13px')
-                         .css('height', '17px')  
+    .css('height', '17px');
 
 });
 //]]>

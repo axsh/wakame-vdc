@@ -34,7 +34,7 @@ module Hijiki::DcmgrResource::V1203
     def delete_monitor(monitor_id)
       self.delete("monitors/#{monitor_id}").body
     end
-    
+
     def update_monitor(monitor_id, params)
       self.put("monitors/#{monitor_id}", params).body
     end

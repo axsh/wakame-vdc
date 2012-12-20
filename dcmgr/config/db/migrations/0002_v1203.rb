@@ -346,7 +346,7 @@ Sequel.migration do
 
     alter_table(:instances) do
       set_column_type :ssh_key_pair_id, "int(11)"
-      set_column_allow_null :ssh_key_pair_id, false
+      set_column_allow_null :ssh_key_pair_id, true
       drop_column :ssh_key_data
     end
 
@@ -402,7 +402,7 @@ Sequel.migration do
     create_table(:instance_monitor_attrs) do
       primary_key :id, :type=>"int(11)"
       column :instance_id, "int(11)", :null=>false
-      column :mailaddr, "varchar(255)", :null=>false
+      column :recipients, "text", :null=>false
       column :enabled, "tinyint(1)", :default=>false, :null=>false
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false

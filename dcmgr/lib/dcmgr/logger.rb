@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 require 'logger'
-require 'isono'
 
 module Dcmgr
   module Logger
@@ -15,20 +14,29 @@ module Dcmgr
       @logdev
     end
 
-    class CustomLogger < Isono::Runner::RpcServer::EndpointBuilder
+    def self.logger
+      @logger ||= begin
+                    ::Logger.new(default_logdev)
+                  end
+    end
+
+    class CustomLogger
       def initialize(progname)
         @progname = progname
       end
-      
+
       ["fatal", "error", "warn", "info", "debug"].each do |level|
         define_method(level){|msg|
-          if job_context
-            logger.__send__(level, "Session ID: #{session_id}: #{msg}")
+          # constant from Isono::NodeModules::JobWorker::JOB_CTX_KEY
+          jobctx = Thread.current[:job_worker_ctx]
+          if jobctx
+            logger.__send__(level, "Session ID: #{jobctx.session_id}: #{msg}")
           else
             logger.__send__(level, "#{msg}")
           end
         }
       end
+      alias :warning :warn
 
       # Factory method for ::Logger
       def logger

@@ -1,0 +1,11 @@
+Here is to specify which images are registered through "vdc-manage image" CLI when you run vdc.sh.
+
+1. All image-*.meta files under .available/ folder are loaded if nothing exists under .enabled/ folder. 
+   This is default behavior:
+
+2. To custmize loading images, create symlinks to the image-*.meta files under image.available/:
+
+```
+ % cd tests/vdc.sh.d/image/enabled
+ % ln -s ../image.available/image-lucid5.meta .
+``` 

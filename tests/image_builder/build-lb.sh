@@ -132,6 +132,8 @@ function build_wrapper_stud() {
   cp ${tmp_dir}/${stud_name}/stud ${tmp_root}/usr/bin/
   cp ${tmp_dir}/${stud_name}/upstart/stud.conf ${tmp_root}/etc/init
 
+  mkdir ${tmp_root}/etc/stud
+
   # Clean up the temp directory
   rm -rf ${tmp_dir}/${stud_tarball} ${tmp_dir}/${stud_name}
   )

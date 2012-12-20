@@ -180,8 +180,8 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
       var private_key = encodeURIComponent($(this).find('#private_key').val());
       var balance_algorithm = $(this).find('input[name="balance_algorithm"]:checked').val();
       var cookie_name = $(this).find('#cookie_name').val();
-      var data = "display_name="+display_name
-                 +"&description="+description
+      var data = "display_name="+encodeURIComponent(display_name)
+                 +"&description="+encodeURIComponent(description)
                  +"&load_balancer_protocol="+load_balancer_protocol
                  +"&load_balancer_port="+load_balancer_port
                  +"&instance_protocol="+instance_protocol
@@ -253,8 +253,8 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     var private_key = encodeURIComponent($(this).find('#private_key').val());
     var balance_algorithm = $(this).find('input[name="balance_algorithm"]:checked').val();
     var cookie_name = $(this).find('#cookie_name').val();
-    var data = "display_name="+display_name
-               +"&description="+description
+    var data = "display_name="+encodeURIComponent(display_name)
+               +"&description="+encodeURIComponent(description)
                +"&load_balancer_protocol="+load_balancer_protocol
                +"&load_balancer_port="+load_balancer_port
                +"&instance_protocol="+instance_protocol

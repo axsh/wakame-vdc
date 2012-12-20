@@ -66,7 +66,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
     respond_with(R::Volume.new(v).generate)
   end
 
-  quota 'volume.size_mb', 'volume.count'
+  quota('volume.size_mb') do
+    request_amount do
+      if params[:backup_object_id]
+        bo = find_by_uuid(:BackupObject, params[:backup_object_id])
+        return bo.size / (1024 * 1024)
+      elsif params[:volume_size]
+        # volume_size uses MB unit.
+        return params[:volume_size]
+      end
+    end
+  end
+  quota 'volume.count'
   post do
     sp = vs = vol = nil
     # input parameter validation
@@ -208,7 +219,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/volumes' do
   end
 
   # Create new backup
-  quota 'backup_object.size_mb', 'backup_object.count'
+  quota 'backup_object.size_mb' do
+    request_amount do
+      v = find_by_uuid(:Volume, params[:id])
+      if v
+        return v.size / (1024 * 1024)
+      end
+    end
+  end
+  quota 'backup_object.count'
   put '/:id/backup' do
     raise E::UndefinedVolumeID if params[:id].nil?
     v = find_by_uuid(:Volume, params[:id])

@@ -42,6 +42,7 @@ BuildRequires: parted
 BuildRequires: yum-utils
 # Trema/racket gem build dependency
 BuildRequires: sqlite-devel libpcap-devel
+BuildRequires: v8 v8-devel
 
 # * wakame-vdc(common)
 Requires: openssh-server openssh-clients
@@ -50,7 +51,6 @@ Requires: nc
 Requires: mysql
 Requires: initscripts
 Requires: logrotate
-Requires: flog
 Requires: ntp
 Requires: ntpdate
 Requires: gzip
@@ -356,7 +356,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %files
 %defattr(-,root,root)
 %{prefix}/%{oname}/
-%config /etc/logrotate.d/flog-vdc
+%config /etc/logrotate.d/wakame-vdc
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
 %config /etc/prelink.conf.d/wakame-vdc.conf

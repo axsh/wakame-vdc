@@ -86,8 +86,8 @@ DcmgrGUI.prototype.imagePanel = function(){
       var image_id = $(this).find('#image_id').val();
       var display_name = $(this).find('#machine_image_display_name').val();
       var description = $(this).find('#machine_image_description').val();
-      var data = 'display_name=' + display_name
-                +'&description=' + description;
+      var data = 'display_name=' + encodeURIComponent(display_name)
+                +'&description=' + encodeURIComponent(description);
 
       var request = new DcmgrGUI.Request;
       request.put({
@@ -141,6 +141,7 @@ DcmgrGUI.prototype.imagePanel = function(){
   var launch_instance_buttons = {};
   launch_instance_buttons[close_button_name] = function() { $(this).dialog("close"); };
   launch_instance_buttons[launch_button_name] = function() {
+    var self = this;
     var image_id = $(this).find('#image_id').val();
     var display_name = $(this).find('#display_name').val();
     var host_name = $(this).find('#host_name').val();
@@ -149,7 +150,6 @@ DcmgrGUI.prototype.imagePanel = function(){
     var launch_in = $(this).find('#right_select_list').find('option');
     var user_data = $(this).find('#user_data').val();
     var monitoring_enabled = $(this).find('#monitoring_enabled').is(':checked');
-    var mailaddr = $(this).find('#mailaddr').val();
     var security_groups = [];
     $.each(launch_in,function(i){
       security_groups.push("security_groups[]="+ $(this).val());
@@ -170,15 +170,20 @@ DcmgrGUI.prototype.imagePanel = function(){
                 vifs.join('&'),
                 bt_launch_instance.monitor_selector.queryParams(),
                 "ssh_key="+ssh_key_pair,
-                "display_name="+display_name,
-                "monitoring[enabled]="+monitoring_enabled,
-                "monitoring[mail_address]="+mailaddr
-               ].join('&');
+                "display_name="+encodeURIComponent(display_name),
+                "monitoring[enabled]="+monitoring_enabled
+               ];
 
-    request = new DcmgrGUI.Request;
+    _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+      if( _.isString($(self).find(id).val()) && $(self).find(id).val() != ""){
+        data.push("monitoring[mail_address][]="+$(self).find(id).val());
+      }
+    });
+    
+    request = new DcmgrGUI.Request();
     request.post({
       "url": '/instances',
-      "data": data,
+      "data": data.join('&'),
       success: function(json,status){
         bt_refresh.element.trigger('dcmgrGUI.refresh');
       }
@@ -199,7 +204,7 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#select_ssh_key_pair').empty().html(loading_image);
       $(this).find("#left_select_list").mask($.i18n.prop('loading_parts'));
 
-      var request = new DcmgrGUI.Request;
+      var request = new DcmgrGUI.Request();
       var is_ready = {
         'instance_spec': false,
         'ssh_keypair': false,
@@ -211,14 +216,33 @@ DcmgrGUI.prototype.imagePanel = function(){
 
       var ready = function(data) {
         if($(self).find('#monitoring_enabled').is(':checked')){
-          var v = $(self).find('#mailaddr').val();
-          data['monitoring'] = (v.length > 0);
+          _.chain(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2']).map(function(id){
+            var v = $(self).find(id).val();
+            if(v.length > 0){
+              return [true, /^[^@]+@[a-z0-9A-Z][a-z0-9A-Z\.\-]+$/.test(v)];
+            }else{
+              return [false, false];
+            }
+          }).tap(function(tuple_lst){
+            if(_.all(tuple_lst, function(i){
+              return i[1] == false;
+            }) && $(self).find('#monitoring_enabled').is(':checked') ){
+              // Can not submit when none of address fields is
+              // filled or valid.
+              data['monitoring'] = false;
+            }else{
+              // Can submit when empty and validation passed address fields exist.
+              data['monitoring'] = _.all(tuple_lst, function(i){
+                return (i[0] == true && i[1] == true) || (i[0] == false);
+              });
+            }
+          });
         }else{
           data['monitoring'] = true;
         }
-
-        if( data.monitoring && bt_launch_instance.monitor_selector.validate() ){
-          data.monitoring = true;
+        
+        if( data.monitoring ){
+          data.monitoring = bt_launch_instance.monitor_selector.validate();
         }
 
         if(data['instance_spec'] == true &&
@@ -237,10 +261,22 @@ DcmgrGUI.prototype.imagePanel = function(){
       $(this).find('#display_name').bind('keyup cut paste', params, DcmgrGUI.Util.checkTextField);
       $(this).find('#monitoring_enabled').bind('click',
                                                {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
-                                               DcmgrGUI.Util.checkTextField);
-      $(this).find('#mailaddr').bind('keyup paste cut',
-                                     {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
-                                     DcmgrGUI.Util.checkTextField);
+                                               DcmgrGUI.Util.checkTextField).bind('click', function(e){
+                                                 _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+                                                   if( $(e.target).is(":checked") ){
+                                                     $(self).find(id).removeAttr("disabled");
+                                                   }else{
+                                                     $(self).find(id).attr("disabled", "disabled");
+                                                   }
+                                                 });
+                                               });
+      $(this).find('.mailaddr_form').bind('keyup paste cut',
+                                          {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                          DcmgrGUI.Util.checkTextField);
+      // All new input forms will get realtime validation.
+      $(this).find('#monitor_item_list input[type=text]').live('keyup paste cut',
+                                                               {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                                               DcmgrGUI.Util.checkTextField);
 
       bt_launch_instance.monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
 

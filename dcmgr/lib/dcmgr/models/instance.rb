@@ -138,6 +138,7 @@ module Dcmgr::Models
       self.terminated_at ||= Time.now
       self.state = :terminated if self.state != :terminated
       self.status = :offline if self.status != :offline
+      self.ssh_key_pair_id = nil
       self.save
     end
 
@@ -214,7 +215,6 @@ module Dcmgr::Models
         :vif => [],
         :hostname => hostname,
         :ha_enabled => ha_enabled,
-        :instance_spec_id => nil,
       }
 
       if self.ssh_key_pair
@@ -279,7 +279,13 @@ module Dcmgr::Models
       nic = NetworkVif.new({ :account_id => self.account_id })
       nic.instance = self
       nic.device_index = vif_template[:index]
-      Dcmgr::Scheduler.service_type(self).mac_address.schedule(nic)
+      sched = if vif_template[:mac_addr]
+        Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new
+      else
+        Dcmgr::Scheduler.service_type(self).mac_address
+      end
+
+      sched.schedule(nic)
       nic.save
 
       if !request_params.has_key?('security_groups') && !vif_template[:security_groups].empty?

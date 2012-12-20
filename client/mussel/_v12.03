@@ -31,6 +31,7 @@ balance_algorithm=${balance_algorithm:-leastconn}
 max_connection=${max_connection:-1000}
 is_public=${is_public:-false}
 is_cacheable=${is_cacheable:-false}
+vifs=${vifs:-\{\}}
 
 ## optional
 display_name=${display_name:-}
@@ -70,6 +71,7 @@ instance)
      --data-urlencode "memory_size=${memory_size}" \
      --data-urlencode "display_name=${display_name}" \
      --data-urlencode "host_name=${host_name}" \
+     --data-urlencode "vifs=${vifs}" \
      ${base_uri}/${1}s.${format}
     ;;
   backup)

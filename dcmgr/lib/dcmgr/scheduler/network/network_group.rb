@@ -7,7 +7,7 @@ module Dcmgr
         include Dcmgr::Logger
 
         ALGORITHMS = [
-          :least_allcation
+          :least_allocation
         ].freeze
 
         configuration do
@@ -16,7 +16,7 @@ module Dcmgr
 
           on_initialize_hook do
             def validate(errors)
-               @config[:algorithm] = :least_allcation if @config[:algorithm].nil?
+               @config[:algorithm] = :least_allocation if @config[:algorithm].nil?
                unless ALGORITHMS.member? @config[:algorithm]
                  errors << "Unknown algorithm: #{@config[:algorithm]}"
                end
@@ -27,50 +27,53 @@ module Dcmgr
         def schedule(instance)
           logger.info "Scheduling network for the instance #{instance.canonical_uuid}"
 
-          tag_id = options.network_group_id
-          raise Dcmgr::Scheduler::NetworkSchedulingError, "No default network group set" if tag_id.nil?
+          # Create the vnics
+          vif_templates = instance.request_params["vifs"] || { "eth0" => {"index"=>"0"} }
+          vif_templates.each { |vif_name,vif_temp|
+            tag_id = vif_temp["network"] || options.network_group_id
+            raise Dcmgr::Scheduler::NetworkSchedulingError, "No default network group set" if tag_id.nil?
 
-          network_group = Dcmgr::Tags::NetworkGroup[tag_id]
-          raise Dcmgr::Scheduler::NetworkSchedulingError, "Unknown network group: #{tag_id}" if network_group.nil?
-          logger.info "Select network group: '#{tag_id}'."
+            network_group = Dcmgr::Tags::NetworkGroup[tag_id]
+            raise Dcmgr::Scheduler::NetworkSchedulingError, "Unknown network group: #{tag_id}" if network_group.nil?
+            logger.info "Selected network group: '#{tag_id}'."
 
-          networks = network_group.sorted_mapped_uuids.map {|mapped| Dcmgr::Models::Network[mapped.uuid]}.compact
+            networks = network_group.mapped_resources
 
-          network_candidates = {}
-          networks.each {|n|
-            network_candidates.store(n.canonical_uuid, n.allocated_ip_nums)
+            network_candidates = {}
+            networks.each {|n|
+              network_candidates.store(n.canonical_uuid, n.allocated_ip_nums)
+            }
+
+            begin
+              raise "No available network left in network group" if network_candidates.empty?
+              logger.info "Candidate networks #{network_candidates}"
+
+
+              # Select the network with the least number of allocated IP.
+              selected_network = Algorithm.__send__(options.algorithm, network_candidates)
+              network_uuid = selected_network[0]
+              logger.info "Selected network #{network_uuid}"
+
+              vnic = instance.add_nic(vif_temp)
+
+              network = Dcmgr::Models::Network[network_uuid]
+              raise Dcmgr::Scheduler::NetworkSchedulingError, "No available ip addresses left in network group '#{tag_id}'." if network.nil?
+              logger.info "Trying to attach vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
+
+              vnic.attach_to_network(network)
+              logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
+            rescue Dcmgr::Models::OutOfIpRange => e
+              logger.warning "No more dynamic ip addresses available in network '#{network.canonical_uuid}'"
+              network_candidates.delete(network_uuid)
+              retry
+            end
           }
-
-          begin
-            raise "No available network left in network group" if network_candidates.empty?
-            logger.info "Candidate networks #{network_candidates}"
-
-            # Select the network with the least number of allocated IP.
-            selected_network = []
-            selected_network = Algorithm.__send__(options.algorithm, network_candidates)
-            network_uuid = selected_network[0]
-            logger.info "Select network #{network_uuid}"
-
-            # Create the vnic
-            vif_template = instance.request_params[:vifs] || {:index=>0}
-            vnic = instance.add_nic(vif_template)
-
-            network = Dcmgr::Models::Network[network_uuid]
-            raise Dcmgr::Scheduler::NetworkSchedulingError, "No available ip addresses left in network group '#{tag_id}'." if network.nil?
-            logger.info "Trying to attach vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
-
-            vnic.attach_to_network(network)
-            logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
-          rescue Dcmgr::Models::OutOfIpRange => e
-            logger.error "No more dynamic ip addresses available in network '#{network.canonical_uuid}'"
-            network_candidates.delete(network_uuid)
-            retry
-          end
 
         end
 
         class Algorithm
-          def self.least_allcation(networks)
+          #TODO: fix this typo and maybe include an alias for deprecation
+          def self.least_allocation(networks)
             networks.min_by {|uuid, ip_nums| ip_nums}
           end
         end

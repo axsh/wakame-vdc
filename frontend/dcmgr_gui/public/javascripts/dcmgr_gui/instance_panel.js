@@ -64,7 +64,9 @@ DcmgrGUI.prototype.instancePanel = function(){
     c_list.element.find(".edit_instance").each(function(key,value){
       $(this).button({ disabled: false });
       var uuid = $(value).attr('id').replace(/edit_(i-[a-z0-9]+)/,'$1');
-      if( uuid ){
+      var row_id = '#row-'+uuid;
+      var state = $(row_id).find('.state').text();
+      if( uuid && _.include(['running', 'stopped', 'halted'], state)){
         $(this).bind('click',function(){
           bt_edit_instance.open({"ids":[uuid]});
         });
@@ -80,14 +82,24 @@ DcmgrGUI.prototype.instancePanel = function(){
       var instance_id = $(this).find('#instance_id').val();
       var display_name = $(this).find('#instance_display_name').val();
 
-      var data = ['display_name=' + display_name,
-                  'monitoring[enabled]=' + $(this).find('#monitoring_enabled').is(':checked'),
-                  'monitoring[mail_address]=' + $(this).find('#mailaddr').val(),
-                  'ssh_key_id=' + $(this).find("#ssh_key_pair").val()
-                 ].join('&');
+      var query = ['display_name=' + encodeURIComponent(display_name),
+                   'monitoring[enabled]=' + $(this).find('#monitoring_enabled').is(':checked'),
+                   'ssh_key_id=' + $(this).find("#ssh_key_pair").val()
+                  ];
       $.each($(this).find('#right_select_list').find('option'), function(i){
-        data = data + "&security_groups[]="+ $(this).val();
+        query.push("security_groups[]="+ $(this).val());
       });
+
+      orig_len = query.length;
+      _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+        if( _.isString($(self).find(id).val()) && $(self).find(id).val() != ""){
+          query.push("monitoring[mail_address][]="+$(self).find(id).val());
+        }
+      });
+      if(query.length == orig_len){
+        // Clear recipient list
+        query.push("monitoring[mail_address]=");
+      }
 
       if( !bt_edit_instance.monitor_selector.validate() ){
         return false;
@@ -98,7 +110,7 @@ DcmgrGUI.prototype.instancePanel = function(){
         instance: function(){
           request.put({
             "url": '/instances/'+ instance_id +'.json',
-            "data": data,
+            "data": query.join('&'),
             success: function(json, status){
               bt_refresh.element.trigger('dcmgrGUI.refresh');
             }
@@ -130,15 +142,30 @@ DcmgrGUI.prototype.instancePanel = function(){
         $(this).find('#right_select_list').mask($.i18n.prop('loading_parts'));
 
         var ready = function(data) {
-          if($(self).find('#monitoring_enabled').is(':checked')){
-            var v = $(self).find('#mailaddr').val();
-            data['monitoring'] = (v.length > 0);
-          }else{
-            data['monitoring'] = true;
-          }
+          _.chain(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2']).map(function(id){
+            var v = $(self).find(id).val();
+            if(v.length > 0){
+              return [true, /^[^@]+@[a-z0-9A-Z][a-z0-9A-Z\.\-]+$/.test(v)];
+            }else{
+              return [false, false];
+            }
+          }).tap(function(tuple_lst){
+            if(_.all(tuple_lst, function(i){
+              return i[1] == false;
+            }) && $(self).find('#monitoring_enabled').is(':checked') ){
+              // Can not submit when none of address fields is
+              // filled or valid.
+              data['monitoring'] = false;
+            }else{
+              // Can submit when empty and validation passed address fields exist.
+              data['monitoring'] = _.all(tuple_lst, function(i){
+                return (i[0] == true && i[1] == true) || (i[0] == false);
+              });
+            }
+          });
 
-          if( data.monitoring && bt_edit_instance.monitor_selector.validate() ){
-            data.monitoring = true;
+          if( data.monitoring ){
+            data.monitoring = bt_edit_instance.monitor_selector.validate();
           }
 
           if(data['security_groups'] == true &&
@@ -172,10 +199,23 @@ DcmgrGUI.prototype.instancePanel = function(){
 
         var params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
         $(this).find('#instance_display_name').bind('keyup paste cut', params, DcmgrGUI.Util.checkTextField);
-        $(this).find('#monitoring_enabled').bind('click', {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready}, DcmgrGUI.Util.checkTextField);
-        $(this).find('#mailaddr').bind('keyup paste cut',
-                                       {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
-                                       DcmgrGUI.Util.checkTextField);
+        $(this).find('#monitoring_enabled').bind('click', {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                                 DcmgrGUI.Util.checkTextField).bind('click', function(e){
+                                                   _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+                                                     if( $(e.target).is(":checked") ){
+                                                       $(self).find(id).removeAttr("disabled");
+                                                     }else{
+                                                       $(self).find(id).attr("disabled", "disabled");
+                                                     }
+                                                   });
+                                                 });
+        $(this).find('.mailaddr_form').bind('keyup paste cut',
+                                            {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                            DcmgrGUI.Util.checkTextField);
+        // All new input forms will get realtime validation.
+	$(this).find('#monitor_item_list input[type=text]').live('keyup paste cut',
+                                                                 {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                                                 DcmgrGUI.Util.checkTextField);
 
         bt_edit_instance.monitor_selector = new DcmgrGUI.VifMonitorSelector($(this).find('#monitor_item_list'));
 
@@ -240,16 +280,16 @@ DcmgrGUI.prototype.instancePanel = function(){
         }
 
         var request = new DcmgrGUI.Request;
-        var instance_id = $('#instance_id').val();
+        var instance_id = $(self).find('#instance_id').val();
         parallel({
           monitoring: function(){
             request.get({
               "url": '/network_vifs/'+select_current_vif[0]+'/monitors.json',
               "data": "",
               success: function(json,status) {
-                for(var i in json) {
+                $.each(json, function(i){
                   bt_edit_instance.monitor_selector.addItem(json[i].title, json[i]);
-                }
+                });
 
                 is_ready['monitoring_form'] = true;
                 ready(is_ready);
@@ -265,6 +305,14 @@ DcmgrGUI.prototype.instancePanel = function(){
           "async": false,
           success: function(json,status) {
             instance = json;
+
+            _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+              if( instance.monitoring.enabled ){
+                $(self).find(id).removeAttr("disabled");
+              }else{
+                $(self).find(id).attr("disabled", "disabled");
+              }
+            });
           }
         });
 
@@ -272,7 +320,7 @@ DcmgrGUI.prototype.instancePanel = function(){
           security_groups:function(){
             var selected_groups = []
             if (instance.vif.length > 0) {
-              selected_groups = instance.vif[0]['security_groups']
+              selected_groups = instance.vif[0]['security_groups'];
             }
 
             request.get({
@@ -489,8 +537,8 @@ DcmgrGUI.prototype.instancePanel = function(){
     var description = $(this).find('#backup_description').val();
 
     var data = ['instance_id='+instance_id,
-                'backup_display_name=' + display_name,
-                'backup_description=' + description
+                'backup_display_name=' + encodeURIComponent(display_name),
+                'backup_description=' + encodeURIComponent(description)
                ].join('&');
 
     var request = new DcmgrGUI.Request;
@@ -510,6 +558,25 @@ DcmgrGUI.prototype.instancePanel = function(){
     height:250,
     title: $.i18n.prop('backup_instances_header'),
     path:'/backup_instances',
+    callback: function(){
+      var is_ready = {
+        'backup_display_name': false,
+      }
+
+      var ready = function(data) {
+        if(data['backup_display_name'] == true) {
+          bt_instance_backup.disabledButton(1, false);
+        } else {
+          bt_instance_backup.disabledButton(1, true);
+        }
+      }
+
+      var display_name_params = {'name': 'backup_display_name', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#backup_display_name').bind('keyup', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#backup_display_name').bind('paste', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#backup_display_name').bind('cut', display_name_params, DcmgrGUI.Util.checkTextField);
+
+    },
     button:instance_backup_buttons
   });
 
@@ -548,6 +615,8 @@ DcmgrGUI.prototype.instancePanel = function(){
     list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
+    c_list.clearCheckedList();
+    $('#detail').html('');
 
     //update detail
     $.each(c_list.checked_list,function(check_id,obj){
@@ -559,8 +628,6 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
 
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){
-    c_list.clearCheckedList();
-    $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
 
@@ -623,6 +690,7 @@ DcmgrGUI.prototype.instancePanel = function(){
       var selected_ids = c_list.getCheckedInstanceIds();
       if( selected_ids ){
         bt_instance_backup.open(selected_ids);
+        bt_instance_backup.disabledButton(1, true);
       } else {
         $(this).button({ disabled: true });
       }
@@ -633,33 +701,40 @@ DcmgrGUI.prototype.instancePanel = function(){
   var actions = {};
   actions.changeButtonState = function() {
     var ids = c_list.currentMultiChecked()['ids'];
-    var flag = true;
-    var is_selectmenu = false;
-    var is_instance_backup = false;
-    $.each(ids, function(key, uuid){
-      var row_id = '#row-'+uuid;
-      var state = $(row_id).find('.state').text();
-      is_selectmenu = _.include(['running', 'stopped', 'halted'], state)
-      is_instance_backup = _.include(['halted'], state)
-      flag = _.contains([is_selectmenu, is_instance_backup], true)
-    });
+    var is_select_menus = [];
+    var is_instance_backups = [];
 
-    if (flag){
-      if(is_selectmenu) {
+    if(ids.length === 0) {
+      selectmenu.data('selectmenu').disableButton();
+      bt_instance_backup.disableDialogButton();
+    } else {
+      $.each(ids, function(key, uuid){
+        var row_id = '#row-'+uuid;
+        var state = $(row_id).find('.state').text();
+        if(_.include(['running', 'stopped', 'halted'], state)) {
+          is_select_menus.push(true);
+        } else {
+          is_select_menus.push(false);
+        }
+
+        if(_.include(['halted'], state)) {
+          is_instance_backups.push(true);
+        } else {
+          is_instance_backups.push(false);
+        }
+      });
+
+      if(!_.contains(is_select_menus, false)){
         selectmenu.data('selectmenu').enableButton();
       } else {
         selectmenu.data('selectmenu').disableButton();
       }
 
-      if(is_instance_backup) {
+      if(!_.contains(is_instance_backups, false)){
         bt_instance_backup.enableDialogButton();
       } else {
         bt_instance_backup.disableDialogButton();
       }
-
-    } else{
-      selectmenu.data('selectmenu').disableButton();
-      bt_instance_backup.disableDialogButton();
     }
   }
 

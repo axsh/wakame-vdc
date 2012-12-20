@@ -181,7 +181,7 @@ module Dcmgr
           'hostname' => @inst[:hostname],
           'instance-action' => @inst[:state],
           'instance-id' => @inst[:uuid],
-          'instance-type' => @inst[:request_params][:instance_spec_id],
+          'instance-type' => @inst[:request_params][:instance_spec_id] || @inst[:image][:instance_model_name],
           'kernel-id' => nil,
           'local-hostname' => @inst[:hostname],
           'local-ipv4' => @inst[:ips].first,
@@ -219,10 +219,10 @@ module Dcmgr
             "network/interfaces/macs/#{mac}/x-metric" => vnic[:ipv4][:network][:metric],
           })
         }
-        if @inst[:ssh_key_pair]
+        if @inst[:ssh_key_data]
           metadata_items.merge!({
-            "public-keys/0=#{@inst[:ssh_key_pair][:uuid]}" => @inst[:ssh_key_pair][:public_key],
-            'public-keys/0/openssh-key'=> @inst[:ssh_key_pair][:public_key],
+            "public-keys/0=#{@inst[:ssh_key_data][:uuid]}" => @inst[:ssh_key_data][:public_key],
+            'public-keys/0/openssh-key'=> @inst[:ssh_key_data][:public_key],
           })
         else
           metadata_items.merge!({'public-keys/'=>nil})
@@ -508,6 +508,8 @@ module Dcmgr
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         update_instance_state({:state=>:starting}, [])
+
+        setup_metadata_drive
 
         @hva_ctx.logger.info("Turning power on")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
