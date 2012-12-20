@@ -25,7 +25,7 @@ If you need OpenVZ container, add another repository.
 
 Install epel-release.
 
-    # yum install -y http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-7.noarch.rpm
+    # yum install -y http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
 
 ### Dcmgr installation
 
