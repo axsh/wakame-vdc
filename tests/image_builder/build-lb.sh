@@ -177,6 +177,10 @@ function load_balancer_setup() {
 
   cat <<EOF > $tmp_root/etc/rc.local
 /etc/wakame-init md
+
+. /metadata/user-data
+route add -net \${AMQP_SERVER} netmask 255.255.255.255 dev eth1
+
 initctl start haproxy_updater
 exit 0
 EOF
