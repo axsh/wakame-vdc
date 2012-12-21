@@ -209,6 +209,7 @@ module Dcmgr
     autoload :Stud, 'dcmgr/drivers/stud'
     autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
+    autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'

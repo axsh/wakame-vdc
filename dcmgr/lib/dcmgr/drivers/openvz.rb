@@ -4,12 +4,9 @@ require File.dirname(__FILE__) + '/openvz_config.rb'
 
 module Dcmgr
   module Drivers
-    class Openvz < LinuxHypervisor
+    class Openvz < LinuxContainer
       include Dcmgr::Logger
-      include Dcmgr::Helpers::Cgroup::CgroupContextProvider
-      include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
-      include Dcmgr::Helpers::TemplateHelper
 
       template_base_dir "openvz"
 
@@ -64,11 +61,7 @@ module Dcmgr
 
         private
         def method_missing(meth, *args)
-          if @subject.respond_to?(meth)
-            @subject.send(meth, *args)
-          else
-            super
-          end
+          @subject.send(meth, *args)
         end
       end
 
@@ -79,9 +72,6 @@ module Dcmgr
       end
 
       def run_instance(hc)
-        # load openvz conf
-        config = OpenvzConfig.new
-
         # write a openvz container id
         inst = hc.inst
         ctid_file_path = File.expand_path('openvz.ctid', hc.inst_data_dir)
@@ -92,19 +82,17 @@ module Dcmgr
         logger.debug("write a openvz container id #{ctid_file_path}")
 
         # delete old config file
-        config_file_path = "#{config.ve_config_dir}/#{hc.ctid}.conf"
-        mount_file_path = "#{config.ve_config_dir}/#{hc.ctid}.mount"
-        if File.exists?(config_file_path)
-          File.unlink(config_file_path)
-          logger.debug("old config file was deleted #{config_file_path}")
+        if File.exists?(hc.ct_conf_path)
+          File.unlink(hc.ct_conf_path)
+          logger.debug("old config file was deleted #{hc.ct_conf_path}")
         end
-        if File.exists?(mount_file_path)
-          File.unlink(mount_file_path)
-          logger.debug("old mount file was deleted #{mount_file_path}")
+        if File.exists?(hc.ct_mount_path)
+          File.unlink(hc.ct_mount_path)
+          logger.debug("old mount file was deleted #{hc.ct_mount_path}")
         end
 
-        destroy_config_file_path = "#{config_file_path}.destroyed"
-        destroy_mount_file_path = "#{mount_file_path}.destroyed"
+        destroy_config_file_path = "#{hc.ct_conf_path}.destroyed"
+        destroy_mount_file_path = "#{hc.ct_mount_path}.destroyed"
         if File.exists?(destroy_config_file_path)
           File.unlink(destroy_config_file_path)
           logger.debug("old config file was deleted #{destroy_config_file_path}")
@@ -114,87 +102,19 @@ module Dcmgr
           logger.debug("old mount file was deleted #{destroy_config_file_path}")
         end
 
-        # generate openvz config
-        hypervisor = inst[:host_node][:hypervisor]
-        output_file_path = "#{config.ve_config_dir}/ve-openvz.conf-sample"
-
-        render_template('template.conf', output_file_path, binding)
-
-        logger.debug("created config #{output_file_path}")
+        # generate openvz config files
+        generate_config(hc)
 
         # create openvz container
-        private_folder = "#{config.ve_private}/#{hc.ctid}"
         image = inst[:image]
-        case image[:file_format]
-        when "tgz"
-          # OpenvzLocalStore driver downloads the file under /vz/template/cache. it places the file without extention.
-          # but "vzctl create" expects that the file name has the extension. so the line below creates hard link to
-          # the path name with extention of archiver type.
+        # create mount directory
+        FileUtils.mkdir(hc.private_dir) unless File.exists?(hc.private_dir)
+        mount_root_image(hc, hc.private_dir)
 
-          # remove existing
-          File.unlink(File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)) rescue nil
-          sh("ln %s %s", [File.expand_path(image[:backup_object][:uuid], config.template_cache),
-                          File.expand_path(image[:backup_object][:uuid] + ".tar.gz", config.template_cache)])
-          ostemplate = image[:backup_object][:uuid]
-          # create vm and config file
-          sh("vzctl create %s --ostemplate %s --config %s",[hc.ctid, ostemplate, hypervisor])
-          logger.debug("created container #{private_folder}")
-          logger.debug("created config #{config_file_path}")
-        when "raw"
-          # copy config file
-          raise "config file does not exist #{output_file_path}" unless File.exists?(output_file_path)
-          FileUtils.cp(output_file_path, config_file_path)
-          # create mount directory
-          FileUtils.mkdir(private_folder) unless File.exists?(private_folder)
-          unless image[:root_device].nil?
-            # creating loop devices
-            mapdevs = sh("kpartx -av %s | egrep -v '^(gpt|dos):' | egrep ^add | awk '{print $3}'", [hc.os_devpath])
-            begin
-              new_device_file = mapdevs[:stdout].split("\n").map {|mapdev| "/dev/mapper/#{mapdev}"}
-              #
-              # add map loop2p1 (253:2): 0 974609 linear /dev/loop2 1
-              # add map loop2p2 (253:3): 0 249856 linear /dev/loop2 974848
-              #
-              # wait udev queue
-              sh("udevadm settle")
-              # find loopback device
-              k, v = image[:root_device].split(":")
-              case k
-              when "uuid","label"
-              else
-                raise "unknown root device mapping key #{k}"
-              end
-              search_word = "#{k.upcase}=#{v}"
-              device_file_list = sh("blkid -t %s |awk '{print $1}'", [search_word])
-              #
-              # /dev/mapper/loop0p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
-              # /dev/mapper/loop2p1: UUID="5eb668a7-176b-44ac-b0c0-ff808c191420" TYPE="ext4"
-              # /dev/mapper/ip-192.0.2.19:3260-iscsi-iqn.2010-09.jp.wakame:vol-lzt6zx5c-lun-1p1: UUID="148bc5df-3fc5-4e93-8a16-7328907cb1c0" TYPE="ext4"
-              #
-              device_file_list = device_file_list[:stdout].split(":\n")
-              # root device
-              root_device = new_device_file & device_file_list
-              raise "root device does not exist #{image[:root_device]}" if root_device.empty?
-
-              check_fs(root_device[0])
-            rescue Exception => e
-              detach_loop(hc.os_devpath)
-              raise e
-            end
-            sh("mount %s %s", [root_device[0], private_folder])
-
-            # Write root partition identifier to instance data dir for the failure recovery script
-            File.open(File.expand_path('root_partition', hc.inst_data_dir), 'w') {|f| f.puts(search_word) }
-          else
-            cmd = "mount %s %s"
-            args = [hc.os_devpath, private_folder]
-            if image[:boot_dev_type] == 2
-              cmd += " -o loop"
-            end
-            # mount vm image file
-            sh(cmd, args)
-          end
-        end
+        # mount metadata drive
+        metadata_path = "#{hc.inst_data_dir}/metadata"
+        Dir.mkdir(metadata_path) unless File.exists?(metadata_path)
+        mount_metadata_drive(hc, metadata_path)
 
         # set name
         sh("vzctl set %s --name %s --save",[hc.ctid, hc.inst_id])
@@ -237,36 +157,6 @@ module Dcmgr
         #
         # VMGUARPAGES="65536"
         #
-
-        # mount metadata drive
-        hn_metadata_path = "#{hc.config.ve_root}/#{hc.ctid}/metadata"
-        ve_metadata_path = "#{hc.inst_data_dir}/metadata"
-        FileUtils.mkdir(ve_metadata_path) unless File.exists?(ve_metadata_path)
-        raise "metadata image does not exist #{hc.metadata_img_path}" unless File.exists?(hc.metadata_img_path)
-        res = sh("kpartx -av %s", [hc.metadata_img_path])
-        begin
-          if res[:stdout] =~ /^add map (\w+) /
-            lodev="/dev/mapper/#{$1}"
-          else
-            raise "Unexpected result from kpartx: #{res[:stdout]}"
-          end
-          sh("udevadm settle")
-
-          # save the loop device name for the metadata drive.
-          File.open(File.expand_path('metadata.lodev', hc.inst_data_dir), 'w') {|f| f.puts(lodev) }
-          check_fs(lodev)
-        rescue Exception => e
-          detach_loop(hc.metadata_img_path)
-          raise e
-        end
-        sh("mount -o ro %s %s", [lodev, ve_metadata_path])
-
-        # generate openvz mount config
-        render_template('template.mount', hc.ct_mount_path, binding)
-        render_template('template.umount', hc.ct_umount_path, binding)
-        sh("chmod +x %s", [hc.ct_umount_path])
-        sh("chmod +x %s", [hc.ct_mount_path])
-        hc.logger.info("Created config #{mount_file_path}")
 
         # start openvz container
         sh("vzctl start %s",[hc.inst_id])
@@ -318,27 +208,8 @@ module Dcmgr
         end
         hc.logger.info("Stop container.")
 
-        case hc.inst[:image][:file_format]
-        when "raw"
-          # umount vm image directory
-          raise "private directory does not exist #{hc.private_dir}" unless File.directory?(hc.private_dir)
-          sh("umount -l %s", [hc.private_dir])
-          hc.logger.debug("unmounted private directory #{hc.private_dir}")
-          if hc.inst[:image][:root_device]
-            detach_loop(hc.os_devpath)
-          end
-        end
-
-        # umount metadata drive
-        #
-        # *** Don't use "-l" option. ***
-        # If "-l" option is added, umount command will get following messages.
-        # > device-mapper: remove ioctl failed: Device or resource busy
-        # > ioctl: LOOP_CLR_FD: Device or resource busy
-        #
-        sh("umount %s/metadata", [hc.inst_data_dir])
-        detach_loop(hc.metadata_img_path)
-        hc.logger.info("Umounted metadata directory #{hc.inst_data_dir}/metadata")
+        umount_root_image(hc, hc.private_dir)
+        umount_metadata_drive(hc, File.expand_path('metadata', hc.inst_data_dir))
       end
 
       def poweron_instance(hc)
@@ -352,7 +223,27 @@ module Dcmgr
         end
       end
 
+      private
+      def generate_config(hc)
+        # generate openvz config
+        output_file_path = "#{hc.config.ve_config_dir}/ve-openvz.conf-sample"
+        render_template('template.conf', output_file_path, binding)
+        raise "config file does not exist #{output_file_path}" unless File.exists?(output_file_path)
+        FileUtils.cp(output_file_path, hc.ct_conf_path)
+        logger.debug("created config #{output_file_path}")
 
+        # template variables
+        ve_metadata_path = "#{hc.inst_data_dir}/metadata"
+        hn_metadata_path = "#{hc.config.ve_root}/#{hc.ctid}/metadata"
+        
+        render_template('template.mount', hc.ct_mount_path, binding)
+        render_template('template.umount', hc.ct_umount_path, binding)
+        sh("chmod +x %s", [hc.ct_umount_path])
+        sh("chmod +x %s", [hc.ct_mount_path])
+        hc.logger.info("Created CT config: #{hc.ct_mount_path}")
+      end
+
+       Task::Tasklet.register(self.new)
     end
   end
 end
