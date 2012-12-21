@@ -186,7 +186,7 @@ EOF
 /sbin/MAKEDEV urandom
 
 # for HAproxy
-rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-7.noarch.rpm
+rpm -ivh http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
 
 # instlall package
 distro_pkgs="
