@@ -212,7 +212,7 @@ module Dcmgr
         end
 
         def logger
-          Dcmgr::Task::TaskSession.current[:logger] || Dcmgr::Logger.logger
+          (@subject.respond_to?(:logger) && @subject.logger) || Dcmgr::Task::TaskSession.current[:logger] || Dcmgr::Logger.logger
         end
       end
 
