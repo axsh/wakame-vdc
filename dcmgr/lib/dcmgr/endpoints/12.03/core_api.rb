@@ -115,10 +115,10 @@ module Dcmgr::Endpoints::V1203
                   0
                 end
         limit = limit < 1 ? 250 : limit
-
         ds = if params[:sort_by]
-               params[:sort_by] =~ /^(\w+)(\.desc|\.asc)?$/
-               ds.order(params[:sort_by])
+                if r = params[:sort_by].match(/^(\w+)[.]{1}(desc|asc)?$/)
+                  ds.order(r[1].to_sym.__send__(r[2]))
+                end
              else
                ds.order(:id.desc)
              end
