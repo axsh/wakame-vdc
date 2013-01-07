@@ -1,0 +1,28 @@
+<% content_for :javascript_link_tags do %>
+<%= javascript_include_tag ['/assets/moment.min.js',
+                            '/assets/admin/models/dcmgr.js',
+                            '/assets/admin/models/item.js',
+                            '/assets/admin/collections/text_log_collection.js',
+                            '/assets/admin/views/text_log_view.js',
+                            '/assets/admin/controllers/text_logs/search_controller.js',
+                            '/assets/admin/helpers.js',
+]
+%>
+<% end %>
+
+<% content_for :stylesheet_link_tags do %>
+<%= stylesheet_link_tag ['/assets/smoothness/jquery-ui-1.8.23.custom.css',
+                         '/assets/jquery-ui-timepicker-addon.css'
+] %>
+<% end %>
+  <div class="span10">
+    <div class="control-group">
+      <legend>ログ</legend>
+    </div>
+    <!--  The pagination is mapped on #tmpServerPagination -->
+    <div id="content"></div>
+    <script type="text/template" id="resultItemTemplate">
+    {{ payload }}<br />
+    </script>
+    <br />
+</div>

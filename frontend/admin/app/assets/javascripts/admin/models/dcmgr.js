@@ -26,4 +26,9 @@
   models.Statistics = models.Dcmgr.extend({
     url: app.info.api_endpoints.dcmgr + '/api/12.03/instances.json?host_node_id=' + location.pathname.split('/')[2] + '&state=without_terminated'
   });
+
+  models.TextLog = models.Dcmgr.extend({
+    url: app.info.api_endpoints.dcmgr + '/api/12.03' + location.pathname + '.json?start=0&limit=100000&sort_by=created_at.asc',
+  });
+
 })( app.models );
