@@ -196,5 +196,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('storage_node_groups')
     load_namespace('network_groups')
     load_namespace('accounts')
+    load_namespace('text_logs')
   end
 end
