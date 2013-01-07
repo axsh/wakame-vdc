@@ -159,8 +159,12 @@ NOTICE: this script will erase all related database at first. We recommend to ba
     # yum install -y wakame-vdc-vdcsh
     # /opt/axsh/wakame-vdc/tests/vdc.sh init
 
+Stop here, your done!
+
 Developer Zone
 ==============
+
+If you are developer, please do the following.
 
 Installing RPM Builder Software
 -------------------------------
