@@ -69,7 +69,11 @@ drive)
     # OpenVZ mounts metadata drive from the outside script.
     METADATA_DRIVE_MOUNTPOINT="/metadata"
   else
-    METADATA_DRIVE_MOUNTPOINT=`mount -l | grep -w METADATA | cut -d " " -f3`
+    mount_output=`mount -l | grep -w METADATA | cut -d " " -f3`
+    [[ -z "${mount_output}" ]] || {
+      # already mounted
+      METADATA_DRIVE_MOUNTPOINT="${mount_output}"
+    }
   fi
 
   if mountpoint -q "${METADATA_DRIVE_MOUNTPOINT}"; then
