@@ -280,6 +280,10 @@ __END
       shell.print_table(table)
     end
 
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
   end
   register RouteOps, 'route', "route [options]", "Maintain routing information"
 
