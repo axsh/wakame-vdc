@@ -30,14 +30,16 @@ module Dcmgr::VNet::OpenFlow
 
       logger.info "Requesting metadata server mac: port:#{port_number} mac:#{local_hw.to_s} ip:#{self.ip.to_s}/#{listen_port}."
 
+      metadata_service = self
+
       # This needs to be per-network handler.
       network.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
                             port.port_info.number == port_number and
-                            network.services[:metadata].of_port.nil? and
+                            metadata_service.of_port.nil? and
                             message.arp? and
                             message.arp_oper == Racket::L3::ARP::ARPOP_REPLY and
-                            message.arp_spa.to_s == network.services[:metadata].ip.to_s and
+                            message.arp_spa.to_s == metadata_service.ip.to_s and
                             message.arp_tpa.to_s == switch.bridge_ipv4
                           }, Proc.new { |switch,port,message|
                             self.of_port = port_number
@@ -67,15 +69,15 @@ module Dcmgr::VNet::OpenFlow
       @arp_retry.cancel if @arp_retry
       @arp_retry = nil
 
+      metadata_service = self
+
       network.packet_handlers <<
         PacketHandler.new(Proc.new { |switch,port,message|
-                            network.services[:metadata] and
-                            network.services[:metadata].of_port and
+                            metadata_service and
+                            metadata_service.of_port and
                             message.ipv4? and message.tcp? and
                             message.ipv4_daddr.to_s == "169.254.169.254" and message.tcp_dst_port == 80
                           }, Proc.new { |switch,port,message|
-                            metadata_server = network.services[:metadata]
-
                             if metadata_server.ip.to_s == switch.bridge_ipv4.to_s
                               switch.install_dnat_entry(message, TABLE_METADATA_OUTGOING, TABLE_METADATA_INCOMING,
                                                         metadata_server.of_port,

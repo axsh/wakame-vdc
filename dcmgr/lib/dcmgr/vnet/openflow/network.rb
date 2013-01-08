@@ -71,6 +71,17 @@ module Dcmgr::VNet::OpenFlow
       system(command)
     end
 
+    def get_service(name)
+      self.services[name]
+    end
+
+    def find_services(name)
+      service = self.services[name]
+      
+      return [service] if service
+      return []
+    end
+
     def add_service(switch, service_map)
       name = service_map[:name].to_sym
 

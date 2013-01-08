@@ -37,7 +37,6 @@ module Dcmgr::VNet::OpenFlow
       end
 
       dhcp_in = DHCP::Message.from_udp_payload(message.udp_payload)
-      nw_services = network.services
 
       logger.debug "DHCP: message:#{dhcp_in.to_s}."
 
@@ -70,15 +69,18 @@ module Dcmgr::VNet::OpenFlow
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (network.ipv4_network | ~subnet_mask).to_short)
 
-      if nw_services[:gateway]
-        dhcp_out.options << DHCP::RouterOption.new(:payload => nw_services[:gateway].ip.to_short)
-      end
+      gateway_payload = []
+      network.find_services(:gateway).each { |service| gateway_payload << service.ip.to_short }
+      gateway_payload.flatten!
 
+      dhcp_out.options << DHCP::RouterOption.new(:payload => gateway_payload) unless gateway_payload.empty?
       dhcp_out.options << DHCP::SubnetMaskOption.new(:payload => subnet_mask.to_short)
 
-      if nw_services[:dns]
-        dhcp_out.options << DHCP::DomainNameOption.new(:payload => nw_services[:dns].domain_name.unpack('C*')) if nw_services[:dns].domain_name
-        dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns].ip
+      dns_service = network.get_service(:dns)
+
+      if dns_service
+        dhcp_out.options << DHCP::DomainNameOption.new(:payload => dns_service.domain_name.unpack('C*')) if dns_service.domain_name
+        dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => dns_service.ip.to_short) if dns_service.ip
       end
 
       logger.debug "DHCP send: output:#{dhcp_out.to_s}."
