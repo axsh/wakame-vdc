@@ -13,6 +13,14 @@ module Dcmgr::VNet::OpenFlow
 
       return unless self.of_port
 
+      # return if no route/something.
+
+      install_gateway_instance
+
+      flush_flows
+    end
+
+    def install_gateway_instance
       if self.network.virtual
         # Drop source IPs that are part of the destination network to avoid spoofing.
         queue_flow Flow.new(TABLE_VIRTUAL_SRC, 6, {:ip => nil, :in_port => self.of_port,
@@ -38,8 +46,6 @@ module Dcmgr::VNet::OpenFlow
                               :output_reg0 => nil
                             })
       end
-
-      flush_flows
     end
 
   end

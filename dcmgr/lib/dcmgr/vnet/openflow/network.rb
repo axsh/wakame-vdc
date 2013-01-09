@@ -34,7 +34,7 @@ module Dcmgr::VNet::OpenFlow
 
       @prefix = 0
 
-      @services = {}
+      @services = []
       @packet_handlers = []
 
       @arp_handler = ArpHandler.new
@@ -71,21 +71,24 @@ module Dcmgr::VNet::OpenFlow
       system(command)
     end
 
-    def get_service(name)
-      self.services[name]
+    def get_service(name, vif_uuid = nil)
+      name_sym = name.to_sym
+
+      self.services.detect { |service|
+        service.name == name_sym && (vif_uuid.nil? || service.vif_uuid == vif_uuid)
+      }
     end
 
     def find_services(name)
-      service = self.services[name]
-      
-      return [service] if service
-      return []
+      name_sym = name.to_sym
+
+      self.services.select { |service|
+        service.name == name_sym
+      }
     end
 
     def add_service(switch, service_map)
-      name = service_map[:name].to_sym
-
-      if self.services.has_key?(name)
+      if get_service(service_map[:name], service_map[:network_vif_uuid])
         logger.info "Duplicate service: name:'#{name}'."
         return
       end
@@ -95,12 +98,14 @@ module Dcmgr::VNet::OpenFlow
       args = {
         :switch => switch,
         :network => self,
+        :name => service_map[:name].to_sym,
+        :vif_uuid => service_map[:network_vif_uuid],
         :mac => service_map[:mac_addr],
         :ip => IPAddr.new(service_map[:address]),
         :of_port => port ? port.port_info.number : nil,
       }
 
-      case name
+      case args[:name]
       when :dhcp
         logger.info "Adding DHCP service."
         service = ServiceDhcp.new(args)
@@ -118,7 +123,7 @@ module Dcmgr::VNet::OpenFlow
         return
       end
 
-      self.services[name] = service
+      self.services << service
       service.install
 
       if virtual && service.ip && service.mac && service_map[:instance_uuid].nil?
@@ -128,47 +133,54 @@ module Dcmgr::VNet::OpenFlow
     end
     
     def update_service_port(switch, service_map, port)
-      service = self.services[service_map[:name].to_sym]
+      service = get_service(service_map[:name], service_map[:network_vif_uuid])
 
-      return unless service
+      return if service.vif_uuid.empty? || service.nil?
 
       service.of_port = port.port_info.number
       service.install
     end
 
     def delete_service(switch, service_map)
-      service = self.services.delete(service_map[:name].to_sym)
+      name_sym = service_map[:name].to_sym
+      vif_uuid = service_map[:network_vif_uuid]
 
-      if service.nil?
+      deleted_services = self.services.delete_if { |service|
+        service.name == name_sym && (vif_uuid.nil? || service.vif_uuid == vif_uuid)
+      }
+
+      if deleted_services.empty?
         logger.info "No such service: name:'#{service_map[:name]}'."
         return
       end
 
       logger.info "Deleting service: name:'#{service_map[:name]}'."
 
-      service.uninstall
+      deleted_services.each { |service| service.uninstall }
 
       # Remove arp/icmp handlers if required.
     end
 
     def update_route_port(switch, route_map, port)
-      service = self.services[:gateway]
-
-      return unless service
+      # Clear the related flows in this case.
       return unless route_map[:inner_nw] and route_map[:outer_nw]
 
-      if route_map[:inner_vif][:network_vif_uuid] == port.port_info.name
-        service.route_ipv4 = route_map[:outer_nw][:ipv4]
-        service.route_prefix = route_map[:outer_nw][:prefix]
-      elsif route_map[:outer_vif][:network_vif_uuid] == port.port_info.name
-        service.route_ipv4 = route_map[:inner_nw][:ipv4]
-        service.route_prefix = route_map[:inner_nw][:prefix]
-      else
-        return
-      end
+      find_services(:gateway).each { |service|
+        if route_map[:inner_vif][:network_vif_uuid] == port.port_info.name
+          service.route_ipv4 = route_map[:outer_nw][:ipv4]
+          service.route_prefix = route_map[:outer_nw][:prefix]
+        elsif route_map[:outer_vif][:network_vif_uuid] == port.port_info.name
+          service.route_ipv4 = route_map[:inner_nw][:ipv4]
+          service.route_prefix = route_map[:inner_nw][:prefix]
+        else
+          next
+        end
 
-      service.of_port = port.port_info.number
-      service.install
+        logger.info "Updating route port: inner_nw:#{route_map[:inner_vif][:network_vif_uuid]} outer_nw:#{route_map[:outer_vif][:network_vif_uuid]}."
+
+        service.of_port = port.port_info.number
+        service.install
+      }
     end
 
   end

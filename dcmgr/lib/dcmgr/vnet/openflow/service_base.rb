@@ -9,6 +9,8 @@ module Dcmgr::VNet::OpenFlow
 
     attr_reader :switch
     attr_reader :network
+    attr_reader :name
+    attr_reader :vif_uuid
     attr_accessor :of_port
 
     attr_accessor :mac
@@ -18,6 +20,8 @@ module Dcmgr::VNet::OpenFlow
     def initialize(args = {})
       @switch = args[:switch]
       @network = args[:network]
+      @name = args[:name]
+      @vif_uuid = args[:vif_uuid]
       @of_port = args[:of_port]
 
       @mac = args[:mac]
