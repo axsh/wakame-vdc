@@ -169,16 +169,19 @@ module Dcmgr::VNet::OpenFlow
         if route_map[:inner_vif][:network_vif_uuid] == port.port_info.name
           service.route_ipv4 = route_map[:outer_nw][:ipv4]
           service.route_prefix = route_map[:outer_nw][:prefix]
+          service.route_mode = :inner
         elsif route_map[:outer_vif][:network_vif_uuid] == port.port_info.name
           service.route_ipv4 = route_map[:inner_nw][:ipv4]
           service.route_prefix = route_map[:inner_nw][:prefix]
+          service.route_mode = :outer
         else
           next
         end
 
-        logger.info "Updating route port: inner_nw:#{route_map[:inner_vif][:network_vif_uuid]} outer_nw:#{route_map[:outer_vif][:network_vif_uuid]}."
+        logger.info "Updating route port: route_map:#{route_map.inspect}."
 
         service.of_port = port.port_info.number
+        service.gateway_type = route_map[:type].to_sym
         service.install
       }
     end

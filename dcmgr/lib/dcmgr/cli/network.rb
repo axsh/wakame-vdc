@@ -248,6 +248,7 @@ __END
     }
 
     desc "add INNER_VIF OUTER_VIF", "Add route between two networks"
+    method_option :gateway_type, :type => :string, :required => true, :desc => "Gateway type"
     def add(inner_uuid, outer_uuid)
       inner_vif = M::NetworkVif[inner_uuid] || UnknownUUIDError.raise(inner_uuid)
       outer_vif = M::NetworkVif[outer_uuid] || UnknownUUIDError.raise(outer_uuid)
@@ -255,6 +256,7 @@ __END
       # Check for collisions.
 
       route_data = {
+        :type => options[:gateway_type],
         :inner_vif_id => inner_vif.id,
         :outer_vif_id => outer_vif.id,
       }
@@ -266,12 +268,13 @@ __END
     def show(uuid)
       ds = get_routes(uuid, options)
 
-      table = [['Inner NW', 'Inner Vif', 'Outer NW', 'Outer Vif']]
+      table = [['Type', 'Inner NW', 'Inner Vif', 'Outer NW', 'Outer Vif']]
       ds.each { |r|
         inner_vif = r.inner_vif
         outer_vif = r.outer_vif
 
-        table << [inner_vif.network.canonical_uuid,
+        table << [r.type,
+                  inner_vif.network.canonical_uuid,
                   inner_vif.canonical_uuid,
                   outer_vif.network.canonical_uuid,
                   outer_vif.canonical_uuid,

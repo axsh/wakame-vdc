@@ -65,6 +65,10 @@ Sequel.migration do
       column :inner_vif_id, "int(11)", :null=>false
       column :outer_vif_id, "int(11)", :null=>false
 
+      # routing type
+      #    gateway_openflow, gateway_instance, nat_openflow, nat_instance
+      column :type, 'varchar(255)', :null=>false
+
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime"
