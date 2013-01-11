@@ -21,6 +21,7 @@ module Dcmgr
 
           ACCEPT_PROTOCOLS.each do |protocol|
             self.rules << IptablesRule.new(:nat,:prerouting,nil,:incoming,"-m physdev --physdev-in #{vnic_id} -d #{self.logging_ip} -p #{protocol} --dport #{logging_port} -j DNAT --to-destination #{self.host_ip}:#{self.logging_port}")
+            self.rules << IptablesRule.new(:filter,:forward,protocol,:outgoing,"-p #{protocol} -d #{self.host_ip} --dport #{self.logging_port} -j ACCEPT")
           end
         end
       end
