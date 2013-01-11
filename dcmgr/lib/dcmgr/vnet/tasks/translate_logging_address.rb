@@ -10,7 +10,7 @@ module Dcmgr
         attr_accessor :logging_ip
         attr_accessor :logging_port
 
-        ACCEPT_PROTOCOLS = ['udp', 'tcp'].freeze
+        ACCEPT_PROTOCOLS = [:udp, :tcp].freeze
 
         def initialize(vnic_id, host_ip, logging_ip, logging_port)
           super()
