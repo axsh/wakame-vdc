@@ -89,6 +89,7 @@ module Dcmgr
     autoload :MacRange, 'dcmgr/models/mac_range'
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
+    autoload :QueuedJob, 'dcmgr/models/queued_job'
   end
 
   module Endpoints
