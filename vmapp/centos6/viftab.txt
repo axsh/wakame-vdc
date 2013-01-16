@@ -1,0 +1,2 @@
+vdc-eth0 52:54:00:ab:c2:a5 vboxbr0
+vdc-eth1 52:54:00:8a:c3:16 vboxbr0
