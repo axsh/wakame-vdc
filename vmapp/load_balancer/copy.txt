@@ -1,0 +1,3 @@
+etc/init/haproxy_updater.conf /etc/init/haproxy_updater.conf
+etc/init.d/stunnel            /etc/init.d/stunnel
+scripts/update_haproxy.sh     /opt/axsh/wakame-vdc/scripts/update_haproxy.sh
