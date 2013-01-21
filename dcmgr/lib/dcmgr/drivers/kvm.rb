@@ -17,6 +17,8 @@ module Dcmgr
             '/usr/libexec/qemu-kvm'
           end
         }
+
+        param :qemu_options, :default=>'-no-kvm-pit-reinjection'
       end
 
       # 0x0-2 are reserved by KVM.
@@ -55,6 +57,7 @@ module Dcmgr
                "-daemonize",
                "-monitor telnet:127.0.0.1:%d,server,nowait",
                "-no-shutdown",
+               driver_configuration.qemu_options,
                ]
         args=[driver_configuration.qemu_path,
               inst[:memory_size],
