@@ -291,6 +291,7 @@ module Dcmgr
         hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
       end
 
+      Task::Tasklet.register(self.new)
     end
   end
 end
