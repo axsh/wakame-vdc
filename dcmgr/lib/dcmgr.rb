@@ -46,6 +46,7 @@ module Dcmgr
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
     autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
+    autoload :Bksta, 'dcmgr/configurations/bksta'
   end
 
   require 'dcmgr/models/errors'
