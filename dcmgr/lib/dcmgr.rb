@@ -123,6 +123,8 @@ module Dcmgr
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
+    autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
+    autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
   end
 
   module Helpers
@@ -341,6 +343,7 @@ module Dcmgr
   require 'dcmgr/messaging'
   module Messaging
     autoload :LoadBalancer, 'dcmgr/messaging/load_balancer'
+    autoload :JobQueue, 'dcmgr/messaging/job_queue'
   end
 
 end
