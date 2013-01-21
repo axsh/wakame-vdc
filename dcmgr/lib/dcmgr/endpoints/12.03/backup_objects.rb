@@ -98,6 +98,26 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
     respond_with(R::BackupObject.new(bo).generate)
   end
 
+  # Register copy_to task
+  put '/:id/copy_to' do
+    bo = find_by_uuid(:BackupObject, params[:id])
+    if params[:destination] && params[:destination].to_s.size > 0
+    else
+      raise E::InvalidParameter, :destination
+    end
+
+    if bo.backup_storage.node.nil?
+      raise E::InvalidBackupStorage, "Not ready for copy_to task."
+    end
+
+    Dcmgr::Messaging.job_queue.submit("backup_storage.copy_to.#{bo.backup_storage.node_id}",
+                                      bo.canonical_uuid,
+                                      {:destination=>params[:destination]}
+                                      )
+
+    respond_with(R::BackupObject.new(bo).generate)
+  end
+
   delete '/:id' do
     raise E::UndefindBackupObjectID if params[:id].nil?
 
