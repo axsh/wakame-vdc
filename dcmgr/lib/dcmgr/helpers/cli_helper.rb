@@ -10,6 +10,13 @@ require 'forwardable'
 # force to use /bin/bash.
 module POSIX
   module Spawn
+
+    # FIXME: force disable C extention.
+    # "qemu -daemonize" from  posix_spawn() causes zombie process then
+    # waitpid later keeps to hold the process ID. As result, hva stops
+    # at the point until the qemu is terminated.
+    remove_method :_pspawn
+    
     private
     def adjust_process_spawn_argv(args)
       if args.size == 1 && args[0] =~ /[ |><]/
