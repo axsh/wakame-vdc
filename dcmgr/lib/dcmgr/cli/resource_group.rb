@@ -100,11 +100,7 @@ __DESC
       UnknownUUIDError.raise(object_uuid) if object.nil?
       Error.raise("A '#{object.class}' can not be put into #{uuid}.",100) unless tag.accept_mapping?(object)
 
-      M::TagMapping.create(
-        :tag_id => tag.id,
-        :uuid   => object.canonical_uuid,
-        :sort_index => options[:sort_index]
-      )
+      tag.map_resource(object,options[:sort_index])
     end
 
     desc "index UUID OBJECT_UUID INDEX", "Set the sort index for a resource in a group"
