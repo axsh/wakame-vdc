@@ -86,8 +86,8 @@ DcmgrGUI.prototype.imagePanel = function(){
       var image_id = $(this).find('#image_id').val();
       var display_name = $(this).find('#machine_image_display_name').val();
       var description = $(this).find('#machine_image_description').val();
-      var data = 'display_name=' + display_name
-                +'&description=' + description;
+      var data = 'display_name=' + encodeURIComponent(display_name)
+                +'&description=' + encodeURIComponent(description);
 
       var request = new DcmgrGUI.Request;
       request.put({
@@ -170,7 +170,7 @@ DcmgrGUI.prototype.imagePanel = function(){
                 vifs.join('&'),
                 bt_launch_instance.monitor_selector.queryParams(),
                 "ssh_key="+ssh_key_pair,
-                "display_name="+display_name,
+                "display_name="+encodeURIComponent(display_name),
                 "monitoring[enabled]="+monitoring_enabled
                ];
 

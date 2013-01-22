@@ -25,7 +25,7 @@ If you need OpenVZ container, add another repository.
 
 Install epel-release.
 
-    # yum install -y http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-7.noarch.rpm
+    # yum install -y http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
 
 ### Dcmgr installation
 
@@ -159,8 +159,12 @@ NOTICE: this script will erase all related database at first. We recommend to ba
     # yum install -y wakame-vdc-vdcsh
     # /opt/axsh/wakame-vdc/tests/vdc.sh init
 
+Stop here, you're done!
+
 Developer Zone
 ==============
+
+If you are a developer, please do the following.
 
 Installing RPM Builder Software
 -------------------------------

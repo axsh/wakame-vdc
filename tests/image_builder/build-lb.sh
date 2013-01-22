@@ -177,6 +177,10 @@ function load_balancer_setup() {
 
   cat <<EOF > $tmp_root/etc/rc.local
 /etc/wakame-init md
+
+. /metadata/user-data
+route add -net \${AMQP_SERVER} netmask 255.255.255.255 dev eth1
+
 initctl start haproxy_updater
 exit 0
 EOF
@@ -186,7 +190,7 @@ EOF
 /sbin/MAKEDEV urandom
 
 # for HAproxy
-rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-7.noarch.rpm
+rpm -ivh http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
 
 # instlall package
 distro_pkgs="

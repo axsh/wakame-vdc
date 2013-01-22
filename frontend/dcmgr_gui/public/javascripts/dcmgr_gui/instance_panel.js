@@ -64,7 +64,9 @@ DcmgrGUI.prototype.instancePanel = function(){
     c_list.element.find(".edit_instance").each(function(key,value){
       $(this).button({ disabled: false });
       var uuid = $(value).attr('id').replace(/edit_(i-[a-z0-9]+)/,'$1');
-      if( uuid ){
+      var row_id = '#row-'+uuid;
+      var state = $(row_id).find('.state').text();
+      if( uuid && _.include(['running', 'stopped', 'halted'], state)){
         $(this).bind('click',function(){
           bt_edit_instance.open({"ids":[uuid]});
         });
@@ -80,7 +82,7 @@ DcmgrGUI.prototype.instancePanel = function(){
       var instance_id = $(this).find('#instance_id').val();
       var display_name = $(this).find('#instance_display_name').val();
 
-      var query = ['display_name=' + display_name,
+      var query = ['display_name=' + encodeURIComponent(display_name),
                    'monitoring[enabled]=' + $(this).find('#monitoring_enabled').is(':checked'),
                    'ssh_key_id=' + $(this).find("#ssh_key_pair").val()
                   ];
@@ -161,7 +163,7 @@ DcmgrGUI.prototype.instancePanel = function(){
               });
             }
           });
-          
+
           if( data.monitoring ){
             data.monitoring = bt_edit_instance.monitor_selector.validate();
           }
@@ -285,9 +287,9 @@ DcmgrGUI.prototype.instancePanel = function(){
               "url": '/network_vifs/'+select_current_vif[0]+'/monitors.json',
               "data": "",
               success: function(json,status) {
-                for(var i in json) {
+                $.each(json, function(i){
                   bt_edit_instance.monitor_selector.addItem(json[i].title, json[i]);
-                }
+                });
 
                 is_ready['monitoring_form'] = true;
                 ready(is_ready);
@@ -535,8 +537,8 @@ DcmgrGUI.prototype.instancePanel = function(){
     var description = $(this).find('#backup_description').val();
 
     var data = ['instance_id='+instance_id,
-                'backup_display_name=' + display_name,
-                'backup_description=' + description
+                'backup_display_name=' + encodeURIComponent(display_name),
+                'backup_description=' + encodeURIComponent(description)
                ].join('&');
 
     var request = new DcmgrGUI.Request;
@@ -556,6 +558,25 @@ DcmgrGUI.prototype.instancePanel = function(){
     height:250,
     title: $.i18n.prop('backup_instances_header'),
     path:'/backup_instances',
+    callback: function(){
+      var is_ready = {
+        'backup_display_name': false,
+      }
+
+      var ready = function(data) {
+        if(data['backup_display_name'] == true) {
+          bt_instance_backup.disabledButton(1, false);
+        } else {
+          bt_instance_backup.disabledButton(1, true);
+        }
+      }
+
+      var display_name_params = {'name': 'backup_display_name', 'is_ready': is_ready, 'ready': ready};
+      $(this).find('#backup_display_name').bind('keyup', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#backup_display_name').bind('paste', display_name_params, DcmgrGUI.Util.checkTextField);
+      $(this).find('#backup_display_name').bind('cut', display_name_params, DcmgrGUI.Util.checkTextField);
+
+    },
     button:instance_backup_buttons
   });
 
@@ -594,6 +615,8 @@ DcmgrGUI.prototype.instancePanel = function(){
     list_request.url = DcmgrGUI.Util.getPagePath('/instances/list/',c_list.page);
     list_request.data = DcmgrGUI.Util.getPagenateData(c_pagenate.start,c_pagenate.row);
     c_list.element.trigger('dcmgrGUI.updateList',{request:list_request})
+    c_list.clearCheckedList();
+    $('#detail').html('');
 
     //update detail
     $.each(c_list.checked_list,function(check_id,obj){
@@ -605,8 +628,6 @@ DcmgrGUI.prototype.instancePanel = function(){
   });
 
   c_pagenate.element.bind('dcmgrGUI.updatePagenate',function(){
-    c_list.clearCheckedList();
-    $('#detail').html('');
     bt_refresh.element.trigger('dcmgrGUI.refresh');
   });
 
@@ -669,6 +690,7 @@ DcmgrGUI.prototype.instancePanel = function(){
       var selected_ids = c_list.getCheckedInstanceIds();
       if( selected_ids ){
         bt_instance_backup.open(selected_ids);
+        bt_instance_backup.disabledButton(1, true);
       } else {
         $(this).button({ disabled: true });
       }
@@ -679,33 +701,40 @@ DcmgrGUI.prototype.instancePanel = function(){
   var actions = {};
   actions.changeButtonState = function() {
     var ids = c_list.currentMultiChecked()['ids'];
-    var flag = true;
-    var is_selectmenu = false;
-    var is_instance_backup = false;
-    $.each(ids, function(key, uuid){
-      var row_id = '#row-'+uuid;
-      var state = $(row_id).find('.state').text();
-      is_selectmenu = _.include(['running', 'stopped', 'halted'], state)
-      is_instance_backup = _.include(['halted'], state)
-      flag = _.contains([is_selectmenu, is_instance_backup], true)
-    });
+    var is_select_menus = [];
+    var is_instance_backups = [];
 
-    if (flag){
-      if(is_selectmenu) {
+    if(ids.length === 0) {
+      selectmenu.data('selectmenu').disableButton();
+      bt_instance_backup.disableDialogButton();
+    } else {
+      $.each(ids, function(key, uuid){
+        var row_id = '#row-'+uuid;
+        var state = $(row_id).find('.state').text();
+        if(_.include(['running', 'stopped', 'halted'], state)) {
+          is_select_menus.push(true);
+        } else {
+          is_select_menus.push(false);
+        }
+
+        if(_.include(['halted'], state)) {
+          is_instance_backups.push(true);
+        } else {
+          is_instance_backups.push(false);
+        }
+      });
+
+      if(!_.contains(is_select_menus, false)){
         selectmenu.data('selectmenu').enableButton();
       } else {
         selectmenu.data('selectmenu').disableButton();
       }
 
-      if(is_instance_backup) {
+      if(!_.contains(is_instance_backups, false)){
         bt_instance_backup.enableDialogButton();
       } else {
         bt_instance_backup.disableDialogButton();
       }
-
-    } else{
-      selectmenu.data('selectmenu').disableButton();
-      bt_instance_backup.disableDialogButton();
     }
   }
 

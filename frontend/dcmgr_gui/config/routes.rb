@@ -133,7 +133,7 @@ DcmgrGui::Application.routes.draw do
   #kepairs
   get    'keypairs' ,:to => 'keypairs#index'
   get    'keypairs/list/:id' ,:to => 'keypairs#list'
-  get    'keypairs/create_ssh_keypair' ,:to => 'keypairs#create_ssh_keypair'
+  post   'keypairs/create_ssh_keypair' ,:to => 'keypairs#create_ssh_keypair'
   put    'keypairs/edit_ssh_keypair/:id' ,:to => 'keypairs#edit_ssh_keypair'
   get    'keypairs/all' ,:to => 'keypairs#show_keypairs'
   get    'keypairs/total' ,:to => 'keypairs#total'

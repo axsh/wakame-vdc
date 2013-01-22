@@ -46,8 +46,8 @@ function list_3rd_party() {
   vdc_current_base_url=http://dlc.wakame.axsh.jp.s3.amazonaws.com/packages/rhel/6/current/${basearch}
   cat <<EOS | egrep -v ^#
 # pkg_name                pkg_uri
-epel-release-6-7          http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-7.noarch.rpm
-elrepo-release            http://elrepo.org/elrepo-release-6-4.el6.elrepo.noarch.rpm
+epel-release-6-8          http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-8.noarch.rpm
+elrepo-release            http://elrepo.org/elrepo-release-6-5.el6.elrepo.noarch.rpm
 rabbitmq-server-2.7.1     http://www.rabbitmq.com/releases/rabbitmq-server/v2.7.1/rabbitmq-server-2.7.1-1.noarch.rpm
 flog                      ${vdc_current_base_url}/flog-1.8-3.${basearch}.rpm
 openvswitch               ${vdc_current_base_url}/kmod-openvswitch-1.6.1-1.el6.${arch}.rpm
