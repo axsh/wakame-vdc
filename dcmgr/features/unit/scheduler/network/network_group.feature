@@ -34,6 +34,11 @@ Feature: Network group scheduler
     And a NetworkGroup default_group exists with the following mapped resources
     | mapped_resources |
     | test-network4    |
+
+    And the following MacRange exists in the database
+    | test_name | vendor_id | range_begin | range_end |
+    | demomacs  | 5395456   | 1           | 16777215  |
+
     And the following configuration is placed in dcmgr.conf
     """
     service_type("std", "StdServiceType") {

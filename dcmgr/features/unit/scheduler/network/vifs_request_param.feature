@@ -19,6 +19,10 @@ Feature: Vifs request param scheduler
     | range_begin | range_end     |
     | 10.101.0.1  | 10.101.0.254  |
 
+    And the following MacRange exists in the database
+    | test_name | vendor_id | range_begin | range_end |
+    | demomacs  | 5395456   | 1           | 16777215  |
+
     And the following configuration is placed in dcmgr.conf
     """
     service_type("std", "StdServiceType") {
