@@ -54,6 +54,16 @@ module Dcmgr::Models
       ds
     end
 
+    def map_resource(resource, sort_index = 0)
+      raise "This tag can not map resources of type #{resource.class}" unless self.accept_mapping?(resource)
+
+      TagMapping.create(
+        :tag_id => self.id,
+        :uuid   => resource.canonical_uuid,
+        :sort_index => sort_index
+      )
+    end
+
     def self.mappable(resource=nil)
       resource && @mappable = resource
 
