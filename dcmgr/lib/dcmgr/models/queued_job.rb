@@ -32,9 +32,13 @@ module Dcmgr::Models
       end
     end
 
+    def to_hash
+      super.merge({:params => self.params})
+    end
+
     # Insert new job entry to a queue.
     #
-    def self.submit(queue_name, resource_uuid, opts=nil)
+    def self.submit(queue_name, resource_uuid, params, opts=nil)
       opts = {:retry_max=>1}.merge(opts || {})
       
       db.transaction do
@@ -42,6 +46,7 @@ module Dcmgr::Models
                      :state=>'pending',
                      :resource_id=>resource_uuid,
                      :retry_max => opts[:retry_max],
+                     :params => params,
                      )
         job
       end
