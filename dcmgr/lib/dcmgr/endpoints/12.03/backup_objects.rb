@@ -112,7 +112,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
 
     Dcmgr::Messaging.job_queue.submit("backup_storage.copy_to.#{bo.backup_storage.node_id}",
                                       bo.canonical_uuid,
-                                      {:destination=>params[:destination]}
+                                      {:destination=>params[:destination],
+                                        :backup_object=>bo.to_hash}
                                       )
 
     respond_with(R::BackupObject.new(bo).generate)
