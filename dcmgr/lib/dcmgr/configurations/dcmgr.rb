@@ -273,7 +273,7 @@ module Dcmgr
           errors << "create_volume_min_size must be a decimal value: #{@config[:create_volume_min_size]}"
         end
 
-        unless @config[:service_types][@config[:default_service_type].to_s]
+        unless @config[:service_types].nil? || @config[:service_types][@config[:default_service_type].to_s]
           errors << "Unable to find the definitions for default_service_type '#{@config[:default_service_type]}'."
         end
       end
