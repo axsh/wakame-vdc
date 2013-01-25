@@ -25,25 +25,27 @@ module Dcmgr
         @backend_class.new(*@new_args)
       end
       
-      def submit(queue_name, resource_uuid, opts={}); end
+      def submit(queue_name, resource_uuid, params, opts={}); end
       def pop(queue_name, worker_id, opts={}); end
       def cancel(job_id); end
       def finish_success(job_id); end
       def finish_fail(job_id, failure_reason); end
       
       class Sequel < self
-        def submit(queue_name, resource_uuid, opts={})
+        def submit(queue_name, resource_uuid, params, opts={})
           opts = {:parent_id=>nil}.merge(opts)
-          Models::QueuedJob.submit(queue_name, resource_uuid, opts[:parent_id]).to_hash
+          Models::QueuedJob.submit(queue_name, resource_uuid, params, opts[:parent_id]).to_hash
         end
 
         def pop(queue_name, worker_id, opts={})
           opts = {}.merge(opts)
-          Models::QueuedJob.pop(queue_name, worker_id).to_hash
+          job = Models::QueuedJob.pop(queue_name, worker_id)
+          job && job.to_hash
         end
 
         def cancel(job_id)
-          Models::QueuedJob.cancel(job_id).to_hash
+          job = Models::QueuedJob.cancel(job_id)
+          job && job.to_hash
         end
 
         def finish_success(job_id)
@@ -67,9 +69,9 @@ module Dcmgr
           @node = node
         end
         
-        def submit(queue_name, resource_uuid, opts={})
+        def submit(queue_name, resource_uuid, params, opts={})
           rpc.request('jobqueue-proxy', 'submit',
-                      queue_name, resource_uuid, opts)
+                      queue_name, resource_uuid, params, opts)
         end
 
         def pop(queue_name, worker_id, opts={})
