@@ -7,13 +7,14 @@ module Dcmgr::Scheduler::MacAddress
     end
 
     M = Dcmgr::Models
+    S = Dcmgr::Scheduler
 
     def schedule(network_vif)
       range = M::MacRange.first
-      raise MacAddressSchedulerError, "No mac address ranges found in the database." if range.nil?
+      raise S::MacAddressSchedulerError, "No mac address ranges found in the database." if range.nil?
 
       mac = range.get_random_available_mac
-      raise MacAddressSchedulerError, "No available MAC addresses left in default range '#{range.canonical_uuid}'" if mac.nil?
+      raise S::MacAddressSchedulerError, "No available MAC addresses left in default range '#{range.canonical_uuid}'" if mac.nil?
 
       M::MacLease.lease(mac.to_s(16))
       network_vif.mac_addr = mac.to_s(16)
