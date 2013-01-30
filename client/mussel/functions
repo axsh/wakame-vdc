@@ -52,7 +52,7 @@ function shlog() {
 }
 
 function call_api() {
-  shlog curl $*
+  shlog curl -fSkL $*
 }
 
 function cmd_index() {
