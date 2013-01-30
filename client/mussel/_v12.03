@@ -74,6 +74,11 @@ instance)
      --data-urlencode "vifs=${vifs}" \
      ${base_uri}/${1}s.${format}
     ;;
+  xcreate)
+    call_api -s -X POST -H ${http_header}  \
+     ${MUSSEL_CUSTOM_DATA} \
+     ${base_uri}/${1}s.${format}
+    ;;
   backup)
     call_api -s -X PUT -H ${http_header} \
      -d "description=${description}" \
