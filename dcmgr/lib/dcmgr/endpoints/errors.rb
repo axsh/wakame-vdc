@@ -158,5 +158,6 @@ module Dcmgr
     define_error(:IncompatibleHostNode, 400, '179')
     define_error(:MacNotInRange, 400, '180')
     define_error(:IpNotInDhcpRange, 400, '181')
+    define_error(:InvalidBackupStorage, 400, '182')
   end
 end

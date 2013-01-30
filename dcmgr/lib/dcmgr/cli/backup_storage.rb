@@ -8,6 +8,7 @@ module Dcmgr::Cli
     desc "add [options]", "Register a backup storage"
     method_option :uuid, :type => :string, :desc => "The UUID for the backup storage."
     method_option :display_name, :type => :string, :required=>true, :desc => "The display name for the backup storage."
+    method_option :node_id, :type => :string, :required=>false, :desc => "The backup service agent ID for the backup storage."
     method_option :base_uri, :type => :string, :required=>true, :desc => "The base URI to store the backup objects."
     method_option :storage_type, :type => :string, :required=>true, :desc => "Storage driver name of the backup storage: #{M::BackupStorage::STORAGE_TYPES.join(', ')}"
     method_option :description, :type => :string, :desc => "Description of the backup storage"
@@ -20,6 +21,7 @@ module Dcmgr::Cli
     desc "modify UUID [options]", "Modify the backup storage"
     method_option :uuid, :type => :string, :desc => "The UUID for the backup storage."
     method_option :display_name, :type => :string, :desc => "The display name for the backup storage."
+    method_option :node_id, :type => :string, :desc => "The backup service agent ID for the backup storage."
     method_option :base_uri, :type => :string, :desc => "The base URI to store the backup objects."
     method_option :storage_type, :type => :string, :desc => "Storage driver name of the backup storage: #{M::BackupStorage::STORAGE_TYPES.join(', ')}"
     method_option :description, :type => :string, :desc => "Description of the backup storage"
@@ -42,6 +44,7 @@ module Dcmgr::Cli
 UUID: <%= bkst.canonical_uuid %>
 Name: <%= bkst.display_name %>
 Storage Type: <%= bkst.storage_type %>
+Node ID: <%= bkst.node_id %>
 Base URI: <%= bkst.base_uri %>
 <%- if bkst.description -%>
 Description:
