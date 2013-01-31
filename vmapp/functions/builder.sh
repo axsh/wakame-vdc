@@ -24,8 +24,21 @@ function preflight_builder_check() {
   [[ -f "${suite_path}/image.ini"     ]] || { echo "[ERROR] file not found: image.ini (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 }
 
+function vmbuilder_dir() {
+  echo ${BASH_SOURCE[0]%/*}/../tmp/vmbuilder
+}
+
+function setup_vmbuilder() {
+  local vmbuilder_dir=$(vmbuilder_dir)
+  [[ -d "${vmbuilder_dir}" ]] || git clone https://github.com/axsh/vmbuilder.git ${vmbuilder_dir}
+  (
+    cd ${vmbuilder_dir}
+    git reset --hard ${vmbuilder_git_hash:-HEAD}
+  )
+}
+
 function vmbuilder_path() {
-  echo /opt/hansode/vmbuilder/kvm/rhel/6/vmbuilder.sh
+  echo $(vmbuilder_dir)/kvm/rhel/6/vmbuilder.sh
 }
 
 function vmbootstrap() {
@@ -81,6 +94,7 @@ function build_vm() {
   [[ -d "${suite_path}" ]] || { echo "[ERROR] directory not found: ${suite_path} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   checkroot || return 1
   preflight_builder_check || return 1
+  setup_vmbuilder
 
   cd ${suite_path}
   load_image_ini image.ini
