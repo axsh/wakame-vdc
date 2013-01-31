@@ -31,4 +31,9 @@ test_instance_create() {
   run_cmd ${MUSSEL_ARGS}
 }
 
+test_instance_xcreate() {
+  extract_args instance xcreate
+  run_cmd ${MUSSEL_ARGS}
+}
+
 . ../shunit2
