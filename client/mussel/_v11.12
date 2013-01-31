@@ -79,14 +79,14 @@ security_group)
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
-    [ -z "${3}" ] && { echo "${1} ${2} NAME" >&2; exit 1; }
+    [ -z "${3}" ] && { echo "${1} ${2} NAME" >&2; return 1; }
     call_api -X POST \
      --data-urlencode "description=${3}" \
      --data-urlencode "rule=${4}" \
      ${base_uri}/${1}s.${format}
     ;;
   update)
-    [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; exit 1; }
+    [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; return 1; }
     call_api -X PUT \
      --data-urlencode "rule=${4}" \
      ${base_uri}/${1}s.${format}/${3}
@@ -107,7 +107,7 @@ volume)
      ${base_uri}/${1}s.${format}
     ;;
   attach|detach)
-    [ $# = 4 ] || { echo "${1} ${2} [vol-id] [inst-id]" >&2; exit 1; }
+    [ $# = 4 ] || { echo "${1} ${2} [vol-id] [inst-id]" >&2; return 1; }
     call_api -X PUT -d "''" \
      "${base_uri}/${1}s.${format}/${3}/${2}?instance_id"
     ;;
@@ -121,7 +121,7 @@ ssh_key_pair)
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   create)
-    [ -z "${3}" ] && { echo "${1} ${2} NAME" >&2; exit 1; }
+    [ -z "${3}" ] && { echo "${1} ${2} NAME" >&2; return 1; }
     call_api -X POST \
      --data-urlencode "name=${3}" \
      ${base_uri}/${1}s.${format}
@@ -138,10 +138,10 @@ network)
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
-    [ -z "${gw}" ] && { echo "'gw' is empty." >&2; exit 1; }
-    [ -z "${network}" ] && { echo "'network' is empty." >&2; exit 1; }
-    [ -z "${prefix}" ] && { echo "'prefix' is empty." >&2; exit 1; }
-    [ -z "${description}" ] && { echo "'description' is empty." >&2; exit 1; }
+    [ -z "${gw}" ] && { echo "'gw' is empty." >&2; return 1; }
+    [ -z "${network}" ] && { echo "'network' is empty." >&2; return 1; }
+    [ -z "${prefix}" ] && { echo "'prefix' is empty." >&2; return 1; }
+    [ -z "${description}" ] && { echo "'description' is empty." >&2; return 1; }
     call_api -X POST \
      --data-urlencode "gw=${gw}" \
      --data-urlencode "network=${network}" \
@@ -150,12 +150,12 @@ network)
      ${base_uri}/${1}s.${format}
     ;;
   reserve|release)
-    [ $# = 4 ] || { echo "${1} ${2} [network-id] [ipaddr]" >&2; exit 1; }
+    [ $# = 4 ] || { echo "${1} ${2} [network-id] [ipaddr]" >&2; return 1; }
     call_api -X PUT -d "''" \
      "${base_uri}/${1}s.${format}/${3}/${2}?ipaddr=${4}"
     ;;
   add_pool|del_pool)
-    [ $# = 4 ] || { echo "${1} ${2} [network-id] [pool-name]" >&2; exit 1; }
+    [ $# = 4 ] || { echo "${1} ${2} [network-id] [pool-name]" >&2; return 1; }
     call_api -X PUT -d "''" \
      "${base_uri}/${1}s.${format}/${3}/${2}?name=${4}"
     ;;
