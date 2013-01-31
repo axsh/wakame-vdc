@@ -15,6 +15,7 @@ module Hijiki::DcmgrResource::V1203
                                  :ha_enabled,
                                  :hypervisor,
                                  :display_name,
+                                 :service_type,
                                  :monitoring_enabled,
                                  :monitoring_mailaddr,
                                 ]
@@ -39,6 +40,7 @@ module Hijiki::DcmgrResource::V1203
         instance.security_groups = params[:security_groups]
         instance.ssh_key_id = params[:ssh_key]
         instance.display_name = params[:display_name]
+        instance.service_type = 'std'
 
         instance.vifs = params[:vifs] if params[:vifs]
 
