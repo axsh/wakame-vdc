@@ -78,7 +78,7 @@ function cmd_index() {
 
 function cmd_show() {
   local namespace=$1 cmd=$2 uuid=$3
-  [[ -n "${uuid}" ]] || { echo "${namespace} ${cmd} ID" >&2; return 1; }
+  [[ -n "${uuid}" ]] || { echo "[ERROR] ${namespace} ${cmd} ID (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X GET "${base_uri}/${namespace}s/${uuid}.${format}"
 }
@@ -97,7 +97,7 @@ function cmd_xcreate() {
 
 function cmd_destroy() {
   local namespace=$1 cmd=$2 uuid=$3
-  [[ -n "${uuid}" ]] || { echo "${namespace} ${cmd} ID" >&2; return 1; }
+  [[ -n "${uuid}" ]] || { echo "[ERROR] ${namespace} ${cmd} ID (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X DELETE "${base_uri}/${namespace}s/${uuid}.${format}"
 }
