@@ -68,6 +68,12 @@ function cmd_xget() {
   call_api -X GET ${base_uri}/${1}s/${3}/${2}.${format}
 }
 
+function cmd_xcreate() {
+  call_api -X POST \
+   ${MUSSEL_CUSTOM_DATA} \
+   ${base_uri}/${1}s.${format}
+}
+
 function cmd_destroy() {
   [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; exit 1; }
   call_api -X DELETE \
