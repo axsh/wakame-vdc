@@ -4,6 +4,7 @@
 #
 
 MUSSEL_RESOURCES="
+ backup_object
  host_node
  image
  instance
