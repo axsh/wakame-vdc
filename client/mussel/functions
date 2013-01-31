@@ -11,18 +11,33 @@ MUSSEL_RESOURCES=
 
 function extract_args() {
   MUSSEL_ARGS=
-
-  for arg in $*; do
-    case $arg in
-      --*=*)
-        key=${arg%%=*}; key=$(echo ${key##--} | tr - _)
-        value=${arg##--*=}
-        eval "${key}=\"${value}\""
+  local arg= key= value=
+  while [[ $# != 0 ]]; do
+    arg="$1" key= value=
+    case "${arg}" in
+    --*=*)
+      key=${arg%%=*}; key=${key##--}; key=${key//-/_}
+      value="${value} ${arg##--*=}"
+      eval "${key}=\"${value}\""; value="\${${key}}"; value=$(eval echo ${value}); eval "${key}=\"${value## }\""
+      ;;
+    --*)
+      key=${arg##--}; key=${key//-/_}
+      case "$2" in
+      --*|"")
+        eval "${key}=1"
         ;;
       *)
-        MUSSEL_ARGS="${MUSSEL_ARGS} ${arg}"
+        value="\${${key}} $2"
+        eval "${key}=\"${value}\""; value="\${${key}}"; value=$(eval echo ${value}); eval "${key}=\"${value## }\""
+        shift
         ;;
+      esac
+      ;;
+    *)
+      MUSSEL_ARGS="${MUSSEL_ARGS} ${arg}"
+      ;;
     esac
+    shift
   done
   # trim
   MUSSEL_ARGS=${MUSSEL_ARGS%% }
