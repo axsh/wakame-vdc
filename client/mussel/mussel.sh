@@ -1,6 +1,10 @@
 #!/bin/bash
 #
-# mussel
+# requires:
+#  bash, pwd
+#
+# description:
+#  wakame-vdc dcmgr(api) client
 #
 LANG=C
 LC_ALL=C
