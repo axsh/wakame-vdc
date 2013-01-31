@@ -176,7 +176,7 @@ host_node|storage_node|image|instance_spec|volume_snapshot)
   ;;
 
 *)
-  echo "$0 [instance|security_group|volume|ssh_key_pair|network|host_node|storage_node|image|instance_spec|volume_snapshot] [method]" >&2
+  echo "$0 [instance|security_group|volume|ssh_key_pair|network|host_node|storage_node|image|instance_spec|volume_snapshot] [method]" >&2; return 1
   ;;
 
 esac
