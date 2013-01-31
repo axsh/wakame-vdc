@@ -71,36 +71,47 @@ function call_api() {
 }
 
 function cmd_index() {
-  call_api -X GET "${base_uri}/${1}s.${format}?${xquery}"
+  local namespace=$1 cmd=$2 uuid=$3
+
+  call_api -X GET "${base_uri}/${namespace}s.${format}?${xquery}"
 }
 
 function cmd_show() {
-  [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; return 1; }
-  call_api -X GET ${base_uri}/${1}s/${3}.${format}
+  local namespace=$1 cmd=$2 uuid=$3
+  [[ -z "${uuid}" ]] && { echo "${namespace} ${cmd} ID" >&2; return 1; }
+
+  call_api -X GET "${base_uri}/${namespace}s/${uuid}.${format}"
 }
 
 function cmd_xget() {
-  call_api -X GET ${base_uri}/${1}s/${3}/${2}.${format}
+  local namespace=$1 cmd=$2 uuid=$3
+
+  call_api -X GET "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 function cmd_xcreate() {
-  call_api -X POST \
-   ${MUSSEL_CUSTOM_DATA} \
-   ${base_uri}/${1}s.${format}
+  local namespace=$1 cmd=$2 uuid=$3
+
+  call_api -X POST ${MUSSEL_CUSTOM_DATA} "${base_uri}/${namespace}s.${format}"
 }
 
 function cmd_destroy() {
-  [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; return 1; }
-  call_api -X DELETE \
-   ${base_uri}/${1}s/${3}.${format}
+  local namespace=$1 cmd=$2 uuid=$3
+  [[ -z "${uuid}" ]] && { echo "${namespace} ${cmd} ID" >&2; return 1; }
+
+  call_api -X DELETE "${base_uri}/${namespace}s/${uuid}.${format}"
 }
 
 function cmd_help() {
-  echo "$0 ${1} [help|${2}]" >&2
+  local namespace=$1 cmd=$2 uuid=$3
+
+  echo "$0 ${namespace} [help|${cmd}]" >&2
 }
 
 function cmd_default() {
-  [ $# = 1 ] && cmd_index $* || $0 ${1} help
+  local namespace=$1 cmd=$2 uuid=$3
+
+  [[ $# = 1 ]] && cmd_index $* || $0 ${namespace} help
 }
 
 function run_cmd() {
