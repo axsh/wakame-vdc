@@ -54,6 +54,14 @@ function test_load_balancer_show_uuid() {
   assertEquals $? 0
 }
 
+### destroy
+
+function test_load_balancer_destroy() {
+  extract_args ${namespace} destroy asdf
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
 ### create
 
 function test_load_balancer_create() {
