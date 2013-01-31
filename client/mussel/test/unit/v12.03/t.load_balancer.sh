@@ -10,6 +10,8 @@
 
 ## variables
 
+declare namespace=load_balancer
+
 ## functions
 
 function setUp() {
@@ -17,26 +19,70 @@ function setUp() {
   state=
 }
 
+### help
+
 function test_load_balancer_help_stderr_to_devnull_success() {
-  extract_args load_balancer help
+  extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>/dev/null)
   assertEquals "${res}" ""
 }
 
 function test_load_balancer_help_stderr_to_stdout_success() {
-  extract_args load_balancer help
+  extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 load_balancer [help|index|show|create|xcreate|destroy|poweroff|poweron]"
+  assertEquals "${res}" "$0 ${namespace} [help|index|show|create|xcreate|destroy|poweroff|poweron]"
 }
 
-function test_load_balancer_state() {
-  extract_args load_balancer index --state=running
+### index
+
+function test_load_balancer_index_state() {
+  extract_args ${namespace} index --state=running
   assertEquals "${state}" "running"
 }
 
-function test_load_balancer_create() {
-  extract_args load_balancer create
+### show
+
+function test_load_balancer_show_no_uuid() {
+  extract_args ${namespace} show
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_load_balancer_show_uuid() {
+  extract_args ${namespace} show asdf
   run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
+### create
+
+function test_load_balancer_create() {
+  extract_args ${namespace} create
+  run_cmd ${MUSSEL_ARGS}
+}
+
+### xcreate
+
+function test_load_balancer_xcreate() {
+  extract_args ${namespace} xcreate
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
+### poweroff
+
+function test_load_balancer_poweroff() {
+  extract_args ${namespace} poweroff
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
+### poweron
+
+function test_load_balancer_poweron() {
+  extract_args ${namespace} poweron
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
 }
 
 ## shunit2

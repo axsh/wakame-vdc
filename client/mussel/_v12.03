@@ -54,7 +54,7 @@ instance)
   index)
     # --state=(running|stopped|terminated|alive)
     xquery="service_type=std"
-    if [ ! -z "${state}" ]; then
+    if [[ -n "${state}" ]]; then
       xquery="${xquery}\&state=${state}"
     fi
     cmd_index $*
@@ -97,7 +97,7 @@ load_balancer)
   help)    cmd_help    ${1} "index|show|create|xcreate|destroy|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
-    if [ ! -z "${state}" ]; then
+    if [[ -n "${state}" ]]; then
       xquery="state=${state}"
     fi
     cmd_index $*
