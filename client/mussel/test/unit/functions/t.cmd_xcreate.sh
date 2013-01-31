@@ -23,6 +23,20 @@ function test_cmd_xcreate() {
   assertEquals "$(cmd_xcreate ${namespace} ${cmd})" "call_api -X POST ${base_uri}/${namespace}s.${format}"
 }
 
+### validation
+
+function test_cmd_xcreate_no_opts() {
+  cmd_xcreate 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_cmd_xcreate_namespace() {
+  local namespace=instance
+
+  cmd_xcreate ${namespace} >/dev/null
+  assertEquals $? 0
+}
+
 ## shunit2
 
 . ${shunit2_file}

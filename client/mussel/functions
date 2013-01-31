@@ -78,38 +78,49 @@ function cmd_index() {
 
 function cmd_show() {
   local namespace=$1 cmd=$2 uuid=$3
-  [[ -n "${uuid}" ]] || { echo "[ERROR] ${namespace} ${cmd} ID (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X GET "${base_uri}/${namespace}s/${uuid}.${format}"
 }
 
 function cmd_xget() {
   local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X GET "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 function cmd_xcreate() {
-  local namespace=$1 cmd=$2 uuid=$3
+  local namespace=$1
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X POST ${MUSSEL_CUSTOM_DATA} "${base_uri}/${namespace}s.${format}"
 }
 
 function cmd_destroy() {
   local namespace=$1 cmd=$2 uuid=$3
-  [[ -n "${uuid}" ]] || { echo "[ERROR] ${namespace} ${cmd} ID (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X DELETE "${base_uri}/${namespace}s/${uuid}.${format}"
 }
 
 function cmd_help() {
   local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   echo "$0 ${namespace} [help|${cmd}]" >&2
 }
 
 function cmd_default() {
   local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   [[ $# = 1 ]] && cmd_index $* || $0 ${namespace} help
 }

@@ -24,6 +24,28 @@ function test_cmd_xget() {
   assertEquals "$(cmd_xget ${namespace} ${cmd} ${uuid})" "call_api -X GET ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
+### validation
+
+function test_cmd_xget_no_opts() {
+  cmd_xget 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_cmd_xget_namespace() {
+  local namespace=instance
+
+  cmd_xget ${namespace} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_cmd_xget_namespace_cmd() {
+  local namespace=instance
+  local cmd=show
+
+  cmd_xget ${namespace} ${cmd} 2>/dev/null
+  assertNotEquals $? 0
+}
+
 ## shunit2
 
 . ${shunit2_file}
