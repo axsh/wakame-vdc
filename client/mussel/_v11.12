@@ -44,7 +44,7 @@ instance)
   destroy) cmd_destroy $* ;;
 
   create)
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "image_id=${image_id}" \
      --data-urlencode "instance_spec_id=${instance_spec_id}"  \
      --data-urlencode "ssh_key_id=${ssh_key_id}" \
@@ -65,7 +65,7 @@ instance)
      ${base_uri}/${1}s.${format}
     ;;
   reboot|stop|start)
-    call_api -s -X PUT -H ${http_header} -d "''" \
+    call_api -X PUT -d "''" \
      ${base_uri}/${1}s.${format}/${3}/${2}
     ;;
   *)       cmd_default $* ;;
@@ -80,14 +80,14 @@ security_group)
   destroy) cmd_destroy $* ;;
   create)
     [ -z "${3}" ] && { echo "${1} ${2} NAME" >&2; exit 1; }
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "description=${3}" \
      --data-urlencode "rule=${4}" \
      ${base_uri}/${1}s.${format}
     ;;
   update)
     [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; exit 1; }
-    call_api -s -X PUT -H ${http_header}  \
+    call_api -X PUT \
      --data-urlencode "rule=${4}" \
      ${base_uri}/${1}s.${format}/${3}
     ;;
@@ -102,13 +102,13 @@ volume)
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "volume_size=${3:-10}" \
      ${base_uri}/${1}s.${format}
     ;;
   attach|detach)
     [ $# = 4 ] || { echo "${1} ${2} [vol-id] [inst-id]" >&2; exit 1; }
-    call_api -s -X PUT -H ${http_header} -d "''" \
+    call_api -X PUT -d "''" \
      "${base_uri}/${1}s.${format}/${3}/${2}?instance_id"
     ;;
   *)       cmd_default $* ;;
@@ -122,7 +122,7 @@ ssh_key_pair)
   show)    cmd_show    $* ;;
   create)
     [ -z "${3}" ] && { echo "${1} ${2} NAME" >&2; exit 1; }
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "name=${3}" \
      ${base_uri}/${1}s.${format}
     ;;
@@ -142,7 +142,7 @@ network)
     [ -z "${network}" ] && { echo "'network' is empty." >&2; exit 1; }
     [ -z "${prefix}" ] && { echo "'prefix' is empty." >&2; exit 1; }
     [ -z "${description}" ] && { echo "'description' is empty." >&2; exit 1; }
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "gw=${gw}" \
      --data-urlencode "network=${network}" \
      --data-urlencode "prefix=${prefix}"  \
@@ -151,12 +151,12 @@ network)
     ;;
   reserve|release)
     [ $# = 4 ] || { echo "${1} ${2} [network-id] [ipaddr]" >&2; exit 1; }
-    call_api -s -X PUT -H ${http_header} -d "''" \
+    call_api -X PUT -d "''" \
      "${base_uri}/${1}s.${format}/${3}/${2}?ipaddr=${4}"
     ;;
   add_pool|del_pool)
     [ $# = 4 ] || { echo "${1} ${2} [network-id] [pool-name]" >&2; exit 1; }
-    call_api -s -X PUT -H ${http_header} -d "''" \
+    call_api -X PUT -d "''" \
      "${base_uri}/${1}s.${format}/${3}/${2}?name=${4}"
     ;;
   get_pool)
