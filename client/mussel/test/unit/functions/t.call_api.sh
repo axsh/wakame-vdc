@@ -12,11 +12,15 @@
 
 ## functions
 
-function test_call_api_curl_opts() {
+function setUp() {
+  function shlog() { echo $*; }
   function curl() { echo curl $*; }
+}
+
+function test_call_api_curl_opts() {
   local preflight_uri=http://www.google.co.jp/
 
-  assertEquals "$(call_api ${preflight_uri})" "curl -fsSkL -H ${preflight_uri}"
+  assertEquals "$(call_api ${preflight_uri})" "curl -fsSkL -H ${http_header} ${preflight_uri}"
 }
 
 ## shunit2

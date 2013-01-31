@@ -15,4 +15,12 @@ readonly shunit2_file=${abs_dirname}/../../shunit2
 
 ## group variables
 
+declare api_version=12.03
+declare host=localhost
+declare port=9001
+declare base_uri=http://${host}:${port}/api/${api_version}
+declare account_id=a-shpoolxx
+declare format=yml
+declare http_header=X_VDC_ACCOUNT_UUID:${account_id}
+
 ## group functions
