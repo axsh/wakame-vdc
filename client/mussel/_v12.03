@@ -49,7 +49,7 @@ case "${1}" in
 
 instance)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy|reboot|stop|start|poweroff|poweron" ;;
+  help)    cmd_help    ${1} "index|show|create|xcreate|destroy|reboot|stop|start|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
     xquery="service_type=std"
@@ -93,7 +93,7 @@ instance)
 
 load_balancer)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy|poweroff|poweron" ;;
+  help)    cmd_help    ${1} "index|show|create|xcreate|destroy|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
     if [ ! -z "${state}" ]; then
@@ -118,6 +118,7 @@ load_balancer)
      --data-urlencode "max_connection=${max_connection}" \
      ${base_uri}/${1}s.${format}
     ;;
+  xcreate) cmd_xcreate ${1} ;;
   poweroff|poweron)
     call_api -X PUT -d "''" \
      ${base_uri}/${1}s/${3}/${2}.${format}
@@ -127,18 +128,20 @@ load_balancer)
   ;;
 image|backup_object)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show|destroy" ;;
+  help)    cmd_help    ${1} "index|show|xcreate|destroy" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
+  xcreate) cmd_xcreate ${1} ;;
   *)       cmd_default $* ;;
   esac
   ;;
 host_node|storage_node|network|security_group|ssh_key_pair)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show" ;;
+  help)    cmd_help    ${1} "index|show|xcreate" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
+  xcreate) cmd_xcreate ${1} ;;
   *)       cmd_default $* ;;
   esac
   ;;
