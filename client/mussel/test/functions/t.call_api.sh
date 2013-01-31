@@ -17,7 +17,7 @@ test_call_api_curl_opts() {
   function curl() { echo curl $*; }
   local preflight_uri=http://www.google.co.jp/
 
-  assertEquals "$(call_api ${preflight_uri})" "curl -fSkL ${preflight_uri}"
+  assertEquals "$(call_api ${preflight_uri})" "curl -fsSkL ${preflight_uri}"
 }
 
 . ../shunit2
