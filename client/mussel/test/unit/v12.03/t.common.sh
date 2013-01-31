@@ -1,11 +1,19 @@
 #!/bin/bash
+#
+# requires:
+#   bash
+#
 
-. ../../functions
-. ./helper_shunit2
+## include files
 
+. $(cd ${BASH_SOURCE[0]%/*} && pwd)/helper_shunit2.sh
+
+## variables
+
+## functions
 
 # known resources
-test_common_known_resource_index_success() {
+function test_common_known_resource_index_success() {
   for resource in ${MUSSEL_RESOURCES}; do
     xquery=
     extract_args ${resource} index
@@ -14,7 +22,7 @@ test_common_known_resource_index_success() {
   done
 }
 
-test_common_known_resource_show_success() {
+function test_common_known_resource_show_success() {
   for resource in ${MUSSEL_RESOURCES}; do
     extract_args ${resource} show asdf
     run_cmd ${MUSSEL_ARGS}
@@ -23,7 +31,7 @@ test_common_known_resource_show_success() {
 }
 
 # unknown resources
-test_common_unknown_resource_index_fail() {
+function test_common_unknown_resource_index_fail() {
   for resource in ${MUSSEL_RESOURCES}; do
     xquery=
     # add "_" to resource prefix
@@ -33,4 +41,6 @@ test_common_unknown_resource_index_fail() {
   done
 }
 
-. ../shunit2
+## shunit2
+
+. ${shunit2_file}

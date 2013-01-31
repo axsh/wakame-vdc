@@ -1,8 +1,8 @@
 all: test
 
-test: test-functions test-v12.03
+test: unit
 
-test-functions:
-	(cd functions && make)
-test-v12.03:
-	(cd v12.03 && make)
+unit:
+	(cd $@ && make)
+
+.PHONY: unit

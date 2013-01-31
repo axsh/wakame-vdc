@@ -1,7 +1,16 @@
 #!/bin/bash
+#
+# requires:
+#   bash
+#
 
-. ../../functions
+## include files
 
+. $(cd ${BASH_SOURCE[0]%/*} && pwd)/helper_shunit2.sh
+
+## variables
+
+## functions
 
 #
 # loglevel:debug
@@ -75,5 +84,6 @@ test_shlog_dryrun_loglevel_debug() {
    "${MUSSEL_PROMPT} echo hello"
 }
 
+## shunit2
 
-. ../shunit2
+. ${shunit2_file}
