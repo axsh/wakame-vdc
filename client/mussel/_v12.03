@@ -61,7 +61,7 @@ instance)
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "image_id=${image_id}" \
      --data-urlencode "instance_spec_name=${instance_spec_name}"  \
      --data-urlencode "security_groups[]=${security_groups}" \
@@ -75,12 +75,12 @@ instance)
      ${base_uri}/${1}s.${format}
     ;;
   xcreate)
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      ${MUSSEL_CUSTOM_DATA} \
      ${base_uri}/${1}s.${format}
     ;;
   backup)
-    call_api -s -X PUT -H ${http_header} \
+    call_api -X PUT \
      -d "description=${description}" \
      -d "display_name=${display_name}" \
      -d "is_public=${is_public}" \
@@ -88,7 +88,7 @@ instance)
      ${base_uri}/${1}s/${3}/${2}.${format}
     ;;
   reboot|stop|start|poweroff|poweron)
-    call_api -s -X PUT -H ${http_header} -d "''" \
+    call_api -X PUT -d "''" \
      ${base_uri}/${1}s/${3}/${2}.${format}
     ;;
   *)       cmd_default $* ;;
@@ -108,7 +108,7 @@ load_balancer)
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "display_name=${display_name}" \
      --data-urlencode "protocol=${protocol}" \
      --data-urlencode "port=${balancer_port}" \
@@ -123,7 +123,7 @@ load_balancer)
      ${base_uri}/${1}s.${format}
     ;;
   poweroff|poweron)
-    call_api -s -X PUT -H ${http_header} -d "''" \
+    call_api -X PUT -d "''" \
      ${base_uri}/${1}s/${3}/${2}.${format}
     ;;
   *)       cmd_default $* ;;
