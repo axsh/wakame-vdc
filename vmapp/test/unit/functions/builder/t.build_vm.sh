@@ -15,10 +15,11 @@
 function setUp() {
   mkdir -p ${suite_path}
   sample_image_ini > ${suite_path}/image.ini
-  touch            > ${suite_path}/execscript.sh
+  :                > ${suite_path}/execscript.sh
 
   function checkroot() { :; }
   function vmbuilder_path() { echo echo vmbuilder_path $*; }
+  function setup_vmbuilder() { echo setup_vmbuilder $*; }
   function tar() { echo tar $*; }
 }
 

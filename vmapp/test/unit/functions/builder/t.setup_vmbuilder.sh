@@ -14,10 +14,11 @@
 
 function setUp() {
   function git() { echo git $*; }
+  function cd() { echo cd $*; }
 }
 
-function test_vmbuilder_path() {
-  vmbuilder_path
+function test_setup_vmbuilder() {
+  setup_vmbuilder
   assertEquals $? 0
 }
 

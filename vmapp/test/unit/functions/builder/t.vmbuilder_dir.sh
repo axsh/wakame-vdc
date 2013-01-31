@@ -12,12 +12,8 @@
 
 ## public functions
 
-function setUp() {
-  function git() { echo git $*; }
-}
-
-function test_vmbuilder_path() {
-  vmbuilder_path
+function test_vmbuilder_dir() {
+  vmbuilder_dir
   assertEquals $? 0
 }
 
