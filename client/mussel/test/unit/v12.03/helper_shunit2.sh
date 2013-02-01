@@ -22,7 +22,7 @@ port=${port:-9001}
 base_uri=${base_uri:-http://${host}:${port}/api/${api_version}}
 account_id=${account_id:-a-shpoolxx}
 format=${format:-yml}
-
+declare http_header=X_VDC_ACCOUNT_UUID:${account_id}
 dry_run=yes
 
 ## group functions
