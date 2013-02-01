@@ -60,7 +60,7 @@ instance)
     ;;
   reboot|stop|start)
     call_api -X PUT -d "''" \
-     ${base_uri}/${1}s.${format}/${3}/${2}
+     ${base_uri}/${1}s/${3}/${2}.${format}
     ;;
   *)       cmd_default $* ;;
   esac
@@ -83,7 +83,7 @@ security_group)
     [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; return 1; }
     call_api -X PUT \
      --data-urlencode "rule=${4}" \
-     ${base_uri}/${1}s.${format}/${3}
+     ${base_uri}/${1}s/${3}.${format}
     ;;
   *)       cmd_default $* ;;
   esac
@@ -103,7 +103,7 @@ volume)
   attach|detach)
     [ $# = 4 ] || { echo "${1} ${2} [vol-id] [inst-id]" >&2; return 1; }
     call_api -X PUT -d "''" \
-     "${base_uri}/${1}s.${format}/${3}/${2}?instance_id"
+     "${base_uri}/${1}s/${3}/${2}.${format}?instance_id"
     ;;
   *)       cmd_default $* ;;
   esac
@@ -150,12 +150,12 @@ network)
   reserve|release)
     [ $# = 4 ] || { echo "${1} ${2} [network-id] [ipaddr]" >&2; return 1; }
     call_api -X PUT -d "''" \
-     "${base_uri}/${1}s.${format}/${3}/${2}?ipaddr=${4}"
+     "${base_uri}/${1}s/${3}/${2}.${format}?ipaddr=${4}"
     ;;
   add_pool|del_pool)
     [ $# = 4 ] || { echo "${1} ${2} [network-id] [pool-name]" >&2; return 1; }
     call_api -X PUT -d "''" \
-     "${base_uri}/${1}s.${format}/${3}/${2}?name=${4}"
+     "${base_uri}/${1}s/${3}/${2}.${format}?name=${4}"
     ;;
   get_pool)
     cmd_xget $*
