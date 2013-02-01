@@ -73,7 +73,7 @@ function test_instance_create_no_opts() {
   local opts=""
 
   local params="
-    --data-urlencode image_id=${image_id} 
+    --data-urlencode image_id=${image_id}
     --data-urlencode instance_spec_name=${instance_spec_name}
     --data-urlencode security_groups[]=${security_groups}
     --data-urlencode ssh_key_id=${ssh_key_id}
