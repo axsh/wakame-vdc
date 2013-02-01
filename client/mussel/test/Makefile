@@ -1,8 +1,10 @@
 all: test
 
-test: unit
+test: unit component
 
 unit:
 	(cd $@ && make)
+component:
+	(cd $@ && make)
 
-.PHONY: unit
+.PHONY: unit component
