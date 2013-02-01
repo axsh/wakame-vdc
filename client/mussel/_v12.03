@@ -149,7 +149,7 @@ host_node|storage_node|network|security_group|ssh_key_pair)
   ;;
 
 *)
-  echo "$0 [resource] [method]" >&2
+  echo "$0 [namespace] [cmd]" >&2
   return 1
   ;;
 
