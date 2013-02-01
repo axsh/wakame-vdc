@@ -66,10 +66,14 @@ function shlog() {
   esac
 }
 
+function request_param() {
+  echo $*
+}
+
 function call_api() {
   [[ -n "${http_header}" ]] || { echo "[ERROR] 'http_header' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  shlog curl -fsSkL -H ${http_header} $*
+  shlog curl -fsSkL -H ${http_header} $(request_param $*)
 }
 
 function cmd_index() {
