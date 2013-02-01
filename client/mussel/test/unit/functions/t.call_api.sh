@@ -14,7 +14,7 @@
 
 function setUp() {
   function shlog() { echo $*; }
-  function curl() { echo curl $*; }
+  function curl_opts() { :; }
 }
 
 ### opts
@@ -22,7 +22,7 @@ function setUp() {
 function test_call_api_curl_opts() {
   local preflight_uri=http://www.google.co.jp/
 
-  assertEquals "$(call_api ${preflight_uri})" "curl -fsSkL -H ${http_header} ${preflight_uri}"
+  assertEquals "$(call_api ${preflight_uri})" "curl ${preflight_uri}"
 }
 
 ### http_header
