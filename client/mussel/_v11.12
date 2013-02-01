@@ -17,11 +17,13 @@ MUSSEL_RESOURCES="
 "
 
 function run_cmd() {
-case "${1}" in
+local namespace=$1 cmd=$2
+
+case "${namespace}" in
 
 instance)
-  case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy|reboot" ;;
+  case "${cmd}" in
+  help)    cmd_help    ${namespace} "index|show|create|destroy|reboot" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
@@ -45,80 +47,88 @@ instance)
      --data-urlencode "security_groups[]=${security_groups}" \
      --data-urlencode "ha_enabled=${ha_enabled}" \
      --data-urlencode "network_scheduler=${network_scheduler}" \
-     $([ -z ${hostname} ] || echo \
+     $([[ -z "${hostname}" ]] || echo \
      --data-urlencode "hostname=${hostname}") \
-     $([ -z ${host_node_id} ] || echo \
+     $([[ -z "${host_node_id}" ]] || echo \
      --data-urlencode "host_node_id=${host_node_id}") \
      $(
-       if [ -f ${user_data} ]; then
+       if [[ -f "${user_data}" ]]; then
          echo --data-urlencode "user_data@${user_data}"
-       elif [ ! -z ${user_data} ]; then
+       elif [[ -n "${user_data}" ]]; then
          echo --data-urlencode "user_data=${user_data}"
        fi
      ) \
-     ${base_uri}/${1}s.${format}
+     ${base_uri}/${namespace}s.${format}
     ;;
   reboot|stop|start)
+    uuid=$3
     call_api -X PUT -d "''" \
-     ${base_uri}/${1}s/${3}/${2}.${format}
+     ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
     ;;
   *)       cmd_default $* ;;
   esac
   ;;
 
 security_group)
-  case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|update|destroy" ;;
+  case "${cmd}" in
+  help)    cmd_help    ${namespace} "index|show|create|update|destroy" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
-    [ -z "${3}" ] && { echo "${1} ${2} NAME" >&2; return 1; }
+    description=$3
+    rule=$4
+    [[ -z "${description}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
     call_api -X POST \
-     --data-urlencode "description=${3}" \
-     --data-urlencode "rule=${4}" \
-     ${base_uri}/${1}s.${format}
+     --data-urlencode "description=${description}" \
+     --data-urlencode "rule=${rule}" \
+     ${base_uri}/${namespace}s.${format}
     ;;
   update)
-    [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; return 1; }
+    description=$3
+    rule=$4
+    [[ -z "${description}" ]] && { echo "${namespace} ${cmd} ID" >&2; return 1; }
     call_api -X PUT \
-     --data-urlencode "rule=${4}" \
-     ${base_uri}/${1}s/${3}.${format}
+     --data-urlencode "rule=${rule}" \
+     ${base_uri}/${namespace}s/${description}.${format}
     ;;
   *)       cmd_default $* ;;
   esac
   ;;
 
 volume)
-  case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|attach|detach|destroy" ;;
+  case "${cmd}" in
+  help)    cmd_help    ${namespace} "index|show|create|attach|detach|destroy" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
+    volume_size=${3:-10}
     call_api -X POST \
-     --data-urlencode "volume_size=${3:-10}" \
-     ${base_uri}/${1}s.${format}
+     --data-urlencode "volume_size=${volume_size}" \
+     ${base_uri}/${namespace}s.${format}
     ;;
   attach|detach)
-    [ $# = 4 ] || { echo "${1} ${2} [vol-id] [inst-id]" >&2; return 1; }
+    uuid=$3
+    [[ $# = 4 ]] || { echo "${namespace} ${cmd} [vol-id] [inst-id]" >&2; return 1; }
     call_api -X PUT -d "''" \
-     "${base_uri}/${1}s/${3}/${2}.${format}?instance_id"
+     "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id"
     ;;
   *)       cmd_default $* ;;
   esac
   ;;
 
 ssh_key_pair)
-  case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy" ;;
+  case "${cmd}" in
+  help)    cmd_help    ${namespace} "index|show|create|destroy" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   create)
-    [ -z "${3}" ] && { echo "${1} ${2} NAME" >&2; return 1; }
+    name=$3
+    [[ -z "${name}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
     call_api -X POST \
-     --data-urlencode "name=${3}" \
-     ${base_uri}/${1}s.${format}
+     --data-urlencode "name=${name}" \
+     ${base_uri}/${namespace}s.${format}
     ;;
   destroy) cmd_destroy $* ;;
   *)       cmd_default $* ;;
@@ -126,8 +136,8 @@ ssh_key_pair)
   ;;
 
 network)
-  case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy" ;;
+  case "${cmd}" in
+  help)    cmd_help    ${namespace} "index|show|create|destroy" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
@@ -136,26 +146,30 @@ network)
     prefix=${prefix}
     description=${description}
 
-    [ -z "${gw}" ] && { echo "'gw' is empty." >&2; return 1; }
-    [ -z "${network}" ] && { echo "'network' is empty." >&2; return 1; }
-    [ -z "${prefix}" ] && { echo "'prefix' is empty." >&2; return 1; }
-    [ -z "${description}" ] && { echo "'description' is empty." >&2; return 1; }
+    [[ -z "${gw}"         ]] && { echo "'gw' is empty." >&2; return 1; }
+    [[ -z "${network}"    ]] && { echo "'network' is empty." >&2; return 1; }
+    [[ -z "${prefix}"     ]] && { echo "'prefix' is empty." >&2; return 1; }
+    [[ -z "${description}"]] && { echo "'description' is empty." >&2; return 1; }
     call_api -X POST \
      --data-urlencode "gw=${gw}" \
      --data-urlencode "network=${network}" \
      --data-urlencode "prefix=${prefix}"  \
      --data-urlencode "description=${description}" \
-     ${base_uri}/${1}s.${format}
+     ${base_uri}/${namespace}s.${format}
     ;;
   reserve|release)
-    [ $# = 4 ] || { echo "${1} ${2} [network-id] [ipaddr]" >&2; return 1; }
+    uuid=$3
+    ipaddr=$4
+    [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [ipaddr]" >&2; return 1; }
     call_api -X PUT -d "''" \
-     "${base_uri}/${1}s/${3}/${2}.${format}?ipaddr=${4}"
+     "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?ipaddr=${ipaddr}"
     ;;
   add_pool|del_pool)
-    [ $# = 4 ] || { echo "${1} ${2} [network-id] [pool-name]" >&2; return 1; }
+    uuid=$3
+    name=$4
+    [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [pool-name]" >&2; return 1; }
     call_api -X PUT -d "''" \
-     "${base_uri}/${1}s/${3}/${2}.${format}?name=${4}"
+     "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?name=${name}"
     ;;
   get_pool)
     cmd_xget $*
@@ -165,8 +179,8 @@ network)
   ;;
 
 host_node|storage_node|image|instance_spec|volume_snapshot)
-  case "${2}" in
-  help)    cmd_help    ${1} "index|show" ;;
+  case "${cmd}" in
+  help)    cmd_help    ${namespace} "index|show" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   *)       cmd_default $* ;;
