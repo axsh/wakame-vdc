@@ -18,10 +18,10 @@ create)
   [[ -z "${prefix}"      ]] && { echo "'prefix' is empty." >&2; return 1; }
   [[ -z "${description}" ]] && { echo "'description' is empty." >&2; return 1; }
   call_api -X POST $(urlencode_data \
-   "gw=${gw}" \
-   "network=${network}" \
-   "prefix=${prefix}"  \
-   "description=${description}" \
+   gw=${gw} \
+   network=${network} \
+   prefix=${prefix}  \
+   description=${description} \
    ) \
    ${base_uri}/${namespace}s.${format}
   ;;

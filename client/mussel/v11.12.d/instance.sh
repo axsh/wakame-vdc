@@ -22,16 +22,16 @@ create)
   user_data=${user_data:-}
 
   call_api -X POST $(urlencode_data \
-   "image_id=${image_id}" \
-   "instance_spec_id=${instance_spec_id}"  \
-   "ssh_key_id=${ssh_key_id}" \
-   "security_groups[]=${security_groups}" \
-   "ha_enabled=${ha_enabled}" \
-   "network_scheduler=${network_scheduler}" \
+   image_id=${image_id} \
+   instance_spec_id=${instance_spec_id}  \
+   ssh_key_id=${ssh_key_id} \
+   security_groups[]=${security_groups} \
+   ha_enabled=${ha_enabled} \
+   network_scheduler=${network_scheduler} \
    $([[ -z "${hostname}" ]] || echo \
-   "hostname=${hostname}") \
+   hostname=${hostname}) \
    $([[ -z "${host_node_id}" ]] || echo \
-   "host_node_id=${host_node_id}") \
+   host_node_id=${host_node_id}) \
    $(
      if [[ -f "${user_data}" ]]; then
        echo "user_data@${user_data}"

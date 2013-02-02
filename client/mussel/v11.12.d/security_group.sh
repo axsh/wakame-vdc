@@ -13,8 +13,8 @@ create)
   rule=$4
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
   call_api -X POST $(urlencode_data \
-   "description=${description}" \
-   "rule=${rule}" \
+   description=${description} \
+   rule=${rule} \
    ) \
    ${base_uri}/${namespace}s.${format}
   ;;
@@ -23,7 +23,7 @@ update)
   rule=$4
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} ID" >&2; return 1; }
   call_api -X PUT $(urlencode_data \
-   "rule=${rule}" \
+   rule=${rule} \
    ) \
    ${base_uri}/${namespace}s/${description}.${format}
   ;;

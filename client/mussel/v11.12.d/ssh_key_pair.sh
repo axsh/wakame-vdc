@@ -11,7 +11,7 @@ create)
   name=$3
   [[ -z "${name}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
   call_api -X POST $(urlencode_data \
-    "name=${name}" \
+    name=${name} \
    ) \
    ${base_uri}/${namespace}s.${format}
   ;;
