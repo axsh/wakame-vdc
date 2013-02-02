@@ -144,6 +144,8 @@ function cmd_default() {
 
 function run_cmd() {
   local namespace=$1 cmd=$2
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   local namespace_path=${BASH_SOURCE[0]%/*}/v${api_version}.d/${namespace}.sh
   [[ -f "${namespace_path}" ]] && {

@@ -17,7 +17,12 @@ function test_run_cmd_no_opts() {
   assertNotEquals $? 0
 }
 
-function test_run_cmd_opts() {
+function test_run_cmd_namespace() {
+  run_cmd shunit2 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_run_cmd_namespace_cmd() {
   assertEquals "$(run_cmd shunit2 testing 2>&1)" "$0 [namespace] [cmd]"
 }
 
