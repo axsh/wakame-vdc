@@ -5,10 +5,6 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
-task_help() {
-  cmd_help ${namespace} "index|show|create|xcreate|destroy|reboot|stop|start|poweroff|poweron"
-}
-
 task_index() {
   # --state=(running|stopped|terminated|alive)
   xquery="service_type=std"

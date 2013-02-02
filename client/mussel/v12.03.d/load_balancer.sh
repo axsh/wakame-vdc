@@ -5,10 +5,6 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
-task_help() {
-  cmd_help ${namespace} "index|show|create|xcreate|destroy|poweroff|poweron"
-}
-
 task_index() {
   # --state=(running|stopped|terminated|alive)
   if [[ -n "${state}" ]]; then

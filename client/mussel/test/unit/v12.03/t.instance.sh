@@ -30,7 +30,7 @@ function test_instance_help_stderr_to_devnull_success() {
 function test_instance_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|index|show|create|xcreate|destroy|reboot|stop|start|poweroff|poweron]"
+  assertEquals "${res}" "$0 ${namespace} [help|backup|create|destroy|index|poweroff|poweron|reboot|show|start|stop|xcreate]"
 }
 
 ### index

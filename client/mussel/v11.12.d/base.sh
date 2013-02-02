@@ -3,10 +3,6 @@
 # 11.12
 #
 
-task_help() {
-  cmd_help ${namespace} "index|show|destroy"
-}
-
 task_index() {
   cmd_index $*
 }

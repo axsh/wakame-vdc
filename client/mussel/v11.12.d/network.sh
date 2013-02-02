@@ -5,10 +5,6 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
-task_help() {
-  cmd_help ${namespace} "index|show|create|destroy"
-}
-
 task_create() {
   [[ -z "${gw}"          ]] && { echo "'gw' is empty." >&2; return 1; }
   [[ -z "${network}"     ]] && { echo "'network' is empty." >&2; return 1; }

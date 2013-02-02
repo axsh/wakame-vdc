@@ -5,10 +5,6 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
-task_help() {
-  cmd_help ${namespace} "index|show|create|destroy"
-}
-
 task_create() {
   local name=$3
   [[ -z "${name}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }

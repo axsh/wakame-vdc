@@ -5,10 +5,6 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
-task_help() {
-  cmd_help ${namespace} "index|show|create|destroy|reboot"
-}
-
 task_create() {
   call_api -X POST $(urlencode_data \
    image_id=${image_id:-wmi-lucid0} \

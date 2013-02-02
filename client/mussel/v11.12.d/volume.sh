@@ -5,10 +5,6 @@
 
 . ${BASH_SOURCE[0]%/*}/base.sh
 
-task_help() {
-  cmd_help ${namespace} "index|show|create|attach|detach|destroy"
-}
-
 task_create() {
   local volume_size=${3:-10}
 

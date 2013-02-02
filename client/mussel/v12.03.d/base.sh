@@ -3,10 +3,6 @@
 # 12.03
 #
 
-task_help() {
-  cmd_help ${namespace} "index|show|destroy|xcreate"
-}
-
 task_index() {
   cmd_index $*
 }
