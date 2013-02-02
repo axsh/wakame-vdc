@@ -29,7 +29,7 @@ function test_backup_object_help_stderr_to_devnull_success() {
 function test_backup_object_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|index|show|xcreate|destroy]"
+  assertEquals "${res}" "$0 ${namespace} [help|destroy|index|show|xcreate]"
 }
 
 ### index
