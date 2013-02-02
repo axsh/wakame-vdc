@@ -175,10 +175,10 @@ function test_instance_backup() {
   local is_cacheable=false
 
   local params="
-    -d description=${description}
-    -d display_name=${display_name}
-    -d is_public=${is_public}
-    -d is_cacheable=${is_cacheable}
+    --data-urlencode description=${description}
+    --data-urlencode display_name=${display_name}
+    --data-urlencode is_public=${is_public}
+    --data-urlencode is_cacheable=${is_cacheable}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \

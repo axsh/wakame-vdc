@@ -52,10 +52,10 @@ backup)
   description=${description:-}
 
   call_api -X PUT \
-   -d "description=${description}" \
-   -d "display_name=${display_name}" \
-   -d "is_public=${is_public}" \
-   -d "is_cacheable=${is_cacheable}" \
+   --data-urlencode "description=${description}" \
+   --data-urlencode "display_name=${display_name}" \
+   --data-urlencode "is_public=${is_public}" \
+   --data-urlencode "is_cacheable=${is_cacheable}" \
    ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
   ;;
 reboot|stop|start|poweroff|poweron)
