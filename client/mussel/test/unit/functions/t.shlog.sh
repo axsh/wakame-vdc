@@ -78,9 +78,29 @@ test_shlog_dryrun_loglevel_default() {
   assertEquals "`dry_run=on           shlog date`" ""
   assertEquals "`dry_run=on loglevel= shlog date`" ""
 }
-test_shlog_dryrun_loglevel_debug() {
+test_shlog_dryrun_loglevel_debug_on() {
   assertEquals \
    "`dry_run=on loglevel=debug shlog echo hello`" \
+   "${MUSSEL_PROMPT} echo hello"
+}
+test_shlog_dryrun_loglevel_debug_y() {
+  assertEquals \
+   "`dry_run=y loglevel=debug shlog echo hello`" \
+   "${MUSSEL_PROMPT} echo hello"
+}
+test_shlog_dryrun_loglevel_debug_yes() {
+  assertEquals \
+   "`dry_run=yes loglevel=debug shlog echo hello`" \
+   "${MUSSEL_PROMPT} echo hello"
+}
+test_shlog_dryrun_loglevel_debug_on() {
+  assertEquals \
+   "`dry_run=on loglevel=debug shlog echo hello`" \
+   "${MUSSEL_PROMPT} echo hello"
+}
+test_shlog_dryrun_loglevel_debug_1() {
+  assertEquals \
+   "`dry_run=1 loglevel=debug shlog echo hello`" \
    "${MUSSEL_PROMPT} echo hello"
 }
 

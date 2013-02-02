@@ -54,7 +54,7 @@ function shlog() {
   esac
 
   case "${dry_run}" in
-  y|yes|on)
+  y|yes|on|1)
     :
    ;;
   *)
