@@ -19,7 +19,7 @@ set -e
 
 extract_args $*
 
-## main
+## variables
 
 api_version=${api_version:-12.03}
 host=${host:-localhost}
@@ -30,11 +30,6 @@ format=${format:-yml}
 
 http_header=X_VDC_ACCOUNT_UUID:${account_id}
 
-# include version
-case "${api_version}" in
-11.12) . ${BASH_SOURCE[0]%/*}/v11.12 ;;
-12.03) . ${BASH_SOURCE[0]%/*}/v12.03 ;;
-*)     . ${BASH_SOURCE[0]%/*}/v12.03 ;;
-esac
+# main
 
 run_cmd ${MUSSEL_ARGS}

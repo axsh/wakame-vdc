@@ -12,7 +12,6 @@ readonly shunit2_file=${abs_dirname}/../../shunit2
 ## include files
 
 . ${abs_dirname}/../../../functions
-. ${abs_dirname}/../../../v11.12
 
 ## group variables
 
