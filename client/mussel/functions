@@ -81,6 +81,8 @@ function urlencode_data() {
   )
 }
 
+## cmd_*
+
 function call_api() {
   [[ -n "${http_header}" ]] || { echo "[ERROR] 'http_header' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
@@ -151,6 +153,8 @@ function cmd_default() {
   [[ $# = 1 ]] && cmd_index $* || $0 ${namespace} help
 }
 
+## tasklet
+
 function invoke_task() {
   local namespace=$1 cmd=$2
   [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
@@ -159,6 +163,8 @@ function invoke_task() {
   declare -f task_${cmd} >/dev/null || { echo "[ERROR] undefined task: 'task_${cmd}' (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   eval task_${cmd} $*
 }
+
+## controller
 
 function run_cmd() {
   local namespace=$1 cmd=$2
