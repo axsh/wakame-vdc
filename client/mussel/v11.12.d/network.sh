@@ -13,10 +13,10 @@ create)
   prefix=${prefix}
   description=${description}
 
-  [[ -z "${gw}"         ]] && { echo "'gw' is empty." >&2; return 1; }
-  [[ -z "${network}"    ]] && { echo "'network' is empty." >&2; return 1; }
-  [[ -z "${prefix}"     ]] && { echo "'prefix' is empty." >&2; return 1; }
-  [[ -z "${description}"]] && { echo "'description' is empty." >&2; return 1; }
+  [[ -z "${gw}"          ]] && { echo "'gw' is empty." >&2; return 1; }
+  [[ -z "${network}"     ]] && { echo "'network' is empty." >&2; return 1; }
+  [[ -z "${prefix}"      ]] && { echo "'prefix' is empty." >&2; return 1; }
+  [[ -z "${description}" ]] && { echo "'description' is empty." >&2; return 1; }
   call_api -X POST \
    --data-urlencode "gw=${gw}" \
    --data-urlencode "network=${network}" \
