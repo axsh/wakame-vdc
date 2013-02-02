@@ -32,9 +32,9 @@ http_header=X_VDC_ACCOUNT_UUID:${account_id}
 
 # include version
 case "${api_version}" in
-11.12) . ${BASH_SOURCE[0]%/*}/_v11.12 ;;
-12.03) . ${BASH_SOURCE[0]%/*}/_v12.03 ;;
-*)     . ${BASH_SOURCE[0]%/*}/_v12.03 ;;
+11.12) . ${BASH_SOURCE[0]%/*}/v11.12 ;;
+12.03) . ${BASH_SOURCE[0]%/*}/v12.03 ;;
+*)     . ${BASH_SOURCE[0]%/*}/v12.03 ;;
 esac
 
 run_cmd ${MUSSEL_ARGS}
