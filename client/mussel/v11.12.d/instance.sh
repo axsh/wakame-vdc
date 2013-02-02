@@ -21,23 +21,24 @@ create)
   host_node_id=${host_node_id:-${host_id}}
   user_data=${user_data:-}
 
-  call_api -X POST \
-   --data-urlencode "image_id=${image_id}" \
-   --data-urlencode "instance_spec_id=${instance_spec_id}"  \
-   --data-urlencode "ssh_key_id=${ssh_key_id}" \
-   --data-urlencode "security_groups[]=${security_groups}" \
-   --data-urlencode "ha_enabled=${ha_enabled}" \
-   --data-urlencode "network_scheduler=${network_scheduler}" \
+  call_api -X POST $(urlencode_data \
+   "image_id=${image_id}" \
+   "instance_spec_id=${instance_spec_id}"  \
+   "ssh_key_id=${ssh_key_id}" \
+   "security_groups[]=${security_groups}" \
+   "ha_enabled=${ha_enabled}" \
+   "network_scheduler=${network_scheduler}" \
    $([[ -z "${hostname}" ]] || echo \
-   --data-urlencode "hostname=${hostname}") \
+   "hostname=${hostname}") \
    $([[ -z "${host_node_id}" ]] || echo \
-   --data-urlencode "host_node_id=${host_node_id}") \
+   "host_node_id=${host_node_id}") \
    $(
      if [[ -f "${user_data}" ]]; then
-       echo --data-urlencode "user_data@${user_data}"
+       echo "user_data@${user_data}"
      elif [[ -n "${user_data}" ]]; then
-       echo --data-urlencode "user_data=${user_data}"
+       echo "user_data=${user_data}"
      fi
+   ) \
    ) \
    ${base_uri}/${namespace}s.${format}
   ;;

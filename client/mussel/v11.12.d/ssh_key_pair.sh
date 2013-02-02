@@ -10,8 +10,9 @@ show)    cmd_show    $* ;;
 create)
   name=$3
   [[ -z "${name}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
-  call_api -X POST \
-   --data-urlencode "name=${name}" \
+  call_api -X POST $(urlencode_data \
+    "name=${name}" \
+   ) \
    ${base_uri}/${namespace}s.${format}
   ;;
 destroy) cmd_destroy $* ;;

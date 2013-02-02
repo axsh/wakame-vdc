@@ -62,17 +62,17 @@ function test_instance_create_no_opts() {
   local opts=""
 
   local params="
-    --data-urlencode image_id=${image_id}
-    --data-urlencode instance_spec_id=${instance_spec_id}
-    --data-urlencode ssh_key_id=${ssh_key_id}
-    --data-urlencode security_groups[]=${security_groups}
-    --data-urlencode ha_enabled=${ha_enabled}
-    --data-urlencode network_scheduler=${network_scheduler}
-    --data-urlencode user_data=${user_data}
-   "
+    image_id=${image_id}
+    instance_spec_id=${instance_spec_id}
+    ssh_key_id=${ssh_key_id}
+    security_groups[]=${security_groups}
+    ha_enabled=${ha_enabled}
+    network_scheduler=${network_scheduler}
+    user_data=${user_data}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 function test_instance_create_opts() {
@@ -97,17 +97,17 @@ function test_instance_create_opts() {
   "
 
   local params="
-    --data-urlencode image_id=${image_id}
-    --data-urlencode instance_spec_id=${instance_spec_id}
-    --data-urlencode ssh_key_id=${ssh_key_id}
-    --data-urlencode security_groups[]=${security_groups}
-    --data-urlencode ha_enabled=${ha_enabled}
-    --data-urlencode network_scheduler=${network_scheduler}
-    --data-urlencode user_data=${user_data}
-   "
+    image_id=${image_id}
+    instance_spec_id=${instance_spec_id}
+    ssh_key_id=${ssh_key_id}
+    security_groups[]=${security_groups}
+    ha_enabled=${ha_enabled}
+    network_scheduler=${network_scheduler}
+    user_data=${user_data}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### reboot

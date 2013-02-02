@@ -73,20 +73,20 @@ function test_instance_create_no_opts() {
   local opts=""
 
   local params="
-    --data-urlencode image_id=${image_id}
-    --data-urlencode instance_spec_name=${instance_spec_name}
-    --data-urlencode security_groups[]=${security_groups}
-    --data-urlencode ssh_key_id=${ssh_key_id}
-    --data-urlencode hypervisor=${hypervisor}
-    --data-urlencode cpu_cores=${cpu_cores}
-    --data-urlencode memory_size=${memory_size}
-    --data-urlencode display_name=${display_name}
-    --data-urlencode host_name=${host_name}
-    --data-urlencode vifs=${vifs}
-   "
+    image_id=${image_id}
+    instance_spec_name=${instance_spec_name}
+    security_groups[]=${security_groups}
+    ssh_key_id=${ssh_key_id}
+    hypervisor=${hypervisor}
+    cpu_cores=${cpu_cores}
+    memory_size=${memory_size}
+    display_name=${display_name}
+    host_name=${host_name}
+    vifs=${vifs}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 function test_instance_create_opts() {
@@ -115,20 +115,20 @@ function test_instance_create_opts() {
   "
 
   local params="
-    --data-urlencode image_id=${image_id}
-    --data-urlencode instance_spec_name=${instance_spec_name}
-    --data-urlencode security_groups[]=${security_groups}
-    --data-urlencode ssh_key_id=${ssh_key_id}
-    --data-urlencode hypervisor=${hypervisor}
-    --data-urlencode cpu_cores=${cpu_cores}
-    --data-urlencode memory_size=${memory_size}
-    --data-urlencode display_name=${display_name}
-    --data-urlencode host_name=${host_name}
-    --data-urlencode vifs=${vifs}
+    image_id=${image_id}
+    instance_spec_name=${instance_spec_name}
+    security_groups[]=${security_groups}
+    ssh_key_id=${ssh_key_id}
+    hypervisor=${hypervisor}
+    cpu_cores=${cpu_cores}
+    memory_size=${memory_size}
+    display_name=${display_name}
+    host_name=${host_name}
+    vifs=${vifs}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### xcreate
@@ -147,21 +147,21 @@ function test_instance_xcreate() {
   local host_name=shunit2
 
   local MUSSEL_CUSTOM_DATA="
-    --data-urlencode image_id=${image_id}
-    --data-urlencode instance_spec_name=${instance_spec_name}
-    --data-urlencode security_groups[]=${security_groups}
-    --data-urlencode ssh_key_id=${ssh_key_id}
-    --data-urlencode hypervisor=${hypervisor}
-    --data-urlencode cpu_cores=${cpu_cores}
-    --data-urlencode memory_size=${memory_size}
-    --data-urlencode display_name=${display_name}
-    --data-urlencode host_name=${host_name}
-    --data-urlencode vifs[eth0][index]=0
-    --data-urlencode vifs[eth0][network]=${network_id}
+    image_id=${image_id}
+    instance_spec_name=${instance_spec_name}
+    security_groups[]=${security_groups}
+    ssh_key_id=${ssh_key_id}
+    hypervisor=${hypervisor}
+    cpu_cores=${cpu_cores}
+    memory_size=${memory_size}
+    display_name=${display_name}
+    host_name=${host_name}
+    vifs[eth0][index]=0
+    vifs[eth0][network]=${network_id}
   "
 
-  assertEquals "$(MUSSEL_CUSTOM_DATA=${MUSSEL_CUSTOM_DATA} cli_wrapper ${namespace} ${cmd})" \
-               "curl -X POST $(echo ${MUSSEL_CUSTOM_DATA}) ${base_uri}/${namespace}s.${format}"
+  assertEquals "$(MUSSEL_CUSTOM_DATA=$(urlencode_data ${MUSSEL_CUSTOM_DATA}) cli_wrapper ${namespace} ${cmd})" \
+               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### backup
@@ -175,14 +175,14 @@ function test_instance_backup() {
   local is_cacheable=false
 
   local params="
-    --data-urlencode description=${description}
-    --data-urlencode display_name=${display_name}
-    --data-urlencode is_public=${is_public}
-    --data-urlencode is_cacheable=${is_cacheable}
+    description=${description}
+    display_name=${display_name}
+    is_public=${is_public}
+    is_cacheable=${is_cacheable}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT $(echo ${params}) ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
+               "curl -X PUT $(urlencode_data ${params}) ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 ### reboot

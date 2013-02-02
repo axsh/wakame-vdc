@@ -43,11 +43,11 @@ function test_ssh_key_pair_create() {
   local cmd=create
 
   local params="
-    --data-urlencode name=${uuid}
-   "
+    name=${uuid}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### destroy

@@ -29,17 +29,18 @@ create)
   display_name=${display_name:-}
   host_name=${host_name:-}
 
-  call_api -X POST \
-   --data-urlencode "image_id=${image_id}" \
-   --data-urlencode "instance_spec_name=${instance_spec_name}"  \
-   --data-urlencode "security_groups[]=${security_groups}" \
-   --data-urlencode "ssh_key_id=${ssh_key_id}" \
-   --data-urlencode "hypervisor=${hypervisor}" \
-   --data-urlencode "cpu_cores=${cpu_cores}" \
-   --data-urlencode "memory_size=${memory_size}" \
-   --data-urlencode "display_name=${display_name}" \
-   --data-urlencode "host_name=${host_name}" \
-   --data-urlencode "vifs=${vifs}" \
+  call_api -X POST $(urlencode_data \
+    image_id=${image_id} \
+    instance_spec_name=${instance_spec_name}  \
+    security_groups[]=${security_groups} \
+    ssh_key_id=${ssh_key_id} \
+    hypervisor=${hypervisor} \
+    cpu_cores=${cpu_cores} \
+    memory_size=${memory_size} \
+    display_name=${display_name} \
+    host_name=${host_name} \
+    vifs=${vifs} \
+   ) \
    ${base_uri}/${namespace}s.${format}
   ;;
 xcreate) cmd_xcreate ${namespace} ;;
@@ -51,11 +52,12 @@ backup)
   #
   description=${description:-}
 
-  call_api -X PUT \
-   --data-urlencode "description=${description}" \
-   --data-urlencode "display_name=${display_name}" \
-   --data-urlencode "is_public=${is_public}" \
-   --data-urlencode "is_cacheable=${is_cacheable}" \
+  call_api -X PUT $(urlencode_data \
+    description=${description} \
+    display_name=${display_name} \
+    is_public=${is_public} \
+    is_cacheable=${is_cacheable} \
+   ) \
    ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
   ;;
 reboot|stop|start|poweroff|poweron)

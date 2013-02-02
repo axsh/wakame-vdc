@@ -43,11 +43,11 @@ function test_host_node_xcreate() {
   local cmd=xcreate
 
   local MUSSEL_CUSTOM_DATA="
-    --data-urlencode name=shunit2
+    name=shunit2
   "
 
-  assertEquals "$(MUSSEL_CUSTOM_DATA=${MUSSEL_CUSTOM_DATA} cli_wrapper ${namespace} ${cmd})" \
-               "curl -X POST $(echo ${MUSSEL_CUSTOM_DATA}) ${base_uri}/${namespace}s.${format}"
+  assertEquals "$(MUSSEL_CUSTOM_DATA=$(urlencode_data ${MUSSEL_CUSTOM_DATA}) cli_wrapper ${namespace} ${cmd})" \
+               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) ${base_uri}/${namespace}s.${format}"
 }
 
 ## shunit2

@@ -27,18 +27,19 @@ create)
   private_key=${private_key:-}
   public_key=${public_key:-}
 
-  call_api -X POST \
-   --data-urlencode "display_name=${display_name}" \
-   --data-urlencode "protocol=${protocol}" \
-   --data-urlencode "port=${balancer_port}" \
-   --data-urlencode "instance_port=${instance_port}" \
-   --data-urlencode "balance_algorithm=${balance_algorithm}" \
-   --data-urlencode "engine=haproxy" \
-   --data-urlencode "cookie_name=${cookie_name}" \
-   --data-urlencode "private_key=${private_key}" \
-   --data-urlencode "public_key=${public_key}" \
-   --data-urlencode "engine=haproxy" \
-   --data-urlencode "max_connection=${max_connection}" \
+  call_api -X POST $(urlencode_data \
+    display_name=${display_name} \
+    protocol=${protocol} \
+    port=${balancer_port} \
+    instance_port=${instance_port} \
+    balance_algorithm=${balance_algorithm} \
+    engine=haproxy \
+    cookie_name=${cookie_name} \
+    private_key=${private_key} \
+    public_key=${public_key} \
+    engine=haproxy \
+    max_connection=${max_connection} \
+    ) \
    ${base_uri}/${1}s.${format}
   ;;
 xcreate) cmd_xcreate ${namespace} ;;

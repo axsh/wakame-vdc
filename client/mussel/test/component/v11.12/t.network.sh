@@ -48,14 +48,14 @@ function test_network_create() {
   local description=shunit2
 
   local params="
-   --data-urlencode gw=${gw}
-   --data-urlencode network=${network}
-   --data-urlencode prefix=${prefix}
-   --data-urlencode description=${description}
-   "
+    gw=${gw}
+    network=${network}
+    prefix=${prefix}
+    description=${description}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### reserve

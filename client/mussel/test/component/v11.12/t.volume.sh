@@ -47,11 +47,11 @@ function test_volume_create() {
   local opts=""
 
   local params="
-    --data-urlencode volume_size=${volume_size}
-   "
+    volume_size=${volume_size}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${size})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### attach

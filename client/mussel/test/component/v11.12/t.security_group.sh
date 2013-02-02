@@ -48,12 +48,12 @@ function test_security_group_create() {
   local opts=""
 
   local params="
-    --data-urlencode description=${description}
-    --data-urlencode rule=${rule}
-   "
+    description=${description}
+    rule=${rule}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${description} ${rule})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### update
@@ -66,11 +66,11 @@ function test_security_group_update() {
   local opts=""
 
   local params="
-    --data-urlencode rule=${rule}
-   "
+    rule=${rule}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${rule})" \
-               "curl -X PUT $(echo ${params}) ${base_uri}/${namespace}s/${uuid}.${format}"
+               "curl -X PUT $(urlencode_data ${params}) ${base_uri}/${namespace}s/${uuid}.${format}"
 }
 
 ## shunit2

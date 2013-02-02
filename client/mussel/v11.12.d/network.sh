@@ -17,11 +17,12 @@ create)
   [[ -z "${network}"     ]] && { echo "'network' is empty." >&2; return 1; }
   [[ -z "${prefix}"      ]] && { echo "'prefix' is empty." >&2; return 1; }
   [[ -z "${description}" ]] && { echo "'description' is empty." >&2; return 1; }
-  call_api -X POST \
-   --data-urlencode "gw=${gw}" \
-   --data-urlencode "network=${network}" \
-   --data-urlencode "prefix=${prefix}"  \
-   --data-urlencode "description=${description}" \
+  call_api -X POST $(urlencode_data \
+   "gw=${gw}" \
+   "network=${network}" \
+   "prefix=${prefix}"  \
+   "description=${description}" \
+   ) \
    ${base_uri}/${namespace}s.${format}
   ;;
 reserve|release)

@@ -73,21 +73,21 @@ function test_load_balancer_create_no_opts() {
   local opts=""
 
   local params="
-    --data-urlencode display_name=${display_name}
-    --data-urlencode protocol=${protocol}
-    --data-urlencode port=${balancer_port}
-    --data-urlencode instance_port=${instance_port}
-    --data-urlencode balance_algorithm=${balance_algorithm}
-    --data-urlencode engine=haproxy
-    --data-urlencode cookie_name=${cookie_name}
-    --data-urlencode private_key=${private_key}
-    --data-urlencode public_key=${public_key}
-    --data-urlencode engine=haproxy
-    --data-urlencode max_connection=${max_connection}
-   "
+    display_name=${display_name}
+    protocol=${protocol}
+    port=${balancer_port}
+    instance_port=${instance_port}
+    balance_algorithm=${balance_algorithm}
+    engine=haproxy
+    cookie_name=${cookie_name}
+    private_key=${private_key}
+    public_key=${public_key}
+    engine=haproxy
+    max_connection=${max_connection}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 function test_load_balancer_create_opts() {
@@ -116,21 +116,21 @@ function test_load_balancer_create_opts() {
   "
 
   local params="
-    --data-urlencode display_name=${display_name}
-    --data-urlencode protocol=${protocol}
-    --data-urlencode port=${balancer_port}
-    --data-urlencode instance_port=${instance_port}
-    --data-urlencode balance_algorithm=${balance_algorithm}
-    --data-urlencode engine=haproxy
-    --data-urlencode cookie_name=${cookie_name}
-    --data-urlencode private_key=${private_key}
-    --data-urlencode public_key=${public_key}
-    --data-urlencode engine=haproxy
-    --data-urlencode max_connection=${max_connection}
-   "
+    display_name=${display_name}
+    protocol=${protocol}
+    port=${balancer_port}
+    instance_port=${instance_port}
+    balance_algorithm=${balance_algorithm}
+    engine=haproxy
+    cookie_name=${cookie_name}
+    private_key=${private_key}
+    public_key=${public_key}
+    engine=haproxy
+    max_connection=${max_connection}
+  "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(echo ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### xcreate
@@ -150,21 +150,21 @@ function test_load_balancer_xcreate() {
   local public_key=
 
   local MUSSEL_CUSTOM_DATA="
-    --data-urlencode display_name=${display_name}
-    --data-urlencode protocol=${protocol}
-    --data-urlencode port=${balancer_port}
-    --data-urlencode instance_port=${instance_port}
-    --data-urlencode balance_algorithm=${balance_algorithm}
-    --data-urlencode engine=haproxy
-    --data-urlencode cookie_name=${cookie_name}
-    --data-urlencode private_key=${private_key}
-    --data-urlencode public_key=${public_key}
-    --data-urlencode engine=haproxy
-    --data-urlencode max_connection=${max_connection}
+    display_name=${display_name}
+    protocol=${protocol}
+    port=${balancer_port}
+    instance_port=${instance_port}
+    balance_algorithm=${balance_algorithm}
+    engine=haproxy
+    cookie_name=${cookie_name}
+    private_key=${private_key}
+    public_key=${public_key}
+    engine=haproxy
+    max_connection=${max_connection}
   "
 
-  assertEquals "$(MUSSEL_CUSTOM_DATA=${MUSSEL_CUSTOM_DATA} cli_wrapper ${namespace} ${cmd})" \
-               "curl -X POST $(echo ${MUSSEL_CUSTOM_DATA}) ${base_uri}/${namespace}s.${format}"
+  assertEquals "$(MUSSEL_CUSTOM_DATA=$(urlencode_data ${MUSSEL_CUSTOM_DATA}) cli_wrapper ${namespace} ${cmd})" \
+               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) ${base_uri}/${namespace}s.${format}"
 }
 
 ### poweron

@@ -10,8 +10,9 @@ show)    cmd_show    $* ;;
 destroy) cmd_destroy $* ;;
 create)
   volume_size=${3:-10}
-  call_api -X POST \
-   --data-urlencode "volume_size=${volume_size}" \
+  call_api -X POST $(urlencode_data \
+    "volume_size=${volume_size}" \
+   ) \
    ${base_uri}/${namespace}s.${format}
   ;;
 attach|detach)
