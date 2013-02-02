@@ -3,6 +3,8 @@
 # 12.03
 #
 
+. ${BASH_SOURCE[0]%/*}/base.sh
+
 task_help() {
   cmd_help ${namespace} "index|show|create|xcreate|destroy|poweroff|poweron"
 }
@@ -13,14 +15,6 @@ task_index() {
     xquery="state=${state}"
   fi
   cmd_index $*
-}
-
-task_show() {
-  cmd_show $*
-}
-
-task_destroy() {
-  cmd_destroy $*
 }
 
 task_create() {
@@ -40,18 +34,10 @@ task_create() {
    ${base_uri}/${1}s.${format}
 }
 
-task_xcreate() {
-  cmd_xcreate ${namespace}
-}
-
 task_poweroff() {
   cmd_put $*
 }
 
 task_poweron() {
   cmd_put $*
-}
-
-task_default() {
-  cmd_default $*
 }

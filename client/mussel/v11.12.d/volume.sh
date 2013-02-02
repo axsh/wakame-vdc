@@ -3,20 +3,10 @@
 # 11.12
 #
 
+. ${BASH_SOURCE[0]%/*}/base.sh
+
 task_help() {
   cmd_help ${namespace} "index|show|create|attach|detach|destroy"
-}
-
-task_index() {
-  cmd_index $*
-}
-
-task_show() {
-  cmd_show $*
-}
-
-task_destroy() {
-  cmd_destroy $*
 }
 
 task_create() {
@@ -40,8 +30,4 @@ task_detach() {
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [vol-id] [inst-id]" >&2; return 1; }
 
   call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id=${instance_id}"
-}
-
-task_default() {
-  cmd_default $*
 }

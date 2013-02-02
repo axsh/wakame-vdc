@@ -73,7 +73,7 @@ function test_instance_create() {
 ### reboot
 
 function test_instance_reboot() {
-  extract_args ${namespace} reboot
+  extract_args ${namespace} reboot i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
 }
@@ -81,7 +81,7 @@ function test_instance_reboot() {
 ### stop
 
 function test_instance_stop() {
-  extract_args ${namespace} stop
+  extract_args ${namespace} stop i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
 }
@@ -89,7 +89,7 @@ function test_instance_stop() {
 ### start
 
 function test_instance_start() {
-  extract_args ${namespace} start
+  extract_args ${namespace} start i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
 }

@@ -3,20 +3,10 @@
 # 11.12
 #
 
+. ${BASH_SOURCE[0]%/*}/base.sh
+
 task_help() {
   cmd_help ${namespace} "index|show|create|destroy|reboot"
-}
-
-task_index() {
-  cmd_index $*
-}
-
-task_show() {
-  cmd_show $*
-}
-
-task_destroy() {
-  cmd_destroy $*
 }
 
 task_create() {
@@ -52,8 +42,4 @@ task_stop() {
 
 task_start() {
   cmd_put $*
-}
-
-task_default() {
-  cmd_default $*
 }

@@ -4,7 +4,7 @@
 #
 
 task_help() {
-  cmd_help ${namespace} "index|show"
+  cmd_help ${namespace} "index|show|destroy"
 }
 
 task_index() {
@@ -13,6 +13,10 @@ task_index() {
 
 task_show() {
   cmd_show $*
+}
+
+task_destroy() {
+  cmd_destroy $*
 }
 
 task_default() {

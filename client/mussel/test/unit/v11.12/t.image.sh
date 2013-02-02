@@ -29,7 +29,7 @@ function test_image_help_stderr_to_devnull_success() {
 function test_image_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|index|show]"
+  assertEquals "${res}" "$0 ${namespace} [help|index|show|destroy]"
 }
 
 ### index
