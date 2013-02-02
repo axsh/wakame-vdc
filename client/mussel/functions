@@ -71,6 +71,16 @@ function request_param() {
   echo $*
 }
 
+function urlencode_data() {
+  # "echo $( ... )" means removing each line \n
+  echo $(
+    while [[ "${1}" ]]; do
+      echo --data-urlencode ${1}
+      shift
+    done
+  )
+}
+
 function call_api() {
   [[ -n "${http_header}" ]] || { echo "[ERROR] 'http_header' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
