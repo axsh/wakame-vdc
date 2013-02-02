@@ -4,7 +4,7 @@
 #
 
 task_help() {
- cmd_help ${namespace} "index|show|create|update|destroy"
+  cmd_help ${namespace} "index|show|create|update|destroy"
 }
 
 task_index() {
@@ -20,9 +20,9 @@ task_destroy() {
 }
 
 task_create() {
-  description=$3
-  rule=$4
+  local description=$3 rule=$4
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
+
   call_api -X POST $(urlencode_data \
    description=${description} \
    rule=${rule} \
@@ -31,9 +31,9 @@ task_create() {
 }
 
 task_update() {
-  description=$3
-  rule=$4
+  local description=$3 rule=$4
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} ID" >&2; return 1; }
+
   call_api -X PUT $(urlencode_data \
    rule=${rule} \
    ) \

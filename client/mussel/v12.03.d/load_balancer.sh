@@ -57,12 +57,12 @@ task_xcreate() {
 }
 
 task_poweroff() {
-  uuid=$3
+  local uuid=$3
   call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
 }
 
 task_poweron() {
-  uuid=$3
+  local uuid=$3
   call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
 }
 

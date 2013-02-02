@@ -58,7 +58,7 @@ task_xcreate() {
 }
 
 task_backup() {
-  uuid=$3
+  local uuid=$3
   #
   is_public=${is_public:-false}
   is_cacheable=${is_cacheable:-false}
@@ -75,27 +75,27 @@ task_backup() {
 }
 
 task_reboot() {
-  uuid=$3
+  local uuid=$3
   call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
 }
 
 task_stop() {
-  uuid=$3
+  local uuid=$3
   call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
 }
 
 task_start() {
-  uuid=$3
+  local uuid=$3
   call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
 }
 
 task_poweroff() {
-  uuid=$3
+  local uuid=$3
   call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
 }
 
 task_poweron() {
-  uuid=$3
+  local uuid=$3
   call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
 }
 
