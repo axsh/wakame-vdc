@@ -62,7 +62,7 @@ function test_volume_attach() {
   local opts=""
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${uuid})" \
-               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id"
+               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id=${uuid}"
 }
 
 ### detach
@@ -73,7 +73,7 @@ function test_volume_detach() {
   local opts=""
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${uuid})" \
-               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id"
+               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id=${uuid}"
 }
 
 ## shunit2

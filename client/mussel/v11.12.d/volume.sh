@@ -20,7 +20,8 @@ task_destroy() {
 }
 
 task_create() {
-  volume_size=${3:-10}
+  local volume_size=${3:-10}
+
   call_api -X POST $(urlencode_data \
     volume_size=${volume_size} \
    ) \
@@ -28,15 +29,17 @@ task_create() {
 }
 
 task_attach() {
-  uuid=$3
+  local uuid=$3 instance_id=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [vol-id] [inst-id]" >&2; return 1; }
-  call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id"
+
+  call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id=${instance_id}"
 }
 
 task_detach() {
-  uuid=$3
+  local uuid=$3 instance_id=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [vol-id] [inst-id]" >&2; return 1; }
-  call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id"
+
+  call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?instance_id=${instance_id}"
 }
 
 task_default() {
