@@ -159,6 +159,7 @@ function run_cmd() {
   local namespace_path=${BASH_SOURCE[0]%/*}/v${api_version}.d/${namespace}.sh
   [[ -f "${namespace_path}" ]] && {
     . ${namespace_path}
+    invoke_task $*
   } || {
     echo "$0 [namespace] [cmd]" >&2
     return 1

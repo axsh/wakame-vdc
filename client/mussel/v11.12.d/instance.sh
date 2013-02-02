@@ -3,13 +3,23 @@
 # 11.12
 #
 
-case "${cmd}" in
-help)    cmd_help    ${namespace} "index|show|create|destroy|reboot" ;;
-index)   cmd_index   $* ;;
-show)    cmd_show    $* ;;
-destroy) cmd_destroy $* ;;
+task_help() {
+  cmd_help ${namespace} "index|show|create|destroy|reboot"
+}
 
-create)
+task_index() {
+  cmd_index $*
+}
+
+task_show() {
+  cmd_show $*
+}
+
+task_destroy() {
+  cmd_destroy $*
+}
+
+task_create() {
   image_id=${image_id:-wmi-lucid0}
   instance_spec_id=${instance_spec_id:-is-demospec}
   ssh_key_id=${ssh_key_id:-ssh-demo}
@@ -41,11 +51,23 @@ create)
    ) \
    ) \
    ${base_uri}/${namespace}s.${format}
-  ;;
-reboot|stop|start)
+}
+
+task_reboot() {
   uuid=$3
-  call_api -X PUT -d "''" \
-   ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
-  ;;
-*)       cmd_default $* ;;
-esac
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_stop() {
+  uuid=$3
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_start() {
+  uuid=$3
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_default() {
+  cmd_default $*
+}

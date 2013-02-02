@@ -3,19 +3,28 @@
 # 12.03
 #
 
-case "${cmd}" in
-help)    cmd_help    ${namespace} "index|show|create|xcreate|destroy|reboot|stop|start|poweroff|poweron" ;;
-index)
+task_help() {
+  cmd_help ${namespace} "index|show|create|xcreate|destroy|reboot|stop|start|poweroff|poweron"
+}
+
+task_index() {
   # --state=(running|stopped|terminated|alive)
   xquery="service_type=std"
   if [[ -n "${state}" ]]; then
     xquery="${xquery}\&state=${state}"
   fi
   cmd_index $*
-  ;;
-show)    cmd_show    $* ;;
-destroy) cmd_destroy $* ;;
-create)
+}
+
+task_show() {
+  cmd_show $*
+}
+
+task_destroy() {
+  cmd_destroy $*
+}
+
+task_create() {
   #
   image_id=${image_id:-wmi-lucid5}
   instance_spec_name=${instance_spec_name:-is-small}
@@ -42,9 +51,13 @@ create)
     vifs=${vifs} \
    ) \
    ${base_uri}/${namespace}s.${format}
-  ;;
-xcreate) cmd_xcreate ${namespace} ;;
-backup)
+}
+
+task_xcreate() {
+  cmd_xcreate ${namespace}
+}
+
+task_backup() {
   uuid=$3
   #
   is_public=${is_public:-false}
@@ -59,11 +72,33 @@ backup)
     is_cacheable=${is_cacheable} \
    ) \
    ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
-  ;;
-reboot|stop|start|poweroff|poweron)
+}
+
+task_reboot() {
   uuid=$3
-  call_api -X PUT -d "''" \
-   ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
-  ;;
-*)       cmd_default $* ;;
-esac
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_stop() {
+  uuid=$3
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_start() {
+  uuid=$3
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_poweroff() {
+  uuid=$3
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_poweron() {
+  uuid=$3
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_default() {
+  cmd_default $*
+}

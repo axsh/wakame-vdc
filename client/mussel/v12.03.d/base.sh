@@ -3,10 +3,22 @@
 # 12.03
 #
 
-case "${cmd}" in
-help)    cmd_help    ${namespace} "index|show|xcreate" ;;
-index)   cmd_index   $* ;;
-show)    cmd_show    $* ;;
-xcreate) cmd_xcreate ${1} ;;
-*)       cmd_default $* ;;
-esac
+task_help() {
+  cmd_help ${namespace} "index|show|xcreate"
+}
+
+task_index() {
+  cmd_index $*
+}
+
+task_show() {
+  cmd_show $*
+}
+
+task_xcreate() {
+  cmd_xcreate ${1}
+}
+
+task_default() {
+  cmd_default $*
+}

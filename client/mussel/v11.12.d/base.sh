@@ -3,9 +3,18 @@
 # 11.12
 #
 
-case "${cmd}" in
-help)    cmd_help    ${namespace} "index|show" ;;
-index)   cmd_index   $* ;;
-show)    cmd_show    $* ;;
-*)       cmd_default $* ;;
-esac
+task_help() {
+  cmd_help ${namespace} "index|show"
+}
+
+task_index() {
+  cmd_index $*
+}
+
+task_show() {
+  cmd_show $*
+}
+
+task_default() {
+  cmd_default $*
+}

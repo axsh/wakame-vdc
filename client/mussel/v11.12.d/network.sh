@@ -3,12 +3,23 @@
 # 11.12
 #
 
-case "${cmd}" in
-help)    cmd_help    ${namespace} "index|show|create|destroy" ;;
-index)   cmd_index   $* ;;
-show)    cmd_show    $* ;;
-destroy) cmd_destroy $* ;;
-create)
+task_help() {
+  cmd_help ${namespace} "index|show|create|destroy"
+}
+
+task_index() {
+  cmd_index $*
+}
+
+task_show() {
+  cmd_show $*
+}
+
+task_destroy() {
+  cmd_destroy $*
+}
+
+task_create() {
   gw=${gw}
   prefix=${prefix}
   description=${description}
@@ -24,23 +35,40 @@ create)
    description=${description} \
    ) \
    ${base_uri}/${namespace}s.${format}
-  ;;
-reserve|release)
+}
+
+task_reserve() {
   uuid=$3
   ipaddr=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [ipaddr]" >&2; return 1; }
-  call_api -X PUT -d "''" \
-   "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?ipaddr=${ipaddr}"
-  ;;
-add_pool|del_pool)
+  call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?ipaddr=${ipaddr}"
+}
+
+task_release() {
+  uuid=$3
+  ipaddr=$4
+  [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [ipaddr]" >&2; return 1; }
+  call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?ipaddr=${ipaddr}"
+}
+
+task_add_pool() {
   uuid=$3
   name=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [pool-name]" >&2; return 1; }
-  call_api -X PUT -d "''" \
-   "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?name=${name}"
-  ;;
-get_pool)
+  call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?name=${name}"
+}
+
+task_del_pool() {
+  uuid=$3
+  name=$4
+  [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [pool-name]" >&2; return 1; }
+  call_api -X PUT -d "''" "${base_uri}/${namespace}s/${uuid}/${cmd}.${format}?name=${name}"
+}
+
+task_get_pool() {
   cmd_xget $*
-  ;;
-*)       cmd_default $* ;;
-esac
+}
+
+task_default() {
+  cmd_default $*
+}

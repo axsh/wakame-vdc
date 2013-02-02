@@ -3,12 +3,23 @@
 # 11.12
 #
 
-case "${cmd}" in
-help)    cmd_help    ${namespace} "index|show|create|update|destroy" ;;
-index)   cmd_index   $* ;;
-show)    cmd_show    $* ;;
-destroy) cmd_destroy $* ;;
-create)
+task_help() {
+ cmd_help ${namespace} "index|show|create|update|destroy"
+}
+
+task_index() {
+  cmd_index $*
+}
+
+task_show() {
+  cmd_show $*
+}
+
+task_destroy() {
+  cmd_destroy $*
+}
+
+task_create() {
   description=$3
   rule=$4
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
@@ -17,8 +28,9 @@ create)
    rule=${rule} \
    ) \
    ${base_uri}/${namespace}s.${format}
-  ;;
-update)
+}
+
+task_update() {
   description=$3
   rule=$4
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} ID" >&2; return 1; }
@@ -26,6 +38,8 @@ update)
    rule=${rule} \
    ) \
    ${base_uri}/${namespace}s/${description}.${format}
-  ;;
-*)       cmd_default $* ;;
-esac
+}
+
+task_default() {
+  cmd_default $*
+}

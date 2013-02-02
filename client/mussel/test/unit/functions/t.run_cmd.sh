@@ -12,6 +12,10 @@
 
 ## functions
 
+function setUp() {
+  function invoke_task() { echo invoke_task $*; }
+}
+
 function test_run_cmd_no_opts() {
   run_cmd 2>/dev/null
   assertNotEquals $? 0

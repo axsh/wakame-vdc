@@ -3,18 +3,27 @@
 # 12.03
 #
 
-case "${cmd}" in
-help)    cmd_help    ${namespace} "index|show|create|xcreate|destroy|poweroff|poweron" ;;
-index)
+task_help() {
+  cmd_help ${namespace} "index|show|create|xcreate|destroy|poweroff|poweron"
+}
+
+task_index() {
   # --state=(running|stopped|terminated|alive)
   if [[ -n "${state}" ]]; then
     xquery="state=${state}"
   fi
   cmd_index $*
-  ;;
-show)    cmd_show    $* ;;
-destroy) cmd_destroy $* ;;
-create)
+}
+
+task_show() {
+  cmd_show $*
+}
+
+task_destroy() {
+  cmd_destroy $*
+}
+
+task_create() {
   #
   protocol=${protocol:-http}
   balancer_port=${balancer_port:-80}
@@ -41,12 +50,22 @@ create)
     max_connection=${max_connection} \
     ) \
    ${base_uri}/${1}s.${format}
-  ;;
-xcreate) cmd_xcreate ${namespace} ;;
-poweroff|poweron)
+}
+
+task_xcreate() {
+  cmd_xcreate ${namespace}
+}
+
+task_poweroff() {
   uuid=$3
-  call_api -X PUT -d "''" \
-   ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
-  ;;
-*)       cmd_default $* ;;
-esac
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_poweron() {
+  uuid=$3
+  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+}
+
+task_default() {
+  cmd_default $*
+}
