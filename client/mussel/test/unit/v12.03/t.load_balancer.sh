@@ -80,7 +80,7 @@ function test_load_balancer_xcreate() {
 ### poweroff
 
 function test_load_balancer_poweroff() {
-  extract_args ${namespace} poweroff
+  extract_args ${namespace} poweroff i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
 }
@@ -88,7 +88,7 @@ function test_load_balancer_poweroff() {
 ### poweron
 
 function test_load_balancer_poweron() {
-  extract_args ${namespace} poweron
+  extract_args ${namespace} poweron i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
 }

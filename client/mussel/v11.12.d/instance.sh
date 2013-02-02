@@ -54,18 +54,15 @@ task_create() {
 }
 
 task_reboot() {
-  local uuid=$3
-  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+  cmd_put $*
 }
 
 task_stop() {
-  local uuid=$3
-  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+  cmd_put $*
 }
 
 task_start() {
-  local uuid=$3
-  call_api -X PUT -d "''" ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
+  cmd_put $*
 }
 
 task_default() {
