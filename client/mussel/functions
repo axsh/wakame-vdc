@@ -133,5 +133,13 @@ function cmd_default() {
 }
 
 function run_cmd() {
-  :
+  local namespace=$1 cmd=$2
+
+  local namespace_path=${BASH_SOURCE[0]%/*}/v${api_version}.d/${namespace}.sh
+  [[ -f "${namespace_path}" ]] && {
+    . ${namespace_path}
+  } || {
+    echo "$0 [namespace] [cmd]" >&2
+    return 1
+  }
 }
