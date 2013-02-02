@@ -27,7 +27,8 @@ function test_run_cmd_namespace() {
 }
 
 function test_run_cmd_namespace_cmd() {
-  assertEquals "$(run_cmd shunit2 testing 2>&1)" "$0 [namespace] [cmd]"
+  local namespace=shunit2
+  assertEquals "$(run_cmd ${namespace} testing 2>&1)" "[ERROR] no such namespace '${namespace}'"
 }
 
 ## shunit2

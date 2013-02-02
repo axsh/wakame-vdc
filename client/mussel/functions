@@ -166,11 +166,11 @@ function run_cmd() {
   [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   local namespace_path=${BASH_SOURCE[0]%/*}/v${api_version}.d/${namespace}.sh
-  [[ -f "${namespace_path}" ]] && {
-    . ${namespace_path}
-    invoke_task $*
-  } || {
-    echo "$0 [namespace] [cmd]" >&2
+  [[ -f "${namespace_path}" ]] || {
+    echo "[ERROR] no such namespace '${namespace}'" >&2
     return 1
   }
+
+  . ${namespace_path}
+  invoke_task $*
 }
