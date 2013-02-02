@@ -142,6 +142,15 @@ function cmd_default() {
   [[ $# = 1 ]] && cmd_index $* || $0 ${namespace} help
 }
 
+function invoke_task() {
+  local namespace=$1 cmd=$2
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  declare -f task_${cmd} >/dev/null || { echo "[ERROR] undefined task: 'task_${cmd}' (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  eval task_${cmd} $*
+}
+
 function run_cmd() {
   local namespace=$1 cmd=$2
   [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
