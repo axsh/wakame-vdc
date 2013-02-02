@@ -3,19 +3,6 @@
 # 11.12
 #
 
-MUSSEL_RESOURCES="
- host_node
- image
- instance
- instance_spec
- network
- security_group
- ssh_key_pair
- storage_node
- volume
- volume_snapshot
-"
-
 function run_cmd() {
   local namespace=$1 cmd=$2
 

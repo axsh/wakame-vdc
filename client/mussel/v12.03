@@ -3,18 +3,6 @@
 # 12.03
 #
 
-MUSSEL_RESOURCES="
- backup_object
- host_node
- image
- instance
- load_balancer
- network
- security_group
- ssh_key_pair
- storage_node
-"
-
 function run_cmd() {
   local namespace=$1 cmd=$2
 

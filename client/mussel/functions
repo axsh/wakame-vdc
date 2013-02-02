@@ -6,9 +6,6 @@
 MUSSEL_PROMPT='$'
 MUSSEL_ARGS=
 
-# | grep ')$' | grep -v '^ ' | sed 's,),,' | sed 's,|,\n,g' | grep -v '*' | sort | sed 's,^, ,'
-MUSSEL_RESOURCES=
-
 function extract_args() {
   MUSSEL_ARGS=
   local arg= key= value=
