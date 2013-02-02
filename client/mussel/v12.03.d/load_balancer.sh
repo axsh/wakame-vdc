@@ -24,30 +24,18 @@ task_destroy() {
 }
 
 task_create() {
-  #
-  protocol=${protocol:-http}
-  balancer_port=${balancer_port:-80}
-  instance_port=${instance_port:-80}
-  balance_algorithm=${balance_algorithm:-leastconn}
-  max_connection=${max_connection:-1000}
-  #
-  display_name=${display_name:-}
-  cookie_name=${cookie_name:-}
-  private_key=${private_key:-}
-  public_key=${public_key:-}
-
   call_api -X POST $(urlencode_data \
     display_name=${display_name} \
-    protocol=${protocol} \
-    port=${balancer_port} \
-    instance_port=${instance_port} \
-    balance_algorithm=${balance_algorithm} \
+    protocol=${protocol:-http} \
+    port=${balancer_port:-80} \
+    instance_port=${instance_port:-80} \
+    balance_algorithm=${balance_algorithm:-leastconn} \
     engine=haproxy \
     cookie_name=${cookie_name} \
     private_key=${private_key} \
     public_key=${public_key} \
     engine=haproxy \
-    max_connection=${max_connection} \
+    max_connection=${max_connection:-1000} \
     ) \
    ${base_uri}/${1}s.${format}
 }

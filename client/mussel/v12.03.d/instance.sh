@@ -25,30 +25,17 @@ task_destroy() {
 }
 
 task_create() {
-  #
-  image_id=${image_id:-wmi-lucid5}
-  instance_spec_name=${instance_spec_name:-is-small}
-  security_groups=${security_groups:-sg-demofgr}
-  ssh_key_id=${ssh_key_id:-ssh-demo}
-  hypervisor=${hypervisor:-openvz}
-  cpu_cores=${cpu_cores:-1}
-  memory_size=${memory_size:-1024}
-  vifs=${vifs:-\{\}}
-  #
-  display_name=${display_name:-}
-  host_name=${host_name:-}
-
   call_api -X POST $(urlencode_data \
-    image_id=${image_id} \
-    instance_spec_name=${instance_spec_name}  \
-    security_groups[]=${security_groups} \
-    ssh_key_id=${ssh_key_id} \
-    hypervisor=${hypervisor} \
-    cpu_cores=${cpu_cores} \
-    memory_size=${memory_size} \
+    image_id=${image_id:-wmi-lucid5} \
+    instance_spec_name=${instance_spec_name:-is-small}  \
+    security_groups[]=${security_groups:-sg-demofgr} \
+    ssh_key_id=${ssh_key_id:-ssh-demo} \
+    hypervisor=${hypervisor:-openvz} \
+    cpu_cores=${cpu_cores:-1} \
+    memory_size=${memory_size:-1024} \
     display_name=${display_name} \
     host_name=${host_name} \
-    vifs=${vifs} \
+    vifs=${vifs:-\{\}} \
    ) \
    ${base_uri}/${namespace}s.${format}
 }
@@ -59,17 +46,12 @@ task_xcreate() {
 
 task_backup() {
   local uuid=$3
-  #
-  is_public=${is_public:-false}
-  is_cacheable=${is_cacheable:-false}
-  #
-  description=${description:-}
 
   call_api -X PUT $(urlencode_data \
     description=${description} \
     display_name=${display_name} \
-    is_public=${is_public} \
-    is_cacheable=${is_cacheable} \
+    is_public=${is_public:-false} \
+    is_cacheable=${is_cacheable:-false} \
    ) \
    ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}
 }
