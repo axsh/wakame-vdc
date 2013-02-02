@@ -1,4 +1,4 @@
-all: functions v12.03
+all: functions v11.12 v12.03
 
 functions:
 	(cd $@ && make)
