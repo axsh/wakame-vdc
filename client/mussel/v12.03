@@ -20,11 +20,8 @@ local namespace=$1 cmd=$2
 
 case "${namespace}" in
 
-instance|load_balancer|image|backup_object)
+instance|load_balancer|image|backup_object|host_node|storage_node|network|security_group|ssh_key_pair)
   . ${BASH_SOURCE[0]%/*}/v${api_version}.d/${namespace}.sh
-  ;;
-host_node|storage_node|network|security_group|ssh_key_pair)
-  . ${BASH_SOURCE[0]%/*}/v${api_version}.d/base.sh
   ;;
 *)
   echo "$0 [namespace] [cmd]" >&2

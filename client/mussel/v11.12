@@ -21,11 +21,8 @@ local namespace=$1 cmd=$2
 
 case "${namespace}" in
 
-instance|security_group|volume|ssh_key_pair|network)
+instance|security_group|volume|ssh_key_pair|network|host_node|storage_node|image|instance_spec|volume_snapshot)
   . ${BASH_SOURCE[0]%/*}/v${api_version}.d/${namespace}.sh
-  ;;
-host_node|storage_node|image|instance_spec|volume_snapshot)
-  . ${BASH_SOURCE[0]%/*}/v${api_version}.d/base.sh
   ;;
 *)
   echo "$0 [instance|security_group|volume|ssh_key_pair|network|host_node|storage_node|image|instance_spec|volume_snapshot] [method]" >&2; return 1
