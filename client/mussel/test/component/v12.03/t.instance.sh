@@ -11,6 +11,7 @@
 ## variables
 
 declare namespace=instance
+declare vifs_file=${BASH_SOURCE[0]%/*}/vifs_file.$$.txt
 
 ## functions
 
@@ -18,6 +19,14 @@ function setUp() {
   xquery=
   state=
   uuid=asdf
+
+  cat <<-EOS > ${vifs_file}
+	{}
+	EOS
+}
+
+function tearDown() {
+  rm -f ${vifs_file}
 }
 
 ### index
@@ -93,7 +102,8 @@ function test_instance_create_opts() {
     --cpu-cores=${cpu_cores}
     --memory-size=${memory_size}
     --display-name=${display_name}
-    --host-name=${host_name} --vifs=${vifs}
+    --host-name=${host_name}
+    --vifs=${vifs}
   "
 
   local params="
@@ -107,6 +117,49 @@ function test_instance_create_opts() {
     display_name=${display_name}
     host_name=${host_name}
     vifs=${vifs}
+  "
+
+  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+}
+
+function test_instance_create_opts_vif_file() {
+  local cmd=create
+
+  local image_id=wmi-shunit2
+  local instance_spec_name=is-shunit2
+  local security_groups=sg-shunit2
+  local ssh_key_id=ssh-shunit2
+  local hypervisor=shunit2
+  local cpu_cores=2
+  local memory_size=2048
+  local display_name=shunit2
+  local host_name=shunit2
+  local vifs=${vifs_file}
+
+  local opts="
+    --image-id=${image_id}
+    --instance-spec-name=${instance_spec_name}
+    --security-groups=${security_groups}
+    --hypervisor=${hypervisor}
+    --cpu-cores=${cpu_cores}
+    --memory-size=${memory_size}
+    --display-name=${display_name}
+    --host-name=${host_name}
+    --vifs=${vifs}
+  "
+
+  local params="
+    image_id=${image_id}
+    instance_spec_name=${instance_spec_name}
+    security_groups[]=${security_groups}
+    ssh_key_id=${ssh_key_id}
+    hypervisor=${hypervisor}
+    cpu_cores=${cpu_cores}
+    memory_size=${memory_size}
+    display_name=${display_name}
+    host_name=${host_name}
+    vifs@${vifs}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \

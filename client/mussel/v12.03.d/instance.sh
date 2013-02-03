@@ -25,7 +25,13 @@ task_create() {
     memory_size=${memory_size:-1024} \
     display_name=${display_name} \
     host_name=${host_name} \
-    vifs=${vifs:-\{\}} \
+    $(
+      if [[ -f "${vifs}" ]]; then
+        echo vifs@${vifs}
+      else
+        echo vifs=${vifs:-\{\}}
+      fi
+    ) \
    ) \
    ${base_uri}/${namespace}s.${format}
 }
