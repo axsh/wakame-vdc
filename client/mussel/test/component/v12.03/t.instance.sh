@@ -104,13 +104,13 @@ function test_instance_create_opts() {
   local vifs="{}"
 
   local opts="
-    --image-id=${image_id} \
-    --instance-spec-name=${instance_spec_name} \
-    --security-groups=${security_groups} \
-    --hypervisor=${hypervisor} \
-    --cpu-cores=${cpu_cores} \
-    --memory-size=${memory_size} \
-    --display-name=${display_name} \
+    --image-id=${image_id}
+    --instance-spec-name=${instance_spec_name}
+    --security-groups=${security_groups}
+    --hypervisor=${hypervisor}
+    --cpu-cores=${cpu_cores}
+    --memory-size=${memory_size}
+    --display-name=${display_name}
     --host-name=${host_name} --vifs=${vifs}
   "
 
