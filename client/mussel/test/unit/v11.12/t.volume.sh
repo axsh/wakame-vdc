@@ -6,7 +6,7 @@
 
 ## include files
 
-. $(cd ${BASH_SOURCE[0]%/*} && pwd)/helper_shunit2.sh
+. ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 
 ## variables
 

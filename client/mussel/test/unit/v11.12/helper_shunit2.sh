@@ -6,12 +6,11 @@
 
 ## system variables
 
-readonly abs_dirname=$(cd ${BASH_SOURCE[0]%/*} && pwd)
-readonly shunit2_file=${abs_dirname}/../../shunit2
+readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 
 ## include files
 
-. ${abs_dirname}/../../../functions
+. ${BASH_SOURCE[0]%/*}/../../../functions
 
 ## group variables
 
