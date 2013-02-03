@@ -12,10 +12,6 @@
 
 ## functions
 
-function setUp() {
-  :
-}
-
 function test_cmd_xcreate() {
   local namespace=instance
   local cmd=terminate

@@ -20,23 +20,6 @@ function setUp() {
   uuid=asdf
 }
 
-### index
-
-function test_security_group_index() {
-  local cmd=index
-  assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET ${base_uri}/${namespace}s.${format}?"
-}
-
-### show
-
-function test_security_group_show() {
-  local cmd=show
-
-  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X GET ${base_uri}/${namespace}s/${uuid}.${format}"
-}
-
 ### create
 
 function test_security_group_create() {

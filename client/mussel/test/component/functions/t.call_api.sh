@@ -12,10 +12,6 @@
 
 ## functions
 
-function setUp() {
-  :
-}
-
 function test_call_api_curl_opts() {
   local args="-X GET ${base_uri}/instance/show"
 

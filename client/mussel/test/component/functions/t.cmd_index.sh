@@ -12,10 +12,6 @@
 
 ## functions
 
-function setUp() {
-  :
-}
-
 function test_cmd_index() {
   local namespace=instance
   local cmd=index

@@ -12,10 +12,6 @@
 
 ## functions
 
-function setUp() {
-  :
-}
-
 function test_cmd_destroy() {
   local namespace=instance
   local cmd=terminate

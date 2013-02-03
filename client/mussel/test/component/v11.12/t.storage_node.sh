@@ -14,28 +14,6 @@ declare namespace=storage_node
 
 ## functions
 
-function setUp() {
-  state=
-  uuid=asdf
-}
-
-### index
-
-function test_storage_node_index() {
-  local cmd=index
-  assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET ${base_uri}/${namespace}s.${format}?"
-}
-
-### show
-
-function test_storage_node_show() {
-  local cmd=show
-
-  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X GET ${base_uri}/${namespace}s/${uuid}.${format}"
-}
-
 ## shunit2
 
 . ${shunit2_file}

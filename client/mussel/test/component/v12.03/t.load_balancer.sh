@@ -36,24 +36,6 @@ function test_load_balancer_index_stateful() {
                "curl -X GET ${base_uri}/${namespace}s.${format}?state=${state}"
 }
 
-### show
-
-function test_load_balancer_show() {
-  local cmd=show
-
-  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X GET ${base_uri}/${namespace}s/${uuid}.${format}"
-}
-
-### destroy
-
-function test_load_balancer_destroy() {
-  local cmd=destroy
-
-  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X DELETE ${base_uri}/${namespace}s/${uuid}.${format}"
-}
-
 ### create
 
 function test_load_balancer_create_no_opts() {

@@ -20,23 +20,6 @@ function setUp() {
   uuid=asdf
 }
 
-### index
-
-function test_network_index() {
-  local cmd=index
-  assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET ${base_uri}/${namespace}s.${format}?"
-}
-
-### show
-
-function test_network_show() {
-  local cmd=show
-
-  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X GET ${base_uri}/${namespace}s/${uuid}.${format}"
-}
-
 ### create
 
 function test_network_create() {

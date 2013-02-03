@@ -14,10 +14,6 @@ declare namespace=undefined
 
 ## functions
 
-function setUp() {
-  :
-}
-
 ### help
 
 function test_undefined_help() {

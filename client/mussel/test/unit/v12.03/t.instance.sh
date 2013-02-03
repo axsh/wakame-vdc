@@ -21,12 +21,6 @@ function setUp() {
 
 ### help
 
-function test_instance_help_stderr_to_devnull_success() {
-  extract_args ${namespace} help
-  res=$(run_cmd  ${MUSSEL_ARGS} 2>/dev/null)
-  assertEquals "${res}" ""
-}
-
 function test_instance_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
@@ -40,28 +34,6 @@ function test_instance_index_state() {
   assertEquals "${state}" "running"
 }
 
-### show
-
-function test_instance_show_no_uuid() {
-  extract_args ${namespace} show
-  run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
-}
-
-function test_instance_show_uuid() {
-  extract_args ${namespace} show asdf
-  run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
-}
-
-### destroy
-
-function test_instance_destroy() {
-  extract_args ${namespace} destroy asdf
-  run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
-}
-
 ### create
 
 function test_instance_create() {
@@ -70,25 +42,29 @@ function test_instance_create() {
   assertEquals $? 0
 }
 
-### xcreate
-
-function test_instance_xcreate() {
-  extract_args ${namespace} xcreate
-  run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
-}
-
 ### backup
 
-function test_instance_backup() {
+function test_instance_backup_no_uuid() {
   extract_args ${namespace} backup
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_instance_backup_uuid() {
+  extract_args ${namespace} backup i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
 }
 
 ### reboot
 
-function test_instance_reboot() {
+function test_instance_reboot_no_uuid() {
+  extract_args ${namespace} reboot
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_instance_reboot_uuid() {
   extract_args ${namespace} reboot i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
@@ -96,7 +72,13 @@ function test_instance_reboot() {
 
 ### stop
 
-function test_instance_stop() {
+function test_instance_stop_no_uuid() {
+  extract_args ${namespace} stop
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_instance_stop_uuid() {
   extract_args ${namespace} stop i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
@@ -104,7 +86,13 @@ function test_instance_stop() {
 
 ### start
 
-function test_instance_start() {
+function test_instance_start_no_uuid() {
+  extract_args ${namespace} start
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_instance_start_uuid() {
   extract_args ${namespace} start i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
@@ -112,7 +100,13 @@ function test_instance_start() {
 
 ### poweroff
 
-function test_instance_poweroff() {
+function test_instance_poweroff_no_uuid() {
+  extract_args ${namespace} poweroff
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_instance_poweroff_uuid() {
   extract_args ${namespace} poweroff i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
@@ -120,7 +114,13 @@ function test_instance_poweroff() {
 
 ### poweron
 
-function test_instance_poweron() {
+function test_instance_poweron_no_uuid() {
+  extract_args ${namespace} poweron
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_instance_poweron_uuid() {
   extract_args ${namespace} poweron i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0

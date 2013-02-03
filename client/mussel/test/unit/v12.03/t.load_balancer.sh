@@ -21,12 +21,6 @@ function setUp() {
 
 ### help
 
-function test_load_balancer_help_stderr_to_devnull_success() {
-  extract_args ${namespace} help
-  res=$(run_cmd  ${MUSSEL_ARGS} 2>/dev/null)
-  assertEquals "${res}" ""
-}
-
 function test_load_balancer_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
@@ -40,28 +34,6 @@ function test_load_balancer_index_state() {
   assertEquals "${state}" "running"
 }
 
-### show
-
-function test_load_balancer_show_no_uuid() {
-  extract_args ${namespace} show
-  run_cmd ${MUSSEL_ARGS} 2>/dev/null
-  assertNotEquals $? 0
-}
-
-function test_load_balancer_show_uuid() {
-  extract_args ${namespace} show asdf
-  run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
-}
-
-### destroy
-
-function test_load_balancer_destroy() {
-  extract_args ${namespace} destroy asdf
-  run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
-}
-
 ### create
 
 function test_load_balancer_create() {
@@ -69,17 +41,15 @@ function test_load_balancer_create() {
   run_cmd ${MUSSEL_ARGS}
 }
 
-### xcreate
-
-function test_load_balancer_xcreate() {
-  extract_args ${namespace} xcreate
-  run_cmd ${MUSSEL_ARGS}
-  assertEquals $? 0
-}
-
 ### poweroff
 
-function test_load_balancer_poweroff() {
+function test_load_balancer_poweroff_no_uuid() {
+  extract_args ${namespace} poweroff
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_load_balancer_poweroff_uuid() {
   extract_args ${namespace} poweroff i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
@@ -87,7 +57,13 @@ function test_load_balancer_poweroff() {
 
 ### poweron
 
-function test_load_balancer_poweron() {
+function test_load_balancer_poweron_no_uuid() {
+  extract_args ${namespace} poweron
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_load_balancer_poweron_uuid() {
   extract_args ${namespace} poweron i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
