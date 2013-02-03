@@ -53,6 +53,14 @@ function test_security_group_show_uuid() {
   assertEquals $? 0
 }
 
+### destroy
+
+function test_security_group_destroy() {
+  extract_args ${namespace} destroy asdf
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
 ### xcreate
 
 function test_security_group_xcreate() {

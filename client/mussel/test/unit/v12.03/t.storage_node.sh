@@ -53,6 +53,14 @@ function test_storage_node_show_uuid() {
   assertEquals $? 0
 }
 
+### destroy
+
+function test_storage_node_destroy() {
+  extract_args ${namespace} destroy asdf
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
 ### xcreate
 
 function test_storage_node_xcreate() {

@@ -10,7 +10,7 @@
 
 ## variables
 
-declare namespace=security_group
+declare namespace=network
 
 ## functions
 
@@ -22,7 +22,7 @@ function setUp() {
 
 ### index
 
-function test_security_group_index() {
+function test_network_index() {
   local cmd=index
   assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
                "curl -X GET ${base_uri}/${namespace}s.${format}?"
@@ -30,7 +30,7 @@ function test_security_group_index() {
 
 ### show
 
-function test_security_group_show() {
+function test_network_show() {
   local cmd=show
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
@@ -39,7 +39,7 @@ function test_security_group_show() {
 
 ### destroy
 
-function test_security_group_destroy() {
+function test_network_destroy() {
   local cmd=destroy
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
@@ -48,7 +48,7 @@ function test_security_group_destroy() {
 
 ### xcreate
 
-function test_security_group_xcreate() {
+function test_network_xcreate() {
   local cmd=xcreate
 
   local MUSSEL_CUSTOM_DATA="

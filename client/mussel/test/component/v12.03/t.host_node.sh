@@ -37,6 +37,15 @@ function test_host_node_show() {
                "curl -X GET ${base_uri}/${namespace}s/${uuid}.${format}"
 }
 
+### destroy
+
+function test_host_node_destroy() {
+  local cmd=destroy
+
+  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
+               "curl -X DELETE ${base_uri}/${namespace}s/${uuid}.${format}"
+}
+
 ### xcreate
 
 function test_host_node_xcreate() {

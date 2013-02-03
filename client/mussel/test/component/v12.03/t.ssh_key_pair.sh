@@ -37,6 +37,15 @@ function test_ssh_key_pair_show() {
                "curl -X GET ${base_uri}/${namespace}s/${uuid}.${format}"
 }
 
+### destroy
+
+function test_ssh_key_pair_destroy() {
+  local cmd=destroy
+
+  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
+               "curl -X DELETE ${base_uri}/${namespace}s/${uuid}.${format}"
+}
+
 ### xcreate
 
 function test_ssh_key_pair_xcreate() {

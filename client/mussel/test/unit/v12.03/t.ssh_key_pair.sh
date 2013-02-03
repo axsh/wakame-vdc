@@ -53,6 +53,14 @@ function test_ssh_key_pair_show_uuid() {
   assertEquals $? 0
 }
 
+### destroy
+
+function test_ssh_key_pair_destroy() {
+  extract_args ${namespace} destroy asdf
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
 ### xcreate
 
 function test_ssh_key_pair_xcreate() {
