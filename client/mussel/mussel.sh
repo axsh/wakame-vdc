@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # requires:
-#  bash, pwd
+#  bash
 #
 # description:
 #  wakame-vdc dcmgr(api) client
