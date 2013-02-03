@@ -32,6 +32,13 @@ task_create() {
         echo vifs=${vifs:-\{\}}
       fi
     ) \
+    $(
+      if [[ -f "${user_data}" ]]; then
+        echo "user_data@${user_data}"
+      elif [[ -n "${user_data}" ]]; then
+        echo user_data=${user_data}
+      fi
+    ) \
    ) \
    ${base_uri}/${namespace}s.${format}
 }
