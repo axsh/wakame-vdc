@@ -59,6 +59,55 @@ function test_ssh_key_pair_xcreate() {
                "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) ${base_uri}/${namespace}s.${format}"
 }
 
+### create
+
+function test_ssh_key_pair_create_no_opts() {
+  local cmd=create
+
+  local description=shunit2
+  local display_name=foo
+  local download_once=
+  local public_key=
+
+  local opts=""
+
+  local params="
+    description=${description}
+    display_name=${display_name}
+    download_once=${download_once}
+    public_key=${public_key}
+  "
+
+  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+}
+
+function test_ssh_key_pair_create_opts() {
+  local cmd=create
+
+  local description=shunit2
+  local display_name=foo
+  local download_once=
+  local public_key=
+
+  local opts="
+    --description=${description}
+    --display-name=${display_name}
+    --download-once=${download_once}
+    --public-key=${public_key}
+  "
+
+  local params="
+    description=${description}
+    display_name=${display_name}
+    download_once=${download_once}
+    public_key=${public_key}
+  "
+
+  assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
+               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+}
+
 ## shunit2
 
 . ${shunit2_file}
