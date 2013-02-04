@@ -12,5 +12,5 @@ task_create() {
     download_once=${download_once:-} \
     $(strfile_type "public_key") \
    ) \
-   ${base_uri}/${1}s.${format}
+   ${base_uri}/${namespace}s.${format}
 }

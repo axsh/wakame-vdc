@@ -16,7 +16,7 @@ task_destroy() {
 }
 
 task_xcreate() {
-  cmd_xcreate ${1}
+  cmd_xcreate ${namespace}
 }
 
 task_default() {

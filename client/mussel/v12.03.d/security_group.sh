@@ -12,5 +12,5 @@ task_create() {
     description=${description:-} \
     display_name=${display_name:-} \
    ) \
-   ${base_uri}/${1}s.${format}
+   ${base_uri}/${namespace}s.${format}
 }
