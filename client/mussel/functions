@@ -81,6 +81,21 @@ function urlencode_data() {
   )
 }
 
+function strfile_type() {
+  local key=$1
+  [[ -n "${key}" ]] || { echo "[ERROR] 'key' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  eval "
+   if [[ -f "\$${key}" ]]; then
+     # file: key@${key}
+     echo "${key}@\$${key}"
+   else
+     # str: key=${key}
+     echo "${key}=\$${key}"
+   fi
+  "
+}
+
 ## cmd_*
 
 function call_api() {
