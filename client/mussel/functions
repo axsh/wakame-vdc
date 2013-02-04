@@ -190,7 +190,7 @@ function run_cmd() {
   [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  local namespace_path=${BASH_SOURCE[0]%/*}/v${DCMGR_API_VERSION:-${api_version}}.d/${namespace}.sh
+  local namespace_path=${BASH_SOURCE[0]%/*}/v${DCMGR_API_VERSION}.d/${namespace}.sh
   [[ -f "${namespace_path}" ]] || {
     echo "[ERROR] no such namespace '${namespace}'" >&2
     return 1
