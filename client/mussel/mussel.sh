@@ -21,10 +21,10 @@ extract_args $*
 
 ## variables
 
-api_version=${api_version:-12.03}
+DCMGR_API_VERSION=${DCMGR_API_VERSION:-${api_version:-12.03}}
 host=${host:-localhost}
 port=${port:-9001}
-base_uri=${base_uri:-http://${host}:${port}/api/${api_version}}
+base_uri=${base_uri:-http://${host}:${port}/api/${DCMGR_API_VERSION}}
 account_id=${account_id:-a-shpoolxx}
 format=${format:-yml}
 
