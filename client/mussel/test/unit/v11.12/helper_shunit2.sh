@@ -22,6 +22,6 @@ declare account_id=a-shpoolxx
 declare format=yml
 declare http_header=X_VDC_ACCOUNT_UUID:${account_id}
 
-dry_run=yes
+declare dry_run=yes
 
 ## group functions
