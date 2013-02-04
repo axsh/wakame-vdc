@@ -17,13 +17,7 @@ task_create() {
    hostname=${hostname}) \
    $([[ -z "${host_node_id:-${host_id}}" ]] || echo \
    host_node_id=${host_node_id:-${host_id}}) \
-   $(
-     if [[ -f "${user_data}" ]]; then
-       echo "user_data@${user_data}"
-     elif [[ -n "${user_data}" ]]; then
-       echo "user_data=${user_data}"
-     fi
-   ) \
+   $(strfile_type "user_data") \
    ) \
    ${base_uri}/${namespace}s.${format}
 }

@@ -25,20 +25,8 @@ task_create() {
     memory_size=${memory_size:-1024} \
     display_name=${display_name} \
     host_name=${host_name} \
-    $(
-      if [[ -f "${vifs}" ]]; then
-        echo vifs@${vifs}
-      else
-        echo vifs=${vifs:-\{\}}
-      fi
-    ) \
-    $(
-      if [[ -f "${user_data}" ]]; then
-        echo "user_data@${user_data}"
-      elif [[ -n "${user_data}" ]]; then
-        echo user_data=${user_data}
-      fi
-    ) \
+    $(strfile_type "vifs") \
+    $(strfile_type "user_data") \
     service_type=${service_type:-std} \
    ) \
    ${base_uri}/${namespace}s.${format}

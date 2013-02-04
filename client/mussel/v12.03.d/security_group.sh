@@ -8,13 +8,7 @@
 task_create() {
   call_api -X POST $(urlencode_data \
     service_type=${service_type:-std} \
-    $(
-      if [[ -f "${rule}" ]]; then
-        echo rule@${rule}
-      else
-        echo rule=${rule:-}
-      fi
-    ) \
+    $(strfile_type "rule") \
     description=${description:-} \
     display_name=${display_name:-} \
     ) \
