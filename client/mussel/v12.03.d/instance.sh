@@ -39,6 +39,7 @@ task_create() {
         echo user_data=${user_data}
       fi
     ) \
+    service_type=${service_type:-std} \
    ) \
    ${base_uri}/${namespace}s.${format}
 }

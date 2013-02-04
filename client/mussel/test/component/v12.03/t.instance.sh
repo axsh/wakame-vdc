@@ -66,6 +66,7 @@ function test_instance_create_no_opts() {
   local host_name=shunit2
   local vifs="{}"
   local user_data=asdf
+  local service_type=std
 
   local opts=""
 
@@ -81,6 +82,7 @@ function test_instance_create_no_opts() {
     host_name=${host_name}
     vifs=${vifs}
     user_data=${user_data}
+    service_type=${service_type}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
@@ -101,6 +103,7 @@ function test_instance_create_opts() {
   local host_name=shunit2
   local vifs="{}"
   local user_data=asdf
+  local service_type=std
 
   local opts="
     --image-id=${image_id}
@@ -113,6 +116,7 @@ function test_instance_create_opts() {
     --host-name=${host_name}
     --vifs=${vifs}
     --user-data=${user_data}
+    --service-type=${service_type}
   "
 
   local params="
@@ -127,6 +131,7 @@ function test_instance_create_opts() {
     host_name=${host_name}
     vifs=${vifs}
     user_data=${user_data}
+    service_type=${service_type}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
@@ -147,6 +152,7 @@ function test_instance_create_opts_vif_file() {
   local host_name=shunit2
   local vifs=${vifs_file}
   local user_data=asdf
+  local service_type=std
 
   local opts="
     --image-id=${image_id}
@@ -159,6 +165,7 @@ function test_instance_create_opts_vif_file() {
     --host-name=${host_name}
     --vifs=${vifs}
     --user-data=${user_data}
+    --service-type=${service_type}
   "
 
   local params="
@@ -173,6 +180,7 @@ function test_instance_create_opts_vif_file() {
     host_name=${host_name}
     vifs@${vifs}
     user_data=${user_data}
+    service_type=${service_type}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
@@ -193,6 +201,7 @@ function test_instance_create_opts_user_data_file() {
   local host_name=shunit2
   local vifs="{}"
   local user_data=${user_data_file}
+  local service_type=std
 
   local opts="
     --image-id=${image_id}
@@ -205,6 +214,7 @@ function test_instance_create_opts_user_data_file() {
     --host-name=${host_name}
     --vifs=${vifs}
     --user-data=${user_data}
+    --service-type=${service_type}
   "
 
   local params="
@@ -219,6 +229,7 @@ function test_instance_create_opts_user_data_file() {
     host_name=${host_name}
     vifs=${vifs}
     user_data@${user_data}
+    service_type=${service_type}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
