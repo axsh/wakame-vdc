@@ -11,6 +11,6 @@ task_create() {
     display_name=${display_name:-} \
     download_once=${download_once:-} \
     $(strfile_type "public_key") \
-    ) \
+   ) \
    ${base_uri}/${1}s.${format}
 }

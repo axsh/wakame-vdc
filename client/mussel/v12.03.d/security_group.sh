@@ -11,6 +11,6 @@ task_create() {
     $(strfile_type "rule") \
     description=${description:-} \
     display_name=${display_name:-} \
-    ) \
+   ) \
    ${base_uri}/${1}s.${format}
 }

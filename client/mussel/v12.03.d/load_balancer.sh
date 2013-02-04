@@ -26,7 +26,7 @@ task_create() {
     public_key=${public_key} \
     engine=haproxy \
     max_connection=${max_connection:-1000} \
-    ) \
+   ) \
    ${base_uri}/${1}s.${format}
 }
 
