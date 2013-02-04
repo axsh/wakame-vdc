@@ -10,23 +10,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
-  def check_network_ip_combo(network_id,ip_addr)
-    nw = M::Network[network_id]
-    raise E::UnknownNetwork, network_id if nw.nil?
-
-    if ip_addr
-      raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
-
-      leaseaddr = IPAddress(ip_addr)
-      raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
-
-      segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
-      raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
-
-      raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
-    end
-  end
-
   # Show list of instances
   # Filter Paramters:
   # start: fixnum, optional

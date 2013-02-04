@@ -70,6 +70,23 @@ module Dcmgr::Endpoints::V1203
       item
     end
 
+    def check_network_ip_combo(network_id,ip_addr)
+      nw = M::Network[network_id]
+      raise E::UnknownNetwork, network_id if nw.nil?
+
+      if ip_addr
+        raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
+
+        leaseaddr = IPAddress(ip_addr)
+        raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
+
+        segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
+        raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
+
+        raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
+      end
+    end
+
     def find_by_public_uuid(model_class, uuid)
       if model_class.is_a?(Symbol)
         model_class = Dcmgr::Models.const_get(model_class, false)
