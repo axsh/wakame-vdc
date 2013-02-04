@@ -12,5 +12,5 @@ task_create() {
   call_api -X POST $(urlencode_data \
     name=${name} \
    ) \
-   ${base_uri}/${namespace}s.${format}
+   ${DCMGR_BASE_URI}/${namespace}s.${format}
 }

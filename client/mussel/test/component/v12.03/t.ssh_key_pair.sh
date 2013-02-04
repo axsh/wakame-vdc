@@ -46,7 +46,7 @@ function test_ssh_key_pair_create_no_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 function test_ssh_key_pair_create_opts() {
@@ -72,7 +72,7 @@ function test_ssh_key_pair_create_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 function test_ssh_key_pair_create_opts_public_key_file() {
@@ -98,7 +98,7 @@ function test_ssh_key_pair_create_opts_public_key_file() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 ## shunit2

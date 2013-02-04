@@ -21,7 +21,7 @@ function test_cmd_show() {
   local xquery=
   local uuid=asdf
 
-  assertEquals "$(cmd_show ${namespace} show ${uuid})" "call_api -X GET ${base_uri}/${namespace}s/${uuid}.${format}"
+  assertEquals "$(cmd_show ${namespace} show ${uuid})" "call_api -X GET ${DCMGR_BASE_URI}/${namespace}s/${uuid}.${format}"
 }
 
 ### validation

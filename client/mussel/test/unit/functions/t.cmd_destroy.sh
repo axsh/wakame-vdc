@@ -21,7 +21,7 @@ function test_cmd_destroy() {
   local cmd=terminate
   local uuid=asdf
 
-  assertEquals "$(cmd_destroy ${namespace} ${cmd} ${uuid})" "call_api -X DELETE ${base_uri}/${namespace}s/${uuid}.${format}"
+  assertEquals "$(cmd_destroy ${namespace} ${cmd} ${uuid})" "call_api -X DELETE ${DCMGR_BASE_URI}/${namespace}s/${uuid}.${format}"
 }
 
 ### validation

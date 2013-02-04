@@ -20,7 +20,7 @@ function test_cmd_index() {
   local namespace=instance
   local xquery=
 
-  assertEquals "$(cmd_index ${namespace})" "call_api -X GET ${base_uri}/${namespace}s.${format}?"
+  assertEquals "$(cmd_index ${namespace})" "call_api -X GET ${DCMGR_BASE_URI}/${namespace}s.${format}?"
 }
 
 ## shunit2

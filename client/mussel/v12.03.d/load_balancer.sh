@@ -27,7 +27,7 @@ task_create() {
     engine=haproxy \
     max_connection=${max_connection:-1000} \
    ) \
-   ${base_uri}/${namespace}s.${format}
+   ${DCMGR_BASE_URI}/${namespace}s.${format}
 }
 
 task_poweroff() {

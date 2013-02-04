@@ -24,7 +24,7 @@ function setUp() {
 function test_base_index() {
   local cmd=index
   assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET ${base_uri}/${namespace}s.${format}?"
+               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s.${format}?"
 }
 
 ### show
@@ -33,7 +33,7 @@ function test_base_show() {
   local cmd=show
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X GET ${base_uri}/${namespace}s/${uuid}.${format}"
+               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s/${uuid}.${format}"
 }
 
 ### destroy
@@ -42,7 +42,7 @@ function test_base_destroy() {
   local cmd=destroy
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X DELETE ${base_uri}/${namespace}s/${uuid}.${format}"
+               "curl -X DELETE ${DCMGR_BASE_URI}/${namespace}s/${uuid}.${format}"
 }
 
 ## shunit2

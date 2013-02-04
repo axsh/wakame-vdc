@@ -13,7 +13,7 @@ task_create() {
     description=${description} \
     $(strfile_type "rule") \
    ) \
-   ${base_uri}/${namespace}s.${format}
+   ${DCMGR_BASE_URI}/${namespace}s.${format}
 }
 
 task_update() {
@@ -23,5 +23,5 @@ task_update() {
   call_api -X PUT $(urlencode_data \
     $(strfile_type "rule") \
    ) \
-   ${base_uri}/${namespace}s/${description}.${format}
+   ${DCMGR_BASE_URI}/${namespace}s/${description}.${format}
 }

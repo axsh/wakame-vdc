@@ -39,7 +39,7 @@ function tearDown() {
 function test_instance_index_stateless() {
   local cmd=index
   assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET ${base_uri}/${namespace}s.${format}?service_type=std"
+               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s.${format}?service_type=std"
 }
 
 function test_instance_index_stateful() {
@@ -47,7 +47,7 @@ function test_instance_index_stateful() {
   local state=running
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} --state=${state})" \
-               "curl -X GET ${base_uri}/${namespace}s.${format}?service_type=std&state=${state}"
+               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s.${format}?service_type=std&state=${state}"
 }
 
 ### create
@@ -86,7 +86,7 @@ function test_instance_create_no_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 function test_instance_create_opts() {
@@ -135,7 +135,7 @@ function test_instance_create_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 function test_instance_create_opts_vif_file() {
@@ -184,7 +184,7 @@ function test_instance_create_opts_vif_file() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 function test_instance_create_opts_user_data_file() {
@@ -233,7 +233,7 @@ function test_instance_create_opts_user_data_file() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 ### xcreate
@@ -266,7 +266,7 @@ function test_instance_xcreate() {
   "
 
   assertEquals "$(MUSSEL_CUSTOM_DATA=$(urlencode_data ${MUSSEL_CUSTOM_DATA}) cli_wrapper ${namespace} ${cmd})" \
-               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 ### backup
@@ -287,7 +287,7 @@ function test_instance_backup() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT $(urlencode_data ${params}) ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
+               "curl -X PUT $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 ### reboot
@@ -296,7 +296,7 @@ function test_instance_reboot() {
   local cmd=reboot
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
+               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 ### stop
@@ -305,7 +305,7 @@ function test_instance_stop() {
   local cmd=stop
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
+               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 ### start
@@ -314,7 +314,7 @@ function test_instance_start() {
   local cmd=start
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
+               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 ### poweron
@@ -323,7 +323,7 @@ function test_instance_poweron() {
   local cmd=poweron
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
+               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 ### poweroff
@@ -332,7 +332,7 @@ function test_instance_poweroff() {
   local cmd=poweroff
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d ${base_uri}/${namespace}s/${uuid}/${cmd}.${format}"
+               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${format}"
 }
 
 ## shunit2

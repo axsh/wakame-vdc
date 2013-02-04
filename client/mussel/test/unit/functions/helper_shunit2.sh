@@ -15,6 +15,8 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 
 ## group variables
 
+echo setup_vars_helper 12.03
 setup_vars_helper 12.03
+echo ${DCMGR_BASE_URI}
 
 ## group functions

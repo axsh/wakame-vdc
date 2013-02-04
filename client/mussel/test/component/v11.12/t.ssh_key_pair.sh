@@ -30,7 +30,7 @@ function test_ssh_key_pair_create() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X POST $(urlencode_data ${params}) ${base_uri}/${namespace}s.${format}"
+               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${format}"
 }
 
 ## shunit2
