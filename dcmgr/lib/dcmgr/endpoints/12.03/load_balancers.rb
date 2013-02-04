@@ -149,7 +149,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                       :monitoring => params["monitoring"]
     }
 
-    # Option for setting manual ip
+    # options for manually settings networks and ip leases
     if params[:public_network] && params[:public_ipv4]
       check_network_ip_combo(params[:public_network], params[:public_ipv4])
       request_params["vifs"]["eth0"]["network"] = params[:public_network]
@@ -160,6 +160,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       check_network_ip_combo(params[:management_network], params[:management_ipv4])
       request_params["vifs"]["eth1"]["network"] = params[:management_network]
       request_params["vifs"]["eth1"]["ipv4_addr"] = params[:management_ipv4]
+    end
+
+    # Options for manually setting mac addresses
+    if params[:public_mac_addr]
+      check_mac_addr(params[:public_mac_addr])
+      request_params["vifs"]["eth0"]["mac_addr"] = params[:public_mac_addr]
+    end
+
+    if params[:management_mac_addr]
+      check_mac_addr(params[:management_mac_addr])
+      request_params["vifs"]["eth1"]["mac_addr"] = params[:management_mac_addr]
     end
 
     account_uuid = @account.canonical_uuid

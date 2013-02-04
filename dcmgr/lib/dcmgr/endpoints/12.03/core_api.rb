@@ -87,6 +87,15 @@ module Dcmgr::Endpoints::V1203
       end
     end
 
+    def check_mac_addr(mac_addr)
+      raise E::InvalidMacAddress, mac_addr if !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
+      raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
+
+      # Check if this mac address exists in a defined range
+      m_vid, m_a = M::MacLease.string_to_ints(mac_addr)
+      raise E::MacNotInRange, mac_addr unless M::MacRange.exists_in_any_range?(m_vid,m_a)
+    end
+
     def find_by_public_uuid(model_class, uuid)
       if model_class.is_a?(Symbol)
         model_class = Dcmgr::Models.const_get(model_class, false)
