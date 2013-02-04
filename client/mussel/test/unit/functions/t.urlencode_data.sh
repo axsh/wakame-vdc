@@ -21,9 +21,13 @@ function test_urlencode_data_no_opts() {
   assertEquals $? 0
 }
 
-function test_urlencode_data_opts() {
-  assertEquals "$(urlencode_data key=val)" "--data-urlencode key=val"
-  assertEquals "$(urlencode_data key=val foo=bar)" "--data-urlencode key=val --data-urlencode foo=bar"
+function test_urlencode_data_opts_single() {
+  assertEquals    "$(urlencode_data key=val)" "--data-urlencode key=val"
+}
+
+function test_urlencode_data_opts_multi() {
+  assertNotEquals "$(urlencode_data key=val foo=bar)" "--data-urlencode key=val --data-urlencode foo=bar"
+  assertEquals    "$(urlencode_data key=val foo=bar)" "--data-urlencode foo=bar --data-urlencode key=val"
 }
 
 ## shunit2
