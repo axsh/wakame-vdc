@@ -364,6 +364,10 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %dir /var/log/%{oname}
 %dir /var/lib/%{oname}
 %exclude %{prefix}/%{oname}/tests/
+## TENTATIVE
+%config(noreplace) /etc/default/vdc-bksta
+%config /etc/init/vdc-bksta.conf
+## TENTATIVE
 
 %files vdcsh
 %defattr(-,root,root)
