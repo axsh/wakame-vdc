@@ -25,8 +25,7 @@ DCMGR_API_VERSION=${DCMGR_API_VERSION:-${api_version:-12.03}}
 DCMGR_HOST=${DCMGR_HOST:-${host:-localhost}}
 DCMGR_PORT=${DCMGR_PORT:-${port:-9001}}
 DCMGR_BASE_URI=${DCMGR_BASE_URI:-${base_uri:-http://${DCMGR_HOST}:${DCMGR_PORT}/api/${DCMGR_API_VERSION}}}
-
-format=${format:-yml}
+DCMGR_RESPONSE_FORMAT=${DCMGR_RESPONSE_FORMAT:-${DCMGR_RESPONSE_FORMAT:-yml}}
 
 # main
 

@@ -21,7 +21,7 @@ function test_cmd_xget() {
   local cmd=show
   local uuid=asdf
 
-  assertEquals "$(cmd_xget ${namespace} ${cmd} ${uuid})" "call_api -X GET ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${format}"
+  assertEquals "$(cmd_xget ${namespace} ${cmd} ${uuid})" "call_api -X GET ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ### validation
