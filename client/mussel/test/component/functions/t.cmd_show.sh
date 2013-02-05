@@ -16,7 +16,7 @@ function test_cmd_show() {
   local namespace=instance
   local cmd=show
   local uuid=asdf
-  local args="-X GET $(base_uri)/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
+  local args="-X GET $(base_uri)/${namespace}s/${uuid}.$(suffix)"
 
   assertEquals "$(cmd_show ${namespace} ${cmd} ${uuid})" "curl ${args}"
 }

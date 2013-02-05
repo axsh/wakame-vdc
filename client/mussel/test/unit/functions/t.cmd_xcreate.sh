@@ -20,7 +20,7 @@ function test_cmd_xcreate() {
   local namespace=instance
   local cmd=create
 
-  assertEquals "$(cmd_xcreate ${namespace} ${cmd})" "call_api -X POST $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+  assertEquals "$(cmd_xcreate ${namespace} ${cmd})" "call_api -X POST $(base_uri)/${namespace}s.$(suffix)"
 }
 
 ### validation

@@ -12,5 +12,5 @@ task_create() {
     description=${description:-} \
     display_name=${display_name:-} \
    ) \
-   $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}
+   $(base_uri)/${namespace}s.$(suffix)
 }

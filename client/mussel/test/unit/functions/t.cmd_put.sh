@@ -21,7 +21,7 @@ function test_cmd_put() {
   local cmd=reboot
   local uuid=asdf
 
-  assertEquals "$(cmd_put ${namespace} ${cmd} ${uuid})" "call_api -X PUT -d '' $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+  assertEquals "$(cmd_put ${namespace} ${cmd} ${uuid})" "call_api -X PUT -d '' $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ### validation

@@ -25,7 +25,7 @@ function setUp() {
 function test_load_balancer_index_stateless() {
   local cmd=index
   assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X GET $(base_uri)/${namespace}s.$(suffix)"
 }
 
 function test_load_balancer_index_stateful() {
@@ -33,7 +33,7 @@ function test_load_balancer_index_stateful() {
   local state=running
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} --state=${state})" \
-               "curl -X GET $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}?state=${state}"
+               "curl -X GET $(base_uri)/${namespace}s.$(suffix)?state=${state}"
 }
 
 ### create
@@ -69,7 +69,7 @@ function test_load_balancer_create_no_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.$(suffix)"
 }
 
 function test_load_balancer_create_opts() {
@@ -112,7 +112,7 @@ function test_load_balancer_create_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.$(suffix)"
 }
 
 ### xcreate
@@ -146,7 +146,7 @@ function test_load_balancer_xcreate() {
   "
 
   assertEquals "$(MUSSEL_CUSTOM_DATA=$(urlencode_data ${MUSSEL_CUSTOM_DATA}) cli_wrapper ${namespace} ${cmd})" \
-               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) $(base_uri)/${namespace}s.$(suffix)"
 }
 
 ### poweron
@@ -155,7 +155,7 @@ function test_load_balancer_poweron() {
   local cmd=poweron
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ### poweroff
@@ -164,7 +164,7 @@ function test_load_balancer_poweroff() {
   local cmd=poweroff
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)"
 }
 
 ## shunit2

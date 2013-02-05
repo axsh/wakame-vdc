@@ -29,7 +29,7 @@ task_create() {
     $(strfile_type "user_data") \
     service_type=${service_type:-std} \
    ) \
-   $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}
+   $(base_uri)/${namespace}s.$(suffix)
 }
 
 task_backup() {
@@ -44,7 +44,7 @@ task_backup() {
     is_public=${is_public:-false} \
     is_cacheable=${is_cacheable:-false} \
    ) \
-   $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}
+   $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }
 
 task_reboot() {

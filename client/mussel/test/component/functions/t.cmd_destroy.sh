@@ -16,7 +16,7 @@ function test_cmd_destroy() {
   local namespace=instance
   local cmd=terminate
   local uuid=asdf
-  local args="-X DELETE $(base_uri)/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
+  local args="-X DELETE $(base_uri)/${namespace}s/${uuid}.$(suffix)"
 
   assertEquals "$(cmd_destroy ${namespace} ${cmd} ${uuid})" "curl ${args}"
 }

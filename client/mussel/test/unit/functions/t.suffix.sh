@@ -17,17 +17,17 @@ function setUp() {
 }
 
 function test_suffix() {
-  assertEquals "$(suffix)" "${DCMGR_RESPONSE_FORMAT}"
+  assertEquals "$(suffix)" "$(suffix)"
 }
 
 function test_suffix_yml() {
   local DCMGR_RESPONSE_FORMAT=yml
-  assertEquals "$(suffix)" "${DCMGR_RESPONSE_FORMAT}"
+  assertEquals "$(suffix)" "$(suffix)"
 }
 
 function test_suffix_json() {
   local DCMGR_RESPONSE_FORMAT=json
-  assertEquals "$(suffix)" "${DCMGR_RESPONSE_FORMAT}"
+  assertEquals "$(suffix)" "$(suffix)"
 }
 
 ## shunit2

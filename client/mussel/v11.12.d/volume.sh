@@ -11,19 +11,19 @@ task_create() {
   call_api -X POST $(urlencode_data \
     volume_size=${volume_size} \
    ) \
-   $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}
+   $(base_uri)/${namespace}s.$(suffix)
 }
 
 task_attach() {
   local uuid=$3 instance_id=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [vol-id] [inst-id]" >&2; return 1; }
 
-  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?instance_id=${instance_id}"
+  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?instance_id=${instance_id}"
 }
 
 task_detach() {
   local uuid=$3 instance_id=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [vol-id] [inst-id]" >&2; return 1; }
 
-  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?instance_id=${instance_id}"
+  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?instance_id=${instance_id}"
 }

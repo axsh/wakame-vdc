@@ -17,35 +17,35 @@ task_create() {
     prefix=${prefix}  \
     description=${description} \
    ) \
-   $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}
+   $(base_uri)/${namespace}s.$(suffix)
 }
 
 task_reserve() {
   local uuid=$3 ipaddr=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [ipaddr]" >&2; return 1; }
 
-  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?ipaddr=${ipaddr}"
+  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?ipaddr=${ipaddr}"
 }
 
 task_release() {
   local uuid=$3 ipaddr=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [ipaddr]" >&2; return 1; }
 
-  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?ipaddr=${ipaddr}"
+  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?ipaddr=${ipaddr}"
 }
 
 task_add_pool() {
   local uuid=$3 name=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [pool-name]" >&2; return 1; }
 
-  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?name=${name}"
+  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?name=${name}"
 }
 
 task_del_pool() {
   local uuid=$3 name=$4
   [[ $# = 4 ]] || { echo "${namespace} ${cmd} [network-id] [pool-name]" >&2; return 1; }
 
-  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?name=${name}"
+  call_api -X PUT -d "''" "$(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)?name=${name}"
 }
 
 task_get_pool() {

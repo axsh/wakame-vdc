@@ -23,7 +23,7 @@ function setUp() {
 function test_base_index() {
   local cmd=index
   assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X GET $(base_uri)/${namespace}s.$(suffix)"
 }
 
 ### show
@@ -32,7 +32,7 @@ function test_base_show() {
   local cmd=show
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X GET $(base_uri)/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X GET $(base_uri)/${namespace}s/${uuid}.$(suffix)"
 }
 
 ### destroy
@@ -41,7 +41,7 @@ function test_base_destroy() {
   local cmd=destroy
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X DELETE $(base_uri)/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X DELETE $(base_uri)/${namespace}s/${uuid}.$(suffix)"
 }
 
 ### xcreate
@@ -54,7 +54,7 @@ function test_base_xcreate() {
   "
 
   assertEquals "$(MUSSEL_CUSTOM_DATA=$(urlencode_data ${MUSSEL_CUSTOM_DATA}) cli_wrapper ${namespace} ${cmd})" \
-               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${MUSSEL_CUSTOM_DATA}) $(base_uri)/${namespace}s.$(suffix)"
 }
 
 ## shunit2

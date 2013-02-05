@@ -12,5 +12,5 @@ task_create() {
     download_once=${download_once:-} \
     $(strfile_type "public_key") \
    ) \
-   $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}
+   $(base_uri)/${namespace}s.$(suffix)
 }
