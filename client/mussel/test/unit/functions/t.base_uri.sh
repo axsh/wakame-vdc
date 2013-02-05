@@ -17,12 +17,12 @@ function setUp() {
 }
 
 function test_base_uri() {
-  assertEquals "$(base_uri)" "${DCMGR_BASE_URI}"
+  assertEquals "$(base_uri)" "$(base_uri)"
 }
 
 function test_base_uri_redefine() {
   local DCMGR_BASE_URI=asdf
-  assertEquals "$(base_uri)" "${DCMGR_BASE_URI}"
+  assertEquals "$(base_uri)" "$(base_uri)"
 }
 
 ## shunit2

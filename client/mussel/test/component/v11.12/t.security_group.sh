@@ -36,7 +36,7 @@ function test_security_group_create() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${description} ${rule})" \
-               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ### update
@@ -53,7 +53,7 @@ function test_security_group_update() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${rule})" \
-               "curl -X PUT $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X PUT $(urlencode_data ${params}) $(base_uri)/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ## shunit2

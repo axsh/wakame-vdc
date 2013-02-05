@@ -38,7 +38,7 @@ function test_network_create() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ### reserve
@@ -49,7 +49,7 @@ function test_network_reserve() {
   local ipaddr=192.0.2.10
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${ipaddr})" \
-               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?ipaddr=${ipaddr}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?ipaddr=${ipaddr}"
 }
 
 ### release
@@ -60,7 +60,7 @@ function test_network_release() {
   local ipaddr=192.0.2.10
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${ipaddr})" \
-               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?ipaddr=${ipaddr}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?ipaddr=${ipaddr}"
 }
 
 ### add_pool
@@ -71,7 +71,7 @@ function test_network_add_pool() {
   local name=np-shunit2
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${name})" \
-               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?name=${name}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?name=${name}"
 }
 
 ### del_pool
@@ -82,7 +82,7 @@ function test_network_del_pool() {
   local name=np-shunit2
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid} ${name})" \
-               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?name=${name}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}?name=${name}"
 }
 
 ### get_pool
@@ -91,7 +91,7 @@ function test_network_get_pool() {
   local cmd=get_pool
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X GET $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ## shunit2

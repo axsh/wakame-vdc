@@ -17,7 +17,7 @@ task_create() {
     $([[ -z "${host_node_id:-${host_id}}" ]] || echo host_node_id=${host_node_id:-${host_id}}) \
     $(strfile_type "user_data") \
    ) \
-   ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}
+   $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}
 }
 
 task_reboot() {

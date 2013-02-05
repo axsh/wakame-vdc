@@ -47,7 +47,7 @@ function test_security_group_create_no_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 function test_security_group_create_opts() {
@@ -73,7 +73,7 @@ function test_security_group_create_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 function test_security_group_create_opts_rule_file() {
@@ -94,7 +94,7 @@ function test_security_group_create_opts_rule_file() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ## shunit2

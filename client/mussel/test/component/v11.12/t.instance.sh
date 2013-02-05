@@ -46,7 +46,7 @@ function test_instance_create_no_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 function test_instance_create_opts() {
@@ -81,7 +81,7 @@ function test_instance_create_opts() {
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
-               "curl -X POST $(urlencode_data ${params}) ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ### reboot
@@ -90,7 +90,7 @@ function test_instance_reboot() {
   local cmd=reboot
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ### stop
@@ -99,7 +99,7 @@ function test_instance_stop() {
   local cmd=stop
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ### start
@@ -108,7 +108,7 @@ function test_instance_start() {
   local cmd=start
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${uuid})" \
-               "curl -X PUT -d ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+               "curl -X PUT -d $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ## shunit2

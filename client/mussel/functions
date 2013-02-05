@@ -113,7 +113,7 @@ function call_api() {
 function cmd_index() {
   local namespace=$1 cmd=$2 uuid=$3
 
-  call_api -X GET "${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}$([[ -z "${xquery}" ]] || echo ?${xquery})"
+  call_api -X GET "$(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}$([[ -z "${xquery}" ]] || echo ?${xquery})"
 }
 
 function cmd_show() {
@@ -122,7 +122,7 @@ function cmd_show() {
   [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  call_api -X GET "${DCMGR_BASE_URI}/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
+  call_api -X GET "$(base_uri)/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 function cmd_xget() {
@@ -131,14 +131,14 @@ function cmd_xget() {
   [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  call_api -X GET "${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+  call_api -X GET "$(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 function cmd_xcreate() {
   local namespace=$1
   [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  call_api -X POST ${MUSSEL_CUSTOM_DATA} "${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
+  call_api -X POST ${MUSSEL_CUSTOM_DATA} "$(base_uri)/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 function cmd_destroy() {
@@ -147,7 +147,7 @@ function cmd_destroy() {
   [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  call_api -X DELETE "${DCMGR_BASE_URI}/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
+  call_api -X DELETE "$(base_uri)/${namespace}s/${uuid}.${DCMGR_RESPONSE_FORMAT}"
 }
 
 function cmd_put() {
@@ -156,7 +156,7 @@ function cmd_put() {
   [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
   [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
-  call_api -X PUT -d "''" ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}
+  call_api -X PUT -d "''" $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}
 }
 
 function cmd_help() {

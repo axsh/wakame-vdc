@@ -16,7 +16,7 @@ function test_cmd_xget() {
   local namespace=instance
   local cmd=xget
   local uuid=asdf
-  local args="-X GET ${DCMGR_BASE_URI}/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
+  local args="-X GET $(base_uri)/${namespace}s/${uuid}/${cmd}.${DCMGR_RESPONSE_FORMAT}"
 
   assertEquals "$(cmd_xget ${namespace} ${cmd} ${uuid})" "curl ${args}"
 }

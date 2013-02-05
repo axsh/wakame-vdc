@@ -13,7 +13,7 @@
 ## functions
 
 function test_call_api_curl_opts() {
-  local args="-X GET ${DCMGR_BASE_URI}/instance/show"
+  local args="-X GET $(base_uri)/instance/show"
 
   assertEquals "$(call_api ${args})" "curl ${args}"
 }
