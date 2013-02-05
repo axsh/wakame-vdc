@@ -6,5 +6,7 @@ unit:
 	(cd $@ && make)
 component:
 	(cd $@ && make)
+integration:
+	(cd $@ && make)
 
-.PHONY: unit component
+.PHONY: unit component integration
