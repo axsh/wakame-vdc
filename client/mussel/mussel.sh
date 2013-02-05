@@ -27,7 +27,6 @@ DCMGR_PORT=${DCMGR_PORT:-${port:-9001}}
 DCMGR_BASE_URI=${DCMGR_BASE_URI:-${base_uri:-http://${DCMGR_HOST}:${DCMGR_PORT}/api/${DCMGR_API_VERSION}}}
 
 format=${format:-yml}
-http_header=X_VDC_ACCOUNT_UUID:${account_id:-a-shpoolxx}
 
 # main
 

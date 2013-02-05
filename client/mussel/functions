@@ -64,7 +64,7 @@ function shlog() {
 }
 
 function curl_opts() {
-  echo -fsSkL -H ${http_header}
+  echo -fsSkL -H X_VDC_ACCOUNT_UUID:${account_id:-a-shpoolxx}
 }
 
 function request_param() {
@@ -99,8 +99,6 @@ function strfile_type() {
 ## cmd_*
 
 function call_api() {
-  [[ -n "${http_header}" ]] || { echo "[ERROR] 'http_header' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
-
   shlog curl $(curl_opts) $(request_param $*)
 }
 

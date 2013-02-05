@@ -19,7 +19,7 @@ function setUp() {
 ### opts
 
 function test_curl_opts() {
-  assertEquals "$(curl_opts)" "-fsSkL -H ${http_header}"
+  assertEquals "$(curl_opts)" "-fsSkL -H X_VDC_ACCOUNT_UUID:${account_id}"
 }
 
 ## shunit2
