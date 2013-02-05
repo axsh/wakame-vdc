@@ -5,11 +5,11 @@
 #  date, nc
 #
 
-addr=${addr:-127.0.0.1}
-port=${port:-9001}
+DCMGR_HOST=${DCMGR_HOST:-${host:-localhost}}
+DCMGR_PORT=${DCMGR_PORT:-${port:-9001}}
 
 trap "exit;" INT
 
-while echo === ${addr}:${port} ===; do
-  date | nc ${addr} -l ${port}
+while echo === ${DCMGR_HOST}:${DCMGR_PORT} ===; do
+  date | nc ${DCMGR_HOST} -l ${DCMGR_PORT}
 done
