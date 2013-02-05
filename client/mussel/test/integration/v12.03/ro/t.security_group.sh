@@ -14,7 +14,7 @@ declare namespace=$(namespace ${BASH_SOURCE[0]})
 
 ## functions
 
-### help
+###
 
 function test_index() {
   step_base_index

@@ -1,4 +1,6 @@
-all: test
+all: ro
 
-test:
-	for i in ./t.*; do $$i || exit; done
+ro:
+	(cd $@ && make)
+
+.PHONY: ro
