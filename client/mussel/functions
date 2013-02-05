@@ -75,6 +75,10 @@ function request_param() {
   echo $*
 }
 
+function base_uri() {
+  echo ${DCMGR_BASE_URI}
+}
+
 function urlencode_data() {
   # "echo $( ... )" means removing each line \n
   echo $(
