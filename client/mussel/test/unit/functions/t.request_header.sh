@@ -13,13 +13,13 @@
 ## functions
 
 function setUp() {
-  function request_header() { :; }
+  :
 }
 
 ### opts
 
-function test_curl_opts() {
-  assertEquals "$(curl_opts)" "-fsSkL"
+function test_request_header() {
+  assertEquals "$(request_header)" "-H X_VDC_ACCOUNT_UUID:${account_id}"
 }
 
 ## shunit2

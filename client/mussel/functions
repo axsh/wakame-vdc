@@ -64,7 +64,11 @@ function shlog() {
 }
 
 function curl_opts() {
-  echo -fsSkL -H X_VDC_ACCOUNT_UUID:${account_id:-a-shpoolxx}
+  echo -fsSkL $(request_header)
+}
+
+function request_header() {
+  echo -H X_VDC_ACCOUNT_UUID:${account_id:-a-shpoolxx}
 }
 
 function request_param() {
