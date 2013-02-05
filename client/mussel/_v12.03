@@ -4,6 +4,7 @@
 #
 
 MUSSEL_RESOURCES="
+ backup_object
  host_node
  image
  instance
@@ -49,7 +50,7 @@ case "${1}" in
 
 instance)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy|reboot|stop|start|poweroff|poweron" ;;
+  help)    cmd_help    ${1} "index|show|create|xcreate|destroy|reboot|stop|start|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
     xquery="service_type=std"
@@ -61,7 +62,7 @@ instance)
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "image_id=${image_id}" \
      --data-urlencode "instance_spec_name=${instance_spec_name}"  \
      --data-urlencode "security_groups[]=${security_groups}" \
@@ -74,8 +75,9 @@ instance)
      --data-urlencode "vifs=${vifs}" \
      ${base_uri}/${1}s.${format}
     ;;
+  xcreate) cmd_xcreate ${1} ;;
   backup)
-    call_api -s -X PUT -H ${http_header} \
+    call_api -X PUT \
      -d "description=${description}" \
      -d "display_name=${display_name}" \
      -d "is_public=${is_public}" \
@@ -83,7 +85,7 @@ instance)
      ${base_uri}/${1}s/${3}/${2}.${format}
     ;;
   reboot|stop|start|poweroff|poweron)
-    call_api -s -X PUT -H ${http_header} -d "''" \
+    call_api -X PUT -d "''" \
      ${base_uri}/${1}s/${3}/${2}.${format}
     ;;
   *)       cmd_default $* ;;
@@ -92,7 +94,7 @@ instance)
 
 load_balancer)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show|create|destroy|poweroff|poweron" ;;
+  help)    cmd_help    ${1} "index|show|create|xcreate|destroy|poweroff|poweron" ;;
   index)
     # --state=(running|stopped|terminated|alive)
     if [ ! -z "${state}" ]; then
@@ -103,7 +105,7 @@ load_balancer)
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
   create)
-    call_api -s -X POST -H ${http_header}  \
+    call_api -X POST \
      --data-urlencode "display_name=${display_name}" \
      --data-urlencode "protocol=${protocol}" \
      --data-urlencode "port=${balancer_port}" \
@@ -117,8 +119,9 @@ load_balancer)
      --data-urlencode "max_connection=${max_connection}" \
      ${base_uri}/${1}s.${format}
     ;;
+  xcreate) cmd_xcreate ${1} ;;
   poweroff|poweron)
-    call_api -s -X PUT -H ${http_header} -d "''" \
+    call_api -X PUT -d "''" \
      ${base_uri}/${1}s/${3}/${2}.${format}
     ;;
   *)       cmd_default $* ;;
@@ -126,18 +129,20 @@ load_balancer)
   ;;
 image|backup_object)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show|destroy" ;;
+  help)    cmd_help    ${1} "index|show|xcreate|destroy" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
   destroy) cmd_destroy $* ;;
+  xcreate) cmd_xcreate ${1} ;;
   *)       cmd_default $* ;;
   esac
   ;;
 host_node|storage_node|network|security_group|ssh_key_pair)
   case "${2}" in
-  help)    cmd_help    ${1} "index|show" ;;
+  help)    cmd_help    ${1} "index|show|xcreate" ;;
   index)   cmd_index   $* ;;
   show)    cmd_show    $* ;;
+  xcreate) cmd_xcreate ${1} ;;
   *)       cmd_default $* ;;
   esac
   ;;

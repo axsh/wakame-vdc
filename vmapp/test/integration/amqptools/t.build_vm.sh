@@ -1,0 +1,1 @@
+../wakame-init/t.build_vm.sh

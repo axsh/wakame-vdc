@@ -46,6 +46,7 @@ module Dcmgr
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
     autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
+    autoload :Bksta, 'dcmgr/configurations/bksta'
   end
 
   require 'dcmgr/models/errors'
@@ -90,6 +91,7 @@ module Dcmgr
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :TextLog, 'dcmgr/models/text_log'
+    autoload :QueuedJob, 'dcmgr/models/queued_job'
   end
 
   module Endpoints
@@ -123,6 +125,8 @@ module Dcmgr
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
+    autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
+    autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
   end
 
   module Helpers
@@ -341,6 +345,7 @@ module Dcmgr
   require 'dcmgr/messaging'
   module Messaging
     autoload :LoadBalancer, 'dcmgr/messaging/load_balancer'
+    autoload :JobQueue, 'dcmgr/messaging/job_queue'
   end
 
 end

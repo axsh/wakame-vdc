@@ -52,25 +52,31 @@ function shlog() {
 }
 
 function call_api() {
-  shlog curl $*
+  shlog curl -fsSkL -H ${http_header} $*
 }
 
 function cmd_index() {
-  call_api -s -X GET -H ${http_header} "${base_uri}/${1}s.${format}?${xquery}"
+  call_api -X GET "${base_uri}/${1}s.${format}?${xquery}"
 }
 
 function cmd_show() {
   [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; exit 1; }
-  call_api -s -X GET -H ${http_header} ${base_uri}/${1}s/${3}.${format}
+  call_api -X GET ${base_uri}/${1}s/${3}.${format}
 }
 
 function cmd_xget() {
-  call_api -s -X GET -H ${http_header} ${base_uri}/${1}s/${3}/${2}.${format}
+  call_api -X GET ${base_uri}/${1}s/${3}/${2}.${format}
+}
+
+function cmd_xcreate() {
+  call_api -X POST \
+   ${MUSSEL_CUSTOM_DATA} \
+   ${base_uri}/${1}s.${format}
 }
 
 function cmd_destroy() {
   [ -z "${3}" ] && { echo "${1} ${2} ID" >&2; exit 1; }
-  call_api -s -X DELETE -H ${http_header}  \
+  call_api -X DELETE \
    ${base_uri}/${1}s/${3}.${format}
 }
 

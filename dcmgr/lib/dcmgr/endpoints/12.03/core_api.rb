@@ -197,5 +197,6 @@ module Dcmgr::Endpoints::V1203
     load_namespace('network_groups')
     load_namespace('accounts')
     load_namespace('text_logs')
+    load_namespace('jobs')
   end
 end
