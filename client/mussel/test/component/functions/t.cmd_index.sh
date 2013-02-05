@@ -15,7 +15,7 @@
 function test_cmd_index() {
   local namespace=instance
   local cmd=index
-  local args="-X GET ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}?${xquery}"
+  local args="-X GET ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 
   assertEquals "$(cmd_index ${namespace} ${cmd})" "curl ${args}"
 }

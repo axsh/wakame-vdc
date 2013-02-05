@@ -109,7 +109,7 @@ function call_api() {
 function cmd_index() {
   local namespace=$1 cmd=$2 uuid=$3
 
-  call_api -X GET "${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}?${xquery}"
+  call_api -X GET "${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}$([[ -z "${xquery}" ]] || echo ?${xquery})"
 }
 
 function cmd_show() {

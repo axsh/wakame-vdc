@@ -23,7 +23,7 @@ function setUp() {
 function test_base_index() {
   local cmd=index
   assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}?"
+               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 ### show

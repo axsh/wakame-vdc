@@ -25,7 +25,7 @@ function setUp() {
 function test_load_balancer_index_stateless() {
   local cmd=index
   assertEquals "$(cli_wrapper ${namespace} ${cmd})" \
-               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}?"
+               "curl -X GET ${DCMGR_BASE_URI}/${namespace}s.${DCMGR_RESPONSE_FORMAT}"
 }
 
 function test_load_balancer_index_stateful() {
