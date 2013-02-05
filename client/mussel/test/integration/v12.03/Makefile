@@ -1,6 +1,8 @@
-all: ro
+all: ro rw
 
 ro:
 	(cd $@ && make)
+rw:
+	(cd $@ && make)
 
-.PHONY: ro
+.PHONY: ro rw
