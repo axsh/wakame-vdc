@@ -10,7 +10,7 @@
 
 ## variables
 
-declare namespace=${BASH_SOURCE[0]##*/}; namespace=${namespace##t.}; namespace=${namespace%%.sh}
+declare namespace=$(namespace ${BASH_SOURCE[0]})
 
 ## functions
 

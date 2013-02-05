@@ -28,6 +28,14 @@ function setup_vars_helper() {
 
 ## helpres
 
+function namespace() {
+  local namespace=$1
+  namespace=${namespace##*/}
+  namespace=${namespace##t.}
+  namespace=${namespace%%.sh}
+  echo ${namespace}
+}
+
 function base_index() {
   run_cmd  ${namespace} index
 }
