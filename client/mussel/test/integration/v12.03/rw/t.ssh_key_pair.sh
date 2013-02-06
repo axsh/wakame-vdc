@@ -25,6 +25,9 @@ function test_crud() {
   run_cmd ${namespace} show ${uuid}
   assertEquals $? 0
 
+  run_cmd ${namespace} update ${uuid}
+  assertEquals $? 0
+
   run_cmd ${namespace} destroy ${uuid}
   assertEquals $? 0
 }
