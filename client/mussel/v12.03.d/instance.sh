@@ -16,7 +16,7 @@ task_index() {
 
 task_create() {
   call_api -X POST $(urlencode_data \
-    image_id=${image_id:-wmi-lucid5} \
+    image_id=${image_id:-wmi-lucid5d} \
     instance_spec_name=${instance_spec_name:-is-small}  \
     security_groups[]=${security_groups:-sg-demofgr} \
     ssh_key_id=${ssh_key_id:-ssh-demo} \

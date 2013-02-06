@@ -55,7 +55,7 @@ function test_instance_index_stateful() {
 function test_instance_create_no_opts() {
   local cmd=create
 
-  local image_id=wmi-lucid5
+  local image_id=wmi-lucid5d
   local instance_spec_name=is-small
   local security_groups=sg-demofgr
   local ssh_key_id=ssh-demo
