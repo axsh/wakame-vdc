@@ -14,3 +14,10 @@ task_create() {
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }
+
+task_update() {
+  call_api -X PUT $(urlencode_data \
+    $(strfile_type "rule") \
+   ) \
+   $(base_uri)/${namespace}s/${uuid}.$(suffix)
+}
