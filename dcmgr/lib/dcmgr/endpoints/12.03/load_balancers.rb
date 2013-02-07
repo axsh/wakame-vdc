@@ -173,6 +173,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       request_params["vifs"]["eth1"]["mac_addr"] = params[:management_mac_addr]
     end
 
+    if params[:host_node_id]
+      host_node_id = params[:host_node_id]
+      host_node = M::HostNode[host_node_id]
+      raise E::UnknownHostNode, "#{host_node_id}" if host_node.nil?
+      raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
+
+      compat_hype = (host_node.hypervisor == lb_spec.hypervisor)
+      raise E::IncompatibleHostNode, "#{host_node_id} can only handle instances of type #{host_node.hypervisor}" unless compat_hype
+      raise E::OutOfHostCapacity, "#{host_node_id}" if lb_spec.cpu_cores > host_node.available_cpu_cores || lb_spec.memory_size > host_node.available_memory_size
+
+      request_params[:host_id] = params[:host_id]
+    end
+
     account_uuid = @account.canonical_uuid
     res = request_forward do
       header('X-VDC-Account-UUID', account_uuid)
