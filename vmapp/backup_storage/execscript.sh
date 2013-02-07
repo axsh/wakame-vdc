@@ -36,9 +36,11 @@ _EOF
 
 yum repolist
 
-yum install -y wakame-vdc
+yum install -y wakame-vdc nfs
 
 rm -f /etc/yum.repos.d/wakame-vdc.repo
+
+chkconfig ntpd on
 
 EOF
 
