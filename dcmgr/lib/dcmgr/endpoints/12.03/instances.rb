@@ -463,10 +463,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
         instance.instance_monitor_attr.changed_columns << :recipients
       end
-      
+
       instance.instance_monitor_attr.save_changes
     end
-    
+
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 

@@ -41,8 +41,18 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     load_balancer_protocol.change(function() {
       if(_.include(['http', 'https'], load_balancer_protocol.val())) {
         instance_protocol.html('http');
+
+        $(e).find('#monitoring_enabled').removeAttr('disabled');
       } else if(_.include(['ssl', 'tcp'], load_balancer_protocol.val())) {
         instance_protocol.html('tcp');
+
+        // Disable the monitoring for ssl and tcp
+        $(e).find('#monitoring_enabled').removeAttr('checked');
+        $(e).find('#monitoring_enabled').attr('disabled','disabled');
+
+        _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2', '#monitoring_path'], function(id){
+          $(e).find(id).attr("disabled", "disabled");
+        });
       }
     });
     load_balancer_protocol.trigger('change');
@@ -50,25 +60,72 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var change_button_behavior = function(e, button) {
       var self = e;
       var is_ready = {
-	  'display_name':false,
-	  'load_balancer_port':false,
-	  'instance_port':false,
-	  'cookie_name':true,
-	  'private_key':true,
-	  'public_key':true
+        'display_name':false,
+        'load_balancer_port':false,
+        'instance_port':false,
+        'cookie_name':true,
+        'private_key':true,
+        'public_key':true,
+        'monitoring':true
       };
+
       var ready = function(data) {
-	  if(data['display_name'] == true &&
-	     data['load_balancer_port'] == true &&
-	     data['instance_port'] == true &&
-	     data['cookie_name'] == true &&
-	     data['private_key'] == true &&
-	     data['public_key'] == true) {
-	      button.disabledButton(1, false);
-	  } else {
-	      button.disabledButton(1, true);
-	  }
+        button.enableDialogButton();
+        if($(self).find('#monitoring_enabled').is(':checked')){
+          _.chain(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2']).map(function(id){
+            var v = $(self).find(id).val();
+            if(v.length > 0){
+              return [true, /^[^@]+@[a-z0-9A-Z][a-z0-9A-Z\.\-]+$/.test(v)];
+            }else{
+              return [false, false];
+            }
+          }).tap(function(tuple_lst){
+            if(_.all(tuple_lst, function(i){
+              return i[1] == false;
+            }) && $(self).find('#monitoring_enabled').is(':checked') ){
+              // Can not submit when none of address fields is
+              // filled or valid.
+              data['monitoring'] = false;
+            }else{
+              // Can submit when empty and validation passed address fields exist.
+              data['monitoring'] = _.all(tuple_lst, function(i){
+                return (i[0] == true && i[1] == true) || (i[0] == false);
+              });
+            }
+          });
+        }else{
+          data['monitoring'] = true;
+        }
+
+        if(data['display_name'] == true &&
+          data['load_balancer_port'] == true &&
+          data['instance_port'] == true &&
+          data['cookie_name'] == true &&
+          data['private_key'] == true &&
+          data['public_key'] == true &&
+          data['monitoring'] == true) {
+            button.disabledButton(1, false);
+          } else {
+            button.disabledButton(1, true);
+          }
       }
+
+      $(e).find('#monitoring_enabled').bind('click',
+       {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+        DcmgrGUI.Util.checkTextField).bind('click', function(e){
+          _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2', '#monitoring_path'], function(id){
+            if( $(e.target).is(":checked") ){
+              $(self).find(id).removeAttr("disabled");
+            }else{
+              $(self).find(id).attr("disabled", "disabled");
+            }
+          });
+      });
+
+      $(e).find('.mailaddr_form').bind('keyup paste cut',
+                                          {'name': 'monitoring', 'is_ready': is_ready, 'ready': ready},
+                                          DcmgrGUI.Util.checkTextField);
+
       var display_name_params = {'name': 'display_name', 'is_ready': is_ready, 'ready': ready};
       $(e).find('#display_name').bind('keyup', display_name_params, DcmgrGUI.Util.checkTextField);
       $(e).find('#display_name').bind('paste', display_name_params, DcmgrGUI.Util.checkTextField);
@@ -169,6 +226,7 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
     var edit_load_balancer_buttons = {};
     edit_load_balancer_buttons[close_button_name] = function() { $(this).dialog("close"); };
     edit_load_balancer_buttons[update_button_name] = function(event) {
+      var self = this
       var load_balancer_id = c_list.currentChecked();
       var display_name = $(this).find('#display_name').val();
       var description = $(this).find('#description').val();
@@ -189,7 +247,16 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
                  +"&balance_algorithm="+balance_algorithm
                  +"&private_key="+private_key
                  +"&public_key="+public_key
-                 +"&cookie_name="+cookie_name;
+                 +"&cookie_name="+cookie_name
+                 +"&monitoring[enabled]="+encodeURIComponent($(this).find('#monitoring_enabled').is(':checked'))
+                 +"&monitoring[path]="+encodeURIComponent($(this).find('#monitoring_path').val());
+
+      _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+        if( _.isString($(self).find(id).val()) && $(self).find(id).val() != ""){
+          data += "&monitoring[mail_address][]=" + encodeURIComponent( $(self).find(id).val() );
+        }
+      });
+
       var request = new DcmgrGUI.Request;
       request.put({
         "url": '/load_balancers/'+ load_balancer_id +'.json',
@@ -243,6 +310,8 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
   var create_load_balancer_buttons = {};
   create_load_balancer_buttons[close_button_name] = function() { $(this).dialog("close"); };
   create_load_balancer_buttons[create_button_name] = function() {
+    var self = this
+
     var display_name = $(this).find('#display_name').val();
     var description = $(this).find('#description').val();
     var load_balancer_protocol = $(this).find('#load_balancer_protocol').val();
@@ -262,7 +331,16 @@ DcmgrGUI.prototype.loadBalancerPanel = function(){
                +"&balance_algorithm="+balance_algorithm
                +"&private_key="+private_key
                +"&public_key="+public_key
-               +"&cookie_name="+cookie_name;
+               +"&cookie_name="+cookie_name
+               +"&monitoring[enabled]="+encodeURIComponent($(this).find('#monitoring_enabled').is(':checked'))
+               +"&monitoring[path]="+encodeURIComponent($(this).find('#monitoring_path').val());
+
+    _.each(['#mailaddr_0', '#mailaddr_1', '#mailaddr_2'], function(id){
+      if( _.isString($(self).find(id).val()) && $(self).find(id).val() != ""){
+        data += "&monitoring[mail_address][]=" + encodeURIComponent( $(self).find(id).val() );
+      }
+    });
+
     var request = new DcmgrGUI.Request;
     request.post({
       "url": '/load_balancers',

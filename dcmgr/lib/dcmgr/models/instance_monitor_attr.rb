@@ -23,7 +23,7 @@ module Dcmgr::Models
     end
 
     private
-    
+
     def before_validation
       self.enabled ||= false
       super

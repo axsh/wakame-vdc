@@ -17,6 +17,14 @@ module Hijiki::DcmgrResource::V1203
         lb.public_key = params[:public_key]
         lb.cookie_name = params[:cookie_name]
         lb.description = params[:description]
+
+        lb.monitoring = {}
+        if params[:monitoring].is_a?(Hash)
+          lb.monitoring["enabled"] = params[:monitoring]["enabled"]
+          lb.monitoring["mail_address"] = params[:monitoring]["mail_address"]
+          lb.monitoring["path"] = params[:monitoring]["path"]
+        end
+
         lbs = LoadBalancerSpec.show(params[:load_balancer_spec_id]) || raise("Unknown load balancer spec: #{params[load_balancer_spec_id]}")
         lb.max_connection = lbs.max_connection
         lb.engine = lbs.engine
