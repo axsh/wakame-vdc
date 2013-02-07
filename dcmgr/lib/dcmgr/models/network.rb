@@ -40,11 +40,9 @@ module Dcmgr::Models
     end
 
     def add_service_vif(ipv4)
-      ip_lease = self.find_ip_lease(ipv4)
-
-      if ip_lease
-        # Verify vif is service vif.
-        return ip_lease.network_vif
+      if ipv4
+        ip_lease = self.find_ip_lease(ipv4)
+        return ip_lease.network_vif if ip_lease
       end
 
       m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
@@ -57,9 +55,13 @@ module Dcmgr::Models
 
       vif = NetworkVif.new(vif_data)
       vif.save
-      ip_lease = self.network_vif_ip_lease_dataset.add_reserved(ipv4)
-      ip_lease.network_vif_id = vif.id
-      ip_lease.save_changes
+
+      if ipv4
+        ip_lease = self.network_vif_ip_lease_dataset.add_reserved(ipv4)
+        ip_lease.network_vif_id = vif.id
+        ip_lease.save_changes
+      end
+
       vif
     end
 

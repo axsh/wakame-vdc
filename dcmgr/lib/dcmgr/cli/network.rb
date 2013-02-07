@@ -250,13 +250,22 @@ __END
       def prepare_vif(uuid, options)
         case uuid
         when /^nw-/
-          options[:ipv4] || Error.raise("IP address is required when passing network UUID.")
+          option_ipv4 = options[:ipv4]
+
+          if options[:no_ipv4] != true
+            option_ipv4 || Error.raise("IP address is required when passing network UUID.", 1)
+          end
+
+          if options[:unique] == true
+            options[:service] || Error.raise("Unique service parameter requires service arg.", 1)
+            get_services(uuid, {:service => options[:service]}).empty? || Error.raise("Service must be unique on network.", 1)
+          end
 
           nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
           nw.add_service_vif(options[:ipv4])
 
         when /^vif-/
-          options[:ipv4].nil? || Error.raise("Cannot pass IP address for VIF UUID.")
+          options[:ipv4].nil? || Error.raise("Cannot pass IP address for VIF UUID.", 1)
           M::NetworkVif[uuid] || UnknownUUIDError.raise(uuid)
         else
           InvalidUUIDError.raise(uuid)
@@ -299,12 +308,27 @@ __END
     method_option :ipv4_from, :type => :string, :required => false, :desc => "The ip address"
     def gateway(uuid_from)
       vif = prepare_vif(uuid_from, {:ipv4 => options[:ipv4_from]})
-      nw = vif.network || Error.raise("Not attached to a network: #{uuid_from}")
+      nw = vif.network || Error.raise("Not attached to a network: #{uuid_from}", 1)
       puts "#{vif.canonical_uuid}"
 
       service_data = {
         :network_vif_id => vif.id,
         :name => 'gateway',
+      }
+
+      M::NetworkService.create(service_data)
+    end
+
+    desc "external-ip NW", "Add external-ip service to network"
+    # method_option :no_ip, :type => :boolean, :required => false, :desc => "Don't lease any IP address"
+    def external_ip(uuid_from)
+      vif = prepare_vif(uuid_from, {:unique => true, :service => 'external-ip', :no_ipv4 => true})
+      nw = vif.network || Error.raise("Not attached to a network: #{uuid_from}", 1)
+      puts "#{vif.canonical_uuid}"
+
+      service_data = {
+        :network_vif_id => vif.id,
+        :name => 'external-ip',
       }
 
       M::NetworkService.create(service_data)
