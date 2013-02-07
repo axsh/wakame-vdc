@@ -63,7 +63,7 @@ function test_instance_create_no_opts() {
   local cpu_cores=1
   local memory_size=1024
   local display_name=shunit2
-  local host_name=shunit2
+  local hostname=shunit2
   local vifs="{}"
   local user_data=asdf
   local service_type=std
@@ -79,7 +79,7 @@ function test_instance_create_no_opts() {
     cpu_cores=${cpu_cores}
     memory_size=${memory_size}
     display_name=${display_name}
-    host_name=${host_name}
+    hostname=${hostname}
     vifs=${vifs}
     user_data=${user_data}
     service_type=${service_type}
@@ -100,7 +100,7 @@ function test_instance_create_opts() {
   local cpu_cores=2
   local memory_size=2048
   local display_name=shunit2
-  local host_name=shunit2
+  local hostname=shunit2
   local vifs="{}"
   local user_data=asdf
   local service_type=std
@@ -113,7 +113,7 @@ function test_instance_create_opts() {
     --cpu-cores=${cpu_cores}
     --memory-size=${memory_size}
     --display-name=${display_name}
-    --host-name=${host_name}
+    --host-name=${hostname}
     --vifs=${vifs}
     --user-data=${user_data}
     --service-type=${service_type}
@@ -128,7 +128,7 @@ function test_instance_create_opts() {
     cpu_cores=${cpu_cores}
     memory_size=${memory_size}
     display_name=${display_name}
-    host_name=${host_name}
+    hostname=${hostname}
     vifs=${vifs}
     user_data=${user_data}
     service_type=${service_type}
@@ -149,7 +149,7 @@ function test_instance_create_opts_vif_file() {
   local cpu_cores=2
   local memory_size=2048
   local display_name=shunit2
-  local host_name=shunit2
+  local hostname=shunit2
   local vifs=${vifs_file}
   local user_data=asdf
   local service_type=std
@@ -162,7 +162,7 @@ function test_instance_create_opts_vif_file() {
     --cpu-cores=${cpu_cores}
     --memory-size=${memory_size}
     --display-name=${display_name}
-    --host-name=${host_name}
+    --host-name=${hostname}
     --vifs=${vifs}
     --user-data=${user_data}
     --service-type=${service_type}
@@ -177,7 +177,7 @@ function test_instance_create_opts_vif_file() {
     cpu_cores=${cpu_cores}
     memory_size=${memory_size}
     display_name=${display_name}
-    host_name=${host_name}
+    hostname=${hostname}
     vifs@${vifs}
     user_data=${user_data}
     service_type=${service_type}
@@ -198,7 +198,7 @@ function test_instance_create_opts_user_data_file() {
   local cpu_cores=2
   local memory_size=2048
   local display_name=shunit2
-  local host_name=shunit2
+  local hostname=shunit2
   local vifs="{}"
   local user_data=${user_data_file}
   local service_type=std
@@ -211,7 +211,7 @@ function test_instance_create_opts_user_data_file() {
     --cpu-cores=${cpu_cores}
     --memory-size=${memory_size}
     --display-name=${display_name}
-    --host-name=${host_name}
+    --host-name=${hostname}
     --vifs=${vifs}
     --user-data=${user_data}
     --service-type=${service_type}
@@ -226,7 +226,7 @@ function test_instance_create_opts_user_data_file() {
     cpu_cores=${cpu_cores}
     memory_size=${memory_size}
     display_name=${display_name}
-    host_name=${host_name}
+    hostname=${hostname}
     vifs=${vifs}
     user_data@${user_data}
     service_type=${service_type}
@@ -249,7 +249,7 @@ function test_instance_xcreate() {
   local cpu_cores=2
   local memory_size=2048
   local display_name=shunit2
-  local host_name=shunit2
+  local hostname=shunit2
 
   local MUSSEL_CUSTOM_DATA="
     image_id=${image_id}
@@ -260,7 +260,7 @@ function test_instance_xcreate() {
     cpu_cores=${cpu_cores}
     memory_size=${memory_size}
     display_name=${display_name}
-    host_name=${host_name}
+    hostname=${hostname}
     vifs[eth0][index]=0
     vifs[eth0][network]=${network_id}
   "

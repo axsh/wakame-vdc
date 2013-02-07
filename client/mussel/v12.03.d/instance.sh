@@ -24,7 +24,7 @@ task_create() {
     cpu_cores=${cpu_cores:-1} \
     memory_size=${memory_size:-1024} \
     display_name=${display_name} \
-    host_name=${host_name} \
+    hostname=${hostname} \
     $(vifs=${vifs:-'{}'} strfile_type "vifs") \
     $(strfile_type "user_data") \
     service_type=${service_type:-std} \
