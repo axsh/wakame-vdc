@@ -7,12 +7,12 @@
 
 task_create() {
   call_api -X POST $(urlencode_data \
-    image_id=${image_id:-wmi-lucid0} \
-    instance_spec_id=${instance_spec_id:-is-demospec}  \
-    ssh_key_id=${ssh_key_id:-ssh-demo} \
-    security_groups[]=${security_groups:-sg-demofgr} \
-    ha_enabled=${ha_enabled:-false} \
-    network_scheduler=${network_scheduler:-default} \
+    image_id=${image_id} \
+    instance_spec_id=${instance_spec_id}  \
+    ssh_key_id=${ssh_key_id} \
+    security_groups[]=${security_groups} \
+    ha_enabled=${ha_enabled} \
+    network_scheduler=${network_scheduler} \
     $([[ -z "${hostname}"                 ]] || echo hostname=${hostname}) \
     $([[ -z "${host_node_id:-${host_id}}" ]] || echo host_node_id=${host_node_id:-${host_id}}) \
     $(strfile_type "user_data") \

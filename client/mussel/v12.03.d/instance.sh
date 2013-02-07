@@ -16,18 +16,18 @@ task_index() {
 
 task_create() {
   call_api -X POST $(urlencode_data \
-    image_id=${image_id:-wmi-lucid5d} \
-    instance_spec_name=${instance_spec_name:-is-small}  \
-    security_groups[]=${security_groups:-sg-demofgr} \
-    ssh_key_id=${ssh_key_id:-ssh-demo} \
-    hypervisor=${hypervisor:-openvz} \
-    cpu_cores=${cpu_cores:-1} \
-    memory_size=${memory_size:-1024} \
+    image_id=${image_id} \
+    instance_spec_name=${instance_spec_name}  \
+    security_groups[]=${security_groups} \
+    ssh_key_id=${ssh_key_id} \
+    hypervisor=${hypervisor} \
+    cpu_cores=${cpu_cores} \
+    memory_size=${memory_size} \
     display_name=${display_name} \
     hostname=${hostname} \
-    $(vifs=${vifs:-'{}'} strfile_type "vifs") \
+    $(strfile_type "vifs") \
     $(strfile_type "user_data") \
-    service_type=${service_type:-std} \
+    service_type=${service_type} \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }
@@ -41,8 +41,8 @@ task_backup() {
   call_api -X PUT $(urlencode_data \
     description=${description} \
     display_name=${display_name} \
-    is_public=${is_public:-false} \
-    is_cacheable=${is_cacheable:-false} \
+    is_public=${is_public} \
+    is_cacheable=${is_cacheable} \
    ) \
    $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }
