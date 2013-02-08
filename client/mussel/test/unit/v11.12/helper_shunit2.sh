@@ -17,6 +17,6 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 
 setup_vars_helper 11.12
 
-declare dry_run=yes
+declare MUSSEL_DRY_RUN=yes
 
 ## group functions

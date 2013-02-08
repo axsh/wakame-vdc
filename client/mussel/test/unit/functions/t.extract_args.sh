@@ -52,15 +52,15 @@ function test_extract_args_commands_simple_opts() {
 }
 
 function test_extract_args_commands_complex_opts() {
-  local overwrite= diskless= disk_less= dry_run=
-  local opts="--overwrite --diskless yes --disk-less no --dry-run"
+  local overwrite= diskless= disk_less= MUSSEL_DRY_RUN=
+  local opts="--overwrite --diskless yes --disk-less no --MUSSEL-DRY-RUN"
 
   extract_args ${opts}
 
   assertEquals "${overwrite}" "1"
   assertEquals "${diskless}"  "yes"
   assertEquals "${disk_less}" "no"
-  assertEquals "${dry_run}"   "1"
+  assertEquals "${MUSSEL_DRY_RUN}"   "1"
 }
 
 function test_extract_args_commands_same_opts() {

@@ -43,7 +43,7 @@ function extract_args() {
 
 function shlog() {
   loglevel=$(echo ${loglevel:-info} | tr A-Z a-z)
-  dry_run=$(echo ${dry_run:-} | tr A-Z a-z)
+  MUSSEL_DRY_RUN=$(echo ${MUSSEL_DRY_RUN:-} | tr A-Z a-z)
 
   case "${loglevel}" in
   debug)
@@ -53,7 +53,7 @@ function shlog() {
     ;;
   esac
 
-  case "${dry_run}" in
+  case "${MUSSEL_DRY_RUN}" in
   y|yes|on|1)
     :
    ;;
