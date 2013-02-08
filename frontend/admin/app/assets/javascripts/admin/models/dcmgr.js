@@ -28,7 +28,19 @@
   });
 
   models.TextLog = models.Dcmgr.extend({
-    url: app.info.api_endpoints.dcmgr + '/api/12.03' + location.pathname + '.json?start=0&limit=100000&sort_by=created_at.asc',
+    url: (function(id){
+      console.log()
+      var params = {
+        'account_id': 'a-00000000',
+        'instance_id': 'none',
+        'application_id': app.utils.parsedSearch('application_id'),
+        'start': 1,
+        'limit': 10,
+        'start_time': app.helpers.date.iso8601(moment('2013-01-28T19:06:38'))
+      };
+
+      return app.info.api_endpoints.dcmgr + '/api/12.03/text_logs.json?' + $.param(params);
+    })(),
   });
 
 })( app.models );
