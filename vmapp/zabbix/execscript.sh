@@ -40,6 +40,21 @@ yum install -y zabbix${zabbix_version} \
    zabbix-server${zabbix_version} zabbix-server-mysql${zabbix_version} \
    zabbix-web${zabbix_version} zabbix-web-mysql${zabbix_version}
 
+yum install -y ntp mysql-server
+
+chkconfig ntpd on
+chkconfig zabbix-server on
+
+cat <<EOF2 > /etc/php.d/zabbix.ini
+[PHP]
+post_max_size = 32M
+upload_max_filesize = 16M
+max_execution_time = 600
+max_input_time = 600
+[Date]
+date.timezone = $(date '+%Z')
+EOF2
+
 EOF
 
 exit
