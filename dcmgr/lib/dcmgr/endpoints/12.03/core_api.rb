@@ -24,6 +24,8 @@ module Dcmgr::Endpoints::V1203
     E = Dcmgr::Endpoints::Errors
     R = Dcmgr::Endpoints::V1203::Responses
 
+    SYSTEM_ACCOUNT_ID = 'a-00000000'.freeze
+
     include Dcmgr::Endpoints::Helpers
 
     before do
