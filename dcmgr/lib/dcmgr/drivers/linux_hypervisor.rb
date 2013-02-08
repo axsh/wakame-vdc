@@ -9,6 +9,7 @@ module Dcmgr
       include Dcmgr::Helpers::NicHelper
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::TemplateHelper
+      include Dcmgr::Helpers::BlockDeviceHelper
 
       template_base_dir 'linux'
 
@@ -146,49 +147,6 @@ module Dcmgr
       end
 
       protected
-
-      def check_fs(device)
-        # Displays the problem in the stdout file system without fixing it.
-        sh("fsck -n -M -v %s", [device])
-      end
-
-      # Find first matching loop device path from the result of "losetup -a"
-      def find_loopdev(path)
-        stat = File.stat(path)
-        `losetup -a`.split(/\n/).each {|i|
-          # /dev/loop0: [0f11]:1179651 (/home/katsuo/dev/wakame-vdc/tmp/instances/i-5....)
-          if i =~ %r{^(/dev/loop\d+): \[([0-9a-f]+)\]:(\d+) } && $2.hex == stat.dev && $3.to_i == stat.ino
-            return $1
-          end
-        }
-        nil
-      end
-
-      # "kpartx -d" gets failed occasionally. so we use "dmsetup" and
-      # "losetup -d" respectively since they do almost same steps as
-      # what is done in "kpartx -d".
-      # the difference is that it waits udev event before detach loop
-      # device. this is very critical step and the root cause for
-      # irregular failure of "kpartx -d".
-      def detach_loop(imgpath)
-        loopdev = find_loopdev(imgpath)
-        raise "Failed to find loop device from: #{imgpath}" if loopdev.nil?
-
-        Dir.glob("/dev/mapper/" + File.basename(loopdev) + "p*").each { |part_dev_path|
-          r = shell.run("dmsetup info %s", [part_dev_path])
-          if r.success? && r.out.split(/\n/).any? {|i| i =~ /^State:\s+ACTIVE/}
-            shell.run("dmsetup remove %s", [part_dev_path])
-            logger.info("Detached partition from devmapper: #{part_dev_path}")
-          end
-        }
-        # Is "dmsetup wait" better here?
-        shell.run("udevadm settle")
-
-        if File.exist?(loopdev)
-          shell.run("losetup -d %s", [loopdev])
-          logger.info("Detached from loop device: #{loopdev}")
-        end
-      end
 
       # cgroup_set('blkio', "0") do
       #   add('blkio.throttle.read_iops_device', "253:0 128000")
