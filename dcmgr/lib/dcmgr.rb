@@ -92,6 +92,12 @@ module Dcmgr
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :TextLog, 'dcmgr/models/text_log'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
+
+    require 'dcmgr/models/log_storage/base'
+    module LogStorage
+      autoload :Base, 'dcmgr/models/log_storage/base'
+      autoload :Cassandra, 'dcmgr/models/log_storage/cassandra'
+    end
   end
 
   module Endpoints
