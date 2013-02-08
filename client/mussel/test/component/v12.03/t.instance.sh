@@ -274,8 +274,8 @@ function test_instance_xcreate() {
 function test_instance_backup() {
   local cmd=backup
 
-  local description=
-  local display_name=
+  local description=shunit2
+  local display_name=shunit2
   local is_public=false
   local is_cacheable=false
 

@@ -7,17 +7,17 @@
 
 task_create() {
   call_api -X POST $(urlencode_data \
-    service_type=${service_type} \
-    $(strfile_type "rule") \
-    description=${description} \
-    display_name=${display_name} \
+    $([[ -z "${service_type}" ]] || echo service_type=${service_type} ) \
+    $([[ -z "${rule}"         ]] || echo $(strfile_type "rule")       ) \
+    $([[ -z "${description}"  ]] || echo description=${description}   ) \
+    $([[ -z "${display_name}" ]] || echo display_name=${display_name} ) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }
 
 task_update() {
   call_api -X PUT $(urlencode_data \
-    $(strfile_type "rule") \
+    $([[ -z "${rule}"         ]] || echo $(strfile_type "rule")       ) \
    ) \
    $(base_uri)/${namespace}s/${uuid}.$(suffix)
 }

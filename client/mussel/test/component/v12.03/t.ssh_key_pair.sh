@@ -33,8 +33,8 @@ function test_ssh_key_pair_create_no_opts() {
 
   local description=shunit2
   local display_name=foo
-  local download_once=
-  local public_key=
+  local download_once=once
+  local public_key=pubkey
 
   local opts=""
 
@@ -54,8 +54,8 @@ function test_ssh_key_pair_create_opts() {
 
   local description=shunit2
   local display_name=foo
-  local download_once=
-  local public_key=
+  local download_once=once
+  local public_key=pubkey
 
   local opts="
     --description=${description}
@@ -80,7 +80,7 @@ function test_ssh_key_pair_create_opts_public_key_file() {
 
   local description=shunit2
   local display_name=foo
-  local download_once=
+  local download_once=once
   local public_key=${public_key_file}
 
   local opts="

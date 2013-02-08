@@ -15,7 +15,16 @@ declare namespace=$(namespace ${BASH_SOURCE[0]})
 ## functions
 
 function setUp() {
+  # required
   image_id=wmi-centos1d
+  hypervisor=${hypervisor:-openvz}
+  cpu_cores=${cpu_cores:-1}
+  memory_size=${memory_size:-256}
+  vifs=${vifs:-'{}'}
+  ssh_key_id=${ssh_key_id:-ssh-demo}
+
+  security_groups=sg-8kpu1bkr
+  #security_groups=sg-88888888
 }
 
 function inst_hash() {
