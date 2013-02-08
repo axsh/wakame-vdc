@@ -136,6 +136,7 @@ module Dcmgr
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
     autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
     autoload :Cgroup, 'dcmgr/helpers/cgroup'
+    autoload :BlockDeviceHelper, 'dcmgr/helpers/block_device_helper'
   end
 
   autoload :Tags, 'dcmgr/tags'
@@ -338,6 +339,7 @@ module Dcmgr
       autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
+      autoload :TranslateLoggingAddress, 'dcmgr/vnet/tasks/translate_logging_address'
     end
 
   end
