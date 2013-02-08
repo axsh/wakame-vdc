@@ -356,6 +356,8 @@ module Dcmgr
     autoload :JobQueue, 'dcmgr/messaging/job_queue'
   end
 
+  autoload :TextLog, 'dcmgr/text_log'
+
 end
 
 module Ext
