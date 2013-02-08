@@ -42,10 +42,10 @@ function extract_args() {
 }
 
 function shlog() {
-  loglevel=$(echo ${loglevel:-info} | tr A-Z a-z)
+  MUSSEL_LOGLEVEL=$(echo ${MUSSEL_LOGLEVEL:-info} | tr A-Z a-z)
   MUSSEL_DRY_RUN=$(echo ${MUSSEL_DRY_RUN:-} | tr A-Z a-z)
 
-  case "${loglevel}" in
+  case "${MUSSEL_LOGLEVEL}" in
   debug)
     echo "${MUSSEL_PROMPT} $*"
     ;;

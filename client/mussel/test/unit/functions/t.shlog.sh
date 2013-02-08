@@ -13,53 +13,53 @@
 ## functions
 
 #
-# loglevel:debug
+# MUSSEL_LOGLEVEL:debug
 #
-test_shlog_loglevel_debug_success() {
+test_shlog_MUSSEL_LOGLEVEL_debug_success() {
   assertEquals \
-   "`loglevel=debug shlog echo hello`" \
+   "`MUSSEL_LOGLEVEL=debug shlog echo hello`" \
         "${MUSSEL_PROMPT} echo hello
 hello"
 }
 
-test_shlog_loglevel_debug_fail() {
+test_shlog_MUSSEL_LOGLEVEL_debug_fail() {
   assertNotEquals \
-   "`loglevel=debug shlog typo hello 2>/dev/null`" \
+   "`MUSSEL_LOGLEVEL=debug shlog typo hello 2>/dev/null`" \
         "${MUSSEL_PROMPT} typo hello
 hello"
 }
 
 
 #
-# loglevel:info
+# MUSSEL_LOGLEVEL:info
 #
-test_shlog_loglevel_info_success() {
+test_shlog_MUSSEL_LOGLEVEL_info_success() {
   local cmd="echo hello"
   assertEquals \
-   "`loglevel=info shlog ${cmd}`" \
+   "`MUSSEL_LOGLEVEL=info shlog ${cmd}`" \
                          "hello"
 }
 
-test_shlog_loglevel_info_fail() {
+test_shlog_MUSSEL_LOGLEVEL_info_fail() {
   local cmd="echo hello"
   assertNotEquals \
-   "`loglevel=info shlog ${cmd}`" \
+   "`MUSSEL_LOGLEVEL=info shlog ${cmd}`" \
        "${MUSSEL_PROMPT} ${cmd}\n${cmd}"
 }
 
 #
-# loglevel:empty
+# MUSSEL_LOGLEVEL:empty
 #
-test_shlog_loglevel_empty_success() {
+test_shlog_MUSSEL_LOGLEVEL_empty_success() {
   local cmd="echo hello"
   assertEquals \
-   "`loglevel= shlog ${cmd}`" "hello"
+   "`MUSSEL_LOGLEVEL= shlog ${cmd}`" "hello"
 }
 
-test_shlog_loglevel_empty_fail() {
+test_shlog_MUSSEL_LOGLEVEL_empty_fail() {
   local cmd="echo hello"
   assertNotEquals \
-   "`loglevel= shlog ${cmd}`" \
+   "`MUSSEL_LOGLEVEL= shlog ${cmd}`" \
    "${MUSSEL_PROMPT} ${cmd}\n${cmd}"
 }
 
@@ -74,33 +74,33 @@ test_shlog_command_not_found_success() {
 #
 # dry-run mode
 #
-test_shlog_dryrun_loglevel_default() {
+test_shlog_dryrun_MUSSEL_LOGLEVEL_default() {
   assertEquals "`MUSSEL_DRY_RUN=on           shlog date`" ""
-  assertEquals "`MUSSEL_DRY_RUN=on loglevel= shlog date`" ""
+  assertEquals "`MUSSEL_DRY_RUN=on MUSSEL_LOGLEVEL= shlog date`" ""
 }
-test_shlog_dryrun_loglevel_debug_on() {
+test_shlog_dryrun_MUSSEL_LOGLEVEL_debug_on() {
   assertEquals \
-   "`MUSSEL_DRY_RUN=on loglevel=debug shlog echo hello`" \
+   "`MUSSEL_DRY_RUN=on MUSSEL_LOGLEVEL=debug shlog echo hello`" \
    "${MUSSEL_PROMPT} echo hello"
 }
-test_shlog_dryrun_loglevel_debug_y() {
+test_shlog_dryrun_MUSSEL_LOGLEVEL_debug_y() {
   assertEquals \
-   "`MUSSEL_DRY_RUN=y loglevel=debug shlog echo hello`" \
+   "`MUSSEL_DRY_RUN=y MUSSEL_LOGLEVEL=debug shlog echo hello`" \
    "${MUSSEL_PROMPT} echo hello"
 }
-test_shlog_dryrun_loglevel_debug_yes() {
+test_shlog_dryrun_MUSSEL_LOGLEVEL_debug_yes() {
   assertEquals \
-   "`MUSSEL_DRY_RUN=yes loglevel=debug shlog echo hello`" \
+   "`MUSSEL_DRY_RUN=yes MUSSEL_LOGLEVEL=debug shlog echo hello`" \
    "${MUSSEL_PROMPT} echo hello"
 }
-test_shlog_dryrun_loglevel_debug_on() {
+test_shlog_dryrun_MUSSEL_LOGLEVEL_debug_on() {
   assertEquals \
-   "`MUSSEL_DRY_RUN=on loglevel=debug shlog echo hello`" \
+   "`MUSSEL_DRY_RUN=on MUSSEL_LOGLEVEL=debug shlog echo hello`" \
    "${MUSSEL_PROMPT} echo hello"
 }
-test_shlog_dryrun_loglevel_debug_1() {
+test_shlog_dryrun_MUSSEL_LOGLEVEL_debug_1() {
   assertEquals \
-   "`MUSSEL_DRY_RUN=1 loglevel=debug shlog echo hello`" \
+   "`MUSSEL_DRY_RUN=1 MUSSEL_LOGLEVEL=debug shlog echo hello`" \
    "${MUSSEL_PROMPT} echo hello"
 }
 
