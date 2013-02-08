@@ -26,6 +26,11 @@
   };
   app.utils = {};
 
+  /*
+    http://example.com/?foo=bar
+    app.utils.parsedSearch('foo')
+    => bar
+  */
   app.utils.parsedSearch = function(word) {
     var parsedSearch;
     parsedSearch = app.parsedSearch || (function() {
