@@ -108,6 +108,21 @@ function strfile_type() {
   "
 }
 
+function add_param() {
+  local param_key=$1 param_type=${2:-string}
+  [[ -n "${param_key}" ]] || { echo "[ERROR] 'param_key' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  eval "
+   [[ -z "\$${param_key}" ]] || {
+     case "${param_type}" in
+      string) echo   "${param_key}=\$${param_key}" ;;
+       array) echo "${param_key}[]=\$${param_key}" ;;
+     strfile) strfile_type ${param_key}            ;;
+     esac
+   }
+  "
+}
+
 ## cmd_*
 
 function call_api() {
