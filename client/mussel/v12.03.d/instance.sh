@@ -16,18 +16,18 @@ task_index() {
 
 task_create() {
   call_api -X POST $(urlencode_data \
+    $([[ -z "${cpu_cores}"          ]] || echo cpu_cores=${cpu_cores}                  ) \
+    $([[ -z "${display_name}"       ]] || echo display_name=${display_name}            ) \
+    $([[ -z "${hostname}"           ]] || echo hostname=${hostname}                    ) \
+    $([[ -z "${hypervisor}"         ]] || echo hypervisor=${hypervisor}                ) \
     $([[ -z "${image_id}"           ]] || echo image_id=${image_id}                    ) \
     $([[ -z "${instance_spec_name}" ]] || echo instance_spec_name=${instance_spec_name}) \
-    $([[ -z "${ssh_key_id}"         ]] || echo ssh_key_id=${ssh_key_id}                ) \
-    $([[ -z "${hypervisor}"         ]] || echo hypervisor=${hypervisor}                ) \
-    $([[ -z "${cpu_cores}"          ]] || echo cpu_cores=${cpu_cores}                  ) \
     $([[ -z "${memory_size}"        ]] || echo memory_size=${memory_size}              ) \
     $([[ -z "${security_groups}"    ]] || echo security_groups[]=${security_groups}    ) \
     $([[ -z "${service_type}"       ]] || echo service_type=${service_type}            ) \
-    $([[ -z "${display_name}"       ]] || echo display_name=${display_name}            ) \
-    $([[ -z "${hostname}"           ]] || echo hostname=${hostname}                    ) \
-    $([[ -z "${vifs}"               ]] || strfile_type "vifs"                          ) \
+    $([[ -z "${ssh_key_id}"         ]] || echo ssh_key_id=${ssh_key_id}                ) \
     $([[ -z "${user_data}"          ]] || strfile_type "user_data"                     ) \
+    $([[ -z "${vifs}"               ]] || strfile_type "vifs"                          ) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }
@@ -41,8 +41,8 @@ task_backup() {
   call_api -X PUT $(urlencode_data \
     $([[ -z "${description}"  ]] || echo description=${description}  ) \
     $([[ -z "${display_name}" ]] || echo display_name=${display_name}) \
-    $([[ -z "${is_public}"    ]] || echo is_public=${is_public}      ) \
     $([[ -z "${is_cacheable}" ]] || echo is_cacheable=${is_cacheable}) \
+    $([[ -z "${is_public}"    ]] || echo is_public=${is_public}      ) \
    ) \
    $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
 }
