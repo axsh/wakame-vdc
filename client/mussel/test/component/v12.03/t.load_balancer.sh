@@ -18,6 +18,17 @@ function setUp() {
   xquery=
   state=
   uuid=asdf
+
+  balance_algorithm=
+  cookie_name=
+  display_name=
+  engine=
+  instance_port=
+  max_connection=
+  port=
+  private_key=
+  protocol=
+  public_key=
 }
 
 ### index
@@ -41,31 +52,30 @@ function test_load_balancer_index_stateful() {
 function test_load_balancer_create_no_opts() {
   local cmd=create
 
-  local protocol=http
-  local balancer_port=80
-  local instance_port=80
   local balance_algorithm=leastconn
+  local cookie_name=shunit2_cookie
+  local display_name=shunit_disp
+  local engine=haproxy
+  local instance_port=80
   local max_connection=1000
-
-  local display_name=
-  local cookie_name=
-  local private_key=
-  local public_key=
+  local port=80
+  local private_key=prv
+  local protocol=http
+  local public_key=pub
 
   local opts=""
 
   local params="
-    display_name=${display_name}
-    protocol=${protocol}
-    port=${balancer_port}
-    instance_port=${instance_port}
     balance_algorithm=${balance_algorithm}
-    engine=haproxy
     cookie_name=${cookie_name}
-    private_key=${private_key}
-    public_key=${public_key}
-    engine=haproxy
+    display_name=${display_name}
+    engine=${engine}
+    instance_port=${instance_port}
     max_connection=${max_connection}
+    port=${port}
+    private_key=${private_key}
+    protocol=${protocol}
+    public_key=${public_key}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
@@ -75,44 +85,46 @@ function test_load_balancer_create_no_opts() {
 function test_load_balancer_create_opts() {
   local cmd=create
 
-  local protocol=http
-  local balancer_port=80
-  local instance_port=80
   local balance_algorithm=leastconn
+  local cookie_name=shunit2_cookie
+  local display_name=shunit_disp
+  local engine=haproxy
+  local instance_port=80
   local max_connection=1000
-
-  local display_name=
-  local cookie_name=
-  local private_key=
-  local public_key=
+  local port=80
+  local private_key=prv
+  local protocol=http
+  local public_key=pub
 
   local opts="
-    --protocol=${protocol}
-    --balancer-port=${balancer_port}
-    --instance-port=${instance_port}
     --balance-algorithm=${balance_algorithm}
-    --max-connection=${max_connection}
-    --display-name=${display_name}
     --cookie-name=${cookie_name}
+    --display-name=${display_name}
+    --engine=${engine}
+    --instance-port=${instance_port}
+    --max-connection=${max_connection}
+    --port=${port}
     --private-key=${private_key}
+    --protocol=${protocol}
+    --public-key=pub=${public_key}
   "
 
   local params="
-    display_name=${display_name}
-    protocol=${protocol}
-    port=${balancer_port}
-    instance_port=${instance_port}
     balance_algorithm=${balance_algorithm}
-    engine=haproxy
     cookie_name=${cookie_name}
-    private_key=${private_key}
-    public_key=${public_key}
-    engine=haproxy
+    display_name=${display_name}
+    engine=${engine}
+    instance_port=${instance_port}
     max_connection=${max_connection}
+    port=${port}
+    private_key=${private_key}
+    protocol=${protocol}
+    public_key=${public_key}
   "
 
   assertEquals "$(cli_wrapper ${namespace} ${cmd} ${opts})" \
                "curl -X POST $(urlencode_data ${params}) $(base_uri)/${namespace}s.$(suffix)"
+
 }
 
 ### xcreate
@@ -120,29 +132,28 @@ function test_load_balancer_create_opts() {
 function test_load_balancer_xcreate() {
   local cmd=xcreate
 
-  local protocol=http
-  local balancer_port=80
-  local instance_port=80
   local balance_algorithm=leastconn
-  local max_connection=1000
-
-  local display_name=
   local cookie_name=
+  local display_name=
+  local engine=haproxy
+  local instance_port=80
+  local max_connection=1000
+  local port=80
   local private_key=
+  local protocol=http
   local public_key=
 
   local MUSSEL_CUSTOM_DATA="
-    display_name=${display_name}
-    protocol=${protocol}
-    port=${balancer_port}
-    instance_port=${instance_port}
     balance_algorithm=${balance_algorithm}
-    engine=haproxy
     cookie_name=${cookie_name}
-    private_key=${private_key}
-    public_key=${public_key}
-    engine=haproxy
+    display_name=${display_name}
+    engine=${engine}
+    instance_port=${instance_port}
     max_connection=${max_connection}
+    port=${port}
+    private_key=${private_key}
+    protocol=${protocol}
+    public_key=${public_key}
   "
 
   assertEquals "$(MUSSEL_CUSTOM_DATA=$(urlencode_data ${MUSSEL_CUSTOM_DATA}) cli_wrapper ${namespace} ${cmd})" \
