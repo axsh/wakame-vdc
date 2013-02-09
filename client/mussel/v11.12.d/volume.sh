@@ -9,7 +9,7 @@ task_create() {
   local volume_size=${3:-10}
 
   call_api -X POST $(urlencode_data \
-    volume_size=${volume_size} \
+    $([[ -z "${volume_size}" ]] || echo volume_size=${volume_size}) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }

@@ -10,8 +10,8 @@ task_create() {
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
 
   call_api -X POST $(urlencode_data \
-    description=${description} \
-    $(strfile_type "rule") \
+    $([[ -z "${description}" ]] || echo description=${description}) \
+    $([[ -z "${rule}"        ]] || strfile_type "rule"            ) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }

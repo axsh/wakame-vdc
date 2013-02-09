@@ -12,10 +12,10 @@ task_create() {
   [[ -z "${description}" ]] && { echo "'description' is empty." >&2; return 1; }
 
   call_api -X POST $(urlencode_data \
-    gw=${gw} \
-    network=${network} \
-    prefix=${prefix}  \
-    description=${description} \
+    $([[ -z "${description}" ]] || echo description=${description}) \
+    $([[ -z "${gw}"          ]] || echo gw=${gw}                  ) \
+    $([[ -z "${network}"     ]] || echo network=${network}        ) \
+    $([[ -z "${prefix}"      ]] || echo prefix=${prefix}          ) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }
