@@ -15,16 +15,16 @@ task_index() {
 
 task_create() {
   call_api -X POST $(urlencode_data \
-    $([[ -z "${balance_algorithm}" ]] || echo balance_algorithm=${balance_algorithm} ) \
-    $([[ -z "${cookie_name}"       ]] || echo cookie_name=${cookie_name}             ) \
-    $([[ -z "${display_name}"      ]] || echo display_name=${display_name}           ) \
-    $([[ -z "${engine}"            ]] || echo engine=${engine}                       ) \
-    $([[ -z "${instance_port}"     ]] || echo instance_port=${instance_port}         ) \
-    $([[ -z "${max_connection}"    ]] || echo max_connection=${max_connection}       ) \
-    $([[ -z "${port}"              ]] || echo port=${port}                           ) \
-    $([[ -z "${private_key}"       ]] || echo private_key=${private_key}             ) \
-    $([[ -z "${protocol}"          ]] || echo protocol=${protocol}                   ) \
-    $([[ -z "${public_key}"        ]] || echo public_key=${public_key}               ) \
+    $(add_param balance_algorithm string) \
+    $(add_param cookie_name       string) \
+    $(add_param display_name      string) \
+    $(add_param engine            string) \
+    $(add_param instance_port     string) \
+    $(add_param max_connection    string) \
+    $(add_param port              string) \
+    $(add_param private_key       string) \
+    $(add_param protocol          string) \
+    $(add_param public_key        string) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }

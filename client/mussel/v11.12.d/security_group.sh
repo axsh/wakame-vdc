@@ -10,8 +10,8 @@ task_create() {
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} NAME" >&2; return 1; }
 
   call_api -X POST $(urlencode_data \
-    $([[ -z "${description}" ]] || echo description=${description}) \
-    $([[ -z "${rule}"        ]] || strfile_type "rule"            ) \
+    $(add_param description  string) \
+    $(add_param rule        strfile) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }
@@ -21,7 +21,7 @@ task_update() {
   [[ -z "${description}" ]] && { echo "${namespace} ${cmd} ID" >&2; return 1; }
 
   call_api -X PUT $(urlencode_data \
-    $(strfile_type "rule") \
+    $(add_param rule        strfile) \
    ) \
    $(base_uri)/${namespace}s/${description}.$(suffix)
 }
