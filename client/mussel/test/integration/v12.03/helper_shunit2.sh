@@ -17,7 +17,7 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 
 ## group functions
 
-function setup_vars_helper() {
+function setup_vars() {
   DCMGR_API_VERSION=$1
   DCMGR_HOST=${DCMGR_HOST:-10.0.2.15}
   DCMGR_PORT=${DCMGR_PORT:-9001}
@@ -61,4 +61,4 @@ function step_base_show_ids() {
 
 ##
 
-setup_vars_helper 12.03
+setup_vars 12.03

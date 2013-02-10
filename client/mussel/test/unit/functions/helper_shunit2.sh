@@ -15,6 +15,6 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 
 ## group variables
 
-setup_vars_helper 12.03
+setup_vars 12.03
 
 ## group functions

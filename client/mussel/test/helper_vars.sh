@@ -6,7 +6,7 @@
 
 ## group variables
 
-function setup_vars_helper() {
+function setup_vars() {
   DCMGR_API_VERSION=$1
   DCMGR_HOST=localhost
   DCMGR_PORT=9001
