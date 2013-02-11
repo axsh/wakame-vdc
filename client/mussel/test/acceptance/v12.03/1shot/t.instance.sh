@@ -57,6 +57,12 @@ function check_port() {
   echo | nc ${nc_opts} ${ipaddr} ${port} >/dev/null
 }
 
+function check_network_connection() {
+  local ipaddr=$1
+
+  ping -c 1 -W 1 ${ipaddr}
+}
+
 ### step
 
 function test_generate_ssh_key_pair() {
@@ -110,7 +116,7 @@ function test_get_instance_ipaddr() {
 }
 
 function test_wait_for_instance_network_is_ready() {
-  retry_until ${wait_sec} "ping -c 1 -W 1 ${ipaddr}" >/dev/null
+  retry_until ${wait_sec} "check_network_connection ${ipaddr}" >/dev/null
   assertEquals $? 0
 }
 
