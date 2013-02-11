@@ -78,7 +78,6 @@ function test_create_ssh_key_pair() {
 }
 
 function test_create_security_group() {
-  # security_group
   cat <<-EOS > ${rule_path}
 	icmp:-1,-1,ip4:0.0.0.0/0
 	tcp:22,22,ip4:0.0.0.0/0
