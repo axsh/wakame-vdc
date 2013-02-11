@@ -63,14 +63,15 @@ function test_1shot() {
   assertEquals $? 0
 
   retry_until 120 "check_document_pair instance ${inst_id} state running"
-  sleep 3
+  sleep 1
 
   run_cmd instance show ${inst_id}
   ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
-  ssh-keygen   -R ${ipaddr} >/dev/null
-  sleep 10
-  ping -c 1 -W 30 ${ipaddr}
-  sleep 30
+
+  retry_until 120 "ping -c 1 -W 1 ${ipaddr}"
+
+  ssh-keygen -R ${ipaddr} >/dev/null
+  sleep 1
 
   run_cmd instance destroy ${inst_id}
   assertEquals $? 0
