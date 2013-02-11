@@ -38,10 +38,8 @@ function oneTimeTearDown() {
   rm -f ${rule_path}
 }
 
-function login_to() {
-  local host=$1; shift
-
-  $(which ssh) ${host} -i ${ssh_keypair_path} -o 'StrictHostKeyChecking no' $@
+function ssh() {
+  $(which ssh) -o 'StrictHostKeyChecking no' $@
 }
 
 function check_port() {
@@ -132,11 +130,11 @@ function test_remove_ssh_known_host_entry() {
 function test_compare_instance_hostname() {
   assertEquals \
     "$(echo "${inst_hash}" | hash_value hostname)" \
-    "$(login_to root@${ipaddr} hostname)"
+    "$(ssh root@${ipaddr} -i ${ssh_keypair_path} hostname)"
 }
 
 function test_compare_instance_ipaddr() {
-  login_to root@${ipaddr} ip addr show eth0 | egrep -q ${ipaddr}
+  ssh root@${ipaddr} -i ${ssh_keypair_path} ip addr show eth0 | egrep -q ${ipaddr}
   assertEquals $? 0
 }
 
