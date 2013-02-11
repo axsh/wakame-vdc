@@ -17,7 +17,7 @@ declare vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
 
 ## functions
 
-function setUp() {
+function oneTimeSetUp() {
   # ssh_key_pair
   ssh-keygen -N "" -f ${ssh_keypair_path} -C shunit2.$$ >/dev/null
   public_key=${ssh_keypair_path}.pub
@@ -45,7 +45,7 @@ function setUp() {
   vifs=${vifs_path}
 }
 
-function tearDown() {
+function oneTimeTearDown() {
   run_cmd ssh_key_pair   destroy ${ssh_key_id}
   run_cmd security_group destroy ${secg_id}
 
