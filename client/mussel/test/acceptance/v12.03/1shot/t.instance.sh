@@ -43,6 +43,8 @@ function oneTimeSetUp() {
 	{"eth0":{"index":"0","network":"${network_id}","security_groups":"${secg_id}"}}
 	EOS
   vifs=${vifs_path}
+
+  declare inst_id inst_hash ipaddr
 }
 
 function oneTimeTearDown() {
@@ -63,8 +65,6 @@ function login_to() {
 ### step
 
 function test_1shot() {
-  local inst_id inst_hash ipaddr
-
   inst_id=$(run_cmd instance create | hash_value id)
   assertEquals $? 0
 
