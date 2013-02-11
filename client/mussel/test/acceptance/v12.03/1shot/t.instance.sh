@@ -38,6 +38,20 @@ function oneTimeTearDown() {
   rm -f ${rule_path}
 }
 
+function render_secg_rule() {
+  cat <<-EOS
+	icmp:-1,-1,ip4:0.0.0.0/0
+	tcp:22,22,ip4:0.0.0.0/0
+	tcp:80,80,ip4:0.0.0.0/0
+	EOS
+}
+
+function render_vif_table() {
+  cat <<-EOS
+	{"eth0":{"index":"0","network":"${network_id}","security_groups":"${secg_id}"}}
+	EOS
+}
+
 ### step
 
 function test_generate_ssh_key_pair() {
@@ -53,11 +67,7 @@ function test_create_ssh_key_pair() {
 }
 
 function test_create_security_group() {
-  cat <<-EOS > ${rule_path}
-	icmp:-1,-1,ip4:0.0.0.0/0
-	tcp:22,22,ip4:0.0.0.0/0
-	tcp:80,80,ip4:0.0.0.0/0
-	EOS
+  render_secg_rule > ${rule_path}
   rule=${rule_path}
 
   secg_id=$(run_cmd security_group create | hash_value id)
@@ -65,9 +75,7 @@ function test_create_security_group() {
 }
 
 function test_create_instance() {
-  cat <<-EOS > ${vifs_path}
-	{"eth0":{"index":"0","network":"${network_id}","security_groups":"${secg_id}"}}
-	EOS
+  render_vif_table > ${vifs_path}
   vifs=${vifs_path}
 
   inst_id=$(run_cmd instance create | hash_value id)
