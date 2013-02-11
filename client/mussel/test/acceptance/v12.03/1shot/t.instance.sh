@@ -54,6 +54,12 @@ function tearDown() {
   rm -f ${rule_path}
 }
 
+function login_to() {
+  local host=$1; shift
+
+  $(which ssh) ${host} -i ${ssh_keypair_path} -o 'StrictHostKeyChecking no' $@
+}
+
 ### step
 
 function test_1shot() {
@@ -63,16 +69,24 @@ function test_1shot() {
   assertEquals $? 0
 
   retry_until 120 "check_document_pair instance ${inst_id} state running"
-  sleep 1
 
   run_cmd instance show ${inst_id}
+  assertEquals $? 0
+
   ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
 
   retry_until 120 "ping -c 1 -W 1 ${ipaddr}"
   retry_until 120 "(echo | nc -w 1 ${ipaddr} 22)"
 
   ssh-keygen -R ${ipaddr} >/dev/null
-  sleep 1
+  assertEquals $? 0
+
+  assertEquals \
+    "$(run_cmd instance show ${inst_id} | hash_value hostname)" \
+    "$(login_to root@${ipaddr} hostname)"
+
+  login_to root@${ipaddr} ip addr show eth0 | egrep ${ipaddr}
+  assertEquals $? 0
 
   run_cmd instance destroy ${inst_id}
   assertEquals $? 0
