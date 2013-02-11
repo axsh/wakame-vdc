@@ -11,46 +11,28 @@
 
 ## variables
 
+declare wait_sec=120
 declare ssh_keypair_path=${BASH_SOURCE[0]%/*}/keypair.$$
 declare rule_path=${BASH_SOURCE[0]%/*}/rule.$$
 declare vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
 
+# configuarable variables
+
+image_id=${image_id:-wmi-centos1d}
+hypervisor=${hypervisor:-openvz}
+cpu_cores=${cpu_cores:-1}
+memory_size=${memory_size:-256}
+network_id=${network_id:-nw-demo1}
+
+# test local variables
+
+declare inst_id=
+declare inst_hash=
+declareipaddr=
+
 ## functions
 
-function oneTimeSetUp() {
-  # ssh_key_pair
-  ssh-keygen -N "" -f ${ssh_keypair_path} -C shunit2.$$ >/dev/null
-  public_key=${ssh_keypair_path}.pub
-  ssh_key_id=$(run_cmd ssh_key_pair create | hash_value id)
-
-  # security_group
-  cat <<-EOS > ${rule_path}
-	icmp:-1,-1,ip4:0.0.0.0/0
-	tcp:22,22,ip4:0.0.0.0/0
-	tcp:80,80,ip4:0.0.0.0/0
-	EOS
-  rule=${rule_path}
-  secg_id=$(run_cmd security_group create | hash_value id)
-
-  # configuarable variables
-  image_id=${image_id:-wmi-centos1d}
-  hypervisor=${hypervisor:-openvz}
-  cpu_cores=${cpu_cores:-1}
-  memory_size=${memory_size:-256}
-  network_id=${network_id:-nw-demo1}
-
-  cat <<-EOS > ${vifs_path}
-	{"eth0":{"index":"0","network":"${network_id}","security_groups":"${secg_id}"}}
-	EOS
-  vifs=${vifs_path}
-
-  declare inst_id inst_hash ipaddr
-}
-
 function oneTimeTearDown() {
-  run_cmd ssh_key_pair   destroy ${ssh_key_id}
-  run_cmd security_group destroy ${secg_id}
-
   rm -f ${ssh_keypair_path}*
   rm -f ${vifs_path}
   rm -f ${rule_path}
@@ -64,17 +46,47 @@ function login_to() {
 
 ### step
 
+function test_generate_ssh_key_pair() {
+  ssh-keygen -N "" -f ${ssh_keypair_path} -C shunit2.$$ >/dev/null
+  assertEquals $? 0
+}
+
+function test_create_ssh_key_pair() {
+  public_key=${ssh_keypair_path}.pub
+
+  ssh_key_id=$(run_cmd ssh_key_pair create | hash_value id)
+  assertEquals $? 0
+}
+
+function test_create_security_group() {
+  # security_group
+  cat <<-EOS > ${rule_path}
+	icmp:-1,-1,ip4:0.0.0.0/0
+	tcp:22,22,ip4:0.0.0.0/0
+	tcp:80,80,ip4:0.0.0.0/0
+	EOS
+  rule=${rule_path}
+
+  secg_id=$(run_cmd security_group create | hash_value id)
+  assertEquals $? 0
+}
+
 function test_create_instance() {
+  cat <<-EOS > ${vifs_path}
+	{"eth0":{"index":"0","network":"${network_id}","security_groups":"${secg_id}"}}
+	EOS
+  vifs=${vifs_path}
+
   inst_id=$(run_cmd instance create | hash_value id)
   assertEquals $? 0
 }
 
 function test_wait_for_instance_state_is_running() {
-  retry_until 120 "check_document_pair instance ${inst_id} state running"
+  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state running"
   assertEquals $? 0
 }
 
-function test_get_instance(){
+function test_get_instance_hash(){
   inst_hash="$(run_cmd instance show ${inst_id})"
   assertEquals $? 0
 }
@@ -85,17 +97,17 @@ function test_get_instance_ipaddr() {
 }
 
 function test_wait_for_instance_network_is_ready() {
-  retry_until 120 "ping -c 1 -W 1 ${ipaddr}"
+  retry_until ${wait_sec} "ping -c 1 -W 1 ${ipaddr}" >/dev/null
   assertEquals $? 0
 }
 
 function test_wait_for_instance_sshd_is_ready() {
-  retry_until 120 "(echo | nc -w 1 ${ipaddr} 22)"
+  retry_until ${wait_sec} "(echo | nc -w 1 ${ipaddr} 22)" >/dev/null
   assertEquals $? 0
 }
 
 function test_remove_ssh_known_host_entry() {
-  ssh-keygen -R ${ipaddr} >/dev/null
+  ssh-keygen -R ${ipaddr} >/dev/null 2>&1
   assertEquals $? 0
 }
 
@@ -106,17 +118,27 @@ function test_compare_instance_hostname() {
 }
 
 function test_compare_instance_ipaddr() {
-  login_to root@${ipaddr} ip addr show eth0 | egrep ${ipaddr}
+  login_to root@${ipaddr} ip addr show eth0 | egrep -q ${ipaddr}
   assertEquals $? 0
 }
 
 function test_destroy_instance() {
-  run_cmd instance destroy ${inst_id}
+  run_cmd instance destroy ${inst_id} >/dev/null
   assertEquals $? 0
 }
 
 function test_wait_for_instance_state_is_terminated() {
-  retry_until 120 "check_document_pair instance ${inst_id} state terminated"
+  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state terminated"
+  assertEquals $? 0
+}
+
+function test_destroy_ssh_key_pair() {
+  run_cmd ssh_key_pair destroy ${ssh_key_id} >/dev/null
+  assertEquals $? 0
+}
+
+function test_destroy_security_group() {
+  run_cmd security_group destroy ${secg_id} >/dev/null
   assertEquals $? 0
 }
 
