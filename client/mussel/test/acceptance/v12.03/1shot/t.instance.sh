@@ -44,6 +44,19 @@ function login_to() {
   $(which ssh) ${host} -i ${ssh_keypair_path} -o 'StrictHostKeyChecking no' $@
 }
 
+function check_port() {
+  local ipaddr=$1 protocol=$2 port=$3
+
+  local nc_opts="-w 1"
+  case ${protocol} in
+  tcp) ;;
+  udp) nc_opts="${nc_opts} -u";;
+    *) ;;
+  esac
+
+  echo | nc ${nc_opts} ${ipaddr} ${port} >/dev/null
+}
+
 ### step
 
 function test_generate_ssh_key_pair() {
@@ -102,7 +115,7 @@ function test_wait_for_instance_network_is_ready() {
 }
 
 function test_wait_for_instance_sshd_is_ready() {
-  retry_until ${wait_sec} "(echo | nc -w 1 ${ipaddr} 22)" >/dev/null
+  retry_until ${wait_sec} "check_port ${ipaddr} tcp 22" >/dev/null
   assertEquals $? 0
 }
 
