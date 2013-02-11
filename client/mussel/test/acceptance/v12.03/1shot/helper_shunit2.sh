@@ -12,6 +12,11 @@
 
 ## group variables
 
+declare wait_sec=120
+declare ssh_keypair_path=${BASH_SOURCE[0]%/*}/keypair.$$
+declare rule_path=${BASH_SOURCE[0]%/*}/rule.$$
+declare vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
+
 ## group functions
 
 function ssh() {

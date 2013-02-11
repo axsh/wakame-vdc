@@ -11,11 +11,6 @@
 
 ## variables
 
-declare wait_sec=120
-declare ssh_keypair_path=${BASH_SOURCE[0]%/*}/keypair.$$
-declare rule_path=${BASH_SOURCE[0]%/*}/rule.$$
-declare vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
-
 # configuarable variables
 
 image_id=${image_id:-wmi-centos1d}
