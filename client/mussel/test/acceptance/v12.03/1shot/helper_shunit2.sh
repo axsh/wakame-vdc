@@ -97,8 +97,9 @@ function get_instance_ipaddr() {
   run_cmd instance show ${inst_id} | hash_value address
 }
 
-function wait_for_instance_state_is_running() {
-  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state running"
+function wait_for_instance_state_is() {
+  local state=$1
+  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state ${state}"
 }
 
 function wait_for_instance_network_is_ready() {
@@ -111,9 +112,6 @@ function wait_for_instance_sshd_is_ready() {
   retry_until ${wait_sec} "check_port ${ipaddr} tcp 22" >/dev/null
 }
 
-function wait_for_instance_state_is_terminated() {
-  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state terminated"
-}
 
 function destroy_instance() {
   run_cmd instance destroy ${inst_id}

@@ -56,7 +56,7 @@ function test_create_instance() {
 }
 
 function test_wait_for_instance_state_is_running() {
-  wait_for_instance_state_is_running
+  wait_for_instance_state_is running
   assertEquals $? 0
 }
 
@@ -94,7 +94,7 @@ function test_destroy_instance() {
 }
 
 function test_wait_for_instance_state_is_terminated() {
-  wait_for_instance_state_is_terminated
+  wait_for_instance_state_is terminated
   assertEquals $? 0
 }
 
