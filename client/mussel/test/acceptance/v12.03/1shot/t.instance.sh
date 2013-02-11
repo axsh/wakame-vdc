@@ -64,34 +64,60 @@ function login_to() {
 
 ### step
 
-function test_1shot() {
+function test_create_instance() {
   inst_id=$(run_cmd instance create | hash_value id)
   assertEquals $? 0
+}
 
+function test_wait_for_instance_state_is_running() {
   retry_until 120 "check_document_pair instance ${inst_id} state running"
+  assertEquals $? 0
+}
 
+function test_get_instance(){
   inst_hash="$(run_cmd instance show ${inst_id})"
   assertEquals $? 0
+}
 
+function test_get_instance_ipaddr() {
   ipaddr=$(echo "${inst_hash}" | hash_value address)
+  assertEquals $? 0
+}
 
+function test_wait_for_instance_network_is_ready() {
   retry_until 120 "ping -c 1 -W 1 ${ipaddr}"
-  retry_until 120 "(echo | nc -w 1 ${ipaddr} 22)"
+  assertEquals $? 0
+}
 
+function test_wait_for_instance_sshd_is_ready() {
+  retry_until 120 "(echo | nc -w 1 ${ipaddr} 22)"
+  assertEquals $? 0
+}
+
+function test_remove_ssh_known_host_entry() {
   ssh-keygen -R ${ipaddr} >/dev/null
   assertEquals $? 0
+}
 
+function test_compare_instance_hostname() {
   assertEquals \
     "$(echo "${inst_hash}" | hash_value hostname)" \
     "$(login_to root@${ipaddr} hostname)"
+}
 
+function test_compare_instance_ipaddr() {
   login_to root@${ipaddr} ip addr show eth0 | egrep ${ipaddr}
   assertEquals $? 0
+}
 
+function test_destroy_instance() {
   run_cmd instance destroy ${inst_id}
   assertEquals $? 0
+}
 
+function test_wait_for_instance_state_is_terminated() {
   retry_until 120 "check_document_pair instance ${inst_id} state terminated"
+  assertEquals $? 0
 }
 
 ## shunit2
