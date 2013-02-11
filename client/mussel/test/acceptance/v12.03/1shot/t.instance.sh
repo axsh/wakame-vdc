@@ -69,6 +69,7 @@ function test_1shot() {
   ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
 
   retry_until 120 "ping -c 1 -W 1 ${ipaddr}"
+  retry_until 120 "(echo | nc -w 1 ${ipaddr} 22)"
 
   ssh-keygen -R ${ipaddr} >/dev/null
   sleep 1
