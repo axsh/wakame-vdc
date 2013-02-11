@@ -47,94 +47,123 @@ function render_vif_table() {
 	EOS
 }
 
-### step
-
-function test_generate_ssh_key_pair() {
+function generate_ssh_key_pair() {
   ssh-keygen -N "" -f ${ssh_keypair_path} -C shunit2.$$ >/dev/null
-  assertEquals $? 0
 }
 
-function test_create_ssh_key_pair() {
+function create_ssh_key_pair() {
   public_key=${ssh_keypair_path}.pub
-
   ssh_key_id=$(run_cmd ssh_key_pair create | hash_value id)
-  assertEquals $? 0
 }
 
-function test_create_security_group() {
+function create_security_group() {
   render_secg_rule > ${rule_path}
   rule=${rule_path}
-
   secg_id=$(run_cmd security_group create | hash_value id)
-  assertEquals $? 0
 }
 
-function test_create_instance() {
+function create_instance() {
   render_vif_table > ${vifs_path}
   vifs=${vifs_path}
 
   inst_id=$(run_cmd instance create | hash_value id)
+}
+
+function wait_for_instance_state_is_running() {
+  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state running"
+}
+
+function wait_for_instance_state_is_terminated() {
+  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state terminated"
+}
+
+function destroy_instance() {
+  run_cmd instance destroy ${inst_id}
+}
+
+function destroy_ssh_key_pair() {
+  run_cmd ssh_key_pair destroy ${ssh_key_id}
+}
+
+function destroy_security_group() {
+  run_cmd security_group destroy ${secg_id}
+}
+
+### step
+
+function test_generate_ssh_key_pair() {
+  generate_ssh_key_pair >/dev/null
+  assertEquals $? 0
+}
+
+function test_create_ssh_key_pair() {
+  create_ssh_key_pair
+  assertEquals $? 0
+}
+
+function test_create_security_group() {
+  create_security_group
+  assertEquals $? 0
+}
+
+function test_create_instance() {
+  create_instance
   assertEquals $? 0
 }
 
 function test_wait_for_instance_state_is_running() {
-  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state running"
-  assertEquals $? 0
-}
-
-function test_get_instance_hash(){
-  inst_hash="$(run_cmd instance show ${inst_id})"
-  assertEquals $? 0
-}
-
-function test_get_instance_ipaddr() {
-  ipaddr=$(echo "${inst_hash}" | hash_value address)
+  wait_for_instance_state_is_running
   assertEquals $? 0
 }
 
 function test_wait_for_instance_network_is_ready() {
+  ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
   retry_until ${wait_sec} "check_network_connection ${ipaddr}" >/dev/null
   assertEquals $? 0
 }
 
 function test_wait_for_instance_sshd_is_ready() {
+  ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
   retry_until ${wait_sec} "check_port ${ipaddr} tcp 22" >/dev/null
   assertEquals $? 0
 }
 
 function test_remove_ssh_known_host_entry() {
+  ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
   ssh-keygen -R ${ipaddr} >/dev/null 2>&1
   assertEquals $? 0
 }
 
 function test_compare_instance_hostname() {
+  ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
   assertEquals \
-    "$(echo "${inst_hash}" | hash_value hostname)" \
+    "$(run_cmd instance show ${inst_id} | hash_value hostname)" \
     "$(ssh root@${ipaddr} -i ${ssh_keypair_path} hostname)"
 }
 
 function test_compare_instance_ipaddr() {
+  ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
   ssh root@${ipaddr} -i ${ssh_keypair_path} ip addr show eth0 | egrep -q ${ipaddr}
   assertEquals $? 0
 }
 
 function test_destroy_instance() {
-  run_cmd instance destroy ${inst_id} >/dev/null
+  destroy_instance >/dev/null
   assertEquals $? 0
 }
 
 function test_wait_for_instance_state_is_terminated() {
-  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state terminated"
+  wait_for_instance_state_is_terminated
   assertEquals $? 0
 }
 
 function test_destroy_ssh_key_pair() {
-  run_cmd ssh_key_pair destroy ${ssh_key_id} >/dev/null
+  destroy_ssh_key_pair >/dev/null
   assertEquals $? 0
 }
 
 function test_destroy_security_group() {
-  run_cmd security_group destroy ${secg_id} >/dev/null
+  destroy_security_group >/dev/null
   assertEquals $? 0
 }
 
