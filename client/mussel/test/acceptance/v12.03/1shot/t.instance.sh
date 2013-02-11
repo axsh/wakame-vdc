@@ -28,7 +28,7 @@ network_id=${network_id:-nw-demo1}
 
 declare inst_id=
 declare inst_hash=
-declareipaddr=
+declare ipaddr=
 
 ## functions
 
