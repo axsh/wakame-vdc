@@ -63,17 +63,17 @@ function login_to() {
 ### step
 
 function test_1shot() {
-  local inst_id
+  local inst_id inst_hash ipaddr
 
   inst_id=$(run_cmd instance create | hash_value id)
   assertEquals $? 0
 
   retry_until 120 "check_document_pair instance ${inst_id} state running"
 
-  run_cmd instance show ${inst_id}
+  inst_hash="$(run_cmd instance show ${inst_id})"
   assertEquals $? 0
 
-  ipaddr=$(run_cmd instance show ${inst_id} | hash_value address)
+  ipaddr=$(echo "${inst_hash}" | hash_value address)
 
   retry_until 120 "ping -c 1 -W 1 ${ipaddr}"
   retry_until 120 "(echo | nc -w 1 ${ipaddr} 22)"
@@ -82,7 +82,7 @@ function test_1shot() {
   assertEquals $? 0
 
   assertEquals \
-    "$(run_cmd instance show ${inst_id} | hash_value hostname)" \
+    "$(echo "${inst_hash}" | hash_value hostname)" \
     "$(login_to root@${ipaddr} hostname)"
 
   login_to root@${ipaddr} ip addr show eth0 | egrep ${ipaddr}
