@@ -10,6 +10,12 @@
     },
 
     initialize : function() {
+
+      var Picker = new app.DatetimePicker({
+        input_form: $('#display_begin_at'),
+        icon: $('#icon_display_begin_at')
+      });
+
       var c = this.collection;
       c.on('all', this.addAll, this);
       c.url = c.model.prototype.url;
@@ -48,6 +54,9 @@
         key_collection = _.without(key_collection, 'invalid')
 
         // TODO: templating
+        var start_time = app.utils.decodeSearhTime(app.utils.parsedSearch('start_time'));
+        $('#display_begin_at').attr('value', start_time);
+
         $('#select_keys').empty();
         $.each(key_collection, function(key, value){
 
@@ -59,11 +68,6 @@
 
           $('#select_keys').append(option_el);
         });
-
-        $('#select_keys').change(function(){
-          var application_id = $(this).val();
-          window.location = '/text_logs?application_id=' + application_id;
-        })
 
       });
     },

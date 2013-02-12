@@ -29,14 +29,22 @@
 
   models.TextLog = models.Dcmgr.extend({
     url: (function(id){
-      console.log()
+      var start_time = app.utils.parsedSearch('start_time');
+
+      if( !_.isEmpty(start_time) ) {
+        var d = app.utils.decodeSearhTime(app.utils.parsedSearch('start_time'));
+        start_time = app.helpers.date.iso8601(d)
+      } else {
+        start_time = '';
+      }
+
       var params = {
         'account_id': 'a-00000000',
         'instance_id': 'none',
         'application_id': app.utils.parsedSearch('application_id'),
         'start': 1,
-        'limit': 10,
-        'start_time': app.helpers.date.iso8601(moment('2013-01-28T19:06:38'))
+        'limit': 100,
+        'start_time': start_time
       };
 
       return app.info.api_endpoints.dcmgr + '/api/12.03/text_logs.json?' + $.param(params);

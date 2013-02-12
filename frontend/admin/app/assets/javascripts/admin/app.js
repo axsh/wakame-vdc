@@ -50,6 +50,10 @@
     }
   };
 
+  app.utils.decodeSearhTime = function(time) {
+    return decodeURIComponent(time).replace('+',' ')
+  };
+
   app.DatetimePicker = function(config) {
     this.el = {};
     this.icon = {};

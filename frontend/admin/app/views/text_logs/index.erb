@@ -19,12 +19,26 @@
     <div class="control-group">
       <legend>ログ</legend>
     </div>
-    <!--  The pagination is mapped on #tmpServerPagination -->
+
     <div>
-        <select id="select_keys" name="select_keys"></select>
+    <form class="well form-query">
+      <div class="control-group">
+        <div class="controls">
+
+        <select id="select_keys" name="application_id"></select>
+        <span class="input-prepend">
+            <input type="text" id="display_begin_at" name="start_time" value="" placeholder="">
+            <span class="add-on" id="icon_display_begin_at"><i class="icon-calendar"></i></span>
+        </span>
+        <div class="controls" style="text-align:right">
+        <button type="submit" class="btn">検索</button>
+        </div>
+        </div>
+    </div>
+    </form>
     </div>
     <div id="content"></div>
     <script type="text/template" id="resultItemTemplate">
-    {{ payload }}<br />
+    [{{ created_at }}]  {{ payload }}<br />
     </script>
 </div>
