@@ -16,7 +16,7 @@ declare namespace=$(namespace ${BASH_SOURCE[0]})
 
 function setUp() {
   # required
-  image_id=wmi-centos1d
+  image_id=${image_id:-wmi-centos1d}
   hypervisor=${hypervisor:-openvz}
   cpu_cores=${cpu_cores:-1}
   memory_size=${memory_size:-256}
