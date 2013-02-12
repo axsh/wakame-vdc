@@ -33,18 +33,10 @@ ssh_key_id=
 
 ## group functions
 
+### ssh
+
 function ssh() {
   $(which ssh) -o 'StrictHostKeyChecking no' $@
-}
-
-##
-
-function render_secg_rule() {
-  :
-}
-
-function render_vif_table() {
-  :
 }
 
 function generate_ssh_key_pair() {
@@ -56,15 +48,37 @@ function remove_ssh_known_host_entry() {
   ssh-keygen -R ${ipaddr} >/dev/null 2>&1
 }
 
+### ssh_key_pair
+
 function create_ssh_key_pair() {
   public_key=${ssh_keypair_path}.pub
   ssh_key_id=$(run_cmd ssh_key_pair create | hash_value id)
+}
+
+function destroy_ssh_key_pair() {
+  run_cmd ssh_key_pair destroy ${ssh_key_id}
+}
+
+### security_groups
+
+function render_secg_rule() {
+  :
 }
 
 function create_security_group() {
   render_secg_rule > ${rule_path}
   rule=${rule_path}
   secg_id=$(run_cmd security_group create | hash_value id)
+}
+
+function destroy_security_group() {
+  run_cmd security_group destroy ${secg_id}
+}
+
+### instance
+
+function render_vif_table() {
+  :
 }
 
 function create_instance() {
@@ -92,15 +106,6 @@ function wait_for_instance_sshd_is_ready() {
   retry_until "check_port ${ipaddr} tcp 22" >/dev/null
 }
 
-
 function destroy_instance() {
   run_cmd instance destroy ${inst_id}
-}
-
-function destroy_ssh_key_pair() {
-  run_cmd ssh_key_pair destroy ${ssh_key_id}
-}
-
-function destroy_security_group() {
-  run_cmd security_group destroy ${secg_id}
 }
