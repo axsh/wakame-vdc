@@ -36,6 +36,15 @@ function test_wait_for_instance_state_is_running() {
   retry_until 60 "check_document_pair ${namespace} ${inst_id} state running"
 }
 
+function test_reboot_instance() {
+  run_cmd ${namespace} reboot ${inst_id} >/dev/null
+  assertEquals $? 0
+}
+
+function test_wait_for_instance_status_is_online() {
+  retry_until 60 "check_document_pair ${namespace} ${inst_id} status online"
+}
+
 function test_destroy_instance() {
   run_cmd ${namespace} destroy ${inst_id} >/dev/null
   assertEquals $? 0
