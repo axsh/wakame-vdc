@@ -11,7 +11,7 @@
 ## variables
 
 declare namespace=$(namespace ${BASH_SOURCE[0]})
-declare uuid state
+declare inst_id state
 
 ## functions
 
@@ -25,29 +25,24 @@ function oneTimeSetUp() {
   ssh_key_id=${ssh_key_id:-ssh-demo}
 }
 
-function inst_hash() {
-  local uuid=$1 key=$2 val=$3
-  [[ "$(run_cmd ${namespace} show ${uuid} | egrep -w ^:${key}: | awk '{print $2}')" == "${val}" ]]
-}
-
 ###
 
 function test_create_instance() {
-  uuid=$(run_cmd ${namespace} create | awk '$1 == ":id:" {print $2}')
+  inst_id=$(run_cmd ${namespace} create | hash_value id)
   assertEquals $? 0
 }
 
 function test_wait_for_instance_state_is_running() {
-  retry_until 60 "inst_hash ${uuid} state running"
+  retry_until 60 "check_document_pair ${namespace} ${inst_id} state running"
 }
 
 function test_destroy_instance() {
-  run_cmd ${namespace} destroy ${uuid} >/dev/null
+  run_cmd ${namespace} destroy ${inst_id} >/dev/null
   assertEquals $? 0
 }
 
 function test_wait_for_instance_state_is_terminated() {
-  retry_until 60 "inst_hash ${uuid} state terminated"
+  retry_until 60 "check_document_pair ${namespace} ${inst_id} state terminated"
 }
 
 ## shunit2
