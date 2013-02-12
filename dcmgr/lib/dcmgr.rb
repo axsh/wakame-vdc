@@ -90,7 +90,6 @@ module Dcmgr
     autoload :MacRange, 'dcmgr/models/mac_range'
     autoload :NetworkVifMonitor, 'dcmgr/models/network_vif_monitor'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
-    autoload :TextLog, 'dcmgr/models/text_log'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
 
     require 'dcmgr/models/log_storage/base'
