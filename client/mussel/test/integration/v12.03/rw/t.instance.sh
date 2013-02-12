@@ -22,9 +22,6 @@ function setUp() {
   memory_size=${memory_size:-256}
   vifs=${vifs:-'{}'}
   ssh_key_id=${ssh_key_id:-ssh-demo}
-
-  security_groups=sg-8kpu1bkr
-  #security_groups=sg-88888888
 }
 
 function inst_hash() {
