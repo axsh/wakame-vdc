@@ -33,7 +33,7 @@ function test_create_instance() {
 }
 
 function test_wait_for_instance_state_is_running() {
-  retry_until 60 "check_document_pair ${namespace} ${inst_id} state running"
+  retry_until "check_document_pair ${namespace} ${inst_id} state running"
 }
 
 function test_reboot_instance() {
@@ -42,7 +42,7 @@ function test_reboot_instance() {
 }
 
 function test_wait_for_instance_status_is_online() {
-  retry_until 60 "check_document_pair ${namespace} ${inst_id} status online"
+  retry_until "check_document_pair ${namespace} ${inst_id} status online"
 }
 
 function test_destroy_instance() {
@@ -51,7 +51,7 @@ function test_destroy_instance() {
 }
 
 function test_wait_for_instance_state_is_terminated() {
-  retry_until 60 "check_document_pair ${namespace} ${inst_id} state terminated"
+  retry_until "check_document_pair ${namespace} ${inst_id} state terminated"
 }
 
 ## shunit2

@@ -12,7 +12,6 @@
 
 ## group variables
 
-declare wait_sec=120
 declare ssh_keypair_path=${BASH_SOURCE[0]%/*}/keypair.$$
 declare rule_path=${BASH_SOURCE[0]%/*}/rule.$$
 declare vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
@@ -99,17 +98,17 @@ function get_instance_ipaddr() {
 
 function wait_for_instance_state_is() {
   local state=$1
-  retry_until ${wait_sec} "check_document_pair instance ${inst_id} state ${state}"
+  retry_until "check_document_pair instance ${inst_id} state ${state}"
 }
 
 function wait_for_instance_network_is_ready() {
   ipaddr=$(get_instance_ipaddr)
-  retry_until ${wait_sec} "check_network_connection ${ipaddr}" >/dev/null
+  retry_until "check_network_connection ${ipaddr}" >/dev/null
 }
 
 function wait_for_instance_sshd_is_ready() {
   ipaddr=$(get_instance_ipaddr)
-  retry_until ${wait_sec} "check_port ${ipaddr} tcp 22" >/dev/null
+  retry_until "check_port ${ipaddr} tcp 22" >/dev/null
 }
 
 
