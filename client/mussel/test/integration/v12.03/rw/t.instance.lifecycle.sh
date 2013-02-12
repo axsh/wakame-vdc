@@ -21,7 +21,7 @@ function oneTimeSetUp() {
   hypervisor=${hypervisor:-openvz}
   cpu_cores=${cpu_cores:-1}
   memory_size=${memory_size:-256}
-  vifs=${vifs:-'{}'}
+  vifs=
   ssh_key_id=${ssh_key_id:-ssh-demo}
 }
 
