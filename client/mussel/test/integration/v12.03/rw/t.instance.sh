@@ -10,7 +10,7 @@
 
 ## variables
 
-declare namespace=$(namespace ${BASH_SOURCE[0]})
+declare namespace=instance
 declare inst_id state
 
 ## functions

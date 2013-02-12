@@ -10,7 +10,7 @@
 
 ## variables
 
-declare namespace=$(namespace ${BASH_SOURCE[0]})
+declare namespace=ssh_key_pair
 declare ssh_keypair_path=${BASH_SOURCE[0]%/*}/keypair.$$
 
 declare uuid

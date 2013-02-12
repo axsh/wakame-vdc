@@ -10,7 +10,7 @@
 
 ## variables
 
-declare namespace=$(namespace ${BASH_SOURCE[0]})
+declare namespace=security_group
 declare uuid= rule=
 
 ## functions
