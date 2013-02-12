@@ -11,10 +11,11 @@
 ## variables
 
 declare namespace=$(namespace ${BASH_SOURCE[0]})
+declare uuid state
 
 ## functions
 
-function setUp() {
+function oneTimeSetUp() {
   # required
   image_id=${image_id:-wmi-centos1d}
   hypervisor=${hypervisor:-openvz}
@@ -54,17 +55,21 @@ function retry_until() {
 
 ###
 
-function test_crud() {
-  local uuid state
-
+function test_create_instance() {
   uuid=$(run_cmd ${namespace} create | awk '$1 == ":id:" {print $2}')
   assertEquals $? 0
+}
 
+function test_wait_for_instance_state_is_running() {
   retry_until 60 "inst_hash ${uuid} state running"
+}
 
-  run_cmd ${namespace} destroy ${uuid}
+function test_destroy_instance() {
+  run_cmd ${namespace} destroy ${uuid} >/dev/null
   assertEquals $? 0
+}
 
+function test_wait_for_instance_state_is_terminated() {
   retry_until 60 "inst_hash ${uuid} state terminated"
 }
 
