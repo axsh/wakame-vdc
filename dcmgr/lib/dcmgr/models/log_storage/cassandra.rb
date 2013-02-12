@@ -47,7 +47,9 @@ module Dcmgr::Models
       def timed_slice_path(path, time)
         case time
           when String
-            t = DateTime.parse(time)
+            t = Time.iso8601(time).utc
+          when Time
+            #nop
           else
             raise "Unsupported time format #{time}"
         end
