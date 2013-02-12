@@ -13,7 +13,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/text_logs' do
       :application_id => params[:application_id]
     }
 
-    time = params[:start_time]
+    if params[:start_time].empty?
+      time = Time.now.utc.iso8601
+    else
+      time = params[:start_time]
+    end
+
     limit = params[:limit]
     text_log = Dcmgr::TextLog.new(log_storage, config)
     last_id = params[:id]
