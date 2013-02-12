@@ -9,8 +9,8 @@ module Dcmgr::Endpoints::V1203::Responses
     def generate
       h = {
         :id => @text_log[:id],
-        :payload => @text_log[:message],
-        :created_at => Time.now
+        :payload =>   @text_log[:message].force_encoding('UTF-8'),
+        :created_at => SimpleUUID::UUID.new(@text_log[:id]).to_time
       }
       h
     end
