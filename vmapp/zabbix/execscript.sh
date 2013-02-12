@@ -55,6 +55,13 @@ max_input_time = 600
 date.timezone = $(date '+%Z')
 EOF2
 
+cat <<EOF2 >> /etc/my.cnf
+[mysqld]
+bind-address = 127.0.0.1
+default-character-set=utf8
+skip-character-set-client-handshake
+EOF2
+
 EOF
 
 exit
