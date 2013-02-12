@@ -4,11 +4,9 @@ module Dcmgr::Endpoints::V1203::Responses
   class TextLog < Dcmgr::Endpoints::ResponseGenerator
     def initialize(text_log)
       @text_log = text_log
-      @id = 0
     end
 
     def generate
-      @id += 1
       h = {
         :id => @text_log[:id],
         :payload => @text_log[:message],
