@@ -26,7 +26,7 @@ network_id=${network_id:-nw-demo1}
 
 ## test local variables
 
-inst_id=
+instance_uuid=
 ipaddr=
 secg_id=
 ssh_key_id=
@@ -84,16 +84,16 @@ function render_vif_table() {
 function create_instance() {
   render_vif_table > ${vifs_path}
   vifs=${vifs_path}
-  inst_id=$(run_cmd instance create | hash_value id)
+  instance_uuid=$(run_cmd instance create | hash_value id)
 }
 
 function get_instance_ipaddr() {
-  run_cmd instance show ${inst_id} | hash_value address
+  run_cmd instance show ${instance_uuid} | hash_value address
 }
 
 function wait_for_instance_state_is() {
   local state=$1
-  retry_until "check_document_pair instance ${inst_id} state ${state}"
+  retry_until "check_document_pair instance ${instance_uuid} state ${state}"
 }
 
 function wait_for_instance_network_is_ready() {
@@ -107,5 +107,5 @@ function wait_for_instance_sshd_is_ready() {
 }
 
 function destroy_instance() {
-  run_cmd instance destroy ${inst_id}
+  run_cmd instance destroy ${instance_uuid}
 }

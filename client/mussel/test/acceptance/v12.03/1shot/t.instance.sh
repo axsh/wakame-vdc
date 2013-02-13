@@ -78,7 +78,7 @@ function test_remove_ssh_known_host_entry() {
 function test_compare_instance_hostname() {
   ipaddr=$(get_instance_ipaddr)
   assertEquals \
-    "$(run_cmd instance show ${inst_id} | hash_value hostname)" \
+    "$(run_cmd instance show ${instance_uuid} | hash_value hostname)" \
     "$(ssh root@${ipaddr} -i ${ssh_keypair_path} hostname)"
 }
 
