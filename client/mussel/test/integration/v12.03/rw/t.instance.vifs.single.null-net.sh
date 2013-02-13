@@ -22,7 +22,7 @@ function render_vif_table() {
 
 ###
 
-function test_show_instance_vifs_single() {
+function test_show_instance_vifs_single_null_net() {
   run_cmd ${namespace} show ${instance_uuid}
 }
 
