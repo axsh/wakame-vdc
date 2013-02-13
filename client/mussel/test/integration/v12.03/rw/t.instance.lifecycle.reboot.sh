@@ -52,50 +52,6 @@ function test_reboot_instance() {
   retry_until "check_document_pair ${namespace} ${inst_id} status online"
 }
 
-function test_stop_instance() {
-  # :state: stopping
-  # :status: online
-  run_cmd ${namespace} stop ${inst_id} >/dev/null
-  assertEquals $? 0
-
-  # :state: stopped
-  # :status: online
-  retry_until "check_document_pair ${namespace} ${inst_id} state stopped"
-}
-
-function test_start_instance() {
-  # :state: initializing
-  # :status: online
-  run_cmd ${namespace} start ${inst_id} >/dev/null
-  assertEquals $? 0
-
-  # :state: running
-  # :status: online
-  retry_until "check_document_pair ${namespace} ${inst_id} state running"
-}
-
-function test_poweroff_instance() {
-  # :state: halting
-  # :status: online
-  run_cmd ${namespace} poweroff ${inst_id} >/dev/null
-  assertEquals $? 0
-
-  # :state: halted
-  # :status: online
-  retry_until "check_document_pair ${namespace} ${inst_id} state halted"
-}
-
-function test_poweron_instance() {
-  # :state: starting
-  # :status: online
-  run_cmd ${namespace} poweron ${inst_id} >/dev/null
-  assertEquals $? 0
-
-  # :state: running
-  # :status: online
-  retry_until "check_document_pair ${namespace} ${inst_id} state running"
-}
-
 function test_destroy_instance() {
   # :state: shuttingdown
   # :status: online
