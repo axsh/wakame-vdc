@@ -86,6 +86,16 @@ module Dcmgr::Models
       ip_dataset.destroy
     end
 
+    # Updated IP lease function
+    def lease_ipv4(options = {})
+      network = self.network
+
+      return nil if network.nil?
+      return nil if options[:multiple] != true && !self.direct_ip_lease.empty?
+
+      return IpLease.lease(self, network)
+    end
+
     #Override the delete method to keep the row and just mark it as deleted
     def delete
       self.deleted_at ||= Time.now

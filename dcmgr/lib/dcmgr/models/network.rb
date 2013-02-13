@@ -36,11 +36,22 @@ module Dcmgr::Models
 
     def network_service(params = {})
       params[:network_id] = self.id
-      NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(params).select_all(:network_services)
+      NetworkService.dataset.join_table(:left, :network_vifs,
+                                        :network_vifs__id => :network_vif_id
+                                        ).where(params).select_all(:network_services)
+    end
+
+    def network_vifs_with_service(params = {})
+      params[:network_id] = self.id
+      NetworkVif.dataset.join_table(:left, :network_services,
+                                    :network_vifs__id => :network_services__network_vif_id
+                                    ).where(params).select_all(:network_vifs)
     end
 
     def network_routes(params = {})
-      NetworkRoute.dataset.where({:inner_network_id => self.id} | {:outer_network_id => self.id}).where(params)
+      NetworkRoute.dataset.where({:inner_network_id => self.id} |
+                                 {:outer_network_id => self.id}
+                                 ).where(params)
     end
 
     def network_routes_with_vifs(params = {})
