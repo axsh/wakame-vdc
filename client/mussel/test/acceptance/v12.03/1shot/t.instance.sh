@@ -27,13 +27,13 @@ function render_secg_rule() {
 
 ### step
 
-function test_wait_for_instance_network_is_ready() {
-  wait_for_instance_network_is_ready
+function test_wait_for_instance_network_to_be_ready() {
+  wait_for_instance_network_to_be_ready
   assertEquals $? 0
 }
 
-function test_wait_for_instance_sshd_is_ready() {
-  wait_for_instance_sshd_is_ready
+function test_wait_for_instance_sshd_to_be_ready() {
+  wait_for_instance_sshd_to_be_ready
   assertEquals $? 0
 }
 

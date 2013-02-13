@@ -21,12 +21,12 @@ function get_instance_ipaddr() {
   run_cmd instance show ${instance_uuid} | hash_value address
 }
 
-function wait_for_instance_network_is_ready() {
+function wait_for_instance_network_to_be_ready() {
   local ipaddr=$(get_instance_ipaddr)
   retry_until "check_network_connection ${ipaddr}"
 }
 
-function wait_for_instance_sshd_is_ready() {
+function wait_for_instance_sshd_to_be_ready() {
   local ipaddr=$(get_instance_ipaddr)
   retry_until "check_port ${ipaddr} tcp 22"
 }
