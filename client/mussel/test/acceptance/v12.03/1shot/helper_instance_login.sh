@@ -13,7 +13,7 @@ function ssh() {
 }
 
 function remove_ssh_known_host_entry() {
-  ipaddr=$(get_instance_ipaddr)
+  local ipaddr=$(get_instance_ipaddr)
   ssh-keygen -R ${ipaddr} >/dev/null 2>&1
 }
 
@@ -22,11 +22,11 @@ function get_instance_ipaddr() {
 }
 
 function wait_for_instance_network_is_ready() {
-  ipaddr=$(get_instance_ipaddr)
+  local ipaddr=$(get_instance_ipaddr)
   retry_until "check_network_connection ${ipaddr}"
 }
 
 function wait_for_instance_sshd_is_ready() {
-  ipaddr=$(get_instance_ipaddr)
+  local ipaddr=$(get_instance_ipaddr)
   retry_until "check_port ${ipaddr} tcp 22"
 }
