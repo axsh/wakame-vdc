@@ -11,19 +11,19 @@
 ## variables
 
 declare namespace=ssh_key_pair
-declare ssh_keypair_path=${BASH_SOURCE[0]%/*}/keypair.$$
+declare ssh_key_pair_path=${BASH_SOURCE[0]%/*}/key_pair.$$
 
 declare ssh_key_pair_uuid
-declare public_key=${ssh_keypair_path}.pub
+declare public_key=${ssh_key_pair_path}.pub
 
 ## functions
 
 function oneTimeSetUp() {
-  ssh-keygen -N "" -f ${ssh_keypair_path} -C shunit2.$$ >/dev/null
+  ssh-keygen -N "" -f ${ssh_key_pair_path} -C shunit2.$$ >/dev/null
 }
 
 function oneTimeTearDown() {
-  rm -f ${ssh_keypair_path}*
+  rm -f ${ssh_key_pair_path}*
 }
 
 ###
