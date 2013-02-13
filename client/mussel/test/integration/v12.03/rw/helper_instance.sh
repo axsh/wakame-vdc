@@ -39,10 +39,21 @@ function destroy_instance() {
 
 ### shunit2 setup
 
+#### instance hooks
+
+function  before_create_instance() { :; }
+function   after_create_instance() { :; }
+function before_destroy_instance() { :; }
+function  after_destroy_instance() { :; }
+
 function oneTimeSetUp() {
+  before_create_instance
   create_instance
+  after_create_instance
 }
 
 function oneTimeTearDown() {
+  before_destroy_instance
   destroy_instance
+  after_destroy_instance
 }
