@@ -21,6 +21,11 @@ extract_args $*
 
 ## variables
 
+MUSSEL_RC=${MUSSEL_RC:-${HOME}/.musselrc}
+if [[ -f "${MUSSEL_RC}" ]]; then
+  . ${MUSSEL_RC}
+fi
+
 DCMGR_API_VERSION=${DCMGR_API_VERSION:-${api_version:-12.03}}
 DCMGR_HOST=${DCMGR_HOST:-localhost}
 DCMGR_PORT=${DCMGR_PORT:-9001}
