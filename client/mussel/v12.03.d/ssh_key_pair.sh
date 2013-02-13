@@ -16,6 +16,8 @@ task_create() {
 }
 
 task_update() {
+  local namespace=$1 cmd=$2 uuid=$3
+
   call_api -X PUT $(urlencode_data \
    ) \
    $(base_uri)/${namespace}s/${uuid}.$(suffix)
