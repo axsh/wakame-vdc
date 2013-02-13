@@ -396,6 +396,8 @@ module Dcmgr
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
         raise "Invalid instance state: #{@inst[:state]}" unless @inst[:state].to_s == 'running'
 
+        umount_metadata_drive_for_host
+
         begin
           rpc.request('hva-collector', 'update_instance',  @inst_id, {:state=>:stopping})
           ignore_error { terminate_instance(false) }
@@ -509,7 +511,10 @@ module Dcmgr
         @hva_ctx = HvaContext.new(self)
         @inst_id = request.args[0]
         @inst = rpc.request('hva-collector', 'get_instance', @inst_id)
+
         update_state_file(:halting)
+
+        umount_metadata_drive_for_host
 
         @hva_ctx.logger.info("Turning power off")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
@@ -526,6 +531,7 @@ module Dcmgr
         update_instance_state({:state=>:starting}, [])
 
         setup_metadata_drive
+        mount_metadata_drive_for_host
 
         @hva_ctx.logger.info("Turning power on")
         task_session.invoke(@hva_ctx.hypervisor_driver_class,
