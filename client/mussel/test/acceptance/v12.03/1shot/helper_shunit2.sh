@@ -28,7 +28,7 @@ network_id=${network_id:-nw-demo1}
 
 instance_uuid=
 ipaddr=
-secg_id=
+security_group_uuid=
 ssh_key_id=
 
 ## group functions
@@ -68,11 +68,11 @@ function render_secg_rule() {
 function create_security_group() {
   render_secg_rule > ${rule_path}
   rule=${rule_path}
-  secg_id=$(run_cmd security_group create | hash_value id)
+  security_group_uuid=$(run_cmd security_group create | hash_value id)
 }
 
 function destroy_security_group() {
-  run_cmd security_group destroy ${secg_id}
+  run_cmd security_group destroy ${security_group_uuid}
 }
 
 ### instance

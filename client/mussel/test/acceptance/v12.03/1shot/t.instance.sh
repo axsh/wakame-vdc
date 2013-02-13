@@ -29,7 +29,7 @@ function render_secg_rule() {
 
 function render_vif_table() {
   cat <<-EOS
-	{"eth0":{"index":"0","network":"${network_id}","security_groups":"${secg_id}"}}
+	{"eth0":{"index":"0","network":"${network_id}","security_groups":"${security_group_uuid}"}}
 	EOS
 }
 
