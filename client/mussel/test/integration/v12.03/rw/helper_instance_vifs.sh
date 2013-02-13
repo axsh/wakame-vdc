@@ -10,8 +10,8 @@
 
 ### vifs
 
+vifs='{}'
 vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
-vifs=${vifs_path}
 
 ### secg
 
@@ -61,6 +61,7 @@ function destroy_security_group() {
 function  before_create_instance() {
   needs_secg && { create_security_group; } || :
   render_vif_table > ${vifs_path}
+  vifs=${vifs_path}
 }
 
 function after_create_instance() {
