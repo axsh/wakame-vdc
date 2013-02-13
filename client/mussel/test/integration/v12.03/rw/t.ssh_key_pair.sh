@@ -13,7 +13,7 @@
 declare namespace=ssh_key_pair
 declare ssh_keypair_path=${BASH_SOURCE[0]%/*}/keypair.$$
 
-declare uuid
+declare ssh_key_pair_uuid
 declare public_key=${ssh_keypair_path}.pub
 
 ## functions
@@ -29,22 +29,22 @@ function oneTimeTearDown() {
 ###
 
 function test_create_ssh_key_pair() {
-  uuid=$(run_cmd ${namespace} create | hash_value id)
+  ssh_key_pair_uuid=$(run_cmd ${namespace} create | hash_value id)
   assertEquals $? 0
 }
 
 function test_show_ssh_key_pair() {
-  run_cmd ${namespace} show ${uuid} >/dev/null
+  run_cmd ${namespace} show ${ssh_key_pair_uuid} >/dev/null
   assertEquals $? 0
 }
 
 function test_update_ssh_key_pair() {
-  run_cmd ${namespace} update ${uuid} >/dev/null
+  run_cmd ${namespace} update ${ssh_key_pair_uuid} >/dev/null
   assertEquals $? 0
 }
 
 function test_destroy_ssh_key_pair() {
-  run_cmd ${namespace} destroy ${uuid} >/dev/null
+  run_cmd ${namespace} destroy ${ssh_key_pair_uuid} >/dev/null
   assertEquals $? 0
 }
 
