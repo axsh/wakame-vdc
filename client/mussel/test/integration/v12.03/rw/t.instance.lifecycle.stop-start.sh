@@ -18,24 +18,24 @@
 function test_stop_instance() {
   # :state: stopping
   # :status: online
-  run_cmd ${namespace} stop ${instance_uuid} >/dev/null
+  run_cmd instance stop ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: stopped
   # :status: online
-  retry_until "check_document_pair ${namespace} ${instance_uuid} state stopped"
+  retry_until "check_document_pair instance ${instance_uuid} state stopped"
   assertEquals $? 0
 }
 
 function test_start_instance() {
   # :state: initializing
   # :status: online
-  run_cmd ${namespace} start ${instance_uuid} >/dev/null
+  run_cmd instance start ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair ${namespace} ${instance_uuid} state running"
+  retry_until "check_document_pair instance ${instance_uuid} state running"
   assertEquals $? 0
 }
 

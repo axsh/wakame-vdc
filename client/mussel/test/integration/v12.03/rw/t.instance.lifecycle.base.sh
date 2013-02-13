@@ -28,7 +28,7 @@ function oneTimeTearDown() {
 function test_create_instance() {
   # :state: scheduling
   # :status: init
-  instance_uuid=$(run_cmd ${namespace} create | hash_value id)
+  instance_uuid=$(run_cmd instance create | hash_value id)
   assertEquals $? 0
 
   # :state: running
@@ -36,19 +36,19 @@ function test_create_instance() {
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair ${namespace} ${instance_uuid} state running"
+  retry_until "check_document_pair instance ${instance_uuid} state running"
   assertEquals $? 0
 }
 
 function test_destroy_instance() {
   # :state: shuttingdown
   # :status: online
-  run_cmd ${namespace} destroy ${instance_uuid} >/dev/null
+  run_cmd instance destroy ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: terminated
   # :status: offline
-  retry_until "check_document_pair ${namespace} ${instance_uuid} state terminated"
+  retry_until "check_document_pair instance ${instance_uuid} state terminated"
   assertEquals $? 0
 }
 

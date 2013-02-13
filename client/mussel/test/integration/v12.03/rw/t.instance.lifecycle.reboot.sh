@@ -18,12 +18,12 @@
 function test_reboot_instance() {
   # :state: running
   # :status: online
-  run_cmd ${namespace} reboot ${instance_uuid} >/dev/null
+  run_cmd instance reboot ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair ${namespace} ${instance_uuid} status online"
+  retry_until "check_document_pair instance ${instance_uuid} status online"
   assertEquals $? 0
 }
 

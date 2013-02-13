@@ -18,24 +18,24 @@
 function test_poweroff_instance() {
   # :state: halting
   # :status: online
-  run_cmd ${namespace} poweroff ${instance_uuid} >/dev/null
+  run_cmd instance poweroff ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: halted
   # :status: online
-  retry_until "check_document_pair ${namespace} ${instance_uuid} state halted"
+  retry_until "check_document_pair instance ${instance_uuid} state halted"
   assertEquals $? 0
 }
 
 function test_poweron_instance() {
   # :state: starting
   # :status: online
-  run_cmd ${namespace} poweron ${instance_uuid} >/dev/null
+  run_cmd instance poweron ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair ${namespace} ${instance_uuid} state running"
+  retry_until "check_document_pair instance ${instance_uuid} state running"
   assertEquals $? 0
 }
 

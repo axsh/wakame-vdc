@@ -22,7 +22,7 @@ function needs_secg() { needless_secg; }
 ## functions
 
 function test_show_instance_vifs_multi_null_net() {
-  run_cmd ${namespace} show ${instance_uuid}
+  run_cmd instance show ${instance_uuid}
 }
 
 ## shunit2
