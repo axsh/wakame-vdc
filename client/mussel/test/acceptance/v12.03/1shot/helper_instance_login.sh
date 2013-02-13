@@ -17,12 +17,7 @@ function remove_ssh_known_host_entry() {
   ssh-keygen -R ${ipaddr} >/dev/null 2>&1
 }
 
-function wait_for_network_to_be_ready() {
-  local ipaddr=$1
-  retry_until "check_network_connection ${ipaddr}"
-}
-
 function wait_for_sshd_to_be_ready() {
   local ipaddr=$1
-  retry_until "check_port ${ipaddr} tcp 22"
+  wait_for_port_to_be_ready ${ipaddr} tcp 22
 }

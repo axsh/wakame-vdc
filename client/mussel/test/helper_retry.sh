@@ -45,3 +45,15 @@ function check_network_connection() {
 
   ping -c 1 -W 3 ${ipaddr}
 }
+
+function wait_for_network_to_be_ready() {
+  local ipaddr=$1
+
+  retry_until "check_network_connection ${ipaddr}"
+}
+
+function wait_for_port_to_be_ready() {
+  local ipaddr=$1 protocol=$2 port=$3
+
+  retry_until "check_port ${ipaddr} ${protocol} ${port}"
+}
