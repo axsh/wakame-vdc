@@ -10,7 +10,6 @@
 
 vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
 vifs=${vifs_path}
-network_id=
 
 ### required
 

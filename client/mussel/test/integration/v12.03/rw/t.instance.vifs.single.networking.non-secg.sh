@@ -12,11 +12,11 @@
 
 ## variables
 
-network_id=${network_id:-nw-demo1}
+vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
 
 function render_vif_table() {
   cat <<-EOS
-	{"eth0":{"index":"0","network":"${network_id}","security_groups":""}}
+	{"eth0":{"index":"0","network":"${vifs_eth0_network_id}","security_groups":""}}
 	EOS
 }
 
