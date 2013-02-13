@@ -19,7 +19,7 @@ declare uuid= rule=
 
 function test_create_security_group() {
   rule=tcp:22,22,ip4:0.0.0.0/0
-  uuid=$(run_cmd ${namespace} create | awk '$1 == ":id:" {print $2}')
+  uuid=$(run_cmd ${namespace} create | hash_value id)
   assertEquals $? 0
 }
 
