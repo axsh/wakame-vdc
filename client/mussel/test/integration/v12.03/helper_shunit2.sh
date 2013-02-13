@@ -52,7 +52,7 @@ function base_index() {
   run_cmd  ${namespace} index
 }
 
-function base_index_ids() {
+function base_index_uuids() {
   base_index | grep -- '- :id:' | awk -F :id: '{print $2}'
 }
 
@@ -63,12 +63,18 @@ function step_base_index() {
   assertEquals $? 0
 }
 
-function step_base_show_ids() {
+function step_base_show_uuids() {
   local uuid
   while read uuid; do
     run_cmd ${namespace} show ${uuid} >/dev/null
     assertEquals $? 0
-  done < <(base_index_ids)
+  done < <(base_index_uuids)
+}
+
+function step_base_show_invalid_uuid_syntax() {
+  local uuid=invalid-uuid-syntax.$$
+  run_cmd ${namespace} show ${uuid} 2>/dev/null
+  assertNotEquals $? 0
 }
 
 ##

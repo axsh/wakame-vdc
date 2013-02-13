@@ -20,8 +20,12 @@ function test_index() {
   step_base_index
 }
 
-function test_show() {
-  step_base_show_ids
+function test_show_uuids() {
+  step_base_show_uuids
+}
+
+function test_show_invalid_uuid_syntax() {
+  step_base_show_invalid_uuid_syntax
 }
 
 ## shunit2
