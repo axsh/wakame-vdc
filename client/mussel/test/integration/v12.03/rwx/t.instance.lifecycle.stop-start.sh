@@ -8,28 +8,27 @@
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 . ${BASH_SOURCE[0]%/*}/helper_instance.sh
-. ${BASH_SOURCE[0]%/*}/helper_instance_lifecycle.sh
 
 ## variables
 
 ## functions
 
-function test_poweroff_instance() {
-  # :state: halting
+function test_stop_instance() {
+  # :state: stopping
   # :status: online
-  run_cmd instance poweroff ${instance_uuid} >/dev/null
+  run_cmd instance stop ${instance_uuid} >/dev/null
   assertEquals $? 0
 
-  # :state: halted
+  # :state: stopped
   # :status: online
-  retry_until "check_document_pair instance ${instance_uuid} state halted"
+  retry_until "check_document_pair instance ${instance_uuid} state stopped"
   assertEquals $? 0
 }
 
-function test_poweron_instance() {
-  # :state: starting
+function test_start_instance() {
+  # :state: initializing
   # :status: online
-  run_cmd instance poweron ${instance_uuid} >/dev/null
+  run_cmd instance start ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: running

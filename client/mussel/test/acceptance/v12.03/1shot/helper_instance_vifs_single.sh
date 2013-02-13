@@ -1,1 +1,1 @@
-../../../integration/v12.03/rw/helper_instance_vifs_single.sh
+../../../integration/v12.03/rwx/helper_instance_vifs_single.sh
