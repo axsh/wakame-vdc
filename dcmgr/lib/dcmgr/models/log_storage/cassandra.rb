@@ -49,7 +49,7 @@ module Dcmgr::Models
           when String
             t = Time.iso8601(time).utc
           when Time
-            #nop
+            t = time
           else
             raise "Unsupported time format #{time}"
         end
