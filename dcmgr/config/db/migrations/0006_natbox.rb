@@ -16,7 +16,7 @@ Sequel.migration do
       # If false, delete when vif is disconnected from network.
       column :is_permanent, "int(11)", :default=>false, :null=>false
 
-      index [:inner_network_id, :outer_network_id, :inner_ipv4, :outer_ipv4], :unique=>true, :name => 'nw_vif_index'
+      index [:inner_network_id, :outer_network_id, :inner_ipv4, :outer_ipv4, :is_deleted], :unique=>true, :name => 'nw_vif_index'
     end
   end
 
