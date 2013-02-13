@@ -16,6 +16,7 @@ vifs=${vifs_path}
 ### secg
 
 security_group_uuid=
+rule=
 
 ## functions
 
