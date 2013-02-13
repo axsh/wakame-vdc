@@ -19,7 +19,7 @@ function needs_secg() { true; }
 
 ###
 
-function test_show_instance_vifs_multi_networking() {
+function test_show_instance_vifs_multi_networking_secg() {
   run_cmd ${namespace} show ${instance_uuid}
 }
 
