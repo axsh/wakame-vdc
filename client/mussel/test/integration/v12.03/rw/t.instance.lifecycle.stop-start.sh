@@ -11,7 +11,7 @@
 ## variables
 
 declare namespace=instance
-declare inst_id state
+declare instance_uuid state
 
 ## functions
 
@@ -30,7 +30,7 @@ function oneTimeSetUp() {
 function test_create_instance() {
   # :state: scheduling
   # :status: init
-  inst_id=$(run_cmd ${namespace} create | hash_value id)
+  instance_uuid=$(run_cmd ${namespace} create | hash_value id)
   assertEquals $? 0
 
   # :state: running
@@ -38,40 +38,40 @@ function test_create_instance() {
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair ${namespace} ${inst_id} state running"
+  retry_until "check_document_pair ${namespace} ${instance_uuid} state running"
 }
 
 function test_stop_instance() {
   # :state: stopping
   # :status: online
-  run_cmd ${namespace} stop ${inst_id} >/dev/null
+  run_cmd ${namespace} stop ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: stopped
   # :status: online
-  retry_until "check_document_pair ${namespace} ${inst_id} state stopped"
+  retry_until "check_document_pair ${namespace} ${instance_uuid} state stopped"
 }
 
 function test_start_instance() {
   # :state: initializing
   # :status: online
-  run_cmd ${namespace} start ${inst_id} >/dev/null
+  run_cmd ${namespace} start ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair ${namespace} ${inst_id} state running"
+  retry_until "check_document_pair ${namespace} ${instance_uuid} state running"
 }
 
 function test_destroy_instance() {
   # :state: shuttingdown
   # :status: online
-  run_cmd ${namespace} destroy ${inst_id} >/dev/null
+  run_cmd ${namespace} destroy ${instance_uuid} >/dev/null
   assertEquals $? 0
 
   # :state: terminated
   # :status: offline
-  retry_until "check_document_pair ${namespace} ${inst_id} state terminated"
+  retry_until "check_document_pair ${namespace} ${instance_uuid} state terminated"
 }
 
 ## shunit2
