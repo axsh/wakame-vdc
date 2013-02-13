@@ -22,7 +22,7 @@ image_id=${image_id:-wmi-centos1d}
 hypervisor=${hypervisor:-openvz}
 cpu_cores=${cpu_cores:-1}
 memory_size=${memory_size:-256}
-network_id=${network_id:-nw-demo1}
+vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
 
 ## test local variables
 
