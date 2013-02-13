@@ -12,9 +12,9 @@
 
 ## variables
 
-vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
+function needs_secg() { true; }
 
-function needs_secg() { :; }
+vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
 
 function render_vif_table() {
   cat <<-EOS

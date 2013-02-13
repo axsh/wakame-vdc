@@ -24,9 +24,15 @@ function render_vif_table() {
 	EOS
 }
 
-function needs_secg() {
+function needless_secg() {
   false
 }
+
+function needs_secg() {
+  needless_secg
+}
+
+### instance.create
 
 function  before_create_instance() {
   needs_secg && { create_security_group; } || :
@@ -34,8 +40,13 @@ function  before_create_instance() {
 }
 
 function after_create_instance() {
-  needs_secg && { destroy_security_group; } || :
   rm -f ${vifs_path}
+}
+
+### instance.destroy
+
+function after_destroy_instance() {
+  needs_secg && { destroy_security_group; } || :
 }
 
 ### secg
