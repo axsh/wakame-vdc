@@ -7,22 +7,20 @@
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
+. ${BASH_SOURCE[0]%/*}/helper_instance.sh
 
 ## variables
 
-declare namespace=instance
-declare instance_uuid state
-
 ## functions
 
+# in this test case the following shunit2 function should be reset.
+
 function oneTimeSetUp() {
-  # required
-  image_id=${image_id:-wmi-centos1d}
-  hypervisor=${hypervisor:-openvz}
-  cpu_cores=${cpu_cores:-1}
-  memory_size=${memory_size:-256}
-  vifs=
-  ssh_key_id=${ssh_key_id:-ssh-demo}
+  :
+}
+
+function oneTimeTearDown() {
+  :
 }
 
 ###
@@ -39,6 +37,7 @@ function test_create_instance() {
   # :state: running
   # :status: online
   retry_until "check_document_pair ${namespace} ${instance_uuid} state running"
+  assertEquals $? 0
 }
 
 function test_destroy_instance() {
@@ -50,6 +49,7 @@ function test_destroy_instance() {
   # :state: terminated
   # :status: offline
   retry_until "check_document_pair ${namespace} ${instance_uuid} state terminated"
+  assertEquals $? 0
 }
 
 ## shunit2
