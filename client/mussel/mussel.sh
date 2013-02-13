@@ -6,25 +6,29 @@
 # description:
 #  wakame-vdc dcmgr(api) client
 #
-LANG=C
-LC_ALL=C
-
 set -e
 
-### include files
+# include files
 
 . ${BASH_SOURCE[0]%/*}/functions
 
-### prepare
+# variables
 
-extract_args $*
+## System part
 
-## variables
+LANG=C
+LC_ALL=C
+
+## MUSSEL part
 
 MUSSEL_RC=${MUSSEL_RC:-${HOME}/.musselrc}
 if [[ -f "${MUSSEL_RC}" ]]; then
   . ${MUSSEL_RC}
 fi
+
+## DCMGR part
+
+extract_args $*
 
 DCMGR_API_VERSION=${DCMGR_API_VERSION:-${api_version:-12.03}}
 DCMGR_HOST=${DCMGR_HOST:-localhost}
