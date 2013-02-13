@@ -43,5 +43,5 @@ function check_port() {
 function check_network_connection() {
   local ipaddr=$1
 
-  ping -c 1 -W 1 ${ipaddr}
+  ping -c 1 -W 3 ${ipaddr}
 }
