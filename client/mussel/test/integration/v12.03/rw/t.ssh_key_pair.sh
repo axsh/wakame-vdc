@@ -29,7 +29,7 @@ function oneTimeTearDown() {
 ###
 
 function test_create_ssh_key_pair() {
-  uuid=$(run_cmd ${namespace} create | awk '$1 == ":id:" {print $2}')
+  uuid=$(run_cmd ${namespace} create | hash_value id)
   assertEquals $? 0
 }
 
