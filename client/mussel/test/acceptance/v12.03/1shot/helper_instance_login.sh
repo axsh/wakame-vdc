@@ -17,10 +17,6 @@ function remove_ssh_known_host_entry() {
   ssh-keygen -R ${ipaddr} >/dev/null 2>&1
 }
 
-function get_instance_ipaddr() {
-  run_cmd instance show ${instance_uuid} | hash_value address
-}
-
 function wait_for_network_to_be_ready() {
   local ipaddr=$1
   retry_until "check_network_connection ${ipaddr}"

@@ -15,6 +15,8 @@
 
 ## variables
 
+declare instance_ipaddr=
+
 ## functions
 
 function render_secg_rule() {
@@ -27,26 +29,29 @@ function render_secg_rule() {
 
 ### step
 
+function test_get_instance_ipaddr() {
+  instance_ipaddr=$(run_cmd instance show ${instance_uuid} | hash_value address)
+}
+
 function test_wait_for_network_to_be_ready() {
-  wait_for_network_to_be_ready $(get_instance_ipaddr)
+  wait_for_network_to_be_ready ${instance_ipaddr}
   assertEquals $? 0
 }
 
 function test_wait_for_sshd_to_be_ready() {
-  wait_for_sshd_to_be_ready $(get_instance_ipaddr)
+  wait_for_sshd_to_be_ready ${instance_ipaddr}
   assertEquals $? 0
 }
 
 function test_remove_ssh_known_host_entry() {
-  remove_ssh_known_host_entry $(get_instance_ipaddr)
+  remove_ssh_known_host_entry ${instance_ipaddr}
   assertEquals $? 0
 }
 
 function test_compare_instance_hostname() {
-  local ipaddr=$(get_instance_ipaddr)
   assertEquals \
     "$(run_cmd instance show ${instance_uuid} | hash_value hostname)" \
-    "$(ssh root@${ipaddr} -i ${ssh_key_pair_path} hostname)"
+    "$(ssh root@${instance_ipaddr} -i ${ssh_key_pair_path} hostname)"
 }
 
 ## shunit2
