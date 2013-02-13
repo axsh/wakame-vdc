@@ -27,18 +27,18 @@ function render_secg_rule() {
 
 ### step
 
-function test_wait_for_instance_network_to_be_ready() {
-  wait_for_instance_network_to_be_ready
+function test_wait_for_network_to_be_ready() {
+  wait_for_network_to_be_ready $(get_instance_ipaddr)
   assertEquals $? 0
 }
 
-function test_wait_for_instance_sshd_to_be_ready() {
-  wait_for_instance_sshd_to_be_ready
+function test_wait_for_sshd_to_be_ready() {
+  wait_for_sshd_to_be_ready $(get_instance_ipaddr)
   assertEquals $? 0
 }
 
 function test_remove_ssh_known_host_entry() {
-  remove_ssh_known_host_entry
+  remove_ssh_known_host_entry $(get_instance_ipaddr)
   assertEquals $? 0
 }
 
