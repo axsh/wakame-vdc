@@ -17,6 +17,7 @@ vifs=${vifs_path}
 
 security_group_uuid=
 rule=
+rule_path=${BASH_SOURCE[0]%/*}/rule.$$
 
 ## functions
 
@@ -38,7 +39,13 @@ function needs_secg() {
   needless_secg
 }
 
+function render_secg_rule() {
+  :
+}
+
 function create_security_group() {
+  render_secg_rule > ${rule_path}
+  rule=${rule_path}
   local create_output="$(run_cmd security_group create)"
   echo "${create_output}"
 
@@ -64,4 +71,5 @@ function after_create_instance() {
 
 function after_destroy_instance() {
   needs_secg && { destroy_security_group; } || :
+  rm -f ${rule_path}
 }
