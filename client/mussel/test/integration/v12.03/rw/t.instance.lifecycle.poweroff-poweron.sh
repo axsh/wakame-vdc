@@ -8,12 +8,11 @@
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 . ${BASH_SOURCE[0]%/*}/helper_instance.sh
+. ${BASH_SOURCE[0]%/*}/helper_instance_lifecycle.sh
 
 ## variables
 
 ## functions
-
-###
 
 function test_poweroff_instance() {
   # :state: halting

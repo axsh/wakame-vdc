@@ -8,19 +8,18 @@
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 . ${BASH_SOURCE[0]%/*}/helper_instance.sh
+. ${BASH_SOURCE[0]%/*}/helper_instance_lifecycle.sh
 
 ## variables
 
 ## functions
 
-# in this test case the following shunit2 function should be reset.
-
 function oneTimeSetUp() {
-  :
+  create_ssh_key_pair
 }
 
 function oneTimeTearDown() {
-  :
+  destroy_ssh_key_pair
 }
 
 ###
