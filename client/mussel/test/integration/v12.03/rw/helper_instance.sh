@@ -29,7 +29,7 @@ public_key=${ssh_key_pair_path}.pub
 
 ### instance
 
-function create_instance() {
+function _create_instance() {
   create_ssh_key_pair
 
   local create_output="$(run_cmd instance create)"
@@ -39,7 +39,7 @@ function create_instance() {
   retry_until "check_document_pair instance ${instance_uuid} state running"
 }
 
-function destroy_instance() {
+function _destroy_instance() {
   run_cmd instance destroy ${instance_uuid}
   retry_until "check_document_pair instance ${instance_uuid} state terminated"
 
@@ -72,14 +72,21 @@ function   after_create_instance() { :; }
 function before_destroy_instance() { :; }
 function  after_destroy_instance() { :; }
 
-function oneTimeSetUp() {
+function create_instance() {
   before_create_instance
-         create_instance
+        _create_instance
    after_create_instance
+}
+function destroy_instance() {
+  before_destroy_instance
+        _destroy_instance
+   after_destroy_instance
+}
+
+function oneTimeSetUp() {
+  create_instance
 }
 
 function oneTimeTearDown() {
-  before_destroy_instance
-         destroy_instance
-   after_destroy_instance
+  destroy_instance
 }
