@@ -8,7 +8,7 @@
 
 ## variables
 
-declare instance_uuid state
+declare instance_uuid
 
 ### required
 
