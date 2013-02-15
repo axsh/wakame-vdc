@@ -71,6 +71,8 @@ Dcmgr.run_initializers('sequel')
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'nwmongw'
+  node_instance_id `/bin/hostname`.chomp
+
   load_module Isono::NodeModules::NodeHeartbeat
   load_module MonitoringGateway
 end
