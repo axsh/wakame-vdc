@@ -183,7 +183,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       raise E::IncompatibleHostNode, "#{host_node_id} can only handle instances of type #{host_node.hypervisor}" unless compat_hype
       raise E::OutOfHostCapacity, "#{host_node_id}" if lb_spec.cpu_cores > host_node.available_cpu_cores || lb_spec.memory_size > host_node.available_memory_size
 
-      request_params[:host_id] = params[:host_id]
+      request_params[:host_node_id] = params[:host_node_id]
     end
 
     account_uuid = @account.canonical_uuid
