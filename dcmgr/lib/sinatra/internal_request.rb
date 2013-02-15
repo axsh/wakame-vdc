@@ -48,7 +48,11 @@ module Sinatra
         end
 
         if http_status == 200
-          b = ::JSON.load(body.shift)
+          buf = ""
+          body.each {|b|
+            buf << b
+          }
+          b = ::JSON.load(buf)
         else
           b = body
         end
