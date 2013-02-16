@@ -33,7 +33,7 @@ function setup_vars() {
 ### helper
 
 function hash_value() {
-  local key=$1 line
+  local key=$1
 
   egrep -w ":${key}:" </dev/stdin | awk '{print $2}'
 }
