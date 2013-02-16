@@ -23,7 +23,7 @@ function retry_until() {
       echo "Retry Failure: Exceed ${wait_sec} sec: Retried ${tries} times" >&2
       return 1
     fi
-  echo ... ${tries} $(date +%Y/%m/%d-%H:%M:%S)
+    echo [$(date +%FT%X) "#$$"] time:${tries} "eval:${blk}"
   done
 }
 
