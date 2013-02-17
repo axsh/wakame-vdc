@@ -64,13 +64,10 @@ function  before_create_instance() {
   vifs=${vifs_path}
 }
 
-function after_create_instance() {
-  rm -f ${vifs_path}
-}
-
 ### instance.destroy
 
 function after_destroy_instance() {
+  rm -f ${vifs_path}
   needs_secg && { destroy_security_group; } || :
   rm -f ${rule_path}
 }
