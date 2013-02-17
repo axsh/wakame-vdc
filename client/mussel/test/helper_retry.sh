@@ -36,7 +36,7 @@ function retry_while() {
 
 ## check
 
-function check_port() {
+function open_port?() {
   local ipaddr=$1 protocol=$2 port=$3
 
   local nc_opts="-w 1"
@@ -49,7 +49,7 @@ function check_port() {
   echo | nc ${nc_opts} ${ipaddr} ${port} >/dev/null
 }
 
-function check_network_connection() {
+function network_connection?() {
   local ipaddr=$1
   ping -c 1 -W 3 ${ipaddr}
 }
@@ -58,22 +58,22 @@ function check_network_connection() {
 
 function wait_for_network_to_be_ready() {
   local ipaddr=$1
-  retry_until "check_network_connection ${ipaddr}"
+  retry_until "network_connection? ${ipaddr}"
 }
 
 function wait_for_port_to_be_ready() {
   local ipaddr=$1 protocol=$2 port=$3
-  retry_until "check_port ${ipaddr} ${protocol} ${port}"
+  retry_until "open_port? ${ipaddr} ${protocol} ${port}"
 }
 
 ## wait for *not to be*
 
 function wait_for_network_not_to_be_ready() {
   local ipaddr=$1
-  retry_while "check_network_connection ${ipaddr}"
+  retry_while "network_connection? ${ipaddr}"
 }
 
 function wait_for_port_not_to_be_ready() {
   local ipaddr=$1 protocol=$2 port=$3
-  retry_while "check_port ${ipaddr} ${protocol} ${port}"
+  retry_while "open_port? ${ipaddr} ${protocol} ${port}"
 }
