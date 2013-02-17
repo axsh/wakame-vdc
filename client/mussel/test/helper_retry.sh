@@ -31,7 +31,7 @@ function retry_until() {
 
 function retry_while() {
   local blk="$@"
-  until retry_until ${blk}; do :; done
+  ! retry_until ${blk}
 }
 
 ## check
