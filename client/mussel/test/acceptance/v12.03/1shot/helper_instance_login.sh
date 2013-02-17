@@ -21,3 +21,8 @@ function wait_for_sshd_to_be_ready() {
   local ipaddr=$1
   wait_for_port_to_be_ready ${ipaddr} tcp 22
 }
+
+function wait_for_sshd_not_to_be_ready() {
+  local ipaddr=$1
+  wait_for_port_not_to_be_ready ${ipaddr} tcp 22
+}
