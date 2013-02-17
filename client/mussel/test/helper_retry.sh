@@ -4,6 +4,8 @@
 #   bash
 #
 
+## retry
+
 function retry_until() {
   local blk="$@"
 
@@ -27,6 +29,13 @@ function retry_until() {
   done
 }
 
+function retry_while() {
+  local blk="$@"
+  until retry_until ${blk}; do :; done
+}
+
+## check
+
 function check_port() {
   local ipaddr=$1 protocol=$2 port=$3
 
@@ -42,18 +51,29 @@ function check_port() {
 
 function check_network_connection() {
   local ipaddr=$1
-
   ping -c 1 -W 3 ${ipaddr}
 }
 
+## wait for *to be*
+
 function wait_for_network_to_be_ready() {
   local ipaddr=$1
-
   retry_until "check_network_connection ${ipaddr}"
 }
 
 function wait_for_port_to_be_ready() {
   local ipaddr=$1 protocol=$2 port=$3
-
   retry_until "check_port ${ipaddr} ${protocol} ${port}"
+}
+
+## wait for *not to be*
+
+function wait_for_network_not_to_be_ready() {
+  local ipaddr=$1
+  retry_while "check_network_connection ${ipaddr}"
+}
+
+function wait_for_port_not_to_be_ready() {
+  local ipaddr=$1 protocol=$2 port=$3
+  retry_while "check_port ${ipaddr} ${protocol} ${port}"
 }
