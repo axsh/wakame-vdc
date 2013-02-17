@@ -41,12 +41,12 @@ function _create_load_balancer() {
   echo "${create_output}"
 
   load_balancer_uuid=$(echo "${create_output}" | hash_value id)
-  retry_until "check_document_pair load_balancer ${load_balancer_uuid} state running"
+  retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
 }
 
 function _destroy_load_balancer() {
   run_cmd load_balancer destroy ${load_balancer_uuid}
-  retry_until "check_document_pair load_balancer ${load_balancer_uuid} state terminated"
+  retry_until "document_pair? load_balancer ${load_balancer_uuid} state terminated"
 }
 
 ### shunit2 setup

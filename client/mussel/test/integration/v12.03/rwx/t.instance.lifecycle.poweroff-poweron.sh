@@ -21,7 +21,7 @@ function test_poweroff_instance() {
 
   # :state: halted
   # :status: online
-  retry_until "check_document_pair instance ${instance_uuid} state halted"
+  retry_until "document_pair? instance ${instance_uuid} state halted"
   assertEquals $? 0
 }
 
@@ -33,7 +33,7 @@ function test_poweron_instance() {
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair instance ${instance_uuid} state running"
+  retry_until "document_pair? instance ${instance_uuid} state running"
   assertEquals $? 0
 }
 

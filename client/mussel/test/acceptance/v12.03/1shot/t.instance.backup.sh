@@ -23,7 +23,7 @@ is_public=${is_public:-}
 
 function after_create_instance() {
   run_cmd instance poweroff ${instance_uuid} >/dev/null
-  retry_until "check_document_pair instance ${instance_uuid} state halted"
+  retry_until "document_pair? instance ${instance_uuid} state halted"
 }
 
 ### step

@@ -38,7 +38,7 @@ function hash_value() {
   egrep -w ":${key}:" </dev/stdin | awk '{print $2}'
 }
 
-function check_document_pair() {
+function document_pair?() {
   local namespace=$1 uuid=$2 key=$3 val=$4
   [[ "$(run_cmd ${namespace} show ${uuid} | hash_value ${key})" == "${val}" ]]
 }

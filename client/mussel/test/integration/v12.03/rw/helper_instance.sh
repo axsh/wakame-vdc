@@ -36,12 +36,12 @@ function _create_instance() {
   echo "${create_output}"
 
   instance_uuid=$(echo "${create_output}" | hash_value id)
-  retry_until "check_document_pair instance ${instance_uuid} state running"
+  retry_until "document_pair? instance ${instance_uuid} state running"
 }
 
 function _destroy_instance() {
   run_cmd instance destroy ${instance_uuid}
-  retry_until "check_document_pair instance ${instance_uuid} state terminated"
+  retry_until "document_pair? instance ${instance_uuid} state terminated"
 
   destroy_ssh_key_pair
 }

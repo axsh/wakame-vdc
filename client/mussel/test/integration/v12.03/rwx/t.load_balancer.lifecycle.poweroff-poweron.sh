@@ -21,7 +21,7 @@ function test_poweroff_load_balancer() {
 
   # :state: halted
   # :status: online
-  retry_until "check_document_pair load_balancer ${load_balancer_uuid} state halted"
+  retry_until "document_pair? load_balancer ${load_balancer_uuid} state halted"
   assertEquals $? 0
 }
 
@@ -33,7 +33,7 @@ function test_poweron_load_balancer() {
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair load_balancer ${load_balancer_uuid} state running"
+  retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
   assertEquals $? 0
 }
 

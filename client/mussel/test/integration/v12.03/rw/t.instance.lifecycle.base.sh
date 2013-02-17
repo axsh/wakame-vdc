@@ -34,7 +34,7 @@ function test_create_instance() {
 
   # :state: running
   # :status: online
-  retry_until "check_document_pair instance ${instance_uuid} state running"
+  retry_until "document_pair? instance ${instance_uuid} state running"
   assertEquals $? 0
 }
 
@@ -46,7 +46,7 @@ function test_destroy_instance() {
 
   # :state: terminated
   # :status: offline
-  retry_until "check_document_pair instance ${instance_uuid} state terminated"
+  retry_until "document_pair? instance ${instance_uuid} state terminated"
   assertEquals $? 0
 }
 
