@@ -53,6 +53,14 @@ function test_update_security_group_udp() {
   assertEquals $? 0
 }
 
+function test_flush_rule() {
+  cat <<-EOS > ${rule_path}
+	#
+	EOS
+  run_cmd security_group update ${security_group_uuid}
+  assertEquals $? 0
+}
+
 function test_destroy_security_group() {
   run_cmd security_group destroy ${security_group_uuid}
   assertEquals $? 0
