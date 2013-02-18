@@ -39,7 +39,7 @@ function retry_while() {
 function open_port?() {
   local ipaddr=$1 protocol=$2 port=$3
 
-  local nc_opts="-w 1"
+  local nc_opts="-w 3"
   case ${protocol} in
   tcp) ;;
   udp) nc_opts="${nc_opts} -u";;
