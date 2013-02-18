@@ -70,10 +70,10 @@ function wait_for_port_to_be_ready() {
 
 function wait_for_network_not_to_be_ready() {
   local ipaddr=$1
-  retry_while "network_connection? ${ipaddr}"
+  retry_until "! network_connection? ${ipaddr}"
 }
 
 function wait_for_port_not_to_be_ready() {
   local ipaddr=$1 protocol=$2 port=$3
-  retry_while "open_port? ${ipaddr} ${protocol} ${port}"
+  retry_until "! open_port? ${ipaddr} ${protocol} ${port}"
 }
