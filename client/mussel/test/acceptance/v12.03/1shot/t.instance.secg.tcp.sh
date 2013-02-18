@@ -11,7 +11,6 @@
 . ${BASH_SOURCE[0]%/*}/helper_instance.sh
 . ${BASH_SOURCE[0]%/*}/helper_instance_vifs.sh
 . ${BASH_SOURCE[0]%/*}/helper_instance_vifs_single.sh
-. ${BASH_SOURCE[0]%/*}/helper_instance_login.sh
 
 ## variables
 

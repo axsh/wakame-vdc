@@ -4,10 +4,6 @@
 #   bash
 #
 
-## system variables
-
-## include files
-
 function ssh() {
   $(which ssh) -o 'StrictHostKeyChecking no' $@
 }
