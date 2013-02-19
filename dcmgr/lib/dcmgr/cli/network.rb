@@ -302,30 +302,11 @@ __END
       end
     }
 
-    desc "add OUTER_NW OUTER_IP INNER_NW INNER_IP", "Add route between two networks"
-    method_option :route_type, :type => :string, :required => true, :desc => "Route type"
-    def add(outer_uuid, outer_ip, inner_uuid, inner_ip)
-      outer_nw = M::Network[outer_uuid] || UnknownUUIDError.raise(outer_uuid)
-      inner_nw = M::Network[inner_uuid] || UnknownUUIDError.raise(inner_uuid)
-
-      # Check for collisions.
-
-      route_data = {
-        :route_type => options[:route_type],
-        :outer_network_id => outer_nw.id,
-        :outer_ipv4 => IPAddress::IPv4.new(outer_ip).to_i,
-        :inner_network_id => inner_nw.id,
-        :inner_ipv4 => IPAddress::IPv4.new(inner_ip).to_i,
-      }
-
-      M::NetworkRoute.create(route_data)
-    end
-
-    desc "add-uuid OUTER_UUID INNER_UUID", "Add route between two networks"
+    desc "add OUTER_UUID INNER_UUID", "Add route between two networks"
     method_option :route_type, :type => :string, :required => true, :desc => "Route type"
     method_option :outer_ip, :type => :string, :required => false, :desc => "Outer IP address"
     method_option :inner_ip, :type => :string, :required => false, :desc => "Inner IP address"
-    def add_uuid(outer_uuid, inner_uuid)
+    def add(outer_uuid, inner_uuid)
       outer_options = {:ipv4 => options[:outer_ip]}
       inner_options = {:ipv4 => options[:inner_ip]}
       
