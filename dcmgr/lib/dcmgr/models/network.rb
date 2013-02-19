@@ -31,8 +31,34 @@ module Dcmgr::Models
     many_to_one :nat_network, :key => :nat_network_id, :class => self
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
+    one_to_many :inner_routes, :key => :inner_network_id, :class=>NetworkRoute do |ds|
+      ds.alives
+    end
+    one_to_many :outer_routes, :key => :outer_network_id, :class=>NetworkRoute do |ds|
+      ds.alives
+    end
+
     one_to_many :dhcp_range
     many_to_one :dc_network
+
+    dataset_module {
+      def join_with_services
+        self.join_table(:left, :network_vifs, :networks__id => :network_vifs__network_id
+                        ).join_table(:left, :network_services, :network_vifs__id => :network_services__network_vif_id)
+      end
+
+      def join_with_dc_networks
+        self.join_table(:left, :dc_networks, :dc_networks__id => :networks__dc_network_id)
+      end
+
+      def where_with_services(param)
+        join_with_services.where(param).select_all(:networks)
+      end
+
+      def where_with_dc_networks(param)
+        join_with_dc_networks.where(param).select_all(:networks)
+      end
+    }
 
     def network_service(params = {})
       params[:network_id] = self.id
@@ -56,6 +82,7 @@ module Dcmgr::Models
 
     def network_routes_with_vifs(params = {})
       params[:network_id] = self.id
+      params[:deleted_at] = nil if params[:deleted_at].nil?
       NetworkRoute.dataset.join_table(:left, :network_vifs,
                                       {:network_vifs__id => :network_routes__inner_vif_id} |
                                       {:network_vifs__id => :network_routes__outer_vif_id}

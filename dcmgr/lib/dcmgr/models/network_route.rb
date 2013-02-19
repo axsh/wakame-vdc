@@ -9,6 +9,8 @@ module Dcmgr::Models
     many_to_one :outer_vif, :key => :outer_vif_id, :class => NetworkVif
     many_to_one :inner_vif, :key => :inner_vif_id, :class => NetworkVif
 
+    subset(:alives, {:deleted_at => nil})
+
     def outer_ipv4
       IPAddress::IPv4::parse_u32(self[:outer_ipv4])
     end
