@@ -182,4 +182,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       respond_with(R::NetworkVifMonitor.new(monitor).generate)
     end
   end
+
+  get '/:vif_id/external_ip' do
+    vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
+
+    result = vif.inner_routes(:conditions => {:name => 'external-ip'}).collect { |route|
+      {
+        :network_uuid => route.outer_network ? route.outer_network.canonical_uuid : nil,
+        :vif_uuid => route.outer_vif ? route.outer_vif.canonical_uuid : nil,
+        :ipv4 => route.outer_ipv4_s
+      }
+    }
+    
+    respond_with(result)
+  end
+
 end
