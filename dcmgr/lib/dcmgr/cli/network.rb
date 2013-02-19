@@ -253,48 +253,52 @@ __END
           vif = nil
           ipv4 = nil
 
-          if get_options[:service]
-            services = nw.network_vifs_with_service({:name => get_options[:service]})
-
-            Error.raise("No such service found on network: #{get_options[:service]}.", 100) if services.empty?
-            Error.raise("More than one matching service found on network: #{get_options[:service]}.", 100) if services.count != 1
-
-            vif = services.first
-
-            if get_options[:lease_ipv4]
-              Error.raise("Cannot pass IPv4 address argument when leasing IPv4 address.", 100) if get_options[:ipv4]
-
-              # Do the leasing when creating the network route, so
-              # that we have proper exception recovery.
-              ip_lease = vif.lease_ipv4({:multiple => true})
-              Error.raise("Could not lease IP address.", 100) if ip_lease.nil?
-              ipv4 = ip_lease.ipv4_s
-
-            elsif get_options[:ipv4]
-              Error.raise("Not supported yet. (1)", 100)
-            else
-              Error.raise("Not supported yet. (2)", 100)
-            end
-
-          else
-            if get_options[:ipv4]
-              ip_lease = nw.find_ip_lease(get_options[:ipv4])
-
-              Error.raise("Could not find network vif for IP address: #{get_options[:ipv4]}") if ip_lease.nil?
-
-              vif = ip_lease.network_vif
-              ipv4 = ip_lease.ipv4_s
-            else
-              Error.raise("Not supported yet. (3)", 100)
-            end
-          end
-
-          [nw, vif, ipv4]
         when /^vif-/
-          Error.raise("Not supported yet. (4)", 100)
+          vif = M::NetworkVif[uuid] || UnknownUUIDError.raise(uuid)
+          nw = vif.network || Error.raise("No network associated with vif: #{vif.canonical_uuid}")
+          ipv4 = nil
         else
           UnknownUUIDError.raise(uuid)
         end
+
+        if get_options[:service]
+          services = nw.network_vifs_with_service({:name => get_options[:service]})
+
+          Error.raise("No such service found on network: #{get_options[:service]}", 100) if services.empty?
+          Error.raise("More than one matching service found on network: #{get_options[:service]}", 100) if services.count != 1
+          Error.raise("Service not found in network vif: #{get_options[:service]} in #{vif.canonical_uuid}", 100) if vif && vif != service.network_vif
+          
+          vif = services.first
+
+          if get_options[:lease_ipv4]
+            Error.raise("Cannot pass IPv4 address argument when leasing IPv4 address.", 100) if get_options[:ipv4]
+
+            # Do the leasing when creating the network route, so
+            # that we have proper exception recovery.
+            ip_lease = vif.lease_ipv4({:multiple => true})
+            Error.raise("Could not lease IP address.", 100) if ip_lease.nil?
+            ipv4 = ip_lease.ipv4_s
+
+          elsif get_options[:ipv4]
+            Error.raise("Not supported yet. (1)", 100)
+          else
+            Error.raise("Not supported yet. (2)", 100)
+          end
+
+        else
+          if get_options[:ipv4]
+            ip_lease = nw.find_ip_lease(get_options[:ipv4])
+
+            Error.raise("Could not find network vif for IP address: #{get_options[:ipv4]}", 100) if ip_lease.nil?
+
+            vif = ip_lease.network_vif
+            ipv4 = ip_lease.ipv4_s
+          else
+            Error.raise("Not supported yet. (3)", 100)
+          end
+        end
+
+        [nw, vif, ipv4]
       end
     }
 
