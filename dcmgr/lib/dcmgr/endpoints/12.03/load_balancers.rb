@@ -356,12 +356,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.instance_port = params[:instance_port]
     end
 
-    raise E::InvalidLoadBalancerPublicKey if params[:public_key].nil?
-    raise E::InvalidLoadBalancerPrivateKey if params[:private_key].nil?
-
     if lb.is_secure?
-      lb.public_key = params[:public_key]
-      lb.private_key = params[:private_key]
+      lb.public_key = params[:public_key] if !params[:public_key].nil? && !params[:public_key].empty?
+      lb.private_key = params[:private_key] if !params[:private_key].nil? && !params[:private_key].empty?
       raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
       raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
       raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
