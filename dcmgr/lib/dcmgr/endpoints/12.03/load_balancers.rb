@@ -109,7 +109,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
     security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
 
-    instance_security_group = create_security_group(security_group_rules)
+    firewall_security_group = create_security_group(security_group_rules)
+    # The instance security group has no rules. It's just there to allow
+    # communication between the LB and its instances
+    instance_security_group = create_security_group([])
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
     lb_spec.convert(params[:engine], params[:max_connection])
@@ -133,7 +136,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                         'eth0' => {
                           'index' => PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
-                          'security_groups' => instance_security_group,
+                          'security_groups' => [firewall_security_group, instance_security_group],
                           'monitors' => monitors
                         },
                         'eth1' =>{
@@ -262,8 +265,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_name => lb.queue_name,
     }
 
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
+    lb_inst_secg_id = lb.instance_security_group.canonical_uuid
 
     targets = []
     target_vifs.each do |uuid|
@@ -273,9 +275,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       # register instance to load balancer.
       lb.add_target(uuid)
-      lb_security_groups.each { |lb_inst_secg_id|
-        set_vif_sg(:add,uuid,lb_inst_secg_id)
-      }
+      set_vif_sg(:add,uuid,lb_inst_secg_id)
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq
@@ -313,13 +313,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
+    lb_inst_secg_uuid = lb.instance_security_group.canonical_uuid
 
     remove_vifs.each do |vif_uuid|
-      lb_security_groups.each {|lb_secg_uuid|
-      set_vif_sg(:remove,vif_uuid,lb_secg_uuid)
-    }
+    set_vif_sg(:remove,vif_uuid,lb_inst_secg_uuid)
     end
 
     # update conifg in load balancer image.

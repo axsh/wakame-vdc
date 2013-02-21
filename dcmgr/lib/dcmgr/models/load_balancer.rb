@@ -65,6 +65,11 @@ module Dcmgr::Models
       end
     end
 
+    # The instance security group is always the one without rules
+    def instance_security_group
+      self.global_vif.security_groups.find {|g| g.rule.empty? }
+    end
+
     def state
       @state = self.instance.state
     end
