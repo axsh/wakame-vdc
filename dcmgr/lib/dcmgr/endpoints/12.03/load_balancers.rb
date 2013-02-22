@@ -529,9 +529,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       'REQUEST_URI' => "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
     })
 
-    if body.include? lb_i.canonical_uuid
-      lb.destroy
-    else
+    unless http_status == 200
       raise E::InvalidLoadBalancerState, lb.state
     end
 
