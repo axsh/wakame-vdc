@@ -26,9 +26,9 @@ declare zabbix_version=${zabbix_version:-""}
 install_epel ${chroot_dir}
 
 chroot ${chroot_dir} <<EOF
-wget http://www.zabbix.jp/binaries/relatedpkgs/rhel6/x86_64/zabbix-jp-release-6-5.noarch.rpm
-rpm -ivh zabbix-jp-release-6-5.noarch.rpm
-rm -f zabbix-jp-release-6-5.noarch.rpm
+curl -O http://repo.zabbix.jp/relatedpkgs/rhel6/x86_64/zabbix-jp-release-6-6.noarch.rpm
+rpm -ivh zabbix-jp-release-6-6.noarch.rpm
+rm -f zabbix-jp-release-6-6.noarch.rpm
 
 yum repolist
 
