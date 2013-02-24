@@ -98,12 +98,12 @@ function strfile_type() {
   [[ -n "${key}" ]] || { echo "[ERROR] 'key' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   eval "
-   if [[ -f "\$${key}" ]]; then
+   if [[ -f "\${${key}}" ]]; then
      # file: key@${key}
-     echo "${key}@\$${key}"
+     echo "${key}@\${${key}}"
    else
      # str: key=${key}
-     echo "${key}=\$${key}"
+     echo "${key}=\${${key}}"
    fi
   "
 }
@@ -113,11 +113,11 @@ function add_param() {
   [[ -n "${param_key}" ]] || { echo "[ERROR] 'param_key' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   eval "
-   [[ -n "\$${param_key}" ]] || return 0
+   [[ -n "\${${param_key}}" ]] || return 0
 
    case "${param_type}" in
-    string) echo   "${param_key}=\$${param_key}" ;;
-     array) echo "${param_key}[]=\$${param_key}" ;;
+    string) echo   "${param_key}=\${${param_key}}" ;;
+     array) echo "${param_key}[]=\${${param_key}}" ;;
    strfile) strfile_type ${param_key}            ;;
    esac
   "
