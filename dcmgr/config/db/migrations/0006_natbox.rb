@@ -7,11 +7,11 @@ Sequel.migration do
 
       column :inner_network_id, "int(11)", :null=>false
       column :inner_vif_id, "int(11)"
-      column :inner_ipv4, "int(11)", :null=>false, :unsigned=>true
+      column :inner_ipv4, "int(11)", :unsigned=>true
 
       column :outer_network_id, "int(11)", :null=>false
       column :outer_vif_id, "int(11)"
-      column :outer_ipv4, "int(11)", :null=>false, :unsigned=>true
+      column :outer_ipv4, "int(11)", :unsigned=>true
 
       # If false, delete when vif is disconnected from network.
       column :is_permanent, "int(11)", :default=>false, :null=>false
