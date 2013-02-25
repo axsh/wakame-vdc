@@ -12,19 +12,21 @@ module Dcmgr::Models
     subset(:alives, {:deleted_at => nil})
 
     def outer_ipv4
-      IPAddress::IPv4::parse_u32(self[:outer_ipv4])
+      return IPAddress::IPv4::parse_u32(self[:outer_ipv4]) if self[:outer_ipv4]
+      return nil
     end
 
     def inner_ipv4
-      IPAddress::IPv4::parse_u32(self[:inner_ipv4])
+      return IPAddress::IPv4::parse_u32(self[:inner_ipv4]) if self[:inner_ipv4]
+      return nil
     end
 
     def outer_ipv4_s
-      IPAddress::IPv4::parse_u32(self[:outer_ipv4]).to_s
+      outer_ipv4.to_s
     end
 
     def inner_ipv4_s
-      IPAddress::IPv4::parse_u32(self[:inner_ipv4]).to_s
+      inner_ipv4.to_s
     end
 
     def outer_ipv4_i
@@ -62,6 +64,7 @@ module Dcmgr::Models
           options = @create_options[arg]
           current_vif = self.send("#{arg}_vif")
           current_network = self.send("#{arg}_network")
+          current_ipv4 = self.send("#{arg}_ipv4")
 
           if options[:find_service]
             params = {:network_services__name => options[:find_service]}
@@ -77,12 +80,19 @@ module Dcmgr::Models
           end
 
           if options[:lease_ipv4]
-            raise("Cannot pass #{arg} IPv4 address argument when leasing address") if self["#{arg}_ipv4".to_sym]
+            raise("Cannot pass #{arg} IPv4 address argument when leasing address") if current_ipv4
 
             ip_lease = current_vif.lease_ipv4({:multiple => true})
             raise("Could not lease #{arg} IPv4 address") if ip_lease.nil?
 
             self["#{arg}_ipv4".to_sym] = ip_lease.ipv4_i
+
+          elsif current_ipv4
+            ip_lease = current_network.find_ip_lease(current_ipv4)
+            raise("Could not find network vif for IPv4 address: #{current_ipv4.to_s}") if ip_lease.nil? || ip_lease.network_vif.nil?
+
+            current_vif = ip_lease.network_vif
+            self["#{arg}_vif_id".to_sym] = current_vif.id
           end
         }
 

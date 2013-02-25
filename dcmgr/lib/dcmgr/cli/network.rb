@@ -233,41 +233,19 @@ __END
     M=Dcmgr::Models
 
     no_tasks {
-      def get_routes(uuid, options)
-        case uuid
-        when /^nw-/
-          nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-          nw.network_routes
-        else
-          InvalidUUIDError.raise(uuid)
-        end
-      end
-
-      def get_nw_vif_ip(uuid, arg_ipv4)
+      def get_nw_vif(uuid)
         case uuid
         when /^nw-/
           nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
           vif = nil
-          ipv4 = nil
-
         when /^vif-/
           vif = M::NetworkVif[uuid] || UnknownUUIDError.raise(uuid)
           nw = vif.network || Error.raise("No network associated with vif: #{vif.canonical_uuid}")
-          ipv4 = nil
         else
           UnknownUUIDError.raise(uuid)
         end
 
-        if arg_ipv4
-          ip_lease = nw.find_ip_lease(arg_ipv4)
-
-          Error.raise("Could not find network vif for IP address: #{get_options[:ipv4]}", 100) if ip_lease.nil?
-
-          vif = ip_lease.network_vif
-          ipv4 = ip_lease.ipv4_s
-        end
-
-        [nw, vif, ipv4]
+        [nw, vif]
       end
     }
 
@@ -286,16 +264,16 @@ __END
         Error.raise("Unknown route type.", 100)
       end
 
-      outer_nw, outer_vif, outer_ipv4 = get_nw_vif_ip(outer_uuid, options[:outer_ip])
-      inner_nw, inner_vif, inner_ipv4 = get_nw_vif_ip(inner_uuid, options[:inner_ip])
+      outer_nw, outer_vif = get_nw_vif(outer_uuid)
+      inner_nw, inner_vif = get_nw_vif(inner_uuid)
 
       route_data = {
         :route_type => options[:route_type],
         :outer_network_id => outer_nw ? outer_nw.id : nil,
-        :outer_ipv4 => outer_ipv4 ? IPAddress::IPv4.new(outer_ipv4).to_i : nil,
+        :outer_ipv4 => options[:outer_ip] ? IPAddress::IPv4.new(options[:outer_ip]).to_i : nil,
         :outer_vif_id => outer_vif ? outer_vif.id : nil,
         :inner_network_id => inner_nw ? inner_nw.id : nil,
-        :inner_ipv4 => inner_ipv4 ? IPAddress::IPv4.new(inner_ipv4).to_i : nil,
+        :inner_ipv4 => options[:inner_ip] ? IPAddress::IPv4.new(options[:inner_ip]).to_i : nil,
         :inner_vif_id => inner_vif ? inner_vif.id : nil,
 
         :create_options => create_options
@@ -314,7 +292,7 @@ __END
 
     desc "show NW", "Show routes on network"
     def show(uuid)
-      ds = get_routes(uuid, options)
+      ds = (M::Network[uuid] || UnknownUUIDError.raise(uuid)).network_routes
 
       table = [['Type', 'Outer NW', 'Outer Vif', 'Inner NW', 'Inner Vif']]
       ds.each { |r|
