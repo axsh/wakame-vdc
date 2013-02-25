@@ -243,7 +243,7 @@ __END
         end
       end
 
-      def get_nw_vif_ip(uuid, get_options)
+      def get_nw_vif_ip(uuid, arg_ipv4)
         case uuid
         when /^nw-/
           nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
@@ -258,25 +258,13 @@ __END
           UnknownUUIDError.raise(uuid)
         end
 
-        if get_options[:service]
-          services = nw.network_vifs_with_service({:name => get_options[:service]})
+        if arg_ipv4
+          ip_lease = nw.find_ip_lease(arg_ipv4)
 
-          Error.raise("No such service found on network: #{get_options[:service]}", 100) if services.empty?
-          Error.raise("More than one matching service found on network: #{get_options[:service]}", 100) if services.count != 1
-          Error.raise("Service not found in network vif: #{get_options[:service]} in #{vif.canonical_uuid}", 100) if vif && vif != service.network_vif
-          
-          vif = services.first
-        else
-          if get_options[:ipv4]
-            ip_lease = nw.find_ip_lease(get_options[:ipv4])
+          Error.raise("Could not find network vif for IP address: #{get_options[:ipv4]}", 100) if ip_lease.nil?
 
-            Error.raise("Could not find network vif for IP address: #{get_options[:ipv4]}", 100) if ip_lease.nil?
-
-            vif = ip_lease.network_vif
-            ipv4 = ip_lease.ipv4_s
-          else
-            Error.raise("Not supported yet. (3)", 100)
-          end
+          vif = ip_lease.network_vif
+          ipv4 = ip_lease.ipv4_s
         end
 
         [nw, vif, ipv4]
@@ -288,51 +276,40 @@ __END
     method_option :outer_ip, :type => :string, :required => false, :desc => "Outer IP address"
     method_option :inner_ip, :type => :string, :required => false, :desc => "Inner IP address"
     def add(outer_uuid, inner_uuid)
-      outer_options = {:ipv4 => options[:outer_ip]}
-      inner_options = {:ipv4 => options[:inner_ip]}
-      
-      create_options = {}
+      create_options = {:outer => {}, :inner => {}}
 
       case options[:route_type]
       when 'external-ip'
-        outer_options[:service] = 'external-ip'
+        create_options[:outer][:lease_ipv4] = :default
+        create_options[:outer][:find_service] = 'external-ip'
       else
         Error.raise("Unknown route type.", 100)
       end
 
-      outer_nw, outer_vif, outer_ipv4 = get_nw_vif_ip(outer_uuid, outer_options)
-      inner_nw, inner_vif, inner_ipv4 = get_nw_vif_ip(inner_uuid, inner_options)
-
-      case options[:route_type]
-      when 'external-ip'
-        raise("Not supported yet. (5)") if outer_ipv4
-
-        create_options[:lease_outer_ipv4] = :default
-        create_options[:lease_outer_from_vif] = outer_vif
-      else
-        Error.raise("Unknown route type.", 100)
-      end
-
-      Error.raise("No outer network found.", 100) if outer_nw.nil?
-      Error.raise("No inner network found.", 100) if inner_nw.nil?
+      outer_nw, outer_vif, outer_ipv4 = get_nw_vif_ip(outer_uuid, options[:outer_ip])
+      inner_nw, inner_vif, inner_ipv4 = get_nw_vif_ip(inner_uuid, options[:inner_ip])
 
       route_data = {
         :route_type => options[:route_type],
-        :outer_network_id => outer_nw.id,
+        :outer_network_id => outer_nw ? outer_nw.id : nil,
         :outer_ipv4 => outer_ipv4 ? IPAddress::IPv4.new(outer_ipv4).to_i : nil,
         :outer_vif_id => outer_vif ? outer_vif.id : nil,
-        :inner_network_id => inner_nw.id,
+        :inner_network_id => inner_nw ? inner_nw.id : nil,
         :inner_ipv4 => inner_ipv4 ? IPAddress::IPv4.new(inner_ipv4).to_i : nil,
         :inner_vif_id => inner_vif ? inner_vif.id : nil,
 
         :create_options => create_options
       }
 
-      M::NetworkRoute.create(route_data)
+      result = M::NetworkRoute.create(route_data)
 
       shell.print_table([[route_data[:route_data],
-                          outer_nw.canonical_uuid, outer_vif ? outer_vif.canonical_uuid : nil, outer_ipv4,
-                          inner_nw.canonical_uuid, inner_vif ? inner_vif.canonical_uuid : nil, inner_ipv4]])
+                          result.outer_network.canonical_uuid,
+                          result.outer_vif ? result.outer_vif.canonical_uuid : nil,
+                          result.outer_ipv4.to_s,
+                          result.inner_network.canonical_uuid,
+                          result.inner_vif ? result.inner_vif.canonical_uuid : nil,
+                          result.inner_ipv4.to_s]])
     end
 
     desc "show NW", "Show routes on network"
