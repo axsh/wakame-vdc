@@ -1063,8 +1063,7 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
     if(new_item === undefined){ throw "Unknown item key: " + item_key; }
 
     // place holder variable for event handlers.
-    var item_props = {"protocol": new_item.protocol,
-                      'title': new_item.title,
+    var item_props = {'title': new_item.title,
                       'item_key': item_key,
                       'idx': idx,
                       'json': json,
@@ -1103,7 +1102,6 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
       }
       item_props['title']=row_item.title;
       item_props['item_key']=item_key;
-      item_props['protocol'] = row_item.protocol;
 
       if(DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS_NUM <= self.item_list.length){
         // disable the plus button
@@ -1163,8 +1161,7 @@ DcmgrGUI.VifMonitorSelector = DcmgrGUI.Class.create({
 
     for (var i=0; i < this.item_list.length; i++) {
       var itm = this.item_list[i];
-      var a = ["eth0_monitors["+i+"][protocol]=" + itm['protocol'],
-               "eth0_monitors["+i+"][title]=" + itm['item_key'],
+      var a = ["eth0_monitors["+i+"][title]=" + itm['item_key'],
                "eth0_monitors["+i+"][enabled]=" + $(itm['row_elem']).find('.enabled').is(':checked')];
       if( itm['json'] !== undefined ){
         a.push("eth0_monitors["+i+"][uuid]=" + itm['json'].uuid);
@@ -1209,7 +1206,6 @@ DcmgrGUI.VifMonitorSelector.Validator = {
 DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
   return {
     'PING': {
-      protocol: 'icmp',
       title: 'Ping',
       ui: function (elem, params){
       },
@@ -1221,7 +1217,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'HTTP1': {
-      protocol: 'http',
       title: 'HTTP',
       ui: function (elem, params){
         if(params === undefined) params={port: 80, check_path:"/"};
@@ -1239,7 +1234,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'HTTPS1': {
-      protocol: 'https',
       title: 'HTTPS',
       ui: function (elem, params){
         if(params === undefined) params={port: 443, check_path:"/"};
@@ -1257,7 +1251,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'FTP': {
-      protocol: 'ftp',
       title: 'FTP',
       ui: function (elem, params){
         if(params === undefined) params={port: 21};
@@ -1271,7 +1264,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'SSH': {
-      protocol: 'ssh',
       title: 'SSH',
       ui: function (elem, params){
         if(params === undefined) params={port: 22};
@@ -1285,7 +1277,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'SMTP': {
-      protocol: 'smtp',
       title: 'SMTP',
       ui: function (elem, params){
         if(params === undefined) params={port: 25};
@@ -1299,7 +1290,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'POP3': {
-      protocol: 'pop3',
       title: 'POP3',
       ui: function (elem, params){
         if(params === undefined) params={port: 110};
@@ -1313,7 +1303,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'IMAP': {
-      protocol: 'imap',
       title: 'IMAP',
       ui: function (elem, params){
         if(params === undefined) params={port: 143};
@@ -1327,7 +1316,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'SUBMISSION': {
-      protocol: 'smtp',
       title: 'Submission',
       ui: function (elem, params){
         if(params === undefined) params={port: 587};
@@ -1341,7 +1329,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'DNS': {
-      protocol: 'dns',
       title: 'DNS',
       ui: function (elem, params){
         if(params === undefined) params={port: 53, query_record: "localhost"};
@@ -1357,7 +1344,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'MYSQL': {
-      protocol: 'mysql',
       title: 'MySQL',
       ui: function (elem, params){
         if(params === undefined) params={port: 3306};
@@ -1371,7 +1357,6 @@ DcmgrGUI.VifMonitorSelector.MONITOR_ITEMS = (function(){
       }
     },
     'POSTGRESQL': {
-      protocol: 'postgresql',
       title: 'PostgreSQL',
       ui: function (elem, params){
         if(params === undefined) params={port: 5432};

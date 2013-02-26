@@ -52,7 +52,6 @@ class InstancesController < ApplicationController
         params[:eth0_monitors].each{ |idx, mon|
           vif_eth0[:monitors] ||= {}
           vif_eth0[:monitors][idx] = {
-            :protocol=>mon[:protocol],
             :title=>mon[:title],
             :enabled=>((mon[:enabled] && mon[:enabled] == 'true') ? true : false),
             :params => mon[:params],
