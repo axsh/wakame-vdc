@@ -11,6 +11,19 @@ module Dcmgr::Models
 
     subset(:alives, {:deleted_at => nil})
 
+    dataset_module {
+      def join_with_routes
+        self.join_table(:left, :network_vifs,
+                        {:network_vifs__id => :network_routes__inner_vif_id} |
+                        {:network_vifs__id => :network_routes__outer_vif_id}).alives
+      end
+
+      def routes_between_vifs(outer_vif, inner_vif)
+        self.where({:network_routes__outer_vif_id => outer_vif.id} &
+                   {:network_routes__inner_vif_id => inner_vif.id}).select_all(:network_routes).alives
+      end
+    }
+
     def outer_ipv4
       return IPAddress::IPv4::parse_u32(self[:outer_ipv4]) if self[:outer_ipv4]
       return nil
@@ -43,8 +56,19 @@ module Dcmgr::Models
 
     def validate
       [:inner, :outer].each { |arg|
-        if self["#{arg}_ipv4".to_sym] && !self.send("#{arg}_network").include?(self.send("#{arg}_ipv4"))
-          errors.add("#{arg}_ipv4".to_sym, "#{arg} IP address out of range: #{self.send("#{arg}_ipv4_s".to_sym)}")
+        # We don't validate anything beyond the above when the network
+        # route is being deleted.
+        next if self.deleted_at
+
+        current_vif = self.send((current_vif_sym = "#{arg}_vif".to_sym))
+        current_network = self.send((current_network_sym = "#{arg}_network".to_sym))
+        current_ipv4 = self.send((current_ipv4_sym = "#{arg}_ipv4".to_sym))
+
+        errors.add(current_network_sym, "No #{arg} network defined.") if current_network.nil?
+        errors.add(current_vif_sym, "Cannot use deleted #{arg} network vif.") if current_vif && current_vif.deleted_at
+
+        if current_ipv4 && current_network && !current_network.include?(current_ipv4)
+          errors.add(current_ipv4_sym, "#{arg} IP address out of range: #{current_ipv4}")
         end
 
         # Verify IP address.
@@ -102,6 +126,27 @@ module Dcmgr::Models
       }
     end
 
+    def before_destroy
+      # Add flag to either routes or ip_lease to indicate if we should release.
+      #
+      # Currently just release any ip_lease that isn't on a network_vif belonging to a instance.
+      
+      [:inner, :outer].each { |arg|
+        current_vif = self.send("#{arg}_vif")
+        # current_network = self.send("#{arg}_network")
+        current_ipv4 = self.send("#{arg}_ipv4")
+
+        next if current_ipv4.nil?
+        next if current_vif.nil?
+        next if current_vif.instance
+
+        ip_lease = current_vif.find_ip_lease(current_ipv4)
+        ip_lease.destroy if ip_lease
+      }
+
+      super
+    end
+
     #
     # Private methods
     #
@@ -110,6 +155,14 @@ module Dcmgr::Models
     def initialize_set(values)
       @create_options = values.delete(:create_options)
       super
+    end
+
+    # override Sequel::Model#delete not to delete rows but to set
+    # delete flags.
+    def delete
+      self.deleted_at ||= Time.now
+      self.is_deleted = self.id
+      self.save_changes
     end
 
   end

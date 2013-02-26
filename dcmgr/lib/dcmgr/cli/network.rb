@@ -290,6 +290,31 @@ __END
                           result.inner_ipv4.to_s]])
     end
 
+    desc "del OUTER_UUID INNER_UUID", "Delete routes between two networks"
+    method_option :route_type, :type => :string, :required => false, :desc => "Route type"
+    method_option :outer_ip, :type => :string, :required => false, :desc => "Outer IP address"
+    method_option :inner_ip, :type => :string, :required => false, :desc => "Inner IP address"
+    def del(outer_uuid, inner_uuid)
+      outer_nw, outer_vif = get_nw_vif(outer_uuid)
+      inner_nw, inner_vif = get_nw_vif(inner_uuid)
+
+      ds = M::NetworkRoute.dataset.routes_between_vifs(outer_vif, inner_vif)
+
+      table = [['Type', 'Outer NW', 'Outer Vif', 'Inner NW', 'Inner Vif']]
+      ds.each { |r|
+        table << [r.route_type,
+                  r.outer_network ? r.outer_network.canonical_uuid : nil,
+                  r.outer_vif ? r.outer_vif.canonical_uuid : nil,
+                  r.outer_ipv4,
+                  r.inner_vif.network ? r.inner_vif.network.canonical_uuid : nil,
+                  r.inner_vif ? r.inner_vif.canonical_uuid : nil,
+                  r.inner_ipv4]
+        r.destroy
+      }
+
+      shell.print_table(table)
+    end
+
     desc "show NW", "Show routes on network"
     def show(uuid)
       ds = (M::Network[uuid] || UnknownUUIDError.raise(uuid)).network_routes

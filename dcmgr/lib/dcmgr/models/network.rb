@@ -52,11 +52,11 @@ module Dcmgr::Models
       end
 
       def where_with_services(param)
-        join_with_services.where(param).select_all(:networks)
+        join_with_services.where(param).select_all(:networks).alives
       end
 
       def where_with_dc_networks(param)
-        join_with_dc_networks.where(param).select_all(:networks)
+        join_with_dc_networks.where(param).select_all(:networks).alives
       end
     }
 
@@ -71,13 +71,13 @@ module Dcmgr::Models
       params[:network_id] = self.id
       NetworkVif.dataset.join_table(:left, :network_services,
                                     :network_vifs__id => :network_services__network_vif_id
-                                    ).where(params).select_all(:network_vifs)
+                                    ).where(params).select_all(:network_vifs).alives
     end
 
     def network_routes(params = {})
       NetworkRoute.dataset.where({:inner_network_id => self.id} |
                                  {:outer_network_id => self.id}
-                                 ).where(params)
+                                 ).where(params).alives
     end
 
     def network_routes_with_vifs(params = {})
@@ -145,9 +145,7 @@ module Dcmgr::Models
     # @param [String] ipaddr IP address
     def find_ip_lease(ipaddr)
       ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
-      leases = self.network_vif_ip_lease_dataset.where(:ipv4 => ipaddr.to_i).alives
-      return nil if leases.empty?
-      leases.first
+      self.network_vif_ip_lease_dataset.where(:ipv4 => ipaddr.to_i).alives.first
     end
 
     # register reserved IP address in this network

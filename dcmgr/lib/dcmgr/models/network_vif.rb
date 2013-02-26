@@ -36,6 +36,33 @@ module Dcmgr::Models
     one_to_many :network_services
     one_to_many :network_vif_monitors
 
+    dataset_module {
+      def join_with_services
+        self.join_table(:left, :network_services, :network_vifs__id => :network_services__network_vif_id)
+      end
+
+      def join_with_routes
+        self.join_table(:left, :network_routes,
+                        {:network_vifs__id => :network_routes__inner_vif_id} |
+                        {:network_vifs__id => :network_routes__outer_vif_id})
+      end
+
+      def where_with_services(param)
+        join_with_services.where(param).select_all(:networks)
+      end
+
+      def where_with_routes(param)
+        join_with_routes.where(param).select_all(:networks)
+      end
+    }
+
+    def network_vifs_with_service(params = {})
+      params[:network_id] = self.id
+      NetworkVif.dataset.join_table(:left, :network_services,
+                                    :network_vifs__id => :network_services__network_vif_id
+                                    ).where(params).select_all(:network_vifs)
+    end
+
     def to_hash
       hash = super
       hash.merge!({ :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
@@ -105,6 +132,13 @@ module Dcmgr::Models
       return nil if options[:multiple] != true && !self.direct_ip_lease.empty?
 
       return IpLease.lease(self, network)
+    end
+
+    # return IpLease for IP address in this network vif
+    # @param [String] ipaddr IP address
+    def find_ip_lease(ipaddr)
+      ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
+      ip_dataset.where(:ipv4 => ipaddr.to_i).alives.first
     end
 
     #Override the delete method to keep the row and just mark it as deleted
