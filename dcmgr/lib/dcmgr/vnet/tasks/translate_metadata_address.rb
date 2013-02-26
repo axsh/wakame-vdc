@@ -24,6 +24,8 @@ module Dcmgr
           self.rules << IptablesRule.new(:nat,:prerouting,:tcp,:outgoing,"-m physdev --physdev-in #{vnic_id} -d #{self.metadata_fake_ip} -p tcp --dport #{self.metadata_fake_port} -j DNAT --to-destination #{self.metadata_ip}:#{self.metadata_port}")
           # Accept tcp traffic to the metadata server
           self.rules << IptablesRule.new(:filter,:forward,:tcp,:outgoing,"-p tcp -d #{self.metadata_ip} --dport #{self.metadata_port} -j ACCEPT")
+          # TODO: segment check
+          self.rules << EbtablesRule.new(:filter,:forward,:arp,:incoming,"--protocol arp --arp-ip-src=#{self.metadata_ip} -j ACCEPT")
         end
       end
 
