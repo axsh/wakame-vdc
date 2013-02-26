@@ -292,6 +292,7 @@ __END
     end
 
     desc "del OUTER_UUID INNER_UUID", "Delete routes between two networks"
+    method_option :all_route_types, :type => :boolean, :required => false, :desc => "Include all route types"
     method_option :route_type, :type => :string, :required => false, :desc => "Route type"
     method_option :outer_ip, :type => :string, :required => false, :desc => "Outer IP address"
     method_option :inner_ip, :type => :string, :required => false, :desc => "Inner IP address"
@@ -300,6 +301,16 @@ __END
       inner_nw, inner_vif = get_nw_vif(inner_uuid)
 
       ds = M::NetworkRoute.dataset.routes_between_vifs(outer_vif, inner_vif)
+
+      ds = ds.where(:network_routes__inner_ipv4 => IPAddress::IPv4.new(options[:inner_ip]).to_i) if options[:inner_ip]
+      ds = ds.where(:network_routes__outer_ipv4 => IPAddress::IPv4.new(options[:outer_ip]).to_i) if options[:outer_ip]
+
+      # If no route_type is supplied, require --all-route-types.
+      if options[:route_type]
+        ds = ds.where(:network_routes__route_type => options[:route_type])
+      elsif options[:all_route_types] != true
+        Error.raise("Either supply a 'route-type' or set 'all-route-types'.", 100)
+      end
 
       table = [['Type', 'Outer NW', 'Outer Vif', 'Inner NW', 'Inner Vif']]
       ds.each { |r|
