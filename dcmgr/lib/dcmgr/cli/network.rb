@@ -260,6 +260,7 @@ __END
       when 'external-ip'
         create_options[:outer][:lease_ipv4] = :default
         create_options[:outer][:find_service] = 'external-ip'
+        create_options[:inner][:find_ipv4] = :vif_first
       else
         Error.raise("Unknown route type.", 100)
       end

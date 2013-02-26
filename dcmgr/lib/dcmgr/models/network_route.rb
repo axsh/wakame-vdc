@@ -67,11 +67,19 @@ module Dcmgr::Models
         errors.add(current_network_sym, "No #{arg} network defined.") if current_network.nil?
         errors.add(current_vif_sym, "Cannot use deleted #{arg} network vif.") if current_vif && current_vif.deleted_at
 
-        if current_ipv4 && current_network && !current_network.include?(current_ipv4)
-          errors.add(current_ipv4_sym, "#{arg} IP address out of range: #{current_ipv4}")
-        end
+        if current_ipv4
+          if current_network && !current_network.include?(current_ipv4)
+            errors.add(current_ipv4_sym, "#{arg} IP address out of range: #{current_ipv4}")
+          end
 
-        # Verify IP address.
+          # Validate vif ip and ipv4 set when not leasing.
+        else
+          # Validate only allows ipv4 to be nil during pre-create.
+          if @create_options.nil? ||
+              (@create_options[arg][:find_ipv4].nil? && @create_options[arg][:lease_ipv4].nil?)
+            errors.add(current_ipv4_sym, "No #{arg} IPv4 specified.")
+          end
+        end
       }
 
       super
@@ -86,9 +94,11 @@ module Dcmgr::Models
 
         [:inner, :outer].each { |arg|
           options = @create_options[arg]
-          current_vif = self.send("#{arg}_vif")
-          current_network = self.send("#{arg}_network")
-          current_ipv4 = self.send("#{arg}_ipv4")
+
+          current_vif_id_sym = "#{arg}_vif_id".to_sym
+          current_vif = self.send((current_vif_sym = "#{arg}_vif".to_sym))
+          current_network = self.send((current_network_sym = "#{arg}_network".to_sym))
+          current_ipv4 = self.send((current_ipv4_sym = "#{arg}_ipv4".to_sym))
 
           if options[:find_service]
             params = {:network_services__name => options[:find_service]}
@@ -99,25 +109,25 @@ module Dcmgr::Models
 
             if current_vif.nil?
               current_vif = vifs.first
-              self["#{arg}_vif_id".to_sym] = current_vif.id
+              self[current_vif_id_sym] = current_vif.id
             end
           end
 
           if options[:lease_ipv4]
-            raise("Cannot pass #{arg} IPv4 address argument when leasing address") if current_ipv4
-
-            ip_lease = current_vif.lease_ipv4({:multiple => true})
-            raise("Could not lease #{arg} IPv4 address") if ip_lease.nil?
-
-            self["#{arg}_ipv4".to_sym] = ip_lease.ipv4_i
-
+            raise("Cannot pass #{arg} IPv4 address argument when leasing address.") if current_ipv4
+            self[current_ipv4_sym] = (current_vif.lease_ipv4({:multiple => true}) ||
+                                          raise("Could not lease #{arg} IPv4 address")).ipv4_i
           elsif current_ipv4
             ip_lease = current_network.find_ip_lease(current_ipv4)
             raise("Could not find network vif for IPv4 address: #{current_ipv4.to_s}") if ip_lease.nil? || ip_lease.network_vif.nil?
+            self[current_vif_id_sym] = ip_lease.network_vif.id
 
-            current_vif = ip_lease.network_vif
-            self["#{arg}_vif_id".to_sym] = current_vif.id
+          elsif options[:find_ipv4] == :vif_first
+            self[current_ipv4_sym] = (current_vif.ip.first ||
+                                      raise("Could not find #{arg} IPv4 address for network vif.")).ipv4_i
           end
+
+          options.delete(:find_ipv4)
         }
 
         # Validate again to ensure the new values pass the sanity test.
