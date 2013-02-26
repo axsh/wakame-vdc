@@ -55,7 +55,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         m.title = input['title'] if !input['title'].nil? && input['title'] != ""
  
         m.params = input['params'] if input['params']
-        m.protocol = input['protocol'] if input['protocol']
         m.save_changes
       }
       new_items.each { |input|
@@ -64,7 +63,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
           if input['enabled']
             m.enabled = (input['enabled'] == 'true')
           end
-          m.protocol = input['protocol']
           m.title = input['title'] if !input['title'].nil? && input['title'] != ""
           m.params = input['params'] if input['params']
         end
@@ -116,7 +114,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     post do
       res = if params[:monitors].is_a?(Hash)
               bulk_update
-            elsif params[:protocol] && params[:enabled]
+            elsif params[:title] && params[:enabled]
               single_insert
             else
               # delete all items.

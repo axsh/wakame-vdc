@@ -15,7 +15,7 @@ module Dcmgr::Models
     private
 
     def before_validation
-      super
+      self.params ||= {}
     end
     
     def _destroy_delete
