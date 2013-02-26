@@ -33,7 +33,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
           new_items << m
         end
       }
-      stored_uuids = @vif.network_vif_monitors.map {|m| m.canonical_uuid }
+      stored_uuids = @vif.network_vif_monitors_dataset.alives.map {|m| m.canonical_uuid }
       deletes = stored_uuids - input_uuids
       updates = stored_uuids - deletes
 
@@ -42,6 +42,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         next if m.nil?
         m.destroy
       }
+      modified_items = []
       updates.each { |uuid|
         input = params['monitors'].find{|idx, i| i['uuid'] == uuid }
         next if input.nil?
@@ -55,21 +56,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         m.title = input['title'] if !input['title'].nil? && input['title'] != ""
  
         m.params = input['params'] if input['params']
-        m.protocol = input['protocol'] if input['protocol']
         m.save_changes
+        modified_items << m
       }
+      created_items = []
       new_items.each { |input|
-        mclass = M::NetworkVifMonitor.monitor_class(input['protocol']) || raise("Unsupported protocol: #{input['protocol']}")
-        monitor = mclass.new do |m|
+        monitor = M::NetworkVifMonitor.new do |m|
           m.network_vif = @vif
           if input['enabled']
             m.enabled = (input['enabled'] == 'true')
           end
-          m.protocol = input['protocol']
           m.title = input['title'] if !input['title'].nil? && input['title'] != ""
           m.params = input['params'] if input['params']
         end
         monitor.save
+        created_items << monitor
       }
 
       on_after_commit do
@@ -88,15 +89,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       end
 
       {:deleted=>deletes,
-        :updated=>updates,
-        :created=>new_items.map {|m| m['uuid']}
+        :updated=>modified_items.map {|m| R::NetworkVifMonitor.new(m).generate },
+        :created=>created_items.map {|m| R::NetworkVifMonitor.new(m).generate }
       }
     end
 
     # Add new network monitor entry.
     def single_insert
-      mclass = M::NetworkVifMonitor.monitor_class(params[:protocol]) || raise("Unsupported protocol: #{params[:protocol]}")
-      monitor = mclass.new do |m|
+      monitor = M::NetworkVifMonitor.new do |m|
         m.network_vif = @vif
         if params[:enabled]
           m.enabled = (params[:enabled] == 'true')
@@ -118,7 +118,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     post do
       res = if params[:monitors].is_a?(Hash)
               bulk_update
-            elsif params[:protocol] && params[:enabled]
+            elsif params[:title] && params[:enabled]
               single_insert
             else
               # delete all items.
