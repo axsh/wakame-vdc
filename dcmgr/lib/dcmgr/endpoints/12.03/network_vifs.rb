@@ -200,27 +200,30 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
   put '/:vif_id/external_ip' do
     inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
     inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
-    inner_ipv4 = inner_vif.ip.first || raise(InvalidIPAddress, params[:vif_id])
-
     outer_nw = find_by_uuid(:Network, params[:network_uuid]) || raise(UnknownUUIDResource, params[:network_uuid])
-    outer_vif = outer_nw.network_vifs_with_service({:network_services__name => 'external-ip'}).first || raise(UnknownNetworkService, 'external-ip')
-    outer_ipv4 = outer_vif.lease_ipv4({:multiple => true}) || raise(InvalidIPAddress, params[:network_uuid])
 
     route_data = {
       :route_type => 'external-ip',
       :outer_network_id => outer_nw.id,
-      :outer_ipv4 => outer_ipv4.ipv4_i,
-      :outer_vif_id => outer_vif ? outer_vif.id : nil,
       :inner_network_id => inner_nw.id,
-      :inner_ipv4 => inner_ipv4.ipv4_i,
-      :inner_vif_id => inner_vif ? inner_vif.id : nil,
+      :inner_vif_id => inner_vif.id,
+
+      :create_options => {
+        :outer => {
+          :lease_ipv4 => :default,
+          :find_service => 'external-ip',
+        },
+        :inner => {
+          :find_ipv4 => :vif_first,
+        },
+      }
     }
 
     route = M::NetworkRoute.create(route_data)
     
-    respond_with({ :network_uuid => outer_nw.canonical_uuid,
-                   :vif_uuid => outer_vif.canonical_uuid,
-                   :ipv4 => outer_ipv4.ipv4_s
+    respond_with({ :network_uuid => route.outer_network.canonical_uuid,
+                   :vif_uuid => route.outer_vif.canonical_uuid,
+                   :ipv4 => route.outer_ipv4_s,
                  })
   end
 
