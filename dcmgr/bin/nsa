@@ -189,6 +189,9 @@ end
 
 include Isono::Runner::RpcServer
 
+# FIXME: use Dcmgr::Initializer and Dcmgr::Confiuraiton.
+load File.expand_path('../../config/initializers/logger.rb', __FILE__)
+
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'nsa'
