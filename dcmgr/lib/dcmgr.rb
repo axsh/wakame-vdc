@@ -45,6 +45,7 @@ module Dcmgr
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
+    autoload :NatBox, 'dcmgr/configurations/natbox'
     autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
     autoload :Bksta, 'dcmgr/configurations/bksta'
   end
@@ -120,6 +121,7 @@ module Dcmgr
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :DebugOpenFlow, 'dcmgr/node_modules/debug_openflow'
+    autoload :ServiceNatBox, 'dcmgr/node_modules/service_natbox'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
     autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
@@ -170,6 +172,7 @@ module Dcmgr
 
   module Rpc
     autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
+    autoload :NatBoxHandler, 'dcmgr/rpc/natbox_handler'
     autoload :StaHandler, 'dcmgr/rpc/sta_handler'
     autoload :HvaContext, 'dcmgr/rpc/hva_context'
     autoload :LocalStoreHandler, 'dcmgr/rpc/local_store_handler'
