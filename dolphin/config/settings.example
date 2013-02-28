@@ -1,0 +1,30 @@
+[server]
+host = 127.0.0.1
+port = 3000
+
+[agent]
+request_handler = 1
+query_processor = 1
+worker = 1
+sender = 1
+
+[database]
+adapter = cassandra
+host = 127.0.0.1 
+port = 9160
+
+[mail]
+from =
+# host =
+# port =
+# user_name =
+# password =
+# type = mail
+type = file
+
+[debugging]
+debug = true
+
+[logger]
+format = human_readable
+# format = ltsv
