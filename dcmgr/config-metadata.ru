@@ -9,13 +9,7 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 ['/etc/wakame-vdc/dcmgr.conf',
                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
                 ])
-
-use Dcmgr::Rack::RunInitializer, lambda {
-  Dcmgr.run_initializers
-}, lambda {
-  next if Isono::NodeModules::DataStore.disconnected? == false
-  Dcmgr.run_initializers('sequel')
-}
+Dcmgr.run_initializers('logger', 'sequel')
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'

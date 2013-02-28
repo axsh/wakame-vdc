@@ -10,7 +10,7 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                 ['/etc/wakame-vdc/dcmgr.conf',
                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
                 ])
-Dcmgr.run_initializers('sequel', 'isono', 'job_queue.sequel')
+Dcmgr.run_initializers('logger', 'sequel', 'isono', 'job_queue.sequel')
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'
