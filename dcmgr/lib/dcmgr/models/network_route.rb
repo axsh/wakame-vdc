@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'ipaddress'
+
 module Dcmgr::Models
   class NetworkRoute < BaseNew
     
@@ -136,6 +138,11 @@ module Dcmgr::Models
       }
     end
 
+    #
+    # Private methods
+    #
+    private
+
     def before_destroy
       # Add flag to either routes or ip_lease to indicate if we should release.
       #
@@ -157,19 +164,12 @@ module Dcmgr::Models
       super
     end
 
-    #
-    # Private methods
-    #
-    private
-
     def initialize_set(values)
       @create_options = values.delete(:create_options)
       super
     end
 
-    # override Sequel::Model#delete not to delete rows but to set
-    # delete flags.
-    def delete
+    def _destroy_delete
       self.deleted_at ||= Time.now
       self.is_deleted = self.id
       self.save_changes
