@@ -72,7 +72,7 @@ module Dcmgr
             logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{selected_network.canonical_uuid}'."
 
             # Set security groups
-            vnic.add_security_groups_by_id(vif_template["security_groups"] || []) unless param["security_groups"].to_s.empty?
+            vnic.add_security_groups_by_id(vif_template["security_groups"] || []) unless vif_template["security_groups"].to_s.empty?
           }
         end
       end
