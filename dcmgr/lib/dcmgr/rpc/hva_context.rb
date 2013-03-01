@@ -54,16 +54,19 @@ module Dcmgr
         @instance_logger = InstanceLogger.new(self)
       end
 
-      class InstanceLogger < EndpointBuilder
+      class InstanceLogger
         def initialize(hva_context)
           @hva_context = hva_context
-          @logger = ::Logger.new(Dcmgr::Logger.default_logdev)
+          require 'logger'
+          @logger = ::Logger.new(Dcmgr::Logger.log_io)
           @logger.progname = 'HvaHandler'
         end
 
         ["fatal", "error", "warn", "info", "debug"].each do |level|
           define_method(level){|msg|
-            @logger.__send__(level, "Session ID: #{session_id}: Instance UUID: #{@hva_context.inst_id}: #{msg}")
+            # key from Isono::NodeModules::JobWorker::JOB_CTX_KEY
+            jobctx = Thread.current[:job_worker_ctx] || raise("Failed to get JobContext from current thread #{Thread.current}")
+            @logger.__send__(level, "Session ID: #{jobctx.session_id}: Instance UUID: #{@hva_context.inst_id}: #{msg}")
           }
         end
       end
