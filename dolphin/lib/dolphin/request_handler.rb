@@ -26,7 +26,7 @@ module Dolphin
 
     post '/events' do |request|
       attach_request_params(request)
-      logger :debug, "params: #{@params}"
+      logger :info, "params #{@params}"
 
       event = {}
       event[:notification_id] = @notification_id
@@ -39,14 +39,14 @@ module Dolphin
 
     get '/events' do |request|
       attach_request_params(request)
-      logger :debug, "params: #{@params}"
+      logger :info, "params #{@params}"
 
       [200, {}, "success!\n"]
     end
 
     post '/notifications' do |request|
       attach_request_params(request)
-      logger :debug, "params: #{@params}"
+      logger :info, "params #{@params}"
 
       notification = {}
       notification[:id] = @notification_id

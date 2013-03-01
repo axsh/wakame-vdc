@@ -8,7 +8,7 @@ module Dolphin
     include Dolphin::Util
 
     def put_event(event)
-      logger :debug, "Worker put events #{event}"
+      logger :info, "Worker put events #{event}"
 
       notification_id = event[:notification_id]
       future_event = query_processor.future.put_event(event)
@@ -37,6 +37,7 @@ module Dolphin
               return false
             end
 
+            logger :info, "Send notification from Worker #{message}"
             send_notification(sender_type, message)
           end
         else
