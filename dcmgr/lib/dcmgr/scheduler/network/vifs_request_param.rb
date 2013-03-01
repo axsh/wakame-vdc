@@ -36,7 +36,7 @@ module Dcmgr
               vnic.nat_network = nat_network
             end
 
-            vnic.add_security_groups_by_id(param["security_groups"] || [])
+            vnic.add_security_groups_by_id(param["security_groups"] || []) unless param["security_groups"].to_s.empty?
 
             vnic.network = network
             vnic.save

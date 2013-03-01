@@ -66,7 +66,7 @@ module Dcmgr
 
               # Add security groups. This needs to be done after saving the vnic
               # because the db record needs to have a primary key first.
-              vnic.add_security_groups_by_id(vif_temp["security_groups"])
+              vnic.add_security_groups_by_id(vif_temp["security_groups"]) unless param["security_groups"].to_s.empty?
 
               logger.info "Successfully attached vnic '#{vnic.canonical_uuid}' to network '#{network.canonical_uuid}'."
             rescue Dcmgr::Models::OutOfIpRange => e
