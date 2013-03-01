@@ -5,27 +5,27 @@ require 'action_mailer'
 
 module Dolphin
 
-  case settings['mail']['type']
-    when 'file'
-      ActionMailer::Base.delivery_method = :file
-      ActionMailer::Base.raise_delivery_errors = true
-      ActionMailer::Base.file_settings = {
-        :location => File.join(Dolphin.root_path, 'tmp/mails')
-      }
-    when 'mail'
-      ActionMailer::Base.delivery_method = :smtp
-      ActionMailer::Base.smtp_settings = {
-        address: settings['mail']['host'],
-        port: settings['mail']['port'],
-        user_name: settings['mail']['user_name'],
-        password: settings['mail']['password'],
-        authentication: :plain,
-        enable_starttls_auto: true
-      }
-  end
-
   module Sender
     TYPE = [:mail_senders].freeze
+
+    case Dolphin.settings['mail']['type']
+      when 'file'
+        ActionMailer::Base.delivery_method = :file
+        ActionMailer::Base.raise_delivery_errors = true
+        ActionMailer::Base.file_settings = {
+          :location => File.join(Dolphin.root_path, 'tmp/mails')
+        }
+      when 'mail'
+        ActionMailer::Base.delivery_method = :smtp
+        ActionMailer::Base.smtp_settings = {
+          address: Dolphin.settings['mail']['host'],
+          port: Dolphin.settings['mail']['port'],
+          user_name: Dolphin.settings['mail']['user_name'],
+          password: Dolphin.settings['mail']['password'],
+          authentication: :plain,
+          enable_starttls_auto: true
+        }
+    end
 
     class Mail < ActionMailer::Base
       include Celluloid
