@@ -31,20 +31,68 @@ module Dcmgr::Models
     many_to_one :nat_network, :key => :nat_network_id, :class => self
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
+    one_to_many :inner_routes, :key => :inner_network_id, :class=>NetworkRoute do |ds|
+      ds.alives
+    end
+    one_to_many :outer_routes, :key => :outer_network_id, :class=>NetworkRoute do |ds|
+      ds.alives
+    end
+
     one_to_many :dhcp_range
     many_to_one :dc_network
 
+    dataset_module {
+      def join_with_services
+        self.join_table(:left, :network_vifs, :networks__id => :network_vifs__network_id
+                        ).join_table(:left, :network_services, :network_vifs__id => :network_services__network_vif_id)
+      end
+
+      def join_with_dc_networks
+        self.join_table(:left, :dc_networks, :dc_networks__id => :networks__dc_network_id)
+      end
+
+      def where_with_services(param)
+        join_with_services.where(param).select_all(:networks).alives
+      end
+
+      def where_with_dc_networks(param)
+        join_with_dc_networks.where(param).select_all(:networks).alives
+      end
+    }
+
     def network_service(params = {})
       params[:network_id] = self.id
-      NetworkService.dataset.join_table(:left, :network_vifs, :id => :network_vif_id).where(params).select_all(:network_services)
+      NetworkService.dataset.join_table(:left, :network_vifs,
+                                        :network_vifs__id => :network_vif_id
+                                        ).where(params).select_all(:network_services)
+    end
+
+    def network_vifs_with_service(params = {})
+      params[:network_id] = self.id
+      NetworkVif.dataset.join_table(:left, :network_services,
+                                    :network_vifs__id => :network_services__network_vif_id
+                                    ).where(params).select_all(:network_vifs).alives
+    end
+
+    def network_routes(params = {})
+      NetworkRoute.dataset.where({:inner_network_id => self.id} |
+                                 {:outer_network_id => self.id}
+                                 ).where(params).alives
+    end
+
+    def network_routes_with_vifs(params = {})
+      params[:network_id] = self.id
+      params[:deleted_at] = nil if params[:deleted_at].nil?
+      NetworkRoute.dataset.join_table(:left, :network_vifs,
+                                      {:network_vifs__id => :network_routes__inner_vif_id} |
+                                      {:network_vifs__id => :network_routes__outer_vif_id}
+                                      ).where(params).select_all(:network_routes)
     end
 
     def add_service_vif(ipv4)
-      ip_lease = self.find_ip_lease(ipv4)
-
-      if ip_lease
-        # Verify vif is service vif.
-        return ip_lease.network_vif
+      if ipv4
+        ip_lease = self.find_ip_lease(ipv4)
+        return ip_lease.network_vif if ip_lease
       end
 
       m = MacLease.lease(Dcmgr.conf.mac_address_vendor_id)
@@ -57,9 +105,13 @@ module Dcmgr::Models
 
       vif = NetworkVif.new(vif_data)
       vif.save
-      ip_lease = self.network_vif_ip_lease_dataset.add_reserved(ipv4)
-      ip_lease.network_vif_id = vif.id
-      ip_lease.save_changes
+
+      if ipv4
+        ip_lease = self.network_vif_ip_lease_dataset.add_reserved(ipv4)
+        ip_lease.network_vif_id = vif.id
+        ip_lease.save_changes
+      end
+
       vif
     end
 
@@ -93,9 +145,7 @@ module Dcmgr::Models
     # @param [String] ipaddr IP address
     def find_ip_lease(ipaddr)
       ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
-      leases = self.network_vif_ip_lease_dataset.where(:ipv4 => ipaddr.to_i).alives
-      return nil if leases.empty?
-      leases.first
+      self.network_vif_ip_lease_dataset.where(:ipv4 => ipaddr.to_i).alives.first
     end
 
     # register reserved IP address in this network

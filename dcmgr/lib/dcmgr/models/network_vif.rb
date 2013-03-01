@@ -19,11 +19,49 @@ module Dcmgr::Models
       ds.where(:network_id=>self.nat_network_id).alives
     end
 
+    one_to_many(:network_routes, :class=>NetworkRoute, :read_only=>true) do |ds|
+      ds.where({:inner_vif_id => self.id} | {:outer_vif_id => self.id}).alives
+    end
+
+    one_to_many :inner_routes, :key => :inner_vif_id, :class=>NetworkRoute do |ds|
+      ds.alives
+    end
+    one_to_many :outer_routes, :key => :outer_vif_id, :class=>NetworkRoute do |ds|
+      ds.alives
+    end
+
     subset(:alives, {:deleted_at => nil})
 
     many_to_one :instance
     one_to_many :network_services
     one_to_many :network_vif_monitors
+
+    dataset_module {
+      def join_with_services
+        self.join_table(:left, :network_services, :network_vifs__id => :network_services__network_vif_id)
+      end
+
+      def join_with_routes
+        self.join_table(:left, :network_routes,
+                        {:network_vifs__id => :network_routes__inner_vif_id} |
+                        {:network_vifs__id => :network_routes__outer_vif_id})
+      end
+
+      def where_with_services(param)
+        join_with_services.where(param).select_all(:networks)
+      end
+
+      def where_with_routes(param)
+        join_with_routes.where(param).select_all(:networks)
+      end
+    }
+
+    def network_vifs_with_service(params = {})
+      params[:network_id] = self.id
+      NetworkVif.dataset.join_table(:left, :network_services,
+                                    :network_vifs__id => :network_services__network_vif_id
+                                    ).where(params).select_all(:network_vifs)
+    end
 
     def to_hash
       hash = super
@@ -84,6 +122,23 @@ module Dcmgr::Models
 
     def release_ip_lease
       ip_dataset.destroy
+    end
+
+    # Updated IP lease function
+    def lease_ipv4(options = {})
+      network = self.network
+
+      return nil if network.nil?
+      return nil if options[:multiple] != true && !self.direct_ip_lease.empty?
+
+      return IpLease.lease(self, network)
+    end
+
+    # return IpLease for IP address in this network vif
+    # @param [String] ipaddr IP address
+    def find_ip_lease(ipaddr)
+      ipaddr = ipaddr.is_a?(IPAddress::IPv4) ? ipaddr : IPAddress::IPv4.new(ipaddr)
+      ip_dataset.where(:ipv4 => ipaddr.to_i).alives.first
     end
 
     #Override the delete method to keep the row and just mark it as deleted

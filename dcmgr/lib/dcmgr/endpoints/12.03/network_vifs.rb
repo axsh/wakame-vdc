@@ -182,4 +182,80 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       respond_with(R::NetworkVifMonitor.new(monitor).generate)
     end
   end
+
+  get '/:vif_id/external_ip' do
+    vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
+
+    result = vif.inner_routes(:conditions => {:name => 'external-ip'}).collect { |route|
+      {
+        :network_uuid => route.outer_network ? route.outer_network.canonical_uuid : nil,
+        :vif_uuid => route.outer_vif ? route.outer_vif.canonical_uuid : nil,
+        :ipv4 => route.outer_ipv4_s
+      }
+    }
+    
+    respond_with(result)
+  end
+
+  put '/:vif_id/external_ip/add' do
+    inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
+    inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
+    outer_nw = find_by_uuid(:Network, params[:network_uuid]) || raise(UnknownUUIDResource, params[:network_uuid])
+
+    create_options = {
+      :outer => {
+        :lease_ipv4 => :default,
+        :find_service => 'external-ip',
+      },
+      :inner => {
+        :find_ipv4 => :vif_first,
+      }
+    }
+      
+    route_data = {
+      :route_type => 'external-ip',
+      :outer_network_id => outer_nw.id,
+      :inner_network_id => inner_nw.id,
+      :inner_vif_id => inner_vif.id,
+
+      :create_options => create_options
+      }
+    }
+
+    route = M::NetworkRoute.create(route_data)
+    
+    respond_with({ :network_uuid => route.outer_network.canonical_uuid,
+                   :vif_uuid => route.outer_vif.canonical_uuid,
+                   :ipv4 => route.outer_ipv4_s,
+                 })
+  end
+
+  put '/:vif_id/external_ip/remove' do
+    inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
+    inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
+
+    outer_nw = find_by_uuid(:Network, params[:network_uuid]) ||
+      raise(UnknownUUIDResource, params[:network_uuid])
+    outer_vif = outer_nw.network_vifs_with_service(:network_services__name => 'external-ip').first ||
+      raise(UnknownNetworkService, 'external-ip')
+
+    ds = M::NetworkRoute.dataset.routes_between_vifs(outer_vif, inner_vif)
+    ds = ds.where(:network_routes__inner_ipv4 => IPAddress::IPv4.new(params[:inner_ipv4]).to_i) if params[:inner_ipv4]
+    ds = ds.where(:network_routes__outer_ipv4 => IPAddress::IPv4.new(params[:outer_ipv4]).to_i) if params[:outer_ipv4]
+
+    result = []
+
+    ds.each { |route|
+      result << {
+        :network_uuid => route.outer_network.canonical_uuid,
+        :vif_uuid => route.outer_vif.canonical_uuid,
+        :ipv4 => route.outer_ipv4_s,
+      }
+
+      route.destroy
+    }
+    
+    respond_with(result)
+  end
+
 end
