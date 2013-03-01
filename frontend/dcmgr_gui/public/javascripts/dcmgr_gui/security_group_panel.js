@@ -95,8 +95,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
       var description = $(this).find('#security_group_description').val();
       var display_name = $(this).find('#security_group_display_name').val();
       var rule = $(this).find('#security_group_rule').val();
-      var data ='description=' + description
-                +'&display_name=' + display_name
+      var data ='description=' + encodeURIComponent(description)
+                +'&display_name=' + encodeURIComponent(display_name)
                 +'&rule=' + rule;
 
       var request = new DcmgrGUI.Request;
@@ -174,8 +174,8 @@ DcmgrGUI.prototype.securityGroupPanel = function(){
     var display_name = $(this).find('#security_group_display_name').val();
     var description = $(this).find('#security_group_description').val();
     var rule = $(this).find('#security_group_rule').val();
-    var data = 'display_name=' + display_name
-             +'&description=' + description
+    var data = 'display_name=' + encodeURIComponent(display_name)
+             +'&description=' + encodeURIComponent(description)
              +'&rule=' + rule;
 
     var request = new DcmgrGUI.Request;

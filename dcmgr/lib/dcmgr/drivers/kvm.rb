@@ -9,13 +9,34 @@ module Dcmgr
       include Dcmgr::Helpers::CliHelper
       include Dcmgr::Helpers::NicHelper
 
-      def_configuration
+      def_configuration do
+        param :qemu_path, :default=>proc { ||
+          if File.exists?('/etc/debian_version')
+            '/usr/bin/kvm'
+          else
+            '/usr/libexec/qemu-kvm'
+          end
+        }
+
+        param :qemu_options, :default=>'-no-kvm-pit-reinjection'
+      end
 
       # 0x0-2 are reserved by KVM.
       # 0=Host bridge
       # 1=ISA bridge
       # 2=VGA
       KVM_NIC_PCI_ADDR_OFFSET=0x10
+      
+      def initialize
+        @qemu_ver_str = `#{driver_configuration.qemu_path} -version`.chomp
+        @qemu_version = if @qemu_ver_str =~ /^QEMU emulator version ([\d\.]+) \(/
+                          $1
+                        elsif @qemu_ver_str =~ /^QEMU PC emulator version ([\d\.]+) \(/
+                          $1
+                        else
+                          raise "Failed to parse qemu version string: #{@qemu_ver_str}"
+                        end
+      end
 
       def run_instance(hc)
 
@@ -31,14 +52,15 @@ module Dcmgr
 
         # run vm
         inst = hc.inst
-        cmd = ["kvm -m %d -smp %d -name vdc-%s -vnc :%d",
-               "-cpu host",
+        cmd = ["%s -m %d -smp %d -name vdc-%s -vnc :%d",
                "-pidfile %s",
                "-daemonize",
                "-monitor telnet:127.0.0.1:%d,server,nowait",
                "-no-shutdown",
+               driver_configuration.qemu_options,
                ]
-        args=[inst[:memory_size],
+        args=[driver_configuration.qemu_path,
+              inst[:memory_size],
               inst[:cpu_cores],
               inst[:uuid],
               vnc_port - 5900, # KVM -vnc offsets 5900
@@ -272,6 +294,7 @@ module Dcmgr
         hc.inst[:image][:features][:virtio] ? 'virtio' : 'e1000'
       end
 
+      Task::Tasklet.register(self.new)
     end
   end
 end

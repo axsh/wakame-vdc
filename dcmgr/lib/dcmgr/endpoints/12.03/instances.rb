@@ -98,11 +98,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     respond_with(R::Instance.new(i).generate)
   end
 
-  quota 'instance.quota_weight', 'instance.count'
+  quota('instance.quota_weight') do
+    request_amount do
+      params[:quota_weight].to_f
+    end
+  end
+  quota 'instance.count'
   post do
     # description 'Runs a new VM instance'
     # param :image_id, string, :required
-    # param :instance_spec_id, string, :required
     # param :host_node_id, string, :optional
     # param :hostname, string, :optional
     # param :user_data, string, :optional
@@ -113,13 +117,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # param :ha_enabled, string, :optional
     # param :display_name, string, :optional
     wmi = M::Image[params[:image_id]] || raise(E::InvalidImageID)
-    spec = M::InstanceSpec[params[:instance_spec_id]]
-    if spec
-      params[:hypervisor]   = spec.hypervisor
-      params[:cpu_cores]    = spec.cpu_cores
-      params[:memory_size]  = spec.memory_size
-      params[:quota_weight] = spec.quota_weight
-    end
 
     if params[:hypervisor]
       if M::HostNode.online_nodes.filter(:hypervisor=>params[:hypervisor]).empty?
@@ -473,7 +470,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   end
 
   # Create image backup from the alive instance.
-  quota 'backup_object.size_mb', 'backup_object.count', 'image.count', 'instance.backup_operations_per_hour'
+  quota 'backup_object.count'
+  quota 'image.count'
+  quota 'instance.backup_operations_per_hour'
+  quota('backup_object.size_mb') do
+    request_amount do
+      instance = find_by_uuid(:Instance, params[:id])
+      return (instance.image.backup_object.size / (1024 * 1024)).to_i
+    end
+  end
   put '/:id/backup' do
     instance = find_by_uuid(:Instance, params[:id])
     raise E::InvalidInstanceState, instance.state unless ['halted'].member?(instance.state)

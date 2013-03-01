@@ -138,6 +138,7 @@ module Dcmgr::Models
       self.terminated_at ||= Time.now
       self.state = :terminated if self.state != :terminated
       self.status = :offline if self.status != :offline
+      self.ssh_key_pair_id = nil
       self.save
     end
 
@@ -214,7 +215,6 @@ module Dcmgr::Models
         :vif => [],
         :hostname => hostname,
         :ha_enabled => ha_enabled,
-        :instance_spec_id => nil,
       }
 
       if self.ssh_key_pair
@@ -310,10 +310,10 @@ module Dcmgr::Models
     # This method helps to set association values have to be
     # set mandatry until initial save to the database.
     def self.entry_new(account, image, params, &blk)
-      raise ArgumentError unless account.is_a?(Account)
-      raise ArgumentError unless image.is_a?(Image)
+      raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
+      raise ArgumentError, "The image parameter must be an Image. Got '#{image.class}'" unless image.is_a?(Image)
       # Mash is passed in some cases.
-      raise ArgumentError unless params.class == ::Hash
+      raise ArgumentError, "The params parameter must be a Hash. Got '#{params.class}'" unless params.class == ::Hash
 
       i = self.new &blk
       i.account_id = account.canonical_uuid

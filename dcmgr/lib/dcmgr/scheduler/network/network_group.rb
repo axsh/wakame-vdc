@@ -28,7 +28,7 @@ module Dcmgr
           logger.info "Scheduling network for the instance #{instance.canonical_uuid}"
 
           # Create the vnics
-          vif_templates = instance.request_params["vifs"] || { "eth0" => {"index"=>"0"} }
+          vif_templates = instance.request_params["vifs"] || { "eth0" => {"index"=>"0","security_groups" => []} }
           vif_templates.each { |vif_name,vif_temp|
             tag_id = vif_temp["network"] || options.network_group_id
             raise Dcmgr::Scheduler::NetworkSchedulingError, "No default network group set" if tag_id.nil?
@@ -79,7 +79,6 @@ module Dcmgr
         end
 
         class Algorithm
-          #TODO: fix this typo and maybe include an alias for deprecation
           def self.least_allocation(networks)
             networks.min_by {|uuid, ip_nums| ip_nums}
           end

@@ -18,7 +18,7 @@ test_load_balancer_help_stderr_to_devnull_success() {
 test_load_balancer_help_stderr_to_stdout_success() {
   extract_args load_balancer help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 load_balancer [help|index|show|create|destroy|poweroff|poweron]"
+  assertEquals "${res}" "$0 load_balancer [help|index|show|create|xcreate|destroy|poweroff|poweron]"
 }
 
 test_load_balancer_state() {

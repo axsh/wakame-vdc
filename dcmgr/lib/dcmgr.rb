@@ -68,7 +68,6 @@ module Dcmgr
     autoload :VolumeSnapshot, 'dcmgr/models/volume_snapshot'
     autoload :SecurityGroup, 'dcmgr/models/security_group'
     autoload :SecurityGroupReference, 'dcmgr/models/security_group_reference'
-    autoload :InstanceSpec, 'dcmgr/models/instance_spec'
     autoload :NetworkService, 'dcmgr/models/network_service'
     autoload :NetworkVif, 'dcmgr/models/network_vif'
     autoload :Network, 'dcmgr/models/network'
@@ -153,7 +152,6 @@ module Dcmgr
     autoload :Image, 'dcmgr/cli/image'
     autoload :KeyPair, 'dcmgr/cli/keypair'
     autoload :SecurityGroup, 'dcmgr/cli/security_group'
-    autoload :Spec, 'dcmgr/cli/spec'
     autoload :ResourceGroup, 'dcmgr/cli/resource_group'
     autoload :BackupStorage, 'dcmgr/cli/backup_storage'
     autoload :BackupObject, 'dcmgr/cli/backup_object'
@@ -211,6 +209,7 @@ module Dcmgr
     autoload :Stud, 'dcmgr/drivers/stud'
     autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
+    autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
