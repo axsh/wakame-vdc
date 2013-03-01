@@ -42,6 +42,7 @@ module Dolphin
           end
         else
           logger :error, "Failed execute query_processor"
+          return false
         end
       else
         query_processor.future.put_event(event)
