@@ -17,13 +17,15 @@ uri = URI.parse(path)
 headers = {
   'Content-Type' =>'application/json',
   'X-NOTIFICATION-ID' => 'system',
-  'X-MESSAGE-TYPE' => 'system_mail'
+  'X-MESSAGE-TYPE' => 'alert_port'
 }
 
 messages = {
   'instance_id' => 'i-abcdefgh',
+  'instance_name' => 'test',
+  'instance_ip' => '127.0.0.1',
   'account_id' => 'a-abcdefgh',
-  'created_at' => Time.now,
+  'event_datetime' => Time.now,
   'message' => 'Alert!!!!'
 }
 

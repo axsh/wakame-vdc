@@ -25,6 +25,10 @@ module Dolphin
     File.expand_path('../../', __FILE__)
   end
 
+  def self.templates_path
+    File.join(root_path, '/templates')
+  end
+
   Celluloid.logger.datetime_format = "%Y-%m-%d %H:%M:%S"
   Celluloid.logger.formatter = proc { |severity, datetime, progname, msg|
 

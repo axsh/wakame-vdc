@@ -22,7 +22,6 @@ module Dolphin
 
           if !notification['mail'].blank?
             mail = notification['mail']
-            messages = event[:messages]
             sender_type = 'email'
 
             build_params = {}
@@ -30,10 +29,13 @@ module Dolphin
             build_params["to"] = mail['to']
             build_params["cc"] = mail['cc']
             build_params["bcc"] = mail['bcc']
-            build_params["message"] = messages['message']
+            build_params["messages"] = event[:messages]
 
             message = build_message(sender_type, message_template_id, build_params)
-            logger :debug, "Send notification from Worker #{message}"
+            if message.nil?
+              logger :error, "Failed to notify because notifification object not found."
+              return false
+            end
 
             send_notification(sender_type, message)
           end

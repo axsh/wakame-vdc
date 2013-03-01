@@ -25,7 +25,7 @@ headers = {
 
 methods = {
   'mail' => {
-    'subject' => 'Test Mail',
+    'subject' => 'Alert Mail',
     'to' => mail_to,
     'cc' => mail_cc,
     'bcc' => mail_bcc,
