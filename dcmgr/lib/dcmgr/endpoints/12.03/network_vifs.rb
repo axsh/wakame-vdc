@@ -197,7 +197,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     respond_with(result)
   end
 
-  put '/:vif_id/external_ip/add' do
+  post '/:vif_id/external_ip' do
     inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
     inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
     outer_nw = find_by_uuid(:Network, params[:network_uuid]) || raise(UnknownUUIDResource, params[:network_uuid])
@@ -229,7 +229,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
                  })
   end
 
-  put '/:vif_id/external_ip/remove' do
+  delete '/:vif_id/external_ip' do
     inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
     inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
 
