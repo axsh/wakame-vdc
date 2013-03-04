@@ -228,6 +228,64 @@ __END
   end
   register VifOps, 'vif', "vif [options]", "Maintain virtual interfaces"
 
+  #
+  # IP Pools
+  #
+  class PoolOps < Base
+    namespace :pool
+    M=Dcmgr::Models
+
+    desc "add [options]", "Add new IP pool."
+    method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
+    method_option :uuid, :type => :string, :required => false, :desc => "UUID of the IP pool"
+    method_option :display_name, :type => :string, :required => true, :desc => "Display name for the IP pool"
+    def add()
+      fields = {
+        :account_id => options[:account_id],
+        :display_name => options[:display_name],
+      }
+      fields[:uuid] = options[:fields] if options[:fields]
+
+      puts super(M::IpPool, fields)
+    end
+    
+    desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
+    def add_dcn(pool_uuid, dcn_uuid)
+      pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
+      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      fields = {
+        :ip_pool_id => pool.id,
+        :dc_network_id => dcn.id,
+      }
+
+      M::IpPoolDcNetwork.create(fields)
+    end
+
+    desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
+    def del_dcn(pool_uuid, dcn_uuid)
+      pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
+      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      fields = {
+        :ip_pool_id => pool.id,
+        :dc_network_id => dcn.id,
+      }
+
+      assoc = M::IpPoolDcNetwork.find(fields)
+      assoc && assoc.destroy
+    end
+
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
+  end
+  register PoolOps, 'pool', "pool [options]", "Maintain IP pool information"
+
+  #
+  # Network Routes
+  #
   class RouteOps < Base
     namespace :route
     M=Dcmgr::Models
@@ -351,6 +409,9 @@ __END
   end
   register RouteOps, 'route', "route [options]", "Maintain routing information"
 
+  #
+  # Network Services
+  #
   class ServiceOps < Base
     namespace :service
     M=Dcmgr::Models
