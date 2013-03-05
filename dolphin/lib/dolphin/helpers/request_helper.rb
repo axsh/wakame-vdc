@@ -27,6 +27,23 @@ module Dolphin
         end
         @params
       end
+
+      def run(request, &blk)
+        attach_request_params(request)
+        logger :info, "params #{@params}"
+        begin
+          blk.call
+        rescue => e
+          puts e.backtrace
+          [400, MultiJson.dump({
+            'message' => e.message
+          })]
+        end
+      end
+
+      def respond_with(data)
+        [200, MultiJson.dump(data)]
+      end
     end
   end
 end
