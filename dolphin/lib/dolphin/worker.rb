@@ -49,6 +49,10 @@ module Dolphin
       end
     end
 
+    def get_event(notification_id, options={})
+      query_processor.future.get_event(notification_id, options)
+    end
+
     def put_notification(notification)
       query_processor.future.put_notification(notification)
     end

@@ -38,10 +38,23 @@ module Dolphin
     end
 
     get '/events' do |request|
-      attach_request_params(request)
-      logger :info, "params #{@params}"
+      run(request) do
+        raise 'Not found notification_id' unless @notification_id
+        start = @params['start'].to_i || 0
+        limit = @params['limit'].to_i || 100
 
-      [200, {}, "success!\n"]
+        options = {}
+        options[:start] = start
+        options[:count] = limit
+        events = worker.get_event(@notification_id, options).value
+
+        response_params = {
+          :start => start,
+          :limit => limit,
+          :results => events
+        }
+        respond_with response_params
+      end
     end
 
     post '/notifications' do |request|

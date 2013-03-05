@@ -20,6 +20,11 @@ module Dolphin
       e
     end
 
+    def get_event(notification_id, options = {})
+      e = Dolphin::Models::Event.new
+      e.get(notification_id, options)
+    end
+
     def put_notification(notification)
       logger :info, "Put notification #{notification}"
       notification_id = notification[:id]
