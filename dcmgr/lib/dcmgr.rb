@@ -69,7 +69,6 @@ module Dcmgr
     autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :DhcpRange, 'dcmgr/models/dhcp_range'
     autoload :IpLease, 'dcmgr/models/ip_lease'
-    autoload :IpLeaseHandle, 'dcmgr/models/ip_lease_handle'
     autoload :IpPool, 'dcmgr/models/ip_pool'
     autoload :IpPoolDcNetwork, 'dcmgr/models/ip_pool_dc_network'
     autoload :Network, 'dcmgr/models/network'

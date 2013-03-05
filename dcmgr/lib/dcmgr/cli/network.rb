@@ -262,7 +262,7 @@ __END
       M::IpPoolDcNetwork.create(fields)
     end
 
-    desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
+    desc "del-dcn POOL DCN [options]", "Remove DC Network from IP pool."
     def del_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
       dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
@@ -274,6 +274,24 @@ __END
 
       assoc = M::IpPoolDcNetwork.find(fields)
       assoc && assoc.destroy
+    end
+
+    desc "acquire POOL [options]", "Acquire IP lease and add it to the IP pool."
+    method_option :network_id, :type => :string, :required => false, :desc => "UUID of the network to lease from"
+    def acquire(pool_uuid)
+      ip_pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
+      network = nil
+
+      if options[:network_id]
+        network = M::Network[options[:network_id]] || UnknownUUIDError.raise(options[:network_id])
+      end
+
+      network || Error.raise("Could not find appropriate network for leasing an IP.", 100)
+
+      st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)      
+      lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
+      
+      puts "#{lease.canonical_uuid} #{lease.ipv4_s}"
     end
 
     protected

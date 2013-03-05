@@ -8,6 +8,8 @@ module Dcmgr::Models
 
     many_to_many :dc_networks, :join_table=>:ip_pool_dc_networks
 
+    subset(:alives, {:deleted_at => nil})
+
   end
 
 end

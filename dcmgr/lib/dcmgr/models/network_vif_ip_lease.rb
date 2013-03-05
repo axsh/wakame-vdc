@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 require 'ipaddress'
 module Dcmgr::Models
-  class NetworkVifIpLease < BaseNew
+  class NetworkVifIpLease < AccountResource
     class RequestError < RuntimeError; end
+
+    taggable 'ipl'
 
     TYPE_AUTO=0
     TYPE_RESERVED=1
@@ -16,6 +18,7 @@ module Dcmgr::Models
 
     many_to_one :network
     many_to_one :network_vif
+    many_to_one :ip_pool
 
     subset(:alives, {:deleted_at => nil})
 
