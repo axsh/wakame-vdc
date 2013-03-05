@@ -219,7 +219,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       :inner_vif_id => inner_vif.id,
 
       :create_options => create_options
-      }
     }
 
     route = M::NetworkRoute.create(route_data)
