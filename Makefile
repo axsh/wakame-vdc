@@ -30,7 +30,7 @@ unexport GEM_HOME GEM_PATH
 
 build: build-ruby-stamp
 
-build-ruby-stamp: ruby-build ruby install-core-gem bundle-install
+build-ruby-stamp: ruby-build ruby bundle-install
 	touch $@
 
 ruby-build: ruby-build-stamp
@@ -44,10 +44,6 @@ ruby-build-stamp:
 ruby: ruby-stamp
 ruby-stamp:
 	(cd $(CURDIR)/ruby-build; ./bin/ruby-build $(ruby_ver) $(RUBYDIR))
-	touch $@
-
-install-core-gem: install-core-gem-stamp
-install-core-gem-stamp:
 	gem install bundler rake --no-rdoc --no-ri
 	touch $@
 
