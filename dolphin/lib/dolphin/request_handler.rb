@@ -12,13 +12,23 @@ module Dolphin
     def initialize(host, port)
       @server = Reel::Server.supervise_as(:reques_handler, host, port) do |connection|
         while request = connection.request
-          options = {
-            :method => request.method,
-            :input => request.body
-          }
-          options.merge!(request.headers)
-          status, headers, body = call Rack::MockRequest.env_for(request.url, options)
-          connection.respond status_symbol(status), headers, body.to_s
+          begin
+            logger :info, {
+              :host => request.headers["Host"],
+              :user_agent => request.headers["User-Agent"]
+
+            }
+            options = {
+              :method => request.method,
+              :input => request.body
+            }
+            options.merge!(request.headers)
+            status, headers, body = call Rack::MockRequest.env_for(request.url, options)
+            connection.respond status_symbol(status), headers, body.to_s
+          rescue => e
+            logger :error, e
+            break
+          end
         end
       end
       logger :info, "Listening on http://#{host}:#{port}"
