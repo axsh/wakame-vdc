@@ -21,14 +21,16 @@ module Dolphin
       end
 
       def run(request, &blk)
-        attach_request_params(request)
-        logger :info, "params #{@params}"
         begin
+          attach_request_params(request)
+          logger :info, "params #{@params}"
           blk.call
         rescue => e
-          puts e.backtrace
+          logger :error, e.backtrace
           [400, MultiJson.dump({
-            'message' => e.message
+            :results => [{
+              'message' => e.message
+            }]
           })]
         end
       end
