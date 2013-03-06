@@ -53,8 +53,8 @@ module Dolphin
 
     get '/events' do |request|
       run(request) do
-        start = @params['start'].to_i || 0
-        limit = @params['limit'].to_i || 100
+        start = @params['start'].blank? ? 0 : @params['start'].to_i
+        limit = @params['limit'].blank? ? 100 : @params['limit'].to_i
 
         params = {}
         params[:start] = start
