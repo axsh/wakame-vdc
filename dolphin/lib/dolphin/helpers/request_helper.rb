@@ -28,9 +28,7 @@ module Dolphin
         rescue => e
           logger :error, e.backtrace
           [400, MultiJson.dump({
-            :results => [{
-              'message' => e.message
-            }]
+            :message => e.message
           })]
         end
       end

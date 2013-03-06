@@ -45,9 +45,7 @@ module Dolphin
 
         worker.future.put_event(event)
         response_params = {
-          :results => [{
-            'message' => 'OK'
-          }]
+          :message => 'OK'
         }
         respond_with response_params
       end
@@ -65,7 +63,8 @@ module Dolphin
 
         response_params = {
           :start => start,
-          :results => events
+          :results => events,
+          :message => 'OK'
         }
         respond_with response_params
       end
@@ -80,9 +79,7 @@ module Dolphin
         notification[:methods] = @params
         worker.future.put_notification(notification)
         response_params = {
-          :results => [{
-            'message' => 'OK'
-          }]
+          :message => 'OK'
         }
         respond_with response_params
       end
