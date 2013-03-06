@@ -11,7 +11,7 @@ uri = URI.parse(path)
 
 headers = {
   'Content-Type' =>'application/json',
-  'X-NOTIFICATION-ID' => 'system',
+  'X-Notification-Id' => 'system',
 }
 
 methods = {

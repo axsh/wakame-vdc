@@ -7,8 +7,8 @@ uri = URI.parse(path)
 
 headers = {
   'Content-Type' =>'application/json',
-  'X-NOTIFICATION-ID' => 'system',
-  'X-MESSAGE-TYPE' => 'alert_port'
+  'X-Notification-Id' => 'system',
+  'X-Message-Type' => 'alert_port'
 }
 
 messages = {
