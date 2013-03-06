@@ -71,14 +71,18 @@ module Dolphin
     end
 
     post '/notifications' do |request|
-      attach_request_params(request)
-      logger :info, "params #{@params}"
-
-      notification = {}
-      notification[:id] = @notification_id
-      notification[:methods] = @params
-      worker.future.put_notification(notification)
-      [200, {}, "success!\n"]
+      run(request) do
+        notification = {}
+        notification[:id] = @notification_id
+        notification[:methods] = @params
+        worker.future.put_notification(notification)
+        response_params = {
+          :results => [{
+            'message' => 'OK'
+          }]
+        }
+        respond_with response_params
+      end
     end
 
     private
