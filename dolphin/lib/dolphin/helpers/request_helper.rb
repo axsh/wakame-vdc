@@ -6,6 +6,7 @@ module Dolphin
     module RequestHelper
 
       def attach_request_params(request)
+        raise 'Unsuppoted Content-Type' unless request.env['Content-Type'] === 'application/json'
         @params = {}
         @notification_id ||= request.env['X-Notification-Id']
         @message_type ||= request.env['X-Message-Type']
