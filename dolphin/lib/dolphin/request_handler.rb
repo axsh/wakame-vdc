@@ -36,6 +36,7 @@ module Dolphin
     post '/events' do |request|
       run(request) do
         raise 'Not found notification_id' unless @notification_id
+        raise 'Nothing parameters.' if @params.blank?
 
         event = {}
         event[:notification_id] = @notification_id
@@ -72,6 +73,8 @@ module Dolphin
 
     post '/notifications' do |request|
       run(request) do
+        raise 'Nothing parameters.' if @params.blank?
+
         notification = {}
         notification[:id] = @notification_id
         notification[:methods] = @params
