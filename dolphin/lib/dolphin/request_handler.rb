@@ -16,7 +16,6 @@ module Dolphin
             logger :info, {
               :host => request.headers["Host"],
               :user_agent => request.headers["User-Agent"]
-
             }
             options = {
               :method => request.method,
@@ -35,32 +34,37 @@ module Dolphin
     end
 
     post '/events' do |request|
-      attach_request_params(request)
-      logger :info, "params #{@params}"
+      run(request) do
+        raise 'Not found notification_id' unless @notification_id
+        logger :info, "params #{@params}"
 
-      event = {}
-      event[:notification_id] = @notification_id
-      event[:message_type] = @message_type
-      event[:messages] = @params
+        event = {}
+        event[:notification_id] = @notification_id
+        event[:message_type] = @message_type
+        event[:messages] = @params
 
-      worker.future.put_event(event)
-      [200, {}, "success!\n"]
+        worker.future.put_event(event)
+        response_params = {
+          :results => [{
+            'message' => 'OK'
+          }]
+        }
+        respond_with response_params
+      end
     end
 
     get '/events' do |request|
       run(request) do
-        raise 'Not found notification_id' unless @notification_id
         start = @params['start'].to_i || 0
         limit = @params['limit'].to_i || 100
 
-        options = {}
-        options[:start] = start
-        options[:count] = limit
-        events = worker.get_event(@notification_id, options).value
+        params = {}
+        params[:start] = start
+        params[:count] = limit
+        events = worker.get_event(params).value
 
         response_params = {
           :start => start,
-          :limit => limit,
           :results => events
         }
         respond_with response_params

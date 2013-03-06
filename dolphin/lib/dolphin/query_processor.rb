@@ -20,9 +20,9 @@ module Dolphin
       e
     end
 
-    def get_event(notification_id, options = {})
+    def get_event(params)
       e = Dolphin::Models::Event.new
-      e.get(notification_id, options)
+      e.get(params)
     end
 
     def put_notification(notification)
