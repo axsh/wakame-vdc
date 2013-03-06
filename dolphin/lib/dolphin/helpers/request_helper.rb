@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'multi_json'
+require 'extlib/blank'
 
 module Dolphin
   module Helpers
@@ -26,6 +27,7 @@ module Dolphin
           logger :info, "params #{@params}"
           blk.call
         rescue => e
+          logger :error, e.message
           logger :error, e.backtrace
           [400, MultiJson.dump({
             :message => e.message
