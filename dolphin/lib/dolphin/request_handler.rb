@@ -36,7 +36,6 @@ module Dolphin
     post '/events' do |request|
       run(request) do
         raise 'Not found notification_id' unless @notification_id
-        logger :info, "params #{@params}"
 
         event = {}
         event[:notification_id] = @notification_id
