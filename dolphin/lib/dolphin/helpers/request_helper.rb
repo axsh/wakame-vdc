@@ -16,7 +16,7 @@ module Dolphin
             v = request.input.to_a[0]
             @params = MultiJson.load(v)
           when "GET"
-            @params = request.path.to_hash
+            @params = parse_query_string(request.env["QUERY_STRING"])
         end
         @params
       end
@@ -38,6 +38,20 @@ module Dolphin
       def respond_with(data)
         [200, MultiJson.dump(data)]
       end
+
+      private
+      def parse_query_string(query_string)
+        params = {}
+        unless query_string.blank?
+          parts = query_string.split('&')
+          parts.collect do |part|
+            key, value = part.split('=')
+            params.store(key, value)
+          end
+        end
+        params
+      end
+
     end
   end
 end
