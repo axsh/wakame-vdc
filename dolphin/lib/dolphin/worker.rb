@@ -7,18 +7,25 @@ module Dolphin
     include Celluloid
     include Dolphin::Util
 
-    def put_event(event)
-      logger :info, "Worker put events #{event}"
+    def put_event(event_object)
+      logger :info, "Worker put events #{event_object}"
 
-      notification_id = event[:notification_id]
-      future_event = query_processor.future.put_event(event)
+      notification_id = event_object[:notification_id]
+      future_event = query_processor.future.put_event(event_object)
 
       if notification_id
         future_notification = query_processor.future.get_notification(notification_id)
+        notification = future_notification.value
+        event = future_event.value
 
-        if future_event.value && future_notification.value
-          notification = future_notification.value
-          message_template_id = event[:message_type]
+        if notification.nil?
+          logger :error, "Not found notification_id:#{event_object[:notification_id]}"
+          return
+        end
+
+        if event && notification
+
+          message_template_id = event_object[:message_type]
 
           if !notification['mail'].blank?
             mail = notification['mail']
@@ -29,7 +36,7 @@ module Dolphin
             build_params["to"] = mail['to']
             build_params["cc"] = mail['cc']
             build_params["bcc"] = mail['bcc']
-            build_params["messages"] = event[:messages]
+            build_params["messages"] = event_object[:messages]
 
             message = build_message(sender_type, message_template_id, build_params)
             if message.nil?
@@ -45,7 +52,7 @@ module Dolphin
           return false
         end
       else
-        query_processor.future.put_event(event)
+        query_processor.future.put_event(event_object)
       end
     end
 
