@@ -10,6 +10,7 @@ module Dolphin
 
       def get(params)
         options = {
+          :start => params[:start_time],
           :count => params[:count]
         }
 
