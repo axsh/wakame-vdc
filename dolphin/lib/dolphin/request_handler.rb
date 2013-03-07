@@ -53,19 +53,19 @@ module Dolphin
 
     get '/events' do |request|
       run(request) do
-        start = @params['start'].blank? ? 0 : @params['start'].to_i
         limit = @params['limit'].blank? ? 100 : @params['limit'].to_i
 
         params = {}
-        params[:start] = start
         params[:count] = limit
+        params[:start_time] = parse_time(@params['start_time']) unless @params['start_time'].blank?
+
         events = worker.get_event(params).value
 
         response_params = {
-          :start => start,
           :results => events,
           :message => 'OK'
         }
+        response_params[:start_time] = @params['start_time'] unless @params['start_time'].blank?
         respond_with response_params
       end
     end
