@@ -52,6 +52,10 @@ module Dolphin
         params
       end
 
+      def parse_time(time)
+        return nil if time.blank? || !time.is_a?(String)
+        Time.parse(URI.decode(time)).to_time
+      end
     end
   end
 end
