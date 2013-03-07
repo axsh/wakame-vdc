@@ -35,10 +35,9 @@ vendor_dir=${vendor_dir}/${basearch}
 function list_3rd_party_builder() {
   cat <<EOS | egrep -v ^#
 # pkg_name                         pkg_uri                                                                        pkg_file
-flog                   git://github.com/hansode/env-builder.git                                                   flog-1.8-3.${basearch}.rpm
 openvswitch            git://github.com/hansode/env-builder.git                                                   kmod-openvswitch-1.6.1-1.el6.${arch}.rpm
 openvswitch            git://github.com/hansode/env-builder.git                                                   openvswitch-1.6.1-1.${arch}.rpm
-lxc                    git://github.com/hansode/env-builder.git                                                   lxc-0.7.5-1.${arch}.rpm
+lxc                    git://github.com/hansode/env-builder.git                                                   lxc-0.8.0-1.el6.${arch}.rpm
 EOS
 }
 
@@ -49,10 +48,10 @@ function list_3rd_party() {
 epel-release-6-8          http://ftp.jaist.ac.jp/pub/Linux/Fedora/epel/6/i386/epel-release-6-8.noarch.rpm
 elrepo-release            http://elrepo.org/elrepo-release-6-5.el6.elrepo.noarch.rpm
 rabbitmq-server-2.7.1     http://www.rabbitmq.com/releases/rabbitmq-server/v2.7.1/rabbitmq-server-2.7.1-1.noarch.rpm
-flog                      ${vdc_current_base_url}/flog-1.8-3.${basearch}.rpm
 openvswitch               ${vdc_current_base_url}/kmod-openvswitch-1.6.1-1.el6.${arch}.rpm
 openvswitch               ${vdc_current_base_url}/openvswitch-1.6.1-1.${arch}.rpm
-lxc                       ${vdc_current_base_url}/lxc-0.7.5-1.${arch}.rpm
+lxc                       ${vdc_current_base_url}/lxc-0.8.0-1.el6.${arch}.rpm
+lxc                       ${vdc_current_base_url}/lxc-libs-0.8.0-1.el6.${arch}.rpm
 EOS
 }
 
@@ -85,9 +84,6 @@ function build_3rd_party() {
 function deploy_3rd_party() {
   list_3rd_party_builder | while read pkg_name pkg_uri pkg_file; do
     case ${pkg_name} in
-    flog)
-      cp ${vendor_dir}/$(basename ${pkg_uri%%.git})/rhel/6/${pkg_name}/${pkg_file} ${vendor_dir}/.
-      ;;
     openvswitch|kmod-openvswitch-vzkernel)
       cp ${HOME}/rpmbuild/RPMS/${arch}/${pkg_file} ${vendor_dir}/.
       ;;
