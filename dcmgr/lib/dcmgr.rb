@@ -68,6 +68,7 @@ module Dcmgr
     autoload :StorageNode, 'dcmgr/models/storage_node'
     autoload :DcNetwork, 'dcmgr/models/dc_network'
     autoload :DhcpRange, 'dcmgr/models/dhcp_range'
+    autoload :IpHandle, 'dcmgr/models/ip_handle'
     autoload :IpLease, 'dcmgr/models/ip_lease'
     autoload :IpPool, 'dcmgr/models/ip_pool'
     autoload :IpPoolDcNetwork, 'dcmgr/models/ip_pool_dc_network'

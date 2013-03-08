@@ -291,7 +291,7 @@ __END
       st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)      
       lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
       
-      puts "#{lease.canonical_uuid} #{lease.ipv4_s}"
+      puts "#{lease.ip_handle.canonical_uuid} #{lease.ipv4_s}"
     end
 
     protected

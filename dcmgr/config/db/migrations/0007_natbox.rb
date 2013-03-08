@@ -24,14 +24,25 @@ Sequel.migration do
       index [:ip_pool_id, :dc_network_id], :unique=>true
     end
 
+    create_table(:ip_handles) do
+      primary_key :id, :type=>"int(11)"
+      column :uuid, "varchar(255)", :null=>false
+      column :display_name, "varchar(255)", :null=>true
+
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      column :deleted_at, "datetime", :null=>true
+
+      index [:uuid], :unique=>true, :name=>:uuid
+      index [:deleted_at]
+    end      
+
     alter_table(:network_vif_ip_leases) do
-      add_column :uuid, "varchar(255)", :null=>false
-      add_column :display_name, "varchar(255)", :null=>true
-      add_column :ip_pool_id, "int(11)", :null=>false
+      add_column :ip_handle_id, "int(11)", :null=>true
 
       set_column_allow_null :network_vif_id, true
 
-      add_index [:uuid], :unique=>true, :name=>:uuid
+      add_index [:ip_handle_id, :is_deleted]
     end
 
     create_table(:network_routes) do

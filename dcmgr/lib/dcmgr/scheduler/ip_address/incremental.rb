@@ -49,8 +49,12 @@ module Dcmgr::Scheduler::IPAddress
         :network_id => network.id,
         :description => leaseaddr.to_s
       }
-      fields[:ip_pool_id] = options[:ip_pool].id if options[:ip_pool]
       fields[:network_vif_id] = options[:network_vif].id if options[:network_vif]
+
+      if options[:ip_pool]
+        ip_handle = IpHandle.create({:display_name => ""}) || raise("Could not create IpHandle.")
+        fields[:ip_handle_id] = ip_handle.id
+      end
 
       NetworkVifIpLease.create(fields)
     end
