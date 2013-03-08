@@ -14,6 +14,7 @@ module Dolphin
         case request.method
           when "POST"
             v = request.input.to_a[0]
+            logger :info, v
             @params = MultiJson.load(v)
           when "GET"
             @params = parse_query_string(request.env["QUERY_STRING"])
