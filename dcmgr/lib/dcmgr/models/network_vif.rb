@@ -230,6 +230,26 @@ module Dcmgr::Models
       release_ip_lease
     end
 
+    def add_ip_lease(options)
+      network = self.network
+      lease = options[:ip_lease]
+
+      return nil if options[:allow_multiple] != true && !self.direct_ip_lease.empty?
+
+      return nil unless lease.is_a?(NetworkVifIpLease)
+      return nil unless lease.network_vif.nil?
+
+      if options[:attach_network] == true && network == nil
+        self.network = network
+        self.save_changes
+      end
+
+      return nil unless lease.network == network
+      
+      lease.network_vif = self
+      lease.save
+    end
+
     private
     def normalize_mac_addr(str)
       str = str.downcase.gsub(/[^0-9a-f]/, '')

@@ -193,15 +193,39 @@ __END
     nw.save
   end
 
+  #
+  # Network Vifs
+  #
   class VifOps < Base
     namespace :vif
     M=Dcmgr::Models
 
     desc "add UUID", "Register a new vif"
-    method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
+    method_option :ipv4, :type => :string, :required => true, :desc => "The IP address"
     def add(nw_uuid)
       nw = M::Network[nw_uuid] || UnknownUUIDError.raise(nw_uuid)
       puts nw.add_service_vif(options[:ipv4]).canonical_uuid
+    end
+
+    desc "add-ip UUID IP", "Add an IP handle to vif"
+    method_option :allow_multiple, :type => :boolean, :required => false, :desc => "Allow adding multiple IP leases to the vif"
+    def add_ip(vif_uuid, ip_uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
+      ip = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
+      ip_lease = ip.ip_lease || Error.raise("No NetworkVifIpLease found.")
+
+      p ip_lease.inspect
+
+      vif.network == ip_lease.network || Error.raise("Vif and IP lease's network must match.", 100)
+
+      fields = {
+        :ip_lease => ip_lease,
+        :allow_multiple => options[:allow_multiple],
+        :attach_network => true,
+      }
+
+      result = vif.add_ip_lease(fields)
+      puts result.to_hash if result
     end
 
     desc "show NW", "Show network vifs on network"

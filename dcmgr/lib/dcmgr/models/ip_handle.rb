@@ -6,6 +6,8 @@ module Dcmgr::Models
     include Dcmgr::Logger
     taggable 'ip'
 
+    one_to_one :ip_lease, :class=>NetworkVifIpLease
+
     subset(:alives, {:deleted_at => nil})
 
     #
