@@ -6,6 +6,8 @@ require 'action_mailer'
 module Dolphin
 
   module Sender
+    TYPES = ['email'].freeze
+
     TYPE = [:mail_senders].freeze
 
     case Dolphin.settings['mail']['type']
