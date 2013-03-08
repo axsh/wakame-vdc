@@ -62,7 +62,7 @@ module Dolphin
       end
 
       def template_path
-        File.join(Dolphin.templates_path, '/mail')
+        File.join(Dolphin.templates_path, '/email')
       end
     end
   end

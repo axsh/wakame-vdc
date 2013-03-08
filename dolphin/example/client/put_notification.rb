@@ -15,7 +15,7 @@ headers = {
 }
 
 methods = {
-  'mail' => {
+  'email' => {
     'subject' => 'Alert Mail',
     'to' => mail_to || 'system@example.com',
     'cc' => mail_cc,
