@@ -15,8 +15,9 @@ module Dolphin
         }
 
         db.get(COLUMN_FAMILY, ROW_KEY, options).collect do |event| {
-          'event_id' => event[0].to_guid,
-          'event' => MultiJson.load(event[1])
+          'id' => event[0].to_guid,
+          'event' => MultiJson.load(event[1]),
+          'created_at' => SimpleUUID::UUID.new(event[0].to_guid).to_time.iso8601
         }
         end
       end
