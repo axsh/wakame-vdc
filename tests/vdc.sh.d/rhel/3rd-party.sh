@@ -50,8 +50,8 @@ elrepo-release            http://elrepo.org/elrepo-release-6-5.el6.elrepo.noarch
 rabbitmq-server-2.7.1     http://www.rabbitmq.com/releases/rabbitmq-server/v2.7.1/rabbitmq-server-2.7.1-1.noarch.rpm
 openvswitch               ${vdc_current_base_url}/kmod-openvswitch-1.6.1-1.el6.${arch}.rpm
 openvswitch               ${vdc_current_base_url}/openvswitch-1.6.1-1.${arch}.rpm
-lxc                       ${vdc_current_base_url}/lxc-0.8.0-1.el6.${arch}.rpm
 lxc                       ${vdc_current_base_url}/lxc-libs-0.8.0-1.el6.${arch}.rpm
+lxc                       ${vdc_current_base_url}/lxc-0.8.0-1.el6.${arch}.rpm
 EOS
 }
 
