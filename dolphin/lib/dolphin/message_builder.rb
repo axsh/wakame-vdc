@@ -27,12 +27,16 @@ module Dolphin
     class Mail < Base
 
       def build(template_id, params)
+        message = ''
 
         if template_id.blank?
-          message = params['messages']['message']
+          template_id = 'default'
+        end
+
+        body_template = template(template_id)
+        if body_template.nil?
+          message = ''
         else
-          body_template = template(template_id)
-          return nil if body_template.nil?
           message = build_message(body_template, params['messages'])
         end
 
@@ -52,7 +56,7 @@ module Dolphin
         if File.exists? file_path
           File.read(file_path)
         else
-          logger :error, "File not found #{file_path}"
+          logger :warn, "File not found #{file_path}"
           nil
         end
       end
