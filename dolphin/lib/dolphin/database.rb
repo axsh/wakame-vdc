@@ -2,6 +2,19 @@
 
 require 'cassandra/1.1'
 
+module Thrift
+  class FramedTransport < BaseTransport
+    def write(buf,sz=nil)
+      if !['US-ASCII', 'ASCII-8BIT'].include?(buf.encoding.to_s)
+        buf = buf.unpack("a*").first
+      end
+      return @transport.write(buf) unless @write
+
+      @wbuf << (sz ? buf[0...sz] : buf)
+    end
+  end
+end
+
 module Dolphin
   module DataBase
 
