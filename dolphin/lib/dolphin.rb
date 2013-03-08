@@ -49,6 +49,47 @@ module Dolphin
 
   class EventObject < OpenStruct;end
   class NotificationObject < OpenStruct; end
+  class ResponseObject
+    attr_accessor :message
+    def initialize
+      @success = nil
+      @message = ''
+    end
+
+    def success!
+      @success = true
+    end
+
+    def success?
+      warn 'Does not happened anything.' if @success.nil?
+      @success === true
+    end
+
+    def fail!
+      @success = false
+    end
+
+    def fail?
+      warn 'Does not happened anything.' if @success.nil?
+      @success === false
+    end
+  end
+
+  class FailureObject < ResponseObject
+    def initialize(message = '')
+      fail!
+      @message = message
+      freeze
+    end
+  end
+
+  class SuccessObject < ResponseObject
+    def initialize(message = '')
+      success!
+      @message = message
+      freeze
+    end
+  end
 
   autoload :Util, 'dolphin/util'
   autoload :MessageBuilder, 'dolphin/message_builder'
