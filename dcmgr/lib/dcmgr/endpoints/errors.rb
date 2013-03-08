@@ -159,5 +159,8 @@ module Dcmgr
     define_error(:MacNotInRange, 400, '180')
     define_error(:IpNotInDhcpRange, 400, '181')
     define_error(:InvalidBackupStorage, 400, '182')
+
+    define_error(:UnknownIpHandle, 404, '183')
+    define_error(:UnknownIpPool, 404, '184')
   end
 end
