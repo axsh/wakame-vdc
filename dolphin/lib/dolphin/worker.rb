@@ -11,49 +11,58 @@ module Dolphin
       logger :info, "Worker put events #{event_object}"
 
       notification_id = event_object[:notification_id]
-      future_event = query_processor.future.put_event(event_object)
+      message_template_id = event_object[:message_type]
 
-      if notification_id
-        future_notification = query_processor.future.get_notification(notification_id)
-        notification = future_notification.value
-        event = future_event.value
-
-        if notification.nil?
-          logger :error, "Not found notification_id:#{event_object[:notification_id]}"
-          return
-        end
-
-        if event && notification
-
-          message_template_id = event_object[:message_type]
-
-          if !notification['mail'].blank?
-            mail = notification['mail']
-            sender_type = 'email'
-
-            build_params = {}
-            build_params["subject"] = mail['subject']
-            build_params["to"] = mail['to']
-            build_params["cc"] = mail['cc']
-            build_params["bcc"] = mail['bcc']
-            build_params["messages"] = event_object[:messages]
-
-            message = build_message(sender_type, message_template_id, build_params)
-            if message.nil?
-              logger :error, "Failed to notify because notifification object not found."
-              return false
-            end
-
-            logger :info, "Send notification from Worker #{message}"
-            send_notification(sender_type, message)
-          end
-        else
-          logger :error, "Failed execute query_processor"
-          return false
-        end
-      else
-        query_processor.future.put_event(event_object)
+      if !notification_id
+        return SuccessObject.new(future_event)
       end
+
+      future_event = query_processor.future.put_event(event_object)
+      future_notification = query_processor.future.get_notification(notification_id)
+
+      # synchronized
+      notifications = future_notification.value
+      future_event.value
+
+      if notifications.blank?
+        log_message = "Not found notification: #{event_object[:notification_id]}"
+        logger :error, log_message
+        return FailureObject.new(log_message)
+      end
+
+      notifications.each do |sender_type, values|
+        unless Sender::TYPES.include? sender_type
+          log_message = "Not found sender #{sender_type}"
+          logger :error, log_message
+          # Does not do response to Request Handler.
+          next
+        end
+
+        build_params = {}
+        # TODO: Plugin
+        case sender_type
+          when 'email'
+            build_params["subject"] = values['subject']
+            build_params["to"] = values['to']
+            build_params["cc"] = values['cc']
+            build_params["bcc"] = values['bcc']
+            build_params["messages"] = event_object[:messages]
+        end
+
+        message = build_message(sender_type, message_template_id, build_params)
+
+        if message.nil?
+          log_message = "Failed to build message: #{message}"
+          logger :error, log_message
+          # Does not do response to Request Handler.
+          next
+        end
+
+        logger :info, "Send notification from Worker #{message}"
+        send_notification(sender_type, message)
+      end
+
+      SuccessObject.new
     end
 
     def get_event(params)
@@ -73,10 +82,10 @@ module Dolphin
       Celluloid::Actor[type]
     end
 
-    def send_notification(type, message)
+    def send_notification(type, log_message)
       case type
         when 'email'
-          sender(:mail_senders).notify(message)
+          sender(:mail_senders).notify(log_message)
       end
     end
 
