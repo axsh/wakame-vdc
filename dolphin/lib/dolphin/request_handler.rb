@@ -76,6 +76,9 @@ module Dolphin
       run(request) do
         raise 'Nothing parameters.' if @params.blank?
 
+        unsupported_sender_types = @params.keys - Sender::TYPES
+        raise "Unsuppoted sender types: #{unsupported_sender_types.join(',')}" unless unsupported_sender_types.blank?
+
         notification = {}
         notification[:id] = @notification_id
         notification[:methods] = @params
