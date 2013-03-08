@@ -6,9 +6,9 @@ require 'time'
 
 start_time = URI.encode((Time.now - 60).iso8601)
 
-path = "http://127.0.0.1:3000/events?limit=10&start_time=#{start_time}"
-# path = 'http://127.0.0.1:3000/events'
-# path = 'http://127.0.0.1:3000/events?start_id=5a7dfaa6-8653-11e2-84b9-a660ac687fbf'
+path = 'http://127.0.0.1:3000/events'
+# path = "http://127.0.0.1:3000/events?limit=10&start_time=#{start_time}"
+# path = 'http://127.0.0.1:3000/events?start_id=12174a14-87c1-11e2-927c-31035db8d436'
 
 uri = URI.parse(path)
 

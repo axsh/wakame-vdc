@@ -9,10 +9,16 @@ module Dolphin
       ROW_KEY = 'history'.freeze
 
       def get(params)
+
         options = {
-          :start => params[:start_time],
           :count => params[:count]
         }
+
+        if params[:start_id]
+          options[:start] = params[:start_id]
+        elsif params[:start_time]
+          options[:start] = params[:start_time]
+        end
 
         db.get(COLUMN_FAMILY, ROW_KEY, options).collect do |event| {
           'id' => event[0].to_guid,

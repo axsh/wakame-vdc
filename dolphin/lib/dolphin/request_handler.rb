@@ -60,6 +60,7 @@ module Dolphin
         params = {}
         params[:count] = limit
         params[:start_time] = parse_time(@params['start_time']) unless @params['start_time'].blank?
+        params[:start_id] = @params['start_id'] unless @params['start_id'].blank?
 
         events = worker.get_event(params).value
 
