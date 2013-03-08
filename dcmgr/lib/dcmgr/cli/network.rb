@@ -228,6 +228,23 @@ __END
       puts result.to_hash if result
     end
 
+    desc "remove-ip UUID IP", "Add an IP handle to vif"
+    def remove_ip(vif_uuid, ip_uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
+      ip = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
+      ip_lease = ip.ip_lease || Error.raise("No NetworkVifIpLease found.", 100)
+
+      p ip_lease.inspect
+
+      fields = {
+        :ip_lease => ip_lease,
+        # :allow_multiple => options[:allow_multiple],
+        # :attach_network => true,
+      }
+
+      vif.remove_ip_lease(fields) || Error.raise("Could not remove IP lease from vif.", 100)
+    end
+
     desc "show NW", "Show network vifs on network"
     def show(nw_uuid)
       nw = M::Network[nw_uuid] || UnknownUUIDError.raise(nw_uuid)

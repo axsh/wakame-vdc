@@ -250,6 +250,22 @@ module Dcmgr::Models
       lease.save
     end
 
+    def remove_ip_lease(options)
+      network = self.network
+      lease = options[:ip_lease]
+
+      return nil unless lease.is_a?(NetworkVifIpLease)
+      return nil unless lease.network_vif == self
+      
+      lease.network_vif = nil
+      lease.save
+
+      # if options[:detach_network] == true && network == nil
+      #   self.network = network
+      #   self.save_changes
+      # end
+    end
+
     private
     def normalize_mac_addr(str)
       str = str.downcase.gsub(/[^0-9a-f]/, '')
