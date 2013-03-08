@@ -11,7 +11,7 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @network_vif.instance_exec {
-        {:id=>canonical_uuid,
+        { :id=>canonical_uuid,
           :uuid=>canonical_uuid,
           :ipv4_address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
           :nat_ipv4_address => self.nat_ip_lease.first.nil? ? nil : self.nat_ip_lease.first.ipv4,
@@ -21,7 +21,10 @@ module Dcmgr::Endpoints::V1203::Responses
           :mac_addr => self.pretty_mac_addr,
           :network_monitors => network_vif_monitors_dataset.alives.all.map {|m|
             NetworkVifMonitor.new(m).generate
-          }
+          },
+          :ip_leases => self.ip_leases.map { |lease|
+            NetworkVifIpLease.new(lease).generate
+          },
         }
       }
     end
@@ -39,4 +42,24 @@ module Dcmgr::Endpoints::V1203::Responses
       }
     end
   end
+
+  class NetworkVifIpLease < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(object)
+      raise ArgumentError if !object.is_a?(Dcmgr::Models::NetworkVifIpLease)
+      @object = object
+    end
+
+    def generate()
+      @object.instance_exec {
+        { :ipv4 => self.ipv4_s,
+          :network_id => self.network.canonical_uuid,
+          :ip_handle => self.ip_handle.nil? ? nil : {
+            :id => self.ip_handle.canonical_uuid,
+            :display_name => self.ip_handle.display_name,
+          }
+        }
+      }
+    end
+  end
+
 end
