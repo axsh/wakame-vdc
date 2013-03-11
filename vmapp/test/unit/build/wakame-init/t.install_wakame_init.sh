@@ -25,9 +25,9 @@ function setUp() {
 touch /var/lock/subsys/local
 EOS
 
- function rsync() { echo rsync $*; }
- function chmod() { echo chmod $*; }
- function chown() { echo chown $*; }
+  function rsync() { echo rsync $*; }
+  function chmod() { echo chmod $*; }
+  function chown() { echo chown $*; }
 }
 
 function tearDown() {
