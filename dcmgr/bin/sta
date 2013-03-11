@@ -23,7 +23,7 @@ rescue Dcmgr::Configuration::ValidationError => e
         e.errors.join("\n  ")
         )
 end
-
+Dcmgr.run_initializers('logger')
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do

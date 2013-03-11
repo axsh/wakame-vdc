@@ -15,7 +15,11 @@ module POSIX
     # "qemu -daemonize" from  posix_spawn() causes zombie process then
     # waitpid later keeps to hold the process ID. As result, hva stops
     # at the point until the qemu is terminated.
-    remove_method :_pspawn
+    def spawn(*args)
+      env, argv, options = extract_process_spawn_arguments(*args)
+      progname = argv.shift[0]
+      ::Process::spawn(env, progname, *argv, options)
+    end
     
     private
     def adjust_process_spawn_argv(args)

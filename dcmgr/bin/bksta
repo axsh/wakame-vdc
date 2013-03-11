@@ -23,6 +23,7 @@ rescue Dcmgr::Configuration::ValidationError => e
         e.errors.join("\n  ")
         )
 end
+Dcmgr.run_initializers('logger')
 
 class Test < Isono::NodeModules::Base
   include Dcmgr::Logger

@@ -228,6 +228,129 @@ __END
   end
   register VifOps, 'vif', "vif [options]", "Maintain virtual interfaces"
 
+  class RouteOps < Base
+    namespace :route
+    M=Dcmgr::Models
+
+    no_tasks {
+      def get_nw_vif(uuid)
+        case uuid
+        when /^nw-/
+          nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
+          vif = nil
+        when /^vif-/
+          vif = M::NetworkVif[uuid] || UnknownUUIDError.raise(uuid)
+          nw = vif.network || Error.raise("No network associated with vif: #{vif.canonical_uuid}")
+        else
+          UnknownUUIDError.raise(uuid)
+        end
+
+        [nw, vif]
+      end
+    }
+
+    desc "add OUTER_UUID INNER_UUID", "Add route between two networks"
+    method_option :route_type, :type => :string, :required => true, :desc => "Route type"
+    method_option :outer_ip, :type => :string, :required => false, :desc => "Outer IP address"
+    method_option :inner_ip, :type => :string, :required => false, :desc => "Inner IP address"
+    def add(outer_uuid, inner_uuid)
+      create_options = {:outer => {}, :inner => {}}
+
+      case options[:route_type]
+      when 'external-ip'
+        create_options[:outer][:lease_ipv4] = :default
+        create_options[:outer][:find_service] = 'external-ip'
+        create_options[:inner][:find_ipv4] = :vif_first
+      else
+        Error.raise("Unknown route type.", 100)
+      end
+
+      outer_nw, outer_vif = get_nw_vif(outer_uuid)
+      inner_nw, inner_vif = get_nw_vif(inner_uuid)
+
+      route_data = {
+        :route_type => options[:route_type],
+        :outer_network_id => outer_nw ? outer_nw.id : nil,
+        :outer_ipv4 => options[:outer_ip] ? IPAddress::IPv4.new(options[:outer_ip]).to_i : nil,
+        :outer_vif_id => outer_vif ? outer_vif.id : nil,
+        :inner_network_id => inner_nw ? inner_nw.id : nil,
+        :inner_ipv4 => options[:inner_ip] ? IPAddress::IPv4.new(options[:inner_ip]).to_i : nil,
+        :inner_vif_id => inner_vif ? inner_vif.id : nil,
+
+        :create_options => create_options
+      }
+
+      result = M::NetworkRoute.create(route_data)
+
+      shell.print_table([[route_data[:route_data],
+                          result.outer_network.canonical_uuid,
+                          result.outer_vif ? result.outer_vif.canonical_uuid : nil,
+                          result.outer_ipv4.to_s,
+                          result.inner_network.canonical_uuid,
+                          result.inner_vif ? result.inner_vif.canonical_uuid : nil,
+                          result.inner_ipv4.to_s]])
+    end
+
+    desc "del OUTER_UUID INNER_UUID", "Delete routes between two networks"
+    method_option :all_route_types, :type => :boolean, :required => false, :desc => "Include all route types"
+    method_option :route_type, :type => :string, :required => false, :desc => "Route type"
+    method_option :outer_ip, :type => :string, :required => false, :desc => "Outer IP address"
+    method_option :inner_ip, :type => :string, :required => false, :desc => "Inner IP address"
+    def del(outer_uuid, inner_uuid)
+      outer_nw, outer_vif = get_nw_vif(outer_uuid)
+      inner_nw, inner_vif = get_nw_vif(inner_uuid)
+
+      ds = M::NetworkRoute.dataset.routes_between_vifs(outer_vif, inner_vif)
+
+      ds = ds.where(:network_routes__inner_ipv4 => IPAddress::IPv4.new(options[:inner_ip]).to_i) if options[:inner_ip]
+      ds = ds.where(:network_routes__outer_ipv4 => IPAddress::IPv4.new(options[:outer_ip]).to_i) if options[:outer_ip]
+
+      # If no route_type is supplied, require --all-route-types.
+      if options[:route_type]
+        ds = ds.where(:network_routes__route_type => options[:route_type])
+      elsif options[:all_route_types] != true
+        Error.raise("Either supply a 'route-type' or set 'all-route-types'.", 100)
+      end
+
+      table = [['Type', 'Outer NW', 'Outer Vif', 'Inner NW', 'Inner Vif']]
+      ds.each { |r|
+        table << [r.route_type,
+                  r.outer_network ? r.outer_network.canonical_uuid : nil,
+                  r.outer_vif ? r.outer_vif.canonical_uuid : nil,
+                  r.outer_ipv4,
+                  r.inner_vif.network ? r.inner_vif.network.canonical_uuid : nil,
+                  r.inner_vif ? r.inner_vif.canonical_uuid : nil,
+                  r.inner_ipv4]
+        r.destroy
+      }
+
+      shell.print_table(table)
+    end
+
+    desc "show NW", "Show routes on network"
+    def show(uuid)
+      ds = (M::Network[uuid] || UnknownUUIDError.raise(uuid)).network_routes
+
+      table = [['Type', 'Outer NW', 'Outer Vif', 'Inner NW', 'Inner Vif']]
+      ds.each { |r|
+        table << [r.route_type,
+                  r.outer_network ? r.outer_network.canonical_uuid : nil,
+                  r.outer_vif ? r.outer_vif.canonical_uuid : nil,
+                  r.outer_ipv4,
+                  r.inner_vif.network ? r.inner_vif.network.canonical_uuid : nil,
+                  r.inner_vif ? r.inner_vif.canonical_uuid : nil,
+                  r.inner_ipv4]
+      }
+      shell.print_table(table)
+    end
+
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
+  end
+  register RouteOps, 'route', "route [options]", "Maintain routing information"
+
   class ServiceOps < Base
     namespace :service
     M=Dcmgr::Models
@@ -250,13 +373,22 @@ __END
       def prepare_vif(uuid, options)
         case uuid
         when /^nw-/
-          options[:ipv4] || Error.raise("IP address is required when passing network UUID.")
+          option_ipv4 = options[:ipv4]
+
+          if options[:no_ipv4] != true
+            option_ipv4 || Error.raise("IP address is required when passing network UUID.", 1)
+          end
+
+          if options[:unique] == true
+            options[:service] || Error.raise("Unique service parameter requires service arg.", 1)
+            get_services(uuid, {:service => options[:service]}).empty? || Error.raise("Service must be unique on network.", 1)
+          end
 
           nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
           nw.add_service_vif(options[:ipv4])
 
         when /^vif-/
-          options[:ipv4].nil? || Error.raise("Cannot pass IP address for VIF UUID.")
+          options[:ipv4].nil? || Error.raise("Cannot pass IP address for VIF UUID.", 1)
           M::NetworkVif[uuid] || UnknownUUIDError.raise(uuid)
         else
           InvalidUUIDError.raise(uuid)
@@ -299,12 +431,27 @@ __END
     method_option :ipv4_from, :type => :string, :required => false, :desc => "The ip address"
     def gateway(uuid_from)
       vif = prepare_vif(uuid_from, {:ipv4 => options[:ipv4_from]})
-      nw = vif.network || Error.raise("Not attached to a network: #{uuid_from}")
+      nw = vif.network || Error.raise("Not attached to a network: #{uuid_from}", 1)
       puts "#{vif.canonical_uuid}"
 
       service_data = {
         :network_vif_id => vif.id,
         :name => 'gateway',
+      }
+
+      M::NetworkService.create(service_data)
+    end
+
+    desc "external-ip NW", "Add external-ip service to network"
+    # method_option :no_ip, :type => :boolean, :required => false, :desc => "Don't lease any IP address"
+    def external_ip(uuid_from)
+      vif = prepare_vif(uuid_from, {:unique => true, :service => 'external-ip', :no_ipv4 => true})
+      nw = vif.network || Error.raise("Not attached to a network: #{uuid_from}", 1)
+      puts "#{vif.canonical_uuid}"
+
+      service_data = {
+        :network_vif_id => vif.id,
+        :name => 'external-ip',
       }
 
       M::NetworkService.create(service_data)

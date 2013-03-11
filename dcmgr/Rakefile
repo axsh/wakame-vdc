@@ -18,7 +18,7 @@ end
 namespace :db do
   desc 'Create all database tables'
   task :init => [ :environment ] do
-    Dcmgr.run_initializers(:sequel)
+    Dcmgr.run_initializers('logger', 'sequel')
 
     Sequel.extension :migration
     Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 9999)
@@ -26,7 +26,7 @@ namespace :db do
 
   desc 'Drop all database tables'
   task :drop => [ :environment ] do
-    Dcmgr.run_initializers(:sequel)
+    Dcmgr.run_initializers('logger', 'sequel')
 
     Sequel.extension :migration
     Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 0)
