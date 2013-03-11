@@ -1,6 +1,6 @@
 require 'net/http'
 require 'uri'
-require 'multi_json'
+require 'json'
 require 'time'
 
 start_time = URI.encode((Time.now - 60).iso8601)
@@ -20,6 +20,6 @@ http = Net::HTTP.new(uri.host, uri.port)
 http.set_debug_output $stderr
 http.start do |h|
   response = h.request(request)
-  res = MultiJson.load(response.body)
+  res = JSON.parse(response.body)
   p res
 end
