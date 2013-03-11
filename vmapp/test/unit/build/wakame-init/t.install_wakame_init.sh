@@ -53,6 +53,11 @@ function test_install_wakame_init_ms() {
   assertEquals $? 0
 }
 
+function test_install_wakame_init_mcd() {
+  install_wakame_init ${chroot_dir} mcd centos
+  assertEquals $? 0
+}
+
 ## shunit2
 
 . ${shunit2_file}
