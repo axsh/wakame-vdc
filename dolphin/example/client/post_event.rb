@@ -2,7 +2,7 @@ require 'net/http'
 require 'uri'
 require 'json'
 
-path = 'http://127.0.0.1:3000/events'
+path = 'http://127.0.0.1:9004/events'
 uri = URI.parse(path)
 
 headers = {

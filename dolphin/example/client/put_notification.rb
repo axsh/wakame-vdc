@@ -6,7 +6,7 @@ mail_to ||= ENV['MAIL_TO']
 mail_cc ||= ENV['MAIL_CC']
 mail_bcc ||= ENV['MAIL_BCC']
 
-path = 'http://127.0.0.1:3000/notifications'
+path = 'http://127.0.0.1:9004/notifications'
 uri = URI.parse(path)
 
 headers = {
