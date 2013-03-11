@@ -1,7 +1,6 @@
 require 'net/http'
 require 'uri'
 require 'multi_json'
-require 'pry'
 require 'time'
 
 start_time = URI.encode((Time.now - 60).iso8601)
