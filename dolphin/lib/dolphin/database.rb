@@ -54,7 +54,7 @@ module Dolphin
 
     class Cassandra < ConncetionBase
       PATH_SEPARATOR = ':'.freeze
-      KEYSPACE = 'notification_service'.freeze
+      KEYSPACE = 'dolphin'.freeze
       def column_family
 
       end
