@@ -28,6 +28,7 @@ EOS
   function rsync() { echo rsync $*; }
   function chmod() { echo chmod $*; }
   function chown() { echo chown $*; }
+  function prevent_interfaces_booting() { echo prevent_interfaces_booting $*; }
 }
 
 function tearDown() {
@@ -45,6 +46,9 @@ function test_install_wakame_init_unknown() {
 
 function test_install_wakame_init_md() {
   install_wakame_init ${chroot_dir} md centos
+  assertEquals $? 0
+
+  install_wakame_init ${chroot_dir} md centos | egrep -q -w prevent_interfaces_booting
   assertEquals $? 0
 }
 
