@@ -9,7 +9,7 @@
 #
 # imports:
 #  utils:     run_in_target
-#  distro:    prevent_daemons_starting
+#  distro:    prevent_daemons_starting, prevent_interfaces_booting
 #  haproxy:   install_haproxy
 #  stud:      install_stud
 #  amqptools: install_amqptools
@@ -33,7 +33,7 @@ function configure_lb_networking() {
   sed -i -e "s/^NETWORKING=\"yes\"/NETWORKING=\"no\"/" ${chroot_dir}/etc/sysconfig/network
 
   # Clear network configurations from template
-  sed -i -e "s/^ONBOOT=yes/ONBOOT=no/" ${chroot_dir}/etc/sysconfig/network-scripts/ifcfg-eth*
+  prevent_interfaces_booting ${chroot_dir} eth*
 
   cat <<-'EOS' >> ${chroot_dir}/etc/rc.local
 	. /metadata/user-data

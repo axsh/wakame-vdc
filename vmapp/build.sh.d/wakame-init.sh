@@ -8,10 +8,14 @@
 #  sed, cat, rsync, chmod, chown
 #
 # imports:
+#  distro: prevent_interfaces_booting
 #
 
 ##
 [[ -z "${__BUILD_WAKAME_INIT_INCLUDED__}" ]] || return 0
+
+##
+. $(cd ${BASH_SOURCE[0]%/*} && pwd)/../functions/distro.sh
 
 ##
 declare wakame_init_rhel_path=$(cd ${BASH_SOURCE[0]%/*} && pwd)/../../tests/image_builder/rhel/6/wakame-init
@@ -23,7 +27,10 @@ function install_wakame_init() {
   [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   case "${metadata_type}" in
-  md|ms|mcd)
+  md)
+    prevent_interfaces_booting ${chroot_dir} eth*
+    ;;
+  ms|mcd)
     ;;
   *)
     echo "[ERROR] unknown metadata_type:${metadata_type} ${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1;
