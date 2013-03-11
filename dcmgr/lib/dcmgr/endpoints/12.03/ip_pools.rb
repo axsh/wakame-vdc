@@ -52,5 +52,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
                  })
   end
 
+  put '/:id/release' do
+    # description ''
+    # params id, string, required
+    ip_pool = find_by_uuid(M::IpPool, params[:id])
+    raise E::UnknownIpPool, params[:id] if ip_pool.nil?
+    ip_handle = ip_pool.ip_handles_dataset.where(:uuid => M::IpHandle.trim_uuid(params[:ip_handle])).first
+
+    raise E::UnknownIpHandle, params[:ip_handle] if ip_handle.nil?
+    raise E::InvalidParameter, params[:ip_handle] if ip_handle.ip_pool != ip_pool
+    raise E::IpHandleInUse, params[:ip_handle] unless ip_handle.can_destroy
+
+    ip_handle.destroy
+
+    respond_with({})
+  end
+
 end
     

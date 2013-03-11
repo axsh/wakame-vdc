@@ -52,7 +52,9 @@ module Dcmgr::Scheduler::IPAddress
       fields[:network_vif_id] = options[:network_vif].id if options[:network_vif]
 
       if options[:ip_pool]
-        ip_handle = IpHandle.create({:display_name => ""}) || raise("Could not create IpHandle.")
+        ip_handle = IpHandle.create({ :ip_pool_id => options[:ip_pool].id,
+                                      :display_name => ""
+                                    }) || raise("Could not create IpHandle.")
         fields[:ip_handle_id] = ip_handle.id
       end
 
