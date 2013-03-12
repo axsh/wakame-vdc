@@ -3,8 +3,6 @@
 require 'parseconfig'
 require 'ostruct'
 require 'pry'
-require 'ltsv'
-require 'celluloid'
 
 Signal.trap(:INT, "EXIT")
 
@@ -29,23 +27,6 @@ module Dolphin
     File.join(root_path, '/templates')
   end
 
-  Celluloid.logger.datetime_format = "%Y-%m-%d %H:%M:%S"
-  Celluloid.logger.formatter = proc { |severity, datetime, progname, msg|
-
-    case settings['logger']['format']
-      when 'human_readable'
-        msg = "[#{msg[:thread_id]}] [#{msg[:classname]}] #{msg[:message]}" if msg.is_a?(Hash)
-        Logger::Formatter.new.call(severity, datetime, progname, msg)
-      when 'ltsv'
-        LTSV.dump({
-          :log_level => severity,
-          :time => datetime,
-          :thread_id => msg[:thread_id],
-          :classname => msg[:classname],
-          :message => msg[:message],
-        }) + "\n"
-    end
-  }
 
   class EventObject < OpenStruct;end
   class NotificationObject < OpenStruct; end
