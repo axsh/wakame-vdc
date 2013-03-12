@@ -8,7 +8,6 @@
 
 . ${BASH_SOURCE[0]%/*}/helper_shunit2.sh
 . ${BASH_SOURCE[0]%/*}/helper_instance.sh
-. ${BASH_SOURCE[0]%/*}/helper_instance_vifs.sh
 . ${BASH_SOURCE[0]%/*}/helper_instance_vifs_multi.sh
 
 ## variables
@@ -16,8 +15,8 @@
 vifs_eth0_network_id=
 vifs_eth1_network_id=
 
+function needs_vif() { true; }
 function needs_secg() { needless_secg; }
-
 
 ## functions
 

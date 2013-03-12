@@ -13,6 +13,8 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 . ${BASH_SOURCE[0]%/*}/../../../functions
 . ${BASH_SOURCE[0]%/*}/../../helper_retry.sh
 . ${BASH_SOURCE[0]%/*}/../../helper_ssh.sh
+. ${BASH_SOURCE[0]%/*}/../../helper_instance.sh
+. ${BASH_SOURCE[0]%/*}/../../helper_load_balancer.sh
 
 ## environment-specific configuration
 

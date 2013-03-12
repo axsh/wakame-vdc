@@ -1,1 +1,0 @@
-../rw/helper_instance_vifs.sh
