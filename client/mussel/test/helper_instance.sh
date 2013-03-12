@@ -20,20 +20,20 @@ ssh_key_id=
 
 ### vifs
 
-vifs='{}'
-vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
+vifs=${vifs:-'{}'}
+vifs_path=${vif_path:-${BASH_SOURCE[0]%/*}/vifs.$$}
 
 ### secg
 
-security_group_uuid=
-rule=
-rule_path=${BASH_SOURCE[0]%/*}/rule.$$
+security_group_uuid=${security_group_uuid:-}
+rule=${rule:-}
+rule_path=${rule_path:-${BASH_SOURCE[0]%/*}/rule.$$}
 
 ### ssh_key_pair
 
 ssh_key_pair_path=${ssh_key_pair_path:-${BASH_SOURCE[0]%/*}/key_pair.$$}
-ssh_key_pair_uuid=
-public_key=${ssh_key_pair_path}.pub
+ssh_key_pair_uuid=${ssh_key_pair_uuid:-}
+public_key=${public_key:-${ssh_key_pair_path}.pub}
 
 ## functions
 
