@@ -15,5 +15,5 @@ function remove_ssh_known_host_entry() {
 
 function generate_ssh_key_pair() {
   local output_keyfile=$1; shift; eval local $@
-  ssh-keygen -N "" -f ${output_keyfile} -C ${comment:-shunit2.$$}
+  ssh-keygen -N "" -f ${output_keyfile} -C ${output_keyfile}
 }
