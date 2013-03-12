@@ -13,7 +13,7 @@ function remove_ssh_known_host_entry() {
   ssh-keygen -R ${ipaddr} >/dev/null 2>&1
 }
 
-function generate_ssh_key_pair() {
+function setup_ssh_key_pair() {
   local output_keyfile=$1; shift; eval local $@
   [[ -f ${output_keyfile} ]] || ssh-keygen -N "" -f ${output_keyfile} -C ${output_keyfile}
 }
