@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
+require "rubygems"
+require "bundler/setup"
 
 require File.join(File.expand_path('../', __FILE__), 'lib/dolphin')
 
 require "rspec/core/rake_task"
-
 desc 'Run rspec'
 RSpec::Core::RakeTask.new("spec")
 
@@ -17,10 +18,23 @@ namespace :db do
     @host = db_config['host']
     @port = db_config['port']
 
+    @connect = Dolphin::DataBase::Cassandra.new({
+      :keyspace => Dolphin::DataBase::Cassandra::KEYSPACE,
+      :uri => "#{@host}:#{@port}"
+    }).connect
+
     desc 'Clean cassandra'
     task :clean do |tasks|
-      filename = Dolphin.db_path + '/cassandra_clear.txt'
-      exec "/usr/bin/cassandra-cli -h #{@host} -p #{@port} -f #{filename}"
+      config = {
+        :keyspace => 'dolphin',
+        :uri => '192.168.121.162:9160'
+      }
+      begin
+        @connect.drop_keyspace(Dolphin::DataBase::Cassandra::KEYSPACE)
+      rescue => e
+        puts "Doesn't exist #{Dolphin::DataBase::Cassandra::KEYSPACE} keyspace or dropped already"
+        exit
+      end
     end
 
     desc 'Migrate cassandra'
