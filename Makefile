@@ -59,12 +59,14 @@ bundle-install-stamp:
 	(cd $(CURDIR)/frontend/admin && mkdir -p vendor/cache)
 	(cd $(CURDIR)/tests/cucumber && mkdir -p vendor/cache)
 	(cd $(CURDIR)/client/ruby-hijiki && rake gem && mv pkg/ruby-hijiki-*.gem ../../frontend/dcmgr_gui/vendor/cache)
+	(cd $(CURDIR)/dolphin && mkdir -p vendor/cache)
 
 	# in order to build rpm, client(ruby-hijiki)/ is no need.
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki $(CURDIR)/client/ruby-hijiki.saved
 	(cd $(CURDIR)/frontend/dcmgr_gui && bundle install --standalone --path vendor/bundle)
 	(cd $(CURDIR)/frontend/admin && bundle install --standalone --path vendor/bundle)
 	(cd $(CURDIR)/tests/cucumber && bundle install --standalone --path vendor/bundle)
+	(cd $(CURDIR)/dolphin && bundle install --standalone --path vendor/bundle)
 	[ "$(RUBYDIR)" = "$(CURDIR)/ruby" ] || mv $(CURDIR)/client/ruby-hijiki.saved $(CURDIR)/client/ruby-hijiki
 
 	touch $@
@@ -74,6 +76,7 @@ clean:
 	rm -rf $(CURDIR)/dcmgr/vendor/bundle
 	rm -rf $(CURDIR)/frontend/dcmgr_gui/vendor/bundle
 	rm -rf $(CURDIR)/frontend/admin/vendor/bundle
+	rm -rf $(CURDIR)/dolphin/vendor/bundle
 	rm -f $(CURDIR)/build-ruby-stamp
 	rm -f $(CURDIR)/bundle-install-stamp
 	rm -f $(CURDIR)/install-core-gem-stamp
