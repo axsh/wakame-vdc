@@ -17,6 +17,7 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 ## environment-specific configuration
 
 [[ -f ${BASH_SOURCE[0]%/*}/musselrc ]] && { . ${BASH_SOURCE[0]%/*}/musselrc; } || :
+[[ -f ${HOME}/.musselrc             ]] && { . ${HOME}/.musselrc;             } || :
 
 ## group variables
 
