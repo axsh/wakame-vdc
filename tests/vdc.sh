@@ -111,6 +111,11 @@ function init_db() {
   #local oauth_keys=$(rake oauth:create_consumer[${account_id}] | egrep -v '^\(in')
   eval ${oauth_keys}
 
+  # for dolphin
+  cd ${prefix_path}/dolphin
+  time bundle exec rake db:cassandra:clean
+  time bundle exec rake db:cassandra:migrate
+
   # Install demo data.
   (. $data_path/demodata.sh)
 }
