@@ -15,5 +15,11 @@ function remove_ssh_known_host_entry() {
 
 function generate_ssh_key_pair() {
   local output_keyfile=$1; shift; eval local $@
-  ssh-keygen -N "" -f ${output_keyfile} -C ${output_keyfile}
+  [[ -f ${output_keyfile} ]] || ssh-keygen -N "" -f ${output_keyfile} -C ${output_keyfile}
+}
+
+function teardown_ssh_key_pair() {
+  local output_keyfile=$1
+  [[ -f ${output_keyfile} ]] || return 0
+  rm -f ${output_keyfile}*
 }

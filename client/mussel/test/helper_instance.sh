@@ -72,7 +72,7 @@ function create_ssh_key_pair() {
 
 function destroy_ssh_key_pair() {
   run_cmd ssh_key_pair destroy ${ssh_key_pair_uuid}
-  rm -f ${ssh_key_pair_path}*
+  teardown_ssh_key_pair ${ssh_key_pair_path}
 }
 
 ### vifs
