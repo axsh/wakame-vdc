@@ -27,6 +27,13 @@ module Dolphin
     File.join(root_path, '/templates')
   end
 
+  def self.config_path
+    File.join(root_path, '/config')
+  end
+
+  def self.db_path
+    File.join(config_path, '/db')
+  end
 
   class EventObject < OpenStruct;end
   class NotificationObject < OpenStruct; end
