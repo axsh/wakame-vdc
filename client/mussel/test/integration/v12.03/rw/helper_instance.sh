@@ -49,7 +49,7 @@ function _destroy_instance() {
 ### ssh_key_pair
 
 function create_ssh_key_pair() {
-  ssh-keygen -N "" -f ${ssh_key_pair_path} -C shunit2.$$ >/dev/null
+  generate_ssh_keypair ${ssh_key_pair_path}
 
   local create_output="$(run_cmd ssh_key_pair create)"
   echo "${create_output}"

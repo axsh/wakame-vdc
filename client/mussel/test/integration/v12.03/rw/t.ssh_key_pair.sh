@@ -18,7 +18,7 @@ declare public_key=${ssh_key_pair_path}.pub
 ## functions
 
 function oneTimeSetUp() {
-  ssh-keygen -N "" -f ${ssh_key_pair_path} -C shunit2.$$ >/dev/null
+  generate_ssh_keypair ${ssh_key_pair_path}
 }
 
 function oneTimeTearDown() {
