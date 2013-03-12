@@ -200,11 +200,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
   post '/:vif_id/external_ip' do
     inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
     inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
-    outer_nw = find_by_uuid(:Network, params[:network_uuid]) || raise(UnknownUUIDResource, params[:network_uuid])
+    inner_ipv4 = nil
+    outer_vif = nil
+    outer_ipv4 = nil
 
     create_options = {
       :outer => {
-        :lease_ipv4 => :default,
         :find_service => 'external-ip',
       },
       :inner => {
@@ -212,14 +213,39 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       }
     }
       
+    params[:network_uuid] && params[:ip_handle] && raise(InvalidParameter, "network_uuid && ip_handle")
+
+    if params[:network_uuid]
+      outer_nw = find_by_uuid(:Network, params[:network_uuid]) || raise(UnknownUUIDResource, params[:network_uuid])
+      create_options[:lease_ipv4] = :default
+    elsif params[:ip_handle]
+      outer_ip_handle = M::IpHandle[params[:ip_handle]] || raise(UnknownUUIDResource, params[:ip_handle])
+      outer_nw = outer_ip_handle.ip_lease.network
+
+      # Verify account_id.
+      if @account && outer_ip_handle.ip_pool.account_id != @account.canonical_uuid
+        raise(E::UnknownUUIDResource, params[:ip_handle])
+      end
+
+      create_options[:outer][:ip_handle] = outer_ip_handle
+    else
+      raise(InvalidParameter, "")
+    end
+
     route_data = {
       :route_type => 'external-ip',
       :outer_network_id => outer_nw.id,
       :inner_network_id => inner_nw.id,
-      :inner_vif_id => inner_vif.id,
 
       :create_options => create_options
     }
+
+    route_data[:outer_vif_id] = outer_vif.id if outer_vif
+    route_data[:inner_vif_id] = inner_vif.id if inner_vif
+    route_data[:outer_ipv4] = outer_ipv4 if outer_ipv4
+    route_data[:inner_ipv4] = inner_ipv4 if inner_ipv4
+
+    # Validate ip pool has dc network?
 
     route = M::NetworkRoute.create(route_data)
     

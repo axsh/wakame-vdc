@@ -78,9 +78,13 @@ module Dcmgr::Models
         else
           # Validate only allows ipv4 to be nil during pre-create.
           if @create_options.nil? ||
-              (@create_options[arg][:find_ipv4].nil? && @create_options[arg][:lease_ipv4].nil?)
+              (@create_options[arg][:find_ipv4].nil? &&
+               @create_options[arg][:ip_handle].nil? &&
+               @create_options[arg][:lease_ipv4].nil?)
             errors.add(current_ipv4_sym, "No #{arg} IPv4 specified.")
           end
+
+          # Validate ip address.
         end
       }
 
@@ -115,7 +119,19 @@ module Dcmgr::Models
             end
           end
 
-          if options[:lease_ipv4]
+          if options[:ip_handle]
+            current_lease = options[:ip_handle].ip_lease
+            lease_vif = current_lease.network_vif
+
+            if lease_vif.nil?
+              current_vif.add_ip_lease({:ip_lease => current_lease, :allow_multiple => true}) || raise("Could not add IP lease to network vif.")
+            elsif lease_vif != current_vif
+              raise("Cannot use IP handle already attached to a network vif.")
+            end
+
+            self[current_ipv4_sym] = current_lease.ipv4_i
+
+          elsif options[:lease_ipv4]
             raise("Cannot pass #{arg} IPv4 address argument when leasing address.") if current_ipv4
             self[current_ipv4_sym] = (current_vif.lease_ipv4({:multiple => true}) ||
                                           raise("Could not lease #{arg} IPv4 address")).ipv4_i
@@ -130,6 +146,8 @@ module Dcmgr::Models
           end
 
           options.delete(:find_ipv4)
+          options.delete(:ip_handle)
+          options.delete(:lease_ipv4)
         }
 
         # Validate again to ensure the new values pass the sanity test.
