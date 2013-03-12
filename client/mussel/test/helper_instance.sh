@@ -40,6 +40,7 @@ public_key=${ssh_key_pair_path}.pub
 ### instance
 
 function _create_instance() {
+  setup_vif
   create_ssh_key_pair
 
   local create_output="$(run_cmd instance create)"
@@ -54,6 +55,7 @@ function _destroy_instance() {
   retry_until "document_pair? instance ${instance_uuid} state terminated"
 
   destroy_ssh_key_pair
+  teardown_vif
 }
 
 ### ssh_key_pair
@@ -75,6 +77,14 @@ function destroy_ssh_key_pair() {
 
 ### vifs
 
+function needless_vif() {
+  false
+}
+
+function needs_vif() {
+  needless_vif
+}
+
 function render_vif_table() {
   cat <<-EOS
 	{}
@@ -82,12 +92,16 @@ function render_vif_table() {
 }
 
 function setup_vif() {
+  needs_vif || return 0
+
   needs_secg && { create_security_group; } || :
   render_vif_table > ${vifs_path}
   vifs=${vifs_path}
 }
 
 function teardown_vif() {
+  needs_vif || return 0
+
   rm -f ${vifs_path}
   needs_secg && { destroy_security_group; } || :
   rm -f ${rule_path}
