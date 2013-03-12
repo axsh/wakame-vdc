@@ -8,53 +8,7 @@
 
 ## variables
 
-### vifs
-
-vifs='{}'
-vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
-
-### secg
-
-security_group_uuid=
-rule=
-rule_path=${BASH_SOURCE[0]%/*}/rule.$$
-
 ## functions
-
-### vifs
-
-function render_vif_table() {
-  cat <<-EOS
-	{}
-	EOS
-}
-
-### secg
-
-function needless_secg() {
-  false
-}
-
-function needs_secg() {
-  needless_secg
-}
-
-function render_secg_rule() {
-  :
-}
-
-function create_security_group() {
-  render_secg_rule > ${rule_path}
-  rule=${rule_path}
-  local create_output="$(run_cmd security_group create)"
-  echo "${create_output}"
-
-  security_group_uuid=$(echo "${create_output}" | hash_value id)
-}
-
-function destroy_security_group() {
-  run_cmd security_group destroy ${security_group_uuid}
-}
 
 ### instance.create
 

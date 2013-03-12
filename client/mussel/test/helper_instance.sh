@@ -16,8 +16,18 @@ image_id=${image_id:-wmi-centos1d}
 hypervisor=${hypervisor:-openvz}
 cpu_cores=${cpu_cores:-1}
 memory_size=${memory_size:-256}
-vifs=
 ssh_key_id=
+
+### vifs
+
+vifs='{}'
+vifs_path=${BASH_SOURCE[0]%/*}/vifs.$$
+
+### secg
+
+security_group_uuid=
+rule=
+rule_path=${BASH_SOURCE[0]%/*}/rule.$$
 
 ### ssh_key_pair
 
@@ -61,6 +71,41 @@ function create_ssh_key_pair() {
 function destroy_ssh_key_pair() {
   run_cmd ssh_key_pair destroy ${ssh_key_pair_uuid}
   rm -f ${ssh_key_pair_path}*
+}
+
+### vifs
+
+function render_vif_table() {
+  cat <<-EOS
+	{}
+	EOS
+}
+
+### secg
+
+function needless_secg() {
+  false
+}
+
+function needs_secg() {
+  needless_secg
+}
+
+function render_secg_rule() {
+  :
+}
+
+function create_security_group() {
+  render_secg_rule > ${rule_path}
+  rule=${rule_path}
+  local create_output="$(run_cmd security_group create)"
+  echo "${create_output}"
+
+  security_group_uuid=$(echo "${create_output}" | hash_value id)
+}
+
+function destroy_security_group() {
+  run_cmd security_group destroy ${security_group_uuid}
 }
 
 #### instance hooks
