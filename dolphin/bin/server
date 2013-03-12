@@ -7,6 +7,16 @@ require File.join(File.expand_path('../../', __FILE__), 'lib/dolphin')
 
 module Dolphin
   def self.run
+
+    if RUBY_VERSION.to_f >= 2
+      # Celluloid::TaskFiber by default
+    elsif RUBY_VERSION.to_f >= 1.9
+      Celluloid.task_class = Celluloid::TaskThread
+    else
+      raise "Doesn't support ruby version: #{RUBY_VERSION}"
+      exit!
+    end
+
     manager = Manager.new
     # manager.pool(Worker, :as => :workers, :size => 2)
     # manager.pool(Sender::Mail, :as => :mail_senders, :size => 2)
