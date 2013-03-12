@@ -1,4 +1,33 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+require File.join(File.expand_path('../', __FILE__), 'lib/dolphin')
+
 require "rspec/core/rake_task"
 
+desc 'Run rspec'
 RSpec::Core::RakeTask.new("spec")
+
 task :default => :spec
+
+namespace :db do
+  namespace :cassandra do
+
+    db_config = Dolphin.settings['database']
+    @host = db_config['host']
+    @port = db_config['port']
+
+    desc 'Clean cassandra'
+    task :clean do |tasks|
+      filename = Dolphin.db_path + '/cassandra_clear.txt'
+      exec "/usr/bin/cassandra-cli -h #{@host} -p #{@port} -f #{filename}"
+    end
+
+    desc 'Migrate cassandra'
+    task :migrate do
+      filename = Dolphin.db_path + '/cassandra_schema.txt'
+      exec "/usr/bin/cassandra-cli -h #{@host} -p #{@port} -f #{filename}"
+    end
+
+  end
+end
