@@ -81,6 +81,18 @@ function render_vif_table() {
 	EOS
 }
 
+function setup_vif() {
+  needs_secg && { create_security_group; } || :
+  render_vif_table > ${vifs_path}
+  vifs=${vifs_path}
+}
+
+function teardown_vif() {
+  rm -f ${vifs_path}
+  needs_secg && { destroy_security_group; } || :
+  rm -f ${rule_path}
+}
+
 ### secg
 
 function needless_secg() {
