@@ -222,7 +222,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       outer_ip_handle = M::IpHandle[params[:ip_handle]] || raise(UnknownUUIDResource, params[:ip_handle])
       outer_nw = outer_ip_handle.ip_lease.network
 
-      # Verify account_id.
       if @account && outer_ip_handle.ip_pool.account_id != @account.canonical_uuid
         raise(E::UnknownUUIDResource, params[:ip_handle])
       end
@@ -258,15 +257,34 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
   delete '/:vif_id/external_ip' do
     inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
     inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
+    inner_ipv4 = params[:inner_ipv4]
+    outer_ipv4 = params[:outer_ipv4]
 
-    outer_nw = find_by_uuid(:Network, params[:network_uuid]) ||
-      raise(UnknownUUIDResource, params[:network_uuid])
-    outer_vif = outer_nw.network_vifs_with_service(:network_services__name => 'external-ip').first ||
-      raise(UnknownNetworkService, 'external-ip')
+    if params[:ip_handle]
+      outer_ipv4.nil? || raise(E::InvalidParameter, "Cannot mix 'ip_handle' and 'outer_ipv4' parameters.")
+
+      outer_ip_handle = M::IpHandle[params[:ip_handle]] || raise(UnknownUUIDResource, params[:ip_handle])
+
+      outer_nw = outer_ip_handle.ip_lease.network
+      outer_vif = outer_ip_handle.ip_lease.network_vif
+      outer_ipv4 = outer_ip_handle.ip_lease.ipv4_s
+
+      if @account && outer_ip_handle.ip_pool.account_id != @account.canonical_uuid
+        raise(E::UnknownUUIDResource, params[:ip_handle])
+      end
+
+    elsif params[:network_uuid]
+      outer_nw = find_by_uuid(:Network, params[:network_uuid]) ||
+        raise(UnknownUUIDResource, params[:network_uuid])
+      outer_vif = outer_nw.network_vifs_with_service(:network_services__name => 'external-ip').first ||
+        raise(UnknownNetworkService, 'external-ip')
+    else
+      raise(E::InvalidParameter, "")
+    end
 
     ds = M::NetworkRoute.dataset.routes_between_vifs(outer_vif, inner_vif)
-    ds = ds.where(:network_routes__inner_ipv4 => IPAddress::IPv4.new(params[:inner_ipv4]).to_i) if params[:inner_ipv4]
-    ds = ds.where(:network_routes__outer_ipv4 => IPAddress::IPv4.new(params[:outer_ipv4]).to_i) if params[:outer_ipv4]
+    ds = ds.where(:network_routes__inner_ipv4 => IPAddress::IPv4.new(inner_ipv4).to_i) if inner_ipv4
+    ds = ds.where(:network_routes__outer_ipv4 => IPAddress::IPv4.new(outer_ipv4).to_i) if outer_ipv4
 
     result = []
 
