@@ -36,17 +36,6 @@ function setup_vars() {
 
 ### helper
 
-function hash_value() {
-  local key=$1 line
-
-  egrep -w ":${key}:" </dev/stdin | awk '{print $2}'
-}
-
-function document_pair?() {
-  local namespace=$1 uuid=$2 key=$3 val=$4
-  [[ "$(run_cmd ${namespace} show ${uuid} | hash_value ${key})" == "${val}" ]]
-}
-
 ##
 
 setup_vars 12.03
