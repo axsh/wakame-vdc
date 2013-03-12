@@ -61,7 +61,7 @@ function _destroy_instance() {
 ### ssh_key_pair
 
 function create_ssh_key_pair() {
-  generate_ssh_keypair ${ssh_key_pair_path}
+  generate_ssh_key_pair ${ssh_key_pair_path}
 
   local create_output="$(run_cmd ssh_key_pair create)"
   echo "${create_output}"

@@ -18,7 +18,7 @@ declare public_key=${ssh_key_pair_path}.pub
 ## functions
 
 function oneTimeSetUp() {
-  generate_ssh_keypair ${ssh_key_pair_path}
+  generate_ssh_key_pair ${ssh_key_pair_path}
 }
 
 function oneTimeTearDown() {
