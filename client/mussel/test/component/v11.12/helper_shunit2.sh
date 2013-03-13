@@ -11,7 +11,7 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 ## include files
 
 . ${BASH_SOURCE[0]%/*}/../../../functions
-. ${BASH_SOURCE[0]%/*}/../../helper_vars.sh
+. ${BASH_SOURCE[0]%/*}/../../helpers/vars.sh
 
 ## group variables
 
