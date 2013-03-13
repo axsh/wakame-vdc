@@ -12,8 +12,6 @@
 
 ## variables
 
-declare load_balancer_ipaddr=
-
 ## functions
 
 ### step

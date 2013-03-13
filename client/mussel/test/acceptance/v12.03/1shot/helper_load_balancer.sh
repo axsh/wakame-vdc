@@ -8,6 +8,8 @@
 
 ## variables
 
+declare load_balancer_ipaddr=
+
 ## functions
 
 ### shunit2 setup
