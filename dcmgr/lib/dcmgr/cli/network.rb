@@ -677,7 +677,7 @@ __END
       else
     print ERB.new(<<__END, nil, '-').result(binding)
 <%- M::DcNetwork.order(:id).all.each { |l| -%>
-<%= "%-20s  %-15s" % [l.canoical_uuid, l.name] %>
+<%= "%-20s  %-15s" % [l.canonical_uuid, l.name] %>
 <%- } -%>
 __END
       end
