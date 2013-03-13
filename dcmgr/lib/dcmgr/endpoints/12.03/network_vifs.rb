@@ -248,6 +248,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     route = M::NetworkRoute.create(route_data)
     
+    on_after_commit do
+      Dcmgr.messaging.event_publish("vnet/network_route/created",
+                                    :args=>[route.id])
+    end
+
     respond_with({ :network_uuid => route.outer_network.canonical_uuid,
                    :vif_uuid => route.outer_vif.canonical_uuid,
                    :ipv4 => route.outer_ipv4_s,
@@ -288,6 +293,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     result = []
 
+    deleted_ids = ds.map(&:id)
+
     ds.each { |route|
       result << {
         :network_uuid => route.outer_network.canonical_uuid,
@@ -297,6 +304,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
       route.destroy
     }
+
+    on_after_commit do
+      Dcmgr.messaging.event_publish("vnet/network_route/deleted",
+                                    :args=>deleted_ids)
+    end
     
     respond_with(result)
   end
