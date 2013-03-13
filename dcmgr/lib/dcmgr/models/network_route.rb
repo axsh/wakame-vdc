@@ -149,6 +149,7 @@ module Dcmgr::Models
             self[current_vif_id_sym] = ip_lease.network_vif.id
 
           elsif options[:find_ipv4] == :vif_first
+            current_vif || raise("Network Vif must be included when using ':find_ipv4 => :vif_first'")
             self[current_ipv4_sym] = (current_vif.ip.first ||
                                       raise("Could not find #{arg} IPv4 address for network vif.")).ipv4_i
           end
