@@ -35,7 +35,7 @@ function test_wait_for_httpd_to_be_ready() {
   assertEquals $? 0
 }
 
-function test_compare_instance_hostname_using_http_get() {
+function test_compare_instance_uuid_using_http_get() {
   assertEquals \
     "${instance_uuid}" \
     "$(curl -fsSkL http://${instance_ipaddr}/)"
