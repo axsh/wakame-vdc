@@ -83,7 +83,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
       network = M::Network[params[:network]] || raise(E::UnknownNetwork, params[:network])
     end
 
-    network || raise(E::UnknownNetwork, nil)
+    raise(E::UnknownNetwork, nil) unless network
+    raise(E::NetworkNotInDcNetwork, nil) unless ip_pool.has_dc_network(network.dc_network)
 
     st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)      
     lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
