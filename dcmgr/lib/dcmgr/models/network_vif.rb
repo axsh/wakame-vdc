@@ -12,6 +12,9 @@ module Dcmgr::Models
 
     many_to_one :nat_network, :key => :nat_network_id, :class => Network
     one_to_many :ip, :class=>NetworkVifIpLease
+    one_to_many(:ip_leases, :class=>NetworkVifIpLease, :read_only=>true) do |ds|
+      ds.alives
+    end
     one_to_many(:direct_ip_lease, :class=>NetworkVifIpLease, :read_only=>true) do |ds|
       ds.where(:network_id=>self.network_id).alives
     end
@@ -225,6 +228,42 @@ module Dcmgr::Models
       self.network = nil
       self.save_changes
       release_ip_lease
+    end
+
+    def add_ip_lease(options)
+      network = self.network
+      lease = options[:ip_lease]
+
+      return nil if options[:allow_multiple] != true && !self.direct_ip_lease.empty?
+
+      return nil unless lease.is_a?(NetworkVifIpLease)
+      return nil unless lease.network_vif.nil?
+
+      if options[:attach_network] == true && network == nil
+        self.network = network
+        self.save_changes
+      end
+
+      return nil unless lease.network == network
+      
+      lease.network_vif = self
+      lease.save
+    end
+
+    def remove_ip_lease(options)
+      network = self.network
+      lease = options[:ip_lease]
+
+      return nil unless lease.is_a?(NetworkVifIpLease)
+      return nil unless lease.network_vif == self
+      
+      lease.network_vif = nil
+      lease.save
+
+      # if options[:detach_network] == true && network == nil
+      #   self.network = network
+      #   self.save_changes
+      # end
     end
 
     private

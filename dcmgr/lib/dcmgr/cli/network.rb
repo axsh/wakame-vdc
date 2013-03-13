@@ -193,15 +193,56 @@ __END
     nw.save
   end
 
+  #
+  # Network Vifs
+  #
   class VifOps < Base
     namespace :vif
     M=Dcmgr::Models
 
     desc "add UUID", "Register a new vif"
-    method_option :ipv4, :type => :string, :required => true, :desc => "The ip address"
+    method_option :ipv4, :type => :string, :required => true, :desc => "The IP address"
     def add(nw_uuid)
       nw = M::Network[nw_uuid] || UnknownUUIDError.raise(nw_uuid)
       puts nw.add_service_vif(options[:ipv4]).canonical_uuid
+    end
+
+    desc "add-ip UUID IP", "Add an IP handle to vif"
+    method_option :allow_multiple, :type => :boolean, :required => false, :desc => "Allow adding multiple IP leases to the vif"
+    def add_ip(vif_uuid, ip_uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
+      ip = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
+      ip_lease = ip.ip_lease || Error.raise("No NetworkVifIpLease found.")
+
+      p ip_lease.inspect
+
+      vif.network == ip_lease.network || Error.raise("Vif and IP lease's network must match.", 100)
+
+      fields = {
+        :ip_lease => ip_lease,
+        :allow_multiple => options[:allow_multiple],
+        :attach_network => true,
+      }
+
+      result = vif.add_ip_lease(fields)
+      puts result.to_hash if result
+    end
+
+    desc "remove-ip UUID IP", "Add an IP handle to vif"
+    def remove_ip(vif_uuid, ip_uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
+      ip = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
+      ip_lease = ip.ip_lease || Error.raise("No NetworkVifIpLease found.", 100)
+
+      p ip_lease.inspect
+
+      fields = {
+        :ip_lease => ip_lease,
+        # :allow_multiple => options[:allow_multiple],
+        # :attach_network => true,
+      }
+
+      vif.remove_ip_lease(fields) || Error.raise("Could not remove IP lease from vif.", 100)
     end
 
     desc "show NW", "Show network vifs on network"
@@ -228,6 +269,82 @@ __END
   end
   register VifOps, 'vif', "vif [options]", "Maintain virtual interfaces"
 
+  #
+  # IP Pools
+  #
+  class PoolOps < Base
+    namespace :pool
+    M=Dcmgr::Models
+
+    desc "add [options]", "Add new IP pool."
+    method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
+    method_option :uuid, :type => :string, :required => false, :desc => "UUID of the IP pool"
+    method_option :display_name, :type => :string, :required => true, :desc => "Display name for the IP pool"
+    def add()
+      fields = {
+        :account_id => options[:account_id],
+        :display_name => options[:display_name],
+      }
+      fields[:uuid] = options[:fields] if options[:fields]
+
+      puts super(M::IpPool, fields)
+    end
+    
+    desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
+    def add_dcn(pool_uuid, dcn_uuid)
+      pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
+      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      fields = {
+        :ip_pool_id => pool.id,
+        :dc_network_id => dcn.id,
+      }
+
+      M::IpPoolDcNetwork.create(fields)
+    end
+
+    desc "del-dcn POOL DCN [options]", "Remove DC Network from IP pool."
+    def del_dcn(pool_uuid, dcn_uuid)
+      pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
+      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      fields = {
+        :ip_pool_id => pool.id,
+        :dc_network_id => dcn.id,
+      }
+
+      assoc = M::IpPoolDcNetwork.find(fields)
+      assoc && assoc.destroy
+    end
+
+    desc "acquire POOL [options]", "Acquire IP lease and add it to the IP pool."
+    method_option :network_id, :type => :string, :required => false, :desc => "UUID of the network to lease from"
+    def acquire(pool_uuid)
+      ip_pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
+      network = nil
+
+      if options[:network_id]
+        network = M::Network[options[:network_id]] || UnknownUUIDError.raise(options[:network_id])
+      end
+
+      network || Error.raise("Could not find appropriate network for leasing an IP.", 100)
+
+      st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)      
+      lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
+      
+      puts "#{lease.ip_handle.canonical_uuid} #{lease.ipv4_s}"
+    end
+
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
+  end
+  register PoolOps, 'pool', "pool [options]", "Maintain IP pool information"
+
+  #
+  # Network Routes
+  #
   class RouteOps < Base
     namespace :route
     M=Dcmgr::Models
@@ -351,6 +468,9 @@ __END
   end
   register RouteOps, 'route', "route [options]", "Maintain routing information"
 
+  #
+  # Network Services
+  #
   class ServiceOps < Base
     namespace :service
     M=Dcmgr::Models
