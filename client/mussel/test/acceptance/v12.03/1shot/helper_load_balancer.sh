@@ -1,1 +1,21 @@
-../../../integration/v12.03/rw/helper_load_balancer.sh
+#!/bin/bash
+#
+# requires:
+#   bash
+#
+
+## include files
+
+## variables
+
+## functions
+
+### shunit2 setup
+
+function oneTimeSetUp() {
+  create_load_balancer
+}
+
+function oneTimeTearDown() {
+  destroy_load_balancer
+}
