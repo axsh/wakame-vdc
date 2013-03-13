@@ -48,7 +48,7 @@ Sequel.migration do
 
     create_table(:network_routes) do
       primary_key :id, :type=>"int(11)"
-
+      column :uuid, "varchar(255)", :null=>false
       column :route_type, "varchar(255)", :null=>false
 
       column :inner_network_id, "int(11)", :null=>false

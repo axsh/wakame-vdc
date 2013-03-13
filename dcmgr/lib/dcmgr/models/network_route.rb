@@ -3,7 +3,8 @@
 require 'ipaddress'
 
 module Dcmgr::Models
-  class NetworkRoute < BaseNew
+  class NetworkRoute < AccountResource
+    taggable 'rt'
     
     many_to_one :outer_network, :key => :outer_network_id, :class => Network
     many_to_one :inner_network, :key => :inner_network_id, :class => Network
