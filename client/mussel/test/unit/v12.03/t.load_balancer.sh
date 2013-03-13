@@ -24,7 +24,7 @@ function setUp() {
 function test_load_balancer_help_stderr_to_stdout_success() {
   extract_args ${namespace} help
   res=$(run_cmd  ${MUSSEL_ARGS} 2>&1)
-  assertEquals "${res}" "$0 ${namespace} [help|create|destroy|index|poweroff|poweron|show|xcreate]"
+  assertEquals "${res}" "$0 ${namespace} [help|create|destroy|index|poweroff|poweron|register|show|unregister|xcreate]"
 }
 
 ### index
@@ -65,6 +65,34 @@ function test_load_balancer_poweron_no_uuid() {
 
 function test_load_balancer_poweron_uuid() {
   extract_args ${namespace} poweron i-xxx
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
+### register
+
+function test_instance_register_no_uuid() {
+  extract_args ${namespace} register
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_instance_register_uuid() {
+  extract_args ${namespace} register i-xxx
+  run_cmd ${MUSSEL_ARGS}
+  assertEquals $? 0
+}
+
+### unregister
+
+function test_instance_unregister_no_uuid() {
+  extract_args ${namespace} unregister
+  run_cmd ${MUSSEL_ARGS} 2>/dev/null
+  assertNotEquals $? 0
+}
+
+function test_instance_unregister_uuid() {
+  extract_args ${namespace} unregister i-xxx
   run_cmd ${MUSSEL_ARGS}
   assertEquals $? 0
 }
