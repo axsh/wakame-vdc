@@ -88,6 +88,14 @@ module Dcmgr::Models
         end
       }
 
+      if self.inner_vif && self.outer_vif
+        errors.add(:inner_vif, "Cannot create route between the same network vif.") if self.inner_vif == self.outer_vif
+      end
+      
+      if self.inner_network && self.outer_network
+        errors.add(:inner_network, "Cannot create route between the same network.") if self.inner_network == self.outer_network
+      end
+      
       super
     end
 

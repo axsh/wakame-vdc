@@ -246,8 +246,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     # Validate ip pool has dc network?
 
-    route = M::NetworkRoute.create(route_data)
-    
+    begin
+      route = M::NetworkRoute.create(route_data)
+    rescue Sequel::ValidationFailed => e
+      raise(E::InvalidParameter, e.message)
+    end
+
     respond_with({ :network_uuid => route.outer_network.canonical_uuid,
                    :vif_uuid => route.outer_vif.canonical_uuid,
                    :ipv4 => route.outer_ipv4_s,
