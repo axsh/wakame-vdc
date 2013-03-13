@@ -310,7 +310,7 @@ __END
         :account_id => options[:account_id],
         :display_name => options[:display_name],
       }
-      fields[:uuid] = options[:fields] if options[:fields]
+      fields[:uuid] = options[:uuid] if options[:uuid]
 
       puts super(M::IpPool, fields)
     end
