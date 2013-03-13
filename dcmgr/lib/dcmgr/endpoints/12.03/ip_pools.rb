@@ -21,6 +21,36 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     end
   end
 
+  post do
+    # description "Create IP pool"
+    # params :display_name, string, required
+    # params :dc_networks, array, required
+
+    raise E::InvalidParameter, :display_name if params[:display_name].class != String
+    raise E::InvalidParameter, params[:dc_networks] if params[:dc_networks].class != Array
+
+    fields = {
+      :account_id => @account.canonical_uuid,
+      :display_name => params[:display_name],
+    }
+
+    ip_pool = M::IpPool.create(fields)
+
+    params[:dc_networks].each { |dcn|
+      if M::DcNetwork.check_uuid_format(dcn)
+        dc_network = find_by_uuid(M::DcNetwork, dcn)
+      else
+        dc_network = M::DcNetwork.find(:name => dcn)
+      end
+
+      next unless dc_network
+
+      M::IpPoolDcNetwork.create({:ip_pool_id => ip_pool.id, :dc_network_id => dc_network.id})
+    }
+
+    respond_with(R::IpPool.new(ip_pool).generate)
+  end  
+
   get '/:id' do
     # description "Retrieve details about an IP pool"
     # params :id required
@@ -28,6 +58,19 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     raise E::UnknownIpPool, params[:id] if ip_pool.nil?
 
     respond_with(R::IpPool.new(ip_pool).generate)
+  end
+
+  get '/:id/ip_handles' do
+    # description "Retrieve ip handles belonging to an IP pool"
+    # params :id required
+    ip_pool = find_by_uuid(M::IpPool, params[:id])
+    raise E::UnknownIpPool, params[:id] if ip_pool.nil?
+
+    ds = ip_pool.ip_handles_dataset
+    
+    collection_respond_with(ds) do |paging_ds|
+      R::IpHandleCollection.new(paging_ds).generate
+    end
   end
 
   put '/:id/acquire' do
