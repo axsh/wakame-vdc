@@ -14,11 +14,6 @@
 
 image_id=${image_id_lbnode:-wmi-lbnode}
 
-declare instance_ipaddr=
-
-function needs_vif() { true; }
-function needs_secg() { true; }
-
 ## functions
 
 function render_secg_rule() {

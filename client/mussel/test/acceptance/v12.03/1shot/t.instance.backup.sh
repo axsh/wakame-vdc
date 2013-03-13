@@ -12,8 +12,6 @@
 
 ## variables
 
-declare instance_ipaddr=
-
 description=${description:-}
 display_name=${display_name:-}
 is_cacheable=${is_cacheable:-}

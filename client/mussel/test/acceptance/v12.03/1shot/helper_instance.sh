@@ -8,6 +8,11 @@
 
 ## variables
 
+declare instance_ipaddr=
+
+function needs_vif() { true; }
+function needs_secg() { true; }
+
 vifs_eth0_network_id=${vifs_eth0_network_id:-nw-demo1}
 
 ## functions
