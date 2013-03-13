@@ -7,10 +7,10 @@
 
 task_create() {
   call_api -X POST $(urlencode_data \
-    $([[ -z "${description}"   ]] || echo description=${description}    ) \
-    $([[ -z "${display_name}"  ]] || echo display_name=${display_name}  ) \
-    $([[ -z "${download_once}" ]] || echo download_once=${download_once}) \
-    $([[ -z "${public_key}"    ]] || strfile_type "public_key"          ) \
+    $(add_param description     string) \
+    $(add_param display_name    string) \
+    $(add_param download_once   string) \
+    $(add_param public_key     strfile) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }
