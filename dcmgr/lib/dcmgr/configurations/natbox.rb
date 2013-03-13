@@ -47,6 +47,8 @@ module Dcmgr
       end
 
       param :ovs_ofctl_path, :default => "/usr/bin/ovs-ofctl"
+      param :verbose_openflow, :default => false
+      param :ovs_flow_table, :default => 0
       param :ovs_flow_priority, :default => 100
 
       def validate(errors)
