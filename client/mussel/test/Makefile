@@ -1,8 +1,14 @@
 all: test
 
-test: test-functions test-v12.03
+test: unit component
 
-test-functions:
-	(cd functions && make)
-test-v12.03:
-	(cd v12.03 && make)
+unit:
+	(cd $@ && make)
+component:
+	(cd $@ && make)
+integration:
+	(cd $@ && make)
+acceptance:
+	(cd $@ && make)
+
+.PHONY: unit component integration acceptance

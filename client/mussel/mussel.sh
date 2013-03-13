@@ -1,32 +1,41 @@
 #!/bin/bash
 #
-# mussel
+# requires:
+#  bash
 #
+# description:
+#  wakame-vdc dcmgr(api) client
+#
+set -e
+
+# include files
+
+. ${BASH_SOURCE[0]%/*}/functions
+
+# variables
+
+## System part
+
 LANG=C
 LC_ALL=C
 
-set -e
+## MUSSEL part
 
-abs_path=$(cd $(dirname $0) && pwd)
-. ${abs_path}/functions
+MUSSEL_RC=${MUSSEL_RC:-${HOME}/.musselrc}
+if [[ -f "${MUSSEL_RC}" ]]; then
+  . ${MUSSEL_RC}
+fi
+
+## DCMGR part
 
 extract_args $*
 
-#
-api_version=${api_version:-12.03}
-host=${host:-localhost}
-port=${port:-9001}
-base_uri=${base_uri:-http://${host}:${port}/api/${api_version}}
-account_id=${account_id:-a-shpoolxx}
-format=${format:-yml}
+DCMGR_API_VERSION=${DCMGR_API_VERSION:-${api_version:-12.03}}
+DCMGR_HOST=${DCMGR_HOST:-localhost}
+DCMGR_PORT=${DCMGR_PORT:-9001}
+DCMGR_BASE_URI=${DCMGR_BASE_URI:-${base_uri:-http://${DCMGR_HOST}:${DCMGR_PORT}/api/${DCMGR_API_VERSION}}}
+DCMGR_RESPONSE_FORMAT=${DCMGR_RESPONSE_FORMAT:-${DCMGR_RESPONSE_FORMAT:-yml}}
 
-http_header=X_VDC_ACCOUNT_UUID:${account_id}
-
-# include version
-case "${api_version}" in
-11.12) . ${abs_path}/_v11.12 ;;
-12.03) . ${abs_path}/_v12.03 ;;
-*)     . ${abs_path}/_v12.03 ;;
-esac
+# main
 
 run_cmd ${MUSSEL_ARGS}

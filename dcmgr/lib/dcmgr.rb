@@ -318,7 +318,6 @@ module Dcmgr
       autoload :AcceptARPFromDNS, 'dcmgr/vnet/tasks/accept_arp_from_dns'
       autoload :AcceptARPToHost, 'dcmgr/vnet/tasks/accept_arp_to_host'
       autoload :AcceptIpFromFriends, 'dcmgr/vnet/tasks/accept_ip_from_friends'
-      autoload :AcceptIpFromGateway, 'dcmgr/vnet/tasks/accept_ip_from_gateway'
       autoload :AcceptIpToAnywhere, 'dcmgr/vnet/tasks/accept_ip_to_anywhere'
       autoload :AcceptRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
       autoload :AcceptTcpRelatedEstablished, 'dcmgr/vnet/tasks/accept_related_established'
