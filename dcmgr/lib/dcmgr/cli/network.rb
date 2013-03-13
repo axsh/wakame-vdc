@@ -318,7 +318,14 @@ __END
     desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
     def add_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
-      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      if M::DcNetwork.check_uuid_format(dcn_uuid)
+        dcn = find_by_uuid(M::DcNetwork, dcn_uuid)
+      else
+        dcn = M::DcNetwork.find(:name => dcn_uuid)
+      end
+
+      dcn || UnknownUUIDError.raise(dcn_uuid)
 
       fields = {
         :ip_pool_id => pool.id,
@@ -331,7 +338,14 @@ __END
     desc "del-dcn POOL DCN [options]", "Remove DC Network from IP pool."
     def del_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
-      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      if M::DcNetwork.check_uuid_format(dcn_uuid)
+        dcn = find_by_uuid(M::DcNetwork, dcn_uuid)
+      else
+        dcn = M::DcNetwork.find(:name => dcn_uuid)
+      end
+
+      dcn || UnknownUUIDError.raise(dcn_uuid)
 
       fields = {
         :ip_pool_id => pool.id,
