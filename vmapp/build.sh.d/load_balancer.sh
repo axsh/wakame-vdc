@@ -30,6 +30,7 @@ function render_lb_etc_rclocal() {
   cat <<-'EOS'
 	. /metadata/user-data
 	route add -net ${AMQP_SERVER} netmask 255.255.255.255 dev eth1
+	initctl start haproxy_updater
 	EOS
 }
 
