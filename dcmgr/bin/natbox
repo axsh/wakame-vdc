@@ -14,7 +14,7 @@ abort("ERROR: Failed to load natbox.conf") if path.nil?
 
 begin
   Dcmgr.instance_eval {
-    @conf = Dcmgr::Configurations::NatBox.load(path)
+    @conf = Dcmgr::Configurations::Natbox.load(path)
   }
 rescue NoMethodError => e
   abort("Syntax Error: #{path}\n  #{e.backtrace.first} #{e.message}")
@@ -30,7 +30,7 @@ manifest.instance_eval do
   node_instance_id "#{Isono::Util.default_gw_ipaddr}"
 
   load_module Isono::NodeModules::NodeHeartbeat
-  load_module Dcmgr::NodeModules::ServiceNatBox
+  load_module Dcmgr::NodeModules::ServiceNatbox
 end
 
 Isono.at_disconnected do
@@ -38,5 +38,5 @@ Isono.at_disconnected do
 end
 
 start(manifest) do
-  endpoint "natbox-handle.#{@node.node_id}", Dcmgr::Rpc::NatBoxHandler
+  endpoint "natbox-handle.#{@node.node_id}", Dcmgr::Rpc::NatboxHandler
 end

@@ -28,6 +28,7 @@ manifest.instance_eval do
   load_module Dcmgr::NodeModules::Scheduler
   load_module Dcmgr::NodeModules::EventHook
   load_module Dcmgr::NodeModules::JobQueueProxy
+  load_module Dcmgr::NodeModules::NatboxCollector
 end
 
 Isono.at_disconnected do

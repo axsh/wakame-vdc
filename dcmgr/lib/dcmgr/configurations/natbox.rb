@@ -4,7 +4,7 @@ module Dcmgr
   
   module Configurations
 
-    class NatBox < Configuration
+    class Natbox < Configuration
 
       class DcNetwork < Configuration
         param :interface
@@ -45,6 +45,9 @@ module Dcmgr
       on_initialize_hook do
         @config[:dc_networks] = {}
       end
+
+      param :ovs_ofctl_path, :default => "/usr/bin/ovs-ofctl"
+      param :ovs_flow_priority, :default => 100
 
       def validate(errors)
       end

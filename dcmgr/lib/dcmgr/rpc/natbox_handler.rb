@@ -5,13 +5,10 @@ require 'ipaddress'
 
 module Dcmgr
   module Rpc
-    class NatBoxHandler < EndpointBuilder
+    class NatboxHandler < EndpointBuilder
       include Dcmgr::Logger
       include Dcmgr::Helpers::CliHelper
       
-      job :foo do
-      end
-
       def event
         @event ||= Isono::NodeModules::EventChannel.new(@node)
       end

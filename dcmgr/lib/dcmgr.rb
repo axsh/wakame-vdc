@@ -45,7 +45,7 @@ module Dcmgr
     autoload :Hva, 'dcmgr/configurations/hva'
     autoload :Dcmgr, 'dcmgr/configurations/dcmgr'
     autoload :Sta, 'dcmgr/configurations/sta'
-    autoload :NatBox, 'dcmgr/configurations/natbox'
+    autoload :Natbox, 'dcmgr/configurations/natbox'
     autoload :Nwmongw, 'dcmgr/configurations/nwmongw'
     autoload :Bksta, 'dcmgr/configurations/bksta'
   end
@@ -124,7 +124,7 @@ module Dcmgr
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :DebugOpenFlow, 'dcmgr/node_modules/debug_openflow'
-    autoload :ServiceNatBox, 'dcmgr/node_modules/service_natbox'
+    autoload :ServiceNatbox, 'dcmgr/node_modules/service_natbox'
     autoload :ServiceNetfilter, 'dcmgr/node_modules/service_netfilter'
     autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
@@ -132,6 +132,7 @@ module Dcmgr
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
     autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
+    autoload :NatboxCollector, 'dcmgr/node_modules/natbox_collector'
   end
 
   module Helpers
@@ -175,7 +176,7 @@ module Dcmgr
 
   module Rpc
     autoload :HvaHandler, 'dcmgr/rpc/hva_handler'
-    autoload :NatBoxHandler, 'dcmgr/rpc/natbox_handler'
+    autoload :NatboxHandler, 'dcmgr/rpc/natbox_handler'
     autoload :StaHandler, 'dcmgr/rpc/sta_handler'
     autoload :HvaContext, 'dcmgr/rpc/hva_context'
     autoload :LocalStoreHandler, 'dcmgr/rpc/local_store_handler'
@@ -221,6 +222,7 @@ module Dcmgr
     autoload :NetworkMonitoring, 'dcmgr/drivers/network_monitoring'
     autoload :Zabbix, 'dcmgr/drivers/zabbix'
     autoload :LinuxContainer, 'dcmgr/drivers/linux_container'
+    autoload :Natbox, 'dcmgr/drivers/natbox'
   end
 
   autoload :StorageService, 'dcmgr/storage_service'
