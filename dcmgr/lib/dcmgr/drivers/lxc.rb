@@ -146,8 +146,14 @@ module Dcmgr
       end
 
       def check_instance(i)
-        container_status = `lxc-info -n #{i}`.chomp.split(" ")[2]
-        if container_status != "RUNNING"
+        # `lxc-info -n i-abj0jbjk`.split
+        # => ["state:", "RUNNING", "pid:", "6253"]
+        #
+        # `lxc-info -n xxx`.split
+        # => ["state:", "STOPPED", "pid:", "-1"]
+
+        container_status = `lxc-info -n #{i}`.split
+        if container_status[1] != "RUNNING"
           raise "Unable to find the lxc container: #{i}"
         end
       end
