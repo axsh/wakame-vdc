@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/backup_object'
+require 'dcmgr/endpoints/12.03/responses/task_copy_to'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
   BACKUP_OBJECT_META_STATE=['alive', 'alive_with_deleted'].freeze
@@ -110,13 +111,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
       raise E::InvalidBackupStorage, "Not ready for copy_to task."
     end
 
-    Dcmgr::Messaging.job_queue.submit("backup_storage.copy_to.#{bo.backup_storage.node_id}",
-                                      bo.canonical_uuid,
-                                      {:destination=>params[:destination],
-                                        :backup_object=>bo.to_hash}
-                                      )
+    job = Dcmgr::Messaging.job_queue.submit("backup_storage.copy_to.#{bo.backup_storage.node_id}",
+                                            bo.canonical_uuid,
+                                            {:destination=>params[:destination],
+                                              :backup_object=>bo.to_hash}
+                                            )
 
-    respond_with(R::BackupObject.new(bo).generate)
+    respond_with(R::TaskCopyTo.new(job).generate)
   end
 
   delete '/:id' do
