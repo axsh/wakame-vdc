@@ -40,6 +40,11 @@ function test_add_param_key_array() {
   assertEquals "$(add_param name array)" "name[]=${name}"
 }
 
+function test_add_param_key_array_multi() {
+  local name="i-xxx i-yyy"
+  assertNotEquals "$(add_param name array)" "$(for i in; do echo name[]=${i}; done)"
+}
+
 function test_add_param_key_strfile() {
   local name=i-xxx
   assertEquals "$(add_param name strfile)" "name=${name}"
