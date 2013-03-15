@@ -207,14 +207,41 @@ __END
       puts nw.add_service_vif(options[:ipv4]).canonical_uuid
     end
 
+    desc "add-external-ip UUID IP", "Add an external IP to vif"
+    def add_external_ip(vif_uuid, ip_uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
+      ip_handle = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
+      ip_lease = ip_handle.ip_lease || Error.raise("No NetworkVifIpLease found.", 100)
+
+      vif.network || Error.raise("Network Vif is not attached to a network.", 100)
+      ip_lease.network || Error.raise("IP lease is not attached to a network.", 100)
+
+      fields = {
+        :route_type => 'external-ip',
+        :outer_network_id => ip_lease.network.id,
+        :inner_network_id => vif.network.id,
+        :inner_vif_id => vif.id,
+
+        :create_options => {
+          :outer => {
+            :find_service => 'external-ip',
+            :ip_handle => ip_handle,
+          },
+          :inner => {
+            :find_ipv4 => :vif_first,
+          }
+        }
+      }
+
+      M::NetworkRoute.create(fields)
+    end
+
     desc "add-ip UUID IP", "Add an IP handle to vif"
     method_option :allow_multiple, :type => :boolean, :required => false, :desc => "Allow adding multiple IP leases to the vif"
     def add_ip(vif_uuid, ip_uuid)
       vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
       ip = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
       ip_lease = ip.ip_lease || Error.raise("No NetworkVifIpLease found.")
-
-      p ip_lease.inspect
 
       vif.network == ip_lease.network || Error.raise("Vif and IP lease's network must match.", 100)
 
@@ -233,8 +260,6 @@ __END
       vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
       ip = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
       ip_lease = ip.ip_lease || Error.raise("No NetworkVifIpLease found.", 100)
-
-      p ip_lease.inspect
 
       fields = {
         :ip_lease => ip_lease,
@@ -285,7 +310,7 @@ __END
         :account_id => options[:account_id],
         :display_name => options[:display_name],
       }
-      fields[:uuid] = options[:fields] if options[:fields]
+      fields[:uuid] = options[:uuid] if options[:uuid]
 
       puts super(M::IpPool, fields)
     end
@@ -293,7 +318,14 @@ __END
     desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
     def add_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
-      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      if M::DcNetwork.check_uuid_format(dcn_uuid)
+        dcn = find_by_uuid(M::DcNetwork, dcn_uuid)
+      else
+        dcn = M::DcNetwork.find(:name => dcn_uuid)
+      end
+
+      dcn || UnknownUUIDError.raise(dcn_uuid)
 
       fields = {
         :ip_pool_id => pool.id,
@@ -306,7 +338,14 @@ __END
     desc "del-dcn POOL DCN [options]", "Remove DC Network from IP pool."
     def del_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
-      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      if M::DcNetwork.check_uuid_format(dcn_uuid)
+        dcn = find_by_uuid(M::DcNetwork, dcn_uuid)
+      else
+        dcn = M::DcNetwork.find(:name => dcn_uuid)
+      end
+
+      dcn || UnknownUUIDError.raise(dcn_uuid)
 
       fields = {
         :ip_pool_id => pool.id,
@@ -677,7 +716,7 @@ __END
       else
     print ERB.new(<<__END, nil, '-').result(binding)
 <%- M::DcNetwork.order(:id).all.each { |l| -%>
-<%= "%-20s  %-15s" % [l.canoical_uuid, l.name] %>
+<%= "%-20s  %-15s" % [l.canonical_uuid, l.name] %>
 <%- } -%>
 __END
       end

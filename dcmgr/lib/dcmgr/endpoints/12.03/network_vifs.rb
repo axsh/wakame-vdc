@@ -246,8 +246,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     # Validate ip pool has dc network?
 
-    route = M::NetworkRoute.create(route_data)
-    
+    begin
+      route = M::NetworkRoute.create(route_data)
+    rescue Sequel::ValidationFailed => e
+      raise(E::InvalidParameter, e.message)
+    end
+
     on_after_commit do
       Dcmgr.messaging.event_publish("vnet/network_route/created",
                                     :args=>[route.id])
