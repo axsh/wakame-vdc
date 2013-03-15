@@ -6,6 +6,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
+require 'net/http'
 
 include Isono::Runner::RpcServer
 
@@ -25,7 +26,7 @@ rescue Dcmgr::Configuration::ValidationError => e
 end
 Dcmgr.run_initializers('logger')
 
-class Test < Isono::NodeModules::Base
+class CopyProcessor < Isono::NodeModules::Base
   include Dcmgr::Logger
   
   initialize_hook do
@@ -33,13 +34,96 @@ class Test < Isono::NodeModules::Base
     
     EM.next_tick do
       queue_worker = Dcmgr::NodeModules::JobQueueWorker.new(self.node)
-      #queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1) do |job|
-      queue_worker.subscribe("backup_storage.copy_to.bksta", 1) do |job|
-        params = job[:params]
-        puts "/bin/cat #{File.expand_path(params[:backup_object][:object_key], '/mnt/work1/vdctmp/images')} > /dev/null"
-        system("/bin/cat #{File.expand_path(params[:backup_object][:object_key], '/mnt/work1/vdctmp/images')} > /dev/null")
+      queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1) do |job|
+        myinstance.submit_pull_job(job)
+      end
+
+      queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1) do |job|
+        myinstance.pull_file_job(job)
       end
     end
+  end
+
+
+  include Dcmgr::Helpers::CliHelper
+
+  def submit_pull_job(job)
+    params = job[:params]
+
+    uri = Dcmgr.conf.destinations[params[:destination]].dup
+    if uri.nil?
+      raise "Unknown destination: #{params[:destination]}"
+    end
+
+    uri.path += '/submit_pull_job'
+    
+    tryagain do
+      post_params = {'src'=>Dcmgr.conf.export_uri + "/" + params[:backup_object][:object_key]}
+      logger.info("Sending POST /submit_pull_job: #{uri.to_s}, #{post_params}")
+      res = Net::HTTP.post_form(uri, post_params)
+      unless res.is_a?(Net::HTTPSuccess)
+        sleep 3
+        raise "Failed to submit pull job: #{res} #{uri.to_s}"
+      end
+
+      true
+    end
+    sleep 3
+  end
+
+  def pull_file_job(job)
+    params = job[:params]
+
+    src_uri = URI.parse(params[:src])
+    logger.info("Starting file pull: #{src_uri.to_s}")
+    if src_uri.scheme == 'scp'
+      sh("scp #{src_uri.host}:#{src_uri.path} /dev/null")
+    else
+      raise "Unsupported transport method: #{src_uri.to_s}"
+    end
+  end
+end
+
+class DestinationMonitor < Isono::NodeModules::Base
+  include Dcmgr::Logger
+  
+  initialize_hook do
+    @destinations = {}
+    Dcmgr.conf.destinations.each { |name, uri|
+      @destinations[name] = {:uri=>uri, :status=>false, :last_monitor_at=>nil}
+    }
+
+    logger.info("Copy destinations to be monitored: #{@destinations.keys.join(', ')}")
+
+    do_http_ping = lambda do
+      EM::Iterator.new(@destinations).map(proc{ |d, iter|
+                                            n, v = d
+                                            http = EM::HttpRequest.new(v[:uri].to_s + '/ping').get
+                                            http.callback {
+                                              if http.response_header.status == 200
+                                                v[:status]=true
+                                              else
+                                                v[:status]=false
+                                              end
+                                              v[:last_monitor_at]=Time.now
+                                              iter.return(v)
+                                            }
+                                            http.errback {
+                                              v[:status]=false
+                                              v[:last_monitor_at]=Time.now
+                                              iter.return(v)
+                                            }
+                                          }, proc { |results|
+                                            failed_dests = @destinations.values.select { |v| !v[:status] }
+                                            if !failed_dests.empty?
+                                              logger.warn("Failed destinations: #{failed_dests.map{ |v | v[:uri] }.join(', ')}")
+                                            end
+                                            #logger.debug("Checked destinations: #{@destinations.keys.join(', ')}")
+                                          })
+    end
+
+    EM.next_tick(&do_http_ping)
+    EM.add_periodic_timer(10, &do_http_ping)
   end
 end
 
@@ -50,12 +134,55 @@ manifest.instance_eval do
 
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::JobQueueWorker
-  load_module Test
+  load_module CopyProcessor
+  load_module DestinationMonitor
 end
 
 Isono.at_disconnected do
   EM.stop { exit }
 end
+
+require 'thin'
+require 'sinatra/base'
+require 'sinatra/async'
+require 'em-http'
+
+
+class APIProxy2 < Sinatra::Base
+  register Sinatra::Async
+
+  def initialize(node)
+    super()
+    @node = node
+  end
+  
+  aget '/ping' do
+    if params[:code]
+      body("PONG: #{params[:code]}")
+    else
+      body("PONG")
+    end
+  end
+
+  apost '/submit_pull_job' do
+    bo = params['backup_object']
+    src = params['src']
+    puts "/sbumit_pull_job: #{EM.reactor_thread?}"
+    job = Dcmgr::Messaging.job_queue.submit("backup_storage.pull_from.#{@node.node_id}",
+                                             "bo-xxxxxx",
+                                             {:src=>params['src']}
+                                             ) do |req|
+      puts "sdlkjsdflkjsdflkjsdf"
+      
+      req.on_success { |r|
+        body("OK")
+        puts "succss"
+      }
+    end
+    nil
+  end
+end
+
 
 class BackupStorageHandler < EndpointBuilder
   job :export_object do
@@ -68,5 +195,7 @@ end
 
 
 start(manifest) do
+  thin = Thin::Server.new('0.0.0.0', 8889, APIProxy2.new(@node))
+  thin.start!
 #  endpoint "bksta-handle.#{@node.node_id}", BackupStorageHandler
 end
