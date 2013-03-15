@@ -57,12 +57,15 @@ module Dcmgr::Endpoints::V1203::Responses
           }
         }
 
+        allow_list = self[:allow_list].split(',') unless self[:allow_list].blank?
+
         to_hash.merge(:id=>canonical_uuid,
               :state=>state,
               :status=>status,
               :target_vifs=> target_vifs,
               :vif=>h[:vif],
-              :instance_id=>instance.canonical_uuid
+              :instance_id=>instance.canonical_uuid,
+              :allow_list=>allow_list
         )
       }
     end

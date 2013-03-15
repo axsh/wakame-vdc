@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'openssl'
+require 'ipaddr'
 
 module Dcmgr::Models
   class LoadBalancer < AccountResource
@@ -42,6 +43,7 @@ module Dcmgr::Models
       validates_includes 1..65535, :instance_port
       validates_private_key
       validates_public_key
+      validates_allow_list
     end
 
     def validates_private_key
@@ -63,6 +65,33 @@ module Dcmgr::Models
       if !check_public_key
         errors.add(:public_key, "Invalid parameter")
       end
+    end
+
+    def validates_allow_list
+
+      if allow_list.is_a?(String)
+        ciders = allow_list.split(',')
+      elsif allow_list.is_a?(Array)
+        ciders = allow_list
+      else
+        errors.add(:allow_list, 'Invalid parameter')
+      end
+
+      if ciders.empty?
+        errors.add(:allow_list, 'Empty CIDR')
+        return false
+      end
+
+      ciders.each do |cider|
+        begin
+          ipaddr = IPAddr.new cider
+          raise unless ipaddr.ipv4?
+        rescue => e
+          errors.add(:allow_list, "Invalid CIDR #{cider} or isn't ipv4")
+          return false
+        end
+      end
+      true
     end
 
     def state

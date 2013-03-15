@@ -65,6 +65,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   post do
     lb_conf = Dcmgr.conf.service_types['lb']
     lb_port = params[:port].to_i
+    allow_list = params[:allow_list] || ['0.0.0.0']
+
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
     raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
 
@@ -75,6 +77,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.instance_port = params[:instance_port].to_i || 80
     lb.instance_protocol = params[:instance_protocol] || 'http'
     lb.balance_algorithm = params[:balance_algorithm] || 'leastconn'
+    lb.allow_list = allow_list.join(',')
 
     if params[:description]
       lb.description = params[:description]
@@ -99,16 +102,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
     end
 
+
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
 
     user_data = []
     user_data << "AMQP_SERVER=#{amqp_settings[:host]}"
     user_data << "AMQP_PORT=#{amqp_settings[:port]}"
 
-    security_group_rules = []
-    security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
-    security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
-
+    security_group_rules = build_security_group_rules(lb.port, allow_list)
     instance_security_group = create_security_group(security_group_rules)
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
@@ -329,16 +330,20 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     end
 
     if !params[:port].empty?
-      lb_port = params[:port].to_i
-      raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
-      security_group_rules = []
-      security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
-      security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
+      lb.port = params[:port].to_i
+      raise E::InvalidLoadBalancerPort, lb.errors[:allow_list] if !lb.valid? && lb.errors.has_key?(:port)
+    end
 
+    if !params[:allow_list][0].empty?
+      lb.allow_list = params[:allow_list].join(',')
+      raise E::InvalidLoadBalancerAllowList, lb.errors[:allow_list] if !lb.valid? && lb.errors.has_key?(:allow_list)
+    end
+
+    if !params[:port].empty? || !params[:allow_list].empty?
+      security_group_rules = build_security_group_rules(lb.port, lb.allow_list.split(','))
       request_forward.put("/security_groups/#{lb.network_vifs(PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
        :rule => security_group_rules.join("\n")
       })
-      lb.port = params[:port]
     end
 
     if !params[:protocol].empty?
@@ -506,6 +511,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       'REQUEST_PATH' => uri
     })
     body
+  end
+
+  def build_security_group_rules(lb_port, allow_list)
+    security_group_rules = []
+    allow_list.each do |cidr|
+      security_group_rules << "icmp:-1,-1,ip4:#{cidr}"
+      security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:#{cidr}"
+    end
+    security_group_rules
   end
 
 end
