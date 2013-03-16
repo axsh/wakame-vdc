@@ -22,9 +22,9 @@ task_create() {
     $(add_param instance_port     string) \
     $(add_param max_connection    string) \
     $(add_param port              string) \
-    $(add_param private_key       string) \
+    $(add_param private_key      strfile) \
     $(add_param protocol          string) \
-    $(add_param public_key        string) \
+    $(add_param public_key       strfile) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
 }
@@ -59,4 +59,25 @@ task_unregister() {
     $(add_param vifs array) \
    ) \
    $(base_uri)/${namespace}s/${uuid}/${cmd}.$(suffix)
+}
+
+task_update() {
+  local namespace=$1 cmd=$2 uuid=$3
+  [[ -n "${namespace}" ]] || { echo "[ERROR] 'namespace' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${cmd}"       ]] || { echo "[ERROR] 'cmd' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  call_api -X PUT $(urlencode_data \
+    $(add_param balance_algorithm string) \
+    $(add_param cookie_name       string) \
+    $(add_param display_name      string) \
+    $(add_param engine            string) \
+    $(add_param instance_port     string) \
+    $(add_param max_connection    string) \
+    $(add_param port              string) \
+    $(add_param private_key      strfile) \
+    $(add_param protocol          string) \
+    $(add_param public_key       strfile) \
+   ) \
+   $(base_uri)/${namespace}s/${uuid}.$(suffix)
 }
