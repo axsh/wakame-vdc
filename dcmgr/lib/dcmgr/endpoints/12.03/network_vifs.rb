@@ -261,6 +261,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     result = []
 
+    deleted_ids = ds.map(&:id)
+
     ds.each { |route|
       result << {
         :network_uuid => route.outer_network.canonical_uuid,
@@ -270,6 +272,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
       route.destroy
     }
+
+    on_after_commit do
+      Dcmgr.messaging.event_publish("vnet/network_route/deleted",
+                                    :args=>deleted_ids)
+    end
     
     respond_with(result)
   end
