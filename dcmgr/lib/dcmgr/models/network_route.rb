@@ -32,7 +32,7 @@ module Dcmgr::Models
       def between_vifs(outer_vif, inner_vif)
         ds = self
         ds = ds.join_with_outer_ip_leases.where(:outer_ip_leases__network_vif_id => outer_vif.id)
-        ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_vif_id => inner_vif.id).select_all(:network_routes)
+        ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_vif_id => inner_vif.id).select_all(:network_routes).alives
       end
     }
 

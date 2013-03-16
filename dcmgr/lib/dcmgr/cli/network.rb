@@ -409,6 +409,32 @@ __END
 
         [nw, vif, ip_lease]
       end
+
+      def routes_dataset(outer_uuid, inner_uuid, outer, inner)
+        ds = M::NetworkRoute.dataset
+
+        if outer[2]
+          ds = ds.where(:network_routes__outer_lease_id => outer[2].id)
+        elsif outer[1]
+          ds = ds.join_with_outer_ip_leases.where(:outer_ip_leases__network_vif_id => outer[1].id)
+        elsif outer[0]
+          ds = ds.join_with_outer_ip_leases.where(:outer_ip_leases__network_id => outer[0].id)
+        else
+          UnknownUUIDError.raise(outer_uuid)
+        end
+
+        if inner[2]
+          ds = ds.where(:network_routes__inner_lease_id => inner[2].id)
+        elsif inner[1]
+          ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_vif_id => inner[1].id)
+        elsif inner[0]
+          ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_id => inner[0].id)
+        else
+          UnknownUUIDError.raise(inner_uuid)
+        end
+        
+        ds
+      end
     }
 
     desc "add OUTER_UUID INNER_UUID", "Add route between two networks"
@@ -459,12 +485,7 @@ __END
       outer_nw, outer_vif, outer_lease = from_uuid(outer_uuid)
       inner_nw, inner_vif, inner_lease = from_uuid(inner_uuid)
 
-      outer_vif || UnknownUUIDError.raise(outer_uuid)
-      inner_vif || UnknownUUIDError.raise(inner_uuid)
-
-      # Modify so as to properly search inner/outer nw/vif/lease for
-      # routes instead of doing only vif-to-vif.
-      ds = M::NetworkRoute.dataset.between_vifs(outer_vif, inner_vif)
+      ds = routes_dataset(outer_uuid, inner_uuid, from_uuid(outer_uuid), from_uuid(inner_uuid))
 
       # If no route_type is supplied, require --all-route-types.
       if options[:route_type]
@@ -510,10 +531,7 @@ __END
       outer_nw, outer_vif, outer_lease = from_uuid(outer_uuid)
       inner_nw, inner_vif, inner_lease = from_uuid(inner_uuid)
 
-      outer_vif || UnknownUUIDError.raise(outer_uuid)
-      inner_vif || UnknownUUIDError.raise(inner_uuid)
-
-      ds = M::NetworkRoute.dataset.between_vifs(outer_vif, inner_vif)
+      ds = routes_dataset(outer_uuid, inner_uuid, from_uuid(outer_uuid), from_uuid(inner_uuid))
 
       table = [['Type', 'Outer NW', 'Outer Vif', 'Inner NW', 'Inner Vif']]
       ds.each { |r|
