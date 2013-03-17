@@ -20,6 +20,7 @@ task_create() {
     $(add_param display_name      string) \
     $(add_param engine            string) \
     $(add_param instance_port     string) \
+    $(add_param instance_protocol string) \
     $(add_param max_connection    string) \
     $(add_param port              string) \
     $(add_param private_key      strfile) \
@@ -73,6 +74,7 @@ task_update() {
     $(add_param display_name      string) \
     $(add_param engine            string) \
     $(add_param instance_port     string) \
+    $(add_param instance_protocol string) \
     $(add_param max_connection    string) \
     $(add_param port              string) \
     $(add_param private_key      strfile) \
