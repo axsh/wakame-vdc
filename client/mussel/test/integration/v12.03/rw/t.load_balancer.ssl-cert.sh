@@ -33,6 +33,7 @@ function setUp() {
 
 function tearDown() {
   teardown_self_signed_key ${common_name}
+  destroy_load_balancer
 }
 
 ###
