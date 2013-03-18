@@ -393,7 +393,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance if instance.nil?
 
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
-      puts "Warning: This code is deprecated and will be removed. Use /network_vifs/:vif_id/add_security_group and /network_vifs/:vif_id/remove_security_group instead."
+      logger.warn "This code is deprecated and will be removed. Use /network_vifs/:vif_id/add_security_group and /network_vifs/:vif_id/remove_security_group instead."
       # Setting only security groups that are of the same service type as the instance
       # This is to work around a bug where LB security groups would be deleted if the instance
       # is registered to a load balancer
