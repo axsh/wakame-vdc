@@ -81,14 +81,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         input = params['monitors'].find{|idx, i| i['uuid'] == uuid }
         next if input.nil?
         input = input[1]
-        
+
         m = M::NetworkVifMonitor[uuid]
         next if m.nil?
         if input['enabled']
           m.enabled = (input['enabled'] == 'true')
         end
         m.title = input['title'] if !input['title'].nil? && input['title'] != ""
- 
+
         m.params = input['params'] if input['params']
         m.protocol = input['protocol'] if input['protocol']
         m.save_changes
@@ -146,7 +146,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         Dcmgr.messaging.event_publish("vif.monitoring.created",
                                       :args=>[{:vif_id=>@vif.canonical_uuid, :monitor_id=>monitor.canonical_uuid}])
       end
-      
+
       R::NetworkVifMonitor.new(monitor).generate
     end
 

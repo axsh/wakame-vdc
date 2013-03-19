@@ -114,6 +114,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
     lb_spec.convert(params[:engine], params[:max_connection])
 
+    monitors = nil
+    if params["monitoring"].is_a?(Hash) && params["monitoring"]["enabled"] == "true"
+      monitors = { "0" => {
+        "protocol" => lb.protocol,
+        "title" => "LB #{lb.protocol}",
+        "enabled" => true,
+        "params" => { "port" => lb.port, "check_path" => params["monitoring"]["path"] }
+      }}
+    end
+
     # make params for internal request.
     request_params = {'image_id' => lb_conf.image_id,
                       'ssh_key_id' => lb_conf.ssh_key_id,
@@ -123,7 +133,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                         'eth0' => {
                           'index' => PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
-                          'security_groups' => instance_security_group
+                          'security_groups' => instance_security_group,
+                          'monitors' => monitors
                         },
                         'eth1' =>{
                           'index' => MANAGEMENT_DEVICE_INDEX.to_s,
@@ -134,7 +145,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                       :hypervisor => lb_spec.hypervisor,
                       :cpu_cores => lb_spec.cpu_cores,
                       :memory_size => lb_spec.memory_size,
-                      :quota_weight => lb_spec.quota_weight
+                      :quota_weight => lb_spec.quota_weight,
+                      :monitoring => params["monitoring"]
     }
 
     account_uuid = @account.canonical_uuid
@@ -309,7 +321,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   put '/:id' do
-
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
     lb = find_by_uuid(:LoadBalancer, params['id'])
     i = lb.instance
@@ -421,6 +432,35 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       end
       Dcmgr::Messaging::LoadBalancer.update_load_balancer_config(config_params.merge(queue_params))
     end
+
+    global_vif = lb.global_vif
+    monitor_hash = {}
+    if params[:monitoring] && params[:monitoring]["enabled"] == "true"
+      # Who the mother******* fr**king h**** decided to use a hash with
+      # incremental numbers for keys?! THAT'S WHAT ARRAYS ARE FOR!!!!!!
+      # Hateful code that converts an array to that bananasformat
+      if global_vif.network_vif_monitors_dataset.alives.empty?
+        monitor_hash = { 0 => {:enabled=>true, :protocol=>lb.protocol, :title=>lb.protocol.upcase + "1", :params=>{"port"=>lb.port, "check_path"=>params[:monitoring]["path"]}} }
+      else
+        index = 0
+        global_vif.network_vif_monitors.each { |mon|
+          monitor_hash[index.to_s] = mon.to_hash
+          monitor_hash[index.to_s][:protocol] = lb.protocol
+          monitor_hash[index.to_s][:title] = lb.protocol.upcase + "1"
+          monitor_hash[index.to_s][:params]["port"] = lb.port
+          monitor_hash[index.to_s][:params]["check_path"] = params[:monitoring]["path"]
+          index += 1
+        }
+      end
+    end
+
+    request_forward.post("network_vifs/#{global_vif.canonical_uuid}/monitors", {
+      :monitors => monitor_hash
+    })
+
+    request_forward.put("/instances/#{i.canonical_uuid}", {
+      :monitoring => params[:monitoring]
+    })
 
     respond_with(R::LoadBalancer.new(lb).generate)
   end

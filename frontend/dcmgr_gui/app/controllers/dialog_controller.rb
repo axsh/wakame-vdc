@@ -239,6 +239,11 @@ class DialogController < ApplicationController
     @private_key = ''
     @public_key = ''
     @cookie_name = ''
+    @monitoring = {
+      'mail_address' => [],
+      'enabled' => false,
+      'path' => '/'
+    }
     render :create_and_edit_load_balancer
   end
 
@@ -296,6 +301,14 @@ class DialogController < ApplicationController
       @private_key = @load_balancer["private_key"]
       @public_key = @load_balancer["public_key"]
       @cookie_name = @load_balancer["cookie_name"]
+
+      instance = Hijiki::DcmgrResource::Instance.show(@load_balancer["instance_id"])
+      vif_id = @load_balancer["vif"].find {|v| v["vif_index"] == 0 }["vif_id"] # index 0 is always the global interface
+      global_vif = Hijiki::DcmgrResource::NetworkVif.show(vif_id)
+      monitoring_path = global_vif["network_monitors"].empty? ? "/" : global_vif["network_monitors"].first["params"]["check_path"]
+      @monitoring = instance["monitoring"]
+      @monitoring["path"] = monitoring_path
+
       render :create_and_edit_load_balancer
     end
   end

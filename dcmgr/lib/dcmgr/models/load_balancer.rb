@@ -194,5 +194,9 @@ module Dcmgr::Models
       end
     end
 
+    def global_vif
+      self.instance.network_vif_dataset.where(:device_index => 0).first
+    end
+
   end
 end
