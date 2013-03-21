@@ -23,8 +23,18 @@ function configure_hypervisor() {
   [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   case ${VDC_HYPERVISOR} in
-  lxc) flush_etc_sysctl ${chroot_dir} ;;
-    *) ;;
+  lxc)
+    #
+    # lxc system container will overwrite lxc host parameter even if running sysctl in a lxc container.
+    # unless running flush a lxc container /etc/sysctl.ctl, the lxc host parameters will be set to rhel6 default value.
+    #
+    # this means following:
+    # * disabling netfilter on bridges on lxc host.
+    #
+    flush_etc_sysctl ${chroot_dir}
+    ;;
+  *)
+    ;;
   esac
 }
 
