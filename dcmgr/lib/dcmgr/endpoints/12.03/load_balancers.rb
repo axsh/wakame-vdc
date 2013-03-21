@@ -121,7 +121,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     if params["monitoring"].is_a?(Hash) && params["monitoring"]["enabled"] == "true"
       monitors = { "0" => {
         "protocol" => lb.protocol,
-        "title" => "LB #{lb.protocol}",
+        "title" => lb.protocol.upcase + "1",
         "enabled" => true,
         "params" => { "port" => lb.port, "check_path" => params["monitoring"]["path"] }
       }}
