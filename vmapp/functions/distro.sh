@@ -60,5 +60,12 @@ function prevent_interfaces_booting() {
   done
 }
 
+function flush_etc_sysctl() {
+  local chroot_dir=$1; shift
+  [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  : > ${chroot_dir}/etc/sysctl.conf
+}
+
 ##
 __FUNCTIONS_DISTRO_INCLUDED__=1
