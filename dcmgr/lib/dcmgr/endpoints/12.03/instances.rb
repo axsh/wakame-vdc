@@ -10,23 +10,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
-  def check_network_ip_combo(network_id,ip_addr)
-    nw = M::Network[network_id]
-    raise E::UnknownNetwork, network_id if nw.nil?
-
-    if ip_addr
-      raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
-
-      leaseaddr = IPAddress(ip_addr)
-      raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
-
-      segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
-      raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
-
-      raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
-    end
-  end
-
   # Show list of instances
   # Filter Paramters:
   # start: fixnum, optional
@@ -163,15 +146,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # Check vifs parameter values
     is_manual_ip_set=false
     params["vifs"].each { |name,temp|
-      mac_addr = temp["mac_addr"]
-      if mac_addr
-        raise E::InvalidMacAddress, mac_addr if !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
-        raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
-
-        # Check if this mac address exists in a defined range
-        m_vid, m_a = M::MacLease.string_to_ints(mac_addr)
-        raise E::MacNotInRange, mac_addr unless M::MacRange.exists_in_any_range?(m_vid,m_a)
-      end
+      check_mac_addr(temp["mac_addr"]) if temp["mac_addr"]
 
       if temp["ipv4_addr"]
         check_network_ip_combo(temp["network"], temp["ipv4_addr"])
