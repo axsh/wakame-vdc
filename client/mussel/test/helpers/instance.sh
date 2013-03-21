@@ -60,6 +60,13 @@ function _destroy_instance() {
   teardown_vif
 
   clean_cached_instance_param ${instance_uuid}
+
+  # clean internal instance helper params
+  instance_uuid=
+  security_group_uuid=
+  ssh_key_pair_uuid=
+  # clean required params
+  ssh_key_id=
 }
 
 ### instance.cache
