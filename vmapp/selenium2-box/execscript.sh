@@ -26,6 +26,7 @@ set -e
 declare chroot_dir=$1
 
 ## main
+configure_hypervisor ${chroot_dir}
 
 ### wakame-init
 
