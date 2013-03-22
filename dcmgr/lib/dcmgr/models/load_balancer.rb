@@ -16,6 +16,10 @@ module Dcmgr::Models
       ds.filter(:is_deleted => 0)
     end
 
+    one_to_many :load_balancer_inbounds, :key => :load_balancer_id do |ds|
+      ds.filter(:is_deleted => 0)
+    end
+
     subset(:alives, {:deleted_at => nil})
 
     def_dataset_method(:alives_and_deleted) { |term_period=Dcmgr.conf.recent_terminated_instance_period|
@@ -37,17 +41,15 @@ module Dcmgr::Models
     class RequestError < RuntimeError; end
 
     def validate
-      validates_includes SUPPORTED_PROTOCOLS, :protocol
       validates_includes SUPPORTED_INSTANCE_PROTOCOLS, :instance_protocol
-      validates_includes 1..65535, :port
-      validates_includes 1..65535, :instance_port
+      validates_includes 0..65535, :instance_port
       validates_private_key
       validates_public_key
       validates_allow_list
     end
 
     def validates_private_key
-      return true if PROTOCOLS.include? protocol
+      return true unless is_secure?
 
       if !check_encryption_algorithm
         errors.add(:private_key, "Doesn't support Algorithm")
@@ -60,7 +62,7 @@ module Dcmgr::Models
     end
 
     def validates_public_key
-      return true if PROTOCOLS.include? protocol
+      return true unless is_secure?
 
       if !check_public_key
         errors.add(:public_key, "Invalid parameter")
@@ -119,20 +121,12 @@ module Dcmgr::Models
        }
     end
 
-    def accept_port
-      self.port
-    end
-
-    def connect_port
-      if self.is_secure?
-        self.port == 4433 ? 443 : 4433
-      else
-        self.port
-      end
-    end
-
     def is_secure?
-      SECURE_PROTOCOLS.include? self.protocol
+      if !private_key.blank? && !public_key.blank?
+        true
+      else
+        false
+      end
     end
 
     def add_target(network_vif_id)
@@ -167,6 +161,33 @@ module Dcmgr::Models
         }
       }
       servers
+    end
+
+    def add_inbound(protocol, port)
+      lbi = LoadBalancerInbound.new
+      lbi.load_balancer_id = self.id
+      lbi.protocol = protocol
+      lbi.port = port
+      lbi.save
+      lbi
+    end
+
+    def inbounds
+      inbounds = []
+      load_balancer_inbounds.each do |lbi|
+        inbounds << {
+          :protocol => lbi.protocol,
+          :port => lbi.port
+        }
+      end
+      inbounds
+    end
+
+    def remove_inbound
+      load_balancer_inbounds.each {|ibi|
+        ibi.destroy
+      }
+      load_balancer_inbounds
     end
 
     # override Sequel::Model#delete not to delete rows but to set
