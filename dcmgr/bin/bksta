@@ -7,6 +7,10 @@ require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
 require 'net/http'
+require 'thin'
+require 'sinatra/base'
+require 'em-http'
+require 'multi_json'
 
 include Isono::Runner::RpcServer
 
@@ -47,6 +51,10 @@ class CopyProcessor < Isono::NodeModules::Base
 
   include Dcmgr::Helpers::CliHelper
 
+  def json_post(uri, params)
+    Net::HTTP.new(uri.host, uri.port).post(uri.path, MultiJson.dump(params), {'Content-Type'=>'application/json'})
+  end
+  
   def submit_pull_job(job)
     params = job[:params]
 
@@ -58,9 +66,12 @@ class CopyProcessor < Isono::NodeModules::Base
     uri.path += '/submit_pull_job'
     
     tryagain do
-      post_params = {'src'=>Dcmgr.conf.export_uri + "/" + params[:backup_object][:object_key]}
+      post_params = params.merge({
+        'src' => Dcmgr.conf.export_uri + "/" + params[:backup_object][:object_key],
+      })
       logger.info("Sending POST /submit_pull_job: #{uri.to_s}, #{post_params}")
-      res = Net::HTTP.post_form(uri, post_params)
+
+      res = json_post(uri, post_params)
       unless res.is_a?(Net::HTTPSuccess)
         sleep 3
         raise "Failed to submit pull job: #{res} #{uri.to_s}"
@@ -68,7 +79,6 @@ class CopyProcessor < Isono::NodeModules::Base
 
       true
     end
-    sleep 3
   end
 
   def pull_file_job(job)
@@ -142,21 +152,38 @@ Isono.at_disconnected do
   EM.stop { exit }
 end
 
-require 'thin'
-require 'sinatra/base'
-require 'sinatra/async'
-require 'em-http'
+require 'fiber'
 
-
-class APIProxy2 < Sinatra::Base
-  register Sinatra::Async
+class APIProxy < Sinatra::Base
+  include Dcmgr::Logger
 
   def initialize(node)
     super()
     @node = node
   end
-  
-  aget '/ping' do
+
+  # Fibered rpc request for EM's async context.
+  def rpc_request(*args)
+    fib = Fiber.current
+    req = Isono::NodeModules::RpcChannel.new(@node).request(*args) { |req|
+      req.timeout_sec = Dcmgr.conf.site_over_rpc_timeout
+      req.on_success { |r|
+        fib.resume(r)
+      }
+      
+      req.on_error { |r|
+        fib.resume(RuntimeError.new(r))
+      }
+    }
+    result = Fiber.yield
+    if result.is_a?(::Exception)
+      raise result
+    else
+      return result
+    end
+  end
+
+  get '/ping' do
     if params[:code]
       body("PONG: #{params[:code]}")
     else
@@ -164,22 +191,72 @@ class APIProxy2 < Sinatra::Base
     end
   end
 
-  apost '/submit_pull_job' do
-    bo = params['backup_object']
-    src = params['src']
-    puts "/sbumit_pull_job: #{EM.reactor_thread?}"
-    job = Dcmgr::Messaging.job_queue.submit("backup_storage.pull_from.#{@node.node_id}",
-                                             "bo-xxxxxx",
-                                             {:src=>params['src']}
-                                             ) do |req|
-      puts "sdlkjsdflkjsdflkjsdf"
-      
-      req.on_success { |r|
-        body("OK")
-        puts "succss"
-      }
+  def error_async(code, body=nil)
+    status(code)
+    body(body) if body
+  end
+
+  condition do
+    if mime_type('json') == request.content_type
+      @params = MultiJson.load(request.body)
+      true
+    else
+      false
     end
-    nil
+  end
+  post '/submit_pull_job' do
+    src = params['src']
+    if src.nil?
+      error(400, "Invalid parameter: src")
+    end
+
+    new_bo_data = {}
+    if params['backup_object']
+      %w(account_id display_name service_type size allocation_size container_format checksum description).each { |k|
+        new_bo_data[k.to_sym]=params['backup_object'][k.to_s]
+      }
+    else
+      error(400, "Invalid parameter: backup_object")
+    end
+
+    res = {}
+    Fiber.new do
+      begin
+        if params['image']
+          res = rpc_request('sta-collector', 'register_image_transfer', @node.node_id, params['image'], new_bo_data)
+        else
+          bo = res[:backup_object] = rpc_request('sta-collector', 'register_backup_object_transfer', @node.node_id, new_bo_data)
+        end
+      rescue ::Exception => e
+        logger.error(e)
+        error_async(500, "Failed at resource registration: backup_object: #{e}")
+        return
+      end
+
+      fib = Fiber.current
+      job = Dcmgr::Messaging.job_queue.submit("backup_storage.pull_from.#{@node.node_id}",
+                                              bo[:uuid],
+                                              {:src=>params['src']}
+                                              ) do |req|
+        req.timeout_sec = Dcmgr.conf.site_over_rpc_timeout
+        
+        req.on_success { |r|
+          fib.resume("OK")
+        }
+        
+        req.on_error { |r|
+          fib.resume("ERROR")
+        }
+      end
+      Fiber.yield
+
+      status(200)
+      body(MultiJson.dump(res))
+
+      env['async.callback'][response.finish]
+    end.resume
+
+    return -1
   end
 end
 
@@ -195,7 +272,7 @@ end
 
 
 start(manifest) do
-  thin = Thin::Server.new('0.0.0.0', 8889, APIProxy2.new(@node))
+  thin = Thin::Server.new('0.0.0.0', 8889, APIProxy.new(@node))
   thin.start!
 #  endpoint "bksta-handle.#{@node.node_id}", BackupStorageHandler
 end

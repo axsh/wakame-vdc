@@ -107,14 +107,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
       raise E::InvalidParameter, :destination
     end
 
+    submit_data = {
+      :backup_object => bo.to_hash,
+      :destination => params[:destination]
+    }
+    [:display_name, :description].each { |k|
+      submit_data[k] = params[k] if params[k]
+    }
+
     if bo.backup_storage.node.nil?
       raise E::InvalidBackupStorage, "Not ready for copy_to task."
     end
 
     job = Dcmgr::Messaging.job_queue.submit("backup_storage.copy_to.#{bo.backup_storage.node_id}",
                                             bo.canonical_uuid,
-                                            {:destination=>params[:destination],
-                                              :backup_object=>bo.to_hash}
+                                            submit_data
                                             )
 
     respond_with(R::TaskCopyTo.new(job).generate)

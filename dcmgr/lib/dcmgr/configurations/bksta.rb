@@ -9,6 +9,8 @@ module Dcmgr
       param :amqp_server_uri
 
       param :export_uri
+
+      param :site_over_rpc_timeout, :default=>10.0
       
       DSL do
         def driver(driver_name, &blk)
