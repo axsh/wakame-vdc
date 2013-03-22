@@ -23,9 +23,9 @@ module Dcmgr
 
         @listen = {}
         @listen[:servers] = {}
+        @listen[:bind] = []
         set_balance_algorithm('leastconn')
         set_name('balancer')
-        set_bind('*', 80)
         @mode = mode
 
         @listen
@@ -92,7 +92,7 @@ module Dcmgr
       end
 
       def set_bind(address, port)
-        @listen[:bind] = "#{address}:#{port}"
+        @listen[:bind] << "#{address}:#{port}"
       end
 
       def set_name(name)
