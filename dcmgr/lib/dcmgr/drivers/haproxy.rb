@@ -24,6 +24,7 @@ module Dcmgr
         @listen = {}
         @listen[:servers] = {}
         @listen[:bind] = []
+        @listen[:acl] = []
         set_balance_algorithm('leastconn')
         set_name('balancer')
         @mode = mode
@@ -99,6 +100,9 @@ module Dcmgr
         @listen[:name] = name
       end
 
+      def set_acl(name, criterion, value)
+        @listen[:acl] << "#{name} #{criterion} #{value}"
+      end
       private
 
       def next_server_name
