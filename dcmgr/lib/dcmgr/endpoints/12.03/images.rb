@@ -90,6 +90,44 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
     respond_with(R::Image.new(i).generate)
   end
 
+  put '/:id/copy_to' do
+    # description 'Update a machine image'
+    # param :id, string, :required
+    # param :display_name, string, :optional
+    # param :description, string, :optional
+    raise E::UndefinedImageID if params[:id].nil?
+    img = find_image_by_uuid(params[:id])
+    raise E::UnknownImage, params[:id] if img.nil?
+    if params[:destination] && params[:destination].to_s.size > 0
+    else
+      raise E::InvalidParameter, :destination
+    end
+
+    # TODO: This version only deals with the primary OS image file.
+    # It will need to take care for secondary image files.
+    bo = img.backup_object
+
+    submit_data = {
+      :image => img.to_hash,
+      :backup_object => bo.to_hash,
+      :destination => params[:destination]
+    }
+    [:display_name, :description].each { |k|
+      submit_data[k] = params[k] if params[k]
+    }
+
+    if bo.backup_storage.node.nil?
+      raise E::InvalidBackupStorage, "Not ready for copy_to task."
+    end
+
+    job = Dcmgr::Messaging.job_queue.submit("backup_storage.copy_to.#{bo.backup_storage.node_id}",
+                                            bo.canonical_uuid,
+                                            submit_data
+                                            )
+
+    respond_with(R::TaskCopyTo.new(job).generate)
+  end
+  
   def find_image_by_uuid(uuid)
     item = M::Image[uuid] || raise(E::UnknownUUIDResource, uuid.to_s)
 
