@@ -163,5 +163,6 @@ module Dcmgr
     define_error(:UnknownIpPool, 404, '184')
     define_error(:IpHandleInUse, 404, '185')
     define_error(:InvalidLoadBalancerAllowList, 400, '186')
+    define_error(:InvalidLoadBalancerProtocol, 400, '187')
   end
 end
