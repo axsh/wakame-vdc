@@ -19,7 +19,7 @@ module Dcmgr
       end
 
       def initialize(mode)
-        raise "Unknown mode." unless ['http', 'tcp'].include? mode
+        raise "Unknown mode. #{mode}" unless ['http', 'tcp'].include? mode
 
         @listen = {}
         @listen[:servers] = {}
