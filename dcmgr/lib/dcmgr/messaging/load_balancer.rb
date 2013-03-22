@@ -20,10 +20,23 @@ module Dcmgr::Messaging
     end
 
     def self.update_load_balancer_config(values)
-      proxy = Dcmgr::Drivers::Haproxy.new(Dcmgr::Drivers::Haproxy.mode(values[:protocol]))
+      proxy = Dcmgr::Drivers::Haproxy.new(Dcmgr::Drivers::Haproxy.mode(values[:instance_protocol]))
       proxy.set_balance_algorithm(values[:balance_algorithm])
       proxy.set_cookie_name(values[:cookie_name]) if !values[:cookie_name].empty?
-      proxy.set_bind('*', values[:port])
+      ports = values[:ports] + [values[:secure_port]]
+      ports.each do |port|
+        proxy.set_bind('*', port) unless port.nil?
+      end
+
+      if proxy.is_http?
+        if !values[:secure_port].nil?
+          proxy.set_x_forwarded_proto('https', values[:secure_port])
+        end
+        if !values[:ports].empty?
+          ports = values[:ports] - [values[:secure_port]]
+          proxy.set_x_forwarded_proto('http', ports)
+        end
+      end
 
       if !values[:servers].empty?
         values[:servers].each do |t|
@@ -34,6 +47,7 @@ module Dcmgr::Messaging
       end
 
       haproxy_config = proxy.bind_template(proxy.template_file_path)
+
       queue_params = {
         :name => values[:name],
         :topic_name => values[:topic_name],
@@ -46,6 +60,5 @@ module Dcmgr::Messaging
       end
       Dcmgr::Messaging.publish(haproxy_config, queue_params)
     end
-
   end
 end
