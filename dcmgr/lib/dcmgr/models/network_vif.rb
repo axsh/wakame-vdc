@@ -258,7 +258,7 @@ module Dcmgr::Models
       
       if lease.ip_handle
         lease.network_vif = nil
-        lease.save
+        lease.save_changes
       else
         lease.destroy
       end
