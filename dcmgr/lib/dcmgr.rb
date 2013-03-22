@@ -92,6 +92,7 @@ module Dcmgr
     autoload :AccountingLog, 'dcmgr/models/accounting_log'
     autoload :LoadBalancer, 'dcmgr/models/load_balancer'
     autoload :LoadBalancerTarget, 'dcmgr/models/load_balancer_target'
+    autoload :LoadBalancerInbound, 'dcmgr/models/load_balancer_inbound'
     autoload :BackupStorage, 'dcmgr/models/backup_storage'
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
