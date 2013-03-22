@@ -25,6 +25,7 @@ module Dcmgr
         @listen[:servers] = {}
         @listen[:bind] = []
         @listen[:acl] = []
+        @listen[:reqadd] = []
         set_balance_algorithm('leastconn')
         set_name('balancer')
         @mode = mode
@@ -102,6 +103,19 @@ module Dcmgr
 
       def set_acl(name, criterion, value)
         @listen[:acl] << "#{name} #{criterion} #{value}"
+      end
+
+      def set_x_forwarded_proto(protocol, ports)
+        case protocol
+          when 'https'
+            set_acl('is-https', 'dst_port', ports)
+            @listen[:reqadd] << 'X-Forwarded-Proto:\ https if is-https'
+          when 'http'
+            ports.each do |port|
+              set_acl('is-http', 'dst_port', port)
+            end
+            @listen[:reqadd] << 'X-Forwarded-Proto:\ http if is-http'
+        end
       end
       private
 
