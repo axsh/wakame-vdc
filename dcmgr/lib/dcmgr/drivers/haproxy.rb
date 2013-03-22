@@ -117,6 +117,15 @@ module Dcmgr
             @listen[:reqadd] << 'X-Forwarded-Proto:\ http if is-http'
         end
       end
+
+      def is_http?
+        @mode === 'http'
+      end
+
+      def is_tcp?
+        @mode === 'tcp'
+      end
+
       private
 
       def next_server_name
