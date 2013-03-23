@@ -224,3 +224,10 @@ function run_cmd() {
   . ${namespace_path}
   invoke_task $*
 }
+
+function load_musselrc() {
+  MUSSEL_RC=${MUSSEL_RC:-${HOME}/.musselrc}
+  if [[ -f "${MUSSEL_RC}" ]]; then
+    . ${MUSSEL_RC}
+  fi
+}
