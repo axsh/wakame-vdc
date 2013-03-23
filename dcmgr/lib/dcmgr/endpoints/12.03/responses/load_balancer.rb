@@ -58,14 +58,16 @@ module Dcmgr::Endpoints::V1203::Responses
         }
 
         allow_list = self[:allow_list].split(',') unless self[:allow_list].blank?
-
         to_hash.merge(:id=>canonical_uuid,
               :state=>state,
               :status=>status,
               :target_vifs=> target_vifs,
               :vif=>h[:vif],
               :instance_id=>instance.canonical_uuid,
-              :allow_list=>allow_list
+              :allow_list=>allow_list,
+              :inbounds => load_balancer_inbounds_dataset.alives.all.map {|m|
+                LoadBalancerInbound.new(m).generate
+              },
         )
       }
     end
@@ -83,4 +85,20 @@ module Dcmgr::Endpoints::V1203::Responses
       }
     end
   end
+
+  class LoadBalancerInbound < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(object)
+      raise ArgumentError if !object.is_a?(Dcmgr::Models::LoadBalancerInbound)
+      @object = object
+    end
+
+    def generate()
+      @object.instance_exec {
+        { :port => self.port,
+          :protocol => self.protocol,
+        }
+      }
+    end
+  end
+
 end
