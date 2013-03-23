@@ -21,10 +21,7 @@ LC_ALL=C
 
 ## MUSSEL part
 
-MUSSEL_RC=${MUSSEL_RC:-${HOME}/.musselrc}
-if [[ -f "${MUSSEL_RC}" ]]; then
-  . ${MUSSEL_RC}
-fi
+load_musselrc
 
 ## DCMGR part
 
