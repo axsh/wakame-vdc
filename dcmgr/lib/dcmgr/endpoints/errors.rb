@@ -164,5 +164,6 @@ module Dcmgr
     define_error(:IpHandleInUse, 404, '185')
     define_error(:InvalidLoadBalancerAllowList, 400, '186')
     define_error(:InvalidLoadBalancerProtocol, 400, '187')
+    define_error(:InvalidLoadBalancerHttpChkPath, 400, '188')
   end
 end

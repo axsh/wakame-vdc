@@ -95,6 +95,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.cookie_name = params[:cookie_name]
     end
 
+    if params[:httpchk] && params[:httpchk][:path]
+      lb.httpchk_path = params[:httpchk][:path]
+    end
+
     lb.public_key = params[:public_key] || ''
     lb.private_key = params[:private_key] || ''
 
@@ -164,7 +168,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :secure_protocol => secure_protocol,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :servers => []
+      :servers => [],
+      :httpchk_path => lb.httpchk_path
     }
 
     queue_params = {
@@ -221,7 +226,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
       :servers => [],
-      :listen_servers => []
+      :httpchk_path => lb.httpchk_path
     }
 
     queue_params = {
@@ -317,7 +322,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :protocols => lb_protocols,
       :secure_port => secure_port,
       :secure_protocol => secure_protocol,
-      :servers => []
+      :servers => [],
+      :httpchk_path => lb.httpchk_path
     }
 
     queue_params = {
@@ -446,7 +452,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :secure_protocol => secure_protocol,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :servers => servers
+      :servers => servers,
+      :httpchk_path => lb.httpchk_path
     }
 
     queue_params = {
@@ -468,7 +475,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       end
 
       config_updatable = nil
-      [:port, :protocol, :balance_algorithm, :cookie_name, :target_vifs].each { |key|
+      [:port, :protocol, :balance_algorithm, :cookie_name, :target_vifs, :httpchk].each { |key|
         if !params[key].blank?
           config_updatable = true
           break

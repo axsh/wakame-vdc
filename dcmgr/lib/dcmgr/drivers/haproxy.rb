@@ -118,6 +118,10 @@ module Dcmgr
         end
       end
 
+      def set_httpchk_path(path)
+        @listen[:httpchk_path] = path
+      end
+
       def is_http?
         @mode === 'http'
       end

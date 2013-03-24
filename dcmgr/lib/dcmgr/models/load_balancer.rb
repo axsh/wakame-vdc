@@ -46,6 +46,7 @@ module Dcmgr::Models
       validates_private_key
       validates_public_key
       validates_allow_list
+      validates_httpchk_path
     end
 
     def validates_private_key
@@ -92,6 +93,18 @@ module Dcmgr::Models
           errors.add(:allow_list, "Invalid CIDR #{cider} or isn't ipv4")
           return false
         end
+      end
+      true
+    end
+
+    def validates_httpchk_path
+      return true if httpchk_path.blank?
+
+      begin
+        URI.parse(httpchk_path)
+      rescue URI::InvalidURIError => e
+        errors.add(:httpchk_path, "Bad httpchk path: #{httpchk_path}")
+        return false
       end
       true
     end
