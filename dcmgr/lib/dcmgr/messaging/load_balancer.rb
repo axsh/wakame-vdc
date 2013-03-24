@@ -22,7 +22,7 @@ module Dcmgr::Messaging
     def self.update_load_balancer_config(values)
       proxy = Dcmgr::Drivers::Haproxy.new(Dcmgr::Drivers::Haproxy.mode(values[:instance_protocol]))
       proxy.set_balance_algorithm(values[:balance_algorithm])
-      proxy.set_cookie_name(values[:cookie_name]) if !values[:cookie_name].empty?
+      proxy.set_cookie_name(values[:cookie_name]) if !values[:cookie_name].blank?
       ports = values[:ports] + [values[:secure_port]]
       ports.each do |port|
         proxy.set_bind('*', port) unless port.nil?
