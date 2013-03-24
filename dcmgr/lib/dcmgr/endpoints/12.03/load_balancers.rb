@@ -375,9 +375,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.balance_algorithm = params[:balance_algorithm]
     end
 
-    if !params[:allow_list].blank? && !params[:allow_list][0].blank?
+    if !params[:allow_list].blank?
+      if !params[:allow_list].is_a?(Array) || params[:allow_list][0].blank?
+        raise E::InvalidLoadBalancerAllowList, "Invalid parameter #{params[:allow_list]}"
+      end
       lb.allow_list = params[:allow_list].join(',')
-      raise E::InvalidLoadBalancerAllowList, lb.errors[:allow_list] if !lb.valid? && lb.errors.has_key?(:allow_list)
+      raise E::InvalidLoadBalancerAllowList, lb.errors[:allow_list] if !lb.valid?
     end
 
     if !lb_ports.empty? || !params[:allow_list].empty?

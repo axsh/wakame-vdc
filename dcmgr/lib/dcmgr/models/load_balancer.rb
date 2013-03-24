@@ -78,6 +78,7 @@ module Dcmgr::Models
         ciders = allow_list
       else
         errors.add(:allow_list, 'Invalid parameter')
+        return false
       end
 
       if ciders.empty?
