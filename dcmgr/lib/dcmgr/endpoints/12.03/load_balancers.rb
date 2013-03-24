@@ -398,6 +398,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.instance_port = params[:instance_port]
     end
 
+    if !params[:httpchk].blank? && !params[:httpchk][:path].blank?
+      lb.httpchk_path = params[:httpchk][:path]
+      raise E::InvalidLoadBalancerHttpChkPath, lb.errors[:httpchk_path].first if !lb.valid?
+    end
 
     if secure_protocol
       if !params[:public_key].blank? && !params[:private_key].blank?
