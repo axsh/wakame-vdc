@@ -112,7 +112,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     instance_security_group = create_security_group(security_group_rules)
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
-    lb_spec.convert(params[:engine], params[:max_connection])
+    load_balancer_engine = params[:engine] || 'haproxy'
+    lb_spec.convert(load_balancer_engine, params[:max_connection])
 
     # make params for internal request.
     request_params = {'image_id' => lb_conf.image_id,
