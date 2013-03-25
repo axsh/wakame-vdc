@@ -234,7 +234,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_name => lb.queue_name,
     }
 
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
+    lb_network_vif = lb.network_vifs(C::PUBLIC_DEVICE_INDEX)
     lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
 
     targets = []
@@ -290,7 +290,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
+    lb_network_vif = lb.network_vifs(C::PUBLIC_DEVICE_INDEX)
     lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
     remove_vifs.each do |uuid|
       vif = find_by_uuid(:NetworkVif, uuid)
