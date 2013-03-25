@@ -104,6 +104,7 @@ module Dcmgr::Models
         [:inner, :outer].each { |arg|
           options = @create_options[arg]
 
+          current_release_sym = "release_#{arg}_vif".to_sym
           current_lease_id_sym = "#{arg}_lease_id".to_sym
           current_lease = self.send((current_lease_sym = "#{arg}_lease".to_sym))
 
@@ -127,7 +128,12 @@ module Dcmgr::Models
 
             if lease_vif.nil?
               raise("Cannot add IP lease without network vif.") unless options[:network_vif]
-              options[:network_vif].add_ip_lease({:ip_lease => current_lease, :allow_multiple => true}) || raise("Could not add IP lease to network vif.")
+
+              self[current_release_sym] = true
+
+              if !options[:network_vif].add_ip_lease({:ip_lease => current_lease, :allow_multiple => true})
+                raise("Could not add IP lease to network vif.")
+              end
             end
           end
         }
@@ -146,20 +152,16 @@ module Dcmgr::Models
     private
 
     def before_destroy
-      # Add flag to either routes or ip_lease to indicate if we should release.
-      #
-      # Currently just release any ip_lease that isn't on a network_vif belonging to a instance.
-      
-      # [:inner, :outer].each { |arg|
-      #   current_vif = self.send("#{arg}_vif")
-      #   current_lease = self.send("#{arg}_vif")
+      # Destroy IP leases if they are not owned by a network vif.
+      [:inner, :outer].each { |arg|
+        current_lease = self.send("#{arg}_lease")
 
-      #   next if current_vif.nil?
-      #   next if current_vif.instance
+        next if current_lease.nil?
 
-      #   ip_lease = current_vif.find_ip_lease(current_ipv4)
-      #   ip_lease.destroy if ip_lease
-      # }
+        if current_lease.network_vif && self.send("release_#{arg}_vif")
+          current_lease.network_vif.remove_ip_lease(:ip_lease => current_lease)
+        end
+      }
 
       super
     end
@@ -171,6 +173,7 @@ module Dcmgr::Models
 
     def _destroy_delete
       self.deleted_at ||= Time.now
+      self.is_deleted = self.id
       self.save_changes
     end
 
