@@ -234,10 +234,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_name => lb.queue_name,
     }
 
-    lb_network_vif = lb.network_vifs(C::PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
-
     targets = []
+    lb_inst_secg_id = lb.instance_security_group.canonical_uuid
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
@@ -245,14 +243,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       # register instance to load balancer.
       lb.add_target(uuid)
-
-      # update security groups to registered instance.
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => lb_security_groups + i_security_groups
-      }
-      update_security_groups(request_params)
+      set_vif_sg(:add,uuid,lb_inst_secg_id)
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq
@@ -290,16 +281,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
-    lb_network_vif = lb.network_vifs(C::PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
-    remove_vifs.each do |uuid|
-      vif = find_by_uuid(:NetworkVif, uuid)
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => i_security_groups - lb_security_groups
-      }
-      update_security_groups(request_params)
+    lb_secg_uuid = lb.instance_security_group.canonical_uuid
+    remove_vifs.each do |vif_uuid|
+      set_vif_sg(:remove,vif_uuid,lb_secg_uuid)
     end
 
     inbounds = lb.inbounds
@@ -560,12 +544,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     body['uuid']
   end
 
-  def update_security_groups(params)
-    path = "/instances/#{params[:id]}"
-    uri = "/api/12.03/#{path}.json"
+  def set_vif_sg(action,vif_id,sg_id)
+    path = "/network_vifs/#{vif_id}/#{action}_security_group"
+    uri = "/api/12.03/#{path}"
     http_status, headers, body = internal_request(uri,{
-      'security_groups' => params[:security_groups],
-      'came_from_lb_api' => "true"
+      'security_group_id' => sg_id
     }, {
       'PATH_INFO' => "#{path}",
       'REQUEST_METHOD' => 'PUT',
