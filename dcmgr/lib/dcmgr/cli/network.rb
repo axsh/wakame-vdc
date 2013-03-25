@@ -320,7 +320,7 @@ __END
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
 
       if M::DcNetwork.check_uuid_format(dcn_uuid)
-        dcn = find_by_uuid(M::DcNetwork, dcn_uuid)
+        dcn = M::DcNetwork[dcn_uuid]
       else
         dcn = M::DcNetwork.find(:name => dcn_uuid)
       end
@@ -340,7 +340,7 @@ __END
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
 
       if M::DcNetwork.check_uuid_format(dcn_uuid)
-        dcn = find_by_uuid(M::DcNetwork, dcn_uuid)
+        dcn = M::DcNetwork[dcn_uuid]
       else
         dcn = M::DcNetwork.find(:name => dcn_uuid)
       end
