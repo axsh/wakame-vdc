@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
-
 module Dcmgr::Messaging
   module LoadBalancer
     def self.update_ssl_proxy_config(values)
