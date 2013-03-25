@@ -14,8 +14,12 @@
 # ovs flow priority
 #config.ovs_flow_priority = 100
 
-dc_network(:external) {
-  bridge_type 'linux'
+outside_dc_network(:external) {
+  interface 'eth0'
+  bridge 'br0'
+}
+
+inside_dc_network(:public) {
   interface 'eth0'
   bridge 'br0'
 }
