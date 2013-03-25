@@ -11,6 +11,7 @@ require 'thin'
 require 'sinatra/base'
 require 'em-http'
 require 'multi_json'
+require 'tmpdir'
 
 include Isono::Runner::RpcServer
 
@@ -39,11 +40,11 @@ class CopyProcessor < Isono::NodeModules::Base
     EM.next_tick do
       queue_worker = Dcmgr::NodeModules::JobQueueWorker.new(self.node)
       queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1) do |job|
-        myinstance.submit_pull_job(job)
+        myinstance.dup.submit_pull_job(job)
       end
 
       queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1) do |job|
-        myinstance.pull_file_job(job)
+        myinstance.dup.pull_file_job(job)
       end
     end
   end
@@ -67,7 +68,7 @@ class CopyProcessor < Isono::NodeModules::Base
     
     tryagain do
       post_params = params.merge({
-        'src' => Dcmgr.conf.export_uri + "/" + params[:backup_object][:object_key],
+        'src' => Dcmgr.conf.export_uri.to_s + "/" + params[:backup_object][:object_key],
       })
       logger.info("Sending POST /submit_pull_job: #{uri.to_s}, #{post_params}")
 
@@ -80,17 +81,113 @@ class CopyProcessor < Isono::NodeModules::Base
       true
     end
   end
+  
+  # Reset TaskSession per request.
+  def task_session
+    @task_session ||= begin
+                        Dcmgr::Task::TaskSession.reset!(:thread)
+                        Dcmgr::Task::TaskSession.current
+                      end
+  end
 
   def pull_file_job(job)
     params = job[:params]
-
     src_uri = URI.parse(params[:src])
-    logger.info("Starting file pull: #{src_uri.to_s}")
-    if src_uri.scheme == 'scp'
-      sh("scp #{src_uri.host}:#{src_uri.path} /dev/null")
-    else
-      raise "Unsupported transport method: #{src_uri.to_s}"
+
+    tmpdir = Dir.mktmpdir("#{job[:uuid]}.")
+    chksum_path = File.expand_path('md5', tmpdir)
+    size_path = File.expand_path('size', tmpdir)
+
+    @backupobject_id = params[:backup_object][:uuid]
+    if params[:image]
+      @image_id = params[:image][:uuid]
     end
+
+    @download_uri =Dcmgr.conf.export_uri.dup.tap { |o|
+      o.path += "/#{params[:backup_object][:uuid]}"
+    }
+
+    logger.info("Staring pull file from #{src_uri.to_s} to #{@download_uri.to_s}")
+    
+    rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating}) do |req|
+      req.oneshot = true
+    end
+    if @image_id
+      rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating}) do |req|
+        req.oneshot = true
+      end
+    end
+    
+
+    evcb = proc { |cmd, *value|
+      case cmd
+      when :setattr
+        # update checksum & allocation_size of the backup object
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {
+                      :checksum=>value[0],
+                      :allocation_size => value[1],
+                    })
+      when :progress
+        # update upload progress of backup object
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:progress=>value[0]}) do |req|
+          req.oneshot = true
+        end
+      else
+        raise "Unknown callback command: #{cmd}"
+      end
+    }.tap { |i|
+      i.instance_eval {
+        def setattr(checksum, alloc_size)
+          self.call(:setattr, checksum, alloc_size)
+        end
+        
+        def progress(percent)
+          self.call(:progress, percent)
+        end
+      }
+    }
+
+    cmd_lst = ["scp '#{src_uri.host}:#{src_uri.path}' /dev/stdout",
+               "pv -W -f -n -s '#{params[:backup_object][:allocation_size]}'",
+               "tee >(md5sum > '#{chksum_path}') >(wc -c > '#{size_path}') > #{@download_uri.path}" ]
+
+    r = shell.popen4(cmd_lst.join(' | ')) do |pid, sin, sout, eout|
+      sin.close
+      
+      begin
+        while l = eout.readline
+          if l =~ /(\d+)/
+            evcb.progress($1.to_f)
+          end
+        end
+      rescue EOFError
+        # ignore this error
+      end
+    end
+    unless r.exitstatus == 0
+      raise "Failed to run archive command line: #{cmd_lst.join(" | ")}"
+    end
+    
+    chksum = File.read(chksum_path).split(/\s+/).first
+    alloc_size = File.read(size_path).split(/\s+/).first
+    
+    evcb.setattr(chksum, alloc_size.to_i)
+    evcb.progress(100)
+
+    rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
+    if @image_id
+      rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
+    end
+    
+  ensure
+    FileUtils.remove_entry_secure chksum_path, true
+    FileUtils.remove_entry_secure size_path, true
+  end
+
+  private
+
+  def rpc
+    Isono::NodeModules::RpcChannel.new(@node)
   end
 end
 
@@ -219,13 +316,13 @@ class APIProxy < Sinatra::Base
       error(400, "Invalid parameter: backup_object")
     end
 
-    res = {}
+    job_params = {:src=>params['src']}
     Fiber.new do
       begin
         if params['image']
-          res = rpc_request('sta-collector', 'register_image_transfer', @node.node_id, params['image'], new_bo_data)
+          job_params.merge!(rpc_request('sta-collector', 'register_image_transfer', @node.node_id, params['image'], new_bo_data))
         else
-          bo = res[:backup_object] = rpc_request('sta-collector', 'register_backup_object_transfer', @node.node_id, new_bo_data)
+          bo = job_params[:backup_object] = rpc_request('sta-collector', 'register_backup_object_transfer', @node.node_id, new_bo_data)
         end
       rescue ::Exception => e
         logger.error(e)
@@ -236,7 +333,7 @@ class APIProxy < Sinatra::Base
       fib = Fiber.current
       job = Dcmgr::Messaging.job_queue.submit("backup_storage.pull_from.#{@node.node_id}",
                                               bo[:uuid],
-                                              {:src=>params['src']}
+                                              job_params
                                               ) do |req|
         req.timeout_sec = Dcmgr.conf.site_over_rpc_timeout
         
@@ -251,7 +348,7 @@ class APIProxy < Sinatra::Base
       Fiber.yield
 
       status(200)
-      body(MultiJson.dump(res))
+      body(MultiJson.dump(job_params))
 
       env['async.callback'][response.finish]
     end.resume

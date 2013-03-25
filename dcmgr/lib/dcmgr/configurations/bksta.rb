@@ -39,8 +39,17 @@ module Dcmgr
         end
         unless self.export_uri
           errors << "Unknown export_uri: #{self.export_uri}"
+        else
+          case self.export_uri
+          when String
+            @config[:export_uri] = URI.parse(@config[:export_uri]).freeze
+          when URI
+            self.export_uri.freeze
+          else
+            errors << "Unsupported type for export_uri: #{self.export_uri.class}"
+          end
         end
-
+        
         #unless self.driver
         #  errors << "driver is unset"
         #end
