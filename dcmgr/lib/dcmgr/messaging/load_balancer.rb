@@ -42,7 +42,7 @@ module Dcmgr::Messaging
         end
 
         if !values[:ports].empty?
-          ports = values[:ports] - [values[:secure_port]]
+          ports = values[:ports]
           proxy.set_x_forwarded_proto('http', ports)
         end
 
