@@ -142,6 +142,12 @@ module Dcmgr::Models
       self.save
     end
 
+    def after_destroy
+      if self.service_type == Dcmgr::Constants::LoadBalancer::SERVICE_TYPE
+        LoadBalancer.filter(:instance_id=> self.id).destroy
+      end
+    end
+
     # dump column data as hash with details of associated models.
     # this is for internal use.
     def to_hash
