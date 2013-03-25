@@ -228,7 +228,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     instance.save
 
-    # 
+    #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -393,9 +393,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance if instance.nil?
 
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
-      # Dirty hack to fix lb security groups getting deleted when a user
-      # changes an instance's security groups while it's registered to a LB
-      st = params[:came_from_lb_api] == "true" ? "lb" : instance.service_type
+      puts "Warning: This code is deprecated and will be removed. Use /network_vifs/:vif_id/add_security_group and /network_vifs/:vif_id/remove_security_group instead."
       security_group_uuids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
 
       groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
@@ -461,10 +459,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
         instance.instance_monitor_attr.changed_columns << :recipients
       end
-      
+
       instance.instance_monitor_attr.save_changes
     end
-    
+
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 
