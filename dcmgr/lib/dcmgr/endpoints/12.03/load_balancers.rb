@@ -564,7 +564,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     path = "/instances/#{params[:id]}"
     uri = "/api/12.03/#{path}.json"
     http_status, headers, body = internal_request(uri,{
-      'security_groups' => params[:security_groups]
+      'security_groups' => params[:security_groups],
+      'came_from_lb_api' => "true"
     }, {
       'PATH_INFO' => "#{path}",
       'REQUEST_METHOD' => 'PUT',

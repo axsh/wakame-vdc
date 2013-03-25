@@ -393,12 +393,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance if instance.nil?
 
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
+      # Dirty hack to fix lb security groups getting deleted when a user
+      # changes an instance's security groups while it's registered to a LB
+      st = params[:came_from_lb_api] == "true" ? "lb" : instance.service_type
       security_group_uuids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
 
       groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
       # Remove old security groups
       instance.nic.each { |vnic|
-        vnic.security_groups_dataset.each { |group|
+        vnic.security_groups_dataset.filter(:service_type => st).each { |group|
           unless security_group_uuids.member?(group.canonical_uuid)
             vnic.remove_security_group(group)
             on_after_commit do
