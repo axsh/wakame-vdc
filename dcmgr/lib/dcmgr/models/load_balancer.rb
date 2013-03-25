@@ -4,11 +4,7 @@ require 'ipaddr'
 
 module Dcmgr::Models
   class LoadBalancer < AccountResource
-
-    PROTOCOLS = ['http', 'tcp'].freeze
-    SECURE_PROTOCOLS = ['https', 'ssl'].freeze
-    SUPPORTED_PROTOCOLS = (PROTOCOLS + SECURE_PROTOCOLS).freeze
-    SUPPORTED_INSTANCE_PROTOCOLS = PROTOCOLS
+    include Dcmgr::Constants::LoadBalancer
 
     taggable 'lb'
     many_to_one :instance
@@ -328,6 +324,10 @@ module Dcmgr::Models
       })
 
       config_params
+    end
+
+    def global_vif
+      self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
     end
   end
 end
