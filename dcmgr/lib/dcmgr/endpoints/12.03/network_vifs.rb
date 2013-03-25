@@ -19,7 +19,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     # by find_by_uuid if the group wasn't found in the database.
     raise E::UnknownUUIDResource, params[:security_group_id].to_s unless group && group.account_id == vnic.account_id
 
-    #TODO: Add a check to make sure the security group isn't already assigned
     if vnic.security_groups.member?(group)
       raise E::DuplicatedSecurityGroup, "'#{params[:security_group_id]}' is already assigned to '#{params[:vif_id]}'"
     end
@@ -37,7 +36,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     vnic = find_by_uuid(:NetworkVif, params[:vif_id])
     group = vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(params[:security_group_id]) ).first
 
-    #TODO: better error for this
     raise E::UnknownSecurityGroup, "'#{params[:security_group_id]}' is not assigned to '#{params[:vif_id]}'" unless group
 
     vnic.remove_security_group(group)
