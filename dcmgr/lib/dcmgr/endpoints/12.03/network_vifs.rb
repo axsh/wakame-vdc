@@ -235,6 +235,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       raise(E::InvalidParameter, e.message)
     end
 
+    on_after_commit do
+      Dcmgr.messaging.event_publish("vnet/network_route/created", :args=>[route.id])
+    end
+
     respond_with({ :network_id => route.outer_network.canonical_uuid,
                    :vif_id => route.outer_vif.canonical_uuid,
                    :ipv4 => route.outer_lease.ipv4_s,
