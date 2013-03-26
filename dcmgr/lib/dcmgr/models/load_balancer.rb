@@ -106,6 +106,11 @@ module Dcmgr::Models
       true
     end
 
+    # The instance security group is always the one without rules
+    def instance_security_group
+      self.global_vif.security_groups.find {|g| g.rule.empty? }
+    end
+
     def firewall_security_group
       self.global_vif.security_groups.find {|g| !g.rule.empty? }
     end
@@ -295,6 +300,10 @@ module Dcmgr::Models
           false
         end
       end
+    end
+
+    def global_vif
+      self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
     end
 
     private
