@@ -106,7 +106,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     user_data << "AMQP_PORT=#{amqp_settings[:port]}"
 
     security_group_rules = build_security_group_rules(lb_ports, allow_list)
-    instance_security_group = create_security_group(security_group_rules)
+    firewall_security_group = create_security_group(security_group_rules)
+    # The instance security group has no rules. It's just there to allow
+    # communication between the LB and its instances
+    instance_security_group = create_security_group([])
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
     load_balancer_engine = params[:engine] || 'haproxy'
@@ -121,7 +124,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                         'eth0' => {
                           'index' => C::PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
-                          'security_groups' => instance_security_group
+                          'security_groups' => [firewall_security_group, instance_security_group],
                         },
                         'eth1' =>{
                           'index' => C::MANAGEMENT_DEVICE_INDEX.to_s,
@@ -366,7 +369,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     if !lb_ports.empty? || !params[:allow_list].empty?
       security_group_rules = build_security_group_rules(lb_ports, lb.allow_list.split(','))
-      request_forward.put("/security_groups/#{lb.network_vifs(C::PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
+      request_forward.put("/security_groups/#{lb.firewall_security_group.canonical_uuid}", {
        :rule => security_group_rules.join("\n")
       })
     end

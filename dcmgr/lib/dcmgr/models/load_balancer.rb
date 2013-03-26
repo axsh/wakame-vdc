@@ -106,6 +106,10 @@ module Dcmgr::Models
       true
     end
 
+    def firewall_security_group
+      self.global_vif.security_groups.find {|g| !g.rule.empty? }
+    end
+
     def state
       @state = self.instance.state
     end
