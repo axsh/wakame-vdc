@@ -1,6 +1,5 @@
 # encoding: utf-8
 
-require 'pry'
 Dcmgr::Models::BaseNew.plugin :hook_class_methods
 
 Dir.glob(File.join(Dcmgr::DCMGR_ROOT, "lib/dcmgr/models/hooks/*_hook.rb")).each do |hook|
