@@ -22,17 +22,6 @@ module Dcmgr::Models
       ds.where(:network_id=>self.nat_network_id).alives
     end
 
-    one_to_many(:network_routes, :class=>NetworkRoute, :read_only=>true) do |ds|
-      ds.where({:inner_vif_id => self.id} | {:outer_vif_id => self.id}).alives
-    end
-
-    one_to_many :inner_routes, :key => :inner_vif_id, :class=>NetworkRoute do |ds|
-      ds.alives
-    end
-    one_to_many :outer_routes, :key => :outer_vif_id, :class=>NetworkRoute do |ds|
-      ds.alives
-    end
-
     subset(:alives, {:deleted_at => nil})
 
     many_to_one :instance
@@ -48,6 +37,14 @@ module Dcmgr::Models
         self.join_table(:left, :network_routes,
                         {:network_vifs__id => :network_routes__inner_vif_id} |
                         {:network_vifs__id => :network_routes__outer_vif_id})
+      end
+
+      def join_with_outer_routes
+        self.join_table(:left, :network_routes, :network_vifs__id => :network_routes__outer_vif_id)
+      end
+
+      def join_with_inner_routes
+        self.join_table(:left, :network_routes, :network_vifs__id => :network_routes__inner_vif_id)
       end
 
       def where_with_services(param)
