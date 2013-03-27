@@ -192,9 +192,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     result = ds.collect { |route|
       {
-        :network_uuid => route.outer_network ? route.outer_network.canonical_uuid : nil,
-        :vif_uuid => route.outer_vif ? route.outer_vif.canonical_uuid : nil,
-        :ipv4 => route.outer_lease.ipv4_s
+        :network_id => route.outer_network ? route.outer_network.canonical_uuid : nil,
+        :vif_id => route.outer_vif ? route.outer_vif.canonical_uuid : nil,
+        :ip_handle_id => route.outer_lease.ip_handle ? route.outer_lease.ip_handle.canonical_uuid : nil,
+        :ipv4 => route.outer_lease.ipv4_s,
       }
     }
     
@@ -245,8 +246,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     respond_with({ :network_id => route.outer_network.canonical_uuid,
                    :vif_id => route.outer_vif.canonical_uuid,
-                   :ipv4 => route.outer_lease.ipv4_s,
                    :ip_handle_id => outer_ip_handle.canonical_uuid,
+                   :ipv4 => route.outer_lease.ipv4_s,
                  })
   end
 
@@ -273,8 +274,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     ds.each { |route|
       result << {
-        :network_uuid => route.outer_network.canonical_uuid,
-        :vif_uuid => route.outer_vif.canonical_uuid,
+        :network_id => route.outer_network.canonical_uuid,
+        :vif_id => route.outer_vif.canonical_uuid,
+        :ip_handle_id => route.outer_lease.ip_handle ? route.outer_lease.ip_handle.canonical_uuid : nil,
         :ipv4 => route.outer_lease.ipv4_s,
       }
 
