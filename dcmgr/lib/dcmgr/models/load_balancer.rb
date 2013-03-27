@@ -339,8 +339,5 @@ module Dcmgr::Models
       config_params
     end
 
-    def global_vif
-      self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
-    end
   end
 end
