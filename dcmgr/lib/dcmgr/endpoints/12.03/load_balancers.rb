@@ -10,10 +10,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_STATE_ALL=(LOAD_BALANCER_STATE + LOAD_BALANCER_META_STATE).freeze
 
   register Sinatra::InternalRequest
-
-  PUBLIC_DEVICE_INDEX = 0
-  MANAGEMENT_DEVICE_INDEX = 1
-  SERVICE_TYPE = 'lb'
+  C = Dcmgr::Constants::LoadBalancer
 
   get do
     ds = M::LoadBalancer.dataset
@@ -122,12 +119,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                       'user_data' => user_data.join("\n"),
                       'vifs' => {
                         'eth0' => {
-                          'index' => PUBLIC_DEVICE_INDEX.to_s,
+                          'index' => C::PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
                           'security_groups' => instance_security_group
                         },
                         'eth1' =>{
-                          'index' => MANAGEMENT_DEVICE_INDEX.to_s,
+                          'index' => C::MANAGEMENT_DEVICE_INDEX.to_s,
                           'network' => lb_conf.management_network,
                           'security_groups' => ''
                         }
@@ -237,7 +234,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_name => lb.queue_name,
     }
 
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
+    lb_network_vif = lb.network_vifs(C::PUBLIC_DEVICE_INDEX)
     lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
 
     targets = []
@@ -293,7 +290,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
+    lb_network_vif = lb.network_vifs(C::PUBLIC_DEVICE_INDEX)
     lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
     remove_vifs.each do |uuid|
       vif = find_by_uuid(:NetworkVif, uuid)
@@ -385,7 +382,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     if !lb_ports.empty? || !params[:allow_list].empty?
       security_group_rules = build_security_group_rules(lb_ports, lb.allow_list.split(','))
-      request_forward.put("/security_groups/#{lb.network_vifs(PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
+      request_forward.put("/security_groups/#{lb.network_vifs(C::PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
        :rule => security_group_rules.join("\n")
       })
     end
@@ -554,7 +551,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
    http_status, headers, body = internal_request("/api/12.03/security_groups.json",{
       'account_id' => @account.canonical_uuid,
       'rule' => rules.join("\n"),
-      'service_type' => SERVICE_TYPE,
+      'service_type' => C::SERVICE_TYPE,
       'description' => '',
       'display_name' => ''
     }, {

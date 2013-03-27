@@ -4,11 +4,7 @@ require 'ipaddr'
 
 module Dcmgr::Models
   class LoadBalancer < AccountResource
-
-    PROTOCOLS = ['http', 'tcp'].freeze
-    SECURE_PROTOCOLS = ['https', 'ssl'].freeze
-    SUPPORTED_PROTOCOLS = (PROTOCOLS + SECURE_PROTOCOLS).freeze
-    SUPPORTED_INSTANCE_PROTOCOLS = PROTOCOLS
+    include Dcmgr::Constants::LoadBalancer
 
     taggable 'lb'
     many_to_one :instance
@@ -223,6 +219,45 @@ module Dcmgr::Models
       LoadBalancerTarget.where({:load_balancer_id => self.id, :network_vif_id => network_vif_id}).first
     end
 
+    def get_reload_config(values = {})
+      config('reload:haproxy', values)
+    end
+
+    def ports
+      inbounds.collect {|i| i[:port] }
+    end
+
+    def protocols
+      inbounds.collect {|i| i[:protocol] }
+    end
+
+    def accept_secure_port
+      inbounds.each {|_in|
+        if SECURE_PROTOCOLS.include?(_in[:protocol])
+          return _in[:port] == 4433 ? 443 : 4433
+        end
+      }
+      nil
+    end
+
+    def secure_port
+      inbounds.each {|_in|
+        if SECURE_PROTOCOLS.include?(_in[:protocol])
+          return _in[:port]
+        end
+      }
+      nil
+    end
+
+    def secure_protocol
+      inbounds.each {|_in|
+        if SECURE_PROTOCOLS.include?(_in[:protocol])
+          return _in[:protocol]
+        end
+      }
+      nil
+    end
+
     def check_public_key
       begin
         c = OpenSSL::X509::Certificate.new(public_key)
@@ -258,5 +293,41 @@ module Dcmgr::Models
       end
     end
 
+    private
+    def config(name, values = {})
+      config_params = {}
+
+      # setting command name
+      config_params.merge!({
+        :name => name
+      })
+
+      # engine params
+      config_params.merge!({
+        :ports => ports - [secure_port],
+        :protocols => protocols,
+        :secure_port => accept_secure_port,
+        :secure_protocol => secure_protocol,
+        :instance_protocol => instance_protocol,
+        :instance_port => instance_port,
+        :balance_algorithm => balance_algorithm,
+        :cookie_name => cookie_name,
+        :servers => get_target_servers,
+        :httpchk_path => httpchk_path
+      })
+
+      # amqp message params
+      config_params.merge!({
+        :topic_name => topic_name,
+        :queue_options => queue_options,
+        :queue_name => queue_name,
+      })
+
+      config_params
+    end
+
+    def global_vif
+      self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
+    end
   end
 end

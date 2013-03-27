@@ -171,8 +171,13 @@ module Dcmgr::Models
         logger.info "Warning: Mac address lease for '#{self.mac_addr}' not found in database."
       end
       release_ip_lease
-      self.remove_all_security_groups
-      self.remove_all_security_groups
+      if self.instance.service_type == Dcmgr::Constants::LoadBalancer::SERVICE_TYPE
+        groups = self.security_groups
+        self.remove_all_security_groups
+        groups.each {|g| g.destroy}
+      else
+        self.remove_all_security_groups
+      end
       self.network_services.each {|i| i.destroy }
       self.network_vif_monitors.each {|i| i.destroy }
       super
