@@ -65,10 +65,12 @@ module Dcmgr::Models
     #
 
     def validate
+      return if self.deleted_at
+
       [:inner, :outer].each { |arg|
         # We don't validate anything beyond the above when the network
         # route is being deleted.
-        next if self.deleted_at || @create_options.nil?
+        next if @create_options.nil?
         
         options = @create_options[arg]
 
