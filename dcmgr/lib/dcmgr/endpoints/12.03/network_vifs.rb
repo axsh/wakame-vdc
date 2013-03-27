@@ -186,11 +186,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
   get '/:vif_id/external_ip' do
     vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
 
-    result = vif.inner_routes(:conditions => {:name => 'external-ip'}).collect { |route|
+    ds = M::NetworkRoute.dataset
+    ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_vif_id => vif.id)
+    ds = ds.select_all(:network_routes).alives
+
+    result = ds.collect { |route|
       {
         :network_uuid => route.outer_network ? route.outer_network.canonical_uuid : nil,
         :vif_uuid => route.outer_vif ? route.outer_vif.canonical_uuid : nil,
-        :ipv4 => route.outer_ipv4_s
+        :ipv4 => route.outer_lease.ipv4_s
       }
     }
     
