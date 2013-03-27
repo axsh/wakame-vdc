@@ -80,6 +80,8 @@ module Dcmgr::Models
 
         if options[:find_service]
           errors.add(arg, "Network must be defined when using 'find_service'.") unless options[:network]
+          service_vifs = self.get_network_services(options[:network], options[:find_service], options[:network_vif])
+          errors.add(arg, "Could not find network service for supplied network vif.") if service_vifs.empty?
         end
       }
 
@@ -109,12 +111,7 @@ module Dcmgr::Models
           current_lease = self.send((current_lease_sym = "#{arg}_lease".to_sym))
 
           if options[:find_service]
-            params = {:network_services__name => options[:find_service]}
-            params[:network_vifs__id] = options[:network_vif].id if options[:network_vif]
-
-            vifs = options[:network].network_vifs_with_service(params)
-            raise("Could not find network service for supplied network vif.") if vifs.empty?
-
+            vifs = self.get_network_services(options[:network], options[:find_service], options[:network_vif])
             options[:network_vif] = vifs.first 
           end
 
@@ -144,6 +141,13 @@ module Dcmgr::Models
         self.validate
         super
       }
+    end
+
+    def get_network_services(network, service, network_vif)
+      params = {:network_services__name => service}
+      params[:network_vifs__id] = options[:network_vif].id if network_vif
+
+      network.network_vifs_with_service(params)
     end
 
     #
