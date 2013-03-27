@@ -14,6 +14,8 @@ module Dcmgr::Models
       r = Isono::Models::NodeState.filter(:state => 'online').select(:node_id)
       filter(:node_id => r)
     end
+
+    subset(:alives, {:deleted_at => nil})
     
     def validate
       unless STORAGE_TYPES.member?(self.storage_type.to_sym)

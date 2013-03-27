@@ -6,6 +6,12 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
+require 'net/http'
+require 'thin'
+require 'sinatra/base'
+require 'em-http'
+require 'multi_json'
+require 'tmpdir'
 
 include Isono::Runner::RpcServer
 
@@ -25,7 +31,7 @@ rescue Dcmgr::Configuration::ValidationError => e
 end
 Dcmgr.run_initializers('logger')
 
-class Test < Isono::NodeModules::Base
+class CopyProcessor < Isono::NodeModules::Base
   include Dcmgr::Logger
   
   initialize_hook do
@@ -33,13 +39,198 @@ class Test < Isono::NodeModules::Base
     
     EM.next_tick do
       queue_worker = Dcmgr::NodeModules::JobQueueWorker.new(self.node)
-      #queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1) do |job|
-      queue_worker.subscribe("backup_storage.copy_to.bksta", 1) do |job|
-        params = job[:params]
-        puts "/bin/cat #{File.expand_path(params[:backup_object][:object_key], '/mnt/work1/vdctmp/images')} > /dev/null"
-        system("/bin/cat #{File.expand_path(params[:backup_object][:object_key], '/mnt/work1/vdctmp/images')} > /dev/null")
+      queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1) do |job|
+        myinstance.dup.submit_pull_job(job)
+      end
+
+      queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1) do |job|
+        myinstance.dup.pull_file_job(job)
       end
     end
+  end
+
+
+  include Dcmgr::Helpers::CliHelper
+
+  def json_post(uri, params)
+    Net::HTTP.new(uri.host, uri.port).post(uri.path, MultiJson.dump(params), {'Content-Type'=>'application/json'})
+  end
+  
+  def submit_pull_job(job)
+    params = job[:params]
+
+    uri = Dcmgr.conf.destinations[params[:destination]].dup
+    if uri.nil?
+      raise "Unknown destination: #{params[:destination]}"
+    end
+
+    uri.path += '/submit_pull_job'
+    
+    tryagain do
+      post_params = params.merge({
+        'src' => Dcmgr.conf.export_uri.to_s + "/" + params[:backup_object][:object_key],
+      })
+      logger.info("Sending POST /submit_pull_job: #{uri.to_s}, #{post_params}")
+
+      res = json_post(uri, post_params)
+      unless res.is_a?(Net::HTTPSuccess)
+        sleep 3
+        raise "Failed to submit pull job: #{res} #{uri.to_s}"
+      end
+
+      true
+    end
+  end
+  
+  # Reset TaskSession per request.
+  def task_session
+    @task_session ||= begin
+                        Dcmgr::Task::TaskSession.reset!(:thread)
+                        Dcmgr::Task::TaskSession.current
+                      end
+  end
+
+  def pull_file_job(job)
+    params = job[:params]
+    src_uri = URI.parse(params[:src])
+
+    tmpdir = Dir.mktmpdir("#{job[:uuid]}.")
+    chksum_path = File.expand_path('md5', tmpdir)
+    size_path = File.expand_path('size', tmpdir)
+
+    @backupobject_id = params[:backup_object][:uuid]
+    if params[:image]
+      @image_id = params[:image][:uuid]
+    end
+
+    @download_uri =Dcmgr.conf.export_uri.dup.tap { |o|
+      o.path += "/#{params[:backup_object][:uuid]}"
+    }
+
+    logger.info("Staring pull file from #{src_uri.to_s} to #{@download_uri.to_s}")
+    
+    rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating}) do |req|
+      req.oneshot = true
+    end
+    if @image_id
+      rpc.request('hva-collector', 'update_image', @image_id, {:state=>:creating}) do |req|
+        req.oneshot = true
+      end
+    end
+    
+
+    evcb = proc { |cmd, *value|
+      case cmd
+      when :setattr
+        # update checksum & allocation_size of the backup object
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {
+                      :checksum=>value[0],
+                      :allocation_size => value[1],
+                    })
+      when :progress
+        # update upload progress of backup object
+        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:progress=>value[0]}) do |req|
+          req.oneshot = true
+        end
+      else
+        raise "Unknown callback command: #{cmd}"
+      end
+    }.tap { |i|
+      i.instance_eval {
+        def setattr(checksum, alloc_size)
+          self.call(:setattr, checksum, alloc_size)
+        end
+        
+        def progress(percent)
+          self.call(:progress, percent)
+        end
+      }
+    }
+
+    cmd_lst = ["scp '#{src_uri.host}:#{src_uri.path}' /dev/stdout",
+               "pv -W -f -n -s '#{params[:backup_object][:allocation_size]}'",
+               "tee >(md5sum > '#{chksum_path}') >(wc -c > '#{size_path}') > #{@download_uri.path}" ]
+
+    r = shell.popen4(cmd_lst.join(' | ')) do |pid, sin, sout, eout|
+      sin.close
+      
+      begin
+        while l = eout.readline
+          if l =~ /(\d+)/
+            evcb.progress($1.to_f)
+          end
+        end
+      rescue EOFError
+        # ignore this error
+      end
+    end
+    unless r.exitstatus == 0
+      raise "Failed to run archive command line: #{cmd_lst.join(" | ")}"
+    end
+    
+    chksum = File.read(chksum_path).split(/\s+/).first
+    alloc_size = File.read(size_path).split(/\s+/).first
+    
+    evcb.setattr(chksum, alloc_size.to_i)
+    evcb.progress(100)
+
+    rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})
+    if @image_id
+      rpc.request('hva-collector', 'update_image', @image_id, {:state=>:available})
+    end
+    
+  ensure
+    FileUtils.remove_entry_secure chksum_path, true
+    FileUtils.remove_entry_secure size_path, true
+  end
+
+  private
+
+  def rpc
+    Isono::NodeModules::RpcChannel.new(@node)
+  end
+end
+
+class DestinationMonitor < Isono::NodeModules::Base
+  include Dcmgr::Logger
+  
+  initialize_hook do
+    @destinations = {}
+    Dcmgr.conf.destinations.each { |name, uri|
+      @destinations[name] = {:uri=>uri, :status=>false, :last_monitor_at=>nil}
+    }
+
+    logger.info("Copy destinations to be monitored: #{@destinations.keys.join(', ')}")
+
+    do_http_ping = lambda do
+      EM::Iterator.new(@destinations).map(proc{ |d, iter|
+                                            n, v = d
+                                            http = EM::HttpRequest.new(v[:uri].to_s + '/ping').get
+                                            http.callback {
+                                              if http.response_header.status == 200
+                                                v[:status]=true
+                                              else
+                                                v[:status]=false
+                                              end
+                                              v[:last_monitor_at]=Time.now
+                                              iter.return(v)
+                                            }
+                                            http.errback {
+                                              v[:status]=false
+                                              v[:last_monitor_at]=Time.now
+                                              iter.return(v)
+                                            }
+                                          }, proc { |results|
+                                            failed_dests = @destinations.values.select { |v| !v[:status] }
+                                            if !failed_dests.empty?
+                                              logger.warn("Failed destinations: #{failed_dests.map{ |v | v[:uri] }.join(', ')}")
+                                            end
+                                            #logger.debug("Checked destinations: #{@destinations.keys.join(', ')}")
+                                          })
+    end
+
+    EM.next_tick(&do_http_ping)
+    EM.add_periodic_timer(10, &do_http_ping)
   end
 end
 
@@ -50,12 +241,122 @@ manifest.instance_eval do
 
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::JobQueueWorker
-  load_module Test
+  load_module CopyProcessor
+  load_module DestinationMonitor
 end
 
 Isono.at_disconnected do
   EM.stop { exit }
 end
+
+require 'fiber'
+
+class APIProxy < Sinatra::Base
+  include Dcmgr::Logger
+
+  def initialize(node)
+    super()
+    @node = node
+  end
+
+  # Fibered rpc request for EM's async context.
+  def rpc_request(*args)
+    fib = Fiber.current
+    req = Isono::NodeModules::RpcChannel.new(@node).request(*args) { |req|
+      req.timeout_sec = Dcmgr.conf.site_over_rpc_timeout
+      req.on_success { |r|
+        fib.resume(r)
+      }
+      
+      req.on_error { |r|
+        fib.resume(RuntimeError.new(r))
+      }
+    }
+    result = Fiber.yield
+    if result.is_a?(::Exception)
+      raise result
+    else
+      return result
+    end
+  end
+
+  get '/ping' do
+    if params[:code]
+      body("PONG: #{params[:code]}")
+    else
+      body("PONG")
+    end
+  end
+
+  def error_async(code, body=nil)
+    status(code)
+    body(body) if body
+  end
+
+  condition do
+    if mime_type('json') == request.content_type
+      @params = MultiJson.load(request.body)
+      true
+    else
+      false
+    end
+  end
+  post '/submit_pull_job' do
+    src = params['src']
+    if src.nil?
+      error(400, "Invalid parameter: src")
+    end
+
+    new_bo_data = {}
+    if params['backup_object']
+      %w(account_id display_name service_type size allocation_size container_format checksum description).each { |k|
+        new_bo_data[k.to_sym]=params['backup_object'][k.to_s]
+      }
+    else
+      error(400, "Invalid parameter: backup_object")
+    end
+
+    job_params = {:src=>params['src']}
+    Fiber.new do
+      begin
+        if params['image']
+          job_params.merge!(rpc_request('sta-collector', 'register_image_transfer', @node.node_id, params['image'], new_bo_data))
+        else
+          bo = job_params[:backup_object] = rpc_request('sta-collector', 'register_backup_object_transfer', @node.node_id, new_bo_data)
+        end
+      rescue ::Exception => e
+        logger.error(e)
+        error_async(500, "Failed at resource registration: backup_object: #{e}")
+        return
+      end
+
+      fib = Fiber.current
+      job = Dcmgr::Messaging.job_queue.submit("backup_storage.pull_from.#{@node.node_id}",
+                                              bo[:uuid],
+                                              job_params
+                                              ) do |req|
+        req.timeout_sec = Dcmgr.conf.site_over_rpc_timeout
+        
+        req.on_success { |r|
+          fib.resume("OK")
+        }
+        
+        req.on_error { |r|
+          fib.resume("ERROR")
+        }
+      end
+      Fiber.yield
+
+      status(200)
+      body(MultiJson.dump(job_params))
+
+      env['async.callback'][response.finish]
+    end.resume
+
+    return -1
+  end
+end
+
 
 class BackupStorageHandler < EndpointBuilder
   job :export_object do
@@ -68,5 +369,7 @@ end
 
 
 start(manifest) do
+  thin = Thin::Server.new('0.0.0.0', 8889, APIProxy.new(@node))
+  thin.start!
 #  endpoint "bksta-handle.#{@node.node_id}", BackupStorageHandler
 end

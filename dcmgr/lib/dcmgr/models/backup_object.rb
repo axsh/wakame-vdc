@@ -18,7 +18,6 @@ module Dcmgr::Models
     def after_initialize
       super
       self[:object_key] ||= self.canonical_uuid
-      self[:progress] ||= 100.0
     end
 
     def validate
@@ -50,14 +49,6 @@ module Dcmgr::Models
       end
     end
 
-    # override Sequel::Model#delete not to delete rows but to set
-    # delete flags.
-    def delete
-      self.state = :deleted if self.state != :deleted
-      self.deleted_at ||= Time.now
-      self.save_changes
-    end
-
     def uri
       self.backup_storage.base_uri + self.object_key
     end
@@ -65,5 +56,22 @@ module Dcmgr::Models
     def to_hash
       super.merge(:backup_storage=> self.backup_storage.to_hash)
     end
+
+    private
+    
+    def before_save
+      if self.state == :available
+        self.progress = 100.0
+      end
+
+      super
+    end
+
+    def _destroy_delete
+      self.state = :deleted if self.state != :deleted
+      self.deleted_at ||= Time.now
+      self.save_changes
+    end
+
   end
 end
