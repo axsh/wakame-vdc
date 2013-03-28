@@ -79,8 +79,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     ip_pool = find_by_uuid(M::IpPool, params[:id])
     raise E::UnknownIpPool, params[:id] if ip_pool.nil?
 
-    if params[:network]
-      network = M::Network[params[:network]] || raise(E::UnknownNetwork, params[:network])
+    if params[:network_id]
+      network = M::Network[params[:network_id]] || raise(E::UnknownNetwork, params[:network_id])
     end
 
     raise(E::UnknownNetwork, nil) unless network
