@@ -8,10 +8,6 @@ module Dcmgr::Models
 
     many_to_one :network
 
-    def_dataset_method(:not_full) {
-      self.filter { range_end - range_begin > self.network.ip_leases.count }
-    }
-
     def_dataset_method(:containing_range) { |begin_range,end_range|
       new_dataset = self
       new_dataset = new_dataset.filter("range_end >= ?", begin_range) if begin_range
