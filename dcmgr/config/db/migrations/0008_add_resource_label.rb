@@ -14,7 +14,6 @@ Sequel.migration do
       column :updated_at, "datetime", :null=>false
 
       index [:resource_uuid, :name], :unique=>true
-      index [:string_value]
     end
   end
 
