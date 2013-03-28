@@ -6,14 +6,25 @@ module Dcmgr::Models
     T_STRING=[1, :string_value, proc{|v| v.to_s }].freeze
     T_BLOB=[2, :blob_value, proc{|v| v.to_s }].freeze
 
+    def self.typecast_value_column(value)
+      pair = {}
+      case value
+      when String
+        pair[:string_value] = value
+      else
+        pair[:string_value] = value.to_s
+      end
+      pair
+    end
+
     # dataset 
     module LabelDatasetMethods
       def label(name)
-        self.find(:name=>name)
+        self.filter(:name=>name).first
       end
       
       def set_label(name, value)
-        l = self.find(:name=>name)
+        l = self.label(name)
         if l
           l.value = value
           l.save_changes
@@ -24,7 +35,7 @@ module Dcmgr::Models
       end
 
       def unset_label(name)
-        self.destroy(:name=>name)
+        label(name).destroy
       end
 
       def set_labels(tuples)

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/security_group'
-require 'dcmgr/endpoints/12.03/responses/resource_label'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
+  register V1203::Helpers::ResourceLabel
+  enable_resource_label(M::SecurityGroup)
 
   def send_reference_events(group,old_referencees,new_referencees)
     (old_referencees - new_referencees).each { |ref|
@@ -67,59 +68,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::InvalidSecurityGroupRule, e.message
     end
 
-    case params['labels']
-    when Array
-      params['labels'].each { |l|
-        g.set_resource_label(l['name'], l['value'])
-      }
-    when Hash
-      params['labels'].each { |i, l|
-        g.set_resource_label(l['name'], l['value'])
-      }
+    labels_param_each_pair do |name, value|
+      g.set_label(name, value)
     end
     
     respond_with(R::SecurityGroup.new(g).generate)
   end
 
-  namespace '/:id/labels' do
-    before do
-      @security_group = M::SecurityGroup[params[:id]] || raise(UnknownUUIDError, params[:id])
-    end
-
-    get '' do
-      ds = @security_group.resource_labels_dataset
-
-      if !params['name'].blank?
-        ds = if params['name'] =~ /(.+)*$/
-               ds.grep(:name, "#{$1}%")
-             else
-               ds.filter(:name=>params['name'])
-             end
-      end
-
-      respond_with(R::ResourceLabelCollection.new(ds).generate)
-    end
-    
-    get '/:name' do
-      l = @security_group.label(params[:name]) || raise(UnknownResourceLabel, params[:id], params[:name])
-      respond_with(R::ResourceLabel.new(l).generate)
-    end
-
-    post '/:name' do
-      @security_group.set_label(params[:name], params[:value])
-      respond_with(R::ResourceLabel.new(l).generate)
-    end
-
-    put '/:name' do
-      l = @security_group.set_label(params[:name], params[:value])
-      respond_with(R::ResourceLabel.new(l).generate)
-    end
-    
-    delete '/:name' do
-      @security_group.unset_label(params[:name])
-    end
-  end
-  
   put '/:id' do
     # description "Update parameters for the security group"
     # params description, string
@@ -144,7 +99,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     end
 
     begin
-      g.save
+      g.save_changes
     rescue M::InvalidSecurityGroupRuleSyntax => e
       raise E::InvalidSecurityGroupRule, e.message
     end

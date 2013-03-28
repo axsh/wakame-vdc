@@ -116,6 +116,9 @@ module Dcmgr
       autoload :CoreAPI, 'dcmgr/endpoints/12.03/core_api'
       module Responses
       end
+      module Helpers
+        autoload :ResourceLabel, 'dcmgr/endpoints/12.03/helpers/resource_label'
+      end
     end
   end
 

@@ -10,7 +10,7 @@ module Dcmgr::Endpoints::V1203::Responses
     def generate()
       @resource_label.instance_exec {
         h = {
-          :uuid => self.resource_uuid,
+          :resource_uuid => self.resource_uuid,
           :name => self.name,
           :value_type => self.value_type,
           :value => self.value,
