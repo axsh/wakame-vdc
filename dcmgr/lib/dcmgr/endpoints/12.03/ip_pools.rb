@@ -89,7 +89,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     st = Dcmgr::Scheduler.service_type(Dcmgr.conf.default_service_type)      
     lease = st.ip_address.schedule({:network => network, :ip_pool => ip_pool})
     
-    respond_with({ :id => lease.ip_handle.canonical_uuid,
+    respond_with({ :ip_handle_id => lease.ip_handle.canonical_uuid,
                    :dc_network_id => lease.network.dc_network.canonical_uuid,
                    :network_id => lease.network.canonical_uuid,
                    :ipv4 => lease.ipv4_s,
@@ -101,11 +101,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_pools' do
     # params id, string, required
     ip_pool = find_by_uuid(M::IpPool, params[:id])
     raise E::UnknownIpPool, params[:id] if ip_pool.nil?
-    ip_handle = ip_pool.ip_handles_dataset.where(:uuid => M::IpHandle.trim_uuid(params[:ip_handle])).first
+    ip_handle = ip_pool.ip_handles_dataset.where(:uuid => M::IpHandle.trim_uuid(params[:ip_handle_id])).first
 
-    raise E::UnknownIpHandle, params[:ip_handle] if ip_handle.nil?
-    raise E::InvalidParameter, params[:ip_handle] if ip_handle.ip_pool != ip_pool
-    raise E::IpHandleInUse, params[:ip_handle] unless ip_handle.can_destroy
+    raise E::UnknownIpHandle, params[:ip_handle_id] if ip_handle.nil?
+    raise E::InvalidParameter, params[:ip_handle_id] if ip_handle.ip_pool != ip_pool
+    raise E::IpHandleInUse, params[:ip_handle_id] unless ip_handle.can_destroy
 
     ip_handle.destroy
 
