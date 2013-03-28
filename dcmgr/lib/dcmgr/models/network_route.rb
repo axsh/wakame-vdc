@@ -29,6 +29,10 @@ module Dcmgr::Models
                         :table_alias => :inner_ip_leases).alives
       end
 
+      def where_with_ip_leases(params)
+        self.join_with_ip_leases.where(params).select_all(:network_routes).alives
+      end
+
       def between_vifs(outer_vif, inner_vif)
         ds = self
         ds = ds.join_with_outer_ip_leases.where(:outer_ip_leases__network_vif_id => outer_vif.id)

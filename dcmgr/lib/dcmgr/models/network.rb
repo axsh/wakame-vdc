@@ -32,7 +32,8 @@ module Dcmgr::Models
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
     one_to_many :network_routes, :class=>NetworkRoute do |ds|
-      NetworkRoute.dataset.join_with_ip_leases.where(:network_vif_ip_leases__network_id => self.id).alives
+      ds = NetworkRoute.dataset.join_with_ip_leases.where(:network_vif_ip_leases__network_id => self.id)
+      ds.select_all(:network_routes).alives
     end
 
     one_to_many :dhcp_range
