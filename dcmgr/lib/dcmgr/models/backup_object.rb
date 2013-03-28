@@ -8,6 +8,7 @@ module Dcmgr::Models
     many_to_one :backup_storage
     plugin ArchiveChangedColumn, :histories
     # TODO put logs to accounting log.
+    plugin Plugins::ResourceLabel
 
     subset(:alives, {:deleted_at => nil})
 

@@ -96,6 +96,7 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
+    autoload :ResourceLabel, 'dcmgr/models/resource_label'
   end
 
   module Endpoints
@@ -114,6 +115,9 @@ module Dcmgr
     module V1203
       autoload :CoreAPI, 'dcmgr/endpoints/12.03/core_api'
       module Responses
+      end
+      module Helpers
+        autoload :ResourceLabel, 'dcmgr/endpoints/12.03/helpers/resource_label'
       end
     end
   end

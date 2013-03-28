@@ -164,5 +164,7 @@ module Dcmgr
     define_error(:UnknownIpPool, 404, '184')
     define_error(:IpHandleInUse, 404, '185')
     define_error(:NetworkNotInDcNetwork, 404, '186')
+
+    define_error(:UnknownResourceLabel, 404, '187')
   end
 end

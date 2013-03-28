@@ -10,6 +10,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
+  register V1203::Helpers::ResourceLabel
+  enable_resource_label(M::Instance)
+  
   def check_network_ip_combo(network_id,ip_addr)
     nw = M::Network[network_id]
     raise E::UnknownNetwork, network_id if nw.nil?
@@ -227,6 +230,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
     instance.save
+
+    labels_param_each_pair do |name, value|
+      instance.set_label(name, value)
+    end
 
     # 
     # TODO:

@@ -3,6 +3,8 @@
 require 'dcmgr/endpoints/12.03/responses/security_group'
 
 Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
+  register V1203::Helpers::ResourceLabel
+  enable_resource_label(M::SecurityGroup)
 
   def send_reference_events(group,old_referencees,new_referencees)
     (old_referencees - new_referencees).each { |ref|
@@ -66,6 +68,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::InvalidSecurityGroupRule, e.message
     end
 
+    labels_param_each_pair do |name, value|
+      g.set_label(name, value)
+    end
+    
     respond_with(R::SecurityGroup.new(g).generate)
   end
 
@@ -93,7 +99,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     end
 
     begin
-      g.save
+      g.save_changes
     rescue M::InvalidSecurityGroupRuleSyntax => e
       raise E::InvalidSecurityGroupRule, e.message
     end
