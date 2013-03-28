@@ -9,6 +9,8 @@ module Dcmgr::Models
     BOOT_DEV_SAN=1
     BOOT_DEV_LOCAL=2
 
+    plugin Plugins::ResourceLabel
+      
     many_to_one :backup_object, :class=>BackupObject, :dataset=> lambda { BackupObject.filter(:uuid=>self.backup_object_id[BackupObject.uuid_prefix.size + 1, 255]) }
 
     subset(:alives, {:deleted_at => nil})

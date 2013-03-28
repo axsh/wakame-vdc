@@ -7,6 +7,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/images' do
   IMAGE_STATE=['available', 'deleted'].freeze
   IMAGE_STATE_ALL=(IMAGE_STATE + IMAGE_META_STATE).freeze
 
+  register V1203::Helpers::ResourceLabel
+  enable_resource_label(M::Image)
+
   post do
     # description 'Register new machine image'
     raise NotImplementedError
