@@ -116,7 +116,7 @@ module Dcmgr::Models
     end
 
     def remove_targets(network_vif_uuids)
-      targets = LoadBalancerTarget.filter(:network_vif_id => network_vif_uuids, :is_deleted => 0).all
+      targets = LoadBalancerTarget.filter(:network_vif_id => network_vif_uuids, :is_deleted => 0, :load_balancer => self).all
       targets.each {|lbt|
         lbt.destroy
       }
