@@ -22,6 +22,11 @@ module Dcmgr::Models
       ds.where(:network_id=>self.nat_network_id).alives
     end
 
+    one_to_many :network_routes, :class=>NetworkRoute do |ds|
+      ds = NetworkRoute.dataset.join_with_ip_leases.where(:network_vif_ip_leases__network_vif_id => self.id)
+      ds.select_all(:network_routes).alives
+    end
+
     subset(:alives, {:deleted_at => nil})
 
     many_to_one :instance
@@ -170,6 +175,7 @@ module Dcmgr::Models
       release_ip_lease
       self.remove_all_security_groups
       self.remove_all_security_groups
+      self.network_routes.each {|i| i.destroy }
       self.network_services.each {|i| i.destroy }
       self.network_vif_monitors.each {|i| i.destroy }
       super
@@ -256,6 +262,9 @@ module Dcmgr::Models
       if lease.ip_handle
         lease.network_vif = nil
         lease.save_changes
+        # Temporary until ip handle retention has been implemented.
+        lease.ip_handle.destroy
+        lease.destroy
       else
         lease.destroy
       end

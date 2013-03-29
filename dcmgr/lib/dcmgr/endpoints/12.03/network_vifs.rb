@@ -206,7 +206,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
     inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
 
-    params[:ip_handle_id] || raise(InvalidParameter, "Missing ip_handle")
+    params[:ip_handle_id] || raise(InvalidParameter, "Missing ip_handle_id")
 
     outer_ip_handle = M::IpHandle[params[:ip_handle_id]] || raise(UnknownUUIDResource, params[:ip_handle_id])
 
