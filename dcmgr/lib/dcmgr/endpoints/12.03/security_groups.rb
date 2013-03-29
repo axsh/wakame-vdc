@@ -68,8 +68,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::InvalidSecurityGroupRule, e.message
     end
 
-    labels_param_each_pair do |name, value|
-      g.set_label(name, value)
+    if params['labels']
+      labels_param_each_pair do |name, value|
+        g.set_label(name, value)
+      end
     end
     
     respond_with(R::SecurityGroup.new(g).generate)

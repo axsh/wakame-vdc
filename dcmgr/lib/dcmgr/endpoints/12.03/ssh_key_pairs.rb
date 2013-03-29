@@ -86,8 +86,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       raise E::DatabaseError, e.message
     end
 
-    labels_param_each_pair do |name, value|
-      ssh.set_label(name, value)
+    if params['labels']
+      labels_param_each_pair do |name, value|
+        ssh.set_label(name, value)
+      end
     end
 
     respond_with(R::SshKeyPair.new(ssh, private_key).generate)
