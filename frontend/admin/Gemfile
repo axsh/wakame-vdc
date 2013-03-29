@@ -1,4 +1,4 @@
-source :rubygems
+source 'https://rubygems.org'
 
 # Server requirements
 # gem 'trinidad', :platform => 'jruby'
