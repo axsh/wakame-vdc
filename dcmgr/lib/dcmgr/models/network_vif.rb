@@ -262,9 +262,6 @@ module Dcmgr::Models
       if lease.ip_handle
         lease.network_vif = nil
         lease.save_changes
-        # Temporary until ip handle retention has been implemented.
-        lease.ip_handle.destroy
-        lease.destroy
       else
         lease.destroy
       end
