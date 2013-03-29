@@ -12,6 +12,41 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
     respond_with(R::NetworkVif.new(find_by_uuid(:NetworkVif, params[:vif_id])).generate)
   end
 
+  put '/:vif_id/add_security_group' do
+    vnic = find_by_uuid(:NetworkVif, params[:vif_id])
+    group = find_by_uuid(:SecurityGroup, params[:security_group_id])
+    # I am using UnknownUUIDResource and not UnknownSecurityGroup because I want to throw the same error that's thrown
+    # by find_by_uuid if the group wasn't found in the database.
+    raise E::UnknownUUIDResource, params[:security_group_id].to_s unless group && group.account_id == vnic.account_id
+
+    if vnic.security_groups.member?(group)
+      raise E::DuplicatedSecurityGroup, "'#{params[:security_group_id]}' is already assigned to '#{params[:vif_id]}'"
+    end
+
+    vnic.add_security_group(group)
+    on_after_commit do
+      Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_joined",:args=>[vnic.canonical_uuid])
+      Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/joined_group",:args=>[group.canonical_uuid])
+    end
+
+    respond_with(R::NetworkVif.new(find_by_uuid(:NetworkVif, params[:vif_id])).generate)
+  end
+
+  put '/:vif_id/remove_security_group' do
+    vnic = find_by_uuid(:NetworkVif, params[:vif_id])
+    group = vnic.security_groups_dataset.filter(:uuid => M::SecurityGroup.trim_uuid(params[:security_group_id]) ).first
+
+    raise E::UnknownSecurityGroup, "'#{params[:security_group_id]}' is not assigned to '#{params[:vif_id]}'" unless group
+
+    vnic.remove_security_group(group)
+    on_after_commit do
+      Dcmgr.messaging.event_publish("#{group.canonical_uuid}/vnic_left",:args=>[vnic.canonical_uuid])
+      Dcmgr.messaging.event_publish("#{vnic.canonical_uuid}/left_group",:args=>[group.canonical_uuid])
+    end
+
+    respond_with(R::NetworkVif.new(find_by_uuid(:NetworkVif, params[:vif_id])).generate)
+  end
+
   namespace '/:vif_id/monitors' do
     before do
       @vif = find_by_uuid(:NetworkVif, params[:vif_id])
@@ -46,14 +81,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         input = params['monitors'].find{|idx, i| i['uuid'] == uuid }
         next if input.nil?
         input = input[1]
-        
+
         m = M::NetworkVifMonitor[uuid]
         next if m.nil?
         if input['enabled']
           m.enabled = (input['enabled'] == 'true')
         end
         m.title = input['title'] if !input['title'].nil? && input['title'] != ""
- 
+
         m.params = input['params'] if input['params']
         m.protocol = input['protocol'] if input['protocol']
         m.save_changes
@@ -111,7 +146,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
         Dcmgr.messaging.event_publish("vif.monitoring.created",
                                       :args=>[{:vif_id=>@vif.canonical_uuid, :monitor_id=>monitor.canonical_uuid}])
       end
-      
+
       R::NetworkVifMonitor.new(monitor).generate
     end
 

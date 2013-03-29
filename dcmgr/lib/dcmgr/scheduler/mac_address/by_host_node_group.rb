@@ -20,7 +20,9 @@ module Dcmgr
         M = Dcmgr::Models
 
         def schedule(network_vif)
-          host_group_ids = network_vif.instance.host_node.groups.map { |g| g.canonical_uuid }
+          host_node = network_vif.instance.host_node
+          raise "Unable to determine host node group because host node is not set yet" if host_node.nil?
+          host_group_ids = host_node.groups.map { |g| g.canonical_uuid }
           mac = nil
 
           host_group_ids.each { |hid|

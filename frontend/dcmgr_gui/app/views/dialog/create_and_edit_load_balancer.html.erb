@@ -50,6 +50,34 @@
   </table>
   </div>
 
+  <fieldset id="network_service_monitor_field" class="with_border">
+    <legend><%= t("dialog.launch_instance.network_service_monitor.title") %></legend>
+          <table>
+            <tbody>
+            <tr>
+              <td><%= t("dialog.launch_instance.network_service_monitor.monitoring_enabled")%>:</td>
+              <td><input type="checkbox" id="monitoring_enabled" <%= @monitoring['enabled'] == true ? "checked" : "" %>></input></td>
+            </tr>
+            <tr>
+              <td><%= t("dialog.launch_instance.network_service_monitor.mailaddr")%>:</td>
+              <td><input type="text" id="mailaddr_0" class="mailaddr_form" <%= @monitoring['enabled'] == false ? "disabled" : "" %> value="<%= @monitoring['mail_address'][0] %>"></input></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><input type="text" id="mailaddr_1" class="mailaddr_form" <%= @monitoring['enabled'] == false ? "disabled" : "" %> value="<%= @monitoring['mail_address'][1] %>"></input></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><input type="text" id="mailaddr_2" class="mailaddr_form" <%= @monitoring['enabled'] == false ? "disabled" : "" %> value="<%= @monitoring['mail_address'][2] %>"></input></td>
+            </tr>
+            <tr>
+              <td><%= t("dialog.launch_instance.network_service_monitor.path")%>:</td>
+              <td><input type="text" id="monitoring_path" value="<%= @monitoring['path'] %>" <%= @monitoring['enabled'] == false ? "disabled" : "" %>></input></td>
+            </tr>
+            </tbody>
+          </table>
+  </fieldset>
+
   <div id="balance_algorithm" class="field">
     <div id="balance_algorithm_header">
       <%= t("dialog.create_load_balancer.algorithm.header") %>

@@ -109,10 +109,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
     security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
 
-    instance_security_group = create_security_group(security_group_rules)
+    firewall_security_group = create_security_group(security_group_rules)
+    # The instance security group has no rules. It's just there to allow
+    # communication between the LB and its instances
+    instance_security_group = create_security_group([])
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
     lb_spec.convert(params[:engine], params[:max_connection])
+
+    monitors = nil
+    if params["monitoring"].is_a?(Hash) && params["monitoring"]["enabled"] == "true"
+      monitors = { "0" => {
+        "protocol" => lb.protocol,
+        "title" => lb.protocol.upcase + "1",
+        "enabled" => true,
+        "params" => { "port" => lb.port, "check_path" => params["monitoring"]["path"] }
+      }}
+    end
 
     # make params for internal request.
     request_params = {'image_id' => lb_conf.image_id,
@@ -123,7 +136,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                         'eth0' => {
                           'index' => PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
-                          'security_groups' => instance_security_group
+                          'security_groups' => [firewall_security_group, instance_security_group],
+                          'monitors' => monitors
                         },
                         'eth1' =>{
                           'index' => MANAGEMENT_DEVICE_INDEX.to_s,
@@ -134,8 +148,46 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                       :hypervisor => lb_spec.hypervisor,
                       :cpu_cores => lb_spec.cpu_cores,
                       :memory_size => lb_spec.memory_size,
-                      :quota_weight => lb_spec.quota_weight
+                      :quota_weight => lb_spec.quota_weight,
+                      :monitoring => params["monitoring"]
     }
+
+    # options for manually settings networks and ip leases
+    if params[:public_network] && params[:public_ipv4]
+      check_network_ip_combo(params[:public_network], params[:public_ipv4])
+      request_params["vifs"]["eth0"]["network"] = params[:public_network]
+      request_params["vifs"]["eth0"]["ipv4_addr"] = params[:public_ipv4]
+    end
+
+    if params[:management_network] && params[:management_ipv4]
+      check_network_ip_combo(params[:management_network], params[:management_ipv4])
+      request_params["vifs"]["eth1"]["network"] = params[:management_network]
+      request_params["vifs"]["eth1"]["ipv4_addr"] = params[:management_ipv4]
+    end
+
+    # Options for manually setting mac addresses
+    if params[:public_mac_addr]
+      check_mac_addr(params[:public_mac_addr])
+      request_params["vifs"]["eth0"]["mac_addr"] = params[:public_mac_addr]
+    end
+
+    if params[:management_mac_addr]
+      check_mac_addr(params[:management_mac_addr])
+      request_params["vifs"]["eth1"]["mac_addr"] = params[:management_mac_addr]
+    end
+
+    if params[:host_node_id]
+      host_node_id = params[:host_node_id]
+      host_node = M::HostNode[host_node_id]
+      raise E::UnknownHostNode, "#{host_node_id}" if host_node.nil?
+      raise E::InvalidHostNodeID, "#{host_node_id}" if host_node.status != 'online'
+
+      compat_hype = (host_node.hypervisor == lb_spec.hypervisor)
+      raise E::IncompatibleHostNode, "#{host_node_id} can only handle instances of type #{host_node.hypervisor}" unless compat_hype
+      raise E::OutOfHostCapacity, "#{host_node_id}" if lb_spec.cpu_cores > host_node.available_cpu_cores || lb_spec.memory_size > host_node.available_memory_size
+
+      request_params[:host_node_id] = params[:host_node_id]
+    end
 
     account_uuid = @account.canonical_uuid
     res = request_forward do
@@ -213,8 +265,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_name => lb.queue_name,
     }
 
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
+    lb_inst_secg_id = lb.instance_security_group.canonical_uuid
 
     targets = []
     target_vifs.each do |uuid|
@@ -224,14 +275,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       # register instance to load balancer.
       lb.add_target(uuid)
-
-      # update security groups to registered instance.
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => lb_security_groups + i_security_groups
-      }
-      update_security_groups(request_params)
+      set_vif_sg(:add,uuid,lb_inst_secg_id)
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq
@@ -269,16 +313,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
-    remove_vifs.each do |uuid|
-      vif = find_by_uuid(:NetworkVif, uuid)
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => i_security_groups - lb_security_groups
-      }
-      update_security_groups(request_params)
+    lb_inst_secg_uuid = lb.instance_security_group.canonical_uuid
+
+    remove_vifs.each do |vif_uuid|
+    set_vif_sg(:remove,vif_uuid,lb_inst_secg_uuid)
     end
 
     # update conifg in load balancer image.
@@ -317,7 +355,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   put '/:id' do
-
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
     lb = find_by_uuid(:LoadBalancer, params['id'])
     i = lb.instance
@@ -353,12 +390,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.instance_port = params[:instance_port]
     end
 
-    raise E::InvalidLoadBalancerPublicKey if params[:public_key].nil?
-    raise E::InvalidLoadBalancerPrivateKey if params[:private_key].nil?
-
     if lb.is_secure?
-      lb.public_key = params[:public_key]
-      lb.private_key = params[:private_key]
+      lb.public_key = params[:public_key] if !params[:public_key].nil? && !params[:public_key].empty?
+      lb.private_key = params[:private_key] if !params[:private_key].nil? && !params[:private_key].empty?
       raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
       raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
       raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
@@ -430,6 +464,35 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       Dcmgr::Messaging::LoadBalancer.update_load_balancer_config(config_params.merge(queue_params))
     end
 
+    global_vif = lb.global_vif
+    monitor_hash = {}
+    if params[:monitoring] && params[:monitoring]["enabled"] == "true"
+      # Who the mother******* fr**king h**** decided to use a hash with
+      # incremental numbers for keys?! THAT'S WHAT ARRAYS ARE FOR!!!!!!
+      # Hateful code that converts an array to that bananasformat
+      if global_vif.network_vif_monitors_dataset.alives.empty?
+        monitor_hash = { 0 => {:enabled=>true, :protocol=>lb.protocol, :title=>lb.protocol.upcase + "1", :params=>{"port"=>lb.port, "check_path"=>params[:monitoring]["path"]}} }
+      else
+        index = 0
+        global_vif.network_vif_monitors.each { |mon|
+          monitor_hash[index.to_s] = mon.to_hash
+          monitor_hash[index.to_s][:protocol] = lb.protocol
+          monitor_hash[index.to_s][:title] = lb.protocol.upcase + "1"
+          monitor_hash[index.to_s][:params]["port"] = lb.port
+          monitor_hash[index.to_s][:params]["check_path"] = params[:monitoring]["path"]
+          index += 1
+        }
+      end
+    end
+
+    request_forward.post("network_vifs/#{global_vif.canonical_uuid}/monitors", {
+      :monitors => monitor_hash
+    })
+
+    request_forward.put("/instances/#{i.canonical_uuid}", {
+      :monitoring => params[:monitoring]
+    })
+
     respond_with(R::LoadBalancer.new(lb).generate)
   end
 
@@ -466,9 +529,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       'REQUEST_URI' => "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
     })
 
-    if body.include? lb_i.canonical_uuid
-      lb.destroy
-    else
+    unless http_status == 200
       raise E::InvalidLoadBalancerState, lb.state
     end
 
@@ -494,11 +555,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     body['uuid']
   end
 
-  def update_security_groups(params)
-    path = "/instances/#{params[:id]}"
-    uri = "/api/12.03/#{path}.json"
+  def set_vif_sg(action,vif_id,sg_id)
+    path = "/network_vifs/#{vif_id}/#{action}_security_group"
+    uri = "/api/12.03/#{path}"
     http_status, headers, body = internal_request(uri,{
-      'security_groups' => params[:security_groups]
+      'security_group_id' => sg_id
     }, {
       'PATH_INFO' => "#{path}",
       'REQUEST_METHOD' => 'PUT',

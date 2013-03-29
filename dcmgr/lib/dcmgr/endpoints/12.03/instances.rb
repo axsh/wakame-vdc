@@ -10,23 +10,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   INSTANCE_STATE=['running', 'stopped', 'terminated'].freeze
   INSTANCE_STATE_PARAM_VALUES=(INSTANCE_STATE + INSTANCE_META_STATE).freeze
 
-  def check_network_ip_combo(network_id,ip_addr)
-    nw = M::Network[network_id]
-    raise E::UnknownNetwork, network_id if nw.nil?
-
-    if ip_addr
-      raise E::InvalidIPAddress, ip_addr unless IPAddress.valid_ipv4?(ip_addr)
-
-      leaseaddr = IPAddress(ip_addr)
-      raise E::DuplicateIPAddress, ip_addr unless M::IpLease.filter(:ipv4 => leaseaddr.to_i).empty?
-
-      segment = IPAddress("#{nw.ipv4_network}/#{nw.prefix}")
-      raise E::IPAddressNotInSegment, ip_addr unless segment.include?(leaseaddr)
-
-      raise E::IpNotInDhcpRange, ip_addr unless nw.exists_in_dhcp_range?(leaseaddr)
-    end
-  end
-
   # Show list of instances
   # Filter Paramters:
   # start: fixnum, optional
@@ -163,15 +146,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     # Check vifs parameter values
     is_manual_ip_set=false
     params["vifs"].each { |name,temp|
-      mac_addr = temp["mac_addr"]
-      if mac_addr
-        raise E::InvalidMacAddress, mac_addr if !(mac_addr.size == 12 && mac_addr =~ /^[0-9a-fA-F]{12}$/)
-        raise E::DuplicateMacAddress, mac_addr if M::MacLease.is_leased?(mac_addr)
-
-        # Check if this mac address exists in a defined range
-        m_vid, m_a = M::MacLease.string_to_ints(mac_addr)
-        raise E::MacNotInRange, mac_addr unless M::MacRange.exists_in_any_range?(m_vid,m_a)
-      end
+      check_mac_addr(temp["mac_addr"]) if temp["mac_addr"]
 
       if temp["ipv4_addr"]
         check_network_ip_combo(temp["network"], temp["ipv4_addr"])
@@ -393,12 +368,17 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance if instance.nil?
 
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
+      logger.warn "This code is deprecated and will be removed. Use /network_vifs/:vif_id/add_security_group and /network_vifs/:vif_id/remove_security_group instead."
+      # Setting only security groups that are of the same service type as the instance
+      # This is to work around a bug where LB security groups would be deleted if the instance
+      # is registered to a load balancer
+      st = instance.service_type
       security_group_uuids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
 
       groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
       # Remove old security groups
       instance.nic.each { |vnic|
-        vnic.security_groups_dataset.each { |group|
+        vnic.security_groups_dataset.filter(:service_type => st).each { |group|
           unless security_group_uuids.member?(group.canonical_uuid)
             vnic.remove_security_group(group)
             on_after_commit do
@@ -458,10 +438,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
         instance.instance_monitor_attr.changed_columns << :recipients
       end
-      
+
       instance.instance_monitor_attr.save_changes
     end
-    
+
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 

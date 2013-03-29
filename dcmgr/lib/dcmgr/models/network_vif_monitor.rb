@@ -40,7 +40,7 @@ module Dcmgr::Models
       },
       'http'  => lambda {
         self.instance_exec(&CUSTOM_VALIDATOR['tcp'])
-        
+
         if self.params['check_path'].nil?
           errors.add(:check_path, "Parameter not found")
         elsif self.params['check_path'] !~ %r{^/.*}

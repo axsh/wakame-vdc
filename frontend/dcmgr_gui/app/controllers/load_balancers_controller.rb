@@ -19,6 +19,7 @@ class LoadBalancersController < ApplicationController
         :private_key => params[:private_key],
         :public_key => params[:public_key],
         :cookie_name => params[:cookie_name],
+        :monitoring => params[:monitoring],
         :load_balancer_spec_id => Rails::configuration.load_balancer_spec_id
       }
       lb = Hijiki::DcmgrResource::LoadBalancer.create(data)
@@ -113,6 +114,7 @@ class LoadBalancersController < ApplicationController
          :private_key => params[:private_key],
          :public_key => params[:public_key],
          :cookie_name => params[:cookie_name],
+         :monitoring => params[:monitoring],
          :target_vifs => params[:target_vifs]
        }
        load_balancer = Hijiki::DcmgrResource::LoadBalancer.update(load_balancer_id,data)
