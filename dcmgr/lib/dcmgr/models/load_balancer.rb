@@ -306,6 +306,10 @@ module Dcmgr::Models
       self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
     end
 
+    def after_destroy
+      remove_inbound
+    end
+
     private
     def config(name, values = {})
       config_params = {}
