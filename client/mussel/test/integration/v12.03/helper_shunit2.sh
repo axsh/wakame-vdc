@@ -14,12 +14,13 @@ readonly shunit2_file=${BASH_SOURCE[0]%/*}/../../shunit2
 . ${BASH_SOURCE[0]%/*}/../../helpers/retry.sh
 . ${BASH_SOURCE[0]%/*}/../../helpers/ssh.sh
 . ${BASH_SOURCE[0]%/*}/../../helpers/instance.sh
+. ${BASH_SOURCE[0]%/*}/../../helpers/ssl.sh
 . ${BASH_SOURCE[0]%/*}/../../helpers/load_balancer.sh
 
 ## environment-specific configuration
 
 [[ -f ${BASH_SOURCE[0]%/*}/musselrc ]] && { . ${BASH_SOURCE[0]%/*}/musselrc; } || :
-[[ -f ${HOME}/.musselrc             ]] && { . ${HOME}/.musselrc;             } || :
+load_musselrc
 
 ## group variables
 

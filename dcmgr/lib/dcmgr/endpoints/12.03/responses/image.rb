@@ -9,7 +9,7 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       @image.instance_exec {
-        to_hash.merge(:id=>canonical_uuid)
+        to_hash.merge(:id=>canonical_uuid, :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate })
       }
     end
   end

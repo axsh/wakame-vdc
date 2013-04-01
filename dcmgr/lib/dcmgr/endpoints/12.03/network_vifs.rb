@@ -221,11 +221,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
   get '/:vif_id/external_ip' do
     vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
 
-    result = vif.inner_routes(:conditions => {:name => 'external-ip'}).collect { |route|
+    ds = M::NetworkRoute.dataset
+    ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_vif_id => vif.id)
+    ds = ds.select_all(:network_routes).alives
+
+    result = ds.collect { |route|
       {
-        :network_uuid => route.outer_network ? route.outer_network.canonical_uuid : nil,
-        :vif_uuid => route.outer_vif ? route.outer_vif.canonical_uuid : nil,
-        :ipv4 => route.outer_ipv4_s
+        :network_id => route.outer_network ? route.outer_network.canonical_uuid : nil,
+        :vif_id => route.outer_vif ? route.outer_vif.canonical_uuid : nil,
+        :ip_handle_id => route.outer_lease.ip_handle ? route.outer_lease.ip_handle.canonical_uuid : nil,
+        :ipv4 => route.outer_lease.ipv4_s,
       }
     }
     
@@ -235,103 +240,88 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
   post '/:vif_id/external_ip' do
     inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
     inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
-    inner_ipv4 = nil
-    outer_vif = nil
-    outer_ipv4 = nil
+
+    params[:ip_handle_id] || raise(InvalidParameter, "Missing ip_handle_id")
+
+    outer_ip_handle = M::IpHandle[params[:ip_handle_id]] || raise(UnknownUUIDResource, params[:ip_handle_id])
+
+    if @account && outer_ip_handle.ip_pool.account_id != @account.canonical_uuid
+      raise(E::UnknownUUIDResource, params[:ip_handle_id])
+    end
 
     create_options = {
       :outer => {
         :find_service => 'external-ip',
+        :network => outer_ip_handle.ip_lease.network,
+        :network_vif => outer_ip_handle.ip_lease.network_vif,
       },
       :inner => {
         :find_ipv4 => :vif_first,
+        :network => inner_nw,
+        :network_vif => inner_vif,
       }
     }
       
-    params[:network_uuid] && params[:ip_handle] && raise(InvalidParameter, "network_uuid && ip_handle")
-
-    if params[:network_uuid]
-      outer_nw = find_by_uuid(:Network, params[:network_uuid]) || raise(UnknownUUIDResource, params[:network_uuid])
-      create_options[:lease_ipv4] = :default
-    elsif params[:ip_handle]
-      outer_ip_handle = M::IpHandle[params[:ip_handle]] || raise(UnknownUUIDResource, params[:ip_handle])
-      outer_nw = outer_ip_handle.ip_lease.network
-
-      if @account && outer_ip_handle.ip_pool.account_id != @account.canonical_uuid
-        raise(E::UnknownUUIDResource, params[:ip_handle])
-      end
-
-      create_options[:outer][:ip_handle] = outer_ip_handle
-    else
-      raise(InvalidParameter, "")
-    end
-
     route_data = {
       :route_type => 'external-ip',
-      :outer_network_id => outer_nw.id,
-      :inner_network_id => inner_nw.id,
+      :outer_lease_id => outer_ip_handle.ip_lease.id,
 
       :create_options => create_options
     }
 
-    route_data[:outer_vif_id] = outer_vif.id if outer_vif
-    route_data[:inner_vif_id] = inner_vif.id if inner_vif
-    route_data[:outer_ipv4] = outer_ipv4 if outer_ipv4
-    route_data[:inner_ipv4] = inner_ipv4 if inner_ipv4
+    begin
+      route = M::NetworkRoute.create(route_data)
+    rescue Sequel::ValidationFailed => e
+      raise(E::InvalidParameter, e.message)
+    end
 
-    # Validate ip pool has dc network?
+    on_after_commit do
+      Dcmgr.messaging.event_publish("vnet/network_route/created", :args=>[route.id])
+    end
 
-    route = M::NetworkRoute.create(route_data)
-    
-    respond_with({ :network_uuid => route.outer_network.canonical_uuid,
-                   :vif_uuid => route.outer_vif.canonical_uuid,
-                   :ipv4 => route.outer_ipv4_s,
+    respond_with({ :network_id => route.outer_network.canonical_uuid,
+                   :vif_id => route.outer_vif.canonical_uuid,
+                   :ip_handle_id => outer_ip_handle.canonical_uuid,
+                   :ipv4 => route.outer_lease.ipv4_s,
                  })
   end
 
   delete '/:vif_id/external_ip' do
     inner_vif = find_by_uuid(:NetworkVif, params[:vif_id]) || raise(UnknownUUIDResource, params[:vif_id])
     inner_nw = inner_vif.network || raise(NetworkVifNotAttached, params[:vif_id])
-    inner_ipv4 = params[:inner_ipv4]
-    outer_ipv4 = params[:outer_ipv4]
 
-    if params[:ip_handle]
-      outer_ipv4.nil? || raise(E::InvalidParameter, "Cannot mix 'ip_handle' and 'outer_ipv4' parameters.")
+    params[:ip_handle_id] || raise(InvalidParameter, "Missing ip_handle")
 
-      outer_ip_handle = M::IpHandle[params[:ip_handle]] || raise(UnknownUUIDResource, params[:ip_handle])
+    outer_ip_handle = M::IpHandle[params[:ip_handle_id]] || raise(UnknownUUIDResource, params[:ip_handle_id])
 
-      outer_nw = outer_ip_handle.ip_lease.network
-      outer_vif = outer_ip_handle.ip_lease.network_vif
-      outer_ipv4 = outer_ip_handle.ip_lease.ipv4_s
-
-      if @account && outer_ip_handle.ip_pool.account_id != @account.canonical_uuid
-        raise(E::UnknownUUIDResource, params[:ip_handle])
-      end
-
-    elsif params[:network_uuid]
-      outer_nw = find_by_uuid(:Network, params[:network_uuid]) ||
-        raise(UnknownUUIDResource, params[:network_uuid])
-      outer_vif = outer_nw.network_vifs_with_service(:network_services__name => 'external-ip').first ||
-        raise(UnknownNetworkService, 'external-ip')
-    else
-      raise(E::InvalidParameter, "")
+    if @account && outer_ip_handle.ip_pool.account_id != @account.canonical_uuid
+      raise(E::UnknownUUIDResource, params[:ip_handle_id])
     end
 
-    ds = M::NetworkRoute.dataset.routes_between_vifs(outer_vif, inner_vif)
-    ds = ds.where(:network_routes__inner_ipv4 => IPAddress::IPv4.new(inner_ipv4).to_i) if inner_ipv4
-    ds = ds.where(:network_routes__outer_ipv4 => IPAddress::IPv4.new(outer_ipv4).to_i) if outer_ipv4
+    ds = M::NetworkRoute.dataset
+    ds = ds.where(:network_routes__outer_lease_id => outer_ip_handle.ip_lease.id)
+    ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_vif_id => inner_vif.id)
+    ds = ds.alives.select_all(:network_routes)
 
     result = []
 
+    deleted_ids = ds.map(&:id)
+
     ds.each { |route|
       result << {
-        :network_uuid => route.outer_network.canonical_uuid,
-        :vif_uuid => route.outer_vif.canonical_uuid,
-        :ipv4 => route.outer_ipv4_s,
+        :network_id => route.outer_network.canonical_uuid,
+        :vif_id => route.outer_vif.canonical_uuid,
+        :ip_handle_id => route.outer_lease.ip_handle ? route.outer_lease.ip_handle.canonical_uuid : nil,
+        :ipv4 => route.outer_lease.ipv4_s,
       }
 
       route.destroy
     }
+
+    on_after_commit do
+      Dcmgr.messaging.event_publish("vnet/network_route/deleted",
+                                    :args=>deleted_ids)
+    end
     
     respond_with(result)
   end

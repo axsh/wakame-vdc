@@ -46,6 +46,7 @@ function vmbootstrap() {
 ROOTPATH="${ROOTPATH}" \
 VDC_METADATA_TYPE=${vdc_metadata_type} \
 VDC_DISTRO_NAME=${vm_distro_name} \
+VDC_HYPERVISOR=${vm_hypervisor} \
  $(vmbuilder_path) \
    --hypervisor    ${vm_hypervisor} \
    --distro-name   ${vm_distro_name} \

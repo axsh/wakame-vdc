@@ -48,6 +48,8 @@ function _create_instance() {
 
   instance_uuid=$(echo "${create_output}" | hash_value id)
   retry_until "document_pair? instance ${instance_uuid} state running"
+
+  cache_instance_param ${instance_uuid}
 }
 
 function _destroy_instance() {
@@ -56,6 +58,42 @@ function _destroy_instance() {
 
   destroy_ssh_key_pair
   teardown_vif
+
+  clean_cached_instance_param ${instance_uuid}
+
+  # clean internal instance helper params
+  instance_uuid=
+  security_group_uuid=
+  ssh_key_pair_uuid=
+  # clean required params
+  ssh_key_id=
+}
+
+### instance.cache
+
+function generate_cache_file_path() {
+  local uuid=$1
+  echo  /tmp/_tmp.mussel.${uuid}.$$.txt
+}
+
+function cache_instance_param() {
+  local instance_uuid=$1
+  local cache_file_path=$(generate_cache_file_path ${instance_uuid})
+  run_cmd instance show ${instance_uuid} > ${cache_file_path}
+}
+
+function cached_instance_param() {
+  local instance_uuid=$1
+  local cache_file_path=$(generate_cache_file_path ${instance_uuid})
+  [[ -f "${cache_file_path}" ]] || return 0
+  cat ${cache_file_path}
+}
+
+function clean_cached_instance_param() {
+  local instance_uuid=$1
+  local cache_file_path=$(generate_cache_file_path ${instance_uuid})
+  [[ -f "${cache_file_path}" ]] || return 0
+  rm -f ${cache_file_path}
 }
 
 ### ssh_key_pair

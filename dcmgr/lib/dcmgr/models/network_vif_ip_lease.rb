@@ -35,7 +35,12 @@ module Dcmgr::Models
           unless IpLease.filter(:network_id=>self.network_id, :ipv4=>self.ipv4_i).first.nil?
             errors.add(:ipv4, "IP address #{addr} already exists")
           end
+
+          if self.ip_handle && self.network && !self.ip_handle.ip_pool.has_dc_network(self.network.dc_network)
+            errors.add(:ip_handle, "IP pool does not have the right DC network.")
+          end
         end
+
         # Set IP address string canonicalized by IPAddress class.
         self[:ipv4] = addr.to_i
       rescue => e

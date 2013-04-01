@@ -22,15 +22,9 @@ module Dcmgr::Models
       ds.where(:network_id=>self.nat_network_id).alives
     end
 
-    one_to_many(:network_routes, :class=>NetworkRoute, :read_only=>true) do |ds|
-      ds.where({:inner_vif_id => self.id} | {:outer_vif_id => self.id}).alives
-    end
-
-    one_to_many :inner_routes, :key => :inner_vif_id, :class=>NetworkRoute do |ds|
-      ds.alives
-    end
-    one_to_many :outer_routes, :key => :outer_vif_id, :class=>NetworkRoute do |ds|
-      ds.alives
+    one_to_many :network_routes, :class=>NetworkRoute do |ds|
+      ds = NetworkRoute.dataset.join_with_ip_leases.where(:network_vif_ip_leases__network_vif_id => self.id)
+      ds.select_all(:network_routes).alives
     end
 
     subset(:alives, {:deleted_at => nil})
@@ -48,6 +42,14 @@ module Dcmgr::Models
         self.join_table(:left, :network_routes,
                         {:network_vifs__id => :network_routes__inner_vif_id} |
                         {:network_vifs__id => :network_routes__outer_vif_id})
+      end
+
+      def join_with_outer_routes
+        self.join_table(:left, :network_routes, :network_vifs__id => :network_routes__outer_vif_id)
+      end
+
+      def join_with_inner_routes
+        self.join_table(:left, :network_routes, :network_vifs__id => :network_routes__inner_vif_id)
       end
 
       def where_with_services(param)
@@ -178,6 +180,7 @@ module Dcmgr::Models
       else
         self.remove_all_security_groups
       end
+      self.network_routes.each {|i| i.destroy }
       self.network_services.each {|i| i.destroy }
       self.network_vif_monitors.each {|i| i.destroy }
       super
@@ -250,25 +253,23 @@ module Dcmgr::Models
       end
 
       return nil unless lease.network == network
-      
+
       lease.network_vif = self
       lease.save
     end
 
     def remove_ip_lease(options)
-      network = self.network
       lease = options[:ip_lease]
 
       return nil unless lease.is_a?(NetworkVifIpLease)
       return nil unless lease.network_vif == self
-      
-      lease.network_vif = nil
-      lease.save
 
-      # if options[:detach_network] == true && network == nil
-      #   self.network = network
-      #   self.save_changes
-      # end
+      if lease.ip_handle
+        lease.network_vif = nil
+        lease.save_changes
+      else
+        lease.destroy
+      end
     end
 
     private

@@ -13,6 +13,10 @@ module Dcmgr::Models
 
     subset(:alives, {:deleted_at => nil})
 
+    def has_dc_network(dcn)
+      !dc_networks_dataset.where(:dc_networks__id => dcn.id).empty?
+    end
+
   end
 
 end

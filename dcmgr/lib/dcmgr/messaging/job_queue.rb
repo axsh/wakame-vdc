@@ -69,30 +69,30 @@ module Dcmgr
           @node = node
         end
         
-        def submit(queue_name, resource_uuid, params, opts={})
+        def submit(queue_name, resource_uuid, params, opts={}, &blk)
           rpc.request('jobqueue-proxy', 'submit',
-                      queue_name, resource_uuid, params, opts)
+                      queue_name, resource_uuid, params, opts, &blk)
         end
 
-        def pop(queue_name, worker_id, opts={})
+        def pop(queue_name, worker_id, opts={}, &blk)
           opts = {}.merge(opts)
           rpc.request('jobqueue-proxy', 'pop',
-                      queue_name, worker_id)
+                      queue_name, worker_id, &blk)
         end
 
-        def cancel(job_id)
+        def cancel(job_id, &blk)
           rpc.request('jobqueue-proxy', 'cancel',
-                      job_id)
+                      job_id, &blk)
         end
 
-        def finish_success(job_id)
+        def finish_success(job_id, &blk)
           rpc.request('jobqueue-proxy', 'finish_success',
-                      job_id)
+                      job_id, &blk)
         end
 
-        def finish_fail(job_id, failure_reason)
+        def finish_fail(job_id, failure_reason, &blk)
           rpc.request('jobqueue-proxy', 'finish_fail',
-                      job_id, failure_reason)
+                      job_id, failure_reason, &blk)
         end
 
         private

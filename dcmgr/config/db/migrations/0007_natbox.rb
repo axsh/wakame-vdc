@@ -38,6 +38,25 @@ Sequel.migration do
       index [:deleted_at]
     end      
 
+    create_table(:network_routes) do
+      primary_key :id, :type=>"int(11)"
+      column :route_type, "varchar(255)", :null=>false
+
+      column :inner_lease_id, "int(11)", :null=>false
+      column :outer_lease_id, "int(11)", :null=>false
+
+      column :release_outer_vif, "tinyint(1)", :default=>false, :null=>false
+      column :release_inner_vif, "tinyint(1)", :default=>false, :null=>false
+
+      column :created_at, "datetime", :null=>false
+      column :updated_at, "datetime", :null=>false
+      column :deleted_at, "datetime", :null=>true
+      column :is_deleted, "int(11)", :null=>false
+
+      index [:inner_lease_id, :outer_lease_id, :is_deleted], :unique=>true
+      index [:deleted_at]
+    end
+
     alter_table(:network_vif_ip_leases) do
       add_column :ip_handle_id, "int(11)", :null=>true
 
@@ -46,36 +65,20 @@ Sequel.migration do
       add_index [:ip_handle_id, :is_deleted]
     end
 
-    create_table(:network_routes) do
-      primary_key :id, :type=>"int(11)"
-
-      column :route_type, "varchar(255)", :null=>false
-
-      column :inner_network_id, "int(11)", :null=>false
-      column :inner_vif_id, "int(11)"
-      column :inner_ipv4, "int(11)", :unsigned=>true
-
-      column :outer_network_id, "int(11)", :null=>false
-      column :outer_vif_id, "int(11)"
-      column :outer_ipv4, "int(11)", :unsigned=>true
-
-      # If false, delete when vif is disconnected from network.
-      column :is_permanent, "int(11)", :default=>false, :null=>false
-      column :is_deleted, "int(11)", :null=>false
-
-      column :created_at, "datetime", :null=>false
-      column :updated_at, "datetime", :null=>false
-      column :deleted_at, "datetime", :null=>true
-
-      index [:inner_network_id, :outer_network_id, :inner_ipv4, :outer_ipv4, :is_deleted], :unique=>true, :name => 'nw_vif_index'
-    end
-
   end
 
   down do
     drop_table(:ip_pools)
+    drop_table(:ip_handles)
     drop_table(:ip_pool_dc_networks)
-    drop_table(:ip_lease_handles)
     drop_table(:network_routes)
+
+    alter_table(:network_vif_ip_leases) do
+      drop_column :ip_handle_id
+
+      set_column_allow_null :network_vif_id, false
+
+      drop_index [:ip_handle_id, :is_deleted]
+    end
   end
 end

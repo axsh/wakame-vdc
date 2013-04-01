@@ -207,14 +207,41 @@ __END
       puts nw.add_service_vif(options[:ipv4]).canonical_uuid
     end
 
+    desc "add-external-ip UUID IP", "Add an external IP to vif"
+    def add_external_ip(vif_uuid, ip_uuid)
+      vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
+      ip_handle = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
+      ip_lease = ip_handle.ip_lease || Error.raise("No NetworkVifIpLease found.", 100)
+
+      vif.network || Error.raise("Network Vif is not attached to a network.", 100)
+      ip_lease.network || Error.raise("IP lease is not attached to a network.", 100)
+
+      fields = {
+        :route_type => 'external-ip',
+        :outer_network_id => ip_lease.network.id,
+        :inner_network_id => vif.network.id,
+        :inner_vif_id => vif.id,
+
+        :create_options => {
+          :outer => {
+            :find_service => 'external-ip',
+            :ip_handle => ip_handle,
+          },
+          :inner => {
+            :find_ipv4 => :vif_first,
+          }
+        }
+      }
+
+      M::NetworkRoute.create(fields)
+    end
+
     desc "add-ip UUID IP", "Add an IP handle to vif"
     method_option :allow_multiple, :type => :boolean, :required => false, :desc => "Allow adding multiple IP leases to the vif"
     def add_ip(vif_uuid, ip_uuid)
       vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
       ip = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
       ip_lease = ip.ip_lease || Error.raise("No NetworkVifIpLease found.")
-
-      p ip_lease.inspect
 
       vif.network == ip_lease.network || Error.raise("Vif and IP lease's network must match.", 100)
 
@@ -233,8 +260,6 @@ __END
       vif = M::NetworkVif[vif_uuid] || UnknownUUIDError.raise(nw_uuid)
       ip = M::IpHandle[ip_uuid] || UnknownUUIDError.raise(ip_uuid)
       ip_lease = ip.ip_lease || Error.raise("No NetworkVifIpLease found.", 100)
-
-      p ip_lease.inspect
 
       fields = {
         :ip_lease => ip_lease,
@@ -285,7 +310,7 @@ __END
         :account_id => options[:account_id],
         :display_name => options[:display_name],
       }
-      fields[:uuid] = options[:fields] if options[:fields]
+      fields[:uuid] = options[:uuid] if options[:uuid]
 
       puts super(M::IpPool, fields)
     end
@@ -293,7 +318,14 @@ __END
     desc "add-dcn POOL DCN [options]", "Add DC Network to IP pool."
     def add_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
-      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      if M::DcNetwork.check_uuid_format(dcn_uuid)
+        dcn = M::DcNetwork[dcn_uuid]
+      else
+        dcn = M::DcNetwork.find(:name => dcn_uuid)
+      end
+
+      dcn || UnknownUUIDError.raise(dcn_uuid)
 
       fields = {
         :ip_pool_id => pool.id,
@@ -306,7 +338,14 @@ __END
     desc "del-dcn POOL DCN [options]", "Remove DC Network from IP pool."
     def del_dcn(pool_uuid, dcn_uuid)
       pool = M::IpPool[pool_uuid] || UnknownUUIDError.raise(pool_uuid)
-      dcn = M::DcNetwork[dcn_uuid] || UnknownUUIDError.raise(dcn_uuid)
+
+      if M::DcNetwork.check_uuid_format(dcn_uuid)
+        dcn = M::DcNetwork[dcn_uuid]
+      else
+        dcn = M::DcNetwork.find(:name => dcn_uuid)
+      end
+
+      dcn || UnknownUUIDError.raise(dcn_uuid)
 
       fields = {
         :ip_pool_id => pool.id,
@@ -350,77 +389,103 @@ __END
     M=Dcmgr::Models
 
     no_tasks {
-      def get_nw_vif(uuid)
+      def from_uuid(uuid)
+        nw = vif = ip_lease = nil
+
         case uuid
         when /^nw-/
           nw = M::Network[uuid] || UnknownUUIDError.raise(uuid)
-          vif = nil
         when /^vif-/
           vif = M::NetworkVif[uuid] || UnknownUUIDError.raise(uuid)
-          nw = vif.network || Error.raise("No network associated with vif: #{vif.canonical_uuid}")
+          nw = vif.network || Error.raise("No network associated with uuid: #{vif.canonical_uuid}")
+        when /^ip-/
+          ip_handle = M::IpHandle[uuid] || UnknownUUIDError.raise(uuid)
+          ip_lease = ip_handle.ip_lease
+          nw = ip_lease.network
+          vif = ip_lease.network_vif
         else
           UnknownUUIDError.raise(uuid)
         end
 
-        [nw, vif]
+        [nw, vif, ip_lease]
+      end
+
+      def routes_dataset(outer_uuid, inner_uuid, outer, inner)
+        ds = M::NetworkRoute.dataset
+
+        if outer[2]
+          ds = ds.where(:network_routes__outer_lease_id => outer[2].id)
+        elsif outer[1]
+          ds = ds.join_with_outer_ip_leases.where(:outer_ip_leases__network_vif_id => outer[1].id)
+        elsif outer[0]
+          ds = ds.join_with_outer_ip_leases.where(:outer_ip_leases__network_id => outer[0].id)
+        else
+          UnknownUUIDError.raise(outer_uuid)
+        end
+
+        if inner[2]
+          ds = ds.where(:network_routes__inner_lease_id => inner[2].id)
+        elsif inner[1]
+          ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_vif_id => inner[1].id)
+        elsif inner[0]
+          ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_id => inner[0].id)
+        else
+          UnknownUUIDError.raise(inner_uuid)
+        end
+        
+        ds
       end
     }
 
     desc "add OUTER_UUID INNER_UUID", "Add route between two networks"
     method_option :route_type, :type => :string, :required => true, :desc => "Route type"
-    method_option :outer_ip, :type => :string, :required => false, :desc => "Outer IP address"
-    method_option :inner_ip, :type => :string, :required => false, :desc => "Inner IP address"
     def add(outer_uuid, inner_uuid)
       create_options = {:outer => {}, :inner => {}}
 
+      outer_nw, outer_vif, outer_lease = from_uuid(outer_uuid)
+      inner_nw, inner_vif, inner_lease = from_uuid(inner_uuid)
+
       case options[:route_type]
       when 'external-ip'
-        create_options[:outer][:lease_ipv4] = :default
+        create_options[:outer][:lease_ipv4] = :default if outer_lease.nil?
         create_options[:outer][:find_service] = 'external-ip'
-        create_options[:inner][:find_ipv4] = :vif_first
+        create_options[:inner][:find_ipv4] = :vif_first if inner_lease.nil?
       else
         Error.raise("Unknown route type.", 100)
       end
 
-      outer_nw, outer_vif = get_nw_vif(outer_uuid)
-      inner_nw, inner_vif = get_nw_vif(inner_uuid)
+      create_options[:outer][:network] = outer_nw if outer_nw
+      create_options[:inner][:network] = inner_nw if inner_nw
+      create_options[:outer][:network_vif] = outer_vif if outer_vif
+      create_options[:inner][:network_vif] = inner_vif if inner_vif
 
       route_data = {
         :route_type => options[:route_type],
-        :outer_network_id => outer_nw ? outer_nw.id : nil,
-        :outer_ipv4 => options[:outer_ip] ? IPAddress::IPv4.new(options[:outer_ip]).to_i : nil,
-        :outer_vif_id => outer_vif ? outer_vif.id : nil,
-        :inner_network_id => inner_nw ? inner_nw.id : nil,
-        :inner_ipv4 => options[:inner_ip] ? IPAddress::IPv4.new(options[:inner_ip]).to_i : nil,
-        :inner_vif_id => inner_vif ? inner_vif.id : nil,
-
         :create_options => create_options
       }
+
+      route_data[:outer_lease_id] = outer_lease.id if outer_lease
+      route_data[:inner_lease_id] = inner_lease.id if inner_lease
 
       result = M::NetworkRoute.create(route_data)
 
       shell.print_table([[route_data[:route_data],
                           result.outer_network.canonical_uuid,
                           result.outer_vif ? result.outer_vif.canonical_uuid : nil,
-                          result.outer_ipv4.to_s,
+                          result.outer_lease.ipv4_s,
                           result.inner_network.canonical_uuid,
                           result.inner_vif ? result.inner_vif.canonical_uuid : nil,
-                          result.inner_ipv4.to_s]])
+                          result.inner_lease.ipv4_s]])
     end
 
     desc "del OUTER_UUID INNER_UUID", "Delete routes between two networks"
     method_option :all_route_types, :type => :boolean, :required => false, :desc => "Include all route types"
     method_option :route_type, :type => :string, :required => false, :desc => "Route type"
-    method_option :outer_ip, :type => :string, :required => false, :desc => "Outer IP address"
-    method_option :inner_ip, :type => :string, :required => false, :desc => "Inner IP address"
     def del(outer_uuid, inner_uuid)
-      outer_nw, outer_vif = get_nw_vif(outer_uuid)
-      inner_nw, inner_vif = get_nw_vif(inner_uuid)
+      outer_nw, outer_vif, outer_lease = from_uuid(outer_uuid)
+      inner_nw, inner_vif, inner_lease = from_uuid(inner_uuid)
 
-      ds = M::NetworkRoute.dataset.routes_between_vifs(outer_vif, inner_vif)
-
-      ds = ds.where(:network_routes__inner_ipv4 => IPAddress::IPv4.new(options[:inner_ip]).to_i) if options[:inner_ip]
-      ds = ds.where(:network_routes__outer_ipv4 => IPAddress::IPv4.new(options[:outer_ip]).to_i) if options[:outer_ip]
+      ds = routes_dataset(outer_uuid, inner_uuid, from_uuid(outer_uuid), from_uuid(inner_uuid))
 
       # If no route_type is supplied, require --all-route-types.
       if options[:route_type]
@@ -434,10 +499,10 @@ __END
         table << [r.route_type,
                   r.outer_network ? r.outer_network.canonical_uuid : nil,
                   r.outer_vif ? r.outer_vif.canonical_uuid : nil,
-                  r.outer_ipv4,
+                  r.outer_lease.ipv4_s,
                   r.inner_vif.network ? r.inner_vif.network.canonical_uuid : nil,
                   r.inner_vif ? r.inner_vif.canonical_uuid : nil,
-                  r.inner_ipv4]
+                  r.inner_lease.ipv4_s]
         r.destroy
       }
 
@@ -453,10 +518,30 @@ __END
         table << [r.route_type,
                   r.outer_network ? r.outer_network.canonical_uuid : nil,
                   r.outer_vif ? r.outer_vif.canonical_uuid : nil,
-                  r.outer_ipv4,
+                  r.outer_lease.ipv4_s,
                   r.inner_vif.network ? r.inner_vif.network.canonical_uuid : nil,
                   r.inner_vif ? r.inner_vif.canonical_uuid : nil,
-                  r.inner_ipv4]
+                  r.inner_lease.ipv4_s]
+      }
+      shell.print_table(table)
+    end
+
+    desc "show-between OUTER INNER", "Show routes on network"
+    def show_between(outer_uuid, inner_uuid)
+      outer_nw, outer_vif, outer_lease = from_uuid(outer_uuid)
+      inner_nw, inner_vif, inner_lease = from_uuid(inner_uuid)
+
+      ds = routes_dataset(outer_uuid, inner_uuid, from_uuid(outer_uuid), from_uuid(inner_uuid))
+
+      table = [['Type', 'Outer NW', 'Outer Vif', 'Inner NW', 'Inner Vif']]
+      ds.each { |r|
+        table << [r.route_type,
+                  r.outer_network ? r.outer_network.canonical_uuid : nil,
+                  r.outer_vif ? r.outer_vif.canonical_uuid : nil,
+                  r.outer_lease.ipv4_s,
+                  r.inner_vif.network ? r.inner_vif.network.canonical_uuid : nil,
+                  r.inner_vif ? r.inner_vif.canonical_uuid : nil,
+                  r.inner_lease.ipv4_s]
       }
       shell.print_table(table)
     end
@@ -677,7 +762,7 @@ __END
       else
     print ERB.new(<<__END, nil, '-').result(binding)
 <%- M::DcNetwork.order(:id).all.each { |l| -%>
-<%= "%-20s  %-15s" % [l.canoical_uuid, l.name] %>
+<%= "%-20s  %-15s" % [l.canonical_uuid, l.name] %>
 <%- } -%>
 __END
       end
