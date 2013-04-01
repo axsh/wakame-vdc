@@ -378,6 +378,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     respond_with({})
   end
 
+  get '/:id/routes' do
+    # description 'List services on this network'
+    # params start, fixnum, optional
+    # params limit, fixnum, optional
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+
+    filter = {:network_vif_ip_leases__network_id => nw.id}
+    filter[:network_routes__route_type] = params[:route_type] if params[:route_type]
+
+    ds = M::NetworkRoute.dataset.where_with_ip_leases(filter)
+
+    collection_respond_with(ds) do |paging_ds|
+      R::NetworkRouteCollection.new(paging_ds).generate
+    end
+  end
+
   # # Make GRE tunnels, currently used for testing purposes.
   # post '/:id/tunnels' do
   #   # description 'Create a tunnel on this network'
