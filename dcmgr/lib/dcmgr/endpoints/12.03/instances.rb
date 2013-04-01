@@ -228,7 +228,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     instance.save
 
-    # 
+    #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -393,12 +393,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance if instance.nil?
 
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
+      logger.warn "This code is deprecated and will be removed. Use /network_vifs/:vif_id/add_security_group and /network_vifs/:vif_id/remove_security_group instead."
+      # Setting only security groups that are of the same service type as the instance
+      # This is to work around a bug where LB security groups would be deleted if the instance
+      # is registered to a load balancer
+      st = instance.service_type
+
       security_group_uuids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
 
       groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
       # Remove old security groups
       instance.nic.each { |vnic|
-        vnic.security_groups_dataset.each { |group|
+        vnic.security_groups_dataset.filter(:service_type => st).each { |group|
           unless security_group_uuids.member?(group.canonical_uuid)
             vnic.remove_security_group(group)
             on_after_commit do
@@ -458,10 +464,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
         instance.instance_monitor_attr.changed_columns << :recipients
       end
-      
+
       instance.instance_monitor_attr.save_changes
     end
-    
+
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 

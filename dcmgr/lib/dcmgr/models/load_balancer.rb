@@ -106,6 +106,15 @@ module Dcmgr::Models
       true
     end
 
+    # The instance security group is always the one without rules
+    def instance_security_group
+      self.global_vif.security_groups.find {|g| g.rule.empty? }
+    end
+
+    def firewall_security_group
+      self.global_vif.security_groups.find {|g| !g.rule.empty? }
+    end
+
     def state
       @state = self.instance.state
     end
@@ -149,7 +158,7 @@ module Dcmgr::Models
     end
 
     def remove_targets(network_vif_uuids)
-      targets = LoadBalancerTarget.filter(:network_vif_id => network_vif_uuids, :is_deleted => 0).all
+      targets = LoadBalancerTarget.filter(:network_vif_id => network_vif_uuids, :is_deleted => 0, :load_balancer => self).all
       targets.each {|lbt|
         lbt.destroy
       }
@@ -293,6 +302,10 @@ module Dcmgr::Models
       end
     end
 
+    def global_vif
+      self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
+    end
+
     private
     def config(name, values = {})
       config_params = {}
@@ -326,8 +339,5 @@ module Dcmgr::Models
       config_params
     end
 
-    def global_vif
-      self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
-    end
   end
 end

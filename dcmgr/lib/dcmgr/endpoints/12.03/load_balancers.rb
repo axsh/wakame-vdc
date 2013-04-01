@@ -106,7 +106,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     user_data << "AMQP_PORT=#{amqp_settings[:port]}"
 
     security_group_rules = build_security_group_rules(lb_ports, allow_list)
-    instance_security_group = create_security_group(security_group_rules)
+    firewall_security_group = create_security_group(security_group_rules)
+    # The instance security group has no rules. It's just there to allow
+    # communication between the LB and its instances
+    instance_security_group = create_security_group([])
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
     load_balancer_engine = params[:engine] || 'haproxy'
@@ -121,7 +124,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                         'eth0' => {
                           'index' => C::PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
-                          'security_groups' => instance_security_group
+                          'security_groups' => [firewall_security_group, instance_security_group],
                         },
                         'eth1' =>{
                           'index' => C::MANAGEMENT_DEVICE_INDEX.to_s,
@@ -234,10 +237,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_name => lb.queue_name,
     }
 
-    lb_network_vif = lb.network_vifs(C::PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
-
     targets = []
+    lb_inst_secg_id = lb.instance_security_group.canonical_uuid
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
@@ -245,14 +246,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       # register instance to load balancer.
       lb.add_target(uuid)
-
-      # update security groups to registered instance.
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => lb_security_groups + i_security_groups
-      }
-      update_security_groups(request_params)
+      set_vif_sg(:add,uuid,lb_inst_secg_id)
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq
@@ -290,16 +284,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
-    lb_network_vif = lb.network_vifs(C::PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
-    remove_vifs.each do |uuid|
-      vif = find_by_uuid(:NetworkVif, uuid)
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => i_security_groups - lb_security_groups
-      }
-      update_security_groups(request_params)
+    lb_secg_uuid = lb.instance_security_group.canonical_uuid
+    remove_vifs.each do |vif_uuid|
+      set_vif_sg(:remove,vif_uuid,lb_secg_uuid)
     end
 
     inbounds = lb.inbounds
@@ -382,7 +369,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     if !lb_ports.empty? || !params[:allow_list].empty?
       security_group_rules = build_security_group_rules(lb_ports, lb.allow_list.split(','))
-      request_forward.put("/security_groups/#{lb.network_vifs(C::PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
+      request_forward.put("/security_groups/#{lb.firewall_security_group.canonical_uuid}", {
        :rule => security_group_rules.join("\n")
       })
     end
@@ -532,9 +519,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       'REQUEST_URI' => "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
     })
 
-    if body.include? lb_i.canonical_uuid
-      lb.destroy
-    else
+    unless http_status == 200
       raise E::InvalidLoadBalancerState, lb.state
     end
 
@@ -560,11 +545,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     body['uuid']
   end
 
-  def update_security_groups(params)
-    path = "/instances/#{params[:id]}"
-    uri = "/api/12.03/#{path}.json"
+  def set_vif_sg(action,vif_id,sg_id)
+    path = "/network_vifs/#{vif_id}/#{action}_security_group"
+    uri = "/api/12.03/#{path}"
     http_status, headers, body = internal_request(uri,{
-      'security_groups' => params[:security_groups]
+      'security_group_id' => sg_id
     }, {
       'PATH_INFO' => "#{path}",
       'REQUEST_METHOD' => 'PUT',
