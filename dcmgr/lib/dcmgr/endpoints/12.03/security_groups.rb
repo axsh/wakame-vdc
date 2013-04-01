@@ -68,7 +68,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
       raise E::InvalidSecurityGroupRule, e.message
     end
 
-    if params['labels']
+    unless params['labels'].blank?
       labels_param_each_pair do |name, value|
         g.set_label(name, value)
       end

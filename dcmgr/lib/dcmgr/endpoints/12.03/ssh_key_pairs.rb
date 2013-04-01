@@ -86,7 +86,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
       raise E::DatabaseError, e.message
     end
 
-    if params['labels']
+    unless params['labels'].blank?
       labels_param_each_pair do |name, value|
         ssh.set_label(name, value)
       end
