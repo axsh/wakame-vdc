@@ -34,13 +34,19 @@ module Dcmgr::Endpoints::V1203::Helpers
     end
 
     module HelperMethods
+      #
+      # labels_param_each_pair(params['labels']) do |n, v|
+      #   puts "name=#{n} value=#{v}"
+      # end
+      #
+      # Accepted patterns for labels parameter:
       # 1. labels[][name]=xxxx&labels[][value]=yyyy
       # 2. labels[1][name]=xxxx&labels[1][value]=yyyy&labels[2][name]=xxxx&labels[2][value]=yyyy
       # 3. labels[xxxx]=yyyy&labels[nnnn]=mmmm
-      def labels_param_each_pair(&blk)
-        case params['labels']
+      def labels_param_each_pair(label_params, &blk)
+        case label_params
         when Hash
-          params['labels'].each { |k, v|
+          labels_params.each { |k, v|
             if v.is_a?(Hash)
               # For pattern 2.
               if v['name'].blank?
@@ -63,7 +69,7 @@ module Dcmgr::Endpoints::V1203::Helpers
           }
         when Array
           # For pattern 1.
-          params['labels'].each_with_index { |l, idx|
+          label_params.each_with_index { |l, idx|
             if !l.is_a?(Hash)
               raise E::InvalidParameter, "labels[#{idx}] is not right type"
             elsif l['name'].blank?

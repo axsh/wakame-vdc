@@ -231,8 +231,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     instance.save
 
-    labels_param_each_pair do |name, value|
-      instance.set_label(name, value)
+    unless params['labels'].blank?
+      labels_param_each_pair(params['labels']) do |name, value|
+        instance.set_label(name, value)
+      end
     end
 
     # 
