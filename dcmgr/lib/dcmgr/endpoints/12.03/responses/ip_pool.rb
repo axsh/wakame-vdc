@@ -13,6 +13,8 @@ module Dcmgr::Endpoints::V1203::Responses
       @object.instance_exec {
         { :id => self.canonical_uuid,
           :display_name => self.display_name,
+          :created_at => self.created_at,
+          :updated_at => self.updated_at,
           :dc_networks => DcNetworkCollection.new(self.dc_networks_dataset).generate,
         }
       }
@@ -45,6 +47,9 @@ module Dcmgr::Endpoints::V1203::Responses
           :network_vif => self.ip_lease.network_vif ? self.ip_lease.network_vif.canonical_uuid : nil,
           :ipv4 => self.ip_lease.ipv4_s,
           :display_name => self.display_name,
+          :created_at => self.created_at,
+          :updated_at => self.updated_at,
+          :expires_at => self.expires_at,
         }
       }
     end
