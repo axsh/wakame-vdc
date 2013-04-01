@@ -87,7 +87,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ssh_key_pairs' do
     end
 
     unless params['labels'].blank?
-      labels_param_each_pair do |name, value|
+      labels_param_each_pair(params['labels']) do |name, value|
         ssh.set_label(name, value)
       end
     end

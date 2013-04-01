@@ -232,7 +232,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     instance.save
 
     unless params['labels'].blank?
-      labels_param_each_pair do |name, value|
+      labels_param_each_pair(params['labels']) do |name, value|
         instance.set_label(name, value)
       end
     end

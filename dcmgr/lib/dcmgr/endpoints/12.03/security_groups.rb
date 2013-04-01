@@ -69,7 +69,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/security_groups' do
     end
 
     unless params['labels'].blank?
-      labels_param_each_pair do |name, value|
+      labels_param_each_pair(params['labels']) do |name, value|
         g.set_label(name, value)
       end
     end
