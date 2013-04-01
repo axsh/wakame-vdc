@@ -151,7 +151,7 @@ module Dcmgr::Models
 
     def get_network_services(network, service, network_vif)
       params = {:network_services__name => service}
-      params[:network_vifs__id] = options[:network_vif].id if network_vif
+      params[:network_vifs__id] = network_vif.id if network_vif
 
       network.network_vifs_with_service(params)
     end
