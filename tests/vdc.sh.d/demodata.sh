@@ -161,7 +161,7 @@ network dhcp addrange nw-demo6 10.102.0.10 10.102.0.240
 network dhcp addrange nw-demo7 10.103.0.10 10.103.0.240
 network dhcp addrange nw-demo8 10.1.0.10 10.1.0.240
 
-network pool add --uuid="external" --display-name="external ips"
+network pool add --uuid="external" --display-name="external ips" --expire-initial=600 --expire-released=120
 network pool add-dcn ipp-external public
 
 resourcegroup map hng-shhost hn-${node_id}

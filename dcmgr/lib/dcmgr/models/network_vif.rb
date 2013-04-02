@@ -249,8 +249,7 @@ module Dcmgr::Models
 
       return nil unless lease.network == network
       
-      lease.network_vif = self
-      lease.save
+      lease.attach_vif(self)
     end
 
     def remove_ip_lease(options)
@@ -260,8 +259,7 @@ module Dcmgr::Models
       return nil unless lease.network_vif == self
       
       if lease.ip_handle
-        lease.network_vif = nil
-        lease.save_changes
+        lease.detach_vif
       else
         lease.destroy
       end
