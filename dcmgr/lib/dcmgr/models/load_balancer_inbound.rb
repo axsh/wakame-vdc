@@ -15,7 +15,7 @@ module Dcmgr::Models
 
     # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
-    def delete
+    def _destroy_delete
       self.deleted_at ||= Time.now
       self.is_deleted = self.id
       self.save_changes
