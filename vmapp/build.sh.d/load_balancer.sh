@@ -9,7 +9,7 @@
 #
 # imports:
 #  utils:     run_in_target
-#  distro:    prevent_daemons_starting
+#  distro:    prevent_daemons_starting, prevent_interfaces_booting
 #  haproxy:   install_haproxy
 #  stud:      install_stud
 #  amqptools: install_amqptools
@@ -26,6 +26,14 @@
 . $(cd ${BASH_SOURCE[0]%/*} && pwd)/amqptools.sh
 
 ##
+function render_lb_etc_rclocal() {
+  cat <<-'EOS'
+	. /metadata/user-data
+	route add -net ${AMQP_SERVER} netmask 255.255.255.255 dev eth1
+	initctl start haproxy_updater
+	EOS
+}
+
 function configure_lb_networking() {
   local chroot_dir=$1
   [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
@@ -33,12 +41,9 @@ function configure_lb_networking() {
   sed -i -e "s/^NETWORKING=\"yes\"/NETWORKING=\"no\"/" ${chroot_dir}/etc/sysconfig/network
 
   # Clear network configurations from template
-  sed -i -e "s/^ONBOOT=yes/ONBOOT=no/" ${chroot_dir}/etc/sysconfig/network-scripts/ifcfg-eth*
+  prevent_interfaces_booting ${chroot_dir} eth*
 
-  cat <<-'EOS' >> ${chroot_dir}/etc/rc.local
-	. /metadata/user-data
-	route add -net ${AMQP_SERVER} netmask 255.255.255.255 dev eth1
-	EOS
+  render_lb_etc_rclocal >> ${chroot_dir}/etc/rc.local
 }
 
 function configure_lb_daemons_starting() {

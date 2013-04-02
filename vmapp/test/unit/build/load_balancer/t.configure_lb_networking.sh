@@ -18,7 +18,7 @@ function setUp() {
 
   echo ONBOOT=yes >> ${chroot_dir}/etc/sysconfig/network
 
-  function sed() { echo sed $*; }
+  function prevent_interfaces_booting() { echo prevent_interfaces_booting $*; }
   function chroot() { echo chroot $*; }
 }
 

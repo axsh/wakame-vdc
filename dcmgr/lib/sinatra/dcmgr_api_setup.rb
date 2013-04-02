@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'json'
+require 'extlib/blank'
 
 require 'sinatra/respond_with'
 require 'sinatra/namespace'

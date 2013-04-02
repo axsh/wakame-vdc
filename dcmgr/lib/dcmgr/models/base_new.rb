@@ -493,6 +493,60 @@ module Dcmgr::Models
     end
   end
 
+  module Plugins
+    M = Dcmgr::Models
+    
+    module ResourceLabel
+      def self.apply(model)
+        model.one_to_many :resource_labels, :class=>M::ResourceLabel, :key=>:resource_uuid, :primary_key=>:canonical_uuid, :extend=>M::ResourceLabel::LabelDatasetMethods
+
+        # model.filter_label('key1', 'value1').first
+        model.def_dataset_method(:filter_by_label) do |name, value=nil|
+          pair_label_filter = {:name=>name}
+          if value
+            pair_label_filter.merge!(M::ResourceLabel.typecast_value_column(value))
+          end
+          m = self.instance_variable_get(:@model)
+          lbds = M::ResourceLabel.dataset.filter(pair_label_filter).filter(Sequel.like(:resource_uuid, "#{m.uuid_prefix}-%"))
+          self.filter(:uuid=>lbds.select(Sequel.function('SUBSTRING', :resource_uuid, m.uuid_prefix.size + 1)))
+        end
+      end
+
+      module InstanceMethods
+        def label(name)
+          self.resource_labels_dataset.filter(:name=>name).first
+        end
+        
+        def set_label(name, value)
+          l = label(name)
+          if l
+            l.value = value
+            l.save_changes
+          else
+            self.add_resource_label({:name=>name}.merge(M::ResourceLabel.typecast_value_column(value)))
+          end
+        end
+        
+        def unset_label(name)
+          l = label(name)
+          l.destroy if l
+        end
+
+        def to_hash(*args)
+          super.to_hash.merge({:labels=>self.resource_labels_dataset.all.map{|l| l.to_hash }})
+        end
+
+        def clear_labels(name_pattern=nil)
+          if name_pattern.is_a?(String)
+            self.resource_labels_dataset.grep(:name, name_pattern).each { |l| l.destroy }
+          else
+            self.remove_all_resource_labels
+          end
+        end
+      end
+    end
+  end
+
   class BaseNew < Sequel::Model
 
     plugin :validation_helpers

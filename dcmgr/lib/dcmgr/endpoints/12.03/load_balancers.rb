@@ -10,10 +10,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   LOAD_BALANCER_STATE_ALL=(LOAD_BALANCER_STATE + LOAD_BALANCER_META_STATE).freeze
 
   register Sinatra::InternalRequest
-
-  PUBLIC_DEVICE_INDEX = 0
-  MANAGEMENT_DEVICE_INDEX = 1
-  SERVICE_TYPE = 'lb'
+  C = Dcmgr::Constants::LoadBalancer
 
   get do
     ds = M::LoadBalancer.dataset
@@ -63,18 +60,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
   quota 'load_balancer.count'
   post do
+    inbounds = get_inbounds
+    lb_ports = inbounds.collect {|i| i[:port] }
+    lb_protocols = inbounds.collect {|i| i[:protocol] }
+    accept_port = accept_port(inbounds)
+    connect_port = connect_port(inbounds)
+    secure_port = connect_port
+    secure_protocol = secure_protocol(inbounds)
+
     lb_conf = Dcmgr.conf.service_types['lb']
-    lb_port = params[:port].to_i
+    allow_list = params[:allow_list] || ['0.0.0.0']
+
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
-    raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
 
     lb = M::LoadBalancer.new
     lb.account_id = @account.canonical_uuid
-    lb.port = lb_port || 80
-    lb.protocol = params[:protocol] || 'http'
     lb.instance_port = params[:instance_port].to_i || 80
     lb.instance_protocol = params[:instance_protocol] || 'http'
     lb.balance_algorithm = params[:balance_algorithm] || 'leastconn'
+    lb.allow_list = allow_list.join(',')
 
     if params[:description]
       lb.description = params[:description]
@@ -88,16 +92,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       lb.cookie_name = params[:cookie_name]
     end
 
-    if lb.is_secure?
-      raise E::InvalidLoadBalancerPublicKey if params[:public_key].nil?
-      raise E::InvalidLoadBalancerPrivateKey if params[:private_key].nil?
-
-      lb.public_key = params[:public_key]
-      lb.private_key = params[:private_key]
-      raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
-      raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
-      raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
+    if params[:httpchk] && params[:httpchk][:path]
+      lb.httpchk_path = params[:httpchk][:path]
     end
+
+    lb.public_key = params[:public_key] || ''
+    lb.private_key = params[:private_key] || ''
 
     amqp_settings = AMQP::Client.parse_connection_uri(lb_conf.amqp_server_uri)
 
@@ -105,14 +105,15 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     user_data << "AMQP_SERVER=#{amqp_settings[:host]}"
     user_data << "AMQP_PORT=#{amqp_settings[:port]}"
 
-    security_group_rules = []
-    security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
-    security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
-
-    instance_security_group = create_security_group(security_group_rules)
+    security_group_rules = build_security_group_rules(lb_ports, allow_list)
+    firewall_security_group = create_security_group(security_group_rules)
+    # The instance security group has no rules. It's just there to allow
+    # communication between the LB and its instances
+    instance_security_group = create_security_group([])
 
     lb_spec = Dcmgr::SpecConvertor::LoadBalancer.new
-    lb_spec.convert(params[:engine], params[:max_connection])
+    load_balancer_engine = params[:engine] || 'haproxy'
+    lb_spec.convert(load_balancer_engine, params[:max_connection])
 
     # make params for internal request.
     request_params = {'image_id' => lb_conf.image_id,
@@ -121,12 +122,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
                       'user_data' => user_data.join("\n"),
                       'vifs' => {
                         'eth0' => {
-                          'index' => PUBLIC_DEVICE_INDEX.to_s,
+                          'index' => C::PUBLIC_DEVICE_INDEX.to_s,
                           'network' => lb_conf.instances_network,
-                          'security_groups' => instance_security_group
+                          'security_groups' => [firewall_security_group, instance_security_group],
                         },
                         'eth1' =>{
-                          'index' => MANAGEMENT_DEVICE_INDEX.to_s,
+                          'index' => C::MANAGEMENT_DEVICE_INDEX.to_s,
                           'network' => lb_conf.management_network,
                           'security_groups' => ''
                         }
@@ -138,6 +139,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     }
 
     account_uuid = @account.canonical_uuid
+
     res = request_forward do
       header('X-VDC-Account-UUID', account_uuid)
       post("/instances", request_params)
@@ -149,15 +151,26 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.instance_id = i.id
     lb.save
 
+    inbounds.each {|i| lb.add_inbound(i[:protocol], i[:port]) }
+
+    if lb.is_secure?
+      raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
+      raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
+      raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
+    end
+
     config_params = {
       :name => 'start:haproxy',
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
-      :port => lb.connect_port,
-      :protocol => lb.protocol,
+      :ports => lb_ports - [accept_port],
+      :protocols => lb_protocols,
+      :secure_port => secure_port,
+      :secure_protocol => secure_protocol,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :servers => []
+      :servers => [],
+      :httpchk_path => lb.httpchk_path
     }
 
     queue_params = {
@@ -170,9 +183,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       if lb.is_secure?
         Dcmgr::Messaging::LoadBalancer.update_ssl_proxy_config({
           :name => 'start:stud',
-          :accept_port => lb.accept_port,
-          :connect_port => lb.connect_port,
-          :protocol => lb.protocol,
+          :accept_port => accept_port,
+          :connect_port => connect_port,
+          :protocol => secure_protocol,
           :private_key => lb.private_key,
           :public_key => lb.public_key
         }.merge(queue_params))
@@ -196,14 +209,25 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     target_vifs = request_vifs - hold_vifs
     raise(E::DuplicateNetworkVif) if target_vifs.empty?
 
+    inbounds = lb.inbounds
+    lb_ports = inbounds.collect {|i| i[:port] }
+    lb_protocols = inbounds.collect {|i| i[:protocol] }
+    accept_port = accept_port(inbounds)
+    connect_port = connect_port(inbounds)
+    secure_port = connect_port
+    secure_protocol = secure_protocol(inbounds)
+
     config_params = {
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
-      :port => lb.connect_port,
-      :protocol => lb.protocol,
+      :ports => lb_ports - [accept_port],
+      :protocols => lb_protocols,
+      :secure_port => secure_port,
+      :secure_protocol => secure_protocol,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :servers => []
+      :servers => [],
+      :httpchk_path => lb.httpchk_path
     }
 
     queue_params = {
@@ -213,10 +237,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :queue_name => lb.queue_name,
     }
 
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
-
     targets = []
+    lb_inst_secg_id = lb.instance_security_group.canonical_uuid
     target_vifs.each do |uuid|
       vif = M::NetworkVif[uuid]
       ip_lease = vif.direct_ip_lease
@@ -224,14 +246,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
       # register instance to load balancer.
       lb.add_target(uuid)
-
-      # update security groups to registered instance.
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => lb_security_groups + i_security_groups
-      }
-      update_security_groups(request_params)
+      set_vif_sg(:add,uuid,lb_inst_secg_id)
     end
 
     config_vifs = (request_vifs + hold_vifs).uniq
@@ -269,17 +284,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     lb.remove_targets(remove_vifs)
 
     # update security groups to registered instance.
-    lb_network_vif = lb.network_vifs(PUBLIC_DEVICE_INDEX)
-    lb_security_groups = lb_network_vif.security_groups.collect{|sg| sg.canonical_uuid }
-    remove_vifs.each do |uuid|
-      vif = find_by_uuid(:NetworkVif, uuid)
-      i_security_groups = vif.security_groups.collect{|sg| sg.canonical_uuid }
-      request_params = {
-        :id => vif.instance.canonical_uuid,
-        :security_groups => i_security_groups - lb_security_groups
-      }
-      update_security_groups(request_params)
+    lb_secg_uuid = lb.instance_security_group.canonical_uuid
+    remove_vifs.each do |vif_uuid|
+      set_vif_sg(:remove,vif_uuid,lb_secg_uuid)
     end
+
+    inbounds = lb.inbounds
+    lb_ports = inbounds.collect {|i| i[:port] }
+    lb_protocols = inbounds.collect {|i| i[:protocol] }
+    accept_port = accept_port(inbounds)
+    connect_port = connect_port(inbounds)
+    secure_port = connect_port
+    secure_protocol = secure_protocol(inbounds)
 
     # update conifg in load balancer image.
     config_params = {
@@ -287,9 +303,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       :instance_port => lb.instance_port,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :port => lb.connect_port,
-      :protocol => lb.protocol,
-      :servers => []
+      :ports => lb_ports - [accept_port],
+      :protocols => lb_protocols,
+      :secure_port => secure_port,
+      :secure_protocol => secure_protocol,
+      :servers => [],
+      :httpchk_path => lb.httpchk_path
     }
 
     queue_params = {
@@ -317,51 +336,66 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   put '/:id' do
-
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
     lb = find_by_uuid(:LoadBalancer, params['id'])
+    if !params[:port].blank? && !params[:protocol].blank?
+      inbounds = get_inbounds
+    else
+      inbounds = lb.inbounds
+    end
+
+    lb_ports = inbounds.collect {|i| i[:port] }
+    lb_protocols = inbounds.collect {|i| i[:protocol] }
+    accept_port = accept_port(inbounds)
+    connect_port = connect_port(inbounds)
+    secure_port = connect_port
+    secure_protocol = secure_protocol(inbounds)
+
     i = lb.instance
     servers = []
 
-    if !params[:balance_algorithm].empty?
+    if !params[:balance_algorithm].blank?
       raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
       lb.balance_algorithm = params[:balance_algorithm]
     end
 
-    if !params[:port].empty?
-      lb_port = params[:port].to_i
-      raise E::InvalidLoadBalancerPort unless lb_port >= 1 && lb_port <= 65535
-      security_group_rules = []
-      security_group_rules << 'icmp:-1,-1,ip4:0.0.0.0'
-      security_group_rules << "tcp:#{lb_port},#{lb_port},ip4:0.0.0.0"
+    if !params[:allow_list].blank?
+      if !params[:allow_list].is_a?(Array) || params[:allow_list][0].blank?
+        raise E::InvalidLoadBalancerAllowList, "Invalid parameter #{params[:allow_list]}"
+      end
+      lb.allow_list = params[:allow_list].join(',')
+      raise E::InvalidLoadBalancerAllowList, lb.errors[:allow_list] if !lb.valid?
+    end
 
-      request_forward.put("/security_groups/#{lb.network_vifs(PUBLIC_DEVICE_INDEX).security_groups.first.canonical_uuid}", {
+    if !lb_ports.empty? || !params[:allow_list].empty?
+      security_group_rules = build_security_group_rules(lb_ports, lb.allow_list.split(','))
+      request_forward.put("/security_groups/#{lb.firewall_security_group.canonical_uuid}", {
        :rule => security_group_rules.join("\n")
       })
-      lb.port = params[:port]
     end
 
-    if !params[:protocol].empty?
-      lb.protocol = params[:protocol]
-    end
-
-    if !params[:instance_protocol].empty?
+    if !params[:instance_protocol].blank?
       lb.instance_protocol = params[:instance_protocol]
     end
 
-    if !params[:instance_port].empty?
+    if !params[:instance_port].blank?
       lb.instance_port = params[:instance_port]
     end
 
-    raise E::InvalidLoadBalancerPublicKey if params[:public_key].nil?
-    raise E::InvalidLoadBalancerPrivateKey if params[:private_key].nil?
+    if !params[:httpchk].blank? && !params[:httpchk][:path].blank?
+      lb.httpchk_path = params[:httpchk][:path]
+      raise E::InvalidLoadBalancerHttpChkPath, lb.errors[:httpchk_path].first if !lb.valid?
+    end
 
-    if lb.is_secure?
-      lb.public_key = params[:public_key]
-      lb.private_key = params[:private_key]
-      raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
-      raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
-      raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
+    if secure_protocol
+      if !params[:public_key].blank? && !params[:private_key].blank?
+        lb.public_key = params[:public_key]
+        lb.private_key = params[:private_key]
+
+        raise E::EncryptionAlgorithmNotSupported if !lb.check_encryption_algorithm
+        raise E::InvalidLoadBalancerPublicKey if !lb.check_public_key
+        raise E::InvalidLoadBalancerPrivateKey if !lb.check_private_key
+      end
     end
 
     if params[:target_vifs] && !params[:target_vifs].empty?
@@ -387,27 +421,34 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       end
     end
 
-    if !params[:description].empty?
+    if !params[:description].blank?
       lb.description = params[:description]
     end
 
-    if !params[:display_name].empty?
+    if !params[:display_name].blank?
       lb.display_name = params[:display_name]
     end
 
     lb.cookie_name = params[:cookie_name]
-
     lb.save_changes
+
+    if !params[:port].blank? && !params[:protocol].blank?
+      lb.remove_inbound
+      inbounds.each {|i| lb.add_inbound(i[:protocol], i[:port]) }
+    end
 
     config_params = {
       :name=>"reload:haproxy",
       :instance_protocol => lb.instance_protocol,
       :instance_port => lb.instance_port,
-      :port => lb.connect_port,
-      :protocol => lb.protocol,
+      :ports => lb_ports - [accept_port],
+      :protocols => lb_protocols,
+      :secure_port => secure_port,
+      :secure_protocol => secure_protocol,
       :balance_algorithm => lb.balance_algorithm,
       :cookie_name => lb.cookie_name,
-      :servers => servers
+      :servers => servers,
+      :httpchk_path => lb.httpchk_path
     }
 
     queue_params = {
@@ -420,14 +461,26 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       if lb.is_secure?
         Dcmgr::Messaging::LoadBalancer.update_ssl_proxy_config({
           :name => 'reload:stud',
-          :accept_port => lb.accept_port,
-          :connect_port => lb.connect_port,
-          :protocol => lb.protocol,
+          :accept_port => accept_port,
+          :connect_port => connect_port,
+          :protocol => secure_protocol,
           :private_key => lb.private_key,
           :public_key => lb.public_key
         }.merge(queue_params))
       end
-      Dcmgr::Messaging::LoadBalancer.update_load_balancer_config(config_params.merge(queue_params))
+
+      config_updatable = nil
+      [:port, :protocol, :balance_algorithm, :cookie_name, :target_vifs, :httpchk].each { |key|
+        if !params[key].blank?
+          config_updatable = true
+          break
+        end
+      }
+
+      if config_updatable
+        Dcmgr::Messaging::LoadBalancer.update_load_balancer_config(config_params.merge(queue_params))
+      end
+
     end
 
     respond_with(R::LoadBalancer.new(lb).generate)
@@ -466,9 +519,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       'REQUEST_URI' => "/api/12.03/instances/#{lb_i.canonical_uuid}.json"
     })
 
-    if body.include? lb_i.canonical_uuid
-      lb.destroy
-    else
+    unless http_status == 200
       raise E::InvalidLoadBalancerState, lb.state
     end
 
@@ -485,7 +536,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
    http_status, headers, body = internal_request("/api/12.03/security_groups.json",{
       'account_id' => @account.canonical_uuid,
       'rule' => rules.join("\n"),
-      'service_type' => SERVICE_TYPE,
+      'service_type' => C::SERVICE_TYPE,
       'description' => '',
       'display_name' => ''
     }, {
@@ -494,11 +545,11 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     body['uuid']
   end
 
-  def update_security_groups(params)
-    path = "/instances/#{params[:id]}"
-    uri = "/api/12.03/#{path}.json"
+  def set_vif_sg(action,vif_id,sg_id)
+    path = "/network_vifs/#{vif_id}/#{action}_security_group"
+    uri = "/api/12.03/#{path}"
     http_status, headers, body = internal_request(uri,{
-      'security_groups' => params[:security_groups]
+      'security_group_id' => sg_id
     }, {
       'PATH_INFO' => "#{path}",
       'REQUEST_METHOD' => 'PUT',
@@ -506,6 +557,65 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
       'REQUEST_PATH' => uri
     })
     body
+  end
+
+  def build_security_group_rules(lb_ports, allow_list)
+    security_group_rules = []
+
+    allow_list.each do |cidr|
+      security_group_rules << "icmp:-1,-1,ip4:#{cidr}"
+      lb_ports.each do |port|
+        security_group_rules << "tcp:#{port},#{port},ip4:#{cidr}"
+      end
+    end
+    security_group_rules
+  end
+
+  def get_inbounds
+    if params[:port].nil? || params[:port].empty? || !params[:port].is_a?(Array)
+      raise E::InvalidLoadBalancerPort
+    end
+
+    if params[:protocol].nil? || params[:protocol].empty? || !params[:protocol].is_a?(Array)
+      raise E::InvalidLoadBalancerProtocol
+    end
+
+    inbounds = []
+    params[:port].each_index { |i|
+      raise 'Invalid param pair' if !params[:protocol][i] || !params[:port][i]
+      inbounds << {
+        :protocol => params[:protocol][i],
+        :port => params[:port][i]
+      }
+    }
+    inbounds
+  end
+
+  def accept_port(inbounds)
+    inbounds.each {|_in|
+      if Dcmgr::Models::LoadBalancer::SECURE_PROTOCOLS.include?(_in[:protocol])
+        return _in[:port]
+      end
+    }
+    nil
+  end
+
+  def connect_port(inbounds)
+    inbounds.each {|_in|
+      if Dcmgr::Models::LoadBalancer::SECURE_PROTOCOLS.include?(_in[:protocol])
+        return _in[:port] == 4433 ? 443 : 4433
+      end
+    }
+    nil
+  end
+
+  def secure_protocol(inbounds)
+    inbounds.each {|_in|
+      if Dcmgr::Models::LoadBalancer::SECURE_PROTOCOLS.include?(_in[:protocol])
+        return _in[:protocol]
+      end
+    }
+    nil
   end
 
 end

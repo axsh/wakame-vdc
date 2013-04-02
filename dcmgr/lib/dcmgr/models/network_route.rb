@@ -3,53 +3,65 @@
 require 'ipaddress'
 
 module Dcmgr::Models
-  class NetworkRoute < BaseNew
-    
-    many_to_one :outer_network, :key => :outer_network_id, :class => Network
-    many_to_one :inner_network, :key => :inner_network_id, :class => Network
+  class NetworkRoute < AccountResource
 
-    many_to_one :outer_vif, :key => :outer_vif_id, :class => NetworkVif
-    many_to_one :inner_vif, :key => :inner_vif_id, :class => NetworkVif
+    many_to_one :outer_lease, :key => :outer_lease_id, :class => NetworkVifIpLease
+    many_to_one :inner_lease, :key => :inner_lease_id, :class => NetworkVifIpLease
 
-    subset(:alives, {:deleted_at => nil})
+    subset(:alives, {:network_routes__deleted_at => nil})
 
     dataset_module {
-      def join_with_routes
-        self.join_table(:left, :network_vifs,
-                        {:network_vifs__id => :network_routes__inner_vif_id} |
-                        {:network_vifs__id => :network_routes__outer_vif_id}).alives
+      def join_with_ip_leases
+        self.join_table(:left, :network_vif_ip_leases,
+                        {:network_vif_ip_leases__id => :network_routes__outer_lease_id} |
+                        {:network_vif_ip_leases__id => :network_routes__inner_lease_id}).alives
       end
 
-      def routes_between_vifs(outer_vif, inner_vif)
-        self.where({:network_routes__outer_vif_id => outer_vif.id} &
-                   {:network_routes__inner_vif_id => inner_vif.id}).select_all(:network_routes).alives
+      def join_with_outer_ip_leases
+        self.join_table(:left, :network_vif_ip_leases,
+                        {:outer_ip_leases__id => :network_routes__outer_lease_id},
+                        :table_alias => :outer_ip_leases).alives
+      end
+
+      def join_with_inner_ip_leases
+        self.join_table(:left, :network_vif_ip_leases,
+                        {:inner_ip_leases__id => :network_routes__inner_lease_id},
+                        :table_alias => :inner_ip_leases).alives
+      end
+
+      def where_with_ip_leases(params)
+        self.join_with_ip_leases.where(params).select_all(:network_routes).alives
+      end
+
+      def between_vifs(outer_vif, inner_vif)
+        ds = self
+        ds = ds.join_with_outer_ip_leases.where(:outer_ip_leases__network_vif_id => outer_vif.id)
+        ds = ds.join_with_inner_ip_leases.where(:inner_ip_leases__network_vif_id => inner_vif.id).select_all(:network_routes).alives
       end
     }
 
-    def outer_ipv4
-      return IPAddress::IPv4::parse_u32(self[:outer_ipv4]) if self[:outer_ipv4]
-      return nil
+    def outer_network
+      lease = self.outer_lease
+      return nil unless lease
+      return lease.network
     end
 
-    def inner_ipv4
-      return IPAddress::IPv4::parse_u32(self[:inner_ipv4]) if self[:inner_ipv4]
-      return nil
+    def inner_network
+      lease = self.inner_lease
+      return nil unless lease
+      return lease.network
     end
 
-    def outer_ipv4_s
-      outer_ipv4.to_s
+    def outer_vif
+      lease = self.outer_lease
+      return nil unless lease
+      return lease.network_vif
     end
 
-    def inner_ipv4_s
-      inner_ipv4.to_s
-    end
-
-    def outer_ipv4_i
-      self[:outer_ipv4]
-    end
-
-    def inner_ipv4_i
-      self[:inner_ipv4]
+    def inner_vif
+      lease = self.inner_lease
+      return nil unless lease
+      return lease.network_vif
     end
 
     #
@@ -57,33 +69,36 @@ module Dcmgr::Models
     #
 
     def validate
+      return if self.deleted_at
+
       [:inner, :outer].each { |arg|
         # We don't validate anything beyond the above when the network
         # route is being deleted.
-        next if self.deleted_at
+        next if @create_options.nil?
+        
+        options = @create_options[arg]
 
         current_vif = self.send((current_vif_sym = "#{arg}_vif".to_sym))
-        current_network = self.send((current_network_sym = "#{arg}_network".to_sym))
-        current_ipv4 = self.send((current_ipv4_sym = "#{arg}_ipv4".to_sym))
 
-        errors.add(current_network_sym, "No #{arg} network defined.") if current_network.nil?
-        errors.add(current_vif_sym, "Cannot use deleted #{arg} network vif.") if current_vif && current_vif.deleted_at
+        if options[:network_vif] && current_vif
+          errors.add(arg, "IP handle's network vif must match the 'network_vif' parameter.") unless current_vif == options[:network_vif]
+        end
 
-        if current_ipv4
-          if current_network && !current_network.include?(current_ipv4)
-            errors.add(current_ipv4_sym, "#{arg} IP address out of range: #{current_ipv4}")
-          end
-
-          # Validate vif ip and ipv4 set when not leasing.
-        else
-          # Validate only allows ipv4 to be nil during pre-create.
-          if @create_options.nil? ||
-              (@create_options[arg][:find_ipv4].nil? && @create_options[arg][:lease_ipv4].nil?)
-            errors.add(current_ipv4_sym, "No #{arg} IPv4 specified.")
-          end
+        if options[:find_service]
+          errors.add(arg, "Network must be defined when using 'find_service'.") unless options[:network]
+          service_vifs = self.get_network_services(options[:network], options[:find_service], options[:network_vif])
+          errors.add(arg, "Could not find network service for supplied network vif.") if service_vifs.empty?
         end
       }
 
+      if self.inner_vif && self.outer_vif
+        errors.add(:inner_vif, "Cannot create route between the same network vif.") if self.inner_vif == self.outer_vif
+      end
+      
+      if self.inner_network && self.outer_network
+        errors.add(:inner_network, "Cannot create route between the same network.") if self.inner_network == self.outer_network
+      end
+      
       super
     end
 
@@ -97,45 +112,48 @@ module Dcmgr::Models
         [:inner, :outer].each { |arg|
           options = @create_options[arg]
 
-          current_vif_id_sym = "#{arg}_vif_id".to_sym
-          current_vif = self.send((current_vif_sym = "#{arg}_vif".to_sym))
-          current_network = self.send((current_network_sym = "#{arg}_network".to_sym))
-          current_ipv4 = self.send((current_ipv4_sym = "#{arg}_ipv4".to_sym))
+          current_release_sym = "release_#{arg}_vif".to_sym
+          current_lease_id_sym = "#{arg}_lease_id".to_sym
+          current_lease = self.send((current_lease_sym = "#{arg}_lease".to_sym))
 
           if options[:find_service]
-            params = {:network_services__name => options[:find_service]}
-            params[:network_vifs__id] = current_vif.id if current_vif
+            vifs = self.get_network_services(options[:network], options[:find_service], options[:network_vif])
+            options[:network_vif] = vifs.first 
+          end
 
-            vifs = current_network.network_vifs_with_service(params)
-            raise("Could not find network service for supplied network vif.") if vifs.empty?
+          if options[:find_ipv4] == :vif_first
+            # Check that current_lease is nil.
+            options[:network_vif] || raise("Network Vif must be included when using ':find_ipv4 => :vif_first'")
+            self[current_lease_id_sym] = (options[:network_vif].ip.first ||
+                                          raise("Could not find #{arg} IPv4 address for network vif.")).id
+          elsif current_lease
+            lease_vif = current_lease.network_vif
 
-            if current_vif.nil?
-              current_vif = vifs.first
-              self[current_vif_id_sym] = current_vif.id
+            if lease_vif.nil?
+              raise("Cannot add IP lease without network vif.") unless options[:network_vif]
+
+              self[current_release_sym] = true
+
+              if !options[:network_vif].add_ip_lease({:ip_lease => current_lease, :allow_multiple => true})
+                raise("Could not add IP lease to network vif.")
+              end
             end
           end
-
-          if options[:lease_ipv4]
-            raise("Cannot pass #{arg} IPv4 address argument when leasing address.") if current_ipv4
-            self[current_ipv4_sym] = (current_vif.lease_ipv4({:multiple => true}) ||
-                                          raise("Could not lease #{arg} IPv4 address")).ipv4_i
-          elsif current_ipv4
-            ip_lease = current_network.find_ip_lease(current_ipv4)
-            raise("Could not find network vif for IPv4 address: #{current_ipv4.to_s}") if ip_lease.nil? || ip_lease.network_vif.nil?
-            self[current_vif_id_sym] = ip_lease.network_vif.id
-
-          elsif options[:find_ipv4] == :vif_first
-            self[current_ipv4_sym] = (current_vif.ip.first ||
-                                      raise("Could not find #{arg} IPv4 address for network vif.")).ipv4_i
-          end
-
-          options.delete(:find_ipv4)
         }
+
+        @create_options = nil
 
         # Validate again to ensure the new values pass the sanity test.
         self.validate
         super
       }
+    end
+
+    def get_network_services(network, service, network_vif)
+      params = {:network_services__name => service}
+      params[:network_vifs__id] = network_vif.id if network_vif
+
+      network.network_vifs_with_service(params)
     end
 
     #
@@ -144,21 +162,15 @@ module Dcmgr::Models
     private
 
     def before_destroy
-      # Add flag to either routes or ip_lease to indicate if we should release.
-      #
-      # Currently just release any ip_lease that isn't on a network_vif belonging to a instance.
-      
+      # Destroy IP leases if they are not owned by a network vif.
       [:inner, :outer].each { |arg|
-        current_vif = self.send("#{arg}_vif")
-        # current_network = self.send("#{arg}_network")
-        current_ipv4 = self.send("#{arg}_ipv4")
+        current_lease = self.send("#{arg}_lease")
 
-        next if current_ipv4.nil?
-        next if current_vif.nil?
-        next if current_vif.instance
+        next if current_lease.nil?
 
-        ip_lease = current_vif.find_ip_lease(current_ipv4)
-        ip_lease.destroy if ip_lease
+        if current_lease.network_vif && self.send("release_#{arg}_vif")
+          current_lease.network_vif.remove_ip_lease(:ip_lease => current_lease)
+        end
       }
 
       super

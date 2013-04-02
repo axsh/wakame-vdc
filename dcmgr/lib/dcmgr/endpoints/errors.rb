@@ -159,5 +159,14 @@ module Dcmgr
     define_error(:MacNotInRange, 400, '180')
     define_error(:IpNotInDhcpRange, 400, '181')
     define_error(:InvalidBackupStorage, 400, '182')
+    define_error(:UnknownIpHandle, 404, '183')
+    define_error(:UnknownIpPool, 404, '184')
+    define_error(:IpHandleInUse, 404, '185')
+    define_error(:InvalidLoadBalancerAllowList, 400, '186')
+    define_error(:UnknownResourceLabel, 404, '187')
+    define_error(:InvalidLoadBalancerProtocol, 400, '188')
+    define_error(:InvalidLoadBalancerHttpChkPath, 400, '189')
+    define_error(:NetworkNotInDcNetwork, 404, '190')
+
   end
 end

@@ -6,6 +6,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'dcmgr/rubygems'
 require 'dcmgr'
 require 'isono'
+require 'socket'
 
 include Isono::Runner::RpcServer
 
@@ -28,7 +29,7 @@ Dcmgr.run_initializers('logger')
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'hva'
-  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
+  node_instance_id "#{Socket.gethostname}"
 
   load_module Isono::NodeModules::NodeHeartbeat
   load_module Dcmgr::NodeModules::InstanceMonitor

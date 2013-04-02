@@ -1,0 +1,21 @@
+# -*- coding: utf-8 -*-
+
+require 'ipaddress'
+require 'dcmgr/endpoints/12.03/responses/ip_pool'
+
+Dcmgr::Endpoints::V1203::CoreAPI.namespace '/ip_handles' do
+
+  get '/:id' do
+    # description "Retrieve details about an IP handle"
+    # params :id required
+    ip_handle = find_by_uuid(:IpHandle, params[:id]) || raise(UnknownUUIDResource, params[:id])
+    raise E::UnknownIpHandle, params[:id] if ip_handle.nil?
+
+    if @account && ip_handle.ip_pool.account_id != @account.canonical_uuid
+      raise(E::UnknownUUIDResource, params[:id])
+    end
+
+    respond_with(R::IpHandle.new(ip_handle).generate)
+  end
+
+end

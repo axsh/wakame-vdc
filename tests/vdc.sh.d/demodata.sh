@@ -140,6 +140,7 @@ network forward nw-demo6 null1
 network forward nw-demo7 null1
 network forward nw-demo8 management
 
+network service external-ip nw-demo1
 network service dhcp nw-demo6 --ipv4=10.102.0.2
 network service dhcp nw-demo7 --ipv4=10.103.0.2
 network service dns nw-demo7 --ipv4=10.103.0.2
@@ -159,6 +160,9 @@ network dhcp addrange nw-demo5 10.101.0.100 10.101.0.130
 network dhcp addrange nw-demo6 10.102.0.10 10.102.0.240
 network dhcp addrange nw-demo7 10.103.0.10 10.103.0.240
 network dhcp addrange nw-demo8 10.1.0.10 10.1.0.240
+
+network pool add --uuid="external" --display-name="external ips" --expire-initial=600 --expire-released=120
+network pool add-dcn ipp-external public
 
 resourcegroup map hng-shhost hn-${node_id}
 resourcegroup map sng-shstor sn-${node_id}

@@ -31,11 +31,9 @@ module Dcmgr::Models
     many_to_one :nat_network, :key => :nat_network_id, :class => self
     one_to_many :inside_networks, :key => :nat_network_id, :class => self
 
-    one_to_many :inner_routes, :key => :inner_network_id, :class=>NetworkRoute do |ds|
-      ds.alives
-    end
-    one_to_many :outer_routes, :key => :outer_network_id, :class=>NetworkRoute do |ds|
-      ds.alives
+    one_to_many :network_routes, :class=>NetworkRoute do |ds|
+      ds = NetworkRoute.dataset.join_with_ip_leases.where(:network_vif_ip_leases__network_id => self.id)
+      ds.select_all(:network_routes).alives
     end
 
     one_to_many :dhcp_range
@@ -72,21 +70,6 @@ module Dcmgr::Models
       NetworkVif.dataset.join_table(:left, :network_services,
                                     :network_vifs__id => :network_services__network_vif_id
                                     ).where(params).select_all(:network_vifs).alives
-    end
-
-    def network_routes(params = {})
-      NetworkRoute.dataset.where({:inner_network_id => self.id} |
-                                 {:outer_network_id => self.id}
-                                 ).where(params).alives
-    end
-
-    def network_routes_with_vifs(params = {})
-      params[:network_id] = self.id
-      params[:deleted_at] = nil if params[:deleted_at].nil?
-      NetworkRoute.dataset.join_table(:left, :network_vifs,
-                                      {:network_vifs__id => :network_routes__inner_vif_id} |
-                                      {:network_vifs__id => :network_routes__outer_vif_id}
-                                      ).where(params).select_all(:network_routes)
     end
 
     def add_service_vif(ipv4)

@@ -11,7 +11,7 @@ module Dcmgr::Endpoints::V1203::Responses
 
     def generate()
       h = @ssh_key_pair.instance_exec {
-        to_hash.merge(:id=>canonical_uuid)
+        to_hash.merge(:id=>canonical_uuid, :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate })
       }
       h[:private_key] = @private_key if @private_key
       h

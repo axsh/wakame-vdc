@@ -31,6 +31,11 @@ config.debug_iptables = false
 # Use ipset for netfilter
 config.use_ipset       = false
 
+# logging service for inside instance.
+config.use_logging_service = true
+config.logging_service_ip = '169.254.169.253'
+config.logging_service_port = 8888
+
 # Path for brctl
 config.brctl_path = '/usr/sbin/brctl'
 

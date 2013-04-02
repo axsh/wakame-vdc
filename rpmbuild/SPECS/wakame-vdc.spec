@@ -210,6 +210,19 @@ Requires: %{oname}-hva-openvz-vmapp-config = %{version}-%{release}
 %description hva-full-vmapp-config
 <insert long description, indented with spaces>
 
+# natbox-vmapp-config
+%package natbox-vmapp-config
+BuildArch: noarch
+Summary: Configuration set for natbox VM appliance
+Group: Development/Languages
+Requires: %{oname} = %{version}-%{release}
+Requires: keepalived
+Requires: bridge-utils
+Requires: kmod-openvswitch
+Requires: openvswitch
+%description  natbox-vmapp-config
+<insert long description, indented with spaces>
+
 # vdcsh
 %package vdcsh
 BuildArch: noarch
@@ -353,6 +366,9 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %post hva-openvz-vmapp-config
 %{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-openvz.conf
 
+%post natbox-vmapp-config
+%{prefix}/%{oname}/rpmbuild/helpers/sysctl.sh < /etc/sysctl.d/30-natbox.conf
+
 %files
 %defattr(-,root,root)
 %{prefix}/%{oname}/
@@ -468,5 +484,11 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config /etc/sysctl.d/30-openvz.conf
 
 %files hva-full-vmapp-config
+
+%files natbox-vmapp-config
+%defattr(-,root,root)
+%config(noreplace) /etc/default/vdc-natbox
+%config /etc/init/vdc-natbox.conf
+%config /etc/sysctl.d/30-natbox.conf
 
 %changelog

@@ -39,6 +39,45 @@ module Dcmgr::Endpoints::V1203::Responses
     end
   end
 
+  class NetworkRoute < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(object)
+      raise ArgumentError if !object.is_a?(Dcmgr::Models::NetworkRoute)
+      @object = object
+    end
+
+    def generate()
+      outer_lease = @object.outer_lease
+      inner_lease = @object.inner_lease
+
+      hash = {
+        :route_type => @object.route_type,
+        :outer => {
+          :network_id => outer_lease.network ? outer_lease.network.canonical_uuid : nil,
+          :network_vif_id => outer_lease.network_vif ? outer_lease.network_vif.canonical_uuid : nil,
+          :ipv4 => outer_lease.ipv4_s,
+        },
+        :inner => {
+          :network_id => inner_lease.network ? inner_lease.network.canonical_uuid : nil,
+          :network_vif_id => inner_lease.network_vif ? inner_lease.network_vif.canonical_uuid : nil,
+          :ipv4 => inner_lease.ipv4_s,
+        },
+      }
+    end
+  end
+
+  class NetworkRouteCollection < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(ds)
+      raise ArgumentError if !ds.is_a?(Sequel::Dataset)
+      @ds = ds
+    end
+
+    def generate()
+      @ds.all.map { |i|
+        NetworkRoute.new(i).generate
+      }
+    end
+  end
+
   class NetworkService < Dcmgr::Endpoints::ResponseGenerator
     def initialize(object)
       raise ArgumentError if !object.is_a?(Dcmgr::Models::NetworkService)

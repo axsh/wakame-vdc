@@ -34,6 +34,7 @@ module Dcmgr::Endpoints::V1203::Responses
             :enabled => self.instance_monitor_attr.enabled,
             :mail_address => self.instance_monitor_attr.recipients.select{|i| i.has_key?(:mail_address) }.map{|i| i[:mail_address] },
           },
+          :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate },
         }
 
         if self.ssh_key_pair

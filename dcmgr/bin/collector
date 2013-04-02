@@ -12,7 +12,7 @@ Dcmgr.load_conf(Dcmgr::Configurations::Dcmgr,
                  File.expand_path('config/dcmgr.conf', Dcmgr::DCMGR_ROOT)
                 ])
 
-Dcmgr.run_initializers('logger', 'sequel')
+Dcmgr.run_initializers('logger', 'sequel', 'isono_messaging', 'sequel_class_method_hook')
 
 manifest = Isono::Runner::RpcServer::DEFAULT_MANIFEST.dup
 manifest.instance_eval do
@@ -24,8 +24,10 @@ manifest.instance_eval do
   load_module Isono::NodeModules::JobCollector
   load_module Dcmgr::NodeModules::HvaCollector
   load_module Dcmgr::NodeModules::StaCollector
+  load_module Dcmgr::NodeModules::NatboxCollector
   load_module Dcmgr::NodeModules::InstanceHA
   load_module Dcmgr::NodeModules::Scheduler
+  load_module Dcmgr::NodeModules::Maintenance
   load_module Dcmgr::NodeModules::EventHook
   load_module Dcmgr::NodeModules::JobQueueProxy
 end
