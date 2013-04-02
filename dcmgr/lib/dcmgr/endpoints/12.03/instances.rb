@@ -31,6 +31,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   end
 
   def set_monitoring_parameters(instance=@instance)
+    dirty = [false, false]
     # instance_monitor_attr row is created at after_save hook in Instance model.
     # Note that the keys should use string for sub hash.
     if !params['monitoring'].is_a?(Hash)
@@ -60,9 +61,13 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
       instance.instance_monitor_attr.changed_columns << :recipients
     end
-    instance.instance_monitor_attr.save_changes
+    if instance.instance_monitor_attr.modified?
+      dirty[0] = true
+      instance.instance_monitor_attr.save_changes
+    end
 
     if monitoring_params.has_key?('process')
+      dirty[1] = true
       process_params = monitoring_params['process']
       case process_params
       when Array, Hash
@@ -96,7 +101,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     on_after_commit do
       # instance.monitoring.refreshed is published only when the instance
       # has been running already.
-      if instance.state.to_s != 'init'
+      if instance.state.to_s != 'init' && dirty.any?
         Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
                                       :args=>[{:instance_id=>instance.canonical_uuid}])
       end
