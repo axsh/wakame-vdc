@@ -30,6 +30,41 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
   end
 
+  def set_monitoring_parameters(instance=@instance)
+    # instance_monitor_attr row is created at after_save hook in Instance model.
+    # Note that the keys should use string for sub hash.
+    if !params['monitoring'].is_a?(Hash)
+      raise E::InvalidParameter, 'monitoring'
+    end
+
+    # Old instance_monitor_attrs table update
+    instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
+    if params['monitoring'].has_key?('mail_address')
+      case params['monitoring']['mail_address']
+      when "", nil
+        # Indicates to clear the recipients.
+        instance.instance_monitor_attr.recipients = []
+      when Array
+        params['monitoring']['mail_address'].each { |v|
+          instance.instance_monitor_attr.tap { |o|
+            o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
+          }
+        }
+      when Hash
+        params['monitoring']['mail_address'].each { |k, v|
+          instance.instance_monitor_attr.tap { |o|
+            o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
+          }
+        }
+      else
+        raise "Invalid mail address"
+      end
+      instance.instance_monitor_attr.changed_columns << :recipients
+    end
+    instance.instance_monitor_attr.save_changes
+    
+  end
+
   # Show list of instances
   # Filter Paramters:
   # start: fixnum, optional
@@ -270,28 +305,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     # instance_monitor_attr row is created at after_save hook in Instance model.
     # Note that the keys should use string for sub hash.
-    if params['monitoring'].is_a?(Hash)
-      instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
-      if params['monitoring'].has_key?('mail_address')
-        case params['monitoring']['mail_address']
-        when "", nil
-          # Indicates to clear the recipients.
-          instance.instance_monitor_attr.recipients = []
-        when Array
-          params['monitoring']['mail_address'].each { |v|
-            instance.instance_monitor_attr.recipients << {:mail_address=>v}
-          }
-        when Hash
-          params['monitoring']['mail_address'].each { |k, v|
-            instance.instance_monitor_attr.recipients << {:mail_address=>v}
-          }
-        else
-          raise "Invalid mail address"
-        end
-        instance.instance_monitor_attr.changed_columns << :recipients
-      end
-      instance.instance_monitor_attr.save_changes
-    end
+    set_monitoring_parameters(instance)
 
     instance.state = :scheduling
     instance.save_changes
@@ -443,33 +457,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
 
-    if params['monitoring'].is_a?(Hash)
-      if params['monitoring']['enabled']
-        instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
-      end
-      # Do not add mail_address key when you don't want to change
-      # existing recipient list.
-      if params['monitoring'].has_key?('mail_address')
-        case params['monitoring']['mail_address']
-        when "", nil
-          # Indicates to clear the recipients.
-          instance.instance_monitor_attr.recipients.clear
-        when Array
-          instance.instance_monitor_attr.tap { |o|
-            o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
-          }
-        when Hash
-          instance.instance_monitor_attr.tap { |o|
-            o.recipients = params['monitoring']['mail_address'].map {|k,v| {:mail_address=>v}}
-          }
-        else
-          raise "Invalid monitoring recipient: #{params['monitoring']['mail_address']}"
-        end
-        instance.instance_monitor_attr.changed_columns << :recipients
-      end
-      
-      instance.instance_monitor_attr.save_changes
-    end
+    set_monitoring_parameters(instance)
     
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
