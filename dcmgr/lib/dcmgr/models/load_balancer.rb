@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 require 'openssl'
+require 'ipaddr'
 
 module Dcmgr::Models
   class LoadBalancer < AccountResource
-
-    PROTOCOLS = ['http', 'tcp'].freeze
-    SECURE_PROTOCOLS = ['https', 'ssl'].freeze
-    SUPPORTED_PROTOCOLS = (PROTOCOLS + SECURE_PROTOCOLS).freeze
-    SUPPORTED_INSTANCE_PROTOCOLS = PROTOCOLS
+    include Dcmgr::Constants::LoadBalancer
 
     taggable 'lb'
     many_to_one :instance
     one_to_many :load_balancer_targets, :key => :load_balancer_id do |ds|
+      ds.filter(:is_deleted => 0)
+    end
+
+    one_to_many :load_balancer_inbounds, :key => :load_balancer_id do |ds|
       ds.filter(:is_deleted => 0)
     end
 
@@ -36,16 +37,16 @@ module Dcmgr::Models
     class RequestError < RuntimeError; end
 
     def validate
-      validates_includes SUPPORTED_PROTOCOLS, :protocol
       validates_includes SUPPORTED_INSTANCE_PROTOCOLS, :instance_protocol
-      validates_includes 1..65535, :port
-      validates_includes 1..65535, :instance_port
+      validates_includes 0..65535, :instance_port
       validates_private_key
       validates_public_key
+      validates_allow_list
+      validates_httpchk_path
     end
 
     def validates_private_key
-      return true if PROTOCOLS.include? protocol
+      return true unless is_secure?
 
       if !check_encryption_algorithm
         errors.add(:private_key, "Doesn't support Algorithm")
@@ -58,11 +59,60 @@ module Dcmgr::Models
     end
 
     def validates_public_key
-      return true if PROTOCOLS.include? protocol
+      return true unless is_secure?
 
       if !check_public_key
         errors.add(:public_key, "Invalid parameter")
       end
+    end
+
+    def validates_allow_list
+
+      if allow_list.is_a?(String)
+        ciders = allow_list.split(',')
+      elsif allow_list.is_a?(Array)
+        ciders = allow_list
+      else
+        errors.add(:allow_list, 'Invalid parameter')
+        return false
+      end
+
+      if ciders.empty?
+        errors.add(:allow_list, 'Empty CIDR')
+        return false
+      end
+
+      ciders.each do |cider|
+        begin
+          ipaddr = IPAddr.new cider
+          raise unless ipaddr.ipv4?
+        rescue => e
+          errors.add(:allow_list, "Invalid CIDR #{cider} or isn't ipv4")
+          return false
+        end
+      end
+      true
+    end
+
+    def validates_httpchk_path
+      return true if httpchk_path.blank?
+
+      begin
+        URI.parse(httpchk_path)
+      rescue URI::InvalidURIError => e
+        errors.add(:httpchk_path, "Bad httpchk path: #{httpchk_path}")
+        return false
+      end
+      true
+    end
+
+    # The instance security group is always the one without rules
+    def instance_security_group
+      self.global_vif.security_groups.find {|g| g.rule.empty? }
+    end
+
+    def firewall_security_group
+      self.global_vif.security_groups.find {|g| !g.rule.empty? }
     end
 
     def state
@@ -90,20 +140,12 @@ module Dcmgr::Models
        }
     end
 
-    def accept_port
-      self.port
-    end
-
-    def connect_port
-      if self.is_secure?
-        self.port == 4433 ? 443 : 4433
-      else
-        self.port
-      end
-    end
-
     def is_secure?
-      SECURE_PROTOCOLS.include? self.protocol
+      if !private_key.blank? && !public_key.blank?
+        true
+      else
+        false
+      end
     end
 
     def add_target(network_vif_id)
@@ -116,7 +158,7 @@ module Dcmgr::Models
     end
 
     def remove_targets(network_vif_uuids)
-      targets = LoadBalancerTarget.filter(:network_vif_id => network_vif_uuids, :is_deleted => 0).all
+      targets = LoadBalancerTarget.filter(:network_vif_id => network_vif_uuids, :is_deleted => 0, :load_balancer => self).all
       targets.each {|lbt|
         lbt.destroy
       }
@@ -140,6 +182,33 @@ module Dcmgr::Models
       servers
     end
 
+    def add_inbound(protocol, port)
+      lbi = LoadBalancerInbound.new
+      lbi.load_balancer_id = self.id
+      lbi.protocol = protocol
+      lbi.port = port
+      lbi.save
+      lbi
+    end
+
+    def inbounds
+      inbounds = []
+      load_balancer_inbounds.each do |lbi|
+        inbounds << {
+          :protocol => lbi.protocol,
+          :port => lbi.port
+        }
+      end
+      inbounds
+    end
+
+    def remove_inbound
+      load_balancer_inbounds.each {|ibi|
+        ibi.destroy
+      }
+      load_balancer_inbounds
+    end
+
     # override Sequel::Model#delete not to delete rows but to set
     # delete flags.
     def delete
@@ -157,6 +226,45 @@ module Dcmgr::Models
 
     def target_network(network_vif_id)
       LoadBalancerTarget.where({:load_balancer_id => self.id, :network_vif_id => network_vif_id}).first
+    end
+
+    def get_reload_config(values = {})
+      config('reload:haproxy', values)
+    end
+
+    def ports
+      inbounds.collect {|i| i[:port] }
+    end
+
+    def protocols
+      inbounds.collect {|i| i[:protocol] }
+    end
+
+    def accept_secure_port
+      inbounds.each {|_in|
+        if SECURE_PROTOCOLS.include?(_in[:protocol])
+          return _in[:port] == 4433 ? 443 : 4433
+        end
+      }
+      nil
+    end
+
+    def secure_port
+      inbounds.each {|_in|
+        if SECURE_PROTOCOLS.include?(_in[:protocol])
+          return _in[:port]
+        end
+      }
+      nil
+    end
+
+    def secure_protocol
+      inbounds.each {|_in|
+        if SECURE_PROTOCOLS.include?(_in[:protocol])
+          return _in[:protocol]
+        end
+      }
+      nil
     end
 
     def check_public_key
@@ -192,6 +300,48 @@ module Dcmgr::Models
           false
         end
       end
+    end
+
+    def global_vif
+      self.instance.network_vif_dataset.where(:device_index => PUBLIC_DEVICE_INDEX).first
+    end
+
+    private
+
+    def after_destroy
+      remove_inbound
+    end
+
+    def config(name, values = {})
+      config_params = {}
+
+      # setting command name
+      config_params.merge!({
+        :name => name
+      })
+
+      # engine params
+      config_params.merge!({
+        :ports => ports - [secure_port],
+        :protocols => protocols,
+        :secure_port => accept_secure_port,
+        :secure_protocol => secure_protocol,
+        :instance_protocol => instance_protocol,
+        :instance_port => instance_port,
+        :balance_algorithm => balance_algorithm,
+        :cookie_name => cookie_name,
+        :servers => get_target_servers,
+        :httpchk_path => httpchk_path
+      })
+
+      # amqp message params
+      config_params.merge!({
+        :topic_name => topic_name,
+        :queue_options => queue_options,
+        :queue_name => queue_name,
+      })
+
+      config_params
     end
 
   end
