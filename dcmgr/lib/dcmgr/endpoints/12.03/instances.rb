@@ -37,32 +37,70 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       raise E::InvalidParameter, 'monitoring'
     end
 
+    monitoring_params = params['monitoring']
+
     # Old instance_monitor_attrs table update
-    instance.instance_monitor_attr.enabled = (params['monitoring']['enabled'] == 'true')
-    if params['monitoring'].has_key?('mail_address')
-      case params['monitoring']['mail_address']
+    instance.instance_monitor_attr.enabled = (monitoring_params['enabled'] == 'true')
+    if monitoring_params.has_key?('mail_address')
+      mail_addrs = monitoring_params['mail_address']
+      case mail_addrs
       when "", nil
         # Indicates to clear the recipients.
         instance.instance_monitor_attr.recipients = []
       when Array
-        params['monitoring']['mail_address'].each { |v|
-          instance.instance_monitor_attr.tap { |o|
-            o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
-          }
+        instance.instance_monitor_attr.tap { |o|
+          o.recipients = mail_addrs.map {|v| {:mail_address=>v}}
         }
       when Hash
-        params['monitoring']['mail_address'].each { |k, v|
-          instance.instance_monitor_attr.tap { |o|
-            o.recipients = params['monitoring']['mail_address'].map {|v| {:mail_address=>v}}
-          }
+        instance.instance_monitor_attr.tap { |o|
+          o.recipients = mail_addrs.map {|k, v| {:mail_address=>v}}
         }
       else
-        raise "Invalid mail address"
+        raise E::InvalidParameter, "monitoring.mail_address"
       end
       instance.instance_monitor_attr.changed_columns << :recipients
     end
     instance.instance_monitor_attr.save_changes
-    
+
+    if monitoring_params.has_key?('process')
+      process_params = monitoring_params['process']
+      case process_params
+      when Array, Hash
+        if process_params.is_a?(Hash)
+          process_params = process_params.values
+        end
+
+        process_params.delete("")
+        
+        if process_params.empty?
+          instance.clear_labels('monitoring.process.%')
+        else
+          process_params.each_with_index { |i, idx|
+            instance.set_label("monitoring.process.#{idx}.enabled", (i['enabled'] == 'true').to_s)
+            instance.set_label("monitoring.process.#{idx}.name", i['name'])
+          }
+          deleted_item_num = instance.resource_labels_dataset.grep(:name, 'monitoring.process.%').count - process_params.size
+          if deleted_item_num >= 0
+            (process_params.size .. (process_params.size + deleted_item_num)).each { |idx|
+              if instance.label("monitoring.process.#{idx}.enabled")
+                instance.unset_labels("monitoring.process.#{idx}.enabled", "monitoring.process.#{idx}.name")
+              end
+            }
+          end
+        end
+      else
+        raise E::InvalidParameter, "monitoring.process"
+      end
+    end
+
+    on_after_commit do
+      # instance.monitoring.refreshed is published only when the instance
+      # has been running already.
+      if instance.state.to_s != 'init'
+        Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                      :args=>[{:instance_id=>instance.canonical_uuid}])
+      end
+    end
   end
 
   # Show list of instances
