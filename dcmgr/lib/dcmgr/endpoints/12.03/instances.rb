@@ -12,7 +12,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   register V1203::Helpers::ResourceLabel
   enable_resource_label(M::Instance)
-  
+
   def check_network_ip_combo(network_id,ip_addr)
     nw = M::Network[network_id]
     raise E::UnknownNetwork, network_id if nw.nil?
@@ -304,13 +304,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     instance.save
 
+    #
     unless params['labels'].blank?
       labels_param_each_pair(params['labels']) do |name, value|
         instance.set_label(name, value)
       end
     end
 
-    # 
+    #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -454,12 +455,18 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     raise E::UnknownInstance if instance.nil?
 
     if params[:security_groups].is_a?(Array) || params[:security_groups].is_a?(String)
+      logger.warn "This code is deprecated and will be removed. Use /network_vifs/:vif_id/add_security_group and /network_vifs/:vif_id/remove_security_group instead."
+      # Setting only security groups that are of the same service type as the instance
+      # This is to work around a bug where LB security groups would be deleted if the instance
+      # is registered to a load balancer
+      st = instance.service_type
+
       security_group_uuids = [params[:security_groups]].flatten.select{|i| !(i.nil? || i == "") }
 
       groups = security_group_uuids.map {|group_id| find_by_uuid(:SecurityGroup, group_id)}
       # Remove old security groups
       instance.nic.each { |vnic|
-        vnic.security_groups_dataset.each { |group|
+        vnic.security_groups_dataset.filter(:service_type => st).each { |group|
           unless security_group_uuids.member?(group.canonical_uuid)
             vnic.remove_security_group(group)
             on_after_commit do
