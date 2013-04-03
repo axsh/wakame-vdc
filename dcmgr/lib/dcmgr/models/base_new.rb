@@ -528,7 +528,8 @@ module Dcmgr::Models
         end
         
         def unset_label(name)
-          label(name).destroy
+          l = label(name)
+          l.destroy if l
         end
 
         def to_hash(*args)
