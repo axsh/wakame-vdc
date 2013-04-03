@@ -159,7 +159,7 @@ module Dcmgr::Models
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :vif=>[],
-                 :ssh_key_data => self.ssh_key_pair.to_hash,
+                 :ssh_key_data => self.ssh_key_pair ? self.ssh_key_pair.to_hash : nil,
               })
       h[:volume]={}
       if self.volume

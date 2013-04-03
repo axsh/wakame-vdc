@@ -2,7 +2,7 @@
 
 module Dcmgr::Models
   # Network interface for running instance.
-  class IpHandle < AccountResource
+  class IpHandle < BaseNew
     include Dcmgr::Logger
     taggable 'ip'
 
