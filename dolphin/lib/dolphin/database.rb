@@ -22,6 +22,9 @@ module Dolphin
       Dolphin::DataBase.create(Dolphin.settings['database']['adapter'].to_sym, {
         :class => self
       }).connect
+
+    def hosts
+      Dolphin.settings['database']['hosts']
     end
 
     def self.create(adapter, options)
@@ -29,12 +32,12 @@ module Dolphin
         when :cassandra
           # TODO: more better code
           column_family = options[:class].class.name.split('::')[2].downcase + 's'
-          uri = [Dolphin.settings['database']['host'], Dolphin.settings['database']['port']].join(':')
           klass = Dolphin::DataBase::Cassandra
           config = {
+            :hosts => Dolphin.settings['database']['hosts'],
+            :port => Dolphin.settings['database']['port'],
             :keyspace => Dolphin::DataBase::Cassandra::KEYSPACE,
-            :cf => column_family,
-            :uri => uri
+            :cf => column_family
           }
         else
           raise NotImplementedError

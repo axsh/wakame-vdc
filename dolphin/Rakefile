@@ -15,12 +15,13 @@ namespace :db do
   namespace :cassandra do
 
     db_config = Dolphin.settings['database']
-    @host = db_config['host']
+    @host = db_config['hosts'].split(',')[0]
     @port = db_config['port']
 
     @connect = Dolphin::DataBase::Cassandra.new({
       :keyspace => Dolphin::DataBase::Cassandra::KEYSPACE,
-      :uri => "#{@host}:#{@port}"
+      :hosts => @host,
+      :port => @port
     }).connect
 
     desc 'Clean cassandra'
