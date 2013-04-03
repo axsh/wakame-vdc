@@ -35,7 +35,7 @@ module Dcmgr::SpecConvertor
   class LoadBalancer < SpecConvertor
     def convert(engine, max_connection)
       if engine != 'haproxy'
-        raise ArgumentError, "#{engine} isn't implmented"
+        raise ArgumentError, "#{engine} engine isn't implemented"
       end
       load('load_balancer.yml', max_connection.to_i)
     end
