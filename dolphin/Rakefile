@@ -26,10 +26,6 @@ namespace :db do
 
     desc 'Clean cassandra'
     task :clean do |tasks|
-      config = {
-        :keyspace => 'dolphin',
-        :uri => '192.168.121.162:9160'
-      }
       begin
         @connect.drop_keyspace(Dolphin::DataBase::Cassandra::KEYSPACE)
       rescue => e
