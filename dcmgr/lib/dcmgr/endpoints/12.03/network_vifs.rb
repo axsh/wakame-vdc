@@ -275,10 +275,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       raise(E::InvalidParameter, e.message)
     end
 
-    on_after_commit do
-      Dcmgr.messaging.event_publish("vnet/network_route/created", :args=>[route.id])
-    end
-
     respond_with({ :network_id => route.outer_network.canonical_uuid,
                    :vif_id => route.outer_vif.canonical_uuid,
                    :ip_handle_id => outer_ip_handle.canonical_uuid,
@@ -305,8 +301,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     result = []
 
-    deleted_ids = ds.map(&:id)
-
     ds.each { |route|
       result << {
         :network_id => route.outer_network.canonical_uuid,
@@ -318,11 +312,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
       route.destroy
     }
 
-    on_after_commit do
-      Dcmgr.messaging.event_publish("vnet/network_route/deleted",
-                                    :args=>deleted_ids)
-    end
-    
     respond_with(result)
   end
 
