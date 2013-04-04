@@ -1,0 +1,10 @@
+uuid=cassandra
+uri=http://dlc.wakame.axsh.jp/demo/vmapp/cassandra/cassandra.x86_64.openvz.md.raw.tar.gz
+arch=x86_64
+localname=cassandra.x86_64.openvz.md.raw.tar.gz
+storetype=local
+file_format=raw
+container_format=tgz
+root_device=label:root
+service_type=std
+display_name=cassandra
