@@ -44,12 +44,6 @@ module Dcmgr::VNet::NetworkModes
       tasks += self.netfilter_isolation_tasks(vnic,friends,node)
       tasks += self.netfilter_nat_tasks(vnic,network,node)
 
-      # Logging Service
-      tasks += self.netfilter_logging_service_tasks(vnic, host_addr)
-
-      # Accept ip traffic from the gateway that isn't blocked by other tasks
-      tasks << AcceptIpFromGateway.new(network[:ipv4_gw]) unless network[:ipv4_gw].nil?
-
       # Security group rules
       security_groups.each { |secgroup|
         tasks += self.netfilter_secgroup_tasks(secgroup)
