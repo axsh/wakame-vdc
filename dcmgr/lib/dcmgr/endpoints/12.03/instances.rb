@@ -33,9 +33,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   def set_monitoring_parameters(instance=@instance)
     dirty = [false, false]
-    # instance_monitor_attr row is created at after_save hook in Instance model.
-    # Note that the keys should use string for sub hash.
-    if !params['monitoring'].is_a?(Hash)
+    # monitoring parameter is optional.
+    if params['monitoring'].nil?
+      return
+    elsif !params['monitoring'].is_a?(Hash)
       raise E::InvalidParameter, 'monitoring'
     end
 
