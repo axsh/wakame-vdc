@@ -528,11 +528,20 @@ module Dcmgr::Models
         end
         
         def unset_label(name)
-          label(name).destroy
+          l = label(name)
+          l.destroy if l
         end
 
         def to_hash(*args)
           super.to_hash.merge({:labels=>self.resource_labels_dataset.all.map{|l| l.to_hash }})
+        end
+
+        def clear_labels(name_pattern=nil)
+          if name_pattern.is_a?(String)
+            self.resource_labels_dataset.grep(:name, name_pattern).each { |l| l.destroy }
+          else
+            self.remove_all_resource_labels
+          end
         end
       end
     end

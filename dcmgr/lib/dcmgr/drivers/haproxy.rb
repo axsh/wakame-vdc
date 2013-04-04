@@ -19,13 +19,15 @@ module Dcmgr
       end
 
       def initialize(mode)
-        raise "Unknown mode." unless ['http', 'tcp'].include? mode
+        raise "Unknown mode. #{mode}" unless ['http', 'tcp'].include? mode
 
         @listen = {}
         @listen[:servers] = {}
+        @listen[:bind] = []
+        @listen[:acl] = []
+        @listen[:reqadd] = []
         set_balance_algorithm('leastconn')
         set_name('balancer')
-        set_bind('*', 80)
         @mode = mode
 
         @listen
@@ -92,11 +94,40 @@ module Dcmgr
       end
 
       def set_bind(address, port)
-        @listen[:bind] = "#{address}:#{port}"
+        @listen[:bind] << "#{address}:#{port}"
       end
 
       def set_name(name)
         @listen[:name] = name
+      end
+
+      def set_acl(name, criterion, value)
+        @listen[:acl] << "#{name} #{criterion} #{value}"
+      end
+
+      def set_x_forwarded_proto(protocol, ports)
+        case protocol
+          when 'https'
+            set_acl('is-https', 'dst_port', ports)
+            @listen[:reqadd] << 'X-Forwarded-Proto:\ https if is-https'
+          when 'http'
+            ports.each do |port|
+              set_acl('is-http', 'dst_port', port)
+            end
+            @listen[:reqadd] << 'X-Forwarded-Proto:\ http if is-http'
+        end
+      end
+
+      def set_httpchk_path(path)
+        @listen[:httpchk_path] = path
+      end
+
+      def is_http?
+        @mode === 'http'
+      end
+
+      def is_tcp?
+        @mode === 'tcp'
       end
 
       private
