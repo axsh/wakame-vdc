@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/instance'
-require 'yaml'
+require 'multi_json'
 
 # To validate ip address syntax in the vifs parameter
 require 'ipaddress'
@@ -84,15 +84,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         else
           process_params.each_with_index { |i, idx|
             instance.set_label("monitoring.process.#{idx}.enabled", (i['enabled'] == 'true').to_s)
+            if i['name'].blank?
+              raise E::InvalidParameter, "monitoring.process.#{idx}.name"
+            end
             instance.set_label("monitoring.process.#{idx}.name", i['name'])
+            # craft UUID for process monitoring item from instance parameter.
+            instance.set_label("monitoring.process.#{idx}.uuid", "pmon-#{instance[:uuid] + idx.to_s}" )
             if i['params'].is_a?(Hash)
-              instance.set_label("monitoring.process.#{idx}.params", ::YAML.dump(i['params']))
+              instance.set_label("monitoring.process.#{idx}.params", ::MultiJson.dump(i['params']))
             end
           }
           deleted_item_num = instance.resource_labels_dataset.grep(:name, 'monitoring.process.%').count - process_params.size
           if deleted_item_num >= 0
             (process_params.size .. (process_params.size + deleted_item_num)).each { |idx|
-              ["monitoring.process.#{idx}.enabled", "monitoring.process.#{idx}.name", "monitoring.process.#{idx}.params"].each { |n|
+              ["monitoring.process.#{idx}.enabled",
+               "monitoring.process.#{idx}.name",
+               "monitoring.process.#{idx}.params",
+               "monitoring.process.#{idx}.uuid"].each { |n|
                 instance.unset_label(n)
               }
             }

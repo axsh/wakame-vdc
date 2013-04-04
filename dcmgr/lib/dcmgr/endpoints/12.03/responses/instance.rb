@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/network_vif'
+require 'multi_json'
 
 module Dcmgr::Endpoints::V1203::Responses
   class Instance < Dcmgr::Endpoints::ResponseGenerator
@@ -33,9 +34,26 @@ module Dcmgr::Endpoints::V1203::Responses
           :monitoring => {
             :enabled => self.instance_monitor_attr.enabled,
             :mail_address => self.instance_monitor_attr.recipients.select{|i| i.has_key?(:mail_address) }.map{|i| i[:mail_address] },
+            :process => [],
           },
           :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate },
         }
+
+        tmp = {}
+        self.resource_labels_dataset.grep(:name, 'monitoring.process.%').each { |l|
+          dummy, dummy, idx, key = l.name.split('.', 4)
+          tmp[idx] ||= {:enabled=>false, :uuid=>nil, :params=>{}}
+          case key
+          when 'params'
+            tmp[idx][:params]=MultiJson.load(l.value)
+          when 'enabled'
+            tmp[idx][:enabled] = (l.value == 'true')
+          else
+            tmp[idx][key]= l.value
+          end
+        }
+        
+        h[:monitoring][:process] = tmp.values
 
         if self.ssh_key_pair
           h[:ssh_key_pair] = {
