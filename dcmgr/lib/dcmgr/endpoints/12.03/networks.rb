@@ -20,20 +20,21 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
     # params limit, fixnum, optional
     ds = M::Network.dataset
 
-    if params[:account_id]
-      ds = ds.filter(:account_id=>params[:account_id])
-    end
+    ds = ds.filter(:networks__account_id => params[:account_id]) if params[:account_id]
+    ds = ds.filter(:networks__display_name => params[:display_name]) if params[:display_name]
+    ds = ds.where_with_services(:network_services__name => params[:has_service]) if params[:has_service]
+    ds = ds.where_with_dc_networks(:dc_networks__uuid => M::DcNetwork.trim_uuid(params[:dc_network])) if params[:dc_network]
 
-    ds = datetime_range_params_filter(:created, ds)
-    ds = datetime_range_params_filter(:deleted, ds)
+    ds = datetime_range_params_filter(:networks__created, ds)
+    ds = datetime_range_params_filter(:networks__deleted, ds)
 
     if params[:service_type]
       validate_service_type(params[:service_type])
-      ds = ds.filter(:service_type=>params[:service_type])
+      ds = ds.filter(:networks__service_type=>params[:service_type])
     end
 
-    if params[:display_name]
-      ds = ds.filter(:display_name=>params[:display_name])
+    if params[:dc_network]
+      dc_network_id = M::DcNetwork
     end
 
     collection_respond_with(ds) do |paging_ds|
@@ -375,6 +376,23 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/networks' do
 
     service.destroy
     respond_with({})
+  end
+
+  get '/:id/routes' do
+    # description 'List services on this network'
+    # params start, fixnum, optional
+    # params limit, fixnum, optional
+    nw = find_by_uuid(M::Network, params[:id])
+    raise E::UnknownNetwork, params[:id] if nw.nil?
+
+    filter = {:network_vif_ip_leases__network_id => nw.id}
+    filter[:network_routes__route_type] = params[:route_type] if params[:route_type]
+
+    ds = M::NetworkRoute.dataset.where_with_ip_leases(filter)
+
+    collection_respond_with(ds) do |paging_ds|
+      R::NetworkRouteCollection.new(paging_ds).generate
+    end
   end
 
   # # Make GRE tunnels, currently used for testing purposes.

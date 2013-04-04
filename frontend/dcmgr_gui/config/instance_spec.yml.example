@@ -8,6 +8,11 @@ vz.large:
   memory_size: 256
   hypervisor: 'openvz'
   quota_weight: 2.0
+vz.xlarge:
+  cpu_cores: 2
+  memory_size: 1536
+  hypervisor: 'openvz'
+  quota_weight: 2.0
 kvm.small:
   cpu_cores: 1
   memory_size: 256
@@ -18,6 +23,11 @@ kvm.large:
   memory_size: 256
   hypervisor: 'kvm'
   quota_weight: 2.0
+kvm.xlarge:
+  cpu_cores: 2
+  memory_size: 1536
+  hypervisor: 'kvm'
+  quota_weight: 2.0
 lxc.small:
   cpu_cores: 1
   memory_size: 256
@@ -26,5 +36,10 @@ lxc.small:
 lxc.large:
   cpu_cores: 2
   memory_size: 256
+  hypervisor: 'lxc'
+  quota_weight: 2.0
+lxc.xlarge:
+  cpu_cores: 2
+  memory_size: 1536
   hypervisor: 'lxc'
   quota_weight: 2.0

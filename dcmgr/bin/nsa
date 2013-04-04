@@ -14,6 +14,7 @@ require 'isono'
 require 'erb'
 require 'eventmachine'
 require 'ipaddress'
+require 'socket'
 
 class SuperviseDnsmasq < Isono::NodeModules::Base
   include Dcmgr::Logger
@@ -189,10 +190,13 @@ end
 
 include Isono::Runner::RpcServer
 
+# FIXME: use Dcmgr::Initializer and Dcmgr::Confiuraiton.
+load File.expand_path('../../config/initializers/logger.rb', __FILE__)
+
 manifest = DEFAULT_MANIFEST.dup
 manifest.instance_eval do
   node_name 'nsa'
-  node_instance_id "#{Isono::Util.default_gw_ipaddr}"
+  node_instance_id "#{Socket.gethostname}"
   load_module Isono::NodeModules::NodeHeartbeat
   load_module SuperviseDnsmasq
 

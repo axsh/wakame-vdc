@@ -181,6 +181,8 @@ module Dcmgr::Endpoints::V1203
 
     load_namespace('instances')
     load_namespace('images')
+    load_namespace('ip_handles')
+    load_namespace('ip_pools')
     load_namespace('host_nodes')
     load_namespace('volumes')
     load_namespace('volume_snapshots')

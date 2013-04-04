@@ -38,5 +38,34 @@ function unprevent_daemons_starting() {
   done
 }
 
+function prevent_interfaces_booting() {
+  local chroot_dir=$1; shift
+  [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+  #
+  # specific nic
+  #   prevent_interfaces_booting ${chroot_dir} eth0 eth1 eth2
+  # wildcard
+  #   prevent_interfaces_booting ${chroot_dir} eth*
+  #
+  local ifcfg_path
+
+  while [[ $# -ne 0 ]]; do
+    # extract file path(s) even if wirldcard used
+    for ifcfg_path in ${chroot_dir}/etc/sysconfig/network-scripts/ifcfg-${1}; do
+      sed -i -e "s/^ONBOOT=yes/ONBOOT=no/" ${ifcfg_path}
+      egrep -q "^ONBOOT=" ${ifcfg_path} || { echo ONBOOT=no >> ${ifcfg_path}; }
+    done
+
+    shift
+  done
+}
+
+function flush_etc_sysctl() {
+  local chroot_dir=$1; shift
+  [[ -d "${chroot_dir}" ]] || { echo "[ERROR] directory not found: ${chroot_dir} (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
+
+  : > ${chroot_dir}/etc/sysctl.conf
+}
+
 ##
 __FUNCTIONS_DISTRO_INCLUDED__=1

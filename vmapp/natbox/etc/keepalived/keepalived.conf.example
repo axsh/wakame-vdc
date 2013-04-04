@@ -1,0 +1,40 @@
+! Configuration File for keepalived
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface br0
+    virtual_router_id 51
+    priority 100
+    nopreempt
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    virtual_ipaddress {
+        10.1.3.100/24 dev br0
+    }
+}
+
+vrrp_instance VI_2 {
+    state BACKUP
+    interface br1
+    virtual_router_id 52
+    priority 100
+    nopreempt
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    virtual_ipaddress {
+        10.1.4.100/24 dev br1
+    }
+}
+
+vrrp_sync_group VG {
+  group {
+    VI_1
+    VI_2
+  }
+}

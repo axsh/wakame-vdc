@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'ipaddress'
 module Dcmgr::Models
-  class NetworkVifIpLease < BaseNew
+  class NetworkVifIpLease < AccountResource
     class RequestError < RuntimeError; end
 
     TYPE_AUTO=0
@@ -16,6 +16,7 @@ module Dcmgr::Models
 
     many_to_one :network
     many_to_one :network_vif
+    many_to_one :ip_handle
 
     subset(:alives, {:deleted_at => nil})
 
@@ -34,7 +35,12 @@ module Dcmgr::Models
           unless IpLease.filter(:network_id=>self.network_id, :ipv4=>self.ipv4_i).first.nil?
             errors.add(:ipv4, "IP address #{addr} already exists")
           end
+
+          if self.ip_handle && self.network && !self.ip_handle.ip_pool.has_dc_network(self.network.dc_network)
+            errors.add(:ip_handle, "IP pool does not have the right DC network.")
+          end
         end
+
         # Set IP address string canonicalized by IPAddress class.
         self[:ipv4] = addr.to_i
       rescue => e

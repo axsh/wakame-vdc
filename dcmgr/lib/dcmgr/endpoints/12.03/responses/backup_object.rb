@@ -27,6 +27,7 @@ module Dcmgr::Endpoints::V1203::Responses
           :created_at => created_at,
           :updated_at => updated_at,
           :deleted_at => deleted_at,
+          :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate },
         }
       }
     end

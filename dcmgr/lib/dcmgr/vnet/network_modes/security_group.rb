@@ -9,7 +9,15 @@ module Dcmgr::VNet::NetworkModes
     def netfilter_all_tasks(vnic,network,friends,security_groups,node)
       tasks = []
 
-      host_addr = Isono::Util.default_gw_ipaddr
+      # ***work-around***
+      # TODO
+      # - multi host nic
+      host_addr = begin
+                    Isono::Util.default_gw_ipaddr
+                  rescue => e
+                    '127.0.0.1'
+                  end
+
       enable_logging = Dcmgr.conf.packet_drop_log
       ipset_enabled = Dcmgr.conf.use_ipset
 
@@ -127,5 +135,5 @@ module Dcmgr::VNet::NetworkModes
       [AcceptARPFromFriends.new(vnic[:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")]
     end
   end
-  
+
 end

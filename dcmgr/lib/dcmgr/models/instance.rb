@@ -17,7 +17,8 @@ module Dcmgr::Models
 
     plugin ArchiveChangedColumn, :histories
     plugin ChangedColumnEvent, :accounting_log => [:state, :cpu_cores, :memory_size]
-
+    plugin Plugins::ResourceLabel
+      
     subset(:lives, {:terminated_at => nil})
     subset(:alives, {:terminated_at => nil})
     subset(:runnings, {:state => 'running'})
@@ -142,6 +143,12 @@ module Dcmgr::Models
       self.save
     end
 
+    def after_destroy
+      if self.service_type == Dcmgr::Constants::LoadBalancer::SERVICE_TYPE
+        LoadBalancer.filter(:instance_id=> self.id).destroy
+      end
+    end
+
     # dump column data as hash with details of associated models.
     # this is for internal use.
     def to_hash
@@ -152,7 +159,7 @@ module Dcmgr::Models
                  :ips => instance_nic.map { |n| n.ip.map {|i| unless i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :nat_ips => instance_nic.map { |n| n.ip.map {|i| if i.is_natted? then i.ipv4 else nil end} if n.ip }.flatten.compact,
                  :vif=>[],
-                 :ssh_key_data => self.ssh_key_pair.to_hash,
+                 :ssh_key_data => self.ssh_key_pair ? self.ssh_key_pair.to_hash : nil,
               })
       h[:volume]={}
       if self.volume
@@ -288,14 +295,14 @@ module Dcmgr::Models
       sched.schedule(nic)
       nic.save
 
-      if !request_params.has_key?('security_groups') && !vif_template[:security_groups].empty?
-        groups = vif_template[:security_groups]
+      if !request_params.has_key?('security_groups') && !request_params.has_key?(request_params[:security_groups])
+        groups = vif_template["security_groups"] || vif_template[:security_groups]
       else
         # TODO: this code will delete. it's remained for compatibility.
         groups = self.request_params["security_groups"]
       end
 
-      if !groups.nil?
+      unless groups.nil? || (groups.respond_to?(:empty?) && groups.empty?)
         groups = [groups] unless groups.is_a? Array
         groups.each { |group_id|
           nic.add_security_group(SecurityGroup[group_id])
@@ -349,10 +356,10 @@ module Dcmgr::Models
     # This method helps to set association values have to be
     # set mandatry until initial save to the database.
     def self.entry_new(account, image, params, &blk)
-      raise ArgumentError unless account.is_a?(Account)
-      raise ArgumentError unless image.is_a?(Image)
+      raise ArgumentError, "The account parameter must be an Account. Got '#{account.class}'" unless account.is_a?(Account)
+      raise ArgumentError, "The image parameter must be an Image. Got '#{image.class}'" unless image.is_a?(Image)
       # Mash is passed in some cases.
-      raise ArgumentError unless params.class == ::Hash
+      raise ArgumentError, "The params parameter must be a Hash. Got '#{params.class}'" unless params.class == ::Hash
 
       i = self.new &blk
       i.account_id = account.canonical_uuid
