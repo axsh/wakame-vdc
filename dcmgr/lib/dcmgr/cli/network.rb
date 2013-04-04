@@ -305,12 +305,16 @@ __END
     method_option :account_id, :type => :string, :default=>'a-shpoolxx', :required => true, :desc => "The account ID to own this"
     method_option :uuid, :type => :string, :required => false, :desc => "UUID of the IP pool"
     method_option :display_name, :type => :string, :required => true, :desc => "Display name for the IP pool"
+    method_option :expire_initial, :type => :numeric, :required => false, :desc => "Expiration time of newly created IP handles (seconds)"
+    method_option :expire_released, :type => :numeric, :required => false, :desc => "Expiration time of released IP handles (seconds)"
     def add()
       fields = {
         :account_id => options[:account_id],
         :display_name => options[:display_name],
       }
       fields[:uuid] = options[:uuid] if options[:uuid]
+      fields[:expire_initial] = options[:expire_initial] if options[:expire_initial]
+      fields[:expire_released] = options[:expire_released] if options[:expire_released]
 
       puts super(M::IpPool, fields)
     end
@@ -380,6 +384,26 @@ __END
     end
   end
   register PoolOps, 'pool', "pool [options]", "Maintain IP pool information"
+
+  class HandleOps < Base
+    namespace :handle
+    M=Dcmgr::Models
+
+    desc "expire-handles", "Expire IP handles."
+    def expire_handles
+      M::IpHandle.dataset.not_leased.expired.alives.each { |handle|
+        p "#{handle.canonical_uuid}: #{handle.ip_lease.network.canonical_uuid} #{handle.ip_lease.ipv4_s}"
+
+        handle.destroy
+      }
+    end
+
+    protected
+    def self.basename
+      "vdc-manage #{Network.namespace} #{self.namespace}"
+    end
+  end
+  register HandleOps, 'handle', "handle [options]", "Maintain IP handle information"
 
   #
   # Network Routes

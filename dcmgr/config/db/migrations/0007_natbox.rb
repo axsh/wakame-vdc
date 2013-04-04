@@ -6,6 +6,9 @@ Sequel.migration do
       column :uuid, "varchar(255)", :null=>false
       column :display_name, "varchar(255)", :null=>true
 
+      column :expire_initial, "int(11)", :null=>true
+      column :expire_released, "int(11)", :null=>true
+
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
       column :deleted_at, "datetime", :null=>true
@@ -32,6 +35,7 @@ Sequel.migration do
 
       column :created_at, "datetime", :null=>false
       column :updated_at, "datetime", :null=>false
+      column :expires_at, "datetime", :null=>true
       column :deleted_at, "datetime", :null=>true
 
       index [:uuid], :unique=>true, :name=>:uuid
