@@ -5,6 +5,6 @@ uri=http://dlc.wakame.axsh.jp.s3.amazonaws.com/demo/vmimage/lb-centos-openvz-md-
 storetype=local
 file_format=raw
 container_format=gz
-root_device=uuid:f048b800-abcb-416d-81f2-521d5080af4d
+root_device=label:root
 service_type=lb
 display_name=demolb
