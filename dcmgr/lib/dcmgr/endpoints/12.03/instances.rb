@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'dcmgr/endpoints/12.03/responses/instance'
+require 'yaml'
 
 # To validate ip address syntax in the vifs parameter
 require 'ipaddress'
@@ -32,9 +33,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
   def set_monitoring_parameters(instance=@instance)
     dirty = [false, false]
-    # instance_monitor_attr row is created at after_save hook in Instance model.
-    # Note that the keys should use string for sub hash.
-    if !params['monitoring'].is_a?(Hash)
+    # monitoring parameter is optional.
+    if params['monitoring'].nil?
+      return
+    elsif !params['monitoring'].is_a?(Hash)
       raise E::InvalidParameter, 'monitoring'
     end
 
@@ -83,13 +85,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
           process_params.each_with_index { |i, idx|
             instance.set_label("monitoring.process.#{idx}.enabled", (i['enabled'] == 'true').to_s)
             instance.set_label("monitoring.process.#{idx}.name", i['name'])
+            if i['params'].is_a?(Hash)
+              instance.set_label("monitoring.process.#{idx}.params", ::YAML.dump(i['params']))
+            end
           }
           deleted_item_num = instance.resource_labels_dataset.grep(:name, 'monitoring.process.%').count - process_params.size
           if deleted_item_num >= 0
             (process_params.size .. (process_params.size + deleted_item_num)).each { |idx|
-              if instance.label("monitoring.process.#{idx}.enabled")
-                instance.unset_labels("monitoring.process.#{idx}.enabled", "monitoring.process.#{idx}.name")
-              end
+              ["monitoring.process.#{idx}.enabled", "monitoring.process.#{idx}.name", "monitoring.process.#{idx}.params"].each { |n|
+                instance.unset_label(n)
+              }
             }
           end
         end
