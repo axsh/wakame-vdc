@@ -23,7 +23,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/jobs' do
 
   get '/:id' do
     job = find_by_uuid(:QueuedJob, params[:id])
-    raise E::UnknownJob, params[:id] if bkst.nil?
+    raise E::UnknownJob, params[:id] if job.nil?
     respond_with(R::QueuedJob.new(job).generate)
   end
 
