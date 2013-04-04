@@ -63,6 +63,8 @@ module Dcmgr::Models
       if self.ip_lease && self.ip_lease.network_vif
         self.expires_at = nil
       end
+
+      super
     end
 
     def before_destroy
