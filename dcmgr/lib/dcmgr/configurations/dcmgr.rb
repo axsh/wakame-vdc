@@ -225,6 +225,12 @@ module Dcmgr
       # Database connection string
       deprecated_warn_param :database_url
       param :database_uri
+
+      # Cassandra connection string for LogService
+      param :cassandra_keyspace
+      param :cassandra_uri, :default => '127.0.0.1:9160'
+      param :cassandra_cf
+
       # AMQP broker to be connected.
       param :amqp_server_uri
 

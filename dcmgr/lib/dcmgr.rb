@@ -98,6 +98,13 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
+
+    require 'dcmgr/models/log_storage/base'
+    module LogStorage
+      autoload :Base, 'dcmgr/models/log_storage/base'
+      autoload :Cassandra, 'dcmgr/models/log_storage/cassandra'
+    end
+
     autoload :ResourceLabel, 'dcmgr/models/resource_label'
   end
 
@@ -148,6 +155,7 @@ module Dcmgr
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
     autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
     autoload :Cgroup, 'dcmgr/helpers/cgroup'
+    autoload :BlockDeviceHelper, 'dcmgr/helpers/block_device_helper'
   end
 
   autoload :Tags, 'dcmgr/tags'
@@ -351,6 +359,7 @@ module Dcmgr
       autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
+      autoload :TranslateLoggingAddress, 'dcmgr/vnet/tasks/translate_logging_address'
     end
 
   end
@@ -360,6 +369,8 @@ module Dcmgr
     autoload :LoadBalancer, 'dcmgr/messaging/load_balancer'
     autoload :JobQueue, 'dcmgr/messaging/job_queue'
   end
+
+  autoload :TextLog, 'dcmgr/text_log'
 
 end
 

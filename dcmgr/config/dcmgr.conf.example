@@ -30,6 +30,10 @@ recent_terminated_instance_period 900
 # mac address vendor_id
 mac_address_vendor_id '525400'
 
+# Cassandra connection string for LogService
+cassandra_keyspace 'wakame_vdc_log_store'
+cassandra_uri '127.0.0.1:9160'
+cassandra_cf 'events'
 
 service_type("std", "StdServiceType") {
   backup_storage_id 'bkst-demo2'

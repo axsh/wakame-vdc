@@ -1,0 +1,9 @@
+create keyspace wakame_vdc_log_store with
+  placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy' AND
+  strategy_options = {replication_factor:1};
+
+use wakame_vdc_log_store;
+
+create column family events with comparator = TimeUUIDType
+AND key_validation_class = AsciiType
+AND default_validation_class = UTF8Type;
