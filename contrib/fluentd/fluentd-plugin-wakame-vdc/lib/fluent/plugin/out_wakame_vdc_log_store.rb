@@ -17,6 +17,9 @@ module Fluent
   class WakameVdcLogStore < BufferedOutput
     Fluent::Plugin.register_output('wakame_vdc_logstore', self)
 
+    SYSTEM_ACCOUNT_ID = 'a-00000000'.freeze
+    SYSTEM_NODE_ID = 'none'.freeze
+
     def initialize
       super
       require 'cassandra/1.1'
@@ -43,9 +46,14 @@ module Fluent
     end
 
     def format(tag, time,record)
-      unless record.has_key?('x_wakame_label')
+      if !record.has_key?('x_wakame_label')
         record['x_wakame_label'] = tag
       end
+
+      if !record.has_key?('x_wakame_account_id')
+        record['x_wakame_account_id'] = SYSTEM_ACCOUNT_ID
+      end
+
       record.to_msgpack
     end
 
@@ -68,6 +76,10 @@ module Fluent
          }
 
          time = Time.now.strftime('%Y%m%d%H')
+         if instance_id.empty?
+           instance_id = SYSTEM_NODE_ID
+         end
+
          rowkey = [account_id, instance_id, label, time].join(":")
          column_name = SimpleUUID::UUID.new(Time.now)
 
