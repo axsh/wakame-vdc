@@ -42,8 +42,8 @@ module Fluent
       # Replace tag
       tag = FORWARD_TAG
 
+      label = msg[0]
       entries = msg[1]
-      label = get_label(msg)
       instance_ipv4 = broker.instance_ip
 
       if is_local?
@@ -54,7 +54,6 @@ module Fluent
         unless has_instance?(instance_ipv4)
           build_instances_mapping_table
         end
-
         instance_id = @instances[instance_ipv4][:instance_id]
         account_id = @instances[instance_ipv4][:account_id]
       end
@@ -75,27 +74,6 @@ module Fluent
 
     def has_instance?(instance_ipv4)
       @instances.has_key? instance_ipv4
-    end
-
-    def get_label(msg)
-      label = ''
-      if is_local?
-        label = msg[0]
-      else
-        label = msg[1].include?('x_wakame_label') ? msg[1]['x_wakame_label'] : ''
-
-        if !label.empty?
-          label = @label
-        end
-
-        if ['', LOCAL_LABEL, INVALID_LABEL].include?(label)
-          $log.warn "Invalided label key #{label}"
-          label = INVALID_LABEL
-        end
-
-      end
-
-      label
     end
 
     def broker
