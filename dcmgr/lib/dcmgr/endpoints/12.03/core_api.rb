@@ -107,7 +107,7 @@ module Dcmgr::Endpoints::V1203
                 end
         limit = if params[:limit]
                   if params[:limit] =~ /^\d+$/
-                  params[:limit].to_i
+                    params[:limit].to_i
                   else
                     raise E::InvalidParameter, :limit
                   end
@@ -117,8 +117,12 @@ module Dcmgr::Endpoints::V1203
         limit = limit < 1 ? 250 : limit
 
         ds = if params[:sort_by]
-               params[:sort_by] =~ /^(\w+)(\.desc|\.asc)?$/
-               ds.order(params[:sort_by])
+               m = /^(\w+)(\.desc|\.asc)?$/.match(params[:sort_by]) || raise(E::InvalidParameter, :limit)
+
+               case m[2]
+               when '.asc' then ds.order(Sequel.asc(m[1].to_sym))
+               when '.desc' then ds.order(Sequel.desc(m[1].to_sym))
+               end
              else
                ds.order(:id.desc)
              end
