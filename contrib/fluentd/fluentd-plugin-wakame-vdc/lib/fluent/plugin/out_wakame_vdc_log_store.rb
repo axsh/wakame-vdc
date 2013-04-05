@@ -43,6 +43,9 @@ module Fluent
     end
 
     def format(tag, time,record)
+      unless record.has_key?('x_wakame_label')
+        record['x_wakame_label'] = tag
+      end
       record.to_msgpack
     end
 
