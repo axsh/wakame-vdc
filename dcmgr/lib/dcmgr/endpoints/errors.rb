@@ -167,6 +167,7 @@ module Dcmgr
     define_error(:InvalidLoadBalancerProtocol, 400, '188')
     define_error(:InvalidLoadBalancerHttpChkPath, 400, '189')
     define_error(:NetworkNotInDcNetwork, 404, '190')
+    define_error(:LoadBalancerNotPermitted, 404, '191')
 
   end
 end

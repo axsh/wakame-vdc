@@ -572,22 +572,33 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   def get_inbounds
-    if params[:port].nil? || params[:port].empty? || !params[:port].is_a?(Array)
+
+    if params[:port].nil? || params[:port].empty?
       raise E::InvalidLoadBalancerPort
     end
 
-    if params[:protocol].nil? || params[:protocol].empty? || !params[:protocol].is_a?(Array)
+    if params[:protocol].nil? || params[:protocol].empty?
       raise E::InvalidLoadBalancerProtocol
     end
 
     inbounds = []
-    params[:port].each_index { |i|
-      raise 'Invalid param pair' if !params[:protocol][i] || !params[:port][i]
-      inbounds << {
-        :protocol => params[:protocol][i],
-        :port => params[:port][i]
+
+    if params[:port].is_a?(Array) && params[:protocol].is_a?(Array)
+      params[:port].each_index { |i|
+        inbounds << {
+          :protocol => params[:protocol][i],
+          :port => params[:port][i]
+        }
       }
-    }
+    elsif params[:port].is_a?(String) && params[:protocol].is_a?(String)
+      inbounds << {
+        :protocol => params[:protocol],
+        :port => params[:port]
+      }
+    else
+      raise E::LoadBalancerNotPermitted
+    end
+
     inbounds
   end
 
