@@ -112,9 +112,11 @@ function init_db() {
   eval ${oauth_keys}
 
   # for dolphin
-  cd ${prefix_path}/dolphin
-  time bundle exec rake db:cassandra:clean
-  time bundle exec rake db:cassandra:migrate
+  if [ "$feature_dolphin" = 1 ]; then
+    cd ${prefix_path}/dolphin
+    time bundle exec rake db:cassandra:clean
+    time bundle exec rake db:cassandra:migrate
+  fi
 
   # Install demo data.
   (. $data_path/demodata.sh)
@@ -136,7 +138,9 @@ function run_standalone() {
   screen_it webui     "cd ./frontend/dcmgr_gui; bundle exec unicorn -p ${webui_port} -o ${webui_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-webui.log"
   screen_it sta       "cd ./dcmgr; ./bin/sta -i ${host_node_id} 2>&1 | tee ${tmp_path}/vdc-sta.log"
   screen_it admin     "cd ./frontend/admin; bundle exec unicorn -p ${admin_port} -o ${admin_bind} ./config.ru 2>&1 | tee ${tmp_path}/vdc-admin.log"
-#  screen_it dolphin   "cd ./dolphin/bin; ./dolphin_server 2>&1 | tee ${tmp_path}/vdc-dolphin.log"
+  if [ "$feature_dolphin" = 1 ]; then
+    screen_it dolphin   "cd ./dolphin/bin; ./dolphin_server 2>&1 | tee ${tmp_path}/vdc-dolphin.log"
+  fi
 }
 
 mode=$1
