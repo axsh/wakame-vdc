@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'celluloid'
+
 module Dolphin
   module Util
     include Celluloid::Logger
