@@ -63,10 +63,11 @@ module Dolphin
         params[:start_time] = parse_time(@params['start_time']) unless @params['start_time'].blank?
         params[:start_id] = @params['start_id'] unless @params['start_id'].blank?
 
-        events = worker.get_event(params).value
+        events = worker.get_event(params)
+        raise events.message if events.fail?
 
         response_params = {
-          :results => events,
+          :results => events.message,
           :message => 'OK'
         }
         response_params[:start_time] = @params['start_time'] unless @params['start_time'].blank?
@@ -84,7 +85,9 @@ module Dolphin
         notification = {}
         notification[:id] = @notification_id
         notification[:methods] = @params
-        worker.future.put_notification(notification)
+        result = worker.put_notification(notification)
+        raise result.message if result.fail?
+
         response_params = {
           :message => 'OK'
         }

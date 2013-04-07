@@ -9,29 +9,35 @@ module Dolphin
 
     def get_notification(id)
       logger :info, "Get notification #{id}"
-      notification = Dolphin::Models::Notification.new
-      notification.get(id)
+      send('notification', 'get', id)
     end
 
     def put_event(event)
       logger :info, "Put event #{event}"
-      e = Dolphin::Models::Event.new
-      e.put(event)
-      e
+      send('event', 'put', event)
     end
 
     def get_event(params)
-      e = Dolphin::Models::Event.new
-      e.get(params)
+      send('event', 'get', params)
     end
 
     def put_notification(notification)
       logger :info, "Put notification #{notification}"
       notification_id = notification[:id]
       methods = notification[:methods]
-      n = Dolphin::Models::Notification.new
-      n.put(notification_id, methods)
-      n
+      send('notification', 'put', notification_id, methods)
+    end
+
+    private
+    def send(model_name, method, *args)
+      begin
+        klass = Dolphin::Models.const_get(model_name.capitalize)
+        k = klass.new
+        results = k.__send__(method, *args)
+      rescue => e
+        logger :error, e
+        false
+      end
     end
   end
 end

@@ -17,11 +17,19 @@ end
 
 module Dolphin
   module DataBase
+    include Dolphin::Util
 
     def db
-      Dolphin::DataBase.create(Dolphin.settings['database']['adapter'].to_sym, {
+      con = Dolphin::DataBase.create(Dolphin.settings['database']['adapter'].to_sym, {
         :class => self
       }).connect
+
+      if con.nil?
+        raise 'Connection to database failed'
+      else
+        con
+      end
+    end
 
     def hosts
       Dolphin.settings['database']['hosts']
@@ -46,6 +54,8 @@ module Dolphin
     end
 
     class ConncetionBase
+      include Dolphin::Util
+
       def connect
         raise NotImplementedError
       end
@@ -56,20 +66,52 @@ module Dolphin
     end
 
     class Cassandra < ConncetionBase
+
+      class UnAvailableNodeException < Exception; end
+
       PATH_SEPARATOR = ':'.freeze
       KEYSPACE = 'dolphin'.freeze
-      def column_family
-
-      end
 
       def initialize(config)
         @keyspace = config[:keyspace]
         @cf = config[:cf]
-        @uri = config[:uri]
+        raise "database hosts is blank" if config[:hosts].empty?
+        @seeds = config[:hosts].split(',')
+      end
+
+      def uri
+        [available_node_ip, Dolphin.settings['database']['port']].join(':')
+      end
+
+      def available_node_ip
+        if @seeds.empty?
+          raise UnAvailableNodeException, "No live servers"
+        end
+        @seeds.shift
       end
 
       def connect
-        @connection ||= ::Cassandra.new(@keyspace, @uri)
+        begin
+          if @connection.nil?
+            u = uri
+            logger :info, "Connect to #{u}"
+            @connection = ::Cassandra.new(@keyspace, u)
+
+            # test connecting..
+            @connection.ring
+            return @connection
+          end
+        rescue ThriftClient::NoServersAvailable => e
+          @connection = nil
+          logger :error, e
+          logger :error, "retry connection.."
+          retry
+        rescue UnAvailableNodeException => e
+          logger :error, e
+        rescue CassandraThrift::InvalidRequestException => e
+          logger :error, e
+        end
+        nil
       end
     end
   end

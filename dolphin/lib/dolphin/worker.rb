@@ -24,7 +24,7 @@ module Dolphin
       notifications = future_notification.value
       future_event.value
 
-      if notifications.blank?
+      if notifications === FALSE
         log_message = "Not found notification: #{event_object[:notification_id]}"
         logger :error, log_message
         return FailureObject.new(log_message)
@@ -66,11 +66,19 @@ module Dolphin
     end
 
     def get_event(params)
-      query_processor.future.get_event(params)
+      event = query_processor.get_event(params)
+      if event === FALSE
+       return FailureObject.new('Failed to get events')
+     end
+      SuccessObject.new(event)
     end
 
     def put_notification(notification)
-      query_processor.future.put_notification(notification)
+      notification = query_processor.put_notification(notification)
+      if notification === FALSE
+        return FailureObject.new('Failed to put notification')
+      end
+      SuccessObject.new(notification)
     end
 
     private
