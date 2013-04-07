@@ -75,7 +75,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     lb = M::LoadBalancer.new
     lb.account_id = @account.canonical_uuid
-    lb.instance_port = params[:instance_port].to_i || 80
+    lb.instance_port = params[:instance_port] || 80
     lb.instance_protocol = params[:instance_protocol] || 'http'
     lb.balance_algorithm = params[:balance_algorithm] || 'leastconn'
     lb.allow_list = allow_list.join(',')
