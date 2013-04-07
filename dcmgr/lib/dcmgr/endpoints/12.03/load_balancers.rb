@@ -72,6 +72,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     allow_list = params[:allow_list] || ['0.0.0.0']
 
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
+    raise E::InvalidLoadBalancerInstancePort unless params[:instance_port].is_a?(String)
+    raise E::InvalidLoadBalancerInstanceProtocol unless params[:instance_protocol].is_a?(String)
 
     lb = M::LoadBalancer.new
     lb.account_id = @account.canonical_uuid
@@ -337,6 +339,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
   put '/:id' do
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
+    raise E::InvalidLoadBalancerInstancePort unless params[:instance_port].is_a?(String)
+    raise E::InvalidLoadBalancerInstanceProtocol unless params[:instance_protocol].is_a?(String)
+
     lb = find_by_uuid(:LoadBalancer, params['id'])
     if !params[:port].blank? && !params[:protocol].blank?
       inbounds = get_inbounds
@@ -376,6 +381,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     if !params[:instance_protocol].blank?
       lb.instance_protocol = params[:instance_protocol]
+      raise E::InvalidLoadBalancerInstanceProtocol, lb.errors[:instance_protocol] if !lb.valid?
     end
 
     if !params[:instance_port].blank?
