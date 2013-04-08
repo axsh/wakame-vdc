@@ -56,6 +56,19 @@ module Dcmgr::VNet::NetworkModes
       tasks
     end
 
+    def netfilter_logging_service_tasks(vnic, host_ip)
+      tasks = []
+      logging_service_enabled = Dcmgr.conf.use_logging_service
+      logging_service_ip = Dcmgr.conf.logging_service_ip
+      logging_service_port = Dcmgr.conf.logging_service_port
+
+      # Logging Service for inside instance.
+      if logging_service_enabled && !logging_service_ip.nil? && !logging_service_port.nil?
+        tasks << TranslateLoggingAddress.new(vnic[:uuid], host_ip, logging_service_ip, logging_service_port)
+      end
+      tasks
+    end
+
     def netfilter_nat_tasks(vnic,network,node)
       tasks = []
 
@@ -116,5 +129,5 @@ module Dcmgr::VNet::NetworkModes
       [AcceptARPFromFriends.new(vnic[:address],friend_ips,enable_logging,"A arp friend #{vnic[:uuid]}")]
     end
   end
-  
+
 end

@@ -98,6 +98,13 @@ module Dcmgr
     autoload :BackupObject, 'dcmgr/models/backup_object'
     autoload :InstanceMonitorAttr, 'dcmgr/models/instance_monitor_attr'
     autoload :QueuedJob, 'dcmgr/models/queued_job'
+
+    require 'dcmgr/models/log_storage/base'
+    module LogStorage
+      autoload :Base, 'dcmgr/models/log_storage/base'
+      autoload :Cassandra, 'dcmgr/models/log_storage/cassandra'
+    end
+
     autoload :ResourceLabel, 'dcmgr/models/resource_label'
   end
 
@@ -128,6 +135,7 @@ module Dcmgr
     autoload :StaCollector, 'dcmgr/node_modules/sta_collector'
     autoload :StaTgtInitializer, 'dcmgr/node_modules/sta_tgt_initializer'
     autoload :HvaCollector, 'dcmgr/node_modules/hva_collector'
+    autoload :NatboxCollector, 'dcmgr/node_modules/natbox_collector'
     autoload :InstanceHA, 'dcmgr/node_modules/instance_ha'
     autoload :DebugOpenFlow, 'dcmgr/node_modules/debug_openflow'
     autoload :ServiceNatbox, 'dcmgr/node_modules/service_natbox'
@@ -135,10 +143,10 @@ module Dcmgr
     autoload :ServiceOpenFlow, 'dcmgr/node_modules/service_openflow'
     autoload :InstanceMonitor, 'dcmgr/node_modules/instance_monitor'
     autoload :Scheduler, 'dcmgr/node_modules/scheduler'
+    autoload :Maintenance, 'dcmgr/node_modules/maintenance'
     autoload :EventHook, 'dcmgr/node_modules/event_hook'
     autoload :JobQueueProxy, 'dcmgr/node_modules/job_queue_proxy'
     autoload :JobQueueWorker, 'dcmgr/node_modules/job_queue_worker'
-    autoload :NatboxCollector, 'dcmgr/node_modules/natbox_collector'
   end
 
   module Helpers
@@ -148,6 +156,7 @@ module Dcmgr
     autoload :SnapshotStorageHelper, 'dcmgr/helpers/snapshot_storage_helper'
     autoload :ByteUnit, 'dcmgr/helpers/byte_unit'
     autoload :Cgroup, 'dcmgr/helpers/cgroup'
+    autoload :BlockDeviceHelper, 'dcmgr/helpers/block_device_helper'
   end
 
   autoload :Tags, 'dcmgr/tags'
@@ -351,6 +360,7 @@ module Dcmgr
       autoload :StaticNat, 'dcmgr/vnet/tasks/static_nat'
       autoload :StaticNatLog, 'dcmgr/vnet/tasks/static_nat'
       autoload :TranslateMetadataAddress, 'dcmgr/vnet/tasks/translate_metadata_address'
+      autoload :TranslateLoggingAddress, 'dcmgr/vnet/tasks/translate_logging_address'
     end
 
   end
@@ -360,6 +370,8 @@ module Dcmgr
     autoload :LoadBalancer, 'dcmgr/messaging/load_balancer'
     autoload :JobQueue, 'dcmgr/messaging/job_queue'
   end
+
+  autoload :TextLog, 'dcmgr/text_log'
 
 end
 

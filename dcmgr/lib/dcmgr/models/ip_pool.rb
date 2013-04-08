@@ -17,6 +17,14 @@ module Dcmgr::Models
       !dc_networks_dataset.where(:dc_networks__id => dcn.id).empty?
     end
 
+    #
+    # Sequel methods:
+    #
+
+    def validate
+      # Validate expire values. Limit to reasonable length of time to avoid integer overflow.
+    end
+
   end
 
 end

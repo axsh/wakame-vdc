@@ -20,6 +20,76 @@ module Dcmgr::Models
 
     subset(:alives, {:deleted_at => nil})
 
+    def attach_vif(vif)
+      self.network_vif.nil? || raise("Cannot attach IP lease to multiple vifs.")
+
+      self.network_vif = vif
+      self.save_changes
+      
+      if self.ip_handle && self.ip_handle.expires_at
+        self.ip_handle.expires_at = nil
+        self.ip_handle.save_changes
+      end
+    end
+
+    def detach_vif
+      self.network_vif || raise("Cannot detach ip lease that isn't attached to a vif.")
+
+      self.network_vif = nil
+      self.save_changes
+
+      if self.ip_handle && self.ip_handle.ip_pool.expire_released
+        self.ip_handle.expires_at = Time.now + self.ip_handle.ip_pool.expire_released
+        self.ip_handle.save_changes
+      end
+    end
+
+    # check if the current lease is for NAT outside address lease.
+    # @return [TrueClass,FalseClass] return true if the lease is for NAT outside.
+    def is_natted?
+      network_vif.network_id != network_id
+    end
+
+    # get the lease of NAT outside network.
+    # @return [IpLease,nil]
+    #    if the IpLease has a pair NAT address it will return
+    #    outside IpLease.
+    def nat_outside_lease
+      if self.network_vif.nat_network_id
+        self.class.find(:network_vif_id=>self.network_vif.id, :network_id=>self.network_vif.nat_network_id)
+      else
+        nil
+      end
+    end
+
+    # get the lease of NAT inside network.
+    # @return [IpLease,nil] IpLease (outside) will return inside
+    #     IpLease.
+    def nat_inside_lease
+      if self.network_vif.nat_network_id.nil?
+        self.class.find(:network_vif_id=>self.network_vif.id, :network_id=>nil)
+      else
+        nil
+      end
+    end
+
+    def ipv4_s
+      IPAddress::IPv4::parse_u32(self[:ipv4]).to_s
+    end
+    alias :ipv4 :ipv4_s
+
+    def ipv4_i
+      self[:ipv4]
+    end
+
+    def ipv4_ipaddress
+      IPAddress::IPv4.new("#{self.ipv4}/#{self.network[:prefix]}")
+    end
+
+    #
+    # Sequel methods:
+    #
+
     def validate
       # do not run validation if the row is maked as deleted.
       return true if self.deleted_at
@@ -71,46 +141,5 @@ module Dcmgr::Models
       self.save_changes
     end
 
-    # check if the current lease is for NAT outside address lease.
-    # @return [TrueClass,FalseClass] return true if the lease is for NAT outside.
-    def is_natted?
-      network_vif.network_id != network_id
-    end
-
-    # get the lease of NAT outside network.
-    # @return [IpLease,nil]
-    #    if the IpLease has a pair NAT address it will return
-    #    outside IpLease.
-    def nat_outside_lease
-      if self.network_vif.nat_network_id
-        self.class.find(:network_vif_id=>self.network_vif.id, :network_id=>self.network_vif.nat_network_id)
-      else
-        nil
-      end
-    end
-
-    # get the lease of NAT inside network.
-    # @return [IpLease,nil] IpLease (outside) will return inside
-    #     IpLease.
-    def nat_inside_lease
-      if self.network_vif.nat_network_id.nil?
-        self.class.find(:network_vif_id=>self.network_vif.id, :network_id=>nil)
-      else
-        nil
-      end
-    end
-
-    def ipv4_s
-      IPAddress::IPv4::parse_u32(self[:ipv4]).to_s
-    end
-    alias :ipv4 :ipv4_s
-
-    def ipv4_i
-      self[:ipv4]
-    end
-
-    def ipv4_ipaddress
-      IPAddress::IPv4.new("#{self.ipv4}/#{self.network[:prefix]}")
-    end
   end
 end
