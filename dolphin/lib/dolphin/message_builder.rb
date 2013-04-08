@@ -26,6 +26,8 @@ module Dolphin
 
     class Mail < Base
 
+      MESSAGE_BOUNDARY="----------------------------------------".freeze
+
       def build(template_id, params)
         message = ''
 
@@ -35,18 +37,22 @@ module Dolphin
 
         body_template = template(template_id)
         if body_template.nil?
-          message = ''
+          subject = 'Default'
+          body = ''
         else
           message = build_message(body_template, params['messages'])
+          subject, body = message.split(MESSAGE_BOUNDARY)
+          subject.strip!
+          body.strip!
         end
 
         notification = NotificationObject.new
-        notification.subject = params["subject"]
+        notification.subject = subject
         notification.from = Dolphin.settings['mail']['from']
         notification.to = params["to"]
         notification.cc ||= params["cc"]
         notification.bcc ||= params["bcc"]
-        notification.body = message
+        notification.body = body
         notification
       end
 
