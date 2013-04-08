@@ -24,7 +24,7 @@ module Dolphin
       def run(request, &blk)
         begin
           attach_request_params(request)
-          logger :info, "params #{@params}"
+          logger :info, @params
           blk.call
         rescue => e
           logger :error, e.message
