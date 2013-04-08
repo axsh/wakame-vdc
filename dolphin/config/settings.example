@@ -22,9 +22,6 @@ from =
 # type = mail
 type = file
 
-[debugging]
-debug = true
-
 [logger]
 format = human_readable
 # format = ltsv
