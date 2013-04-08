@@ -17,7 +17,7 @@ module Dolphin
         ActionMailer::Base.file_settings = {
           :location => File.join(Dolphin.root_path, 'tmp/mails')
         }
-      when 'mail'
+      when 'tls-mail'
         ActionMailer::Base.delivery_method = :smtp
         ActionMailer::Base.smtp_settings = {
           address: Dolphin.settings['mail']['host'],
@@ -26,6 +26,12 @@ module Dolphin
           password: Dolphin.settings['mail']['password'],
           authentication: :plain,
           enable_starttls_auto: true
+        }
+      when 'mail'
+        ActionMailer::Base.delivery_method = :smtp
+        ActionMailer::Base.smtp_settings = {
+          address: Dolphin.settings['mail']['host'],
+          port: Dolphin.settings['mail']['port'],
         }
     end
 
