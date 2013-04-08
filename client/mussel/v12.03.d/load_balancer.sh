@@ -15,16 +15,19 @@ task_index() {
 
 task_create() {
   call_api -X POST $(urlencode_data \
+    $(add_param allow_list         array) \
     $(add_param balance_algorithm string) \
     $(add_param cookie_name       string) \
+    $(add_param description       string) \
     $(add_param display_name      string) \
     $(add_param engine            string) \
+    $(add_param httpchk           string) \
     $(add_param instance_port     string) \
     $(add_param instance_protocol string) \
     $(add_param max_connection    string) \
-    $(add_param port              string) \
+    $(add_param port               array) \
     $(add_param private_key      strfile) \
-    $(add_param protocol          string) \
+    $(add_param protocol           array) \
     $(add_param public_key       strfile) \
    ) \
    $(base_uri)/${namespace}s.$(suffix)
