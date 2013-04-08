@@ -22,7 +22,7 @@ module Dolphin
     end
 
     def put_notification(notification)
-      logger :info, "Put notification #{notification}"
+      logger :info, notification
       notification_id = notification[:id]
       methods = notification[:methods]
       send('notification', 'put', notification_id, methods)

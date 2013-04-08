@@ -41,9 +41,11 @@ module Dolphin
           subject: notification_object.subject,
           body: notification_object.body
         }
-        logger :debug, "Get send_params #{send_params}"
+
+        logger :info, send_params
         begin
           mail(send_params).deliver
+          logger :info, "Success Sent message"
         rescue => e
           logger :error, e.message
         end
