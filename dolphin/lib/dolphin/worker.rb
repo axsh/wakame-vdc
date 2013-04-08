@@ -42,7 +42,6 @@ module Dolphin
         # TODO: Plugin
         case sender_type
           when 'email'
-            build_params["subject"] = values['subject']
             build_params["to"] = values['to']
             build_params["cc"] = values['cc']
             build_params["bcc"] = values['bcc']
