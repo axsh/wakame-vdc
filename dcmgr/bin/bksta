@@ -39,11 +39,11 @@ class CopyProcessor < Isono::NodeModules::Base
     
     EM.next_tick do
       queue_worker = Dcmgr::NodeModules::JobQueueWorker.new(self.node)
-      queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1) do |job|
+      queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1, Dcmgr.conf.default_retry_max_per_job) do |job|
         myinstance.dup.submit_pull_job(job)
       end
 
-      queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1) do |job|
+      queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1, Dcmgr.conf.default_retry_max_per_job) do |job|
         myinstance.dup.pull_file_job(job)
       end
     end

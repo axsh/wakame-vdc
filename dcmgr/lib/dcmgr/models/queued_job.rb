@@ -38,8 +38,10 @@ module Dcmgr::Models
 
     # Insert new job entry to a queue.
     #
+    # :retry_max
+    #    (default 0 = try default retry count set to each queue worker.)
     def self.submit(queue_name, resource_uuid, params, opts=nil)
-      opts = {:retry_max=>1}.merge(opts || {})
+      opts = {:retry_max=>0}.merge(opts || {})
       
       db.transaction do
         job = create(:queue_name=>queue_name,

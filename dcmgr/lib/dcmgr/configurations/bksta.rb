@@ -11,6 +11,8 @@ module Dcmgr
       param :export_uri
 
       param :site_over_rpc_timeout, :default=>10.0
+
+      param :default_retry_max_per_job, :default=>2
       
       DSL do
         def driver(driver_name, &blk)
