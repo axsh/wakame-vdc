@@ -9,6 +9,7 @@ module Dcmgr
       param :amqp_server_uri
 
       param :export_uri
+      param :local_upload_uri
 
       param :site_over_rpc_timeout, :default=>10.0
 
