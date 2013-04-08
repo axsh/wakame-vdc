@@ -22,8 +22,8 @@ engine=${engine:-haproxy}
 instance_port=${instance_port:-80}
 instance_protocol=${instance_protocol:-http}
 max_connection=${max_connection:-1000}
-port=${port:-80 443}
-protocol=${protocol:-http https}
+port=${port:-80}
+protocol=${protocol:-http}
 
 ### optional
 
