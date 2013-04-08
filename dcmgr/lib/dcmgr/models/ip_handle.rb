@@ -50,8 +50,13 @@ module Dcmgr::Models
     #
 
     def validate
-      errors.add(:ip_pool, "IP pool is not associated: #{self.canonical_uuid}") unless self.ip_pool
-      # errors.add(:ip_lease, "IP lease is not associated: #{self.canonical_uuid}") unless self.ip_lease
+      if self.expires_at.nil?
+        errors.add(:ip_pool, "IP pool is not associated: #{self.canonical_uuid}") unless self.ip_pool
+      end
+
+      if !self.new?
+        errors.add(:ip_lease, "IP lease is not associated: #{self.canonical_uuid}") unless self.ip_lease
+      end
       super
     end
 
