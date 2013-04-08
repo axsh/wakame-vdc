@@ -10,7 +10,7 @@ sender = 1
 
 [database]
 adapter = cassandra
-host = 127.0.0.1 
+hosts = 127.0.0.1
 port = 9160
 
 [mail]
