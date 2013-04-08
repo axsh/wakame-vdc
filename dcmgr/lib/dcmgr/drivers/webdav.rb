@@ -8,14 +8,14 @@ module Dcmgr::Drivers
 
     # Note on CommandAPI (shell onliner) support.
     #
-    # For PUT operation, most of DAV servers check the Content-Length
-    # header and expect to be sent from the client. The content will
-    # be rejected if the header has wrong value.
-    # It is difficult to send the proper size of the image file from
-    # the shell oneliner without creating temporary file. Because the
-    # data is transformed to different format, i.e. gzip,  then the
-    # generated data size is vary while goes through the shell pipeline.
-    # Therefore, this driver no longer supports shell onliner API.
+    # For PUT operation, some of DAV servers lacks to support
+    #   Transfer-Encoding: chunked
+    # Oneliner command line requires the chunked transfer support
+    # because it can not determine the complete byte length prior to send body.
+    #
+    # Following web servers support chunked transfer for PUT:
+    #    Apache >2.2
+    #    Nginx >1.3.9
     include CommandAPI
 
     attr_accessor :upload_base_uri
