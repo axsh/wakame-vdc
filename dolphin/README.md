@@ -6,16 +6,16 @@ Dolphine is notification service.
 ### Copy Settings File
 
 ```
-$ cp -ip ./config/settings.example ./config/settings
+$ cp -ip ./config/dolphin.conf.example ./config/dolphin.conf
 ```
 
-### Edit settings
+### Edit config
 
 ```
-$ vi ./config/settings
+$ vi ./config/dolphin.conf
 ```
 
-./config/settings
+./config/dolphin.conf
 ```
 from=yourname@yourdomain
 ```

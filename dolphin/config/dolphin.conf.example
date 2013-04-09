@@ -12,14 +12,12 @@ sender = 1
 adapter = cassandra
 hosts = 127.0.0.1
 port = 9160
+retry_count = 3
 
 [mail]
-from =
-# host =
-# port =
-# user_name =
-# password =
-# type = mail
+from = demo@example.com
+# host = localhost
+# port = 25
 type = file
 
 [logger]

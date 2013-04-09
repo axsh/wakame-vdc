@@ -12,7 +12,7 @@ module Dolphin
 
   def self.settings
 
-    @settings ||= ParseConfig.new(File.join(Dolphin.root_path, '/config/settings'))
+    @settings ||= ParseConfig.new(File.join(Dolphin.root_path, '/config/dolphin.conf'))
 
     # TODO:validation
 
