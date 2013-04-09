@@ -1,0 +1,18 @@
+source 'http://rubygems.org'
+
+gem 'reel', '0.3.0'
+gem 'cassandra', '0.17.0'
+gem 'actionmailer', '3.2.12'
+gem 'ltsv', '0.1.0'
+gem 'extlib', '~> 0.9.16'
+gem 'multi_json', '1.6.1'
+gem 'rake', '10.0.3'
+gem 'octarine', '0.0.3'
+gem 'parseconfig', '1.0.2'
+gem 'erubis', '2.7.0'
+
+group :development, :test do
+  gem 'rspec', '2.13.0'
+  gem 'pry'
+  gem 'rb-readline'
+end
