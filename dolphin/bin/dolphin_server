@@ -1,8 +1,19 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-require 'rubygems'
-require 'bundler/setup'
+# TODO: better loading libraries
+setup_rb = File.expand_path('../../vendor/bundle/bundler/setup.rb', __FILE__)
+
+begin
+  require 'rubygems'
+  if File.exists?(setup_rb)
+    load setup_rb
+  else
+    require 'bundler/setup'
+  end
+rescue LoadError => e
+end
+
 require File.join(File.expand_path('../../', __FILE__), 'lib/dolphin')
 
 require 'ltsv'
