@@ -2,7 +2,6 @@
 
 require 'parseconfig'
 require 'ostruct'
-require 'pry'
 
 Signal.trap(:INT, "EXIT")
 
