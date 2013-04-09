@@ -94,18 +94,22 @@ module Dcmgr::Endpoints::V1203
       #  - start
       #  - limit
       #  - sort_by
-      def paging_params_filter(ds)
-        if params[:filter]
-          filter_list = params[:filter].class == Array ? params[:filter] : [params[:filter]]
-          filter_list.each { |filter|
-            m = /^(\w+)(\.nil|\.not_nil)?$/.match(params[:filter]) || raise(E::InvalidParameter, :filter)
+      def dataset_filter(ds, filter)
+        filter_list = params[:filter].class == Array ? params[:filter] : [params[:filter]]
+        filter_list.each { |filter|
+          m = /^(\w+)(\.nil|\.not_nil)?$/.match(params[:filter]) || raise(E::InvalidParameter, :filter)
 
-            case m[2]
-            when '.nil' then ds = ds.where(m[1].to_sym => nil)
-            when '.not_nil' then ds = ds.exclude(m[1].to_sym => nil)
-            end
-          }
-        end
+          case m[2]
+          when '.nil' then ds = ds.where(m[1].to_sym => nil)
+          when '.not_nil' then ds = ds.exclude(m[1].to_sym => nil)
+          end
+        }
+
+        ds
+      end
+
+      def paging_params_filter(ds)
+        ds = dataset_filter(ds, params[:filter]) if params[:filter]
 
         total = ds.count
 

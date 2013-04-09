@@ -243,7 +243,14 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     params[:ip_handle_id] || raise(InvalidParameter, "Missing ip_handle_id")
 
-    outer_ip_handle = M::IpHandle[params[:ip_handle_id]] || raise(UnknownUUIDResource, params[:ip_handle_id])
+    if params[:filter]
+      ip_handle_dataset = M::IpHandle.dataset.where(:uuid => M::IpHandle.trim_uuid(params[:ip_handle_id]))
+      outer_ip_handle = dataset_filter(ip_handle_dataset, params[:filter]).first
+    else
+      outer_ip_handle = M::IpHandle[params[:ip_handle_id]]
+    end
+
+    outer_ip_handle || raise(UnknownUUIDResource, params[:ip_handle_id])
 
     if @account && outer_ip_handle.ip_pool.account_id != @account.canonical_uuid
       raise(E::UnknownUUIDResource, params[:ip_handle_id])
