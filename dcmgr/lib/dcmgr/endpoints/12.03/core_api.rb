@@ -95,6 +95,17 @@ module Dcmgr::Endpoints::V1203
       #  - limit
       #  - sort_by
       def paging_params_filter(ds)
+        if params[:filter]
+          filter_list = params[:filter].class == Array ? params[:filter] : [params[:filter]]
+          filter_list.each { |filter|
+            m = /^(\w+)(\.nil|\.not_nil)?$/.match(params[:filter]) || raise(E::InvalidParameter, :filter)
+
+            case m[2]
+            when '.nil' then ds = ds.where(m[1].to_sym => nil)
+            when '.not_nil' then ds = ds.exclude(m[1].to_sym => nil)
+            end
+          }
+        end
 
         total = ds.count
 
@@ -118,7 +129,7 @@ module Dcmgr::Endpoints::V1203
                 end
         limit = limit < 1 ? 250 : limit
         ds = if params[:sort_by]
-               m = /^(\w+)(\.desc|\.asc)?$/.match(params[:sort_by]) || raise(E::InvalidParameter, :limit)
+               m = /^(\w+)(\.desc|\.asc)?$/.match(params[:sort_by]) || raise(E::InvalidParameter, :sort_by)
 
                case m[2]
                when '.asc' then ds.order(Sequel.asc(m[1].to_sym))
