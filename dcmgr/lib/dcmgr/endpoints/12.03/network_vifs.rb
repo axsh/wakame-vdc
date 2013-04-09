@@ -243,9 +243,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/network_vifs' do
 
     params[:ip_handle_id] || raise(InvalidParameter, "Missing ip_handle_id")
 
-    if params[:filter]
+    if params[:ip_handle_filter]
       ip_handle_dataset = M::IpHandle.dataset.where(:uuid => M::IpHandle.trim_uuid(params[:ip_handle_id]))
-      outer_ip_handle = dataset_filter(ip_handle_dataset, params[:filter]).first
+      outer_ip_handle = dataset_filter(ip_handle_dataset, params[:ip_handle_filter]).first
     else
       outer_ip_handle = M::IpHandle[params[:ip_handle_id]]
     end

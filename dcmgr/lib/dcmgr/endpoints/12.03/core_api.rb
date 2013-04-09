@@ -95,9 +95,9 @@ module Dcmgr::Endpoints::V1203
       #  - limit
       #  - sort_by
       def dataset_filter(ds, filter)
-        filter_list = params[:filter].class == Array ? params[:filter] : [params[:filter]]
+        filter_list = filter.class == Array ? filter : [filter]
         filter_list.each { |filter|
-          m = /^(\w+)(\.nil|\.not_nil)?$/.match(params[:filter]) || raise(E::InvalidParameter, :filter)
+          m = /^(\w+)(\.nil|\.not_nil)?$/.match(filter) || raise(E::InvalidParameter, :filter)
 
           case m[2]
           when '.nil' then ds = ds.where(m[1].to_sym => nil)
