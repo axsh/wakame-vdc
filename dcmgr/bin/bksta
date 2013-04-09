@@ -31,6 +31,19 @@ rescue Dcmgr::Configuration::ValidationError => e
 end
 Dcmgr.run_initializers('logger')
 
+module OneLiner
+  def pull_download_command(dst_uri)
+  end
+end
+
+class CurlTransfer
+  include OneLiner
+  
+  def pull_download_command(dst_uri)
+    ["curl -s '%s'", [dst_uri]]
+  end
+end
+
 class CopyProcessor < Isono::NodeModules::Base
   include Dcmgr::Logger
   
@@ -39,11 +52,11 @@ class CopyProcessor < Isono::NodeModules::Base
     
     EM.next_tick do
       queue_worker = Dcmgr::NodeModules::JobQueueWorker.new(self.node)
-      queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1) do |job|
+      queue_worker.subscribe("backup_storage.copy_to.#{self.node.node_id}", 1, Dcmgr.conf.default_retry_max_per_job) do |job|
         myinstance.dup.submit_pull_job(job)
       end
 
-      queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1) do |job|
+      queue_worker.subscribe("backup_storage.pull_from.#{self.node.node_id}", 1, Dcmgr.conf.default_retry_max_per_job) do |job|
         myinstance.dup.pull_file_job(job)
       end
     end
@@ -98,16 +111,18 @@ class CopyProcessor < Isono::NodeModules::Base
     chksum_path = File.expand_path('md5', tmpdir)
     size_path = File.expand_path('size', tmpdir)
 
+    @backup_object = params[:backup_object]
     @backupobject_id = params[:backup_object][:uuid]
     if params[:image]
       @image_id = params[:image][:uuid]
     end
 
-    @download_uri =Dcmgr.conf.export_uri.dup.tap { |o|
+    # Save the downloaded object to the URI.
+    @save_uri =Dcmgr.conf.export_uri.dup.tap { |o|
       o.path += "/#{params[:backup_object][:uuid]}"
     }
 
-    logger.info("Staring pull file from #{src_uri.to_s} to #{@download_uri.to_s}")
+    logger.info("Staring pull file from #{src_uri.to_s} to #{@save_uri.to_s}")
     
     rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:creating}) do |req|
       req.oneshot = true
@@ -121,12 +136,6 @@ class CopyProcessor < Isono::NodeModules::Base
 
     evcb = proc { |cmd, *value|
       case cmd
-      when :setattr
-        # update checksum & allocation_size of the backup object
-        rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {
-                      :checksum=>value[0],
-                      :allocation_size => value[1],
-                    })
       when :progress
         # update upload progress of backup object
         rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:progress=>value[0]}) do |req|
@@ -137,20 +146,27 @@ class CopyProcessor < Isono::NodeModules::Base
       end
     }.tap { |i|
       i.instance_eval {
-        def setattr(checksum, alloc_size)
-          self.call(:setattr, checksum, alloc_size)
-        end
-        
         def progress(percent)
           self.call(:progress, percent)
         end
       }
     }
+    
+    transfer = CurlTransfer.new
+    bkst = Dcmgr::Drivers::BackupStorage.driver_class(@backup_object[:backup_storage][:storage_type]).new
+    if Dcmgr.conf.local_upload_uri
+      bkst.upload_base_uri = Dcmgr.conf.local_upload_uri
+    end
+    n = transfer.pull_download_command(src_uri.to_s)
+    transfer_command =  (n[0] % n[1])
+    n = bkst.upload_command('-', @backup_object)
+    upload_command = (n[0] % n[1])
 
-    cmd_lst = ["scp '#{src_uri.host}:#{src_uri.path}' /dev/stdout",
-               "pv -W -f -n -s '#{params[:backup_object][:allocation_size]}'",
-               "tee >(md5sum > '#{chksum_path}') >(wc -c > '#{size_path}') > #{@download_uri.path}" ]
-
+    cmd_lst = [transfer_command,
+               "pv -W -f -n -s '#{@backup_object[:allocation_size]}'",
+               "tee >(md5sum > '#{chksum_path}') >(wc -c > '#{size_path}')",
+               upload_command
+              ]
     r = shell.popen4(cmd_lst.join(' | ')) do |pid, sin, sout, eout|
       sin.close
       
@@ -169,9 +185,17 @@ class CopyProcessor < Isono::NodeModules::Base
     end
     
     chksum = File.read(chksum_path).split(/\s+/).first
-    alloc_size = File.read(size_path).split(/\s+/).first
+    alloc_size = File.read(size_path).split(/\s+/).first.to_i
+
+    # verify result from backup object database entry.
+    if @backup_object[:allocation_size] != alloc_size.to_i
+      logger.error("Verify failed with Wrong size: #{@backup_object[:uuid]} expected size=#{@backup_object[:allocation_size]}, real size=#{alloc_size}")
+      raise "Verification Failure"
+    elsif @backup_object[:checksum] != chksum
+      logger.error("Verify failed with wrong check sum: #{@backup_object[:uuid]} expected=#{@backup_object[:checksum]}, caluculated=#{chksum}")
+      raise "Verification Failure"
+    end
     
-    evcb.setattr(chksum, alloc_size.to_i)
     evcb.progress(100)
 
     rpc.request('sta-collector', 'update_backup_object', @backupobject_id, {:state=>:available})

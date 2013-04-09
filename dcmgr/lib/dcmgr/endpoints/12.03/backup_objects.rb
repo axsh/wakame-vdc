@@ -115,8 +115,8 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/backup_objects' do
       submit_data[k] = params[k] if params[k]
     }
 
-    if bo.backup_storage.node.nil?
-      raise E::InvalidBackupStorage, "Not ready for copy_to task."
+    if bo.backup_storage.node_id.nil?
+      raise E::InvalidBackupStorage, "Not ready for copy task"
     end
 
     job = Dcmgr::Messaging.job_queue.submit("backup_storage.copy_to.#{bo.backup_storage.node_id}",
