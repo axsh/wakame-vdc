@@ -267,11 +267,14 @@ CURDIR=${RPM_BUILD_ROOT} rpmbuild/rules binary-arch
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
 
+# TODO: Remove contrib dir excluding contrib/fluentd .
 components="
  dcmgr
  frontend
  rpmbuild
  client
+ dolphin
+ contrib
 "
 for component in ${components}; do
   rsync -aHA --exclude=".git/*" --exclude="*~" `pwd`/${component} ${RPM_BUILD_ROOT}/%{prefix}/%{oname}/
