@@ -72,10 +72,12 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
     allow_list = params[:allow_list] || ['0.0.0.0']
 
     raise E::InvalidLoadBalancerAlgorithm unless ['leastconn', 'source'].include? params[:balance_algorithm]
+    raise E::InvalidLoadBalancerInstancePort unless params[:instance_port].is_a?(String)
+    raise E::InvalidLoadBalancerInstanceProtocol unless params[:instance_protocol].is_a?(String)
 
     lb = M::LoadBalancer.new
     lb.account_id = @account.canonical_uuid
-    lb.instance_port = params[:instance_port].to_i || 80
+    lb.instance_port = params[:instance_port] || 80
     lb.instance_protocol = params[:instance_protocol] || 'http'
     lb.balance_algorithm = params[:balance_algorithm] || 'leastconn'
     lb.allow_list = allow_list.join(',')
@@ -337,6 +339,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
   put '/:id' do
     raise E::Undefined:UndefinedLoadBalancerID if params[:id].nil?
+    raise E::InvalidLoadBalancerInstancePort unless params[:instance_port].is_a?(String)
+    raise E::InvalidLoadBalancerInstanceProtocol unless params[:instance_protocol].is_a?(String)
+
     lb = find_by_uuid(:LoadBalancer, params['id'])
     if !params[:port].blank? && !params[:protocol].blank?
       inbounds = get_inbounds
@@ -376,6 +381,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
 
     if !params[:instance_protocol].blank?
       lb.instance_protocol = params[:instance_protocol]
+      raise E::InvalidLoadBalancerInstanceProtocol, lb.errors[:instance_protocol] if !lb.valid?
     end
 
     if !params[:instance_port].blank?
@@ -572,22 +578,33 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/load_balancers' do
   end
 
   def get_inbounds
-    if params[:port].nil? || params[:port].empty? || !params[:port].is_a?(Array)
+
+    if params[:port].nil? || params[:port].empty?
       raise E::InvalidLoadBalancerPort
     end
 
-    if params[:protocol].nil? || params[:protocol].empty? || !params[:protocol].is_a?(Array)
+    if params[:protocol].nil? || params[:protocol].empty?
       raise E::InvalidLoadBalancerProtocol
     end
 
     inbounds = []
-    params[:port].each_index { |i|
-      raise 'Invalid param pair' if !params[:protocol][i] || !params[:port][i]
-      inbounds << {
-        :protocol => params[:protocol][i],
-        :port => params[:port][i]
+
+    if params[:port].is_a?(Array) && params[:protocol].is_a?(Array)
+      params[:port].each_index { |i|
+        inbounds << {
+          :protocol => params[:protocol][i],
+          :port => params[:port][i]
+        }
       }
-    }
+    elsif params[:port].is_a?(String) && params[:protocol].is_a?(String)
+      inbounds << {
+        :protocol => params[:protocol],
+        :port => params[:port]
+      }
+    else
+      raise E::LoadBalancerNotPermitted
+    end
+
     inbounds
   end
 
