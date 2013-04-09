@@ -30,6 +30,7 @@ module Dcmgr::Models
         self.ip_handle.expires_at = nil
         self.ip_handle.save_changes
       end
+      return true
     end
 
     def detach_vif
