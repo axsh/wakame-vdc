@@ -72,6 +72,7 @@ task_update() {
   [[ -n "${uuid}"      ]] || { echo "[ERROR] 'uuid' is empty (${BASH_SOURCE[0]##*/}:${LINENO})" >&2; return 1; }
 
   call_api -X PUT $(urlencode_data \
+    $(add_param allow_list         array) \
     $(add_param balance_algorithm string) \
     $(add_param cookie_name       string) \
     $(add_param display_name      string) \
@@ -79,9 +80,9 @@ task_update() {
     $(add_param instance_port     string) \
     $(add_param instance_protocol string) \
     $(add_param max_connection    string) \
-    $(add_param port              string) \
+    $(add_param port               array) \
     $(add_param private_key      strfile) \
-    $(add_param protocol          string) \
+    $(add_param protocol           array) \
     $(add_param public_key       strfile) \
    ) \
    $(base_uri)/${namespace}s/${uuid}.$(suffix)
