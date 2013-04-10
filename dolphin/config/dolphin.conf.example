@@ -12,7 +12,8 @@ sender = 1
 adapter = cassandra
 hosts = 127.0.0.1
 port = 9160
-retry_count = 3
+max_retry_count = 3
+retry_interval = 3
 
 [mail]
 from = demo@example.com
