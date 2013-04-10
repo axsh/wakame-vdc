@@ -34,7 +34,7 @@ function tearDown() {
 ###
 
 function test_create_load_balancer_allow_list_cidr() {
-  load_balancer_uuid="$(allow_list=216.98.224.0/20 run_cmd load_balancer create | hash_value id)"
+  load_balancer_uuid="$(allow_list=192.0.2.0/24 run_cmd load_balancer create | hash_value id)"
   assertEquals $? 0
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
@@ -42,7 +42,7 @@ function test_create_load_balancer_allow_list_cidr() {
 }
 
 function test_create_load_balancer_allow_list_cidr_array() {
-  load_balancer_uuid="$(allow_list="216.98.224.0/20 216.99.10.0/20" run_cmd load_balancer create | hash_value id)"
+  load_balancer_uuid="$(allow_list="192.0.2.0/24 192.168.0.0/24" run_cmd load_balancer create | hash_value id)"
   assertEquals $? 0
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
@@ -50,7 +50,7 @@ function test_create_load_balancer_allow_list_cidr_array() {
 }
 
 function test_create_load_balancer_allow_list_ip() {
-  load_balancer_uuid="$(allow_list=216.98.224.99 run_cmd load_balancer create | hash_value id)"
+  load_balancer_uuid="$(allow_list=192.0.2.1 run_cmd load_balancer create | hash_value id)"
   assertEquals $? 0
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
@@ -58,7 +58,7 @@ function test_create_load_balancer_allow_list_ip() {
 }
 
 function test_create_load_balancer_allow_list_ip_array() {
-  load_balancer_uuid="$(allow_list="216.98.224.99 216.98.224.98" run_cmd load_balancer create | hash_value id)"
+  load_balancer_uuid="$(allow_list="192.0.2.1 192.0.2.99" run_cmd load_balancer create | hash_value id)"
   assertEquals $? 0
 
   retry_until "document_pair? load_balancer ${load_balancer_uuid} state running"
