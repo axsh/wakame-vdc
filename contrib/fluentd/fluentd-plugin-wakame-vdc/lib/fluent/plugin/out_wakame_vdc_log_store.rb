@@ -32,13 +32,17 @@ module Fluent
       raise ConfigError, "'Keyspace' parameter is required on cassandra output"   unless @keyspace = conf['keyspace']
       raise ConfigError, "'ColumnFamily' parameter is required on cassandra output"   unless @columnfamily = conf['columnfamily']
 
-      @host = conf.has_key?('host') ? conf['host'] : 'localhost'
+      @hosts = conf.has_key?('hosts') ? conf['hosts'].split(',') : ['127.0.0.1']
       @port = conf.has_key?('port') ? conf['port'] : 9160
     end
 
     def start
-      super
-      @connection = Cassandra.new(@keyspace, @host + ':' + @port )
+      begin
+        super
+        @connection = Cassandra.new(@keyspace, servers)
+      rescue => e
+        raise e
+      end
     end
 
     def shutdown
@@ -90,5 +94,11 @@ module Fluent
          )
       }
     end
+
+    private
+    def servers
+      @hosts.collect{|host| "#{host}:#{@port}"}
+    end
+
   end
 end
