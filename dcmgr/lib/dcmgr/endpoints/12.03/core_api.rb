@@ -94,7 +94,22 @@ module Dcmgr::Endpoints::V1203
       #  - start
       #  - limit
       #  - sort_by
+      def dataset_filter(ds, filter)
+        filter_list = filter.class == Array ? filter : [filter]
+        filter_list.each { |filter|
+          m = /^(\w+)(\.nil|\.not_nil)?$/.match(filter) || raise(E::InvalidParameter, :filter)
+
+          case m[2]
+          when '.nil' then ds = ds.where(m[1].to_sym => nil)
+          when '.not_nil' then ds = ds.exclude(m[1].to_sym => nil)
+          end
+        }
+
+        ds
+      end
+
       def paging_params_filter(ds)
+        ds = dataset_filter(ds, params[:filter]) if params[:filter]
 
         total = ds.count
 
@@ -109,7 +124,7 @@ module Dcmgr::Endpoints::V1203
                 end
         limit = if params[:limit]
                   if params[:limit] =~ /^\d+$/
-                  params[:limit].to_i
+                    params[:limit].to_i
                   else
                     raise E::InvalidParameter, :limit
                   end
@@ -118,9 +133,12 @@ module Dcmgr::Endpoints::V1203
                 end
         limit = limit < 1 ? 250 : limit
         ds = if params[:sort_by]
-                if r = params[:sort_by].match(/^(\w+)[.]{1}(desc|asc)?$/)
-                  ds.order(r[1].to_sym.__send__(r[2]))
-                end
+               m = /^(\w+)(\.desc|\.asc)?$/.match(params[:sort_by]) || raise(E::InvalidParameter, :sort_by)
+
+               case m[2]
+               when '.asc' then ds.order(Sequel.asc(m[1].to_sym))
+               when '.desc' then ds.order(Sequel.desc(m[1].to_sym))
+               end
              else
                ds.order(:id.desc)
              end
