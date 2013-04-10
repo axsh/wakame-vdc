@@ -21,7 +21,7 @@ task_create() {
     $(add_param description       string) \
     $(add_param display_name      string) \
     $(add_param engine            string) \
-    $(add_param httpchk           string) \
+    $(add_param httpchk          strfile) \
     $(add_param instance_port     string) \
     $(add_param instance_protocol string) \
     $(add_param max_connection    string) \
@@ -77,6 +77,7 @@ task_update() {
     $(add_param cookie_name       string) \
     $(add_param display_name      string) \
     $(add_param engine            string) \
+    $(add_param httpchk          strfile) \
     $(add_param instance_port     string) \
     $(add_param instance_protocol string) \
     $(add_param max_connection    string) \
