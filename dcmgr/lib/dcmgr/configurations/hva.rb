@@ -124,7 +124,7 @@ module Dcmgr
       param :packet_drop_log, :default => false
       param :debug_iptables, :default=>false
       param :use_ipset, :default=>false
-      param :use_logging_service, :default=>true
+      param :use_logging_service, :default=>false
       param :logging_service_ip, :default =>'169.254.169.253'
       param :logging_service_port, :default => 8888
       param :enable_gre, :default=>false
