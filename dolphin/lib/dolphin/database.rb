@@ -92,7 +92,7 @@ module Dolphin
       def connect
         begin
           if @connection.nil?
-            @connection = ::Cassandra.new(@keyspace, servers)
+            @connection = ::Cassandra.new(@keyspace, seeds)
 
             # test connecting..
             @connection.ring
@@ -116,7 +116,7 @@ module Dolphin
       end
 
       private
-      def servers
+      def seeds
         @hosts.collect{|host| "#{host}:#{@port}"}
       end
     end
