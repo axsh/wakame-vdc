@@ -72,9 +72,9 @@ function test_load_balancer_create_no_opts() {
     engine=${engine}
     instance_port=${instance_port}
     max_connection=${max_connection}
-    port=${port}
+    port[]=${port}
     private_key=${private_key}
-    protocol=${protocol}
+    protocol[]=${protocol}
     public_key=${public_key}
   "
 
@@ -116,9 +116,9 @@ function test_load_balancer_create_opts() {
     engine=${engine}
     instance_port=${instance_port}
     max_connection=${max_connection}
-    port=${port}
+    port[]=${port}
     private_key=${private_key}
-    protocol=${protocol}
+    protocol[]=${protocol}
     public_key=${public_key}
   "
 

@@ -89,7 +89,7 @@ function urlencode_data() {
     while [[ "${1}" ]]; do
       echo --data-urlencode ${1}
       shift
-    done | sort
+    done
   )
 }
 
