@@ -10,6 +10,8 @@ gem 'rake', '10.0.3'
 gem 'octarine', '0.0.3'
 gem 'parseconfig', '1.0.2'
 gem 'erubis', '2.7.0'
+
+# Fixed version for reel
 gem 'celluloid', '0.12.4'
 gem 'celluloid-io', '0.12.1'
 gem 'nio4r', '0.4.3'
