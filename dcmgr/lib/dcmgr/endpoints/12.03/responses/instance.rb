@@ -49,7 +49,7 @@ module Dcmgr::Endpoints::V1203::Responses
           when 'enabled'
             tmp[idx][:enabled] = (l.value == 'true')
           else
-            tmp[idx][key]= l.value
+            tmp[idx][key.to_sym]= l.value
           end
         }
         
