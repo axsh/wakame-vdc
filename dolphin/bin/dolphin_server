@@ -38,7 +38,10 @@ module Dolphin
     end
   }
 
-  def self.run
+  def self.run(config_file)
+
+    # init config_file
+    Dolphin.settings(config_file)
 
     if RUBY_VERSION.to_f >= 2
       # Celluloid::TaskFiber by default
@@ -58,16 +61,34 @@ module Dolphin
     manager.add(Sender::Mail, :as => :mail_senders)
     manager.add(QueryProcessor, :as => :query_processors)
 
-    server_settings = Dolphin.settings['server']
-
     # TODO: RequestHandler link to Manager
     # TODO: Chanage to rackup
-    RequestHandler.new(server_settings['host'], server_settings['port'])
 
+    server_settings = Dolphin.settings['server']
+    RequestHandler.new(server_settings['host'], server_settings['port'])
 
     Manager.run
   end
 end
 
-Dolphin.run
-sleep
+OptionParser.new do |opt|
+  begin
+    config_file = ''
+    run = true
+
+    opt.on('-c [dolphin.conf]', "Dolphin configuration file") {|v| config_file = v }
+    opt.on('-h', "--help") {|v| run = false; puts opt.help() }
+    opt.on('-v', "--version") {|v| run = false; puts Dolphin::VERSION }
+    opt.parse!(ARGV)
+
+    if run
+      Dolphin.run(config_file)
+      sleep
+    else
+      exit!
+    end
+  rescue => e
+    puts e.message
+    exit!
+  end
+end

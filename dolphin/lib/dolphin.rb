@@ -2,20 +2,28 @@
 
 require 'parseconfig'
 require 'ostruct'
+require 'extlib/blank'
 
 Signal.trap(:INT, "EXIT")
 
 $LOAD_PATH.unshift File.expand_path('../', __FILE__)
 
 module Dolphin
+  def self.settings(config='')
 
-  def self.settings
+    if @settings.nil?
+      # overwrite
+      config = File.join(Dolphin.root_path, '/config/dolphin.conf') if config.blank?
 
-    @settings ||= ParseConfig.new(File.join(Dolphin.root_path, '/config/dolphin.conf'))
-
-    # TODO:validation
-
+      # TODO:validation
+      @config = config
+      @settings = ParseConfig.new(config)
+    end
     @settings
+  end
+
+  def self.config
+    @config
   end
 
   def self.root_path
