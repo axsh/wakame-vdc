@@ -446,6 +446,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config(noreplace) /etc/default/vdc-proxy
 %config(noreplace) /etc/default/vdc-auth
 %config(noreplace) /etc/default/vdc-nwmongw
+%config(noreplace) /etc/default/vdc-dolphin
 %config /etc/init/vdc-dcmgr.conf
 %config /etc/init/vdc-collector.conf
 %config /etc/init/vdc-metadata.conf
@@ -455,6 +456,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %config /etc/init/vdc-proxy.conf
 %config /etc/init/vdc-auth.conf
 %config /etc/init/vdc-nwmongw.conf
+%config /etc/init/vdc-dolphin.conf
 %dir /etc/%{oname}/dcmgr_gui
 %dir /etc/%{oname}/convert_specs
 %dir /var/log/%{oname}/dcmgr_gui
