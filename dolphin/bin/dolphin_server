@@ -16,6 +16,20 @@ end
 
 require File.join(File.expand_path('../../', __FILE__), 'lib/dolphin')
 
+options = {}
+opt = OptionParser.new do |opt|
+  opt.on('-c [dolphin.conf]', "Dolphin configuration file") {|v| options[:config_file] = v }
+  opt.on('-h', "--help") {|v| puts opt.help(); Kernel.exit(true) }
+  opt.on('-v', "--version") {|v| puts Dolphin::VERSION; Kernel.exit(true) }
+end
+
+begin
+  opt.parse!(ARGV)
+rescue => e
+  STDERR.puts e
+  exit!
+end
+
 require 'ltsv'
 require 'celluloid'
 
@@ -38,7 +52,10 @@ module Dolphin
     end
   }
 
-  def self.run
+  def self.run(options)
+
+    # init config_file
+    Dolphin.settings(options[:config_file])
 
     if RUBY_VERSION.to_f >= 2
       # Celluloid::TaskFiber by default
@@ -58,16 +75,15 @@ module Dolphin
     manager.add(Sender::Mail, :as => :mail_senders)
     manager.add(QueryProcessor, :as => :query_processors)
 
-    server_settings = Dolphin.settings['server']
-
     # TODO: RequestHandler link to Manager
     # TODO: Chanage to rackup
-    RequestHandler.new(server_settings['host'], server_settings['port'])
 
+    server_settings = Dolphin.settings['server']
+    RequestHandler.new(server_settings['host'], server_settings['port'])
 
     Manager.run
   end
 end
 
-Dolphin.run
+Dolphin.run(options)
 sleep

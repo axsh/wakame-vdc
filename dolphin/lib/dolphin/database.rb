@@ -84,8 +84,8 @@ module Dolphin
         raise "database hosts is blank" if config[:hosts].empty?
         @hosts = config[:hosts].split(',')
         @port = config[:port]
-        @max_retry_count = config[:max_retry_count]
-        @retry_interval = config[:retry_interval]
+        @max_retry_count = config[:max_retry_count] || 3
+        @retry_interval = config[:retry_interval] || 3
         @retry_count = 0
       end
 
