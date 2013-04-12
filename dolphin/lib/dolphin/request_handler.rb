@@ -10,6 +10,10 @@ module Dolphin
     include Dolphin::Helpers::RequestHelper
 
     def initialize(host, port)
+
+      # TODO: Fix Celluloid.logger loading order.
+      logger :info, "Load settings in #{Dolphin.config}"
+
       @server = Reel::Server.supervise_as(:reques_handler, host, port) do |connection|
         while request = connection.request
           begin
