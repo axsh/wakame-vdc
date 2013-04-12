@@ -12,8 +12,13 @@ module Dolphin
   def self.settings(config='')
 
     if @settings.nil?
+
       # overwrite
       config = File.join(Dolphin.root_path, '/config/dolphin.conf') if config.blank?
+      if !File.exists?(config)
+        puts "File not found #{config}"
+        exit!
+      end
 
       # TODO:validation
       @config = config
