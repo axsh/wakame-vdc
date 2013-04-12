@@ -16,6 +16,20 @@ end
 
 require File.join(File.expand_path('../../', __FILE__), 'lib/dolphin')
 
+options = {}
+opt = OptionParser.new do |opt|
+  opt.on('-c [dolphin.conf]', "Dolphin configuration file") {|v| options[:config_file] = v }
+  opt.on('-h', "--help") {|v| puts opt.help(); Kernel.exit(true) }
+  opt.on('-v', "--version") {|v| puts Dolphin::VERSION; Kernel.exit(true) }
+end
+
+begin
+  opt.parse!(ARGV)
+rescue => e
+  STDERR.puts e
+  exit!
+end
+
 require 'ltsv'
 require 'celluloid'
 
@@ -69,20 +83,6 @@ module Dolphin
 
     Manager.run
   end
-end
-
-options = {}
-opt = OptionParser.new do |opt|
-  opt.on('-c [dolphin.conf]', "Dolphin configuration file") {|v| options[:config_file] = v }
-  opt.on('-h', "--help") {|v| puts opt.help(); Kernel.exit! }
-  opt.on('-v', "--version") {|v| puts Dolphin::VERSION; Kernel.exit! }
-end
-
-begin
-  opt.parse!(ARGV)
-rescue => e
-  STDERR.puts e
-  exit!
 end
 
 Dolphin.run(options)
