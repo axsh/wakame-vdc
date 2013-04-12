@@ -157,35 +157,46 @@ module Dcmgr
         @on_initialize_hooks
       end
 
-      # Show warning message if the old parameter is set.
-      def deprecated_warn_param(old_name, message=nil, &blk)
-        on_param_create_hook do |param_name, opts|
-          warn_msg = message || "WARN: Deprecated parameter: #{old_name}. Please use '#{param_name}'."
+      DEPRECATED_WARNING_MESSAGE="WARN: Deprecated parameter: %1$s. Please use '%2$s'".freeze
+      DEPRECATED_ERROR_MESSAGE="ERROR: Parameter is no longer supported: %1$s. Please use '%2$s'".freeze
 
-          alias_param old_name, param_name
-          self.const_get(:DSL, false).class_eval %Q{
-            def #{old_name}(v)
-              STDERR.puts "#{warn_msg}"
-              #{param_name.to_s}(v)
-            end
-          }
+      # Show warning message if the old parameter is set.
+      def deprecated_warn_param(old_name, message=nil)
+        on_param_create_hook do |param_name, opts|
+          self.deprecated_warn_for(old_name, param_name, message)
         end
+      end
+
+      def deprecated_warn_for(old_name, param_name, message=nil)
+        warn_msg = message || DEPRECATED_WARNING_MESSAGE
+        
+        alias_param old_name, param_name
+        self.const_get(:DSL, false).class_eval %Q{
+          def #{old_name}(v)
+            STDERR.puts("#{warn_msg}" % ["#{old_name}", "#{param_name}"])
+            #{param_name.to_s}(v)
+          end
+        }
       end
 
       # Raise an error if the old parameter is set.
       def deprecated_error_param(old_name, message=nil)
         on_param_create_hook do |param_name, opts|
-          err_msg = message || "ERROR: Parameter is no longer supported: #{old_name}. Please use '#{param_name}'."
-
-          alias_param old_name, param_name
-          self.const_get(:DSL, false).class_eval %Q{
-            def #{old_name}(v)
-              raise "#{err_msg}"
-            end
-          }
+          self.deprecated_error_for(old_name, param_name, message)
         end
       end
 
+      def deprecated_error_for(old_name, param_name, message=nil)
+        err_msg = message || DEPRECATED_ERROR_MESSAGE
+        
+        alias_param old_name, param_name
+        self.const_get(:DSL, false).class_eval %Q{
+          def #{old_name}(v)
+            raise ("#{err_msg}" % ["#{old_name}", "#{param_name}"])
+          end
+        }
+      end
+      
       def alias_param (alias_name, ref_name)
         # getter
         self.class_eval %Q{
