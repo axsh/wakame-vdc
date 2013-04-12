@@ -78,6 +78,8 @@ module Dolphin
     end
   end
 
+  autoload :VERSION, 'dolphin/version'
+
   autoload :Util, 'dolphin/util'
   autoload :MessageBuilder, 'dolphin/message_builder'
   autoload :DataBase, 'dolphin/database'
