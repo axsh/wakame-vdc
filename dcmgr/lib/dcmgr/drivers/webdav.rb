@@ -21,7 +21,7 @@ module Dcmgr::Drivers
     attr_accessor :upload_base_uri
     
     def download_command(src_bo, dst_path)
-      ["curl -s -o %s", [abs_uri(src_bo)]]
+      ["curl -s %s", [abs_uri(src_bo)]]
     end
 
     def upload_command(src_path, dst_bo)
