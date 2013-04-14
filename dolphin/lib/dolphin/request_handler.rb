@@ -48,7 +48,8 @@ module Dolphin
         event[:message_type] = @message_type
         event[:messages] = @params
 
-        worker.future.put_event(event)
+        events = worker.future.put_event(event)
+        raise events.value.message if events.value.fail?
 
         response_params = {
           :message => 'OK'
