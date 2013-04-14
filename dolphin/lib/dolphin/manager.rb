@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 require 'celluloid'
-
+require 'pry'
 module Dolphin
   class Manager < Celluloid::SupervisionGroup
     include Dolphin::Util
 
-    trap_exit :worker_died
+    trap_exit :actor_died
 
-    def worker_died(actor, reason)
-      info "actor died"
-      restart_actor(actor, "Hoge")
-      info "actor restarted"
+    def actor_died(actor, reason)
+      logger :info, "Actor died"
+      restart_actor(actor, "Breaked actor")
+      logger :info, "Actor restarted"
     end
 
     def start
