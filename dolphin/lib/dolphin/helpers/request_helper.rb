@@ -27,10 +27,7 @@ module Dolphin
           logger :info, @params
           blk.call
         rescue => e
-          logger :error, e.message
-          e.backtrace.each do |line|
-            logger :error, line
-          end
+          logger :error, e
 
           [400, MultiJson.dump({
             :message => e.message
