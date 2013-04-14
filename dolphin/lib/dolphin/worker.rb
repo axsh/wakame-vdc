@@ -24,7 +24,7 @@ module Dolphin
       notifications = future_notification.value
       future_event.value
 
-      if notifications === FALSE
+      if !notifications
         log_message = "Not found notification: #{event_object[:notification_id]}"
         logger :error, log_message
         return FailureObject.new(log_message)
