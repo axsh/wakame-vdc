@@ -182,6 +182,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         check_network_ip_combo(temp["nat_network"], temp["nat_ipv4_addr"])
         is_manual_ip_set = true
       end
+
+      # Deprecated code. Will be removed when we update the GUI to handle security groups
+      # on the vifs leven instead of the instances level.
+      temp["security_groups"] = params["security_groups"] || [] unless temp["security_groups"]
     }
 
     # params is a Mash object. so coverts to raw Hash object.
@@ -228,7 +232,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     instance.save
 
-    # 
+    #
     # TODO:
     #  "host_id" and "host_pool_id" will be obsolete.
     #  They are used in lib/dcmgr/scheduler/host_node/specify_node.rb.
@@ -249,12 +253,9 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     if is_manual_ip_set
       ## Assign the custom vifs
-      Dcmgr::Scheduler::Network::SpecifyNetwork.new.schedule(instance)
+      Dcmgr::Scheduler::Network::VifsRequestParam.new.schedule(instance)
       instance.network_vif.each { |vif|
-        # Calling this scheduler from instance#add_nic method instead
-        # as a workaround for that dirty method that needs to be removed
-        # Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
-
+        Dcmgr::Scheduler::MacAddress::SpecifyMacAddress.new.schedule(vif)
         Dcmgr::Scheduler::IPAddress::SpecifyIP.new.schedule(vif)
       }
     end
@@ -458,10 +459,10 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         end
         instance.instance_monitor_attr.changed_columns << :recipients
       end
-      
+
       instance.instance_monitor_attr.save_changes
     end
-    
+
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
 

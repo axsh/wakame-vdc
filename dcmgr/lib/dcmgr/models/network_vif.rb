@@ -25,6 +25,15 @@ module Dcmgr::Models
     one_to_many :network_services
     one_to_many :network_vif_monitors
 
+    def add_security_groups_by_id(group_ids)
+      group_ids = [group_ids] unless group_ids.respond_to?(:each)
+      group_ids.each { |group_id|
+        group = Dcmgr::Models::SecurityGroup[group_id]
+        raise "Security group: #{group_id} doesn't exit" if group.nil?
+        self.add_security_group(group)
+      }
+    end
+
     def to_hash
       hash = super
       hash.merge!({ :address => self.direct_ip_lease.first.nil? ? nil : self.direct_ip_lease.first.ipv4,
@@ -93,7 +102,7 @@ module Dcmgr::Models
     end
 
     def before_validation
-      self[:mac_addr] = normalize_mac_addr(self[:mac_addr])
+      self[:mac_addr] = normalize_mac_addr(self[:mac_addr]) if self.mac_addr
 
       # set maximum index number if the nic has no index value and
       # is attached to instance.
@@ -126,11 +135,13 @@ module Dcmgr::Models
       # do not run validation if the row is marked as deleted.
       return true if self.deleted_at
 
-      unless self.mac_addr.size == 12 && self.mac_addr =~ /^[0-9a-f]{12}$/
-        errors.add(:mac_addr, "Invalid mac address syntax: #{self.mac_addr}")
-      end
-      if MacLease.find(:mac_addr=>self.mac_addr.hex).nil?
-        errors.add(:mac_addr, "MAC address is not on the MAC lease database.")
+      unless self.mac_addr.nil? || self.mac_addr.empty?
+        unless self.mac_addr.size == 12 && self.mac_addr =~ /^[0-9a-f]{12}$/
+          errors.add(:mac_addr, "Invalid mac address syntax: #{self.mac_addr}")
+        end
+        if MacLease.find(:mac_addr=>self.mac_addr.hex).nil?
+          errors.add(:mac_addr, "MAC address is not on the MAC lease database.")
+        end
       end
 
       # find duplicate device index.
