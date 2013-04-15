@@ -36,6 +36,7 @@ module Dolphin
       end
       logger :info, "Running on ruby #{RUBY_VERSION} with selected #{Celluloid::task_class}"
       logger :info, "Listening on http://#{host}:#{port}"
+      @server
     end
 
     post '/events' do |request|
