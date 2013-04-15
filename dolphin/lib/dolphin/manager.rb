@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'celluloid'
-require 'pry'
+
 module Dolphin
   class Manager < Celluloid::SupervisionGroup
     include Dolphin::Util
