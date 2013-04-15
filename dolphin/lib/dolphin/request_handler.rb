@@ -36,6 +36,7 @@ module Dolphin
       end
       logger :info, "Running on ruby #{RUBY_VERSION} with selected #{Celluloid::task_class}"
       logger :info, "Listening on http://#{host}:#{port}"
+      @server
     end
 
     post '/events' do |request|
@@ -48,7 +49,8 @@ module Dolphin
         event[:message_type] = @message_type
         event[:messages] = @params
 
-        worker.future.put_event(event)
+        events = worker.future.put_event(event)
+        raise events.value.message if events.value.fail?
 
         response_params = {
           :message => 'OK'

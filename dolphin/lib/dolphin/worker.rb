@@ -24,10 +24,14 @@ module Dolphin
       notifications = future_notification.value
       future_event.value
 
-      if notifications === FALSE
+      if notifications.nil?
         log_message = "Not found notification: #{event_object[:notification_id]}"
         logger :error, log_message
         return FailureObject.new(log_message)
+      end
+
+      if query_processor_failed?(notifications)
+        return FailureObject.new('Failed to get notifications')
       end
 
       notifications.each do |sender_type, values|
@@ -58,7 +62,14 @@ module Dolphin
         end
 
         logger :info, "Send notification from Worker #{message}"
-        send_notification(sender_type, message)
+
+        begin
+          send_notification(sender_type, message)
+        rescue => e
+          logger :error, e
+          # Does not do response to Request Handler.
+          next
+        end
       end
 
       SuccessObject.new
@@ -66,7 +77,7 @@ module Dolphin
 
     def get_event(params)
       event = query_processor.get_event(params)
-      if event === FALSE
+      if query_processor_failed?(event)
        return FailureObject.new('Failed to get events')
      end
       SuccessObject.new(event)
@@ -74,13 +85,17 @@ module Dolphin
 
     def put_notification(notification)
       notification = query_processor.put_notification(notification)
-      if notification === FALSE
+      if query_processor_failed?(notification)
         return FailureObject.new('Failed to put notification')
       end
       SuccessObject.new(notification)
     end
 
     private
+    def query_processor_failed?(response_data)
+      response_data === FALSE
+    end
+
     def query_processor
       Celluloid::Actor[:query_processors]
     end
@@ -93,13 +108,17 @@ module Dolphin
       case type
         when 'email'
           sender(:mail_senders).notify(log_message)
+        else
+          raise "Unsuppoted sender type: #{type}"
       end
     end
 
     def build_message(type, template_id, params)
       case type
         when 'email'
-        MessageBuilder::Mail.new.build(template_id, params)
+          MessageBuilder::Mail.new.build(template_id, params)
+        else
+          nil
       end
     end
   end
