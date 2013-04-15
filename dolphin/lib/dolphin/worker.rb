@@ -24,10 +24,14 @@ module Dolphin
       notifications = future_notification.value
       future_event.value
 
-      if !notifications
+      if notifications.nil?
         log_message = "Not found notification: #{event_object[:notification_id]}"
         logger :error, log_message
         return FailureObject.new(log_message)
+      end
+
+      if query_processor_failed?(notifications)
+        return FailureObject.new('Failed to get notifications')
       end
 
       notifications.each do |sender_type, values|
@@ -81,6 +85,10 @@ module Dolphin
     end
 
     private
+    def query_processor_failed?(response_data)
+      response_data === FALSE
+    end
+
     def query_processor
       Celluloid::Actor[:query_processors]
     end
