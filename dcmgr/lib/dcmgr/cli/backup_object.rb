@@ -49,7 +49,7 @@ module Dcmgr::Cli
       fields = options.dup
       fields.delete(:storage_id)
 
-      if options[options[:storage_id]]
+      if options[:storage_id]
         bkst = M::BackupStorage[options[:storage_id]]
         Error.raise("Backup storage '#{options[:storage_id]}' does not exist.",100) if bkst.nil?
         fields[:backup_storage_id] = bkst.id
