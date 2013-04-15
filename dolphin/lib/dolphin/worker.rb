@@ -62,7 +62,14 @@ module Dolphin
         end
 
         logger :info, "Send notification from Worker #{message}"
-        send_notification(sender_type, message)
+
+        begin
+          send_notification(sender_type, message)
+        rescue => e
+          logger :error, e
+          # Does not do response to Request Handler.
+          next
+        end
       end
 
       SuccessObject.new
@@ -101,6 +108,8 @@ module Dolphin
       case type
         when 'email'
           sender(:mail_senders).notify(log_message)
+        else
+          raise "Unsuppoted sender type: #{type}"
       end
     end
 
