@@ -116,7 +116,9 @@ module Dolphin
     def build_message(type, template_id, params)
       case type
         when 'email'
-        MessageBuilder::Mail.new.build(template_id, params)
+          MessageBuilder::Mail.new.build(template_id, params)
+        else
+          nil
       end
     end
   end
