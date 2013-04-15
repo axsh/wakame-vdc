@@ -49,7 +49,7 @@ module Dcmgr::Cli
       fields = options.dup
       fields.delete(:storage_id)
 
-      if options[options[:storage_id]]
+      if options[:storage_id]
         bkst = M::BackupStorage[options[:storage_id]]
         Error.raise("Backup storage '#{options[:storage_id]}' does not exist.",100) if bkst.nil?
         fields[:backup_storage_id] = bkst.id
@@ -66,7 +66,7 @@ module Dcmgr::Cli
     desc "show [UUID]", "Show the backup object details"
     def show(uuid=nil)
       if uuid
-        bo = M::BackupObject[uuid]
+        bo = M::BackupObject[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
 UUID: <%= bo.canonical_uuid %>
 Name: <%= bo.display_name %>
