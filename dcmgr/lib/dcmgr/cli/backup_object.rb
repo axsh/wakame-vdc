@@ -66,7 +66,7 @@ module Dcmgr::Cli
     desc "show [UUID]", "Show the backup object details"
     def show(uuid=nil)
       if uuid
-        bo = M::BackupObject[uuid]
+        bo = M::BackupObject[uuid] || UnknownUUIDError.raise(uuid)
         puts ERB.new(<<__END, nil, '-').result(binding)
 UUID: <%= bo.canonical_uuid %>
 Name: <%= bo.display_name %>
