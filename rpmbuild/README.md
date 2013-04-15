@@ -139,7 +139,9 @@ check if the following lines are described.
     #AMQP_ADDR=127.0.0.1
     #AMQP_PORT=5672
 
+Especially, vdc-hva has a name of node itself. If NODE_ID value is not specified, dcmgr does not recognize the hva as online.
 
+    NODE_ID=demo1
 
 Creating Database
 -----------------
