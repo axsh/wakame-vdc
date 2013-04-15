@@ -77,7 +77,7 @@ module Dolphin
 
     def get_event(params)
       event = query_processor.get_event(params)
-      if event === FALSE
+      if query_processor_failed?(event)
        return FailureObject.new('Failed to get events')
      end
       SuccessObject.new(event)
@@ -85,7 +85,7 @@ module Dolphin
 
     def put_notification(notification)
       notification = query_processor.put_notification(notification)
-      if notification === FALSE
+      if query_processor_failed?(notification)
         return FailureObject.new('Failed to put notification')
       end
       SuccessObject.new(notification)
