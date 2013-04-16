@@ -375,7 +375,7 @@ trema_home_realpath=`cd %{prefix}/%{oname}/dcmgr && %{prefix}/%{oname}/ruby/bin/
 %files
 %defattr(-,root,root)
 %{prefix}/%{oname}/
-%config /etc/logrotate.d/wakame-vdc
+%config(noreplace) /etc/logrotate.d/wakame-vdc
 %config /etc/init.d/vdc-net-event
 %config(noreplace) /etc/default/wakame-vdc
 %config /etc/prelink.conf.d/wakame-vdc.conf
