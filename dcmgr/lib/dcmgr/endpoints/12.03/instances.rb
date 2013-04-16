@@ -31,8 +31,35 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
   end
 
-  def set_monitoring_parameters(instance=@instance)
-    dirty = [false, false]
+  # monitoring.items nested parameters are accepted only at POST
+  # /instances call. It is unable from PUT /instances.
+  # Further modifications can be done from "/instances/i-xxxxx/monitoring"
+  # API namespace.
+  def insert_monitoring_items(instance)
+    # monitoring parameter is optional.
+    if params['monitoring'].nil?
+      return
+    elsif !params['monitoring'].is_a?(Hash)
+      raise E::InvalidParameter, 'monitoring'
+    end
+
+    monitoring_params = params['monitoring']
+
+    if monitoring_params.has_key?('items')
+      items_param = monitoring_params['items']
+      case items_param
+      when Array
+        items_param.each { |i|
+          instance.add_monitor_item(i['title'], i['enabled'], i['params'])
+        }
+      else
+        raise E::InvalidParameter, "monitoring.items"
+      end
+    end
+  end
+  
+  def set_monitoring_parameters(instance)
+    dirty = [false]
     # monitoring parameter is optional.
     if params['monitoring'].nil?
       return
@@ -68,48 +95,6 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       instance.instance_monitor_attr.save_changes
     end
 
-    if monitoring_params.has_key?('process')
-      dirty[1] = true
-      process_params = monitoring_params['process']
-      case process_params
-      when Array, Hash
-        if process_params.is_a?(Hash)
-          process_params = process_params.values
-        end
-
-        process_params.delete("")
-        
-        if process_params.empty?
-          instance.clear_labels('monitoring.process.%')
-        else
-          process_params.each_with_index { |i, idx|
-            instance.set_label("monitoring.process.#{idx}.enabled", (i['enabled'] == 'true').to_s)
-            if i['name'].blank?
-              raise E::InvalidParameter, "monitoring.process.#{idx}.name"
-            end
-            instance.set_label("monitoring.process.#{idx}.name", i['name'])
-            # craft UUID for process monitoring item from instance parameter.
-            instance.set_label("monitoring.process.#{idx}.uuid", "pmon-#{instance[:uuid] + idx.to_s}" )
-            if i['params'].is_a?(Hash)
-              instance.set_label("monitoring.process.#{idx}.params", ::MultiJson.dump(i['params']))
-            end
-          }
-          deleted_item_num = instance.resource_labels_dataset.grep(:name, 'monitoring.process.%').count - process_params.size
-          if deleted_item_num >= 0
-            (process_params.size .. (process_params.size + deleted_item_num)).each { |idx|
-              ["monitoring.process.#{idx}.enabled",
-               "monitoring.process.#{idx}.name",
-               "monitoring.process.#{idx}.params",
-               "monitoring.process.#{idx}.uuid"].each { |n|
-                instance.unset_label(n)
-              }
-            }
-          end
-        end
-      else
-        raise E::InvalidParameter, "monitoring.process"
-      end
-    end
 
     on_after_commit do
       # instance.monitoring.refreshed is published only when the instance
@@ -362,6 +347,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
 
     # instance_monitor_attr row is created at after_save hook in Instance model.
     # Note that the keys should use string for sub hash.
+    insert_monitoring_items(instance)
     set_monitoring_parameters(instance)
 
     instance.state = :scheduling
@@ -607,5 +593,75 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
     end
     respond_with({:instance_id=>instance.canonical_uuid,
                  })
+  end
+
+  namespace '/:instance_id/monitoring' do
+    def single_insert
+      @instance.add_monitor_item(params[:title], params[:enabled]=='true', params[:params])
+    end
+
+    before do
+      @instance = find_by_uuid(:Instance, params[:instance_id])
+    end
+
+    # List monitoring items.
+    get do
+      respond_with(R::InstanceMonitorItemCollection.new(@instance).generate)
+    end
+
+    # Create new monitoring item.
+    post do
+      res = if params[:title] && params[:enabled]
+              single_insert
+            else
+              raise E::InvalidParameter, "Invalid parameter combination"
+            end
+
+      on_after_commit do
+        Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                      :args=>[{:instance_id=>@instance.canonical_uuid}])
+      end
+
+      respond_with(res)
+    end
+
+    # Show single monitoring item.
+    get '/:monitor_id' do
+      monitor = @instance.monitor_item(params[:monitor_id]) || raise(E::UnknownUUIDResource, params[:monitor_id])
+      respond_with(R::InstanceMonitorItem.new(@instance, params[:monitor_id]).generate)
+    end
+
+    # Delete single monitoring item.
+    delete '/:monitor_id' do
+      @instance.delete_monitor_item(params[:monitor_id]) || raise(E::UnknownUUIDResource, params[:monitor_id])
+
+      on_after_commit do
+        Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                      :args=>[{:instance_id=>@instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
+      end
+      
+      respond_with([params[:monitor_id]])
+    end
+
+    # Update a monitor parameters.
+    put '/:monitor_id' do
+      @instance.monitor_item(params[:monitor_id]) || raise(E::UnknownUUIDResource, params[:monitor_id])
+
+      monitor = {}
+      unless params[:enabled].blank?
+        monitor[:enabled] = (params[:enabled] == 'true')
+      end
+
+      monitor[:title] = params[:title] unless params[:title].blank?
+      monitor[:params] = params[:params] unless params[:params]
+      @instance.update_monitor_item(params[:monitor_id], monitor)
+
+      on_after_commit do
+        Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                      :args=>[{:instance_id=>@instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
+      end
+
+      respond_with(R::InstanceMonitorItem.new(instance, params[:monitor_id]).generate)
+    end
   end
 end

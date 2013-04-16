@@ -517,13 +517,21 @@ module Dcmgr::Models
           self.resource_labels_dataset.filter(:name=>name).first
         end
         
-        def set_label(name, value)
+        def set_label(name, value, value_type=nil)
           l = label(name)
-          if l
-            l.value = value
-            l.save_changes
+          if value_type
+            if l
+              l.value = value
+              l.save_changes
+            else
+            end            
           else
-            self.add_resource_label({:name=>name}.merge(M::ResourceLabel.typecast_value_column(value)))
+            if l
+              l.value = value
+              l.save_changes
+            else
+              self.add_resource_label({:name=>name}.merge(M::ResourceLabel.typecast_value_column(value)))
+            end
           end
         end
         
@@ -538,7 +546,11 @@ module Dcmgr::Models
 
         def clear_labels(name_pattern=nil)
           if name_pattern.is_a?(String)
-            self.resource_labels_dataset.grep(:name, name_pattern).each { |l| l.destroy }
+            ret = []
+            self.resource_labels_dataset.grep(:name, name_pattern).each { |l|
+              ret << l.destroy
+            }
+            return ret
           else
             self.remove_all_resource_labels
           end
