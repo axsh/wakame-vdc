@@ -50,8 +50,8 @@ module Dolphin
         event[:messages] = @params
 
         events = worker.future.put_event(event)
-        raise events.value.message if events.value.fail?
 
+        # always success because put_event is async action.
         response_params = {
           :message => 'OK'
         }
