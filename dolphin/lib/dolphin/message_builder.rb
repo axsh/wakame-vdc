@@ -40,6 +40,11 @@ module Dolphin
           return nil
         end
 
+        message = build_message(body_template, params['messages'])
+        subject, body = message.split(MESSAGE_BOUNDARY)
+        subject.strip! unless subject.nil?
+        body.strip! unless body.nil?
+
         notification = NotificationObject.new
         notification.subject = subject
         notification.from = Dolphin.settings['mail']['from']
