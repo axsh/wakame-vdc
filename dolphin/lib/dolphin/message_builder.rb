@@ -37,13 +37,7 @@ module Dolphin
 
         body_template = template(template_id)
         if body_template.nil?
-          subject = 'Default'
-          body = ''
-        else
-          message = build_message(body_template, params['messages'])
-          subject, body = message.split(MESSAGE_BOUNDARY)
-          subject.strip!
-          body.strip!
+          return nil
         end
 
         notification = NotificationObject.new
