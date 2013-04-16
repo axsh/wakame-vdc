@@ -26,8 +26,8 @@ module Dolphin
               :input => request.body
             }
             options.merge!(request.headers)
-            status, headers, body = call Rack::MockRequest.env_for(request.url, options)
-            connection.respond status_symbol(status), headers, body.to_s
+            status, headers_or_body, body = call Rack::MockRequest.env_for(request.url, options)
+            connection.respond status_symbol(status), headers_or_body, body.to_s
           rescue => e
             logger :error, e
             break
