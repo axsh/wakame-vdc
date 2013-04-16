@@ -5,5 +5,5 @@
 #
 
 ./test_post_event
-./test_put_notification
+./test_post_notification
 ./test_post_event
