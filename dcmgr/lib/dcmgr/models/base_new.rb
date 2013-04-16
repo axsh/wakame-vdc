@@ -520,10 +520,12 @@ module Dcmgr::Models
         def set_label(name, value, value_type=nil)
           l = label(name)
           if value_type
+            # TODO: more validations for value_type.
             if l
-              l.value = value
+              l.send("#{value_type}=", value)
               l.save_changes
             else
+              self.add_resource_label({:name=>name}.merge({value_type.to_sym=>value}))
             end            
           else
             if l
