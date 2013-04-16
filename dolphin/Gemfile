@@ -10,6 +10,7 @@ gem 'rake', '10.0.3'
 gem 'octarine', '0.0.3'
 gem 'parseconfig', '1.0.2'
 gem 'erubis', '2.7.0'
+gem 'mail-iso-2022-jp', '2.0.1'
 
 # Fixed version for reel
 gem 'celluloid', '0.12.4'

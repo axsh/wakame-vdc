@@ -2,6 +2,7 @@
 
 require 'celluloid'
 require 'action_mailer'
+require 'mail-iso-2022-jp'
 
 module Dolphin
 
@@ -38,6 +39,8 @@ module Dolphin
     class Mail < ActionMailer::Base
       include Celluloid
       include Dolphin::Util
+
+      default :charset => 'ISO-2022-JP'
 
       def notify(notification_object)
         logger :debug, "Get #{notification_object}"
