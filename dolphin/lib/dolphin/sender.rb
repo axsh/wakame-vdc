@@ -16,7 +16,7 @@ module Dolphin
         ActionMailer::Base.delivery_method = :file
         ActionMailer::Base.raise_delivery_errors = true
         ActionMailer::Base.file_settings = {
-          :location => File.join(Dolphin.root_path, 'tmp/mails')
+          :location => '/var/tmp'
         }
       when 'tls-mail'
         ActionMailer::Base.delivery_method = :smtp
