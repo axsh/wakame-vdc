@@ -399,7 +399,7 @@ module Dcmgr::Models
     # List all monitoring items.
     def monitor_items
       labels = resource_labels_dataset.grep(:name, "monitoring.items.%").all
-      return [] if labels.empty?
+      return {} if labels.empty?
 
       hlist={}
      
