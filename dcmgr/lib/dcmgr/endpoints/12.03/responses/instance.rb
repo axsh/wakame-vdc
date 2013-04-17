@@ -34,26 +34,12 @@ module Dcmgr::Endpoints::V1203::Responses
           :monitoring => {
             :enabled => self.instance_monitor_attr.enabled,
             :mail_address => self.instance_monitor_attr.recipients.select{|i| i.has_key?(:mail_address) }.map{|i| i[:mail_address] },
-            :process => [],
+            :items => {},
           },
           :labels=>resource_labels.map{ |l| ResourceLabel.new(l).generate },
         }
 
-        tmp = {}
-        self.resource_labels_dataset.grep(:name, 'monitoring.process.%').each { |l|
-          dummy, dummy, idx, key = l.name.split('.', 4)
-          tmp[idx] ||= {:enabled=>false, :uuid=>nil, :params=>{}}
-          case key
-          when 'params'
-            tmp[idx][:params]=MultiJson.load(l.value)
-          when 'enabled'
-            tmp[idx][:enabled] = (l.value == 'true')
-          else
-            tmp[idx][key.to_sym]= l.value
-          end
-        }
-        
-        h[:monitoring][:process] = tmp.values
+        h[:monitoring][:items] = self.monitor_items
 
         if self.ssh_key_pair
           h[:ssh_key_pair] = {
@@ -109,6 +95,29 @@ module Dcmgr::Endpoints::V1203::Responses
       @ds.all.map { |i|
         Instance.new(i).generate
       }
+    end
+  end
+
+  class InstanceMonitorItem < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(instance, idx)
+      raise ArgumentError if !instance.is_a?(Dcmgr::Models::Instance)
+      @instance = instance
+      @idx = idx
+    end
+
+    def generate
+      @instance.monitor_item(@idx) || raise("Unknown monitor item: #{@idx}")
+    end
+  end
+
+  class InstanceMonitorItemCollection < Dcmgr::Endpoints::ResponseGenerator
+    def initialize(instance)
+      raise ArgumentError if !instance.is_a?(Dcmgr::Models::Instance)
+      @instance = instance
+    end
+
+    def generate
+      @instance.monitor_items
     end
   end
 end

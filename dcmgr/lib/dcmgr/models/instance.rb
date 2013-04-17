@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'multi_json'
+
 module Dcmgr::Models
   # Model class for running virtual instance.
   class Instance < AccountResource
@@ -373,5 +375,87 @@ module Dcmgr::Models
       AccountingLog.record(self, changed_column)
     end
 
+
+    # Find a monitoring item.
+    def monitor_item(uuid)
+      labels = resource_labels_dataset.grep(:name, "monitoring.items.#{uuid}.%").all
+      return nil if labels.empty?
+
+      h={:enabled=>false, :title=>nil, :params=>{}}
+      labels.each { |l|
+        dummy, dummy, uuid, key = l.name.split('.', 4)
+        h[key.to_sym] = case key
+                        when 'enabled'
+                          l.value == 'true'
+                        when 'params'
+                          ::MultiJson.load(l.value)
+                        else
+                          l.value
+                        end
+      }
+      h
+    end
+
+    # List all monitoring items.
+    def monitor_items
+      labels = resource_labels_dataset.grep(:name, "monitoring.items.%").all
+      return [] if labels.empty?
+
+      hlist={}
+     
+      labels.each { |l|
+        dummy, dummy, uuid, key = l.name.split('.', 4)
+        h = (hlist[uuid] ||= {:enabled=>false, :title=>nil, :params=>{}})
+        
+        h[key.to_sym] = case key
+                        when 'enabled'
+                          l.value == 'true'
+                        when 'params'
+                          ::MultiJson.load(l.value)
+                        else
+                          l.value
+                        end
+      }
+      hlist
+    end
+    
+    # Add monitor item as resource label.
+    def add_monitor_item(title, enabled, params={})
+      # generate unique UUID uniqueness from instance's uuid.
+      retry_count=3
+      begin
+        # TODO: generate ID more randomly using rand or hashing library.
+        uuid = "imon-" + self.uuid.to_s + (ResourceLabel.dataset.naked.order(Sequel.desc(:id)).get(:id).to_i + retry_count).to_s
+        retry_count -= 1
+      end while !M::ResourceLabel.dataset.filter(:name=>"monitoring.items.#{uuid}.title").empty? && retry_count > 0
+      raise "Failed to generate UUID for new monitor item." if retry_count <= 0
+      
+      set_label("monitoring.items.#{uuid}.title", title.to_s)
+      set_label("monitoring.items.#{uuid}.enabled", enabled.to_s)
+      set_label("monitoring.items.#{uuid}.params", ::MultiJson.dump(params))
+      {:uuid=>uuid, :title=>title, :enabled=>enabled, :params=>params}
+    end
+
+    def update_monitor_item(uuid, data)
+      if monitor_item(uuid).nil?
+        return nil
+      end
+
+      set_label("monitoring.items.#{uuid}.title", data[:title].to_s) if data.has_key?(:title)
+      set_label("monitoring.items.#{uuid}.enabled", data[:enabled].to_s) if data.has_key?(:enabled)
+      if data.has_key?(:params)
+        set_label("monitoring.items.#{uuid}.params", ::MultiJson.dump(data[:params]), :blob_value)
+      end
+      monitor_item(uuid)
+    end
+    
+    # Delete monitor item from resource label.
+    def delete_monitor_item(uuid)
+      item = monitor_item(uuid)
+      return nil if item.nil?
+
+      clear_labels("monitoring.items.#{uuid}.%")
+      item
+    end
   end
 end
