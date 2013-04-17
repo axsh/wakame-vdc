@@ -46,6 +46,8 @@ module Dolphin
         send_params = {
           from: notification_object.from,
           to: notification_object.to,
+          cc: notification_object.cc,
+          bcc: notification_object.bcc,
           subject: notification_object.subject,
           body: notification_object.body
         }
