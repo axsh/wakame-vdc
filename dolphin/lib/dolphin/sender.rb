@@ -2,6 +2,7 @@
 
 require 'celluloid'
 require 'action_mailer'
+require 'mail-iso-2022-jp'
 
 module Dolphin
 
@@ -39,11 +40,14 @@ module Dolphin
       include Celluloid
       include Dolphin::Util
 
+      default :charset => 'ISO-2022-JP'
+
       def notify(notification_object)
-        logger :debug, "Get #{notification_object}"
         send_params = {
           from: notification_object.from,
           to: notification_object.to,
+          cc: notification_object.cc,
+          bcc: notification_object.bcc,
           subject: notification_object.subject,
           body: notification_object.body
         }

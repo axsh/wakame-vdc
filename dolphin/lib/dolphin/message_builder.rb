@@ -3,6 +3,20 @@ require 'erubis'
 require 'extlib/blank'
 
 module Dolphin
+
+  class TemplateBuilder
+
+    include Dolphin::Helpers::Message::ZabbixHelper
+
+    def build(template_str, params)
+      template = Erubis::Eruby.new(template_str)
+      params.each {|key, val|
+        instance_variable_set("@#{key}", val)
+      }
+      template.result(binding)
+    end
+  end
+
   module MessageBuilder
 
     EXT = '.erb'.freeze
@@ -19,8 +33,8 @@ module Dolphin
       end
 
       def build_message(str, params)
-        erubis = Erubis::Eruby.new(str)
-        erubis.result(params)
+        template = TemplateBuilder.new
+        template.build(str, params)
       end
     end
 
@@ -37,14 +51,13 @@ module Dolphin
 
         body_template = template(template_id)
         if body_template.nil?
-          subject = 'Default'
-          body = ''
-        else
-          message = build_message(body_template, params['messages'])
-          subject, body = message.split(MESSAGE_BOUNDARY)
-          subject.strip!
-          body.strip!
+          return nil
         end
+
+        message = build_message(body_template, params['messages'])
+        subject, body = message.split(MESSAGE_BOUNDARY)
+        subject.strip! unless subject.nil?
+        body.strip! unless body.nil?
 
         notification = NotificationObject.new
         notification.subject = subject

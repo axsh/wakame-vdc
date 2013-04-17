@@ -3,19 +3,19 @@
 
 監視アラート
 
-<%= message %>
+<%= @message %>
 
 【コンポーネントID】
-<%= instance_name %>(<%= instance_id %>)
+<%= @instance_name %>(<%= @instance_id %>)
 
 【IPアドレス】
-<%= instance_ip %>
+<%= @instance_ip %>
 
 【ステータス】
 異常
 
 【検知日時】
-<%= event_datetime %>
+<%= @event_datetime %>
 
 【補足】
 監視概要：監視間隔5分、応答待ち時間30秒、リトライ回数2回

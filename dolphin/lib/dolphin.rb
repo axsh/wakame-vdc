@@ -105,6 +105,9 @@ module Dolphin
 
   module Helpers
     autoload :RequestHelper, 'dolphin/helpers/request_helper'
+    module Message
+      autoload :ZabbixHelper, 'dolphin/helpers/message/zabbix_helper'
+    end
   end
 
   # Celluloid supervisor

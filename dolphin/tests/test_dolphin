@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# Example:
+# DOLPHIN_HOST=127.0.0.1 DOLPHIN_PORT=9004 ./test_dolphin.sh
+#
+
+./test_post_notification
+./test_post_event
+./test_get_event

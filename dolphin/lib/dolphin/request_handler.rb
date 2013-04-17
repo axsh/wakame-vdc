@@ -9,12 +9,15 @@ module Dolphin
     include Dolphin::Util
     include Dolphin::Helpers::RequestHelper
 
+    GET_EVENT_LIMIT = 30.freeze
+
     def initialize(host, port)
 
       # TODO: Fix Celluloid.logger loading order.
       logger :info, "Load settings in #{Dolphin.config}"
 
       @server = Reel::Server.supervise_as(:reques_handler, host, port) do |connection|
+
         while request = connection.request
           begin
             logger :info, {
@@ -26,8 +29,8 @@ module Dolphin
               :input => request.body
             }
             options.merge!(request.headers)
-            status, headers, body = call Rack::MockRequest.env_for(request.url, options)
-            connection.respond status_symbol(status), headers, body.to_s
+            status, headers_or_body, body = call Rack::MockRequest.env_for(request.url, options)
+            connection.respond status_symbol(status), headers_or_body, body.to_s
           rescue => e
             logger :error, e
             break
@@ -50,8 +53,8 @@ module Dolphin
         event[:messages] = @params
 
         events = worker.future.put_event(event)
-        raise events.value.message if events.value.fail?
 
+        # always success because put_event is async action.
         response_params = {
           :message => 'OK'
         }
@@ -61,7 +64,9 @@ module Dolphin
 
     get '/events' do |request|
       run(request) do
-        limit = @params['limit'].blank? ? 100 : @params['limit'].to_i
+
+        limit = @params['limit'].blank? ? GET_EVENT_LIMIT : @params['limit'].to_i
+        raise "Requested over the limit. Limited to #{GET_EVENT_LIMIT}" if limit > GET_EVENT_LIMIT
 
         params = {}
         params[:count] = limit
