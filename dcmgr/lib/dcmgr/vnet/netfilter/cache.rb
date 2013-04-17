@@ -91,13 +91,16 @@ module Dcmgr
 
         def add_security_group(group_id)
           logger.info "Adding #{group_id}"
-          @cache[:security_groups][group_id] = @rpc.request('hva-collector', 'get_netfilter_security_group', group_id, @node.node_id)
-
-
-          @cache[:security_groups][group_id][:local_vnics].values.each { |vnic|
-            add_network vnic[:network_id]
-          }
-
+          @rpc.request('hva-collector', 'get_netfilter_security_group', group_id, @node.node_id).tap do |security_group|
+            unless security_group
+              logger.warn "Security group not found from hva-collector: #{group_id}"
+              return
+            end
+            @cache[:security_groups][group_id] = security_group
+            @cache[:security_groups][group_id][:local_vnics].values.each do |vnic|
+              add_network vnic[:network_id]
+            end
+          end
           nil
         end
 
