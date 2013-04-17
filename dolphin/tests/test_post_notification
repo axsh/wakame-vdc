@@ -22,9 +22,9 @@ headers = {
 
 methods = {
   'email' => {
-    'to' => mail_to || 's-mikami@axsh.net',
-    'cc' => mail_cc,
-    'bcc' => mail_bcc,
+    'to' => 'foo@example.com,bar@example.com',
+    'cc' => 'foo@example.com,bar@example.com',
+    'bcc' => 'foofoo@example.com,barbar@example.com',
   }
 }
 
