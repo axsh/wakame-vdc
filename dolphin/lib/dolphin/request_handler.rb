@@ -18,9 +18,6 @@ module Dolphin
 
       @server = Reel::Server.supervise_as(:reques_handler, host, port) do |connection|
 
-        # always keepalived off
-        connection.instance_variable_set(:@keepalive, false)
-
         while request = connection.request
           begin
             logger :info, {
