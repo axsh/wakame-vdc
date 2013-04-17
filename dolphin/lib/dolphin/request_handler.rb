@@ -9,6 +9,8 @@ module Dolphin
     include Dolphin::Util
     include Dolphin::Helpers::RequestHelper
 
+    GET_EVENT_LIMIT = 30.freeze
+
     def initialize(host, port)
 
       # TODO: Fix Celluloid.logger loading order.
@@ -65,7 +67,9 @@ module Dolphin
 
     get '/events' do |request|
       run(request) do
-        limit = @params['limit'].blank? ? 100 : @params['limit'].to_i
+
+        limit = @params['limit'].blank? ? GET_EVENT_LIMIT : @params['limit'].to_i
+        raise "Requested over the limit. Limited to #{GET_EVENT_LIMIT}" if limit > GET_EVENT_LIMIT
 
         params = {}
         params[:count] = limit
