@@ -29,14 +29,14 @@ module Dolphin
         rescue => e
           logger :error, e
 
-          [400, MultiJson.dump({
+          [400, {}, MultiJson.dump({
             :message => e.message
           })]
         end
       end
 
       def respond_with(data)
-        [200, MultiJson.dump(data)]
+        [200, {}, MultiJson.dump(data)]
       end
 
       private
