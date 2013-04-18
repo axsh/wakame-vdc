@@ -661,7 +661,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
                                       :args=>[{:instance_id=>@instance.canonical_uuid, :monitor_id=>params[:monitor_id]}])
       end
 
-      respond_with(R::InstanceMonitorItem.new(instance, params[:monitor_id]).generate)
+      respond_with(R::InstanceMonitorItem.new(@instance, params[:monitor_id]).generate)
     end
   end
 end
