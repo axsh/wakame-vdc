@@ -73,7 +73,7 @@ module Dolphin
       def template(template_id)
         file_path = File.join(template_path, template_file(template_id))
         if File.exists? file_path
-          File.read(file_path)
+          File.read(file_path, :encoding => Encoding::UTF_8)
         else
           logger :warn, "File not found #{file_path}"
           nil
