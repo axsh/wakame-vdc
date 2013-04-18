@@ -3,6 +3,7 @@
 require 'celluloid'
 require 'action_mailer'
 require 'mail-iso-2022-jp'
+require 'extlib/blank'
 
 module Dolphin
 
@@ -44,13 +45,19 @@ module Dolphin
 
       def notify(notification_object)
         send_params = {
-          from: notification_object.from,
-          to: notification_object.to,
-          cc: notification_object.cc,
-          bcc: notification_object.bcc,
-          subject: notification_object.subject,
-          body: notification_object.body
+          :from => notification_object.from,
+          :to => notification_object.to,
+          :subject => notification_object.subject,
+          :body => notification_object.body
         }
+
+        unless notification_object.to.blank?
+          send_params[:cc] = notification_object.cc
+        end
+
+        unless notification_object.bcc.blank?
+          send_params[:bcc] = notification_object.bcc
+        end
 
         logger :info, send_params
         begin
