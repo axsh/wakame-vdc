@@ -44,7 +44,8 @@ module Dolphin
 
     post '/events' do |request|
       run(request) do
-        raise 'Not found notification_id' unless @notification_id
+        required 'notification_id'
+
         raise 'Nothing parameters.' if @params.blank?
 
         event = {}
@@ -87,6 +88,7 @@ module Dolphin
 
     post '/notifications' do |request|
       run(request) do
+        required 'notification_id'
         raise 'Nothing parameters.' if @params.blank?
 
         unsupported_sender_types = @params.keys - Sender::TYPES

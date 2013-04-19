@@ -39,6 +39,13 @@ module Dolphin
         [200, {}, MultiJson.dump(data)]
       end
 
+      def required(name)
+        case name
+          when 'notification_id'
+            raise 'Not found X-Notification-Id' if @notification_id.nil?
+        end
+      end
+
       private
       def parse_query_string(query_string)
         params = {}
