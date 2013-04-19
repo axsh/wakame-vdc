@@ -119,6 +119,7 @@ function add_param() {
     string) echo   "${param_key}=\${${param_key}}" ;;
      array) local i; for i in \${${param_key}}; do echo "${param_key}[]=\${i}"; done ;;
    strfile) strfile_type ${param_key}            ;;
+  strplain) echo "\${${param_key}}" ;;
    esac
   "
 }
