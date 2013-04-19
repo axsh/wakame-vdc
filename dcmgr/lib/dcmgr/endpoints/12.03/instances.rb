@@ -38,7 +38,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
   def insert_monitoring_items(instance)
     # monitoring parameter is optional.
     if params['monitoring'].nil?
-      return
+      return false
     elsif !params['monitoring'].is_a?(Hash)
       raise E::InvalidParameter, 'monitoring'
     end
@@ -52,17 +52,24 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
         items_param.each { |i|
           instance.add_monitor_item(i['title'], i['enabled'], i['params'])
         }
+      when Hash
+        items_param.each_pair { |k, i|
+          instance.add_monitor_item(i['title'], i['enabled'], i['params'])
+        }
       else
         raise E::InvalidParameter, "monitoring.items"
       end
+
+      return true
     end
+    return false
   end
   
   def set_monitoring_parameters(instance)
     dirty = [false]
     # monitoring parameter is optional.
     if params['monitoring'].nil?
-      return
+      return false
     elsif !params['monitoring'].is_a?(Hash)
       raise E::InvalidParameter, 'monitoring'
     end
@@ -95,15 +102,7 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       instance.instance_monitor_attr.save_changes
     end
 
-
-    on_after_commit do
-      # instance.monitoring.refreshed is published only when the instance
-      # has been running already.
-      if instance.state.to_s != 'init' && dirty.any?
-        Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
-                                      :args=>[{:instance_id=>instance.canonical_uuid}])
-      end
-    end
+    return dirty.any?
   end
 
   # Show list of instances
@@ -506,7 +505,16 @@ Dcmgr::Endpoints::V1203::CoreAPI.namespace '/instances' do
       end
     end
 
-    set_monitoring_parameters(instance)
+    if set_monitoring_parameters(instance)
+      on_after_commit do
+        # instance.monitoring.refreshed is published only when the instance
+        # has been running already.
+        if instance.state.to_s != 'init'
+          Dcmgr.messaging.event_publish("instance.monitoring.refreshed",
+                                        :args=>[{:instance_id=>instance.canonical_uuid}])
+        end
+      end
+    end
     
     instance.display_name = params[:display_name] if params[:display_name]
     instance.save_changes
