@@ -35,6 +35,11 @@ module Dolphin
       end
 
       notifications.each do |sender_type, values|
+        if values.empty?
+          logger :info, "Skip to notify message because notifications was empty."
+          next
+        end
+
         unless Sender::TYPES.include? sender_type
           log_message = "Not found sender #{sender_type}"
           logger :error, log_message
