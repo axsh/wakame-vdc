@@ -99,6 +99,14 @@ module Dolphin
       SuccessObject.new(notification)
     end
 
+    def delete_notification(notification)
+      notification = query_processor.delete_notification(notification)
+      if query_processor_failed?(notification)
+        return FailureObject.new('Failed to delete notification')
+      end
+      SuccessObject.new(notification)
+    end
+
     private
     def query_processor_failed?(response_data)
       response_data === FALSE

@@ -126,6 +126,23 @@ module Dolphin
       end
     end
 
+    delete '/notifications' do |request|
+      run(request) do
+        required 'notification_id'
+
+        notification = {}
+        notification[:id] = @notification_id
+
+        result = worker.delete_notification(notification)
+        raise result.message if result.fail?
+
+        response_params = {
+          :message => 'OK'
+        }
+        respond_with response_params
+      end
+    end
+
     private
     def worker
       Celluloid::Actor[:workers]
